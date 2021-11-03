@@ -8,4 +8,5 @@ setup(
     author='Agnostiq',
     install_requires=[],
     url='https://github.com/AgnostiqHQ/covalent',
+    download_url='https://github.com/AgnostiqHQ/covalent/archive/v0.1.tar.gz',
 )
