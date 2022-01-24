@@ -46,8 +46,8 @@ def test_logs_placed_correctly():
     with tempfile.TemporaryDirectory() as tmpdir:
         ct.set_config(
             {
-                "executor.local.log_stdout": f"{tmpdir}/stdout.log",
-                "executor.local.log_stderr": f"{tmpdir}/stderr.log",
+                "executors.local.log_stdout": f"{tmpdir}/stdout.log",
+                "executors.local.log_stderr": f"{tmpdir}/stderr.log",
             }
         )
 
