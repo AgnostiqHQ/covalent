@@ -22,6 +22,8 @@
 Tests for self-contained entry point for the dispatcher
 """
 
+import shutil
+
 import covalent
 import covalent_dispatcher as dispatcher
 from covalent._results_manager import results_manager as rm
@@ -55,3 +57,4 @@ def test_get_result():
     assert isinstance(result, covalent._results_manager.result.Result)
 
     rm._delete_result(dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR)
+    shutil.rmtree(TEST_RESULTS_DIR, ignore_errors=True)

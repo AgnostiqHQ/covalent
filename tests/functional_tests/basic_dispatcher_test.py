@@ -19,6 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import shutil
+from pathlib import Path
+
 import covalent as ct
 
 the_executor = ct.executor.LocalExecutor(
@@ -79,6 +82,9 @@ def test_dispatcher_functional():
 
     assert output == "failed"
 
+    Path(the_executor.log_stdout).unlink(missing_ok=True)
+    Path(the_executor.log_stderr).unlink(missing_ok=True)
+
 
 def test_results_dir_in_sublattice():
     # Test that a "non-standard" results_dir in a sublattice works.
@@ -97,3 +103,5 @@ def test_results_dir_in_sublattice():
     output = ct.get_result(dispatch_id, wait=True).result
 
     assert output == 25
+
+    shutil.rmtree(lattice_square.get_metadata["results_dir"], ignore_errors=True)

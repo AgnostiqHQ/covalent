@@ -22,6 +22,8 @@
 Integration test for the dispatcher.
 """
 
+import shutil
+
 import pytest
 
 import covalent_dispatcher as dispatcher
@@ -66,3 +68,4 @@ def test_dispatcher_flow(mock_result, expected_res, expected_node_outputs):
     assert result.get_all_node_outputs() == expected_node_outputs
 
     rm._delete_result(dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR)
+    shutil.rmtree(TEST_RESULTS_DIR, ignore_errors=True)
