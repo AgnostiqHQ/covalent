@@ -1,0 +1,15 @@
+name: 📝 Feature request
+description: Propose an improvement in documentation.
+labels: ["documentation"]
+
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for suggesting an idea for improving Covalent documentation. Please search the issues in this repository to see if there is already a similar suggestion. If you do find something similar, please comment on that issue instead of opening a new one. If this is a question, please post it in the Q&A section of [GitHub Discussions](https://github.com/AgnostiqHQ/covalent/discussions) instead of creating an issue.
+
+  - type: textarea
+    attributes:
+      label: What should we add?
+      description: A description of something that could be easier to understand in documentation, including links to existing documentation if applicable.
+    validations:
+      required: true
