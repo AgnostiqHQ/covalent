@@ -27,8 +27,32 @@ on:
 
 jobs:
   publish_master:
-    uses: AgnostiqHQ/covalent/.github/workflows/publish.yml@develop
-    secrets:
-      aws_ecr_repo: ${{ secrets.AWS_ECR_REPO }}
-      aws_key_id: ${{ secrets.AWS_KEY_ID }}
-      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Generate tag
+        run: |
+          aws --version
+          docker info
+          docker --version
+          TAG="$(cat ./VERSION)"
+          if aws ecr-public describe-images \
+            --repository-name covalent \
+            --image-ids imageTag=$TAG &> /dev/null ; then
+            SHORT_SHA="${GITHUB_SHA::8}"
+            TAG=$TAG-$SHORT_SHA
+          fi
+          echo "TAG=$TAG" >> $GITHUB_ENV
+      - name: Build and push image
+        uses: pahud/ecr-public-action@8cd826db40befb59b0cd0b60b22a7ba72d06a7f7
+        with:
+          tags: |
+            ${{ secrets.AWS_ECR_REPO }}:latest
+            ${{ secrets.AWS_ECR_REPO }}:${{ env.TAG }}

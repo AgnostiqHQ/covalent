@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.20.1] - 2022-01-25
+## [0.22.1] - 2022-01-25
 
 ### Added
 
@@ -19,6 +19,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Absolute URLs used in README
 - Workflow badges updated URLs
 - `install_package_data` -> `include_package_data` in `setup.py`
+
+## [0.22.0] - 2022-01-25
+
+### Changed
+
+- Using public ECR for Docker release
+
+## [0.21.0] - 2022-01-25
+
+### Added
+
+- GitHub pull request templates
 
 ## [0.20.0] - 2022-01-25
 
