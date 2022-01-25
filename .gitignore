@@ -45,6 +45,7 @@ data_cache.sqlite
 __pycache__/
 *.py[cod]
 *$py.class
+**.pytest_cache/**
 
 # Jupyter Notebook
 *.ipynb_checkpoints
