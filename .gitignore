@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-# Ignore results folderss
+# Ignore results folders
 **/results/**
 **/result_*
 !covalent_ui/result_webhook.py

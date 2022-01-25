@@ -78,7 +78,8 @@ setup_info = {
     "description": "Covalent Workflow Tool",
     "long_description": open("README.md").read(),
     "long_description_content_type": "text/markdown",
-    "install_package_data": True,
+    "include_package_data": True,
+    #"install_package_data": True,
     "zip_safe": False,
     "package_data": {
         "": package_data_dirs,
