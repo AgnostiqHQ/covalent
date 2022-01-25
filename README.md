@@ -204,7 +204,7 @@ Release notes are available in the [Changelog](https://github.com/AgnostiqHQ/cov
 
 Please use the following citation in any publications:
 
-> W. J. Cunningham, F. Hasan, J. Kanem, V. Kostadinov, S. W. Neagle, S. K. Radha, and S. Sanand.
+> W. J. Cunningham, S. K. Radha, F. Hasan, J. Kanem, S. W. Neagle, and S. Sanand.
 > *Covalent.* Zenodo, 2022. https://doi.org/10.5281/zenodo.5903364
 
 ## 📃 License
