@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Code of conduct
 - Manifest.in file
 - Citation info
+- Action to upload to pypi
 
 ### Fixed
 
