@@ -21,7 +21,7 @@
 {% set data = load_setup_py_data(setup_file='./setup.py', from_recipe_dir=True) %}
 
 package:
-    name: {{ data.get('name', 'cova') }}
+    name: covalent
     version: {{ data.get('version') }}
 
 source:
@@ -60,8 +60,7 @@ test:
 
 about:
     home: {{ data.get('url') }}
-    # TODO: Update license info
-    license: PROPRIETARY
+    license: AGPL
     license_file: LICENSE
 
 extra:

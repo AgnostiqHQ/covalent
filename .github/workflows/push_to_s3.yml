@@ -23,7 +23,6 @@ name: push-to-s3
 on:
     push:
         branches:
-            - develop
             - develop-ui
 
 jobs:

@@ -62,8 +62,11 @@ def package_files(directory):
     return paths
 
 
-package_data_dirs = package_files("covalent_dispatcher")
-package_data_dirs += package_files("covalent/executor/executor_plugins")
+package_data_dirs = package_files("covalent")
+package_data_dirs += package_files("covalent_dispatcher")
+package_data_dirs += package_files("covalent_ui")
+package_data_dirs += package_files("doc")
+package_data_dirs += package_files("tests")
 
 setup_info = {
     "name": "cova",
@@ -78,7 +81,7 @@ setup_info = {
     "description": "Covalent Workflow Tool",
     "long_description": open("README.md").read(),
     "long_description_content_type": "text/markdown",
-    "install_package_data": True,
+    "include_package_data": True,
     "zip_safe": False,
     "package_data": {
         "": package_data_dirs,
