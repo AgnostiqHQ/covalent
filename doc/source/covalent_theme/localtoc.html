@@ -1,0 +1,28 @@
+{%- if pagename != "search" %}
+<div class="comment-container overflow-auto">
+    <div id="comments">
+      <h5>In This Page</h5>
+      {% if display_toc %}
+        {{ toc }}
+      {% else %}
+        <ul style="display: none;"><li><a></a></li></ul>
+      {% endif %}
+    </div>
+      <hr>
+        <h5>Quick Links</h5>
+        <div class="sidebar-container">
+          <div class="btn-sidebar">
+            <a href="#">Home</a>
+          </div>
+          <br>
+          <div class="btn-sidebar">
+            <a href="#">Index</a>
+          </div>
+          <br>
+          <div class="btn-sidebar">
+            <a href="#">Support</a>
+          </div>
+        </div>
+  </div>
+</div>
+{%- endif %}

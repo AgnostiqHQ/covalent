@@ -1,0 +1,975 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.19.0] - 2022-01-25
+
+### Changed
+
+- Covalent Beta Release
+
+## [0.18.9] - 2022-01-24
+
+### Fixed
+
+- iframe in the docs landing page is now responsive
+
+## [0.18.8] - 2022-01-24
+
+### Changed
+
+- Temporarily removed output tab
+- Truncated dispatch id to fit left sidebar, add tooltip to show full id
+
+## [0.18.7] - 2022-01-24
+
+### Changed
+
+- Many stylistic improvements to documentation, README, and CONTRIBUTING.
+
+## [0.18.6] - 2022-01-24
+
+### Added
+
+- Test added to check whether an already decorated function works as expected with Covalent.
+- `pennylane` package added to the `requirements-dev.txt` file.
+
+### Changed
+
+- Now using `inspect.signature` instead of `function.__code__` to get the names of function's parameters.
+
+## [0.18.5] - 2022-01-21
+
+### Fixed
+
+- Various CI fixes, including rolling back regression in version validation, caching on s3 hosted badges, applying releases and tags correctly.
+
+## [0.18.4] - 2022-01-21
+
+### Changed
+
+- Removed comments and unused functions in covalent_dispatcher
+- `result_class.py` renamed to `result.py`
+
+### Fixed
+
+- Version was not being properly imported inside `covalent/__init__.py`
+- `dispatch_sync` was not previously using the `results_dir` metadata field
+
+### Removed
+
+- Credentials in config
+- `generate_random_filename_in_cache`
+- `is_any_atom`
+- `to_json`
+- `show_subgraph` option in `draw`
+- `calculate_node`
+
+## [0.18.3] - 2022-01-20
+
+### Fixed
+
+- The gunicorn servers now restart more gracefully
+
+## [0.18.2] - 2022-01-21
+
+### Changed
+
+- `tempdir` metadata field removed and replaced with `executor.local.cache_dir`
+
+## [0.18.1] - 2022-01-11
+
+## Added
+
+- Concepts page
+
+## [0.18.0] - 2022-01-20
+
+### Added
+
+- `Result.CANCELLED` status to represent the status of a cancelled dispatch.
+- Condition to cancel the whole dispatch if any of the nodes are cancelled.
+- `cancel_workflow` function which uses a shared variable provided by Dask (`dask.distributed.Variable`) in a dask client to inform nodes to stop execution.
+- Cancel function for dispatcher server API which will allow the server to terminate the dispatch.
+- How to notebook for cancelling a dispatched job.
+- Test to verify whether cancellation of dispatched jobs is working as expected.
+- `cancel` function is available as `covalent.cancel`.
+
+### Changed
+
+- In file `covalent/_shared_files/config.py` instead of using a variable to store and then return the config data, now directly returning the configuration.
+- Using `fire_and_forget` to dispatch a job instead of a dictionary of Dask's `Future` objects so that we won't have to manage the lifecycle of those futures.
+- The `test_run_dispatcher` test was changed to reflect that the dispatcher no longer uses a dictionary of future objects as it was not being utilized anywhere.
+
+### Removed
+
+- `with dask_client` context was removed as the client created in `covalent_dispatcher/_core/__init__.py` is already being used even without the context. Furthermore, it creates issues when that context is exited which is unnecessary at the first place hence not needed to be resolved.
+
+## [0.17.5] - 2022-01-19
+
+### Changed
+
+- Results directory uses a relative path by default and can be overridden by the environment variable `COVALENT_RESULTS_DIR`.
+
+## [0.17.4] - 2022-01-19
+
+### Changed
+
+- Executor parameters use defaults specified in config TOML
+- If relative paths are supplied for stdout and stderr, those files are created inside the results directory
+
+## [0.17.3] - 2022-01-18
+
+### Added
+
+- Sync function
+- Covalent CLI tool can restart in developer mode
+
+### Fixed
+
+- Updated the UI address referenced in the README
+
+## [0.17.2] - 2022-01-12
+
+### Added
+
+- Quantum gravity tutorial
+
+### Changed
+
+- Moved VERSION file to top level
+
+## [0.17.1] - 2022-01-19
+
+### Added
+
+- `error` attribute was added to the results object to show which node failed and the reason behind it.
+- `stdout` and `stderr` attributes were added to a node's result to store any stdout and stderr printing done inside an electron/node.
+- Test to verify whether `stdout` and `stderr` are being stored in the result object.
+
+### Changed
+
+- Redesign of how `redirect_stdout` and `redirect_stderr` contexts in executor now work to allow storing their respective outputs.
+- Executors now also return `stdout` and `stderr` strings, along with the execution output, so that they can be stored in their result object.
+
+## [0.17.0] - 2022-01-18
+
+### Added
+
+- Added an attribute `__code__` to electron and lattice which is a copy of their respective function's `__code__` attribute.
+- Positional arguments, `args`, are now merged with keyword arguments, `kwargs`, as close as possible to where they are passed. This was done to make sure we support both with minimal changes and without losing the name of variables passed.
+- Tests to ensure usage of positional arguments works as intended.
+
+### Changed
+
+- Slight rework to how any print statements in lattice are sent to null.
+- Changed `test_dispatcher_functional` in `basic_dispatcher_test.py` to account for the support of `args` and removed a an unnecessary `print` statement.
+
+### Removed
+
+- Removed `args` from electron's `init` as it wasn't being used anywhere.
+
+## [0.16.1] - 2022-01-18
+
+### Changed
+
+- Requirement changed from `dask[complete]` to `dask[distributed]`.
+
+## [0.16.0] - 2022-01-14
+
+### Added
+
+- New UI static demo build
+- New UI toolbar functions - orientation, toggle params, minimap
+- Sortable and searchable lattice name row
+
+### Changed
+
+- Numerous UI style tweaks, mostly around dispatches table states
+
+### Fixed
+
+- Node sidebar info now updates correctly
+
+## [0.15.11] - 2022-01-18
+
+### Removed
+
+- Unused numpy requirement. Note that numpy is still being installed indirectly as other packages in the requirements rely on it.
+
+## [0.15.10] - 2022-01-16
+
+## Added
+
+- How-to guide for Covalent dispatcher CLI.
+
+## [0.15.9] - 2022-01-18
+
+### Changed
+
+- Switched from using human readable ids to using UUIDs
+
+### Removed
+
+- `human-id` package was removed along with its mention in `requirements.txt` and `meta.yaml`
+
+## [0.15.8] - 2022-01-17
+
+### Removed
+
+- Code breaking text from CLI api documentation.
+- Unwanted covalent_dispatcher rst file.
+
+### Changed
+
+- Installation of entire covalent_dispatcher instead of covalent_dispatcher/_service in setup.py.
+
+## [0.15.7] - 2022-01-13
+
+### Fixed
+
+- Functions with multi-line or really long decorators are properly serialized in dispatch_source.py.
+- Multi-line Covalent output is properly commented out in dispatch_source.py.
+
+## [0.15.6] - 2022-01-11
+
+### Fixed
+
+- Sub-lattice functions are successfully serialized in the utils.py get_serialized_function_str.
+
+### Added
+
+- Function to scan utilized source files and return a set of imported modules (utils.get_imports_from_source)
+
+## [0.15.5] - 2022-01-12
+
+### Changed
+
+- UI runs on port 47007 and the dispatcher runs on port 48008. This is so that when the servers are later merged, users continue using port 47007 in the browser.
+- Small modifications to the documentation
+- Small fix to the README
+
+### Removed
+
+- Removed a directory `generated` which was improperly added
+- Dispatcher web interface
+- sqlalchemy requirement
+
+## [0.15.4] - 2022-01-11
+
+### Changed
+
+- In file `covalent/executor/base.py`, `pickle` was changed to `cloudpickle` because of its universal pickling ability.
+
+### Added
+
+- In docstring of `BaseExecutor`, a note was added specifying that `covalent` with its dependencies is assumed to be installed in the conda environments.
+- Above note was also added to the conda env selector how-to.
+
+## [0.15.3] - 2022-01-11
+
+### Changed
+
+- Replaced the generic `RuntimeError` telling users to check if there is an object manipulation taking place inside the lattice to a simple warning. This makes the original error more visible.
+
+## [0.15.2] - 2022-01-11
+
+### Added
+
+- If condition added for handling the case where `__getattr__` of an electron is accessed to detect magic functions.
+
+### Changed
+
+- `ActiveLatticeManager` now subclasses from `threading.local` to make it thread-safe.
+- `ValueError` in the lattice manager's `claim` function now also shows the name of the lattice that is currently claimed.
+- Changed docstring of `ActiveLatticeManager` to note that now it is thread-safe.
+- Sublattice dispatching now no longer deletes the result object file and is dispatched normally instead of in a serverless manner.
+- `simulate_nitrogen_and_copper_slab_interaction.ipynb` notebook tutorial now does normal dispatching as well instead of serverless dispatching. Also, now 7 datapoints will be shown instead of 10 earlier.
+
+## [0.15.1] - 2022-01-11
+
+### Fixed
+
+- Passing AWS credentials to reusable workflows as a secret
+
+## [0.15.0] - 2022-01-10
+
+### Added
+
+- Action to push development image to ECR
+
+### Changed
+
+- Made the publish action reusable and callable
+
+## [0.14.1] - 2022-01-02
+
+### Changed
+
+- Updated the README
+- Updated classifiers in the setup.py file
+- Massaged some RTD pages
+
+## [0.14.0] - 2022-01-07
+
+### Added
+
+- Action to push static UI to S3
+
+## [0.13.2] - 2022-01-07
+
+### Changed
+
+- Completed new UI design work
+
+## [0.13.1] - 2022-01-02
+
+### Added
+
+- Added eventlet requirement
+
+### Changed
+
+- The CLI tool can now manage the UI flask server as well
+- [Breaking] The CLI option `-t` has been changed to `-d`, which starts the servers in developer mode and exposes unit tests to the server.
+
+## [0.13.0] - 2022-01-01
+
+### Added
+
+- Config manager in `covalent/_shared_files/config.py`
+- Default location for the main config file can be overridden using the environment variable `COVALENT_CONFIG_DIR`
+- Ability to set and get configuration using `get_config` and `set_config`
+
+### Changed
+
+- The flask servers now reference the config file
+- Defaults reference the config file
+
+### Fixed
+
+- `ValueError` caught when running `covalent stop`
+- One of the functional tests was using a malformed path
+
+### Deprecated
+
+- The `electron.to_json` function
+- The `generate_random_filename_in_cache` function
+
+### Removed
+
+- The `get_api_token` function
+
+## [0.12.13] - 2022-01-04
+
+## Removed
+
+- Tutorial section headings
+
+## Fixed
+
+- Plot background white color
+
+## [0.12.12] - 2022-01-06
+
+### Fixed
+
+- Having a print statement inside electron and lattice code no longer causes the workflow to fail.
+
+## [0.12.11] - 2022-01-04
+
+### Added
+
+- Completed UI feature set for first release
+
+### Changed
+
+- UI server result serialization improvements
+- UI result update webhook no longer fails on request exceptions, logs warning intead
+
+## [0.12.10] - 2021-12-17
+
+### Added
+
+- Astrophysics tutorial
+
+## [0.12.9] - 2022-01-04
+
+### Added
+
+- Added `get_all_node_results` method in `result_class.py` to return result of all node executions.
+
+- Added `test_parallelilization` test to verify whether the execution is now being achieved in parallel.
+
+### Changed
+
+- Removed `LocalCluster` cluster creation usage to a simple `Client` one from Dask.
+
+- Removed unnecessary `to_run` function as we no longer needed to run execution through an asyncio loop.
+
+- Removed `async` from function definition of previously asynchronous functions, `_run_task`, `_run_planned_workflow`, `_plan_workflow`, and `_run_workflow`.
+
+- Removed `uvloop` from requirements.
+
+- Renamed `test_get_results` to `test_get_result`.
+
+- Reran the how to notebooks where execution time was mentioned.
+
+- Changed how `dispatch_info` context manager was working to account for multiple nodes accessing it at the same time.
+
+## [0.12.8] - 2022-01-02
+
+### Changed
+
+- Changed the software license to GNU Affero 3.0
+
+### Removed
+
+- `covalent-ui` directory
+
+## [0.12.7] - 2021-12-29
+
+### Fixed
+
+- Gunicorn logging now uses the `capture-output` flag instead of redirecting stdout and stderr
+
+## [0.12.6] - 2021-12-23
+
+### Changed
+
+- Cleaned up the requirements and moved developer requirements to a separate file inside `tests`
+
+## [0.12.5] - 2021-12-16
+
+### Added
+
+- Conda build CI job
+
+## [0.12.4] - 2021-12-23
+
+### Changed
+
+- Gunicorn server now checks for port availability before starting
+
+### Fixed
+
+- The `covalent start` function now prints the correct port if the server is already running.
+
+## [0.12.3] - 2021-12-14
+
+### Added
+
+- Covalent tutorial comparing quantum support vector machines with support vector machine algorithms implemented in qiskit and scikit-learn.
+
+## [0.12.2] - 2021-12-16
+
+### Fixed
+
+- Now using `--daemon` in gunicorn to start the server, which was the original intention.
+
+## [0.12.1] - 2021-12-16
+
+### Fixed
+
+- Removed finance references from docs
+- Fixed some other small errors
+
+### Removed
+
+- Removed one of the failing how-to tests from the functional test suite
+
+## [0.12.0] - 2021-12-16
+
+### Added
+
+- Web UI prototype
+
+## [0.11.1] - 2021-12-14
+
+### Added
+
+- CLI command `covalent status` shows port information
+
+### Fixed
+
+- gunicorn management improved
+
+## [0.11.0] - 2021-12-14
+
+### Added
+
+- Slack notifications for test status
+
+## [0.10.4] - 2021-12-15
+
+### Fixed
+
+- Specifying a non-default results directory in a sub-lattice no longer causes a failure in lattice execution.
+
+## [0.10.3] - 2021-12-14
+
+### Added
+
+- Functional tests for how-to's in documentation
+
+### Changed
+
+- Moved example script to a functional test in the pipeline
+- Added a test flag to the CLI tool
+
+## [0.10.2] - 2021-12-14
+
+### Fixed
+
+- Check that only `kwargs` without any default values in the workflow definition need to be passed in `lattice.draw(ax=ax, **kwargs)`.
+
+### Added
+
+- Function to check whether all the parameters without default values for a callable function has been passed added to shared utils.
+
+## [0.10.1] - 2021-12-13
+
+### Fixed
+
+- Content and style fixes for getting started doc.
+
+## [0.10.0] - 2021-12-12
+
+### Changed
+
+- Remove all imports from the `covalent` to the `covalent_dispatcher`, except for `_dispatch_serverless`
+- Moved CLI into `covalent_dispatcher`
+- Moved executors to `covalent` directory
+
+## [0.9.1] - 2021-12-13
+
+### Fixed
+
+- Updated CONTRIBUTING to clarify docstring style.
+- Fixed docstrings for `calculate_node` and `check_constraint_specific_sum`.
+
+## [0.9.0] - 2021-12-10
+
+### Added
+
+- `prefix_separator` for separating non-executable node types from executable ones.
+
+- `subscript_prefix`, `generator_prefix`, `sublattice_prefix`, `attr_prefix` for prefixes of subscripts, generators,
+  sublattices, and attributes, when called on an electron and added to the transport graph.
+
+- `exclude_from_postprocess` list of prefixes to denote those nodes which won't be used in post processing the workflow.
+
+- `__int__()`, `__float__()`, `__complex__()` for converting a node to an integer, float, or complex to a value of 0 then handling those types in post processing.
+
+- `__iter__()` generator added to Electron for supporting multiple return values from an electron execution.
+
+- `__getattr__()` added to Electron for supporting attribute access on the node output.
+
+- `__getitem__()` added to Electron for supporting subscripting on the node output.
+
+- `electron_outputs` added as an attribute to lattice.
+
+### Changed
+
+- `electron_list_prefix`, `electron_dict_prefix`, `parameter_prefix` modified to reflect new way to assign prefixes to nodes.
+
+- In `build_graph` instead of ignoring all exceptions, now the exception is shown alongwith the runtime error notifying that object manipulation should be avoided inside a lattice.
+
+- `node_id` changed to `self.node_id` in Electron's `__call__()`.
+
+- `parameter` type electrons now have the default metadata instead of empty dictionary.
+
+- Instead of deserializing and checking whether a sublattice is there, now a `sublattice_prefix` is used to denote when a node is a sublattice.
+
+- In `dispatcher_stack_test`, `test_dispatcher_flow` updated to indicate the new use of `parameter_prefix`.
+
+### Fixed
+
+- When an execution fails due to something happening in `run_workflow`, then result object's status is now failed and the object is saved alongwith throwing the appropriate exception.
+
+## [0.8.5] - 2021-12-10
+
+### Added
+
+- Added tests for choosing specific executors inside electron initialization.
+- Added test for choosing specific Conda environments inside electron initialization.
+
+## [0.8.4] - 2021-12-10
+
+### Changed
+
+- Removed _shared_files directory and contents from covalent_dispatcher. Logging in covalent_dispatcher now uses the logger in covalent/_shared_files/logging.py.
+
+## [0.8.3] - 2021-12-10
+
+### Fixed
+
+- Decorator symbols were added to the pseudo-code in the quantum chemistry tutorial.
+
+## [0.8.2] - 2021-12-06
+
+### Added
+
+- Quantum chemistry tutorial.
+
+## [0.8.1] - 2021-12-08
+
+### Added
+
+- Docstrings with typehints for covalent dispatcher functions added.
+
+### Changed
+
+- Replaced `node` to `node_id` in `electron.py`.
+
+- Removed unnecessary `enumerate` in `covalent_dispatcher/_core/__init__.py`.
+
+- Removed `get_node_device_mapping` function from `covalent_dispatcher/_core/__init__.py`
+  and moved the definition to directly add the mapping to `workflow_schedule`.
+
+- Replaced iterable length comparison for `executor_specific_exec_cmds` from `if len(executor_specific_exec_cmds) > 0`
+  to `if executor_specific_exec_cmds`.
+
+## [0.8.0] - 2021-12-03
+
+### Added
+
+- Executors can now accept the name of a Conda environment. If that environment exists, the operations of any electron using that executor are performed in that Conda environment.
+
+## [0.7.6] - 2021-12-02
+
+### Changed
+
+- How to estimate lattice execution time has been renamed to How to query lattice execution time.
+- Change result querying syntax in how-to guides from `lattice.get_result` to
+  `covalent.get_result`.
+- Choose random port for Dask dashboard address by setting `dashboard_address` to ':0' in
+  `LocalCluster`.
+
+## [0.7.5] - 2021-12-02
+
+### Fixed
+
+- "Default" executor plugins are included as part of the package upon install.
+
+## [0.7.4] - 2021-12-02
+
+### Fixed
+
+- Upgraded dask to 2021.10.0 based on a vulnerability report
+
+## [0.7.3] - 2021-12-02
+
+### Added
+
+- Transportable object tests
+- Transport graph tests
+
+### Changed
+
+- Variable name node_num to node_id
+- Variable name node_idx to node_id
+
+### Fixed
+
+- Transport graph `get_dependencies()` method return type was changed from Dict to List
+
+## [0.7.2] - 2021-12-01
+
+### Fixed
+
+- Date handling in changelog validation
+
+### Removed
+
+- GitLab CI YAML
+
+## [0.7.1] - 2021-12-02
+
+### Added
+
+- A new parameter to a node's result called `sublattice_result` is added.
+  This will be of a `Result` type and will contain the result of that sublattice's
+  execution. If a normal electron is executed, this will be `None`.
+
+- In `_delete_result` function in `results_manager.py`, an empty results directory
+  will now be deleted.
+
+- Name of a sublattice node will also contain `(sublattice)`.
+
+- Added `_dispatch_sync_serverless` which synchronously dispatches without a server
+  and waits for a result to be returned. This is the method used to dispatch a sublattice.
+
+- Test for sublatticing is added.
+
+- How-to guide added for sublatticing explaining the new features.
+
+### Changed
+
+- Partially changed `draw` function in `lattice.py` to also draw the subgraph
+  of the sublattice when drawing the main graph of the lattice. The change is
+  incomplete as we intend to add this feature later.
+
+- Instead of returning `plt`, `draw` now returns the `ax` object.
+
+- `__call__` function in `lattice.py` now runs the lattice's function normally
+  instead of dispatching it.
+
+- `_run_task` function now checks whether current node is a sublattice and acts
+  accordingly.
+
+### Fixed
+
+- Unnecessary lines to rename the node's name in `covalent_dispatcher/_core/__init__.py` are removed.
+
+- `test_electron_takes_nested_iterables` test was being ignored due to a spelling mistake. Fixed and
+  modified to follow the new pattern.
+
+## [0.7.0] - 2021-12-01
+
+### Added
+
+- Electrons can now accept an executor object using the "backend" keyword argument. "backend" can still take a string naming the executor module.
+- Electrons and lattices no longer have Slurm metadata associated with the executor, as that information should be contained in the executor object being used as an input argument.
+- The "backend" keyword can still be a string specifying the executor module, but only if the executor doesn't need any metadata.
+- Executor plugin classes are now directly available to covalent, eg: covalent.executor.LocalExecutor().
+
+## [0.6.7] - 2021-12-01
+
+### Added
+
+- Docstrings without examples for all the functions in core covalent.
+- Typehints in those functions as well.
+- Used `typing.TYPE_CHECKING` to prevent cyclic imports when writing typehints.
+
+### Changed
+
+- `convert_to_lattice_function` renamed to `convert_to_lattice_function_call`.
+- Context managers now raise a `ValueError` instead of a generic `Exception`.
+
+## [0.6.6] - 2021-11-30
+
+### Fixed
+
+- Fixed the version used in the documentation
+- Fixed the badge URLs to prevent caching
+
+## [0.6.5] - 2021-11-30
+
+### Fixed
+
+- Broken how-to links
+
+### Removed
+
+- Redundant lines from .gitignore
+- *.ipynb from .gitignore
+
+## [0.6.4] - 2021-11-30
+
+### Added
+
+- How-to guides for workflow orchestration.
+  - How to construct an electron
+  - How to construct a lattice
+  - How to add an electron to lattice
+  - How to visualize the lattice
+  - How to add constraints to lattices
+- How-to guides for workflow and subtask execution.
+  - How to execute individual electrons
+  - How to execute a lattice
+  - How to execute multiple lattices
+- How-to guides for status querying.
+  - How to query electron execution status
+  - How to query lattice execution status
+  - How to query lattice execution time
+- How-to guides for results collection
+  - How to query electron execution results
+  - How to query lattice execution results
+  - How to query multiple lattice execution results
+- Str method for the results object.
+
+### Fixed
+
+- Saving the electron execution status when the subtask is running.
+
+## [0.6.3] - 2021-11-29
+
+### Removed
+
+- JWT token requirement.
+- Covalent dispatcher login requirement.
+- Update covalent login reference in README.md.
+- Changed the default dispatcher server port from 5000 to 47007.
+
+## [0.6.2] - 2021-11-28
+
+### Added
+
+- Github action for tests and coverage
+- Badges for tests and coverage
+- If tests pass then develop is pushed to master
+- Add release action which tags and creates a release for minor version upgrades
+- Add badges action which runs linter, and upload badges for version, linter score, and platform
+- Add publish action (and badge) which builds a Docker image and uploads it to the AWS ECR
+
+## [0.6.1] - 2021-11-27
+
+### Added
+
+- Github action which checks version increment and changelog entry
+
+## [0.6.0] - 2021-11-26
+
+### Added
+
+- New Covalent RTD theme
+- sphinx extension sphinx-click for CLI RTD
+- Sections in RTD
+- init.py in both covalent-dispatcher logger module and cli module for it to be importable in sphinx
+
+### Changed
+
+- docutils version that was conflicting with sphinx
+
+### Removed
+
+- Old aq-theme
+
+## [0.5.1] - 2021-11-25
+
+### Added
+
+- Integration tests combining both covalent and covalent-dispatcher modules to test that
+  lattice workflow are properly planned and executed.
+- Integration tests for the covalent-dispatcher init module.
+- pytest-asyncio added to requirements.
+
+## [0.5.0] - 2021-11-23
+
+### Added
+
+- Results manager file to get results from a file, delete a result, and redispatch a result object.
+- Results can also be awaited to only return a result if it has either been completed or failed.
+- Results class which is used to store the results with all the information needed to be used again along with saving the results to a file functionality.
+- A result object will be a mercurial object which will be updated by the dispatcher and saved to a file throughout the dispatching and execution parts.
+- Direct manipulation of the transport graph inside a result object takes place.
+- Utility to convert a function definition string to a function and vice-versa.
+- Status class to denote the status of a result object and of each node execution in the transport graph.
+- Start and end times are now also stored for each node execution as well as for the whole dispatch.
+- Logging of `stdout` and `stderr` can be done by passing in the `log_stdout`, `log_stderr` named metadata respectively while dispatching.
+- In order to get the result of a certain dispatch, the `dispatch_id`, the `results_dir`, and the `wait` parameter can be passed in. If everything is default, then only the dispatch id is required, waiting will not be done, and the result directory will be in the current working directory with folder name as `results/` inside which every new dispatch will have a new folder named according to their respective dispatch ids, containing:
+  - `result.pkl` - (Cloud)pickled result object.
+  - `result_info.yaml` - yaml file with high level information about the result and its execution.
+  - `dispatch_source.py` - python file generated, containing the original function definitions of lattice and electrons which can be used to dispatch again.
+
+### Changed
+
+- `logfile` named metadata is now `slurm_logfile`.
+- Instead of using `jsonpickle`, `cloudpickle` is being used everywhere to maintain consistency.
+- `to_json` function uses `json` instead of `jsonpickle` now in electron and lattice definitions.
+- `post_processing` moved to the dispatcher, so the dispatcher will now store a finished execution result in the results folder as specified by the user with no requirement of post processing it from the client/user side.
+- `run_task` function in dispatcher modified to check if a node has completed execution and return it if it has, else continue its execution. This also takes care of cases if the server has been closed mid execution, then it can be started again from the last saved state, and the user won't have to wait for the whole execution.
+- Instead of passing in the transport graph and dispatch id everywhere, the result object is being passed around, except for the `asyncio` part where the dispatch id and results directory is being passed which afterwards lets the core dispatcher know where to get the result object from and operate on it.
+- Getting result of parent node executions of the graph, is now being done using the result object's graph. Storing of each execution's result is also done there.
+- Tests updated to reflect the changes made. They are also being run in a serverless manner.
+
+### Removed
+
+- `LatticeResult` class removed.
+- `jsonpickle` requirement removed.
+- `WorkflowExecutionResult`, `TaskExecutionResult`, and `ExecutionError` singleton classes removed.
+
+### Fixed
+
+- Commented out the `jwt_required()` part in `covalent-dispatcher/_service/app.py`, may be removed in later iterations.
+- Dispatcher server will now return the error message in the response of getting result if it fails instead of sending every result ever as a response.
+
+## [0.4.3] - 2021-11-23
+
+### Added
+
+- Added a note in Known Issues regarding port conflict warning.
+
+## [0.4.2] - 2021-11-24
+
+### Added
+
+- Added badges to README.md
+
+## [0.4.1] - 2021-11-23
+
+### Changed
+
+- Removed old coverage badge and fixed the badge URL
+
+## [0.4.0] - 2021-11-23
+
+### Added
+
+- Codecov integrations and badge
+
+### Fixed
+
+- Detached pipelines no longer created
+
+## [0.3.0] - 2021-11-23
+
+### Added
+
+- Wrote a Code of Conduct based on <https://www.contributor-covenant.org/>
+- Added installation and environment setup details in CONTRIBUTING
+- Added Known Issues section to README
+
+## [0.2.0] - 2021-11-22
+
+### Changed
+
+- Removed non-open-source executors from Covalent. The local SLURM executor is now
+- a separate repo. Executors are now plugins.
+
+## [0.1.0] - 2021-11-19
+
+### Added
+
+- Pythonic CLI tool. Install the package and run `covalent --help` for a usage description.
+- Login and logout functionality.
+- Executor registration/deregistration skeleton code.
+- Dispatcher service start, stop, status, and restart.
+
+### Changed
+
+- JWT token is stored to file instead of in an environment variable.
+- The Dask client attempts to connect to an existing server.
+
+### Removed
+
+- Removed the Bash CLI tool.
+
+### Fixed
+
+- Version assignment in the covalent init file.
+
+## [0.0.3] - 2021-11-17
+
+### Fixed
+
+- Fixed the Dockerfile so that it runs the dispatcher server from the covalent repo.
+
+## [0.0.2] - 2021-11-15
+
+### Changed
+
+- Single line change in ci script so that it doesn't exit after validating the version.
+- Using `rules` in `pytest` so that the behavior in test stage is consistent.
+
+## [0.0.1] - 2021-11-15
+
+### Added
+
+- CHANGELOG.md to track changes (this file).
+- Semantic versioning in VERSION.
+- CI pipeline job to enforce versioning.

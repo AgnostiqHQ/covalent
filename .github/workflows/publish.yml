@@ -1,0 +1,65 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+# 
+# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any 
+# modifications or derivative works of this file must retain this copyright 
+# notice, and modified files must contain a notice indicating that they have 
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: publish
+
+on:
+  workflow_call:
+    secrets:
+      aws_ecr_repo:
+        required: true
+      aws_key_id:
+        required: true
+      aws_secret_access_key:
+        required: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.aws_key_id }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          aws-region: us-east-1
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Generate tag
+        run: |
+          aws --version
+          docker info
+          docker --version
+          TAG="$(cat ./VERSION)"
+          if aws ecr describe-images \
+            --repository-name covalent \
+            --image-ids imageTag=$TAG &> /dev/null ; then
+            SHORT_SHA="${GITHUB_SHA::8}"
+            TAG=$TAG-$SHORT_SHA
+          fi
+          echo "TAG=$TAG" >> $GITHUB_ENV
+      - name: Build and push image
+        run: |
+          docker build -t ${{ secrets.aws_ecr_repo }} .
+          docker push ${{ secrets.aws_ecr_repo }}
+          docker tag ${{ secrets.aws_ecr_repo }} ${{ secrets.aws_ecr_repo }}:$TAG
+          docker push ${{ secrets.aws_ecr_repo }}:$TAG

@@ -1,0 +1,234 @@
+/*!
+ * Dark Mode Switch v1.0.1 (https://github.com/coliff/dark-mode-switch)
+ * Copyright 2021 C.Oliff
+ * Licensed under MIT (https://github.com/coliff/dark-mode-switch/blob/main/LICENSE)
+ */
+
+/* -- core controlers -- */
+[data-theme="dark"] {
+  background-color: #101820 !important;
+  color: #eee;
+}
+
+[data-theme="dark"] .bg-#131316 {
+  background-color: #fff !important;
+}
+
+[data-theme="dark"] .bg-dark {
+  background-color: #eee !important;
+}
+
+[data-theme="dark"] .bg-light {
+  background-color: #222 !important;
+}
+
+[data-theme="dark"] .bg-white {
+  background-color: #000 !important;
+}
+
+/* -- agnostiq dark-mode v1 -- */
+
+[data-theme="dark"] .logo-fill {
+    fill: #fff !important;
+}
+
+[data-theme="dark"] p {
+  color: #AFAFAF;
+}
+
+[data-theme="dark"] a{
+  color: #eee;
+}
+
+[data-theme="dark"] a:hover{
+  color: #998AFF;
+}
+
+[data-theme="dark"] .class > dt {
+  background: #131316;
+  }
+
+/* -- main navigation -- */
+[data-theme="dark"] .navbar {
+  background-color: #101820 !important;
+  border-bottom: 1px solid #555 !important;
+}
+
+[data-theme="dark"] .navbar.navbar-light .breadcrumb .nav-item.active>.nav-link:hover, .navbar.navbar-light .navbar-nav .nav-item.active>.nav-link:hover, .navbar.navbar-light .navbar-toggler, .navbar.navbar-light form .md-form .form-control {
+  color: inherit !important;
+}
+
+[data-theme="dark"] .navbar .navbar-nav > li {
+  color: #AFAFAF !important;
+  border-bottom-color: #101820;
+}
+
+[data-theme="dark"] .nav-item.active{
+  color: white !important;
+  border-bottom-color: white !important;
+}
+
+[data-theme="dark"] .navbar a {
+  background-color: #101820 !important;
+  color: #AFAFAF !important;
+}
+
+[data-theme="dark"] .navbar.navbar-light .navbar-toggler-icon {
+  color: white;
+}
+
+/* -- sidebar globaltoc -- */
+[data-theme="dark"] #sidebar{
+  border-right: 1px solid #555;
+  background-color: transparent;
+  color: #AFAFAF;
+}
+
+
+[data-theme="dark"] .sidebar-toc ul li.toctree-l1 a {
+  color: #AFAFAF;
+}
+
+[data-theme="dark"] div.sphinxsidebar .sidebar-toc a:hover {
+  color: #998AFF !important;
+}
+[data-theme="dark"] div.sphinxsidebar .sidebar-toc a:hover {
+  color: #998AFF !important;
+}
+
+/*-- Code -- */
+[data-theme="dark"] code, tt {
+  color: #AFAFAF !important;
+  background: transparent !important;
+}
+
+[data-theme="dark"]  pre {
+  background: #131316;
+}
+[data-theme="dark"] .comment-container{
+  background: #131316;
+}
+
+[data-theme="dark"] .comment-container ul li a {
+  color: #AFAFAF;
+}
+
+[data-theme="dark"] .comment-container h3 {
+  color: white;
+}
+
+[data-theme="dark"] .comment-container h4 {
+  color: white;
+}
+
+[data-theme="dark"] #comments a:hover{
+  color: white;
+}
+
+[data-theme="dark"] blockquote {
+  background: #131316;
+  color: #AFAFAF;
+  border-color: #131316;
+}
+[data-theme="dark"] .md-input input:invalid {
+  box-shadow: none;
+  background-color: #101820;
+}
+[data-theme="dark"] .search-block {
+  background-color: #101820;
+}
+[data-theme="dark"] .search-block {
+  background-color: #101820;
+  border: 2px solid #555;
+}
+[data-theme="dark"] .card{
+    background-color: #64F4D2;
+    color: black;
+}
+
+[data-theme="dark"] .exception > dt {
+  background: #2F465E;
+  color: white;
+}
+
+[data-theme="dark"] .exception > dt code {
+  background: #2F465E;
+  color: white;
+}
+
+[data-theme="dark"] .function > dt {
+  background: #2F465E;
+  color: white;
+}
+ /*--tabs--*/
+
+ [data-theme="dark"] .tabbed-set {
+  background: #64F4D2;
+  color: black;
+}
+
+
+[data-theme="dark"] .tabbed-set>input:checked+label {
+  border-color: black !important;
+  color: black !important;
+}
+
+[data-theme="dark"] .tabbed-set>label{
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+[data-theme="dark"] .sphinx-tabs {
+  background: #2F465E;
+  color: black;
+}
+[data-theme="dark"] .sphinx-tabs-tab {
+  color: rgba(255, 255, 255, 0.3);
+}
+[data-theme="dark"] .sphinx-tabs-tab[aria-selected="true"] {
+  color: white !important;
+  border-bottom: 1px solid white !important;
+}
+[data-theme="dark"] .btn {
+  background: rgba(255, 255, 255, 0.3);
+  color: #FBF8F8;
+}
+
+[data-theme="dark"] .btn-primary {
+  background: black !important;
+  color: white !important;
+  border: none !important;
+}
+
+[data-theme="dark"] .moon{
+  fill: #64F4D2;
+  stroke: none;
+}
+
+[data-theme="dark"] .btn-sidebar{
+  background: rgba(167, 187, 207, 1);
+}
+[data-theme="dark"] div.topic {
+  background-color: #131316;
+  border: none;
+}
+
+/* -- Admonitions --*/
+
+[data-theme="dark"] .admonition-title {
+  color: black;
+  }
+
+
+@media screen and (max-width: 968px) {
+
+  [data-theme="dark"] .navbar {
+    border-bottom: 1px #555 solid;
+  }
+
+}
+
+@media screen and (max-width: 768px) {
+  [data-theme="dark"] #sidebar {
+    background-color: #101820 !important;
+  }
+}

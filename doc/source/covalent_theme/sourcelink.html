@@ -1,0 +1,12 @@
+{%- if show_source and has_source and sourcename %}
+<div class="sidebar-block">
+    <div class="sidebar-toc">
+        {% set toctree = toctree(maxdepth=1, collapse=True, includehidden=True) %}
+        {% if toctree %}
+          {{ toctree }}
+        {% else %}
+          {{ toc }}
+        {% endif %}
+      </div>
+</div>
+{%- endif %}

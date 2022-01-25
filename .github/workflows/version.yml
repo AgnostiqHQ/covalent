@@ -1,0 +1,93 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+# 
+# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any 
+# modifications or derivative works of this file must retain this copyright 
+# notice, and modified files must contain a notice indicating that they have 
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: version
+
+on:
+  push:
+    branches-ignore:
+      - develop
+      - master
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    env:
+      SEMVER_REGEX: '[0-9]+\.[0-9]+\.[0-9]+'
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 0
+      - name: Read head version
+        run: |
+          HEAD_VERSION="$(cat ./VERSION)"
+          echo "HEAD_VERSION=$HEAD_VERSION" >> $GITHUB_ENV
+      - name: Validate changelog entry
+        run: |
+          git diff --name-only origin/develop | grep CHANGELOG
+          if [[ $(grep -c "\b${HEAD_VERSION}\b" CHANGELOG.md) > 1 ]]; then
+            echo 'There are duplicate entries in the changelog.'
+            exit 4
+          elif [[ $(grep -c "\b${HEAD_VERSION}\b" CHANGELOG.md) < 1 ]]; then
+            echo "There is not a changelog entry that matches the head version ${HEAD_VERSION}."
+            exit 5
+          fi
+          changedate=$(grep "\b${HEAD_VERSION}\b" CHANGELOG.md | awk '{ print $4 }')
+          date -I -d $changedate
+          if [[ $changedate > $(date -I) ]] ||
+             [[ $changedate < $(date -I --date='-1 year') ]] ; then
+            echo "There is a problem with the date in the changelog."
+            exit 3
+          fi
+      - name: Check out base
+        run: git checkout develop
+      - name: Read base version
+        run: |
+          BASE_VERSION="$(cat ./VERSION)"
+          echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
+      - name: Validate version change
+        run: |
+          echo "head version is ${HEAD_VERSION}"
+          echo "base version is ${BASE_VERSION}"
+          if [[ $BASE_VERSION =~ $SEMVER_REGEX ]] && 
+             [[ $HEAD_VERSION =~ $SEMVER_REGEX ]] && 
+             dpkg --compare-versions $HEAD_VERSION 'gt' $BASE_VERSION ; then
+            echo "Validated version incremented correctly."
+            exit 0
+          elif [[ $BASE_VERSION =~ $SEMVER_REGEX ]] && 
+               [[ $HEAD_VERSION =~ $SEMVER_REGEX ]] ; then
+            echo "You must increment the version to merge this branch."
+            exit 1
+          elif [[ $BASE_VERSION =~ $SEMVER_REGEX ]] ; then
+            echo "The version number in this branch is not a valid semantic version."
+            exit 2
+          else
+            echo "Pass due to bad version format in develop branch."
+          fi
+#      - name: Notify failure
+#        if: failure()
+#        uses: rtCamp/action-slack-notify@v2
+#        env:
+#          SLACK_CHANNEL: "covalent-ci"
+#          SLACK_USERNAME: "CovalentOpsBot"
+#          SLACK_MESSAGE: "Failed to validate version or changelog."
+#          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+#          SLACK_COLOR: ${{ job.status }}

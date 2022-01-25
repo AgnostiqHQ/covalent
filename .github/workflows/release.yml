@@ -1,0 +1,65 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+# 
+# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any 
+# modifications or derivative works of this file must retain this copyright 
+# notice, and modified files must contain a notice indicating that they have 
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out master
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Read version
+        run: |
+          VERSION="$(cat ./VERSION)"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "RELEASE=v$VERSION" >> $GITHUB_ENV
+      - name: Tag commit
+        id: push
+        run: |
+          git config user.name "CovalentOpsBot"
+          git config user.email "covalentopsbot@users.noreply.github.com"
+          git tag -a $RELEASE -m "Release $RELEASE"
+          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
+          git push origin $RELEASE
+      - name: Generate release message
+        id: message
+        run: |
+          begin=$(grep -n "\b${VERSION}\b" ./CHANGELOG.md | cut -d ':' -f 1)
+          previous_version=$(git describe --abbrev=0 $RELEASE^ | cut -c2-)
+          end=$(tail -n +$((begin+1)) ./CHANGELOG.md | grep -n -m 1 "\b${previous_version}\b" | cut -d ':' -f 1)
+          echo 'MESSAGE<<EOF' >> $GITHUB_ENV
+          tail +$begin ./CHANGELOG.md | head -$end >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+      - name: Create release
+        if: ${{ steps.push.outcome == 'success' && steps.message.outcome == 'success' }}
+        uses: ncipollo/release-action@v1
+        with:
+          body: ${{ env.MESSAGE }}
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          tag: ${{ env.RELEASE }}
