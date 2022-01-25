@@ -200,6 +200,13 @@ To contribute to Covalent, refer to the [Contribution Guidelines](https://github
 
 Release notes are available in the [Changelog](https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md).
 
+## ⚓ Citation
+
+Please use the following citation in any publications:
+
+> W. J. Cunningham, F. Hasan, J. Kanem, V. Kostadinov, S. W. Neagle, S. K. Radha, and S. Sanand.
+> *Covalent.* Zenodo, 2022. https://doi.org/10.5281/zenodo.5903364
+
 ## 📃 License
 
 Covalent is licensed under the GNU Affero GPL 3.0 License. Covalent may be distributed under other licenses upon request. See the [LICENSE](https://github.com/AgnostiqHQ/covalent/blob/master/LICENSE) file or contact the [support team](mailto:support@agnostiq.ai) for more details.
