@@ -26,7 +26,7 @@ Users can also install Covalent as a package in a Conda environment:
 
 .. code:: bash
 
-   conda install covalent
+   conda install -c agnostiq covalent
 
 Docker Install
 --------------
