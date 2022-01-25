@@ -22,7 +22,8 @@ name: pypi
 
 on:
   push:
-    - master
+    branches:
+      - master
 
 jobs:
   pypi:
