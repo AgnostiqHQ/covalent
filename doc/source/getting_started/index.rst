@@ -28,6 +28,10 @@ Users can also install Covalent as a package in a Conda environment:
 
    conda install -c agnostiq covalent
 
+.. note::
+
+   Sometimes Conda can have trouble resolving packages. Use the flag :code:`--override-channels` to speed things up.
+
 Docker Install
 --------------
 
