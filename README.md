@@ -1,8 +1,8 @@
 &nbsp;
 
 <div align="center">
-<img src="doc/source/_static/light.png#gh-light-mode-only" width="70%">
-<img src="doc/source/_static/dark.png#gh-dark-mode-only" width="70%">
+<img src="https://github.com/AgnostiqHQ/covalent/blob/master/doc/source/_static/light.png#gh-light-mode-only" width="70%">
+<img src="https://github.com/AgnostiqHQ/covalent/blob/master/doc/source/_static/dark.png#gh-dark-mode-only" width="70%">
 
 &nbsp;
 
@@ -23,7 +23,7 @@ Covalent is a Pythonic workflow tool used to execute tasks on advanced computing
 ## ✨ Features
 
 <div align="center">
-<img src="doc/source/_static/uibanner.png" width="100%">
+<img src="https://github.com/AgnostiqHQ/covalent/blob/master/doc/source/_static/uibanner.png" width="100%">
 
 <em>With Covalent's UI, bring your workflows to life! </em>
 </div>
@@ -194,12 +194,12 @@ The official documentation includes tips on getting started, some high level con
 
 ## ✔️  Contributing
 
-To contribute to Covalent, refer to the [Contribution Guidelines](./CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. Participation in the Covalent community is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md).
+To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
 
 ## 📝 Release Notes
 
-Release notes are available in the [Changelog](./CHANGELOG.md).
+Release notes are available in the [Changelog](https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md).
 
 ## 📃 License
 
-Covalent is licensed under the GNU Affero GPL 3.0 License. Covalent may be distributed under other licenses upon request. See the [LICENSE](LICENSE) file or contact the [support team](mailto:support@agnostiq.ai) for more details.
+Covalent is licensed under the GNU Affero GPL 3.0 License. Covalent may be distributed under other licenses upon request. See the [LICENSE](https://github.com/AgnostiqHQ/covalent/blob/master/LICENSE) file or contact the [support team](mailto:support@agnostiq.ai) for more details.
