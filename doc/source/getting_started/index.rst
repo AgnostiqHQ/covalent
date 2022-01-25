@@ -35,7 +35,7 @@ Covalent is also provided as a Docker image. This image can be used as a develop
 
 .. code:: bash
 
-   docker pull public.ecr.aws/covalent
+   docker pull public.ecr.aws/i9y7r1d8/covalent
 
    # Run the container as a developer environment
    docker run -it --rm covalent bash
