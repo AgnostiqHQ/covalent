@@ -22,7 +22,7 @@ FROM python:3.8-slim-buster
 
 RUN mkdir -p /opt/covalent
 COPY . /opt/covalent
-RUN pip install --no-cache-dir /opt/covalent
+RUN pip install --no-cache-dir --use-feature=in-tree-build /opt/covalent
 
 EXPOSE 80
 
