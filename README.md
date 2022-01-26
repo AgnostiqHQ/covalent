@@ -2,7 +2,8 @@
 
 <div align="center">
 
-![covalent logo](doc/source/_static/dark.png?raw=true)
+![covalent logo](doc/source/_static/dark.png?raw=true#gh-dark-mode-only)
+![covalent logo](doc/source/_static/light.png?raw=true#gh-light-mode-only)
 
 &nbsp;
 
