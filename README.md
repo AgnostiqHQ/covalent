@@ -2,8 +2,8 @@
 
 <div align="center">
 
-![covalent logo](doc/source/_static/dark.png?raw=true#gh-dark-mode-only)
-![covalent logo](doc/source/_static/light.png?raw=true#gh-light-mode-only)
+![covalent logo](https://github.com/AgnostiqHQ/covalent/tree/master/doc/source/_static/dark.png?raw=true#gh-dark-mode-only)
+![covalent logo](https://github.com/AgnostiqHQ/covalent/tree/master/doc/source/_static/light.png?raw=true#gh-light-mode-only)
 
 &nbsp;
 
@@ -25,7 +25,7 @@ Covalent is a Pythonic workflow tool used to execute tasks on advanced computing
 
 <div align="center">
 
-![covalent ui banner](doc/source/_static/uibanner.png?raw=true)
+![covalent ui banner](https://github.com/AgnostiqHQ/covalent/tree/master/doc/source/_static/uibanner.png?raw=true)
 
 <em>With Covalent's UI, bring your workflows to life! </em>
 </div>
