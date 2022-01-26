@@ -20,6 +20,10 @@
 
 FROM python:3.8-slim-buster
 
+RUN apt-get update && apt-get install -y \
+  gcc \
+  && rm -rf /var/lib/apt/lists/*
+
 RUN mkdir -p /opt/covalent
 COPY . /opt/covalent
 RUN pip install --no-cache-dir --use-feature=in-tree-build /opt/covalent
