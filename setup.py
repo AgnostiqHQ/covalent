@@ -62,7 +62,7 @@ def package_files(directory):
     return paths
 
 
-package_data_dirs = package_files("covalent_dispatcher/_static")
+package_data_dirs = package_files("covalent_dispatcher/_service")
 package_data_dirs += package_files("doc")
 package_data_dirs += package_files("tests")
 
