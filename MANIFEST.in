@@ -1,3 +1,4 @@
 include VERSION
 include requirements.txt
+include covalent/executor/executor_plugins/*
 include covalent_dispatcher/_service/*
