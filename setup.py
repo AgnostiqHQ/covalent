@@ -54,18 +54,6 @@ class Docs(Command):
         generate_docs.run(self.clean)
 
 
-def package_files(directory):
-    paths = []
-    for (path, directories, filenames) in os.walk(directory):
-        for filename in filenames:
-            paths.append(os.path.join("..", path, filename))
-    return paths
-
-
-package_data_dirs = package_files("covalent_dispatcher/_service")
-package_data_dirs += package_files("doc")
-package_data_dirs += package_files("tests")
-
 setup_info = {
     "name": "cova",
     "packages": find_packages(exclude=["tests"]),
@@ -82,7 +70,8 @@ setup_info = {
     "include_package_data": True,
     "zip_safe": False,
     "package_data": {
-        "": package_data_dirs,
+        "covalent": ["executor/executor_plugins/local.py"],
+        "covalent_dispatcher": ["_service/app.py"],
     },
     "install_requires": required,
     "classifiers": [
