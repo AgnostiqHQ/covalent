@@ -30,6 +30,8 @@ from covalent._shared_files.defaults import default_constraints_dict, parameter_
 from covalent._workflow.electron import electron
 from covalent._workflow.lattice import Lattice, lattice
 from covalent._workflow.transport import _TransportGraph
+from covalent._results_manager.result import Result
+from covalent._shared_files.config import get_config
 
 
 @electron
@@ -144,4 +146,31 @@ def test_lattice_check_consumable():
 
     # TODO: Same as above.
     pass
+
+
+def test_lattice_dispatch(test_lattice: Lattice):
+    """Test that the lattice can dispatch."""
+
+    id = test_lattice.dispatch(1, 2)
+
+    assert id is not None
+    assert isinstance(id, str)
+
+
+def test_lattice_dispatch_sync(test_lattice: Lattice):
+    """Test that the lattice can dispatch synchronously and waits for the calculation to complete."""
+
+    result = test_lattice.dispatch_sync(1, 2)
+
+    assert isinstance(result, Result)
+    assert result.status == Result.COMPLETED
+
+
+def test_lattice_server_dispatch(test_lattice: Lattice):
+    """Test that the lattice can send its result object to the dispatcher server"""
+
+    id = test_lattice._server_dispatch(Result(test_lattice, results_dir=get_config("dispatcher.results_dir")))
+
+    assert id is not None
+    assert isinstance(id, str)
 
