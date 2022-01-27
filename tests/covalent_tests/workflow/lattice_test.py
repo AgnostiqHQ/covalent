@@ -24,6 +24,8 @@
 import networkx as nx
 import pytest
 
+from typing import Callable, List
+
 from covalent._shared_files.defaults import default_constraints_dict, parameter_prefix
 from covalent._workflow.electron import electron
 from covalent._workflow.lattice import Lattice, lattice
@@ -46,6 +48,12 @@ def sample_workflow(a, b):
 
 
 @pytest.fixture
+def test_task_function():
+    """Test function."""
+
+    return sample_task
+
+@pytest.fixture
 def test_workflow_function():
     return sample_workflow
 
@@ -65,7 +73,7 @@ def sample_values():
     return [1, 2]
 
 
-def test_lattice_build_graph(test_lattice: Lattice, task_arg_name: str, sample_values: list):
+def test_lattice_build_graph(test_lattice: Lattice, task_arg_name: str, sample_values: List):
     """Test that the graph is built correctly."""
 
     new_graph = _TransportGraph()
@@ -104,10 +112,36 @@ def test_lattice_build_graph(test_lattice: Lattice, task_arg_name: str, sample_v
     assert nx.graph_edit_distance(graph_to_test, sample_graph, node_match=are_matching_nodes) == 0
 
 
-def test_lattice_call(sample_values):
+def test_lattice_call(test_workflow_function: Callable, test_task_function: Callable, sample_values: List):
     """Test that lattice can be called as a normal function"""
 
-    output_1, output_2 = sample_workflow(sample_values[0], sample_values[1])
+    output_1, output_2 = test_workflow_function(sample_values[0], sample_values[1])
 
-    assert output_1 == sample_task(sample_values[0])
-    assert output_2 == sample_task(sample_values[1])
+    assert output_1 == test_task_function(sample_values[0])
+    assert output_2 == test_task_function(sample_values[1])
+
+
+def test_lattice_check_constraint_specific_sum(test_workflow_function: Callable):
+    """Test that lattice can check constraint specific sum."""
+
+    # TODO: This is getting really hard to test because first, we don't 
+    # have an interface to the electron to change the `budget` and `time_limit` constraints
+    # and second, this is an old function which is only here for so that if needed, we can
+    # support validating that electron constraints don't exceed lattice's constraints.
+
+    # What we can do is either modify how this function inputs things and then test it.
+
+    # graph = test_lattice.transport_graph.get_internal_graph_copy()
+    # data = nx.readwrite.node_link_data(graph)
+
+    # for constraint in ["budget", "time_limit"]:
+
+    pass
+
+
+def test_lattice_check_consumable():
+    """Test that lattice can check consumable constraint limits."""
+
+    # TODO: Same as above.
+    pass
+
