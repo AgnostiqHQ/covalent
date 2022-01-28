@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.9] - 2022-01-27
+
+### Fixed
+
+- Fixing version check action so that it doesn't run on commits that are in develop
+- Edited PR template so that markdown checklist appears properly
+
 ## [0.22.8] - 2022-01-27
 
 ### Fixed

@@ -4,8 +4,8 @@
 ⚠️ Add a note to /CHANGELOG.md with your version number and the date, summarizing the changes.
 ⚠️ If your pull request fixes an open issue, please link to the issue.
 ⚠️ Rebase the latest changes from the develop branch. Assuming origin points to https://github.com/AgnostiqHQ/covalent, you should run git rebase origin/develop.
+-->
 
 - [ ] I have added the tests to cover my changes.
 - [ ] I have updated the documentation, VERSION, and CHANGELOG accordingly.
 - [ ] I have read the CONTRIBUTING document.
--->
