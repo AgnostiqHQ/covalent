@@ -24,7 +24,7 @@ on:
   push:
     branches:
       - master
-      - publish-master
+      - docker-issues
 
 jobs:
   publish_master:
