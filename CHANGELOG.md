@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.8] - 2022-01-27
+
+### Fixed
+
+- publish workflow, using `docker buildx` to build images for x86 and ARM, prepare manifest and push to ECR so that pulls will match the correct architecture.
+- typo in CONTRIBUTING
+- installing `gcc` in Docker image so Docker can build wheels for `dask` and other packages that don't provide ARM wheels
+
+### Changed
+
+- updated versions in `requirements.txt` for `matplotlib` and `dask`
+
 ## [0.22.7] - 2022-01-27
 
 ### Added
