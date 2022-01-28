@@ -50,7 +50,6 @@ jobs:
             TAG=$TAG-$SHORT_SHA
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
         with:
