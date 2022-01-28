@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - master
-      - docker-issues
 
 jobs:
   publish_master:
@@ -71,7 +70,7 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
-          push: false
+          push: true
           tags: |
             ${{ secrets.AWS_ECR_REPO }}:latest
             ${{ secrets.AWS_ECR_REPO }}:${{ env.TAG }}
