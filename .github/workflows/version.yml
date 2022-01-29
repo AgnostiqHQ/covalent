@@ -20,11 +20,7 @@
 
 name: version
 
-on:
-  push:
-    branches-ignore:
-      - develop
-      - master
+on: pull_request
 
 jobs:
   version:
