@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Running tests on pull requests, not just pushes
+- Running tests, conda, and version workflows on pull requests, not just pushes
 
 ## [0.22.9] - 2022-01-27
 
