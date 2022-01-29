@@ -62,7 +62,7 @@ Navigate to the user interface at `http://localhost:47007` to monitor workflow e
 
 In your Python code, it's as simple as adding a few decorators!  Consider the following example which uses a support vector machine (SVM) to classify types of iris flowers.
 
-<table style='margin-left: auto; margin-right: auto; word-wrap: break-word;'>
+<table style='margin-left: auto; margin-right: auto; word-wrap: break-word; width: 915px;'>
 <tr>
 <th style='text-align:center;'>Without Covalent</th>
 <th style='text-align:center;'>With Covalent</th>
@@ -154,12 +154,8 @@ def run_experiment(C=1.0, gamma=0.7):
     )
     return score
 
-dispatch_id =
-    run_experiment.dispatch(
-    	C=1.0,
-    	gamma=0.7
-    )
-result = ct.get_result(dispatch_id)
+dispatch_id = run_experiment.dispatch(C=1.0, gamma=0.7)
+result = ct.get_result(dispatch_id, wait=True)
 ```
 </td>
 </tr>
