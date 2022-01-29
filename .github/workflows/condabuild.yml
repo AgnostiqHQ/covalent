@@ -20,11 +20,7 @@
 
 name: conda
 
-on:
-  push:
-    branches-ignore:
-      - develop
-      - master
+on: pull_request
 
 jobs:
   conda:
