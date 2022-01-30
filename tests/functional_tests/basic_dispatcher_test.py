@@ -104,4 +104,4 @@ def test_results_dir_in_sublattice():
 
     assert output == 25
 
-    shutil.rmtree(lattice_square.get_metadata["results_dir"], ignore_errors=True)
+    shutil.rmtree(lattice_square.get_metadata(name="results_dir"), ignore_errors=True)
