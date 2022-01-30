@@ -20,11 +20,7 @@
 
 name: version
 
-on:
-  push:
-    branches-ignore:
-      - develop
-      - master
+on: pull_request
 
 jobs:
   version:
@@ -36,11 +32,18 @@ jobs:
         uses: actions/checkout@v1
         with:
           fetch-depth: 0
+      - name: Check git history
+        run: |
+          if git merge-base --is-ancestor $GITHUB_SHA origin/develop; then
+            echo "DEVELOP_COMMIT_HISTORY=$GITHUB_SHA" >> $GITHUB_ENV
+          fi
       - name: Read head version
+        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: |
           HEAD_VERSION="$(cat ./VERSION)"
           echo "HEAD_VERSION=$HEAD_VERSION" >> $GITHUB_ENV
       - name: Validate changelog entry
+        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: |
           git diff --name-only origin/develop | grep CHANGELOG
           if [[ $(grep -c "\b${HEAD_VERSION}\b" CHANGELOG.md) > 1 ]]; then
@@ -58,12 +61,15 @@ jobs:
             exit 3
           fi
       - name: Check out base
+        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: git checkout develop
       - name: Read base version
+        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: |
           BASE_VERSION="$(cat ./VERSION)"
           echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
       - name: Validate version change
+        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: |
           echo "head version is ${HEAD_VERSION}"
           echo "base version is ${BASE_VERSION}"

@@ -14,7 +14,7 @@ where `my-github` is your personal GitHub account.
 We recommend using [Conda](https://www.anaconda.com/) to create an environment to install and develop Covalent. After you have [installed](https://docs.anaconda.com/anaconda/install/index.html) `conda`, create an environment:
 
 ```shell
-conda create -n covalent-dev python:3.8
+conda create -n covalent-dev python=3.8
 conda activate covalent-dev
 ```
 

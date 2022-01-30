@@ -50,9 +50,27 @@ jobs:
             TAG=$TAG-$SHORT_SHA
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
-      - name: Build and push image
-        uses: pahud/ecr-public-action@8cd826db40befb59b0cd0b60b22a7ba72d06a7f7
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
         with:
+          platforms: all
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          registry: public.ecr.aws
+          username: ${{ secrets.AWS_KEY_ID }}
+          password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Build and push image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
           tags: |
             ${{ secrets.AWS_ECR_REPO }}:latest
             ${{ secrets.AWS_ECR_REPO }}:${{ env.TAG }}

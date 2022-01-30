@@ -5,11 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.22.7] - 2022-01-26
+## [0.22.11] - 2022-01-26
 
 ### Fixed
 
 - When the local executor's `log_stdout` and `log_stderr` config variables are relative paths, they should go inside the results directory. Previously that was queried from the config, but now it's queried from the lattice metadata.
+
+### Added 
+
+- Tests for ...
+ 
+## [0.22.10] - 2022-01-29
+
+### Changed
+
+- Running tests, conda, and version workflows on pull requests, not just pushes
+
+## [0.22.9] - 2022-01-27
+
+### Fixed
+
+- Fixing version check action so that it doesn't run on commits that are in develop
+- Edited PR template so that markdown checklist appears properly
+
+## [0.22.8] - 2022-01-27
+
+### Fixed
+
+- publish workflow, using `docker buildx` to build images for x86 and ARM, prepare manifest and push to ECR so that pulls will match the correct architecture.
+- typo in CONTRIBUTING
+- installing `gcc` in Docker image so Docker can build wheels for `dask` and other packages that don't provide ARM wheels
+
+### Changed
+
+- updated versions in `requirements.txt` for `matplotlib` and `dask`
+
+## [0.22.7] - 2022-01-27
+
+### Added
+
+- `MANIFEST.in` did not have `covalent_dispatcher/_service` in it due to which the PyPi package was not being built correctly. Added the `covalent_dispatcher/_service` to the `MANIFEST.in` file.
+
+### Fixed
+
+- setuptools properly including data files during installation
 
 ## [0.22.6] - 2022-01-26
 
