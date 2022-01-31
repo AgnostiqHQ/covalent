@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Diff check in pypi.yml ensures correct files are packaged
 
+### Changed
+
+- Disabled Slack notifications since webhook was invalidated
+
 ## [0.22.10] - 2022-01-29
 
 ### Changed
