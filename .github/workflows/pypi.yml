@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - master
-      - fixing-pip-ui
 
 jobs:
   pypi:
@@ -56,5 +55,4 @@ jobs:
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-#        run: twine upload dist/*
-        run: ls -la
+        run: twine upload dist/*
