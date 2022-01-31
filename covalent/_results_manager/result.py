@@ -23,7 +23,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Set, Tuple
 
 import cloudpickle as pickle
 import yaml
@@ -434,19 +434,18 @@ Node Outputs
 
         import pkg_resources
 
-        dispatch_function = (
+        dispatch_header = (
             f"# File created by Covalent using covalent version {pkg_resources.get_distribution('cova').version}\n"
-            f"# Note that this file does not contain any global imports you did in your original dispatch\n"
             f"# Covalent result -"
         )
         result_string_lines = str(self.result).split("\n")
         if len(result_string_lines) == 1:
-            dispatch_function += f" {self.result}\n\n"
+            dispatch_header += f" {self.result}\n\n"
         else:
-            dispatch_function += "\n"
+            dispatch_header += "\n"
             for line in result_string_lines:
-                dispatch_function += f"# {line}\n"
-            dispatch_function += "\n"
+                dispatch_header += f"# {line}\n"
+            dispatch_header += "\n"
 
         directory = directory or self.results_dir
         result_folder_path = os.path.join(directory, f"{self.dispatch_id}")
@@ -455,6 +454,8 @@ Node Outputs
         # Accumulate the tasks and workflow in a string
         topo_sorted_graph = self.lattice.transport_graph.get_topologically_sorted_graph()
         functions_added = []
+        serialized_functions = ""
+        imports = set()
         for level in topo_sorted_graph:
             for nodes in level:
                 function = self.lattice.transport_graph.get_node_value(
@@ -462,9 +463,16 @@ Node Outputs
                 ).get_deserialized()
                 if function is not None and function.__name__ not in functions_added:
 
-                    dispatch_function += self.lattice.transport_graph.get_node_value(
+                    serialized_function = self.lattice.transport_graph.get_node_value(
                         nodes, value_key="function_string"
                     )
+
+                    # Remove duplicate import statements, if any
+                    serialized_function, imports = self._remove_import_dupes(
+                        serialized_function, imports
+                    )
+
+                    serialized_functions += serialized_function
                     functions_added.append(function.__name__)
 
         lattice_function_str = convert_to_lattice_function_call(
@@ -472,7 +480,50 @@ Node Outputs
             self.lattice.workflow_function.__name__,
             self.inputs,
         )
-        dispatch_function += lattice_function_str
+        lattice_function_str, _ = self._remove_import_dupes(lattice_function_str, imports)
+
+        dispatch_function = dispatch_header + serialized_functions + lattice_function_str
 
         with open(os.path.join(result_folder_path, "dispatch_source.py"), "w") as f:
             f.write(dispatch_function)
+
+    @staticmethod
+    def _remove_import_dupes(function_string: str, imports: Set[str]) -> Tuple[str, Set[str]]:
+        """
+        Inspect a snippet of code and remove any duplicate imports
+
+        Args:
+            function_string: The input code snippet as a string.
+            imports: A list of already-collected imports.
+
+        Returns:
+            A 2-element tuple containing the code snippet with any duplicate imports removed, and
+                a set of import statements that have been collected.
+        """
+
+        function_lines = function_string.split("\n")
+        dupes = []
+        for i in range(len(function_lines)):
+            line = function_lines[i].strip().lstrip("#").lstrip()
+            row = line.split()
+            # imports in the serialized function have a limitied number of forms.
+            # None are multiple imports in one line.
+            if (
+                (len(row) == 2 and row[0] == "import")  # import x
+                or (len(row) == 4 and row[0] == "import" and row[2] == "as")  # import x as y
+                or (len(row) == 4 and row[0] == "from" and row[2] == "import")  # from x import y
+                or (
+                    len(row) == 6 and row[0] == "from" and row[2] == "import" and row[4] == "as"
+                )  # from x import y as z
+            ):
+                if line in imports:
+                    dupes.append(i)
+                else:
+                    imports.add(line)
+        if len(dupes) > 0:
+            dupes.reverse()
+            for i in dupes:
+                function_lines.pop(i)
+            function_string = "\n".join(function_lines)
+
+        return function_string, imports

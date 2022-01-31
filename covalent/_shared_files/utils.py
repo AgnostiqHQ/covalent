@@ -22,9 +22,10 @@
 
 import ast
 import inspect
+import os
 from datetime import timedelta
 from io import TextIOWrapper
-from typing import Callable, Dict, Set, Union
+from typing import Callable, Dict, List, Set, Tuple, Union
 
 from . import logger
 
@@ -84,7 +85,7 @@ def get_time(time_delta: timedelta) -> str:
     return f"{days}-{hours}:{minutes}:{seconds}"
 
 
-def get_serialized_function_str(function):
+def get_serialized_function_str(function) -> str:
     """
     Generates a string representation of a function definition
     including the decorators on it.
@@ -93,11 +94,9 @@ def get_serialized_function_str(function):
         function: The function whose definition is to be convert to a string.
 
     Returns:
-        function_str: The string representation of the function definition.
+        function_str: The string representation of the function definition, along with
+            imports.
     """
-
-    imports = _get_imports_from_source()
-    ct_decorators = _get_cova_imports(imports)
 
     input_function = function
     # If a Lattice or electron object was passed as the function input, we need the
@@ -105,8 +104,19 @@ def get_serialized_function_str(function):
     while hasattr(input_function, "workflow_function"):
         input_function = input_function.workflow_function
 
+    # Get external (to Covalent) imports that were used. And record what Covalent
+    # has been imported as.
+    imports, cova_imports = imports_from_sources()
+    imports = list(imports)
+    imports.sort()
+
     try:
-        # function_str is the string representation of one function, with decorators, if any.
+        import_str = ""
+        for import_statement in imports:
+            import_str += f"{import_statement}\n"
+        import_str += "\n"
+
+        # inspect.getsource call gets the string representation of one function, with decorators, if any.
         function_str = inspect.getsource(input_function)
 
         # Check if the function has covalent decorators that need to be commented out.
@@ -123,102 +133,158 @@ def get_serialized_function_str(function):
                     decorator_name = decorator.func.value.id
                 else:
                     decorator_name = decorator.value.id
-                if decorator_name in ct_decorators:
+                if decorator_name in cova_imports:
                     for i in range(start - 1, end):
                         commented_lines.add(i)
 
-        function_str_list = function_str.split("\n")
-        for i in range(len(function_str_list)):
-            if i in commented_lines:
-                line = function_str_list[i].lstrip()
-                function_str_list[i] = f"# {function_str_list[i]}"
-        function_str = "\n".join(function_str_list)
+        if len(commented_lines) > 0:
+            function_str_list = function_str.split("\n")
+            for i in range(len(function_str_list)):
+                if i in commented_lines:
+                    line = function_str_list[i].lstrip()
+                    function_str_list[i] = f"# {function_str_list[i]}"
+            function_str = "\n".join(function_str_list)
+
+        function_str = import_str + function_str
+
     except Exception:
         function_str = f"# {function.__name__} was not inspectable"
     return function_str + "\n\n"
 
 
-def _get_cova_imports(imports_set: Set[Union[ast.Import, ast.ImportFrom]]) -> Set[str]:
-    """Get a set of Covalent-related imports (and aliases) from a set of imports.
+def imports_from_sources(external_only: bool = True) -> Tuple[Set[str], Set[str]]:
+    """
+    Scan in-scope modules and find imports and which imports are for covalent-related modules.
 
     Args:
-        imports_set: A complete set of modules that have been imported.
+        external_only: If True, only files outside the covalent and covalent_dispatcher
+            modules are scanned.
 
     Returns:
-        imports: A set of Covalent-related imports, inluding any aliases.
+        A 2-element tuple containing a set of import statements, and a set of names which
+            covalent-related modules have been imported as.
     """
 
-    ct_imports = set()
-    for node in imports_set:
-        if isinstance(node, ast.Import):
-            for i in range(len(node.names)):
-                if node.names[i].name == "covalent":
-                    if node.names[i].asname is None:
-                        ct_imports.add("covalent")
-                    else:
-                        ct_imports.add(node.names[i].asname)
-        elif isinstance(node, ast.ImportFrom):
-            if node.module == "covalent":
-                for i in range(len(node.names)):
-                    if node.names[i].asname is None:
-                        ct_imports.add(node.names[i].name)
-                    else:
-                        ct_imports.add(node.names[i].asname)
+    imports = set()
+    cova_imports = set()
+    source_list = _scan_source_files(external_only)
+    for source_string in source_list:
+        try:
+            imp, cova_imp = parse_source_for_imports(source_string, comment_cova=True)
+            imports.update(imp)
+            cova_imports.update(cova_imp)
 
-    return ct_imports
+        except Exception as e:
+            # This is scanning all files that are utilized. We don't want any minor error, that
+            # possibly could come from outside the Covalent code-base, to derail the process.
+            app_log.debug(e)
+
+    return imports, cova_imports
 
 
-def _get_imports_from_source(
-    source: Union[str, TextIOWrapper] = "",
-    is_filename: bool = True,
-    imports: set = set(),
-) -> Set[Union[ast.Import, ast.ImportFrom]]:
-    """Get (or add to) a set of imports from a source file.
+def _scan_source_files(external_only: bool = True) -> List[str]:
+    """
+    When called, this will scan and read all source files in scope, and return a list
+        of strings, where each string is the contents of one source file.
 
     Args:
-        source: The input source code (as a string), filename or file-handler object. If empty
-            all files in scope are scanned.
-        is_filename: If input source is a non-empty string, this denotes whether it is the source code
-            itself, or a filename.
-        imports: If non-empty, any imports found are added to this set and returned.
+        external_only: If True, only files outside the covalent and covalent_dispatcher
+            modules are scanned.
 
     Returns:
-        imports: A set of imports (ast.node objects) found in the specified module code file.
+        A list of strings, where each string is the contents of one source file.
     """
 
-    if isinstance(source, str):
-        if source == "":
-            for frame_info in inspect.stack():
-                frame = frame_info.frame
-                try:
-                    source = inspect.getsource(frame)
-                    imports = _get_imports_from_source(
-                        source=source, is_filename=False, imports=imports
-                    )
-                except (IndentationError, OSError) as e:
-                    # This is scanning all files that are utilized. We don't want any minor error, that
-                    # possibly could come from outside the Covalent code-base, to derail the process.
-                    app_log.debug(e)
-        elif is_filename:
-            with open(source, "r") as fh:
-                source = fh.read()
-        else:
-            # source is the actual source as a str object
-            pass
-    elif isinstance(source, TextIOWrapper):
-        source = source.read()
-    else:
-        raise TypeError
+    source_list = []
+    scanned = set()
 
-    try:
-        parsed_source = ast.parse(source)
-        for node in ast.iter_child_nodes(parsed_source):
-            if isinstance(node, (ast.Import, ast.ImportFrom)):
-                imports.add(node)
-    except IndentationError as e:
-        app_log.debug(e)
+    for frame_info in inspect.stack():
+        frame = frame_info.frame
+        filename = inspect.getsourcefile(frame)
 
-    return imports
+        top_level_module = ""
+        if external_only:
+            module = inspect.getmodule(frame)
+            if module is not None:
+                top_level_module = module.__name__.split(".")[0]
+
+        if (
+            filename is None  # This can happen with built-in types.
+            or not os.path.exists(filename)
+            or (external_only and top_level_module in ["covalent", "covalent_dispatcher"])
+            or filename in scanned  # Already scanned.
+        ):
+            continue
+
+        with open(filename, "r") as fh:
+            source_list.append(fh.read())
+        scanned.add(filename)
+
+    return source_list
+
+
+def parse_source_for_imports(
+    source_string, comment_cova: bool = False
+) -> Tuple[Set[str], Set[str]]:
+    """
+    Scan a source snippet and find imports. And find which imports are
+        for covalent-related modules.
+
+    Args:
+        source_string: The source code snippet, as a string.
+        comment_cova: If True, Covalent-related import emtries are pre-pended with "# ".
+
+    Returns:
+        A 2-element tuple containing a set of import statements, and a set of names which
+            covalent-related modules have been imported as.
+    """
+
+    imports = set()
+    cova_imports = set()
+    parsed_source = ast.parse(source_string)
+
+    for node in ast.iter_child_nodes(parsed_source):
+
+        if not isinstance(node, (ast.Import, ast.ImportFrom)):
+            continue
+
+        for subnode in node.names:
+
+            cova_module = False
+            import_string = ""
+            if isinstance(node, ast.ImportFrom):
+                if node.module is None:
+                    # This happens for "from . import <module_name>.
+                    continue
+                import_string = f"from {node.module} "
+                if (
+                    node.module.split(".")[0] == "covalent"
+                    or node.module.split(".")[0] == "covalent_dispatcher"
+                ):
+                    cova_module = True
+
+            import_string += f"import {subnode.name}"
+            if subnode.asname is not None:
+                import_string += f" as {subnode.asname}"
+
+            if (
+                subnode.name.split(".")[0] == "covalent"
+                or subnode.name.split(".")[0] == "covalent_dispatcher"
+            ):
+                cova_module = True
+
+            if cova_module:
+                if subnode.asname is not None:
+                    cova_imports.add(subnode.asname)
+                else:
+                    cova_imports.add(subnode.name)
+
+                if comment_cova:
+                    import_string = f"# {import_string}"
+
+            imports.add(import_string)
+
+    return imports, cova_imports
 
 
 def required_params_passed(func: Callable, kwargs: Dict) -> bool:

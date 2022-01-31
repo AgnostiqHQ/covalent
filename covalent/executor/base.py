@@ -27,7 +27,7 @@ import subprocess
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Set, Tuple, Union
 
 import cloudpickle as pickle
 
@@ -35,6 +35,7 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
+from .._shared_files.utils import imports_from_sources
 from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
@@ -312,3 +313,17 @@ class BaseExecutor(ABC):
             return False
         self.conda_path = which_conda
         return True
+
+    def get_imports(self, external_only: bool = True) -> Set[str]:
+        """
+        Get a set of import statements that have been utilized in the process. This is
+
+        Args:
+            external_only: If True, only import statements from outside the
+                covalent package are returned.
+        Returns:
+            A set of import statements that have been utilized in the process.
+        """
+
+        imports, _ = imports_from_sources(external_only=external_only)
+        return imports
