@@ -88,12 +88,3 @@ jobs:
           else
             echo "Pass due to bad version format in develop branch."
           fi
-      - name: Notify failure
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: "covalent-ci"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "Failed to validate version or changelog."
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_COLOR: ${{ job.status }}
