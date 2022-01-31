@@ -23,7 +23,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Set, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Set
 
 import cloudpickle as pickle
 import yaml
@@ -455,7 +455,6 @@ Node Outputs
         topo_sorted_graph = self.lattice.transport_graph.get_topologically_sorted_graph()
         functions_added = []
         serialized_functions = ""
-        imports = set()
         for level in topo_sorted_graph:
             for nodes in level:
                 function = self.lattice.transport_graph.get_node_value(
@@ -466,12 +465,6 @@ Node Outputs
                     serialized_function = self.lattice.transport_graph.get_node_value(
                         nodes, value_key="function_string"
                     )
-
-                    # Remove duplicate import statements, if any
-                    serialized_function, imports = self._remove_import_dupes(
-                        serialized_function, imports
-                    )
-
                     serialized_functions += serialized_function
                     functions_added.append(function.__name__)
 
@@ -480,15 +473,15 @@ Node Outputs
             self.lattice.workflow_function.__name__,
             self.inputs,
         )
-        lattice_function_str, _ = self._remove_import_dupes(lattice_function_str, imports)
 
         dispatch_function = dispatch_header + serialized_functions + lattice_function_str
+        dispatch_function = self._remove_import_dupes(dispatch_function)
 
         with open(os.path.join(result_folder_path, "dispatch_source.py"), "w") as f:
             f.write(dispatch_function)
 
     @staticmethod
-    def _remove_import_dupes(function_string: str, imports: Set[str]) -> Tuple[str, Set[str]]:
+    def _remove_import_dupes(function_string: str) -> str:
         """
         Inspect a snippet of code and remove any duplicate imports
 
@@ -497,10 +490,9 @@ Node Outputs
             imports: A list of already-collected imports.
 
         Returns:
-            A 2-element tuple containing the code snippet with any duplicate imports removed, and
-                a set of import statements that have been collected.
+            The code snippet with any duplicate imports removed.
         """
-
+        imports = set()
         function_lines = function_string.split("\n")
         dupes = []
         for i in range(len(function_lines)):
@@ -526,4 +518,4 @@ Node Outputs
                 function_lines.pop(i)
             function_string = "\n".join(function_lines)
 
-        return function_string, imports
+        return function_string
