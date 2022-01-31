@@ -23,8 +23,8 @@ name: tests
 on: 
   pull_request:
   push:
-    branches-ignore:
-      - master
+    branches:
+      - develop
 
 jobs:
   tests:
