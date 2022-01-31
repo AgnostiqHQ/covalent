@@ -48,7 +48,8 @@ def recursively_append_files(directory: str):
 
     for path, _, filenames in os.walk(directory):
         for filename in filenames:
-            filepaths.append(os.path.join(path, filename).split("covalent_ui/")[1])
+            filepaths.append(os.path.join(path, filename).split("/", 1)[1])
+    print(filepaths)
 
     return filepaths
 
@@ -92,7 +93,7 @@ setup_info = {
     "package_data": {
         "covalent": ["executor/executor_plugins/local.py"],
         "covalent_dispatcher": ["_service/app.py"],
-        "covalent_ui": recursively_append_files("covalent_ui/webapp"),
+        "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
     },
     "install_requires": required,
     "classifiers": [
