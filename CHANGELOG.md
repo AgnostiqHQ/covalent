@@ -11,10 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - When the local executor's `log_stdout` and `log_stderr` config variables are relative paths, they should go inside the results directory. Previously that was queried from the config, but now it's queried from the lattice metadata.
 
-### Added 
+### Added
 
-- Tests for ...
- 
+- Tests for the corresponding functions affected by the bug fix.
+
 ## [0.22.10] - 2022-01-29
 
 ### Changed
