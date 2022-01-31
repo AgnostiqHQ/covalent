@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Functions to check if UI (`is_ui_running`) and dispatcher server (`is_dispatcher_running`) are running.
+- Functions to check if UI and dispatcher servers are running.
 - Tests for the corresponding functions.
 
 ## [0.22.12] - 2022-01-31
