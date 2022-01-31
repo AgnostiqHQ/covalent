@@ -39,7 +39,7 @@ def recursively_append_files(directory: str):
 
     Args:
         directory: Directory within which all the subdirs and files reside
-    
+
     Returns:
         filepaths: List of all file paths found recursively in the directory
     """
@@ -49,7 +49,6 @@ def recursively_append_files(directory: str):
     for path, _, filenames in os.walk(directory):
         for filename in filenames:
             filepaths.append(os.path.join(path, filename).split("/", 1)[1])
-    print(filepaths)
 
     return filepaths
 
