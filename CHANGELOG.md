@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.13]
+
+### Added
+
+- Functions to check if UI (`is_ui_running`) and dispatcher server (`is_dispatcher_running`) are running.
+- Tests for the corresponding functions.
+
 ## [0.22.12] - 2022-01-31
 
 ### Added
