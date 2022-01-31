@@ -23,21 +23,13 @@ name: tests
 on: 
   pull_request:
   push:
-    branches-ignore:
-      - master
+    branches:
+      - develop
 
 jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - name: Start notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: "covalent-ci"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "Test started by push."
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_COLOR: "#808080"
       - name: Check out head
         uses: actions/checkout@v2
         with:
@@ -57,30 +49,11 @@ jobs:
         run: covalent start -d
       - name: Run tests and measure coverage
         run: pytest -v --cov=covalent --cov=covalent_dispatcher
-      - name: Notify success
-        if: success()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: "covalent-ci"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "Test succeeded."
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_COLOR: ${{ job.status }}
-      - name: Notify failure
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: "covalent-ci"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "Test failed."
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_COLOR: ${{ job.status }}
       - name: Generate coverage report
         run: coverage xml
       - name: Upload report to Codecov
         uses: codecov/codecov-action@v2
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
       - name: Push to master
         if: github.ref == 'refs/heads/develop'
