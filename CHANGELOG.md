@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Tests for the corresponding functions affected by the bug fix.
+
+### Changed
+
+- Refactored `_delete_result` in result manager to allow forcefully deleting results directory.
+
 ## [0.22.12] - 2022-01-31
 
 ### Added
