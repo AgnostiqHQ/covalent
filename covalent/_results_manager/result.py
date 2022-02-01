@@ -435,7 +435,7 @@ Node Outputs
         import pkg_resources
 
         dispatch_header = (
-            f"# File created by Covalent using covalent version {pkg_resources.get_distribution('cova').version}\n"
+            f"# File created by Covalent version {pkg_resources.get_distribution('cova').version}\n"
             f"# Covalent result -"
         )
         result_string_lines = str(self.result).split("\n")
