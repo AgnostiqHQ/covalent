@@ -33,6 +33,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python-version: ['3.6', '3.7', '3.8', '3.9']
+        exclude:
+          - os: ubuntu-latest
+            python-version: '3.6'
     steps:
       - name: Check out head
         uses: actions/checkout@v2
@@ -67,17 +70,17 @@ jobs:
           git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
           git fetch --unshallow
           git push origin HEAD:master
-      - name: Format Slack message
-        if: github.ref == 'refs/heads/develop'
-        run: |
-          VERSION="$(cat ./VERSION)"
-          SLACK_MSG=":rocket: Version $VERSION is now available."
-          echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
-      - name: Notify Slack
-        if: github.ref == 'refs/heads/develop'
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: "covalent-ci"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: ${{ env.SLACK_MSG }}
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+#      - name: Format Slack message
+#        if: github.ref == 'refs/heads/develop'
+#        run: |
+#          VERSION="$(cat ./VERSION)"
+#          SLACK_MSG=":rocket: Version $VERSION is now available."
+#          echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
+#      - name: Notify Slack
+#        if: github.ref == 'refs/heads/develop'
+#        uses: rtCamp/action-slack-notify@v2
+#        env:
+#          SLACK_CHANNEL: "covalent-ci"
+#          SLACK_USERNAME: "CovalentOpsBot"
+#          SLACK_MESSAGE: ${{ env.SLACK_MSG }}
+#          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
