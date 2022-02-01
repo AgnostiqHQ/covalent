@@ -36,10 +36,13 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
 from covalent.executor import _executor_manager
 
+from .. import covalent_dispatcher
+
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
 
 app = Flask(__name__, static_folder=WEBAPP_PATH)
+app.register_blueprint(covalent_dispatcher._service.app.bp)
 # allow cross-origin requests when API and static files are served separately
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")

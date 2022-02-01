@@ -19,14 +19,14 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import cloudpickle as pickle
-from flask import Flask, Response, jsonify, request
+from flask import Blueprint, Flask, Response, jsonify, request
 
 import covalent_dispatcher as dispatcher
 
-app = Flask(__name__)
+bp = Blueprint("dispatcher", __name__, url_prefix="/dispatcher")
 
 
-@app.route("/api/submit", methods=["POST"])
+@bp.route("/submit", methods=["POST"])
 def submit() -> Response:
     """
     Function to accept the submit request of
@@ -48,7 +48,7 @@ def submit() -> Response:
     return jsonify(dispatch_id)
 
 
-@app.route("/api/cancel", methods=["POST"])
+@bp.route("/cancel", methods=["POST"])
 def cancel() -> Response:
     """
     Function to accept the cancel request of
@@ -66,7 +66,3 @@ def cancel() -> Response:
     dispatcher.cancel_running_dispatch(dispatch_id)
 
     return jsonify(f"Dispatch {dispatch_id} cancelled.")
-
-
-if __name__ == "__main__":
-    app.run()
