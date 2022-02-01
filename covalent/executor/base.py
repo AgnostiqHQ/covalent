@@ -316,7 +316,7 @@ class BaseExecutor(ABC):
 
     def get_imports(self, external_only: bool = True) -> Set[str]:
         """
-        Get a set of import statements that have been utilized in the process. This is
+        Get a set of import statements that have been utilized in the process.
 
         Args:
             external_only: If True, only import statements from outside the

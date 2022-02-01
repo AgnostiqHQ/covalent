@@ -257,20 +257,14 @@ def parse_source_for_imports(
                     # This happens for "from . import <module_name>.
                     continue
                 import_string = f"from {node.module} "
-                if (
-                    node.module.split(".")[0] == "covalent"
-                    or node.module.split(".")[0] == "covalent_dispatcher"
-                ):
+                if node.module.split(".")[0] in ["covalent", "covalent_dispatcher"]:
                     cova_module = True
 
             import_string += f"import {subnode.name}"
             if subnode.asname is not None:
                 import_string += f" as {subnode.asname}"
 
-            if (
-                subnode.name.split(".")[0] == "covalent"
-                or subnode.name.split(".")[0] == "covalent_dispatcher"
-            ):
+            if subnode.name.split(".")[0] in ["covalent", "covalent_dispatcher"]:
                 cova_module = True
 
             if cova_module:
