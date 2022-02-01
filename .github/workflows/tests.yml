@@ -32,7 +32,7 @@ jobs:
     strategy:
       matrix:
 #        container: ['ubuntu:20.04', 'fedora:34', 'fedora:35', 'centos:centos6', 'centos:centos7']
-        container: ['ubuntu:18.04', 'ubuntu:20.04']
+        container: ['ubuntu:18.04', 'ubuntu:20.04', 'centos:centos7']
         python-version: ['3.8']
     container: ${{ matrix.container }}
     steps:
