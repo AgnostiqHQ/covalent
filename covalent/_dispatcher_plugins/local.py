@@ -63,6 +63,10 @@ class LocalDispatcher(BaseDispatcher):
         @wraps(lattice)
         def wrapper(*args, **kwargs):
 
-            return get_result(LocalDispatcher.dispatch(lattice)(*args, **kwargs), wait=True)
+            return get_result(
+                LocalDispatcher.dispatch(lattice)(*args, **kwargs),
+                lattice.metadata["results_dir"],
+                wait=True,
+            )
 
         return wrapper

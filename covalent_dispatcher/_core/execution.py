@@ -29,6 +29,7 @@ import cloudpickle as pickle
 import dask
 from dask.distributed import Client, Variable
 
+from covalent import dispatch_sync
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
@@ -189,7 +190,7 @@ def _run_task(
 
         if node_name.startswith(sublattice_prefix):
             func = serialized_callable.get_deserialized()
-            sublattice_result = func.dispatch_sync(**inputs)
+            sublattice_result = dispatch_sync(func)(**inputs)
             output = sublattice_result.result
 
             end_time = datetime.now(timezone.utc)
