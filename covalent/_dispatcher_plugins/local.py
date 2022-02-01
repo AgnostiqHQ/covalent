@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import inspect
+from copy import deepcopy
 from functools import wraps
 
 import cloudpickle as pickle
@@ -32,9 +33,11 @@ from .base import BaseDispatcher
 
 class LocalDispatcher(BaseDispatcher):
     @staticmethod
-    def dispatch(lattice: Lattice) -> str:
-        @wraps(lattice)
+    def dispatch(orig_lattice: Lattice) -> str:
+        @wraps(orig_lattice)
         def wrapper(*args, **kwargs) -> str:
+
+            lattice = deepcopy(orig_lattice)
 
             if lattice.workflow_function:
                 kwargs.update(
