@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.14] - 2022-02-01
+
+### Fixed
+
+- Covalent CLI command `covalent purge` will now stop the servers before deleting all the pid files.
+
+### Added
+
+- Click method to confirm if the user wants to shut down the server and purge the cache and config files.
+
 ## [0.22.13] - 2022-01-26
 
 ### Fixed

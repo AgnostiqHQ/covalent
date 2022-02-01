@@ -381,8 +381,17 @@ def status() -> None:
 @click.command()
 def purge() -> None:
     """
-    Delete the cache and config settings.
+    Shutdown servers and delete the cache and config settings.
     """
+
+    click.confirm(
+        "This will shutdown the servers and delete cache / config files. \nAre you sure you want to continue?",
+        abort=True,
+    )
+
+    # Shutdown UI and dispatcher server.
+    _graceful_shutdown("dispatcher", DISPATCHER_PIDFILE)
+    _graceful_shutdown("UI", UI_PIDFILE)
 
     shutil.rmtree(get_config("sdk.log_dir"), ignore_errors=True)
     shutil.rmtree(get_config("dispatcher.cache_dir"), ignore_errors=True)
