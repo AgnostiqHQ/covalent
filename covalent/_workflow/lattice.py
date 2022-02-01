@@ -355,7 +355,7 @@ class Lattice:
         import requests
 
         pickled_res = pickle.dumps(result_object)
-        test_url = "http://" + self.metadata["dispatcher"] + "/api/submit"
+        test_url = "http://" + self.metadata["dispatcher"] + "/dispatcher/submit"
 
         r = requests.post(test_url, data=pickled_res)
         r.raise_for_status()

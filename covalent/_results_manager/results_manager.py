@@ -195,7 +195,7 @@ def cancel(
 
     import requests
 
-    url = "http://" + dispatcher + "/api/cancel"
+    url = "http://" + dispatcher + "/dispatcher/cancel"
 
     r = requests.post(url, data=dispatch_id.encode("utf-8"))
     r.raise_for_status()
