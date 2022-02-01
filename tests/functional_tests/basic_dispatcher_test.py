@@ -20,6 +20,7 @@
 
 
 import covalent as ct
+import covalent._results_manager.results_manager as rm
 
 the_executor = ct.executor.LocalExecutor(
     log_stdout="/tmp/log_stdout.txt", log_stderr="/tmp/log_stderr.txt"
@@ -66,16 +67,18 @@ def bad_workflow(name):
 def test_dispatcher_functional():
     # Dispatch after starting the dispatcher server.
 
-    dispatch_id = workflow.dispatch(name="q")
+    dispatch_id = ct.dispatch(workflow)(name="q")
     output = ct.get_result(dispatch_id, wait=True).result
 
     assert output == "aqbq"
 
     try:
-        output = bad_workflow.dispatch("z")
+        output = ct.dispatch(bad_workflow)("z")
     except Exception as ex:
         print(f"Exception thrown for dispatching bad workflow as {ex}.")
         output = "failed"
+
+    rm._delete_result(dispatch_id)
 
     assert output == "failed"
 
@@ -93,7 +96,9 @@ def test_results_dir_in_sublattice():
     def outer_lattice(y):
         return ct.electron(lattice_square)(x=y)
 
-    dispatch_id = outer_lattice.dispatch(y=5)
+    dispatch_id = ct.dispatch(outer_lattice)(y=5)
     output = ct.get_result(dispatch_id, wait=True).result
+
+    rm._delete_result(dispatch_id, results_dir="/tmp/results")
 
     assert output == 25

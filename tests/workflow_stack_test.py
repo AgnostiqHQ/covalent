@@ -325,4 +325,6 @@ def test_dispatch_cancellation():
 
     result = rm.get_result(dispatch_id, wait=True)
 
+    rm._delete_result(dispatch_id)
+
     assert result.status == Result.CANCELLED
