@@ -27,7 +27,7 @@ import subprocess
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Tuple
 
 import cloudpickle as pickle
 
@@ -39,11 +39,6 @@ from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-class ExecutorResult:
-    output: Any
-    error: Union[str, Exception]
 
 
 class BaseExecutor(ABC):

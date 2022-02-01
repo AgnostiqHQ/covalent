@@ -17,3 +17,17 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+
+from abc import ABC, abstractmethod
+from typing import Any
+
+from .._workflow.lattice import Lattice
+
+
+class BaseDispatcher(ABC):
+    def __init__(self) -> None:
+        pass
+
+    @abstractmethod
+    def dispatch(self, lattice: Lattice, custom_variables: Any) -> None:
+        pass

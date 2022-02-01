@@ -17,3 +17,47 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+
+import inspect
+from functools import wraps
+
+import cloudpickle as pickle
+import requests
+
+from .._results_manager.result import Result
+from .._results_manager.results_manager import get_result
+from .._workflow.lattice import Lattice
+from .base import BaseDispatcher
+
+
+class LocalDispatcher(BaseDispatcher):
+    def dispatch(self, lattice: Lattice) -> str:
+        @wraps(lattice)
+        def wrapper(*args, **kwargs) -> str:
+
+            if lattice.workflow_function:
+                kwargs.update(
+                    dict(zip(list(inspect.signature(lattice.workflow_function).parameters), args))
+                )
+
+            lattice.build_graph(**kwargs)
+
+            # Serializing the transport graph and then passing it to the Result object
+            lattice.transport_graph = lattice.transport_graph.serialize()
+
+            pickled_res = pickle.dumps(Result(lattice, lattice.metadata["results_dir"]))
+            test_url = "http://" + lattice.metadata["dispatcher"] + "/api/submit"
+
+            r = requests.post(test_url, data=pickled_res)
+            r.raise_for_status()
+            return r.content.decode("utf-8").strip().replace('"', "")
+
+        return wrapper
+
+    def dispatch_sync(self, lattice: Lattice) -> Result:
+        @wraps(lattice)
+        def wrapper(*args, **kwargs):
+
+            return get_result(self.dispatch(lattice)(*args, **kwargs), wait=True)
+
+        return wrapper
