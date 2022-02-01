@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        container: ['ubuntu:20.04', 'fedora:34', 'fedora:35', 'centos6', 'centos7']
+        container: ['ubuntu:20.04', 'fedora:34', 'fedora:35', 'centos:centos6', 'centos:centos7']
         python-version: ['3.8', '3.9']
     container: ${{ matrix.container }}
     steps:
@@ -42,7 +42,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}A
+      - name: Install pip
+        if: matrix.container == 'ubuntu:20.04'
+        run: apt update && apt install python3-pip
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
