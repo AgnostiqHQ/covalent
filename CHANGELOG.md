@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED] - 2022-01-31
 
+## [0.22.12] - 2022-01-31
+
+### Added
+
+- Diff check in pypi.yml ensures correct files are packaged
+
+## [0.22.11] - 2022-01-31
+
+### Changed
+
+- Removed codecov token
+- Removed Slack notifications from feature branches
+
 ## [0.22.10] - 2022-01-29
 
 ### Changed
