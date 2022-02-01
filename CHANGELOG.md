@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Tests for the corresponding functions affected by the bug fix.
+- Tests for the corresponding functions in (`covalent_dispatcher/_core?__init__.py`, `covalent/executor/base.py`, `covalent/executor/executor_plugins/local.py` and `covalent/executor/__init__.py`) affected by the bug fix.
 
 ### Changed
 

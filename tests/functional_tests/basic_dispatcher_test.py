@@ -18,8 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-
-import shutil
 from pathlib import Path
 
 import covalent as ct

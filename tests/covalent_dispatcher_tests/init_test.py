@@ -22,8 +22,6 @@
 Tests for self-contained entry point for the dispatcher
 """
 
-import shutil
-
 import covalent
 import covalent_dispatcher as dispatcher
 from covalent._results_manager import results_manager as rm
