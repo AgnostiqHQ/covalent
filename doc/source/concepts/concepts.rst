@@ -347,7 +347,7 @@ Once a workflow has been constructed, it is dispatched to the Covalent dispatche
 .. code-block:: python
     :linenos:
 
-    dispatch_id = run_experiment.dispatch(C=1.0, gamma=0.7)
+    dispatch_id = ct.dispatch(run_experiment)(C=1.0, gamma=0.7)
 
 
 Once the workflow has been submitted to the dispatcher, all the relevant workflow information, including execution status and results, are tagged with a unique dispatch ID. In other words, the workflow details and execution results are not tied to the initial workflow definition, but rather an instance of the workflow execution. Covalent is designed in this way so that the user can retrieve and analyze results at a later point in time.
@@ -434,7 +434,7 @@ The Covalent result manager is responsible for storing, updating, and retrieving
 
 .. code-block:: python
 
-    dispatch_id = workflow.dispatch(**params)
+    dispatch_id = ct.dispatch(workflow)(**params)
     result = ct.get_result(dispatch_id=dispatch_id, wait=False, results_dir='./results')
 
 The result manager allows us to retrieve the result object even if the computations have not completed by setting the :code:`wait` parameter to :code:`False` as shown above.
