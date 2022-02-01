@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.13] - 2022-01-26
+
+### Fixed
+
+- When the local executor's `log_stdout` and `log_stderr` config variables are relative paths, they should go inside the results directory. Previously that was queried from the config, but now it's queried from the lattice metadata.
+
+### Added
+
+- Tests for the corresponding functions in (`covalent_dispatcher/_core/__init__.py`, `covalent/executor/base.py`, `covalent/executor/executor_plugins/local.py` and `covalent/executor/__init__.py`) affected by the bug fix.
+
+### Changed
+
+- Refactored `_delete_result` in result manager to give the option of deleting the result parent directory.
+
 ## [0.22.12] - 2022-01-31
 
 ### Added

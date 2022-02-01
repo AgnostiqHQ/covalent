@@ -65,4 +65,6 @@ def test_dispatcher_flow(mock_result, expected_res, expected_node_outputs):
     assert result.result == expected_res
     assert result.get_all_node_outputs() == expected_node_outputs
 
-    rm._delete_result(dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR)
+    rm._delete_result(
+        dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR, remove_parent_directory=True
+    )
