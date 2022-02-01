@@ -20,3 +20,6 @@
 
 from .base import BaseDispatcher
 from .local import LocalDispatcher
+
+local_dispatch = LocalDispatcher.dispatch
+local_dispatch_sync = LocalDispatcher.dispatch_sync

@@ -31,7 +31,8 @@ from .base import BaseDispatcher
 
 
 class LocalDispatcher(BaseDispatcher):
-    def dispatch(self, lattice: Lattice) -> str:
+    @staticmethod
+    def dispatch(lattice: Lattice) -> str:
         @wraps(lattice)
         def wrapper(*args, **kwargs) -> str:
 
@@ -54,10 +55,11 @@ class LocalDispatcher(BaseDispatcher):
 
         return wrapper
 
-    def dispatch_sync(self, lattice: Lattice) -> Result:
+    @staticmethod
+    def dispatch_sync(lattice: Lattice) -> Result:
         @wraps(lattice)
         def wrapper(*args, **kwargs):
 
-            return get_result(self.dispatch(lattice)(*args, **kwargs), wait=True)
+            return get_result(LocalDispatcher.dispatch(lattice)(*args, **kwargs), wait=True)
 
         return wrapper
