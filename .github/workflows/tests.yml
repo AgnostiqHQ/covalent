@@ -33,7 +33,7 @@ jobs:
       matrix:
 #        container: ['ubuntu:20.04', 'fedora:34', 'fedora:35', 'centos:centos6', 'centos:centos7']
         container: ['ubuntu:20.04']
-        python-version: ['3.8']
+        python-version: ['3.8.12']
     container: ${{ matrix.container }}
     steps:
       - name: Check out head
