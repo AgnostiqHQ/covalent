@@ -33,9 +33,6 @@ jobs:
       matrix:
         container: ['ubuntu:20.04', 'fedora:34', 'fedora:35', 'centos6', 'centos7']
         python-version: ['3.8', '3.9']
-      exclude:
-        - container: 'ubuntu:18.04'
-          python-version: '3.9'
     container: ${{ matrix.container }}
     steps:
       - name: Check out head
