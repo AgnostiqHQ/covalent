@@ -28,14 +28,12 @@ on:
 
 jobs:
   tests:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        container: ['ubuntu:18.04', 'ubuntu:20.04', 'debian:buster', 'debian:stretch', 'fedora:34', 'fedora:35', 'centos6', 'centos7']
         python-version: ['3.8', '3.9']
-#        exclude:
-#          - os: ubuntu-latest
-#            python-version: '3.6'
+    container: ${{ matrix.container }}
     steps:
       - name: Check out head
         uses: actions/checkout@v2
@@ -59,11 +57,12 @@ jobs:
       - name: Generate coverage report
         run: coverage xml
       - name: Upload report to Codecov
+        if: matrix.python-version == '3.8' && matrix.container == 'ubuntu:20.04'
         uses: codecov/codecov-action@v2
         with:
           files: ./coverage.xml
       - name: Push to master
-        if: github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/develop' && matrix.python-version == '3.8' && matrix.container == 'ubuntu:20.04'
         run: |
           git config user.name "CovalentOpsBot"
           git config user.email "covalentopsbot@users.noreply.github.com"
