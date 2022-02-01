@@ -111,9 +111,7 @@ def get_serialized_function_str(function) -> str:
     imports.sort()
 
     try:
-        import_str = ""
-        for import_statement in imports:
-            import_str += f"{import_statement}\n"
+        import_str = "".join(f"{import_statement}\n" for import_statement in imports)
         import_str += "\n"
 
         # inspect.getsource call gets the string representation of one function, with decorators, if any.
