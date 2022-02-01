@@ -45,7 +45,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install pip
-        if: matrix.container =~ ^ubuntu
+        if: startsWith(matrix.container, 'ubuntu')
         run: apt update && apt install -y python3-pip
       - name: Install Python dependencies
         run: |
