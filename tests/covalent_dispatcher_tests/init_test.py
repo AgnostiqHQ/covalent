@@ -56,5 +56,6 @@ def test_get_result():
     )
     assert isinstance(result, covalent._results_manager.result.Result)
 
-    rm._delete_result(dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR)
-    shutil.rmtree(TEST_RESULTS_DIR, ignore_errors=True)
+    rm._delete_result(
+        dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR, remove_parent_directory=True
+    )

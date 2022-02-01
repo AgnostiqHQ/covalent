@@ -98,8 +98,8 @@ class BaseExecutor(ABC):
         self,
         stream_strings,
         filepaths,
-        dispatch_id="",
-        results_dir=None,
+        dispatch_id,
+        results_dir,
     ) -> None:
         """
         Write the contents of stdout and stderr to respective files.
@@ -111,20 +111,17 @@ class BaseExecutor(ABC):
             results_dir: The location of the results directory.
         """
 
-        if not results_dir:
-            results_dir = get_config("dispatcher.results_dir")
-
         for ss, filepath in zip(stream_strings, filepaths):
             if filepath:
                 # If it is a relative path, attach to results dir
                 if not Path(filepath).expanduser().is_absolute():
-                    filepath = os.path.join(os.path.join(results_dir, dispatch_id), filepath)
+                    filepath = os.path.join(results_dir, dispatch_id, filepath)
 
                 filename = Path(filepath)
                 filename = filename.expanduser()
                 filename.parent.mkdir(parents=True, exist_ok=True)
                 filename.touch(exist_ok=True)
-                
+
                 with open(filepath, "a") as f:
                     f.write(ss)
             else:

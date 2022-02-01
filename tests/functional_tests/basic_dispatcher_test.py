@@ -23,6 +23,7 @@ import shutil
 from pathlib import Path
 
 import covalent as ct
+from covalent._results_manager import results_manager as rm
 
 the_executor = ct.executor.LocalExecutor(
     log_stdout="/tmp/log_stdout.txt", log_stderr="/tmp/log_stderr.txt"
@@ -104,4 +105,6 @@ def test_results_dir_in_sublattice():
 
     assert output == 25
 
-    shutil.rmtree(lattice_square.get_metadata(name="results_dir"), ignore_errors=True)
+    rm._delete_result(
+        dispatch_id=dispatch_id, results_dir="/tmp/results", remove_parent_directory=True
+    )

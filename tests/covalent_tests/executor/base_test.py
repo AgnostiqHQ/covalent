@@ -39,9 +39,11 @@ def test_write_streams_to_file(mocker):
     # Case 1 - Check that relative log files that are written to are constructed in the results directory that is explicitly passed as an argument.
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_file = "relative.log"
-        me.write_streams_to_file(stream_strings=["relative"], filepaths=[tmp_file], dispatch_id="", results_dir=tmp_dir)
+        me.write_streams_to_file(
+            stream_strings=["relative"], filepaths=[tmp_file], dispatch_id="", results_dir=tmp_dir
+        )
         assert "relative.log" in os.listdir(tmp_dir)
-        
+
         with open(f"{tmp_dir}/relative.log") as f:
             lines = f.readlines()
         assert lines[0] == "relative"
@@ -49,20 +51,14 @@ def test_write_streams_to_file(mocker):
     # Case 2 - Check that absolute log files that are written to are constructed in the results directory that is explicitly passed as an argument.
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_file = tempfile.NamedTemporaryFile()
-        me.write_streams_to_file(stream_strings=["absolute"], filepaths=[tmp_file.name], dispatch_id="", results_dir=tmp_dir)
+        me.write_streams_to_file(
+            stream_strings=["absolute"],
+            filepaths=[tmp_file.name],
+            dispatch_id="",
+            results_dir=tmp_dir,
+        )
         assert os.path.isfile(tmp_file.name)
-        
+
         with open(tmp_file.name) as f:
             lines = f.readlines()
         assert lines[0] == "absolute"
-
-    # Case 3 - Check that relative log files that are written to are constructed in results directory specified in the covalent conf file when not explicitly specified.
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        mocker.patch('covalent.executor.base.get_config', return_value=tmp_dir)
-        tmp_file = "relative.log"
-        me.write_streams_to_file(stream_strings=["default"], filepaths=[tmp_file], dispatch_id="")
-        assert "relative.log" in os.listdir(tmp_dir)
-        
-        with open(f"{tmp_dir}/relative.log") as f:
-            lines = f.readlines()
-        assert lines[0] == "default"
