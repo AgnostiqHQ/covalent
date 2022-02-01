@@ -49,7 +49,7 @@ jobs:
         run: apt update && apt install -y python3-pip
       - name: Install Python dependencies
         run: |
-          if [[ ${{ matrix.container }} != 'ubuntu:18.04' ]] ; then
+          if [ ${{ matrix.container }} != 'ubuntu:18.04' ] ; then
             python -m pip install --upgrade pip
           fi
           pip install --no-cache-dir -r ./requirements.txt
