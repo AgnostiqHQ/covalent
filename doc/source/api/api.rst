@@ -7,7 +7,8 @@ The following API documentation describes how to use Covalent.
 
 - :ref:`electrons_api` and :ref:`lattices_api` are used for constructing workflows
 - :ref:`results_api` is used for collecting and manipulating results
-- The :ref:`dispatcher_api` is used for interfacing with the Covalent servers
+- :ref:`dispatcher_api` is used for dispatching workflows
+- The :ref:`dispatcher_server_api` is used for interfacing with the Covalent servers
 
 .. _electrons_api:
 
@@ -36,6 +37,23 @@ Lattice
 ----------------------------------------------------------------
 
 
+.. _dispatcher_api:
+
+Dispatcher
+""""""""""""""
+
+Dispatching jobs to the dispatcher servers
+
+.. autofunction:: dispatch
+.. autofunction:: dispatch_sync
+
+
+.. autoclass:: covalent._dispatcher_plugins.LocalDispatcher
+    :members:
+
+
+----------------------------------------------------------------
+
 .. _results_api:
 
 Results
@@ -54,7 +72,7 @@ Collecting and managing results
 
 .. currentmodule:: covalent_dispatcher
 
-.. _dispatcher_api:
+.. _dispatcher_server_api:
 
 Covalent CLI Tool
 """"""""""""""""""
