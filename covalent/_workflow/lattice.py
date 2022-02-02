@@ -343,7 +343,7 @@ class Lattice:
 
         return get_result(self.dispatch(**kwargs), self.metadata["results_dir"], wait=True)
 
-    def _server_dispatch(self, result_object) -> str:
+    def _server_dispatch(self, result_object: "Result") -> str:
         """
         Run the lattice-defined workflow with the dispatcher in server.
 
