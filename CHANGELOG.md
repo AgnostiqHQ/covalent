@@ -11,11 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Covalent CLI command `covalent purge` will now stop the servers before deleting all the pid files.
 
+### Added
+
+- Test for `purge` method in covalent_dispatcher/_cli/service.py.
+
+### Removed
+
+- Unused `covalent_dispatcher` import from covalent_dispatcher/_cli/service.py.
+
+### Changed
+
+- Moved `_config_manager` import from within the `purge` method to the covalent_dispatcher/_cli/service.py for the purpose of mocking in tests.
+
 ## [0.22.14] - 2022-02-01
 
 ### Added
 
-- Type hint to `_server_dispatch` method in `covalent/_workflow/lattice.py`
+- Type hint to `_server_dispatch` method in `covalent/_workflow/lattice.py`.
 
 ## [0.22.13] - 2022-01-26
 
