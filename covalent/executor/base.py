@@ -78,7 +78,7 @@ class BaseExecutor(ABC):
         self.conda_env = conda_env
         self.cache_dir = cache_dir
         self.current_env_on_conda_fail = current_env_on_conda_fail
-        self.current_env: str = ""
+        self.current_env = ""
 
     def get_dispatch_context(
         self, 
