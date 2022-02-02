@@ -117,7 +117,7 @@ Node Outputs
         return self._start_time
 
     @property
-    def end_time(self):
+    def end_time(self) -> datetime:
         """
         End time of processing the dispatch.
         """
@@ -125,7 +125,7 @@ Node Outputs
         return self._end_time
 
     @property
-    def results_dir(self):
+    def results_dir(self) -> str:
         """
         Results directory used to save this result object.
         """
@@ -133,7 +133,7 @@ Node Outputs
         return self._results_dir
 
     @property
-    def lattice(self):
+    def lattice(self) -> Lattice:
         """
         "Lattice" object which was dispatched.
         """
@@ -141,7 +141,7 @@ Node Outputs
         return self._lattice
 
     @property
-    def dispatch_id(self):
+    def dispatch_id(self) -> str:
         """
         Dispatch id of current dispatch.
         """
@@ -157,7 +157,7 @@ Node Outputs
         return self._status
 
     @property
-    def result(self):
+    def result(self) -> int:
         """
         Final result of current dispatch.
         """
@@ -165,7 +165,7 @@ Node Outputs
         return self._result
 
     @property
-    def inputs(self):
+    def inputs(self) -> dict:
         """
         Inputs sent to the "Lattice" function for dispatching.
         """
