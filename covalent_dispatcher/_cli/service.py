@@ -30,7 +30,7 @@ from typing import Optional
 import click
 import psutil
 
-import covalent_dispatcher
+from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
 
 DISPATCHER_PIDFILE = get_config("dispatcher.cache_dir") + "/dispatcher.pid"
@@ -381,15 +381,17 @@ def status() -> None:
 @click.command()
 def purge() -> None:
     """
-    Delete the cache and config settings.
+    Shutdown servers and delete the cache and config settings.
     """
+
+    # Shutdown UI and dispatcher server.
+    _graceful_shutdown("dispatcher", DISPATCHER_PIDFILE)
+    _graceful_shutdown("UI", UI_PIDFILE)
 
     shutil.rmtree(get_config("sdk.log_dir"), ignore_errors=True)
     shutil.rmtree(get_config("dispatcher.cache_dir"), ignore_errors=True)
     shutil.rmtree(get_config("dispatcher.log_dir"), ignore_errors=True)
     shutil.rmtree(get_config("user_interface.log_dir"), ignore_errors=True)
-
-    from covalent._shared_files.config import _config_manager as cm
 
     cm.purge_config()
 
