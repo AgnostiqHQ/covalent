@@ -109,7 +109,7 @@ Node Outputs
         return show_result_str
 
     @property
-    def start_time(self):
+    def start_time(self) -> datetime:
         """
         Start time of processing the dispatch.
         """
