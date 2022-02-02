@@ -33,6 +33,26 @@ with open("requirements.txt") as f:
     required = f.read().splitlines()
 
 
+def recursively_append_files(directory: str):
+    """
+    Append files recursively in a given directory
+
+    Args:
+        directory: Directory within which all the subdirs and files reside
+
+    Returns:
+        filepaths: List of all file paths found recursively in the directory
+    """
+
+    filepaths = []
+
+    for path, _, filenames in os.walk(directory):
+        for filename in filenames:
+            filepaths.append(os.path.join(path, filename).split("/", 1)[1])
+
+    return filepaths
+
+
 class Docs(Command):
     """Generate HTML documentation"""
 
@@ -72,6 +92,7 @@ setup_info = {
     "package_data": {
         "covalent": ["executor/executor_plugins/local.py"],
         "covalent_dispatcher": ["_service/app.py"],
+        "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
     },
     "install_requires": required,
     "classifiers": [

@@ -95,22 +95,28 @@ class BaseExecutor(ABC):
 
         return active_dispatch_info_manager.claim(dispatch_info)
 
-    def write_streams_to_file(self, stream_strings, filepaths, dispatch_id="") -> None:
+    def write_streams_to_file(
+        self,
+        stream_strings,
+        filepaths,
+        dispatch_id,
+        results_dir,
+    ) -> None:
         """
         Write the contents of stdout and stderr to respective files.
 
         Args:
             stream_strings: The stream_strings to be written to files.
             filepaths: The filepaths to be used for writing the streams.
+            dispatch_id: The ID of the dispatch which initiated the request.
+            results_dir: The location of the results directory.
         """
 
         for ss, filepath in zip(stream_strings, filepaths):
             if filepath:
                 # If it is a relative path, attach to results dir
                 if not Path(filepath).expanduser().is_absolute():
-                    filepath = os.path.join(
-                        os.path.join(get_config("dispatcher.results_dir"), dispatch_id), filepath
-                    )
+                    filepath = os.path.join(results_dir, dispatch_id, filepath)
 
                 filename = Path(filepath)
                 filename = filename.expanduser()
