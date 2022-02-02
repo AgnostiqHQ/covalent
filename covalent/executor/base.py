@@ -27,7 +27,7 @@ import subprocess
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Iterable, Tuple, Union, ContextManager
 
 import cloudpickle as pickle
 
@@ -67,10 +67,10 @@ class BaseExecutor(ABC):
 
     def __init__(
         self,
-        log_stdout: Optional[str] = "",
-        log_stderr: Optional[str] = "",
-        conda_env: Optional[str] = "",
-        cache_dir: Optional[str] = "",
+        log_stdout: str = "",
+        log_stderr: str = "",
+        conda_env: str = "",
+        cache_dir: str = "",
         current_env_on_conda_fail: bool = False,
     ) -> None:
         self.log_stdout = log_stdout
@@ -78,9 +78,12 @@ class BaseExecutor(ABC):
         self.conda_env = conda_env
         self.cache_dir = cache_dir
         self.current_env_on_conda_fail = current_env_on_conda_fail
-        self.current_env = ""
+        self.current_env: str = ""
 
-    def get_dispatch_context(self, dispatch_info) -> None:
+    def get_dispatch_context(
+        self, 
+        dispatch_info: DispatchInfo
+    ) -> ContextManager[DispatchInfo]:
         """
         Start a context manager that will be used to
         access the dispatch info for the executor.
@@ -89,17 +92,17 @@ class BaseExecutor(ABC):
             dispatch_info: The dispatch info to be used inside current context.
 
         Returns:
-            None
+            A context manager object that handles the dispatch info.
         """
 
         return active_dispatch_info_manager.claim(dispatch_info)
 
     def write_streams_to_file(
         self,
-        stream_strings,
-        filepaths,
-        dispatch_id,
-        results_dir,
+        stream_strings: Iterable[str],
+        filepaths: Iterable[str],
+        dispatch_id: str,
+        results_dir: str,
     ) -> None:
         """
         Write the contents of stdout and stderr to respective files.
@@ -318,3 +321,4 @@ class BaseExecutor(ABC):
             return False
         self.conda_path = which_conda
         return True
+
