@@ -48,10 +48,6 @@ Dispatching jobs to the dispatcher servers
 .. autofunction:: dispatch_sync
 
 
-.. autoclass:: covalent._dispatcher_plugins.LocalDispatcher
-    :members:
-
-
 ----------------------------------------------------------------
 
 .. _results_api:

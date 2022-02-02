@@ -50,6 +50,9 @@ class LocalDispatcher(BaseDispatcher):
         Wrapping the dispatching functionality to allow input passing
         and server address specification.
 
+        Afterwards, send the lattice to the dispatcher server and return
+        the assigned dispatch id.
+
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
             dispatcher_addr: The address of the dispatcher server.
@@ -103,6 +106,9 @@ class LocalDispatcher(BaseDispatcher):
         """
         Wrapping the synchronous dispatching functionality to allow input
         passing and server address specification.
+
+        Afterwards, sends the lattice to the dispatcher server and return
+        the result of the executed workflow.
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
