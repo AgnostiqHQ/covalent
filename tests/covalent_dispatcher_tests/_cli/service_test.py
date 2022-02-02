@@ -23,7 +23,27 @@
 import mock
 from click.testing import CliRunner
 
-from covalent_dispatcher._cli.service import purge
+from covalent_dispatcher._cli.service import _is_dispatcher_running, _is_ui_running, purge
+
+
+def test_is_dispatcher_running(mocker):
+    """Test the dispatcher server status checking function."""
+
+    mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=1)
+    assert _is_dispatcher_running()
+
+    mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=-1)
+    assert not _is_dispatcher_running()
+
+
+def test_is_ui_running(mocker):
+    """Test the user interface server status checking function."""
+
+    mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=1)
+    assert _is_ui_running()
+
+    mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=-1)
+    assert not _is_ui_running()
 
 
 def test_purge(mocker):

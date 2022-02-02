@@ -127,6 +127,30 @@ def _next_available_port(requested_port: int) -> int:
     return assigned_port
 
 
+def _is_dispatcher_running() -> bool:
+    """Check status of dispatcher server.
+
+    Returns:
+        status: Status of whether the dispatcher server is running.
+    """
+
+    if _read_pid(DISPATCHER_PIDFILE) == -1:
+        return False
+    return True
+
+
+def _is_ui_running() -> bool:
+    """Check status of user interface (UI) server.
+
+    Returns:
+        status: Status of whether the user interface server is running.
+    """
+
+    if _read_pid(UI_PIDFILE) == -1:
+        return False
+    return True
+
+
 def _graceful_start(
     server_name: str,
     server_root: str,
