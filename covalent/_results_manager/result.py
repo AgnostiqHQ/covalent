@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Any, Dict, List
 import cloudpickle as pickle
 import yaml
 
-from .._shared_files.util_classes import RESULT_STATUS
+from .._shared_files.util_classes import RESULT_STATUS, Status
 from .utils import convert_to_lattice_function_call
 
 if TYPE_CHECKING:
@@ -149,7 +149,7 @@ Node Outputs
         return self._dispatch_id
 
     @property
-    def status(self):
+    def status(self) -> Status:
         """
         Status of current dispatch.
         """
