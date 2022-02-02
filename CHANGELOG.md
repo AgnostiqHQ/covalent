@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Functions to check if UI and dispatcher servers are running.
-- Tests for the corresponding functions.
+- Tests for the `is_ui_running` and `is_server_running` in covalent_dispatcher/_cli/service.py.
 
 ## [0.22.15] - 2022-02-01
 
