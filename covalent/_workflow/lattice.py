@@ -367,7 +367,7 @@ def lattice(
     *,
     backend: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES.backend,
+    ] = _DEFAULT_CONSTRAINT_VALUES["backend"],
     dispatcher: Optional[str] = get_config("dispatcher.address")
     + ":"
     + str(get_config("dispatcher.port")),
