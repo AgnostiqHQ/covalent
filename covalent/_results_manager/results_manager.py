@@ -101,7 +101,9 @@ def _get_result_from_file(
 
 
 def _delete_result(
-    dispatch_id: str, results_dir: str = get_config("dispatcher.results_dir")
+    dispatch_id: str,
+    results_dir: str = get_config("dispatcher.results_dir"),
+    remove_parent_directory: bool = False,
 ) -> None:
     """
     Internal function to delete the result.
@@ -109,6 +111,7 @@ def _delete_result(
     Args:
         dispatch_id: The dispatch id of the result.
         results_dir: The directory where the results are stored in dispatch id named folders.
+        remove_parent_directory: Status of whether to delete the parent directory when removing the result.
 
     Returns:
         None
@@ -128,6 +131,9 @@ def _delete_result(
         os.rmdir(results_dir)
     except OSError:
         pass
+
+    if remove_parent_directory:
+        shutil.rmtree(results_dir, ignore_errors=True)
 
 
 def redispatch_result(result_object: Result, dispatcher: str = None) -> str:
