@@ -384,11 +384,6 @@ def purge() -> None:
     Shutdown servers and delete the cache and config settings.
     """
 
-    click.confirm(
-        "This will shutdown the servers and delete cache / config files. \nAre you sure you want to continue?",
-        abort=True,
-    )
-
     # Shutdown UI and dispatcher server.
     _graceful_shutdown("dispatcher", DISPATCHER_PIDFILE)
     _graceful_shutdown("UI", UI_PIDFILE)
