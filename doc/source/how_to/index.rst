@@ -38,9 +38,9 @@ Status
 Collection
 ************
 
-- :doc:`How to get the results <./collection/query_electron_execution_result>`
+- :doc:`How to get the results <./collection/query_multiple_lattice_execution_results>`
 - :doc:`How to get results of previous runs <./collection/query_lattice_execution_result>`
-- :doc:`How to get the result of a particular electron <./collection/query_multiple_lattice_execution_results>`
+- :doc:`How to get the result of a particular electron <./collection/query_electron_execution_result>`
 
 Configuration
 **************
