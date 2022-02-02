@@ -31,7 +31,6 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from .._results_manager.results_manager import get_result
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
@@ -44,7 +43,6 @@ from .._shared_files.utils import (
 from .transport import _TransportGraph
 
 if TYPE_CHECKING:
-    from .._results_manager.result import Result
     from ..executor import BaseExecutor
 
 
@@ -294,9 +292,6 @@ def lattice(
     backend: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = _DEFAULT_CONSTRAINT_VALUES.backend,
-    dispatcher: Optional[str] = get_config("dispatcher.address")
-    + ":"
-    + str(get_config("dispatcher.port")),
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
     # e.g. schedule: True, whether to use a custom scheduling logic or not
@@ -320,7 +315,6 @@ def lattice(
 
     constraints = {
         "backend": backend,
-        "dispatcher": dispatcher,
         "results_dir": results_dir,
     }
 

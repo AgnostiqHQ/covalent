@@ -21,13 +21,34 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
+from .._results_manager.result import Result
 from .._workflow.lattice import Lattice
 
 
 class BaseDispatcher(ABC):
+    """
+    The base dispatcher class to allow defining custom dispatchers.
+    Subclassed dispatchers must implement the `dispatch` method and
+    `dispatch_sync` methods. These dispatchers act as the interface
+    to the covalent dispatcher server and using the `dispatch` method
+    will allow the user to submit jobs to the dispatcher server.
+    """
+
     def __init__(self) -> None:
         pass
 
     @abstractmethod
     def dispatch(self, lattice: Lattice, custom_variables: Any) -> None:
+        """
+        Dispatch a lattice to the dispatcher server.
+        """
+
+        pass
+
+    @abstractmethod
+    def dispatch_sync(self, lattice: Lattice, custom_variables: Any) -> Result:
+        """
+        Dispatch a lattice to the dispatcher server and wait for the results.
+        """
+
         pass

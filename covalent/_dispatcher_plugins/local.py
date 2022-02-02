@@ -21,21 +21,56 @@
 import inspect
 from copy import deepcopy
 from functools import wraps
+from typing import Callable
 
 import cloudpickle as pickle
 import requests
 
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
+from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
 from .base import BaseDispatcher
 
 
 class LocalDispatcher(BaseDispatcher):
+    """
+    Local dispatcher which sends the workflow to the locally running
+    dispatcher server.
+    """
+
     @staticmethod
-    def dispatch(orig_lattice: Lattice) -> str:
+    def dispatch(
+        orig_lattice: Lattice,
+        dispatcher_addr: str = get_config("dispatcher.address")
+        + ":"
+        + str(get_config("dispatcher.port")),
+    ) -> Callable:
+        """
+        Wrapping the dispatching functionality to allow input passing
+        and server address specification.
+
+        Args:
+            orig_lattice: The lattice/workflow to send to the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server.
+
+        Returns:
+            Wrapper function which takes the inputs of the workflow as arguments
+        """
+
         @wraps(orig_lattice)
         def wrapper(*args, **kwargs) -> str:
+            """
+            Send the lattice to the dispatcher server and return
+            the assigned dispatch id.
+
+            Args:
+                *args: The inputs of the workflow.
+                **kwargs: The keyword arguments of the workflow.
+
+            Returns:
+                The dispatch id of the workflow.
+            """
 
             lattice = deepcopy(orig_lattice)
 
@@ -50,7 +85,7 @@ class LocalDispatcher(BaseDispatcher):
             lattice.transport_graph = lattice.transport_graph.serialize()
 
             pickled_res = pickle.dumps(Result(lattice, lattice.metadata["results_dir"]))
-            test_url = "http://" + lattice.metadata["dispatcher"] + "/api/submit"
+            test_url = "http://" + dispatcher_addr + "/api/submit"
 
             r = requests.post(test_url, data=pickled_res)
             r.raise_for_status()
@@ -59,12 +94,40 @@ class LocalDispatcher(BaseDispatcher):
         return wrapper
 
     @staticmethod
-    def dispatch_sync(lattice: Lattice) -> Result:
+    def dispatch_sync(
+        lattice: Lattice,
+        dispatcher_addr: str = get_config("dispatcher.address")
+        + ":"
+        + str(get_config("dispatcher.port")),
+    ) -> Callable:
+        """
+        Wrapping the synchronous dispatching functionality to allow input
+        passing and server address specification.
+
+        Args:
+            orig_lattice: The lattice/workflow to send to the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server.
+
+        Returns:
+            Wrapper function which takes the inputs of the workflow as arguments
+        """
+
         @wraps(lattice)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> Result:
+            """
+            Send the lattice to the dispatcher server and return
+            the result of the executed workflow.
+
+            Args:
+                *args: The inputs of the workflow.
+                **kwargs: The keyword arguments of the workflow.
+
+            Returns:
+                The result of the executed workflow.
+            """
 
             return get_result(
-                LocalDispatcher.dispatch(lattice)(*args, **kwargs),
+                LocalDispatcher.dispatch(lattice, dispatcher_addr)(*args, **kwargs),
                 lattice.metadata["results_dir"],
                 wait=True,
             )
