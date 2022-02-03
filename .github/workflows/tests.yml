@@ -49,9 +49,9 @@ jobs:
 #        uses: actions/setup-python@v2
 #        with:
 #          python-version: ${{ matrix.python-version }}
-      - name: Install pip
-        if: startsWith(matrix.container, 'ubuntu')
-        run: apt update && apt install -y python3-pip
+#      - name: Install pip
+#        if: startsWith(matrix.container, 'ubuntu')
+#        run: apt update && apt install -y python3-pip
       - name: Install Python dependencies
         run: |
 #          if [ ${{ matrix.container }} != 'ubuntu:18.04' ] ; then
