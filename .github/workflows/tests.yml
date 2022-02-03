@@ -32,13 +32,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        container: ['python:3.7-buster', 'python:3.8-buster', 'python:3.9-buster']
+        container: ['python:3.8-buster', 'python:3.9-buster']
         os: ['ubuntu-latest']
         experimental: [false]
-#        include:
-#          - os: macos-latest
-#            container: null
-#            experimental: true
+        include:
+          - os: ubuntu-latest
+            container: python:3.7-buster
+            experimental: true
+          - os: macos-latest
+            container:
+            experimental: true
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
     steps:
