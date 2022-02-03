@@ -13,10 +13,7 @@ While Covalent is primarily developed using Python 3.8 on MacOS and Linux, it ha
        <th>Supported</th>
        <th>Notes</th>
      <tr>
-       <td colspan="4">Mac</td>
-     </tr>
-     <tr>
-       <td>Mac OS 11 (Big Sur)</td>
+       <td>MacOS 11 (Big Sur)</td>
        <td>3.7</td>
        <td style="background-color:#FFFF00">Partial</td>
        <td>Function string serialization fails.</td>
