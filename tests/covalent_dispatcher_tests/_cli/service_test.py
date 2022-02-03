@@ -20,9 +20,11 @@
 
 """Tests for Covalent command line interface (CLI) Tool."""
 
+import os
 import tempfile
 
 import mock
+import pytest
 from click.testing import CliRunner
 
 from covalent_dispatcher._cli.service import (
@@ -34,7 +36,7 @@ from covalent_dispatcher._cli.service import (
 )
 
 
-def test_read_pid_nonexistent_pid_file():
+def test_read_pid_nonexistent_file():
     """Test the process id read function when the pid file does not exist."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -49,8 +51,15 @@ def test_read_valid_pid_file():
     assert res == 1984
 
 
-def test_rm_pid():
-    pass
+@pytest.mark.parametrize("file_exists,remove_call_status", [(False, False), (True, True)])
+def test_rm_pid_file(mocker, file_exists, remove_call_status):
+    """Test the process id file removal function."""
+
+    mocker.patch("os.path.isfile", return_value=file_exists)
+    os_remove_mock = mocker.patch("os.remove")
+    _rm_pid_file("nonexistent.pid")
+
+    assert os_remove_mock.called is remove_call_status
 
 
 def test_port_from_pid():

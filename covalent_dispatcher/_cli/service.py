@@ -72,10 +72,8 @@ def _rm_pid_file(filename: str) -> None:
         None
     """
 
-    try:
+    if os.path.isfile(filename):
         os.remove(filename)
-    except OSError:
-        pass
 
 
 def _port_from_pid(pid: int) -> int:
