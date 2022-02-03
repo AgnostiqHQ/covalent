@@ -85,17 +85,19 @@ def get_time(time_delta: timedelta) -> str:
     return f"{days}-{hours}:{minutes}:{seconds}"
 
 
-def get_serialized_function_str(function) -> str:
+def get_serialized_function_str(function, collect_imports: bool = False) -> str:
     """
     Generates a string representation of a function definition
     including the decorators on it.
 
     Args:
         function: The function whose definition is to be convert to a string.
+        collect_imports: If True, this function will inspect the source and collect
+            imports statements.
 
     Returns:
         function_str: The string representation of the function definition, along with
-            imports.
+            required import statements, if collect_imports == True.
     """
 
     input_function = function
@@ -104,18 +106,22 @@ def get_serialized_function_str(function) -> str:
     while hasattr(input_function, "workflow_function"):
         input_function = input_function.workflow_function
 
-    # Get external (to Covalent) imports that were used. And record what Covalent
-    # has been imported as.
-    imports, cova_imports = imports_from_sources()
-    imports = list(imports)
-    imports.sort()
-
     try:
-        import_str = "".join(f"{import_statement}\n" for import_statement in imports)
-        import_str += "\n"
-
         # inspect.getsource call gets the string representation of one function, with decorators, if any.
         function_str = inspect.getsource(input_function)
+    except:
+        function_str = f"# {function.__name__} was not inspectable"
+        return function_str + "\n\n"
+
+    # Get external (to Covalent) imports that were used. And record what Covalent
+    # has been imported as.
+    if collect_imports:
+        imports, cova_imports = imports_from_sources()
+        imports = list(imports)
+        imports.sort()
+
+        import_str = "".join(f"{import_statement}\n" for import_statement in imports)
+        import_str += "\n"
 
         # Check if the function has covalent decorators that need to be commented out.
         commented_lines = set()
@@ -145,8 +151,6 @@ def get_serialized_function_str(function) -> str:
 
         function_str = import_str + function_str
 
-    except Exception:
-        function_str = f"# {function.__name__} was not inspectable"
     return function_str + "\n\n"
 
 
