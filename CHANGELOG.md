@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.19] - 2022-02-03
+
+### Fixed
+
+- _write_dispatch_to_python_file isn't called each time a task is saved. It is now only called in the final save in _run_planned_workflow (in covalent_dispatcher/_core/__init__.py).
+
+## [0.22.18] - 2022-02-03
+
+### Fixed
+
+- Added type information to result.py
+
+## [0.22.17] - 2022-02-02
+
+### Added
+
+- Replaced `"typing.Optional"` with `"str"` in covalent/executor/base.py
+- Added missing type hints to `get_dispatch_context` and `write_streams_to_file` in covalent/executor/base.py, BaseExecutor
+
 ## [0.22.16] - 2022-02-02
 
 ### Added
