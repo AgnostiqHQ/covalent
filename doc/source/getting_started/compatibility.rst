@@ -34,7 +34,7 @@ While Covalent is primarily developed using Python 3.8 on MacOS and Linux, it ha
       <tr style="background-color: white;">
        <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
        <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.10</td>
-       <td class="not-supported" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">NOT SUPPORTED</td>
+       <td class="not-supported" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #d98a91;">NOT SUPPORTED</td>
        <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
      </tr>
    </table>
