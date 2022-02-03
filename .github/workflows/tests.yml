@@ -28,30 +28,35 @@ on:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-#        container: ['ubuntu:20.04', 'fedora:34', 'fedora:35', 'centos:centos6', 'centos:centos7']
-        container: ['ubuntu:18.04', 'ubuntu:20.04', 'centos:centos7']
-        python-version: ['3.8']
+        container: ['python:3.7-buster', 'python:3.8-buster', 'python:3.9-buster']
+        os: ['ubuntu-latest']
+        experimental: [false]
+        include:
+          - os: macos-latest
+            container: ~
+            experimental: true
     container: ${{ matrix.container }}
+    continue-on-error: ${{ matrix.experimental }}
     steps:
       - name: Check out head
         uses: actions/checkout@v2
         with:
           persist-credentials: false
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
+#      - name: Set up Python
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: ${{ matrix.python-version }}
       - name: Install pip
         if: startsWith(matrix.container, 'ubuntu')
         run: apt update && apt install -y python3-pip
       - name: Install Python dependencies
         run: |
-          if [ ${{ matrix.container }} != 'ubuntu:18.04' ] ; then
-            python -m pip install --upgrade pip
-          fi
+#          if [ ${{ matrix.container }} != 'ubuntu:18.04' ] ; then
+#            python -m pip install --upgrade pip
+#          fi
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
       - name: Install Covalent
