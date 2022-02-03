@@ -36,7 +36,7 @@ jobs:
         experimental: [false]
         include:
           - os: macos-latest
-            container: ~
+            container: null
             experimental: true
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
