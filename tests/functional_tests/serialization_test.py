@@ -218,23 +218,36 @@ pytest_imports = [
 def test_non_electron_serialization():
     """Test that 'normal' functions are successfully serialized."""
 
-    function_string = get_serialized_function_str(non_electron)
-
     function_lines = [
         "def non_electron(x):",
         "    return x",
     ]
+
+    function_string = get_serialized_function_str(non_electron, collect_imports=False)
+    expected_string = "\n".join(function_lines)
+    expected_string += "\n\n\n"
+    assert function_string == expected_string
+
+    function_string = get_serialized_function_str(non_electron, collect_imports=True)
     expected_string = "\n".join(covalent_imports + pytest_imports + [""] + function_lines)
     expected_string += "\n\n\n"
-
     assert function_string == expected_string
 
 
 def test_electron_serialization():
     """Test that an electron function is successfully serialized."""
 
-    function_string = get_serialized_function_str(electron_function)
+    function_string = get_serialized_function_str(electron_function, collect_imports=False)
+    function_lines = [
+        "@cova.electron(backend=executor)",
+        "def electron_function(x):",
+        "    return x",
+    ]
+    expected_string = "\n".join(function_lines)
+    expected_string += "\n\n\n"
+    assert function_string == expected_string
 
+    function_string = get_serialized_function_str(electron_function, collect_imports=True)
     function_lines = [
         "# @cova.electron(backend=executor)",
         "def electron_function(x):",
@@ -242,15 +255,25 @@ def test_electron_serialization():
     ]
     expected_string = "\n".join(covalent_imports + pytest_imports + [""] + function_lines)
     expected_string += "\n\n\n"
-
     assert function_string == expected_string
 
 
 def test_lattice_serialization():
     """Test that a lattice function is successfully serialized."""
 
-    function_string = get_serialized_function_str(lattice_function)
+    function_string = get_serialized_function_str(lattice_function, collect_imports=False)
+    function_lines = [
+        '@covalent.lattice(results_dir="./")',
+        "def lattice_function(input_a, input_b):",
+        "    a = electron_function(x=input_a)",
+        "    b = sub_lattice_function(y=input_b)",
+        "    return a + b",
+    ]
+    expected_string = "\n".join(function_lines)
+    expected_string += "\n\n\n"
+    assert function_string == expected_string
 
+    function_string = get_serialized_function_str(lattice_function, collect_imports=True)
     function_lines = [
         '# @covalent.lattice(results_dir="./")',
         "def lattice_function(input_a, input_b):",
@@ -258,10 +281,8 @@ def test_lattice_serialization():
         "    b = sub_lattice_function(y=input_b)",
         "    return a + b",
     ]
-
     expected_string = "\n".join(covalent_imports + pytest_imports + [""] + function_lines)
     expected_string += "\n\n\n"
-
     assert function_string == expected_string
 
 
@@ -269,8 +290,22 @@ def test_lattice_object_serialization():
     """Test that a Lattice object, based on a sub-lattice, is successsfully serialized."""
 
     lattice_obj = Lattice(sub_lattice_function)
-    function_string = get_serialized_function_str(lattice_obj)
+    function_string = get_serialized_function_str(lattice_obj, collect_imports=False)
+    function_lines = [
+        "@etron",
+        "@cova.lattice(",
+        '    results_dir="./",',
+        '    dispatcher="super long fake dispatcher to test really long arguments                                                                                                                                                                                end_fake_dispatcher_name",',
+        ")",
+        "def sub_lattice_function(y):",
+        "    return y",
+    ]
+    expected_string = "\n".join(function_lines)
+    expected_string += "\n\n\n"
+    assert function_string == expected_string
 
+    lattice_obj = Lattice(sub_lattice_function)
+    function_string = get_serialized_function_str(lattice_obj, collect_imports=True)
     function_lines = [
         "# @etron",
         "# @cova.lattice(",
@@ -280,18 +315,29 @@ def test_lattice_object_serialization():
         "def sub_lattice_function(y):",
         "    return y",
     ]
-
     expected_string = "\n".join(covalent_imports + pytest_imports + [""] + function_lines)
     expected_string += "\n\n\n"
-
     assert function_string == expected_string
 
 
 def test_nested_electron():
     """Test a nested electron."""
 
-    function_string = get_serialized_function_str(nested_electron)
+    function_string = get_serialized_function_str(nested_electron, collect_imports=False)
+    function_lines = [
+        "@covalent.electron",
+        "@covalent.lattice",
+        "@etron",
+        "@cova.lattice",
+        "@covalent.electron",
+        "def nested_electron(z):",
+        "    return z",
+    ]
+    expected_string = "\n".join(function_lines)
+    expected_string += "\n\n\n"
+    assert function_string == expected_string
 
+    function_string = get_serialized_function_str(nested_electron, collect_imports=True)
     function_lines = [
         "# @covalent.electron",
         "# @covalent.lattice",
@@ -301,8 +347,6 @@ def test_nested_electron():
         "def nested_electron(z):",
         "    return z",
     ]
-
     expected_string = "\n".join(covalent_imports + pytest_imports + [""] + function_lines)
     expected_string += "\n\n\n"
-
     assert function_string == expected_string
