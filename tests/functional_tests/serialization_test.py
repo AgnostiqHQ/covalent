@@ -26,6 +26,7 @@ import covalent as cova
 # These imports are here solely to check that they are commented out in the serialized function string.
 import covalent._workflow
 from covalent import electron as etron
+from covalent._shared_files.config import set_config
 from covalent._shared_files.utils import get_serialized_function_str
 from covalent._workflow.lattice import Lattice
 
@@ -68,6 +69,7 @@ def nested_electron(z):
 
 covalent_imports = [
     "# from covalent import electron as etron",
+    "# from covalent._shared_files.config import set_config",
     "# from covalent._shared_files.utils import get_serialized_function_str",
     "# from covalent._workflow.lattice import Lattice",
     "# import covalent",
@@ -223,12 +225,14 @@ def test_non_electron_serialization():
         "    return x",
     ]
 
-    function_string = get_serialized_function_str(non_electron, collect_imports=False)
+    set_config("sdk.full_dispatch_source", "false")
+    function_string = get_serialized_function_str(non_electron)
     expected_string = "\n".join(function_lines)
     expected_string += "\n\n\n"
     assert function_string == expected_string
 
-    function_string = get_serialized_function_str(non_electron, collect_imports=True)
+    set_config("sdk.full_dispatch_source", "true")
+    function_string = get_serialized_function_str(non_electron)
     expected_string = "\n".join(covalent_imports + pytest_imports + [""] + function_lines)
     expected_string += "\n\n\n"
     assert function_string == expected_string
@@ -237,7 +241,8 @@ def test_non_electron_serialization():
 def test_electron_serialization():
     """Test that an electron function is successfully serialized."""
 
-    function_string = get_serialized_function_str(electron_function, collect_imports=False)
+    set_config("sdk.full_dispatch_source", "false")
+    function_string = get_serialized_function_str(electron_function)
     function_lines = [
         "@cova.electron(backend=executor)",
         "def electron_function(x):",
@@ -247,7 +252,8 @@ def test_electron_serialization():
     expected_string += "\n\n\n"
     assert function_string == expected_string
 
-    function_string = get_serialized_function_str(electron_function, collect_imports=True)
+    set_config("sdk.full_dispatch_source", "true")
+    function_string = get_serialized_function_str(electron_function)
     function_lines = [
         "# @cova.electron(backend=executor)",
         "def electron_function(x):",
@@ -261,7 +267,8 @@ def test_electron_serialization():
 def test_lattice_serialization():
     """Test that a lattice function is successfully serialized."""
 
-    function_string = get_serialized_function_str(lattice_function, collect_imports=False)
+    set_config("sdk.full_dispatch_source", "false")
+    function_string = get_serialized_function_str(lattice_function)
     function_lines = [
         '@covalent.lattice(results_dir="./")',
         "def lattice_function(input_a, input_b):",
@@ -273,7 +280,8 @@ def test_lattice_serialization():
     expected_string += "\n\n\n"
     assert function_string == expected_string
 
-    function_string = get_serialized_function_str(lattice_function, collect_imports=True)
+    set_config("sdk.full_dispatch_source", "true")
+    function_string = get_serialized_function_str(lattice_function)
     function_lines = [
         '# @covalent.lattice(results_dir="./")',
         "def lattice_function(input_a, input_b):",
@@ -290,7 +298,9 @@ def test_lattice_object_serialization():
     """Test that a Lattice object, based on a sub-lattice, is successsfully serialized."""
 
     lattice_obj = Lattice(sub_lattice_function)
-    function_string = get_serialized_function_str(lattice_obj, collect_imports=False)
+
+    set_config("sdk.full_dispatch_source", "false")
+    function_string = get_serialized_function_str(lattice_obj)
     function_lines = [
         "@etron",
         "@cova.lattice(",
@@ -304,8 +314,8 @@ def test_lattice_object_serialization():
     expected_string += "\n\n\n"
     assert function_string == expected_string
 
-    lattice_obj = Lattice(sub_lattice_function)
-    function_string = get_serialized_function_str(lattice_obj, collect_imports=True)
+    set_config("sdk.full_dispatch_source", "true")
+    function_string = get_serialized_function_str(lattice_obj)
     function_lines = [
         "# @etron",
         "# @cova.lattice(",
@@ -323,7 +333,8 @@ def test_lattice_object_serialization():
 def test_nested_electron():
     """Test a nested electron."""
 
-    function_string = get_serialized_function_str(nested_electron, collect_imports=False)
+    set_config("sdk.full_dispatch_source", "false")
+    function_string = get_serialized_function_str(nested_electron)
     function_lines = [
         "@covalent.electron",
         "@covalent.lattice",
@@ -337,7 +348,8 @@ def test_nested_electron():
     expected_string += "\n\n\n"
     assert function_string == expected_string
 
-    function_string = get_serialized_function_str(nested_electron, collect_imports=True)
+    set_config("sdk.full_dispatch_source", "true")
+    function_string = get_serialized_function_str(nested_electron)
     function_lines = [
         "# @covalent.electron",
         "# @covalent.lattice",
