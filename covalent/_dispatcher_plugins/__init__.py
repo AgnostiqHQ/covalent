@@ -18,27 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Main Covalent public functionality."""
+from .base import BaseDispatcher
+from .local import LocalDispatcher
 
-import os
-
-from . import executor
-from ._dispatcher_plugins import local_dispatch as dispatch
-from ._dispatcher_plugins import local_dispatch_sync as dispatch_sync
-from ._results_manager.results_manager import cancel, get_result, sync
-from ._shared_files.config import get_config, reload_config, set_config
-from ._shared_files.util_classes import RESULT_STATUS as status
-from ._workflow import electron, lattice
-
-try:
-    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../VERSION")) as f:
-        __version__ = f.read().strip()
-except FileNotFoundError:
-    pass
-
-__all__ = [s for s in dir() if not s.startswith("_")]
-
-for _s in dir():
-    if not _s.startswith("_"):
-        _obj = globals()[_s]
-        _obj.__module__ = __name__
+local_dispatch = LocalDispatcher.dispatch
+local_dispatch_sync = LocalDispatcher.dispatch_sync

@@ -27,23 +27,17 @@ import subprocess
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Iterable, Tuple, Union, ContextManager
+from typing import Any, ContextManager, Iterable, Tuple
 
 import cloudpickle as pickle
 
 from .._shared_files import logger
-from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
 from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-class ExecutorResult:
-    output: Any
-    error: Union[str, Exception]
 
 
 class BaseExecutor(ABC):
@@ -80,10 +74,7 @@ class BaseExecutor(ABC):
         self.current_env_on_conda_fail = current_env_on_conda_fail
         self.current_env = ""
 
-    def get_dispatch_context(
-        self, 
-        dispatch_info: DispatchInfo
-    ) -> ContextManager[DispatchInfo]:
+    def get_dispatch_context(self, dispatch_info: DispatchInfo) -> ContextManager[DispatchInfo]:
         """
         Start a context manager that will be used to
         access the dispatch info for the executor.
@@ -321,4 +312,3 @@ class BaseExecutor(ABC):
             return False
         self.conda_path = which_conda
         return True
-
