@@ -337,7 +337,7 @@ def _run_planned_workflow(result_object: Result) -> Result:
 
     result_object._status = Result.COMPLETED
     result_object._end_time = datetime.now(timezone.utc)
-    result_object.save()
+    result_object.save(write_source=True)
     result_webhook.send_update(result_object)
 
 
