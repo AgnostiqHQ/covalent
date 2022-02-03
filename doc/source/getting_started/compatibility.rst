@@ -7,85 +7,90 @@ While Covalent is primarily developed using Python 3.8 on MacOS and Linux, it ha
 .. raw:: html
   
    
+     
+    
+   
    <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
         <tr style="background-color: white;">
+          <th style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">OS Version</th>
           <th style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Python Version</th>
           <th style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Supported</th>
           <th style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Notes</th>
         </tr>
         <tr style="background-color: #f2f2f2;">
-          <td colspan="3" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">macOS 11 (Big Sur)</td>
-        </tr>
-        <tr style="background-color: white;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">macOS 11 (Big Sur)</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.7</td>
             <td class="semi-stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 210 67);">SEMI-STABLE</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Github runner; get_serialized_function_str failing</td>
           </tr>
-        <tr style="background-color: #f2f2f2;">
+        <tr style="background-color: white;">
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Github runner</td>
         </tr>
-        <tr style="background-color: white;">
+        <tr style="background-color: #f2f2f2;">
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.9</td>
           <td class="unknown" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #d6d8d9;">UKNOWN</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Github runner; pytest hangs indefinitely</td>
         </tr>
-        <tr style="background-color: #f2f2f2;">
-            <td colspan="3" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Debian Buster (Ubuntu 18.04)</td>
-          </tr>
           <tr style="background-color: white;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Debian Buster (Ubuntu 18.04)</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.6</td>
             <td class="not-supported" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #d98a91;">NOT SUPPORTED</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           </tr>
           <tr style="background-color: #f2f2f2;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.7</td>
             <td class="semi-stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 210 67);">SEMI-STABLE</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">`get_serialized_function_str` failing</td>
           </tr>
           <tr style="background-color: white;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
             <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           </tr>
           <tr style="background-color: #f2f2f2;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.9</td>
             <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           </tr>
           <tr style="background-color: white;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.10</td>
             <td class="not-supported" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #d98a91;">NOT SUPPORTED</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">`eventlet` compatibility problems</td>
           </tr>
           <tr style="background-color: #f2f2f2;">
-            <td colspan="3" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Debian Bullseye (Ubuntu 20.04)</td>
-          </tr>
-          <tr style="background-color: white;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Debian Bullseye (Ubuntu 20.04)</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.7</td>
             <td class="semi-stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 210 67);">SEMI-STABLE</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">`get_serialized_function_str` failing</td>
           </tr>
-          <tr style="background-color: #f2f2f2;">
+          <tr style="background-color: white;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
             <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           </tr>
-          <tr style="background-color: white;">
+          <tr style="background-color: #f2f2f2;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.9</td>
             <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           </tr>
-          <tr style="background-color: #f2f2f2;">
-            <td colspan="3" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">CentOS 7</td>
-          </tr>
           <tr style="background-color: white;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">CentOS 7<</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.6</td>
             <td class="not-supported" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #d98a91;">NOT SUPPORTED</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           </tr>
           <tr style="background-color: #f2f2f2;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
             <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
