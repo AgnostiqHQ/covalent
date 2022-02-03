@@ -25,6 +25,7 @@ on:
   push:
     branches:
       - develop
+      - test-multiple-versions
 
 jobs:
   tests:
