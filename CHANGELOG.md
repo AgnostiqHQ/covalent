@@ -5,7 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [UNRELEASED] - 2022-02-02
+## [0.23.0] - 2022-02-02
+
+### Added
+
+- Added `BaseDispatcher` class to be used for creating custom dispatchers which allow connection to a dispatcher server.
+- `LocalDispatcher` inheriting from `BaseDispatcher` allows connection to a local dispatcher server running on the user's machine.
+- Covalent only gives interface to the `LocalDispatcher`'s `dispatch` and `dispatch_sync` methods.
+- Tests for both `LocalDispatcher` and `BaseDispatcher` added.
+
+### Changed
+
+- Switched from using `lattice.dispatch` and `lattice.dispatch_sync` to `covalent.dispatch` and `covalent.dispatch_sync`.
+- Dispatcher address now is passed as a parameter (`dispatcher_addr`) to `covalent.dispatch` and `covalent.dispatch_sync` instead of a metadata field to lattice.
+- Updated tests, how tos, and tutorials to use `covalent.dispatch` and `covalent.dispatch_sync`.
+- All the contents of `covalent_dispatcher/_core/__init__.py` are moved to `covalent_dispatcher/_core/execution.py` for better organization. `__init__.py` only contains function imports which are needed by external modules.
+
+### Removed
+
+- `dispatch`, `dispatch_sync` and `_server_dispatch` methods removed from `Lattice`.
+- `dispatcher` metadata field removed from `lattice`.
 
 ## [0.22.17] - 2022-02-02
 
