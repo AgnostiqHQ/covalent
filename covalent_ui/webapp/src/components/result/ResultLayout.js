@@ -25,7 +25,6 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { AppBar, Box, Drawer, IconButton, Toolbar } from '@mui/material'
 import { Menu as MenuIcon } from '@mui/icons-material'
-import { Helmet } from 'react-helmet-async'
 import { useStoreActions, useStoreState } from 'react-flow-renderer'
 
 import LatticeMain from './LatticeMain'
@@ -59,8 +58,6 @@ const ResultLayout = () => {
 
   return (
     <>
-      <Helmet title={dispatchId} />
-
       <Box sx={{ display: 'flex' }}>
         <Box sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}>
           {/* Mobile drawer */}
