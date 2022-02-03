@@ -19,42 +19,32 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import covalent as ct
-import covalent._results_manager.results_manager as rm
+from covalent._dispatcher_plugins.local import LocalDispatcher
+
+dispatcher = LocalDispatcher()
 
 
 @ct.electron
-def identity(x):
-    return x
-
-
-@ct.electron
-def add(x, y):
-    import random
-    import time
-
-    time.sleep(random.choice([1, 2]))
-    return x + y
+def add(a, b):
+    return a + b
 
 
 @ct.lattice
-def pipeline(a, b):
-    res_1 = add(x=a, y=b)
-    return identity(x=res_1)
+def workflow(x, y):
+    res = add(x, y)
+    return add(res, y)
 
 
-def test_dispatcher_server():
-    # After the dispatcher server has been started, you can run the following
-    dispatch_id = ct.dispatch(pipeline)(a=2, b=1)
-    assert dispatch_id is not None
+def test_local_dispatcher_dispatch():
+    """Tests whether the local dispatcher can dispatch a workflow successfully."""
 
-    # Wait for it to complete
-    result = ct.get_result(dispatch_id, wait=True)
-    assert result is not None
+    dispatch_id = dispatcher.dispatch(workflow)(1, 2)
 
-    assert result.start_time is not None
-    assert result.end_time is not None
-    assert result.end_time > result.start_time
-    assert result.status == ct.status.COMPLETED
-    assert result.result == 3
+    assert isinstance(dispatch_id, str)
 
-    rm._delete_result(dispatch_id)
+
+def test_local_dispatcher_dispatch_sync():
+    """Tests whether the local dispatcher can synchronously dispatch a workflow successfully."""
+
+    result = dispatcher.dispatch_sync(workflow)(1, 2)
+    assert result.result == 5
