@@ -5,12 +5,104 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.23.0] - 2022-02-01
+## [0.25.0] - 2022-02-03
 
 ### Added
 
-- Imports needed for dispatch_source.py are now included in that file.
+- Imports needed for dispatch_source.py are now optionally included in that file. However, it is slow, and does not work in Jupyter notebooks.
 - A set of all imports utilized, including those imported by end-user modules, is available to executor plugins.
+
+## [0.24.0] - 2022-02-03
+
+### Added
+
+- UI: log file output - display in Output tab of all available log file output
+- UI: show lattice and electron inputs
+- UI: display executor attributes
+- UI: display error message on failed status for lattice and electron
+
+### Changed
+- UI: re-order sidebar sections according to latest figma designs
+- UI: update favicon
+- UI: remove dispatch id from tab title
+- UI: fit new uuids
+- UI: adjust theme text primary and secondary colors
+
+### Fixed
+- UI: auto-refresh result state on initial render of listing and graph pages
+- UI: graph layout issues: truncate long electron/param names
+
+## [0.23.0] - 2022-02-03
+
+### Added
+
+- Added `BaseDispatcher` class to be used for creating custom dispatchers which allow connection to a dispatcher server.
+- `LocalDispatcher` inheriting from `BaseDispatcher` allows connection to a local dispatcher server running on the user's machine.
+- Covalent only gives interface to the `LocalDispatcher`'s `dispatch` and `dispatch_sync` methods.
+- Tests for both `LocalDispatcher` and `BaseDispatcher` added.
+
+### Changed
+
+- Switched from using `lattice.dispatch` and `lattice.dispatch_sync` to `covalent.dispatch` and `covalent.dispatch_sync`.
+- Dispatcher address now is passed as a parameter (`dispatcher_addr`) to `covalent.dispatch` and `covalent.dispatch_sync` instead of a metadata field to lattice.
+- Updated tests, how tos, and tutorials to use `covalent.dispatch` and `covalent.dispatch_sync`.
+- All the contents of `covalent_dispatcher/_core/__init__.py` are moved to `covalent_dispatcher/_core/execution.py` for better organization. `__init__.py` only contains function imports which are needed by external modules.
+- `dispatch`, `dispatch_sync` methods deprecated from `Lattice`.
+
+### Removed
+
+- `_server_dispatch` method removed from `Lattice`.
+- `dispatcher` metadata field removed from `lattice`.
+
+## [0.22.19] - 2022-02-03
+
+### Fixed
+
+- `_write_dispatch_to_python_file` isn't called each time a task is saved. It is now only called in the final save in `_run_planned_workflow` (in covalent_dispatcher/_core/__init__.py).
+
+## [0.22.18] - 2022-02-03
+
+### Fixed
+
+- Added type information to result.py
+
+## [0.22.17] - 2022-02-02
+
+### Added
+
+- Replaced `"typing.Optional"` with `"str"` in covalent/executor/base.py
+- Added missing type hints to `get_dispatch_context` and `write_streams_to_file` in covalent/executor/base.py, BaseExecutor
+
+## [0.22.16] - 2022-02-02
+
+### Added
+
+- Functions to check if UI and dispatcher servers are running.
+- Tests for the `is_ui_running` and `is_server_running` in covalent_dispatcher/_cli/service.py.
+
+## [0.22.15] - 2022-02-01
+
+### Fixed
+
+- Covalent CLI command `covalent purge` will now stop the servers before deleting all the pid files.
+
+### Added
+
+- Test for `purge` method in covalent_dispatcher/_cli/service.py.
+
+### Removed
+
+- Unused `covalent_dispatcher` import from covalent_dispatcher/_cli/service.py.
+
+### Changed
+
+- Moved `_config_manager` import from within the `purge` method to the covalent_dispatcher/_cli/service.py for the purpose of mocking in tests.
+
+## [0.22.14] - 2022-02-01
+
+### Added
+
+- Type hint to `_server_dispatch` method in `covalent/_workflow/lattice.py`.
 
 ## [0.22.13] - 2022-01-26
 

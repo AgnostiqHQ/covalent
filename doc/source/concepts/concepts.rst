@@ -193,7 +193,7 @@ There are a few best practices to highlight when working with lattices.
         abc_dict = task_1()
         return pd.DataFrame.from_dict(abc_dict)
 
-    res = workflow.dispatch_sync(a=1)
+    res = ct.dispatch_sync(workflow)(a=1)
 
 The code snippet above will not execute properly, since lattices are supposed to be used to construct the workflow and not manipulate the execution results of an electron. When :ref:`dispatch<Workflow dispatch>` is called, a :ref:`transport graph<Transport graph>` is built using the electrons as graph nodes. During construction, these electrons are not executed, but rather simply added to the transport graph; however, any non-electron is executed. In the example above, :code:`pd.DataFrame.from_dict()` (non-electron) is executed during construction while :code:`task_1` (electron) is not executed. This raises an error since the output of :code:`task_1` is not available to be used as an input for :code:`pd.DataFrame.from_dict()`.
 
@@ -216,7 +216,7 @@ The above example can be restructured using an extra electron to transform the d
         abc_dict = task_1()
         return task_2(abc_dict)
 
-    res = workflow.dispatch_sync(a=1)
+    res = ct.dispatch_sync(workflow)(a=1)
 
 However, lattices do support some basic parsing of electron outputs:
 
@@ -247,7 +247,7 @@ However, lattices do support some basic parsing of electron outputs:
         # len(a) -> getting the length
         # a[0] = 1 -> assigning a value
 
-    res = workflow.dispatch_sync(a=1)
+    res = ct.dispatch_sync(workflow)(a=1)
 
 Note that while the lattice construction has some minor restrictions, as indicated through these examples, electrons can be constructed from any Python function.
 
@@ -347,7 +347,7 @@ Once a workflow has been constructed, it is dispatched to the Covalent dispatche
 .. code-block:: python
     :linenos:
 
-    dispatch_id = run_experiment.dispatch(C=1.0, gamma=0.7)
+    dispatch_id = ct.dispatch(run_experiment)(C=1.0, gamma=0.7)
 
 
 Once the workflow has been submitted to the dispatcher, all the relevant workflow information, including execution status and results, are tagged with a unique dispatch ID. In other words, the workflow details and execution results are not tied to the initial workflow definition, but rather an instance of the workflow execution. Covalent is designed in this way so that the user can retrieve and analyze results at a later point in time.
@@ -434,7 +434,7 @@ The Covalent result manager is responsible for storing, updating, and retrieving
 
 .. code-block:: python
 
-    dispatch_id = workflow.dispatch(**params)
+    dispatch_id = ct.dispatch(workflow)(**params)
     result = ct.get_result(dispatch_id=dispatch_id, wait=False, results_dir='./results')
 
 The result manager allows us to retrieve the result object even if the computations have not completed by setting the :code:`wait` parameter to :code:`False` as shown above.

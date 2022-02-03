@@ -45,7 +45,7 @@ def electron_function(x):
 @etron
 @cova.lattice(
     results_dir="./",
-    dispatcher="super long fake dispatcher to test really long arguments                                                                                                                                                                                end_fake_dispatcher_name",
+    backend="super long fake backend to test really long arguments                                                                                                                                                                                end_fake_dispatcher_name",
 )
 def sub_lattice_function(y):
     return y
@@ -305,7 +305,7 @@ def test_lattice_object_serialization():
         "@etron",
         "@cova.lattice(",
         '    results_dir="./",',
-        '    dispatcher="super long fake dispatcher to test really long arguments                                                                                                                                                                                end_fake_dispatcher_name",',
+        '    backend="super long fake backend to test really long arguments                                                                                                                                                                                end_fake_dispatcher_name",',
         ")",
         "def sub_lattice_function(y):",
         "    return y",
@@ -320,7 +320,7 @@ def test_lattice_object_serialization():
         "# @etron",
         "# @cova.lattice(",
         '#     results_dir="./",',
-        '#     dispatcher="super long fake dispatcher to test really long arguments                                                                                                                                                                                end_fake_dispatcher_name",',
+        '#     backend="super long fake backend to test really long arguments                                                                                                                                                                                end_fake_dispatcher_name",',
         "# )",
         "def sub_lattice_function(y):",
         "    return y",
