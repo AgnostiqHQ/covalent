@@ -373,7 +373,7 @@ Node Outputs
         self._lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
         self._lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
 
-    def save(self, directory: str = None) -> None:
+    def save(self, directory: str = None, write_source: bool = False) -> None:
         """
         Save the result object to a file.
 
@@ -408,7 +408,8 @@ Node Outputs
         with open(os.path.join(result_folder_path, "result_info.yaml"), "w") as f:
             yaml.dump(result_info, f)
 
-        self._write_dispatch_to_python_file()
+        if write_source:
+            self._write_dispatch_to_python_file()
 
     def _convert_to_electron_result(self) -> Any:
         """
