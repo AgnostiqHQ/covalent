@@ -114,9 +114,10 @@ export const ExecutorSection = ({ metadata }) => {
       {!_.isEmpty(executorParams) && (
         <Typography sx={{ overflowX: 'auto', whiteSpace: 'nowrap', pb: 1 }}>
           {_.map(executorParams, (value, key) => (
-            <div>
+            <span key={key}>
               {key} = {value}
-            </div>
+              <br />
+            </span>
           ))}
         </Typography>
       )}

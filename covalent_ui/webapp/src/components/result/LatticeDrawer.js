@@ -47,6 +47,7 @@ import { ReactComponent as AtomSvg } from '../../assets/atom.svg'
 import { selectResultProgress } from '../results/ResultProgress'
 import LatticeOverview from './LatticeOverview'
 import { truncateMiddle } from '../../utils/misc'
+import LogOutput from '../LogOutput'
 
 const LatticeDrawer = () => {
   const { dispatchId } = useParams()
@@ -78,7 +79,7 @@ const LatticeDrawer = () => {
           onChange={(e, newTab) => setTab(newTab)}
         >
           <Tab label="Overview" value="overview" />
-          {/* <Tab label="Output" value="output" /> */}
+          <Tab label="Output" value="output" />
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
@@ -86,7 +87,7 @@ const LatticeDrawer = () => {
         </TabPanel>
 
         <TabPanel value="output" sx={{ px: 0, py: 1 }}>
-          [output placeholder]
+          <LogOutput dispatchId={dispatchId} />
         </TabPanel>
       </TabContext>
     </Box>

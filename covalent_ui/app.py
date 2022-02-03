@@ -21,16 +21,18 @@
 import os
 from datetime import datetime
 from logging.handlers import DEFAULT_TCP_LOGGING_PORT
+from pathlib import Path
 
 import networkx as nx
 import simplejson
 import tailer
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, make_response
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
+from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
 from covalent.executor import _executor_manager
 
@@ -145,11 +147,19 @@ def fetch_result(dispatch_id):
     return app.response_class(response, status=200, mimetype="application/json")
 
 
-@app.route("/api/logoutput")
-def fetch_file():
+@app.route("/api/logoutput/<dispatch_id>")
+def fetch_file(dispatch_id):
     path = request.args.get("path")
     n = int(request.args.get("n", 10))
-    lines = tailer.tail(open(path), n)
+
+    if not Path(path).expanduser().is_absolute():
+        path = os.path.join(get_config("dispatcher.results_dir"), dispatch_id, path)
+
+    try:
+        lines = tailer.tail(open(path), n)
+    except Exception as ex:
+        return make_response(jsonify({"message": str(ex)}), 404)
+
     return jsonify({"lines": lines})
 
 
