@@ -20,10 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dispatcher address now is passed as a parameter (`dispatcher_addr`) to `covalent.dispatch` and `covalent.dispatch_sync` instead of a metadata field to lattice.
 - Updated tests, how tos, and tutorials to use `covalent.dispatch` and `covalent.dispatch_sync`.
 - All the contents of `covalent_dispatcher/_core/__init__.py` are moved to `covalent_dispatcher/_core/execution.py` for better organization. `__init__.py` only contains function imports which are needed by external modules.
+- `dispatch`, `dispatch_sync` methods deprecated from `Lattice`.
 
 ### Removed
 
-- `dispatch`, `dispatch_sync` and `_server_dispatch` methods removed from `Lattice`.
+- `_server_dispatch` method removed from `Lattice`.
 - `dispatcher` metadata field removed from `lattice`.
 
 ## [0.22.17] - 2022-02-02

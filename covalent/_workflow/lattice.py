@@ -43,6 +43,7 @@ from .._shared_files.utils import (
 from .transport import _TransportGraph
 
 if TYPE_CHECKING:
+    from .._results_manager.result import Result
     from ..executor import BaseExecutor
 
 
@@ -284,6 +285,48 @@ class Lattice:
                         constraint, constraint
                     )
                 )
+
+    def dispatch(self, *args, **kwargs) -> str:
+        """
+        Deprecated function to dispatch workflows
+
+        Args:
+            *args: Positional arguments for the workflow
+            **kwargs: Keyword arguments for the workflow
+
+        Returns:
+            Dispatch id assigned to job
+        """
+
+        app_log.warning(
+            "workflow.dispatch(your_arguments_here) is deprecated and may get removed without notice in future releases. Please use covalent.dispatch(workflow)(your_arguments_here) instead.",
+            exc_info=DeprecationWarning,
+        )
+
+        from .._dispatcher_plugins import local_dispatch
+
+        return local_dispatch(self)(*args, **kwargs)
+
+    def dispatch_sync(self, *args, **kwargs) -> "Result":
+        """
+        Deprecated function to dispatch workflows synchronously
+
+        Args:
+            *args: Positional arguments for the workflow
+            **kwargs: Keyword arguments for the workflow
+
+        Returns:
+            Result of workflow execution
+        """
+
+        app_log.warning(
+            "workflow.dispatch_sync(your_arguments_here) is deprecated and may get removed without notice in future releases. Please use covalent.dispatch_sync(workflow)(your_arguments_here) instead.",
+            exc_info=DeprecationWarning,
+        )
+
+        from .._dispatcher_plugins import local_dispatch_sync
+
+        return local_dispatch_sync(self)(*args, **kwargs)
 
 
 def lattice(
