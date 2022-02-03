@@ -23,12 +23,12 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 import cloudpickle as pickle
 import yaml
 
-from .._shared_files.util_classes import RESULT_STATUS
+from .._shared_files.util_classes import RESULT_STATUS, Status
 from .utils import convert_to_lattice_function_call
 
 if TYPE_CHECKING:
@@ -109,7 +109,7 @@ Node Outputs
         return show_result_str
 
     @property
-    def start_time(self):
+    def start_time(self) -> datetime:
         """
         Start time of processing the dispatch.
         """
@@ -117,7 +117,7 @@ Node Outputs
         return self._start_time
 
     @property
-    def end_time(self):
+    def end_time(self) -> datetime:
         """
         End time of processing the dispatch.
         """
@@ -125,7 +125,7 @@ Node Outputs
         return self._end_time
 
     @property
-    def results_dir(self):
+    def results_dir(self) -> str:
         """
         Results directory used to save this result object.
         """
@@ -133,7 +133,7 @@ Node Outputs
         return self._results_dir
 
     @property
-    def lattice(self):
+    def lattice(self) -> "Lattice":
         """
         "Lattice" object which was dispatched.
         """
@@ -141,7 +141,7 @@ Node Outputs
         return self._lattice
 
     @property
-    def dispatch_id(self):
+    def dispatch_id(self) -> str:
         """
         Dispatch id of current dispatch.
         """
@@ -149,7 +149,7 @@ Node Outputs
         return self._dispatch_id
 
     @property
-    def status(self):
+    def status(self) -> Status:
         """
         Status of current dispatch.
         """
@@ -157,7 +157,7 @@ Node Outputs
         return self._status
 
     @property
-    def result(self):
+    def result(self) -> Union[int, float, list, dict]:
         """
         Final result of current dispatch.
         """
@@ -165,7 +165,7 @@ Node Outputs
         return self._result
 
     @property
-    def inputs(self):
+    def inputs(self) -> dict:
         """
         Inputs sent to the "Lattice" function for dispatching.
         """
@@ -173,7 +173,7 @@ Node Outputs
         return self._inputs
 
     @property
-    def error(self):
+    def error(self) -> str:
         """
         Error due to which the dispatch failed.
         """
