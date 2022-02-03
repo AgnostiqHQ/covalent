@@ -84,7 +84,7 @@ While Covalent is primarily developed using Python 3.8 on MacOS and Linux, it ha
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           </tr>
           <tr style="background-color: white;">
-            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">CentOS 7<</td>
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">CentOS 7</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.6</td>
             <td class="not-supported" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #d98a91;">NOT SUPPORTED</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
