@@ -58,7 +58,7 @@ const ElectronNode = ({
   const hasBorder = data.status !== 'NEW_OBJECT'
 
   return (
-    <ElectronTooltip title={data.label} arrow placement="bottom-end">
+    <ElectronTooltip title={data.fullName} arrow placement="bottom-end">
       <Box
         sx={{
           display: 'flex',

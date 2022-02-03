@@ -21,7 +21,7 @@
  */
 
 import _ from 'lodash'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { parseISO } from 'date-fns'
 import {
@@ -57,7 +57,7 @@ import {
 import Fuse from 'fuse.js'
 import { createSelector } from '@reduxjs/toolkit'
 
-import { removeResult } from '../../redux/resultsSlice'
+import { fetchResult, removeResult } from '../../redux/resultsSlice'
 import CopyButton from '../CopyButton'
 import { formatDate } from '../../utils/misc'
 import Runtime from './Runtime'
@@ -272,6 +272,38 @@ const ResultListing = () => {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
+  const runningResults = useSelector((state) =>
+    _.filter(
+      state.results.cache,
+      (result) => _.get(result, 'status') === 'RUNNING'
+    )
+  )
+
+  const results = useSelector((state) =>
+    !selectNormQuery(state, query)
+      ? selectResults(state)
+      : selectSearchResults(state, query)
+  )
+
+  // refresh still-running results on first render
+  useEffect(() => {
+    _.each(runningResults, (result) => {
+      dispatch(
+        fetchResult({
+          dispatchId: result.dispatch_id,
+          resultsDir: result.results_dir,
+        })
+      )
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch])
+
+  const getter = _.get(_.find(headers, { id: orderBy }), 'getter')
+  const rows = _.chain(results)
+    .orderBy(({ item }) => _.get(item, getter), order)
+    .slice(page * rowsPerPage, (page + 1) * rowsPerPage)
+    .value()
+
   const handleChangeSort = (headerId) => {
     const isAsc = orderBy === headerId && order === 'asc'
     setOrder(isAsc ? 'desc' : 'asc')
@@ -293,20 +325,12 @@ const ResultListing = () => {
   }
   const handleDeleteSelected = () => {
     dispatch(removeResult(selected))
+    // move to last page if necessary
+    const lastPage =
+      Math.ceil((_.size(results) - _.size(selected)) / rowsPerPage) - 1
+    setPage(Math.min(page, lastPage))
     setSelected([])
   }
-
-  const results = useSelector((state) =>
-    !selectNormQuery(state, query)
-      ? selectResults(state)
-      : selectSearchResults(state, query)
-  )
-
-  const getter = _.get(_.find(headers, { id: orderBy }), 'getter')
-  const rows = _.chain(results)
-    .orderBy(({ item }) => _.get(item, getter), order)
-    .slice(page * rowsPerPage, (page + 1) * rowsPerPage)
-    .value()
 
   const handleSelectAllClick = () => {
     if (_.size(selected) < _.size(results)) {
