@@ -59,10 +59,7 @@ const App = () => {
       <ReactFlowProvider>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <Helmet
-            defaultTitle="Covalent Dashboard"
-            titleTemplate="%s - Covalent Dashboard"
-          />
+          <Helmet defaultTitle="Covalent" titleTemplate="%s - Covalent" />
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/:dispatchId" element={<ResultLayout />} />

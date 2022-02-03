@@ -36,6 +36,7 @@ import {
 } from '@mui/material'
 import {
   AccountTreeOutlined,
+  CancelOutlined,
   CheckCircleOutline,
   ChevronLeft,
   WarningAmber,
@@ -47,6 +48,7 @@ import { ReactComponent as AtomSvg } from '../../assets/atom.svg'
 import { selectResultProgress } from '../results/ResultProgress'
 import LatticeOverview from './LatticeOverview'
 import { truncateMiddle } from '../../utils/misc'
+import LogOutput from '../LogOutput'
 
 const LatticeDrawer = () => {
   const { dispatchId } = useParams()
@@ -78,7 +80,7 @@ const LatticeDrawer = () => {
           onChange={(e, newTab) => setTab(newTab)}
         >
           <Tab label="Overview" value="overview" />
-          {/* <Tab label="Output" value="output" /> */}
+          <Tab label="Output" value="output" />
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
@@ -86,7 +88,7 @@ const LatticeDrawer = () => {
         </TabPanel>
 
         <TabPanel value="output" sx={{ px: 0, py: 1 }}>
-          [output placeholder]
+          <LogOutput dispatchId={dispatchId} />
         </TabPanel>
       </TabContext>
     </Box>
@@ -107,82 +109,118 @@ const CustomTabList = styled(TabList)(({ theme }) => ({
 }))
 
 const LatticeStatusCard = ({ dispatchId }) => {
-  const { completed, total, status, label, color } = useSelector((state) =>
-    selectResultProgress(state, dispatchId)
+  const { completed, total, status, label, color, error } = useSelector(
+    (state) => selectResultProgress(state, dispatchId)
   )
 
   return (
-    <Paper sx={{ my: 2, p: 2 }} elevation={4}>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-        }}
-      >
-        {/* left column */}
-        <Box>
-          <Typography color="text.secondary" variant="body2" sx={{ mb: 1.5 }}>
-            Status
-          </Typography>
+    <Box sx={{ my: 2 }}>
+      <Paper sx={{ px: 1, py: 1 }} elevation={4}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+          }}
+        >
+          {/* left column */}
+          <Box>
+            <Typography color="text.secondary" variant="body2" sx={{ mb: 1.5 }}>
+              Status
+            </Typography>
 
-          <Box
-            sx={{
-              color: `${color}.main`,
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            {(() => {
-              switch (status) {
-                case 'RUNNING':
-                  return <CircularProgress size="1rem" />
-                case 'COMPLETED':
-                  return <CheckCircleOutline />
-                case 'FAILED':
-                  return <WarningAmber />
-                default:
-                  return null
-              }
-            })()}
-            &nbsp;
-            {label}
-          </Box>
-        </Box>
-
-        {/* right column */}
-        <Box>
-          <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
-            Progress
-          </Typography>
-
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <SvgIcon fontSize="inherit" sx={{ mr: 1.5 }}>
-              <AtomSvg />
-            </SvgIcon>
-
-            <Box>
-              <Typography
-                component="span"
-                sx={{
-                  color: status === 'COMPLETED' ? 'inherit' : `${color}.main`,
-                }}
-              >
-                {completed}
-              </Typography>
-              &nbsp;/ {total}
+            <Box
+              sx={{
+                color: `${color}.main`,
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              {(() => {
+                switch (status) {
+                  case 'RUNNING':
+                    return <CircularProgress size="1rem" />
+                  case 'COMPLETED':
+                    return <CheckCircleOutline />
+                  case 'FAILED':
+                    return <WarningAmber />
+                  case 'CANCELLED':
+                    return <CancelOutlined />
+                  default:
+                    return null
+                }
+              })()}
+              &nbsp;
+              {label}
             </Box>
+          </Box>
 
-            <CircularProgress
-              sx={{ ml: 2 }}
-              variant="determinate"
-              color={color}
-              size="2rem"
-              value={(completed * 100) / total}
-            />
+          {/* right column */}
+          <Box>
+            <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
+              Progress
+            </Typography>
+
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <SvgIcon fontSize="inherit" sx={{ mr: 1.5 }}>
+                <AtomSvg />
+              </SvgIcon>
+
+              <Box>
+                <Typography
+                  component="span"
+                  sx={{
+                    color: status === 'COMPLETED' ? 'inherit' : `${color}.main`,
+                  }}
+                >
+                  {completed}
+                </Typography>
+                &nbsp;/ {total}
+              </Box>
+
+              <CircularProgress
+                sx={{ ml: 2 }}
+                variant="determinate"
+                color={color}
+                size="2rem"
+                value={(completed * 100) / total}
+              />
+            </Box>
           </Box>
         </Box>
-      </Box>
-    </Paper>
+      </Paper>
+
+      <ErrorCard showElectron error={error} />
+    </Box>
+  )
+}
+
+export const ErrorCard = ({ showElectron = false, error }) => {
+  if (!error) {
+    return null
+  }
+
+  return (
+    <Box
+      sx={{
+        fontSize: 'body2.fontSize',
+        display: 'flex',
+        alignItems: 'center',
+        my: 2,
+        px: 2,
+        py: 1,
+        border: '0.5px solid rgba(227, 80, 80, 0.5)',
+        borderRadius: '4px',
+        background:
+          'linear-gradient(90deg, rgba(73, 12, 12, 0.5) 0%, rgba(4, 4, 6, 0.5) 100%)',
+      }}
+    >
+      {showElectron && (
+        <SvgIcon sx={{ fontSize: 'inherit', mr: 1.5 }}>
+          <AtomSvg />
+        </SvgIcon>
+      )}
+      {error}
+    </Box>
   )
 }
 
