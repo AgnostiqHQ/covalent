@@ -119,7 +119,10 @@ class LocalExecutor(BaseExecutor):
                 result = fn(**kwargs)
 
         self.write_streams_to_file(
-            (stdout.getvalue(), stderr.getvalue()), (self.log_stdout, self.log_stderr), dispatch_id
+            (stdout.getvalue(), stderr.getvalue()),
+            (self.log_stdout, self.log_stderr),
+            dispatch_id,
+            execution_args["results_dir"],
         )
 
         return (result, stdout.getvalue(), stderr.getvalue())

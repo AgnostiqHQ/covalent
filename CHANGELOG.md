@@ -5,7 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [UNRELEASED] - 2022-01-31
+## [UNRELEASED] - 2022-02-02
+
+## [0.22.17] - 2022-02-02
+
+### Added
+
+- Replaced `"typing.Optional"` with `"str"` in covalent/executor/base.py
+- Added missing type hints to `get_dispatch_context` and `write_streams_to_file` in covalent/executor/base.py, BaseExecutor
+
+## [0.22.16] - 2022-02-02
+
+### Added
+
+- Functions to check if UI and dispatcher servers are running.
+- Tests for the `is_ui_running` and `is_server_running` in covalent_dispatcher/_cli/service.py.
+
+## [0.22.15] - 2022-02-01
+
+### Fixed
+
+- Covalent CLI command `covalent purge` will now stop the servers before deleting all the pid files.
+
+### Added
+
+- Test for `purge` method in covalent_dispatcher/_cli/service.py.
+
+### Removed
+
+- Unused `covalent_dispatcher` import from covalent_dispatcher/_cli/service.py.
+
+### Changed
+
+- Moved `_config_manager` import from within the `purge` method to the covalent_dispatcher/_cli/service.py for the purpose of mocking in tests.
+
+## [0.22.14] - 2022-02-01
+
+### Added
+
+- Type hint to `_server_dispatch` method in `covalent/_workflow/lattice.py`.
+
+## [0.22.13] - 2022-01-26
+
+### Fixed
+
+- When the local executor's `log_stdout` and `log_stderr` config variables are relative paths, they should go inside the results directory. Previously that was queried from the config, but now it's queried from the lattice metadata.
+
+### Added
+
+- Tests for the corresponding functions in (`covalent_dispatcher/_core/__init__.py`, `covalent/executor/base.py`, `covalent/executor/executor_plugins/local.py` and `covalent/executor/__init__.py`) affected by the bug fix.
+
+### Changed
+
+- Refactored `_delete_result` in result manager to give the option of deleting the result parent directory.
 
 ## [0.22.12] - 2022-01-31
 

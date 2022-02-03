@@ -31,7 +31,7 @@ from typing import Any, Dict, List, Union
 import pkg_resources
 
 from .._shared_files import logger
-from .._shared_files.config import get_config
+from .._shared_files.config import get_config, reload_config
 from .base import BaseExecutor
 
 app_log = logger.app_log
@@ -114,6 +114,7 @@ class _ExecutorManager:
             if name in self.executor_map:
                 if not new:
                     return self.executor_map[name]
+                reload_config()
                 default_options = get_config(f"executors.{name}")
                 return self.executor_plugins_map[name](**default_options)
             else:
