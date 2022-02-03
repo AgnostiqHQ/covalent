@@ -87,12 +87,9 @@ def _port_from_pid(pid: int) -> int:
         port: Port in use by the process.
     """
 
-    try:
-        port = psutil.Process(pid).connections()[0].laddr[1]
-    except (psutil.NoSuchProcess, ValueError):
-        port = None
-
-    return port
+    if psutil.pid_exists(pid):
+        return psutil.Process(pid).connections()[0].laddr.port
+    return None
 
 
 def _next_available_port(requested_port: int) -> int:

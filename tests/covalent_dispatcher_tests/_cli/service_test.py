@@ -30,6 +30,7 @@ from click.testing import CliRunner
 from covalent_dispatcher._cli.service import (
     _is_dispatcher_running,
     _is_ui_running,
+    _port_from_pid,
     _read_pid,
     _rm_pid_file,
     purge,
@@ -62,8 +63,21 @@ def test_rm_pid_file(mocker, file_exists, remove_call_status):
     assert os_remove_mock.called is remove_call_status
 
 
-def test_port_from_pid():
-    pass
+def test_port_from_invalid_pid(mocker):
+    """Test port retrieval method from invalid pid."""
+
+    mocker.patch("psutil.pid_exists", return_value=False)
+    res = _port_from_pid(-1)
+    assert res is None
+
+
+def test_port_from_valid_pid(mocker):
+    """Test port retrieval method from invalid pid."""
+
+    process_mock = mocker.patch("psutil.Process")
+    mocker.patch("psutil.pid_exists", return_value=True)
+    _port_from_pid(12)
+    process_mock.assert_called_once()
 
 
 def test_next_available_port():
