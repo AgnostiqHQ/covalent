@@ -30,6 +30,7 @@ from click.testing import CliRunner
 from covalent_dispatcher._cli.service import (
     _is_dispatcher_running,
     _is_ui_running,
+    _next_available_port,
     _port_from_pid,
     _read_pid,
     _rm_pid_file,
@@ -80,8 +81,20 @@ def test_port_from_valid_pid(mocker):
     process_mock.assert_called_once()
 
 
-def test_next_available_port():
-    pass
+def test_next_available_port(mocker):
+    """Test function to generate the next available port that is not in use."""
+
+    # Case 1 - Port is available.
+    with mocker.patch("socket.socket.bind"):
+        res = _next_available_port(requested_port=12)
+    assert res == 12
+
+    # Case 2 - Next two ports are not available.
+    with mocker.patch(
+        "socket.socket.bind", side_effect=[Exception("OSERROR"), Exception("OSERROR"), None]
+    ):
+        res = _next_available_port(requested_port=12)
+    assert res == 14
 
 
 def test_graceful_start():
