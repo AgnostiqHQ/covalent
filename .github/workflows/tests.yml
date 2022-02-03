@@ -36,13 +36,26 @@ jobs:
         container: ['python:3.8-buster', 'python:3.9-buster']
         experimental: [false]
         include:
+# Few tests fail
 #          - os: ubuntu-latest
 #            container: python:3.7-buster
 #            experimental: true
           - os: macos-latest
-            container:
+            python-version: 3.7
             experimental: true
-            python-version: 3.8
+          - os: ubuntu-latest
+            container: python:3.7-bullseye
+            experimental: true
+          - os: ubuntu-latest
+            container: python:3.8-bullseye
+            experimental: true
+          - os: ubuntu-latest
+            container: python:3.9-bullseye
+            experimental: true
+# Stable on MacOS 11
+#          - os: macos-latest
+#            python-version: 3.8
+#            experimental: false
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
     steps:
