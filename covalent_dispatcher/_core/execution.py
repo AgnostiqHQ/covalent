@@ -374,7 +374,7 @@ def _plan_workflow(result_object: Result) -> None:
                     if isinstance(node["metadata"]["backend"], list)
                     else node["metadata"]["backend"],
                     # Mutate executor-specific arguments here
-                    "backend_args": {},
+                    "backend_args": {"results_dir": result_object.results_dir},
                 }
             )
 
