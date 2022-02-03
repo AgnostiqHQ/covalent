@@ -54,6 +54,10 @@ const defaultTheme = createTheme({
     warning: {
       main: '#E39F50',
     },
+    text: {
+      primary: '#FAFAFA',
+      secondary: '#BEBEBE',
+    },
   },
 })
 
