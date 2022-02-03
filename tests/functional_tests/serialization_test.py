@@ -38,10 +38,7 @@ def electron_function(x):
 
 
 @etron
-@cova.lattice(
-    results_dir="./",
-    dispatcher="super long fake dispatcher to test really long arguments                                                                                                                                                                                end_fake_dispatcher_name",
-)
+@cova.lattice(results_dir="./")
 def sub_lattice_function(y):
     return y
 
@@ -116,10 +113,7 @@ def test_lattice_object_serialization():
     expected_string = "\n".join(
         [
             "# @etron",
-            "# @cova.lattice(",
-            '#     results_dir="./",',
-            '#     dispatcher="super long fake dispatcher to test really long arguments                                                                                                                                                                                end_fake_dispatcher_name",',
-            "# )",
+            '# @cova.lattice(results_dir="./")',
             "def sub_lattice_function(y):",
             "    return y",
         ]

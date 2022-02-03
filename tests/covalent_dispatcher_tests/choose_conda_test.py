@@ -23,6 +23,7 @@ Integration test for choosing Conda environments within an executor.
 """
 
 import covalent as ct
+import covalent._results_manager.results_manager as rm
 
 
 def test_using_current_env() -> None:
@@ -47,7 +48,9 @@ def test_using_current_env() -> None:
     def workflow(y):
         return passthrough(x=y)
 
-    dispatch_id = workflow.dispatch(y="input")
+    dispatch_id = ct.dispatch(workflow)(y="input")
     output = ct.get_result(dispatch_id, wait=True)
+
+    rm._delete_result(dispatch_id)
 
     assert output.result == "input"

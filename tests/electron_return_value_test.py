@@ -104,7 +104,7 @@ def type_conversion_test_dict(a):
 def test_arithmetic_1(test_operand, expected):
     """Test arithmetic operations"""
 
-    dispatch_id = arithmetic_test_1.dispatch(a=2, operand=test_operand)
+    dispatch_id = ct.dispatch(arithmetic_test_1)(a=2, operand=test_operand)
 
     res = get_result(dispatch_id, wait=True)
     _delete_result(dispatch_id)
@@ -116,7 +116,7 @@ def test_arithmetic_1(test_operand, expected):
 def test_arithmetic_1_rev(test_operand, expected):
     """Test reverse arithmetic operations"""
 
-    dispatch_id = arithmetic_test_1_rev.dispatch(a=2, operand=test_operand)
+    dispatch_id = ct.dispatch(arithmetic_test_1_rev)(a=2, operand=test_operand)
 
     res = get_result(dispatch_id, wait=True)
     _delete_result(dispatch_id)
@@ -130,7 +130,7 @@ def test_arithmetic_1_rev(test_operand, expected):
 def test_arithmetic_2(test_b, test_operand, expected):
     """Test arithmetic operations"""
 
-    dispatch_id = arithmetic_test_2.dispatch(a=2, b=test_b, operand=test_operand)
+    dispatch_id = ct.dispatch(arithmetic_test_2)(a=2, b=test_b, operand=test_operand)
 
     res = get_result(dispatch_id, wait=True)
     _delete_result(dispatch_id)
@@ -142,7 +142,7 @@ def test_arithmetic_2(test_b, test_operand, expected):
 def test_type_conversion_numbers(test_type_to):
     """Test type conversion for number types"""
 
-    dispatch_id = type_conversion_test_numbers.dispatch(a=2, type_to=test_type_to)
+    dispatch_id = ct.dispatch(type_conversion_test_numbers)(a=2, type_to=test_type_to)
 
     res = get_result(dispatch_id, wait=True)
     _delete_result(dispatch_id)
@@ -154,7 +154,7 @@ def test_type_conversion_numbers(test_type_to):
 def test_type_conversion_iterables(test_type_to):
     """Test type conversion for iterables"""
 
-    dispatch_id = type_conversion_test_iterables.dispatch(a=[2], type_to=test_type_to)
+    dispatch_id = ct.dispatch(type_conversion_test_iterables)(a=[2], type_to=test_type_to)
 
     res = get_result(dispatch_id, wait=True)
     _delete_result(dispatch_id)
@@ -165,7 +165,7 @@ def test_type_conversion_iterables(test_type_to):
 def test_type_conversion_dict():
     """Test type conversion for dictionary"""
 
-    dispatch_id = type_conversion_test_dict.dispatch(a={"x": 2})
+    dispatch_id = ct.dispatch(type_conversion_test_dict)(a={"x": 2})
 
     res = get_result(dispatch_id, wait=True)
     _delete_result(dispatch_id)
