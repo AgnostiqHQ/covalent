@@ -41,10 +41,10 @@ def test_read_pid_nonexistent_pid_file():
         assert _read_pid(f"{tmp_dir}/nonexistent.pid") == -1
 
 
-def test_read_valid_pid_file(mock_open):
+def test_read_valid_pid_file():
     """Test the process id read function when the pid file exists."""
 
-    with mock.patch("__main__.open", mock_open(read_data=1984)):
+    with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open(read_data="1984")):
         res = _read_pid(filename="mock.pid")
     assert res == 1984
 
