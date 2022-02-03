@@ -34,10 +34,10 @@ jobs:
         container: ['python:3.7-buster', 'python:3.8-buster', 'python:3.9-buster']
         os: ['ubuntu-latest']
         experimental: [false]
-        include:
-          - os: macos-latest
-            container: null
-            experimental: true
+#        include:
+#          - os: macos-latest
+#            container: null
+#            experimental: true
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
     steps:
@@ -45,18 +45,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           persist-credentials: false
-#      - name: Set up Python
-#        uses: actions/setup-python@v2
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#      - name: Install pip
-#        if: startsWith(matrix.container, 'ubuntu')
-#        run: apt update && apt install -y python3-pip
       - name: Install Python dependencies
         run: |
-#          if [ ${{ matrix.container }} != 'ubuntu:18.04' ] ; then
-#            python -m pip install --upgrade pip
-#          fi
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
       - name: Install Covalent
@@ -68,29 +58,15 @@ jobs:
       - name: Generate coverage report
         run: coverage xml
       - name: Upload report to Codecov
-        if: matrix.python-version == '3.8' && matrix.container == 'ubuntu:20.04'
+        if: matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v2
         with:
           files: ./coverage.xml
       - name: Push to master
-        if: github.ref == 'refs/heads/develop' && matrix.python-version == '3.8' && matrix.container == 'ubuntu:20.04'
+        if: github.ref == 'refs/heads/develop' && matrix.container == 'python:3.8-buster'
         run: |
           git config user.name "CovalentOpsBot"
           git config user.email "covalentopsbot@users.noreply.github.com"
           git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
           git fetch --unshallow
           git push origin HEAD:master
-#      - name: Format Slack message
-#        if: github.ref == 'refs/heads/develop'
-#        run: |
-#          VERSION="$(cat ./VERSION)"
-#          SLACK_MSG=":rocket: Version $VERSION is now available."
-#          echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
-#      - name: Notify Slack
-#        if: github.ref == 'refs/heads/develop'
-#        uses: rtCamp/action-slack-notify@v2
-#        env:
-#          SLACK_CHANNEL: "covalent-ci"
-#          SLACK_USERNAME: "CovalentOpsBot"
-#          SLACK_MESSAGE: ${{ env.SLACK_MSG }}
-#          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
