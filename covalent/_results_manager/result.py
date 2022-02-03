@@ -173,7 +173,7 @@ Node Outputs
         return self._inputs
 
     @property
-    def error(self):
+    def error(self) -> str:
         """
         Error due to which the dispatch failed.
         """
