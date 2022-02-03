@@ -28,6 +28,7 @@ from io import TextIOWrapper
 from typing import Callable, Dict, List, Set, Tuple, Union
 
 from . import logger
+from .config import get_config
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -85,7 +86,7 @@ def get_time(time_delta: timedelta) -> str:
     return f"{days}-{hours}:{minutes}:{seconds}"
 
 
-def get_serialized_function_str(function, collect_imports: bool = False) -> str:
+def get_serialized_function_str(function) -> str:
     """
     Generates a string representation of a function definition
     including the decorators on it.
@@ -115,6 +116,7 @@ def get_serialized_function_str(function, collect_imports: bool = False) -> str:
 
     # Get external (to Covalent) imports that were used. And record what Covalent
     # has been imported as.
+    collect_imports = get_config("sdk.full_dispatch_source").upper() == "TRUE"
     if collect_imports:
         imports, cova_imports = imports_from_sources()
         imports = list(imports)
@@ -123,35 +125,64 @@ def get_serialized_function_str(function, collect_imports: bool = False) -> str:
         import_str = "".join(f"{import_statement}\n" for import_statement in imports)
         import_str += "\n"
 
-        # Check if the function has covalent decorators that need to be commented out.
-        commented_lines = set()
-        parsed_source = ast.parse(function_str)
-        for node in ast.iter_child_nodes(parsed_source):
-            for decorator in node.decorator_list:
-                start = decorator.lineno
-                end = decorator.end_lineno
-                decorator_name = ""
-                if hasattr(decorator, "id"):
-                    decorator_name = decorator.id
-                elif hasattr(decorator, "func"):
-                    decorator_name = decorator.func.value.id
-                else:
-                    decorator_name = decorator.value.id
-                if decorator_name in cova_imports:
-                    for i in range(start - 1, end):
-                        commented_lines.add(i)
-
-        if len(commented_lines) > 0:
-            function_str_list = function_str.split("\n")
-            for i in range(len(function_str_list)):
-                if i in commented_lines:
-                    line = function_str_list[i].lstrip()
-                    function_str_list[i] = f"# {function_str_list[i]}"
-            function_str = "\n".join(function_str_list)
+        # Comment out any covalent decorators
+        function_str = _comment_covalent_decorators(function_str, cova_imports)
 
         function_str = import_str + function_str
 
     return function_str + "\n\n"
+
+
+def _comment_covalent_decorators(function_str: str, cova_imports: Set[str]) -> str:
+    """
+    Given a string representing a function, this comments out any covalent-related decorators.
+
+    Args:
+        function_str: The input string representing the function.
+        cova_imports: A set of strings which are the names covalent-related moules have been
+            imported as.
+
+    Returns:
+        The function string with covalent-related decorators commented out.
+    """
+
+    commented_lines = set()
+    try:
+        parsed_source = ast.parse(function_str)
+    except IndentationError:
+        # Sub-fuctions or classes need to be de-indented, else ast will raise an error.
+        import textwrap
+
+        parsed_source = ast.parse(textwrap.dedent(function_str))
+
+    for node in ast.iter_child_nodes(parsed_source):
+        for decorator in node.decorator_list:
+            start = decorator.lineno
+            end = decorator.end_lineno
+            decorator_name = ""
+            if hasattr(decorator, "id"):
+                decorator_name = decorator.id
+            elif hasattr(decorator, "value"):
+                decorator_name = decorator.value.id
+            elif hasattr(decorator, "func"):
+                if hasattr(decorator.func, "id"):
+                    decorator_name = decorator.func.id
+                elif hasattr(decorator.func, "value"):
+                    decorator_name = decorator.func.value.id
+
+            if decorator_name in cova_imports:
+                for i in range(start - 1, end):
+                    commented_lines.add(i)
+
+    if len(commented_lines) > 0:
+        function_str_list = function_str.split("\n")
+        for i in range(len(function_str_list)):
+            if i in commented_lines:
+                line = function_str_list[i].lstrip()
+                function_str_list[i] = f"# {function_str_list[i]}"
+        function_str = "\n".join(function_str_list)
+
+    return function_str
 
 
 def imports_from_sources(external_only: bool = True) -> Tuple[Set[str], Set[str]]:

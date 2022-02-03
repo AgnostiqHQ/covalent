@@ -46,6 +46,7 @@ _DEFAULT_CONFIG = {
         + "/covalent",
         "log_level": os.environ.get("LOGLEVEL", "WARNING").lower(),
         "enable_logging": os.environ.get("COVALENT_LOG_TO_FILE", "false").lower(),
+        "full_dispatch_source": os.environ.get("FULL_DISPATCH_SOURCE", "false").lower(),
     },
     "dispatcher": {
         "address": "0.0.0.0",
