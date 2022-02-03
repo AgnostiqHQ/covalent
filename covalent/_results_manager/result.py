@@ -28,12 +28,16 @@ from typing import TYPE_CHECKING, Any, Dict, List
 import cloudpickle as pickle
 import yaml
 
+from .._shared_files import logger
 from .._shared_files.util_classes import RESULT_STATUS
 from .utils import convert_to_lattice_function_call
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import Status
     from .._workflow.lattice import Lattice
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 
 class Result:
