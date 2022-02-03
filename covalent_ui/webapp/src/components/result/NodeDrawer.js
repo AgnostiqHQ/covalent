@@ -38,6 +38,7 @@ import { formatDate, statusColor, statusLabel } from '../../utils/misc'
 import Runtime from '../results/Runtime'
 import SyntaxHighlighter from '../SyntaxHighlighter'
 import Heading from './Heading'
+import { ExecutorSection, InputSection } from './LatticeOverview'
 
 export const nodeDrawerWidth = 360
 
@@ -156,14 +157,19 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
             </>
           )}
 
+          <ExecutorSection metadata={_.get(node, 'metadata')} />
+
           {node.status === 'COMPLETED' && (
             <>
               <Heading>Result</Heading>
               <Paper elevation={4}>
-                <SyntaxHighlighter language="json" src={node.output} />
+                <SyntaxHighlighter language="python" src={node.output} />
               </Paper>
             </>
           )}
+
+          {/* Input */}
+          <InputSection inputs={node.kwargs} />
         </>
       )}
     </Drawer>

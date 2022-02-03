@@ -32,6 +32,7 @@ from flask_socketio import SocketIO
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.util_classes import Status
+from covalent.executor import _executor_manager
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
@@ -65,14 +66,44 @@ def encode_result(obj):
 
 
 def extract_graph_node(node):
-    # TODO placeholder for advanced node transformations Eventually, will pick
-    # instead of omit keys, currently just strip unused fields
+    # doc string
     f = node.get("function")
     if f is not None:
         node["doc"] = node["function"].get_deserialized().__doc__
+
+    # metadata
+    extract_executor_info(node.get("metadata"))
+
+    # prevent JSON encoding
+    node["kwargs"] = encode_dict(node.get("kwargs"))
+
+    # remove unused fields
     node.pop("function")
     node.pop("node_name")
+
     return node
+
+
+def encode_dict(d):
+    """ Avoid JSON encoding when python str() suffices """
+    if not isinstance(d, dict):
+        return d
+    return {k: str(v) for (k, v) in d.items()}
+
+
+def extract_executor_info(metadata):
+    # executor details
+    try:
+        backend = metadata["backend"]
+        executor = _executor_manager.get_executor(name=backend)
+        if executor is not None:
+            # extract attributes
+            metadata["executor"] = encode_dict(executor.__dict__)
+            if not isinstance(backend, str):
+                # if not named, replace with class name
+                metadata["backend"] = f"<{executor.__class__.__name__}>"
+    except (KeyError, AttributeError) as e:
+        pass
 
 
 def extract_graph(result):
@@ -89,6 +120,7 @@ def fetch_result(dispatch_id):
     results_dir = request.args["resultsDir"]
 
     result = rm.get_result(dispatch_id, results_dir=results_dir)
+    extract_executor_info(result.lattice.metadata)
 
     response = {
         "dispatch_id": result.dispatch_id,
@@ -101,7 +133,7 @@ def fetch_result(dispatch_id):
             "function_string": result.lattice.workflow_function_string,
             "doc": result.lattice.__doc__,
             "name": result.lattice.__name__,
-            "inputs": result.lattice.kwargs,
+            "kwargs": encode_dict(result.lattice.kwargs),
             "metadata": result.lattice.metadata,
         },
         "graph": extract_graph(result),
