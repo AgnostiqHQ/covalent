@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- _write_dispatch_to_python_file isn't called each time a task is saved.
+- _write_dispatch_to_python_file isn't called each time a task is saved. It is now only called in the final save in _run_planned_workflow (in covalent_dispatcher/_core/__init__.py).
 
 ## [0.22.17] - 2022-02-02
 
