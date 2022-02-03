@@ -23,7 +23,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 import cloudpickle as pickle
 import yaml
@@ -157,7 +157,7 @@ Node Outputs
         return self._status
 
     @property
-    def result(self) -> int:
+    def result(self) -> Union[int, float]:
         """
         Final result of current dispatch.
         """
