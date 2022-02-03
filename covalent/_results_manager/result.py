@@ -133,7 +133,7 @@ Node Outputs
         return self._results_dir
 
     @property
-    def lattice(self) -> Lattice:
+    def lattice(self) -> "Lattice":
         """
         "Lattice" object which was dispatched.
         """
@@ -157,7 +157,7 @@ Node Outputs
         return self._status
 
     @property
-    def result(self) -> Union[int, float]:
+    def result(self) -> Union[int, float, list, dict]:
         """
         Final result of current dispatch.
         """
