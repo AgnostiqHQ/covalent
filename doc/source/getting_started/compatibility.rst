@@ -6,34 +6,35 @@ While Covalent is primarily developed using Python 3.8 on MacOS and Linux, it ha
 
 .. raw:: html
 
-   <table style="width:100%; border:1px solid black">
-     <tr>
-       <th>OS Version</th>
-       <th>Python Version</th>
-       <th>Supported</th>
-       <th>Notes</th>
-     <tr>
-       <td>MacOS 11 (Big Sur)</td>
-       <td>3.7</td>
-       <td style="background-color:#FFFF00">Partial</td>
-       <td>Function string serialization fails.</td>
+   <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
+     <tr style="background-color: white;">
+       <th style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">OS Version</th>
+       <th style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Python Version</th>
+       <th style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Supported</th>
+       <th style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Notes</th>
      </tr>
-     <tr>
-       <td></td>
-       <td>3.8</td>
-       <td style="background-color:#00FF00">Yes</td>
-       <td></td>
+     <tr style="background-color: #f2f2f2;">
+       <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">MacOS 11 (Big Sur)</td>
+       <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.7</td>
+       <td class="semi-stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 210 67);">SEMI-STABLE</td>
+       <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Function string serialization fails.</td>
      </tr>
-     <tr>
-       <td></td>
-       <td>3.9</td>
-       <td style="background-color:#D3D3D3">Unknown</td>
-       <td>GitHub runner hangs.</td>
+    <tr style="background-color: white;">
+       <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
+       <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
+       <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
+       <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
      </tr>
-     <tr>
-       <td></td>
-       <td>3.10</td>
-       <td style="background-color:#FF0000">No</td>
-       <td></td>
+    <tr style="background-color: #f2f2f2;">
+       <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
+       <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.9</td>
+       <td class="unknown" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #d6d8d9;">UKNOWN</td>
+       <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">GitHub runner hangs.</td>
+     </tr>
+      <tr style="background-color: white;">
+       <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
+       <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.10</td>
+       <td class="not-supported" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">NOT SUPPORTED</td>
+       <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
      </tr>
    </table>
