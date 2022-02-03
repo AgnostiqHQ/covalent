@@ -20,10 +20,73 @@
 
 """Tests for Covalent command line interface (CLI) Tool."""
 
+import tempfile
+
 import mock
 from click.testing import CliRunner
 
-from covalent_dispatcher._cli.service import _is_dispatcher_running, _is_ui_running, purge
+from covalent_dispatcher._cli.service import (
+    _is_dispatcher_running,
+    _is_ui_running,
+    _read_pid,
+    _rm_pid_file,
+    purge,
+)
+
+
+def test_read_pid_nonexistent_pid_file():
+    """Test the process id read function when the pid file does not exist."""
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        assert _read_pid(f"{tmp_dir}/nonexistent.pid") == -1
+
+
+def test_read_valid_pid_file(mock_open):
+    """Test the process id read function when the pid file exists."""
+
+    with mock.patch("__main__.open", mock_open(read_data=1984)):
+        res = _read_pid(filename="mock.pid")
+    assert res == 1984
+
+
+def test_rm_pid():
+    pass
+
+
+def test_port_from_pid():
+    pass
+
+
+def test_next_available_port():
+    pass
+
+
+def test_graceful_start():
+    pass
+
+
+def test_graceful_shutdown():
+    pass
+
+
+def test_graceful_restart():
+    pass
+
+
+def test_start():
+    pass
+
+
+def test_stop():
+    pass
+
+
+def test_restart():
+    pass
+
+
+def test_status():
+    pass
 
 
 def test_is_dispatcher_running(mocker):
