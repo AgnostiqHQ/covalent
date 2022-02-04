@@ -35,11 +35,13 @@ const LatticeOverview = ({ dispatchId }) => {
 
   const src = _.get(result, 'lattice.function_string', '# source unavailable')
   const showResult = result.status === 'COMPLETED'
+
   const hasStarted = !!result.start_time
   const hasEnded = !!result.end_time
 
   return (
     <>
+      {/* Description */}
       {result.lattice.doc && (
         <>
           <Heading>Description</Heading>
@@ -47,23 +49,7 @@ const LatticeOverview = ({ dispatchId }) => {
         </>
       )}
 
-      <Heading />
-      <Paper elevation={4}>
-        <SyntaxHighlighter src={src} />
-      </Paper>
-
-      <Divider sx={{ my: 2 }} />
-
-      <Heading>Directory</Heading>
-      <Typography fontSize="small">
-        {result.results_dir}
-        <CopyButton
-          content={result.results_dir}
-          size="small"
-          title="Copy results directory"
-        />
-      </Typography>
-
+      {/* Start/end times */}
       {hasStarted && (
         <>
           <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
@@ -74,19 +60,88 @@ const LatticeOverview = ({ dispatchId }) => {
         </>
       )}
 
+      {/* Runtime */}
       <Heading>Runtime</Heading>
       <Runtime startTime={result.start_time} endTime={result.end_time} />
 
+      {/* Directory */}
+      <Heading>Directory</Heading>
+      <Typography sx={{ overflowWrap: 'anywhere' }}>
+        {result.results_dir}
+        <CopyButton
+          content={result.results_dir}
+          size="small"
+          title="Copy results directory"
+        />
+      </Typography>
+
+      {/* Input */}
+      <InputSection inputs={_.get(result, 'lattice.kwargs')} />
+
+      {/* Result */}
       {showResult && (
         <>
           <Heading>Result</Heading>
           <Paper elevation={4}>
-            <SyntaxHighlighter language="json" src={result.result} />
+            <SyntaxHighlighter language="python" src={result.result} />
           </Paper>
         </>
+      )}
+
+      {/* Executor */}
+      <ExecutorSection metadata={_.get(result, 'lattice.metadata')} />
+
+      <Divider sx={{ my: 3 }} />
+
+      {/* Source */}
+      <Heading />
+      <Paper elevation={4}>
+        <SyntaxHighlighter src={src} />
+      </Paper>
+    </>
+  )
+}
+
+export const ExecutorSection = ({ metadata }) => {
+  const executorType = _.get(metadata, 'backend')
+  const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
+
+  return (
+    <>
+      {!_.isEmpty(executorType)}
+      <Heading>Executor: {executorType}</Heading>
+
+      {!_.isEmpty(executorParams) && (
+        <Typography sx={{ overflowX: 'auto', whiteSpace: 'nowrap', pb: 1 }}>
+          {_.map(executorParams, (value, key) => (
+            <span key={key}>
+              {key} = {value}
+              <br />
+            </span>
+          ))}
+        </Typography>
       )}
     </>
   )
 }
 
+export const InputSection = ({ inputs }) => {
+  if (_.isEmpty(inputs)) {
+    return null
+  }
+
+  const inputSrc = _.join(
+    _.map(inputs, (value, key) => `${key}=${value}`),
+    ', '
+  )
+
+  return (
+    <>
+      <Heading>Input</Heading>
+      <Paper elevation={4}>
+        <SyntaxHighlighter language="python" src={inputSrc} />
+      </Paper>
+    </>
+  )
+}
 export default LatticeOverview

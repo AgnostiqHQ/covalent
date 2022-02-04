@@ -220,7 +220,7 @@ fi
 -   For single line statements and associated output, use Python console syntax (pycon):
 
 ```python
->>> pipeline.dispatch(**params) # Dispatching a workflow returns a unique dispatch id.
+>>> ct.dispatch(pipeline)(**params) # Dispatching a workflow returns a unique dispatch id.
 '8a7bfe54-d3c7-4ca1-861b-f55af6d5964a'
 ```
 
@@ -230,7 +230,7 @@ fi
 >>> dispatch_ids = []
 >>> params = [1, 2, 3, 4]
 >>> for a in params:
-...     dispatch_ids.append(pipeline.dispatch(a=a))
+...     dispatch_ids.append(ct.dispatch(pipeline)(a=a))
 ```
 
 -   For larger, more complicated code blocks, use standard Python code-block with Python console syntax for displaying output:
@@ -245,7 +245,7 @@ fi
 ...     res = identity(a)
 ...     return res
 ...
->>> dispatch_id = pipeline.dispatch(a=1)
+>>> dispatch_id = ct.dispatch(pipeline)(a=1)
 >>> result = pipeline.get_result(dispatch_id=dispatch_id)
 >>> print(result)
 
