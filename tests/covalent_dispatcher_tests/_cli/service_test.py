@@ -26,8 +26,12 @@ import tempfile
 import mock
 import pytest
 from click.testing import CliRunner
+from psutil import pid_exists
 
 from covalent_dispatcher._cli.service import (
+    _graceful_restart,
+    _graceful_shutdown,
+    _graceful_start,
     _is_dispatcher_running,
     _is_ui_running,
     _next_available_port,
@@ -90,15 +94,55 @@ def test_next_available_port(mocker):
     assert res == 12
 
     # Case 2 - Next two ports are not available.
+    click_echo_mock = mocker.patch("click.echo")
     with mocker.patch(
         "socket.socket.bind", side_effect=[Exception("OSERROR"), Exception("OSERROR"), None]
     ):
+
         res = _next_available_port(requested_port=12)
     assert res == 14
+    click_echo_mock.assert_called_once()
 
 
-def test_graceful_start():
-    pass
+def test_graceful_start_when_pid_exists(mocker):
+    """Test the graceful server start function."""
+
+    read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid")
+    pid_exists_mock = mocker.patch("psutil.pid_exists", return_value=True)
+    port_from_pid_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._port_from_pid", return_value=1984
+    )
+    click_echo_mock = mocker.patch("click.echo")
+    res = _graceful_start("", "", "", "", 15, False)
+    assert res == 1984
+
+    click_echo_mock.assert_called_once()
+    read_pid_mock.assert_called_once()
+    pid_exists_mock.assert_called_once()
+    port_from_pid_mock.assert_called_once()
+
+
+def test_graceful_start_when_pid_absent(mocker):
+    """Test the graceful server start function."""
+
+    read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid")
+    pid_exists_mock = mocker.patch("psutil.pid_exists", return_value=False)
+    rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+    next_available_port_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._next_available_port", return_value=1984
+    )
+    popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
+    click_echo_mock = mocker.patch("click.echo")
+
+    res = _graceful_start("", "", "", "", 15, False)
+    assert res == 1984
+
+    rm_pid_file_mock.assert_called_once()
+    next_available_port_mock.assert_called_once()
+    pid_exists_mock.assert_called_once()
+    popen_mock.assert_called_once()
+    click_echo_mock.assert_called_once()
+    read_pid_mock.assert_called_once()
 
 
 def test_graceful_shutdown():
