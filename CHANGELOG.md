@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Typing: Use `bool` in place of `Optional[bool]` as type annotation for `develop` parameter in `covalent_dispatcher.service._graceful_start`
 - Typing: Use `Any` in place of `Optional[Any]` as type annotation for `new_value` parameter in `covalent._shared_files.config.get_config`
-=======
 
 ## [0.24.2] - 2022-02-04
 
