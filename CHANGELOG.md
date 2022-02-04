@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.18] - 2022-02-04
+
+### Fixed
+
+- Updated hyperlink of "How to get the results" from "./collection/query_electron_execution_result" to "./collection/query_multiple_lattice_execution_results" in "doc/source/how_to/index.rst".
+- Updated hyperlink of "How to get the result of a particular electron" from "./collection/query_multiple_lattice_execution_results" to "./collection/query_electron_execution_result" in "doc/source/how_to/index.rst".
+
 ## [0.22.17] - 2022-02-02
 
 ### Added
