@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Tests across multiple versions of Python and multiple operating systems
+- Documentation reflecting supported configurations
 
 ## [0.22.12] - 2022-01-31
 
