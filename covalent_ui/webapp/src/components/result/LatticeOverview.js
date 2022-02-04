@@ -21,7 +21,7 @@
  */
 
 import _ from 'lodash'
-import { Divider, Paper, Tooltip, Typography } from '@mui/material'
+import { Box, Divider, Paper, Tooltip, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 
 import { formatDate, truncateMiddle } from '../../utils/misc'
@@ -45,7 +45,9 @@ const LatticeOverview = ({ dispatchId }) => {
       {result.lattice.doc && (
         <>
           <Heading>Description</Heading>
-          <Typography>{result.lattice.doc}</Typography>
+          <Typography fontSize="body2.fontSize">
+            {result.lattice.doc}
+          </Typography>
         </>
       )}
 
@@ -121,17 +123,18 @@ export const ExecutorSection = ({ metadata }) => {
         <Typography
           sx={{
             fontSize: 'body2.fontSize',
-            overflowX: 'auto',
             whiteSpace: 'nowrap',
             pb: 1,
           }}
         >
-          {_.map(executorParams, (value, key) => (
-            <span key={key}>
-              {key} = {value}
-              <br />
-            </span>
-          ))}
+          <Box sx={{ overflowX: 'auto' }}>
+            {_.map(executorParams, (value, key) => (
+              <span key={key}>
+                {key} = {value}
+                <br />
+              </span>
+            ))}
+          </Box>
         </Typography>
       )}
     </>

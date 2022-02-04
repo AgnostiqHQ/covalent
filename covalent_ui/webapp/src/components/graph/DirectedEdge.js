@@ -22,14 +22,15 @@
 
 import { BezierEdge } from 'react-flow-renderer'
 
-import theme from '../../utils/theme'
+import { graphBgColor } from '../../utils/theme'
+import { NODE_TEXT_COLOR } from './ElectronNode'
 
 const DirectedEdge = (props) => {
   return (
     <BezierEdge
       {...props}
-      labelBgStyle={{ fill: theme.palette.background.default }}
-      labelStyle={{ fill: 'rgba(250, 250, 250, 0.6)' }}
+      labelBgStyle={{ fill: graphBgColor }}
+      labelStyle={{ fill: NODE_TEXT_COLOR }}
       arrowHeadType="arrow"
     />
   )

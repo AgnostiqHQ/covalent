@@ -106,6 +106,7 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
             </Box>
           </Box>
 
+          {/* Status */}
           <Heading>Status</Heading>
           <Box
             sx={{
@@ -122,6 +123,7 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
 
           <ErrorCard error={node.error} />
 
+          {/* Description */}
           {node.doc && (
             <>
               <Heading>Description</Heading>
@@ -129,6 +131,7 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
             </>
           )}
 
+          {/* Start/end times */}
           {hasStarted && (
             <>
               <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
@@ -139,13 +142,7 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
             </>
           )}
 
-          <Heading />
-          <Paper elevation={0}>
-            <SyntaxHighlighter src={src} />
-          </Paper>
-
-          <Divider sx={{ my: 2 }} />
-
+          {/* Runtime */}
           {node.status !== 'NEW_OBJECT' && (
             <>
               <Heading>Runtime</Heading>
@@ -157,8 +154,10 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
             </>
           )}
 
-          <ExecutorSection metadata={_.get(node, 'metadata')} />
+          {/* Input */}
+          <InputSection inputs={node.kwargs} />
 
+          {/* Result */}
           {node.status === 'COMPLETED' && (
             <>
               <Heading>Result</Heading>
@@ -168,8 +167,16 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
             </>
           )}
 
-          {/* Input */}
-          <InputSection inputs={node.kwargs} />
+          {/* Executor */}
+          <ExecutorSection metadata={_.get(node, 'metadata')} />
+
+          <Divider sx={{ my: 2 }} />
+
+          {/* Source */}
+          <Heading />
+          <Paper elevation={0}>
+            <SyntaxHighlighter src={src} />
+          </Paper>
         </>
       )}
     </Drawer>

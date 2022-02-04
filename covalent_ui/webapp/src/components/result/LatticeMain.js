@@ -35,6 +35,7 @@ import DirectedEdge from '../graph/DirectedEdge'
 import layout from '../graph/Layout'
 import LatticeControls from './LatticeControls'
 import theme from '../../utils/theme'
+import { lighten } from '@mui/material'
 import { statusColor } from '../../utils/misc'
 
 const LatticeMain = ({ hasSelectedNode }) => {
@@ -83,7 +84,7 @@ const LatticeMain = ({ hasSelectedNode }) => {
       >
         <Background
           variant="dots"
-          color={theme.palette.grey[900]}
+          color={lighten(theme.palette.background.paper, 0.1)}
           gap={12}
           size={1}
         />

@@ -34,6 +34,7 @@ import LatticeDrawer from './LatticeDrawer'
 import NodeDrawer, { nodeDrawerWidth } from './NodeDrawer'
 import { ReactComponent as Logo } from '../../assets/covalent-full-logo.svg'
 import { fetchResult } from '../../redux/resultsSlice'
+import { graphBgColor } from '../../utils/theme'
 
 const drawerWidth = 400
 
@@ -113,6 +114,13 @@ const ResultLayout = () => {
                 width: drawerWidth,
                 border: 'none',
                 bgcolor: alpha(theme.palette.background.default, 0.3),
+                '&:not(:hover)::-webkit-scrollbar-thumb': {
+                  backgroundColor: 'inherit',
+                },
+                '&:not(:hover)::-webkit-scrollbar': {
+                  backgroundColor: 'inherit',
+                },
+                transition: 'background-color 1s',
               },
             })}
             open
@@ -145,7 +153,7 @@ const ResultLayout = () => {
             ...(!!selectedElectron && {
               marginRight: 0,
             }),
-            bgcolor: alpha(theme.palette.background.paper, 0.5),
+            bgcolor: graphBgColor,
           })}
         >
           <AppBar

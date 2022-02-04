@@ -21,7 +21,7 @@
  */
 
 import React from 'react'
-import { createTheme } from '@mui/material/styles'
+import { createTheme, emphasize, darken } from '@mui/material/styles'
 import { Link as RouterLink } from 'react-router-dom'
 
 const LinkBehavior = React.forwardRef(({ href, ...props }, ref) => {
@@ -63,6 +63,42 @@ const defaultTheme = createTheme({
   },
 })
 
+const darkScrollbar = ({
+  size = 6,
+  border = 0,
+  borderRadius = 8,
+  thumbColor = emphasize(defaultTheme.palette.background.paper, 0.1),
+  trackColor = emphasize(defaultTheme.palette.background.default, 0.1),
+  active = emphasize(defaultTheme.palette.background.paper, 0.15),
+} = {}) => {
+  return {
+    scrollbarColor: `${thumbColor} ${trackColor}`,
+    '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
+      backgroundColor: trackColor,
+      height: size,
+      width: size,
+    },
+    '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
+      borderRadius,
+      backgroundColor: thumbColor,
+      minHeight: 24,
+      border: `${border}px solid ${trackColor}`,
+    },
+    '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus': {
+      backgroundColor: active,
+    },
+    '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active': {
+      backgroundColor: active,
+    },
+    '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
+      backgroundColor: active,
+    },
+    '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
+      backgroundColor: trackColor,
+    },
+  }
+}
+
 const theme = createTheme(defaultTheme, {
   components: {
     MuiLink: {
@@ -78,34 +114,7 @@ const theme = createTheme(defaultTheme, {
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          // adapted from @mui/material/darkScrollbar
-          scrollbarColor: '#6b6b6b #2b2b2b',
-          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            backgroundColor: '#2b2b2b',
-            height: 6,
-            width: 6,
-          },
-          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
-            borderRadius: 8,
-            backgroundColor: '#6b6b6b',
-            minHeight: 24,
-            // border: '2px solid #2b2b2b',
-          },
-          '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus':
-            {
-              backgroundColor: '#959595',
-            },
-          '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active':
-            {
-              backgroundColor: '#959595',
-            },
-          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover':
-            {
-              backgroundColor: '#959595',
-            },
-          '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
-            backgroundColor: '#2b2b2b',
-          },
+          ...darkScrollbar(),
         },
       },
     },
@@ -131,5 +140,7 @@ const theme = createTheme(defaultTheme, {
     // },
   },
 })
+
+export const graphBgColor = darken(theme.palette.background.paper, 0.25)
 
 export default theme
