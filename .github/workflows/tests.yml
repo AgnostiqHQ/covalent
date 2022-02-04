@@ -25,7 +25,6 @@ on:
   push:
     branches:
       - develop
-      - test-multiple-versions
 
 jobs:
   tests:
@@ -35,35 +34,15 @@ jobs:
         os: ['ubuntu-latest']
         container:
           - python:3.8-buster
-# All these work
-#          - python:3.8-bullseye
-#          - python:3.9-buster
-#          - python:3.9-bullseye
-#          - centos/python-38-centos7
+          - python:3.8-bullseye
+          - python:3.9-buster
+          - python:3.9-bullseye
+          - centos/python-38-centos7
         experimental: [false]
         include:
-# Few tests fail
-#          - os: ubuntu-latest
-#            container:
-#              - python:3.7-buster
-#              - python:3.7-bullseye
-#            experimental: true
-#          - os: macos-latest
-#            python-version: '3.7'
-#            experimental: true
-#          - os: macos-10.15
-#            python-version:
-#              - '3.8'
-#              - '3.9'
-#            experimental: true
-#
-# These work
-#          - os: macos-latest
-#            python-version: '3.8'
-#            experimental: false
-#          - os: macos-latest
-#            python-version: '3.9'
-#            experimental: true
+          - os: macos-latest
+            python-version: '3.8'
+            experimental: false
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
     steps:
