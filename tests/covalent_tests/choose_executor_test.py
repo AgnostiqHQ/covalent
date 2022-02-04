@@ -24,6 +24,7 @@ Integration test for choosing executors.
 
 
 import covalent as ct
+import covalent._results_manager.results_manager as rm
 
 
 def test_executors_exist():
@@ -47,8 +48,10 @@ def test_using_executor_names():
         def workflow(y):
             return passthrough(x=y)
 
-        dispatch_id = workflow.dispatch(y="input")
+        dispatch_id = ct.dispatch(workflow)(y="input")
         output = ct.get_result(dispatch_id, wait=True)
+
+        rm._delete_result(dispatch_id)
 
         assert output.result == "input"
 
@@ -70,9 +73,11 @@ def test_using_executor_classes():
 
         output = ""
         try:
-            dispatch_id = workflow.dispatch(y="input")
+            dispatch_id = ct.dispatch(workflow)(y="input")
             output = ct.get_result(dispatch_id, wait=True)
         except:
             pass
+
+        rm._delete_result(dispatch_id)
 
         assert output.result == "input"

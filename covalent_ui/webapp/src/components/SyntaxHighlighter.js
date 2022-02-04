@@ -23,11 +23,9 @@
 import _ from 'lodash'
 import { Light } from 'react-syntax-highlighter'
 import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python'
-import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json'
 import style from 'react-syntax-highlighter/dist/esm/styles/hljs/tomorrow-night'
 
 Light.registerLanguage('python', python)
-Light.registerLanguage('json', json)
 
 const SyntaxHighlighter = ({ src, ...props }) => {
   return (
@@ -36,7 +34,8 @@ const SyntaxHighlighter = ({ src, ...props }) => {
       style={style}
       customStyle={{
         margin: 0,
-        maxHeight: 280,
+        padding: 10,
+        maxHeight: 240,
         fontSize: 14,
         backgroundColor: 'transparent',
       }}

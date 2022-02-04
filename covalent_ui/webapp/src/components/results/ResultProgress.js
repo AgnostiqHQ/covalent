@@ -31,6 +31,7 @@ const STATUS_COLORS = {
   RUNNING: 'primary',
   COMPLETED: 'success',
   FAILED: 'error',
+  CANCELLED: 'error',
 }
 
 export const selectResultProgress = createSelector(
@@ -38,12 +39,16 @@ export const selectResultProgress = createSelector(
   (result) => {
     return _.reduce(
       _.get(result, 'graph.nodes'),
-      (counters, node) => {
+      (progress, node) => {
         if (!isParameter(node)) {
-          counters.total++
-          counters.completed += node.status === 'COMPLETED' ? 1 : 0
+          progress.total++
+          progress.completed += node.status === 'COMPLETED' ? 1 : 0
+          // record first electron error
+          if (node.error && !progress.error) {
+            progress.error = `${node.name}: ${node.error}`
+          }
         }
-        return counters
+        return progress
       },
       {
         total: 0,
