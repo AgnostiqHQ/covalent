@@ -28,19 +28,35 @@ on:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['ubuntu-latest']
+        container:
+          - python:3.8-buster
+          - python:3.8-bullseye
+          - python:3.9-buster
+          - python:3.9-bullseye
+          - centos/python-38-centos7
+        experimental: [false]
+        include:
+          - os: macos-latest
+            python-version: '3.8'
+            experimental: false
+    container: ${{ matrix.container }}
+    continue-on-error: ${{ matrix.experimental }}
     steps:
       - name: Check out head
         uses: actions/checkout@v2
         with:
           persist-credentials: false
       - name: Set up Python
+        if: matrix.os == 'macos-latest'
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.python-version }}
       - name: Install Python dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
       - name: Install Covalent
@@ -52,11 +68,12 @@ jobs:
       - name: Generate coverage report
         run: coverage xml
       - name: Upload report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v2
         with:
           files: ./coverage.xml
       - name: Push to master
-        if: github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
           git config user.name "CovalentOpsBot"
           git config user.email "covalentopsbot@users.noreply.github.com"
@@ -64,13 +81,13 @@ jobs:
           git fetch --unshallow
           git push origin HEAD:master
       - name: Format Slack message
-        if: github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
           VERSION="$(cat ./VERSION)"
           SLACK_MSG=":rocket: Version $VERSION is now available."
           echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
       - name: Notify Slack
-        if: github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent-ci"
