@@ -23,20 +23,23 @@
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import { AppBar, Box, Drawer, IconButton, Toolbar } from '@mui/material'
 import { Menu as MenuIcon } from '@mui/icons-material'
-import { Helmet } from 'react-helmet-async'
 import { useStoreActions, useStoreState } from 'react-flow-renderer'
 
 import LatticeMain from './LatticeMain'
 import LatticeDrawer from './LatticeDrawer'
 import NodeDrawer, { nodeDrawerWidth } from './NodeDrawer'
 import { ReactComponent as Logo } from '../../assets/covalent-full-logo.svg'
+import { fetchResult } from '../../redux/resultsSlice'
 
 const drawerWidth = 400
 
 const ResultLayout = () => {
   const { dispatchId } = useParams()
+  const result = useSelector((state) => state.results.cache[dispatchId])
+
   const selectedElectron = useStoreState((state) =>
     _.find(state.selectedElements, { type: 'electron' })
   )
@@ -55,12 +58,23 @@ const ResultLayout = () => {
     setSelectedElements([])
   }, [dispatchId, setSelectedElements])
 
+  const dispatch = useDispatch()
+  useEffect(() => {
+    if (_.get(result, 'status') === 'RUNNING') {
+      dispatch(
+        fetchResult({
+          dispatchId: result.dispatch_id,
+          resultsDir: result.results_dir,
+        })
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatchId])
+
   // TODO handle not found
 
   return (
     <>
-      <Helmet title={dispatchId} />
-
       <Box sx={{ display: 'flex' }}>
         <Box sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}>
           {/* Mobile drawer */}
