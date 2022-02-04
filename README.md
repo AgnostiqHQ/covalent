@@ -154,8 +154,9 @@ def run_experiment(C=1.0, gamma=0.7):
     )
     return score
 
-dispatch_id =
-    run_experiment.dispatch(
+dispatchable_func = ct.dispatch(run_experiment)
+
+dispatch_id = dispatchable_func(
     	C=1.0,
     	gamma=0.7
     )

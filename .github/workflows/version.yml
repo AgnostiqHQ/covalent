@@ -55,9 +55,8 @@ jobs:
           fi
           changedate=$(grep "\b${HEAD_VERSION}\b" CHANGELOG.md | awk '{ print $4 }')
           date -I -d $changedate
-          if [[ $changedate > $(date -I) ]] ||
-             [[ $changedate < $(date -I --date='-1 year') ]] ; then
-            echo "There is a problem with the date in the changelog."
+          if [[ $changedate != $(date -I) ]]; then
+            echo "There is a problem with the date in the changelog. Expecting today's date: $(date -I)"
             exit 3
           fi
       - name: Check out base

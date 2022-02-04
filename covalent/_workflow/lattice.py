@@ -31,7 +31,6 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from .._results_manager.results_manager import get_result
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
@@ -289,77 +288,45 @@ class Lattice:
 
     def dispatch(self, *args, **kwargs) -> str:
         """
-        Run the lattice-defined workflow with the dispatcher asynchronously.
+        Deprecated function to dispatch workflows
 
         Args:
-            *args: Positional arguments to be passed to the workflow function.
-            **kwargs: Keyword arguments to pass to the workflow function.
+            *args: Positional arguments for the workflow
+            **kwargs: Keyword arguments for the workflow
 
         Returns:
-            dispatch_id: the unique id of the dispatched job obtained from the dispatcher server.
+            Dispatch id assigned to job
         """
 
-        # Positional args are converted to kwargs
-        if self.workflow_function:
-            kwargs.update(
-                dict(zip(list(inspect.signature(self.workflow_function).parameters), args))
-            )
+        app_log.warning(
+            "workflow.dispatch(your_arguments_here) is deprecated and may get removed without notice in future releases. Please use covalent.dispatch(workflow)(your_arguments_here) instead.",
+            exc_info=DeprecationWarning,
+        )
 
-        from .._results_manager import Result
+        from .._dispatcher_plugins import local_dispatch
 
-        self.build_graph(**kwargs)
-        self.check_consumable()
-
-        # Serializing the transport graph and then passing it to the Result object
-        transport_graph = self.transport_graph.serialize()
-        self.transport_graph, transport_graph = transport_graph, self.transport_graph
-
-        dispatch_id = self._server_dispatch(Result(self, self.metadata["results_dir"]))
-
-        # Getting the transport graph back to the original state
-        self.transport_graph, transport_graph = transport_graph, self.transport_graph
-
-        return dispatch_id
+        return local_dispatch(self)(*args, **kwargs)
 
     def dispatch_sync(self, *args, **kwargs) -> "Result":
         """
-        Run the lattice-defined workflow with the dispatcher synchronously.
+        Deprecated function to dispatch workflows synchronously
 
         Args:
-            *args: Positional arguments to be passed to the workflow function.
-            **kwargs: Keyword arguments to pass to the workflow function.
+            *args: Positional arguments for the workflow
+            **kwargs: Keyword arguments for the workflow
 
         Returns:
-            result: Result of the workflow execution.
-
-        Note: Since it is synchronous dispatching, the result is waited for completion or failure.
+            Result of workflow execution
         """
 
-        # Positional args are converted to kwargs
-        if self.workflow_function:
-            kwargs.update(
-                dict(zip(list(inspect.signature(self.workflow_function).parameters), args))
-            )
+        app_log.warning(
+            "workflow.dispatch_sync(your_arguments_here) is deprecated and may get removed without notice in future releases. Please use covalent.dispatch_sync(workflow)(your_arguments_here) instead.",
+            exc_info=DeprecationWarning,
+        )
 
-        return get_result(self.dispatch(**kwargs), self.metadata["results_dir"], wait=True)
+        from .._dispatcher_plugins import local_dispatch_sync
 
-    def _server_dispatch(self, result_object: "Result") -> str:
-        """
-        Run the lattice-defined workflow with the dispatcher in server.
-
-        Args:
-            dispatch_id: A unique id assigned to the dispatch by the dispatcher.
-        """
-
-        import cloudpickle as pickle
-        import requests
-
-        pickled_res = pickle.dumps(result_object)
-        test_url = "http://" + self.metadata["dispatcher"] + "/api/submit"
-
-        r = requests.post(test_url, data=pickled_res)
-        r.raise_for_status()
-        return r.content.decode("utf-8").strip().replace('"', "")
+        return local_dispatch_sync(self)(*args, **kwargs)
 
 
 def lattice(
@@ -368,9 +335,6 @@ def lattice(
     backend: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = _DEFAULT_CONSTRAINT_VALUES.backend,
-    dispatcher: Optional[str] = get_config("dispatcher.address")
-    + ":"
-    + str(get_config("dispatcher.port")),
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
     # e.g. schedule: True, whether to use a custom scheduling logic or not
@@ -394,7 +358,6 @@ def lattice(
 
     constraints = {
         "backend": backend,
-        "dispatcher": dispatcher,
         "results_dir": results_dir,
     }
 

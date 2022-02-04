@@ -22,34 +22,34 @@
 
 import os
 
+import covalent as ct
 import covalent._results_manager.results_manager as rm
-from covalent import electron, lattice
 from covalent._results_manager.result import Result
 
 
-@electron
+@ct.electron
 def add(a, b):
     return a + b
 
 
-@electron
+@ct.electron
 def identity(a):
     return a
 
 
-@lattice
+@ct.lattice
 def check(a, b):
     result1 = add(a=a, b=b)
     return identity(a=result1)
 
 
-@lattice
+@ct.lattice
 def check_alt(a, b):
     result1 = add(a=a, b=b)
     return identity(a=result1)
 
 
-@electron
+@ct.electron
 def collect(l_electrons):
     return l_electrons
 
@@ -82,14 +82,14 @@ def test_electron_takes_nested_iterables():
     Test to check whether electron can take in nested dicts and lists
     """
 
-    @lattice
+    @ct.lattice
     def workflow():
         # Use keywords to specify parameters
         a_list = [identity(a=i) for i in range(5)]
         b_list = [identity(a=i) for i in range(5, 10)]
         return collect(l_electrons=[a_list, b_list])
 
-    dispatch_id = workflow.dispatch()
+    dispatch_id = ct.dispatch(workflow)()
 
     assert rm.get_result(dispatch_id, wait=True).result == [
         [0, 1, 2, 3, 4],
@@ -105,14 +105,14 @@ def test_sublatticing():
     and used inside of a bigger lattice.
     """
 
-    sublattice_add = lattice(add)
+    sublattice_add = ct.lattice(add)
 
-    @lattice
+    @ct.lattice
     def workflow(a, b):
-        res_1 = electron(sublattice_add)(a=a, b=b)
+        res_1 = ct.electron(sublattice_add)(a=a, b=b)
         return identity(a=res_1)
 
-    dispatch_id = workflow.dispatch(a=1, b=2)
+    dispatch_id = ct.dispatch(workflow)(a=1, b=2)
 
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
@@ -131,16 +131,16 @@ def test_parallelization():
     import timeit
 
     SETUP_CODE = """
-from covalent import electron, lattice
+import covalent as ct
 
-@electron
+@ct.electron
 def heavy_function(a):
     import time
 
     time.sleep(1)
     return a
 
-@lattice
+@ct.lattice
 def workflow(x=10):
     for i in range(x):
         heavy_function(a=i)
@@ -148,7 +148,7 @@ def workflow(x=10):
 """
 
     TEST_CODE_1 = "workflow()"
-    TEST_CODE_2 = "workflow.dispatch_sync()"
+    TEST_CODE_2 = "ct.dispatch_sync(workflow)()"
 
     time_for_normal = timeit.timeit(
         setup=SETUP_CODE,
@@ -171,15 +171,15 @@ def test_electrons_with_positional_args():
     inside a lattice.
     """
 
-    @electron
+    @ct.electron
     def test_func(a, b):
         return a + b
 
-    @lattice
+    @ct.lattice
     def workflow(a, b):
         return test_func(a, b)
 
-    dispatch_id = workflow.dispatch(a=1, b=2)
+    dispatch_id = ct.dispatch(workflow)(a=1, b=2)
 
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
@@ -193,15 +193,15 @@ def test_lattice_with_positional_args():
     Test to check whether the lattice can be dispatched with positional arguments.
     """
 
-    @electron
+    @ct.electron
     def test_func(a, b):
         return a + b
 
-    @lattice
+    @ct.lattice
     def workflow(a, b):
         return test_func(a=a, b=b)
 
-    dispatch_id = workflow.dispatch(1, 2)
+    dispatch_id = ct.dispatch(workflow)(1, 2)
 
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
@@ -215,15 +215,15 @@ def test_positional_args_integration():
     Test whether positional and keyword arguments work together in both lattice and electrons.
     """
 
-    @electron
+    @ct.electron
     def new_func(a, b, c, d, e):
         return a + b + c + d + e
 
-    @lattice
+    @ct.lattice
     def work_func(a, b, c):
         return new_func(a, b, c, d=4, e=5)
 
-    dispatch_id = work_func.dispatch(1, 2, c=3)
+    dispatch_id = ct.dispatch(work_func)(1, 2, c=3)
 
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
@@ -238,17 +238,17 @@ def test_stdout_stderr_redirection():
     """
     import sys
 
-    @electron
+    @ct.electron
     def test_func(a, b):
         print(a)
         print(b, file=sys.stderr)
         return a + b
 
-    @lattice
+    @ct.lattice
     def work_func(a, b):
         return test_func(a, b)
 
-    dispatch_id = work_func.dispatch(1, 2)
+    dispatch_id = ct.dispatch(work_func)(1, 2)
 
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
@@ -285,7 +285,7 @@ def test_decorated_function():
     def workflow():
         return circuit([0.54, 0.12])
 
-    dispatch_id = workflow.dispatch()
+    dispatch_id = ct.dispatch(workflow)()
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
     rm._delete_result(dispatch_id)
@@ -300,23 +300,23 @@ def test_dispatch_cancellation():
 
     import time
 
-    @electron
+    @ct.electron
     def task_1():
         time.sleep(4)
         print("Task 1")
         return 5
 
-    @electron
+    @ct.electron
     def task_2(x):
         time.sleep(x)
         print("Task 2")
 
-    @lattice
+    @ct.lattice
     def workflow():
         task_2(task_1())
         return 10
 
-    dispatch_id = workflow.dispatch()
+    dispatch_id = ct.dispatch(workflow)()
     result = rm.get_result(dispatch_id)
 
     assert result.status in [Result.RUNNING, Result.NEW_OBJ]
@@ -324,5 +324,7 @@ def test_dispatch_cancellation():
     rm.cancel(dispatch_id)
 
     result = rm.get_result(dispatch_id, wait=True)
+
+    rm._delete_result(dispatch_id)
 
     assert result.status == Result.CANCELLED

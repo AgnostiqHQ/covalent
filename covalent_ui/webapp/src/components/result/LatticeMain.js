@@ -42,7 +42,7 @@ const LatticeMain = ({ hasSelectedNode }) => {
   const [elements, setElements] = useState()
   const [direction, setDirection] = useState('TB')
   const [showMinimap, setShowMinimap] = useState(false)
-  const [showParams, setShowParams] = useState(true)
+  const [showParams, setShowParams] = useState(false)
   const [nodesDraggable, setNodesDraggable] = useState(false)
 
   useEffect(() => {
