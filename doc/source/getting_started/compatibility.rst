@@ -106,4 +106,6 @@ While Covalent is primarily developed using Python 3.8 on MacOS and Linux, it ha
       </table>
 
 
-Is your environment missing from this list? Help us expand it by reporting feedback on `GitHub <https://github.com/AgnostiqHQ/covalent/issues`_.
+Is your environment missing from this list? Help us expand it by reporting feedback on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.
+
+i*Return to :doc:`Getting Started <./index>`.*
