@@ -114,63 +114,57 @@ const Dashboard = () => {
   const stats = useSelector(selectJobStats)
 
   return (
-    <>
+    <Container maxWidth="xl" sx={{ mb: 4 }}>
       <AppBar position="static" color="transparent" sx={{ my: 3 }}>
-        <Toolbar>
-          <Container>
-            <Link href="/">
-              <Logo />
-            </Link>
-          </Container>
+        <Toolbar disableGutters>
+          <Link href="/">
+            <Logo />
+          </Link>
         </Toolbar>
       </AppBar>
 
-      <Container>
-        <Paper sx={{ p: 2, mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography fontSize="h5.fontSize">Dispatch list</Typography>
+      <Paper elevation={0} sx={{ p: 3, mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography fontSize="h5.fontSize">Dispatch list</Typography>
 
-            {dispatcherAddress && (
-              <>
-                <Typography sx={{ ml: 'auto' }} color="text.secondary">
-                  {dispatcherAddress}
-                </Typography>
+          {dispatcherAddress && (
+            <>
+              <Typography sx={{ ml: 'auto' }} color="text.secondary">
+                {dispatcherAddress}
+              </Typography>
 
-                <CopyButton
-                  sx={{ ml: 1 }}
-                  size="small"
-                  content={dispatcherAddress}
-                  title="Copy dispatcher address"
-                />
-              </>
-            )}
-          </Box>
+              <CopyButton
+                sx={{ ml: 1 }}
+                size="small"
+                content={dispatcherAddress}
+                title="Copy dispatcher address"
+              />
+            </>
+          )}
+        </Box>
 
-          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-around' }}>
-            <DashboardCard content={stats.running} desc="Total jobs running" />
-            <DashboardDivider />
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-around' }}>
+          <DashboardCard content={stats.running} desc="Total jobs running" />
+          <DashboardDivider />
 
-            <DashboardCard content={stats.done} desc="Total jobs done" />
-            <DashboardDivider />
+          <DashboardCard content={stats.done} desc="Total jobs done" />
+          <DashboardDivider />
 
-            <DashboardCard
-              content={displayStatus(_.get(stats, 'latest.status')) || 'N/A'}
-              desc="Latest running task status"
-            />
-            <DashboardDivider />
+          <DashboardCard
+            content={displayStatus(_.get(stats, 'latest.status')) || 'N/A'}
+            desc="Latest running task status"
+          />
+          <DashboardDivider />
 
-            <DashboardCard
-              content={humanize(stats.duration * 1000)}
-              desc="Total dispatcher duration"
-            />
-          </Box>
-        </Paper>
-      </Container>
+          <DashboardCard
+            content={humanize(stats.duration * 1000)}
+            desc="Total dispatcher duration"
+          />
+        </Box>
+      </Paper>
 
-      <Container>
-        <ResultListing />
-      </Container>
-    </>
+      <ResultListing />
+    </Container>
   )
 }
 

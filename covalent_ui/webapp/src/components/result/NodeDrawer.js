@@ -32,6 +32,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useStoreActions } from 'react-flow-renderer'
+import { alpha } from '@mui/material/styles'
 
 import {
   formatDate,
@@ -69,16 +70,17 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
 
   return (
     <Drawer
-      sx={{
+      sx={(theme) => ({
         width: nodeDrawerWidth,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: nodeDrawerWidth,
           boxSizing: 'border-box',
           border: 'none',
-          p: 2,
+          p: 3,
+          bgcolor: alpha(theme.palette.background.default, 0.3),
         },
-      }}
+      })}
       anchor="right"
       variant="persistent"
       open={!!nodeId}
@@ -90,7 +92,8 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              mb: 3,
+              alignItems: 'center',
+              mb: 2,
             }}
           >
             <Typography sx={{ color: '#A5A6F6', overflowWrap: 'anywhere' }}>
@@ -103,9 +106,7 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
             </Box>
           </Box>
 
-          <Typography color="text.secondary" variant="body2">
-            Status
-          </Typography>
+          <Heading>Status</Heading>
           <Box
             sx={{
               mt: 1,
@@ -131,15 +132,15 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
           {hasStarted && (
             <>
               <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-              <Typography>
+              <Typography fontSize="body2.fontSize">
                 {formatDate(node.start_time)}
-                {hasEnded && `- ${formatDate(node.end_time)}`}
+                {hasEnded && ` - ${formatDate(node.end_time)}`}
               </Typography>
             </>
           )}
 
           <Heading />
-          <Paper elevation={4}>
+          <Paper elevation={0}>
             <SyntaxHighlighter src={src} />
           </Paper>
 
@@ -148,7 +149,11 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
           {node.status !== 'NEW_OBJECT' && (
             <>
               <Heading>Runtime</Heading>
-              <Runtime startTime={node.start_time} endTime={node.end_time} />
+              <Runtime
+                sx={{ fontSize: 'body2.fontSize' }}
+                startTime={node.start_time}
+                endTime={node.end_time}
+              />
             </>
           )}
 
@@ -157,7 +162,7 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
           {node.status === 'COMPLETED' && (
             <>
               <Heading>Result</Heading>
-              <Paper elevation={4}>
+              <Paper elevation={0}>
                 <SyntaxHighlighter language="python" src={node.output} />
               </Paper>
             </>

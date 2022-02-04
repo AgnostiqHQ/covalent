@@ -55,8 +55,10 @@ const defaultTheme = createTheme({
       main: '#E39F50',
     },
     text: {
-      primary: '#FAFAFA',
-      secondary: '#BEBEBE',
+      // primary: '#FAFAFA',
+      // secondary: '#BEBEBE',
+      primary: '#D6D7D8',
+      secondary: '#9A9C9E',
     },
   },
 })

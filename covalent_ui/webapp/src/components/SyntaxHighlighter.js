@@ -36,7 +36,7 @@ const SyntaxHighlighter = ({ src, ...props }) => {
         margin: 0,
         padding: 10,
         maxHeight: 240,
-        fontSize: 14,
+        fontSize: 12,
         backgroundColor: 'transparent',
       }}
       {...props}

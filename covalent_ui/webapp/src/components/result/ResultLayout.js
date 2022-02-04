@@ -27,6 +27,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { AppBar, Box, Drawer, IconButton, Link, Toolbar } from '@mui/material'
 import { Menu as MenuIcon } from '@mui/icons-material'
 import { useStoreActions, useStoreState } from 'react-flow-renderer'
+import { alpha } from '@mui/material/styles'
 
 import LatticeMain from './LatticeMain'
 import LatticeDrawer from './LatticeDrawer'
@@ -76,7 +77,12 @@ const ResultLayout = () => {
   return (
     <>
       <Box sx={{ display: 'flex' }}>
-        <Box sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}>
+        <Box
+          sx={{
+            width: { md: drawerWidth },
+            flexShrink: { md: 0 },
+          }}
+        >
           {/* Mobile drawer */}
           <Drawer
             variant="temporary"
@@ -100,17 +106,24 @@ const ResultLayout = () => {
           {/* Desktop drawer */}
           <Drawer
             variant="permanent"
-            sx={{
+            sx={(theme) => ({
               display: { xs: 'none', md: 'block' },
               '& .MuiDrawer-paper': {
                 boxSizing: 'border-box',
                 width: drawerWidth,
                 border: 'none',
+                bgcolor: alpha(theme.palette.background.default, 0.3),
               },
-            }}
+            })}
             open
           >
-            <AppBar position="static" elevation={0}>
+            <AppBar
+              position="static"
+              elevation={0}
+              sx={(theme) => ({
+                bgcolor: alpha(theme.palette.background.default, 0.3),
+              })}
+            >
               <Toolbar sx={{ my: 3, mb: 2 }}>
                 <Link href="/">
                   <Logo />
@@ -124,7 +137,7 @@ const ResultLayout = () => {
 
         <Box
           component="main"
-          sx={{
+          sx={(theme) => ({
             flexGrow: 1,
             // width: { md: `calc(100% - ${drawerWidth}px)` },
             height: '100vh',
@@ -132,7 +145,8 @@ const ResultLayout = () => {
             ...(!!selectedElectron && {
               marginRight: 0,
             }),
-          }}
+            bgcolor: alpha(theme.palette.background.paper, 0.5),
+          })}
         >
           <AppBar
             position="static"

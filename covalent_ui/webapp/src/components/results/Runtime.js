@@ -49,7 +49,7 @@ export const humanize = humanizeDuration.humanizer({
 
 const parseDate = (date) => (_.isString(date) ? parseISO(date) : date)
 
-const Runtime = ({ startTime, endTime }) => {
+const Runtime = ({ startTime, endTime, sx }) => {
   startTime = parseDate(startTime)
   endTime = parseDate(endTime)
 
@@ -57,17 +57,17 @@ const Runtime = ({ startTime, endTime }) => {
     return ''
   }
   if (!isValid(endTime)) {
-    return <RuntimeTicker startTime={startTime} />
+    return <RuntimeTicker sx={sx} startTime={startTime} />
   }
-  return <RuntimeConst startTime={startTime} endTime={endTime} />
+  return <RuntimeConst sx={sx} startTime={startTime} endTime={endTime} />
 }
 
-const RuntimeConst = ({ startTime, endTime }) => {
+const RuntimeConst = ({ startTime, endTime, sx }) => {
   const diffMs = differenceInMilliseconds(startTime, endTime)
-  return <Typography>{humanize(diffMs)}</Typography>
+  return <Typography sx={sx}>{humanize(diffMs)}</Typography>
 }
 
-const RuntimeTicker = ({ startTime }) => {
+const RuntimeTicker = ({ startTime, sx }) => {
   const [now, setNow] = useState(new Date())
 
   useEffect(() => {
@@ -82,7 +82,7 @@ const RuntimeTicker = ({ startTime }) => {
     }
   })
 
-  return <RuntimeConst startTime={startTime} endTime={now} />
+  return <RuntimeConst sx={sx} startTime={startTime} endTime={now} />
 }
 
 export default Runtime

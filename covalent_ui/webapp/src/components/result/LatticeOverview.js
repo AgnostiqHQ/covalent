@@ -53,22 +53,26 @@ const LatticeOverview = ({ dispatchId }) => {
       {hasStarted && (
         <>
           <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-          <Typography>
+          <Typography fontSize="body2.fontSize">
             {formatDate(result.start_time)}
-            {hasEnded && `- ${formatDate(result.end_time)}`}
+            {hasEnded && ` - ${formatDate(result.end_time)}`}
           </Typography>
         </>
       )}
 
       {/* Runtime */}
       <Heading>Runtime</Heading>
-      <Runtime startTime={result.start_time} endTime={result.end_time} />
+      <Runtime
+        sx={{ fontSize: 'body2.fontSize' }}
+        startTime={result.start_time}
+        endTime={result.end_time}
+      />
 
       {/* Directory */}
       <Heading>Directory</Heading>
-      <Typography sx={{ overflowWrap: 'anywhere' }}>
+      <Typography sx={{ overflowWrap: 'anywhere', fontSize: 'body2.fontSize' }}>
         <Tooltip title={result.results_dir} enterDelay={500}>
-          <span>{truncateMiddle(result.results_dir, 12, 25)}</span>
+          <span>{truncateMiddle(result.results_dir, 15, 28)}</span>
         </Tooltip>
         <CopyButton
           content={result.results_dir}
@@ -84,7 +88,7 @@ const LatticeOverview = ({ dispatchId }) => {
       {showResult && (
         <>
           <Heading>Result</Heading>
-          <Paper elevation={4}>
+          <Paper elevation={0}>
             <SyntaxHighlighter language="python" src={result.result} />
           </Paper>
         </>
@@ -97,7 +101,7 @@ const LatticeOverview = ({ dispatchId }) => {
 
       {/* Source */}
       <Heading />
-      <Paper elevation={4}>
+      <Paper elevation={0}>
         <SyntaxHighlighter src={src} />
       </Paper>
     </>
@@ -114,7 +118,14 @@ export const ExecutorSection = ({ metadata }) => {
       <Heading>Executor: {executorType}</Heading>
 
       {!_.isEmpty(executorParams) && (
-        <Typography sx={{ overflowX: 'auto', whiteSpace: 'nowrap', pb: 1 }}>
+        <Typography
+          sx={{
+            fontSize: 'body2.fontSize',
+            overflowX: 'auto',
+            whiteSpace: 'nowrap',
+            pb: 1,
+          }}
+        >
           {_.map(executorParams, (value, key) => (
             <span key={key}>
               {key} = {value}
@@ -140,7 +151,7 @@ export const InputSection = ({ inputs }) => {
   return (
     <>
       <Heading>Input</Heading>
-      <Paper elevation={4}>
+      <Paper elevation={0}>
         <SyntaxHighlighter language="python" src={inputSrc} />
       </Paper>
     </>
