@@ -24,6 +24,7 @@ import os
 import tempfile
 
 import mock
+import psutil
 import pytest
 from click.testing import CliRunner
 from psutil import pid_exists
@@ -145,8 +146,37 @@ def test_graceful_start_when_pid_absent(mocker):
     read_pid_mock.assert_called_once()
 
 
-def test_graceful_shutdown():
-    pass
+def test_graceful_shutdown_running_server(mocker):
+    """Test the graceful shutdown functionality."""
+
+    read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=12)
+    mocker.patch("psutil.pid_exists", return_value=True)
+    process_mock = mocker.patch("psutil.Process")
+    rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+    click_echo_mock = mocker.patch("click.echo")
+
+    _graceful_shutdown(server_name="mock", pidfile="mock")
+
+    click_echo_mock.assert_called_once_with("Covalent mock server has stopped.")
+    rm_pid_file_mock.assert_called_once_with("mock")
+    read_pid_mock.assert_called_once()
+    process_mock.assert_called_once_with(12)
+
+
+def test_graceful_shutdown_stopped_server(mocker):
+    """Test the graceful shutdown functionality."""
+
+    mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=12)
+    mocker.patch("psutil.pid_exists", return_value=False)
+    process_mock = mocker.patch("psutil.Process")
+    rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+    click_echo_mock = mocker.patch("click.echo")
+
+    _graceful_shutdown(server_name="mock", pidfile="mock")
+
+    click_echo_mock.assert_called_once_with("Covalent mock server was not running.")
+    rm_pid_file_mock.assert_called_once_with("mock")
+    assert not process_mock.called
 
 
 def test_graceful_restart():

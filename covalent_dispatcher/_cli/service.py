@@ -211,15 +211,14 @@ def _graceful_shutdown(server_name: str, pidfile: str) -> None:
         None
     """
 
-    try:
-        pid = _read_pid(pidfile)
+    pid = _read_pid(pidfile)
+    if psutil.pid_exists(pid):
         proc = psutil.Process(pid)
         proc.terminate()
         proc.wait()
         click.echo(f"Covalent {server_name} server has stopped.")
-    except (psutil.NoSuchProcess, ValueError):
+    else:
         click.echo(f"Covalent {server_name} server was not running.")
-
     _rm_pid_file(pidfile)
 
 
