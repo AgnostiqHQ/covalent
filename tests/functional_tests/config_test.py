@@ -24,12 +24,12 @@ from unittest.mock import patch
 from covalent._shared_files.config import _ConfigManager
 
 
-@patch.dict(os.environ, {"COVALENT_CONFIG_DIR": "functional_test_files"}, clear=True)
+@patch.dict(os.environ, {"COVALENT_CONFIG_DIR": "./"}, clear=True)
 def test_read_config():
     """Test that configuration file is properly read"""
 
-    assert os.environ["COVALENT_CONFIG_DIR"] == "functional_test_files"
-    assert os.path.exists("functional_test_files/covalent/covalent.conf")
+    assert os.environ["COVALENT_CONFIG_DIR"] == "./"
+    assert os.path.exists("covalent.conf")
 
     config_manager = _ConfigManager()
     config_manager.read_config()
