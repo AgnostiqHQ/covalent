@@ -28,6 +28,9 @@ from covalent._shared_files.config import _ConfigManager
 def test_read_config():
     """Test that configuration file is properly read"""
 
+    assert os.environ["COVALENT_CONFIG_DIR"] == "functional_test_files"
+    assert os.path.exists("functional_test_files/covalent/covalent.conf")
+
     config_manager = _ConfigManager()
     config_manager.read_config()
 
