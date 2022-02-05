@@ -24,102 +24,102 @@ from unittest.mock import patch
 from covalent._shared_files.config import _ConfigManager
 
 
+@patch.dict(os.environ, {"COVALENT_CONFIG_DIR": "functional_test_files"}, clear=True)
 def test_read_config():
     """Test that configuration file is properly read"""
 
-    with patch.dict(os.environ, {"COVALENT_CONFIG_DIR": "functional_test_files"}, clear=True):
-        config_manager = _ConfigManager()
-        config_manager.read_config()
+    config_manager = _ConfigManager()
+    config_manager.read_config()
 
-        expected_dict = {
-            "sdk": {"log_dir": "./", "log_level": "warning", "enable_logging": "false"},
-            "executors": {
-                "local": {
-                    "log_stdout": "stdout.log",
-                    "log_stderr": "stderr.log",
-                    "cache_dir": "/tmp/covalent",
-                    "other_params": {"name": "Local Executor", "proprietary": "False"},
-                },
-                "local_executor": "local.py",
-                "slurm_executor": "slurmp.py",
-                "ssh_executor": "ssh_executor.py",
+    expected_dict = {
+        "sdk": {"log_dir": "./", "log_level": "warning", "enable_logging": "false"},
+        "executors": {
+            "local": {
+                "log_stdout": "stdout.log",
+                "log_stderr": "stderr.log",
+                "cache_dir": "/tmp/covalent",
+                "other_params": {"name": "Local Executor", "proprietary": "False"},
             },
-            "test_dict": {
-                "1": 2,
-                "3": 4,
-            },
-        }
+            "local_executor": "local.py",
+            "slurm_executor": "slurmp.py",
+            "ssh_executor": "ssh_executor.py",
+        },
+        "test_dict": {
+            "1": 2,
+            "3": 4,
+        },
+    }
 
     assert config_manager.config_data == expected_dict
 
 
+@patch.dict(os.environ, {"COVALENT_CONFIG_DIR": "functional_test_files"}, clear=True)
 def test_update_config():
     """Test that updating the existing config data with the config file works"""
 
-    with patch.dict(os.environ, {"COVALENT_CONFIG_DIR": "functional_test_files"}, clear=True):
-        config_manager = _ConfigManager()
-        config_manager.config_data = {
-            "sdk": {
-                "test_dir": "/tmp",
-                "log_dir": {
-                    "dir_one": "/var",
-                    "dir_two": "~/.log_dir",
-                },
-                "log_level": "debug",
-                "enable_logging": "true",
+    config_manager = _ConfigManager()
+    config_manager.config_data = {
+        "sdk": {
+            "test_dir": "/tmp",
+            "log_dir": {
+                "dir_one": "/var",
+                "dir_two": "~/.log_dir",
             },
-            "executors": {
-                "local": {
-                    "other_params": {
-                        "proprietary": "true",
-                        "params_test_dict": {
-                            "a": "b",
-                            "c": "d",
-                        },
-                    }
-                },
-                "executor_test_dict": {
-                    "alpha": "beta",
-                    "gamma": "delta",
-                },
+            "log_level": "debug",
+            "enable_logging": "true",
+        },
+        "executors": {
+            "local": {
+                "other_params": {
+                    "proprietary": "true",
+                    "params_test_dict": {
+                        "a": "b",
+                        "c": "d",
+                    },
+                }
             },
-            "test_dict": None,
-        }
-        config_manager.update_config()
+            "executor_test_dict": {
+                "alpha": "beta",
+                "gamma": "delta",
+            },
+        },
+        "test_dict": None,
+    }
+    config_manager.update_config()
 
-        expected_dict = {
-            "sdk": {
-                "test_dir": "/tmp",
-                "log_dir": "./",
-                "log_level": "warning",
-                "enable_logging": "false",
-            },
-            "executors": {
-                "local": {
-                    "log_stdout": "stdout.log",
-                    "log_stderr": "stderr.log",
-                    "cache_dir": "/tmp/covalent",
-                    "other_params": {
-                        "name": "Local Executor",
-                        "proprietary": "False",
-                        "params_test_dict": {
-                            "a": "b",
-                            "c": "d",
-                        },
+    expected_dict = {
+        "sdk": {
+            "test_dir": "/tmp",
+            "log_dir": "./",
+            "log_level": "warning",
+            "enable_logging": "false",
+        },
+        "executors": {
+            "local": {
+                "log_stdout": "stdout.log",
+                "log_stderr": "stderr.log",
+                "cache_dir": "/tmp/covalent",
+                "other_params": {
+                    "name": "Local Executor",
+                    "proprietary": "False",
+                    "params_test_dict": {
+                        "a": "b",
+                        "c": "d",
                     },
                 },
-                "local_executor": "local.py",
-                "slurm_executor": "slurmp.py",
-                "ssh_executor": "ssh_executor.py",
-                "executor_test_dict": {
-                    "alpha": "beta",
-                    "gamma": "delta",
-                },
             },
-            "test_dict": {
-                "1": 2,
-                "3": 4,
+            "local_executor": "local.py",
+            "slurm_executor": "slurmp.py",
+            "ssh_executor": "ssh_executor.py",
+            "executor_test_dict": {
+                "alpha": "beta",
+                "gamma": "delta",
             },
-        }
+        },
+        "test_dict": {
+            "1": 2,
+            "3": 4,
+        },
+    }
 
     assert config_manager.config_data == expected_dict
