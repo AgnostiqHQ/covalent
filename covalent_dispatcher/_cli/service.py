@@ -25,7 +25,6 @@ import shutil
 import signal
 import socket
 from subprocess import Popen
-from typing import Optional
 
 import click
 import psutil
@@ -157,7 +156,7 @@ def _graceful_start(
     pidfile: str,
     logfile: str,
     port: int,
-    develop: Optional[bool] = False,
+    develop: bool = False,
 ) -> int:
     """
     Gracefully start a Flask app with gunicorn.

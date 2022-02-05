@@ -22,7 +22,12 @@
 
 import _ from 'lodash'
 import { useSelector } from 'react-redux'
-import { CheckCircleOutline, Close, WarningAmber } from '@mui/icons-material'
+import {
+  CancelOutlined,
+  CheckCircleOutline,
+  Close,
+  WarningAmber,
+} from '@mui/icons-material'
 import {
   Box,
   CircularProgress,
@@ -38,6 +43,8 @@ import { formatDate, statusColor, statusLabel } from '../../utils/misc'
 import Runtime from '../results/Runtime'
 import SyntaxHighlighter from '../SyntaxHighlighter'
 import Heading from './Heading'
+import { ExecutorSection, InputSection } from './LatticeOverview'
+import { ErrorCard } from './LatticeDrawer'
 
 export const nodeDrawerWidth = 360
 
@@ -100,7 +107,6 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
           <Typography color="text.secondary" variant="body2">
             Status
           </Typography>
-
           <Box
             sx={{
               mt: 1,
@@ -117,6 +123,8 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
                   return <CheckCircleOutline />
                 case 'FAILED':
                   return <WarningAmber />
+                case 'CANCELLED':
+                  return <CancelOutlined />
                 default:
                   return null
               }
@@ -124,6 +132,8 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
             &nbsp;
             {statusLabel(node.status)}
           </Box>
+
+          <ErrorCard error={node.error} />
 
           {node.doc && (
             <>
@@ -156,14 +166,19 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
             </>
           )}
 
+          <ExecutorSection metadata={_.get(node, 'metadata')} />
+
           {node.status === 'COMPLETED' && (
             <>
               <Heading>Result</Heading>
               <Paper elevation={4}>
-                <SyntaxHighlighter language="json" src={node.output} />
+                <SyntaxHighlighter language="python" src={node.output} />
               </Paper>
             </>
           )}
+
+          {/* Input */}
+          <InputSection inputs={node.kwargs} />
         </>
       )}
     </Drawer>

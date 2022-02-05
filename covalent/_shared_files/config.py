@@ -23,7 +23,7 @@ import shutil
 from functools import reduce
 from operator import getitem
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import toml
 
@@ -145,7 +145,7 @@ class _ConfigManager:
 _config_manager = _ConfigManager()
 
 
-def set_config(new_config: Union[Dict, str], new_value: Optional[Any] = None) -> None:
+def set_config(new_config: Union[Dict, str], new_value: Any = None) -> None:
     """
     Update the configuration.
 
