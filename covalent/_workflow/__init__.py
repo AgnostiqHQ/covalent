@@ -20,5 +20,5 @@
 
 """Import workflow utilities."""
 
-from .electron import electron
+from .electron import electron, Electron
 from .lattice import lattice

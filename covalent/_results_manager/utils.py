@@ -38,6 +38,6 @@ def convert_to_lattice_function_call(
     """
 
     inp = "".join(key + "=" + str(value) + ", " for key, value in inputs.items())[:-2]
-    function_call_str = lattice_function_string
+    function_call_str = "#" + lattice_function_string
     function_call_str += f'if __name__ == "__main__":\n    {lattice_function_name}({inp})\n'
     return function_call_str

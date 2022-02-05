@@ -51,6 +51,44 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
+def comment_decorators(function):
+
+    current_module = __import__(__name__)
+    import inspect
+    from typing import Callable
+
+    source = inspect.getsource(function)
+    index = source.find("def ")
+    l = []
+    import regex as re
+
+    r = re.compile("(@?[^@]+)")
+    decorators = [i.replace("\n", "").replace(" ", "") for i in r.findall(source[:index])]
+    caller_globals = inspect.stack()[1].frame.f_globals
+    aliases = []
+    for i in caller_globals:
+        glob = caller_globals[i]
+        if isinstance(glob, Callable):
+            if glob == electron:
+                aliases.append(i)
+
+        if glob == current_module:
+            aliases.append(i)
+    txt = ""
+    for i in decorators:
+        tmp = False
+        for j in aliases:
+            if j in i:
+                tmp = True
+
+        if not tmp:
+            txt += i + "\n"
+        else:
+            txt += "#" + i + "\n"
+    txt += source[index:]
+    return txt
+
+
 class Electron:
     """
     An electron (or task) object that is a modular component of a
@@ -70,6 +108,8 @@ class Electron:
         self.node_id = node_id
         self.metadata = metadata
         self.kwargs = kwargs
+        self.function_str = inspect.getsource(function)
+        self.function_comments = comment_decorators(function)
 
     def set_metadata(self, name: str, value: Any) -> None:
         """
@@ -366,8 +406,11 @@ class Electron:
         )
 
         # Add function string
+        # active_lattice.transport_graph.set_node_value(
+        #     self.node_id, "function_string", get_serialized_function_str(self.function)
+        # )
         active_lattice.transport_graph.set_node_value(
-            self.node_id, "function_string", get_serialized_function_str(self.function)
+            self.node_id, "function_commented", self.function_comments
         )
 
         for key, value in kwargs.items():

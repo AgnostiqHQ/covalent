@@ -457,6 +457,14 @@ Node Outputs
         result_folder_path = os.path.join(directory, f"{self.dispatch_id}")
         Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
+        dispatch_function += f"# Result of dispatch {self.dispatch_id}\n"
+        dispatch_function += f"# Result status: {self.status}\n"
+        dispatch_function += f"# Result start time: {self.start_time}\n"
+        dispatch_function += f"# Result end time: {self.end_time}" + "\n" * 3
+
+        # add imports
+        dispatch_function += self.lattice.lattice_imports + "\n" * 3
+
         # Accumulate the tasks and workflow in a string
         topo_sorted_graph = self.lattice.transport_graph.get_topologically_sorted_graph()
         functions_added = []
@@ -468,16 +476,18 @@ Node Outputs
                 if function is not None and function.__name__ not in functions_added:
 
                     dispatch_function += self.lattice.transport_graph.get_node_value(
-                        nodes, value_key="function_string"
+                        nodes, value_key="function_commented"
                     )
                     functions_added.append(function.__name__)
 
-        lattice_function_str = convert_to_lattice_function_call(
-            self.lattice.workflow_function_string,
-            self.lattice.workflow_function.__name__,
-            self.inputs,
+        dispatch_function += (
+            "\n\n" + self.lattice.function_comments + "\n\n"
+        )  # lattice_function_str
+
+        inp = "".join(key + "=" + str(value) + ", " for key, value in self.inputs.items())[:-2]
+        dispatch_function += (
+            f'if __name__ == "__main__":\n    {self.lattice.workflow_function.__name__}({inp})\n'
         )
-        dispatch_function += lattice_function_str
 
         with open(os.path.join(result_folder_path, "dispatch_source.py"), "w") as f:
             f.write(dispatch_function)

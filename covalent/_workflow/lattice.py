@@ -53,6 +53,57 @@ log_stack_info = logger.log_stack_info
 consumable_constraints = []
 
 
+def comment_decorators(function):
+
+    current_module = __import__(__name__)
+    import inspect
+    from typing import Callable
+
+    source = inspect.getsource(function)
+    index = source.find("def ")
+    l = []
+    import regex as re
+
+    r = re.compile("(@?[^@]+)")
+    decorators = [i.replace("\n", "").replace(" ", "") for i in r.findall(source[:index])]
+    caller_globals = inspect.stack()[1].frame.f_globals
+
+    aliases = []
+    for i in caller_globals:
+
+        glob = caller_globals[i]
+        if isinstance(glob, Callable):
+            if glob == lattice:
+                aliases.append(i)
+
+        if glob == current_module:
+            aliases.append(i)
+    txt = ""
+    for i in decorators:
+        tmp = False
+        for j in aliases:
+            if j in i:
+                tmp = True
+
+        if not tmp:
+            txt += i + "\n"
+        else:
+            txt += "#" + i + "\n"
+        txt += source[index:]
+    return txt
+
+
+def get_imports(func):
+    imports_str = ""
+    for i, j in func.__globals__.items():
+        if inspect.ismodule(j):
+            add = ""
+            if j.__name__ == "covalent":
+                add = "#"
+            imports_str += add + f"import {j.__name__} as {i}\n"
+    return imports_str
+
+
 class Lattice:
     """
     A lattice workflow object that holds the work flow graph and is returned by :obj:`lattice <covalent.lattice>` decorator.
@@ -70,13 +121,18 @@ class Lattice:
         self, workflow_function: Callable, transport_graph: _TransportGraph = None
     ) -> None:
         self.workflow_function = workflow_function
-        self.workflow_function_string = get_serialized_function_str(self.workflow_function)
+        self.workflow_function_string = comment_decorators(
+            workflow_function
+        )  # get_serialized_function_str(self.workflow_function)
         self.transport_graph = transport_graph or _TransportGraph()
         self.metadata = {}
         self.__name__ = self.workflow_function.__name__
         self.post_processing = False
         self.kwargs = {}
         self.electron_outputs = {}
+        self.function_str = inspect.getsource(workflow_function)
+        self.function_comments = comment_decorators(workflow_function)
+        self.lattice_imports = get_imports(workflow_function)
 
     def set_metadata(self, name: str, value: Any) -> None:
         """
