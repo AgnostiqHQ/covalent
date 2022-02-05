@@ -74,7 +74,7 @@ const LatticeOverview = ({ dispatchId }) => {
       <Heading>Directory</Heading>
       <Typography sx={{ overflowWrap: 'anywhere', fontSize: 'body2.fontSize' }}>
         <Tooltip title={result.results_dir} enterDelay={500}>
-          <span>{truncateMiddle(result.results_dir, 15, 28)}</span>
+          <span>{truncateMiddle(result.results_dir, 15, 25)}</span>
         </Tooltip>
         <CopyButton
           content={result.results_dir}

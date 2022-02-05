@@ -141,6 +141,6 @@ const theme = createTheme(defaultTheme, {
   },
 })
 
-export const graphBgColor = darken(theme.palette.background.paper, 0.25)
+export const graphBgColor = darken(theme.palette.background.paper, 0.3)
 
 export default theme

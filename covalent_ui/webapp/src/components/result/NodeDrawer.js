@@ -127,7 +127,7 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
           {node.doc && (
             <>
               <Heading>Description</Heading>
-              <Typography>{node.doc}</Typography>
+              <Typography fontSize="body2.fontSize">{node.doc}</Typography>
             </>
           )}
 

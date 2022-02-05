@@ -84,7 +84,7 @@ const LatticeMain = ({ hasSelectedNode }) => {
       >
         <Background
           variant="dots"
-          color={lighten(theme.palette.background.paper, 0.1)}
+          color={lighten(theme.palette.background.paper, 0.05)}
           gap={12}
           size={1}
         />
