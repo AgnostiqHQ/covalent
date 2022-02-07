@@ -96,17 +96,17 @@ def test_next_available_port(mocker):
     """Test function to generate the next available port that is not in use."""
 
     # Case 1 - Port is available.
-    with mocker.patch("socket.socket.bind"):
-        res = _next_available_port(requested_port=12)
+    mocker.patch("socket.socket.bind")
+    res = _next_available_port(requested_port=12)
     assert res == 12
 
     # Case 2 - Next two ports are not available.
     click_echo_mock = mocker.patch("click.echo")
-    with mocker.patch(
+    mocker.patch(
         "socket.socket.bind", side_effect=[Exception("OSERROR"), Exception("OSERROR"), None]
-    ):
+    )
 
-        res = _next_available_port(requested_port=12)
+    res = _next_available_port(requested_port=12)
     assert res == 14
     click_echo_mock.assert_called_once()
 
@@ -250,8 +250,8 @@ def test_start(mocker, monkeypatch):
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
 
-    runner.invoke(start, f"--ui --ui-port {port_val}")
-    graceful_start_mock.assert_called_once_with("UI", "mock", "mock", "mock", port_val, False)
+    runner.invoke(start, f"--ui --ui-port {port_val} -d")
+    graceful_start_mock.assert_called_once_with("UI", "mock", "mock", "mock", port_val, True)
     set_config_mock.assert_called_once_with(
         {
             "user_interface.address": "0.0.0.0",
@@ -260,8 +260,20 @@ def test_start(mocker, monkeypatch):
     )
 
 
-def test_stop():
-    pass
+def test_stop(mocker, monkeypatch):
+    """Test the stop CLI command."""
+
+    runner = CliRunner()
+    graceful_shutdown_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.DISPATCHER_PIDFILE", "mock")
+    runner.invoke(stop, "--dispatcher")
+    graceful_shutdown_mock.assert_called_once_with("dispatcher", "mock")
+
+    runner = CliRunner()
+    graceful_shutdown_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    runner.invoke(stop, "--ui")
+    graceful_shutdown_mock.assert_called_once_with("UI", "mock")
 
 
 def test_restart():
