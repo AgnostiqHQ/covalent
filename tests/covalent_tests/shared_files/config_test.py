@@ -23,7 +23,7 @@ from unittest.mock import patch
 
 from covalent._shared_files.config import _ConfigManager
 
-CONFIG_DIR = os.path.join(os.path.dirname(__file__), "functional_test_files")
+CONFIG_DIR = os.path.join(os.path.dirname(__file__), "test_files")
 
 
 @patch.dict(os.environ, {"COVALENT_CONFIG_DIR": CONFIG_DIR}, clear=True)
