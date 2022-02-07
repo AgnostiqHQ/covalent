@@ -23,10 +23,10 @@ from unittest.mock import patch
 
 from covalent._shared_files.config import _ConfigManager
 
-config_dir = os.path.join(os.path.dirname(__file__), "functional_test_files")
+CONFIG_DIR = os.path.join(os.path.dirname(__file__), "functional_test_files")
 
 
-@patch.dict(os.environ, {"COVALENT_CONFIG_DIR": config_dir}, clear=True)
+@patch.dict(os.environ, {"COVALENT_CONFIG_DIR": CONFIG_DIR}, clear=True)
 def test_read_config():
     """Test that configuration file is properly read"""
 
@@ -55,7 +55,7 @@ def test_read_config():
     assert config_manager.config_data == expected_dict
 
 
-@patch.dict(os.environ, {"COVALENT_CONFIG_DIR": config_dir}, clear=True)
+@patch.dict(os.environ, {"COVALENT_CONFIG_DIR": CONFIG_DIR}, clear=True)
 def test_update_config():
     """Test that updating the existing config data with the config file works"""
 
