@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.7] - 2022-02-07
+
+### Added
+
+- Typing: Add Type hint `dispatch_info` parameter.                
+- Documentation: Updated the return_type description in docstring.
+
+### Changed
+
+- Typing: Change return type annotation to `Generator`.
+
+## [0.24.6] - 2022-02-06
+
+### Added
+
+- Type hint to `deserialize` method of `TransportableObject` of `covalent/_workflow/transport.py`.
+
+### Changed
+
+- Description of `data` in `deserialize` method of `TransportableObject` of `covalent/_workflow/transport.py` from `The serialized transportable object` to `Cloudpickled function`.
+
 ## [0.24.5] - 2022-02-05
 
 ### Fixed
