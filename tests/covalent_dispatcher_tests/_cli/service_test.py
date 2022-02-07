@@ -236,7 +236,7 @@ def test_start(mocker, monkeypatch):
     set_config_mock.assert_called_once_with(
         {
             "dispatcher.address": "0.0.0.0",
-            "dispatcher.port": str(port_val),
+            "dispatcher.port": port_val,
         }
     )
 
@@ -255,7 +255,7 @@ def test_start(mocker, monkeypatch):
     set_config_mock.assert_called_once_with(
         {
             "user_interface.address": "0.0.0.0",
-            "user_interface.port": str(port_val),
+            "user_interface.port": port_val,
         }
     )
 
