@@ -121,7 +121,7 @@ class ActiveDispatchInfoManager:
             dispatch_info: The dispatch info object to claim.
 
         Returns:
-            Returns a Generator object, that gets converted into a contextmanager.
+            Returns a generator, which gets converted into a contextmanager.
         """
 
         self._active_dispatch_info = dispatch_info
