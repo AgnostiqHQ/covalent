@@ -220,7 +220,7 @@ def test_start(mocker, monkeypatch):
     """Test the start CLI command."""
 
     runner = CliRunner()
-    port_val = "42"
+    port_val = 42
     graceful_start_mock = mocker.patch(
         "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
     )
@@ -236,12 +236,12 @@ def test_start(mocker, monkeypatch):
     set_config_mock.assert_called_once_with(
         {
             "dispatcher.address": "0.0.0.0",
-            "dispatcher.port": port_val,
+            "dispatcher.port": str(port_val),
         }
     )
 
     runner = CliRunner()
-    port_val = "42"
+    port_val = 42
     graceful_start_mock = mocker.patch(
         "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
     )
@@ -255,7 +255,7 @@ def test_start(mocker, monkeypatch):
     set_config_mock.assert_called_once_with(
         {
             "user_interface.address": "0.0.0.0",
-            "user_interface.port": port_val,
+            "user_interface.port": str(port_val),
         }
     )
 
@@ -280,7 +280,9 @@ def test_restart():
     pass
 
 
-def test_status():
+def test_status(mocker, monkeypatch):
+    """Test covalent status command."""
+
     pass
 
 
