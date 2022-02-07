@@ -158,6 +158,7 @@ class BaseExecutor(ABC):
         dispatch_info: DispatchInfo,
         conda_env: str,
         cache_dir: str,
+        node_id: int,
     ) -> Tuple[bool, Any]:
         """
         Execute the function with the given arguments, in a Conda environment.
@@ -175,7 +176,7 @@ class BaseExecutor(ABC):
         """
 
         if not self.get_conda_path():
-            return (False, None)
+            return self._on_conda_env_fail(function, kwargs, node_id)
 
         # Pickle the function
         temp_filename = ""
@@ -203,7 +204,7 @@ class BaseExecutor(ABC):
         else:
             message = "No Conda installation found on this compute node."
             app_log.warning(message)
-            return (False, None)
+            return self._on_conda_env_fail(function, kwargs, node_id)
 
         shell_commands += f"conda activate {conda_env}\n"
         shell_commands += "retval=$?\n"
@@ -252,12 +253,35 @@ class BaseExecutor(ABC):
 
             if out.returncode != 0:
                 app_log.warning(out.stderr)
-                return (False, None)
+                return self._on_conda_env_fail(function, kwargs, node_id)
 
         with open(result_filename, "rb") as f:
             result = pickle.load(f)
 
-        return (True, result)
+            message = f"Executed node {node_id} on Conda environment {self.conda_env}."
+            app_log.debug(message)
+            return result
+
+    def _on_conda_env_fail(self, func, kwargs, node_id):
+        """
+        
+        """
+
+        result = None
+        message = (
+            f"Failed to execute node {node_id} on Conda environment {self.conda_env}."
+        )
+        if self.current_env_on_conda_fail:
+            message += "\nExecuting on the current Conda environment."
+            app_log.warning(message)
+            fn = func.get_deserialized()
+            result = fn(**kwargs)
+
+        else:
+            app_log.error(message)
+            raise RuntimeError
+
+        return result
 
     def get_conda_envs(self) -> None:
         """

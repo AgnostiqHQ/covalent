@@ -77,15 +77,11 @@ class LocalExecutor(BaseExecutor):
         ) as stdout, redirect_stderr(io.StringIO()) as stderr:
 
             if self.conda_env != "":
-                success = False
-                result = None
-
                 # Extract any executor-specific bash commands from execution_args that are
                 # needed. Each command should be an entry in executor_specific_execution_args.
                 # This executor has none.
                 executor_specific_exec_cmds = []
-
-                success, result = self.execute_in_conda_env(
+                result = self.execute_in_conda_env(
                     function,
                     kwargs,
                     execution_args,
@@ -93,26 +89,8 @@ class LocalExecutor(BaseExecutor):
                     dispatch_info,
                     self.conda_env,
                     self.cache_dir,
+                    node_id,
                 )
-
-                if success:
-                    message = f"Executed node {node_id} on Conda environment {self.conda_env}."
-                    app_log.debug(message)
-
-                else:
-                    message = (
-                        f"Failed to execute node {node_id} on Conda environment {self.conda_env}."
-                    )
-                    if self.current_env_on_conda_fail:
-                        message += "\nExecuting on the current Conda environment."
-                        app_log.warning(message)
-                        fn = function.get_deserialized()
-                        result = fn(**kwargs)
-
-                    else:
-                        app_log.error(message)
-
-                        raise RuntimeError
 
             else:
                 fn = function.get_deserialized()
