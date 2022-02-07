@@ -165,11 +165,13 @@ class BaseExecutor(ABC):
 
         Args:
             function: The input python function which will be executed and whose result
-                      is ultimately returned by this function.
+                is ultimately returned by this function.
             kwargs: Keyword arguments to be used by function.
             execution_args: Executor-specific arguments.
             dispatch_info: Dispatch information, e.g., the dispatch ID.
             conda_env: Name of a Conda environment in which to execute the task.
+            cache_dir: The directory where temporary files and logs (if any) are stored.
+            node_id: The integer identifier for the current node.
 
         Returns:
             output: The result of the function execution.
@@ -262,9 +264,18 @@ class BaseExecutor(ABC):
             app_log.debug(message)
             return result
 
-    def _on_conda_env_fail(self, func, kwargs, node_id):
+    def _on_conda_env_fail(self, func: TransportableObject, kwargs: Any, node_id: int):
         """
         
+        Args:
+            func: The serialized input python function which will be executed and
+                whose result may be returned by this function.
+            kwargs: Keyword arguments to be used by function.
+            node_id: The integer identifier for the current node.
+
+        Returns:
+            output: The result of the function execution, if
+                self.current_env_on_conda_fail == True, otherwise, return value is None.
         """
 
         result = None
