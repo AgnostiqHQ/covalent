@@ -14,6 +14,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Added
 
 - Unit tests for command line interface (CLI) functionalities.
+
+## [0.24.7] - 2022-02-07
+
+### Added
+
+- Typing: Add Type hint `dispatch_info` parameter.
+- Documentation: Updated the return_type description in docstring.
+
+### Changed
+
+- Typing: Change return type annotation to `Generator`.
+
+## [0.24.6] - 2022-02-06
+
+### Added
+
+- Type hint to `deserialize` method of `TransportableObject` of `covalent/_workflow/transport.py`.
+
+### Changed
+
+- Description of `data` in `deserialize` method of `TransportableObject` of `covalent/_workflow/transport.py` from `The serialized transportable object` to `Cloudpickled function`.
+
+## [0.24.5] - 2022-02-05
+
+### Fixed
+
+- Removed dependence on Sentinel module
+
+## [0.24.4] - 2022-02-04
+
+### Added
+
+- Tests across multiple versions of Python and multiple operating systems
+- Documentation reflecting supported configurations
+
 ## [0.24.3] - 2022-02-04
 
 ### Changed
