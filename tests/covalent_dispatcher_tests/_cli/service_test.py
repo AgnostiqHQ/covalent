@@ -22,6 +22,7 @@
 
 import os
 import tempfile
+from asyncore import dispatcher
 from http import server
 
 import mock
@@ -41,6 +42,10 @@ from covalent_dispatcher._cli.service import (
     _read_pid,
     _rm_pid_file,
     purge,
+    restart,
+    start,
+    status,
+    stop,
 )
 
 
@@ -211,8 +216,48 @@ def test_graceful_restart_nonexistent_pid(mocker):
     read_pid_mock.assert_called_once()
 
 
-def test_start():
-    pass
+def test_start(mocker, monkeypatch):
+    """Test the start CLI command."""
+
+    runner = CliRunner()
+    port_val = "42"
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.DISPATCHER_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.DISPATCHER_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.DISPATCHER_LOGFILE", "mock")
+
+    runner.invoke(start, f"--dispatcher --port {port_val}")
+    graceful_start_mock.assert_called_once_with(
+        "dispatcher", "mock", "mock", "mock", port_val, False
+    )
+    set_config_mock.assert_called_once_with(
+        {
+            "dispatcher.address": "0.0.0.0",
+            "dispatcher.port": port_val,
+        }
+    )
+
+    runner = CliRunner()
+    port_val = "42"
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    runner.invoke(start, f"--ui --ui-port {port_val}")
+    graceful_start_mock.assert_called_once_with("UI", "mock", "mock", "mock", port_val, False)
+    set_config_mock.assert_called_once_with(
+        {
+            "user_interface.address": "0.0.0.0",
+            "user_interface.port": port_val,
+        }
+    )
 
 
 def test_stop():

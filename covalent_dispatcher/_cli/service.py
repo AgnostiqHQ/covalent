@@ -261,8 +261,7 @@ def _graceful_restart(server_name: str, pidfile: str) -> bool:
     help="Local user interface server port number.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server(s) in developer mode.")
-@click.pass_context
-def start(ctx, dispatcher: bool, ui: bool, port: int, ui_port: int, develop: bool) -> None:
+def start(dispatcher: bool, ui: bool, port: int, ui_port: int, develop: bool) -> None:
     """
     Start the dispatcher and/or UI servers.
     """
