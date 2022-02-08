@@ -21,7 +21,11 @@
 import os
 from unittest.mock import patch
 
-from covalent._shared_files.config import _ConfigManager
+import pytest
+import toml
+
+from covalent._shared_files.config import _ConfigManager, set_config
+from covalent._shared_files.defaults import _DEFAULT_CONFIG
 
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "test_files")
 
@@ -125,3 +129,41 @@ def test_update_config():
     }
 
     assert config_manager.config_data == expected_dict
+
+
+def test_set_config_str_key(mocker):
+    cm_set_mock = mocker.patch("covalent._shared_files.config._config_manager.set")
+    cm_write_config = mocker.patch("covalent._shared_files.config._config_manager.write_config")
+    set_config("mock_section.mock_variable", "mock_value")
+    cm_set_mock.assert_called_once_with("mock_section.mock_variable", "mock_value")
+    cm_write_config.assert_called_once_with()
+
+
+def test_set_config_dict_key(mocker):
+    cm_set_mock = mocker.patch("covalent._shared_files.config._config_manager.set")
+    cm_write_config = mocker.patch("covalent._shared_files.config._config_manager.write_config")
+    set_config({"mock_section.mock_variable": "mock_value"})
+    cm_set_mock.assert_called_once_with("mock_section.mock_variable", "mock_value")
+    cm_write_config.assert_called_once_with()
+
+
+def test_generate_default_config():
+
+    test_class = _ConfigManager()
+    test_class.generate_default_config()
+    assert test_class.config_data == _DEFAULT_CONFIG
+
+
+def test_read_config():
+
+    test_class = _ConfigManager()
+    test_class.read_config()
+    assert test_class.config_data == toml.load(test_class.config_file)
+
+
+# def test_write_config():
+
+#     test_class=_ConfigManager()
+#     test_class.write_config()
+#     f=open(test_class.config_file, "w")
+#     test_class.write_config()
