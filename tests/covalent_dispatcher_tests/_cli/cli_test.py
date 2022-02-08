@@ -23,12 +23,24 @@
 """Test for Covalent CLI Tool."""
 
 import click
+from click.testing import CliRunner
 
 from covalent_dispatcher._cli.cli import cli
 
 
-def test_cli():
-    pass
+def test_cli(mocker):
+    """Test the main CLI function."""
+
+    runner = CliRunner()
+    response = runner.invoke(cli, "--version")
+    assert (
+        ("python" in response.output.lower())
+        and ("agnostiq" in response.output.lower())
+        and ("copyright" in response.output.lower())
+    )
+
+    response = runner.invoke(cli)
+    assert ("options" in response.output.lower()) and ("commands" in response.output.lower())
 
 
 def test_cli_commands():
