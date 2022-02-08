@@ -25,6 +25,7 @@ import tempfile
 from asyncore import dispatcher
 from http import server
 
+import click
 import mock
 import psutil
 import pytest
@@ -281,7 +282,33 @@ def test_stop(mocker, monkeypatch):
     graceful_shutdown_mock.assert_called_once_with("UI", "mock")
 
 
-def test_restart():
+def test_restart(mocker):
+    """Test the restart CLI command."""
+
+    # @click.group()
+    # @click.pass_context
+    # def cli(ctx):
+    #     ctx.obj = 'test'
+
+    # @cli.command()
+    # @click.pass_obj
+    # def test(obj):
+    #     click.echo(obj)
+
+    # result = runner.invoke(cli, ['test'])
+    # assert not result.exception
+    # assert result.output == 'test\n'
+
+    # port_val = 42
+    # pid_val = 15
+    # mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid_val)
+    # mocker.patch("covalent_dispatcher._cli.service._port_from_pid", return_value=port_val)
+    # mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port_val)
+    # mocker.patch("covalent_dispatcher._cli.service._graceful_restart")
+    # mocker.patch("covalent_dispatcher._cli.service..invoke")
+    # runner = CliRunner()
+    # res = runner.invoke(restart, f"--dispatcher -p {port_val}")
+    # print(res.output)
     pass
 
 
