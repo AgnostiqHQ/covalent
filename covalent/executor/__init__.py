@@ -79,7 +79,7 @@ class _ExecutorManager:
         # Look for executor plugins in the config directory
         default_config_dir = os.environ["HOME"] + "/.config/covalent"
         plugins_path = os.environ.get("COVALENT_CONFIG_DIR", default_config_dir)
-        plugins_path += "/executor_plugins"
+        plugins_path = os.path.join(plugins_path,"executor_plugins")
         self._load_executors(plugins_path)
 
         # Look for pip-installed plugins
