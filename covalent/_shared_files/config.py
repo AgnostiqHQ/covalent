@@ -235,3 +235,17 @@ def reload_config() -> None:
     """
 
     _config_manager.read_config()
+
+def update_config() -> None:
+    """
+    Read the configuration from the TOML file and append to default
+        (or existing) configuration.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+
+    _config_manager.update_config()
