@@ -73,7 +73,7 @@ class _ExecutorManager:
         # Dictionary mapping executor name to executor class
         self.executor_plugins_map: Dict[str, Any] = {}
 
-        plugins_path = os.path.dirname(__file__) + "/executor_plugins"
+        plugins_path = os.path.join(os.path.dirname(__file__),"executor_plugins")
         self._load_executors(plugins_path)
 
         # Look for executor plugins in the config directory
