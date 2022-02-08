@@ -113,29 +113,22 @@ const LatticeOverview = ({ dispatchId }) => {
 export const ExecutorSection = ({ metadata }) => {
   const executorType = _.get(metadata, 'backend')
   const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
+  const src = _.join(
+    _.map(executorParams, (value, key) => `${key}: ${value}`),
+    '\n'
+  )
 
   return (
     <>
       {!_.isEmpty(executorType)}
-      <Heading>Executor: {executorType}</Heading>
+      <Heading>
+        Executor: <strong>{executorType}</strong>
+      </Heading>
 
       {!_.isEmpty(executorParams) && (
-        <Typography
-          sx={{
-            fontSize: 'body2.fontSize',
-            whiteSpace: 'nowrap',
-            pb: 1,
-          }}
-        >
-          <Box sx={{ overflowX: 'auto' }}>
-            {_.map(executorParams, (value, key) => (
-              <span key={key}>
-                {key} = {value}
-                <br />
-              </span>
-            ))}
-          </Box>
-        </Typography>
+        <Paper elevation={0}>
+          <SyntaxHighlighter language="yaml" src={src} />
+        </Paper>
       )}
     </>
   )

@@ -23,9 +23,11 @@
 import _ from 'lodash'
 import { Light } from 'react-syntax-highlighter'
 import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python'
-import style from 'react-syntax-highlighter/dist/esm/styles/hljs/tomorrow-night'
+import yaml from 'react-syntax-highlighter/dist/esm/languages/hljs/yaml'
+import style from 'react-syntax-highlighter/dist/esm/styles/hljs/monokai-sublime'
 
 Light.registerLanguage('python', python)
+Light.registerLanguage('yaml', yaml)
 
 const SyntaxHighlighter = ({ src, ...props }) => {
   return (
