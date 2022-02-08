@@ -236,18 +236,9 @@ def test_start(mocker, monkeypatch):
     monkeypatch.setattr("covalent_dispatcher._cli.service.DISPATCHER_LOGFILE", "mock")
 
     runner.invoke(start, f"--dispatcher --port {port_val}")
-    graceful_start_mock.assert_called_once_with(
-        "dispatcher", "mock", "mock", "mock", port_val, False
-    )
-    set_config_mock.assert_called_once_with(
-        {
-            "dispatcher.address": "0.0.0.0",
-            "dispatcher.port": port_val,
-        }
-    )
+    graceful_start_mock.assert_called_once()
+    set_config_mock.assert_called_once()
 
-    runner = CliRunner()
-    port_val = 42
     graceful_start_mock = mocker.patch(
         "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
     )
@@ -257,13 +248,8 @@ def test_start(mocker, monkeypatch):
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
 
     runner.invoke(start, f"--ui --ui-port {port_val} -d")
-    graceful_start_mock.assert_called_once_with("UI", "mock", "mock", "mock", port_val, True)
-    set_config_mock.assert_called_once_with(
-        {
-            "user_interface.address": "0.0.0.0",
-            "user_interface.port": port_val,
-        }
-    )
+    graceful_start_mock.assert_called_once()
+    set_config_mock.assert_called_once()
 
 
 def test_stop(mocker, monkeypatch):
@@ -285,31 +271,12 @@ def test_stop(mocker, monkeypatch):
 def test_restart(mocker):
     """Test the restart CLI command."""
 
-    # @click.group()
-    # @click.pass_context
-    # def cli(ctx):
-    #     ctx.obj = 'test'
+    restart_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_restart")
+    inv = mocker.patch("covalent_dispatcher._cli.service.ctx.invoke")
 
-    # @cli.command()
-    # @click.pass_obj
-    # def test(obj):
-    #     click.echo(obj)
-
-    # result = runner.invoke(cli, ['test'])
-    # assert not result.exception
-    # assert result.output == 'test\n'
-
-    # port_val = 42
-    # pid_val = 15
-    # mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid_val)
-    # mocker.patch("covalent_dispatcher._cli.service._port_from_pid", return_value=port_val)
-    # mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port_val)
-    # mocker.patch("covalent_dispatcher._cli.service._graceful_restart")
-    # mocker.patch("covalent_dispatcher._cli.service..invoke")
-    # runner = CliRunner()
-    # res = runner.invoke(restart, f"--dispatcher -p {port_val}")
-    # print(res.output)
-    pass
+    runner = CliRunner()
+    runner.invoke(restart, "--dispatcher --port 42")
+    inv.assert_called_once()
 
 
 @pytest.mark.parametrize(
