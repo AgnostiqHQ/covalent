@@ -48,6 +48,11 @@ from covalent_dispatcher._cli.service import (
     stop,
 )
 
+STOPPED_SERVER_STATUS_ECHO = (
+    "Covalent dispatcher server is stopped.\nCovalent UI server is stopped.\n"
+)
+RUNNING_SERVER_STATUS_ECHO = "Covalent dispatcher server is running at http://0.0.0.0:42.\nCovalent UI server is running at http://0.0.0.0:42.\n"
+
 
 def test_read_pid_nonexistent_file():
     """Test the process id read function when the pid file does not exist."""
@@ -280,10 +285,21 @@ def test_restart():
     pass
 
 
-def test_status(mocker, monkeypatch):
+@pytest.mark.parametrize(
+    "port_val,echo_output,file_removed",
+    [(None, STOPPED_SERVER_STATUS_ECHO, True), (42, RUNNING_SERVER_STATUS_ECHO, False)],
+)
+def test_status(mocker, port_val, echo_output, file_removed):
     """Test covalent status command."""
 
-    pass
+    mocker.patch("covalent_dispatcher._cli.service._port_from_pid", return_value=port_val)
+    rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+
+    runner = CliRunner()
+    res = runner.invoke(status)
+
+    assert res.output == echo_output
+    assert rm_pid_file_mock.called is file_removed
 
 
 def test_is_dispatcher_running(mocker):
