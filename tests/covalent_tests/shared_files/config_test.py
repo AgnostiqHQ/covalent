@@ -19,8 +19,10 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import os
+import tempfile
 from unittest.mock import patch
 
+import mock
 import pytest
 import toml
 
@@ -167,3 +169,30 @@ def test_read_config():
 #     test_class.write_config()
 #     f=open(test_class.config_file, "w")
 #     test_class.write_config()
+
+
+def test_write_config_example_1():
+    """Bad example"""
+
+    cm = _ConfigManager()
+    expected_data = cm.config_data
+    with tempfile.NamedTemporaryFile() as fp:
+        cm.config_file = str(fp.name)
+        print(f"Config file name: {cm.config_file}")
+        cm.write_config()
+        actual_data = toml.load(str(fp.name))
+
+    assert expected_data == actual_data
+
+
+def test_write_config_example_2(mocker):
+    """another example"""
+
+    toml_mock = mocker.patch("covalent._shared_files.config.toml.dump")
+    cm = _ConfigManager()
+
+    with mock.patch(
+        "covalent._shared_files.config.open", mock.mock_open(read_data="1984")
+    ) as mock_file:
+        cm.update_config()
+        toml_mock.assert_called_once()
