@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.9] - 2022-02-09
+
+### Added
+- UI: add dashboard cards
+- UI: add scaling dots background
+
+### Changed
+
+- UI: reduce sidebar font sizes, refine color theme
+- UI: refine scrollbar styling, show on container hover
+- UI: format executor parameters as YAML code
+- UI: update syntax highlighting scheme
+- UI: update index.html description meta tag
+
 ## [0.24.8] - 2022-02-07
 
 ### Fixed
@@ -15,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Typing: Add Type hint `dispatch_info` parameter.                
+- Typing: Add Type hint `dispatch_info` parameter.
 - Documentation: Updated the return_type description in docstring.
 
 ### Changed
