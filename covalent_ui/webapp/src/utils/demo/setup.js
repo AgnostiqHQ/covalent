@@ -29,7 +29,7 @@ import resultC from './result-c'
 /**
  * Demo mode switch based on build-time environment variable (see package.json).
  */
-export const isDemo = _.toLower(process.env.REACT_APP_DEMO) !== 'true'
+export const isDemo = _.toLower(process.env.REACT_APP_DEMO) === 'true'
 
 export const demoEnhancer =
   (createStore) => (reducer, initialState, enhancer) => {
