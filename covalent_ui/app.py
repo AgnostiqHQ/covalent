@@ -19,6 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import os
+import argparse
+
+from distutils.log import debug
 from datetime import datetime
 from logging.handlers import DEFAULT_TCP_LOGGING_PORT
 from pathlib import Path
@@ -36,13 +39,14 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
 from covalent.executor import _executor_manager
 
-from .. import covalent_dispatcher
+from covalent_dispatcher._service.app import bp
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
+DEFAULT_PORT = 5000
 
 app = Flask(__name__, static_folder=WEBAPP_PATH)
-app.register_blueprint(covalent_dispatcher._service.app.bp)
+app.register_blueprint(bp)
 # allow cross-origin requests when API and static files are served separately
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -179,4 +183,18 @@ def serve(path):
 
 
 if __name__ == "__main__":
-    socketio.run(app)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-l", "--log-file", required=False, help="Path to log file that will be written to by server.")
+    ap.add_argument("-p", "--port", required=False, help="Port to run server.")
+    args, unknown = ap.parse_known_args()
+    # log file to be specified by cli
+    if args.log_file:
+        import logging
+        log_file = args.log_file
+        logging.basicConfig(filename=log_file,level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+    # port to be specified by cli
+    if args.port:
+        port = int(args.port)
+    else: 
+        port = DEFAULT_PORT
+    socketio.run(app, debug=True, host='0.0.0.0', port=port)

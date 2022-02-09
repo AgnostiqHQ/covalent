@@ -24,7 +24,8 @@ import os
 import shutil
 import signal
 import socket
-from subprocess import Popen
+from subprocess import Popen, PIPE, DEVNULL
+from typing import Optional
 
 import click
 import psutil
@@ -183,23 +184,21 @@ def _graceful_start(
 
     port = _next_available_port(port)
 
-    reload = "--reload" if develop else ""
-    eventlet = "--worker-class eventlet" if server_name == "UI" else ""
-    pythonpath = (
-        f'--pythonpath="{server_root}/../../tests/functional_tests"'
-        if develop and server_name == "dispatcher"
-        else ""
-    )
-
-    launch_str = f"gunicorn -w 1 -t 30 -b 0.0.0.0:{port} {eventlet} --daemon --chdir {server_root} --pid {pidfile} --capture-output --log-file {logfile} {reload} {pythonpath} --reuse-port app:app"
+    #pythonpath = (
+    #    f'--pythonpath="{server_root}/../../tests/functional_tests"'
+    #    if develop and server_name == "dispatcher"
+    #    else ""
+    #)
+    server_root = f"{server_root}/app.py"
+    launch_str = f"python {server_root} --port {port} --pid {pidfile} --log-file {logfile} >/dev/null &"
 
     proc = Popen(
         launch_str,
         shell=True,
+        stdout=DEVNULL,
+        stderr=DEVNULL
     )
-
-    click.echo(f"Covalent {server_name} server has started at http://0.0.0.0:{port}")
-
+    click.echo(f"Covalent {server_name} [pid: {proc.pid}] server has started at http://0.0.0.0:{port}");
     return port
 
 
@@ -243,59 +242,29 @@ def _graceful_restart(server_name: str, pidfile: str) -> bool:
 
 @click.command()
 @click.option(
-    "--dispatcher",
-    is_flag=True,
-    help="Start only the dispatcher server.",
-)
-@click.option(
-    "--ui",
-    is_flag=True,
-    help="Start only the UI server.",
-)
-@click.option(
     "-p",
     "--port",
     default=get_config("dispatcher.port"),
     show_default=True,
     help="Local dispatcher server port number.",
 )
-@click.option(
-    "-P",
-    "--ui-port",
-    default=get_config("user_interface.port"),
-    show_default=True,
-    help="Local user interface server port number.",
-)
 @click.option("-d", "--develop", is_flag=True, help="Start the server(s) in developer mode.")
 @click.pass_context
-def start(ctx, dispatcher: bool, ui: bool, port: int, ui_port: int, develop: bool) -> None:
+def start(ctx, port: int, develop: bool) -> None:
     """
     Start the dispatcher and/or UI servers.
     """
 
-    if not (dispatcher or ui):
-        dispatcher = True
-        ui = True
-
-    if dispatcher:
-        port = _graceful_start(
-            "dispatcher", DISPATCHER_SRVDIR, DISPATCHER_PIDFILE, DISPATCHER_LOGFILE, port, develop
-        )
-        set_config(
-            {
-                "dispatcher.address": "0.0.0.0",
-                "dispatcher.port": port,
-            }
-        )
-
-    if ui:
-        ui_port = _graceful_start("UI", UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, ui_port, develop)
-        set_config(
-            {
-                "user_interface.address": "0.0.0.0",
-                "user_interface.port": ui_port,
-            }
-        )
+    port = _graceful_start("dispatcher", UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
+    set_config(
+        {
+            "user_interface.address": "0.0.0.0",
+            "user_interface.port": port,
+            "dispatcher.address": "0.0.0.0",
+            "dispatcher.port": port,
+        }
+    )
+        
 
 
 @click.command()
