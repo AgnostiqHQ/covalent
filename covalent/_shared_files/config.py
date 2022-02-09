@@ -18,12 +18,13 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import copy
 import os
 import shutil
 from functools import reduce
 from operator import getitem
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import toml
 
@@ -43,12 +44,12 @@ class _ConfigManager:
         ) + "/covalent"
         self.config_file = f"{config_dir}/covalent.conf"
 
+        self.generate_default_config()
         if os.path.exists(self.config_file):
-            self.read_config()
+            self.update_config()
         else:
             Path(config_dir).mkdir(parents=True, exist_ok=True)
 
-            self.generate_default_config()
             self.write_config()
 
         Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
@@ -70,7 +71,30 @@ class _ConfigManager:
 
         from .defaults import _DEFAULT_CONFIG
 
-        self.config_data = _DEFAULT_CONFIG
+        # self.config_data may be modified later, and we don't want it to affect _DEFAULT_CONFIG
+        self.config_data = copy.deepcopy(_DEFAULT_CONFIG)
+
+    def update_config(self) -> None:
+        """
+        Update the exising configuration dictionary with the configuration stored in file.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+
+        def update_nested_dict(old_dict, new_dict):
+            for key, value in new_dict.items():
+                if isinstance(value, dict) and key in old_dict and isinstance(old_dict[key], dict):
+                    update_nested_dict(old_dict[key], value)
+                else:
+                    old_dict[key] = value
+
+        if os.path.exists(self.config_file):
+            file_config = toml.load(self.config_file)
+            update_nested_dict(self.config_data, file_config)
 
     def read_config(self) -> None:
         """
@@ -145,7 +169,7 @@ class _ConfigManager:
 _config_manager = _ConfigManager()
 
 
-def set_config(new_config: Union[Dict, str], new_value: Optional[Any] = None) -> None:
+def set_config(new_config: Union[Dict, str], new_value: Any = None) -> None:
     """
     Update the configuration.
 

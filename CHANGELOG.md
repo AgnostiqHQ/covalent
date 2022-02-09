@@ -5,12 +5,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.0] - 2022-02-03
+## [0.25.0] - 2022-02-09
 
 ### Added
 
 - Imports needed for dispatch_source.py are now optionally included in that file. However, it is slow, and does not work in Jupyter notebooks.
 - A set of all imports utilized, including those imported by end-user modules, is available to executor plugins.
+
+## [0.24.8] - 2022-02-07
+
+### Fixed
+
+- If a user's configuration file does not have a needed parameter, the default parameter (defined in _shared_files/defaults.py) is used.
+
+## [0.24.7] - 2022-02-07
+
+### Added
+
+- Typing: Add Type hint `dispatch_info` parameter.                
+- Documentation: Updated the return_type description in docstring.
+
+### Changed
+
+- Typing: Change return type annotation to `Generator`.
+
+## [0.24.6] - 2022-02-06
+
+### Added
+
+- Type hint to `deserialize` method of `TransportableObject` of `covalent/_workflow/transport.py`.
+
+### Changed
+
+- Description of `data` in `deserialize` method of `TransportableObject` of `covalent/_workflow/transport.py` from `The serialized transportable object` to `Cloudpickled function`.
+
+## [0.24.5] - 2022-02-05
+
+### Fixed
+
+- Removed dependence on Sentinel module
+
+## [0.24.4] - 2022-02-04
+
+### Added
+
+- Tests across multiple versions of Python and multiple operating systems
+- Documentation reflecting supported configurations
+
+## [0.24.3] - 2022-02-04
+
+### Changed
+
+- Typing: Use `bool` in place of `Optional[bool]` as type annotation for `develop` parameter in `covalent_dispatcher.service._graceful_start`
+- Typing: Use `Any` in place of `Optional[Any]` as type annotation for `new_value` parameter in `covalent._shared_files.config.get_config`
+
+## [0.24.2] - 2022-02-04
+
+### Fixed
+
+- Updated hyperlink of "How to get the results" from "./collection/query_electron_execution_result" to "./collection/query_multiple_lattice_execution_results" in "doc/source/how_to/index.rst".
+- Updated hyperlink of "How to get the result of a particular electron" from "./collection/query_multiple_lattice_execution_results" to "./collection/query_electron_execution_result" in "doc/source/how_to/index.rst".
+
+## [0.24.1] - 2022-02-04
+
+### Changed
+
+- Changelog entries are now required to have the current date to enforce ordering.
 
 ## [0.24.0] - 2022-02-03
 
