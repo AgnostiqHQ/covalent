@@ -30,7 +30,7 @@ import mock
 import pytest
 import toml
 
-from covalent._shared_files.config import _ConfigManager, reload_config, set_config
+from covalent._shared_files.config import _ConfigManager, get_config, reload_config, set_config
 from covalent._shared_files.defaults import _DEFAULT_CONFIG
 
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "test_files")
@@ -232,3 +232,18 @@ def test_purge_config(mocker):
     cm.purge_config()
     os_dir_mock.assert_called_once_with(cm.config_file)
     rmtree_mock.assert_called_once_with("mock_dir", ignore_errors=True)
+
+
+def test_get_config():
+    """Test config retrieval function."""
+
+    from covalent._shared_files.config import _config_manager
+
+    # Case 1 - Empty list
+    assert get_config(entries=[]) == _config_manager.config_data
+
+    # Case 2 - List with one item
+    assert (
+        get_config(entries=["dispatcher.port"])
+        == _config_manager.config_data["dispatcher"]["port"]
+    )
