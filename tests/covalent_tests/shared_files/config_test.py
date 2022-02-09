@@ -18,8 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import copy
 import os
 import tempfile
+from asyncore import dispatcher
 from functools import reduce
 from operator import getitem
 from unittest.mock import patch
@@ -28,7 +30,7 @@ import mock
 import pytest
 import toml
 
-from covalent._shared_files.config import _ConfigManager, set_config
+from covalent._shared_files.config import _ConfigManager, reload_config, set_config
 from covalent._shared_files.defaults import _DEFAULT_CONFIG
 
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "test_files")
@@ -151,26 +153,25 @@ def test_set_config_dict_key(mocker):
     cm_write_config.assert_called_once_with()
 
 
-def test_generate_default_config():
+def test_generate_default_config(mocker):
 
     test_class = _ConfigManager()
+    cm_deepcopy_mock = mocker.patch("covalent._shared_files.config.copy.deepcopy", return_value={})
+
     test_class.generate_default_config()
+    cm_deepcopy_mock.assert_called_once_with(_DEFAULT_CONFIG)
     assert test_class.config_data == _DEFAULT_CONFIG
 
 
-def test_read_config():
-
-    test_class = _ConfigManager()
-    test_class.read_config()
-    assert test_class.config_data == toml.load(test_class.config_file)
-
-
-# def test_write_config():
-
-#     test_class=_ConfigManager()
-#     test_class.write_config()
-#     f=open(test_class.config_file, "w")
-#     test_class.write_config()
+def test_read_config(mocker):
+    cm = _ConfigManager()
+    test_data = {"test": "test"}
+    toml_load_mock = mocker.patch(
+        "covalent._shared_files.config.toml.load", return_value=test_data
+    )
+    cm.read_config()
+    toml_load_mock.assert_called_with(cm.config_file)
+    assert cm.config_data == test_data
 
 
 def test_write_config_example_1():
@@ -203,19 +204,19 @@ def test_write_config_example_1():
 def test_get():
     test_class = _ConfigManager()
 
-    assert test_class.get("dispatcher.port") == reduce(
-        getitem, "dispatcher.port".split("."), test_class.config_data
-    )
+    assert test_class.get("dispatcher.port") == test_class.config_data["dispatcher"]["port"]
+
+
+def test_generate_default_config():
+
+    test_class = _ConfigManager()
+    test_class.generate_default_config()
+    assert test_class.config_data == _DEFAULT_CONFIG
+    assert test_class.config_data is not _DEFAULT_CONFIG
 
 
 def test_reload_config(mocker):
 
-    test_class = _ConfigManager()
-    test_class.reload_config()
     cm_read_config = mocker.patch("covalent._shared_files.config._config_manager.read_config")
+    reload_config()
     cm_read_config.assert_called_once_with()
-
-
-# def test_set():
-
-#     test_class=_ConfigManager()
