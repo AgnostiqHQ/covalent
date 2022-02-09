@@ -379,7 +379,7 @@ def lattice(
     *,
     backend: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES.backend,
+    ] = _DEFAULT_CONSTRAINT_VALUES["backend"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
     # e.g. schedule: True, whether to use a custom scheduling logic or not

@@ -22,7 +22,7 @@
 
 import threading
 from contextlib import contextmanager
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generator
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import DispatchInfo
@@ -113,7 +113,7 @@ class ActiveDispatchInfoManager:
         return self._active_dispatch_info
 
     @contextmanager
-    def claim(self, dispatch_info) -> None:
+    def claim(self, dispatch_info: "DispatchInfo") -> Generator:
         """
         Claims the given dispatch info as active.
 
@@ -121,7 +121,7 @@ class ActiveDispatchInfoManager:
             dispatch_info: The dispatch info object to claim.
 
         Returns:
-            None
+            Returns a generator, which gets converted into a contextmanager.
         """
 
         self._active_dispatch_info = dispatch_info

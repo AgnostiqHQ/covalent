@@ -22,8 +22,6 @@
 
 import os
 
-import sentinel
-
 prefix_separator = ":"
 
 parameter_prefix = f"{prefix_separator}parameter{prefix_separator}"
@@ -73,7 +71,7 @@ _DEFAULT_CONFIG = {
 }
 
 # Metadata which may influence execution behavior
-default_constraints_dict = {
+_DEFAULT_CONSTRAINT_VALUES = {
     "schedule": False,
     "num_cpu": 1,
     "cpu_feature_set": [],
@@ -86,8 +84,3 @@ default_constraints_dict = {
     "budget": 0,
     "conda_env": "",
 }
-
-_DEFAULT_CONSTRAINT_VALUES = sentinel.create(
-    "_DEFAULT_CONSTRAINT_VALUES",
-    cls_dict=default_constraints_dict.copy(),
-)

@@ -30,7 +30,6 @@ from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     _DEFAULT_CONSTRAINT_VALUES,
     attr_prefix,
-    default_constraints_dict,
     electron_dict_prefix,
     electron_list_prefix,
     generator_prefix,
@@ -268,7 +267,7 @@ class Electron:
                     kwargs={"key": i},
                     name=node_name,
                     function=None,
-                    metadata=default_constraints_dict.copy(),
+                    metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
                 )
 
                 active_lattice.transport_graph.add_edge(self.node_id, node_id, f"[{i}]")
@@ -304,7 +303,7 @@ class Electron:
                 kwargs={"attr": attr},
                 name=node_name,
                 function=None,
-                metadata=default_constraints_dict.copy(),
+                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
             )
 
             active_lattice.transport_graph.add_edge(self.node_id, node_id, f".{attr}")
@@ -331,7 +330,7 @@ class Electron:
                 kwargs={"key": key},
                 name=node_name,
                 function=None,
-                metadata=default_constraints_dict.copy(),
+                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
             )
 
             active_lattice.transport_graph.add_edge(self.node_id, node_id, f"[{key}]")
@@ -382,8 +381,9 @@ class Electron:
         # Setting metadata for default values according to lattice's metadata
         # If metadata is default, then set it to lattice's default
         for k in self.metadata:
-            if k not in consumable_constraints and self.get_metadata(k) is getattr(
-                _DEFAULT_CONSTRAINT_VALUES, k
+            if (
+                k not in consumable_constraints
+                and self.get_metadata(k) is _DEFAULT_CONSTRAINT_VALUES[k]
             ):
                 self.set_metadata(k, active_lattice.get_metadata(k))
 
@@ -443,7 +443,7 @@ class Electron:
             kwargs={key: value},
             name=prefix,
             function=to_electron_collection,
-            metadata=default_constraints_dict.copy(),
+            metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
         )
 
         graph.set_node_value(
@@ -501,7 +501,7 @@ class Electron:
                 kwargs=argument_kwargs,
                 name=parameter_prefix + str(some_value),
                 function=None,
-                metadata=default_constraints_dict.copy(),
+                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
             )
             transport_graph.add_edge(argument_node, node_id, variable=key)
 
@@ -511,7 +511,7 @@ def electron(
     *,
     backend: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES.backend,
+    ] = _DEFAULT_CONSTRAINT_VALUES["backend"],
     # Add custom metadata fields here
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns a new :obj:`Electron <covalent._workflow.electron.Electron>` object.
