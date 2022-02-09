@@ -23,7 +23,7 @@ from flask import Blueprint, Flask, Response, jsonify, request
 
 import covalent_dispatcher as dispatcher
 
-bp = Blueprint("dispatcher", __name__, url_prefix="/dispatcher")
+bp = Blueprint("dispatcher", __name__, url_prefix="/api")
 
 
 @bp.route("/submit", methods=["POST"])
