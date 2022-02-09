@@ -37,7 +37,6 @@ from .._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
-from .._shared_files.utils import get_serialized_function_str
 from .lattice import Lattice
 
 consumable_constraints = ["budget", "time_limit"]
@@ -398,9 +397,6 @@ class Electron:
         )
 
         # Add function string
-        # active_lattice.transport_graph.set_node_value(
-        #     self.node_id, "function_string", get_serialized_function_str(self.function)
-        # )
         active_lattice.transport_graph.set_node_value(
             self.node_id, "function_commented", self.function_comments
         )
@@ -447,7 +443,7 @@ class Electron:
         )
 
         graph.set_node_value(
-            node_id, "function_string", get_serialized_function_str(to_electron_collection)
+            node_id, "function_string", comment_decorators(to_electron_collection)
         )
 
         return node_id
