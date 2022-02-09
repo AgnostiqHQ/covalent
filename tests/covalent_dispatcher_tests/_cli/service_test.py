@@ -20,14 +20,9 @@
 
 """Tests for Covalent command line interface (CLI) Tool."""
 
-import os
 import tempfile
-from asyncore import dispatcher
-from http import server
 
-import click
 import mock
-import psutil
 import pytest
 from click.testing import CliRunner
 from psutil import pid_exists
