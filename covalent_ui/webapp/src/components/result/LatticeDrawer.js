@@ -34,20 +34,14 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import {
-  AccountTreeOutlined,
-  CancelOutlined,
-  CheckCircleOutline,
-  ChevronLeft,
-  WarningAmber,
-} from '@mui/icons-material'
+import { AccountTreeOutlined, ChevronLeft } from '@mui/icons-material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 
 import CopyButton from '../CopyButton'
 import { ReactComponent as AtomSvg } from '../../assets/atom.svg'
 import { selectResultProgress } from '../results/ResultProgress'
 import LatticeOverview from './LatticeOverview'
-import { truncateMiddle } from '../../utils/misc'
+import { statusIcon, truncateMiddle } from '../../utils/misc'
 import LogOutput from '../LogOutput'
 
 const LatticeDrawer = () => {
@@ -115,7 +109,7 @@ const LatticeStatusCard = ({ dispatchId }) => {
 
   return (
     <Box sx={{ my: 2 }}>
-      <Paper sx={{ px: 1, py: 1 }} elevation={4}>
+      <Paper sx={{ p: 2 }} elevation={4}>
         <Box
           sx={{
             display: 'grid',
@@ -123,7 +117,7 @@ const LatticeStatusCard = ({ dispatchId }) => {
           }}
         >
           {/* left column */}
-          <Box>
+          <Box sx={{ borderRight: '1px solid #29425B' }}>
             <Typography color="text.secondary" variant="body2" sx={{ mb: 1.5 }}>
               Status
             </Typography>
@@ -135,31 +129,19 @@ const LatticeStatusCard = ({ dispatchId }) => {
                 alignItems: 'center',
               }}
             >
-              {(() => {
-                switch (status) {
-                  case 'RUNNING':
-                    return <CircularProgress size="1rem" />
-                  case 'COMPLETED':
-                    return <CheckCircleOutline />
-                  case 'FAILED':
-                    return <WarningAmber />
-                  case 'CANCELLED':
-                    return <CancelOutlined />
-                  default:
-                    return null
-                }
-              })()}
+              {statusIcon(status)}
               &nbsp;
               {label}
             </Box>
           </Box>
 
           {/* right column */}
-          <Box>
+          <Box sx={{ justifySelf: 'end' }}>
             <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
               Progress
             </Typography>
 
+            {/* electron progress */}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <SvgIcon fontSize="inherit" sx={{ mr: 1.5 }}>
                 <AtomSvg />

@@ -26,7 +26,7 @@ import { differenceInMilliseconds, isValid, parseISO } from 'date-fns'
 import humanizeDuration from 'humanize-duration'
 import { useEffect, useState } from 'react'
 
-const humanize = humanizeDuration.humanizer({
+export const humanize = humanizeDuration.humanizer({
   largest: 3,
   round: true,
   delimiter: ' ',

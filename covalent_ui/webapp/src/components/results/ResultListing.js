@@ -342,7 +342,7 @@ const ResultListing = () => {
 
   return (
     <>
-      <Box>
+      <Box sx={{ mb: 3 }}>
         <ResultsTableToolbar
           query={query}
           setQuery={setQuery}

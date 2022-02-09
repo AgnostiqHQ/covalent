@@ -22,15 +22,9 @@
 
 import _ from 'lodash'
 import { useSelector } from 'react-redux'
-import {
-  CancelOutlined,
-  CheckCircleOutline,
-  Close,
-  WarningAmber,
-} from '@mui/icons-material'
+import { Close } from '@mui/icons-material'
 import {
   Box,
-  CircularProgress,
   Divider,
   Drawer,
   IconButton,
@@ -39,7 +33,12 @@ import {
 } from '@mui/material'
 import { useStoreActions } from 'react-flow-renderer'
 
-import { formatDate, statusColor, statusLabel } from '../../utils/misc'
+import {
+  formatDate,
+  statusColor,
+  statusIcon,
+  statusLabel,
+} from '../../utils/misc'
 import Runtime from '../results/Runtime'
 import SyntaxHighlighter from '../SyntaxHighlighter'
 import Heading from './Heading'
@@ -115,20 +114,7 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
               alignItems: 'center',
             }}
           >
-            {(() => {
-              switch (node.status) {
-                case 'RUNNING':
-                  return <CircularProgress size="1rem" />
-                case 'COMPLETED':
-                  return <CheckCircleOutline />
-                case 'FAILED':
-                  return <WarningAmber />
-                case 'CANCELLED':
-                  return <CancelOutlined />
-                default:
-                  return null
-              }
-            })()}
+            {statusIcon(node.status)}
             &nbsp;
             {statusLabel(node.status)}
           </Box>

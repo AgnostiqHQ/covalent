@@ -28,14 +28,18 @@ import {
   Paper,
   Typography,
   Toolbar,
+  Divider,
 } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { createSelector } from '@reduxjs/toolkit'
+import { differenceInSeconds, isValid, parseISO } from 'date-fns'
 
 import ResultListing from './results/ResultListing'
 import { ReactComponent as Logo } from '../assets/covalent-full-logo.svg'
 import { Box } from '@mui/system'
 import CopyButton from './CopyButton'
+import { humanize } from './results/Runtime'
+import { displayStatus } from '../utils/misc'
 
 const selectResultsCache = (state) => state.results.cache
 
@@ -55,8 +59,59 @@ export const selectDispatcherAddress = createSelector(
   }
 )
 
+export const parseDurationInSecs = (start, end) => {
+  start = parseISO(start)
+  end = parseISO(end)
+  if (!isValid(start) || !isValid(end)) {
+    return 0
+  }
+  return differenceInSeconds(end, start)
+}
+
+export const selectJobStats = createSelector(selectResultsCache, (cache) => {
+  const isRunning = (result) => result.status === 'RUNNING'
+  const isCompleted = (result) => result.status === 'COMPLETED'
+
+  const stats = _.reduce(
+    cache,
+    (stats, result) => {
+      if (!result) {
+        return stats
+      }
+      stats.running += isRunning(result) ? 1 : 0
+      stats.done += isCompleted(result) ? 1 : 0
+      stats.duration += parseDurationInSecs(result.start_time, result.end_time)
+      if (
+        !stats.latest ||
+        // prefer running to not running
+        (isRunning(result) && !isRunning(stats.latest)) ||
+        // prefer last started among running
+        (isRunning(result) &&
+          isRunning(stats.latest) &&
+          result.start_time > stats.latest.start_time) ||
+        // prefer last ended among not running
+        (!isRunning(result) &&
+          !isRunning(stats.latest) &&
+          result.end_time > stats.latest.end_time)
+      ) {
+        stats.latest = result
+      }
+      return stats
+    },
+    {
+      running: 0,
+      done: 0,
+      duration: 0,
+      latest: null,
+    }
+  )
+
+  return stats
+})
+
 const Dashboard = () => {
   const dispatcherAddress = useSelector(selectDispatcherAddress)
+  const stats = useSelector(selectJobStats)
 
   return (
     <>
@@ -73,7 +128,7 @@ const Dashboard = () => {
       <Container>
         <Paper sx={{ p: 2, mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography fontSize={20}>Dispatch list</Typography>
+            <Typography fontSize="h5.fontSize">Dispatch list</Typography>
 
             {dispatcherAddress && (
               <>
@@ -90,6 +145,25 @@ const Dashboard = () => {
               </>
             )}
           </Box>
+
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-around' }}>
+            <DashboardCard content={stats.running} desc="Total jobs running" />
+            <DashboardDivider />
+
+            <DashboardCard content={stats.done} desc="Total jobs done" />
+            <DashboardDivider />
+
+            <DashboardCard
+              content={displayStatus(_.get(stats, 'latest.status')) || 'N/A'}
+              desc="Latest running task status"
+            />
+            <DashboardDivider />
+
+            <DashboardCard
+              content={humanize(stats.duration * 1000)}
+              desc="Total dispatcher duration"
+            />
+          </Box>
         </Paper>
       </Container>
 
@@ -99,5 +173,16 @@ const Dashboard = () => {
     </>
   )
 }
+
+const DashboardCard = ({ desc, content }) => (
+  <Box sx={{ textAlign: 'right' }}>
+    <Typography fontSize="h5.fontSize">{content}</Typography>
+    <Typography color="text.secondary">{desc}</Typography>
+  </Box>
+)
+
+const DashboardDivider = () => (
+  <Divider flexItem orientation="vertical" sx={{ borderColor: '#29425B' }} />
+)
 
 export default Dashboard

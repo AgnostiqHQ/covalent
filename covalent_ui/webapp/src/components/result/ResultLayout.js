@@ -24,7 +24,7 @@ import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { AppBar, Box, Drawer, IconButton, Toolbar } from '@mui/material'
+import { AppBar, Box, Drawer, IconButton, Link, Toolbar } from '@mui/material'
 import { Menu as MenuIcon } from '@mui/icons-material'
 import { useStoreActions, useStoreState } from 'react-flow-renderer'
 
@@ -111,8 +111,10 @@ const ResultLayout = () => {
             open
           >
             <AppBar position="static" elevation={0}>
-              <Toolbar>
-                <Logo />
+              <Toolbar sx={{ my: 3, mb: 2 }}>
+                <Link href="/">
+                  <Logo />
+                </Link>
               </Toolbar>
             </AppBar>
 

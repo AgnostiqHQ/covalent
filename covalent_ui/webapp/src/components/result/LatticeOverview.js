@@ -21,10 +21,10 @@
  */
 
 import _ from 'lodash'
-import { Divider, Paper, Typography } from '@mui/material'
+import { Divider, Paper, Tooltip, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 
-import { formatDate } from '../../utils/misc'
+import { formatDate, truncateMiddle } from '../../utils/misc'
 import CopyButton from '../CopyButton'
 import Runtime from '../results/Runtime'
 import SyntaxHighlighter from '../SyntaxHighlighter'
@@ -67,7 +67,9 @@ const LatticeOverview = ({ dispatchId }) => {
       {/* Directory */}
       <Heading>Directory</Heading>
       <Typography sx={{ overflowWrap: 'anywhere' }}>
-        {result.results_dir}
+        <Tooltip title={result.results_dir} enterDelay={500}>
+          <span>{truncateMiddle(result.results_dir, 12, 25)}</span>
+        </Tooltip>
         <CopyButton
           content={result.results_dir}
           size="small"
