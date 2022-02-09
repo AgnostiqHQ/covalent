@@ -59,8 +59,8 @@ def comment_decorators(function):
 
     source = inspect.getsource(function)
     index = source.find("def ")
-    l = []
-    import regex as re
+
+    import re
 
     r = re.compile("(@?[^@]+)")
     decorators = [i.replace("\n", "").replace(" ", "") for i in r.findall(source[:index])]
@@ -68,23 +68,15 @@ def comment_decorators(function):
     aliases = []
     for i in caller_globals:
         glob = caller_globals[i]
-        if isinstance(glob, Callable):
-            if glob == electron:
-                aliases.append(i)
+        if isinstance(glob, Callable) and glob == electron:
+            aliases.append(i)
 
         if glob == current_module:
             aliases.append(i)
-    txt = ""
-    for i in decorators:
-        tmp = False
-        for j in aliases:
-            if j in i:
-                tmp = True
+    txt = "".join(
+        i + "\n" if all(j not in i for j in aliases) else "#" + i + "\n" for i in decorators
+    )
 
-        if not tmp:
-            txt += i + "\n"
-        else:
-            txt += "#" + i + "\n"
     txt += source[index:]
     return txt
 

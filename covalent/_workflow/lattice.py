@@ -61,8 +61,8 @@ def comment_decorators(function):
 
     source = inspect.getsource(function)
     index = source.find("def ")
-    l = []
-    import regex as re
+
+    import re
 
     r = re.compile("(@?[^@]+)")
     decorators = [i.replace("\n", "").replace(" ", "") for i in r.findall(source[:index])]
@@ -72,23 +72,14 @@ def comment_decorators(function):
     for i in caller_globals:
 
         glob = caller_globals[i]
-        if isinstance(glob, Callable):
-            if glob == lattice:
-                aliases.append(i)
+        if isinstance(glob, Callable) and glob == lattice:
+            aliases.append(i)
 
         if glob == current_module:
             aliases.append(i)
     txt = ""
     for i in decorators:
-        tmp = False
-        for j in aliases:
-            if j in i:
-                tmp = True
-
-        if not tmp:
-            txt += i + "\n"
-        else:
-            txt += "#" + i + "\n"
+        txt += i + "\n" if all(j not in i for j in aliases) else "#" + i + "\n"
         txt += source[index:]
     return txt
 
@@ -97,9 +88,7 @@ def get_imports(func):
     imports_str = ""
     for i, j in func.__globals__.items():
         if inspect.ismodule(j):
-            add = ""
-            if j.__name__ == "covalent":
-                add = "#"
+            add = "#" if j.__name__ == "covalent" else ""
             imports_str += add + f"import {j.__name__} as {i}\n"
     return imports_str
 
