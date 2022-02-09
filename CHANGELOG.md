@@ -5,11 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.8] - 2022-02-09
+
+### Added
+
+- A new dictionary `_DEFAULT_CONSTRAINTS_DEPRECATED` in defaults.py
+
+### Changed
+
+- The `_DEFAULT_CONSTRAINT_VALUES` dictionary now only contains the `backend` argument
+
 ## [0.24.7] - 2022-02-07
 
 ### Added
 
-- Typing: Add Type hint `dispatch_info` parameter.                
+- Typing: Add Type hint `dispatch_info` parameter.
 - Documentation: Updated the return_type description in docstring.
 
 ### Changed
