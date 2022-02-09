@@ -23,7 +23,11 @@
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import ReactFlow, { MiniMap, useZoomPanHelper } from 'react-flow-renderer'
+import ReactFlow, {
+  Background,
+  MiniMap,
+  useZoomPanHelper,
+} from 'react-flow-renderer'
 
 import ElectronNode from '../graph/ElectronNode'
 import ParameterNode from '../graph/ParameterNode'
@@ -77,6 +81,13 @@ const LatticeMain = ({ hasSelectedNode }) => {
         // prevent selection when nothing is selected to prevent fitView
         selectNodesOnDrag={hasSelectedNode}
       >
+        <Background
+          variant="dots"
+          color={theme.palette.grey[900]}
+          gap={12}
+          size={1}
+        />
+
         <LatticeControls
           showParams={showParams}
           toggleParams={() => {
