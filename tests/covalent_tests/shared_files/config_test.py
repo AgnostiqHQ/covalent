@@ -220,3 +220,15 @@ def test_reload_config(mocker):
     cm_read_config = mocker.patch("covalent._shared_files.config._config_manager.read_config")
     reload_config()
     cm_read_config.assert_called_once_with()
+
+
+def test_purge_config(mocker):
+
+    cm = _ConfigManager()
+    os_dir_mock = mocker.patch(
+        "covalent._shared_files.config.os.path.dirname", return_value="mock_dir"
+    )
+    rmtree_mock = mocker.patch("covalent._shared_files.config.shutil.rmtree")
+    cm.purge_config()
+    os_dir_mock.assert_called_once_with(cm.config_file)
+    rmtree_mock.assert_called_once_with("mock_dir", ignore_errors=True)
