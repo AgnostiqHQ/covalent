@@ -268,15 +268,31 @@ def test_stop(mocker, monkeypatch):
     graceful_shutdown_mock.assert_called_once_with("UI", "mock")
 
 
-def test_restart(mocker):
+@pytest.mark.parametrize(
+    "port_tag,port,server,pid,restart_called,start_called,stop_called",
+    [
+        ("port", 42, "dispatcher", -1, False, True, True),
+        ("port", 42, "dispatcher", 100, True, False, False),
+        ("ui-port", 42, "ui", -1, False, True, True),
+        ("ui-port", 42, "ui", 100, True, False, False),
+    ],
+)
+def test_restart(mocker, port_tag, port, pid, server, restart_called, start_called, stop_called):
     """Test the restart CLI command."""
 
+    start = mocker.patch("covalent_dispatcher._cli.service.start")
+    stop = mocker.patch("covalent_dispatcher._cli.service.stop")
+    mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port)
+
+    obj = mocker.MagicMock()
+    mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
     restart_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_restart")
-    inv = mocker.patch("covalent_dispatcher._cli.service.ctx.invoke")
 
     runner = CliRunner()
-    runner.invoke(restart, "--dispatcher --port 42")
-    inv.assert_called_once()
+    runner.invoke(restart, f"--{server} --{port_tag} {port}", obj=obj)
+    assert restart_mock.called is restart_called
+    assert start.called is start_called
+    assert stop.called is stop_called
 
 
 @pytest.mark.parametrize(
