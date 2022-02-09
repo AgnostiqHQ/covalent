@@ -20,6 +20,8 @@
 
 import os
 import tempfile
+from functools import reduce
+from operator import getitem
 from unittest.mock import patch
 
 import mock
@@ -185,14 +187,35 @@ def test_write_config_example_1():
     assert expected_data == actual_data
 
 
-def test_write_config_example_2(mocker):
-    """another example"""
+# def test_write_config_example_2(mocker):
+#     """another example"""
 
-    toml_mock = mocker.patch("covalent._shared_files.config.toml.dump")
-    cm = _ConfigManager()
+#     toml_mock = mocker.patch("covalent._shared_files.config.toml.dump")
+#     cm = _ConfigManager()
 
-    with mock.patch(
-        "covalent._shared_files.config.open", mock.mock_open(read_data="1984")
-    ) as mock_file:
-        cm.update_config()
-        toml_mock.assert_called_once()
+#     with mock.patch(
+#         "covalent._shared_files.config.open", mock.mock_open(read_data="1984")
+#     ) as mock_file:
+#         cm.update_config()
+#         toml_mock.assert_called_once()
+
+
+def test_get():
+    test_class = _ConfigManager()
+
+    assert test_class.get("dispatcher.port") == reduce(
+        getitem, "dispatcher.port".split("."), test_class.config_data
+    )
+
+
+def test_reload_config(mocker):
+
+    test_class = _ConfigManager()
+    test_class.reload_config()
+    cm_read_config = mocker.patch("covalent._shared_files.config._config_manager.read_config")
+    cm_read_config.assert_called_once_with()
+
+
+# def test_set():
+
+#     test_class=_ConfigManager()
