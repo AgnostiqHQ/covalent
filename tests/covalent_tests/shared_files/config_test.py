@@ -18,15 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import copy
 import os
 import tempfile
-from asyncore import dispatcher
-from functools import reduce
-from operator import getitem
 from unittest.mock import patch
 
-import mock
 import pytest
 import toml
 
@@ -62,6 +57,14 @@ def test_config_manager_init_write_update_config(
 ):
     """Test the init method for the config manager."""
 
+    config_keys = [
+        "sdk.log_dir",
+        "dispatcher.cache_dir",
+        "dispatcher.results_dir",
+        "dispatcher.log_dir",
+        "user_interface.log_dir",
+    ]
+
     with tempfile.TemporaryDirectory() as tmp_dir:
         monkeypatch.setenv("COVALENT_CONFIG_DIR", tmp_dir)
         update_config_mock = mocker.patch(
@@ -70,6 +73,10 @@ def test_config_manager_init_write_update_config(
         write_config_mock = mocker.patch(
             "covalent._shared_files.config._ConfigManager.write_config"
         )
+        get_mock = mocker.patch(
+            "covalent._shared_files.config._ConfigManager.get", side_effect=config_keys
+        )
+        path_mock = mocker.patch("pathlib.Path.__init__", return_value=None)
 
         mocker.patch("os.path.exists", return_value=path_exists)
 
@@ -77,6 +84,12 @@ def test_config_manager_init_write_update_config(
         assert hasattr(cm, "config_data")
         assert write_config_mock.called is write_config_called
         assert update_config_mock.called is update_config_called
+
+    get_mock_calls = get_mock.mock_calls
+    path_mock_calls = path_mock.mock_calls
+
+    for key in config_keys:
+        assert mocker.call(key) in get_mock_calls and path_mock_calls
 
 
 @patch.dict(os.environ, {"COVALENT_CONFIG_DIR": CONFIG_DIR}, clear=True)
