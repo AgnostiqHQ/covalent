@@ -96,6 +96,8 @@ class _ConfigManager:
             file_config = toml.load(self.config_file)
             update_nested_dict(self.config_data, file_config)
 
+        self.write_config()
+
     def read_config(self) -> None:
         """
         Read the configuration from file.
