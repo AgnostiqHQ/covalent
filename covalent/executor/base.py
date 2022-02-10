@@ -266,7 +266,7 @@ class BaseExecutor(ABC):
 
     def _on_conda_env_fail(self, func: TransportableObject, kwargs: Any, node_id: int):
         """
-        
+
         Args:
             func: The serialized input python function which will be executed and
                 whose result may be returned by this function.
@@ -279,9 +279,7 @@ class BaseExecutor(ABC):
         """
 
         result = None
-        message = (
-            f"Failed to execute node {node_id} on Conda environment {self.conda_env}."
-        )
+        message = f"Failed to execute node {node_id} on Conda environment {self.conda_env}."
         if self.current_env_on_conda_fail:
             message += "\nExecuting on the current Conda environment."
             app_log.warning(message)

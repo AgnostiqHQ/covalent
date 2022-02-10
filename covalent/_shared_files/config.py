@@ -93,9 +93,9 @@ class _ConfigManager:
                 if isinstance(value, dict) and key in old_dict and isinstance(old_dict[key], dict):
                     update_nested_dict(old_dict[key], value, defaults)
                 else:
-                    if defaults:    # Values provided are defaults
+                    if defaults:  # Values provided are defaults
                         old_dict.setdefault(key, value)
-                    else:           # Values provided should overwrite
+                    else:  # Values provided should overwrite
                         old_dict[key] = value
 
         if os.path.exists(self.config_file):
@@ -253,6 +253,7 @@ def reload_config() -> None:
     """
 
     _config_manager.read_config()
+
 
 def update_config(self, new_entries: Optional[Dict] = None, defaults: bool = False) -> None:
     """

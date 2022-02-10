@@ -74,21 +74,20 @@ class _ExecutorManager:
         self.executor_plugins_map: Dict[str, Any] = {}
 
         # Load plugins that are part of the covalent path.
-        pkg_plugins_path = os.path.join(os.path.dirname(__file__),"executor_plugins")
+        pkg_plugins_path = os.path.join(os.path.dirname(__file__), "executor_plugins")
         self._load_executors(pkg_plugins_path)
 
         # Look for executor plugins in the config directory
         default_plugins_path = os.environ["HOME"] + "/.config/covalent/executor_plugins"
-        config_path = os.environ.get("COVALENT_CONFIG_DIR",None)
+        config_path = os.environ.get("COVALENT_CONFIG_DIR", None)
         if config_path:
-            default_plugins_path = os.path.join(config_path,"covalent/executor_plugins")
+            default_plugins_path = os.path.join(config_path, "covalent/executor_plugins")
         self._load_executors(default_plugins_path)
 
         # Look for executor plugins in a user-defined path
-        user_plugins_path = os.environ.get("COVALENT_EXECUTOR_DIR",None)
+        user_plugins_path = os.environ.get("COVALENT_EXECUTOR_DIR", None)
         if user_plugins_path:
             self._load_executors(user_plugins_path)
-
 
         # Look for pip-installed plugins
         self._load_installed_plugins()
