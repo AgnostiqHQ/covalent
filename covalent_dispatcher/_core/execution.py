@@ -355,28 +355,21 @@ def _plan_workflow(result_object: Result) -> None:
 
     serialized_tg = result_object.lattice.transport_graph.serialize(metadata_only=True)
 
-    schedule = result_object.lattice.transport_graph.lattice_metadata.get("schedule", False)
+    workflow_schedule = {"nodes": []}
+    deserialized_tg = pickle.loads(serialized_tg)
 
-    if schedule:
-        # Custom scheduling logic
-        pass
-    else:
-        # Default scheduling logic
-        workflow_schedule = {"nodes": [], "schedule_quality": 1}
-        deserialized_tg = pickle.loads(serialized_tg)
-
-        # Certain metadata fields are transformed and passed to the executor
-        for node in deserialized_tg["nodes"]:
-            workflow_schedule["nodes"].append(
-                {
-                    "id": node["id"],
-                    "backend": node["metadata"]["backend"][0]
-                    if isinstance(node["metadata"]["backend"], list)
-                    else node["metadata"]["backend"],
-                    # Mutate executor-specific arguments here
-                    "backend_args": {"results_dir": result_object.results_dir},
-                }
-            )
+    # Certain metadata fields are transformed and passed to the executor
+    for node in deserialized_tg["nodes"]:
+        workflow_schedule["nodes"].append(
+            {
+                "id": node["id"],
+                "backend": node["metadata"]["backend"][0]
+                if isinstance(node["metadata"]["backend"], list)
+                else node["metadata"]["backend"],
+                # Mutate executor-specific arguments here
+                "backend_args": {"results_dir": result_object.results_dir},
+            }
+        )
 
     # Attach the execution plan to the transport graph
     for node in workflow_schedule["nodes"]:
