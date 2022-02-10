@@ -36,6 +36,16 @@ from covalent._shared_files.defaults import _DEFAULT_CONFIG
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "test_files")
 
 
+@pytest.mark.parametrize("dir_env", [("COVALENT_CONFIG_DIR"), ("XDG_CONFIG_DIR"), ("HOME")])
+def test_config_manager_init(monkeypatch, dir_env):
+    """Test the init method for the config manager."""
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        monkeypatch.setenv(dir_env, tmp_dir)
+        cm = _ConfigManager()
+        assert cm.config_file == f"{tmp_dir}/covalent/covalent.conf"
+
+
 @patch.dict(os.environ, {"COVALENT_CONFIG_DIR": CONFIG_DIR}, clear=True)
 def test_read_config():
     """Test that configuration file is properly read"""
@@ -261,8 +271,3 @@ def test_get_config():
         "dispatcher.address": _config_manager.config_data["dispatcher"]["address"],
         "dispatcher.port": _config_manager.config_data["dispatcher"]["port"],
     }
-
-
-def test_init(mocker):
-
-    config_dir_mock = mocker.patch("covalent._shared_files.config.")
