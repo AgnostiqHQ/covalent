@@ -5,12 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.24.9] - 2022-02-08
+## [0.24.11] - 2022-02-10
 
 ### Fixed
 
 - If a user's configuration file does not have a needed exeutor parameter, the default parameter (defined in _shared_files/defaults.py) is used.
 - Each executor plugin is no longer initialized upon the import of Covalent. This allows required parameters in executor plugins. 
+
+## Changed
+
+- Upon updating the configuration data with a user's configuration file, the complete set is written back to file.
+
+## [0.24.10] - 2022-02-09
+
+### Fixed
+
+- Sporadically failing workflow cancellation test in tests/workflow_stack_test.py
+
+## [0.24.9] - 2022-02-09
+
+## Changed
+
+- Implementation of `_port_from_pid` in covalent_dispatcher/_cli/service.py.
+
+## Added
+
+- Unit tests for command line interface (CLI) functionalities in covalent_dispatcher/_cli/service.py and covalent_dispatcher/_cli/cli.py.
 
 ## [0.24.8] - 2022-02-07
 
@@ -22,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Typing: Add Type hint `dispatch_info` parameter.                
+- Typing: Add Type hint `dispatch_info` parameter.
 - Documentation: Updated the return_type description in docstring.
 
 ### Changed
