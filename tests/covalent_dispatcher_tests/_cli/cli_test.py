@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
@@ -18,6 +20,31 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Import CLI tool functionalities."""
+"""Test for Covalent CLI Tool."""
 
-from .service import _is_dispatcher_running, _is_ui_running
+import click
+from click.testing import CliRunner
+
+from covalent_dispatcher._cli.cli import cli
+
+
+def test_cli(mocker):
+    """Test the main CLI function."""
+
+    runner = CliRunner()
+    response = runner.invoke(cli, "--version")
+    assert (
+        ("python" in response.output.lower())
+        and ("agnostiq" in response.output.lower())
+        and ("copyright" in response.output.lower())
+    )
+
+    response = runner.invoke(cli)
+    assert ("options" in response.output.lower()) and ("commands" in response.output.lower())
+
+
+def test_cli_commands():
+    """Test the list of commands associated with Covalent CLI."""
+
+    ctx = click.Context
+    assert cli.list_commands(ctx) == ["purge", "restart", "start", "status", "stop"]

@@ -302,7 +302,7 @@ def test_dispatch_cancellation():
 
     @ct.electron
     def task_1():
-        time.sleep(4)
+        time.sleep(600)
         print("Task 1")
         return 5
 

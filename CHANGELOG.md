@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.24.9] - 2022-02-09
+
+## [0.24.11] - 2022-02-09
 
 ### Added
 
@@ -14,6 +15,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - The `_DEFAULT_CONSTRAINT_VALUES` dictionary now only contains the `backend` argument
+
+## [0.24.10] - 2022-02-09
+
+### Fixed
+
+- Sporadically failing workflow cancellation test in tests/workflow_stack_test.py
+
+## [0.24.9] - 2022-02-09
+
+## Changed
+
+- Implementation of `_port_from_pid` in covalent_dispatcher/_cli/service.py.
+
+## Added
+
+- Unit tests for command line interface (CLI) functionalities in covalent_dispatcher/_cli/service.py and covalent_dispatcher/_cli/cli.py.
+
+## [0.24.8] - 2022-02-07
+
+### Fixed
+
+- If a user's configuration file does not have a needed parameter, the default parameter (defined in _shared_files/defaults.py) is used.
 
 ## [0.24.7] - 2022-02-07
 
