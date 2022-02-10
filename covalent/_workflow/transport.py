@@ -88,12 +88,12 @@ class TransportableObject:
         )
 
     @staticmethod
-    def deserialize(data) -> "TransportableObject":
+    def deserialize(data: bytes) -> "TransportableObject":
         """
         Deserialize the transportable object.
 
         Args:
-            data: The serialized transportable object.
+            data: Cloudpickled function.
 
         Returns:
             object: The deserialized transportable object.
