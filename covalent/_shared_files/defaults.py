@@ -71,7 +71,7 @@ _DEFAULT_CONFIG = {
 }
 
 # Metadata which may influence execution behavior
-_DEFAULT_CONSTRAINT_VALUES = {"backend": "local"}
+_DEFAULT_CONSTRAINT_VALUES = {"executor": "local"}
 
 # Going Forward we only want to return the backend field of DEFAULT_CONSTRAINT_VALUES
 # The rest of those parameters will now be in this dictionary
