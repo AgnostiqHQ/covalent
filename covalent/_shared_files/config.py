@@ -77,6 +77,7 @@ class _ConfigManager:
     def update_config(self, new_entries: Optional[Dict] = None, defaults: bool = False) -> None:
         """
         Update the exising configuration dictionary with the configuration stored in file.
+            Optionally, update configuration data with an input dict.
 
         Args:
             new_entries: Dictionary of new entries added or updated in the config
@@ -253,16 +254,19 @@ def reload_config() -> None:
 
     _config_manager.read_config()
 
-def update_config() -> None:
+def update_config(self, new_entries: Optional[Dict] = None, defaults: bool = False) -> None:
     """
     Read the configuration from the TOML file and append to default
-        (or existing) configuration.
+        (or existing) configuration. Optionally, update configuration
+        data with an input dict.
 
     Args:
-        None
+        new_entries: Dictionary of new entries added or updated in the config
+        defaults: If False (which is the default), default values do not overwrite
+            existing entries.
 
     Returns:
         None
     """
 
-    _config_manager.update_config()
+    _config_manager.update_config(new_entries, defaults)
