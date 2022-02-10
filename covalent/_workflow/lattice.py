@@ -253,9 +253,9 @@ class Lattice:
 def lattice(
     _func: Optional[Callable] = None,
     *,
-    backend: Optional[
+    executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["backend"],
+    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
     # e.g. schedule: True, whether to use a custom scheduling logic or not
@@ -267,7 +267,7 @@ def lattice(
         _func: function to be decorated
 
     Keyword Args:
-        backend: Alternative executor object to be used in the execution of each node. If not passed, the local
+        executor: Alternative executor object to be used in the execution of each node. If not passed, the local
             executor is used by default.
         results_dir: Directory to store the results
 
@@ -278,7 +278,7 @@ def lattice(
     results_dir = str(Path(results_dir).expanduser().resolve())
 
     constraints = {
-        "backend": backend,
+        "executor": executor,
         "results_dir": results_dir,
     }
 

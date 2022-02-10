@@ -26,7 +26,7 @@ from pathlib import Path
 import networkx as nx
 import simplejson
 import tailer
-from flask import Flask, jsonify, request, send_from_directory, make_response
+from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
@@ -87,7 +87,7 @@ def extract_graph_node(node):
 
 
 def encode_dict(d):
-    """ Avoid JSON encoding when python str() suffices """
+    """Avoid JSON encoding when python str() suffices"""
     if not isinstance(d, dict):
         return d
     return {k: str(v) for (k, v) in d.items()}
@@ -96,14 +96,14 @@ def encode_dict(d):
 def extract_executor_info(metadata):
     # executor details
     try:
-        backend = metadata["backend"]
-        executor = _executor_manager.get_executor(name=backend)
+        executor = metadata["executor"]
+        executor = _executor_manager.get_executor(name=executor)
         if executor is not None:
             # extract attributes
             metadata["executor"] = encode_dict(executor.__dict__)
-            if not isinstance(backend, str):
+            if not isinstance(executor, str):
                 # if not named, replace with class name
-                metadata["backend"] = f"<{executor.__class__.__name__}>"
+                metadata["executor"] = f"<{executor.__class__.__name__}>"
     except (KeyError, AttributeError) as e:
         pass
 

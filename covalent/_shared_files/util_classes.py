@@ -46,19 +46,6 @@ class RESULT_STATUS:
     CANCELLED = Status("CANCELLED")
 
 
-class TaskExecutionMetadata(NamedTuple):
-    """
-    Metadata about a task execution.
-
-    Attributes:
-        selected_executor: The name of the executor that was selected for this task.
-        execution_args: The arguments that were passed to the executor.
-    """
-
-    selected_executor: Any
-    execution_args: Dict
-
-
 class DispatchInfo(NamedTuple):
     """
     Information about a dispatch to be shared to a task post dispatch.

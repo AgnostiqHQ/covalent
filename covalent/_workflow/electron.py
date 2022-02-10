@@ -474,9 +474,9 @@ class Electron:
 def electron(
     _func: Optional[Callable] = None,
     *,
-    backend: Optional[
+    executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["backend"],
+    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     # Add custom metadata fields here
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns a new :obj:`Electron <covalent._workflow.electron.Electron>` object.
@@ -485,7 +485,7 @@ def electron(
         _func: function to be decorated
 
     Keyword Args:
-        backend: Alternative executor object to be used by the electron execution. If not passed, the local
+        executor: Alternative executor object to be used by the electron execution. If not passed, the local
             executor is used by default.
 
     Returns:
@@ -493,7 +493,7 @@ def electron(
     """
 
     constraints = {
-        "backend": backend,
+        "executor": executor,
     }
 
     def decorator_electron(func=None):

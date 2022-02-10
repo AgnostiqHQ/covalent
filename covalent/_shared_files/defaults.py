@@ -79,7 +79,7 @@ _DEFAULT_CONSTRAINT_VALUES = {
     "gpu_type": "",
     "gpu_compute_capability": [],
     "memory": "1G",
-    "backend": "local",
+    "executor": "local",
     "time_limit": "00-00:00:00",
     "budget": 0,
     "conda_env": "",
