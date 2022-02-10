@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.24.11] - 2022-02-10
+
+### Added
+
+- A new dictionary `_DEFAULT_CONSTRAINTS_DEPRECATED` in defaults.py
+
+### Changed
+
+- The `_DEFAULT_CONSTRAINT_VALUES` dictionary now only contains the `backend` argument
+
 ## [0.24.10] - 2022-02-09
 
 ### Fixed
@@ -93,6 +103,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI: display error message on failed status for lattice and electron
 
 ### Changed
+
 - UI: re-order sidebar sections according to latest figma designs
 - UI: update favicon
 - UI: remove dispatch id from tab title
@@ -100,6 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI: adjust theme text primary and secondary colors
 
 ### Fixed
+
 - UI: auto-refresh result state on initial render of listing and graph pages
 - UI: graph layout issues: truncate long electron/param names
 
