@@ -148,7 +148,9 @@ def _run_task(
     """
 
     serialized_callable = result_object.lattice.transport_graph.get_node_value(node_id, "function")
-    executor = result_object.lattice.transport_graph.get_node_value(node_id, "executor")
+    executor = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
+        "executor"
+    ]
     node_name = (
         result_object.lattice.transport_graph.get_node_value(node_id, "name") + f"({node_id})"
     )
@@ -366,7 +368,7 @@ def run_workflow(dispatch_id: str, results_dir: str) -> None:
     except Exception as ex:
         result_object._status = Result.FAILED
         result_object._end_time = datetime.now(timezone.utc)
-        result_object._error = ex
+        result_object._error = repr(ex)
         result_object.save()
         raise
 

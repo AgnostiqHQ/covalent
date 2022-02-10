@@ -49,8 +49,8 @@ def test_using_current_env() -> None:
         return passthrough(x=y)
 
     dispatch_id = ct.dispatch(workflow)(y="input")
-    output = ct.get_result(dispatch_id, wait=True)
+    result = ct.get_result(dispatch_id, wait=True)
 
     rm._delete_result(dispatch_id)
 
-    assert output.result == "input"
+    assert result.result == "input"

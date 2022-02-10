@@ -46,7 +46,6 @@ def get_mock_result() -> Result:
         return task(x)
 
     pipeline.build_graph(x="absolute")
-    pipeline.check_consumable()
 
     return Result(
         lattice=pipeline,

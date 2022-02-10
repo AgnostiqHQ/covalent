@@ -83,7 +83,6 @@ class LocalExecutor(BaseExecutor):
                 success, result = self.execute_in_conda_env(
                     function,
                     kwargs,
-                    dispatch_info,
                     self.conda_env,
                     self.cache_dir,
                 )
