@@ -247,3 +247,22 @@ def test_get_config():
         get_config(entries=["dispatcher.port"])
         == _config_manager.config_data["dispatcher"]["port"]
     )
+
+    # Case 3 - String
+    assert (
+        get_config(entries="dispatcher.port") == _config_manager.config_data["dispatcher"]["port"]
+    )
+
+    # Case 4 - List with >1 items
+
+    test_list = ["dispatcher.address", "dispatcher.port"]
+
+    assert get_config(entries=test_list) == {
+        "dispatcher.address": _config_manager.config_data["dispatcher"]["address"],
+        "dispatcher.port": _config_manager.config_data["dispatcher"]["port"],
+    }
+
+
+def test_init(mocker):
+
+    config_dir_mock = mocker.patch("covalent._shared_files.config.")
