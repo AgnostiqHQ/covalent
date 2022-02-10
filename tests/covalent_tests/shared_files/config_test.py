@@ -36,14 +36,47 @@ from covalent._shared_files.defaults import _DEFAULT_CONFIG
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "test_files")
 
 
-@pytest.mark.parametrize("dir_env", [("COVALENT_CONFIG_DIR"), ("XDG_CONFIG_DIR"), ("HOME")])
-def test_config_manager_init(monkeypatch, dir_env):
+@pytest.mark.parametrize(
+    "dir_env,conf_dir",
+    [
+        ("COVALENT_CONFIG_DIR", "covalent/covalent.conf"),
+        ("XDG_CONFIG_DIR", "covalent/covalent.conf"),
+        ("HOME", ".config/covalent/covalent.conf"),
+    ],
+)
+def test_config_manager_init_directory_setting(monkeypatch, dir_env, conf_dir):
     """Test the init method for the config manager."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         monkeypatch.setenv(dir_env, tmp_dir)
         cm = _ConfigManager()
-        assert cm.config_file == f"{tmp_dir}/covalent/covalent.conf"
+        assert cm.config_file == f"{tmp_dir}/{conf_dir}"
+
+
+@pytest.mark.parametrize(
+    "path_exists,write_config_called,update_config_called",
+    [(False, True, False), (True, False, True)],
+)
+def test_config_manager_init_write_update_config(
+    mocker, monkeypatch, path_exists, write_config_called, update_config_called
+):
+    """Test the init method for the config manager."""
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        monkeypatch.setenv("COVALENT_CONFIG_DIR", tmp_dir)
+        update_config_mock = mocker.patch(
+            "covalent._shared_files.config._ConfigManager.update_config"
+        )
+        write_config_mock = mocker.patch(
+            "covalent._shared_files.config._ConfigManager.write_config"
+        )
+
+        mocker.patch("os.path.exists", return_value=path_exists)
+
+        cm = _ConfigManager()
+        assert hasattr(cm, "config_data")
+        assert write_config_mock.called is write_config_called
+        assert update_config_mock.called is update_config_called
 
 
 @patch.dict(os.environ, {"COVALENT_CONFIG_DIR": CONFIG_DIR}, clear=True)
@@ -198,19 +231,6 @@ def test_write_config_example_1():
     assert expected_data == actual_data
 
 
-# def test_write_config_example_2(mocker):
-#     """another example"""
-
-#     toml_mock = mocker.patch("covalent._shared_files.config.toml.dump")
-#     cm = _ConfigManager()
-
-#     with mock.patch(
-#         "covalent._shared_files.config.open", mock.mock_open(read_data="1984")
-#     ) as mock_file:
-#         cm.update_config()
-#         toml_mock.assert_called_once()
-
-
 def test_get():
     test_class = _ConfigManager()
 
@@ -271,3 +291,13 @@ def test_get_config():
         "dispatcher.address": _config_manager.config_data["dispatcher"]["address"],
         "dispatcher.port": _config_manager.config_data["dispatcher"]["port"],
     }
+
+
+def test_write_config(mocker):
+    cm = _ConfigManager()
+    toml_dump_mock = mocker.patch("covalent._shared_files.config.toml.dump")
+    open_mock = mocker.patch("covalent._shared_files.config.open")
+    mock_file = open_mock.return_value.__enter__.return_value
+    cm.write_config()
+    toml_dump_mock.assert_called_once_with(cm.config_data, mock_file)
+    open_mock.assert_called_once_with(cm.config_file, "w")
