@@ -263,6 +263,16 @@ def test_get_config():
     }
 
 
-def test_init(mocker):
+# def test_init(mocker):
 
-    config_dir_mock = mocker.patch("covalent._shared_files.config.")
+#     config_dir_mock = mocker.patch("covalent._shared_files.config.")
+
+
+def test_write_config(mocker):
+    cm = _ConfigManager()
+    toml_dump_mock = mocker.patch("covalent._shared_files.config.toml.dump")
+    open_mock = mocker.patch("covalent._shared_files.config.open")
+    mock_file = open_mock.return_value.__enter__.return_value
+    cm.write_config()
+    toml_dump_mock.assert_called_once_with(cm.config_data, mock_file)
+    open_mock.assert_called_once_with(cm.config_file, "w")
