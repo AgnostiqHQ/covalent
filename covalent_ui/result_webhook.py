@@ -62,7 +62,6 @@ def send_update(result: Result) -> None:
     try:
         # ignore response
         requests.post(WEBHOOK_URL, data=result_update)
-    except requests.exceptions.RequestException as err:
+    except requests.exceptions.RequestException:
         # catch all requests-related exceptions
-        print(err);
         app_log.warning("Unable to send result update to UI server.")
