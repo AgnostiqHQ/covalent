@@ -20,14 +20,39 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { commonSlice } from './commonSlice'
-import { resultsSlice } from './resultsSlice'
-import { latticePreviewSlice } from './latticePreviewSlice'
+import { alpha, AppBar, IconButton, Toolbar } from '@mui/material'
+import { Menu as MenuIcon } from '@mui/icons-material'
 
-const reducers = {
-  common: commonSlice.reducer,
-  results: resultsSlice.reducer,
-  latticePreview: latticePreviewSlice.reducer,
+import { toggleLatticeDrawer } from '../../redux/commonSlice'
+import { useDispatch } from 'react-redux'
+
+const MobileAppBar = () => {
+  const dispatch = useDispatch()
+
+  return (
+    <AppBar
+      position="fixed"
+      sx={(theme) => ({
+        display: {
+          xs: 'block',
+          md: 'none',
+        },
+        bgcolor: alpha(theme.palette.background.paper, 0.3),
+        backdropFilter: 'blur(16px)',
+      })}
+    >
+      <Toolbar>
+        <IconButton
+          sx={{ mr: 2 }}
+          color="inherit"
+          edge="start"
+          onClick={() => dispatch(toggleLatticeDrawer())}
+        >
+          <MenuIcon />
+        </IconButton>
+      </Toolbar>
+    </AppBar>
+  )
 }
 
-export default reducers
+export default MobileAppBar

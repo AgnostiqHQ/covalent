@@ -21,13 +21,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { useParams } from 'react-router-dom'
-import ReactFlow, {
-  Background,
-  MiniMap,
-  useZoomPanHelper,
-} from 'react-flow-renderer'
+import ReactFlow, { Background, MiniMap } from 'react-flow-renderer'
 
 import ElectronNode from '../graph/ElectronNode'
 import ParameterNode from '../graph/ParameterNode'
@@ -37,12 +31,15 @@ import LatticeControls from './LatticeControls'
 import theme from '../../utils/theme'
 import { lighten } from '@mui/material'
 import { statusColor } from '../../utils/misc'
+import useFitViewHelper from '../common/ReactFlowHooks'
 
-const LatticeMain = ({ hasSelectedNode }) => {
-  const { dispatchId } = useParams()
-
-  const result = useSelector((state) => state.results.cache[dispatchId])
-  const { fitView } = useZoomPanHelper()
+const LatticeMain = ({
+  graph,
+  hasSelectedNode,
+  marginLeft = 0,
+  marginRight = 0,
+}) => {
+  const { fitView } = useFitViewHelper()
 
   const [elements, setElements] = useState()
   const [direction, setDirection] = useState('TB')
@@ -51,19 +48,27 @@ const LatticeMain = ({ hasSelectedNode }) => {
   const [nodesDraggable, setNodesDraggable] = useState(false)
 
   useEffect(() => {
-    setElements(layout(result.graph, direction, showParams))
-  }, [result, direction, showParams])
+    setElements(layout(graph, direction, showParams))
+  }, [graph, direction, showParams])
 
   useEffect(() => {
     setTimeout(() => {
-      fitView()
+      fitView({ duration: 300, marginLeft, marginRight })
     })
-  }, [dispatchId, fitView, hasSelectedNode, showParams, direction])
+  }, [
+    fitView,
+    hasSelectedNode,
+    marginLeft,
+    marginRight,
+    graph,
+    showParams,
+    direction,
+  ])
 
   // handle resizing
   useEffect(() => {
     const resizeHandler = () => {
-      fitView()
+      fitView({ duration: 300, marginLeft, marginRight })
     }
     window.addEventListener('resize', resizeHandler)
     return () => {
@@ -90,6 +95,8 @@ const LatticeMain = ({ hasSelectedNode }) => {
         />
 
         <LatticeControls
+          marginLeft={marginLeft}
+          marginRight={marginRight}
           showParams={showParams}
           toggleParams={() => {
             setShowParams(!showParams)

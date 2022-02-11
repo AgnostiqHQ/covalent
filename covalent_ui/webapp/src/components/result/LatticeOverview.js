@@ -21,7 +21,7 @@
  */
 
 import _ from 'lodash'
-import { Box, Divider, Paper, Tooltip, Typography } from '@mui/material'
+import { Divider, Paper, Tooltip, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 
 import { formatDate, truncateMiddle } from '../../utils/misc'

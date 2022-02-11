@@ -20,14 +20,33 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { commonSlice } from './commonSlice'
-import { resultsSlice } from './resultsSlice'
-import { latticePreviewSlice } from './latticePreviewSlice'
+import {
+  AppBar,
+  Container,
+  Link,
+  Paper,
+  Toolbar,
+  Typography,
+} from '@mui/material'
 
-const reducers = {
-  common: commonSlice.reducer,
-  results: resultsSlice.reducer,
-  latticePreview: latticePreviewSlice.reducer,
+import { ReactComponent as Logo } from '../assets/covalent-full-logo.svg'
+
+const NotFound = ({ text = 'Page not found.', children }) => {
+  return (
+    <Container>
+      <AppBar position="static" color="transparent">
+        <Toolbar disableGutters sx={{ my: 2 }}>
+          <Link href="/">
+            <Logo />
+          </Link>
+        </Toolbar>
+      </AppBar>
+
+      <Paper elevation={4} sx={{ p: 2 }}>
+        {children || <Typography variant="h5">{text}</Typography>}
+      </Paper>
+    </Container>
+  )
 }
 
-export default reducers
+export default NotFound
