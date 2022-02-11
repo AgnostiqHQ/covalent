@@ -105,4 +105,12 @@ def test_get_executor(mocker):
 
 
 def test_load_installed_plugins(mocker):
-    pass
+    """Test load installed plugins."""
+
+    mocker.patch("covalent.executor._ExecutorManager.__init__", return_value=None)
+    populate_executor_map_from_module_mock = mocker.patch(
+        "covalent.executor._ExecutorManager._load_installed_plugins"
+    )
+    em = _ExecutorManager()
+    em._load_installed_plugins()
+    populate_executor_map_from_module_mock.assert_called()
