@@ -194,6 +194,8 @@ def test_update_config():
 
 
 def test_set_config_str_key(mocker):
+    """Test the set_config method when the input is a string"""
+
     cm_set_mock = mocker.patch("covalent._shared_files.config._config_manager.set")
     cm_write_config = mocker.patch("covalent._shared_files.config._config_manager.write_config")
     set_config("mock_section.mock_variable", "mock_value")
@@ -202,6 +204,8 @@ def test_set_config_str_key(mocker):
 
 
 def test_set_config_dict_key(mocker):
+    """Test the set_config method when the input is a dictionary"""
+
     cm_set_mock = mocker.patch("covalent._shared_files.config._config_manager.set")
     cm_write_config = mocker.patch("covalent._shared_files.config._config_manager.write_config")
     set_config({"mock_section.mock_variable": "mock_value"})
@@ -210,16 +214,19 @@ def test_set_config_dict_key(mocker):
 
 
 def test_generate_default_config(mocker):
+    """Tests that the default configuration was loaded"""
 
-    test_class = _ConfigManager()
+    cm = _ConfigManager()
     cm_deepcopy_mock = mocker.patch("covalent._shared_files.config.copy.deepcopy", return_value={})
 
-    test_class.generate_default_config()
+    cm.generate_default_config()
     cm_deepcopy_mock.assert_called_once_with(_DEFAULT_CONFIG)
-    assert test_class.config_data == _DEFAULT_CONFIG
+    assert cm.config_data == _DEFAULT_CONFIG
 
 
 def test_read_config(mocker):
+    """Test the read_config method for the config manager"""
+
     cm = _ConfigManager()
     test_data = {"test": "test"}
     toml_load_mock = mocker.patch(
@@ -245,20 +252,24 @@ def test_write_config_example_1():
 
 
 def test_get():
-    test_class = _ConfigManager()
+    """Test the get method for the config manager"""
 
-    assert test_class.get("dispatcher.port") == test_class.config_data["dispatcher"]["port"]
+    cm = _ConfigManager()
+
+    assert cm.get("dispatcher.port") == cm.config_data["dispatcher"]["port"]
 
 
 def test_generate_default_config():
+    """Test that the default configuration was loaded"""
 
-    test_class = _ConfigManager()
-    test_class.generate_default_config()
-    assert test_class.config_data == _DEFAULT_CONFIG
-    assert test_class.config_data is not _DEFAULT_CONFIG
+    cm = _ConfigManager()
+    cm.generate_default_config()
+    assert cm.config_data == _DEFAULT_CONFIG
+    assert cm.config_data is not _DEFAULT_CONFIG
 
 
 def test_reload_config(mocker):
+    """Test the reload_config method"""
 
     cm_read_config = mocker.patch("covalent._shared_files.config._config_manager.read_config")
     reload_config()
@@ -266,6 +277,7 @@ def test_reload_config(mocker):
 
 
 def test_purge_config(mocker):
+    """Test the purge_config method for config manager"""
 
     cm = _ConfigManager()
     os_dir_mock = mocker.patch(
@@ -296,7 +308,7 @@ def test_get_config():
         get_config(entries="dispatcher.port") == _config_manager.config_data["dispatcher"]["port"]
     )
 
-    # Case 4 - List with >1 items
+    # Case 4 - List with > 1 items
 
     test_list = ["dispatcher.address", "dispatcher.port"]
 
@@ -307,6 +319,8 @@ def test_get_config():
 
 
 def test_write_config(mocker):
+    """Test the write_config method for config manager"""
+
     cm = _ConfigManager()
     toml_dump_mock = mocker.patch("covalent._shared_files.config.toml.dump")
     open_mock = mocker.patch("covalent._shared_files.config.open")
