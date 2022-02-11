@@ -22,6 +22,7 @@
 Defines the core functionality of the dispatcher
 """
 
+import traceback
 from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
@@ -38,9 +39,9 @@ from covalent._shared_files.defaults import (
     attr_prefix,
     electron_dict_prefix,
     electron_list_prefix,
-    exclude_from_postprocess,
     generator_prefix,
     parameter_prefix,
+    prefix_separator,
     sublattice_prefix,
     subscript_prefix,
 )
@@ -331,7 +332,7 @@ def _run_planned_workflow(result_object: Result) -> Result:
     node_outputs_for_post_processing = {
         k: v
         for k, v in result_object.get_all_node_outputs().items()
-        if all(prefix not in k for prefix in exclude_from_postprocess)
+        if not k.startswith(prefix_separator)
     }
     result_object._result = _post_process(result_object.lattice, node_outputs_for_post_processing)
 
@@ -411,7 +412,7 @@ def run_workflow(dispatch_id: str, results_dir: str) -> None:
     except Exception as ex:
         result_object._status = Result.FAILED
         result_object._end_time = datetime.now(timezone.utc)
-        result_object._error = ex
+        result_object._error = "".join(traceback.TracebackException.from_exception(ex).format())
         result_object.save()
         raise
 
