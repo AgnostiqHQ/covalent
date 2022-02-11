@@ -260,7 +260,7 @@ def start(ctx, port: int, develop: bool) -> None:
     Start the dispatcher and/or UI servers.
     """
 
-    port = _graceful_start("dispatcher", UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
+    port = _graceful_start("UI", UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
     set_config(
         {
             "user_interface.address": "0.0.0.0",
