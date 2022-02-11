@@ -22,7 +22,6 @@
 Tests for the core functionality of the dispatcher.
 """
 
-import cloudpickle as pickle
 
 import covalent as ct
 from covalent._results_manager import Result

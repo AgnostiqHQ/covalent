@@ -474,6 +474,7 @@ class Electron:
 def electron(
     _func: Optional[Callable] = None,
     *,
+    backend: Optional[str] = None,
     executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
@@ -485,12 +486,20 @@ def electron(
         _func: function to be decorated
 
     Keyword Args:
+        backend: DEPRECATED: Same as `executor`.
         executor: Alternative executor object to be used by the electron execution. If not passed, the local
             executor is used by default.
 
     Returns:
         :obj:`Electron <covalent._workflow.electron.Electron>` : Electron object inside which the decorated function exists.
     """
+
+    if backend:
+        app_log.warning(
+            "backend is deprecated and will be removed in a future release. Please use executor keyword instead.",
+            exc_info=DeprecationWarning,
+        )
+        executor = backend
 
     constraints = {
         "executor": executor,

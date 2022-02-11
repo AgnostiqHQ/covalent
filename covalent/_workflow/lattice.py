@@ -42,6 +42,14 @@ if TYPE_CHECKING:
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
 
+from .._shared_files.utils import (
+    get_serialized_function_str,
+    get_timedelta,
+    required_params_passed,
+)
+
+consumable_constraints = []
+
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -101,7 +109,7 @@ class Lattice:
             KeyError: If metadata of given name is not present.
         """
 
-        return self.metadata[name]
+        return self.metadata.get(name, None)
 
     def build_graph(self, *args, **kwargs) -> None:
         """
@@ -207,9 +215,89 @@ class Lattice:
 
         return self.workflow_function(*args, **kwargs)
 
+    def check_constraint_specific_sum(self, constraint_name: str, node_list: List[dict]) -> bool:
+        """
+        DEPRECATED: Function to check whether the sum of the given constraint in each electron
+        are within the constraint specified for the lattice.
+
+        Args:
+            constraint_name: Name of the constraint to be checked, e.g budget, timelimit, etc.
+            node_list: List of nodes to be checked.
+        Returns:
+            True if the sum of constraints are within the constraint specified for the lattice,
+            else False.
+        """
+
+        app_log.warning(
+            "check_constraint_specific_sum is deprecated and will be removed in a future release.",
+            exc_info=DeprecationWarning,
+        )
+
+        constraint_list = [
+            node["metadata"][constraint_name] if node["metadata"] else None for node in node_list
+        ]
+
+        parameter_node_id = [i for i, x in enumerate(constraint_list) if not x]
+
+        if constraint_name == "budget":
+            constraint_sum = sum(
+                cl for i, cl in enumerate(constraint_list) if i not in parameter_node_id
+            )
+
+            return constraint_sum <= self.get_metadata(constraint_name)
+
+        elif constraint_name == "time_limit":
+            from datetime import timedelta
+
+            order = self.transport_graph.get_topologically_sorted_graph()
+
+            delta_list_parallel = []
+            for node_set in order:
+                node_set_time_deltas = [
+                    get_timedelta(constraint_list[n])
+                    for n in node_set
+                    if n not in parameter_node_id
+                ]
+                if node_set_time_deltas:
+                    delta_list_parallel.append(max(node_set_time_deltas))
+
+            return sum(delta_list_parallel, timedelta()) <= get_timedelta(
+                self.get_metadata(constraint_name)
+            )
+
+    def check_consumable(self) -> None:
+        """
+        DEPRECATED: Function to check whether all consumable constraints in all the nodes are
+        within the limits of what is specified for the lattice.
+
+        Args:
+            None
+        Returns:
+            None
+        Raises:
+            ValueError: If the sum of consumable constraints in all the nodes are
+                        not within the total limit of the lattice.
+        """
+
+        app_log.warning(
+            "check_consumable is deprecated and will be removed in a future release.",
+            exc_info=DeprecationWarning,
+        )
+
+        graph_copy = self.transport_graph.get_internal_graph_copy()
+        data = nx.readwrite.node_link_data(graph_copy)
+
+        for constraint in consumable_constraints:
+            if not self.check_constraint_specific_sum(constraint, data["nodes"]):
+                raise ValueError(
+                    "The sum of all electron {} constraints is greater than the lattice {} constraint".format(
+                        constraint, constraint
+                    )
+                )
+
     def dispatch(self, *args, **kwargs) -> str:
         """
-        Deprecated function to dispatch workflows
+        DEPRECATED: Function to dispatch workflows.
 
         Args:
             *args: Positional arguments for the workflow
@@ -230,7 +318,7 @@ class Lattice:
 
     def dispatch_sync(self, *args, **kwargs) -> "Result":
         """
-        Deprecated function to dispatch workflows synchronously
+        DEPRECATED: Function to dispatch workflows synchronously by waiting for the result too.
 
         Args:
             *args: Positional arguments for the workflow
@@ -253,6 +341,7 @@ class Lattice:
 def lattice(
     _func: Optional[Callable] = None,
     *,
+    backend: Optional[str] = None,
     executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
@@ -267,6 +356,7 @@ def lattice(
         _func: function to be decorated
 
     Keyword Args:
+        backend: DEPRECATED: Same as `executor`.
         executor: Alternative executor object to be used in the execution of each node. If not passed, the local
             executor is used by default.
         results_dir: Directory to store the results
@@ -274,6 +364,13 @@ def lattice(
     Returns:
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.
     """
+
+    if backend:
+        app_log.warning(
+            "backend is deprecated and will be removed in a future release. Please use executor keyword instead.",
+            exc_info=DeprecationWarning,
+        )
+        executor = backend
 
     results_dir = str(Path(results_dir).expanduser().resolve())
 

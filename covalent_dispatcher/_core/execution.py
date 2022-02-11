@@ -25,7 +25,6 @@ Defines the core functionality of the dispatcher
 from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
-import cloudpickle as pickle
 import dask
 from dask.distributed import Client, Variable
 
@@ -148,7 +147,7 @@ def _run_task(
     """
 
     serialized_callable = result_object.lattice.transport_graph.get_node_value(node_id, "function")
-    executor = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
+    selected_executor = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
         "executor"
     ]
     node_name = (
@@ -178,7 +177,7 @@ def _run_task(
         return
 
     # the executor is determined during scheduling and provided in the execution metadata
-    executor = _executor_manager.get_executor(executor)
+    executor = _executor_manager.get_executor(selected_executor)
 
     # run the task on the executor and register any failures
     try:
@@ -342,6 +341,28 @@ def _run_planned_workflow(result_object: Result) -> Result:
     result_webhook.send_update(result_object)
 
 
+def _plan_workflow(result_object: Result) -> None:
+    """
+    DEPRECATED: Function to plan a workflow according to a schedule.
+    Planning means to decide which executors (along with their arguments) will
+    be used by each node.
+
+    Args:
+        result_object: Result object being used for current dispatch
+
+    Returns:
+        None
+    """
+
+    if result_object.lattice.get_metadata("schedule"):
+        # Custom scheduling logic of the format:
+        # scheduled_executors = get_schedule(result_object)
+
+        # for node_id, executor in scheduled_executors.items():
+        #    result_object.lattice.transport_graph.set_node_value(node_id, "executor", executor)
+        pass
+
+
 def run_workflow(dispatch_id: str, results_dir: str) -> None:
     """
     Plan and run the workflow by loading the result object corresponding to the
@@ -363,6 +384,7 @@ def run_workflow(dispatch_id: str, results_dir: str) -> None:
         return
 
     try:
+        _plan_workflow(result_object)
         _run_planned_workflow(result_object)
 
     except Exception as ex:

@@ -26,8 +26,12 @@ from typing import List, Optional, Union
 
 import cloudpickle as pickle
 
+from .._shared_files import logger
 from .._shared_files.config import get_config
 from .result import Result
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 
 def get_result(
@@ -134,6 +138,29 @@ def _delete_result(
 
     if remove_parent_directory:
         shutil.rmtree(results_dir, ignore_errors=True)
+
+
+def redispatch_result(result_object: Result, dispatcher: str = None) -> str:
+    """
+    DEPRECATED: Function to redispatch the result as a new dispatch.
+
+    Args:
+        result_object: The result object to be redispatched.
+        dispatcher: The address to the dispatcher in the form of hostname:port, e.g. "localhost:8080".
+    Returns:
+        dispatch_id: The dispatch id of the new dispatch.
+    """
+
+    app_log.warning(
+        "redispatch_result is deprecated and will be removed in a future release",
+        exc_info=DeprecationWarning,
+    )
+
+    result_object._lattice.metadata["dispatcher"] = (
+        dispatcher or result_object.lattice.metadata["dispatcher"]
+    )
+
+    return result_object.lattice._server_dispatch(result_object)
 
 
 def sync(
