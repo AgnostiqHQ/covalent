@@ -34,6 +34,13 @@ from covalent._shared_files.util_classes import DispatchInfo
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import BaseExecutor
 
+# Plugin config defaults
+_EXECUTOR_PLUGIN_DEFAULTS = {
+    "log_stdout": "stdout.log",
+    "log_stderr": "stderr.log",
+    "cache_dir": "/tmp/covalent",
+}
+
 # The plugin class name must be given by the executor_plugin_name attribute:
 executor_plugin_name = "LocalExecutor"
 

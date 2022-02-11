@@ -71,6 +71,7 @@ class BaseExecutor(ABC):
         self.log_stderr = log_stderr
         self.conda_env = conda_env
         self.cache_dir = cache_dir
+        Path(self.cache_dir).expanduser().absolute().mkdir(parents=True, exist_ok=True)
         self.current_env_on_conda_fail = current_env_on_conda_fail
         self.current_env = ""
 

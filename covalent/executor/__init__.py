@@ -31,7 +31,7 @@ from typing import Any, Dict, List, Union
 import pkg_resources
 
 from .._shared_files import logger
-from .._shared_files.config import get_config, reload_config
+from .._shared_files.config import get_config, reload_config, update_config
 from .base import BaseExecutor
 
 app_log = logger.app_log
@@ -155,7 +155,10 @@ class _ExecutorManager:
         if len(plugin_class):
             plugin_class = plugin_class[0]
             short_name = the_module.__name__.split("/")[-1]
-            self.executor_map[short_name] = plugin_class()
+            plugin_config = {"executors": {short_name: the_module._EXECUTOR_PLUGIN_DEFAULTS}}
+            update_config(plugin_config, defaults=True)
+            default_options = get_config(f"executors.{short_name}")
+            self.executor_map[short_name] = plugin_class(**default_options)
             self.executor_plugins_map[short_name] = plugin_class
         else:
             # The requested plugin (the_module.module_name) was not found in the module.
@@ -174,7 +177,7 @@ class _ExecutorManager:
             None
         """
 
-        entry_points = pkg_resources.iter_entry_points("covalent_dispatcher.executor_plugins")
+        entry_points = pkg_resources.iter_entry_points("covalent.executor.executor_plugins")
         for entry in entry_points:
             the_module = entry.load()
             self._populate_executor_map_from_module(the_module)
