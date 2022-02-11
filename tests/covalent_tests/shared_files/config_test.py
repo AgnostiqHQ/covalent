@@ -314,3 +314,11 @@ def test_write_config(mocker):
     cm.write_config()
     toml_dump_mock.assert_called_once_with(cm.config_data, mock_file)
     open_mock.assert_called_once_with(cm.config_file, "w")
+
+
+def test_config_manager_set(mocker):
+    """Test the set method in config manager."""
+
+    cm = _ConfigManager()
+    mocker.patch("functools.reduce", side_effect=Exception("KeyError"))
+    cm.set("fake", "fake")
