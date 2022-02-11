@@ -20,6 +20,8 @@
 
 # CODEOWNERS
 
+*			@AgnostiqHQ/aq-engineers
+
 # Modifying these requires additional approval
 Dockerfile		@AgnostiqHQ/aq-managers
 .github/workflows/**	@AgnostiqHQ/aq-managers
