@@ -20,6 +20,7 @@
 
 """Tests for Covalent executor init file."""
 
+import pytest
 
 from covalent.executor import BaseExecutor, _executor_manager, _ExecutorManager
 
@@ -95,8 +96,12 @@ def test_get_executor(mocker):
     assert resp == "plugin map func called"
 
     # Case 3 - name is str and not in executor_plugin_map
+    with pytest.raises(ValueError):
+        em.get_executor(name="non-existent")
 
     # Case4 - name is neither str or BaseExecutor type
+    with pytest.raises(TypeError):
+        em.get_executor(name=3)
 
 
 def test_load_installed_plugins(mocker):
