@@ -20,7 +20,8 @@
 
 """Tests for Covalent executor init file."""
 
-from covalent.executor import _executor_manager, _ExecutorManager
+
+from covalent.executor import BaseExecutor, _executor_manager, _ExecutorManager
 
 
 def test_get_executor_local(mocker):
@@ -64,3 +65,39 @@ def test_executor_manager_generate_plugins_list(mocker):
         mocker.call("user_plugin_path"),
     ]
     load_installed_plugins_mock.called_once_with()
+
+
+def test_get_executor(mocker):
+    """Test get executor method in executor manager."""
+
+    class MockExecutor(BaseExecutor):
+        def execute(self):
+            pass
+
+    def plugin_mock(**kwargs):
+        return "plugin map func called"
+
+    mocker.patch("covalent.executor._ExecutorManager.__init__", return_value=None)
+
+    # Case 1 - name is BaseExecutor type
+    em = _ExecutorManager()
+    resp = em.get_executor(MockExecutor())
+    assert isinstance(resp, MockExecutor)
+
+    # Case 2 - name is str and in executor_plugin_map
+    get_config_mock = mocker.patch("covalent.executor.get_config", return_value={"test_arg": 1})
+    update_config_mock = mocker.patch("covalent.executor.update_config")
+
+    em.executor_plugins_map = {"mock_name": plugin_mock}
+    resp = em.get_executor(name="mock_name")
+    update_config_mock.assert_called_once_with()
+    get_config_mock.assert_called_once_with("executors.mock_name")
+    assert resp == "plugin map func called"
+
+    # Case 3 - name is str and not in executor_plugin_map
+
+    # Case4 - name is neither str or BaseExecutor type
+
+
+def test_load_installed_plugins(mocker):
+    pass
