@@ -34,20 +34,15 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import {
-  AccountTreeOutlined,
-  CancelOutlined,
-  CheckCircleOutline,
-  ChevronLeft,
-  WarningAmber,
-} from '@mui/icons-material'
+import { AccountTreeOutlined, ChevronLeft } from '@mui/icons-material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
+import { alpha } from '@mui/material/styles'
 
 import CopyButton from '../CopyButton'
 import { ReactComponent as AtomSvg } from '../../assets/atom.svg'
 import { selectResultProgress } from '../results/ResultProgress'
 import LatticeOverview from './LatticeOverview'
-import { truncateMiddle } from '../../utils/misc'
+import { statusIcon, truncateMiddle } from '../../utils/misc'
 import LogOutput from '../LogOutput'
 
 const LatticeDrawer = () => {
@@ -55,7 +50,7 @@ const LatticeDrawer = () => {
   const [tab, setTab] = useState('overview')
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ px: 3 }}>
       {/* dispatch id */}
       <IconButton href="/" sx={{ color: 'text.disabled', mr: 1 }}>
         <ChevronLeft />
@@ -115,7 +110,7 @@ const LatticeStatusCard = ({ dispatchId }) => {
 
   return (
     <Box sx={{ my: 2 }}>
-      <Paper sx={{ px: 1, py: 1 }} elevation={4}>
+      <Paper sx={{ px: 3, py: 2 }} elevation={0}>
         <Box
           sx={{
             display: 'grid',
@@ -123,8 +118,8 @@ const LatticeStatusCard = ({ dispatchId }) => {
           }}
         >
           {/* left column */}
-          <Box>
-            <Typography color="text.secondary" variant="body2" sx={{ mb: 1.5 }}>
+          <Box sx={{ borderRight: '1px solid #29425B' }}>
+            <Typography color="text.secondary" fontSize="body2.fontSize">
               Status
             </Typography>
 
@@ -132,58 +127,64 @@ const LatticeStatusCard = ({ dispatchId }) => {
               sx={{
                 color: `${color}.main`,
                 display: 'flex',
+                fontSize: '1.125rem',
                 alignItems: 'center',
+                py: 1,
               }}
             >
-              {(() => {
-                switch (status) {
-                  case 'RUNNING':
-                    return <CircularProgress size="1rem" />
-                  case 'COMPLETED':
-                    return <CheckCircleOutline />
-                  case 'FAILED':
-                    return <WarningAmber />
-                  case 'CANCELLED':
-                    return <CancelOutlined />
-                  default:
-                    return null
-                }
-              })()}
+              {statusIcon(status)}
               &nbsp;
               {label}
             </Box>
           </Box>
 
           {/* right column */}
-          <Box>
-            <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
+          <Box sx={{ justifySelf: 'end' }}>
+            <Typography color="text.secondary" fontSize="body2.fontSize">
               Progress
             </Typography>
 
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {/* electron progress */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                py: 1,
+              }}
+            >
               <SvgIcon fontSize="inherit" sx={{ mr: 1.5 }}>
                 <AtomSvg />
               </SvgIcon>
 
-              <Box>
-                <Typography
+              <Typography fontSize="body2.fontSize">
+                <Box
                   component="span"
                   sx={{
                     color: status === 'COMPLETED' ? 'inherit' : `${color}.main`,
                   }}
                 >
                   {completed}
-                </Typography>
+                </Box>
                 &nbsp;/ {total}
-              </Box>
+              </Typography>
 
-              <CircularProgress
-                sx={{ ml: 2 }}
-                variant="determinate"
-                color={color}
-                size="2rem"
-                value={(completed * 100) / total}
-              />
+              <Box sx={{ ml: 2, position: 'relative' }}>
+                <CircularProgress
+                  variant="determinate"
+                  sx={(theme) => ({
+                    color: alpha(theme.palette[color].main, 0.2),
+                  })}
+                  size="2rem"
+                  value={100}
+                />
+                <CircularProgress
+                  sx={{ position: 'absolute', left: 0 }}
+                  variant="determinate"
+                  color={color}
+                  size="2rem"
+                  value={(completed * 100) / total}
+                />
+              </Box>
             </Box>
           </Box>
         </Box>
