@@ -144,7 +144,8 @@ class _ConfigManager:
             None
         """
 
-        shutil.rmtree(os.path.dirname(self.config_file), ignore_errors=True)
+        dir_name = os.path.dirname(self.config_file)
+        shutil.rmtree(dir_name, ignore_errors=True)
 
     def get(self, key: str) -> Any:
         """
