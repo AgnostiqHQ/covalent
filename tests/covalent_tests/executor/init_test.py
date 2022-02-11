@@ -42,16 +42,25 @@ def test_executor_manager_init(mocker):
     generate_plugins_list_mock.assert_called_once_with()
 
 
-# def test_executor_manager_generate_plugins_list(mocker):
-#     """Test the generate plugins list method of the executor manager object."""
+def test_executor_manager_generate_plugins_list(mocker):
+    """Test the generate plugins list method of the executor manager object."""
 
-#     init_mock = mocker.patch("covalent.executor._ExecutorManager.__init__", return_value=None)
+    init_mock = mocker.patch("covalent.executor._ExecutorManager.__init__", return_value=None)
 
-#     em = _ExecutorManager()
-#     init_mock.called_once_with()
+    em = _ExecutorManager()
+    init_mock.called_once_with()
 
-#     load_executors_mock = mocker.patch("covalent.executor._ExecutorManager._load_executors")
-#     os_path_join = mocker.patch("os.path.join", side_effect=["plugin_path", "default_plugin_path", "user_plugin_path"])
-#     em.generate_plugins_list()
+    load_executors_mock = mocker.patch("covalent.executor._ExecutorManager._load_executors")
+    mocker.patch("os.path.join", side_effect=["plugin_path", "default_plugin_path"])
+    mocker.patch("os.environ.get", return_value="user_plugin_path")
+    load_installed_plugins_mock = mocker.patch(
+        "covalent.executor._ExecutorManager._load_installed_plugins"
+    )
+    em.generate_plugins_list()
 
-#     assert load_executors_mock.mock_calls == [mocker.call("plugin_path"), mocker.call("default_plugin_path")]
+    assert load_executors_mock.mock_calls == [
+        mocker.call("plugin_path"),
+        mocker.call("default_plugin_path"),
+        mocker.call("user_plugin_path"),
+    ]
+    load_installed_plugins_mock.called_once_with()
