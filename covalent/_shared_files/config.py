@@ -255,7 +255,7 @@ def reload_config() -> None:
     _config_manager.read_config()
 
 
-def update_config(self, new_entries: Optional[Dict] = None, defaults: bool = False) -> None:
+def update_config(new_entries: Optional[Dict] = None, defaults: bool = False) -> None:
     """
     Read the configuration from the TOML file and append to default
         (or existing) configuration. Optionally, update configuration
