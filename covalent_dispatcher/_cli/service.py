@@ -71,10 +71,8 @@ def _rm_pid_file(filename: str) -> None:
         None
     """
 
-    try:
+    if os.path.isfile(filename):
         os.remove(filename)
-    except OSError:
-        pass
 
 
 def _port_from_pid(pid: int) -> int:
@@ -88,12 +86,9 @@ def _port_from_pid(pid: int) -> int:
         port: Port in use by the process.
     """
 
-    try:
-        port = psutil.Process(pid).connections()[0].laddr[1]
-    except (psutil.NoSuchProcess, ValueError):
-        port = None
-
-    return port
+    if psutil.pid_exists(pid):
+        return psutil.Process(pid).connections()[0].laddr.port
+    return None
 
 
 def _next_available_port(requested_port: int) -> int:
@@ -215,15 +210,14 @@ def _graceful_shutdown(server_name: str, pidfile: str) -> None:
         None
     """
 
-    try:
-        pid = _read_pid(pidfile)
+    pid = _read_pid(pidfile)
+    if psutil.pid_exists(pid):
         proc = psutil.Process(pid)
         proc.terminate()
         proc.wait()
         click.echo(f"Covalent {server_name} server has stopped.")
-    except (psutil.NoSuchProcess, ValueError):
+    else:
         click.echo(f"Covalent {server_name} server was not running.")
-
     _rm_pid_file(pidfile)
 
 
@@ -267,8 +261,7 @@ def _graceful_restart(server_name: str, pidfile: str) -> bool:
     help="Local user interface server port number.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server(s) in developer mode.")
-@click.pass_context
-def start(ctx, dispatcher: bool, ui: bool, port: int, ui_port: int, develop: bool) -> None:
+def start(dispatcher: bool, ui: bool, port: int, ui_port: int, develop: bool) -> None:
     """
     Start the dispatcher and/or UI servers.
     """

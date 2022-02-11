@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.24.9] - 2022-02-09
+## [0.24.14] - 2022-02-09
 
 ### Added
 - UI: add dashboard cards
@@ -18,6 +18,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI: format executor parameters as YAML code
 - UI: update syntax highlighting scheme
 - UI: update index.html description meta tag
+## [0.24.13] - 2022-02-11
+
+### Added
+
+- Tests for covalent/_shared_files/config.py
+
+## [0.24.12] - 2022-02-10
+
+### Added
+
+- CodeQL code analyzer
+
+## [0.24.11] - 2022-02-10
+
+### Added
+
+- A new dictionary `_DEFAULT_CONSTRAINTS_DEPRECATED` in defaults.py
+
+### Changed
+
+- The `_DEFAULT_CONSTRAINT_VALUES` dictionary now only contains the `backend` argument
+
+## [0.24.10] - 2022-02-09
+
+### Fixed
+
+- Sporadically failing workflow cancellation test in tests/workflow_stack_test.py
+
+## [0.24.9] - 2022-02-09
+
+## Changed
+
+- Implementation of `_port_from_pid` in covalent_dispatcher/_cli/service.py.
+
+## Added
+
+- Unit tests for command line interface (CLI) functionalities in covalent_dispatcher/_cli/service.py and covalent_dispatcher/_cli/cli.py.
 
 ## [0.24.8] - 2022-02-07
 
