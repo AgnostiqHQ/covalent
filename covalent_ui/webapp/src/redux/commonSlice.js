@@ -20,14 +20,20 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { commonSlice } from './commonSlice'
-import { resultsSlice } from './resultsSlice'
-import { latticePreviewSlice } from './latticePreviewSlice'
+import { createSlice } from '@reduxjs/toolkit'
 
-const reducers = {
-  common: commonSlice.reducer,
-  results: resultsSlice.reducer,
-  latticePreview: latticePreviewSlice.reducer,
+const initialState = {
+  latticeDrawerOpen: false,
 }
 
-export default reducers
+export const commonSlice = createSlice({
+  name: 'common',
+  initialState,
+  reducers: {
+    toggleLatticeDrawer(state) {
+      state.latticeDrawerOpen = !state.latticeDrawerOpen
+    },
+  },
+})
+
+export const { toggleLatticeDrawer } = commonSlice.actions

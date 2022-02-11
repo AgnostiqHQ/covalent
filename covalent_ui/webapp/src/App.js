@@ -32,8 +32,10 @@ import Dashboard from './components/Dashboard'
 import ResultLayout from './components/result/ResultLayout'
 import socket from './utils/socket'
 import { fetchResult } from './redux/resultsSlice'
+import { setLattice } from './redux/latticePreviewSlice'
 import theme from './utils/theme'
 import { ReactFlowProvider } from 'react-flow-renderer'
+import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -54,6 +56,16 @@ const App = () => {
     }
   }, [dispatch])
 
+  useEffect(() => {
+    const onDrawRequest = (request) => {
+      dispatch(setLattice(request.payload))
+    }
+    socket.on('draw-request', onDrawRequest)
+    return () => {
+      socket.off('draw-request', onDrawRequest)
+    }
+  })
+
   return (
     <HelmetProvider>
       <ReactFlowProvider>
@@ -63,6 +75,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/:dispatchId" element={<ResultLayout />} />
+            <Route path="/preview" element={<LatticePreviewLayout />} />
           </Routes>
         </ThemeProvider>
       </ReactFlowProvider>

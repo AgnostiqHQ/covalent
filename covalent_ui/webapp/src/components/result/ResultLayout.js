@@ -42,9 +42,16 @@ const ResultLayout = () => {
   const { dispatchId } = useParams()
   const result = useSelector((state) => state.results.cache[dispatchId])
 
-  const selectedElectron = useStoreState((state) =>
-    _.find(state.selectedElements, { type: 'electron' })
-  )
+  const selectedElectron = useStoreState((state) => {
+    const nodeId = _.get(
+      _.find(state.selectedElements, { type: 'electron' }),
+      'id'
+    )
+    return _.find(
+      _.get(result, 'graph.nodes'),
+      (node) => nodeId === String(_.get(node, 'id'))
+    )
+  })
   const setSelectedElements = useStoreActions(
     (actions) => actions.setSelectedElements
   )
@@ -173,13 +180,13 @@ const ResultLayout = () => {
             </Toolbar>
           </AppBar>
 
-          <LatticeMain hasSelectedNode={!!selectedElectron} />
+          <LatticeMain
+            graph={result.graph}
+            hasSelectedNode={!!selectedElectron}
+          />
         </Box>
 
-        <NodeDrawer
-          dispatchId={dispatchId}
-          nodeId={_.get(selectedElectron, 'id')}
-        />
+        <NodeDrawer node={selectedElectron} />
       </Box>
     </>
   )

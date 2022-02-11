@@ -34,8 +34,11 @@ import {
   MapOutlined,
   Remove as MinusIcon,
 } from '@mui/icons-material'
+import useFitViewHelper from '../common/ReactFlowHooks'
 
 const LatticeControls = ({
+  marginLeft = 0,
+  marginRight = 0,
   showParams,
   toggleParams,
   showMinimap,
@@ -45,7 +48,8 @@ const LatticeControls = ({
   nodesDraggable,
   toggleNodesDraggable,
 }) => {
-  const { zoomIn, zoomOut, fitView } = useZoomPanHelper()
+  const { zoomIn, zoomOut } = useZoomPanHelper()
+  const { fitView } = useFitViewHelper()
 
   return (
     <ToggleButtonGroup
@@ -54,7 +58,7 @@ const LatticeControls = ({
       sx={{
         position: 'absolute',
         bottom: 12,
-        left: 12,
+        left: 12 + marginLeft,
         zIndex: 5,
         bgcolor: 'background.paper',
         opacity: 0.7,
@@ -73,7 +77,12 @@ const LatticeControls = ({
       </Hint>
 
       <Hint title="Fit to screen">
-        <ToggleButton value="" onClick={fitView}>
+        <ToggleButton
+          value=""
+          onClick={() => {
+            fitView({ duration: 300, marginLeft, marginRight })
+          }}
+        >
           <Fullscreen />
         </ToggleButton>
       </Hint>

@@ -21,7 +21,6 @@
  */
 
 import _ from 'lodash'
-import { useSelector } from 'react-redux'
 import { Close } from '@mui/icons-material'
 import {
   Box,
@@ -48,14 +47,7 @@ import { ErrorCard } from './LatticeDrawer'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ dispatchId, nodeId }) => {
-  const node = useSelector((state) =>
-    _.find(
-      _.get(state.results.cache[dispatchId], 'graph.nodes'),
-      (node) => nodeId === String(_.get(node, 'id'))
-    )
-  )
-
+const NodeDrawer = ({ node }) => {
   // unselect on close
   const setSelectedElements = useStoreActions(
     (actions) => actions.setSelectedElements
@@ -72,18 +64,18 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
     <Drawer
       sx={(theme) => ({
         width: nodeDrawerWidth,
-        flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: nodeDrawerWidth,
           boxSizing: 'border-box',
           border: 'none',
           p: 3,
           bgcolor: alpha(theme.palette.background.default, 0.3),
+          backdropFilter: 'blur(16px)',
         },
       })}
       anchor="right"
       variant="persistent"
-      open={!!nodeId}
+      open={!!node}
       onClose={handleClose}
     >
       {!!node && (
@@ -107,19 +99,23 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
           </Box>
 
           {/* Status */}
-          <Heading>Status</Heading>
-          <Box
-            sx={{
-              mt: 1,
-              color: statusColor(node.status),
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            {statusIcon(node.status)}
-            &nbsp;
-            {statusLabel(node.status)}
-          </Box>
+          {node.status && (
+            <>
+              <Heading>Status</Heading>
+              <Box
+                sx={{
+                  mt: 1,
+                  color: statusColor(node.status),
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                {statusIcon(node.status)}
+                &nbsp;
+                {statusLabel(node.status)}
+              </Box>
+            </>
+          )}
 
           <ErrorCard error={node.error} />
 
@@ -143,7 +139,7 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
           )}
 
           {/* Runtime */}
-          {node.status !== 'NEW_OBJECT' && (
+          {node.status && node.status !== 'NEW_OBJECT' && (
             <>
               <Heading>Runtime</Heading>
               <Runtime

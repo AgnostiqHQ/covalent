@@ -22,19 +22,21 @@ import json
 
 import requests
 
+import covalent_ui.app as ui_server
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-
-from .app import WEBHOOK_PATH
 
 DEFAULT_PORT = get_config("user_interface.port")
 
 app_log = logger.app_log
 
 # UI server webhook for result updates
-WEBHOOK_BASE_URL = f"http://localhost:{DEFAULT_PORT}"
-WEBHOOK_URL = f"{WEBHOOK_BASE_URL}{WEBHOOK_PATH}"
+
+
+def get_ui_url(path):
+    baseUrl = f"http://localhost:{DEFAULT_PORT}"
+    return f"{baseUrl}{path}"
 
 
 def send_update(result: Result) -> None:
@@ -50,7 +52,7 @@ def send_update(result: Result) -> None:
 
     result_update = json.dumps(
         {
-            "event": "change",
+            "event": "result-update",
             "result": {
                 "dispatch_id": result.dispatch_id,
                 "results_dir": result.results_dir,
@@ -61,7 +63,37 @@ def send_update(result: Result) -> None:
 
     try:
         # ignore response
-        requests.post(WEBHOOK_URL, data=result_update)
+        requests.post(get_ui_url(ui_server.WEBHOOK_PATH), data=result_update)
     except requests.exceptions.RequestException:
         # catch all requests-related exceptions
         app_log.warning("Unable to send result update to UI server.")
+
+
+def send_draw_request(lattice) -> None:
+    """
+    Sends a lattice draw request to UI server along with all necessary lattice
+    graph data.
+
+    Args: lattice: The lattice to draw with a pre-built graph.
+
+    Returns: None
+    """
+
+    graph = lattice.transport_graph.get_internal_graph_copy()
+    draw_request = json.dumps(
+        {
+            "event": "draw-request",
+            "payload": {
+                "lattice": {
+                    "function_string": lattice.workflow_function_string,
+                    "doc": lattice.__doc__,
+                    "name": lattice.__name__,
+                    "kwargs": ui_server.encode_dict(lattice.kwargs),
+                    "metadata": lattice.metadata,
+                },
+                "graph": ui_server.extract_graph(graph),
+            },
+        }
+    )
+
+    requests.post(get_ui_url("/api/draw"), data=draw_request)
