@@ -165,16 +165,21 @@ def _graceful_start(
     #    if develop and server_name == "dispatcher"
     #    else ""
     #)
-    server_root = f"{server_root}/app.py"
-    launch_str = f"python {server_root} --port {port} --pid {pidfile} --log-file {logfile} >/dev/null &"
+    launch_str = f"python app.py --port {port} --pid {pidfile} --log-file {logfile} &"
 
     proc = Popen(
         launch_str,
         shell=True,
         stdout=DEVNULL,
-        stderr=DEVNULL
+        stderr=DEVNULL,
+        cwd=server_root
     )
-    click.echo(f"Covalent {server_name} [pid: {proc.pid}] server has started at http://0.0.0.0:{port}");
+    # TODO: determine better way to resolve PID of background process without this assumption
+    pid = proc.pid + 1
+    # write PID file manually 
+    with open(pidfile, "w") as file1:
+        file1.write(f"{str(pid)}\n")
+    click.echo(f"Covalent {server_name} server has started at http://0.0.0.0:{port}");
     return port
 
 
