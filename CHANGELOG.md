@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.15] - 2022-02-11
+
+### Fixed
+
+- If a user's configuration file does not have a needed exeutor parameter, the default parameter (defined in _shared_files/defaults.py) is used.
+- Each executor plugin is no longer initialized upon the import of Covalent. This allows required parameters in executor plugins.
+
+## Changed
+
+- Upon updating the configuration data with a user's configuration file, the complete set is written back to file.
+
+## Added
+
+- Tests for the local and base executors.
+
 ## [0.24.14] - 2022-02-11
 
 ### Added
