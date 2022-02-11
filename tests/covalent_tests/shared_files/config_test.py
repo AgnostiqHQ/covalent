@@ -28,8 +28,6 @@ import toml
 from covalent._shared_files.config import _ConfigManager, get_config, reload_config, set_config
 from covalent._shared_files.defaults import _DEFAULT_CONFIG
 
-CONFIG_DIR = os.path.join(os.path.dirname(__file__), "test_files")
-
 
 @pytest.mark.parametrize(
     "dir_env,conf_dir",
@@ -90,107 +88,6 @@ def test_config_manager_init_write_update_config(
 
     for key in config_keys:
         assert mocker.call(key) in get_mock_calls and path_mock_calls
-
-
-@patch.dict(os.environ, {"COVALENT_CONFIG_DIR": CONFIG_DIR}, clear=True)
-def test_read_config():
-    """Test that configuration file is read properly."""
-
-    config_manager = _ConfigManager()
-    config_manager.read_config()
-
-    expected_dict = {
-        "sdk": {"log_dir": "./", "log_level": "warning", "enable_logging": "false"},
-        "executors": {
-            "local": {
-                "log_stdout": "stdout.log",
-                "log_stderr": "stderr.log",
-                "cache_dir": "/tmp/covalent",
-                "other_params": {"name": "Local Executor", "proprietary": "False"},
-            },
-            "local_executor": "local.py",
-            "slurm_executor": "slurmp.py",
-            "ssh_executor": "ssh_executor.py",
-        },
-        "test_dict": {
-            "1": 2,
-            "3": 4,
-        },
-    }
-
-    assert config_manager.config_data == expected_dict
-
-
-@patch.dict(os.environ, {"COVALENT_CONFIG_DIR": CONFIG_DIR}, clear=True)
-def test_update_config():
-    """Test that updating the existing config data with the config file works."""
-
-    config_manager = _ConfigManager()
-    config_manager.config_data = {
-        "sdk": {
-            "test_dir": "/tmp",
-            "log_dir": {
-                "dir_one": "/var",
-                "dir_two": "~/.log_dir",
-            },
-            "log_level": "debug",
-            "enable_logging": "true",
-        },
-        "executors": {
-            "local": {
-                "other_params": {
-                    "proprietary": "true",
-                    "params_test_dict": {
-                        "a": "b",
-                        "c": "d",
-                    },
-                }
-            },
-            "executor_test_dict": {
-                "alpha": "beta",
-                "gamma": "delta",
-            },
-        },
-        "test_dict": None,
-    }
-    config_manager.update_config()
-
-    expected_dict = {
-        "sdk": {
-            "test_dir": "/tmp",
-            "log_dir": "./",
-            "log_level": "warning",
-            "enable_logging": "false",
-        },
-        "executors": {
-            "local": {
-                "log_stdout": "stdout.log",
-                "log_stderr": "stderr.log",
-                "cache_dir": "/tmp/covalent",
-                "other_params": {
-                    "name": "Local Executor",
-                    "proprietary": "False",
-                    "params_test_dict": {
-                        "a": "b",
-                        "c": "d",
-                    },
-                },
-            },
-            "local_executor": "local.py",
-            "slurm_executor": "slurmp.py",
-            "ssh_executor": "ssh_executor.py",
-            "executor_test_dict": {
-                "alpha": "beta",
-                "gamma": "delta",
-            },
-        },
-        "test_dict": {
-            "1": 2,
-            "3": 4,
-        },
-    }
-
-    assert config_manager.config_data == expected_dict
 
 
 def test_set_config_str_key(mocker):
@@ -320,5 +217,17 @@ def test_config_manager_set(mocker):
     """Test the set method in config manager."""
 
     cm = _ConfigManager()
-    mocker.patch("functools.reduce", side_effect=Exception("KeyError"))
-    cm.set("fake", "fake")
+    cm.config_data = {"mock_section": {"mock_dir": "initial_value"}}
+    cm.set("mock_section.mock_dir", "final_value")
+    assert cm.config_data == {"mock_section": {"mock_dir": "final_value"}}
+
+    cm.set("mock_section.new_mock_dir", "mock_value")
+    assert cm.config_data == {
+        "mock_section": {"mock_dir": "final_value", "new_mock_dir": "mock_value"}
+    }
+
+    cm.set("new_mock_section.new_mock_dir", "mock_value")
+    assert cm.config_data == {
+        "mock_section": {"mock_dir": "final_value", "new_mock_dir": "mock_value"},
+        "new_mock_section": {"new_mock_dir": {"new_mock_dir": "mock_value"}},
+    }
