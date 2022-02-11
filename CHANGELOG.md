@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.24.12] - 2022-02-10
+
+### Added
+
+- CodeQL code analyzer
+
 ## [0.24.11] - 2022-02-10
 
 ### Added
