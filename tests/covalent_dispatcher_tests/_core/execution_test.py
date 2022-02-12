@@ -26,9 +26,22 @@ import cloudpickle as pickle
 
 import covalent as ct
 from covalent._results_manager import Result
-from covalent_dispatcher._core.execution import _plan_workflow
+from covalent_dispatcher._core.execution import _plan_workflow, _post_process
 
 TEST_RESULTS_DIR = "/tmp/results"
+
+
+@ct.electron
+def a(x):
+    return x, x ** 2
+
+
+@ct.lattice
+def p(x):
+    result, b = a(x=x)
+    for _ in range(1):
+        result, b = a(x=result)
+    return b, result
 
 
 def get_mock_result() -> Result:
@@ -65,3 +78,22 @@ def test_plan_workflow():
     updated_tg = pickle.loads(mock_result.lattice.transport_graph.serialize(metadata_only=True))
 
     assert "results_dir" in updated_tg["nodes"][0]["exec_plan"].execution_args
+
+
+def test_post_process():
+    """Test post-processing of results."""
+
+    p.build_graph(x=2)
+    order = p.transport_graph.get_topologically_sorted_graph()
+    node_outputs = {
+        "a(0)": (2, 4),
+        ":parameter:2(1)": 2,
+        ":generated:a()[0](2)": 2,
+        ":generated:a()[1](3)": 4,
+        "a(4)": (2, 4),
+        ":generated:a()[0](5)": 2,
+        ":generated:a()[1](6)": 4,
+    }
+
+    execution_result = _post_process(p, node_outputs, order)
+    assert execution_result == (4, 2)
