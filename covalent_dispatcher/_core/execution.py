@@ -98,7 +98,7 @@ def _get_task_inputs(
     return task_input
 
 
-def _post_process(lattice: Lattice, node_outputs: dict) -> Any:
+def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[List]) -> Any:
     """
     Post processing function to be called after the lattice execution.
     This takes care of executing statements that were not an electron
@@ -114,14 +114,27 @@ def _post_process(lattice: Lattice, node_outputs: dict) -> Any:
     Args:
         lattice: Lattice object that was dispatched.
         node_outputs: Dictionary containing the output of all the nodes.
+        execution_order: List of lists containing the order of execution of the nodes.
 
     Reurns:
         result: The result of the lattice function.
     """
 
+    keys_of_outputs = list(node_outputs.keys())
+    values_of_outputs = list(node_outputs.values())
+
+    ordered_node_outputs = []
+    for node_id_list in execution_order:
+        for node_id in node_id_list:
+            # Here we only need outputs of nodes which are executable
+            if not keys_of_outputs[node_id].startswith(prefix_separator) or keys_of_outputs[
+                node_id
+            ].startswith(sublattice_prefix):
+                ordered_node_outputs.append(values_of_outputs[node_id])
+
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
-        lattice.electron_outputs = node_outputs
+        lattice.electron_outputs = ordered_node_outputs
         result = lattice.workflow_function(**lattice.kwargs)
         lattice.post_processing = False
         return result
@@ -329,12 +342,9 @@ def _run_planned_workflow(result_object: Result) -> Result:
                 return
 
     # post process the lattice
-    node_outputs_for_post_processing = {
-        k: v
-        for k, v in result_object.get_all_node_outputs().items()
-        if not k.startswith(prefix_separator)
-    }
-    result_object._result = _post_process(result_object.lattice, node_outputs_for_post_processing)
+    result_object._result = _post_process(
+        result_object.lattice, result_object.get_all_node_outputs(), order
+    )
 
     result_object._status = Result.COMPLETED
     result_object._end_time = datetime.now(timezone.utc)
