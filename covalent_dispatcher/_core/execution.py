@@ -239,7 +239,7 @@ def _run_task(
             end_time,
             Result.FAILED,
             None,
-            ex,
+            "".join(traceback.TracebackException.from_exception(ex).format()),
         )
 
     result_object.save()
@@ -316,7 +316,7 @@ def _run_planned_workflow(result_object: Result) -> Result:
             if result_object._get_node_status(node_id) == Result.FAILED:
                 result_object._status = Result.FAILED
                 result_object._end_time = datetime.now(timezone.utc)
-                result_object._error = f"Node {result_object._get_node_name(node_id)} failed: {result_object._get_node_error(node_id)}"
+                result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
                 result_object.save()
                 result_webhook.send_update(result_object)
                 return
