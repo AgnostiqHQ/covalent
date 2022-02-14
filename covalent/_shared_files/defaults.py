@@ -32,8 +32,6 @@ generator_prefix = f"{prefix_separator}generated{prefix_separator}"
 sublattice_prefix = f"{prefix_separator}sublattice{prefix_separator}"
 attr_prefix = f"{prefix_separator}attribute{prefix_separator}"
 
-exclude_from_postprocess = [attr_prefix, subscript_prefix, generator_prefix]
-
 # Default configuration settings
 _DEFAULT_CONFIG = {
     "sdk": {
