@@ -20,10 +20,291 @@
 
 """Tests for Covalent command line interface (CLI) Tool."""
 
-import mock
-from click.testing import CliRunner
+import tempfile
 
-from covalent_dispatcher._cli.service import _is_dispatcher_running, _is_ui_running, purge
+import mock
+import pytest
+from click.testing import CliRunner
+from psutil import pid_exists
+
+from covalent_dispatcher._cli.service import (
+    _graceful_restart,
+    _graceful_shutdown,
+    _graceful_start,
+    _is_dispatcher_running,
+    _is_ui_running,
+    _next_available_port,
+    _port_from_pid,
+    _read_pid,
+    _rm_pid_file,
+    purge,
+    restart,
+    start,
+    status,
+    stop,
+)
+
+STOPPED_SERVER_STATUS_ECHO = (
+    "Covalent dispatcher server is stopped.\nCovalent UI server is stopped.\n"
+)
+RUNNING_SERVER_STATUS_ECHO = "Covalent dispatcher server is running at http://0.0.0.0:42.\nCovalent UI server is running at http://0.0.0.0:42.\n"
+
+
+def test_read_pid_nonexistent_file():
+    """Test the process id read function when the pid file does not exist."""
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        assert _read_pid(f"{tmp_dir}/nonexistent.pid") == -1
+
+
+def test_read_valid_pid_file():
+    """Test the process id read function when the pid file exists."""
+
+    with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open(read_data="1984")):
+        res = _read_pid(filename="mock.pid")
+    assert res == 1984
+
+
+@pytest.mark.parametrize("file_exists,remove_call_status", [(False, False), (True, True)])
+def test_rm_pid_file(mocker, file_exists, remove_call_status):
+    """Test the process id file removal function."""
+
+    mocker.patch("os.path.isfile", return_value=file_exists)
+    os_remove_mock = mocker.patch("os.remove")
+    _rm_pid_file("nonexistent.pid")
+
+    assert os_remove_mock.called is remove_call_status
+
+
+def test_port_from_invalid_pid(mocker):
+    """Test port retrieval method from invalid pid."""
+
+    mocker.patch("psutil.pid_exists", return_value=False)
+    res = _port_from_pid(-1)
+    assert res is None
+
+
+def test_port_from_valid_pid(mocker):
+    """Test port retrieval method from invalid pid."""
+
+    process_mock = mocker.patch("psutil.Process")
+    mocker.patch("psutil.pid_exists", return_value=True)
+    _port_from_pid(12)
+    process_mock.assert_called_once()
+
+
+def test_next_available_port(mocker):
+    """Test function to generate the next available port that is not in use."""
+
+    # Case 1 - Port is available.
+    mocker.patch("socket.socket.bind")
+    res = _next_available_port(requested_port=12)
+    assert res == 12
+
+    # Case 2 - Next two ports are not available.
+    click_echo_mock = mocker.patch("click.echo")
+    mocker.patch(
+        "socket.socket.bind", side_effect=[Exception("OSERROR"), Exception("OSERROR"), None]
+    )
+
+    res = _next_available_port(requested_port=12)
+    assert res == 14
+    click_echo_mock.assert_called_once()
+
+
+def test_graceful_start_when_pid_exists(mocker):
+    """Test the graceful server start function."""
+
+    read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid")
+    pid_exists_mock = mocker.patch("psutil.pid_exists", return_value=True)
+    port_from_pid_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._port_from_pid", return_value=1984
+    )
+    click_echo_mock = mocker.patch("click.echo")
+    res = _graceful_start("", "", "", "", 15, False)
+    assert res == 1984
+
+    click_echo_mock.assert_called_once()
+    read_pid_mock.assert_called_once()
+    pid_exists_mock.assert_called_once()
+    port_from_pid_mock.assert_called_once()
+
+
+def test_graceful_start_when_pid_absent(mocker):
+    """Test the graceful server start function."""
+
+    read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid")
+    pid_exists_mock = mocker.patch("psutil.pid_exists", return_value=False)
+    rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+    next_available_port_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._next_available_port", return_value=1984
+    )
+    popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
+    click_echo_mock = mocker.patch("click.echo")
+
+    res = _graceful_start("", "", "", "", 15, False)
+    assert res == 1984
+
+    rm_pid_file_mock.assert_called_once()
+    next_available_port_mock.assert_called_once()
+    pid_exists_mock.assert_called_once()
+    popen_mock.assert_called_once()
+    click_echo_mock.assert_called_once()
+    read_pid_mock.assert_called_once()
+
+
+def test_graceful_shutdown_running_server(mocker):
+    """Test the graceful shutdown functionality."""
+
+    read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=12)
+    mocker.patch("psutil.pid_exists", return_value=True)
+    process_mock = mocker.patch("psutil.Process")
+    rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+    click_echo_mock = mocker.patch("click.echo")
+
+    _graceful_shutdown(server_name="mock", pidfile="mock")
+
+    click_echo_mock.assert_called_once_with("Covalent mock server has stopped.")
+    rm_pid_file_mock.assert_called_once_with("mock")
+    read_pid_mock.assert_called_once()
+    process_mock.assert_called_once_with(12)
+
+
+def test_graceful_shutdown_stopped_server(mocker):
+    """Test the graceful shutdown functionality."""
+
+    mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=12)
+    mocker.patch("psutil.pid_exists", return_value=False)
+    process_mock = mocker.patch("psutil.Process")
+    rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+    click_echo_mock = mocker.patch("click.echo")
+
+    _graceful_shutdown(server_name="mock", pidfile="mock")
+
+    click_echo_mock.assert_called_once_with("Covalent mock server was not running.")
+    rm_pid_file_mock.assert_called_once_with("mock")
+    assert not process_mock.called
+
+
+def test_graceful_restart_valid_pid(mocker):
+    """Test the graceful restart method for a valid pid file and pid."""
+
+    read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=20)
+    os_kill_mock = mocker.patch("os.kill")
+    click_echo_mock = mocker.patch("click.echo")
+    mocker.patch("covalent_dispatcher._cli.service._port_from_pid", return_value=15)
+    res = _graceful_restart(server_name="mock", pidfile="mock")
+    assert res
+
+    os_kill_mock.assert_called_once()
+    read_pid_mock.assert_called_once_with("mock")
+    click_echo_mock.assert_called_once_with(
+        "Covalent mock server has restarted on port http://0.0.0.0:15."
+    )
+
+
+def test_graceful_restart_nonexistent_pid(mocker):
+    """Test the graceful restart method for a non-existent pid file."""
+
+    read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=-1)
+    os_kill_mock = mocker.patch("os.kill")
+    click_echo_mock = mocker.patch("click.echo")
+    mocker.patch("covalent_dispatcher._cli.service._port_from_pid", return_value=15)
+    res = _graceful_restart(server_name="mock", pidfile="mock")
+    assert not res
+    assert not os_kill_mock.called
+    assert not click_echo_mock.called
+    read_pid_mock.assert_called_once()
+
+
+def test_start(mocker, monkeypatch):
+    """Test the start CLI command."""
+
+    runner = CliRunner()
+    port_val = 42
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.DISPATCHER_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.DISPATCHER_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.DISPATCHER_LOGFILE", "mock")
+
+    runner.invoke(start, f"--dispatcher --port {port_val}")
+    graceful_start_mock.assert_called_once()
+    set_config_mock.assert_called_once()
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    runner.invoke(start, f"--ui --ui-port {port_val} -d")
+    graceful_start_mock.assert_called_once()
+    set_config_mock.assert_called_once()
+
+
+def test_stop(mocker, monkeypatch):
+    """Test the stop CLI command."""
+
+    runner = CliRunner()
+    graceful_shutdown_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.DISPATCHER_PIDFILE", "mock")
+    runner.invoke(stop, "--dispatcher")
+    graceful_shutdown_mock.assert_called_once_with("dispatcher", "mock")
+
+    runner = CliRunner()
+    graceful_shutdown_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    runner.invoke(stop, "--ui")
+    graceful_shutdown_mock.assert_called_once_with("UI", "mock")
+
+
+@pytest.mark.parametrize(
+    "port_tag,port,server,pid,restart_called,start_called,stop_called",
+    [
+        ("port", 42, "dispatcher", -1, False, True, True),
+        ("port", 42, "dispatcher", 100, True, False, False),
+        ("ui-port", 42, "ui", -1, False, True, True),
+        ("ui-port", 42, "ui", 100, True, False, False),
+    ],
+)
+def test_restart(mocker, port_tag, port, pid, server, restart_called, start_called, stop_called):
+    """Test the restart CLI command."""
+
+    start = mocker.patch("covalent_dispatcher._cli.service.start")
+    stop = mocker.patch("covalent_dispatcher._cli.service.stop")
+    mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port)
+
+    obj = mocker.MagicMock()
+    mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
+    restart_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_restart")
+
+    runner = CliRunner()
+    runner.invoke(restart, f"--{server} --{port_tag} {port}", obj=obj)
+    assert restart_mock.called is restart_called
+    assert start.called is start_called
+    assert stop.called is stop_called
+
+
+@pytest.mark.parametrize(
+    "port_val,echo_output,file_removed",
+    [(None, STOPPED_SERVER_STATUS_ECHO, True), (42, RUNNING_SERVER_STATUS_ECHO, False)],
+)
+def test_status(mocker, port_val, echo_output, file_removed):
+    """Test covalent status command."""
+
+    mocker.patch("covalent_dispatcher._cli.service._port_from_pid", return_value=port_val)
+    rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+
+    runner = CliRunner()
+    res = runner.invoke(status)
+
+    assert res.output == echo_output
+    assert rm_pid_file_mock.called is file_removed
 
 
 def test_is_dispatcher_running(mocker):

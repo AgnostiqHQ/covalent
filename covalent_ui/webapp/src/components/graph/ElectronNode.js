@@ -21,7 +21,7 @@
  */
 
 import {
-  Box,
+  Paper,
   SvgIcon,
   Tooltip,
   tooltipClasses,
@@ -33,9 +33,8 @@ import { Handle } from 'react-flow-renderer'
 import { ReactComponent as AtomSvg } from '../../assets/atom.svg'
 import { statusColor } from '../../utils/misc'
 import { Check, WarningAmber } from '@mui/icons-material'
-import theme from '../../utils/theme'
 
-const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
+export const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
 
 const ElectronTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -59,14 +58,15 @@ const ElectronNode = ({
 
   return (
     <ElectronTooltip title={data.fullName} arrow placement="bottom-end">
-      <Box
+      <Paper
+        elevation={!selected ? 1 : 5}
         sx={{
           display: 'flex',
           alignItems: 'center',
           px: 1,
           py: 0.5,
           borderRadius: 1,
-          bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
+          // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
           color: !selected ? NODE_TEXT_COLOR : '#FAFAFA',
           borderColor: color,
           borderStyle: 'solid',
@@ -114,7 +114,7 @@ const ElectronNode = ({
             isConnectable={isConnectable}
           />
         )}
-      </Box>
+      </Paper>
     </ElectronTooltip>
   )
 }

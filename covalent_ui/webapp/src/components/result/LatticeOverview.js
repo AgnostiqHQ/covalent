@@ -21,10 +21,10 @@
  */
 
 import _ from 'lodash'
-import { Divider, Paper, Typography } from '@mui/material'
+import { Box, Divider, Paper, Tooltip, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 
-import { formatDate } from '../../utils/misc'
+import { formatDate, truncateMiddle } from '../../utils/misc'
 import CopyButton from '../CopyButton'
 import Runtime from '../results/Runtime'
 import SyntaxHighlighter from '../SyntaxHighlighter'
@@ -45,7 +45,9 @@ const LatticeOverview = ({ dispatchId }) => {
       {result.lattice.doc && (
         <>
           <Heading>Description</Heading>
-          <Typography>{result.lattice.doc}</Typography>
+          <Typography fontSize="body2.fontSize">
+            {result.lattice.doc}
+          </Typography>
         </>
       )}
 
@@ -53,21 +55,27 @@ const LatticeOverview = ({ dispatchId }) => {
       {hasStarted && (
         <>
           <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-          <Typography>
+          <Typography fontSize="body2.fontSize">
             {formatDate(result.start_time)}
-            {hasEnded && `- ${formatDate(result.end_time)}`}
+            {hasEnded && ` - ${formatDate(result.end_time)}`}
           </Typography>
         </>
       )}
 
       {/* Runtime */}
       <Heading>Runtime</Heading>
-      <Runtime startTime={result.start_time} endTime={result.end_time} />
+      <Runtime
+        sx={{ fontSize: 'body2.fontSize' }}
+        startTime={result.start_time}
+        endTime={result.end_time}
+      />
 
       {/* Directory */}
       <Heading>Directory</Heading>
-      <Typography sx={{ overflowWrap: 'anywhere' }}>
-        {result.results_dir}
+      <Typography sx={{ overflowWrap: 'anywhere', fontSize: 'body2.fontSize' }}>
+        <Tooltip title={result.results_dir} enterDelay={500}>
+          <span>{truncateMiddle(result.results_dir, 15, 25)}</span>
+        </Tooltip>
         <CopyButton
           content={result.results_dir}
           size="small"
@@ -82,7 +90,7 @@ const LatticeOverview = ({ dispatchId }) => {
       {showResult && (
         <>
           <Heading>Result</Heading>
-          <Paper elevation={4}>
+          <Paper elevation={0}>
             <SyntaxHighlighter language="python" src={result.result} />
           </Paper>
         </>
@@ -95,7 +103,7 @@ const LatticeOverview = ({ dispatchId }) => {
 
       {/* Source */}
       <Heading />
-      <Paper elevation={4}>
+      <Paper elevation={0}>
         <SyntaxHighlighter src={src} />
       </Paper>
     </>
@@ -105,21 +113,22 @@ const LatticeOverview = ({ dispatchId }) => {
 export const ExecutorSection = ({ metadata }) => {
   const executorType = _.get(metadata, 'backend')
   const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
+  const src = _.join(
+    _.map(executorParams, (value, key) => `${key}: ${value}`),
+    '\n'
+  )
 
   return (
     <>
       {!_.isEmpty(executorType)}
-      <Heading>Executor: {executorType}</Heading>
+      <Heading>
+        Executor: <strong>{executorType}</strong>
+      </Heading>
 
       {!_.isEmpty(executorParams) && (
-        <Typography sx={{ overflowX: 'auto', whiteSpace: 'nowrap', pb: 1 }}>
-          {_.map(executorParams, (value, key) => (
-            <span key={key}>
-              {key} = {value}
-              <br />
-            </span>
-          ))}
-        </Typography>
+        <Paper elevation={0}>
+          <SyntaxHighlighter language="yaml" src={src} />
+        </Paper>
       )}
     </>
   )
@@ -138,7 +147,7 @@ export const InputSection = ({ inputs }) => {
   return (
     <>
       <Heading>Input</Heading>
-      <Paper elevation={4}>
+      <Paper elevation={0}>
         <SyntaxHighlighter language="python" src={inputSrc} />
       </Paper>
     </>

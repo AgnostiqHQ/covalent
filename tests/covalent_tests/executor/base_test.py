@@ -62,3 +62,23 @@ def test_write_streams_to_file(mocker):
         with open(tmp_file.name) as f:
             lines = f.readlines()
         assert lines[0] == "absolute"
+
+
+def test_execute_in_conda_env(mocker):
+    """Test execute in conda enve method in Base Executor object."""
+
+    me = MockExecutor()
+
+    mocker.patch("covalent.executor.BaseExecutor.get_conda_path", return_value=False)
+    conda_env_fail_mock = mocker.patch("covalent.executor.BaseExecutor._on_conda_env_fail")
+    me.execute_in_conda_env(
+        "function",
+        "kwargs",
+        "execution_args",
+        "executor_specific_exec_cmds",
+        "dispatch_info",
+        "conda_env",
+        "cache_dir",
+        "node_id",
+    )
+    conda_env_fail_mock.assert_called_once_with("function", "kwargs", "node_id")

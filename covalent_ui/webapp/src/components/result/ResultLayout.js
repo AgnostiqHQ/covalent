@@ -24,15 +24,17 @@ import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { AppBar, Box, Drawer, IconButton, Toolbar } from '@mui/material'
+import { AppBar, Box, Drawer, IconButton, Link, Toolbar } from '@mui/material'
 import { Menu as MenuIcon } from '@mui/icons-material'
 import { useStoreActions, useStoreState } from 'react-flow-renderer'
+import { alpha } from '@mui/material/styles'
 
 import LatticeMain from './LatticeMain'
 import LatticeDrawer from './LatticeDrawer'
 import NodeDrawer, { nodeDrawerWidth } from './NodeDrawer'
 import { ReactComponent as Logo } from '../../assets/covalent-full-logo.svg'
 import { fetchResult } from '../../redux/resultsSlice'
+import { graphBgColor } from '../../utils/theme'
 
 const drawerWidth = 400
 
@@ -76,7 +78,12 @@ const ResultLayout = () => {
   return (
     <>
       <Box sx={{ display: 'flex' }}>
-        <Box sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}>
+        <Box
+          sx={{
+            width: { md: drawerWidth },
+            flexShrink: { md: 0 },
+          }}
+        >
           {/* Mobile drawer */}
           <Drawer
             variant="temporary"
@@ -100,19 +107,35 @@ const ResultLayout = () => {
           {/* Desktop drawer */}
           <Drawer
             variant="permanent"
-            sx={{
+            sx={(theme) => ({
               display: { xs: 'none', md: 'block' },
               '& .MuiDrawer-paper': {
                 boxSizing: 'border-box',
                 width: drawerWidth,
                 border: 'none',
+                bgcolor: alpha(theme.palette.background.default, 0.3),
+                '&:not(:hover)::-webkit-scrollbar-thumb': {
+                  backgroundColor: 'inherit',
+                },
+                '&:not(:hover)::-webkit-scrollbar': {
+                  backgroundColor: 'inherit',
+                },
+                transition: 'background-color 1s',
               },
-            }}
+            })}
             open
           >
-            <AppBar position="static" elevation={0}>
-              <Toolbar>
-                <Logo />
+            <AppBar
+              position="static"
+              elevation={0}
+              sx={(theme) => ({
+                bgcolor: alpha(theme.palette.background.default, 0.3),
+              })}
+            >
+              <Toolbar sx={{ my: 3, mb: 2 }}>
+                <Link href="/">
+                  <Logo />
+                </Link>
               </Toolbar>
             </AppBar>
 
@@ -122,7 +145,7 @@ const ResultLayout = () => {
 
         <Box
           component="main"
-          sx={{
+          sx={(theme) => ({
             flexGrow: 1,
             // width: { md: `calc(100% - ${drawerWidth}px)` },
             height: '100vh',
@@ -130,7 +153,8 @@ const ResultLayout = () => {
             ...(!!selectedElectron && {
               marginRight: 0,
             }),
-          }}
+            bgcolor: graphBgColor,
+          })}
         >
           <AppBar
             position="static"

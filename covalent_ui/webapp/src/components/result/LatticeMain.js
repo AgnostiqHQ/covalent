@@ -23,7 +23,11 @@
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import ReactFlow, { MiniMap, useZoomPanHelper } from 'react-flow-renderer'
+import ReactFlow, {
+  Background,
+  MiniMap,
+  useZoomPanHelper,
+} from 'react-flow-renderer'
 
 import ElectronNode from '../graph/ElectronNode'
 import ParameterNode from '../graph/ParameterNode'
@@ -31,6 +35,7 @@ import DirectedEdge from '../graph/DirectedEdge'
 import layout from '../graph/Layout'
 import LatticeControls from './LatticeControls'
 import theme from '../../utils/theme'
+import { lighten } from '@mui/material'
 import { statusColor } from '../../utils/misc'
 
 const LatticeMain = ({ hasSelectedNode }) => {
@@ -77,6 +82,13 @@ const LatticeMain = ({ hasSelectedNode }) => {
         // prevent selection when nothing is selected to prevent fitView
         selectNodesOnDrag={hasSelectedNode}
       >
+        <Background
+          variant="dots"
+          color={lighten(theme.palette.background.paper, 0.05)}
+          gap={12}
+          size={1}
+        />
+
         <LatticeControls
           showParams={showParams}
           toggleParams={() => {
