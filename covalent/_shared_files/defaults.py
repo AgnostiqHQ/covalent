@@ -32,8 +32,6 @@ generator_prefix = f"{prefix_separator}generated{prefix_separator}"
 sublattice_prefix = f"{prefix_separator}sublattice{prefix_separator}"
 attr_prefix = f"{prefix_separator}attribute{prefix_separator}"
 
-exclude_from_postprocess = [attr_prefix, subscript_prefix, generator_prefix]
-
 # Default configuration settings
 _DEFAULT_CONFIG = {
     "sdk": {
@@ -71,7 +69,11 @@ _DEFAULT_CONFIG = {
 }
 
 # Metadata which may influence execution behavior
-_DEFAULT_CONSTRAINT_VALUES = {
+_DEFAULT_CONSTRAINT_VALUES = {"backend": "local"}
+
+# Going Forward we only want to return the backend field of DEFAULT_CONSTRAINT_VALUES
+# The rest of those parameters will now be in this dictionary
+_DEFAULT_CONSTRAINTS_DEPRECATED = {
     "schedule": False,
     "num_cpu": 1,
     "cpu_feature_set": [],

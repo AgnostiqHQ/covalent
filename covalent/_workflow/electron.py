@@ -363,19 +363,7 @@ class Electron:
             kwargs.update(dict(zip(list(inspect.signature(self.function).parameters), args)))
 
         if active_lattice.post_processing:
-            key = [k for k in active_lattice.electron_outputs if f"{self.function.__name__}" in k][
-                0
-            ]
-
-            if not key:
-                raise ValueError(
-                    "dispatch_id and lattice mismatch. Please try "
-                    "again with the correct dispatch_id."
-                )
-
-            output = active_lattice.electron_outputs[key]
-            del active_lattice.electron_outputs[key]
-            return output
+            return active_lattice.electron_outputs.pop(0)
 
         # Setting metadata for default values according to lattice's metadata
         # If metadata is default, then set it to lattice's default

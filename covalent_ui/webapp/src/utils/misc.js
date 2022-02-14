@@ -23,6 +23,12 @@
 import _ from 'lodash'
 import { isValid, format, parseISO } from 'date-fns'
 import theme from './theme'
+import { CircularProgress } from '@mui/material'
+import {
+  CancelOutlined,
+  CheckCircleOutline,
+  WarningAmber,
+} from '@mui/icons-material'
 
 export const formatDate = (date) => {
   if (_.isString(date)) {
@@ -47,6 +53,8 @@ export const truncateMiddle = (s, start, end, omission = '…') => {
 
 export const isParameter = (node) => _.startsWith(node.name, ':parameter:')
 
+export const displayStatus = (status) => _.startCase(_.lowerCase(status))
+
 export const statusColor = (status) => {
   return {
     RUNNING: theme.palette.primary.main,
@@ -64,4 +72,19 @@ export const statusLabel = (status) => {
       NEW_OBJECT: 'Pending',
     }[status] || status
   )
+}
+
+export const statusIcon = (status) => {
+  switch (status) {
+    case 'RUNNING':
+      return <CircularProgress size="1rem" />
+    case 'COMPLETED':
+      return <CheckCircleOutline />
+    case 'FAILED':
+      return <WarningAmber />
+    case 'CANCELLED':
+      return <CancelOutlined />
+    default:
+      return null
+  }
 }

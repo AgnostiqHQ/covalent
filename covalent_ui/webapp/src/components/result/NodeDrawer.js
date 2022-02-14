@@ -22,15 +22,9 @@
 
 import _ from 'lodash'
 import { useSelector } from 'react-redux'
-import {
-  CancelOutlined,
-  CheckCircleOutline,
-  Close,
-  WarningAmber,
-} from '@mui/icons-material'
+import { Close } from '@mui/icons-material'
 import {
   Box,
-  CircularProgress,
   Divider,
   Drawer,
   IconButton,
@@ -38,8 +32,14 @@ import {
   Typography,
 } from '@mui/material'
 import { useStoreActions } from 'react-flow-renderer'
+import { alpha } from '@mui/material/styles'
 
-import { formatDate, statusColor, statusLabel } from '../../utils/misc'
+import {
+  formatDate,
+  statusColor,
+  statusIcon,
+  statusLabel,
+} from '../../utils/misc'
 import Runtime from '../results/Runtime'
 import SyntaxHighlighter from '../SyntaxHighlighter'
 import Heading from './Heading'
@@ -70,16 +70,17 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
 
   return (
     <Drawer
-      sx={{
+      sx={(theme) => ({
         width: nodeDrawerWidth,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: nodeDrawerWidth,
           boxSizing: 'border-box',
           border: 'none',
-          p: 2,
+          p: 3,
+          bgcolor: alpha(theme.palette.background.default, 0.3),
         },
-      }}
+      })}
       anchor="right"
       variant="persistent"
       open={!!nodeId}
@@ -91,7 +92,8 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              mb: 3,
+              alignItems: 'center',
+              mb: 2,
             }}
           >
             <Typography sx={{ color: '#A5A6F6', overflowWrap: 'anywhere' }}>
@@ -104,9 +106,8 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
             </Box>
           </Box>
 
-          <Typography color="text.secondary" variant="body2">
-            Status
-          </Typography>
+          {/* Status */}
+          <Heading>Status</Heading>
           <Box
             sx={{
               mt: 1,
@@ -115,70 +116,67 @@ const NodeDrawer = ({ dispatchId, nodeId }) => {
               alignItems: 'center',
             }}
           >
-            {(() => {
-              switch (node.status) {
-                case 'RUNNING':
-                  return <CircularProgress size="1rem" />
-                case 'COMPLETED':
-                  return <CheckCircleOutline />
-                case 'FAILED':
-                  return <WarningAmber />
-                case 'CANCELLED':
-                  return <CancelOutlined />
-                default:
-                  return null
-              }
-            })()}
+            {statusIcon(node.status)}
             &nbsp;
             {statusLabel(node.status)}
           </Box>
 
           <ErrorCard error={node.error} />
 
+          {/* Description */}
           {node.doc && (
             <>
               <Heading>Description</Heading>
-              <Typography>{node.doc}</Typography>
+              <Typography fontSize="body2.fontSize">{node.doc}</Typography>
             </>
           )}
 
+          {/* Start/end times */}
           {hasStarted && (
             <>
               <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-              <Typography>
+              <Typography fontSize="body2.fontSize">
                 {formatDate(node.start_time)}
-                {hasEnded && `- ${formatDate(node.end_time)}`}
+                {hasEnded && ` - ${formatDate(node.end_time)}`}
               </Typography>
             </>
           )}
 
-          <Heading />
-          <Paper elevation={4}>
-            <SyntaxHighlighter src={src} />
-          </Paper>
-
-          <Divider sx={{ my: 2 }} />
-
+          {/* Runtime */}
           {node.status !== 'NEW_OBJECT' && (
             <>
               <Heading>Runtime</Heading>
-              <Runtime startTime={node.start_time} endTime={node.end_time} />
-            </>
-          )}
-
-          <ExecutorSection metadata={_.get(node, 'metadata')} />
-
-          {node.status === 'COMPLETED' && (
-            <>
-              <Heading>Result</Heading>
-              <Paper elevation={4}>
-                <SyntaxHighlighter language="python" src={node.output} />
-              </Paper>
+              <Runtime
+                sx={{ fontSize: 'body2.fontSize' }}
+                startTime={node.start_time}
+                endTime={node.end_time}
+              />
             </>
           )}
 
           {/* Input */}
           <InputSection inputs={node.kwargs} />
+
+          {/* Result */}
+          {node.status === 'COMPLETED' && (
+            <>
+              <Heading>Result</Heading>
+              <Paper elevation={0}>
+                <SyntaxHighlighter language="python" src={node.output} />
+              </Paper>
+            </>
+          )}
+
+          {/* Executor */}
+          <ExecutorSection metadata={_.get(node, 'metadata')} />
+
+          <Divider sx={{ my: 2 }} />
+
+          {/* Source */}
+          <Heading />
+          <Paper elevation={0}>
+            <SyntaxHighlighter src={src} />
+          </Paper>
         </>
       )}
     </Drawer>

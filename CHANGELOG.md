@@ -5,6 +5,91 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.16] - 2022-02-12
+
+### Added
+
+- Errors now contain the traceback as well as the error message in the result object.
+- Added test for `_post_process` in `tests/covalent_dispatcher_tests/_core/execution_test.py`.
+
+### Changed
+
+- Post processing logic in `electron` and dispatcher now relies on the order of execution in the transport graph rather than node's function names to allow for a more reliable pairing of nodes and their outputs.
+
+- Renamed `init_test.py` in `tests/covalent_dispatcher_tests/_core/` to `execution_test.py`.
+
+### Removed
+
+- `exclude_from_postprocess` list which contained some non executable node types removed since only executable nodes are post processed now.
+
+## [0.24.15] - 2022-02-11
+
+### Fixed
+
+- If a user's configuration file does not have a needed exeutor parameter, the default parameter (defined in _shared_files/defaults.py) is used.
+- Each executor plugin is no longer initialized upon the import of Covalent. This allows required parameters in executor plugins.
+
+## Changed
+
+- Upon updating the configuration data with a user's configuration file, the complete set is written back to file.
+
+## Added
+
+- Tests for the local and base executors.
+
+## [0.24.14] - 2022-02-11
+
+### Added
+
+- UI: add dashboard cards
+- UI: add scaling dots background
+
+### Changed
+
+- UI: reduce sidebar font sizes, refine color theme
+- UI: refine scrollbar styling, show on container hover
+- UI: format executor parameters as YAML code
+- UI: update syntax highlighting scheme
+- UI: update index.html description meta tag
+
+## [0.24.13] - 2022-02-11
+
+### Added
+
+- Tests for covalent/_shared_files/config.py
+
+## [0.24.12] - 2022-02-10
+
+### Added
+
+- CodeQL code analyzer
+
+## [0.24.11] - 2022-02-10
+
+### Added
+
+- A new dictionary `_DEFAULT_CONSTRAINTS_DEPRECATED` in defaults.py
+
+### Changed
+
+- The `_DEFAULT_CONSTRAINT_VALUES` dictionary now only contains the `backend` argument
+
+## [0.24.10] - 2022-02-09
+
+### Fixed
+
+- Sporadically failing workflow cancellation test in tests/workflow_stack_test.py
+
+## [0.24.9] - 2022-02-09
+
+## Changed
+
+- Implementation of `_port_from_pid` in covalent_dispatcher/_cli/service.py.
+
+## Added
+
+- Unit tests for command line interface (CLI) functionalities in covalent_dispatcher/_cli/service.py and covalent_dispatcher/_cli/cli.py.
+
 ## [0.24.8] - 2022-02-07
 
 ### Fixed
@@ -15,7 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Typing: Add Type hint `dispatch_info` parameter.                
+- Typing: Add Type hint `dispatch_info` parameter.
 - Documentation: Updated the return_type description in docstring.
 
 ### Changed
