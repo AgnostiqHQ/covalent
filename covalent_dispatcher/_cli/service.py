@@ -177,8 +177,9 @@ def _graceful_start(
 
     _rm_pid_file(pidfile)
 
+    dev_mode_flag = "--develop" if develop else ""
     port = _next_available_port(port)
-    launch_str = f"python app.py --port {port} --log-file {logfile} & echo $! >{pidfile}"
+    launch_str = f"python app.py {dev_mode_flag} --port {port} --log-file {logfile} & echo $! >{pidfile}"
 
     proc = Popen(
         launch_str,

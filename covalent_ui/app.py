@@ -185,7 +185,8 @@ def serve(path):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("-l", "--log-file", required=False, help="Path to log file that will be written to by server.")
-    ap.add_argument("-p", "--port", required=False, help="Port to run server.")
+    ap.add_argument("-p", "--port", required=False, help="Server port number.")
+    ap.add_argument("-d", "--develop", required=False, action='store_true', help="Start the server in developer mode.")
     args, unknown = ap.parse_known_args()
     # log file to be specified by cli
     if args.log_file:
@@ -197,4 +198,4 @@ if __name__ == "__main__":
         port = int(args.port)
     else: 
         port = DEFAULT_PORT
-    socketio.run(app, debug=True, host='0.0.0.0', port=port)
+    socketio.run(app, debug=args.develop==True, host='0.0.0.0', port=port)
