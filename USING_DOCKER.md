@@ -31,5 +31,3 @@ To acquire shell access to the container you can run the following:
 ```shell
 docker exec -it $(docker container ls  | grep 'covalent:latest' | awk '{print $1}') /bin/bash
 ```
-
-By navigating to `/opt/covalent` you can see the covalent source files copied as described in the `Dockerfile`
