@@ -28,7 +28,8 @@ RUN mkdir -p /opt/covalent
 COPY . /opt/covalent
 RUN pip install --no-cache-dir --use-feature=in-tree-build /opt/covalent
 
-EXPOSE 8080
+WORKDIR /opt/covalent
 
+EXPOSE 8080
 ENTRYPOINT [ "python" ]
 CMD ["/opt/covalent/covalent_ui/app.py", "--port", "8080"]
