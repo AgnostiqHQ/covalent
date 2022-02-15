@@ -28,6 +28,7 @@ import { useSelector } from 'react-redux'
 import api from '../utils/api'
 import Heading from './result/Heading'
 import { isParameter } from '../utils/misc'
+import { isDemo } from '../utils/demo/setup'
 
 const FETCH_INTERVAL_MS = 2000
 const MAX_LINES = 80
@@ -93,6 +94,16 @@ const TailFile = ({ dispatchId, path, isRunning, isStdErr }) => {
   // tail file
   useEffect(() => {
     const fetchLog = () => {
+      // TODO use demo mock api instead
+      if (isDemo) {
+        setLines(
+          isStdErr
+            ? ['Unable to fetch remote resource.']
+            : _.map(_.range(20), (i) => `iteration ${i}`)
+        )
+        return
+      }
+
       api
         .get(`/api/logoutput/${dispatchId}`, { params: { path, n: MAX_LINES } })
         .then((res) => {
@@ -119,7 +130,7 @@ const TailFile = ({ dispatchId, path, isRunning, isStdErr }) => {
         clearInterval(intervalId)
       }
     }
-  }, [path, isRunning, dispatchId])
+  }, [path, isRunning, dispatchId, isStdErr])
 
   return (
     <div>
