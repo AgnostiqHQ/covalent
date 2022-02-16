@@ -10,6 +10,7 @@ The following tutorials demonstrate examples of how Covalent is used in real-wor
 - :doc:`Machine Learning: Classical and quantum support vector machines<./machine_learning/classical_quantum_svm>`
 - :doc:`Astronomy: Tracking stars in the night sky<./astronomy/star_tracker>`
 - :doc:`Quantum Gravity: Classifying discrete spacetimes by dimension<./quantum_gravity/spacetime_classification>`
+- :doc:`Basic Tutorial Writing Guide: Writing basic tutorials for Covalent<basic_tutorial_guide>`
 
 ---------------------------------
 

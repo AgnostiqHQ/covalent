@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- A tutorial notebook describing the expectations from a beginner tutorial notebook.
+- A jupyter notebook describing the expectations from a basic tutorial.
 
 ## [0.24.17] - 2022-02-15
 
