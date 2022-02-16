@@ -26,44 +26,20 @@ import {
   ChevronLeft,
   Edit as EditIcon,
 } from '@mui/icons-material'
-import {
-  alpha,
-  AppBar,
-  Box,
-  Divider,
-  IconButton,
-  Link,
-  Paper,
-  Toolbar,
-  Typography,
-} from '@mui/material'
+import { Box, Divider, IconButton, Paper, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 
-import { ReactComponent as Logo } from '../../assets/covalent-full-logo.svg'
-import Heading from '../result/Heading'
-import { ExecutorSection, InputSection } from '../result/LatticeOverview'
-import SyntaxHighlighter from '../SyntaxHighlighter'
+import Heading from '../common/Heading'
+import SyntaxHighlighter from '../common/SyntaxHighlighter'
+import InputSection from '../common/InputSection'
+import ExecutorSection from '../common/ExecutorSection'
 
-const LatticeDrawerContents = () => {
+const PreviewDrawerContents = () => {
   const preview = useSelector((state) => state.latticePreview.lattice)
 
   return (
     <>
-      <AppBar
-        position="static"
-        elevation={0}
-        sx={(theme) => ({
-          bgcolor: alpha(theme.palette.background.default, 0.3),
-        })}
-      >
-        <Toolbar sx={{ my: 3, mb: 2 }}>
-          <Link href="/">
-            <Logo />
-          </Link>
-        </Toolbar>
-      </AppBar>
-
-      <Box sx={{ px: 3 }}>
+      <Box sx={{ p: 3 }}>
         {/* dispatch id */}
         <IconButton href="/" sx={{ color: 'text.disabled', mr: 1 }}>
           <ChevronLeft />
@@ -148,4 +124,4 @@ const LatticePreviewOverview = ({ preview }) => {
   )
 }
 
-export default LatticeDrawerContents
+export default PreviewDrawerContents

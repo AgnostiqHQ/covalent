@@ -39,11 +39,12 @@ import {
   statusIcon,
   statusLabel,
 } from '../../utils/misc'
-import Runtime from '../results/Runtime'
-import SyntaxHighlighter from '../SyntaxHighlighter'
-import Heading from './Heading'
-import { ExecutorSection, InputSection } from './LatticeOverview'
-import { ErrorCard } from './LatticeDrawer'
+import Runtime from '../dispatches/Runtime'
+import SyntaxHighlighter from './SyntaxHighlighter'
+import Heading from '../common/Heading'
+import ErrorCard from './ErrorCard'
+import InputSection from './InputSection'
+import ExecutorSection from './ExecutorSection'
 
 export const nodeDrawerWidth = 360
 

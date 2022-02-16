@@ -21,22 +21,24 @@
  */
 
 import _ from 'lodash'
-import { Box, Typography } from '@mui/material'
-import { useSelector } from 'react-redux'
+import { Box } from '@mui/material'
+import { useDispatch, useSelector } from 'react-redux'
 import { useStoreActions, useStoreState } from 'react-flow-renderer'
 
-import LatticeMain from '../graph/LatticeGraph'
+import LatticeGraph from '../graph/LatticeGraph'
 import NotFound from '../NotFound'
 import NodeDrawer, { nodeDrawerWidth } from '../common/NodeDrawer'
 import { useEffect } from 'react'
 import { graphBgColor } from '../../utils/theme'
 import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
-// import MobileAppBar from '../common/MobileAppBar'
 import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
-import PreviewDrawerContents from './PreviewDrawerContents'
+import { useParams } from 'react-router-dom'
+import { fetchResult } from '../../redux/resultsSlice'
+import DispatchDrawerContents from './DispatchDrawerContents'
 
-const LatticePreviewLayout = () => {
-  const lattice = useSelector((state) => state.latticePreview.lattice)
+const DispatchLayout = () => {
+  const { dispatchId } = useParams()
+  const result = useSelector((state) => state.results.cache[dispatchId])
 
   const selectedElectron = useStoreState((state) => {
     const nodeId = _.get(
@@ -44,31 +46,34 @@ const LatticePreviewLayout = () => {
       'id'
     )
     return _.find(
-      _.get(lattice, 'graph.nodes'),
+      _.get(result, 'graph.nodes'),
       (node) => nodeId === String(_.get(node, 'id'))
     )
   })
-
   const setSelectedElements = useStoreActions(
     (actions) => actions.setSelectedElements
   )
 
-  // unselect on change of lattice
+  // unselect on change of dispatch
   useEffect(() => {
     setSelectedElements([])
-  }, [lattice, setSelectedElements])
+  }, [dispatchId, setSelectedElements])
 
-  if (!lattice) {
-    return (
-      <NotFound>
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Lattice preview not found.
-        </Typography>
-        <Typography color="text.secondary">
-          Try running <code>[lattice].draw_ui()</code> again.
-        </Typography>
-      </NotFound>
-    )
+  const dispatch = useDispatch()
+  useEffect(() => {
+    if (_.get(result, 'status') === 'RUNNING') {
+      dispatch(
+        fetchResult({
+          dispatchId: result.dispatch_id,
+          resultsDir: result.results_dir,
+        })
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatchId])
+
+  if (!result) {
+    return <NotFound text="Lattice dispatch not found." />
   }
 
   return (
@@ -81,24 +86,21 @@ const LatticePreviewLayout = () => {
           bgcolor: graphBgColor,
         }}
       >
-        <LatticeMain
-          graph={lattice.graph}
+        <LatticeGraph
+          graph={result.graph}
           hasSelectedNode={!!selectedElectron}
           marginLeft={latticeDrawerWidth + navDrawerWidth}
           marginRight={!!selectedElectron ? nodeDrawerWidth : 0}
         />
       </Box>
 
-      {/* <MobileAppBar /> */}
       <NavDrawer />
-
       <LatticeDrawer>
-        <PreviewDrawerContents />
+        <DispatchDrawerContents />
       </LatticeDrawer>
-
       <NodeDrawer node={selectedElectron} />
     </>
   )
 }
 
-export default LatticePreviewLayout
+export default DispatchLayout

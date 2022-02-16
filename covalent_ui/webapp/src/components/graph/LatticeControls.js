@@ -34,7 +34,7 @@ import {
   MapOutlined,
   Remove as MinusIcon,
 } from '@mui/icons-material'
-import useFitViewHelper from '../common/ReactFlowHooks'
+import useFitViewHelper from './ReactFlowHooks'
 
 const LatticeControls = ({
   marginLeft = 0,
@@ -65,13 +65,13 @@ const LatticeControls = ({
       }}
     >
       <Hint title="Zoom in">
-        <ToggleButton value="" onClick={zoomIn}>
+        <ToggleButton value="" onClick={() => zoomIn(300)}>
           <PlusIcon />
         </ToggleButton>
       </Hint>
 
       <Hint title="Zoom out">
-        <ToggleButton value="" onClick={zoomOut}>
+        <ToggleButton value="" onClick={() => zoomOut(300)}>
           <MinusIcon />
         </ToggleButton>
       </Hint>
