@@ -53,6 +53,7 @@ class _ConfigManager:
             self.write_config()
 
         Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
+        Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
         Path(self.get("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
         Path(self.get("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
         Path(self.get("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)

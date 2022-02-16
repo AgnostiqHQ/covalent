@@ -12,6 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Conda installation is only supported for Linux in the `Getting Started` guide.
 - MNIST classifier tutorial.
 
+## [0.24.19] - 2022-02-16
+
+### Added
+
+- CODEOWNERS for certain files.
+
+## [0.24.18] - 2022-02-15
+
+### Added
+
+- The user configuration file can now specify an executor plugin directory.
+
 ## [0.24.17] - 2022-02-15
 
 ### Added
