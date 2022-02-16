@@ -439,11 +439,14 @@ Node Outputs
 
         import pkg_resources
 
-        dispatch_function = (
-            f"# File created by Covalent using covalent version {pkg_resources.get_distribution('cova').version}\n"
-            f"# Note that this file does not contain any global imports you did in your original dispatch\n"
-            f"# Covalent result -"
-        )
+        dispatch_function = f"# File created by Covalent using covalent version {pkg_resources.get_distribution('cova').version}\n"
+
+        dispatch_function += f"# Result of dispatch {self.dispatch_id}\n"
+        dispatch_function += f"# Result status: {self.status}\n"
+        dispatch_function += f"# Result start time: {self.start_time}\n"
+        dispatch_function += f"# Result end time: {self.end_time}" + "\n"
+
+        dispatch_function += "# Covalent result -"
         result_string_lines = str(self.result).split("\n")
         if len(result_string_lines) == 1:
             dispatch_function += f" {self.result}\n\n"
@@ -452,6 +455,9 @@ Node Outputs
             for line in result_string_lines:
                 dispatch_function += f"# {line}\n"
             dispatch_function += "\n"
+
+        # add imports
+        dispatch_function += self.lattice.lattice_imports + "\n" * 2
 
         directory = directory or self.results_dir
         result_folder_path = os.path.join(directory, f"{self.dispatch_id}")
@@ -467,9 +473,12 @@ Node Outputs
                 ).get_deserialized()
                 if function is not None and function.__name__ not in functions_added:
 
-                    dispatch_function += self.lattice.transport_graph.get_node_value(
+                    function_str = self.lattice.transport_graph.get_node_value(
                         nodes, value_key="function_string"
                     )
+                    function_str = self._filter_cova_decorators(function_str)
+
+                    dispatch_function += function_str
                     functions_added.append(function.__name__)
 
         lattice_function_str = convert_to_lattice_function_call(
@@ -477,7 +486,28 @@ Node Outputs
             self.lattice.workflow_function.__name__,
             self.inputs,
         )
+        lattice_function_str = self._filter_cova_decorators(lattice_function_str)
         dispatch_function += lattice_function_str
 
         with open(os.path.join(result_folder_path, "dispatch_source.py"), "w") as f:
             f.write(dispatch_function)
+
+    def _filter_cova_decorators(self, function_string: str) -> str:
+        """
+        Given a string representing a function, comment out any Covalent-related decorators.
+
+        Args
+            function_string: A string representation of a workflow function.
+
+        Returns:
+            The function string with Covalent-related decorators commented out.
+        """
+
+        function_lines = function_string.split("\n")
+        for i in range(len(function_lines)):
+            line = function_lines[i].strip()
+            if line.startswith("@"):
+                decorator = line.split("@")[1].split(".")[0].split("(")[0]
+                if decorator in self.lattice.cova_imports:
+                    function_lines[i] = f"# {function_lines[i]}"
+        return "\n".join(function_lines)
