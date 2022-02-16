@@ -20,6 +20,7 @@
 
 """Result object."""
 
+import ast
 import os
 from datetime import datetime
 from pathlib import Path
@@ -503,11 +504,40 @@ Node Outputs
             The function string with Covalent-related decorators commented out.
         """
 
+        commented_lines = set()
+        try:
+            parsed_source = ast.parse(function_string)
+        except IndentationError:
+            # Sub-fuctions or classes need to be de-indented, else ast will raise an error.
+            import textwrap
+
+            parsed_source = ast.parse(textwrap.dedent(function_string))
+
+        for node in ast.iter_child_nodes(parsed_source):
+            if not hasattr(node, "decorator_list"):
+                continue
+
+            for decorator in node.decorator_list:
+                start = decorator.lineno
+                end = decorator.end_lineno
+                decorator_name = ""
+                if isinstance(decorator, ast.Name):
+                    decorator_name = decorator.id
+                elif isinstance(decorator, ast.Attribute):
+                    decorator_name = decorator.value.id
+                elif isinstance(decorator, ast.Call):
+                    obj = decorator.func
+                    if isinstance(obj, ast.Name):
+                        decorator_name = obj.id
+                    elif isinstance(obj, ast.Attribute):
+                        decorator_name = obj.value.id
+
+                if decorator_name in self.lattice.cova_imports:
+                    for i in range(start - 1, end):
+                        commented_lines.add(i)
+
         function_lines = function_string.split("\n")
-        for i in range(len(function_lines)):
-            line = function_lines[i].strip()
-            if line.startswith("@"):
-                decorator = line.split("@")[1].split(".")[0].split("(")[0]
-                if decorator in self.lattice.cova_imports:
-                    function_lines[i] = f"# {function_lines[i]}"
+        for i in commented_lines:
+            function_lines[i] = f"# {function_lines[i]}"
+
         return "\n".join(function_lines)
