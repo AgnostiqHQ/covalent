@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
--
+- Conda installation is only supported for Linux in the `Getting Started` guide.
+- MNIST classifier tutorial.
 
 ## [0.24.17] - 2022-02-15
 
