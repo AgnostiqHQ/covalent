@@ -142,7 +142,7 @@ def _delete_result(
 
 def redispatch_result(result_object: Result, dispatcher: str = None) -> str:
     """
-    DEPRECATED: Function to redispatch the result as a new dispatch.
+    Function to redispatch the result as a new dispatch.
 
     Args:
         result_object: The result object to be redispatched.
@@ -150,11 +150,6 @@ def redispatch_result(result_object: Result, dispatcher: str = None) -> str:
     Returns:
         dispatch_id: The dispatch id of the new dispatch.
     """
-
-    app_log.warning(
-        "redispatch_result is deprecated and will be removed in a future release",
-        exc_info=DeprecationWarning,
-    )
 
     result_object._lattice.metadata["dispatcher"] = (
         dispatcher or result_object.lattice.metadata["dispatcher"]

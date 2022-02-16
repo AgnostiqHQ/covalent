@@ -217,7 +217,7 @@ class Lattice:
 
     def check_constraint_specific_sum(self, constraint_name: str, node_list: List[dict]) -> bool:
         """
-        DEPRECATED: Function to check whether the sum of the given constraint in each electron
+        Function to check whether the sum of the given constraint in each electron
         are within the constraint specified for the lattice.
 
         Args:
@@ -227,11 +227,6 @@ class Lattice:
             True if the sum of constraints are within the constraint specified for the lattice,
             else False.
         """
-
-        app_log.warning(
-            "check_constraint_specific_sum is deprecated and will be removed in a future release.",
-            exc_info=DeprecationWarning,
-        )
 
         constraint_list = [
             node["metadata"][constraint_name] if node["metadata"] else None for node in node_list
@@ -267,7 +262,7 @@ class Lattice:
 
     def check_consumable(self) -> None:
         """
-        DEPRECATED: Function to check whether all consumable constraints in all the nodes are
+        Function to check whether all consumable constraints in all the nodes are
         within the limits of what is specified for the lattice.
 
         Args:
@@ -278,11 +273,6 @@ class Lattice:
             ValueError: If the sum of consumable constraints in all the nodes are
                         not within the total limit of the lattice.
         """
-
-        app_log.warning(
-            "check_consumable is deprecated and will be removed in a future release.",
-            exc_info=DeprecationWarning,
-        )
 
         graph_copy = self.transport_graph.get_internal_graph_copy()
         data = nx.readwrite.node_link_data(graph_copy)

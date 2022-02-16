@@ -343,7 +343,7 @@ def _run_planned_workflow(result_object: Result) -> Result:
 
 def _plan_workflow(result_object: Result) -> None:
     """
-    DEPRECATED: Function to plan a workflow according to a schedule.
+    Function to plan a workflow according to a schedule.
     Planning means to decide which executors (along with their arguments) will
     be used by each node.
 

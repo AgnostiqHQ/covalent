@@ -34,18 +34,13 @@ log_stack_info = logger.log_stack_info
 
 def get_timedelta(time_limit: str) -> timedelta:
     """
-    DEPRECATED: Get timedelta from a compatible time limit string passed to the lattice/electron decorator.
+    Get timedelta from a compatible time limit string passed to the lattice/electron decorator.
 
     Args:
         time_limit: The time limit string.
     Returns:
         timedelta: The `datetime.timedelta` object.
     """
-
-    app_log.warning(
-        "get_timedelta is deprecated and will be removed in a future release.",
-        exc_info=DeprecationWarning,
-    )
 
     days, hours, minutes, seconds = time_limit.split("-")[0], *time_limit.split("-")[1].split(":")
     return timedelta(
@@ -58,35 +53,26 @@ def get_timedelta(time_limit: str) -> timedelta:
 
 def reformat(t: int) -> str:
     """
-    DEPRECATED: Reformat an integer to a readable time-like string. For example, if t = 1, return "01".
+    Reformat an integer to a readable time-like string. For example, if t = 1, return "01".
 
-    Args:
-        t: The integer to reformat.
-    Returns:
-        ref_string: The reformatted string.
+     Args:
+         t: The integer to reformat.
+     Returns:
+         ref_string: The reformatted string.
     """
-
-    app_log.warning(
-        "reformat is deprecated and will be removed in a future release.",
-        exc_info=DeprecationWarning,
-    )
 
     return f"0{t}" if len(str(t)) == 1 else str(t)
 
 
 def get_time(time_delta: timedelta) -> str:
     """
-    DEPRECATED: Get a compatible time string from a timedelta object.
+    Get a compatible time string from a timedelta object.
+
     Args:
         time_delta: The timedelta object.
     Returns:
         time_string: The compatible reformatted time string.
     """
-
-    app_log.warning(
-        "get_time is deprecated and will be removed in a future release.",
-        exc_info=DeprecationWarning,
-    )
 
     days = reformat(time_delta.days)
     hours = reformat(time_delta.seconds // 3600)
