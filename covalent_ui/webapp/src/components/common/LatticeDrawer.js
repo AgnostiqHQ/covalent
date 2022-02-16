@@ -22,10 +22,10 @@
 
 import { Drawer } from '@mui/material'
 import { alpha } from '@mui/material/styles'
-import { useDispatch, useSelector } from 'react-redux'
+// import { useDispatch, useSelector } from 'react-redux'
 
-import { toggleLatticeDrawer } from '../../redux/commonSlice'
-import LatticeDrawerContents from './LatticeDrawerContents'
+// import { toggleLatticeDrawer } from '../../redux/commonSlice'
+import { navDrawerWidth } from './NavDrawer'
 
 export const latticeDrawerWidth = 400
 
@@ -41,13 +41,15 @@ const drawerPaperStyles = (theme) => ({
   '&:not(:hover)::-webkit-scrollbar': {
     backgroundColor: 'inherit',
   },
+  // accomodate nav drawer (temporary design)
+  ml: `${navDrawerWidth}px`,
 })
 
-const LatticeDrawer = () => {
-  const dispatch = useDispatch()
-  const latticeDrawerOpen = useSelector(
-    (state) => state.common.latticeDrawerOpen
-  )
+const LatticeDrawer = ({ children }) => {
+  // const dispatch = useDispatch()
+  // const latticeDrawerOpen = useSelector(
+  //   (state) => state.common.latticeDrawerOpen
+  // )
 
   return (
     <>
@@ -55,15 +57,15 @@ const LatticeDrawer = () => {
       <Drawer
         variant="permanent"
         sx={(theme) => ({
-          display: { xs: 'none', md: 'block' },
+          // display: { xs: 'none', md: 'block' },
           '& .MuiDrawer-paper': drawerPaperStyles(theme),
         })}
       >
-        <LatticeDrawerContents />
+        {children}
       </Drawer>
 
       {/* Mobile */}
-      <Drawer
+      {/* <Drawer
         variant="temporary"
         open={latticeDrawerOpen}
         onClose={() => dispatch(toggleLatticeDrawer())}
@@ -73,7 +75,7 @@ const LatticeDrawer = () => {
         })}
       >
         <LatticeDrawerContents />
-      </Drawer>
+      </Drawer> */}
     </>
   )
 }

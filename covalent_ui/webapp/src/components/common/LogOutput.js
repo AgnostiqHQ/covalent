@@ -25,10 +25,10 @@ import { Paper, Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 
-import api from '../utils/api'
-import Heading from './result/Heading'
-import { isParameter } from '../utils/misc'
-import { isDemo } from '../utils/demo/setup'
+import api from '../../utils/api'
+import Heading from './Heading'
+import { isParameter } from '../../utils/misc'
+import { isDemo } from '../../utils/demo/setup'
 
 const FETCH_INTERVAL_MS = 2000
 const MAX_LINES = 80

@@ -149,7 +149,7 @@ class Lattice:
                     )
                     raise
 
-    def draw(self, ax: plt.Axes = None, *args, **kwargs) -> None:
+    def draw_inline(self, ax: plt.Axes = None, *args, **kwargs) -> None:
         """
         Rebuilds the graph according to the kwargs passed and draws it on the given axis.
         If no axis is given then a new figure is created.
@@ -210,7 +210,7 @@ class Lattice:
         plt.tight_layout()
         return ax
 
-    def draw_ui(self, *args, **kwargs) -> None:
+    def draw(self, *args, **kwargs) -> None:
         """
         Generate lattice graph and display in UI taking into account passed in
         arguments.

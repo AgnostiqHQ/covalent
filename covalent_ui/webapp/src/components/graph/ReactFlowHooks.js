@@ -23,7 +23,6 @@
 import { useMemo } from 'react'
 import { zoomIdentity } from 'd3-zoom'
 import { getRectOfNodes, useStoreState, useStore } from 'react-flow-renderer'
-import { clamp } from 'lodash'
 
 const DEFAULT_PADDING = 0.1
 
@@ -34,6 +33,8 @@ const initialFitViewHelper = {
 const getTransition = (selection, duration = 0) => {
   return selection.transition().duration(duration)
 }
+
+const clamp = (val, min = 0, max = 1) => Math.min(Math.max(val, min), max)
 
 const getTransformForBounds = (
   bounds,

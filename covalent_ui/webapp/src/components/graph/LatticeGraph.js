@@ -20,20 +20,30 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { useEffect, useState } from 'react'
+import _ from 'lodash'
+import { useEffect, useRef, useState } from 'react'
 import ReactFlow, { Background, MiniMap } from 'react-flow-renderer'
+import { lighten } from '@mui/material'
 
-import ElectronNode from '../graph/ElectronNode'
-import ParameterNode from '../graph/ParameterNode'
-import DirectedEdge from '../graph/DirectedEdge'
-import layout from '../graph/Layout'
+import ElectronNode from './ElectronNode'
+import ParameterNode from './ParameterNode'
+import DirectedEdge from './DirectedEdge'
+import layout from './Layout'
 import LatticeControls from './LatticeControls'
 import theme from '../../utils/theme'
-import { lighten } from '@mui/material'
 import { statusColor } from '../../utils/misc'
-import useFitViewHelper from '../common/ReactFlowHooks'
+import useFitViewHelper from './ReactFlowHooks'
 
-const LatticeMain = ({
+// https://reactjs.org/docs/hooks-faq.html#how-to-get-the-previous-props-or-state
+function usePrevious(value) {
+  const ref = useRef()
+  useEffect(() => {
+    ref.current = value
+  })
+  return ref.current
+}
+
+const LatticeGraph = ({
   graph,
   hasSelectedNode,
   marginLeft = 0,
@@ -51,30 +61,31 @@ const LatticeMain = ({
     setElements(layout(graph, direction, showParams))
   }, [graph, direction, showParams])
 
+  const prevMarginRight = usePrevious(marginRight)
   useEffect(() => {
     setTimeout(() => {
-      fitView({ duration: 300, marginLeft, marginRight })
+      const animate =
+        prevMarginRight !== undefined && prevMarginRight !== marginRight
+      fitView({
+        marginLeft,
+        marginRight,
+        ...(animate ? { duration: 300 } : null),
+      })
     })
-  }, [
-    fitView,
-    hasSelectedNode,
-    marginLeft,
-    marginRight,
-    graph,
-    showParams,
-    direction,
-  ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitView, marginLeft, marginRight, graph, direction, showParams])
 
   // handle resizing
   useEffect(() => {
-    const resizeHandler = () => {
-      fitView({ duration: 300, marginLeft, marginRight })
-    }
+    const resizeHandler = _.debounce(
+      () => fitView({ duration: 250, marginLeft, marginRight }),
+      50
+    )
     window.addEventListener('resize', resizeHandler)
     return () => {
       window.removeEventListener('resize', resizeHandler)
     }
-  })
+  }, [marginRight, marginLeft, fitView])
 
   return (
     <>
@@ -122,4 +133,4 @@ const LatticeMain = ({
   )
 }
 
-export default LatticeMain
+export default LatticeGraph

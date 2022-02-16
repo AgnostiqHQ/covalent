@@ -58,7 +58,7 @@ import Fuse from 'fuse.js'
 import { createSelector } from '@reduxjs/toolkit'
 
 import { fetchResult, removeResult } from '../../redux/resultsSlice'
-import CopyButton from '../CopyButton'
+import CopyButton from '../common/CopyButton'
 import { formatDate } from '../../utils/misc'
 import Runtime from './Runtime'
 import ResultProgress from './ResultProgress'

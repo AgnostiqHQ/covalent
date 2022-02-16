@@ -38,19 +38,20 @@ import { AccountTreeOutlined, ChevronLeft } from '@mui/icons-material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { alpha } from '@mui/material/styles'
 
-import CopyButton from '../CopyButton'
+import CopyButton from '../common/CopyButton'
 import { ReactComponent as AtomSvg } from '../../assets/atom.svg'
-import { selectResultProgress } from '../results/ResultProgress'
-import LatticeOverview from './LatticeOverview'
+import { selectResultProgress } from '../dispatches/ResultProgress'
+import LatticeDispatchOverview from './LatticeDispatchOverview'
 import { statusIcon, truncateMiddle } from '../../utils/misc'
-import LogOutput from '../LogOutput'
+import LogOutput from '../common/LogOutput'
+import ErrorCard from '../common/ErrorCard'
 
-const LatticeDrawer = () => {
+const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
   const [tab, setTab] = useState('overview')
 
   return (
-    <Box sx={{ px: 3 }}>
+    <Box sx={{ p: 3 }}>
       {/* dispatch id */}
       <IconButton href="/" sx={{ color: 'text.disabled', mr: 1 }}>
         <ChevronLeft />
@@ -79,7 +80,7 @@ const LatticeDrawer = () => {
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
-          <LatticeOverview dispatchId={dispatchId} />
+          <LatticeDispatchOverview dispatchId={dispatchId} />
         </TabPanel>
 
         <TabPanel value="output" sx={{ px: 0, py: 1 }}>
@@ -195,34 +196,4 @@ const LatticeStatusCard = ({ dispatchId }) => {
   )
 }
 
-export const ErrorCard = ({ showElectron = false, error }) => {
-  if (!error) {
-    return null
-  }
-
-  return (
-    <Box
-      sx={{
-        fontSize: 'body2.fontSize',
-        display: 'flex',
-        alignItems: 'center',
-        my: 2,
-        px: 2,
-        py: 1,
-        border: '0.5px solid rgba(227, 80, 80, 0.5)',
-        borderRadius: '4px',
-        background:
-          'linear-gradient(90deg, rgba(73, 12, 12, 0.5) 0%, rgba(4, 4, 6, 0.5) 100%)',
-      }}
-    >
-      {showElectron && (
-        <SvgIcon sx={{ fontSize: 'inherit', mr: 1.5 }}>
-          <AtomSvg />
-        </SvgIcon>
-      )}
-      {error}
-    </Box>
-  )
-}
-
-export default LatticeDrawer
+export default DispatchDrawerContents

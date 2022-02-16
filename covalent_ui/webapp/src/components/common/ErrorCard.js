@@ -20,14 +20,38 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import Typography from '@mui/material/Typography'
+import { Box, SvgIcon } from '@mui/material'
 
-const Title = ({ children }) => {
+import { ReactComponent as AtomSvg } from '../../assets/atom.svg'
+
+const ErrorCard = ({ showElectron = false, error }) => {
+  if (!error) {
+    return null
+  }
+
   return (
-    <Typography component="h2" variant="h6" color="primary" gutterBottom>
-      {children}
-    </Typography>
+    <Box
+      sx={{
+        fontSize: 'body2.fontSize',
+        display: 'flex',
+        alignItems: 'center',
+        my: 2,
+        px: 2,
+        py: 1,
+        border: '0.5px solid rgba(227, 80, 80, 0.5)',
+        borderRadius: '4px',
+        background:
+          'linear-gradient(90deg, rgba(73, 12, 12, 0.5) 0%, rgba(4, 4, 6, 0.5) 100%)',
+      }}
+    >
+      {showElectron && (
+        <SvgIcon sx={{ fontSize: 'inherit', mr: 1.5 }}>
+          <AtomSvg />
+        </SvgIcon>
+      )}
+      {error}
+    </Box>
   )
 }
 
-export default Title
+export default ErrorCard

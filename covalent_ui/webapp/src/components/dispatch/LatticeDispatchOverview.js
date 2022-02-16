@@ -25,12 +25,14 @@ import { Divider, Paper, Tooltip, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 
 import { formatDate, truncateMiddle } from '../../utils/misc'
-import CopyButton from '../CopyButton'
-import Runtime from '../results/Runtime'
-import SyntaxHighlighter from '../SyntaxHighlighter'
-import Heading from './Heading'
+import CopyButton from '../common/CopyButton'
+import Runtime from '../dispatches/Runtime'
+import SyntaxHighlighter from '../common/SyntaxHighlighter'
+import Heading from '../common/Heading'
+import InputSection from '../common/InputSection'
+import ExecutorSection from '../common/ExecutorSection'
 
-const LatticeOverview = ({ dispatchId }) => {
+const LatticeDispatchOverview = ({ dispatchId }) => {
   const result = useSelector((state) => state.results.cache[dispatchId])
 
   const src = _.get(result, 'lattice.function_string', '# source unavailable')
@@ -110,47 +112,4 @@ const LatticeOverview = ({ dispatchId }) => {
   )
 }
 
-export const ExecutorSection = ({ metadata }) => {
-  const executorType = _.get(metadata, 'backend')
-  const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
-  const src = _.join(
-    _.map(executorParams, (value, key) => `${key}: ${value}`),
-    '\n'
-  )
-
-  return (
-    <>
-      {!_.isEmpty(executorType)}
-      <Heading>
-        Executor: <strong>{executorType}</strong>
-      </Heading>
-
-      {!_.isEmpty(executorParams) && (
-        <Paper elevation={0}>
-          <SyntaxHighlighter language="yaml" src={src} />
-        </Paper>
-      )}
-    </>
-  )
-}
-
-export const InputSection = ({ inputs }) => {
-  if (_.isEmpty(inputs)) {
-    return null
-  }
-
-  const inputSrc = _.join(
-    _.map(inputs, (value, key) => `${key}=${value}`),
-    ', '
-  )
-
-  return (
-    <>
-      <Heading>Input</Heading>
-      <Paper elevation={0}>
-        <SyntaxHighlighter language="python" src={inputSrc} />
-      </Paper>
-    </>
-  )
-}
-export default LatticeOverview
+export default LatticeDispatchOverview
