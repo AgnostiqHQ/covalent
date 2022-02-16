@@ -32,8 +32,6 @@ generator_prefix = f"{prefix_separator}generated{prefix_separator}"
 sublattice_prefix = f"{prefix_separator}sublattice{prefix_separator}"
 attr_prefix = f"{prefix_separator}attribute{prefix_separator}"
 
-exclude_from_postprocess = [attr_prefix, subscript_prefix, generator_prefix]
-
 # Default configuration settings
 _DEFAULT_CONFIG = {
     "sdk": {
@@ -44,6 +42,9 @@ _DEFAULT_CONFIG = {
         + "/covalent",
         "log_level": os.environ.get("LOGLEVEL", "WARNING").lower(),
         "enable_logging": os.environ.get("COVALENT_LOG_TO_FILE", "false").lower(),
+        "executor_dir": os.environ.get("COVALENT_EXECUTOR_DIR")
+        or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
+        + "/covalent/executor_plugins",
     },
     "dispatcher": {
         "address": "0.0.0.0",

@@ -22,7 +22,7 @@
 
 import io from 'socket.io-client'
 
-import { isDemo } from './demo'
+import { isDemo } from './demo/setup'
 
 /**
  * Establishes socket connection.
