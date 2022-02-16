@@ -385,31 +385,33 @@ export LOGLEVEL=INFO
 guarantees all info, warning, error and critical messages will be shown. If this environment variable is not set, the default value of `WARNING` is used.
 
 ## Writing Tests
-All feature changes and bug fixes should be accompanied by tests. These can be a
-combination of unit, integration and functional tests. Unit tests are the highest priority and
-should be the bulk of the tests in the repo. Following that, integration tests, checking that
-various modules function as expected are the next highest priority. Lastly, functional tests,
-which test various software use cases should be proportionately the minority
-of the tests (without undermining their importance).
+All feature changes and bug fixes should be accompanied by tests. Below, we list some important
+guidelines when writing tests.
 
-In the case of bug fixes, it is necessary to write tests for which the code breaks before
-implementing the bug fix.
+* Unless there is a good reason
+for it, write unit tests as opposed to integration or functional tests.
 
-It is further advisable to consider how feature changes could be implemented so that the code
-is easily testable.
+* In the case of bug fixes, write tests for which the code breaks before implementing the bug fix.
 
-`pytest` is the framework of choice for testing in this repo with additional packages such as
-`pytest-asyncio` to test asynchronous code and `pytest-mock` for the purpose of mocking and
-monkey-patching.
+* Before implementing a feature, ensure that the design is such that the code is easily testable.
 
-The test suite for covalent can be run locally via:
+### Install test packages
+The framework of choice for testing in this repo is `pytest`. Other relevant packages are:
+* `pytest-asyncio` - to test asynchronous code.
+* `pytest-mock` - to mock functions, server / API calls etc.
 
-```buildoutcfg
-pytest -v
-```
+To install the packages relevant to testing,
 
-Running the entire test suite will take a while and for the purpose of development, one can
-focus on more specific tests using syntax in the examples shown below.
+1. Navigate to the `tests` folder in the Covalent root directory.
+2. Run `pip install -r requirements.txt`
+
+### Run tests locally
+
+The test suite for covalent can be run locally from the root directory using `pytest -v`
+or, `pytest -vv -s` for a more verbose setting.
+
+Running the entire test suite will take a while and for the purpose of development, focus on a
+smaller subset of tests.
 
 1. To run a specific test module:
 ```buildoutcfg
@@ -421,6 +423,15 @@ pytest tests/covalent_dispatcher_tests/_executor/local_test.py -vv -s
 ```buildoutcfg
 pytest tests/electron_return_value_test.py::test_arithmetic_1_rev -vv -s
 ```
+
+### Mocking via `mocker`
+
+
+### Mocking via `monkeypatch`
+
+
+### Other resources
+
 
 Contributor License Agreement
 =============================
