@@ -5,11 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.24.18] - 2022-02-15
+## [0.24.20] - 2022-02-16
 
 ### Added
 
 - A jupyter notebook describing the expectations from a basic tutorial.
+
+## [0.24.19] - 2022-02-16
+
+### Added
+
+- CODEOWNERS for certain files.
+
+## [0.24.18] - 2022-02-15
+
+### Added
+
+- The user configuration file can now specify an executor plugin directory.
 
 ## [0.24.17] - 2022-02-15
 
