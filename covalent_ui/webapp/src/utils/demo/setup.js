@@ -25,6 +25,7 @@ import _ from 'lodash'
 import resultA from './result-a'
 import resultB from './result-b'
 import resultC from './result-c'
+import latticePreview from './draw-a'
 
 /**
  * Demo mode switch based on build-time environment variable (see package.json).
@@ -63,4 +64,5 @@ export const demoState = {
     ),
     fetchResult: { isFetching: false, error: null },
   },
+  latticePreview,
 }

@@ -36,6 +36,7 @@ import theme from './utils/theme'
 import { ReactFlowProvider } from 'react-flow-renderer'
 import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
 import DispatchLayout from './components/dispatch/DispatchLayout'
+import NotFound from './components/NotFound'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -76,6 +77,7 @@ const App = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/:dispatchId" element={<DispatchLayout />} />
             <Route path="/preview" element={<LatticePreviewLayout />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </ThemeProvider>
       </ReactFlowProvider>
