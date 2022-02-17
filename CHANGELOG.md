@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Changed the description of the hyperlink for choosing executors
-- Fixed typos in doc.source.api.getting_started.how_to.execution.creating_custom_executors.ipynb
+- Fixed typos in doc/source/api/getting_started/how_to/execution/creating_custom_executors.ipynb
 
 ## [0.24.19] - 2022-02-16
 
