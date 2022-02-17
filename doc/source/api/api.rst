@@ -8,6 +8,7 @@ The following API documentation describes how to use Covalent.
 - :ref:`electrons_api` and :ref:`lattices_api` are used for constructing workflows
 - :ref:`results_api` is used for collecting and manipulating results
 - :ref:`dispatcher_api` is used for dispatching workflows
+- :ref:`local_executor` is used to execute electrons locally.
 - The :ref:`dispatcher_server_api` is used for interfacing with the Covalent servers
 
 .. _electrons_api:
@@ -79,3 +80,12 @@ This Command Line Interface (CLI) tool is used to manage Covalent's dispatch and
     :prog: covalent
     :commands: start,stop,restart,status,purge
     :nested: full
+
+.. _local_executor:
+
+Local executor
+"""""""""""""""""""""""""""
+
+.. autoclass:: covalent._workflow.executor.executor_plugins.local.LocalExecutor
+    :members:
+    :inherited-members:
