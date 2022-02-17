@@ -1,7 +1,7 @@
 .. currentmodule:: covalent
-####
+############
 Covalent API
-####
+############
 
 The following API documentation describes how to use Covalent.
 
