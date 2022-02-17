@@ -86,6 +86,8 @@ This Command Line Interface (CLI) tool is used to manage Covalent's dispatch and
 Local executor
 """""""""""""""""""""""""""
 
+Experiment headline
+
 .. autoclass:: covalent._workflow.executor.executor_plugins.local.LocalExecutor
     :members:
     :inherited-members:
