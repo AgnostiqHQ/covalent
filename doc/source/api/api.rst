@@ -88,6 +88,8 @@ Local executor
 
 Experiment headline
 
+.. autodecorator:: local_executor
+
 .. autoclass:: covalent._workflow.executor.executor_plugins.local.LocalExecutor
     :members:
     :inherited-members:
