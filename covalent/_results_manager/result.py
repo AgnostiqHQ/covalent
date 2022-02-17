@@ -20,7 +20,6 @@
 
 """Result object."""
 
-import ast
 import os
 from datetime import datetime
 from pathlib import Path
