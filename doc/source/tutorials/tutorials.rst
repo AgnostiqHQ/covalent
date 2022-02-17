@@ -25,7 +25,10 @@ Advanced
 
 .. list-table::
    :widths: 25 60
+   :header-rows: 1
 
+   * - Topic
+     - Title
    * - Quantum Chemistry
      - :doc:`Simulating the Nitrogen-Copper interaction<./quantum_chemistry/nitrogen_copper_interaction>`
    * - Machine Learning
