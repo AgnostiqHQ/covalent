@@ -1,6 +1,6 @@
 .. currentmodule:: covalent
 ####
-Covalent API
+Covalent API [Haim's test]
 ####
 
 The following API documentation describes how to use Covalent.
