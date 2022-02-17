@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Fixed issue 126
+- Added how to create custon executors
+
+### Changed
+
+- Changed the description of the hyperlink for choosing executors
+- Fixed typos in creating_custon executors.ipynb
 
 ## [0.24.19] - 2022-02-16
 
