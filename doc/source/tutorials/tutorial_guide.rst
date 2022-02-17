@@ -4,7 +4,7 @@ Tutorial Writing Guide
 
 This guide will cover things that should be taken care of while writing tutorials for Covalent. It can also be seen as a way to highlight covalent's strenghts in real world projects.
 
-.. note:: This is a basic structure and can be modified depending on what kind of tutorial is being written. Since it is not a full-fledged template it gives the author some leeway to write however they deem the tutorial fit.
+.. note:: This is a basic structure and can be modified depending on what kind of tutorial is being written. Since it is not a full-fledged template it gives the author leeway to write however they deem the tutorial fit.
 
 ===========
 Readability
