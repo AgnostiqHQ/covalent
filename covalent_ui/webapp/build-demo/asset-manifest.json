@@ -1,0 +1,23 @@
+{
+  "files": {
+    "main.css": "/static/css/main.5658d761.chunk.css",
+    "main.js": "/static/js/main.0f1bc5c9.chunk.js",
+    "main.js.map": "/static/js/main.0f1bc5c9.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.533164ea.js",
+    "runtime-main.js.map": "/static/js/runtime-main.533164ea.js.map",
+    "static/js/2.bb8b2674.chunk.js": "/static/js/2.bb8b2674.chunk.js",
+    "static/js/2.bb8b2674.chunk.js.map": "/static/js/2.bb8b2674.chunk.js.map",
+    "index.html": "/index.html",
+    "static/css/main.5658d761.chunk.css.map": "/static/css/main.5658d761.chunk.css.map",
+    "static/js/2.bb8b2674.chunk.js.LICENSE.txt": "/static/js/2.bb8b2674.chunk.js.LICENSE.txt",
+    "static/media/atom.3f8fd5bf.svg": "/static/media/atom.3f8fd5bf.svg",
+    "static/media/covalent-full-logo.b42305d7.svg": "/static/media/covalent-full-logo.b42305d7.svg",
+    "static/media/covalent-logo.623a3e8a.svg": "/static/media/covalent-logo.623a3e8a.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.533164ea.js",
+    "static/js/2.bb8b2674.chunk.js",
+    "static/css/main.5658d761.chunk.css",
+    "static/js/main.0f1bc5c9.chunk.js"
+  ]
+}
