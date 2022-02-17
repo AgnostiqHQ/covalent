@@ -1,6 +1,6 @@
 .. currentmodule:: covalent
 ####
-Covalent API [Haim's test]
+Covalent API
 ####
 
 The following API documentation describes how to use Covalent.
@@ -83,13 +83,11 @@ This Command Line Interface (CLI) tool is used to manage Covalent's dispatch and
 
 .. _local_executor:
 
-Local executor
+Local Executor
 """""""""""""""""""""""""""
 
 Experiment headline
 
-.. autodecorator:: local_executor
-
-.. autoclass:: covalent._workflow.executor.executor_plugins.local.LocalExecutor
+.. autoclass:: covalent.executor.executor_plugins.local.LocalExecutor
     :members:
     :inherited-members:
