@@ -2,55 +2,29 @@
 Tutorial Writing Guide
 ****************************
 
-This guide will cover things that should be taken care of while writing tutorials for Covalent. It can also be seen as a way to highlight covalent's strenghts in real world projects.
+This guide covers best practices for Covalent tutorials. These principles are indended to guide but not constrain the author.
 
-.. note:: This is a basic structure and can be modified depending on what kind of tutorial is being written. Since it is not a full-fledged template it gives the author leeway to write however they deem the tutorial fit.
+1. Set the scope
 
-===========
-Readability
-===========
+Good tutorials are small and self-contained. They do not overcomplicate things and cater to a mixed audience. Any examples highlighted should be straightforward and friendly to beginners.
 
-First and foremost, the tutorial should be small enough to not overcomplicate things which will discourage newcomers from reading it.
-Whatever example is chosen, should be straightforward and beginner friendly.
+2. Introduce the example
 
+Introduce background material and describe what we will be trying to achieve in the tutorial. Separate the logical components and show what purpose each of them serves.
 
-=======================
-Introducing the example
-=======================
+3. Prototype the solution
 
-Describe what we will be trying to achieve. Separate the components and show what each of them will do.
+Write code with commented explanations wherever necessary. Write it without Covalent, in a functional manner, where it is clear what each of the components is doing in the context of the example.
 
+4. Run the workflows
 
-================
-Without Covalent
-================
+Add decorators to the functions without changing their definitions. Show representative screenshots of the UI to help readers understand the problem being solved. A good tutorial also provides typical input parameters and the corresponding typical runtimes.
 
-Write code with commented explanations wherever necessary. This time we will be writing it without covalent in a functional manner, where it is clear what each of the components is doing.
+5. Analyze the results
+
+View the results in the Covalent UI, and query them programatically as well.  Summarize the findings using a meaningful plot or chart. Discuss the metadata returned in the result object.
 
 
+6. Discuss the concepts
 
-Results
--------
-
-Run the code, benchmark, and show how much time it took. Also show the changes to the code that we'll need to do in order to a) see the execution time, b) get the error if any of the components failed, c) track the status of each component, d) execute the independent components in parallel, etc.
-
-
-=============
-With Covalent
-=============
-
-Add decorators to those functions without changing their definitions. Show the the UI which they can use to track all of the above mentioned information. Also, indicate that the user can continue working on something else instead of waiting for the result. This can be done by running a trivial code snippet in the following cell after dispatching the job.
-
-
-
-Results
--------
-
-Do ct.get_result, and indicate that they didn't have to do anything extra in order to get all of the above information about the execution which can be found inside a single result object.
-
-
-=================
-Covalent Concepts
-=================
-
-Highlight what each covalent's component's role and importance in executing the example.
+Highlight how different components of Covalent are used to accomplish objectives or to obey constraints.

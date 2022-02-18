@@ -13,6 +13,4 @@ The following tutorials demonstrate examples of how Covalent is used in real-wor
 
 ---------------------------------
 
-Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.
-
-Guide to write one can be found :doc:`here <tutorial_guide>`.
+Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.  To get started, check out the :doc:`guide <tutorial_guide>`.
