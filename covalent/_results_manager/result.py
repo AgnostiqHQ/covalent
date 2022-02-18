@@ -439,11 +439,11 @@ Node Outputs
 
         import pkg_resources
 
-        dispatch_function = f"# File created by Covalent using covalent version {pkg_resources.get_distribution('cova').version}\n"
-        dispatch_function += f"# Results of workflow ID {self.dispatch_id}:\n"
-        dispatch_function += f"# Result status: {self.status}\n"
-        dispatch_function += f"# Result start time: {self.start_time}\n"
-        dispatch_function += f"# Result end time: {self.end_time}" + "\n"
+        dispatch_function = f"# File created by Covalent using version {pkg_resources.get_distribution('cova').version}\n"
+        dispatch_function += f"# Dispatch ID: {self.dispatch_id}\n"
+        dispatch_function += f"# Workflow status: {self.status}\n"
+        dispatch_function += f"# Workflow start time: {self.start_time}\n"
+        dispatch_function += f"# Workflow end time: {self.end_time}" + "\n"
 
         dispatch_function += "# Covalent result -"
         result_string_lines = str(self.result).split("\n")
