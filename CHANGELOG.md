@@ -5,12 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.24.21] - 2022-02-17
+## [0.24.22] - 2022-02-17
 
 ## Added
 
 - Conda installation is only supported for Linux in the `Getting Started` guide.
 - MNIST classifier tutorial.
+
+## [0.24.21] - 2022-02-18
+
+### Added
+
+- RST document describing the expectations from a tutorial.
 
 ## [0.24.20] - 2022-02-17
 
@@ -196,6 +202,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI: display error message on failed status for lattice and electron
 
 ### Changed
+
 - UI: re-order sidebar sections according to latest figma designs
 - UI: update favicon
 - UI: remove dispatch id from tab title
@@ -203,6 +210,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI: adjust theme text primary and secondary colors
 
 ### Fixed
+
 - UI: auto-refresh result state on initial render of listing and graph pages
 - UI: graph layout issues: truncate long electron/param names
 

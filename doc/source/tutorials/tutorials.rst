@@ -40,4 +40,4 @@ Advanced
 
 ---------------------------------
 
-Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.
+Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.  To get started, check out the :doc:`guide <tutorial_guide>`.
