@@ -96,4 +96,10 @@ def send_draw_request(lattice) -> None:
         }
     )
 
-    requests.post(get_ui_url("/api/draw"), data=draw_request)
+    try:
+        response = requests.post(get_ui_url("/api/draw"), data=draw_request)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as ex:
+        app_log.error(ex)
+    except requests.exceptions.RequestException:
+        app_log.error("Connection failure. Please check Covalent server is running.")

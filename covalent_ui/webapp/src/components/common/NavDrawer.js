@@ -53,7 +53,7 @@ const NavDrawer = () => {
         <LinkButton title="Dispatch list" path="/" icon={ViewListIcon} />
 
         <LinkButton
-          title="Dispatch list"
+          title="Lattice draw preview"
           path="/preview"
           icon={DriveFileRenameOutlineIcon}
         />
