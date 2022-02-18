@@ -85,26 +85,8 @@ class LocalExecutor(BaseExecutor):
                     kwargs,
                     self.conda_env,
                     self.cache_dir,
+                    node_id,
                 )
-
-                if success:
-                    message = f"Executed node {node_id} on Conda environment {self.conda_env}."
-                    app_log.debug(message)
-
-                else:
-                    message = (
-                        f"Failed to execute node {node_id} on Conda environment {self.conda_env}."
-                    )
-                    if self.current_env_on_conda_fail:
-                        message += "\nExecuting on the current Conda environment."
-                        app_log.warning(message)
-                        fn = function.get_deserialized()
-                        result = fn(**kwargs)
-
-                    else:
-                        app_log.error(message)
-
-                        raise RuntimeError
 
             else:
                 fn = function.get_deserialized()

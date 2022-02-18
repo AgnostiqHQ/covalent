@@ -24,7 +24,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import persistState from 'redux-localstorage'
 
 import rootReducer from './reducers'
-import { isDemo, demoEnhancer } from '../utils/demo'
+import { isDemo, demoEnhancer } from '../utils/demo/setup'
 
 export default function configureAppStore(preloadedState) {
   const store = configureStore({

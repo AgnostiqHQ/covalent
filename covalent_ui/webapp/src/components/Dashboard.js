@@ -21,21 +21,17 @@
  */
 
 import _ from 'lodash'
-import {
-  AppBar,
-  Container,
-  Link,
-  Paper,
-  Typography,
-  Toolbar,
-} from '@mui/material'
+import { Container, Paper, Typography, Divider } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { createSelector } from '@reduxjs/toolkit'
+import { differenceInSeconds, isValid, parseISO } from 'date-fns'
 
-import ResultListing from './results/ResultListing'
-import { ReactComponent as Logo } from '../assets/covalent-full-logo.svg'
+import ResultListing from './dispatches/ResultListing'
 import { Box } from '@mui/system'
-import CopyButton from './CopyButton'
+import CopyButton from './common/CopyButton'
+import { humanize } from './dispatches/Runtime'
+import { displayStatus } from '../utils/misc'
+import NavDrawer from './common/NavDrawer'
 
 const selectResultsCache = (state) => state.results.cache
 
@@ -55,25 +51,68 @@ export const selectDispatcherAddress = createSelector(
   }
 )
 
+export const parseDurationInSecs = (start, end) => {
+  start = parseISO(start)
+  end = parseISO(end)
+  if (!isValid(start) || !isValid(end)) {
+    return 0
+  }
+  return differenceInSeconds(end, start)
+}
+
+export const selectJobStats = createSelector(selectResultsCache, (cache) => {
+  const isRunning = (result) => result.status === 'RUNNING'
+  const isCompleted = (result) => result.status === 'COMPLETED'
+
+  const stats = _.reduce(
+    cache,
+    (stats, result) => {
+      if (!result) {
+        return stats
+      }
+      stats.running += isRunning(result) ? 1 : 0
+      stats.done += isCompleted(result) ? 1 : 0
+      stats.duration += parseDurationInSecs(result.start_time, result.end_time)
+      if (
+        !stats.latest ||
+        // prefer running to not running
+        (isRunning(result) && !isRunning(stats.latest)) ||
+        // prefer last started among running
+        (isRunning(result) &&
+          isRunning(stats.latest) &&
+          result.start_time > stats.latest.start_time) ||
+        // prefer last ended among not running
+        (!isRunning(result) &&
+          !isRunning(stats.latest) &&
+          result.end_time > stats.latest.end_time)
+      ) {
+        stats.latest = result
+      }
+      return stats
+    },
+    {
+      running: 0,
+      done: 0,
+      duration: 0,
+      latest: null,
+    }
+  )
+
+  return stats
+})
+
 const Dashboard = () => {
   const dispatcherAddress = useSelector(selectDispatcherAddress)
+  const stats = useSelector(selectJobStats)
 
   return (
-    <>
-      <AppBar position="static" color="transparent" sx={{ my: 3 }}>
-        <Toolbar>
-          <Container>
-            <Link href="/">
-              <Logo />
-            </Link>
-          </Container>
-        </Toolbar>
-      </AppBar>
+    <Box sx={{ display: 'flex' }}>
+      <NavDrawer />
 
-      <Container>
-        <Paper sx={{ p: 2, mb: 2 }}>
+      <Container maxWidth="xl" sx={{ mb: 4, mt: 7 }}>
+        <Paper elevation={0} sx={{ p: 3, mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography fontSize={20}>Dispatch list</Typography>
+            <Typography fontSize="h5.fontSize">Dispatch list</Typography>
 
             {dispatcherAddress && (
               <>
@@ -90,14 +129,42 @@ const Dashboard = () => {
               </>
             )}
           </Box>
-        </Paper>
-      </Container>
 
-      <Container>
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-around' }}>
+            <DashboardCard content={stats.running} desc="Total jobs running" />
+            <DashboardDivider />
+
+            <DashboardCard content={stats.done} desc="Total jobs done" />
+            <DashboardDivider />
+
+            <DashboardCard
+              content={displayStatus(_.get(stats, 'latest.status')) || 'N/A'}
+              desc="Latest running task status"
+            />
+            <DashboardDivider />
+
+            <DashboardCard
+              content={humanize(stats.duration * 1000)}
+              desc="Total dispatcher duration"
+            />
+          </Box>
+        </Paper>
+
         <ResultListing />
       </Container>
-    </>
+    </Box>
   )
 }
+
+const DashboardCard = ({ desc, content }) => (
+  <Box sx={{ textAlign: 'right' }}>
+    <Typography fontSize="h5.fontSize">{content}</Typography>
+    <Typography color="text.secondary">{desc}</Typography>
+  </Box>
+)
+
+const DashboardDivider = () => (
+  <Divider flexItem orientation="vertical" sx={{ borderColor: '#29425B' }} />
+)
 
 export default Dashboard
