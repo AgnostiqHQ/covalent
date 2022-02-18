@@ -20,10 +20,14 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
+import { commonSlice } from './commonSlice'
 import { resultsSlice } from './resultsSlice'
+import { latticePreviewSlice } from './latticePreviewSlice'
 
 const reducers = {
+  common: commonSlice.reducer,
   results: resultsSlice.reducer,
+  latticePreview: latticePreviewSlice.reducer,
 }
 
 export default reducers
