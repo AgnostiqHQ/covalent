@@ -79,6 +79,7 @@ class Lattice:
         self.kwargs = {}
         self.electron_outputs = {}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
+        self.cova_imports.update({"electron"})
 
     def set_metadata(self, name: str, value: Any) -> None:
         """

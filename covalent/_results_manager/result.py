@@ -23,7 +23,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 import cloudpickle as pickle
 import yaml
@@ -475,8 +475,10 @@ Node Outputs
                     function_str = self.lattice.transport_graph.get_node_value(
                         nodes, value_key="function_string"
                     )
-                    function_str = self._filter_cova_decorators(function_str)
-
+                    function_str = _filter_cova_decorators(
+                        function_str,
+                        self.lattice.cova_imports,
+                    )
                     dispatch_function += function_str
                     functions_added.append(function.__name__)
 
@@ -485,41 +487,45 @@ Node Outputs
             self.lattice.workflow_function.__name__,
             self.inputs,
         )
-        lattice_function_str = self._filter_cova_decorators(lattice_function_str)
+        lattice_function_str = _filter_cova_decorators(
+            lattice_function_str,
+            self.lattice.cova_imports,
+        )
         dispatch_function += lattice_function_str
 
         with open(os.path.join(result_folder_path, "dispatch_source.py"), "w") as f:
             f.write(dispatch_function)
 
-    def _filter_cova_decorators(self, function_string: str) -> str:
-        """
-        Given a string representing a function, comment out any Covalent-related decorators.
 
-        Args
-            function_string: A string representation of a workflow function.
+def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:
+    """
+    Given a string representing a function, comment out any Covalent-related decorators.
 
-        Returns:
-            The function string with Covalent-related decorators commented out.
-        """
+    Args
+        function_string: A string representation of a workflow function.
 
-        has_cova_decorator = False
-        in_decorator = 0
-        function_lines = function_string.split("\n")
-        for i in range(len(function_lines)):
-            line = function_lines[i].strip()
-            if in_decorator > 0:
+    Returns:
+        The function string with Covalent-related decorators commented out.
+    """
+
+    has_cova_decorator = False
+    in_decorator = 0
+    function_lines = function_string.split("\n")
+    for i in range(len(function_lines)):
+        line = function_lines[i].strip()
+        if in_decorator > 0:
+            function_lines[i] = f"# {function_lines[i]}"
+            in_decorator += line.count("(")
+            in_decorator -= line.count(")")
+        elif line.startswith("@"):
+            decorator_name = line.split("@")[1].split(".")[0].split("(")[0]
+            if decorator_name in cova_imports:
                 function_lines[i] = f"# {function_lines[i]}"
+                has_cova_decorator = True
                 in_decorator += line.count("(")
                 in_decorator -= line.count(")")
-            elif line.startswith("@"):
-                decorator_name = line.split("@")[1].split(".")[0].split("(")[0]
-                if decorator_name in self.lattice.cova_imports:
-                    function_lines[i] = f"# {function_lines[i]}"
-                    has_cova_decorator = True
-                    in_decorator += line.count("(")
-                    in_decorator -= line.count(")")
 
-        if has_cova_decorator:
-            return "\n".join(function_lines)
-        else:
-            return function_string
+    if has_cova_decorator:
+        return "\n".join(function_lines)
+    else:
+        return function_string
