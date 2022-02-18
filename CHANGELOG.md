@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.21] - 2022-02-18
+
+### Changed
+
+- Removed unnecessary blockquotes from the How-To guide for creatin custom executors
+- Changed "Covalent Cloud" to "Covalent" in the main code text
+
 ## [0.24.20] - 2022-02-17
 
 ### Added
