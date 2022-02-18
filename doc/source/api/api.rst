@@ -86,7 +86,7 @@ This Command Line Interface (CLI) tool is used to manage Covalent's dispatch and
 Local Executor
 """""""""""""""""""""""""""
 
-Experiment headline
+Executing tasks (electrons) directly on the local machine
 
 .. autoclass:: covalent.executor.executor_plugins.local.LocalExecutor
     :members:

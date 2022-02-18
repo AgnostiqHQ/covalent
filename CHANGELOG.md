@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.24.21] - 2022-02-17
 
+### Added
+
+- Added Local Executor section to the API
 
 ## [0.24.20] - 2022-02-17
 
