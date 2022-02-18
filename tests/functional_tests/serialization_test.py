@@ -139,10 +139,3 @@ def test_nested_electron():
     )
     expected_string += "\n\n\n"
     assert function_string == expected_string
-
-
-test_non_electron_serialization()
-test_electron_serialization()
-test_lattice_serialization()
-test_lattice_object_serialization()
-test_nested_electron()
