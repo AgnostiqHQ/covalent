@@ -31,6 +31,8 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 import matplotlib.pyplot as plt
 import networkx as nx
 
+import covalent_ui.result_webhook as result_webhook
+
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
@@ -150,7 +152,7 @@ class Lattice:
                     )
                     raise
 
-    def draw(self, ax: plt.Axes = None, *args, **kwargs) -> None:
+    def draw_inline(self, ax: plt.Axes = None, *args, **kwargs) -> None:
         """
         Rebuilds the graph according to the kwargs passed and draws it on the given axis.
         If no axis is given then a new figure is created.
@@ -210,6 +212,33 @@ class Lattice:
         plt.margins(x=0.4)
         plt.tight_layout()
         return ax
+
+    def draw(self, *args, **kwargs) -> None:
+        """
+        Generate lattice graph and display in UI taking into account passed in
+        arguments.
+
+        Args:
+            *args: Positional arguments to be passed to build the graph.
+            **kwargs: Keyword arguments to be passed to build the graph.
+
+        Returns:
+            None
+        """
+
+        # Positional args are converted to kwargs
+        if self.workflow_function:
+            kwargs.update(
+                dict(zip(list(inspect.signature(self.workflow_function).parameters), args))
+            )
+
+        if not required_params_passed(func=self.workflow_function, kwargs=kwargs):
+            raise ValueError(
+                "Provide values for all the workflow function parameters without default values."
+            )
+
+        self.build_graph(**kwargs)
+        result_webhook.send_draw_request(self)
 
     def __call__(self, *args, **kwargs):
         """Execute lattice as an ordinary function for testing purposes."""
