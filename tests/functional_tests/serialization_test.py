@@ -79,7 +79,7 @@ def test_electron_serialization():
     function_string = get_serialized_function_str(electron_function)
     expected_string = "\n".join(
         [
-            "@cova.electron(backend=executor)",
+            "@cova.electron(executor=executor)",
             "def electron_function(x):",
             "    return x",
         ]

@@ -74,7 +74,7 @@ _DEFAULT_CONFIG = {
 # Metadata which may influence execution behavior
 _DEFAULT_CONSTRAINT_VALUES = {"executor": "local"}
 
-# Going Forward we only want to return the backend field of DEFAULT_CONSTRAINT_VALUES
+# Going forward we may only want to return the executor field of DEFAULT_CONSTRAINT_VALUES
 # The rest of those parameters will now be in this dictionary
 _DEFAULT_CONSTRAINTS_DEPRECATED = {
     "schedule": False,

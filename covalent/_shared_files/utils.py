@@ -55,6 +55,7 @@ def reformat(t: int) -> str:
 
      Args:
          t: The integer to reformat.
+
      Returns:
          ref_string: The reformatted string.
     """
