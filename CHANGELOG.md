@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.25.1] - 2022-02-18
+
+### Fixed
+
+- Tracking imports that have been used in the workflow takes less time.
+
+### Added
+
+- User-imports are included in the dispatch_source.py script. Covalent-related imports are commented out.
+
 ## [0.25.0] - 2022-02-18
 
 ### Added

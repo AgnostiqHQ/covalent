@@ -45,6 +45,7 @@ if TYPE_CHECKING:
     from ..executor import BaseExecutor
 
 from .._shared_files.utils import (
+    get_imports,
     get_serialized_function_str,
     get_timedelta,
     required_params_passed,
@@ -81,6 +82,8 @@ class Lattice:
         self.post_processing = False
         self.kwargs = {}
         self.electron_outputs = {}
+        self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
+        self.cova_imports.update({"electron"})
 
     def set_metadata(self, name: str, value: Any) -> None:
         """
