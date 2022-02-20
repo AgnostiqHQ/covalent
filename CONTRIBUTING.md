@@ -447,7 +447,7 @@ Some important commands to know about:
 
 #### Mocking via `monkeypatch`
 
-This module is more straightforward and can be used to mock module variables, environment variables etc. Check out the official [monkeypatch documentation](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
+This module can be used to mock module variables, environment variables etc. Check out the official [monkeypatch documentation](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
 
 Contributor License Agreement
 =============================
