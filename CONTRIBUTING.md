@@ -442,8 +442,8 @@ Some important commands to know about:
 1. `mocker.patch` - allows mocking function calls, return values etc.
 2. The previous command combined with the parameter `side_effects` allows mocking return values for multiple calls of the mocked function. Furthermore, it allows mocking the outcome of `try / except` clauses.
 3. Some other commands used to check if a mocked function (`mocked_func`) has been called or called with particular arguments once are `mocked_func.assert_called_once()`, `mocked_func.assert_called_once_with(..)`.
-4. If a mocked function has been called multiple times within a function, it can be checked via `mocked_func.mock_calls`. Check out [this](https://stackoverflow.com/questions/59839192/python-pytest-mock-assert-has-calls)discussion on stackoverflow.
-5. Check out [this](https://stackoverflow.com/questions/28850070/python-mocking-a-context-manager) stackoverflow discussion on mocking context managers (such as `with open(..):` etc.).
+4. If a mocked function has been called multiple times within a function, it can be checked via `mocked_func.mock_calls`. Check out this [discussion](https://stackoverflow.com/questions/59839192/python-pytest-mock-assert-has-calls) on stackoverflow.
+5. Check out this [discussion](https://stackoverflow.com/questions/28850070/python-mocking-a-context-manager) on mocking context managers (such as `with open(..):` etc.).
 
 #### Mocking via `monkeypatch`
 
