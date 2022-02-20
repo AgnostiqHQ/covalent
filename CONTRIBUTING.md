@@ -388,20 +388,17 @@ guarantees all info, warning, error and critical messages will be shown. If this
 All feature changes and bug fixes should be accompanied by tests. Below, we list some important
 guidelines when writing tests.
 
-* Unless there is a good reason
-for it, write unit tests as opposed to integration or functional tests.
+* Write unit tests as opposed to integration or functional tests (unless there's a really good reason for it).
 
 * In the case of bug fixes, write tests for which the code breaks before implementing the bug fix.
 
-* Before implementing a feature, ensure that the design is such that the code is easily testable.
+When writing tests, consider the following questions as guiding principles:
 
-When writing tests, consider the following questions as guiding principles for writing good tests:
-
-1. Are these tests easily maintainable as the code implementation changes? - Try to minimize the number of tests that would need to be modified when an implementation is changed.
+1. Are these tests easily maintainable as the code is updated over time? - Try to minimize the number of tests that would need to be modified when an implementation is changed.
 2. Are these tests lightweight, i.e. not resource or time intensive? - Try to minimize test runtime and the number of operations that are carried out.
 3. Are these tests going to be helpful for debugging when a feature is added or modified?
 
-### Install test packages
+### Installing test packages
 When it comes to testing, `pytest` is the recommended framework for this repository.
 
 To install all packages relevant to testing,
@@ -409,20 +406,20 @@ To install all packages relevant to testing,
 1. Navigate to the `tests` folder in the Covalent root directory.
 2. Run `pip install -r requirements.txt`.
 
-### Run tests locally
+### Running tests locally
 
 The Covalent test suite can be run locally from the root directory with `pytest`. Add `-vv -s` for a more verbose setting.
 
 Running the entire test suite everytime the code has been updated will take a while. The following commands are useful to hone in on a smaller subset of tests for development purposes.
 
 1. To run a specific test module:
-```buildoutcfg
+```python
 pytest tests/covalent_dispatcher_tests/_executor/local_test.py -vv -s
 ```
 
 2. To run a specific test:
 
-```buildoutcfg
+```python
 pytest tests/electron_return_value_test.py::test_arithmetic_1_rev -vv -s
 ```
 
@@ -430,7 +427,7 @@ Note: In order to run some of the functional tests (which will eventually be dep
 
 ### Mocking
 
-Mocking is a very important part of writing proper unit tests. Scenarios where mocking is essential is listed below:
+Mocking is a very important part of writing proper unit tests. Scenarios where mocking is essential are listed below:
 
 1. Making server calls.
 2. Reading and writing to files.
@@ -438,14 +435,21 @@ Mocking is a very important part of writing proper unit tests. Scenarios where m
 4. Getting file or directory paths.
 5. If a function A is composed of functions B and C, the calls to functions B and C should be mocked. This ensures maintainability, since changes to functions B would then only require us to update the test for function B (instead of both A and B).
 
+For detailed documentation on mocking with pytest, look [here](https://pypi.org/project/pytest-mock/).
+
 #### Mocking via `mocker`
 
+Some important commands to know about:
+
+1. `mocker.patch` - allows mocking function calls, return values etc.
+2. The previous command combined with the parameter `side_effects` allows mocking return values for multiple calls of the mocked function. Furthermore, it allows mocking the outcome of `try / except` clauses.
+3. Some other commands used to check if a mocked function (`mocked_func`) has been called or called with particular arguments once are `mocked_func.assert_called_once()`, `mocked_func.assert_called_once_with(..)`.
+4. If a mocked function has been called multiple times within a function, it can be checked via `mocked_func.mock_calls`. Check out [this](https://stackoverflow.com/questions/59839192/python-pytest-mock-assert-has-calls) relevant discussion on stackoverflow.
+5. Check out [this](https://stackoverflow.com/questions/28850070/python-mocking-a-context-manager) stackoverflow discussion on mocking context managers (such as `with open(..):` etc.).
 
 #### Mocking via `monkeypatch`
 
-
-#### Other resources
-
+This module is more straightforward and can be used to mock module variables, environment variables etc. Check out the documentation [here](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
 
 Contributor License Agreement
 =============================
