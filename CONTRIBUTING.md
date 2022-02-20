@@ -399,16 +399,14 @@ When writing tests, consider the following questions as guiding principles:
 3. Are these tests going to be helpful for debugging when a feature is added or modified?
 
 ### Installing test packages
-When it comes to testing, `pytest` is the recommended framework for this repository.
-
-To install all packages relevant to testing,
+When it comes to testing, `pytest` is the recommended framework for this repository. Install all testing related packages with the following step:
 
 1. Navigate to the `tests` folder in the Covalent root directory.
 2. Run `pip install -r requirements.txt`.
 
 ### Running tests locally
 
-The Covalent test suite can be run locally from the root directory with `pytest`. Add `-vv -s` for a more verbose setting.
+The Covalent test suite can be run locally from the root directory with `pytest` (add the tags `-vv -s` for a more verbose setting).
 
 Running the entire test suite everytime the code has been updated will take a while. The following commands are useful to hone in on a smaller subset of tests for development purposes.
 
@@ -435,7 +433,7 @@ Mocking is a very important part of writing proper unit tests. Scenarios where m
 4. Getting file or directory paths.
 5. If a function A is composed of functions B and C, the calls to functions B and C should be mocked. This ensures maintainability, since changes to functions B would then only require us to update the test for function B (instead of both A and B).
 
-For detailed documentation on mocking with pytest, look [here](https://pypi.org/project/pytest-mock/).
+Check out the official [pytest documentation](https://pypi.org/project/pytest-mock/).
 
 #### Mocking via `mocker`
 
@@ -444,12 +442,12 @@ Some important commands to know about:
 1. `mocker.patch` - allows mocking function calls, return values etc.
 2. The previous command combined with the parameter `side_effects` allows mocking return values for multiple calls of the mocked function. Furthermore, it allows mocking the outcome of `try / except` clauses.
 3. Some other commands used to check if a mocked function (`mocked_func`) has been called or called with particular arguments once are `mocked_func.assert_called_once()`, `mocked_func.assert_called_once_with(..)`.
-4. If a mocked function has been called multiple times within a function, it can be checked via `mocked_func.mock_calls`. Check out [this](https://stackoverflow.com/questions/59839192/python-pytest-mock-assert-has-calls) relevant discussion on stackoverflow.
+4. If a mocked function has been called multiple times within a function, it can be checked via `mocked_func.mock_calls`. Check out [this](https://stackoverflow.com/questions/59839192/python-pytest-mock-assert-has-calls)discussion on stackoverflow.
 5. Check out [this](https://stackoverflow.com/questions/28850070/python-mocking-a-context-manager) stackoverflow discussion on mocking context managers (such as `with open(..):` etc.).
 
 #### Mocking via `monkeypatch`
 
-This module is more straightforward and can be used to mock module variables, environment variables etc. Check out the documentation [here](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
+This module is more straightforward and can be used to mock module variables, environment variables etc. Check out the official [monkeypatch documentation](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
 
 Contributor License Agreement
 =============================
