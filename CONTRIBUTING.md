@@ -395,23 +395,25 @@ for it, write unit tests as opposed to integration or functional tests.
 
 * Before implementing a feature, ensure that the design is such that the code is easily testable.
 
-### Install test packages
-The framework of choice for testing in this repo is `pytest`. Other relevant packages are:
-* `pytest-asyncio` - to test asynchronous code.
-* `pytest-mock` - to mock functions, server / API calls etc.
+When writing tests, consider the following questions as guiding principles for writing good tests:
 
-To install the packages relevant to testing,
+1. Are these tests easily maintainable as the code implementation changes? - Try to minimize the number of tests that would need to be modified when an implementation is changed.
+2. Are these tests lightweight, i.e. not resource or time intensive? - Try to minimize test runtime and the number of operations that are carried out.
+3. Are these tests going to be helpful for debugging when a feature is added or modified?
+
+### Install test packages
+When it comes to testing, `pytest` is the recommended framework for this repository.
+
+To install all packages relevant to testing,
 
 1. Navigate to the `tests` folder in the Covalent root directory.
-2. Run `pip install -r requirements.txt`
+2. Run `pip install -r requirements.txt`.
 
 ### Run tests locally
 
-The test suite for covalent can be run locally from the root directory using `pytest -v`
-or, `pytest -vv -s` for a more verbose setting.
+The Covalent test suite can be run locally from the root directory with `pytest`. Add `-vv -s` for a more verbose setting.
 
-Running the entire test suite will take a while and for the purpose of development, focus on a
-smaller subset of tests.
+Running the entire test suite everytime the code has been updated will take a while. The following commands are useful to hone in on a smaller subset of tests for development purposes.
 
 1. To run a specific test module:
 ```buildoutcfg
@@ -424,13 +426,25 @@ pytest tests/covalent_dispatcher_tests/_executor/local_test.py -vv -s
 pytest tests/electron_return_value_test.py::test_arithmetic_1_rev -vv -s
 ```
 
-### Mocking via `mocker`
+Note: In order to run some of the functional tests (which will eventually be deprecated), the covalent dispatcher needs to be started in developer mode (discussed in _First Steps_ section).
+
+### Mocking
+
+Mocking is a very important part of writing proper unit tests. Scenarios where mocking is essential is listed below:
+
+1. Making server calls.
+2. Reading and writing to files.
+3. Getting environment variable values.
+4. Getting file or directory paths.
+5. If a function A is composed of functions B and C, the calls to functions B and C should be mocked. This ensures maintainability, since changes to functions B would then only require us to update the test for function B (instead of both A and B).
+
+#### Mocking via `mocker`
 
 
-### Mocking via `monkeypatch`
+#### Mocking via `monkeypatch`
 
 
-### Other resources
+#### Other resources
 
 
 Contributor License Agreement
