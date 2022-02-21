@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `backend` metadata name changed to `executor`.
 - `_plan_workflow` usage updated to reflect how that executor related information is now stored in the specific executor object.
-- Updated tests to relect the above changes.
+- Updated tests to reflect the above changes.
+- Also reverted the cancellation test since it did not provide a robust solution and started taking 10 minutes to run.
 
 ### Removed
 
