@@ -34,7 +34,7 @@ class Lepton(Electron):
 
     def wrap_function(self) -> Callable:
         def wrapper(*args, **kwargs) -> Any:
-            if kwargs:
+            if kwargs and self.language not in ["Python", "python"]:
                 app_log.critical(
                     f"Keyword arguments are not supported when calling {self.function}."
                 )
@@ -46,7 +46,7 @@ class Lepton(Electron):
                 try:
                     handle = CDLL(self.library_name)
                 except OSError:
-                    app_log.critical(f"Could not open {self.library_name}.")
+                    app_log.warning(f"Could not open {self.library_name}.")
                     sys.exit(1)
 
                 entrypoint = self.function_name
@@ -88,15 +88,33 @@ class Lepton(Electron):
                         return_vals.append(arg.contents.value)
                     # This is a list or array
                     elif hasattr(arg, "__getitem__"):
-                        return [x.value for x in arg]
+                        return_vals.append([x.value for x in arg])
                     else:
                         app_log.error("Unexpected error.")
                         sys.exit(5)
+            elif self.language in ["Python", "python"]:
+                import importlib
+
+                try:
+                    module = importlib.import_module(self.library_name)
+                except ModuleNotFoundError:
+                    app_log.warning(f"Could not import the module '{self.library_name}'.")
+                    return
+
+                try:
+                    func = getattr(module, self.function_name)
+                except AttributeError:
+                    app_log.warning(
+                        f"Could not find the function '{self.function_name}' in '{self.library_name}'."
+                    )
+                    return
+
+                return func(*args, **kwargs)
             else:
-                app_log.error("Language not supported!")
+                app_log.warning("Language not supported!")
                 sys.exit(2)
 
-            if len(return_vals) == 0:
+            if not return_vals:
                 return None
             elif len(return_vals) == 1:
                 return return_vals[0]
@@ -116,6 +134,8 @@ lep = Lepton(
     "test_entry",
     [(POINTER(c_int32), Lepton.INPUT_OUTPUT)],
 )
+
+lep2 = Lepton("python", "test2", "test_entry2")
 
 ###########
 # Below is what we want to abstract
@@ -158,4 +178,5 @@ if __name__ == "__main__":
     # result = ct.get_result(dispatch_id, wait=True).result
     # print(result)
 
-    print(lep(1))
+    # print(lep(1))
+    print(lep2(1, y=2))
