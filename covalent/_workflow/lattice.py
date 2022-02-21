@@ -137,15 +137,15 @@ class Lattice:
             )
 
         self.kwargs = kwargs
-        with redirect_stdout(open(os.devnull, "w")):
-            with active_lattice_manager.claim(self):
-                try:
-                    self.workflow_function(**kwargs)
-                except Exception:
-                    warnings.warn(
-                        "Please make sure you are not manipulating an object inside the lattice."
-                    )
-                    raise
+        # with redirect_stdout(open(os.devnull, "w")):
+        with active_lattice_manager.claim(self):
+            try:
+                self.workflow_function(**kwargs)
+            except Exception:
+                warnings.warn(
+                    "Please make sure you are not manipulating an object inside the lattice."
+                )
+                raise
 
     def draw(self, ax: plt.Axes = None, *args, **kwargs) -> None:
         """
