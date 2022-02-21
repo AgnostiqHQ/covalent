@@ -20,7 +20,7 @@
 
 
 from dataclasses import dataclass
-from typing import Any, Dict, NamedTuple
+from typing import NamedTuple
 
 
 @dataclass
