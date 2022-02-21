@@ -77,10 +77,9 @@ class LocalExecutor(BaseExecutor):
         ) as stdout, redirect_stderr(io.StringIO()) as stderr:
 
             if self.conda_env != "":
-                success = False
                 result = None
 
-                success, result = self.execute_in_conda_env(
+                result = self.execute_in_conda_env(
                     function,
                     kwargs,
                     self.conda_env,
