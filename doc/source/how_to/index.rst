@@ -9,10 +9,12 @@ These are practical step-by-step guides to help you achieve a specific goal. The
 Orchestration
 *******************
 - :doc:`How to construct an electron <./orchestration/construct_electron>`
+- :doc:`How to construct a lepton <./orchestration/construct_lepton>`
 - :doc:`How to construct a lattice <./orchestration/construct_lattice>`
 - :doc:`How to add an electron to lattice <./orchestration/add_electron_to_lattice>`
 - :doc:`How to visualize the lattice <./orchestration/visualize_lattice>`
 - :doc:`How to add constraints to lattices <./orchestration/add_constraints_to_lattice>`
+- :doc:`How to construct leptons using C code <./orchestration/construct_c_task>`
 
 
 Execution
