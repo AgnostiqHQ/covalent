@@ -369,12 +369,12 @@ The workflow defined in the :ref:`lattice<Lattice>` subsection uses the electron
 .. code-block:: python
     :linenos:
 
-    @ct.electron(backend=quantum_executor)
+    @ct.electron(executor=quantum_executor)
     def task_1(**params):
         ...
         return val
 
-    @ct.electron(backend=gpu_executor)
+    @ct.electron(executor=gpu_executor)
     def task_2(**params):
         ...
         return val

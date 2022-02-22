@@ -30,7 +30,7 @@ COVA_IMPORTS = {"covalent", "lattice", "electron", "ct", "cova", "etron"}
 INPUT1 = "\n".join(
     [
         "@covalent.electron(",
-        '    backend="local"',
+        '    executor="local"',
         ")",
         "def identity(x):",
         "    return x",
@@ -38,7 +38,7 @@ INPUT1 = "\n".join(
         "@covalent.electron",
         "@covalent.lattice",
         "@covalent.electron(",
-        '    backend="local"',
+        '    executor="local"',
         ")",
         "def double(x):",
         "    return 2*x",
@@ -54,7 +54,7 @@ INPUT6 = INPUT1.replace("ct.lattice", "lattice")
 OUTPUT1 = "\n".join(
     [
         "# @covalent.electron(",
-        '#     backend="local"',
+        '#     executor="local"',
         "# )",
         "def identity(x):",
         "    return x",
@@ -62,7 +62,7 @@ OUTPUT1 = "\n".join(
         "# @covalent.electron",
         "# @covalent.lattice",
         "# @covalent.electron(",
-        '#     backend="local"',
+        '#     executor="local"',
         "# )",
         "def double(x):",
         "    return 2*x",

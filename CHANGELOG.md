@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.2] - 2022-02-21
+
+### Changed
+
+- `backend` metadata name changed to `executor`.
+- `_plan_workflow` usage updated to reflect how that executor related information is now stored in the specific executor object.
+- Updated tests to reflect the above changes.
+- Improved the dispatch cancellation test to provide a robust solution which earlier took 10 minutes to run with uncertainty of failing every now and then.
+
+### Removed
+
+- Removed `TaskExecutionMetadata` as a consequence of removing `execution_args`.
+
 ## [0.25.1] - 2022-02-18
 
 ### Fixed
@@ -220,6 +233,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI: display error message on failed status for lattice and electron
 
 ### Changed
+
 - UI: re-order sidebar sections according to latest figma designs
 - UI: update favicon
 - UI: remove dispatch id from tab title
@@ -227,6 +241,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI: adjust theme text primary and secondary colors
 
 ### Fixed
+
 - UI: auto-refresh result state on initial render of listing and graph pages
 - UI: graph layout issues: truncate long electron/param names
 
