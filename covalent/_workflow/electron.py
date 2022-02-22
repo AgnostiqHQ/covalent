@@ -29,6 +29,7 @@ from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     _DEFAULT_CONSTRAINT_VALUES,
+    arg_prefix,
     attr_prefix,
     electron_dict_prefix,
     electron_list_prefix,
@@ -329,7 +330,18 @@ class Electron:
 
         # Merging the args to kwargs to maintain consistency throughout the code
         if self.function:
-            kwargs.update(dict(zip(list(inspect.signature(self.function).parameters), args)))
+            func_params = dict(inspect.signature(self.function).parameters)
+
+            # Explicit args
+            # TODO: Need to add func prefix here as well
+            kwargs.update(dict(zip(list(func_params), args)))
+
+            # Append args
+            if "args" in func_params:
+                kwargs.update(dict(zip([f"{arg_prefix}{idx}" for idx in range(len(args))], args)))
+                del kwargs["args"]
+            if "kwargs" in kwargs:
+                del kwargs["kwargs"]
 
         if active_lattice.post_processing:
             return active_lattice.electron_outputs.pop(0)
