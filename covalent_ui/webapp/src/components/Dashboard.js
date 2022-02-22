@@ -21,25 +21,17 @@
  */
 
 import _ from 'lodash'
-import {
-  AppBar,
-  Container,
-  Link,
-  Paper,
-  Typography,
-  Toolbar,
-  Divider,
-} from '@mui/material'
+import { Container, Paper, Typography, Divider } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { createSelector } from '@reduxjs/toolkit'
 import { differenceInSeconds, isValid, parseISO } from 'date-fns'
 
-import ResultListing from './results/ResultListing'
-import { ReactComponent as Logo } from '../assets/covalent-full-logo.svg'
+import ResultListing from './dispatches/ResultListing'
 import { Box } from '@mui/system'
-import CopyButton from './CopyButton'
-import { humanize } from './results/Runtime'
+import CopyButton from './common/CopyButton'
+import { humanize } from './dispatches/Runtime'
 import { displayStatus } from '../utils/misc'
+import NavDrawer from './common/NavDrawer'
 
 const selectResultsCache = (state) => state.results.cache
 
@@ -114,57 +106,53 @@ const Dashboard = () => {
   const stats = useSelector(selectJobStats)
 
   return (
-    <Container maxWidth="xl" sx={{ mb: 4 }}>
-      <AppBar position="static" color="transparent" sx={{ my: 3 }}>
-        <Toolbar disableGutters>
-          <Link href="/">
-            <Logo />
-          </Link>
-        </Toolbar>
-      </AppBar>
+    <Box sx={{ display: 'flex' }}>
+      <NavDrawer />
 
-      <Paper elevation={0} sx={{ p: 3, mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography fontSize="h5.fontSize">Dispatch list</Typography>
+      <Container maxWidth="xl" sx={{ mb: 4, mt: 7 }}>
+        <Paper elevation={0} sx={{ p: 3, mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography fontSize="h5.fontSize">Dispatch list</Typography>
 
-          {dispatcherAddress && (
-            <>
-              <Typography sx={{ ml: 'auto' }} color="text.secondary">
-                {dispatcherAddress}
-              </Typography>
+            {dispatcherAddress && (
+              <>
+                <Typography sx={{ ml: 'auto' }} color="text.secondary">
+                  {dispatcherAddress}
+                </Typography>
 
-              <CopyButton
-                sx={{ ml: 1 }}
-                size="small"
-                content={dispatcherAddress}
-                title="Copy dispatcher address"
-              />
-            </>
-          )}
-        </Box>
+                <CopyButton
+                  sx={{ ml: 1 }}
+                  size="small"
+                  content={dispatcherAddress}
+                  title="Copy dispatcher address"
+                />
+              </>
+            )}
+          </Box>
 
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-around' }}>
-          <DashboardCard content={stats.running} desc="Total jobs running" />
-          <DashboardDivider />
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-around' }}>
+            <DashboardCard content={stats.running} desc="Total jobs running" />
+            <DashboardDivider />
 
-          <DashboardCard content={stats.done} desc="Total jobs done" />
-          <DashboardDivider />
+            <DashboardCard content={stats.done} desc="Total jobs done" />
+            <DashboardDivider />
 
-          <DashboardCard
-            content={displayStatus(_.get(stats, 'latest.status')) || 'N/A'}
-            desc="Latest running task status"
-          />
-          <DashboardDivider />
+            <DashboardCard
+              content={displayStatus(_.get(stats, 'latest.status')) || 'N/A'}
+              desc="Latest running task status"
+            />
+            <DashboardDivider />
 
-          <DashboardCard
-            content={humanize(stats.duration * 1000)}
-            desc="Total dispatcher duration"
-          />
-        </Box>
-      </Paper>
+            <DashboardCard
+              content={humanize(stats.duration * 1000)}
+              desc="Total dispatcher duration"
+            />
+          </Box>
+        </Paper>
 
-      <ResultListing />
-    </Container>
+        <ResultListing />
+      </Container>
+    </Box>
   )
 }
 

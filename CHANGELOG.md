@@ -5,6 +5,66 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.1] - 2022-02-18
+
+### Fixed
+
+- Tracking imports that have been used in the workflow takes less time.
+
+### Added
+
+- User-imports are included in the dispatch_source.py script. Covalent-related imports are commented out.
+
+## [0.25.0] - 2022-02-18
+
+### Added
+
+- UI: Lattice draw() method displays in web UI
+- UI: New navigation panel
+
+### Changed
+
+- UI: Animated graph changes, panel opacity
+
+### Fixed
+
+- UI: Fixed "Not Found" pages
+
+## [0.24.21] - 2022-02-18
+
+### Added
+
+- RST document describing the expectations from a tutorial.
+
+## [0.24.20] - 2022-02-17
+
+### Added
+
+- Added how to create custom executors
+
+### Changed
+
+- Changed the description of the hyperlink for choosing executors
+- Fixed typos in doc/source/api/getting_started/how_to/execution/creating_custom_executors.ipynb
+
+## [0.24.19] - 2022-02-16
+
+### Added
+
+- CODEOWNERS for certain files.
+
+## [0.24.18] - 2022-02-15
+
+### Added
+
+- The user configuration file can now specify an executor plugin directory.
+
+## [0.24.17] - 2022-02-15
+
+### Added
+
+- Added a how-to for making custom executors.
+
 ## [0.24.16] - 2022-02-12
 
 ### Added
