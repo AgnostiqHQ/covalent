@@ -154,7 +154,7 @@ def required_params_passed(func: Callable, **kwargs) -> bool:
 
     required_arg_set = set({})
     sig = inspect.signature(func)
-    # app_log.warning(f"SIG: {sig.parameters.values()}")
+    app_log.warning(f"SIG: {sig.parameters.values()}")
     for idx, param in enumerate(sig.parameters.values()):
         # app_log.warning(f"DEFAULT: {param.default}")
         # app_log.warning(f"KIND: {param.kind}")
@@ -164,7 +164,8 @@ def required_params_passed(func: Callable, **kwargs) -> bool:
                 required_arg_set.add(f"{arg_prefix}{idx}")
             elif param.kind == param.KEYWORD_ONLY:
                 required_arg_set.add(str(param))
-    # app_log.warning(f"REQ: {required_arg_set}")
+    app_log.warning(f"REQ: {required_arg_set}")
+    app_log.warning(f"KWARGS: {kwargs}")
 
     return required_arg_set.issubset(set(kwargs.keys()))
 
