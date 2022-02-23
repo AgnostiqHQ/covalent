@@ -94,14 +94,3 @@ This Command Line Interface (CLI) tool is used to manage Covalent's dispatch and
     :prog: covalent
     :commands: start,stop,restart,status,purge
     :nested: full
-
-.. _local_executor:
-
-Local Executor
-"""""""""""""""""""""""""""
-
-Executing tasks (electrons) directly on the local machine
-
-.. autoclass:: covalent.executor.executor_plugins.local.LocalExecutor
-    :members:
-    :inherited-members:
