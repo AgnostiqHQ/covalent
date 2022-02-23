@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Electrons can now support unnamed args and kwargs in their definitions
+- Unnamed args are assigned names using a special prefix
+- `required_params_passed` now used inside `build_graph`
 
 ## [0.25.2] - 2022-02-21
 

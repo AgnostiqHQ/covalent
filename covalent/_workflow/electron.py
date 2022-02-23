@@ -59,19 +59,16 @@ class Electron:
         function: Function to be executed.
         node_id: Node id of the electron.
         metadata: Metadata to be used for the function execution.
-        args: Non-keyword arguments if any.
         kwargs: Keyword arguments if any.
     """
 
     def __init__(
-        self, function: Callable, node_id: int = None, metadata: dict = {}, *args, **kwargs
+        self, function: Callable, node_id: int = None, metadata: dict = {}, **kwargs
     ) -> None:
         self.function = function
         self.node_id = node_id
         self.metadata = metadata
         self.kwargs = kwargs
-
-        merge_args_with_kwargs(*args, **kwargs)
 
     def set_metadata(self, name: str, value: Any) -> None:
         """
@@ -331,7 +328,7 @@ class Electron:
 
         # Merging the args to kwargs to maintain consistency throughout the code
         if self.function:
-            merge_args_with_kwargs(*args, **kwargs)
+            kwargs = merge_args_with_kwargs(*args, **kwargs)
 
         if active_lattice.post_processing:
             return active_lattice.electron_outputs.pop(0)

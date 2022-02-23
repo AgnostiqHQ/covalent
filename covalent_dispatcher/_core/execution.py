@@ -44,6 +44,7 @@ from covalent._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
+from covalent._shared_files.utils import separate_args_and_kwargs
 from covalent._workflow.lattice import Lattice
 from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
@@ -133,7 +134,8 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
         lattice.electron_outputs = ordered_node_outputs
-        result = lattice.workflow_function(**lattice.kwargs)
+        args, kwargs = separate_args_and_kwargs(**lattice.kwargs)
+        result = lattice.workflow_function(*args, **kwargs)
         lattice.post_processing = False
         return result
 

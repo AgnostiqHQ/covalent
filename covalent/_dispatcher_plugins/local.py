@@ -29,6 +29,7 @@ import requests
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
+from .._shared_files.logger import app_log
 from .._shared_files.utils import merge_args_with_kwargs
 from .._workflow.lattice import Lattice
 from .base import BaseDispatcher
@@ -78,10 +79,7 @@ class LocalDispatcher(BaseDispatcher):
 
             lattice = deepcopy(orig_lattice)
 
-            if lattice.workflow_function:
-                merge_args_with_kwargs(*args, **kwargs)
-
-            lattice.build_graph(**kwargs)
+            lattice.build_graph(*args, **kwargs)
 
             # Serializing the transport graph and then passing it to the Result object
             lattice.transport_graph = lattice.transport_graph.serialize()

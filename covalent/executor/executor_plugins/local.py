@@ -31,6 +31,7 @@ from typing import Any
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import logger
 from covalent._shared_files.util_classes import DispatchInfo
+from covalent._shared_files.utils import separate_args_and_kwargs
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import BaseExecutor
 
@@ -71,6 +72,7 @@ class LocalExecutor(BaseExecutor):
         """
 
         dispatch_info = DispatchInfo(dispatch_id)
+        args, kwargs = separate_args_and_kwargs(**kwargs)
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()
@@ -89,7 +91,7 @@ class LocalExecutor(BaseExecutor):
 
             else:
                 fn = function.get_deserialized()
-                result = fn(**kwargs)
+                result = fn(*args, **kwargs)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),

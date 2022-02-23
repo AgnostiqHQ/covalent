@@ -38,7 +38,9 @@ from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .._shared_files.utils import (
+    get_imports,
     get_serialized_function_str,
+    get_timedelta,
     merge_args_with_kwargs,
     required_params_passed,
 )
@@ -47,13 +49,6 @@ from .transport import _TransportGraph
 if TYPE_CHECKING:
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
-
-from .._shared_files.utils import (
-    get_imports,
-    get_serialized_function_str,
-    get_timedelta,
-    required_params_passed,
-)
 
 consumable_constraints = []
 
@@ -142,14 +137,20 @@ class Lattice:
         self.transport_graph.reset()
 
         # Positional args are converted to kwargs
-        if self.workflow_function:
-            merge_args_with_kwargs(*args, **kwargs)
-
         self.kwargs = kwargs
+        if self.workflow_function:
+            self.kwargs = merge_args_with_kwargs(*args, **kwargs)
+
+        # Validate arguments
+        if not required_params_passed(self.workflow_function, **self.kwargs):
+            raise ValueError(
+                "Provide values for all the workflow function parameters without default values."
+            )
+
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    self.workflow_function(**kwargs)
+                    self.workflow_function(*args, **kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
@@ -172,16 +173,7 @@ class Lattice:
             None
         """
 
-        # Positional args are converted to kwargs
-        if self.workflow_function:
-            merge_args_with_kwargs(*args, **kwargs)
-
-        if required_params_passed(func=self.workflow_function, kwargs=kwargs):
-            self.build_graph(**kwargs)
-        else:
-            raise ValueError(
-                "Provide values for all the workflow function parameters without default values."
-            )
+        self.build_graph(*args, **kwargs)
 
         main_graph = self.transport_graph.get_internal_graph_copy()
 
@@ -228,16 +220,7 @@ class Lattice:
             None
         """
 
-        # Positional args are converted to kwargs
-        if self.workflow_function:
-            merge_args_with_kwargs(*args, **kwargs)
-
-        if not required_params_passed(func=self.workflow_function, kwargs=kwargs):
-            raise ValueError(
-                "Provide values for all the workflow function parameters without default values."
-            )
-
-        self.build_graph(**kwargs)
+        self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
 
     def __call__(self, *args, **kwargs):

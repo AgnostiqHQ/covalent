@@ -141,7 +141,7 @@ def get_imports(func: Callable) -> Tuple[str, Set[str]]:
     return imports_str, cova_imports
 
 
-def required_params_passed(func: Callable, kwargs: Dict) -> bool:
+def required_params_passed(func: Callable, **kwargs) -> bool:
     """Check to see that values for all parameters without default values have been passed.
 
     Args:
@@ -154,19 +154,30 @@ def required_params_passed(func: Callable, kwargs: Dict) -> bool:
 
     required_arg_set = set({})
     sig = inspect.signature(func)
-    for param in sig.parameters.values():
+    # app_log.warning(f"SIG: {sig.parameters.values()}")
+    for idx, param in enumerate(sig.parameters.values()):
+        # app_log.warning(f"DEFAULT: {param.default}")
+        # app_log.warning(f"KIND: {param.kind}")
+        # app_log.warning(f"IDX: {idx}")
         if param.default is param.empty:
-            required_arg_set.add(str(param))
+            if param.kind == param.POSITIONAL_ONLY or param.kind == param.POSITIONAL_OR_KEYWORD:
+                required_arg_set.add(f"{arg_prefix}{idx}")
+            elif param.kind == param.KEYWORD_ONLY:
+                required_arg_set.add(str(param))
+    # app_log.warning(f"REQ: {required_arg_set}")
 
     return required_arg_set.issubset(set(kwargs.keys()))
 
 
-def merge_args_with_kwargs(*args, **kwargs) -> None:
-    kwargs.update(dict(zip([f"{arg_prefix}{idx}" for idx in range(len(args))], args)))
+def merge_args_with_kwargs(*args, **kwargs) -> Dict:
+    merged_kwargs = dict(zip([f"{arg_prefix}{idx}" for idx in range(len(args))], args))
+    merged_kwargs.update(kwargs)
+
+    return merged_kwargs
 
 
 def separate_args_and_kwargs(**kwargs) -> Tuple[List, Dict]:
-    args = [v for k, v in kwargs.items() if k.startswith(arg_prefix)]
-    kwargs = kwargs[len(args) :]
+    args = tuple([v for k, v in kwargs.items() if k.startswith(arg_prefix)])
+    unmerged_kwargs = {k: kwargs[k] for k in kwargs.keys() if not k.startswith(arg_prefix)}
 
-    return args, kwargs
+    return args, unmerged_kwargs
