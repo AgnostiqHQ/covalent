@@ -67,7 +67,7 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
                        info including the results.
 
     Returns:
-        inputs: Input dictionary to be passed to the task containing kwargs
+        inputs: Input dictionary to be passed to the task containing args, kwargs,
                 and any parent node execution results if present.
     """
 
@@ -76,7 +76,7 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
             result_object.lattice.transport_graph.get_node_value(parent, "output")
             for parent in result_object.lattice.transport_graph.get_dependencies(node_id)
         ]
-        task_input = {"x": values}
+        task_input = {"args": [], "kwargs": {"x": values}}
     elif node_name.startswith(electron_dict_prefix):
         values = {}
         for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
@@ -85,15 +85,26 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
             )
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
             values[key] = value
-        task_input = {"x": values}
+        task_input = {"args": [], "kwargs": {"x": values}}
     else:
-        task_input = {}
+        task_input = {"args": [], "kwargs": {}}
         for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-            key = result_object.lattice.transport_graph.get_edge_value(
-                parent, node_id, "edge_name"
+            param_type = result_object.lattice.transport_graph.get_edge_value(
+                parent, node_id, "param_type"
             )
+
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
-            task_input[key] = value
+
+            if param_type == "arg":
+                task_input["args"].append(value)
+
+            elif param_type == "kwarg":
+                key = result_object.lattice.transport_graph.get_edge_value(
+                    parent, node_id, "edge_name"
+                )
+
+                task_input["kwargs"][key] = value
+
     return task_input
 
 
@@ -135,7 +146,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
         lattice.electron_outputs = ordered_node_outputs
-        result = lattice.workflow_function(**lattice.kwargs)
+        result = lattice.workflow_function(*lattice.args, **lattice.kwargs)
         lattice.post_processing = False
         return result
 
@@ -206,7 +217,7 @@ def _run_task(
 
         if node_name.startswith(sublattice_prefix):
             func = serialized_callable.get_deserialized()
-            sublattice_result = dispatch_sync(func)(**inputs)
+            sublattice_result = dispatch_sync(func)(*inputs["args"], **inputs["kwargs"])
             output = sublattice_result.result
 
             end_time = datetime.now(timezone.utc)
@@ -225,7 +236,8 @@ def _run_task(
         else:
             output, stdout, stderr = executor.execute(
                 serialized_callable,
-                inputs,
+                inputs["args"],
+                inputs["kwargs"],
                 result_object.dispatch_id,
                 result_object.results_dir,
                 node_id,
