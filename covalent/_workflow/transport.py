@@ -147,14 +147,14 @@ class _TransportGraph:
         )
         return node_id
 
-    def add_edge(self, x: int, y: int, variable: Any) -> None:
+    def add_edge(self, x: int, y: int, edge_name: Any) -> None:
         """
-        Add an edge to the graph and assigns a variable to it.
+        Adds an edge to the graph and assigns a name to it.
 
         Args:
             x: The node id for first node.
             y: The node id for second node.
-            variable: The variable to be assigned to the edge.
+            edge_name: The name to be assigned to the edge.
 
         Returns:
             None
@@ -163,7 +163,7 @@ class _TransportGraph:
             ValueError: If the edge already exists.
         """
 
-        self._graph.add_edge(x, y, variable=variable)
+        self._graph.add_edge(x, y, edge_name=edge_name)
 
     def reset(self) -> None:
         """

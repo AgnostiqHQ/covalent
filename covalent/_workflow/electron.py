@@ -363,9 +363,9 @@ class Electron:
 
     def connect_node_with_others(
         self,
-        some_value: Union[Any, "Electron"],
+        param_name: str,
+        param_value: Union[Any, "Electron"],
         node_id: int,
-        key: str,
         transport_graph: "_TransportGraph",
     ):
         """
@@ -381,38 +381,37 @@ class Electron:
             None
         """
 
-        if isinstance(some_value, Electron):
-            transport_graph.add_edge(some_value.node_id, node_id, variable=key)
+        if isinstance(param_value, Electron):
+            transport_graph.add_edge(param_value.node_id, node_id, variable=param_name)
 
-        elif isinstance(some_value, list):
+        elif isinstance(param_value, list):
             list_node = self.add_collection_node_to_graph(
-                transport_graph, electron_list_prefix, key, some_value
+                transport_graph, electron_list_prefix, param_name, param_value
             )
 
-            for v in some_value:
-                self.connect_node_with_others(v, list_node, key, transport_graph)
+            for v in param_value:
+                self.connect_node_with_others(v, list_node, param_name, transport_graph)
 
-            transport_graph.add_edge(list_node, node_id, variable=key)
+            transport_graph.add_edge(list_node, node_id, variable=param_name)
 
-        elif isinstance(some_value, dict):
+        elif isinstance(param_value, dict):
             dict_node = self.add_collection_node_to_graph(
-                transport_graph, electron_dict_prefix, key, some_value
+                transport_graph, electron_dict_prefix, param_name, param_value
             )
 
-            for k, v in some_value.items():
+            for k, v in param_value.items():
                 self.connect_node_with_others(v, dict_node, k, transport_graph)
 
-            transport_graph.add_edge(dict_node, node_id, variable=key)
+            transport_graph.add_edge(dict_node, node_id, variable=param_name)
 
         else:
-            parameter_dict = {key: some_value}
+            parameter_dict = {param_name: param_value}
             parameter_node = transport_graph.add_node(
-                kwargs=parameter_dict,
-                name=parameter_prefix + str(some_value),
+                name=parameter_prefix + str(param_value),
                 function=None,
                 metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
             )
-            transport_graph.add_edge(parameter_node, node_id, variable=key)
+            transport_graph.add_edge(parameter_node, node_id, edge_name=param_name)
 
     def add_collection_node_to_graph(
         self, graph: "_TransportGraph", prefix: str, key: str, value: Iterable
