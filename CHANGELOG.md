@@ -5,12 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.3] - 2022-02-23
+## [WIP]
 
 ## Added
 
 - Conda installation is only supported for Linux in the `Getting Started` guide.
 - MNIST classifier tutorial.
+
+## [0.26.1] - 2022-02-23
+
+### Added
+
+- Added Local Executor section to the API read the docs.
+
+## [0.26.0] - 2022-02-23
+
+### Added
+
+- Automated reminders to update the changelog
+
+## [0.25.3] - 2022-02-23
+
+## Added
+
+- Listed common mocking commands in the CONTRIBUTING.md guide.
+- Additional guidelines on testing.
 
 ## [0.25.2] - 2022-02-21
 
