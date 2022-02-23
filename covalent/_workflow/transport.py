@@ -131,6 +131,7 @@ class _TransportGraph:
             name: The name of the node.
             function: The function to be executed.
             metadata: The metadata of the node.
+            attr: Any other attributes that need to be added to the node.
 
         Returns:
             node_key: The node id.

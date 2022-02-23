@@ -158,3 +158,29 @@ def required_params_passed(func: Callable, kwargs: Dict) -> bool:
             required_arg_set.add(str(param))
 
     return required_arg_set.issubset(set(kwargs.keys()))
+
+
+def get_named_params(func, args, kwargs):
+    ordered_params_dict = inspect.signature(func).parameters
+    named_args = {}
+    named_kwargs = {}
+
+    for ind, parameter_dict in enumerate(ordered_params_dict.items()):
+
+        param_name, param = parameter_dict
+
+        if param.kind in [param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD]:
+            if param_name in kwargs:
+                named_kwargs[param_name] = kwargs[param_name]
+            else:
+                named_args[param_name] = args[ind]
+        elif param.kind == param.VAR_POSITIONAL:
+            for i in range(ind, len(args)):
+                named_args[f"arg[{i}]"] = args[i]
+
+        elif param.kind in [param.KEYWORD_ONLY, param.VAR_KEYWORD]:
+            for key, value in kwargs.items():
+                if key != param_name:
+                    named_kwargs[key] = value
+
+    return (named_args, named_kwargs)

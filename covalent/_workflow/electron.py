@@ -345,12 +345,10 @@ class Electron:
             else self.function.__name__,
             function=self.function,
             metadata=self.metadata.copy(),
+            function_string=get_serialized_function_str(self.function),
         )
 
-        # Add function string
-        active_lattice.transport_graph.set_node_value(
-            self.node_id, "function_string", get_serialized_function_str(self.function)
-        )
+        args_keys = [inspect.signature(self.workflow_function).parameters]
 
         for key, value in kwargs.items():
             self.connect_node_with_others(value, self.node_id, key, active_lattice.transport_graph)
@@ -362,40 +360,6 @@ class Electron:
             *args,
             **kwargs,
         )
-
-    def add_collection_node_to_graph(
-        self, graph: "_TransportGraph", prefix: str, key: str, value: Iterable
-    ) -> int:
-        """
-        Adds the node to lattice's transport graph in the case
-        where a collection of electrons is passed as an argument
-        to another electron.
-
-        Args:
-            graph: Transport graph of the lattice
-            prefix: Prefix of the node
-            key: Key of the node kwargs
-            value: Value of the node kwargs
-
-        Returns:
-            node_id: Node id of the added node
-        """
-
-        @electron
-        def to_electron_collection(**x):
-            return list(x.values())[0]
-
-        node_id = graph.add_node(
-            name=prefix,
-            function=to_electron_collection,
-            metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-        )
-
-        graph.set_node_value(
-            node_id, "function_string", get_serialized_function_str(to_electron_collection)
-        )
-
-        return node_id
 
     def connect_node_with_others(
         self,
@@ -449,6 +413,37 @@ class Electron:
                 metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
             )
             transport_graph.add_edge(parameter_node, node_id, variable=key)
+
+    def add_collection_node_to_graph(
+        self, graph: "_TransportGraph", prefix: str, key: str, value: Iterable
+    ) -> int:
+        """
+        Adds the node to lattice's transport graph in the case
+        where a collection of electrons is passed as an argument
+        to another electron.
+
+        Args:
+            graph: Transport graph of the lattice
+            prefix: Prefix of the node
+            key: Key of the node kwargs
+            value: Value of the node kwargs
+
+        Returns:
+            node_id: Node id of the added node
+        """
+
+        @electron
+        def to_electron_collection(**x):
+            return list(x.values())[0]
+
+        node_id = graph.add_node(
+            name=prefix,
+            function=to_electron_collection,
+            metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+            function_string=get_serialized_function_str(to_electron_collection),
+        )
+
+        return node_id
 
 
 def electron(
