@@ -142,11 +142,10 @@ class Lattice:
             self.kwargs = merge_args_with_kwargs(*args, **kwargs)
 
         # Validate arguments
-        # TODO: This breaks a bunch of tests
-        # if not required_params_passed(self.workflow_function, **self.kwargs):
-        #    raise ValueError(
-        #        "Provide values for all the workflow function parameters without default values."
-        #    )
+        if not required_params_passed(self.workflow_function, **self.kwargs):
+            raise ValueError(
+                "Provide values for all the workflow function parameters without default values."
+            )
 
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):

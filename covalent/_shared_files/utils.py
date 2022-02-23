@@ -154,20 +154,19 @@ def required_params_passed(func: Callable, **kwargs) -> bool:
 
     required_arg_set = set({})
     sig = inspect.signature(func)
-    app_log.warning(f"SIG: {sig.parameters.values()}")
+    has_flexible_reqs = True
     for idx, param in enumerate(sig.parameters.values()):
-        # app_log.warning(f"DEFAULT: {param.default}")
-        # app_log.warning(f"KIND: {param.kind}")
-        # app_log.warning(f"IDX: {idx}")
         if param.default is param.empty:
-            if param.kind == param.POSITIONAL_ONLY or param.kind == param.POSITIONAL_OR_KEYWORD:
+            if param.kind == param.POSITIONAL_ONLY:
                 required_arg_set.add(f"{arg_prefix}{idx}")
             elif param.kind == param.KEYWORD_ONLY:
                 required_arg_set.add(str(param))
-    app_log.warning(f"REQ: {required_arg_set}")
-    app_log.warning(f"KWARGS: {kwargs}")
+            elif param.kind == param.POSITIONAL_OR_KEYWORD:
+                has_flexible_reqs = has_flexible_reqs and (
+                    f"{arg_prefix}{idx}" in kwargs.keys() or str(param) in kwargs.keys()
+                )
 
-    return required_arg_set.issubset(set(kwargs.keys()))
+    return required_arg_set.issubset(set(kwargs.keys())) and has_flexible_reqs
 
 
 def merge_args_with_kwargs(*args, **kwargs) -> Dict:
