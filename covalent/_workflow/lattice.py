@@ -37,7 +37,11 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
-from .._shared_files.utils import get_serialized_function_str, required_params_passed
+from .._shared_files.utils import (
+    get_named_params,
+    get_serialized_function_str,
+    required_params_passed,
+)
 from .transport import _TransportGraph
 
 if TYPE_CHECKING:
@@ -137,6 +141,11 @@ class Lattice:
         """
 
         self.transport_graph.reset()
+
+        named_args, named_kwargs = get_named_params(self.workflow_function, args, kwargs)
+
+        args = [v for _, v in named_args.items()]
+        kwargs = named_kwargs
 
         self.args = args
         self.kwargs = kwargs

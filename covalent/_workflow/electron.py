@@ -412,7 +412,7 @@ class Electron:
             )
 
         else:
-            print(f"{node_id} {param_name} {param_value} {param_type}")
+            # print(f"{node_id} {param_name} {param_value} {param_type}")
 
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
