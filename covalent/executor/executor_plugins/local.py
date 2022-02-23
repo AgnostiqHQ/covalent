@@ -50,8 +50,8 @@ class LocalExecutor(BaseExecutor):
         self,
         function: TransportableObject,
         kwargs: Any,
-        execution_args: dict,
         dispatch_id: str,
+        results_dir: str,
         node_id: int = -1,
     ) -> Any:
         """
@@ -61,9 +61,9 @@ class LocalExecutor(BaseExecutor):
             function: The input python function which will be executed and whose result
                       is ultimately returned by this function.
             kwargs: Keyword arguments to be used by function.
-            execution_args: Executor-specific arguments.
             dispatch_id: The unique identifier of the external lattice process which is
                          calling this function.
+            results_dir: The location of the results directory.
             node_id: The node ID of this task in the bigger workflow graph.
 
         Returns:
@@ -77,16 +77,11 @@ class LocalExecutor(BaseExecutor):
         ) as stdout, redirect_stderr(io.StringIO()) as stderr:
 
             if self.conda_env != "":
-                # Extract any executor-specific bash commands from execution_args that are
-                # needed. Each command should be an entry in executor_specific_execution_args.
-                # This executor has none.
-                executor_specific_exec_cmds = []
+                result = None
+
                 result = self.execute_in_conda_env(
                     function,
                     kwargs,
-                    execution_args,
-                    executor_specific_exec_cmds,
-                    dispatch_info,
                     self.conda_env,
                     self.cache_dir,
                     node_id,
@@ -100,7 +95,7 @@ class LocalExecutor(BaseExecutor):
             (stdout.getvalue(), stderr.getvalue()),
             (self.log_stdout, self.log_stderr),
             dispatch_id,
-            execution_args["results_dir"],
+            results_dir,
         )
 
         return (result, stdout.getvalue(), stderr.getvalue())

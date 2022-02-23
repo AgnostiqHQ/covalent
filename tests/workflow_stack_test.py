@@ -298,23 +298,23 @@ def test_dispatch_cancellation():
     Test whether a running dispatch can be successfully cancelled.
     """
 
-    import time
+    import numpy as np
+
+    rng = np.random.default_rng()
 
     @ct.electron
-    def task_1():
-        time.sleep(600)
-        print("Task 1")
-        return 5
+    def generate_random_list(size):
+        return rng.choice(size, size=size, replace=False)
 
     @ct.electron
-    def task_2(x):
-        time.sleep(x)
-        print("Task 2")
+    def get_sorted(unsorted_list):
+        return np.sort(unsorted_list)
 
     @ct.lattice
-    def workflow():
-        task_2(task_1())
-        return 10
+    def workflow(size=100_000_00, repetitions=10):
+        for _ in range(repetitions):
+            get_sorted(generate_random_list(size))
+        return repetitions
 
     dispatch_id = ct.dispatch(workflow)()
     result = rm.get_result(dispatch_id)

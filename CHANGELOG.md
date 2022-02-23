@@ -5,17 +5,66 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.24.22] - 2022-02-22
+## [0.25.4] - 2022-02-23
 
 ### Changed
 
 - Changed the location of the Local Executor section in the API
 
-## [0.24.21] - 2022-02-17
-
 ### Added
 
 - Added Local Executor section to the API
+
+## [0.25.3] - 2022-02-23
+
+## Added
+
+- Listed common mocking commands in the CONTRIBUTING.md guide.
+- Additional guidelines on testing.
+
+## [0.25.2] - 2022-02-21
+
+### Changed
+
+- `backend` metadata name changed to `executor`.
+- `_plan_workflow` usage updated to reflect how that executor related information is now stored in the specific executor object.
+- Updated tests to reflect the above changes.
+- Improved the dispatch cancellation test to provide a robust solution which earlier took 10 minutes to run with uncertainty of failing every now and then.
+
+### Removed
+
+- Removed `TaskExecutionMetadata` as a consequence of removing `execution_args`.
+
+## [0.25.1] - 2022-02-18
+
+### Fixed
+
+- Tracking imports that have been used in the workflow takes less time.
+
+### Added
+
+- User-imports are included in the dispatch_source.py script. Covalent-related imports are commented out.
+
+## [0.25.0] - 2022-02-18
+
+### Added
+
+- UI: Lattice draw() method displays in web UI
+- UI: New navigation panel
+
+### Changed
+
+- UI: Animated graph changes, panel opacity
+
+### Fixed
+
+- UI: Fixed "Not Found" pages
+
+## [0.24.21] - 2022-02-18
+
+### Added
+
+- RST document describing the expectations from a tutorial.
 
 ## [0.24.20] - 2022-02-17
 
@@ -201,6 +250,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI: display error message on failed status for lattice and electron
 
 ### Changed
+
 - UI: re-order sidebar sections according to latest figma designs
 - UI: update favicon
 - UI: remove dispatch id from tab title
@@ -208,6 +258,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI: adjust theme text primary and secondary colors
 
 ### Fixed
+
 - UI: auto-refresh result state on initial render of listing and graph pages
 - UI: graph layout issues: truncate long electron/param names
 

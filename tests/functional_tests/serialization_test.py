@@ -32,7 +32,7 @@ def non_electron(x):
     return x
 
 
-@cova.electron(backend=executor)
+@cova.electron(executor=executor)
 def electron_function(x):
     return x
 
@@ -79,7 +79,7 @@ def test_electron_serialization():
     function_string = get_serialized_function_str(electron_function)
     expected_string = "\n".join(
         [
-            "# @cova.electron(backend=executor)",
+            "@cova.electron(executor=executor)",
             "def electron_function(x):",
             "    return x",
         ]
@@ -94,7 +94,7 @@ def test_lattice_serialization():
     function_string = get_serialized_function_str(lattice_function)
     expected_string = "\n".join(
         [
-            '# @covalent.lattice(results_dir="./")',
+            '@covalent.lattice(results_dir="./")',
             "def lattice_function(input_a, input_b):",
             "    a = electron_function(x=input_a)",
             "    b = sub_lattice_function(y=input_b)",
@@ -112,8 +112,8 @@ def test_lattice_object_serialization():
     function_string = get_serialized_function_str(lattice_obj)
     expected_string = "\n".join(
         [
-            "# @etron",
-            '# @cova.lattice(results_dir="./")',
+            "@etron",
+            '@cova.lattice(results_dir="./")',
             "def sub_lattice_function(y):",
             "    return y",
         ]
@@ -128,11 +128,11 @@ def test_nested_electron():
     function_string = get_serialized_function_str(nested_electron)
     expected_string = "\n".join(
         [
-            "# @covalent.electron",
-            "# @covalent.lattice",
-            "# @etron",
-            "# @cova.lattice",
-            "# @covalent.electron",
+            "@covalent.electron",
+            "@covalent.lattice",
+            "@etron",
+            "@cova.lattice",
+            "@covalent.electron",
             "def nested_electron(z):",
             "    return z",
         ]

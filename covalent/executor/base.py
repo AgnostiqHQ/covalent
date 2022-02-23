@@ -126,8 +126,8 @@ class BaseExecutor(ABC):
         self,
         function: TransportableObject,
         kwargs: Any,
-        execution_args: dict,
         dispatch_id: str,
+        results_dir: str,
         node_id: int = -1,
     ) -> Any:
         """
@@ -139,9 +139,10 @@ class BaseExecutor(ABC):
             function: The input python function which will be executed and whose result
                       is ultimately returned by this function.
             kwargs: Keyword arguments to be used by function.
-            execution_args: Executor-specific arguments.
             dispatch_id: The unique identifier of the external lattice process which is
                          calling this function.
+            results_dir: The location of the results directory.
+            node_id: ID of the node in the transport graph which is using this executor.
 
         Returns:
             output: The result of the function execution.
@@ -153,9 +154,6 @@ class BaseExecutor(ABC):
         self,
         function: TransportableObject,
         kwargs: Any,
-        execution_args: dict,
-        executor_specific_exec_cmds: dict,
-        dispatch_info: DispatchInfo,
         conda_env: str,
         cache_dir: str,
         node_id: int,
@@ -167,8 +165,6 @@ class BaseExecutor(ABC):
             function: The input python function which will be executed and whose result
                 is ultimately returned by this function.
             kwargs: Keyword arguments to be used by function.
-            execution_args: Executor-specific arguments.
-            dispatch_info: Dispatch information, e.g., the dispatch ID.
             conda_env: Name of a Conda environment in which to execute the task.
             cache_dir: The directory where temporary files and logs (if any) are stored.
             node_id: The integer identifier for the current node.
@@ -190,11 +186,6 @@ class BaseExecutor(ABC):
 
         # Write a bash script to activate the environment
         shell_commands = "#!/bin/bash\n"
-
-        # Add any executor-specific lines:
-        if executor_specific_exec_cmds:
-            for line in executor_specific_exec_cmds:
-                shell_commands += line + "\n"
 
         # Add commands to initialize the Conda shell and activate the environment:
         conda_sh = os.path.join(

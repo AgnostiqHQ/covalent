@@ -40,7 +40,7 @@ def test_using_executor_names():
     executor_names = ct.executor._executor_manager.list_executors(print_names=False)
     for executor_name in executor_names:
 
-        @ct.electron(backend=executor_name)
+        @ct.electron(executor=executor_name)
         def passthrough(x):
             return x
 
@@ -63,7 +63,7 @@ def test_using_executor_classes():
         executor_class = ct.executor._executor_manager.executor_plugins_map[executor_name]
         executor = executor_class()
 
-        @ct.electron(backend=executor)
+        @ct.electron(executor=executor)
         def passthrough(x):
             return x
 
