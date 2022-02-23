@@ -28,25 +28,25 @@ the_executor = ct.executor.LocalExecutor(
 )
 
 
-@ct.electron(backend=the_executor)
+@ct.electron(executor=the_executor)
 def passthrough_a(input):
     print("passthrough_a")
     return f"a{input}"
 
 
-@ct.electron(backend=the_executor)
+@ct.electron(executor=the_executor)
 def concatenator(input_a, input_b):
     print("concatenator")
     return f"{input_a}{input_b}"
 
 
-@ct.electron(backend=the_executor)
+@ct.electron(executor=the_executor)
 def concatenator_dict(input_a, input_b):
     print("concatenator")
     return {"input": f"{input_a}{input_b}"}
 
 
-@ct.electron(backend=the_executor)
+@ct.electron(executor=the_executor)
 def passthrough_b(input):
     print("passthrough_b")
     return f"b{input}"

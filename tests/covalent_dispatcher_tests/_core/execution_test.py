@@ -22,6 +22,7 @@
 Tests for the core functionality of the dispatcher.
 """
 
+
 import cloudpickle as pickle
 
 import covalent as ct
@@ -60,7 +61,6 @@ def get_mock_result() -> Result:
         return task(x)
 
     pipeline.build_graph(x="absolute")
-    pipeline.check_consumable()
 
     return Result(
         lattice=pipeline,
@@ -72,12 +72,13 @@ def test_plan_workflow():
     """Test workflow planning method."""
 
     mock_result = get_mock_result()
+    mock_result.lattice.metadata["schedule"] = True
     _plan_workflow(result_object=mock_result)
 
     # Updated transport graph post planning
     updated_tg = pickle.loads(mock_result.lattice.transport_graph.serialize(metadata_only=True))
 
-    assert "results_dir" in updated_tg["nodes"][0]["exec_plan"].execution_args
+    assert updated_tg["lattice_metadata"]["schedule"]
 
 
 def test_post_process():

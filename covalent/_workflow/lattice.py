@@ -37,23 +37,25 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
-from .._shared_files.utils import (
-    get_imports,
-    get_serialized_function_str,
-    get_timedelta,
-    required_params_passed,
-)
+from .._shared_files.utils import get_serialized_function_str, required_params_passed
 from .transport import _TransportGraph
 
 if TYPE_CHECKING:
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
 
+from .._shared_files.utils import (
+    get_imports,
+    get_serialized_function_str,
+    get_timedelta,
+    required_params_passed,
+)
+
+consumable_constraints = []
+
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-consumable_constraints = []
 
 
 class Lattice:
@@ -112,7 +114,7 @@ class Lattice:
             KeyError: If metadata of given name is not present.
         """
 
-        return self.metadata[name]
+        return self.metadata.get(name, None)
 
     def build_graph(self, *args, **kwargs) -> None:
         """
@@ -253,7 +255,6 @@ class Lattice:
         Args:
             constraint_name: Name of the constraint to be checked, e.g budget, timelimit, etc.
             node_list: List of nodes to be checked.
-
         Returns:
             True if the sum of constraints are within the constraint specified for the lattice,
             else False.
@@ -298,10 +299,8 @@ class Lattice:
 
         Args:
             None
-
         Returns:
             None
-
         Raises:
             ValueError: If the sum of consumable constraints in all the nodes are
                         not within the total limit of the lattice.
@@ -320,7 +319,7 @@ class Lattice:
 
     def dispatch(self, *args, **kwargs) -> str:
         """
-        Deprecated function to dispatch workflows
+        DEPRECATED: Function to dispatch workflows.
 
         Args:
             *args: Positional arguments for the workflow
@@ -341,7 +340,7 @@ class Lattice:
 
     def dispatch_sync(self, *args, **kwargs) -> "Result":
         """
-        Deprecated function to dispatch workflows synchronously
+        DEPRECATED: Function to dispatch workflows synchronously by waiting for the result too.
 
         Args:
             *args: Positional arguments for the workflow
@@ -364,9 +363,10 @@ class Lattice:
 def lattice(
     _func: Optional[Callable] = None,
     *,
-    backend: Optional[
+    backend: Optional[str] = None,
+    executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["backend"],
+    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
     # e.g. schedule: True, whether to use a custom scheduling logic or not
@@ -378,7 +378,8 @@ def lattice(
         _func: function to be decorated
 
     Keyword Args:
-        backend: Alternative executor object to be used in the execution of each node. If not passed, the local
+        backend: DEPRECATED: Same as `executor`.
+        executor: Alternative executor object to be used in the execution of each node. If not passed, the local
             executor is used by default.
         results_dir: Directory to store the results
 
@@ -386,10 +387,17 @@ def lattice(
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.
     """
 
+    if backend:
+        app_log.warning(
+            "backend is deprecated and will be removed in a future release. Please use executor keyword instead.",
+            exc_info=DeprecationWarning,
+        )
+        executor = backend
+
     results_dir = str(Path(results_dir).expanduser().resolve())
 
     constraints = {
-        "backend": backend,
+        "executor": executor,
         "results_dir": results_dir,
     }
 

@@ -44,8 +44,8 @@ def test_local_executor_passes_results_dir(mocker):
         le.execute(
             function=TransportableObject(simple_task),
             kwargs={"x": 1},
-            execution_args={"results_dir": tmp_dir},
             dispatch_id=-1,
+            results_dir=tmp_dir,
             node_id=0,
         )
         mocked_function.assert_called_once()
