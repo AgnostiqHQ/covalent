@@ -26,8 +26,12 @@ from typing import List, Optional, Union
 
 import cloudpickle as pickle
 
+from .._shared_files import logger
 from .._shared_files.config import get_config
 from .result import Result
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 
 def get_result(
@@ -138,12 +142,11 @@ def _delete_result(
 
 def redispatch_result(result_object: Result, dispatcher: str = None) -> str:
     """
-    Redispatch the result as a new dispatch.
+    Function to redispatch the result as a new dispatch.
 
     Args:
         result_object: The result object to be redispatched.
         dispatcher: The address to the dispatcher in the form of hostname:port, e.g. "localhost:8080".
-
     Returns:
         dispatch_id: The dispatch id of the new dispatch.
     """

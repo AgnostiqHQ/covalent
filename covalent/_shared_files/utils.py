@@ -36,7 +36,6 @@ def get_timedelta(time_limit: str) -> timedelta:
 
     Args:
         time_limit: The time limit string.
-
     Returns:
         timedelta: The `datetime.timedelta` object.
     """
@@ -54,11 +53,11 @@ def reformat(t: int) -> str:
     """
     Reformat an integer to a readable time-like string. For example, if t = 1, return "01".
 
-    Args:
-        t: The integer to reformat.
+     Args:
+         t: The integer to reformat.
 
-    Returns:
-        ref_string: The reformatted string.
+     Returns:
+         ref_string: The reformatted string.
     """
 
     return f"0{t}" if len(str(t)) == 1 else str(t)
@@ -70,7 +69,6 @@ def get_time(time_delta: timedelta) -> str:
 
     Args:
         time_delta: The timedelta object.
-
     Returns:
         time_string: The compatible reformatted time string.
     """

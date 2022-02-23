@@ -40,7 +40,7 @@ def test_using_current_env() -> None:
 
     executor = ct.executor.LocalExecutor(conda_env=conda_env, current_env_on_conda_fail=True)
 
-    @ct.electron(backend=executor)
+    @ct.electron(executor=executor)
     def passthrough(x):
         return x
 
@@ -49,8 +49,8 @@ def test_using_current_env() -> None:
         return passthrough(x=y)
 
     dispatch_id = ct.dispatch(workflow)(y="input")
-    output = ct.get_result(dispatch_id, wait=True)
+    result = ct.get_result(dispatch_id, wait=True)
 
     rm._delete_result(dispatch_id)
 
-    assert output.result == "input"
+    assert result.result == "input"

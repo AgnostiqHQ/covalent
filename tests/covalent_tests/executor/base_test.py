@@ -74,9 +74,6 @@ def test_execute_in_conda_env(mocker):
     me.execute_in_conda_env(
         "function",
         "kwargs",
-        "execution_args",
-        "executor_specific_exec_cmds",
-        "dispatch_info",
         "conda_env",
         "cache_dir",
         "node_id",

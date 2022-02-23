@@ -104,14 +104,15 @@ def encode_dict(d):
 def extract_executor_info(metadata):
     # executor details
     try:
-        backend = metadata["backend"]
-        executor = covalent_executor._executor_manager.get_executor(name=backend)
+
+        executor = covalent_executor._executor_manager.get_executor(name=metadata["executor"])
+
         if executor is not None:
             # extract attributes
             metadata["executor"] = encode_dict(executor.__dict__)
-            if not isinstance(backend, str):
+            if not isinstance(executor, str):
                 # if not named, replace with class name
-                metadata["backend"] = f"<{executor.__class__.__name__}>"
+                metadata["executor"] = f"<{executor.__class__.__name__}>"
     except (KeyError, AttributeError) as e:
         pass
 
