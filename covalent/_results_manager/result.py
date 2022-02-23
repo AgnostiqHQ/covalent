@@ -83,7 +83,12 @@ class Result:
         self._status = Result.NEW_OBJ
 
         self._result = None
-        self._inputs = (lattice.args, lattice.kwargs)
+
+        self._inputs = []
+        if lattice.args:
+            self._inputs.append(lattice.args)
+        if lattice.kwargs:
+            self._inputs.append(lattice.kwargs)
 
         self._error = None
 
@@ -525,7 +530,4 @@ def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str
                 in_decorator += line.count("(")
                 in_decorator -= line.count(")")
 
-    if has_cova_decorator:
-        return "\n".join(function_lines)
-    else:
-        return function_string
+    return "\n".join(function_lines) if has_cova_decorator else function_string
