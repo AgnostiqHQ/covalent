@@ -123,13 +123,12 @@ class _TransportGraph:
         self._graph = nx.DiGraph()
         self.lattice_metadata = None
 
-    def add_node(self, name: str, kwargs: Dict, function: Callable, metadata: Dict) -> int:
+    def add_node(self, name: str, function: Callable, metadata: Dict, **attr) -> int:
         """
         Adds a node to the graph.
 
         Args:
             name: The name of the node.
-            kwargs: The keyword arguments to be passed to the function.
             function: The function to be executed.
             metadata: The metadata of the node.
 
@@ -141,9 +140,9 @@ class _TransportGraph:
         self._graph.add_node(
             node_id,
             name=name,
-            kwargs=kwargs,
             function=TransportableObject(function),
             metadata=metadata,
+            **attr,
         )
         return node_id
 

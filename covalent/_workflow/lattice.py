@@ -80,6 +80,7 @@ class Lattice:
         self.metadata = {}
         self.__name__ = self.workflow_function.__name__
         self.post_processing = False
+        self.args = []
         self.kwargs = {}
         self.electron_outputs = {}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
@@ -137,17 +138,13 @@ class Lattice:
 
         self.transport_graph.reset()
 
-        # Positional args are converted to kwargs
-        if self.workflow_function:
-            kwargs.update(
-                dict(zip(list(inspect.signature(self.workflow_function).parameters), args))
-            )
-
+        self.args = args
         self.kwargs = kwargs
+
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    self.workflow_function(**kwargs)
+                    self.workflow_function(*args, **kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."

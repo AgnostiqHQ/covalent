@@ -83,7 +83,7 @@ class Result:
         self._status = Result.NEW_OBJ
 
         self._result = None
-        self._inputs = lattice.kwargs
+        self._inputs = (lattice.args, lattice.kwargs)
 
         self._error = None
 

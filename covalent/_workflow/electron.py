@@ -68,7 +68,6 @@ class Electron:
         self.function = function
         self.node_id = node_id
         self.metadata = metadata
-        self.kwargs = kwargs
 
     def set_metadata(self, name: str, value: Any) -> None:
         """
@@ -327,10 +326,6 @@ class Electron:
         if active_lattice is None:
             return self.function(*args, **kwargs)
 
-        # Merging the args to kwargs to maintain consistency throughout the code
-        if self.function:
-            kwargs.update(dict(zip(list(inspect.signature(self.function).parameters), args)))
-
         if active_lattice.post_processing:
             return active_lattice.electron_outputs.pop(0)
 
@@ -345,7 +340,6 @@ class Electron:
 
         # Add a node to the transport graph of the active lattice
         self.node_id = active_lattice.transport_graph.add_node(
-            kwargs=kwargs,
             name=sublattice_prefix + self.function.__name__
             if isinstance(self.function, Lattice)
             else self.function.__name__,
@@ -359,18 +353,17 @@ class Electron:
         )
 
         for key, value in kwargs.items():
-            self.add_node_for_nested_iterables(
-                value, self.node_id, key, active_lattice.transport_graph
-            )
+            self.connect_node_with_others(value, self.node_id, key, active_lattice.transport_graph)
 
         return Electron(
             self.function,
             metadata=self.metadata,
             node_id=self.node_id,
+            *args,
             **kwargs,
         )
 
-    def add_node_to_graph(
+    def add_collection_node_to_graph(
         self, graph: "_TransportGraph", prefix: str, key: str, value: Iterable
     ) -> int:
         """
@@ -393,7 +386,6 @@ class Electron:
             return list(x.values())[0]
 
         node_id = graph.add_node(
-            kwargs={key: value},
             name=prefix,
             function=to_electron_collection,
             metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
@@ -405,7 +397,7 @@ class Electron:
 
         return node_id
 
-    def add_node_for_nested_iterables(
+    def connect_node_with_others(
         self,
         some_value: Union[Any, "Electron"],
         node_id: int,
@@ -429,34 +421,34 @@ class Electron:
             transport_graph.add_edge(some_value.node_id, node_id, variable=key)
 
         elif isinstance(some_value, list):
-            list_node = self.add_node_to_graph(
+            list_node = self.add_collection_node_to_graph(
                 transport_graph, electron_list_prefix, key, some_value
             )
 
             for v in some_value:
-                self.add_node_for_nested_iterables(v, list_node, key, transport_graph)
+                self.connect_node_with_others(v, list_node, key, transport_graph)
 
             transport_graph.add_edge(list_node, node_id, variable=key)
 
         elif isinstance(some_value, dict):
-            dict_node = self.add_node_to_graph(
+            dict_node = self.add_collection_node_to_graph(
                 transport_graph, electron_dict_prefix, key, some_value
             )
 
             for k, v in some_value.items():
-                self.add_node_for_nested_iterables(v, dict_node, k, transport_graph)
+                self.connect_node_with_others(v, dict_node, k, transport_graph)
 
             transport_graph.add_edge(dict_node, node_id, variable=key)
 
         else:
-            argument_kwargs = {key: some_value}
-            argument_node = transport_graph.add_node(
-                kwargs=argument_kwargs,
+            parameter_dict = {key: some_value}
+            parameter_node = transport_graph.add_node(
+                kwargs=parameter_dict,
                 name=parameter_prefix + str(some_value),
                 function=None,
                 metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
             )
-            transport_graph.add_edge(argument_node, node_id, variable=key)
+            transport_graph.add_edge(parameter_node, node_id, variable=key)
 
 
 def electron(
