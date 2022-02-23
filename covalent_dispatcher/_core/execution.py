@@ -54,17 +54,13 @@ log_stack_info = logger.log_stack_info
 dask_client = Client(processes=False, dashboard_address=":0")
 
 
-def _get_task_inputs(
-    task_input: dict, node_id: int, node_name: str, result_object: Result
-) -> dict:
+def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
     """
     Return the required inputs for a task execution.
     This makes sure that any node with child nodes isn't executed twice and fetches the
     result of parent node to use as input for the child node.
 
     Args:
-        task_input: Input dictionary for the task containing the kwargs
-                    assigned to its function.
         node_id: Node id of this task in the transport graph.
         node_name: Name of the node.
         result_object: Result object to be used to update and store execution related
@@ -89,6 +85,7 @@ def _get_task_inputs(
             values[key] = value
         task_input = {"x": values}
     else:
+        task_input = {}
         for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
             key = result_object.lattice.transport_graph.get_edge_value(parent, node_id, "variable")
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
@@ -123,12 +120,13 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
 
     ordered_node_outputs = []
     for node_id_list in execution_order:
-        for node_id in node_id_list:
+        ordered_node_outputs.extend(
+            values_of_outputs[node_id]
+            for node_id in node_id_list
             # Here we only need outputs of nodes which are executable
-            if not keys_of_outputs[node_id].startswith(prefix_separator) or keys_of_outputs[
-                node_id
-            ].startswith(sublattice_prefix):
-                ordered_node_outputs.append(values_of_outputs[node_id])
+            if not keys_of_outputs[node_id].startswith(prefix_separator)
+            or keys_of_outputs[node_id].startswith(sublattice_prefix)
+        )
 
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
@@ -285,38 +283,42 @@ def _run_planned_workflow(result_object: Result) -> Result:
         tasks: List[Coroutine] = []
 
         for node_id in nodes:
-            # Get all inputs for the current task
-            task_input = result_object.lattice.transport_graph.get_node_value(node_id, "kwargs")
+            # Get name of the node for the current task
             node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
 
             if node_name.startswith(
                 (subscript_prefix, generator_prefix, parameter_prefix, attr_prefix)
             ):
                 if node_name.startswith(parameter_prefix):
-                    output = list(task_input.values())[0]
+                    output = result_object.lattice.transport_graph.get_node_value(
+                        node_id, "output"
+                    )
                 else:
                     parent = result_object.lattice.transport_graph.get_dependencies(node_id)[0]
                     output = result_object.lattice.transport_graph.get_node_value(parent, "output")
 
                     if node_name.startswith(attr_prefix):
-                        attr = task_input["attr"]
+                        attr = result_object.lattice.transport_graph.get_node_value(
+                            node_id, "attribute_name"
+                        )
                         output = getattr(output, attr)
                     else:
-                        key = task_input["key"]
+                        key = result_object.lattice.transport_graph.get_node_value(node_id, "key")
                         output = output[key]
 
                 result_object._update_node(
                     node_id,
-                    node_name + f"({node_id})",
+                    f"{node_name}({node_id})",
                     datetime.now(timezone.utc),
                     datetime.now(timezone.utc),
                     Result.COMPLETED,
                     output,
                     None,
                 )
+
                 continue
 
-            task_input = _get_task_inputs(task_input, node_id, node_name, result_object)
+            task_input = _get_task_inputs(node_id, node_name, result_object)
 
             # Add the task generated for the node to the list of tasks
             tasks.append(dask.delayed(_run_task)(task_input, result_object, node_id))

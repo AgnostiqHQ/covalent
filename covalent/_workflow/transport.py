@@ -316,11 +316,11 @@ class _TransportGraph:
                 if node["id"] in parameter_node_id:
                     data["nodes"].remove(node)
 
-            # Remove the fields 'function' and 'kwargs' from the scheduler workflow input data.
-            unwanted_fields = ["function", "args", "kwargs", "name"]
+            # Remove the non-metadata fields such as 'function', 'name', etc from the scheduler workflow input data.
             for idx, node in enumerate(data["nodes"]):
-                for field in unwanted_fields:
-                    data["nodes"][idx].pop(field, None)
+                for field in data["nodes"][idx]:
+                    if field != "metadata":
+                        data["nodes"][idx].pop(field, None)
 
             # Remove the field 'variable' from the scheduler workflow input data.
             for idx, node in enumerate(data["links"]):

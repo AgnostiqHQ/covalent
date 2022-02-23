@@ -266,7 +266,7 @@ class Electron:
                 name=node_name,
                 function=None,
                 metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                attribute=attr,
+                attribute_name=attr,
             )
 
             active_lattice.transport_graph.add_edge(self.node_id, node_id, f".{attr}")
@@ -351,8 +351,6 @@ class Electron:
             self.function,
             metadata=self.metadata,
             node_id=self.node_id,
-            *args,
-            **kwargs,
         )
 
     def connect_node_with_others(
