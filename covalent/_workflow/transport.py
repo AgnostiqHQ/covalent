@@ -319,13 +319,15 @@ class _TransportGraph:
 
             # Remove the non-metadata fields such as 'function', 'name', etc from the scheduler workflow input data.
             for idx, node in enumerate(data["nodes"]):
-                for field in data["nodes"][idx]:
+                for field in data["nodes"][idx].copy():
                     if field != "metadata":
                         data["nodes"][idx].pop(field, None)
 
-            # Remove the field 'variable' from the scheduler workflow input data.
+            # Remove the non-source-target fields from the scheduler workflow input data.
             for idx, node in enumerate(data["links"]):
-                data["links"][idx].pop("variable", None)
+                for name in data["links"][idx].copy():
+                    if name not in ["source", "target"]:
+                        data["links"][idx].pop("edge_name", None)
 
         data["lattice_metadata"] = self.lattice_metadata
         return cloudpickle.dumps(data)

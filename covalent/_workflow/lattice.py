@@ -167,12 +167,6 @@ class Lattice:
             None
         """
 
-        # Positional args are converted to kwargs
-        if self.workflow_function:
-            kwargs.update(
-                dict(zip(list(inspect.signature(self.workflow_function).parameters), args))
-            )
-
         if required_params_passed(func=self.workflow_function, kwargs=kwargs):
             self.build_graph(**kwargs)
         else:
@@ -198,7 +192,7 @@ class Lattice:
         # Print the node number in the label as `[node number]`
         for key, value in node_labels.items():
             node_labels[key] = "[" + str(key) + "]\n" + value
-        edge_labels = nx.get_edge_attributes(main_graph, "variable")
+        edge_labels = nx.get_edge_attributes(main_graph, "edge_name")
         nx.draw(
             main_graph,
             pos=pos,
@@ -225,18 +219,12 @@ class Lattice:
             None
         """
 
-        # Positional args are converted to kwargs
-        if self.workflow_function:
-            kwargs.update(
-                dict(zip(list(inspect.signature(self.workflow_function).parameters), args))
-            )
-
         if not required_params_passed(func=self.workflow_function, kwargs=kwargs):
             raise ValueError(
                 "Provide values for all the workflow function parameters without default values."
             )
 
-        self.build_graph(**kwargs)
+        self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
 
     def __call__(self, *args, **kwargs):
