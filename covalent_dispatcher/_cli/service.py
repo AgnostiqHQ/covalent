@@ -24,7 +24,7 @@ import os
 import shutil
 import signal
 import socket
-from subprocess import Popen, PIPE, DEVNULL
+from subprocess import DEVNULL, PIPE, Popen
 from typing import Optional
 
 import click
@@ -171,7 +171,7 @@ def _graceful_start(
 
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
-        port = _port_from_pid(pid)
+        port = get_config("user_interface.port")
         click.echo(f"Covalent {server_name} server is already running at http://0.0.0.0:{port}.")
         return port
 
@@ -179,17 +179,13 @@ def _graceful_start(
 
     dev_mode_flag = "--develop" if develop else ""
     port = _next_available_port(port)
-    launch_str = f"python app.py {dev_mode_flag} --port {port} --log-file {logfile} & echo $! >{pidfile}"
-
-    proc = Popen(
-        launch_str,
-        shell=True,
-        stdout=DEVNULL,
-        stderr=DEVNULL,
-        cwd=server_root
+    launch_str = (
+        f"python app.py {dev_mode_flag} --port {port} --log-file {logfile} & echo $! >{pidfile}"
     )
 
-    click.echo(f"Covalent {server_name} server has started at http://0.0.0.0:{port}");
+    proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
+
+    click.echo(f"Covalent {server_name} server has started at http://0.0.0.0:{port}")
     return port
 
 
@@ -222,9 +218,8 @@ def _graceful_restart(server_name: str, pidfile: str) -> bool:
     pid = _read_pid(pidfile)
     if pid != -1:
         os.kill(pid, signal.SIGHUP)
-        click.echo(
-            f"Covalent {server_name} server has restarted on port http://0.0.0.0:{_port_from_pid(pid)}."
-        )
+        port = get_config("user_interface.port")
+        click.echo(f"Covalent {server_name} server has restarted on port http://0.0.0.0:{port}.")
         return True
     else:
         return False
@@ -254,7 +249,6 @@ def start(ctx, port: int, develop: bool) -> None:
             "dispatcher.port": port,
         }
     )
-        
 
 
 @click.command()
@@ -286,16 +280,6 @@ def stop(dispatcher: bool, ui: bool) -> None:
 
 @click.command()
 @click.option(
-    "--dispatcher",
-    is_flag=True,
-    help="Restart only the dispatcher server.",
-)
-@click.option(
-    "--ui",
-    is_flag=True,
-    help="Restart only the UI server.",
-)
-@click.option(
     "-p", "--port", default=None, type=int, help="Restart dispatcher server on a different port."
 )
 @click.option(
@@ -307,36 +291,20 @@ def stop(dispatcher: bool, ui: bool) -> None:
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server(s) in developer mode.")
 @click.pass_context
-def restart(ctx, dispatcher: bool, ui: bool, port: int, ui_port: int, develop: bool) -> None:
+def restart(ctx, port: int, ui_port: int, develop: bool) -> None:
     """
-    Restart the dispatcher and/or UI servers.
+    Restart the server.
     """
 
-    if not (dispatcher or ui):
-        dispatcher = True
-        ui = True
-
-    if dispatcher:
-        pid = _read_pid(DISPATCHER_PIDFILE)
-        port = port or _port_from_pid(pid) or get_config("dispatcher.port")
-        if pid == -1 or port != get_config("dispatcher.port") or develop:
-            ctx.invoke(stop, dispatcher=True)
-            ctx.invoke(start, dispatcher=True, port=port, develop=develop)
-        elif pid != -1:
-            started = _graceful_restart("dispatcher", DISPATCHER_PIDFILE)
-            if not started:
-                ctx.invoke(start, dispatcher=True, port=port, develop=develop)
-
-    if ui:
-        pid = _read_pid(UI_PIDFILE)
-        port = ui_port or _port_from_pid(pid) or get_config("user_interface.port")
-        if pid == -1 or port != get_config("user_interface.port") or develop:
-            ctx.invoke(stop, ui=True)
+    pid = _read_pid(UI_PIDFILE)
+    port = ui_port or get_config("user_interface.port")
+    if pid == -1 or port != get_config("user_interface.port") or develop:
+        ctx.invoke(stop, ui=True)
+        ctx.invoke(start, ui=True, ui_port=port, develop=develop)
+    elif pid != -1:
+        started = _graceful_restart("user interface", UI_PIDFILE)
+        if not started:
             ctx.invoke(start, ui=True, ui_port=port, develop=develop)
-        elif pid != -1:
-            started = _graceful_restart("user interface", UI_PIDFILE)
-            if not started:
-                ctx.invoke(start, ui=True, ui_port=port, develop=develop)
 
 
 @click.command()
@@ -352,8 +320,8 @@ def status() -> None:
         _rm_pid_file(DISPATCHER_PIDFILE)
         click.echo("Covalent dispatcher server is stopped.")
 
-    ui_port = _port_from_pid(_read_pid(UI_PIDFILE))
-    if ui_port is not None:
+    if _read_pid(UI_PIDFILE) != -1:
+        ui_port = get_config("user_interface.port")
         click.echo(f"Covalent UI server is running at http://0.0.0.0:{ui_port}.")
     else:
         _rm_pid_file(UI_PIDFILE)
