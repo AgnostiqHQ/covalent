@@ -62,9 +62,9 @@ class Electron:
         kwargs: Keyword arguments if any.
     """
 
-    def __init__(
-        self, function: Callable, node_id: int = None, metadata: dict = {}, **kwargs
-    ) -> None:
+    def __init__(self, function: Callable, node_id: int = None, metadata: dict = None) -> None:
+        if metadata is None:
+            metadata = {}
         self.function = function
         self.node_id = node_id
         self.metadata = metadata
@@ -217,9 +217,7 @@ class Electron:
             return
 
         for i in range(expected_unpack_values):
-            active_lattice = active_lattice_manager.get_active_lattice()
-
-            if active_lattice:
+            if active_lattice := active_lattice_manager.get_active_lattice():
                 try:
                     node_name = generator_prefix + self.function.__name__ + "()" + f"[{i}]"
 
@@ -231,15 +229,15 @@ class Electron:
                     node_name += f"[{i}]"
 
                 node_id = active_lattice.transport_graph.add_node(
-                    kwargs={"key": i},
                     name=node_name,
                     function=None,
                     metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                    key=i,
                 )
 
                 active_lattice.transport_graph.add_edge(self.node_id, node_id, f"[{i}]")
 
-                yield Electron(function=None, node_id=node_id, metadata=None, key=i)
+                yield Electron(function=None, node_id=node_id, metadata=None)
 
     def __getattr__(self, attr: str) -> "Electron":
         # This is to handle the cases where magic functions are attempted
@@ -255,35 +253,31 @@ class Electron:
                 "Please change the name of the attribute you want to use.",
             )
 
-        active_lattice = active_lattice_manager.get_active_lattice()
-
-        if active_lattice:
+        if active_lattice := active_lattice_manager.get_active_lattice():
             try:
                 node_name = attr_prefix + self.function.__name__ + "." + attr
             except AttributeError:
                 node_name = attr_prefix + active_lattice.transport_graph.get_node_value(
                     self.node_id, "name"
                 )
-                node_name += "." + attr
+                node_name += f".{attr}"
 
             node_id = active_lattice.transport_graph.add_node(
-                kwargs={"attr": attr},
                 name=node_name,
                 function=None,
                 metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                attribute=attr,
             )
 
             active_lattice.transport_graph.add_edge(self.node_id, node_id, f".{attr}")
 
-            return Electron(function=None, node_id=node_id, metadata=None, attr=attr)
+            return Electron(function=None, node_id=node_id, metadata=None)
 
         return super().__getattr__(attr)
 
     def __getitem__(self, key: Union[int, str]) -> "Electron":
 
-        active_lattice = active_lattice_manager.get_active_lattice()
-
-        if active_lattice:
+        if active_lattice := active_lattice_manager.get_active_lattice():
             try:
                 node_name = subscript_prefix + self.function.__name__ + "()" + f"[{key}]"
             except AttributeError:
@@ -294,15 +288,15 @@ class Electron:
                 node_name += f"[{key}]"
 
             node_id = active_lattice.transport_graph.add_node(
-                kwargs={"key": key},
                 name=node_name,
                 function=None,
                 metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                key=key,
             )
 
             active_lattice.transport_graph.add_edge(self.node_id, node_id, f"[{key}]")
 
-            return Electron(function=None, node_id=node_id, metadata=None, key=key)
+            return Electron(function=None, node_id=node_id, metadata=None)
 
         raise StopIteration
 
@@ -348,10 +342,10 @@ class Electron:
             function_string=get_serialized_function_str(self.function),
         )
 
-        args_keys = [inspect.signature(self.workflow_function).parameters]
+        # TODO: CALL `get_named_params` HERE
 
         for key, value in kwargs.items():
-            self.connect_node_with_others(value, self.node_id, key, active_lattice.transport_graph)
+            self.connect_node_with_others(self.node_id, key, value, active_lattice.transport_graph)
 
         return Electron(
             self.function,
@@ -363,18 +357,18 @@ class Electron:
 
     def connect_node_with_others(
         self,
+        node_id: int,
         param_name: str,
         param_value: Union[Any, "Electron"],
-        node_id: int,
         transport_graph: "_TransportGraph",
     ):
         """
         Adds a node along with connecting edges for all the arguments to the electron.
 
         Args:
-            some_value: Value of the node kwarg
             node_id: Node number of the electron
-            key: Key of the node kwarg
+            param_name: Name of the parameter
+            param_value: Value of the parameter
             transport_graph: Transport graph of the lattice
 
         Returns:
@@ -382,40 +376,34 @@ class Electron:
         """
 
         if isinstance(param_value, Electron):
-            transport_graph.add_edge(param_value.node_id, node_id, variable=param_name)
+            transport_graph.add_edge(param_value.node_id, node_id, edge_name=param_name)
 
         elif isinstance(param_value, list):
-            list_node = self.add_collection_node_to_graph(
-                transport_graph, electron_list_prefix, param_name, param_value
-            )
+            list_node = self.add_collection_node_to_graph(transport_graph, electron_list_prefix)
 
             for v in param_value:
-                self.connect_node_with_others(v, list_node, param_name, transport_graph)
+                self.connect_node_with_others(list_node, param_name, v, transport_graph)
 
-            transport_graph.add_edge(list_node, node_id, variable=param_name)
+            transport_graph.add_edge(list_node, node_id, edge_name=param_name)
 
         elif isinstance(param_value, dict):
-            dict_node = self.add_collection_node_to_graph(
-                transport_graph, electron_dict_prefix, param_name, param_value
-            )
+            dict_node = self.add_collection_node_to_graph(transport_graph, electron_dict_prefix)
 
             for k, v in param_value.items():
-                self.connect_node_with_others(v, dict_node, k, transport_graph)
+                self.connect_node_with_others(dict_node, k, v, transport_graph)
 
-            transport_graph.add_edge(dict_node, node_id, variable=param_name)
+            transport_graph.add_edge(dict_node, node_id, edge_name=param_name)
 
         else:
-            parameter_dict = {param_name: param_value}
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
                 metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                output=param_value,
             )
             transport_graph.add_edge(parameter_node, node_id, edge_name=param_name)
 
-    def add_collection_node_to_graph(
-        self, graph: "_TransportGraph", prefix: str, key: str, value: Iterable
-    ) -> int:
+    def add_collection_node_to_graph(self, graph: "_TransportGraph", prefix: str) -> int:
         """
         Adds the node to lattice's transport graph in the case
         where a collection of electrons is passed as an argument
@@ -424,8 +412,6 @@ class Electron:
         Args:
             graph: Transport graph of the lattice
             prefix: Prefix of the node
-            key: Key of the node kwargs
-            value: Value of the node kwargs
 
         Returns:
             node_id: Node id of the added node
