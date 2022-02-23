@@ -88,7 +88,9 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
         task_input = {"args": [], "kwargs": {"x": values}}
     else:
         task_input = {"args": [], "kwargs": {}}
+
         for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
+
             param_type = result_object.lattice.transport_graph.get_edge_value(
                 parent, node_id, "param_type"
             )
@@ -104,6 +106,8 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
                 )
 
                 task_input["kwargs"][key] = value
+
+    print(task_input)
 
     return task_input
 
@@ -306,9 +310,8 @@ def _run_planned_workflow(result_object: Result) -> Result:
                 (subscript_prefix, generator_prefix, parameter_prefix, attr_prefix)
             ):
                 if node_name.startswith(parameter_prefix):
-                    output = result_object.lattice.transport_graph.get_node_value(
-                        node_id, "output"
-                    )
+                    output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
+                    print(node_id, node_name, output)
                 else:
                     parent = result_object.lattice.transport_graph.get_dependencies(node_id)[0]
                     output = result_object.lattice.transport_graph.get_node_value(parent, "output")

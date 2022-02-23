@@ -84,11 +84,11 @@ class Result:
 
         self._result = None
 
-        self._inputs = []
+        self._inputs = {"args": [], "kwargs": {}}
         if lattice.args:
-            self._inputs.append(lattice.args)
+            self._inputs["args"] = lattice.args
         if lattice.kwargs:
-            self._inputs.append(lattice.kwargs)
+            self._inputs["kwargs"] = lattice.kwargs
 
         self._error = None
 

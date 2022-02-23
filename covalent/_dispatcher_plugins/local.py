@@ -76,7 +76,6 @@ class LocalDispatcher(BaseDispatcher):
             """
 
             lattice = deepcopy(orig_lattice)
-            print(args, kwargs)
 
             lattice.build_graph(*args, **kwargs)
 

@@ -141,15 +141,15 @@ class Lattice:
         self.args = args
         self.kwargs = kwargs
 
-        with redirect_stdout(open(os.devnull, "w")):
-            with active_lattice_manager.claim(self):
-                try:
-                    self.workflow_function(*args, **kwargs)
-                except Exception:
-                    warnings.warn(
-                        "Please make sure you are not manipulating an object inside the lattice."
-                    )
-                    raise
+        # with redirect_stdout(open(os.devnull, "w")):
+        with active_lattice_manager.claim(self):
+            try:
+                self.workflow_function(*args, **kwargs)
+            except Exception:
+                warnings.warn(
+                    "Please make sure you are not manipulating an object inside the lattice."
+                )
+                raise
 
     def draw_inline(self, ax: plt.Axes = None, *args, **kwargs) -> None:
         """

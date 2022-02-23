@@ -412,11 +412,13 @@ class Electron:
             )
 
         else:
+            print(f"{node_id} {param_name} {param_value} {param_type}")
+
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
                 metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                output=param_value,
+                value=param_value,
             )
             transport_graph.add_edge(
                 parameter_node, node_id, edge_name=param_name, param_type=param_type
