@@ -172,13 +172,17 @@ def get_named_params(func, args, kwargs):
         if param.kind in [param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD]:
             if param_name in kwargs:
                 named_kwargs[param_name] = kwargs[param_name]
-            else:
+            elif ind < len(args):
                 named_args[param_name] = args[ind]
+            elif param.default != param.empty:
+                named_args[param_name] = param.default
         elif param.kind == param.VAR_POSITIONAL:
             for i in range(ind, len(args)):
                 named_args[f"arg[{i}]"] = args[i]
 
         elif param.kind in [param.KEYWORD_ONLY, param.VAR_KEYWORD]:
+            if param.default != param.empty:
+                named_kwargs[param_name] = param.default
             for key, value in kwargs.items():
                 if key != param_name:
                     named_kwargs[key] = value
