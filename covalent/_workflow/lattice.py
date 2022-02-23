@@ -37,7 +37,11 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
-from .._shared_files.utils import get_serialized_function_str, required_params_passed
+from .._shared_files.utils import (
+    get_serialized_function_str,
+    merge_args_with_kwargs,
+    required_params_passed,
+)
 from .transport import _TransportGraph
 
 if TYPE_CHECKING:
@@ -139,9 +143,7 @@ class Lattice:
 
         # Positional args are converted to kwargs
         if self.workflow_function:
-            kwargs.update(
-                dict(zip(list(inspect.signature(self.workflow_function).parameters), args))
-            )
+            merge_args_with_kwargs(*args, **kwargs)
 
         self.kwargs = kwargs
         with redirect_stdout(open(os.devnull, "w")):
@@ -172,9 +174,7 @@ class Lattice:
 
         # Positional args are converted to kwargs
         if self.workflow_function:
-            kwargs.update(
-                dict(zip(list(inspect.signature(self.workflow_function).parameters), args))
-            )
+            merge_args_with_kwargs(*args, **kwargs)
 
         if required_params_passed(func=self.workflow_function, kwargs=kwargs):
             self.build_graph(**kwargs)
@@ -230,9 +230,7 @@ class Lattice:
 
         # Positional args are converted to kwargs
         if self.workflow_function:
-            kwargs.update(
-                dict(zip(list(inspect.signature(self.workflow_function).parameters), args))
-            )
+            merge_args_with_kwargs(*args, **kwargs)
 
         if not required_params_passed(func=self.workflow_function, kwargs=kwargs):
             raise ValueError(

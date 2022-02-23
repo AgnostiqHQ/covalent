@@ -31,6 +31,7 @@ subscript_prefix = f"{prefix_separator}subscripted{prefix_separator}"
 generator_prefix = f"{prefix_separator}generated{prefix_separator}"
 sublattice_prefix = f"{prefix_separator}sublattice{prefix_separator}"
 attr_prefix = f"{prefix_separator}attribute{prefix_separator}"
+arg_prefix = f"{prefix_separator}arg{prefix_separator}"
 
 # Default configuration settings
 _DEFAULT_CONFIG = {

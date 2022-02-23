@@ -29,6 +29,7 @@ import requests
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
+from .._shared_files.utils import merge_args_with_kwargs
 from .._workflow.lattice import Lattice
 from .base import BaseDispatcher
 
@@ -78,9 +79,7 @@ class LocalDispatcher(BaseDispatcher):
             lattice = deepcopy(orig_lattice)
 
             if lattice.workflow_function:
-                kwargs.update(
-                    dict(zip(list(inspect.signature(lattice.workflow_function).parameters), args))
-                )
+                merge_args_with_kwargs(*args, **kwargs)
 
             lattice.build_graph(**kwargs)
 

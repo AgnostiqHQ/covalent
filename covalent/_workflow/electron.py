@@ -37,7 +37,7 @@ from .._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
-from .._shared_files.utils import get_serialized_function_str
+from .._shared_files.utils import get_serialized_function_str, merge_args_with_kwargs
 from .lattice import Lattice
 
 consumable_constraints = ["budget", "time_limit"]
@@ -59,16 +59,19 @@ class Electron:
         function: Function to be executed.
         node_id: Node id of the electron.
         metadata: Metadata to be used for the function execution.
+        args: Non-keyword arguments if any.
         kwargs: Keyword arguments if any.
     """
 
     def __init__(
-        self, function: Callable, node_id: int = None, metadata: dict = {}, **kwargs
+        self, function: Callable, node_id: int = None, metadata: dict = {}, *args, **kwargs
     ) -> None:
         self.function = function
         self.node_id = node_id
         self.metadata = metadata
         self.kwargs = kwargs
+
+        merge_args_with_kwargs(*args, **kwargs)
 
     def set_metadata(self, name: str, value: Any) -> None:
         """
@@ -209,7 +212,6 @@ class Electron:
         return complex()
 
     def __iter__(self):
-
         last_frame = inspect.currentframe().f_back
         bytecode = last_frame.f_code.co_code
         expected_unpack_values = bytecode[last_frame.f_lasti + 1]
@@ -329,7 +331,7 @@ class Electron:
 
         # Merging the args to kwargs to maintain consistency throughout the code
         if self.function:
-            kwargs.update(dict(zip(list(inspect.signature(self.function).parameters), args)))
+            merge_args_with_kwargs(*args, **kwargs)
 
         if active_lattice.post_processing:
             return active_lattice.electron_outputs.pop(0)

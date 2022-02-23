@@ -22,9 +22,10 @@
 
 import inspect
 from datetime import timedelta
-from typing import Callable, Dict, Set, Tuple
+from typing import Callable, Dict, List, Set, Tuple
 
 from . import logger
+from .defaults import arg_prefix
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -158,3 +159,14 @@ def required_params_passed(func: Callable, kwargs: Dict) -> bool:
             required_arg_set.add(str(param))
 
     return required_arg_set.issubset(set(kwargs.keys()))
+
+
+def merge_args_with_kwargs(*args, **kwargs) -> None:
+    kwargs.update(dict(zip([f"{arg_prefix}{idx}" for idx in range(len(args))], args)))
+
+
+def separate_args_and_kwargs(**kwargs) -> Tuple[List, Dict]:
+    args = [v for k, v in kwargs.items() if k.startswith(arg_prefix)]
+    kwargs = kwargs[len(args) :]
+
+    return args, kwargs
