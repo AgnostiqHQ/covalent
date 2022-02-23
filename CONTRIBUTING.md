@@ -385,10 +385,16 @@ export LOGLEVEL=INFO
 guarantees all info, warning, error and critical messages will be shown. If this environment variable is not set, the default value of `WARNING` is used.
 
 ## Writing Tests
-All feature changes and bug fixes should be accompanied by tests. Below, we list some important
-guidelines when writing tests.
+All feature changes and bug fixes should be accompanied by tests. The bulk of the tests in the repo should be unit tests as opposed to functional or integration tests. A short definition of each type of test:
 
-* Write unit tests as opposed to integration or functional tests (unless there's a really good reason for it).
+1. Unit tests - the scope of unit tests are usually at a functional level, i.e. given an input, check if the output is as expected. Furthermore, care needs to be taken to mock other functions, context managers, I/O tasks within the function that is being tested.
+2. Integration tests - the scope of integration tests varies from a functional to module level. Here, we also test that functions or methods behave in certain ways given an input without mocking some of the other functions. The objective is to test how different functions / modules behave when "integrated".
+3. Functional tests - the scope of these tests are on a user experience level. The purpose here is to ensure that commonly defined software use cases leads to expected behaviour / output (without encountering runtime errors etc.) for a given input.
+
+
+Below, we list some important guidelines when writing tests.
+
+* **Write unit tests as opposed to integration or functional tests (unless there's a really good reason for it).**
 
 * In the case of bug fixes, write tests for which the code breaks before implementing the bug fix.
 
@@ -411,13 +417,13 @@ The Covalent test suite can be run locally from the root directory with `pytest`
 Running the entire test suite everytime the code has been updated will take a while. The following commands are useful to hone in on a smaller subset of tests for development purposes.
 
 1. To run a specific test module:
-```python
+```bash
 pytest tests/covalent_dispatcher_tests/_executor/local_test.py -vv -s
 ```
 
 2. To run a specific test:
 
-```python
+```bash
 pytest tests/electron_return_value_test.py::test_arithmetic_1_rev -vv -s
 ```
 
