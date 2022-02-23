@@ -80,14 +80,18 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
     elif node_name.startswith(electron_dict_prefix):
         values = {}
         for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-            key = result_object.lattice.transport_graph.get_edge_value(parent, node_id, "variable")
+            key = result_object.lattice.transport_graph.get_edge_value(
+                parent, node_id, "edge_name"
+            )
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
             values[key] = value
         task_input = {"x": values}
     else:
         task_input = {}
         for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-            key = result_object.lattice.transport_graph.get_edge_value(parent, node_id, "variable")
+            key = result_object.lattice.transport_graph.get_edge_value(
+                parent, node_id, "edge_name"
+            )
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
             task_input[key] = value
     return task_input

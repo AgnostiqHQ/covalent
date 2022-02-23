@@ -37,7 +37,7 @@ from .._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
-from .._shared_files.utils import get_serialized_function_str
+from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .lattice import Lattice
 
 consumable_constraints = ["budget", "time_limit"]
@@ -343,9 +343,20 @@ class Electron:
         )
 
         # TODO: CALL `get_named_params` HERE
+        if self.function:
+            named_args, named_kwargs = get_named_params(self.function, args, kwargs)
 
-        for key, value in kwargs.items():
-            self.connect_node_with_others(self.node_id, key, value, active_lattice.transport_graph)
+            # For positional arguments
+            for key, value in named_args.items():
+                self.connect_node_with_others(
+                    self.node_id, key, value, active_lattice.transport_graph
+                )
+
+            # For keyword arguments
+            for key, value in named_kwargs.items():
+                self.connect_node_with_others(
+                    self.node_id, key, value, active_lattice.transport_graph
+                )
 
         return Electron(
             self.function,
