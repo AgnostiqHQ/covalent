@@ -42,6 +42,9 @@ _DEFAULT_CONFIG = {
         + "/covalent",
         "log_level": os.environ.get("LOGLEVEL", "WARNING").lower(),
         "enable_logging": os.environ.get("COVALENT_LOG_TO_FILE", "false").lower(),
+        "executor_dir": os.environ.get("COVALENT_EXECUTOR_DIR")
+        or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
+        + "/covalent/executor_plugins",
     },
     "dispatcher": {
         "address": "0.0.0.0",
@@ -69,9 +72,9 @@ _DEFAULT_CONFIG = {
 }
 
 # Metadata which may influence execution behavior
-_DEFAULT_CONSTRAINT_VALUES = {"backend": "local"}
+_DEFAULT_CONSTRAINT_VALUES = {"executor": "local"}
 
-# Going Forward we only want to return the backend field of DEFAULT_CONSTRAINT_VALUES
+# Going forward we may only want to return the executor field of DEFAULT_CONSTRAINT_VALUES
 # The rest of those parameters will now be in this dictionary
 _DEFAULT_CONSTRAINTS_DEPRECATED = {
     "schedule": False,
@@ -81,7 +84,7 @@ _DEFAULT_CONSTRAINTS_DEPRECATED = {
     "gpu_type": "",
     "gpu_compute_capability": [],
     "memory": "1G",
-    "backend": "local",
+    "executor": "local",
     "time_limit": "00-00:00:00",
     "budget": 0,
     "conda_env": "",

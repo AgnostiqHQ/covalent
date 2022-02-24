@@ -53,17 +53,23 @@ def test_executor_manager_generate_plugins_list(mocker):
     init_mock.called_once_with()
 
     load_executors_mock = mocker.patch("covalent.executor._ExecutorManager._load_executors")
-    mocker.patch("os.path.join", side_effect=["plugin_path", "default_plugin_path"])
-    mocker.patch("os.environ.get", return_value="user_plugin_path")
+
+    os_path_dirname_mock = mocker.patch("os.path.dirname", return_value="covalent")
+    os_path_join_mock = mocker.patch("os.path.join", return_value="pkg_plugins_path")
+    get_config_mock = mocker.patch(
+        "covalent.executor.get_config", return_value="user_plugins_path"
+    )
     load_installed_plugins_mock = mocker.patch(
         "covalent.executor._ExecutorManager._load_installed_plugins"
     )
+
     em.generate_plugins_list()
+    os_path_join_mock.assert_called_once_with("covalent", "executor_plugins")
+    get_config_mock.assert_called_once_with("sdk.executor_dir")
 
     assert load_executors_mock.mock_calls == [
-        mocker.call("plugin_path"),
-        mocker.call("default_plugin_path"),
-        mocker.call("user_plugin_path"),
+        mocker.call("pkg_plugins_path"),
+        mocker.call("user_plugins_path"),
     ]
     load_installed_plugins_mock.called_once_with()
 

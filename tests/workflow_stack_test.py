@@ -298,23 +298,23 @@ def test_dispatch_cancellation():
     Test whether a running dispatch can be successfully cancelled.
     """
 
-    import time
+    import numpy as np
+
+    rng = np.random.default_rng()
 
     @ct.electron
-    def task_1():
-        time.sleep(600)
-        print("Task 1")
-        return 5
+    def generate_random_list(size):
+        return rng.choice(size, size=size, replace=False)
 
     @ct.electron
-    def task_2(x):
-        time.sleep(x)
-        print("Task 2")
+    def get_sorted(unsorted_list):
+        return np.sort(unsorted_list)
 
     @ct.lattice
-    def workflow():
-        task_2(task_1())
-        return 10
+    def workflow(size=100_000_00, repetitions=10):
+        for _ in range(repetitions):
+            get_sorted(generate_random_list(size))
+        return repetitions
 
     dispatch_id = ct.dispatch(workflow)()
     result = rm.get_result(dispatch_id)
@@ -328,3 +328,42 @@ def test_dispatch_cancellation():
     rm._delete_result(dispatch_id)
 
     assert result.status == Result.CANCELLED
+
+
+def test_all_parameter_types_in_electron():
+    """Test whether an electron supports parameter passing in every python compatible way"""
+
+    @ct.electron
+    def task(a, /, b, *args, c, **kwargs):
+        return a * b * c, args, kwargs
+
+    @ct.lattice
+    def workflow():
+        return task(1, 2, 3, 4, c=5, d=6, e=7)
+
+    dispatch_id = ct.dispatch(workflow)()
+    result = rm.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
+
+    assert result.result == (10, (3, 4), {"d": 6, "e": 7})
+
+
+def test_all_parameter_types_in_lattice():
+    """Test whether a lattice supports parameter passing in every python compatible way"""
+
+    @ct.electron
+    def task(a, /, b, *args, c, **kwargs):
+        return a * b * c, args, kwargs
+
+    @ct.lattice
+    def workflow(a, /, b, *args, c, **kwargs):
+        return task(a, b, *args, c=c, **kwargs)
+
+    dispatch_id = ct.dispatch(workflow)(1, 2, 3, 4, c=5, d=6, e=7)
+    result = rm.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
+
+    assert result.inputs["args"] == [1, 2, 3, 4]
+    assert result.inputs["kwargs"] == {"c": 5, "d": 6, "e": 7}
+
+    assert result.result == (10, (3, 4), {"d": 6, "e": 7})

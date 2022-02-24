@@ -5,13 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.16] - 2022-02-14
+## [0.27.2] - 2022-02-24
 
 ### Added
 
 - Added `USING_DOCKER.md` guide for running docker container.
 - Added cli args to covalent UI flask server `covalent_ui/app.py` to modify port and log file path.
- 
+
 ### Removed
 - Removed gunicorn from cli and Dockerfile.
 
@@ -20,6 +20,144 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Using Flask blueprints to merge Dispatcher and UI servers.
 - Updated Dockerfile to run flask server directly.
 - Creating server PID file manually in `covalent_dispatcher/_cli/service.py`.
+- Updated tests and docs to reflect merged servers.
+
+
+## [0.27.1] - 2022-02-24
+
+### Removed
+
+- Removed AQ-Engineers from CODEOWNERS in order to fix PR review notifications
+
+## [0.27.0] - 2022-02-24
+
+### Added
+
+- Support for positional only, positional or keyword, variable positional, keyword only, variable keyword types of parameters is now added, e.g an electron can now use variable args and variable kwargs if the number/names of parameters are unknown during definition as `def task(*args, **kwargs)` which wasn't possible before.
+
+- `Lattice.args` added to store positional arguments passed to the lattice's workflow function.
+
+- `get_named_params` function added in `_shared_files/utils.py` which will return a tuple containing named positional arguments and named keyword arguments. The names help in showing and storing these parameters in the transport graph.
+
+- Tests to verify whether all kinds of input paramaters are supported by electron or a lattice.
+
+### Changed
+
+- No longer merging positional arguments with keyword arguments, instead they are separately stored in respective nodes in the transport graph.
+
+- `inputs` returned from `_get_inputs` function in `covalent_dispatcher/_core/execution.py` now contains positional as well as keyword arguments which further get passed to the executor.
+
+- Executors now support positional and keyword arguments as inputs to their executable functions.
+
+- Result object's `_inputs` attribute now contains both `args` and `kwargs`.
+
+- `add_node_for_nested_iterables` is renamed to `connect_node_with_others` and `add_node_to_graph` also renamed to `add_collection_node_to_graph` in `electron.py`. Some more variable renames to have appropriate self-explanatory names.
+
+- Nodes and edges in the transport graph now have a better interface to assign attributes to them.
+
+- Edge attribute `variable` renamed to `edge_name`.
+
+- In `serialize` function of the transport graph, if `metadata_only` is True, then only `metadata` attribute of node and `source` and `target` attributes of edge are kept in the then return serialized `data`.
+
+- Updated the tests wherever necessary to reflect the above changes
+
+### Removed
+
+- Deprecated `required_params_passed` since an error will automatically be thrown by the `build_graph` function if any of the required parameters are not passed.
+
+- Removed duplicate attributes from nodes in the transport graph.
+
+## [0.26.1] - 2022-02-23
+
+### Added
+
+- Added Local Executor section to the API
+
+## [0.26.0] - 2022-02-23
+
+### Added
+
+- Automated reminders to update the changelog
+
+## [0.25.3] - 2022-02-23
+
+## Added
+
+- Listed common mocking commands in the CONTRIBUTING.md guide.
+- Additional guidelines on testing.
+
+## [0.25.2] - 2022-02-21
+
+### Changed
+
+- `backend` metadata name changed to `executor`.
+- `_plan_workflow` usage updated to reflect how that executor related information is now stored in the specific executor object.
+- Updated tests to reflect the above changes.
+- Improved the dispatch cancellation test to provide a robust solution which earlier took 10 minutes to run with uncertainty of failing every now and then.
+
+### Removed
+
+- Removed `TaskExecutionMetadata` as a consequence of removing `execution_args`.
+
+## [0.25.1] - 2022-02-18
+
+### Fixed
+
+- Tracking imports that have been used in the workflow takes less time.
+
+### Added
+
+- User-imports are included in the dispatch_source.py script. Covalent-related imports are commented out.
+
+## [0.25.0] - 2022-02-18
+
+### Added
+
+- UI: Lattice draw() method displays in web UI
+- UI: New navigation panel
+
+### Changed
+
+- UI: Animated graph changes, panel opacity
+
+### Fixed
+
+- UI: Fixed "Not Found" pages
+
+## [0.24.21] - 2022-02-18
+
+### Added
+
+- RST document describing the expectations from a tutorial.
+
+## [0.24.20] - 2022-02-17
+
+### Added
+
+- Added how to create custom executors
+
+### Changed
+
+- Changed the description of the hyperlink for choosing executors
+- Fixed typos in doc/source/api/getting_started/how_to/execution/creating_custom_executors.ipynb
+
+## [0.24.19] - 2022-02-16
+
+### Added
+
+- CODEOWNERS for certain files.
+
+## [0.24.18] - 2022-02-15
+
+### Added
+
+- The user configuration file can now specify an executor plugin directory.
+
+## [0.24.17] - 2022-02-15
+
+### Added
+
+- Added a how-to for making custom executors.
 
 ## [0.24.16] - 2022-02-12
 
@@ -176,6 +314,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI: display error message on failed status for lattice and electron
 
 ### Changed
+
 - UI: re-order sidebar sections according to latest figma designs
 - UI: update favicon
 - UI: remove dispatch id from tab title
@@ -183,6 +322,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI: adjust theme text primary and secondary colors
 
 ### Fixed
+
 - UI: auto-refresh result state on initial render of listing and graph pages
 - UI: graph layout issues: truncate long electron/param names
 
