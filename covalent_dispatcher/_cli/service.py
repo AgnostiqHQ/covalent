@@ -24,6 +24,7 @@ import os
 import shutil
 import signal
 import socket
+import time
 from subprocess import DEVNULL, PIPE, Popen
 from typing import Optional
 
@@ -230,6 +231,9 @@ def start(ctx, port: int, develop: bool) -> None:
             "dispatcher.port": port,
         }
     )
+    # Check that port is actually bound to before returning
+    while _next_available_port(port) == port:
+        time.sleep(3)
 
 
 @click.command()
