@@ -73,12 +73,10 @@ def test_execute_in_conda_env(mocker):
     conda_env_fail_mock = mocker.patch("covalent.executor.BaseExecutor._on_conda_env_fail")
     me.execute_in_conda_env(
         "function",
+        "args",
         "kwargs",
-        "execution_args",
-        "executor_specific_exec_cmds",
-        "dispatch_info",
         "conda_env",
         "cache_dir",
         "node_id",
     )
-    conda_env_fail_mock.assert_called_once_with("function", "kwargs", "node_id")
+    conda_env_fail_mock.assert_called_once_with("function", "args", "kwargs", "node_id")

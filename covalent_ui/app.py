@@ -26,15 +26,15 @@ from pathlib import Path
 import networkx as nx
 import simplejson
 import tailer
-from flask import Flask, jsonify, request, send_from_directory, make_response
+from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
+import covalent.executor as covalent_executor
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
-from covalent.executor import _executor_manager
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
@@ -49,6 +49,14 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 def handle_result_update():
     result_update = request.get_json(force=True)
     socketio.emit("result-update", result_update)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/draw", methods=["POST"])
+def handle_draw_request():
+    draw_request = request.get_json(force=True)
+
+    socketio.emit("draw-request", draw_request)
     return jsonify({"ok": True})
 
 
@@ -80,14 +88,14 @@ def extract_graph_node(node):
     node["kwargs"] = encode_dict(node.get("kwargs"))
 
     # remove unused fields
-    node.pop("function")
-    node.pop("node_name")
+    node.pop("function", None)
+    node.pop("node_name", None)
 
     return node
 
 
 def encode_dict(d):
-    """ Avoid JSON encoding when python str() suffices """
+    """Avoid JSON encoding when python str() suffices"""
     if not isinstance(d, dict):
         return d
     return {k: str(v) for (k, v) in d.items()}
@@ -96,20 +104,21 @@ def encode_dict(d):
 def extract_executor_info(metadata):
     # executor details
     try:
-        backend = metadata["backend"]
-        executor = _executor_manager.get_executor(name=backend)
+
+        executor = covalent_executor._executor_manager.get_executor(name=metadata["executor"])
+
         if executor is not None:
             # extract attributes
             metadata["executor"] = encode_dict(executor.__dict__)
-            if not isinstance(backend, str):
+            if not isinstance(executor, str):
                 # if not named, replace with class name
-                metadata["backend"] = f"<{executor.__class__.__name__}>"
+                metadata["executor"] = f"<{executor.__class__.__name__}>"
     except (KeyError, AttributeError) as e:
         pass
 
 
-def extract_graph(result):
-    graph = nx.json_graph.node_link_data(result.lattice.transport_graph._graph)
+def extract_graph(graph):
+    graph = nx.json_graph.node_link_data(graph)
     nodes = list(map(extract_graph_node, graph["nodes"]))
     return {
         "nodes": nodes,
@@ -138,7 +147,7 @@ def fetch_result(dispatch_id):
             "kwargs": encode_dict(result.lattice.kwargs),
             "metadata": result.lattice.metadata,
         },
-        "graph": extract_graph(result),
+        "graph": extract_graph(result.lattice.transport_graph._graph),
     }
 
     # Use simplejson/ignore_nan=True to handle NaN/Infinity constants

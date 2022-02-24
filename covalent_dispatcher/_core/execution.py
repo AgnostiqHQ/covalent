@@ -26,7 +26,6 @@ import traceback
 from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
-import cloudpickle as pickle
 import dask
 from dask.distributed import Client, Variable
 
@@ -45,7 +44,6 @@ from covalent._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
-from covalent._shared_files.util_classes import TaskExecutionMetadata
 from covalent._workflow.lattice import Lattice
 from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
@@ -56,24 +54,20 @@ log_stack_info = logger.log_stack_info
 dask_client = Client(processes=False, dashboard_address=":0")
 
 
-def _get_task_inputs(
-    task_input: dict, node_id: int, node_name: str, result_object: Result
-) -> dict:
+def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
     """
     Return the required inputs for a task execution.
     This makes sure that any node with child nodes isn't executed twice and fetches the
     result of parent node to use as input for the child node.
 
     Args:
-        task_input: Input dictionary for the task containing the kwargs
-                    assigned to its function.
         node_id: Node id of this task in the transport graph.
         node_name: Name of the node.
         result_object: Result object to be used to update and store execution related
                        info including the results.
 
     Returns:
-        inputs: Input dictionary to be passed to the task containing kwargs
+        inputs: Input dictionary to be passed to the task containing args, kwargs,
                 and any parent node execution results if present.
     """
 
@@ -82,19 +76,39 @@ def _get_task_inputs(
             result_object.lattice.transport_graph.get_node_value(parent, "output")
             for parent in result_object.lattice.transport_graph.get_dependencies(node_id)
         ]
-        task_input = {"x": values}
+        task_input = {"args": [], "kwargs": {"x": values}}
     elif node_name.startswith(electron_dict_prefix):
         values = {}
         for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-            key = result_object.lattice.transport_graph.get_edge_value(parent, node_id, "variable")
+            key = result_object.lattice.transport_graph.get_edge_value(
+                parent, node_id, "edge_name"
+            )
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
             values[key] = value
-        task_input = {"x": values}
+        task_input = {"args": [], "kwargs": {"x": values}}
     else:
+        task_input = {"args": [], "kwargs": {}}
+
         for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-            key = result_object.lattice.transport_graph.get_edge_value(parent, node_id, "variable")
+
+            param_type = result_object.lattice.transport_graph.get_edge_value(
+                parent, node_id, "param_type"
+            )
+
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
-            task_input[key] = value
+
+            if param_type == "arg":
+                task_input["args"].append(value)
+
+            elif param_type == "kwarg":
+                key = result_object.lattice.transport_graph.get_edge_value(
+                    parent, node_id, "edge_name"
+                )
+
+                task_input["kwargs"][key] = value
+
+    print(task_input)
+
     return task_input
 
 
@@ -125,17 +139,18 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
 
     ordered_node_outputs = []
     for node_id_list in execution_order:
-        for node_id in node_id_list:
+        ordered_node_outputs.extend(
+            values_of_outputs[node_id]
+            for node_id in node_id_list
             # Here we only need outputs of nodes which are executable
-            if not keys_of_outputs[node_id].startswith(prefix_separator) or keys_of_outputs[
-                node_id
-            ].startswith(sublattice_prefix):
-                ordered_node_outputs.append(values_of_outputs[node_id])
+            if not keys_of_outputs[node_id].startswith(prefix_separator)
+            or keys_of_outputs[node_id].startswith(sublattice_prefix)
+        )
 
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
         lattice.electron_outputs = ordered_node_outputs
-        result = lattice.workflow_function(**lattice.kwargs)
+        result = lattice.workflow_function(*lattice.args, **lattice.kwargs)
         lattice.post_processing = False
         return result
 
@@ -146,7 +161,7 @@ def _run_task(
     node_id: int,
 ) -> None:
     """
-    Run a task with given inputs on the selected backend.
+    Run a task with given inputs on the selected executor.
     Also updates the status of current node execution while
     checking if a redispatch has occurred. Exclude those nodes
     from execution which were completed.
@@ -163,7 +178,9 @@ def _run_task(
     """
 
     serialized_callable = result_object.lattice.transport_graph.get_node_value(node_id, "function")
-    task_md = result_object.lattice.transport_graph.get_node_value(node_id, "exec_plan")
+    selected_executor = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
+        "executor"
+    ]
     node_name = (
         result_object.lattice.transport_graph.get_node_value(node_id, "name") + f"({node_id})"
     )
@@ -191,7 +208,7 @@ def _run_task(
         return
 
     # the executor is determined during scheduling and provided in the execution metadata
-    executor = _executor_manager.get_executor(task_md.selected_executor)
+    executor = _executor_manager.get_executor(selected_executor)
 
     # run the task on the executor and register any failures
     try:
@@ -204,7 +221,7 @@ def _run_task(
 
         if node_name.startswith(sublattice_prefix):
             func = serialized_callable.get_deserialized()
-            sublattice_result = dispatch_sync(func)(**inputs)
+            sublattice_result = dispatch_sync(func)(*inputs["args"], **inputs["kwargs"])
             output = sublattice_result.result
 
             end_time = datetime.now(timezone.utc)
@@ -223,9 +240,10 @@ def _run_task(
         else:
             output, stdout, stderr = executor.execute(
                 serialized_callable,
-                inputs,
-                task_md.execution_args,
+                inputs["args"],
+                inputs["kwargs"],
                 result_object.dispatch_id,
+                result_object.results_dir,
                 node_id,
             )
 
@@ -285,38 +303,41 @@ def _run_planned_workflow(result_object: Result) -> Result:
         tasks: List[Coroutine] = []
 
         for node_id in nodes:
-            # Get all inputs for the current task
-            task_input = result_object.lattice.transport_graph.get_node_value(node_id, "kwargs")
+            # Get name of the node for the current task
             node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
 
             if node_name.startswith(
                 (subscript_prefix, generator_prefix, parameter_prefix, attr_prefix)
             ):
                 if node_name.startswith(parameter_prefix):
-                    output = list(task_input.values())[0]
+                    output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
+                    print(node_id, node_name, output)
                 else:
                     parent = result_object.lattice.transport_graph.get_dependencies(node_id)[0]
                     output = result_object.lattice.transport_graph.get_node_value(parent, "output")
 
                     if node_name.startswith(attr_prefix):
-                        attr = task_input["attr"]
+                        attr = result_object.lattice.transport_graph.get_node_value(
+                            node_id, "attribute_name"
+                        )
                         output = getattr(output, attr)
                     else:
-                        key = task_input["key"]
+                        key = result_object.lattice.transport_graph.get_node_value(node_id, "key")
                         output = output[key]
 
                 result_object._update_node(
                     node_id,
-                    node_name + f"({node_id})",
+                    f"{node_name}({node_id})",
                     datetime.now(timezone.utc),
                     datetime.now(timezone.utc),
                     Result.COMPLETED,
                     output,
                     None,
                 )
+
                 continue
 
-            task_input = _get_task_inputs(task_input, node_id, node_name, result_object)
+            task_input = _get_task_inputs(node_id, node_name, result_object)
 
             # Add the task generated for the node to the list of tasks
             tasks.append(dask.delayed(_run_task)(task_input, result_object, node_id))
@@ -354,8 +375,9 @@ def _run_planned_workflow(result_object: Result) -> Result:
 
 def _plan_workflow(result_object: Result) -> None:
     """
-    Plan the workflow for execution, assigning the executor to each node
-    and assigning some common execution arguments to each node.
+    Function to plan a workflow according to a schedule.
+    Planning means to decide which executors (along with their arguments) will
+    be used by each node.
 
     Args:
         result_object: Result object being used for current dispatch
@@ -364,35 +386,13 @@ def _plan_workflow(result_object: Result) -> None:
         None
     """
 
-    serialized_tg = result_object.lattice.transport_graph.serialize(metadata_only=True)
+    if result_object.lattice.get_metadata("schedule"):
+        # Custom scheduling logic of the format:
+        # scheduled_executors = get_schedule(result_object)
 
-    schedule = result_object.lattice.transport_graph.lattice_metadata.get("schedule", False)
-
-    if schedule:
-        # Custom scheduling logic
+        # for node_id, executor in scheduled_executors.items():
+        #    result_object.lattice.transport_graph.set_node_value(node_id, "executor", executor)
         pass
-    else:
-        # Default scheduling logic
-        workflow_schedule = {"nodes": [], "schedule_quality": 1}
-        deserialized_tg = pickle.loads(serialized_tg)
-
-        # Certain metadata fields are transformed and passed to the executor
-        for node in deserialized_tg["nodes"]:
-            workflow_schedule["nodes"].append(
-                {
-                    "id": node["id"],
-                    "backend": node["metadata"]["backend"][0]
-                    if isinstance(node["metadata"]["backend"], list)
-                    else node["metadata"]["backend"],
-                    # Mutate executor-specific arguments here
-                    "backend_args": {"results_dir": result_object.results_dir},
-                }
-            )
-
-    # Attach the execution plan to the transport graph
-    for node in workflow_schedule["nodes"]:
-        exec_plan = TaskExecutionMetadata(node["backend"], node["backend_args"])
-        result_object._lattice.transport_graph.set_node_value(node["id"], "exec_plan", exec_plan)
 
 
 def run_workflow(dispatch_id: str, results_dir: str) -> None:
