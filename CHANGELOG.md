@@ -767,7 +767,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- UI runs on port 48008 and the dispatcher runs on port 48008. This is so that when the servers are later merged, users continue using port 48008 in the browser.
+- UI runs on port 47007 and the dispatcher runs on port 48008. This is so that when the servers are later merged, users continue using port 47007 in the browser.
 - Small modifications to the documentation
 - Small fix to the README
 
@@ -1322,7 +1322,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - JWT token requirement.
 - Covalent dispatcher login requirement.
 - Update covalent login reference in README.md.
-- Changed the default dispatcher server port from 5000 to 48008.
+- Changed the default dispatcher server port from 5000 to 47007.
 
 ## [0.6.2] - 2021-11-28
 
