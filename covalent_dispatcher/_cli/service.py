@@ -231,9 +231,18 @@ def start(ctx, port: int, develop: bool) -> None:
             "dispatcher.port": port,
         }
     )
-    # Check that port is actually bound to before returning
-    while _next_available_port(port) == port:
-        time.sleep(3)
+
+    # Wait until the server actually starts listening on the port
+    server_listening = False
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    while not server_listening:
+        try:
+            sock.bind(("0.0.0.0", port))
+            sock.close()
+        except:
+            server_listening = True
+
+        time.sleep(1)
 
 
 @click.command()
