@@ -43,10 +43,10 @@ Getting started with feature development
 
 ## Opening and moving between branches
 
-To open a new branch:
+When beginning implementation on an issue, first create a branch off of develop:
 
 ```bash
-git branch branch_name
+git branch branch_name develop
 ```
 
 To move to a given branch:
@@ -55,17 +55,23 @@ To move to a given branch:
 git checkout branch_name
 ```
 
-## Linking Pool Request to issue number
-
-In order to link a Pool Request to a given issue number, the first commit should be accompanied with a comment containing the issue number, for example:
+The last two commands can be combined into one command:
 
 ```bash
-git commit -m 'fixes issue #57'
+git checkout -b branch_name develop
+```
+
+## Linking Pull Request to issue number
+
+In order to link a Pull Request to a given issue number, the first commit should be accompanied with a comment containing the issue number, for example:
+
+```bash
+git commit -m 'fixes #57'
 ```
 
 ## How and when to do a Pull Request
 
-Pull requests should be done when work on an issue is done and ready to be reviewed. Once the new changes are pushed to remote, an option to do a Pull Request will appear on the top of the page at AgnostiqHQ/covalent. You will then be able to choose a reviewer on the upper right part of the screen.
+Pull requests should be done as soon as the work on an issue has started on a branch and needs to be reviewed.
 
 Style Guide
 ===========
