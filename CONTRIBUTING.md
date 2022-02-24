@@ -385,42 +385,75 @@ export LOGLEVEL=INFO
 guarantees all info, warning, error and critical messages will be shown. If this environment variable is not set, the default value of `WARNING` is used.
 
 ## Writing Tests
-All feature changes and bug fixes should be accompanied by tests. These can be a
-combination of unit, integration and functional tests. Unit tests are the highest priority and
-should be the bulk of the tests in the repo. Following that, integration tests, checking that
-various modules function as expected are the next highest priority. Lastly, functional tests,
-which test various software use cases should be proportionately the minority
-of the tests (without undermining their importance).
+All feature changes and bug fixes should be accompanied by tests. The bulk of the tests in the repo should be unit tests as opposed to functional or integration tests. A short definition of each type of test:
 
-In the case of bug fixes, it is necessary to write tests for which the code breaks before
-implementing the bug fix.
+1. Unit tests - the scope of unit tests are usually at a functional level, i.e. given an input, check if the output is as expected. Furthermore, care needs to be taken to mock other functions, context managers, I/O tasks within the function that is being tested.
+2. Integration tests - the scope of integration tests varies from a functional to module level. Here, we also test that functions or methods behave in certain ways given an input without mocking some of the other functions. The objective is to test how different functions / modules behave when "integrated".
+3. Functional tests - the scope of these tests are on a user experience level. The purpose here is to ensure that commonly defined software use cases leads to expected behaviour / output (without encountering runtime errors etc.) for a given input.
 
-It is further advisable to consider how feature changes could be implemented so that the code
-is easily testable.
 
-`pytest` is the framework of choice for testing in this repo with additional packages such as
-`pytest-asyncio` to test asynchronous code and `pytest-mock` for the purpose of mocking and
-monkey-patching.
+Below, we list some important guidelines when writing tests.
 
-The test suite for covalent can be run locally via:
+* **Write unit tests as opposed to integration or functional tests (unless there's a really good reason for it).**
 
-```buildoutcfg
-pytest -v
-```
+* In the case of bug fixes, write tests for which the code breaks before implementing the bug fix.
 
-Running the entire test suite will take a while and for the purpose of development, one can
-focus on more specific tests using syntax in the examples shown below.
+When writing tests, consider the following questions as guiding principles:
+
+1. Are these tests easily maintainable as the code is updated over time? - Try to minimize the number of tests that would need to be modified when an implementation is changed.
+2. Are these tests lightweight, i.e. not resource or time intensive? - Try to minimize test runtime and the number of operations that are carried out.
+3. Are these tests going to be helpful for debugging when a feature is added or modified?
+
+### Installing test packages
+When it comes to testing, `pytest` is the recommended framework for this repository. Install all testing related packages with the following step:
+
+1. Navigate to the `tests` folder in the Covalent root directory.
+2. Run `pip install -r requirements.txt`.
+
+### Running tests locally
+
+The Covalent test suite can be run locally from the root directory with `pytest` (add the tags `-vv -s` for a more verbose setting).
+
+Running the entire test suite everytime the code has been updated will take a while. The following commands are useful to hone in on a smaller subset of tests for development purposes.
 
 1. To run a specific test module:
-```buildoutcfg
+```bash
 pytest tests/covalent_dispatcher_tests/_executor/local_test.py -vv -s
 ```
 
 2. To run a specific test:
 
-```buildoutcfg
+```bash
 pytest tests/electron_return_value_test.py::test_arithmetic_1_rev -vv -s
 ```
+
+Note: In order to run some of the functional tests (which will eventually be deprecated), the covalent dispatcher needs to be started in developer mode (discussed in _First Steps_ section).
+
+### Mocking
+
+Mocking is a very important part of writing proper unit tests. Scenarios where mocking is essential are listed below:
+
+1. Making server calls.
+2. Reading and writing to files.
+3. Getting environment variable values.
+4. Getting file or directory paths.
+5. If a function A is composed of functions B and C, the calls to functions B and C should be mocked. This ensures maintainability, since changes to functions B would then only require us to update the test for function B (instead of both A and B).
+
+Check out the official [pytest documentation](https://pypi.org/project/pytest-mock/).
+
+#### Mocking via `mocker`
+
+Some important commands to know about:
+
+1. `mocker.patch` - allows mocking function calls, return values etc.
+2. The previous command combined with the parameter `side_effects` allows mocking return values for multiple calls of the mocked function. Furthermore, it allows mocking the outcome of `try / except` clauses.
+3. Some other commands used to check if a mocked function (`mocked_func`) has been called or called with particular arguments once are `mocked_func.assert_called_once()`, `mocked_func.assert_called_once_with(..)`.
+4. If a mocked function has been called multiple times within a function, it can be checked via `mocked_func.mock_calls`. Check out this [discussion](https://stackoverflow.com/questions/59839192/python-pytest-mock-assert-has-calls) on stackoverflow.
+5. Check out this [discussion](https://stackoverflow.com/questions/28850070/python-mocking-a-context-manager) on mocking context managers (such as `with open(..):` etc.).
+
+#### Mocking via `monkeypatch`
+
+This module can be used to mock module variables, environment variables etc. Check out the official [monkeypatch documentation](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
 
 Contributor License Agreement
 =============================
