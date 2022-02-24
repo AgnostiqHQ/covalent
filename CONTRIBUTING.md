@@ -37,11 +37,9 @@ pytest -v
 ```
 
 Getting started with feature development
-===========
+========================================
 
-## How to add new modules to the API
-
-## Opening and moving between branches
+### Create and checkout the feature branch
 
 When beginning implementation on an issue, first create a branch off of develop:
 
@@ -49,17 +47,21 @@ When beginning implementation on an issue, first create a branch off of develop:
 git branch branch_name develop
 ```
 
-To move to a given branch:
+To checkout the branch:
 
 ```bash
 git checkout branch_name
 ```
 
-The last two commands can be combined into one command:
+The two commands can be combined into:
 
 ```bash
 git checkout -b branch_name develop
 ```
+
+### How and when to do a Pull Request
+
+Pull requests should be done as soon as the implementation on an issue has started on the feature branch.
 
 ## Linking Pull Request to issue number
 
@@ -69,9 +71,12 @@ In order to link a Pull Request to a given issue number, the first commit should
 git commit -m 'fixes #57'
 ```
 
-## How and when to do a Pull Request
+This could also be done manually on the Pull Request page using the `Linked issues` button.
 
-Pull requests should be done as soon as the work on an issue has started on a branch and needs to be reviewed.
+### Tag reviewers
+
+Once the changes in the feature branch are ready to be reviwed, tag the relevant reviewer(s) on the Pull Request page.
+
 
 Style Guide
 ===========
@@ -490,6 +495,11 @@ Some important commands to know about:
 #### Mocking via `monkeypatch`
 
 This module can be used to mock module variables, environment variables etc. Check out the official [monkeypatch documentation](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
+
+
+Building Read the Docs locally
+==============================
+## How to add new modules to the API
 
 Contributor License Agreement
 =============================
