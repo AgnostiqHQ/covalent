@@ -342,7 +342,6 @@ class Electron:
             function_string=get_serialized_function_str(self.function),
         )
 
-        # TODO: CALL `get_named_params` HERE
         if self.function:
             named_args, named_kwargs = get_named_params(self.function, args, kwargs)
 
@@ -412,7 +411,6 @@ class Electron:
             )
 
         else:
-            # print(f"{node_id} {param_name} {param_value} {param_type}")
 
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
