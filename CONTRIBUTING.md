@@ -455,6 +455,8 @@ Some important commands to know about:
 
 This module can be used to mock module variables, environment variables etc. Check out the official [monkeypatch documentation](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
 
+## How to add new modules to the API
+
 ## Opening and moving between branches
 
 To open a new branch:
