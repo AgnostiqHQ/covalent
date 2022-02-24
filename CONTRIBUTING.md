@@ -485,34 +485,6 @@ Some important commands to know about:
 
 This module can be used to mock module variables, environment variables etc. Check out the official [monkeypatch documentation](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
 
-## How to add new modules to the API
-
-## Opening and moving between branches
-
-To open a new branch:
-
-```bash
-git branch branch_name
-```
-
-To move to a given branch:
-
-```bash
-git checkout branch_name
-```
-
-## Linking Pool Request to issue number
-
-In order to link a Pool Request to a given issue number, the first commit should be accompanied with a comment containing the issue number, for example:
-
-```bash
-git commit -m 'fixes issue #57'
-```
-
-## How and when to do a Pull Request
-
-Pull requests should be done when work on an issue is done and ready to be reviewed. Once the new changes are pushed to remote, an option to do a Pull Request will appear on the top of the page at AgnostiqHQ/covalent. You will then be able to choose a reviewer on the upper right part of the screen.
-
 Contributor License Agreement
 =============================
 
