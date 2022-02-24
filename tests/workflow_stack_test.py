@@ -328,3 +328,42 @@ def test_dispatch_cancellation():
     rm._delete_result(dispatch_id)
 
     assert result.status == Result.CANCELLED
+
+
+def test_all_parameter_types_in_electron():
+    """Test whether an electron supports parameter passing in every python compatible way"""
+
+    @ct.electron
+    def task(a, /, b, *args, c, **kwargs):
+        return a * b * c, args, kwargs
+
+    @ct.lattice
+    def workflow():
+        return task(1, 2, 3, 4, c=5, d=6, e=7)
+
+    dispatch_id = ct.dispatch(workflow)()
+    result = rm.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
+
+    assert result.result == (10, (3, 4), {"d": 6, "e": 7})
+
+
+def test_all_parameter_types_in_lattice():
+    """Test whether a lattice supports parameter passing in every python compatible way"""
+
+    @ct.electron
+    def task(a, /, b, *args, c, **kwargs):
+        return a * b * c, args, kwargs
+
+    @ct.lattice
+    def workflow(a, /, b, *args, c, **kwargs):
+        return task(a, b, *args, c=c, **kwargs)
+
+    dispatch_id = ct.dispatch(workflow)(1, 2, 3, 4, c=5, d=6, e=7)
+    result = rm.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
+
+    assert result.inputs["args"] == [1, 2, 3, 4]
+    assert result.inputs["kwargs"] == {"c": 5, "d": 6, "e": 7}
+
+    assert result.result == (10, (3, 4), {"d": 6, "e": 7})

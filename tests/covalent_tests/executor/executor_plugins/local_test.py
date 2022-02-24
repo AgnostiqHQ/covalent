@@ -28,14 +28,14 @@ from covalent.executor.executor_plugins.local import LocalExecutor
 
 
 def test_local_executor_passes_results_dir(mocker):
-    """Test that the local executor calls the stream writing function with the results directory specified in the execution arguments."""
+    """Test that the local executor calls the stream writing function with the results directory specified."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
 
         @ct.electron
-        def simple_task(x):
-            print(x)
-            return x
+        def simple_task(x, y):
+            print(x, y)
+            return x, y
 
         mocked_function = mocker.patch(
             "covalent.executor.executor_plugins.local.LocalExecutor.write_streams_to_file"
@@ -43,7 +43,8 @@ def test_local_executor_passes_results_dir(mocker):
         le = LocalExecutor()
         le.execute(
             function=TransportableObject(simple_task),
-            kwargs={"x": 1},
+            args={"x": 1},
+            kwargs={"y": 2},
             dispatch_id=-1,
             results_dir=tmp_dir,
             node_id=0,
