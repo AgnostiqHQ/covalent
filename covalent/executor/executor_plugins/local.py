@@ -26,7 +26,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import io
 from contextlib import redirect_stderr, redirect_stdout
-from typing import Any
+from typing import Any, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import logger
@@ -49,7 +49,8 @@ class LocalExecutor(BaseExecutor):
     def execute(
         self,
         function: TransportableObject,
-        kwargs: Any,
+        args: List,
+        kwargs: Dict,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
@@ -60,7 +61,8 @@ class LocalExecutor(BaseExecutor):
         Args:
             function: The input python function which will be executed and whose result
                       is ultimately returned by this function.
-            kwargs: Keyword arguments to be used by function.
+            args: List of positional arguments to be used by the function.
+            kwargs: Dictionary of keyword arguments to be used by the function.
             dispatch_id: The unique identifier of the external lattice process which is
                          calling this function.
             results_dir: The location of the results directory.
@@ -81,6 +83,7 @@ class LocalExecutor(BaseExecutor):
 
                 result = self.execute_in_conda_env(
                     function,
+                    args,
                     kwargs,
                     self.conda_env,
                     self.cache_dir,
@@ -89,7 +92,7 @@ class LocalExecutor(BaseExecutor):
 
             else:
                 fn = function.get_deserialized()
-                result = fn(**kwargs)
+                result = fn(*args, **kwargs)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),

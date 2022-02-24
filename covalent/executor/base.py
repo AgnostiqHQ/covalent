@@ -27,7 +27,7 @@ import subprocess
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, ContextManager, Iterable, Tuple
+from typing import Any, ContextManager, Dict, Iterable, List, Tuple
 
 import cloudpickle as pickle
 
@@ -125,7 +125,8 @@ class BaseExecutor(ABC):
     def execute(
         self,
         function: TransportableObject,
-        kwargs: Any,
+        args: List,
+        kwargs: Dict,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
@@ -138,7 +139,8 @@ class BaseExecutor(ABC):
         Args:
             function: The input python function which will be executed and whose result
                       is ultimately returned by this function.
-            kwargs: Keyword arguments to be used by function.
+            args: List of positional arguments to be used by the function.
+            kwargs: Dictionary of keyword arguments to be used by the function.
             dispatch_id: The unique identifier of the external lattice process which is
                          calling this function.
             results_dir: The location of the results directory.
@@ -153,7 +155,8 @@ class BaseExecutor(ABC):
     def execute_in_conda_env(
         self,
         function: TransportableObject,
-        kwargs: Any,
+        args: List,
+        kwargs: Dict,
         conda_env: str,
         cache_dir: str,
         node_id: int,
@@ -164,7 +167,8 @@ class BaseExecutor(ABC):
         Args:
             function: The input python function which will be executed and whose result
                 is ultimately returned by this function.
-            kwargs: Keyword arguments to be used by function.
+            args: List of positional arguments to be used by the function.
+            kwargs: Dictionary of keyword arguments to be used by the function.
             conda_env: Name of a Conda environment in which to execute the task.
             cache_dir: The directory where temporary files and logs (if any) are stored.
             node_id: The integer identifier for the current node.
@@ -174,7 +178,7 @@ class BaseExecutor(ABC):
         """
 
         if not self.get_conda_path():
-            return self._on_conda_env_fail(function, kwargs, node_id)
+            return self._on_conda_env_fail(function, args, kwargs, node_id)
 
         # Pickle the function
         temp_filename = ""
@@ -182,7 +186,7 @@ class BaseExecutor(ABC):
             pickle.dump(function, f)
             temp_filename = f.name
 
-        result_filename = os.path.join(cache_dir, "result_" + temp_filename.split("/")[-1])
+        result_filename = os.path.join(cache_dir, f'result_{temp_filename.split("/")[-1]}')
 
         # Write a bash script to activate the environment
         shell_commands = "#!/bin/bash\n"
@@ -197,7 +201,7 @@ class BaseExecutor(ABC):
         else:
             message = "No Conda installation found on this compute node."
             app_log.warning(message)
-            return self._on_conda_env_fail(function, kwargs, node_id)
+            return self._on_conda_env_fail(function, args, kwargs, node_id)
 
         shell_commands += f"conda activate {conda_env}\n"
         shell_commands += "retval=$?\n"
@@ -227,7 +231,7 @@ class BaseExecutor(ABC):
         shell_commands += f'os.remove("{temp_filename}")\n\n'
 
         shell_commands += "fn = function.get_deserialized()\n"
-        shell_commands += f"result = fn(**{kwargs})\n\n"
+        shell_commands += f"result = fn(*{args}, **{kwargs})\n\n"
 
         shell_commands += f'with open("{result_filename}", "wb") as f:\n'
         shell_commands += "    pickle.dump(result, f)\n"
@@ -246,7 +250,7 @@ class BaseExecutor(ABC):
 
             if out.returncode != 0:
                 app_log.warning(out.stderr)
-                return self._on_conda_env_fail(function, kwargs, node_id)
+                return self._on_conda_env_fail(function, args, kwargs, node_id)
 
         with open(result_filename, "rb") as f:
             result = pickle.load(f)
@@ -255,13 +259,16 @@ class BaseExecutor(ABC):
             app_log.debug(message)
             return result
 
-    def _on_conda_env_fail(self, func: TransportableObject, kwargs: Any, node_id: int):
+    def _on_conda_env_fail(
+        self, func: TransportableObject, args: List, kwargs: Dict, node_id: int
+    ):
         """
 
         Args:
             func: The serialized input python function which will be executed and
                 whose result may be returned by this function.
-            kwargs: Keyword arguments to be used by function.
+            args: List of positional arguments to be used by the function.
+            kwargs: Dictionary of keyword arguments to be used by the function.
             node_id: The integer identifier for the current node.
 
         Returns:
@@ -275,7 +282,7 @@ class BaseExecutor(ABC):
             message += "\nExecuting on the current Conda environment."
             app_log.warning(message)
             fn = func.get_deserialized()
-            result = fn(**kwargs)
+            result = fn(*args, **kwargs)
 
         else:
             app_log.error(message)

@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.27.0] - 2022-02-24
+
+### Added
+
+- Support for positional only, positional or keyword, variable positional, keyword only, variable keyword types of parameters is now added, e.g an electron can now use variable args and variable kwargs if the number/names of parameters are unknown during definition as `def task(*args, **kwargs)` which wasn't possible before.
+
+- `Lattice.args` added to store positional arguments passed to the lattice's workflow function.
+
+- `get_named_params` function added in `_shared_files/utils.py` which will return a tuple containing named positional arguments and named keyword arguments. The names help in showing and storing these parameters in the transport graph.
+
+- Tests to verify whether all kinds of input paramaters are supported by electron or a lattice.
+
+### Changed
+
+- No longer merging positional arguments with keyword arguments, instead they are separately stored in respective nodes in the transport graph.
+
+- `inputs` returned from `_get_inputs` function in `covalent_dispatcher/_core/execution.py` now contains positional as well as keyword arguments which further get passed to the executor.
+
+- Executors now support positional and keyword arguments as inputs to their executable functions.
+
+- Result object's `_inputs` attribute now contains both `args` and `kwargs`.
+
+- `add_node_for_nested_iterables` is renamed to `connect_node_with_others` and `add_node_to_graph` also renamed to `add_collection_node_to_graph` in `electron.py`. Some more variable renames to have appropriate self-explanatory names.
+
+- Nodes and edges in the transport graph now have a better interface to assign attributes to them.
+
+- Edge attribute `variable` renamed to `edge_name`.
+
+- In `serialize` function of the transport graph, if `metadata_only` is True, then only `metadata` attribute of node and `source` and `target` attributes of edge are kept in the then return serialized `data`.
+
+- Updated the tests wherever necessary to reflect the above changes
+
+### Removed
+
+- Deprecated `required_params_passed` since an error will automatically be thrown by the `build_graph` function if any of the required parameters are not passed.
+
+- Removed duplicate attributes from nodes in the transport graph.
+
 ## [0.26.1] - 2022-02-23
 
 ### Added
