@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Conda installation is only supported for Linux in the `Getting Started` guide.
 - MNIST classifier tutorial.
 
+## [0.27.1] - 2022-02-24
+
+### Removed
+
+- Removed AQ-Engineers from CODEOWNERS in order to fix PR review notifications
+
 ## [0.27.0] - 2022-02-24
 
 ### Added
