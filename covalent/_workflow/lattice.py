@@ -37,7 +37,11 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
-from .._shared_files.utils import get_serialized_function_str, required_params_passed
+from .._shared_files.utils import (
+    get_named_params,
+    get_serialized_function_str,
+    required_params_passed,
+)
 from .transport import _TransportGraph
 
 if TYPE_CHECKING:
@@ -80,6 +84,7 @@ class Lattice:
         self.metadata = {}
         self.__name__ = self.workflow_function.__name__
         self.post_processing = False
+        self.args = []
         self.kwargs = {}
         self.electron_outputs = {}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
@@ -137,17 +142,18 @@ class Lattice:
 
         self.transport_graph.reset()
 
-        # Positional args are converted to kwargs
-        if self.workflow_function:
-            kwargs.update(
-                dict(zip(list(inspect.signature(self.workflow_function).parameters), args))
-            )
+        named_args, named_kwargs = get_named_params(self.workflow_function, args, kwargs)
 
+        args = [v for _, v in named_args.items()]
+        kwargs = named_kwargs
+
+        self.args = args
         self.kwargs = kwargs
+
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    self.workflow_function(**kwargs)
+                    self.workflow_function(*args, **kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
@@ -170,18 +176,7 @@ class Lattice:
             None
         """
 
-        # Positional args are converted to kwargs
-        if self.workflow_function:
-            kwargs.update(
-                dict(zip(list(inspect.signature(self.workflow_function).parameters), args))
-            )
-
-        if required_params_passed(func=self.workflow_function, kwargs=kwargs):
-            self.build_graph(**kwargs)
-        else:
-            raise ValueError(
-                "Provide values for all the workflow function parameters without default values."
-            )
+        self.build_graph(**kwargs)
 
         main_graph = self.transport_graph.get_internal_graph_copy()
 
@@ -201,7 +196,7 @@ class Lattice:
         # Print the node number in the label as `[node number]`
         for key, value in node_labels.items():
             node_labels[key] = "[" + str(key) + "]\n" + value
-        edge_labels = nx.get_edge_attributes(main_graph, "variable")
+        edge_labels = nx.get_edge_attributes(main_graph, "edge_name")
         nx.draw(
             main_graph,
             pos=pos,
@@ -228,18 +223,7 @@ class Lattice:
             None
         """
 
-        # Positional args are converted to kwargs
-        if self.workflow_function:
-            kwargs.update(
-                dict(zip(list(inspect.signature(self.workflow_function).parameters), args))
-            )
-
-        if not required_params_passed(func=self.workflow_function, kwargs=kwargs):
-            raise ValueError(
-                "Provide values for all the workflow function parameters without default values."
-            )
-
-        self.build_graph(**kwargs)
+        self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
 
     def __call__(self, *args, **kwargs):
