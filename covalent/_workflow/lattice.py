@@ -176,12 +176,7 @@ class Lattice:
             None
         """
 
-        if required_params_passed(func=self.workflow_function, kwargs=kwargs):
-            self.build_graph(**kwargs)
-        else:
-            raise ValueError(
-                "Provide values for all the workflow function parameters without default values."
-            )
+        self.build_graph(**kwargs)
 
         main_graph = self.transport_graph.get_internal_graph_copy()
 
@@ -227,11 +222,6 @@ class Lattice:
         Returns:
             None
         """
-
-        if not required_params_passed(func=self.workflow_function, kwargs=kwargs):
-            raise ValueError(
-                "Provide values for all the workflow function parameters without default values."
-            )
 
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)

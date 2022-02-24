@@ -141,7 +141,8 @@ def get_imports(func: Callable) -> Tuple[str, Set[str]]:
 
 
 def required_params_passed(func: Callable, kwargs: Dict) -> bool:
-    """Check to see that values for all parameters without default values have been passed.
+    """
+    DEPRECATED: Check to see that values for all parameters without default values have been passed.
 
     Args:
         func: Callable function.
