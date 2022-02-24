@@ -31,17 +31,21 @@ Start the Covalent servers in developer mode:
 covalent start -d
 ```
 
-Finally, run the tests to verify your installation (Check the [writing tests](#writing-tests) section for more details on installing test specific packages):
+Check the [writing tests](#writing-tests) section for more details on installing test specific packages. Finally, run the tests to verify your installation:
 ```shell
 pytest -v
 ```
 
+
+
 Getting started with feature development
 ========================================
 
+Note that for complex issues, planning out the implementation details (on the issues page) is a very important step before writing any code in the feature branch. The feature development steps are listed below.
+
 ### Create and checkout the feature branch
 
-When beginning implementation on an issue, first create a branch off of develop:
+Once an issue has been assigned to you, create a feature branch to implement the proposed changes. When beginning implementation on an issue, first create a branch off of develop:
 
 ```bash
 git branch branch_name develop
@@ -61,7 +65,7 @@ git checkout -b branch_name develop
 
 ### How and when to open a Pull Request
 
-Pull requests should be done as soon as the implementation on an issue has started on the feature branch (Learn more about [how to open a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)).
+Pull requests should be done as soon as the implementation on an issue has started on the feature branch. (Learn more about [how to open a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request).)
 
 ## Linking Pull Request to issue number
 
@@ -77,6 +81,9 @@ This could also be done manually on the Pull Request page using the `Linked issu
 
 Once the changes in the feature branch are ready to be reviwed, tag the relevant reviewer(s) on the Pull Request page.
 
+### Merging the feature branch to develop
+
+If all the reviewers have approved the Pull Request and all the actions have passed, the last person to review the branch is responsible for merging the feature branch to develop.
 
 Style Guide
 ===========
@@ -497,8 +504,23 @@ Some important commands to know about:
 This module can be used to mock module variables, environment variables etc. Check out the official [monkeypatch documentation](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
 
 
-Building Read the Docs locally
-==============================
+Documentation
+=============
+
+Contributing to the Covalent documentation is highly encouraged. This could mean adding How-To guides, tutorials etc.
+
+
+### Building the Read the Docs (RTD) locally
+
+#### Installation
+
+
+#### Building the docs
+
+
+#### Viewing the locally built RTD
+
+
 
 
 Contributor License Agreement
