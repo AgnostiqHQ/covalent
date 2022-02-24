@@ -33,10 +33,6 @@ import psutil
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
 
-DISPATCHER_PIDFILE = get_config("dispatcher.cache_dir") + "/dispatcher.pid"
-DISPATCHER_LOGFILE = get_config("dispatcher.log_dir") + "/dispatcher.log"
-DISPATCHER_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../_service"
-
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
@@ -122,23 +118,11 @@ def _next_available_port(requested_port: int) -> int:
     return assigned_port
 
 
-def _is_dispatcher_running() -> bool:
-    """Check status of dispatcher server.
+def _is_server_running() -> bool:
+    """Check status of the Covalent server.
 
     Returns:
-        status: Status of whether the dispatcher server is running.
-    """
-
-    if _read_pid(DISPATCHER_PIDFILE) == -1:
-        return False
-    return True
-
-
-def _is_ui_running() -> bool:
-    """Check status of user interface (UI) server.
-
-    Returns:
-        status: Status of whether the user interface server is running.
+        status: Status of whether the server is running.
     """
 
     if _read_pid(UI_PIDFILE) == -1:
@@ -147,7 +131,6 @@ def _is_ui_running() -> bool:
 
 
 def _graceful_start(
-    server_name: str,
     server_root: str,
     pidfile: str,
     logfile: str,
@@ -155,10 +138,9 @@ def _graceful_start(
     develop: bool = False,
 ) -> int:
     """
-    Gracefully start a Flask app with gunicorn.
+    Gracefully start a Flask app.
 
     Args:
-        server_name: Name of the server. 'dispatcher' or 'UI'.
         server_root: Directory where app.py is located.
         pidfile: Process ID file for the server.
         logfile: Log file for the server.
@@ -172,7 +154,7 @@ def _graceful_start(
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         port = get_config("user_interface.port")
-        click.echo(f"Covalent {server_name} server is already running at http://0.0.0.0:{port}.")
+        click.echo(f"Covalent server is already running at http://0.0.0.0:{port}.")
         return port
 
     _rm_pid_file(pidfile)
@@ -185,16 +167,15 @@ def _graceful_start(
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
 
-    click.echo(f"Covalent {server_name} server has started at http://0.0.0.0:{port}")
+    click.echo(f"Covalent server has started at http://0.0.0.0:{port}")
     return port
 
 
-def _graceful_shutdown(server_name: str, pidfile: str) -> None:
+def _graceful_shutdown(pidfile: str) -> None:
     """
     Gracefully shut down a server given a process ID.
 
     Args:
-        server_name: Name of the server.
         pidfile: Process ID file for the server.
 
     Returns:
@@ -206,20 +187,20 @@ def _graceful_shutdown(server_name: str, pidfile: str) -> None:
         proc = psutil.Process(pid)
         proc.terminate()
         proc.wait()
-        click.echo(f"Covalent {server_name} server has stopped.")
+        click.echo("Covalent server has stopped.")
     else:
-        click.echo(f"Covalent {server_name} server was not running.")
+        click.echo("Covalent server was not running.")
     _rm_pid_file(pidfile)
 
 
-def _graceful_restart(server_name: str, pidfile: str) -> bool:
+def _graceful_restart(pidfile: str) -> bool:
     """Gracefully restart a server given a process ID."""
 
     pid = _read_pid(pidfile)
     if pid != -1:
         os.kill(pid, signal.SIGHUP)
         port = get_config("user_interface.port")
-        click.echo(f"Covalent {server_name} server has restarted on port http://0.0.0.0:{port}.")
+        click.echo(f"Covalent server has restarted on port http://0.0.0.0:{port}.")
         return True
     else:
         return False
@@ -229,18 +210,18 @@ def _graceful_restart(server_name: str, pidfile: str) -> bool:
 @click.option(
     "-p",
     "--port",
-    default=get_config("dispatcher.port"),
+    default=get_config("user_interface.port"),
     show_default=True,
-    help="Local dispatcher server port number.",
+    help="Server port number.",
 )
-@click.option("-d", "--develop", is_flag=True, help="Start the server(s) in developer mode.")
+@click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
 @click.pass_context
 def start(ctx, port: int, develop: bool) -> None:
     """
-    Start the dispatcher and/or UI servers.
+    Start the Covalent server.
     """
 
-    port = _graceful_start("UI", UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
+    port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
     set_config(
         {
             "user_interface.address": "0.0.0.0",
@@ -252,91 +233,62 @@ def start(ctx, port: int, develop: bool) -> None:
 
 
 @click.command()
-@click.option(
-    "--dispatcher",
-    is_flag=True,
-    help="Stop only the dispatcher server.",
-)
-@click.option(
-    "--ui",
-    is_flag=True,
-    help="Stop only the UI server.",
-)
-def stop(dispatcher: bool, ui: bool) -> None:
+def stop() -> None:
     """
-    Stop the dispatcher and/or UI servers.
+    Stop the Covalent server.
     """
 
-    if not (dispatcher or ui):
-        dispatcher = True
-        ui = True
-
-    if dispatcher:
-        _graceful_shutdown("dispatcher", DISPATCHER_PIDFILE)
-
-    if ui:
-        _graceful_shutdown("UI", UI_PIDFILE)
+    _graceful_shutdown(UI_PIDFILE)
 
 
 @click.command()
 @click.option(
-    "-p", "--port", default=None, type=int, help="Restart dispatcher server on a different port."
-)
-@click.option(
-    "-P",
-    "--ui-port",
+    "-p",
+    "--port",
     default=None,
     type=int,
-    help="Restart UI server on a different port.",
+    help="Restart Covalent server on a different port.",
 )
-@click.option("-d", "--develop", is_flag=True, help="Start the server(s) in developer mode.")
+@click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
 @click.pass_context
-def restart(ctx, port: int, ui_port: int, develop: bool) -> None:
+def restart(ctx, port: bool, develop: bool) -> None:
     """
     Restart the server.
     """
 
     pid = _read_pid(UI_PIDFILE)
-    port = ui_port or get_config("user_interface.port")
+    port = port or get_config("user_interface.port")
     if pid == -1 or port != get_config("user_interface.port") or develop:
-        ctx.invoke(stop, ui=True)
-        ctx.invoke(start, ui=True, ui_port=port, develop=develop)
+        ctx.invoke(stop)
+        ctx.invoke(start, port=port, develop=develop)
     elif pid != -1:
-        started = _graceful_restart("user interface", UI_PIDFILE)
+        started = _graceful_restart(UI_PIDFILE)
         if not started:
-            ctx.invoke(start, ui=True, ui_port=port, develop=develop)
+            ctx.invoke(start, port=port, develop=develop)
 
 
 @click.command()
 def status() -> None:
     """
-    Query the status of the dispatcher and UI servers.
+    Query the status of the Covalent server.
     """
-
-    dispatcher_port = _port_from_pid(_read_pid(DISPATCHER_PIDFILE))
-    if dispatcher_port is not None:
-        click.echo(f"Covalent dispatcher server is running at http://0.0.0.0:{dispatcher_port}.")
-    else:
-        _rm_pid_file(DISPATCHER_PIDFILE)
-        click.echo("Covalent dispatcher server is stopped.")
 
     if _read_pid(UI_PIDFILE) != -1:
         ui_port = get_config("user_interface.port")
-        click.echo(f"Covalent UI server is running at http://0.0.0.0:{ui_port}.")
+        click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
     else:
         _rm_pid_file(UI_PIDFILE)
-        click.echo("Covalent UI server is stopped.")
+        click.echo("Covalent server is stopped.")
 
 
 @click.command()
 def purge() -> None:
     """
-    Shutdown servers and delete the cache and config settings.
+    Shutdown server and delete the cache and config settings.
     """
 
-    # Shutdown UI and dispatcher server.
-    _graceful_shutdown("dispatcher", DISPATCHER_PIDFILE)
-    _graceful_shutdown("UI", UI_PIDFILE)
+    # Shutdown server.
+    _graceful_shutdown(UI_PIDFILE)
 
     shutil.rmtree(get_config("sdk.log_dir"), ignore_errors=True)
     shutil.rmtree(get_config("dispatcher.cache_dir"), ignore_errors=True)
