@@ -31,7 +31,7 @@ Start the Covalent servers in developer mode:
 covalent start -d
 ```
 
-Finally, run the tests to verify your installation:
+Finally, run the tests to verify your installation (Check the [writing tests](#writing-tests) section for more details on installing test specific packages):
 ```shell
 pytest -v
 ```
@@ -59,9 +59,9 @@ The two commands can be combined into:
 git checkout -b branch_name develop
 ```
 
-### How and when to do a Pull Request
+### How and when to open a Pull Request
 
-Pull requests should be done as soon as the implementation on an issue has started on the feature branch.
+Pull requests should be done as soon as the implementation on an issue has started on the feature branch (Learn more about [how to open a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)).
 
 ## Linking Pull Request to issue number
 
@@ -71,7 +71,7 @@ In order to link a Pull Request to a given issue number, the first commit should
 git commit -m 'fixes #57'
 ```
 
-This could also be done manually on the Pull Request page using the `Linked issues` button.
+This could also be done manually on the Pull Request page using the `Linked issues` button (Learn more about [linking a pull request to an issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)).
 
 ### Tag reviewers
 
@@ -499,7 +499,7 @@ This module can be used to mock module variables, environment variables etc. Che
 
 Building Read the Docs locally
 ==============================
-## How to add new modules to the API
+
 
 Contributor License Agreement
 =============================
