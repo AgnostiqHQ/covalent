@@ -57,7 +57,7 @@ _DEFAULT_CONFIG = {
     },
     "user_interface": {
         "address": "0.0.0.0",
-        "port": 47007,
+        "port": 48008,
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
     },

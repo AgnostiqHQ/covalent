@@ -12,6 +12,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Conda installation is only supported for Linux in the `Getting Started` guide.
 - MNIST classifier tutorial.
 
+## [0.27.3] - 2022-02-25
+
+### Added
+
+- Added `USING_DOCKER.md` guide for running docker container.
+- Added cli args to covalent UI flask server `covalent_ui/app.py` to modify port and log file path.
+
+### Removed
+- Removed gunicorn from cli and Dockerfile.
+
+### Changed
+- Updated cli `covalent_dispatcher/_cli/service.py` to run flask server directly, and removed dispatcher and UI flags.
+- Using Flask blueprints to merge Dispatcher and UI servers.
+- Updated Dockerfile to run flask server directly.
+- Creating server PID file manually in `covalent_dispatcher/_cli/service.py`.
+- Updated tests and docs to reflect merged servers.
+- Changed all mentions of port 47007 (for old UI server) to 48008.
+
+## [0.27.2] - 2022-02-24
+
+### Changed
+
+- Removed unnecessary blockquotes from the How-To guide for creating custom executors
+- Changed "Covalent Cloud" to "Covalent" in the main code text
+
 ## [0.27.1] - 2022-02-24
 
 ### Removed
