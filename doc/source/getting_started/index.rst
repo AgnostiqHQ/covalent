@@ -45,7 +45,7 @@ Covalent is also provided as a Docker image. This image can be used as a develop
    docker run -it --rm covalent bash
 
    # Run the container as a server
-   docker run -d -p 48008 covalent
+   docker run -d -p 48008:8080 covalent
 
 .. note::
 
