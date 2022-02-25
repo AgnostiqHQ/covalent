@@ -156,7 +156,7 @@ Let's look at a simple example to get started with Covalent. Before starting, en
    # Dispatch the workflow
    dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
 
-Navigate to the Covalent UI at `<http://0.0.0.0:47008>`_ to see your workflow in the queue:
+Navigate to the Covalent UI at `<http://0.0.0.0:48008>`_ to see your workflow in the queue:
 
 |
 
@@ -166,7 +166,7 @@ Navigate to the Covalent UI at `<http://0.0.0.0:47008>`_ to see your workflow in
 |
 
 .. warning::
-   In some browsers and operating systems, the address `0.0.0.0` does not resolve to localhost. If you experience issues, try instead navigating to `<http://localhost:47008>`_.
+   In some browsers and operating systems, the address `0.0.0.0` does not resolve to localhost. If you experience issues, try instead navigating to `<http://localhost:48008>`_.
 
 Click on the dispatch ID to view the workflow graph:
 
