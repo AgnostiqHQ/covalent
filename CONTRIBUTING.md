@@ -36,8 +36,6 @@ Check the [writing tests](#writing-tests) section for more details on installing
 pytest -v
 ```
 
-
-
 Getting started with feature development
 ========================================
 
@@ -67,7 +65,7 @@ git checkout -b branch_name develop
 
 Pull requests should be done as soon as the implementation on an issue has started on the feature branch. (Learn more about [how to open a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request).)
 
-## Linking Pull Request to issue number
+### Linking Pull Request to issue number
 
 In order to link a Pull Request to a given issue number, the first commit should be accompanied with a comment containing the issue number, for example:
 
@@ -79,7 +77,7 @@ This could also be done manually on the Pull Request page using the `Linked issu
 
 ### Tag reviewers
 
-Once the changes in the feature branch are ready to be reviwed, tag the relevant reviewer(s) on the Pull Request page.
+Once the changes in the feature branch are ready to be reviewed, tag the relevant reviewer(s) on the Pull Request page.
 
 ### Merging the feature branch to develop
 
@@ -504,14 +502,10 @@ Some important commands to know about:
 This module can be used to mock module variables, environment variables etc. Check out the official [monkeypatch documentation](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
 
 
-Documentation
-=============
+Building Read the Docs (RTD) locally
+====================================
 
-Contributing to the Covalent documentation is highly encouraged. This could mean adding How-To guides, tutorials etc. In order to check that the changes to the documentation are rendering as desired, there are two options: check the documentation on the Pull Request page in the RTD action or build the RTD locally.
-
-### Building the Read the Docs (RTD) locally
-
-The steps required to build the RTD locally is listed below.
+Contributing to the Covalent documentation is highly encouraged. This could mean adding How-To guides, tutorials etc. The steps required to build the RTD locally are listed below:
 
 #### Installation
 
