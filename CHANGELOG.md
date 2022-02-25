@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.27.2] - 2022-02-25
+## [0.27.3] - 2022-02-25
 
 ### Added
 
@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Creating server PID file manually in `covalent_dispatcher/_cli/service.py`.
 - Updated tests and docs to reflect merged servers.
 - Changed all mentions of port 47007 (for old UI server) to 48008.
+
+## [0.27.2] - 2022-02-24
+
+### Changed
+
+- Removed unnecessary blockquotes from the How-To guide for creating custom executors
+- Changed "Covalent Cloud" to "Covalent" in the main code text
 
 ## [0.27.1] - 2022-02-24
 
