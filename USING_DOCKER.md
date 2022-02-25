@@ -13,7 +13,7 @@ where `my-github` is your personal GitHub account.
 ## Building Image
 
 ```shell
-docker build . -t covalent
+docker build -t covalent:latest .
 ```
 
 ## Running Image
