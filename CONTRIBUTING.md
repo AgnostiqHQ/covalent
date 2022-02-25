@@ -507,21 +507,41 @@ This module can be used to mock module variables, environment variables etc. Che
 Documentation
 =============
 
-Contributing to the Covalent documentation is highly encouraged. This could mean adding How-To guides, tutorials etc.
-
+Contributing to the Covalent documentation is highly encouraged. This could mean adding How-To guides, tutorials etc. In order to check that the changes to the documentation are rendering as desired, there are two options: check the documentation on the Pull Request page in the RTD action or build the RTD locally.
 
 ### Building the Read the Docs (RTD) locally
 
+The steps required to build the RTD locally is listed below.
+
 #### Installation
 
+Navigate to the `/covalent/doc` folder and install the packages to build the documentation:
+
+```bash
+pip install -r requirements.txt
+```
+
+Note that some additional packages might need to be installed as well, depending on the operating system.
 
 #### Building the docs
 
+Navigate to the root folder (`/covalent/`) of the repo and run:
+
+```bash
+python setup.py docs
+```
 
 #### Viewing the locally built RTD
 
+In order to view the local RTD build, navigate to the `/covalent/doc/build/html` folder. Left click on `index.html` file and copy the path. Paste the path into the browser to access the RTD that was built locally.
 
+#### Cleaning the doc build
 
+The local RTD build can be cleaned using:
+
+```bash
+python setup.py docs --clean
+```
 
 Contributor License Agreement
 =============================
