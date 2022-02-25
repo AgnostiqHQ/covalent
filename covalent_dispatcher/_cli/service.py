@@ -239,7 +239,7 @@ def start(ctx, port: int, develop: bool) -> None:
         try:
             sock.bind(("0.0.0.0", port))
             sock.close()
-        except:
+        except OSError:
             server_listening = True
 
         time.sleep(1)
