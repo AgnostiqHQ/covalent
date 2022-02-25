@@ -58,7 +58,7 @@ Begin by starting the Covalent servers:
 covalent start
 ```
 
-Navigate to the user interface at `http://localhost:47008` to monitor workflow execution progress.
+Navigate to the user interface at `http://localhost:48008` to monitor workflow execution progress.
 
 In your Python code, it's as simple as adding a few decorators!  Consider the following example which uses a support vector machine (SVM) to classify types of iris flowers.
 
