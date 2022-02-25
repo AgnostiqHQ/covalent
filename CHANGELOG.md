@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [WIP]
 
-## Added
+### Added
 
 - Conda installation is only supported for Linux in the `Getting Started` guide.
 - MNIST classifier tutorial.
+
+### Removed
+
+- Removed handling of default values of function parameters in `get_named_params` in `covalent/_shared_files/utils.py`. So, it is actually being handled by not being handled since now `named_args` and `named_kwargs` will only contain parameters that were passed during the function call and not all of them.
 
 ## [0.27.3] - 2022-02-25
 
