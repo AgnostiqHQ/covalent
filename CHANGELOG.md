@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Path used in `covalent/executor/__init__.py` for executor plugin modules needed updating to `covalent/executor/executor_plugins`
 
+### Removed
+
+- Disabled workflow cancellation test due to inconsistent outcomes. Test will be re-enabled after cancellation mechanisms are investigated further.
+
 ## [0.27.3] - 2022-02-25
 
 ### Added
