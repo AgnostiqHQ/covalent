@@ -164,7 +164,7 @@ class _ExecutorManager:
             None
         """
 
-        entry_points = pkg_resources.iter_entry_points("covalent_dispatcher.executor_plugins")
+        entry_points = pkg_resources.iter_entry_points("covalent.executor.executor_plugins")
         for entry in entry_points:
             the_module = entry.load()
             self._populate_executor_map_from_module(the_module)
