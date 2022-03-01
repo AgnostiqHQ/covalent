@@ -1,0 +1,338 @@
+openapi: 3.0.2
+info:
+  title: Covalent Data Service API
+  version: 0.1.0
+paths:
+  /api/v1/workflow/results:
+    get:
+      tags:
+        - Workflow
+      summary: Get Results
+      description: Get all results
+      operationId: get_results_api_v1_workflow_results_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                title: Response Get Results Api V1 Workflow Results Get
+                type: array
+                items:
+                  $ref: '#/components/schemas/Result'
+    post:
+      tags:
+        - Workflow
+      summary: Create Result
+      description: Get a result object
+      operationId: create_result_api_v1_workflow_results_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Result'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/workflow/results/{result_id}:
+    get:
+      tags:
+        - Workflow
+      summary: Get Result
+      description: Get a result object
+      operationId: get_result_api_v1_workflow_results__result_id__get
+      parameters:
+        - required: true
+          schema:
+            title: Result Id
+            type: integer
+          name: result_id
+          in: path
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+        '404':
+          description: The result was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPExceptionSchema'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/fs/upload:
+    post:
+      tags:
+        - Data
+      summary: Upload File
+      description: Upload a file
+      operationId: upload_file_api_v1_fs_upload_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_file_api_v1_fs_upload_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/fs/download:
+    get:
+      tags:
+        - Data
+      summary: Download File
+      description: Donwload a file
+      operationId: download_file_api_v1_fs_download_get
+      parameters:
+        - required: true
+          schema:
+            title: File Location
+            type: string
+          name: file_location
+          in: query
+      responses:
+        '200':
+          description: Return binary content of file.
+          content:
+            application/octet-stream: {}
+        '404':
+          description: File was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPExceptionSchema'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /:
+    get:
+      summary: Root
+      description: Root GET
+      operationId: root__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    Body_upload_file_api_v1_fs_upload_post:
+      title: Body_upload_file_api_v1_fs_upload_post
+      required:
+        - file
+      type: object
+      properties:
+        file:
+          title: File
+          type: string
+          format: binary
+    Graph:
+      title: Graph
+      required:
+        - nodes
+        - links
+      type: object
+      properties:
+        nodes:
+          title: Nodes
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        links:
+          title: Links
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+    HTTPExceptionSchema:
+      title: HTTPExceptionSchema
+      required:
+        - detail
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: string
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    Link:
+      title: Link
+      required:
+        - name
+        - start_time
+        - end_time
+        - status
+        - stdout
+        - stderr
+        - edge_name
+        - param_type
+        - source
+        - target
+      type: object
+      properties:
+        name:
+          title: Name
+          type: string
+        start_time:
+          title: Start Time
+          type: string
+          format: date-time
+        end_time:
+          title: End Time
+          type: string
+          format: date-time
+        status:
+          title: Status
+          type: string
+        output:
+          title: Output
+        error:
+          title: Error
+          type: string
+        stdout:
+          title: Stdout
+          type: string
+        stderr:
+          title: Stderr
+          type: string
+        edge_name:
+          title: Edge Name
+          type: string
+        param_type:
+          title: Param Type
+          type: string
+        source:
+          title: Source
+          type: integer
+        target:
+          title: Target
+          type: integer
+    Node:
+      title: Node
+      required:
+        - name
+        - start_time
+        - end_time
+        - status
+        - stdout
+        - stderr
+        - id
+      type: object
+      properties:
+        name:
+          title: Name
+          type: string
+        start_time:
+          title: Start Time
+          type: string
+          format: date-time
+        end_time:
+          title: End Time
+          type: string
+          format: date-time
+        status:
+          title: Status
+          type: string
+        output:
+          title: Output
+        error:
+          title: Error
+          type: string
+        stdout:
+          title: Stdout
+          type: string
+        stderr:
+          title: Stderr
+          type: string
+        id:
+          title: Id
+          type: integer
+    Result:
+      title: Result
+      required:
+        - dispatch_id
+        - results_dir
+        - status
+        - graph
+      type: object
+      properties:
+        dispatch_id:
+          title: Dispatch Id
+          type: string
+        results_dir:
+          title: Results Dir
+          type: string
+        status:
+          title: Status
+          type: string
+        graph:
+          $ref: '#/components/schemas/Graph'
+    UploadResponse:
+      title: UploadResponse
+      required:
+        - filename
+        - path
+      type: object
+      properties:
+        filename:
+          title: Filename
+          type: string
+        path:
+          title: Path
+          type: string
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
