@@ -33,7 +33,7 @@ from .service import purge, restart, start, status, stop
 @click.pass_context
 def cli(ctx: click.Context, version: bool) -> None:
     """
-    Covalent CLI tool used to manage the dispatcher and UI servers.
+    Covalent CLI tool used to manage the servers.
     """
     if version:
         from covalent import __version__

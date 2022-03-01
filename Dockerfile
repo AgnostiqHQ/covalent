@@ -28,6 +28,8 @@ RUN mkdir -p /opt/covalent
 COPY . /opt/covalent
 RUN pip install --no-cache-dir --use-feature=in-tree-build /opt/covalent
 
-EXPOSE 80
+WORKDIR /opt/covalent
 
-ENTRYPOINT gunicorn -w 1 -t 30 -b 0.0.0.0:80 --chdir /opt/covalent/covalent_dispatcher/_service app:app
+EXPOSE 8080
+ENTRYPOINT [ "python" ]
+CMD ["/opt/covalent/covalent_ui/app.py", "--port", "8080"]

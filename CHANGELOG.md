@@ -5,12 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.27.2] - 2022-02-25
+## [0.27.5] - 2022-02-25
 
 ### Added
 
 - Added feature development basic steps in CONTRIBUTING.md.
 - Added section on locally building RTD (read the docs) in the contributing guide.
+
+## [0.27.4] - 2022-02-28
+
+### Fixed
+
+- Path used in `covalent/executor/__init__.py` for executor plugin modules needed updating to `covalent/executor/executor_plugins`
+
+### Removed
+
+- Disabled workflow cancellation test due to inconsistent outcomes. Test will be re-enabled after cancellation mechanisms are investigated further.
+
+## [0.27.3] - 2022-02-25
+
+### Added
+
+- Added `USING_DOCKER.md` guide for running docker container.
+- Added cli args to covalent UI flask server `covalent_ui/app.py` to modify port and log file path.
+
+### Removed
+- Removed gunicorn from cli and Dockerfile.
+
+### Changed
+- Updated cli `covalent_dispatcher/_cli/service.py` to run flask server directly, and removed dispatcher and UI flags.
+- Using Flask blueprints to merge Dispatcher and UI servers.
+- Updated Dockerfile to run flask server directly.
+- Creating server PID file manually in `covalent_dispatcher/_cli/service.py`.
+- Updated tests and docs to reflect merged servers.
+- Changed all mentions of port 47007 (for old UI server) to 48008.
+
+## [0.27.2] - 2022-02-24
+
+### Changed
+
+- Removed unnecessary blockquotes from the How-To guide for creating custom executors
+- Changed "Covalent Cloud" to "Covalent" in the main code text
 
 ## [0.27.1] - 2022-02-24
 
