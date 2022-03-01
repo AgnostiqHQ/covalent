@@ -243,27 +243,39 @@ components:
           type: string
         graph:
           $ref: '#/components/schemas/Graph'
+    ResultStatusEnum:
+      title: ResultStatusEnum
+      enum:
+        - COMPLETED
+      type: string
+      description: An enumeration.
     UpdateWorkFlowResponse:
       title: UpdateWorkFlowResponse
       required:
         - event
+        - status
         - result
       type: object
       properties:
         event:
           title: Event
           type: string
+        status:
+          $ref: '#/components/schemas/ResultStatusEnum'
         result:
           $ref: '#/components/schemas/Result'
     UpdateWorkflowRequest:
       title: UpdateWorkflowRequest
       required:
         - event
+        - status
       type: object
       properties:
         event:
           title: Event
           type: string
+        status:
+          $ref: '#/components/schemas/ResultStatusEnum'
     ValidationError:
       title: ValidationError
       required:
