@@ -1,4 +1,4 @@
-from typing import Any, Sequence
+from typing import Any, Optional, Sequence
 
 from app import crud
 from app.api import deps
@@ -22,8 +22,11 @@ router = APIRouter()
 #     return crud.recipe.get_all(db=db, limit=max_results)
 
 
-@router.put("/run", status_code=202, response_model=Recipe)
-def run_task(*, some_object_yet_to_decide: Any) -> Any:
+# TODO: Change response mode to a custom class similar to found in Recipe schema
+
+
+@router.put("/run", status_code=202, response_model=dict)
+def run_task(*, some_object_yet_to_decide: Optional[Any] = None) -> Any:
     """
     API Endpoint (/api/task/run) to run a task
     """
@@ -31,8 +34,8 @@ def run_task(*, some_object_yet_to_decide: Any) -> Any:
     return {"run_task": "run task"}
 
 
-@router.get("/status", status_code=200, response_model=Recipe)
-def check_status(*, another_object_yet_to_decide: Any) -> Any:
+@router.get("/status", status_code=200, response_model=dict)
+def check_status(*, another_object_yet_to_decide: Optional[Any] = None) -> Any:
     """
     API Endpoint (/api/task/status) to check status of a task
     """
@@ -40,8 +43,8 @@ def check_status(*, another_object_yet_to_decide: Any) -> Any:
     return {"check_status": "check status"}
 
 
-@router.delete("/cancel", status_code=200, response_model=Recipe)
-def cancel_task(*, another_object_yet_to_decide: Any) -> Any:
+@router.delete("/cancel", status_code=200, response_model=dict)
+def cancel_task(*, another_object_yet_to_decide: Optional[Any] = None) -> Any:
     """
     API Endpoint (/api/task/cancel) to cancel a task
     """

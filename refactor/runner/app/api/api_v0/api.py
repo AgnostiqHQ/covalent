@@ -4,5 +4,5 @@ from fastapi import APIRouter
 api_router = APIRouter()
 
 # Will be /task instead of /recipes or /users
-api_router.include_router(recipe.router, prefix="/recipes", tags=["recipes"])
-api_router.include_router(user.router, prefix="/users", tags=["users"])
+api_router.include_router(recipe.router, prefix="/task", tags=["task"])
+# api_router.include_router(user.router, prefix="/users", tags=["users"])
