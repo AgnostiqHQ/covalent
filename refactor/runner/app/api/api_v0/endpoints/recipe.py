@@ -22,56 +22,31 @@ router = APIRouter()
 #     return crud.recipe.get_all(db=db, limit=max_results)
 
 
-# Below might be /api/task/status
+@router.put("/run", status_code=202, response_model=Recipe)
+def run_task(*, some_object_yet_to_decide: Any) -> Any:
+    """
+    API Endpoint (/api/task/run) to run a task
+    """
 
-# @router.get("/{recipe_id}", status_code=200, response_model=Recipe)
-# def fetch_recipe(
-#     *,
-#     recipe_id: int,
-#     db: Session = Depends(deps.get_db),
-# ) -> Any:
-#     """
-#     Fetch a single recipe by ID
-#     """
-#     result = crud.recipe.get(db=db, id=recipe_id)
-#     if not result:
-#         # the exception is raised, not returned - you will get a validation
-#         # error otherwise.
-#         raise HTTPException(status_code=404, detail=f"Recipe with ID {recipe_id} not found")
-
-#     return result
+    return {"run_task": "run task"}
 
 
-# Below might be /api/task/cancel
+@router.get("/status", status_code=200, response_model=Recipe)
+def check_status(*, another_object_yet_to_decide: Any) -> Any:
+    """
+    API Endpoint (/api/task/status) to check status of a task
+    """
 
-# @router.delete("/{recipe_id}", status_code=200, response_model=Recipe)
-# def delete_recipe(
-#     *,
-#     recipe_id: int,
-#     db: Session = Depends(deps.get_db),
-# ) -> Any:
-#     """
-#     Fetch a single recipe by ID
-#     """
-
-#     return crud.recipe.remove(db=db, id=recipe_id)
+    return {"check_status": "check status"}
 
 
-# Below might be /api/task/run
+@router.delete("/cancel", status_code=200, response_model=Recipe)
+def cancel_task(*, another_object_yet_to_decide: Any) -> Any:
+    """
+    API Endpoint (/api/task/cancel) to cancel a task
+    """
 
-# @router.put("/{recipe_id}", status_code=201, response_model=Recipe)
-# def update_recipe(
-#     *, recipe_id: int, recipe_in: RecipeCreate, db: Session = Depends(deps.get_db)
-# ) -> dict:
-#     """
-#     Update a recipe in the database.
-#     """
-
-#     recipe = crud.recipe.get(db, id=recipe_id)
-#     if not recipe:
-#         raise HTTPException(status_code=400, detail=f"Recipe with ID: {recipe_in.id} not found.")
-
-#     return crud.recipe.update(db=db, obj_in=recipe_in, db_obj=recipe)
+    return {"cancel_task": "cancel task"}
 
 
 # @router.post("/", status_code=201, response_model=Recipe)

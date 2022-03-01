@@ -2,7 +2,7 @@ import os
 from typing import List, Union
 
 from dotenv import load_dotenv
-from pydantic import AnyHttpUrl, BaseSettings, EmailStr, validator
+from pydantic import AnyHttpUrl, BaseSettings, validator
 
 load_dotenv()
 
