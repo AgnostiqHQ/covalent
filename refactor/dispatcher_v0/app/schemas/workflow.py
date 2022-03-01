@@ -37,8 +37,10 @@ class Result(BaseModel):
     graph: Graph
 
 
+# event example: result-update
 class UpdateWorkflowRequest(BaseModel):
     event: str
+    status: str
 
 class UpdateWorkFlowResponse(UpdateWorkflowRequest):
     result: Result
