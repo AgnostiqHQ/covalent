@@ -1,0 +1,127 @@
+openapi: 3.0.2
+info:
+  title: Runner API
+  version: 0.1.0
+paths:
+  /api/v0/task/run:
+    put:
+      tags:
+        - task
+      summary: Run Task
+      description: API Endpoint (/api/task/run) to run a task
+      operationId: run_task_api_v0_task_run_put
+      parameters:
+        - required: false
+          schema:
+            title: Some Object Yet To Decide
+          name: some_object_yet_to_decide
+          in: query
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                title: Response Run Task Api V0 Task Run Put
+                type: object
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v0/task/status:
+    get:
+      tags:
+        - task
+      summary: Check Status
+      description: API Endpoint (/api/task/status) to check status of a task
+      operationId: check_status_api_v0_task_status_get
+      parameters:
+        - required: false
+          schema:
+            title: Another Object Yet To Decide
+          name: another_object_yet_to_decide
+          in: query
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                title: Response Check Status Api V0 Task Status Get
+                type: object
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v0/task/cancel:
+    delete:
+      tags:
+        - task
+      summary: Cancel Task
+      description: API Endpoint (/api/task/cancel) to cancel a task
+      operationId: cancel_task_api_v0_task_cancel_delete
+      parameters:
+        - required: false
+          schema:
+            title: Another Object Yet To Decide
+          name: another_object_yet_to_decide
+          in: query
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                title: Response Cancel Task Api V0 Task Cancel Delete
+                type: object
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /:
+    get:
+      summary: Root
+      description: Root GET
+      operationId: root__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
