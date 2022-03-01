@@ -82,124 +82,131 @@ class Lepton(Electron):
         super().set_metadata("backend", backend)
 
     def wrap_task(self) -> Callable:
-        def wrapper(*args, **kwargs) -> Any:
-            # Call a Python function specified in some other module
-            if self.language in Lepton._LANG_PY:
-                import importlib
+        """Return a lepton wrapper function."""
 
-                try:
-                    module = importlib.import_module(self.library_name)
-                except ModuleNotFoundError:
-                    app_log.warning(f"Could not import the module '{self.library_name}'.")
-                    return
+        def python_wrapper(*args, **kwargs) -> Any:
+            """Call a Python function specified in some other module."""
 
-                try:
-                    func = getattr(module, self.function_name)
-                except AttributeError:
-                    app_log.warning(
-                        f"Could not find the function '{self.function_name}' in '{self.library_name}'."
-                    )
-                    return
+            import importlib
 
-                # Foreign function invoked
-                return func(*args, **kwargs)
-
-            # Call a C function specified in a shared library
-            elif self.language in Lepton._LANG_C:
-                import ctypes
-
-                # TODO: This is a temporary solution until both args and kwargs are supported in electrons
-                args = tuple(kwargs.values())
-                kwargs = {}
-
-                if kwargs:
-                    app_log.warning(
-                        f"Keyword arguments {kwargs} are not supported when calling {self.function}."
-                    )
-                    return
-
-                try:
-                    handle = ctypes.CDLL(self.library_name)
-                except OSError:
-                    app_log.warning(f"Could not open '{self.library_name}'.")
-                    return
-
-                # Format the variable type translation
-                entrypoint = self.function_name
-                types = []
-                for t in self.argtypes:
-                    if t[0].startswith("LP_"):  # This is a pointer
-                        types.append(ctypes.POINTER(getattr(ctypes, t[0][3:])))
-                    else:
-                        types.append(getattr(ctypes, t[0]))
-                attrs = [a[1] for a in self.argtypes]
-                handle[entrypoint].argtypes = types
-                handle[entrypoint].restype = None
-
-                # Translate the variables
-                c_func_args = []
-                for idx, t in enumerate(types):
-                    arg = args[idx] if attrs[idx] != Lepton.OUTPUT else None
-
-                    # 1. The user specifies a scalar (non-subscriptable)
-                    #    and this variable returns data. It is transformed
-                    #    to a pointer and passed by address.
-                    if (
-                        attrs[idx] != Lepton.INPUT
-                        and not hasattr(arg, "__getitem__")
-                        and types[idx].__name__.startswith("LP_")
-                    ):
-                        if arg:
-                            # The variable is used for input and output
-                            c_func_args.append(ctypes.pointer(types[idx]._type_(arg)))
-                        else:
-                            # The variable is used for output only
-                            c_func_args.append(ctypes.pointer(types[idx]._type_()))
-
-                    # 2. The user specifies an array (subscriptable)
-                    elif hasattr(arg, "__getitem__") and types[idx].__name__.startswith("LP_"):
-                        c_func_args.append((types[idx]._type_ * len(arg))(*arg))
-
-                    # 3. Arg passed by value
-                    elif attrs[idx] == self.INPUT:
-                        c_func_args.append(types[idx](arg))
-
-                    else:
-                        app_log.warning("An invalid type was specified.")
-                        return
-
-                # Foreign function invoked
-                handle[entrypoint](*c_func_args)
-
-                # Format the return values
-                return_vals = []
-                for idx, arg in enumerate(c_func_args):
-                    if attrs[idx] == self.INPUT:
-                        continue
-
-                    # 1. Convert pointers to scalars
-                    if hasattr(arg, "contents"):
-                        return_vals.append(arg.contents.value)
-
-                    # 2. This is a subscriptable object
-                    elif hasattr(arg, "__getitem__"):
-                        return_vals.append([x.value for x in arg])
-
-                    # If we end up here, the previous if/else block needs improving
-                    else:
-                        app_log.error("An invalid return type was encountered.")
-                        return
-
-                if not return_vals:
-                    return None
-                elif len(return_vals) == 1:
-                    return return_vals[0]
-                else:
-                    return tuple(return_vals)
-
-            else:
-                app_log.warning(f"Language '{self.language}' is not supported.")
+            try:
+                module = importlib.import_module(self.library_name)
+            except ModuleNotFoundError:
+                app_log.warning(f"Could not import the module '{self.library_name}'.")
                 return
+
+            try:
+                func = getattr(module, self.function_name)
+            except AttributeError:
+                app_log.warning(
+                    f"Could not find the function '{self.function_name}' in '{self.library_name}'."
+                )
+                return
+
+            # Foreign function invoked
+            return func(*args, **kwargs)
+
+        def c_wrapper(*args, **kwargs) -> Any:
+            """Call a C function specified in a shared library."""
+
+            import ctypes
+
+            # TODO: This is a temporary solution until both args and kwargs are supported in electrons
+            # args = tuple(kwargs.values())
+            # kwargs = {}
+
+            if kwargs:
+                app_log.warning(
+                    f"Keyword arguments {kwargs} are not supported when calling {self.function}."
+                )
+                return
+
+            try:
+                handle = ctypes.CDLL(self.library_name)
+            except OSError:
+                app_log.warning(f"Could not open '{self.library_name}'.")
+                return
+
+            # Format the variable type translation
+            entrypoint = self.function_name
+            types = []
+            for t in self.argtypes:
+                if t[0].startswith("LP_"):  # This is a pointer
+                    types.append(ctypes.POINTER(getattr(ctypes, t[0][3:])))
+                else:
+                    types.append(getattr(ctypes, t[0]))
+            attrs = [a[1] for a in self.argtypes]
+            handle[entrypoint].argtypes = types
+            handle[entrypoint].restype = None
+
+            # Translate the variables
+            c_func_args = []
+            for idx, t in enumerate(types):
+                arg = args[idx] if attrs[idx] != Lepton.OUTPUT else None
+
+                # 1. The user specifies a scalar (non-subscriptable)
+                #    and this variable returns data. It is transformed
+                #    to a pointer and passed by address.
+                if (
+                    attrs[idx] != Lepton.INPUT
+                    and not hasattr(arg, "__getitem__")
+                    and types[idx].__name__.startswith("LP_")
+                ):
+                    if arg:
+                        # The variable is used for input and output
+                        c_func_args.append(ctypes.pointer(types[idx]._type_(arg)))
+                    else:
+                        # The variable is used for output only
+                        c_func_args.append(ctypes.pointer(types[idx]._type_()))
+
+                # 2. The user specifies an array (subscriptable)
+                elif hasattr(arg, "__getitem__") and types[idx].__name__.startswith("LP_"):
+                    c_func_args.append((types[idx]._type_ * len(arg))(*arg))
+
+                # 3. Arg passed by value
+                elif attrs[idx] == self.INPUT:
+                    c_func_args.append(types[idx](arg))
+
+                else:
+                    app_log.warning("An invalid type was specified.")
+                    return
+
+            # Foreign function invoked
+            handle[entrypoint](*c_func_args)
+
+            # Format the return values
+            return_vals = []
+            for idx, arg in enumerate(c_func_args):
+                if attrs[idx] == self.INPUT:
+                    continue
+
+                # 1. Convert pointers to scalars
+                if hasattr(arg, "contents"):
+                    return_vals.append(arg.contents.value)
+
+                # 2. This is a subscriptable object
+                elif hasattr(arg, "__getitem__"):
+                    return_vals.append([x.value for x in arg])
+
+                # If we end up here, the previous if/else block needs improving
+                else:
+                    app_log.error("An invalid return type was encountered.")
+                    return
+
+            if not return_vals:
+                return None
+            elif len(return_vals) == 1:
+                return return_vals[0]
+            else:
+                return tuple(return_vals)
+
+        if self.language in Lepton._LANG_PY:
+            wrapper = python_wrapper
+        elif self.language in Lepton._LANG_C:
+            wrapper = c_wrapper
+        else:
+            app_log.warning(f"Language '{self.language}' is not supported.")
+            return
 
         # Attribute translation
         wrapper.__name__ = self.function_name
