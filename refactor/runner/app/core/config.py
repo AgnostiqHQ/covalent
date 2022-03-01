@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional, Union
+from typing import List, Union
 
 from dotenv import load_dotenv
 from pydantic import AnyHttpUrl, BaseSettings, EmailStr, validator
@@ -8,7 +8,7 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-    API_V1_STR: str = "/api/v1"
+    API_V0_STR: str = "/api/v0"
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
@@ -19,7 +19,7 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    SQLALCHEMY_DATABASE_URI: Optional[str] = os.environ.get("DB_URI")
+    SQLALCHEMY_DATABASE_URI: str = os.environ.get("DB_URI")
 
     class Config:
         case_sensitive = True

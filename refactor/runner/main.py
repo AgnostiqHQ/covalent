@@ -20,7 +20,7 @@
 
 from pathlib import Path
 
-from app.api.api_v1.api import api_router
+from app.api.api_v0.api import api_router
 from app.core.config import settings
 from fastapi import APIRouter, FastAPI, Request
 
@@ -40,7 +40,7 @@ def root(
     return {"Rick?": "Look Morty I turned myself into a pickle! It's PICKLE RICK!"}
 
 
-app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(api_router, prefix=settings.API_V0_STR)
 app.include_router(root_router)
 
 
