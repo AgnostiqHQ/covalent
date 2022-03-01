@@ -37,6 +37,7 @@ from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
+from covalent._shared_files.utils import get_named_params
 from covalent_dispatcher._service.app import bp
 
 WEBHOOK_PATH = "/api/webhook"
@@ -109,16 +110,17 @@ def encode_dict(d):
 def extract_executor_info(metadata):
     # executor details
     try:
-
-        executor = covalent_executor._executor_manager.get_executor(name=metadata["executor"])
+        name = metadata["executor"]
+        executor = covalent_executor._executor_manager.get_executor(name=name)
 
         if executor is not None:
             # extract attributes
             metadata["executor"] = encode_dict(executor.__dict__)
-            if not isinstance(executor, str):
-                # if not named, replace with class name
-                metadata["executor"] = f"<{executor.__class__.__name__}>"
-    except (KeyError, AttributeError) as e:
+            if isinstance(name, str):
+                metadata["executor_name"] = name
+            else:
+                metadata["executor_name"] = f"<{executor.__class__.__name__}>"
+    except (KeyError, AttributeError):
         pass
 
 
@@ -138,6 +140,11 @@ def fetch_result(dispatch_id):
     result = rm.get_result(dispatch_id, results_dir=results_dir)
     extract_executor_info(result.lattice.metadata)
 
+    lattice = result.lattice
+    ((named_args, named_kwargs),) = (
+        get_named_params(lattice.workflow_function, lattice.args, lattice.kwargs),
+    )
+
     response = {
         "dispatch_id": result.dispatch_id,
         "status": result.status,
@@ -145,12 +152,13 @@ def fetch_result(dispatch_id):
         "start_time": result.start_time,
         "end_time": result.end_time,
         "results_dir": result.results_dir,
+        "error": result.error,
         "lattice": {
-            "function_string": result.lattice.workflow_function_string,
-            "doc": result.lattice.__doc__,
-            "name": result.lattice.__name__,
-            "kwargs": encode_dict(result.lattice.kwargs),
-            "metadata": result.lattice.metadata,
+            "function_string": lattice.workflow_function_string,
+            "doc": lattice.__doc__,
+            "name": lattice.__name__,
+            "inputs": encode_dict({**named_args, **named_kwargs}),
+            "metadata": lattice.metadata,
         },
         "graph": extract_graph(result.lattice.transport_graph._graph),
     }

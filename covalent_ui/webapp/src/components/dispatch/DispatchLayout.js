@@ -98,7 +98,7 @@ const DispatchLayout = () => {
       <LatticeDrawer>
         <DispatchDrawerContents />
       </LatticeDrawer>
-      <NodeDrawer node={selectedElectron} />
+      <NodeDrawer node={selectedElectron} graph={result.graph} />
     </>
   )
 }

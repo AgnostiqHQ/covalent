@@ -16,6 +16,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed handling of default values of function parameters in `get_named_params` in `covalent/_shared_files/utils.py`. So, it is actually being handled by not being handled since now `named_args` and `named_kwargs` will only contain parameters that were passed during the function call and not all of them.
 
+## [0.27.6] - 2022-03-01
+
+### Added
+
+- Added feature development basic steps in CONTRIBUTING.md.
+- Added section on locally building RTD (read the docs) in the contributing guide.
+
+## [0.27.5] - 2022-03-01
+
+### Fixed
+
+- Missing UI input data after backend change - needed to be derived from graph for electrons, lattice inputs fixed on server-side, combining name and positional args
+- Broken UI graph due to variable->edge_name renaming
+- Missing UI executor data after server-side renaming
+
 ## [0.27.4] - 2022-02-28
 
 ### Fixed

@@ -86,7 +86,7 @@ const LatticeDispatchOverview = ({ dispatchId }) => {
       </Typography>
 
       {/* Input */}
-      <InputSection inputs={_.get(result, 'lattice.kwargs')} />
+      <InputSection inputs={_.get(result, 'lattice.inputs')} />
 
       {/* Result */}
       {showResult && (
