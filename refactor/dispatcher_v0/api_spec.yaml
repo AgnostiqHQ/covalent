@@ -1,0 +1,285 @@
+openapi: 3.0.2
+info:
+  title: Covalent Dispatcher Service API
+  version: 0.1.0
+paths:
+  /api/v1/workflow/{result_id}/dispatch:
+    post:
+      tags:
+        - Workflow
+      summary: Submit Workflow
+      description: Submit a workflow
+      operationId: submit_workflow_api_v1_workflow__result_id__dispatch_post
+      parameters:
+        - required: true
+          schema:
+            title: Result Id
+            type: integer
+          name: result_id
+          in: path
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DispatchResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/workflow/{result_id}/cancel:
+    post:
+      tags:
+        - Workflow
+      summary: Cancel Workflow
+      description: Cancel a workflow
+      operationId: cancel_workflow_api_v1_workflow__result_id__cancel_post
+      parameters:
+        - required: true
+          schema:
+            title: Result Id
+            type: integer
+          name: result_id
+          in: path
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DispatchResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/workflow/{result_id}/update:
+    put:
+      tags:
+        - Workflow
+      summary: Update Workflow
+      description: Update a workflow
+      operationId: update_workflow_api_v1_workflow__result_id__update_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkflowRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateWorkFlowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /:
+    get:
+      summary: Root
+      description: Root GET
+      operationId: root__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    DispatchResponse:
+      title: DispatchResponse
+      required:
+        - dispatch_id
+      type: object
+      properties:
+        dispatch_id:
+          title: Dispatch Id
+          type: string
+    Graph:
+      title: Graph
+      required:
+        - nodes
+        - links
+      type: object
+      properties:
+        nodes:
+          title: Nodes
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        links:
+          title: Links
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    Link:
+      title: Link
+      required:
+        - name
+        - start_time
+        - end_time
+        - status
+        - stdout
+        - stderr
+        - edge_name
+        - param_type
+        - source
+        - target
+      type: object
+      properties:
+        name:
+          title: Name
+          type: string
+        start_time:
+          title: Start Time
+          type: string
+          format: date-time
+        end_time:
+          title: End Time
+          type: string
+          format: date-time
+        status:
+          title: Status
+          type: string
+        output:
+          title: Output
+        error:
+          title: Error
+          type: string
+        stdout:
+          title: Stdout
+          type: string
+        stderr:
+          title: Stderr
+          type: string
+        edge_name:
+          title: Edge Name
+          type: string
+        param_type:
+          title: Param Type
+          type: string
+        source:
+          title: Source
+          type: integer
+        target:
+          title: Target
+          type: integer
+    Node:
+      title: Node
+      required:
+        - name
+        - start_time
+        - end_time
+        - status
+        - stdout
+        - stderr
+        - id
+      type: object
+      properties:
+        name:
+          title: Name
+          type: string
+        start_time:
+          title: Start Time
+          type: string
+          format: date-time
+        end_time:
+          title: End Time
+          type: string
+          format: date-time
+        status:
+          title: Status
+          type: string
+        output:
+          title: Output
+        error:
+          title: Error
+          type: string
+        stdout:
+          title: Stdout
+          type: string
+        stderr:
+          title: Stderr
+          type: string
+        id:
+          title: Id
+          type: integer
+    Result:
+      title: Result
+      required:
+        - dispatch_id
+        - results_dir
+        - status
+        - graph
+      type: object
+      properties:
+        dispatch_id:
+          title: Dispatch Id
+          type: string
+        results_dir:
+          title: Results Dir
+          type: string
+        status:
+          title: Status
+          type: string
+        graph:
+          $ref: '#/components/schemas/Graph'
+    UpdateWorkFlowResponse:
+      title: UpdateWorkFlowResponse
+      required:
+        - event
+        - result
+      type: object
+      properties:
+        event:
+          title: Event
+          type: string
+        result:
+          $ref: '#/components/schemas/Result'
+    UpdateWorkflowRequest:
+      title: UpdateWorkflowRequest
+      required:
+        - event
+      type: object
+      properties:
+        event:
+          title: Event
+          type: string
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
