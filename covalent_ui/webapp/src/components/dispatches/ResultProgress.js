@@ -56,6 +56,7 @@ export const selectResultProgress = createSelector(
         status: result.status,
         label: _.startCase(_.lowerCase(result.status)),
         color: STATUS_COLORS[result.status],
+        error: result.error,
       }
     )
   }

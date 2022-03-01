@@ -27,7 +27,7 @@ import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'
 
 const ExecutorSection = ({ metadata }) => {
-  const executorType = _.get(metadata, 'backend')
+  const executorType = _.get(metadata, 'executor_name')
   const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
   const src = _.join(
     _.map(executorParams, (value, key) => `${key}: ${value}`),
