@@ -18,8 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import argparse
 import os
 from datetime import datetime
+from distutils.log import debug
 from logging.handlers import DEFAULT_TCP_LOGGING_PORT
 from pathlib import Path
 
@@ -35,11 +37,15 @@ from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
+from covalent._shared_files.utils import get_named_params
+from covalent_dispatcher._service.app import bp
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
+DEFAULT_PORT = 5000
 
 app = Flask(__name__, static_folder=WEBAPP_PATH)
+app.register_blueprint(bp)
 # allow cross-origin requests when API and static files are served separately
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -104,15 +110,17 @@ def encode_dict(d):
 def extract_executor_info(metadata):
     # executor details
     try:
-        backend = metadata["backend"]
-        executor = covalent_executor._executor_manager.get_executor(name=backend)
+        name = metadata["executor"]
+        executor = covalent_executor._executor_manager.get_executor(name=name)
+
         if executor is not None:
             # extract attributes
             metadata["executor"] = encode_dict(executor.__dict__)
-            if not isinstance(backend, str):
-                # if not named, replace with class name
-                metadata["backend"] = f"<{executor.__class__.__name__}>"
-    except (KeyError, AttributeError) as e:
+            if isinstance(name, str):
+                metadata["executor_name"] = name
+            else:
+                metadata["executor_name"] = f"<{executor.__class__.__name__}>"
+    except (KeyError, AttributeError):
         pass
 
 
@@ -132,6 +140,11 @@ def fetch_result(dispatch_id):
     result = rm.get_result(dispatch_id, results_dir=results_dir)
     extract_executor_info(result.lattice.metadata)
 
+    lattice = result.lattice
+    ((named_args, named_kwargs),) = (
+        get_named_params(lattice.workflow_function, lattice.args, lattice.kwargs),
+    )
+
     response = {
         "dispatch_id": result.dispatch_id,
         "status": result.status,
@@ -139,12 +152,13 @@ def fetch_result(dispatch_id):
         "start_time": result.start_time,
         "end_time": result.end_time,
         "results_dir": result.results_dir,
+        "error": result.error,
         "lattice": {
-            "function_string": result.lattice.workflow_function_string,
-            "doc": result.lattice.__doc__,
-            "name": result.lattice.__name__,
-            "kwargs": encode_dict(result.lattice.kwargs),
-            "metadata": result.lattice.metadata,
+            "function_string": lattice.workflow_function_string,
+            "doc": lattice.__doc__,
+            "name": lattice.__name__,
+            "inputs": encode_dict({**named_args, **named_kwargs}),
+            "metadata": lattice.metadata,
         },
         "graph": extract_graph(result.lattice.transport_graph._graph),
     }
@@ -184,4 +198,36 @@ def serve(path):
 
 
 if __name__ == "__main__":
-    socketio.run(app)
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "-l",
+        "--log-file",
+        required=False,
+        help="Path to log file that will be written to by server.",
+    )
+    ap.add_argument("-p", "--port", required=False, help="Server port number.")
+    ap.add_argument(
+        "-d",
+        "--develop",
+        required=False,
+        action="store_true",
+        help="Start the server in developer mode.",
+    )
+    args, unknown = ap.parse_known_args()
+    # log file to be specified by cli
+    if args.log_file:
+        import logging
+
+        log_file = args.log_file
+        logging.basicConfig(
+            filename=log_file,
+            level=logging.DEBUG,
+            format="%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s",
+        )
+    # port to be specified by cli
+    if args.port:
+        port = int(args.port)
+    else:
+        port = DEFAULT_PORT
+    debug = True if args.develop is True else False
+    socketio.run(app, debug=debug, host="0.0.0.0", port=port)

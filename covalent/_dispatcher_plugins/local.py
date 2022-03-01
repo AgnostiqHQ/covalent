@@ -77,18 +77,13 @@ class LocalDispatcher(BaseDispatcher):
 
             lattice = deepcopy(orig_lattice)
 
-            if lattice.workflow_function:
-                kwargs.update(
-                    dict(zip(list(inspect.signature(lattice.workflow_function).parameters), args))
-                )
-
-            lattice.build_graph(**kwargs)
+            lattice.build_graph(*args, **kwargs)
 
             # Serializing the transport graph and then passing it to the Result object
             lattice.transport_graph = lattice.transport_graph.serialize()
 
             pickled_res = pickle.dumps(Result(lattice, lattice.metadata["results_dir"]))
-            test_url = "http://" + dispatcher_addr + "/api/submit"
+            test_url = f"http://{dispatcher_addr}/api/submit"
 
             r = requests.post(test_url, data=pickled_res)
             r.raise_for_status()

@@ -48,7 +48,7 @@ import ExecutorSection from './ExecutorSection'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node }) => {
+const NodeDrawer = ({ node, graph }) => {
   // unselect on close
   const setSelectedElements = useStoreActions(
     (actions) => actions.setSelectedElements
@@ -152,7 +152,7 @@ const NodeDrawer = ({ node }) => {
           )}
 
           {/* Input */}
-          <InputSection inputs={node.kwargs} />
+          <InputSection node={node} graph={graph} />
 
           {/* Result */}
           {node.status === 'COMPLETED' && (

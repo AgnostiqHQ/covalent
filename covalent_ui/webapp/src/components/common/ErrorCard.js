@@ -40,6 +40,7 @@ const ErrorCard = ({ showElectron = false, error }) => {
         py: 1,
         border: '0.5px solid rgba(227, 80, 80, 0.5)',
         borderRadius: '4px',
+        overflowWrap: 'anywhere',
         background:
           'linear-gradient(90deg, rgba(73, 12, 12, 0.5) 0%, rgba(4, 4, 6, 0.5) 100%)',
       }}
