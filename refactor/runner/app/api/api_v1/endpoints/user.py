@@ -3,7 +3,7 @@ from typing import Any, Optional, Sequence
 from app import crud
 from app.api import deps
 from app.schemas.user import User, UserCreate, UserUpdate
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -18,8 +18,8 @@ def fetch_users(
     """
     Fetch all users
     """
-    results = crud.user.get_all(db=db, limit=max_results)
-    return results
+
+    return crud.user.get_all(db=db, limit=max_results)
 
 
 @router.get("/{user_id}", status_code=200, response_model=User)
@@ -49,8 +49,8 @@ def delete_user(
     """
     Fetch a single user by ID
     """
-    result = crud.user.remove(db=db, id=user_id)
-    return result
+
+    return crud.user.remove(db=db, id=user_id)
 
 
 @router.put("/{user_id}", status_code=201, response_model=User)
@@ -58,11 +58,12 @@ def update_user(*, user_id: int, user_in: UserUpdate, db: Session = Depends(deps
     """
     Update a user in the database.
     """
+
     user = crud.user.get(db, id=user_id)
     if not user:
         raise HTTPException(status_code=400, detail=f"User with ID: {user_in.id} not found.")
-    updated_user = crud.user.update(db=db, obj_in=user_in, db_obj=user)
-    return updated_user
+
+    return crud.user.update(db=db, obj_in=user_in, db_obj=user)
 
 
 @router.post("/", status_code=201, response_model=User)
@@ -70,5 +71,5 @@ def create_user(*, user_in: UserCreate, db: Session = Depends(deps.get_db)) -> d
     """
     Create a new user in the database.
     """
-    user = crud.user.create(db=db, obj_in=user_in)
-    return user
+
+    return crud.user.create(db=db, obj_in=user_in)

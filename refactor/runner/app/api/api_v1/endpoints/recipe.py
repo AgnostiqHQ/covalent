@@ -3,7 +3,7 @@ from typing import Any, Optional, Sequence
 from app import crud
 from app.api import deps
 from app.schemas.recipe import Recipe, RecipeCreate
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -18,8 +18,8 @@ def fetch_recipes(
     """
     Fetch all recipes
     """
-    results = crud.recipe.get_all(db=db, limit=max_results)
-    return results
+
+    return crud.recipe.get_all(db=db, limit=max_results)
 
 
 @router.get("/{recipe_id}", status_code=200, response_model=Recipe)
@@ -49,8 +49,8 @@ def delete_recipe(
     """
     Fetch a single recipe by ID
     """
-    result = crud.recipe.remove(db=db, id=recipe_id)
-    return result
+
+    return crud.recipe.remove(db=db, id=recipe_id)
 
 
 @router.put("/{recipe_id}", status_code=201, response_model=Recipe)
@@ -60,11 +60,12 @@ def update_recipe(
     """
     Update a recipe in the database.
     """
+
     recipe = crud.recipe.get(db, id=recipe_id)
     if not recipe:
         raise HTTPException(status_code=400, detail=f"Recipe with ID: {recipe_in.id} not found.")
-    updated_recipe = crud.recipe.update(db=db, obj_in=recipe_in, db_obj=recipe)
-    return updated_recipe
+
+    return crud.recipe.update(db=db, obj_in=recipe_in, db_obj=recipe)
 
 
 @router.post("/", status_code=201, response_model=Recipe)
@@ -72,6 +73,5 @@ def create_recipe(*, recipe_in: RecipeCreate, db: Session = Depends(deps.get_db)
     """
     Create a new recipe in the database.
     """
-    recipe = crud.recipe.create(db=db, obj_in=recipe_in)
 
-    return recipe
+    return crud.recipe.create(db=db, obj_in=recipe_in)
