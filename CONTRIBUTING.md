@@ -525,6 +525,12 @@ Navigate to the root folder (`/covalent/`) of the repo and run:
 python setup.py docs
 ```
 
+When running this command for the first time some users might get a `pandoc missing` error. This can be resolved via:
+
+```bash
+pip install pandoc
+```
+
 #### Viewing the locally built RTD
 
 In order to view the local RTD build, navigate to the `/covalent/doc/build/html` folder. Left click on `index.html` file and copy the path. Paste the path into the browser to access the RTD that was built locally.
