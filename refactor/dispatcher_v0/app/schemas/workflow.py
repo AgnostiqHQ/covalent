@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Sequence, Any, Optional
 from pydantic import BaseModel, HttpUrl
+from enum import Enum
 
 class DispatchResponse(BaseModel):
     dispatch_id: str
@@ -36,11 +37,13 @@ class Result(BaseModel):
     status: str
     graph: Graph
 
+class ResultStatusEnum(str, Enum):
+    COMPLETED = "COMPLETED"
 
 # event example: result-update
 class UpdateWorkflowRequest(BaseModel):
     event: str
-    status: str
+    status: ResultStatusEnum
 
 class UpdateWorkFlowResponse(UpdateWorkflowRequest):
     result: Result
