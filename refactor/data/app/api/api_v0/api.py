@@ -18,22 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from pathlib import Path
 
-from app.api.api_v0.api import api_router
-from app.core.config import settings
-from fastapi import FastAPI
+from app.api.api_v0.endpoints import fs, workflow
+from fastapi import APIRouter
 
-BASE_PATH = Path(__file__).resolve().parent
-
-app = FastAPI(title="Covalent Queuer Service API")
-
-
-app.include_router(api_router, prefix=settings.API_V0_STR)
-
-
-if __name__ == "__main__":
-    # Use this for debugging purposes only
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, log_level="debug", reload=True)
+api_router = APIRouter()
+api_router.include_router(workflow.router, prefix="/workflow", tags=["Workflow"])
+api_router.include_router(fs.router, prefix="/fs", tags=["Data"])

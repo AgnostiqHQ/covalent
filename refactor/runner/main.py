@@ -26,7 +26,7 @@ from fastapi import FastAPI
 
 BASE_PATH = Path(__file__).resolve().parent
 
-app = FastAPI(title="Runner API")
+app = FastAPI(title="Covalent Runner Service API")
 
 
 app.include_router(api_router, prefix=settings.API_V0_STR)
