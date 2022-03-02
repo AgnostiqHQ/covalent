@@ -17,3 +17,14 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+
+
+from pydantic import BaseModel
+
+
+class ResultPickle(BaseModel):
+    result_object: bytes
+
+
+class SubmitResponse(BaseModel):
+    dispatch_id: str
