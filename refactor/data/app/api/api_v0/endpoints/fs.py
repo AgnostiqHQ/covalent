@@ -34,7 +34,10 @@ def upload_file(*, file: bytes = File(...)) -> Any:
     """
     Upload a file
     """
-    return {"filename": "result.plk", "path": "/Users/aq/Documents/agnostiq/uploads/result.plk"}
+    return {
+        "filename": "sample_input_file.sample",
+        "path": "/Users/aq/Documents/agnostiq/uploads/",
+    }
 
 
 @router.get(
@@ -51,7 +54,7 @@ def upload_file(*, file: bytes = File(...)) -> Any:
 )
 def download_file(*, file_location: str) -> Any:
     """
-    Donwload a file
+    Download a file
     """
     if not file_location:
         raise HTTPException(status_code=404, detail="File not found")

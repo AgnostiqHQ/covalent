@@ -19,10 +19,16 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from typing import Any, Sequence
+from typing import Any, Union
 
 from app.schemas.common import HTTPExceptionSchema
-from app.schemas.workflow import Result
+from app.schemas.workflow import (
+    CreateResultResponse,
+    Node,
+    Result,
+    ResultPickle,
+    UpdateResultResponse,
+)
 from fastapi import APIRouter
 
 router = APIRouter()
@@ -55,14 +61,6 @@ mock_result_object_instance = {
 }
 
 
-@router.get("/results", status_code=200, response_model=Sequence[Result])
-def get_results() -> Any:
-    """
-    Get all results
-    """
-    return [mock_result_object_instance, mock_result_object_instance]
-
-
 @router.get(
     "/results/{dispatch_id}",
     status_code=200,
@@ -78,15 +76,30 @@ def get_result(
     """
     Get a result object
     """
+
     return mock_result_object_instance
 
 
-@router.post("/results", status_code=200)
-def create_result(
+@router.post("/results/create", status_code=200, response_model=CreateResultResponse)
+def insert_result(
     *,
-    result_input: Result,
+    result_object: Union[Result, ResultPickle],
 ) -> Any:
     """
-    Get a result object
+    Insert a result object
     """
-    return mock_result_object_instance
+
+    return {"response": "Result successfully added to db"}
+
+
+@router.post("/results/update", status_code=200, response_model=UpdateResultResponse)
+def update_result(
+    *,
+    dispatch_id: str,
+    task: Node,
+) -> Any:
+    """
+    Update a result object
+    """
+
+    return {"response": "Task updated successfully"}

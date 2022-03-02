@@ -36,7 +36,7 @@ class BaseNode(BaseModel):
     stderr: str
 
 
-class Link(BaseNode):
+class Link(BaseModel):
     edge_name: str
     param_type: str
     source: int
@@ -57,3 +57,15 @@ class Result(BaseModel):
     results_dir: str
     status: str
     graph: Graph
+
+
+class CreateResultResponse(BaseModel):
+    response: str
+
+
+class UpdateResultResponse(BaseModel):
+    response: str
+
+
+class ResultPickle(BaseModel):
+    result_object: bytes

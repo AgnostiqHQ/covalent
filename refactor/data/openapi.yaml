@@ -3,54 +3,13 @@ info:
   title: Covalent Data Service API
   version: 0.1.0
 paths:
-  /api/v1/workflow/results:
-    get:
-      tags:
-        - Workflow
-      summary: Get Results
-      description: Get all results
-      operationId: get_results_api_v1_workflow_results_get
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                title: Response Get Results Api V1 Workflow Results Get
-                type: array
-                items:
-                  $ref: '#/components/schemas/Result'
-    post:
-      tags:
-        - Workflow
-      summary: Create Result
-      description: Get a result object
-      operationId: create_result_api_v1_workflow_results_post
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Result'
-        required: true
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/workflow/results/{dispatch_id}:
+  /api/v0/workflow/results/{dispatch_id}:
     get:
       tags:
         - Workflow
       summary: Get Result
       description: Get a result object
-      operationId: get_result_api_v1_workflow_results__dispatch_id__get
+      operationId: get_result_api_v0_workflow_results__dispatch_id__get
       parameters:
         - required: true
           schema:
@@ -77,18 +36,80 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/fs/upload:
+  /api/v0/workflow/results/create:
+    post:
+      tags:
+        - Workflow
+      summary: Insert Result
+      description: Insert a result object
+      operationId: insert_result_api_v0_workflow_results_create_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Result Object
+              anyOf:
+                - $ref: '#/components/schemas/Result'
+                - $ref: '#/components/schemas/ResultPickle'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateResultResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v0/workflow/results/update:
+    post:
+      tags:
+        - Workflow
+      summary: Update Result
+      description: Update a result object
+      operationId: update_result_api_v0_workflow_results_update_post
+      parameters:
+        - required: true
+          schema:
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
+          in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Node'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateResultResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v0/fs/upload:
     post:
       tags:
         - Data
       summary: Upload File
       description: Upload a file
-      operationId: upload_file_api_v1_fs_upload_post
+      operationId: upload_file_api_v0_fs_upload_post
       requestBody:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Body_upload_file_api_v1_fs_upload_post'
+              $ref: '#/components/schemas/Body_upload_file_api_v0_fs_upload_post'
         required: true
       responses:
         '200':
@@ -103,13 +124,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/fs/download:
+  /api/v0/fs/download:
     get:
       tags:
         - Data
       summary: Download File
-      description: Donwload a file
-      operationId: download_file_api_v1_fs_download_get
+      description: Download a file
+      operationId: download_file_api_v0_fs_download_get
       parameters:
         - required: true
           schema:
@@ -134,21 +155,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /:
-    get:
-      summary: Root
-      description: Root GET
-      operationId: root__get
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
 components:
   schemas:
-    Body_upload_file_api_v1_fs_upload_post:
-      title: Body_upload_file_api_v1_fs_upload_post
+    Body_upload_file_api_v0_fs_upload_post:
+      title: Body_upload_file_api_v0_fs_upload_post
       required:
         - file
       type: object
@@ -157,6 +167,15 @@ components:
           title: File
           type: string
           format: binary
+    CreateResultResponse:
+      title: CreateResultResponse
+      required:
+        - response
+      type: object
+      properties:
+        response:
+          title: Response
+          type: string
     Graph:
       title: Graph
       required:
@@ -195,43 +214,12 @@ components:
     Link:
       title: Link
       required:
-        - name
-        - start_time
-        - end_time
-        - status
-        - stdout
-        - stderr
         - edge_name
         - param_type
         - source
         - target
       type: object
       properties:
-        name:
-          title: Name
-          type: string
-        start_time:
-          title: Start Time
-          type: string
-          format: date-time
-        end_time:
-          title: End Time
-          type: string
-          format: date-time
-        status:
-          title: Status
-          type: string
-        output:
-          title: Output
-        error:
-          title: Error
-          type: string
-        stdout:
-          title: Stdout
-          type: string
-        stderr:
-          title: Stderr
-          type: string
         edge_name:
           title: Edge Name
           type: string
@@ -304,6 +292,25 @@ components:
           type: string
         graph:
           $ref: '#/components/schemas/Graph'
+    ResultPickle:
+      title: ResultPickle
+      required:
+        - result_object
+      type: object
+      properties:
+        result_object:
+          title: Result Object
+          type: string
+          format: binary
+    UpdateResultResponse:
+      title: UpdateResultResponse
+      required:
+        - response
+      type: object
+      properties:
+        response:
+          title: Response
+          type: string
     UploadResponse:
       title: UploadResponse
       required:
