@@ -49,9 +49,9 @@ jobs:
           echo 'Running example dispatch to check container health'
           echo ${port_map}
           docker exec -t $(docker container ls -a | awk 'NR>1 {print $1}') /bin/sh \
-            cd opt/covalent/tests \
-            pip install requirements.txt \
-            cd .. && pytest test && exit
+            "cd opt/covalent/tests"; \
+            "pip install requirements.txt;" \
+            "cd .. && pytest test && exit";
       - name: Discarding container
         run: |
           echo 'Discarding container after successful test run'
