@@ -22,3 +22,4 @@
 
 from .electron import electron
 from .lattice import lattice
+from .lepton import Lepton
