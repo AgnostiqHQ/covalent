@@ -51,7 +51,7 @@ jobs:
           echo 'Running example dispatch to check container health'
           echo ${port_map}
           cat << EOF > test_dispatch.py
-          print(python --version)
+          print(3+3)
           EOF
           python test_dispatch.py
       - name: Discarding container
