@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.28.1] - 2022-03-02
+
+### Added
+
+- Conda installation is only supported for Linux in the `Getting Started` guide.
+- MNIST classifier tutorial.
+
+### Removed
+
+- Removed handling of default values of function parameters in `get_named_params` in `covalent/_shared_files/utils.py`. So, it is actually being handled by not being handled since now `named_args` and `named_kwargs` will only contain parameters that were passed during the function call and not all of them.
+
 ## [0.28.0] - 2022-03-02
 
 ### Added
@@ -110,7 +121,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added Local Executor section to the API
+- Added Local Executor section to the API read the docs.
 
 ## [0.26.0] - 2022-02-23
 

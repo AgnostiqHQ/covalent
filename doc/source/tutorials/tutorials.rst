@@ -6,10 +6,37 @@ The following tutorials demonstrate examples of how Covalent is used in real-wor
 
 ---------------------------------
 
-- :doc:`Quantum Chemistry: Simulating the Nitrogen-Copper interaction<./quantum_chemistry/nitrogen_copper_interaction>`
-- :doc:`Machine Learning: Classical and quantum support vector machines<./machine_learning/classical_quantum_svm>`
-- :doc:`Astronomy: Tracking stars in the night sky<./astronomy/star_tracker>`
-- :doc:`Quantum Gravity: Classifying discrete spacetimes by dimension<./quantum_gravity/spacetime_classification>`
+~~~~~~~~
+Beginner
+~~~~~~~~
+
+.. list-table::
+   :widths: 25 60
+   :header-rows: 1
+
+   * - Topic
+     - Title
+   * - Machine learning
+     - :doc:`MNIST classifier<./machine_learning/mnist_classifier>`
+
+~~~~~~~~
+Advanced
+~~~~~~~~
+
+.. list-table::
+   :widths: 25 60
+   :header-rows: 1
+
+   * - Topic
+     - Title
+   * - Quantum Chemistry
+     - :doc:`Simulating the Nitrogen-Copper interaction<./quantum_chemistry/nitrogen_copper_interaction>`
+   * - Machine Learning
+     - :doc:`Classical and quantum support vector machines<./machine_learning/classical_quantum_svm>`
+   * - Astronomy
+     - :doc:`Tracking stars in the night sky<./astronomy/star_tracker>`
+   * - Quantum Gravity
+     - :doc:`Classifying discrete spacetimes by dimension<./quantum_gravity/spacetime_classification>`
 
 ---------------------------------
 
