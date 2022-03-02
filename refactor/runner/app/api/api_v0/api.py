@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from app.api.api_v0.endpoints import task, user
+from app.api.api_v0.endpoints import task
 from fastapi import APIRouter
 
 api_router = APIRouter()
