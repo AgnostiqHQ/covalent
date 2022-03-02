@@ -19,4 +19,4 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from .task import Result, ResultList
+from .task import NodeID, NodeIDList

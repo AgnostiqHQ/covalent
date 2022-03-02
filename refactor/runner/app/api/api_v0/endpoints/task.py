@@ -19,23 +19,23 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from app.schemas.task import CancelResponse, ResultList, TaskStatus
+from app.schemas.task import CancelResponse, NodeID, NodeIDList, TaskStatus
 from fastapi import APIRouter
 
 router = APIRouter()
 
 
 @router.post("/run", status_code=202, response_model=str)
-def run_task(*, results: ResultList) -> str:
+def run_task(*, dispatch_id: str, node_ids: NodeIDList) -> str:
     """
     API Endpoint (/api/task/run) to run tasks
     """
 
-    return {"response": "tasks started execution"}
+    return {"response": "execution of tasks started"}
 
 
 @router.get("/status", status_code=200, response_model=TaskStatus)
-def check_status(*, dispatch_id: str) -> TaskStatus:
+def check_status(*, dispatch_id: str, node_id: NodeID) -> TaskStatus:
     """
     API Endpoint (/api/task/status) to check status of a task
     """
@@ -44,7 +44,7 @@ def check_status(*, dispatch_id: str) -> TaskStatus:
 
 
 @router.post("/cancel", status_code=200, response_model=CancelResponse)
-def cancel_task(*, dispatch_id: str) -> CancelResponse:
+def cancel_task(*, dispatch_id: str, node_id: NodeID) -> CancelResponse:
     """
     API Endpoint (/api/task/cancel) to cancel a task
     """
