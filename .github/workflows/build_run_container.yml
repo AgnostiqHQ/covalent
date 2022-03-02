@@ -46,29 +46,13 @@ jobs:
       - name: Run and test container
         run: |
           pip install cova
+          pip freeze | grep cova
           docker run -d -p $port_map ${{ secrets.AWS_ECR_DEV_REPO }}
           echo 'Running example dispatch to check container health'
           echo ${port_map}
           cat << EOF > test_dispatch.py
-          import covalent as ct
-        # Construct tasks as "electrons"
-          @ct.electron
-          def join_words(a, b):
-            return ", ".join([a, b])
-          @ct.electron
-          def excitement(a):
-            return f"{a}!"
-        # Construct a workflow of tasks
-          @ct.lattice
-          def simple_workflow(a, b):
-               phrase = join_words(a, b)
-            return excitement(phrase)
-        # Dispatch the workflow
-          dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
-          result_string = ct.get_result(dispatch_id).result
-          print(f'Dispatch {result_string} completed successfully')
+          print(python --version)
           EOF
-          cat test_dispatch.py
           python test_dispatch.py
       - name: Discarding container
         run: |
