@@ -22,26 +22,14 @@ from pathlib import Path
 
 from app.api.api_v0.api import api_router
 from app.core.config import settings
-from fastapi import APIRouter, FastAPI, Request
+from fastapi import FastAPI
 
 BASE_PATH = Path(__file__).resolve().parent
 
-root_router = APIRouter()
 app = FastAPI(title="Runner API")
 
 
-@root_router.get("/", status_code=200)
-def root(
-    request: Request,
-) -> dict:
-    """
-    Root GET
-    """
-    return {"Rick?": "Look Morty I turned myself into a pickle! It's PICKLE RICK!"}
-
-
 app.include_router(api_router, prefix=settings.API_V0_STR)
-app.include_router(root_router)
 
 
 if __name__ == "__main__":

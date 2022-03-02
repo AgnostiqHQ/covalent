@@ -19,15 +19,34 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from typing import Generator
+from app.schemas.task import CancelResponse, ResultList, TaskStatus
+from fastapi import APIRouter
 
-from app.db.session import SessionLocal
+router = APIRouter()
 
 
-def get_db() -> Generator:
-    db = SessionLocal()
-    db.current_user_id = None
-    try:
-        yield db
-    finally:
-        db.close()
+@router.post("/run", status_code=202, response_model=str)
+def run_task(*, results: ResultList) -> str:
+    """
+    API Endpoint (/api/task/run) to run tasks
+    """
+
+    return {"response": "tasks started execution"}
+
+
+@router.get("/status", status_code=200, response_model=TaskStatus)
+def check_status(*, dispatch_id: str) -> TaskStatus:
+    """
+    API Endpoint (/api/task/status) to check status of a task
+    """
+
+    return {"status": "running"}
+
+
+@router.post("/cancel", status_code=200, response_model=CancelResponse)
+def cancel_task(*, dispatch_id: str) -> CancelResponse:
+    """
+    API Endpoint (/api/task/cancel) to cancel a task
+    """
+
+    return {"cancelled_dispatch_id": "some_dispatch_id"}

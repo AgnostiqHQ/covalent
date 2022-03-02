@@ -19,13 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-import os
 from typing import List, Union
 
-from dotenv import load_dotenv
 from pydantic import AnyHttpUrl, BaseSettings, validator
-
-load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -39,8 +35,6 @@ class Settings(BaseSettings):
         elif isinstance(v, (list, str)):
             return v
         raise ValueError(v)
-
-    SQLALCHEMY_DATABASE_URI: str = os.environ.get("DB_URI")
 
     class Config:
         case_sensitive = True

@@ -7,7 +7,7 @@ router = APIRouter()
 
 
 @router.post("/{dispatch_id}/dispatch", status_code=200, response_model=DispatchResponse)
-def submit_workflow(*, dispatch_id: int) -> Any:
+def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
@@ -15,7 +15,7 @@ def submit_workflow(*, dispatch_id: int) -> Any:
 
 
 @router.post("/{dispatch_id}/cancel", status_code=200, response_model=DispatchResponse)
-def cancel_workflow(*, dispatch_id: int) -> Any:
+def cancel_workflow(*, dispatch_id: str) -> Any:
     """
     Cancel a workflow
     """
