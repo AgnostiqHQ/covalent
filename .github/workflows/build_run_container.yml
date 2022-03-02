@@ -46,7 +46,7 @@ jobs:
         env:
           port_map: 48008:8080
         run: |
-          echo 'Running the covalent container with port mapping `$port_map`'
+          echo 'Running the covalent container with port mapping ${port_map}'
           docker run -d -p $port_map ${{ secrets.AWS_ECR_DEV_REPO }}
           echo 'Running dispatch script to check container health'
       - name: Discarding container
