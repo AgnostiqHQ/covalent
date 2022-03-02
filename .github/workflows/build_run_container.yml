@@ -47,7 +47,7 @@ jobs:
         run: |
           docker run -d -p $port_map ${{ secrets.AWS_ECR_DEV_REPO }}
           echo 'Running example dispatch to check container's health'
-          docker exec -it $(docker container ls -a | awk 'NR>1 {print $1}') /bin/sh
+          echo ${port_map}
       - name: Discarding container
         run: |
           echo 'Discarding container after successful test run'
