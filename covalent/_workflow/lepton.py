@@ -65,9 +65,9 @@ class Lepton(Electron):
         function_name: str = "",
         argtypes: Optional[List] = [],
         *,
-        backend: Union[
+        executor: Union[
             List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
-        ] = _DEFAULT_CONSTRAINT_VALUES["backend"],
+        ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     ) -> None:
         self.language = language
         self.library_name = library_name
@@ -79,7 +79,7 @@ class Lepton(Electron):
         super().__init__(self.wrap_task())
 
         # Assign metadata defaults
-        super().set_metadata("backend", backend)
+        super().set_metadata("executor", executor)
 
     def wrap_task(self) -> Callable:
         """Return a lepton wrapper function."""
@@ -93,7 +93,7 @@ class Lepton(Electron):
                 module = importlib.import_module(self.library_name)
             except ModuleNotFoundError:
                 app_log.warning(f"Could not import the module '{self.library_name}'.")
-                return
+                raise
 
             try:
                 func = getattr(module, self.function_name)
@@ -101,7 +101,7 @@ class Lepton(Electron):
                 app_log.warning(
                     f"Could not find the function '{self.function_name}' in '{self.library_name}'."
                 )
-                return
+                raise
 
             # Foreign function invoked
             return func(*args, **kwargs)
@@ -111,21 +111,16 @@ class Lepton(Electron):
 
             import ctypes
 
-            # TODO: This is a temporary solution until both args and kwargs are supported in electrons
-            # args = tuple(kwargs.values())
-            # kwargs = {}
-
             if kwargs:
-                app_log.warning(
+                raise ValueError(
                     f"Keyword arguments {kwargs} are not supported when calling {self.function}."
                 )
-                return
 
             try:
                 handle = ctypes.CDLL(self.library_name)
             except OSError:
                 app_log.warning(f"Could not open '{self.library_name}'.")
-                return
+                raise
 
             # Format the variable type translation
             entrypoint = self.function_name
@@ -168,8 +163,7 @@ class Lepton(Electron):
                     c_func_args.append(types[idx](arg))
 
                 else:
-                    app_log.warning("An invalid type was specified.")
-                    return
+                    raise ValueError("An invalid type was specified.")
 
             # Foreign function invoked
             handle[entrypoint](*c_func_args)
@@ -190,8 +184,7 @@ class Lepton(Electron):
 
                 # If we end up here, the previous if/else block needs improving
                 else:
-                    app_log.error("An invalid return type was encountered.")
-                    return
+                    raise ValueError("An invalid return type was encountered.")
 
             if not return_vals:
                 return None
@@ -205,8 +198,7 @@ class Lepton(Electron):
         elif self.language in Lepton._LANG_C:
             wrapper = c_wrapper
         else:
-            app_log.warning(f"Language '{self.language}' is not supported.")
-            return
+            raise ValueError(f"Language '{self.language}' is not supported.")
 
         # Attribute translation
         wrapper.__name__ = self.function_name
