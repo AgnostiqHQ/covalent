@@ -18,9 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-
-from typing import List
-
 from pydantic import BaseModel
 
 
@@ -28,16 +25,9 @@ class RunTaskResponse(BaseModel):
     response: str
 
 
-class TaskID(BaseModel):
-    id: int
-
-
-class TaskIDList(BaseModel):
-    list_task_ids: List[TaskID]
-
-
 class CancelResponse(BaseModel):
     cancelled_dispatch_id: str
+    cancelled_task_id: str
 
 
 class TaskStatus(BaseModel):
