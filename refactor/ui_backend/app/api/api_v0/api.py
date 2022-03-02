@@ -19,26 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from typing import List
+from app.api.api_v0.endpoints import ui
+from fastapi import APIRouter
 
-from pydantic import BaseModel
+api_router = APIRouter()
 
-
-class RunTaskResponse(BaseModel):
-    response: str
-
-
-class NodeID(BaseModel):
-    id: int
-
-
-class NodeIDList(BaseModel):
-    list_node_ids: List[NodeID]
-
-
-class CancelResponse(BaseModel):
-    cancelled_dispatch_id: str
-
-
-class TaskStatus(BaseModel):
-    status: str
+api_router.include_router(ui.router, prefix="/ui", tags=["ui"])

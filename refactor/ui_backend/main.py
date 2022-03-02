@@ -18,27 +18,22 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from pathlib import Path
 
-from typing import List
+from app.api.api_v0.api import api_router
+from app.core.config import settings
+from fastapi import FastAPI
 
-from pydantic import BaseModel
+BASE_PATH = Path(__file__).resolve().parent
 
-
-class RunTaskResponse(BaseModel):
-    response: str
-
-
-class NodeID(BaseModel):
-    id: int
+app = FastAPI(title="UI Backend API")
 
 
-class NodeIDList(BaseModel):
-    list_node_ids: List[NodeID]
+app.include_router(api_router, prefix=settings.API_V0_STR)
 
 
-class CancelResponse(BaseModel):
-    cancelled_dispatch_id: str
+if __name__ == "__main__":
+    # Use this for debugging purposes only
+    import uvicorn
 
-
-class TaskStatus(BaseModel):
-    status: str
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, log_level="debug", reload=True)

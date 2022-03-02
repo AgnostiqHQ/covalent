@@ -19,26 +19,15 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from typing import List
+from fastapi import APIRouter
 
-from pydantic import BaseModel
-
-
-class RunTaskResponse(BaseModel):
-    response: str
+router = APIRouter()
 
 
-class NodeID(BaseModel):
-    id: int
+@router.post("/run", status_code=200, response_model=str)
+def update_ui(*, dispatch_id: str) -> str:
+    """
+    API Endpoint (/api/ui/update) to run tasks
+    """
 
-
-class NodeIDList(BaseModel):
-    list_node_ids: List[NodeID]
-
-
-class CancelResponse(BaseModel):
-    cancelled_dispatch_id: str
-
-
-class TaskStatus(BaseModel):
-    status: str
+    return {"response": "UI updated"}
