@@ -39,20 +39,19 @@ jobs:
           aws-region: us-east-1
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v1
-      - name: Generate tag
+      - name: Build Image
         run: |
-          aws --version
-          docker info
-          docker --version
-      - name: Build and run image
+          docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
+      - name: Run and test container
         env:
           port_map: 48008:8080
         run: |
-          echo 'Building image'
-          docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
-          echo 'Running the container'
+          echo 'Running the covalent container with port mapping `$port_map'`
           docker run -d -p $port_map ${{ secrets.AWS_ECR_DEV_REPO }}
-          echo 'Discarding container'
+          echo 'Running dispatch script to check container health'
+      - name: Discarding container
+        run: |
+          echo 'Discarding container after successful test run'
           docker stop $(docker ps -aq)
           docker rm $(docker ps -aq)
 
