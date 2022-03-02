@@ -1,12 +1,12 @@
 openapi: 3.0.2
 info:
-  title: Queuer API
+  title: Covalent Queuer Service API
   version: 0.1.0
 paths:
   /api/v0/submit/dispatch:
     post:
       tags:
-        - submit
+        - Submit
       summary: Submit Workflow
       description: Submit a workflow
       operationId: submit_workflow_api_v0_submit_dispatch_post

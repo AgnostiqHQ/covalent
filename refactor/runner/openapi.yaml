@@ -1,12 +1,12 @@
 openapi: 3.0.2
 info:
-  title: Runner API
+  title: Covalent Runner Service API
   version: 0.1.0
 paths:
   /api/v0/task/run:
     post:
       tags:
-        - task
+        - Task
       summary: Run Task
       description: API Endpoint (/api/task/run) to run tasks
       operationId: run_task_api_v0_task_run_post
@@ -42,7 +42,7 @@ paths:
   /api/v0/task/status:
     get:
       tags:
-        - task
+        - Task
       summary: Check Status
       description: API Endpoint (/api/task/status) to check status of a task
       operationId: check_status_api_v0_task_status_get
@@ -75,7 +75,7 @@ paths:
   /api/v0/task/cancel:
     post:
       tags:
-        - task
+        - Task
       summary: Cancel Task
       description: API Endpoint (/api/task/cancel) to cancel a task
       operationId: cancel_task_api_v0_task_cancel_post
