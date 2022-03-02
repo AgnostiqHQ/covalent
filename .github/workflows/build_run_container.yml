@@ -47,7 +47,8 @@ jobs:
         run: |
           pip install cova
           pip freeze | grep cova
-          docker run -d -p $port_map ${{ secrets.AWS_ECR_DEV_REPO }}
+          # docker run -d -p $port_map ${{ secrets.AWS_ECR_DEV_REPO }}
+          covalent start
           echo 'Running example dispatch to check container health'
           echo ${port_map}
           cat << EOF > test_dispatch.py
