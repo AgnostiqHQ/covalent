@@ -36,9 +36,6 @@ jobs:
       - name: Build and run image
         run: |
           echo 'Building image'
-          docker build -t $image_tag .
           echo 'Running the container'
-          docker run $image_tag
-          echo 'Deleting the container'
-          docker rm $(docker ps -aq)
+          echo 'Discarding the container'
 
