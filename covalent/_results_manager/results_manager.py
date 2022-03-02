@@ -21,6 +21,7 @@
 
 import os
 import pickle as _pickle
+import sqlite3
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -32,6 +33,7 @@ from .result import Result
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+con = sqlite3.connect("results.db")
 
 
 def get_result(

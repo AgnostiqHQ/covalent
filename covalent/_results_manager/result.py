@@ -21,6 +21,7 @@
 """Result object."""
 
 import os
+import sqlite3
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
@@ -46,8 +47,7 @@ class Result:
 
     Attributes:
         lattice: "Lattice" object which was dispatched.
-        results_dir: Directory where the result will be stored.
-                     It'll be in the format of "<results_dir>/<dispatch_id>/".
+        results_db: Name of the database where results are stored, e.g. "results.db".
         dispatch_id: Dispatch id assigned to this dispatch.
         status: Status of the result. It'll be one of the following:
                 - Result.NEW_OBJ: When it is a new result object.
@@ -60,7 +60,7 @@ class Result:
         error: Error due to which the execution failed.
 
     Functions:
-        save_result: Save the result object to the passed results directory or to self.results_dir by default.
+        save_result: Save the result object to the DB.
         get_all_node_outputs: Return all the outputs of all the node executions.
     """
 
@@ -70,12 +70,17 @@ class Result:
     FAILED = RESULT_STATUS.FAILED
     CANCELLED = RESULT_STATUS.CANCELLED
 
-    def __init__(self, lattice: "Lattice", results_dir: str, dispatch_id: str = None) -> None:
+    def __init__(
+        self, lattice: "Lattice", results_db: str = "results.db", dispatch_id: str = None
+    ) -> None:
 
         self._start_time = None
         self._end_time = None
 
-        self._results_dir = results_dir
+        con = sqlite3.connect(results_db)
+        cur = con.cursor()
+        # TODO: check if DB exists
+        self._results_db = results_db
 
         self._lattice = lattice
         self._dispatch_id = dispatch_id
