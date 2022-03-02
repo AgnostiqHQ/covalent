@@ -18,10 +18,11 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+name: Build Image and Run Container
+
+
 on:
   pull_request
-
-name: Build Image and Run Container
 
 env:
   image_tag: covalent
