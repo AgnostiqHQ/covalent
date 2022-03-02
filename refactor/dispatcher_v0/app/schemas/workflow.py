@@ -31,19 +31,19 @@ class Graph(BaseModel):
     nodes: Sequence[Node]
     links: Sequence[Link]
 
+class ResultStatusEnum(str, Enum):
+    COMPLETED = "COMPLETED"
 class Result(BaseModel):
     dispatch_id: str
     results_dir: str
-    status: str
+    status: ResultStatusEnum
     graph: Graph
-
-class ResultStatusEnum(str, Enum):
-    COMPLETED = "COMPLETED"
 
 # event example: result-update
 class UpdateWorkflowRequest(BaseModel):
     event: str
     status: ResultStatusEnum
 
-class UpdateWorkFlowResponse(UpdateWorkflowRequest):
+class UpdateWorkFlowResponse(BaseModel):
+    event: str
     result: Result
