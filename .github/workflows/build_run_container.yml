@@ -48,4 +48,15 @@ jobs:
           docker run -d -p $port_map ${{ secrets.AWS_ECR_DEV_REPO }}
           echo 'Running example dispatch to check container health'
           echo ${port_map}
+          docker exec -it $(docker container ls -a | awk 'NR>1 {print $1}') /bin/sh \
+                    cd opt/covalent/tests \
+                    pip install requirements.txt \
+                    cd ../ \
+                    pytest test \
+                    exit
+      - name: Discarding container
+        run: |
+          echo 'Discarding container after successful test run'
+          docker stop $(docker container ls -a | awk 'NR>1 {print $1}')
+          docker rm $(docker container ls -a | awk 'NR>1 {print $1}')
 
