@@ -52,7 +52,7 @@ jobs:
           docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
           echo 'Running the container'
           docker run -d -p $port_map ${{ secrets.AWS_ECR_DEV_REPO }}
-          echo 'Discarding the container'
-          docker stop ${{ secrets.AWS_ECR_DEV_REPO }}
-          docker rm ${{ secrets.AWS_ECR_DEV_REPO }}
+          echo 'Discarding container'
+          docker stop $(docker ps -aq)
+          docker rm $(docker ps -aq)
 
