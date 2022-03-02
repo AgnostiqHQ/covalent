@@ -80,7 +80,7 @@ class LocalDispatcher(BaseDispatcher):
 
             # Serializing the transport graph and then passing it to the Result object
             lattice.transport_graph = lattice.transport_graph.serialize()
-
+            # TODO: change this instantiation
             pickled_res = pickle.dumps(Result(lattice, lattice.metadata["results_dir"]))
             test_url = f"http://{dispatcher_addr}/api/submit"
 
