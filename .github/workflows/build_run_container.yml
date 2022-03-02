@@ -24,8 +24,6 @@ name: Build Image and Run Container
 on:
   pull_request
 
-env:
-  image_tag: covalent
 
 jobs:
   build_run_container:
@@ -46,20 +44,14 @@ jobs:
           aws --version
           docker info
           docker --version
-          TAG="$(cat ./VERSION)"
-          if aws ecr describe-images \
-            --repository-name covalent \
-            --image-ids imageTag=$TAG &> /dev/null ; then
-            SHORT_SHA="${GITHUB_SHA::8}"
-            TAG=$TAG-$SHORT_SHA
-          fi
-          echo "TAG=$TAG" >> $GITHUB_ENV
       - name: Build and run image
+        env:
+          port_map: 48008:8080
         run: |
           echo 'Building image'
           docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
           echo 'Running the container'
-          docker run ${{ secrets.AWS_ECR_DEV_REPO }}
+          docker run -d -p $port_map ${{ secrets.AWS_ECR_DEV_REPO }}
           echo 'Discarding the container'
           docker stop ${{ secrets.AWS_ECR_DEV_REPO }}
           docker rm ${{ secrets.AWS_ECR_DEV_REPO }}
