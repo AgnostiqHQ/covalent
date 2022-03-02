@@ -46,7 +46,7 @@ jobs:
       - name: Run and test container
         run: |
           docker run -d -p $port_map ${{ secrets.AWS_ECR_DEV_REPO }}
-          echo 'Running example dispatch to check container's health'
+          echo 'Running example dispatch to check container\'s health'
           echo ${port_map}
       - name: Discarding container
         run: |
