@@ -3,19 +3,19 @@ info:
   title: Covalent Dispatcher Service API
   version: 0.1.0
 paths:
-  /api/v1/workflow/{result_id}/dispatch:
+  /api/v1/workflow/{dispatch_id}/dispatch:
     post:
       tags:
         - Workflow
       summary: Submit Workflow
       description: Submit a workflow
-      operationId: submit_workflow_api_v1_workflow__result_id__dispatch_post
+      operationId: submit_workflow_api_v1_workflow__dispatch_id__dispatch_post
       parameters:
         - required: true
           schema:
-            title: Result Id
-            type: integer
-          name: result_id
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
           in: path
       responses:
         '200':
@@ -30,19 +30,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/workflow/{result_id}/cancel:
+  /api/v1/workflow/{dispatch_id}/cancel:
     post:
       tags:
         - Workflow
       summary: Cancel Workflow
       description: Cancel a workflow
-      operationId: cancel_workflow_api_v1_workflow__result_id__cancel_post
+      operationId: cancel_workflow_api_v1_workflow__dispatch_id__cancel_post
       parameters:
         - required: true
           schema:
-            title: Result Id
-            type: integer
-          name: result_id
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
           in: path
       responses:
         '200':
@@ -57,13 +57,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/workflow/{result_id}/update:
+  /api/v1/workflow/{dispatch_id}/update:
     put:
       tags:
         - Workflow
       summary: Update Workflow
       description: Update a workflow
-      operationId: update_workflow_api_v1_workflow__result_id__update_put
+      operationId: update_workflow_api_v1_workflow__dispatch_id__update_put
       requestBody:
         content:
           application/json:

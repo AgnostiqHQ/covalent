@@ -44,19 +44,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v1/workflow/results/{result_id}:
+  /api/v1/workflow/results/{dispatch_id}:
     get:
       tags:
         - Workflow
       summary: Get Result
       description: Get a result object
-      operationId: get_result_api_v1_workflow_results__result_id__get
+      operationId: get_result_api_v1_workflow_results__dispatch_id__get
       parameters:
         - required: true
           schema:
-            title: Result Id
-            type: integer
-          name: result_id
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
           in: path
       responses:
         '200':
