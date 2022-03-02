@@ -32,8 +32,9 @@ suffix = "*.ipynb"
 files = glob.glob(rootdir + how_to_dir + suffix, recursive=True)
 expected_return_values = [0] * len(files)
 
-# Skip these since they require graphviz
+# Skip these since they require graphviz and/or gcc
 ignore_files = [
+    "construct_c_task.ipynb",
     "query_electron_execution_status.ipynb",
     "query_lattice_execution_status.ipynb",
     "visualize_lattice.ipynb",
