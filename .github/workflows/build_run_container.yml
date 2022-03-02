@@ -29,8 +29,6 @@ jobs:
     steps:
       - name: Check out head
         uses: actions/checkout@v2
-        run: |
-          aws --version
-          echo 'Workflow to build docker image and run container'
       - name: Build and run image
+      - run: echo 'Workflow to build image and run container'
 
