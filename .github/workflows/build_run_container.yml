@@ -51,7 +51,20 @@ jobs:
           echo 'Running example dispatch to check container health'
           echo ${port_map}
           cat << EOF > test_dispatch.py
-          print(3+3)
+          import covalent as ct
+          @ct.electron
+          def join_words(a, b):
+            return ", ".join([a, b])
+          @ct.electron
+          def excitement(a):
+            return f"{a}!"
+          @ct.lattice
+          def simple_workflow(a, b):
+            phrase = join_words(a, b)
+            return excitement(phrase)
+          dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
+          result_string = ct.get_result(dispatch_id).result
+          print(f'Dispatch id {result_string} completed successfully')
           EOF
           python test_dispatch.py
       - name: Discarding container
