@@ -28,12 +28,12 @@ class RunTaskResponse(BaseModel):
     response: str
 
 
-class NodeID(BaseModel):
+class TaskID(BaseModel):
     id: int
 
 
-class NodeIDList(BaseModel):
-    list_node_ids: List[NodeID]
+class TaskIDList(BaseModel):
+    list_task_ids: List[TaskID]
 
 
 class CancelResponse(BaseModel):
