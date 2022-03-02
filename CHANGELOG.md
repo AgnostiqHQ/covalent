@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+<<<<<<< HEAD
 ## [0.27.6] - 2022-03-01
 
 ### Added
@@ -19,6 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Missing UI input data after backend change - needed to be derived from graph for electrons, lattice inputs fixed on server-side, combining name and positional args
 - Broken UI graph due to variable->edge_name renaming
 - Missing UI executor data after server-side renaming
+=======
+## [0.27.5] - 2022-02-28
+
+### Added
+
+- Added test for docker image before deploying to ECR.
+>>>>>>> acd0ceb (Updated CHANGELOG)
 
 ## [0.27.4] - 2022-02-28
 
