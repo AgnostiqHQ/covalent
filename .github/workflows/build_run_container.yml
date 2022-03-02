@@ -52,6 +52,7 @@ jobs:
           echo ${port_map}
           cat << EOF > test_dispatch.py
           import covalent as ct
+          import time
           @ct.electron
           def join_words(a, b):
             return ", ".join([a, b])
@@ -63,6 +64,7 @@ jobs:
             phrase = join_words(a, b)
             return excitement(phrase)
           dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
+          time.sleep(30)
           result_string = ct.get_result(dispatch_id).result
           print(f'Dispatch id {result_string} completed successfully')
           EOF
