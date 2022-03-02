@@ -23,14 +23,21 @@ on:
 
 name: Build Image and Run Container
 
+env:
+  image_tag: covalent
+
 jobs:
   build_run_container:
     runs-on: ubuntu-latest
     steps:
       - name: Check out head
         uses: actions/checkout@v2
-        run: |
-          aws --version
-          echo 'Workflow to build docker image and run container'
       - name: Build and run image
+        run: |
+          echo 'Building image'
+          docker build -t $image_tag .
+          echo 'Running the container'
+          docker run $image_tag
+          echo 'Deleting the container'
+          docker rm $(docker ps -aq)
 
