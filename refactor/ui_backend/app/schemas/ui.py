@@ -18,17 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-
-from app.schemas.ui import UpdateUIResponse
-from fastapi import APIRouter
-
-router = APIRouter()
+from pydantic import BaseModel
 
 
-@router.post("/run", status_code=200, response_model=UpdateUIResponse)
-def update_ui(*, dispatch_id: str, task_id: int) -> UpdateUIResponse:
-    """
-    API Endpoint (/api/ui/update) to run tasks
-    """
-
-    return {"response": "UI Updated"}
+class UpdateUIResponse(BaseModel):
+    response: str
