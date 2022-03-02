@@ -28,7 +28,7 @@ BASE_PATH = Path(__file__).resolve().parent
 
 app = FastAPI(title="Covalent Data Service API")
 
-app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(api_router, prefix=settings.API_V0_STR)
 
 
 if __name__ == "__main__":

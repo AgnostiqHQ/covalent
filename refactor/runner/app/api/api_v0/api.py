@@ -24,4 +24,4 @@ from fastapi import APIRouter
 
 api_router = APIRouter()
 
-api_router.include_router(task.router, prefix="/task", tags=["task"])
+api_router.include_router(task.router, prefix="/task", tags=["Task"])

@@ -24,4 +24,4 @@ from fastapi import APIRouter
 
 api_router = APIRouter()
 
-api_router.include_router(ui.router, prefix="/ui", tags=["ui"])
+api_router.include_router(ui.router, prefix="/ui", tags=["UI"])

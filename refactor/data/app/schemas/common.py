@@ -19,9 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from typing import Any, Optional, Sequence
-
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 
 
 class HTTPExceptionSchema(BaseModel):

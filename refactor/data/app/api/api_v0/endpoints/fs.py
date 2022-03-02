@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from typing import Any, Optional
+from typing import Any
 
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.fs import UploadResponse

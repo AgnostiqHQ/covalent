@@ -23,4 +23,4 @@ from app.api.api_v0.endpoints import submit
 from fastapi import APIRouter
 
 api_router = APIRouter()
-api_router.include_router(submit.router, prefix="/submit", tags=["submit"])
+api_router.include_router(submit.router, prefix="/submit", tags=["Submit"])
