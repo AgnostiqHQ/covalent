@@ -18,10 +18,23 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from pathlib import Path
 
-from pydantic import BaseModel
+from app.api.api_v1.api import api_router
+from app.core.config import settings
+from fastapi import FastAPI
+
+BASE_PATH = Path(__file__).resolve().parent
 
 
-class UploadResponse(BaseModel):
-    filename: str
-    path: str
+app = FastAPI(title="Covalent Dispatcher Service API")
+
+
+app.include_router(api_router, prefix=settings.API_V0_STR)
+
+
+if __name__ == "__main__":
+    # Use this for debugging purposes only
+    import uvicorn
+
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, log_level="debug", reload=True)

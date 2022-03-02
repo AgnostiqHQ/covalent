@@ -18,35 +18,9 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from pathlib import Path
 
-from fastapi import APIRouter, Depends, FastAPI, Request
+from app.api.api_v1.endpoints import workflow
+from fastapi import APIRouter
 
-from app.api.api_v1.api import api_router
-from app.core.config import settings
-
-BASE_PATH = Path(__file__).resolve().parent
-
-root_router = APIRouter()
-app = FastAPI(title="Covalent Dispatcher Service API")
-
-
-@root_router.get("/", status_code=200)
-def root(
-    request: Request,
-) -> dict:
-    """
-    Root GET
-    """
-    return {"message": "ok"}
-
-
-app.include_router(api_router, prefix=settings.API_V1_STR)
-app.include_router(root_router)
-
-
-if __name__ == "__main__":
-    # Use this for debugging purposes only
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
+api_router = APIRouter()
+api_router.include_router(workflow.router, prefix="/workflow", tags=["Workflow"])

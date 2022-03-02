@@ -19,9 +19,4 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from pydantic import BaseModel
-
-
-class UploadResponse(BaseModel):
-    filename: str
-    path: str
+from .workflow import DispatchResponse, Link, Node, Result

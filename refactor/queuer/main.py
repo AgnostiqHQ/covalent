@@ -20,33 +20,20 @@
 
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, FastAPI, Request
-
-from app.api.api_v1.api import api_router
+from app.api.api_v0.api import api_router
 from app.core.config import settings
+from fastapi import FastAPI
 
 BASE_PATH = Path(__file__).resolve().parent
 
-root_router = APIRouter()
 app = FastAPI(title="Covalent Queuer Service API")
 
 
-@root_router.get("/", status_code=200)
-def root(
-    request: Request,
-) -> dict:
-    """
-    Root GET
-    """
-    return {"message": "ok"}
-
-
-app.include_router(api_router, prefix=settings.API_V1_STR)
-app.include_router(root_router)
+app.include_router(api_router, prefix=settings.API_V0_STR)
 
 
 if __name__ == "__main__":
     # Use this for debugging purposes only
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, log_level="debug", reload=True)

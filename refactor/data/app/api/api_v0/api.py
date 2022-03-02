@@ -19,9 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from pydantic import BaseModel
+from app.api.api_v0.endpoints import fs, workflow
+from fastapi import APIRouter
 
-
-class UploadResponse(BaseModel):
-    filename: str
-    path: str
+api_router = APIRouter()
+api_router.include_router(workflow.router, prefix="/workflow", tags=["Workflow"])
+api_router.include_router(fs.router, prefix="/fs", tags=["Data"])

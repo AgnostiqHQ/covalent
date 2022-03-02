@@ -22,6 +22,9 @@
 from pydantic import BaseModel
 
 
-class UploadResponse(BaseModel):
-    filename: str
-    path: str
+class ResultPickle(BaseModel):
+    result_object: bytes
+
+
+class SubmitResponse(BaseModel):
+    dispatch_id: str

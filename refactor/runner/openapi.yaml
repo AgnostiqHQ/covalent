@@ -4,26 +4,35 @@ info:
   version: 0.1.0
 paths:
   /api/v0/task/run:
-    put:
+    post:
       tags:
         - task
       summary: Run Task
-      description: API Endpoint (/api/task/run) to run a task
-      operationId: run_task_api_v0_task_run_put
+      description: API Endpoint (/api/task/run) to run tasks
+      operationId: run_task_api_v0_task_run_post
       parameters:
-        - required: false
+        - required: true
           schema:
-            title: Some Object Yet To Decide
-          name: some_object_yet_to_decide
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
           in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Task Ids
+              type: array
+              items:
+                type: integer
+        required: true
       responses:
         '202':
           description: Successful Response
           content:
             application/json:
               schema:
-                title: Response Run Task Api V0 Task Run Put
-                type: object
+                $ref: '#/components/schemas/RunTaskResponse'
         '422':
           description: Validation Error
           content:
@@ -38,10 +47,17 @@ paths:
       description: API Endpoint (/api/task/status) to check status of a task
       operationId: check_status_api_v0_task_status_get
       parameters:
-        - required: false
+        - required: true
           schema:
-            title: Another Object Yet To Decide
-          name: another_object_yet_to_decide
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
+          in: query
+        - required: true
+          schema:
+            title: Task Id
+            type: integer
+          name: task_id
           in: query
       responses:
         '200':
@@ -49,8 +65,7 @@ paths:
           content:
             application/json:
               schema:
-                title: Response Check Status Api V0 Task Status Get
-                type: object
+                $ref: '#/components/schemas/TaskStatus'
         '422':
           description: Validation Error
           content:
@@ -58,17 +73,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/v0/task/cancel:
-    delete:
+    post:
       tags:
         - task
       summary: Cancel Task
       description: API Endpoint (/api/task/cancel) to cancel a task
-      operationId: cancel_task_api_v0_task_cancel_delete
+      operationId: cancel_task_api_v0_task_cancel_post
       parameters:
-        - required: false
+        - required: true
           schema:
-            title: Another Object Yet To Decide
-          name: another_object_yet_to_decide
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
+          in: query
+        - required: true
+          schema:
+            title: Task Id
+            type: integer
+          name: task_id
           in: query
       responses:
         '200':
@@ -76,27 +98,28 @@ paths:
           content:
             application/json:
               schema:
-                title: Response Cancel Task Api V0 Task Cancel Delete
-                type: object
+                $ref: '#/components/schemas/CancelResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /:
-    get:
-      summary: Root
-      description: Root GET
-      operationId: root__get
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
 components:
   schemas:
+    CancelResponse:
+      title: CancelResponse
+      required:
+        - cancelled_dispatch_id
+        - cancelled_task_id
+      type: object
+      properties:
+        cancelled_dispatch_id:
+          title: Cancelled Dispatch Id
+          type: string
+        cancelled_task_id:
+          title: Cancelled Task Id
+          type: string
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -106,6 +129,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
+    RunTaskResponse:
+      title: RunTaskResponse
+      required:
+        - response
+      type: object
+      properties:
+        response:
+          title: Response
+          type: string
+    TaskStatus:
+      title: TaskStatus
+      required:
+        - status
+      type: object
+      properties:
+        status:
+          title: Status
+          type: string
     ValidationError:
       title: ValidationError
       required:

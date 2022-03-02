@@ -20,9 +20,14 @@
 
 
 from datetime import datetime
+from enum import Enum
 from typing import Any, Optional, Sequence
 
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
+
+
+class DispatchResponse(BaseModel):
+    dispatch_id: str
 
 
 class BaseNode(BaseModel):
@@ -57,3 +62,17 @@ class Result(BaseModel):
     results_dir: str
     status: str
     graph: Graph
+
+
+class ResultStatusEnum(str, Enum):
+    COMPLETED = "COMPLETED"
+
+
+# event example: result-update
+class UpdateWorkflowRequest(BaseModel):
+    event: str
+    status: ResultStatusEnum
+
+
+class UpdateWorkFlowResponse(UpdateWorkflowRequest):
+    result: Result

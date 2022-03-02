@@ -1,58 +1,36 @@
 openapi: 3.0.2
 info:
-  title: Covalent Queuer Service API
+  title: Queuer API
   version: 0.1.0
 paths:
-  /api/v1/submit/dispatch:
+  /api/v0/submit/dispatch:
     post:
       tags:
-        - Submit
+        - submit
       summary: Submit Workflow
       description: Submit a workflow
-      operationId: submit_workflow_api_v1_submit_dispatch_post
-      parameters:
-        - required: true
-          schema:
-            title: Data
-            type: string
-            format: binary
-          name: data
-          in: query
+      operationId: submit_workflow_api_v0_submit_dispatch_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResultPickle'
+        required: true
       responses:
-        '200':
+        '202':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DispatchResponse'
+                $ref: '#/components/schemas/SubmitResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /:
-    get:
-      summary: Root
-      description: Root GET
-      operationId: root__get
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
 components:
   schemas:
-    DispatchResponse:
-      title: DispatchResponse
-      required:
-        - dispatch_id
-      type: object
-      properties:
-        dispatch_id:
-          title: Dispatch Id
-          type: string
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -62,6 +40,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
+    ResultPickle:
+      title: ResultPickle
+      required:
+        - result_object
+      type: object
+      properties:
+        result_object:
+          title: Result Object
+          type: string
+          format: binary
+    SubmitResponse:
+      title: SubmitResponse
+      required:
+        - dispatch_id
+      type: object
+      properties:
+        dispatch_id:
+          title: Dispatch Id
+          type: string
     ValidationError:
       title: ValidationError
       required:

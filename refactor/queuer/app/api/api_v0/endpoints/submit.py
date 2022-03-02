@@ -19,9 +19,16 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from pydantic import BaseModel
+from app.schemas.submit import ResultPickle, SubmitResponse
+from fastapi import APIRouter
+
+router = APIRouter()
 
 
-class UploadResponse(BaseModel):
-    filename: str
-    path: str
+@router.post("/dispatch", status_code=202, response_model=SubmitResponse)
+def submit_workflow(*, result: ResultPickle) -> SubmitResponse:
+    """
+    Submit a workflow
+    """
+
+    return {"dispatch_id": "48f1d3b7-27bb-4c5d-97fe-c0c61c197fd5"}

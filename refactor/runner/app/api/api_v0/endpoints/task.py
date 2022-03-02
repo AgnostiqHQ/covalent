@@ -19,14 +19,16 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from app.schemas.task import CancelResponse, TaskID, TaskIDList, TaskStatus
+from typing import List
+
+from app.schemas.task import CancelResponse, RunTaskResponse, TaskStatus
 from fastapi import APIRouter
 
 router = APIRouter()
 
 
-@router.post("/run", status_code=202, response_model=str)
-def run_task(*, dispatch_id: str, task_ids: TaskIDList) -> str:
+@router.post("/run", status_code=202, response_model=RunTaskResponse)
+def run_task(*, dispatch_id: str, task_ids: List[int]) -> RunTaskResponse:
     """
     API Endpoint (/api/task/run) to run tasks
     """
@@ -35,7 +37,7 @@ def run_task(*, dispatch_id: str, task_ids: TaskIDList) -> str:
 
 
 @router.get("/status", status_code=200, response_model=TaskStatus)
-def check_status(*, dispatch_id: str, task_id: TaskID) -> TaskStatus:
+def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
     """
     API Endpoint (/api/task/status) to check status of a task
     """
@@ -44,9 +46,9 @@ def check_status(*, dispatch_id: str, task_id: TaskID) -> TaskStatus:
 
 
 @router.post("/cancel", status_code=200, response_model=CancelResponse)
-def cancel_task(*, dispatch_id: str, task_id: TaskID) -> CancelResponse:
+def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     """
     API Endpoint (/api/task/cancel) to cancel a task
     """
 
-    return {"cancelled_dispatch_id": "some_dispatch_id"}
+    return {"cancelled_dispatch_id": f"{dispatch_id}", "cancelled_task_id": f"{task_id}"}
