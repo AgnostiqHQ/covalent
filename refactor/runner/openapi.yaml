@@ -3,13 +3,13 @@ info:
   title: Covalent Runner Service API
   version: 0.1.0
 paths:
-  /api/v0/task/run/{dispatch_id}:
+  /api/v0/workflow/{dispatch_id}/task:
     post:
       tags:
         - Task
       summary: Run Task
       description: API Endpoint (/api/task/run) to run tasks
-      operationId: run_task_api_v0_task_run__dispatch_id__post
+      operationId: run_task_api_v0_workflow__dispatch_id__task_post
       parameters:
         - required: true
           schema:
@@ -39,13 +39,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v0/task/status/{dispatch_id}/{task_id}:
+  /api/v0/workflow/{dispatch_id}/task/{task_id}/status:
     get:
       tags:
         - Task
       summary: Check Status
       description: API Endpoint (/api/task/status) to check status of a task
-      operationId: check_status_api_v0_task_status__dispatch_id___task_id__get
+      operationId: check_status_api_v0_workflow__dispatch_id__task__task_id__status_get
       parameters:
         - required: true
           schema:
@@ -72,13 +72,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v0/task/cancel/{dispatch_id}/{task_id}:
-    post:
+  /api/v0/workflow/{dispatch_id}/task/{task_id}/cancel:
+    delete:
       tags:
         - Task
       summary: Cancel Task
       description: API Endpoint (/api/task/cancel) to cancel a task
-      operationId: cancel_task_api_v0_task_cancel__dispatch_id___task_id__post
+      operationId: cancel_task_api_v0_workflow__dispatch_id__task__task_id__cancel_delete
       parameters:
         - required: true
           schema:
