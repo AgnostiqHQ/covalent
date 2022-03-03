@@ -20,14 +20,9 @@
 
 
 from datetime import datetime
-from enum import Enum
 from typing import Any, Optional, Sequence
 
 from pydantic import BaseModel
-
-
-class DispatchResponse(BaseModel):
-    dispatch_id: str
 
 
 class BaseNode(BaseModel):
@@ -41,38 +36,17 @@ class BaseNode(BaseModel):
     stderr: str
 
 
-class Link(BaseNode):
-    edge_name: str
-    param_type: str
-    source: int
-    target: int
-
-
 class Node(BaseNode):
     id: int
 
 
-class Graph(BaseModel):
-    nodes: Sequence[Node]
-    links: Sequence[Link]
+class DispatchWorkflowResponse(BaseModel):
+    response: str
 
 
-class Result(BaseModel):
-    dispatch_id: str
-    results_dir: str
-    status: str
-    graph: Graph
+class CancelWorkflowResponse(BaseModel):
+    response: str
 
 
-class ResultStatusEnum(str, Enum):
-    COMPLETED = "COMPLETED"
-
-
-# event example: result-update
-class UpdateWorkflowRequest(BaseModel):
-    event: str
-    status: ResultStatusEnum
-
-
-class UpdateWorkFlowResponse(UpdateWorkflowRequest):
-    result: Result
+class UpdateWorkflowResponse(BaseModel):
+    response: str

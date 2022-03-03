@@ -19,4 +19,4 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from .workflow import DispatchResponse, Link, Node, Result
+from .workflow import DispatchWorkflowResponse, Link, Node, Result
