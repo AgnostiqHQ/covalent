@@ -27,7 +27,7 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-@router.post("/run", status_code=202, response_model=RunTaskResponse)
+@router.post("/run/{dispatch_id}", status_code=202, response_model=RunTaskResponse)
 def run_task(*, dispatch_id: str, task_ids: List[int]) -> RunTaskResponse:
     """
     API Endpoint (/api/task/run) to run tasks
@@ -36,7 +36,7 @@ def run_task(*, dispatch_id: str, task_ids: List[int]) -> RunTaskResponse:
     return {"response": "execution of tasks started"}
 
 
-@router.get("/status", status_code=200, response_model=TaskStatus)
+@router.get("/status/{dispatch_id}/{task_id}", status_code=200, response_model=TaskStatus)
 def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
     """
     API Endpoint (/api/task/status) to check status of a task
@@ -45,7 +45,7 @@ def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
     return {"status": "running"}
 
 
-@router.post("/cancel", status_code=200, response_model=CancelResponse)
+@router.post("/cancel/{dispatch_id}/{task_id}", status_code=200, response_model=CancelResponse)
 def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     """
     API Endpoint (/api/task/cancel) to cancel a task
