@@ -36,12 +36,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    post:
+    put:
       tags:
         - Workflow
       summary: Update Result
       description: Update a result object
-      operationId: update_result_api_v0_workflow_results__dispatch_id__post
+      operationId: update_result_api_v0_workflow_results__dispatch_id__put
       parameters:
         - required: true
           schema:

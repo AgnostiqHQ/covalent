@@ -93,7 +93,7 @@ def insert_result(
     return {"response": "Result successfully added to db"}
 
 
-@router.post("/results/{dispatch_id}", status_code=200, response_model=UpdateResultResponse)
+@router.put("/results/{dispatch_id}", status_code=200, response_model=UpdateResultResponse)
 def update_result(
     *,
     dispatch_id: str,

@@ -63,7 +63,7 @@ mock_result = {
 }
 
 
-@router.post("/dispatch/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
+@router.post("/{dispatch_id}/dispatch", status_code=202, response_model=DispatchWorkflowResponse)
 def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
@@ -72,7 +72,7 @@ def submit_workflow(*, dispatch_id: str) -> Any:
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 
 
-@router.post("/cancel/{dispatch_id}", status_code=200, response_model=CancelWorkflowResponse)
+@router.post("/{dispatch_id}/cancel", status_code=200, response_model=CancelWorkflowResponse)
 def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     """
     Cancel a workflow
@@ -81,7 +81,7 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     return {"response": f"{dispatch_id} workflow cancelled successfully"}
 
 
-@router.post("/update/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
+@router.post("/{dispatch_id}/update", status_code=200, response_model=UpdateWorkflowResponse)
 def update_workflow(*, dispatch_id: str, task: Node) -> UpdateWorkflowResponse:
     """
     Update a workflow
