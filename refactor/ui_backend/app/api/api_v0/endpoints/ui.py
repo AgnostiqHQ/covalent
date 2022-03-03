@@ -25,10 +25,10 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-@router.post("/update/{dispatch_id}/{task_id}", status_code=200, response_model=UpdateUIResponse)
+@router.put("/workflow/{dispatch_id}/task/{task_id}", status_code=200, response_model=UpdateUIResponse)
 def update_ui(*, dispatch_id: str, task_id: int) -> UpdateUIResponse:
     """
-    API Endpoint (/api/ui/update) to update ui frontend
+    API Endpoint (/api/workflow/task) to update ui frontend
     """
 
     return {"response": "UI Updated"}

@@ -3,13 +3,13 @@ info:
   title: Covalent UI Backend Service API
   version: 0.1.0
 paths:
-  /api/v0/ui/update/{dispatch_id}/{task_id}:
-    post:
+  /api/v0/ui/workflow/{dispatch_id}/task/{task_id}:
+    put:
       tags:
         - UI
       summary: Update Ui
-      description: API Endpoint (/api/ui/update) to update ui frontend
-      operationId: update_ui_api_v0_ui_update__dispatch_id___task_id__post
+      description: API Endpoint (/api/workflow/task) to update ui frontend
+      operationId: update_ui_api_v0_ui_workflow__dispatch_id__task__task_id__put
       parameters:
         - required: true
           schema:
