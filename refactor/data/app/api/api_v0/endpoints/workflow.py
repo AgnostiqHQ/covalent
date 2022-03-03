@@ -33,6 +33,7 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
+# For now we don't return this, instead just a bytes-like pickle object
 mock_result_object_instance = {
     "dispatch_id": "",
     "results_dir": "",
@@ -64,7 +65,7 @@ mock_result_object_instance = {
 @router.get(
     "/results/{dispatch_id}",
     status_code=200,
-    response_model=Result,
+    response_model=ResultPickle,
     responses={
         404: {"model": HTTPExceptionSchema, "description": "The result was not found"},
     },
@@ -77,7 +78,7 @@ def get_result(
     Get a result object
     """
 
-    return mock_result_object_instance
+    return {"result_object": b"result pickle object"}
 
 
 @router.post("/results", status_code=200, response_model=InsertResultResponse)
