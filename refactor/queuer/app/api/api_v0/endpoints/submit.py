@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from app.core.queue import Queuer
 from app.schemas.submit import ResultPickle, SubmitResponse
 from fastapi import APIRouter
 
@@ -26,9 +27,12 @@ router = APIRouter()
 
 
 @router.post("/dispatch", status_code=202, response_model=SubmitResponse)
-def submit_workflow(*, result: ResultPickle) -> SubmitResponse:
+async def submit_workflow(*, result: ResultPickle) -> SubmitResponse:
     """
     Submit a workflow
     """
+
+    queue = Queuer()
+    await queue.publish("foo", {"message": "hi"})
 
     return {"dispatch_id": "48f1d3b7-27bb-4c5d-97fe-c0c61c197fd5"}
