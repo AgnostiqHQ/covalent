@@ -1,7 +1,4 @@
-import asyncio
 from multiprocessing import Pool
-
-import uvloop
 
 
 def task(x):
