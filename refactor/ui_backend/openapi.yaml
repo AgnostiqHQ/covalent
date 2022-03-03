@@ -3,26 +3,26 @@ info:
   title: Covalent UI Backend Service API
   version: 0.1.0
 paths:
-  /api/v0/ui/run:
+  /api/v0/ui/update/{dispatch_id}/{task_id}:
     post:
       tags:
         - UI
       summary: Update Ui
-      description: API Endpoint (/api/ui/update) to run tasks
-      operationId: update_ui_api_v0_ui_run_post
+      description: API Endpoint (/api/ui/update) to update ui frontend
+      operationId: update_ui_api_v0_ui_update__dispatch_id___task_id__post
       parameters:
         - required: true
           schema:
             title: Dispatch Id
             type: string
           name: dispatch_id
-          in: query
+          in: path
         - required: true
           schema:
             title: Task Id
             type: integer
           name: task_id
-          in: query
+          in: path
       responses:
         '200':
           description: Successful Response
