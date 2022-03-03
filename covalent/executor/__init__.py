@@ -145,8 +145,7 @@ class _ExecutorManager:
 
         if len(plugin_class):
             plugin_class = plugin_class[0]
-            short_name = the_module.__name__.split("/")[-1]
-            short_name = short_name.split(".")[-1]
+            short_name = the_module.__name__.split("/")[-1].split(".")[-1]
             self.executor_plugins_map[short_name] = plugin_class
         else:
             # The requested plugin (the_module.module_name) was not found in the module.
