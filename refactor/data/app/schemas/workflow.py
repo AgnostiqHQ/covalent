@@ -59,7 +59,7 @@ class Result(BaseModel):
     graph: Graph
 
 
-class CreateResultResponse(BaseModel):
+class InsertResultResponse(BaseModel):
     response: str
 
 

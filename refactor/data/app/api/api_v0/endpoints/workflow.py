@@ -23,7 +23,7 @@ from typing import Any, Union
 
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import (
-    CreateResultResponse,
+    InsertResultResponse,
     Node,
     Result,
     ResultPickle,
@@ -80,7 +80,7 @@ def get_result(
     return mock_result_object_instance
 
 
-@router.post("/results/create", status_code=200, response_model=CreateResultResponse)
+@router.post("/results", status_code=200, response_model=InsertResultResponse)
 def insert_result(
     *,
     result_object: Union[Result, ResultPickle],
@@ -92,7 +92,7 @@ def insert_result(
     return {"response": "Result successfully added to db"}
 
 
-@router.post("/results/update", status_code=200, response_model=UpdateResultResponse)
+@router.post("/results/{dispatch_id}", status_code=200, response_model=UpdateResultResponse)
 def update_result(
     *,
     dispatch_id: str,
