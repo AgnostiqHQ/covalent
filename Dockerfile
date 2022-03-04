@@ -36,6 +36,8 @@ RUN cd /opt/covalent/covalent_ui/webapp \
 
 WORKDIR /opt/covalent
 
+ENV PLATFORM Docker
+
 EXPOSE 8080
 ENTRYPOINT [ "python" ]
 CMD ["/opt/covalent/covalent_ui/app.py", "--port", "8080"]

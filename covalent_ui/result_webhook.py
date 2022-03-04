@@ -68,7 +68,7 @@ def send_update(result: Result) -> None:
         requests.post(get_ui_url(ui_server.WEBHOOK_PATH), data=result_update)
     except requests.exceptions.RequestException:
         # catch all requests-related exceptions
-        app_log.warning("Unable to send result update to UI server.")
+        app_log.exception("Unable to send result update to UI server.")
 
 
 def send_draw_request(lattice) -> None:
