@@ -5,11 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.28.3] - 2022-03-04
+
+### Changed
+
+- Updated eventlet to 0.31.0
+
+## [0.28.2] - 2022-03-03
+
+### Added
+
+- A brief overview of the tutorial structure in the MNIST classification tutorial.
+
+## [0.28.1] - 2022-03-02
+
+### Added
+
+- Conda installation is only supported for Linux in the `Getting Started` guide.
+- MNIST classifier tutorial.
+
+### Removed
+
+- Removed handling of default values of function parameters in `get_named_params` in `covalent/_shared_files/utils.py`. So, it is actually being handled by not being handled since now `named_args` and `named_kwargs` will only contain parameters that were passed during the function call and not all of them.
+
+## [0.28.0] - 2022-03-02
+
+### Added
+
+- Lepton support, including for Python modules and C libraries
+- How-to guides showing how to use leptons for each of these
+
+## [0.27.6] - 2022-03-01
+
+### Added
+
+- Added feature development basic steps in CONTRIBUTING.md.
+- Added section on locally building RTD (read the docs) in the contributing guide.
+
 ## [0.27.5] - 2022-03-01
 
 ### Fixed
 
-- Updated eventlet to 0.31.0
+- Missing UI input data after backend change - needed to be derived from graph for electrons, lattice inputs fixed on server-side, combining name and positional args
+- Broken UI graph due to variable->edge_name renaming
+- Missing UI executor data after server-side renaming
 
 ## [0.27.4] - 2022-02-28
 
@@ -94,7 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added Local Executor section to the API
+- Added Local Executor section to the API read the docs.
 
 ## [0.26.0] - 2022-02-23
 
