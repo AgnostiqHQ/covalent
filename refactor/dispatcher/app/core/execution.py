@@ -18,28 +18,33 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from typing import Dict
+from datetime import datetime, timezone
+from typing import Dict, List
 
 from covalent._results_manager import Result
+from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import _TransportGraph
 
 
-def is_workflow_running(dispatch_id: int) -> bool:
+def is_workflow_running(result_object: Result) -> bool:
     """Check if workflow is running."""
 
-    pass
+    return result_object.status == "RUNNING"
 
 
-def is_workflow_completed(dispatch_id: int) -> bool:
+def is_workflow_completed(result_object: Result) -> bool:
     """Check if workflow is completed"""
 
-    pass
+    # TODO - Clarify if FAILED status belongs here
+    return result_object == "COMPLETED" or "FAILED"
 
 
-def is_task_completed(dispatch_id: int, task_id: int) -> bool:
+def is_task_completed(task_id: int, result_object: Result) -> bool:
     """Check if task is completed."""
 
-    pass
+    # TODO - Refactor `node_id` -> `task_id`
+    # TODO - Clarify if FAILED status belongs here
+    return result_object.get_node_status(task_id=task_id) == "COMPLETED" or "FAILED"
 
 
 def cancel_workflow():
@@ -48,10 +53,34 @@ def cancel_workflow():
     pass
 
 
-def update_workflow(task_execution_result: Dict, result_object: Result):
+def update_task_results(task_execution_result: Dict, result_object: Result):
     """Update the workflow with task execution results."""
 
     result_object._update_node(**task_execution_result)
+
+
+def _post_process(lattice: Lattice, node_outputs: Dict, task_exec_order: List[List]):
+    """TODO - Describe post processing here."""
+
+    return "workflow_result"
+
+
+def update_workflow_results(workflow_execution_result: Dict, result_object: Result):
+    """Update workflow results"""
+
+    # TODO - This might be a very central component; consider in more detail
+    order = result_object.lattice.transport_graph.get_topologically_sorted_graph()
+
+    # post process the lattice
+    result_object._result = _post_process(
+        result_object.lattice, result_object.get_all_node_outputs(), order
+    )
+
+    result_object._status = Result.COMPLETED
+    result_object._end_time = datetime.now(timezone.utc)
+
+    # TODO - Double check that this is indeed equivalent to writing to the database
+    result_object.save()
 
 
 def run_workflow():
