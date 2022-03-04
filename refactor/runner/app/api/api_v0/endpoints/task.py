@@ -36,7 +36,7 @@ def run_task(*, dispatch_id: str, task_ids: List[int]) -> RunTaskResponse:
     return {"response": "execution of tasks started"}
 
 
-@router.get("/{dispatch_id}/task/{task_id}/status", status_code=200, response_model=TaskStatus)
+@router.get("/{dispatch_id}/task/{task_id}", status_code=200, response_model=TaskStatus)
 def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
     """
     API Endpoint (/api/workflow/task/status) to check status of a task

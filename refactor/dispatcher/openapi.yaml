@@ -3,13 +3,13 @@ info:
   title: Covalent Dispatcher Service API
   version: 0.1.0
 paths:
-  /api/v0/workflow/{dispatch_id}/dispatch:
+  /api/v0/workflow/{dispatch_id}:
     post:
       tags:
         - Workflow
       summary: Submit Workflow
       description: Submit a workflow
-      operationId: submit_workflow_api_v0_workflow__dispatch_id__dispatch_post
+      operationId: submit_workflow_api_v0_workflow__dispatch_id__post
       parameters:
         - required: true
           schema:
@@ -31,12 +31,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/v0/workflow/{dispatch_id}/cancel:
-    post:
+    delete:
       tags:
         - Workflow
       summary: Cancel Workflow
       description: Cancel a workflow
-      operationId: cancel_workflow_api_v0_workflow__dispatch_id__cancel_post
+      operationId: cancel_workflow_api_v0_workflow__dispatch_id__cancel_delete
       parameters:
         - required: true
           schema:
@@ -58,12 +58,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/v0/workflow/{dispatch_id}/update:
-    post:
+    put:
       tags:
         - Workflow
       summary: Update Workflow
       description: Update a workflow
-      operationId: update_workflow_api_v0_workflow__dispatch_id__update_post
+      operationId: update_workflow_api_v0_workflow__dispatch_id__update_put
       parameters:
         - required: true
           schema:

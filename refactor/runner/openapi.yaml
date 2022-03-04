@@ -8,7 +8,7 @@ paths:
       tags:
         - Task
       summary: Run Task
-      description: API Endpoint (/api/task/run) to run tasks
+      description: API Endpoint (/api/workflow/task) to run tasks
       operationId: run_task_api_v0_workflow__dispatch_id__task_post
       parameters:
         - required: true
@@ -39,13 +39,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v0/workflow/{dispatch_id}/task/{task_id}/status:
+  /api/v0/workflow/{dispatch_id}/task/{task_id}:
     get:
       tags:
         - Task
       summary: Check Status
-      description: API Endpoint (/api/task/status) to check status of a task
-      operationId: check_status_api_v0_workflow__dispatch_id__task__task_id__status_get
+      description: API Endpoint (/api/workflow/task) to check status of a task
+      operationId: check_status_api_v0_workflow__dispatch_id__task__task_id__get
       parameters:
         - required: true
           schema:
@@ -77,7 +77,7 @@ paths:
       tags:
         - Task
       summary: Cancel Task
-      description: API Endpoint (/api/task/cancel) to cancel a task
+      description: API Endpoint (/api/workflow/task/cancel) to cancel a task
       operationId: cancel_task_api_v0_workflow__dispatch_id__task__task_id__cancel_delete
       parameters:
         - required: true
