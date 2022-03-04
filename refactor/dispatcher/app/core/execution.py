@@ -152,6 +152,23 @@ def run_workflow():
     pass
 
 
+def preprocess_tasks_before_execution():
+    """Several things need to happen to the results object before the tasks can be sent for
+    execution."""
+
+    pass
+
+
+def get_task_inputs(task_id: int, result_object: Result) -> Dict:
+    """Get inputs for the tasks.
+
+    Perhaps instead of returning the task inputs, this method writes it to the transport graph
+    task nodes.
+    """
+
+    return {}
+
+
 def dispatch_workflow(result_object: Result) -> None:
     """After a workflow has been popped from a queue (remember that dispatcher processes only
     one workflow at a time) and it has been validated, this function is run.
@@ -178,6 +195,7 @@ def dispatch_workflow(result_object: Result) -> None:
 
     # TODO - Modify this logic so that it applies to sub-lattices as well
     while scheduled_tasks:
+        preprocess_tasks_before_execution()
         run_task(result_object=result_object, task_id_batch=scheduled_tasks.pop(0))
 
     # After all the scheduled tasks have successfully been sent to the Runner API and the while
