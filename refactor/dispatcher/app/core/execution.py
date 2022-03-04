@@ -36,7 +36,7 @@ def is_workflow_completed(dispatch_id: int) -> bool:
     pass
 
 
-def is_task_completed(dispatch_id: int) -> bool:
+def is_task_completed(dispatch_id: int, task_id: int) -> bool:
     """Check if task is completed."""
 
     pass
