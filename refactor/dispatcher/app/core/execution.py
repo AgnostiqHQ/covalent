@@ -25,6 +25,31 @@ from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import _TransportGraph
 
+"""
+Dummy methods for calls to the Runner API.
+"""
+
+
+def run_task(dispatch_id: int, task_id: int) -> bool:
+    """Ask Runner to execute task - get back True (False) if resources are (not) available."""
+
+    pass
+
+
+def cancel_task(dispatch_id: int, task_id: int):
+    """Cancel task execution."""
+
+    pass
+
+
+"""
+Dummy method for calls to the UI API.
+"""
+
+
+def update_ui(result_object: Result):
+    pass
+
 
 def is_workflow_running(result_object: Result) -> bool:
     """Check if workflow is running."""
