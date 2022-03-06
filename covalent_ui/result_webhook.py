@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import json
+import os
 
 import requests
 
@@ -36,7 +37,9 @@ app_log = logger.app_log
 
 
 def get_ui_url(path):
-    baseUrl = f"http://localhost:{DEFAULT_PORT}"
+    port = 8080 if os.environ.get("PLATFORM") == "Docker" else DEFAULT_PORT
+    baseUrl = f"http://localhost:{port}"
+    app_log.debug(f"ui url is {baseUrl}{path}")
     return f"{baseUrl}{path}"
 
 
