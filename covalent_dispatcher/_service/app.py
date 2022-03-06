@@ -57,8 +57,8 @@ def submit() -> Response:
         None
 
     Returns:
-        dispatch_id: The dispatch id in a json format
-                     returned as a Flask Response object.
+        The dispatch id in a json format
+        returned as a Flask Response object.
     """
 
     data = request.get_data()
