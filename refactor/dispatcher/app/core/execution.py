@@ -40,7 +40,7 @@ Dummy methods for calls to the Runner API.
 """
 
 
-def run_task(result_object: Result, task_id_batch: List[int]) -> bool:
+def run_task(result_object: Result, task_id_batch: List[int], input_arg_batch: List[Dict]) -> bool:
     """Ask Runner to execute tasks - get back True (False) if resources are (not) available.
 
     The Runner might not have resources available to pick up the batch of tasks. In that case,
@@ -157,6 +157,8 @@ def update_workflow_results(workflow_execution_result: Dict, result_object: Resu
     # TODO - Double check that this is indeed equivalent to writing to the database
     result_object.save()
 
+    # TODO - CHeck all the statuses and then run post process
+
 
 def run_workflow():
     pass
@@ -198,9 +200,16 @@ def preprocess_tasks_before_execution(task_id_batch: list, result_object: Result
                 None,
             )
 
-            result_object.save()
+        write_task_inputs(task_id, node_name, result_object)
 
-            continue
+
+def write_task_inputs(task_id, node_name, result_object):
+
+    task_inputs = get_task_inputs(task_id, node_name, result_object)
+
+    # TODO - write task inputs to the appropriate nodes in the transport graphs
+
+    result_object.save()
 
 
 def get_task_inputs(task_id: int, node_name: str, result_object: Result) -> Dict:
@@ -255,8 +264,6 @@ def get_task_inputs(task_id: int, node_name: str, result_object: Result) -> Dict
                 )
 
                 task_input["kwargs"][key] = value
-
-    # TODO - Write task inputs to the task node in the result object.
     return task_input
 
 
