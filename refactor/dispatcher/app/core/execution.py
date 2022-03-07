@@ -22,6 +22,16 @@ from datetime import datetime, timezone
 from typing import Dict, List
 
 from covalent._results_manager import Result
+from covalent._shared_files.defaults import (
+    attr_prefix,
+    electron_dict_prefix,
+    electron_list_prefix,
+    generator_prefix,
+    parameter_prefix,
+    prefix_separator,
+    sublattice_prefix,
+    subscript_prefix,
+)
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import _TransportGraph
 
@@ -152,21 +162,102 @@ def run_workflow():
     pass
 
 
-def preprocess_tasks_before_execution():
+def preprocess_tasks_before_execution(task_id_batch: list, result_object: Result):
     """Several things need to happen to the results object before the tasks can be sent for
     execution."""
 
-    pass
+    for task_id in task_id_batch:
+        # Get name of the node for the current task
+        node_name = result_object.lattice.transport_graph.get_node_value(task_id, "name")
+
+        if node_name.startswith(
+            (subscript_prefix, generator_prefix, parameter_prefix, attr_prefix)
+        ):
+            if node_name.startswith(parameter_prefix):
+                output = result_object.lattice.transport_graph.get_node_value(task_id, "value")
+            else:
+                parent = result_object.lattice.transport_graph.get_dependencies(task_id)[0]
+                output = result_object.lattice.transport_graph.get_node_value(parent, "output")
+
+                if node_name.startswith(attr_prefix):
+                    attr = result_object.lattice.transport_graph.get_node_value(
+                        task_id, "attribute_name"
+                    )
+                    output = getattr(output, attr)
+                else:
+                    key = result_object.lattice.transport_graph.get_node_value(task_id, "key")
+                    output = output[key]
+
+            result_object._update_node(
+                task_id,
+                f"{node_name}({task_id})",
+                datetime.now(timezone.utc),
+                datetime.now(timezone.utc),
+                Result.COMPLETED,
+                output,
+                None,
+            )
+
+            result_object.save()
+
+            continue
 
 
-def get_task_inputs(task_id: int, result_object: Result) -> Dict:
-    """Get inputs for the tasks.
+def get_task_inputs(task_id: int, node_name: str, result_object: Result) -> Dict:
+    """
+    Return the required inputs for a task execution.
+    This makes sure that any node with child nodes isn't executed twice and fetches the
+    result of parent node to use as input for the child node.
 
-    Perhaps instead of returning the task inputs, this method writes it to the transport graph
-    task nodes.
+    Args:
+        task_id: Node id of this task in the transport graph.
+        node_name: Name of the node.
+        result_object: Result object to be used to update and store execution related
+                       info including the results.
+
+    Returns:
+        inputs: Input dictionary to be passed to the task containing args, kwargs,
+                and any parent node execution results if present.
     """
 
-    return {}
+    if node_name.startswith(electron_list_prefix):
+        values = [
+            result_object.lattice.transport_graph.get_node_value(parent, "output")
+            for parent in result_object.lattice.transport_graph.get_dependencies(task_id)
+        ]
+        task_input = {"args": [], "kwargs": {"x": values}}
+    elif node_name.startswith(electron_dict_prefix):
+        values = {}
+        for parent in result_object.lattice.transport_graph.get_dependencies(task_id):
+            key = result_object.lattice.transport_graph.get_edge_value(
+                parent, task_id, "edge_name"
+            )
+            value = result_object.lattice.transport_graph.get_node_value(parent, "output")
+            values[key] = value
+        task_input = {"args": [], "kwargs": {"x": values}}
+    else:
+        task_input = {"args": [], "kwargs": {}}
+
+        for parent in result_object.lattice.transport_graph.get_dependencies(task_id):
+
+            param_type = result_object.lattice.transport_graph.get_edge_value(
+                parent, task_id, "param_type"
+            )
+
+            value = result_object.lattice.transport_graph.get_node_value(parent, "output")
+
+            if param_type == "arg":
+                task_input["args"].append(value)
+
+            elif param_type == "kwarg":
+                key = result_object.lattice.transport_graph.get_edge_value(
+                    parent, task_id, "edge_name"
+                )
+
+                task_input["kwargs"][key] = value
+
+    # TODO - Write task inputs to the task node in the result object.
+    return task_input
 
 
 def dispatch_workflow(result_object: Result) -> None:
@@ -191,15 +282,27 @@ def dispatch_workflow(result_object: Result) -> None:
 
     # Beginning the workflow execution process.
     result_object.status = Result.RUNNING
-    scheduled_tasks = result_object.lattice.transport_graph.get_topologically_sorted_graph()
+    task_schedule = result_object.lattice.transport_graph.get_topologically_sorted_graph()
 
     # TODO - Modify this logic so that it applies to sub-lattices as well
-    while scheduled_tasks:
-        preprocess_tasks_before_execution()
-        run_task(result_object=result_object, task_id_batch=scheduled_tasks.pop(0))
+    while task_schedule:
+        tasks = task_schedule.pop(0)
+        preprocess_tasks_before_execution(task_id_batch=tasks, result_object=result_object)
+        run_task(result_object=result_object, task_id_batch=tasks)
 
         # TODO - check that all the prerequisite tasks are completed before attempting the next
         #  batch of tasks.
 
-    # After all the scheduled tasks have successfully been sent to the Runner API and the while
-    # loop above has completed, it doesn't mean that the workflow execution status is COMPLETED.
+    # TODO - After all the scheduled tasks have successfully been sent to the Runner API and the
+    #  while loop above has completed, it doesn't mean that the workflow execution status is
+    #  COMPLETED.
+
+    if is_workflow_completed(result_object=result_object):
+        # post process the lattice
+        result_object._result = _post_process(
+            result_object.lattice, result_object.get_all_node_outputs(), task_schedule
+        )
+
+        result_object._status = Result.COMPLETED
+        result_object._end_time = datetime.now(timezone.utc)
+        result_object.save(write_source=True)
