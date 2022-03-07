@@ -73,16 +73,21 @@ class LocalExecutor(BaseExecutor):
         """
 
         dispatch_info = DispatchInfo(dispatch_id)
+        fn = function.get_deserialized()
+        fn_version = function.python_version
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()
         ) as stdout, redirect_stderr(io.StringIO()) as stderr:
 
+            app_log.warning(self.conda_env)
+
             if self.conda_env != "":
                 result = None
 
                 result = self.execute_in_conda_env(
-                    function,
+                    fn,
+                    fn_version,
                     args,
                     kwargs,
                     self.conda_env,
@@ -91,7 +96,6 @@ class LocalExecutor(BaseExecutor):
                 )
 
             else:
-                fn = function.get_deserialized()
                 result = fn(*args, **kwargs)
 
         self.write_streams_to_file(
