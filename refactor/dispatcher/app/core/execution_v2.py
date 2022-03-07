@@ -19,9 +19,10 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from covalent._results_manager import Result
+from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
     attr_prefix,
     electron_dict_prefix,
@@ -56,11 +57,28 @@ def dispatch_workflow(result_obj: Result) -> Result:
     return result_obj
 
 
-def update_workflow(result_obj: Result) -> Result:
+def update_workflow(task_execution_results: Dict, result_obj: Result) -> Result:
     """Main update function. Called by the Runner API when there is an update for task
     execution status."""
 
-    pass
+    # Update the task results
+    result_obj._update_node(**task_execution_results)
+
+    # If workflow is completed, post-process result
+    if is_workflow_completed(result_obj=result_obj):
+        # post process the lattice
+        # TODO - The task schedule for the active lattice needs to be passed. This could either
+        #  be the original lattice or a sublattice.
+        task_schedule = None
+
+        result_obj._result = _post_process(
+            result_obj.lattice, result_obj.get_all_node_outputs(), task_schedule
+        )
+
+        result_obj._status = Result.COMPLETED
+        result_obj._end_time = datetime.now(timezone.utc)
+
+    return result_obj
 
 
 def cancel_workflow():
@@ -69,17 +87,18 @@ def cancel_workflow():
     pass
 
 
-def init_result_pre_dispatch(result_obj: Result):
-    transport_graph = _TransportGraph()
-    transport_graph.deserialize(result_obj.lattice.transport_graph)
-    result_obj._lattice.transport_graph = transport_graph
-    result_obj._initialize_nodes()
-    return result_obj
+"""
+Important helper functions:
+    - dispatch tasks: everything to do with dispatching tasks to the runner API
+
+"""
 
 
 def dispatch_tasks(task_schedule: List[List], result_obj: Result) -> Result:
     """Responsible for preprocessing the tasks, and sending the tasks for execution to the
     Runner API in batches."""
+
+    # TODO - THE ACTIVE LATTICE CONTEXT MIGHT NEED TO BE SET / RESET - BUT WHERE?
 
     while task_schedule:
         tasks = task_schedule.pop(0)
@@ -102,6 +121,19 @@ def dispatch_tasks(task_schedule: List[List], result_obj: Result) -> Result:
         run_task(result_obj=result_obj, task_id_batch=tasks, input_arg_batch=input_args)
 
     return result_obj
+
+
+def run_task(result_obj: Result, task_id_batch: List[int], input_arg_batch: List[Dict]):
+    """Ask Runner to execute tasks - get back True (False) if resources are (not) available.
+
+    The Runner might not have resources available to pick up the batch of tasks. In that case,
+    this function continues to try running the tasks until the runner becomes free.
+    """
+
+    pass
+
+
+"""Other helper functions."""
 
 
 def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result) -> Result:
@@ -134,26 +166,47 @@ def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result)
     return result_obj
 
 
-def is_sublattice(task_id: int) -> bool:
-    # TODO - Find out if task is sublattice.
+def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[List]) -> Any:
+    """
+    Post processing function to be called after the lattice execution.
+    This takes care of executing statements that were not an electron
+    but were inside the lattice's function. It also replaces any calls
+    to an electron with the result of that electron execution, hence
+    preventing a local execution of electron's function.
 
-    return True
+    Note: Here `node_outputs` is used instead of `electron_outputs`
+    since an electron can be called multiple times with possibly different
+    arguments, but every time it's called, it will be executed as a separate node.
+    Thus, output of every node is used.
 
+    Args:
+        lattice: Lattice object that was dispatched.
+        node_outputs: Dictionary containing the output of all the nodes.
+        execution_order: List of lists containing the order of execution of the nodes.
 
-def get_sublattice_task_schedule(task_id: int) -> List[List]:
-    # TODO - Get sublattice task schedule.
-
-    pass
-
-
-def run_task(result_obj: Result, task_id_batch: List[int], input_arg_batch: List[Dict]):
-    """Ask Runner to execute tasks - get back True (False) if resources are (not) available.
-
-    The Runner might not have resources available to pick up the batch of tasks. In that case,
-    this function continues to try running the tasks until the runner becomes free.
+    Reurns:
+        result: The result of the lattice function.
     """
 
-    pass
+    keys_of_outputs = list(node_outputs.keys())
+    values_of_outputs = list(node_outputs.values())
+
+    ordered_node_outputs = []
+    for node_id_list in execution_order:
+        ordered_node_outputs.extend(
+            values_of_outputs[node_id]
+            for node_id in node_id_list
+            # Here we only need outputs of nodes which are executable
+            if not keys_of_outputs[node_id].startswith(prefix_separator)
+            or keys_of_outputs[node_id].startswith(sublattice_prefix)
+        )
+
+    with active_lattice_manager.claim(lattice):
+        lattice.post_processing = True
+        lattice.electron_outputs = ordered_node_outputs
+        result = lattice.workflow_function(*lattice.args, **lattice.kwargs)
+        lattice.post_processing = False
+        return result
 
 
 def get_task_inputs(task_id: int, node_name: str, result_obj: Result) -> Dict:
@@ -207,3 +260,49 @@ def get_task_inputs(task_id: int, node_name: str, result_obj: Result) -> Dict:
 
                 task_input["kwargs"][key] = value
     return task_input
+
+
+"""
+Trivial functions
+"""
+
+
+def init_result_pre_dispatch(result_obj: Result):
+    transport_graph = _TransportGraph()
+    transport_graph.deserialize(result_obj.lattice.transport_graph)
+    result_obj._lattice.transport_graph = transport_graph
+    result_obj._initialize_nodes()
+    return result_obj
+
+
+def is_sublattice(task_id: int) -> bool:
+    # TODO - Find out if task is sublattice.
+
+    return True
+
+
+def get_sublattice_task_schedule(task_id: int) -> List[List]:
+    # TODO - Get sublattice task schedule.
+
+    pass
+
+
+def is_workflow_completed(result_obj: Result) -> bool:
+    """Check if workflow is completed"""
+
+    if result_obj == Result.COMPLETED:
+        return True
+    elif result_obj == Result.FAILED:
+        return True
+    else:
+        task_id_batches = result_obj.lattice.transport_graph.get_topologically_sorted_graph()
+
+        for task_batch in task_id_batches:
+            for node_id in task_batch:
+                if (
+                    result_obj._get_node_status(node_id) == Result.FAILED
+                    or Result.RUNNING
+                    or Result.CANCELLED
+                ):
+                    return False
+    return True
