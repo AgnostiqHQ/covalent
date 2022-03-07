@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Dispatcher microservice API endpoint to dispatch workflow.
+## [0.28.3] - 2022-03-03
+
+### Fixed
+
+Installed executor plugins don't have to be referred to by their full module name. Eg, use "custom_executor", instead of "covalent_custom_plugin.custom_executor".
 
 ## [0.28.2] - 2022-03-03
 
