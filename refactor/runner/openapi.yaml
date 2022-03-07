@@ -21,7 +21,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TaskIds'
+              $ref: '#/components/schemas/TaskPickleList'
         required: true
       responses:
         '202':
@@ -135,17 +135,18 @@ components:
         response:
           title: Response
           type: string
-    TaskIds:
-      title: TaskIds
+    TaskPickleList:
+      title: TaskPickleList
       required:
-        - task_ids
+        - tasks
       type: object
       properties:
-        task_ids:
-          title: Task Ids
+        tasks:
+          title: Tasks
           type: array
           items:
-            type: integer
+            type: string
+            format: binary
     TaskStatus:
       title: TaskStatus
       required:

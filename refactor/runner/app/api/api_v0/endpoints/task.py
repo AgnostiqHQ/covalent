@@ -19,16 +19,14 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from typing import Dict
-
-from app.schemas.task import CancelResponse, RunTaskResponse, TaskIds, TaskStatus
+from app.schemas.task import CancelResponse, RunTaskResponse, TaskPickleList, TaskStatus
 from fastapi import APIRouter
 
 router = APIRouter()
 
 
 @router.post("/{dispatch_id}/task", status_code=202, response_model=RunTaskResponse)
-def run_task(*, dispatch_id: str, task_ids: TaskIds) -> RunTaskResponse:
+def run_task(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
     """
     API Endpoint (/workflow/task/run) to run tasks
     """
