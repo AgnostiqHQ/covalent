@@ -18,7 +18,13 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from typing import List
+
 from pydantic import BaseModel
+
+
+class TaskIds(BaseModel):
+    task_ids: List[int]
 
 
 class RunTaskResponse(BaseModel):

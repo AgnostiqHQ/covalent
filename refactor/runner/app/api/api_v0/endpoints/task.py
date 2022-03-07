@@ -19,16 +19,16 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from typing import List
+from typing import Dict
 
-from app.schemas.task import CancelResponse, RunTaskResponse, TaskStatus
+from app.schemas.task import CancelResponse, RunTaskResponse, TaskIds, TaskStatus
 from fastapi import APIRouter
 
 router = APIRouter()
 
 
 @router.post("/{dispatch_id}/task", status_code=202, response_model=RunTaskResponse)
-def run_task(*, dispatch_id: str, task_ids: List[int]) -> RunTaskResponse:
+def run_task(*, dispatch_id: str, task_ids: TaskIds) -> RunTaskResponse:
     """
     API Endpoint (/workflow/task/run) to run tasks
     """
@@ -45,7 +45,9 @@ def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
     return {"status": "running"}
 
 
-@router.delete("/{dispatch_id}/task/{task_id}/cancel", status_code=200, response_model=CancelResponse)
+@router.delete(
+    "/{dispatch_id}/task/{task_id}/cancel", status_code=200, response_model=CancelResponse
+)
 def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     """
     API Endpoint (/api/workflow/task/cancel) to cancel a task

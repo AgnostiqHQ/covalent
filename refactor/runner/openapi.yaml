@@ -8,7 +8,7 @@ paths:
       tags:
         - Task
       summary: Run Task
-      description: API Endpoint (/api/workflow/task) to run tasks
+      description: API Endpoint (/workflow/task/run) to run tasks
       operationId: run_task_api_v0_workflow__dispatch_id__task_post
       parameters:
         - required: true
@@ -21,10 +21,7 @@ paths:
         content:
           application/json:
             schema:
-              title: Task Ids
-              type: array
-              items:
-                type: integer
+              $ref: '#/components/schemas/TaskIds'
         required: true
       responses:
         '202':
@@ -44,7 +41,7 @@ paths:
       tags:
         - Task
       summary: Check Status
-      description: API Endpoint (/api/workflow/task) to check status of a task
+      description: API Endpoint (/api/workflow/task/status) to check status of a task
       operationId: check_status_api_v0_workflow__dispatch_id__task__task_id__get
       parameters:
         - required: true
@@ -138,6 +135,17 @@ components:
         response:
           title: Response
           type: string
+    TaskIds:
+      title: TaskIds
+      required:
+        - task_ids
+      type: object
+      properties:
+        task_ids:
+          title: Task Ids
+          type: array
+          items:
+            type: integer
     TaskStatus:
       title: TaskStatus
       required:
