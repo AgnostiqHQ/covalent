@@ -198,5 +198,8 @@ def dispatch_workflow(result_object: Result) -> None:
         preprocess_tasks_before_execution()
         run_task(result_object=result_object, task_id_batch=scheduled_tasks.pop(0))
 
+        # TODO - check that all the prerequisite tasks are completed before attempting the next
+        #  batch of tasks.
+
     # After all the scheduled tasks have successfully been sent to the Runner API and the while
     # loop above has completed, it doesn't mean that the workflow execution status is COMPLETED.
