@@ -18,13 +18,15 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import base64
+import os 
 
-from app.core.queue import Queuer
 from app.schemas.submit import ResultPickle, SubmitResponse
 from fastapi import APIRouter
+from refactor.queuer.app.core.api import DataService
+from refactor.queuer.app.core.queuer import Queuer
 
 router = APIRouter()
-
 
 @router.post("/dispatch", status_code=202, response_model=SubmitResponse)
 async def submit_workflow(*, result: ResultPickle) -> SubmitResponse:
@@ -33,6 +35,19 @@ async def submit_workflow(*, result: ResultPickle) -> SubmitResponse:
     """
 
     queue = Queuer()
-    await queue.publish("foo", {"message": "hi"})
 
-    return {"dispatch_id": "48f1d3b7-27bb-4c5d-97fe-c0c61c197fd5"}
+    # get base64 encoded result object
+    result_base64 = result.result_object
+
+    # recover pickle from base64
+    # result_pickle = base64.decodebytes(result_base64.encode('utf-8'))
+
+    data_svc = DataService()
+    created_result = await data_svc.create_result(result_base64)
+    print(created_result)
+    dispatch_id = created_result["dispatch_id"]
+    await queue.publish(os.environ.get("MQ_DISPATCH_TOPIC"), {
+        "dispatch_id": dispatch_id
+    })
+
+    return {"dispatch_id": dispatch_id}
