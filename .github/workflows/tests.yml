@@ -60,11 +60,12 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
-      - name: Build Webapp
+      - name: Set up node
         uses: actions/setup-node@v2
         with:
           node-version: 16
           cache: 'yarn'
+      - name: Build webapp
         run: |
           cd ./covalent_ui/webapp
           yarn install
