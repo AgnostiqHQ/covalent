@@ -39,6 +39,11 @@ jobs:
           - python:3.9-buster
           - python:3.9-bullseye
           - centos/python-38-centos7
+          if: matrix.container == 'python:3.8-buster' || 'python:3.8-bullseye' || python:3.9-bullseye \
+           || centos/python-38-centos7
+          run: |
+              apt-get install -y nodejs
+              npm install --global yarn
         experimental: [false]
         include:
           - os: macos-latest
