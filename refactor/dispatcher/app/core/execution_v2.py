@@ -47,6 +47,7 @@ Main functions:
 def dispatch_workflow(result_obj: Result) -> Result:
     """Main dispatch function. Responsible for starting off the workflow dispatch."""
 
+    # TODO - Do I need the decision statement here; can I assume that the workflow has just been picked up?
     if result_obj.status == Result.NEW_OBJ:
         result_obj = init_result_pre_dispatch(result_obj=result_obj)
         result_obj._status = Result.RUNNING
@@ -275,10 +276,17 @@ def init_result_pre_dispatch(result_obj: Result):
     return result_obj
 
 
-def is_sublattice(task_id: int) -> bool:
-    # TODO - Find out if task is sublattice.
+def is_sublattice(task_id: int = None, result_obj: Result = None, task_name: str = None) -> bool:
+    """Check if the transport graph task node is a sublattice."""
 
-    return True
+    if task_name is not None and task_name.startswith(sublattice_prefix):
+        return True
+
+    if task_id and result_obj is not None:
+        task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
+        is_sublattice(task_name=task_name)
+
+    return False
 
 
 def get_sublattice_task_schedule(task_id: int) -> List[List]:
