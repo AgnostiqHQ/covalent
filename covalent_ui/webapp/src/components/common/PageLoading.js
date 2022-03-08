@@ -20,27 +20,20 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { configureStore } from '@reduxjs/toolkit'
-import persistState from 'redux-localstorage'
+import { CircularProgress } from '@mui/material'
 
-import rootReducer from './reducers'
-import { isDemo, demoEnhancer } from '../utils/demo/setup'
-
-export default function configureAppStore(preloadedState) {
-  const store = configureStore({
-    reducer: rootReducer,
-    preloadedState,
-    enhancers: [
-      // persist state across sessions except for demo
-      isDemo ? demoEnhancer : persistState(['latticePreview']),
-    ],
-  })
-
-  if (process.env.NODE_ENV !== 'production' && module.hot) {
-    module.hot.accept('./reducers', () => {
-      store.replaceReducer(rootReducer)
-    })
-  }
-
-  return store
+const PageLoading = () => {
+  return (
+    <CircularProgress
+      disableShrink
+      sx={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+      }}
+    />
+  )
 }
+
+export default PageLoading

@@ -20,6 +20,7 @@
 
 import covalent as ct
 import covalent._results_manager.results_manager as rm
+from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 
 @ct.electron
@@ -58,3 +59,5 @@ def test_dispatcher_server():
     assert result.result == 3
 
     rm._delete_result(dispatch_id)
+    with DispatchDB() as db:
+        db.delete([dispatch_id])
