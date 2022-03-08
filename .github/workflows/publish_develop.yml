@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - develop
-      - fix-webapp-build
 
 jobs:
   publish_develop:
