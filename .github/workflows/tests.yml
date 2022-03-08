@@ -39,11 +39,6 @@ jobs:
           - python:3.9-buster
           - python:3.9-bullseye
           - centos/python-38-centos7
-          if: matrix.container == 'python:3.8-buster' || 'python:3.8-bullseye' || python:3.9-bullseye \
-           || centos/python-38-centos7
-          run: |
-              apt-get install -y nodejs
-              npm install --global yarn
         experimental: [false]
         include:
           - os: macos-latest
@@ -65,11 +60,12 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
-      - name: Set up node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16
-          cache: 'yarn'
+      - name: Install npm and yarn
+        if: matrix.container == 'python:3.8-buster' || 'python:3.8-bullseye' || python:3.9-bullseye \
+          || python:3.9-bullseye || centos/python-38-centos7
+          run: |
+            apt-get install -y nodejs
+            npm install -g yarn
       - name: Build webapp
         run: |
           cd ./covalent_ui/webapp
