@@ -47,13 +47,23 @@ Main functions:
 def dispatch_workflow(result_obj: Result) -> Result:
     """Main dispatch function. Responsible for starting off the workflow dispatch."""
 
-    # TODO - Do I need the decision statement here; can I assume that the workflow has just been picked up?
     if result_obj.status == Result.NEW_OBJ:
         result_obj = init_result_pre_dispatch(result_obj=result_obj)
         result_obj._status = Result.RUNNING
 
-    task_schedule = result_obj.lattice.transport_graph.get_topologically_sorted_graph()
-    result_obj = dispatch_tasks(task_schedule=task_schedule, result_obj=result_obj)
+    elif result_obj.status == Result.COMPLETED:
+        # TODO - Redispatch workflow for reproducibility
+        pass
+
+    elif result_obj.status == Result.CANCELLED:
+        # TODO - Redispatch cancelled workflow
+        pass
+
+    elif result_obj.status == Result.FAILED:
+        # TODO - Redispatch failed workflow
+        pass
+
+    result_obj = dispatch_tasks(result_obj=result_obj)
 
     return result_obj
 
@@ -95,29 +105,41 @@ Important helper functions:
 """
 
 
-def dispatch_tasks(task_schedule: List[List], result_obj: Result) -> Result:
+def dispatch_tasks(result_obj: Result) -> Result:
     """Responsible for preprocessing the tasks, and sending the tasks for execution to the
     Runner API in batches."""
 
-    # TODO - THE ACTIVE LATTICE CONTEXT MIGHT NEED TO BE SET / RESET - BUT WHERE?
+    task_order = get_task_order(result_obj=result_obj)
 
-    while task_schedule:
-        tasks = task_schedule.pop(0)
+    while task_order:
+        tasks = task_order.pop(0)
         input_args = []
+        executors = []
+
+        # TODO - Add executors to pass to the Runner API (doesn't interact with Data API)
 
         for task_id in tasks:
+            task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
+            inputs = get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
+
             if is_sublattice(task_id=task_id):
-                sublattice_task_schedule = get_sublattice_task_schedule(task_id=task_id)
-                dispatch_tasks(task_schedule=sublattice_task_schedule, result_obj=result_obj)
+                sublattice = get_sublattice(task_id=task_id, result_obj=result_obj)
+
+                sublattice.build_graph(inputs)
+
+                sublattice_result_obj = Result(
+                    sublattice,
+                    result_obj.lattice.metadata["results_dir"],
+                    dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
+                )
+
+                dispatch_tasks(result_obj=sublattice_result_obj)
 
             else:
-                task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
                 preprocess_transport_graph(
                     task_id=task_id, task_name=task_name, result_obj=result_obj
                 )
-                input_args.append(
-                    get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
-                )
+                input_args.append(inputs)
 
         run_task(result_obj=result_obj, task_id_batch=tasks, input_arg_batch=input_args)
 
@@ -289,10 +311,10 @@ def is_sublattice(task_id: int = None, result_obj: Result = None, task_name: str
     return False
 
 
-def get_sublattice_task_schedule(task_id: int) -> List[List]:
-    # TODO - Get sublattice task schedule.
+def get_sublattice(task_id: int, result_obj: Result) -> Lattice:
+    # TODO - Remember to deserialize
 
-    pass
+    return result_obj.lattice.transport_graph.get_node_value(task_id, "function")
 
 
 def is_workflow_completed(result_obj: Result) -> bool:
@@ -314,3 +336,7 @@ def is_workflow_completed(result_obj: Result) -> bool:
                 ):
                     return False
     return True
+
+
+def get_task_order(result_obj: Result):
+    return result_obj.lattice.transport_graph.get_topologically_sorted_graph()
