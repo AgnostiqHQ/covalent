@@ -136,18 +136,11 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         result: The result of the lattice function.
     """
 
-    keys_of_outputs = list(node_outputs.keys())
-    values_of_outputs = list(node_outputs.values())
-
-    ordered_node_outputs = []
-    for node_id_list in execution_order:
-        ordered_node_outputs.extend(
-            values_of_outputs[node_id]
-            for node_id in node_id_list
-            # Here we only need outputs of nodes which are executable
-            if not keys_of_outputs[node_id].startswith(prefix_separator)
-            or keys_of_outputs[node_id].startswith(sublattice_prefix)
-        )
+    ordered_node_outputs = [
+        val
+        for key, val in node_outputs.items()
+        if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix)
+    ]
 
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
