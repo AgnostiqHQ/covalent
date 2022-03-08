@@ -62,7 +62,8 @@ jobs:
           pip install --no-cache-dir -r ./tests/requirements.txt
       - name: Install npm and yarn
         if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' ||
-        matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye' || centos/python-38-centos7
+        matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye' || 
+        matrix.container == 'centos/python-38-centos7'
         run: |
           apt-get update && apt-get install -y curl gcc
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
