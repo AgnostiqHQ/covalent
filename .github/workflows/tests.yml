@@ -61,7 +61,10 @@ jobs:
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
       - name: Build Webapp
-        uses: borales/actions-yarn@v2.3.0
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'yarn'
         run: |
           cd ./covalent_ui/webapp
           yarn install
