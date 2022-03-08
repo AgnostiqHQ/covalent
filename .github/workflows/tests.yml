@@ -62,8 +62,8 @@ jobs:
           pip install --no-cache-dir -r ./tests/requirements.txt
       - name: Set up Node
         uses: actions/setup-node@v2
-          with:
-            node-version: 14
+        with:
+          node-version: 14
       - name: Install Covalent
         run: pip install -e .
       - name: Start Covalent dispatcher server
