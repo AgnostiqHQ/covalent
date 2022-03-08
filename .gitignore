@@ -124,7 +124,3 @@ ipython_config.py
 
 # Temporary files
 covalent_dispatcher/_service/tmp*
-
-# Static webapp build
-covalent_ui/webapp/build/static/**
-covalent_ui/webapp/package-lock.json
