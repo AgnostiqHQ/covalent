@@ -1,4 +1,6 @@
 from multiprocessing import Pool
+from multiprocessing import Queue as MPQ
+from queue import Empty
 
 
 def task(x):
@@ -32,6 +34,7 @@ def wait_task_complete(async_results: dict, available_resources):
 
 
 if __name__ == "__main__":
+    cancelled_tasks_queue = MPQ()
 
     pool = Pool(maxtasksperchild=1)
 
@@ -59,6 +62,13 @@ if __name__ == "__main__":
 
             available_resources -= 1
             available_tasks.pop(task_index)
+
+        try:
+            cancelled_tasks = cancelled_tasks_queue.get_nowait()
+            for task_id in cancelled_tasks:
+                async_results[task_id].terminate()
+        except Empty:
+            cancelled_tasks = []
 
         completed_task_id, available_resources = wait_task_complete(
             async_results, available_resources
