@@ -13,20 +13,22 @@ def send_node_update_to_dispatcher(dispatch_id, task_id, node_output):
     pass
 
 
-def wait_task_complete(async_results, available_resources):
+def wait_task_complete(async_results: dict, available_resources):
 
     i = 0
+    keys = set(async_results.keys)
+
     while True:
         if i >= len(async_results):
             i = 0
 
-        elif async_results[i].ready():
+        elif async_results[keys[i]].ready():
             available_resources += 1
             break
 
         i += 1
 
-    return i, available_resources
+    return keys[i], available_resources
 
 
 if __name__ == "__main__":
@@ -46,25 +48,25 @@ if __name__ == "__main__":
     available_resources = 4
     execution_results = []
 
-    async_results = []
+    async_results = {}
 
     while available_tasks:
 
         for task_index in range(available_resources):
             task_id, func, args = available_tasks[task_index]
 
-            async_results.append(pool.apply_async(func, args=args, callback=custom_callback))
+            async_results[task_id] = pool.apply_async(func, args=args, callback=custom_callback)
 
             available_resources -= 1
             available_tasks.pop(task_index)
 
-        completed_task_index, available_resources = wait_task_complete(
+        completed_task_id, available_resources = wait_task_complete(
             async_results, available_resources
         )
 
         # async_results[completed_task_index].get() will also return the task id
         available_tasks += send_node_update_to_dispatcher(
-            "dispatch_id", async_results[completed_task_index].get()
+            "dispatch_id", async_results[completed_task_id].get()
         )
 
-        del async_results[completed_task_index]
+        del async_results[completed_task_id]
