@@ -152,7 +152,7 @@ class _ExecutorManager:
                 default_params = {
                     "executors": {short_name: getattr(the_module, "_EXECUTOR_PLUGIN_DEFAULTS")},
                 }
-                update_config(default_params, defaults=True)
+                update_config(default_params, override_existing=False)
 
         else:
             # The requested plugin (the_module.module_name) was not found in the module.
