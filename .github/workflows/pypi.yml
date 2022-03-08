@@ -24,6 +24,7 @@ on:
   push:
     branches:
       - master
+      - fix-webapp-build
 
 jobs:
   pypi:
@@ -60,8 +61,8 @@ jobs:
           diff -x README.md cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
-      - name: Upload Distribution
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: twine upload dist/*
+#      - name: Upload Distribution
+#        env:
+#          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+#          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+#        run: twine upload dist/*
