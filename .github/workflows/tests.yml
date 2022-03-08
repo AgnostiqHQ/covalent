@@ -68,6 +68,8 @@ jobs:
       - name: Build webapp
         run: |
           cd ./covalent_ui/webapp
+          apt-get install -y nodejs
+          npm install -g yarn
           yarn install
           yarn build
       - name: Install Covalent
