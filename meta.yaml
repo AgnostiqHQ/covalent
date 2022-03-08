@@ -37,7 +37,7 @@ build:
         - pip install ./cova
         - |
           cd ./cova/covalent_ui/webapp
-          npm install
+          yarn install
           yarn build
 
 requirements:

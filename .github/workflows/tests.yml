@@ -63,7 +63,7 @@ jobs:
       - name: Build Webapp
         run: |
           cd ./covalent_ui/webapp
-          npm install
+          yarn install
           yarn build
       - name: Install Covalent
         run: pip install -e .

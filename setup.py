@@ -93,17 +93,13 @@ class BuildUI(Command):
         if self.clean:
             import shutil
 
-            shutil.rmtree("covalent_ui/webapp/build/static", ignore_errors=True)
-            try:
-                os.remove("covalent_ui/webapp/package-lock.json")
-            except OSError:
-                pass
+            shutil.rmtree("covalent_ui/webapp/build", ignore_errors=True)
 
         else:
             import subprocess
 
             subprocess.run(
-                ["npm", "install"], cwd="covalent_ui/webapp", check=True, capture_output=True
+                ["yarn", "install"], cwd="covalent_ui/webapp", check=True, capture_output=True
             )
             subprocess.run(
                 ["yarn", "build"], cwd="covalent_ui/webapp", check=True, capture_output=True

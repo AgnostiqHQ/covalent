@@ -46,7 +46,7 @@ jobs:
       - name: Build Webapp
         run: |
           cd ./covalent_ui/webapp
-          npm install
+          yarn install
           yarn build
       - name: Build Distribution
         run: python setup.py sdist

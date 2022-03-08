@@ -312,10 +312,9 @@ const ResultListing = () => {
   const handleDeleteSelected = () => {
     dispatch(deleteResults({ dispatchIds: selected })).then((action) => {
       if (action.type === deleteResults.fulfilled.type) {
-        // move to last page if necessary
-        const lastPage =
-          Math.ceil((_.size(results) - _.size(selected)) / rowsPerPage) - 1
-        setPage(Math.min(page, lastPage))
+        // last page may not exist anymore
+        const lastPossible = Math.ceil(_.size(results) / rowsPerPage) - 1
+        setPage(Math.min(page, lastPossible))
         setSelected([])
       }
     })
