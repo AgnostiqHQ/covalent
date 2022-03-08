@@ -4,11 +4,10 @@ import os
 import nats
 from typing import Any
 
-MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
-
 class Queuer():
 
     def get_client(self) -> Any:
+       MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
        return nats.connect(MQ_CONNECTION_URI)
 
     async def publish(self, topic: str, msg: Any) -> Any:
