@@ -1,10 +1,13 @@
 import json
-from typing import Any
-import nats
+import os
 
-MQ_CONNECTION_URI = "localhost:4222"
+import nats
+from typing import Any
+
+MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
 class Queuer():
+
     def get_client(self) -> Any:
        return nats.connect(MQ_CONNECTION_URI)
 
@@ -12,5 +15,3 @@ class Queuer():
         client = await self.get_client()
         res = await client.publish(topic, json.dumps(msg).encode())
         return res
-
-

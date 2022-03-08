@@ -18,11 +18,12 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-
+import os
 from typing import List, Union
-
+from dotenv import load_dotenv
 from pydantic import AnyHttpUrl, BaseSettings, validator
 
+load_dotenv() 
 
 class Settings(BaseSettings):
     API_V0_STR: str = "/api/v0"

@@ -1,11 +1,14 @@
+import os
 import asyncio
-
 import nats
+
 from nats.errors import ConnectionClosedError, NoServersError, TimeoutError
+from dotenv import load_dotenv
 
-TOPIC = "foo"
-MQ_CONNECTION_URI = "localhost:4222"
+load_dotenv() 
 
+TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
+MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
 async def main():
     print("Connecting to NATS...")
