@@ -98,10 +98,16 @@ class _ConfigManager:
                 if isinstance(value, dict) and key in old_dict and isinstance(old_dict[key], dict):
                     update_nested_dict(old_dict[key], value, override_existing)
                 else:
-                    if override_existing:  # Values provided should override existing values.
+                    if override_existing:
+                        # Values provided should override existing values.
                         old_dict[key] = value
-                    else:  # Values provided are defaults, but shouldn't override existing values.
-                        old_dict.setdefault(key, value)
+                    else:
+                        # Values provided are defaults, and shouldn't override existing values
+                        # unless the existing value is empty.
+                        if key in old_dict and old_dict[key] == "":
+                            old_dict[key] = value
+                        else:
+                            old_dict.setdefault(key, value)
 
         if os.path.exists(self.config_file):
             file_config = toml.load(self.config_file)
