@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
@@ -51,6 +52,7 @@ def dispatch_workflow(result_obj: Result) -> Result:
     if result_obj.status == Result.NEW_OBJ:
         result_obj = init_result_pre_dispatch(result_obj=result_obj)
         result_obj._status = Result.RUNNING
+        result_obj = dispatch_tasks(result_obj=result_obj)
 
     elif result_obj.status == Result.COMPLETED:
         # TODO - Redispatch workflow for reproducibility
@@ -60,14 +62,15 @@ def dispatch_workflow(result_obj: Result) -> Result:
     elif result_obj.status == Result.CANCELLED:
         # TODO - Redispatch cancelled workflow
 
-        pass
+        # Change status to running if we want to redeploy this workflow
+        result_obj._status = Result.RUNNING
+
+        # TODO - Redispatch tasks
 
     elif result_obj.status == Result.FAILED:
         # TODO - Redispatch failed workflow
 
         pass
-
-    result_obj = dispatch_tasks(result_obj=result_obj)
 
     return result_obj
 
@@ -98,9 +101,23 @@ def update_workflow(task_execution_results: Dict, result_obj: Result) -> Result:
     return result_obj
 
 
-def cancel_workflow():
+def cancel_workflow(result_obj: Result):
     """Main cancel function. Called by the user via ct.cancel(dispatch_id)."""
 
+    # TODO - We need to know which tasks are currently running so that we can ask Runner API
+    #  to terminate those tasks
+    tasks_to_cancel = get_running_tasks()
+
+    # TODO - Call cancel tasks
+    cancelled_task_ids = cancel_task(tasks_to_cancel, result_obj)
+
+    # TODO - Update results object with cancelled tasks - Special attention needs to be taken to
+    #  cancel
+
+    pass
+
+
+def get_running_tasks():
     pass
 
 
@@ -118,7 +135,9 @@ def dispatch_tasks(result_obj: Result) -> Result:
 
     task_order: List[List] = get_task_order(result_obj=result_obj)
 
-    while task_order:
+    while not (
+        task_order or result_obj.status == Result.CANCELLED or result_obj.status == Result.FAILED
+    ):
         tasks = task_order.pop(0)
         input_args = []
         executors = []
@@ -131,13 +150,15 @@ def dispatch_tasks(result_obj: Result) -> Result:
             ]
 
             if is_sublattice(task_name=task_name):
-                sublattice = get_sublattice(task_id=task_id, result_obj=result_obj)
+
+                # TODO - Is deepcopy necessary here?
+                sublattice = deepcopy(get_sublattice(task_id=task_id, result_obj=result_obj))
 
                 sublattice.build_graph(inputs)
 
                 sublattice_result_obj = Result(
-                    sublattice,
-                    result_obj.lattice.metadata["results_dir"],
+                    lattice=sublattice,
+                    results_dir=result_obj.lattice.metadata["results_dir"],
                     dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
                 )
 
@@ -150,6 +171,7 @@ def dispatch_tasks(result_obj: Result) -> Result:
                 input_args.append(inputs)
                 executors.append(executor)
 
+        # Dispatching batch of tasks to the Runner API.
         run_task(
             result_obj=result_obj,
             task_id_batch=tasks,
@@ -171,6 +193,12 @@ def run_task(
     The Runner might not have resources available to pick up the batch of tasks. In that case,
     this function continues to try running the tasks until the runner becomes free.
     """
+
+    pass
+
+
+def cancel_task(result_obj: Result, task_id_batch: List[int]) -> List:
+    """Returns a list of tasks that was cancelled before completion."""
 
     pass
 
