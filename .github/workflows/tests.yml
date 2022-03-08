@@ -39,9 +39,6 @@ jobs:
           - python:3.9-buster
           - python:3.9-bullseye
           - centos/python-38-centos7
-          include:
-            npm: 8
-            yarn: 1
         experimental: [false]
         include:
           - os: macos-latest
