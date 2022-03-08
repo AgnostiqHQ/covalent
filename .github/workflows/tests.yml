@@ -60,10 +60,6 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
-      - name: Set up Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 14
       - name: Build Webapp
         run: |
           cd ./covalent_ui/webapp
