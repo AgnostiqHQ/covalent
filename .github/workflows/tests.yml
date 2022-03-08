@@ -64,6 +64,8 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 14
+      - name: Install Yarn
+        run: npm install yarn
       - name: Build Webapp
         run: |
           cd ./covalent_ui/webapp
