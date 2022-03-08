@@ -28,7 +28,10 @@ from dask.distributed import Client, fire_and_forget
 
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
+from covalent._shared_files import logger
 from covalent._workflow.transport import _TransportGraph
+
+app_log = logger.app_log
 
 try:
     dask_client = Client(address="127.0.0.1:8786", timeout="1s")
@@ -73,7 +76,8 @@ def run_dispatcher(result_object: Result) -> str:
     result_object._lattice.transport_graph = transport_graph
 
     result_object._initialize_nodes()
-
+    app_log.debug("run_dispatcher")
+    app_log.debug("results directory is " + result_object._results_dir)
     result_object.save()
 
     from ._core import run_workflow

@@ -22,8 +22,11 @@ import cloudpickle as pickle
 from flask import Blueprint, Flask, Response, jsonify, request
 
 import covalent_dispatcher as dispatcher
+from covalent._shared_files import logger
 
 bp = Blueprint("dispatcher", __name__, url_prefix="/api")
+
+app_log = logger.app_log
 
 
 @bp.route("/submit", methods=["POST"])
@@ -43,6 +46,8 @@ def submit() -> Response:
 
     data = request.get_data()
     result_object = pickle.loads(data)
+    app_log.debug("submit")
+    app_log.debug("results directory is " + result_object._results_dir)
     dispatch_id = dispatcher.run_dispatcher(result_object)
 
     return jsonify(dispatch_id)
