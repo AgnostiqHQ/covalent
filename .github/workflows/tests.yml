@@ -64,15 +64,15 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 14
-      - name: Install Covalent
-        run: pip install -e .
-      - name: Start Covalent dispatcher server
-        run: covalent start -d
       - name: Build Webapp
         run: |
           cd ./covalent_ui/webapp
           npm install
           yarn build
+      - name: Install Covalent
+        run: pip install -e .
+      - name: Start Covalent dispatcher server
+        run: covalent start -d
       - name: Run tests and measure coverage
         run: pytest -v --cov=covalent --cov=covalent_dispatcher
       - name: Generate coverage report
