@@ -44,7 +44,7 @@ requirements:
     build:
         - python 3.8
         - pip
-        - npm
+        - nodejs
         - yarn
         - poetry
         {% for package in data.get('install_requires', []) -%}
