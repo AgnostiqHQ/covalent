@@ -5,11 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.29.3] - 2022-03-09
+## [0.29.4] - 2022-03-09
 
 ### Fixed
 
 - When executing a task on an alternate Conda environment, Covalent does not have to be installed on that environment.
+
+## [0.29.3] - 2022-03-09
+
+### Fixed
+
+- Covalent UI is built in the Dockerfile, the setup file, the pypi workflow, the tests workflow, and the conda build script.
 
 ## [0.29.2] - 2022-03-09
 
