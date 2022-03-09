@@ -22,7 +22,8 @@ from datetime import datetime, timezone
 from typing import Dict, List
 
 from covalent._results_manager import Result
-from .utils import is_workflow_completed, _post_process
+
+from .utils import _post_process, is_workflow_completed
 
 
 def update_workflow(task_execution_results: Dict, result_obj: Result) -> Result:
@@ -49,7 +50,3 @@ def update_workflow(task_execution_results: Dict, result_obj: Result) -> Result:
         result_obj._end_time = datetime.now(timezone.utc)
 
     return result_obj
-
-
-def _write_result_to_db(result_obj: Result) -> None:
-    pass

@@ -19,10 +19,12 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from copy import deepcopy
-from typing import Dict, List
+from typing import List
 
-from covalent._dispatcher_plugins import BaseDispatcher
+import cloudpickle as pickle
+
 from covalent._results_manager import Result
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.transport import _TransportGraph
 
 from .utils import (
@@ -31,6 +33,7 @@ from .utils import (
     get_task_order,
     is_sublattice,
     preprocess_transport_graph,
+    update_ui,
 )
 
 
@@ -41,6 +44,7 @@ def dispatch_workflow(result_obj: Result) -> Result:
         result_obj = init_result_pre_dispatch(result_obj=result_obj)
         result_obj._status = Result.RUNNING
         result_obj = _dispatch_tasks(result_obj=result_obj)
+        update_ui(result_obj=result_obj)
 
     elif result_obj.status == Result.COMPLETED:
         # TODO - Redispatch workflow for reproducibility
@@ -52,6 +56,7 @@ def dispatch_workflow(result_obj: Result) -> Result:
 
         # Change status to running if we want to redeploy this workflow
         result_obj._status = Result.RUNNING
+        update_ui(result_obj=result_obj)
 
         # TODO - Redispatch tasks
 
@@ -110,9 +115,12 @@ def _dispatch_tasks(result_obj: Result) -> Result:
         _run_task(
             result_obj=result_obj,
             task_id_batch=tasks,
-            input_arg_batch=input_args,
-            executors=executors,
+            pickled_input_args=pickle.dumps(input_args),
+            pickled_executors=pickle.dumps(executors),
         )
+
+        update_task_status(task_id_batch=tasks, result_obj=result_obj, status=Result.RUNNING)
+        update_ui(result_obj=result_obj)
 
     return result_obj
 
@@ -120,8 +128,8 @@ def _dispatch_tasks(result_obj: Result) -> Result:
 def _run_task(
     result_obj: Result,
     task_id_batch: List[int],
-    input_arg_batch: List[Dict],
-    executors: List[BaseDispatcher],
+    pickled_input_args: bytes,
+    pickled_executors: bytes,
 ):
     """Ask Runner to execute tasks - get back True (False) if resources are (not) available.
 
@@ -139,4 +147,15 @@ def init_result_pre_dispatch(result_obj: Result):
     transport_graph.deserialize(result_obj.lattice.transport_graph)
     result_obj._lattice.transport_graph = transport_graph
     result_obj._initialize_nodes()
+    return result_obj
+
+
+def update_task_status(
+    task_id_batch: List[int], result_obj: Result, status: RESULT_STATUS
+) -> Result:
+    """Update the task status batch to running."""
+
+    for task_id in task_id_batch:
+        result_obj._lattice.transport_graph.set_node_value(task_id, "status", status)
+
     return result_obj
