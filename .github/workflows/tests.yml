@@ -30,7 +30,7 @@ jobs:
   tests:
     runs-on: ${{ matrix.os }}
     strategy:
-#      fail-fast: false
+      fail-fast: false
       matrix:
         os: ['ubuntu-latest']
         container:
