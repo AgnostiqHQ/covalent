@@ -74,6 +74,38 @@ class Docs(Command):
         generate_docs.run(self.clean)
 
 
+class BuildUI(Command):
+    """Build UI webapp"""
+
+    description = "Build the front-end webapp from source"
+
+    user_options = [
+        ("clean", "c", "clean directory"),
+    ]
+
+    def initialize_options(self):
+        self.clean = False
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        if self.clean:
+            import shutil
+
+            shutil.rmtree("covalent_ui/webapp/build", ignore_errors=True)
+
+        else:
+            import subprocess
+
+            subprocess.run(
+                ["yarn", "install"], cwd="covalent_ui/webapp", check=True, capture_output=True
+            )
+            subprocess.run(
+                ["yarn", "build"], cwd="covalent_ui/webapp", check=True, capture_output=True
+            )
+
+
 setup_info = {
     "name": "cova",
     "packages": find_packages(exclude=["tests"]),
@@ -116,6 +148,7 @@ setup_info = {
     ],
     "cmdclass": {
         "docs": Docs,
+        "webapp": BuildUI,
     },
     "entry_points": {
         "console_scripts": [

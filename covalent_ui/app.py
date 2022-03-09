@@ -153,4 +153,4 @@ if __name__ == "__main__":
     else:
         port = DEFAULT_PORT
     debug = True if args.develop is True else False
-    socketio.run(app, debug=debug, host="0.0.0.0", port=port)
+    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=True)
