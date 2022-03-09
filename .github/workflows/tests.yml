@@ -38,7 +38,8 @@ jobs:
           - python:3.8-bullseye
           - python:3.9-buster
           - python:3.9-bullseye
-          - {image: "centos/python-38-centos7", options: "--user root"}
+          - image: "centos/python-38-centos7"
+            options: "--user root"
         experimental: [false]
         include:
           - os: macos-latest
@@ -68,7 +69,7 @@ jobs:
           apt-get install -y nodejs
           npm install -g yarn
       - name: Install NPM and Yarn on CentOS
-        if: matrix.container == 'centos/python-38-centos7'
+        if: matrix.container.image == 'centos/python-38-centos7'
         run: |
           yum remove -y npm nodejs
           curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
