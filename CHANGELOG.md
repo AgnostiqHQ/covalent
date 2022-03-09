@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Dispatcher microservice API endpoint to dispatch and update workflow.
 
+## [0.29.3] - 2022-03-09
+
+### Fixed
+
+- Covalent UI is built in the Dockerfile, the setup file, the pypi workflow, the tests workflow, and the conda build script.
+
 ## [0.29.2] - 2022-03-09
 
 ### Added

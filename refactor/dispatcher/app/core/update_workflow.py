@@ -35,14 +35,13 @@ def update_workflow(task_execution_results: Dict, result_obj: Result) -> Result:
     update_ui(result_obj=result_obj)
 
     if task_execution_results["status"] == "FAILED":
-        # TODO - Update workflow execution to failed - The batch of tasks will finish
-        return result_obj
+        result_obj._status = Result.FAILED
 
-    if task_execution_results["status"] == "CANCELLED":
-        return result_obj
+    elif task_execution_results["status"] == "CANCELLED":
+        result_obj._status = Result.CANCELLED
 
     # If workflow is completed, post-process result
-    if is_workflow_completed(result_obj=result_obj):
+    elif is_workflow_completed(result_obj=result_obj):
 
         task_execution_order: List[
             List
@@ -55,8 +54,9 @@ def update_workflow(task_execution_results: Dict, result_obj: Result) -> Result:
         )
 
         result_obj._status = Result.COMPLETED
+
+    if result_obj.status != Result.RUNNING:
         result_obj._end_time = datetime.now(timezone.utc)
 
-        update_ui(result_obj=result_obj)
-
+    update_ui(result_obj=result_obj)
     return result_obj
