@@ -41,6 +41,7 @@ def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
 
     Example: \n
 
+    ```
     def task_func_1(x, y):
         return x * y
 
@@ -54,6 +55,7 @@ def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
     task_2 = pickle.dumps({"id": 1, "func": task_func_2, "args": (3,), "kwargs": {}, "executor": executor_2})
 
     requests.post(f'localhost:48008/api/workflow/{dispatch_id}/tasks', body=pickle.dumps([task_1, task_2]))
+    ```
     """
 
     return {"response": "execution of tasks started"}
