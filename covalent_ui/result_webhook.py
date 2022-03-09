@@ -26,6 +26,7 @@ import covalent_ui.app as ui_server
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
+from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
 
 DEFAULT_PORT = get_config("user_interface.port")
 
@@ -88,10 +89,10 @@ def send_draw_request(lattice) -> None:
                     "function_string": lattice.workflow_function_string,
                     "doc": lattice.__doc__,
                     "name": lattice.__name__,
-                    "kwargs": ui_server.encode_dict(lattice.kwargs),
-                    "metadata": lattice.metadata,
+                    "kwargs": encode_dict(lattice.kwargs),
+                    "metadata": extract_metadata(lattice.metadata),
                 },
-                "graph": ui_server.extract_graph(graph),
+                "graph": extract_graph(graph),
             },
         }
     )

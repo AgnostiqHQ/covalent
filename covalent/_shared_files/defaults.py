@@ -61,6 +61,8 @@ _DEFAULT_CONFIG = {
         "port": 48008,
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
+        "dispatch_db": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
+        + "/covalent/dispatch_db.sqlite",
     },
 }
 
