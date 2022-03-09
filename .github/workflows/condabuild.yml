@@ -34,11 +34,11 @@ jobs:
         id: buildchange
         run: git diff --name-only origin/develop | grep -e setup.py -e requirements.txt -e meta.yaml
         continue-on-error: true
-      - name: Build conda package
-        if: steps.buildchange.outcome == 'success'
-        run: |
-          conda install conda-build conda-verify
-          conda config --append channels conda-forge
-          conda create --name buildenv python=3.8
-          $CONDA/bin/activate buildenv
-          conda build --override-channels .
+#      - name: Build conda package
+#        if: steps.buildchange.outcome == 'success'
+#        run: |
+#          conda install conda-build conda-verify
+#          conda config --append channels conda-forge
+#          conda create --name buildenv python=3.8
+#          $CONDA/bin/activate buildenv
+#          conda build --override-channels .

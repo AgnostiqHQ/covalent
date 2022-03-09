@@ -44,7 +44,8 @@ jobs:
           - os: macos-latest
             python-version: '3.8'
             experimental: false
-    container: ${{ matrix.container }}
+    container:
+      image: ${{ matrix.container }}
       options: --user root
     continue-on-error: ${{ matrix.experimental }}
     steps:
