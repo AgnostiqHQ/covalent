@@ -8,7 +8,21 @@ paths:
       tags:
         - Task
       summary: Run Tasks
-      description: API Endpoint (/api/workflow/{dispatch_id}/tasks) to run tasks
+      description: |-
+        Run a list of tasks
+
+        Note: The request body contains a list of "string"s which are pickled objects (bytes) containing
+        the following info about the Task:
+
+        `id`: Task ID
+
+        `func`: Callable function which will be run
+
+        `args`: Positional arguments for `func`
+
+        `kwargs`: Keyword arguments for `func`
+
+        `executor`: Executor object (https://covalent.readthedocs.io/en/latest/api/api.html#local-executor)
       operationId: run_tasks_api_v0_workflow__dispatch_id__tasks_post
       parameters:
         - required: true
@@ -41,7 +55,7 @@ paths:
       tags:
         - Task
       summary: Check Status
-      description: API Endpoint (/api/workflow/{dispatch_id}/task/{task_id}) to check status of a task
+      description: Check status of a task
       operationId: check_status_api_v0_workflow__dispatch_id__task__task_id__get
       parameters:
         - required: true
@@ -73,7 +87,7 @@ paths:
       tags:
         - Task
       summary: Cancel Task
-      description: API Endpoint (/api/workflow/{dispatch_id}/task/{task_id}) to cancel a task
+      description: Cancel a task
       operationId: cancel_task_api_v0_workflow__dispatch_id__task__task_id__delete
       parameters:
         - required: true
