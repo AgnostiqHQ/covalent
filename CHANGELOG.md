@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Dispatcher microservice API endpoint to dispatch and update workflow.
 
+## [0.29.2] - 2022-03-09
+
+### Added
+
+- Defaults defined in executor plugins are read and used to update the in-memory config, as well as the user config file. But only if the parameter in question wasn't already defined.
+
+### Changed
+
+- Input parameter names and docstrings in _shared_files.config.update_config were changed for clarity.
+
 ## [0.29.1] - 2022-03-07
 
 ### Changed
