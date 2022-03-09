@@ -64,14 +64,6 @@ _DEFAULT_CONFIG = {
         "dispatch_db": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent/dispatch_db.sqlite",
     },
-    "executors": {
-        "local": {
-            "log_stdout": "stdout.log",
-            "log_stderr": "stderr.log",
-            "cache_dir": "/tmp/covalent",
-        },
-        # Add entries for custom executors here
-    },
 }
 
 # Metadata which may influence execution behavior
