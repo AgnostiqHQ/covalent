@@ -73,6 +73,8 @@ jobs:
       - name: Build webapp
         run: |
           cd ./covalent_ui/webapp
+          curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+          apt-get install -y nodejs
           npm install yarn
           yarn install
           yarn build
