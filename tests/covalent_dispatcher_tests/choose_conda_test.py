@@ -39,7 +39,7 @@ def test_using_current_env() -> None:
     tmp_executor.get_conda_envs()
     conda_env = tmp_executor.current_env
 
-    executor = ct.executor.LocalExecutor(conda_env=conda_env, current_env_on_conda_fail=True)
+    executor = ct.executor.LocalExecutor(conda_env=conda_env, current_env_on_conda_fail=False)
 
     @ct.electron(executor=executor)
     def passthrough(x):
