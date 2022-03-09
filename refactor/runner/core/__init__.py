@@ -17,9 +17,3 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
-from .base_runner import BaseRunner
-
-
-def get_runner() -> BaseRunner:
-    pass

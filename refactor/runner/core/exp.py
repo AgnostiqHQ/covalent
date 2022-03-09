@@ -1,82 +1,99 @@
-from multiprocessing import Pool
+from multiprocessing import Process
 from multiprocessing import Queue as MPQ
 from queue import Empty
-
-
-def task(x):
-    return x ** 2
-
-
-def custom_callback(arg):
-    print(f"I'm the callback for {arg}")
 
 
 def send_node_update_to_dispatcher(dispatch_id, task_id, node_output):
     pass
 
 
-def wait_task_complete(async_results: dict, available_resources):
+def start_task(task_id, result_queue, func, args, kwargs, executor):
 
-    i = 0
-    keys = set(async_results.keys)
+    # And adding some other stuff if needed to this functions parameters
 
-    while True:
-        if i >= len(async_results):
-            i = 0
-
-        elif async_results[keys[i]].ready():
-            available_resources += 1
-            break
-
-        i += 1
-
-    return keys[i], available_resources
+    result = executor.execute(func, args, kwargs)
+    result_queue.put_nowait((task_id, result))
 
 
-if __name__ == "__main__":
-    cancelled_tasks_queue = MPQ()
+def cancel_task(process):
+    process.terminate()
+    process.join()
+    pass
 
-    pool = Pool(maxtasksperchild=1)
 
-    task_ids = [0, 1, 2, 3, 4, 5, 6]
+def update_status_queue(task_id, status, track_status_queue):
 
-    available_tasks = [
-        (task_ids[0], task, [6]),
-        (task_ids[1], task, [5]),
-        (task_ids[2], task, [4]),
-        (task_ids[3], task, [3]),
-        (task_ids[4], task, [2]),
-        (task_ids[5], task, [1]),
-    ]
-    available_resources = 4
-    execution_results = []
+    statuses = track_status_queue.get()
+    statuses[task_id] = status
+    track_status_queue.put(statuses)
 
-    async_results = {}
+
+def get_task_status(task_id, track_status_queue):
+
+    statuses = track_status_queue.get()
+    task_status = statuses[task_id]
+    track_status_queue.put(statuses)
+    return task_status
+
+
+def check_task_cancellation(cancelled_queue, track_status_queue, available_tasks, processes):
+
+    try:
+        cancelled_task_id = cancelled_queue.get_nowait()
+        cancel_task(processes[cancelled_task_id])
+        update_status_queue(cancelled_task_id, "CANCELLED", track_status_queue)
+        available_tasks.pop(cancelled_task_id)
+    except Empty:
+        pass
+
+    return available_tasks
+
+
+def run_available_tasks(
+    dispatch_id: str,
+    cancelled_queue: MPQ,
+    track_status_queue: MPQ,
+    available_tasks: list,
+    available_resources: int,
+):
+
+    processes = {}
+
+    result_queue = MPQ()
 
     while available_tasks:
 
-        for task_index in range(available_resources):
-            task_id, func, args = available_tasks[task_index]
+        available_tasks = check_task_cancellation(
+            cancelled_queue, track_status_queue, available_tasks, processes
+        )
 
-            async_results[task_id] = pool.apply_async(func, args=args, callback=custom_callback)
+        for i in range(available_resources):
+            task_id, func, args, kwargs, executor = available_tasks[i]
+            starting_args = (task_id, result_queue, func, args, kwargs, executor)
 
+            processes[task_id] = Process(target=start_task, args=starting_args, daemon=True)
+
+            available_tasks.pop(i)
             available_resources -= 1
-            available_tasks.pop(task_index)
 
-        try:
-            cancelled_tasks = cancelled_tasks_queue.get_nowait()
-            for task_id in cancelled_tasks:
-                async_results[task_id].terminate()
-        except Empty:
-            cancelled_tasks = []
+        for task_id, proc in processes.items():
+            proc.start()
+            update_status_queue(task_id, "RUNNING", track_status_queue)
 
-        completed_task_id, available_resources = wait_task_complete(
-            async_results, available_resources
-        )
+        while True:
+            try:
+                completed_task_id, completed_task_result = result_queue.get_nowait()
+                processes[completed_task_id].join()
+                del processes[completed_task_id]
+                update_status_queue(completed_task_id, "COMPLETED", track_status_queue)
 
-        # async_results[completed_task_index].get() will also return the task id
+                break
+            except Empty:
+                available_tasks = check_task_cancellation(
+                    cancelled_queue, track_status_queue, available_tasks, processes
+                )
+
+        available_resources += 1
         available_tasks += send_node_update_to_dispatcher(
-            "dispatch_id", async_results[completed_task_id].get()
+            dispatch_id, completed_task_id, completed_task_result
         )
-
-        del async_results[completed_task_id]
