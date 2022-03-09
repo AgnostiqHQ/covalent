@@ -147,6 +147,13 @@ class _ExecutorManager:
             plugin_class = plugin_class[0]
             short_name = the_module.__name__.split("/")[-1].split(".")[-1]
             self.executor_plugins_map[short_name] = plugin_class
+
+            if hasattr(the_module, "_EXECUTOR_PLUGIN_DEFAULTS"):
+                default_params = {
+                    "executors": {short_name: getattr(the_module, "_EXECUTOR_PLUGIN_DEFAULTS")},
+                }
+                update_config(default_params, override_existing=False)
+
         else:
             # The requested plugin (the_module.module_name) was not found in the module.
             message = f"Requested executor plugin {the_module.executor_plugin_name} was not found in {the_module.__name__}"
