@@ -37,7 +37,23 @@ def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
     `func`: Callable function which will be run \n
     `args`: Positional arguments for `func` \n
     `kwargs`: Keyword arguments for `func` \n
-    `executor`: Executor object (https://covalent.readthedocs.io/en/latest/api/api.html#local-executor)
+    `executor`: Executor object (https://covalent.readthedocs.io/en/latest/api/api.html#local-executor)\n
+
+    Example: \n
+
+    def task_func_1(x, y):
+        return x * y
+
+    def task_func_2(a):
+        return a ** 2
+
+    executor_1 = LocalExecutor() \n
+    executor_2 = LocalExecutor()
+
+    task_1 = pickle.dumps({"id": 0, "func": task_func_1, "args": (1, 2), "kwargs": {}, "executor": executor_1}) \n
+    task_2 = pickle.dumps({"id": 1, "func": task_func_2, "args": (3,), "kwargs": {}, "executor": executor_2})
+
+    requests.post(f'localhost:48008/api/workflow/{dispatch_id}/tasks', body=pickle.dumps([task_1, task_2]))
     """
 
     return {"response": "execution of tasks started"}

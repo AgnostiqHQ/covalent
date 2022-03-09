@@ -23,6 +23,26 @@ paths:
         `kwargs`: Keyword arguments for `func`
 
         `executor`: Executor object (https://covalent.readthedocs.io/en/latest/api/api.html#local-executor)
+
+
+        Example:
+
+
+        def task_func_1(x, y):
+            return x * y
+
+        def task_func_2(a):
+            return a ** 2
+
+        executor_1 = LocalExecutor()
+
+        executor_2 = LocalExecutor()
+
+        task_1 = pickle.dumps({"id": 0, "func": task_func_1, "args": (1, 2), "kwargs": {}, "executor": executor_1})
+
+        task_2 = pickle.dumps({"id": 1, "func": task_func_2, "args": (3,), "kwargs": {}, "executor": executor_2})
+
+        requests.post(f'localhost:48008/api/workflow/{dispatch_id}/tasks', body=pickle.dumps([task_1, task_2]))
       operationId: run_tasks_api_v0_workflow__dispatch_id__tasks_post
       parameters:
         - required: true
