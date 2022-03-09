@@ -79,7 +79,10 @@ def list_results():
 def fetch_result(dispatch_id):
     with DispatchDB() as db:
         res = db.get([dispatch_id])
-    response = res[0][1]
+    if len(res) > 0:
+        response = res[0][1]
+    else:
+        response = ""
 
     return app.response_class(response, status=200, mimetype="application/json")
 
