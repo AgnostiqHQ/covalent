@@ -26,7 +26,22 @@ import { Paper } from '@mui/material'
 import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'
 
-const InputSection = ({ inputs }) => {
+const InputSection = ({ inputs, node, graph }) => {
+  // check kwargs (legacy format)
+  if (!inputs) {
+    inputs = _.get(node, 'kwargs')
+  }
+  // construct arguments list from graph
+  if (!inputs && graph) {
+    inputs = _.chain(graph.links)
+      .filter(({ target }) => target === node.id)
+      .keyBy('edge_name')
+      .mapValues(({ source }) =>
+        _.get(_.find(graph.nodes, { id: source }), 'output')
+      )
+      .value()
+  }
+
   if (_.isEmpty(inputs)) {
     return null
   }

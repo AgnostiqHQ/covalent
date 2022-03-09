@@ -42,4 +42,3 @@ jobs:
           conda create --name buildenv python=3.8
           $CONDA/bin/activate buildenv
           conda build --override-channels .
-        

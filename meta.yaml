@@ -35,11 +35,17 @@ build:
     script:
         - pip install ./sentinel
         - pip install ./cova
+        - |
+          cd ./cova/covalent_ui/webapp
+          npm install
+          yarn build
 
 requirements:
     build:
         - python 3.8
         - pip
+        - nodejs
+        - yarn
         - poetry
         {% for package in data.get('install_requires', []) -%}
         {%   if not ( package.startswith('sentinel') ) -%}

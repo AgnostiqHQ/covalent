@@ -20,7 +20,8 @@ conda activate covalent-dev
 
 Install Covalent's core requirements as well as the developer requirements:
 ```shell
-conda install setuptools pip
+conda install setuptools pip nodejs yarn
+python setup.py webapp
 pip install -e .
 pip install -r tests/requirements.txt
 pre-commit install
@@ -31,11 +32,57 @@ Start the Covalent servers in developer mode:
 covalent start -d
 ```
 
-Finally, run the tests to verify your installation:
+Check the [writing tests](#writing-tests) section for more details on installing test specific packages. Finally, run the tests to verify your installation:
 ```shell
 pytest -v
 ```
 
+Getting started with feature development
+========================================
+
+Note that for complex issues, planning out the implementation details (on the issues page) is a very important step before writing any code in the feature branch. The feature development steps are listed below.
+
+### Create and checkout the feature branch
+
+Once an issue has been assigned to you, create a feature branch to implement the proposed changes. When beginning implementation on an issue, first create a branch off of develop:
+
+```bash
+git branch branch_name develop
+```
+
+To checkout the branch:
+
+```bash
+git checkout branch_name
+```
+
+The two commands can be combined into:
+
+```bash
+git checkout -b branch_name develop
+```
+
+### How and when to open a Pull Request
+
+Pull requests should be done as soon as the implementation on an issue has started on the feature branch. (Learn more about [how to open a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request).)
+
+### Linking Pull Request to issue number
+
+In order to link a Pull Request to a given issue number, the first commit should be accompanied with a comment containing the issue number, for example:
+
+```bash
+git commit -m 'fixes #57'
+```
+
+This could also be done manually on the Pull Request page using the `Linked issues` button (Learn more about [linking a pull request to an issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)).
+
+### Tag reviewers
+
+Once the changes in the feature branch are ready to be reviewed, tag the relevant reviewer(s) on the Pull Request page.
+
+### Merging the feature branch to develop
+
+If all the reviewers have approved the Pull Request and all the actions have passed, the last person to review the branch is responsible for merging the feature branch to develop.
 
 Style Guide
 ===========
@@ -454,6 +501,48 @@ Some important commands to know about:
 #### Mocking via `monkeypatch`
 
 This module can be used to mock module variables, environment variables etc. Check out the official [monkeypatch documentation](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
+
+
+Building Read the Docs (RTD) locally
+====================================
+
+Contributing to the Covalent documentation is highly encouraged. This could mean adding How-To guides, tutorials etc. The steps required to build the RTD locally are listed below:
+
+#### Installation
+
+Navigate to the `/covalent/doc` folder and install the packages to build the documentation:
+
+```bash
+pip install -r requirements.txt
+```
+
+Note that some additional packages might need to be installed as well, depending on the operating system.
+
+#### Building the docs
+
+Navigate to the root folder (`/covalent/`) of the repo and run:
+
+```bash
+python setup.py docs
+```
+
+When running this command for the first time some users might get a `pandoc missing` error. This can be resolved via:
+
+```bash
+pip install pandoc
+```
+
+#### Viewing the locally built RTD
+
+In order to view the local RTD build, navigate to the `/covalent/doc/build/html` folder. Left click on `index.html` file and copy the path. Paste the path into the browser to access the RTD that was built locally.
+
+#### Cleaning the doc build
+
+The local RTD build can be cleaned using:
+
+```bash
+python setup.py docs --clean
+```
 
 Contributor License Agreement
 =============================
