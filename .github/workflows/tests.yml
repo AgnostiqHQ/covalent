@@ -38,17 +38,13 @@ jobs:
           - python:3.8-bullseye
           - python:3.9-buster
           - python:3.9-bullseye
-          - centos/python-38-centos7
+          - {image: "centos/python-38-centos7", options: "--user root"}
         experimental: [false]
-        options: ["--user root"]
         include:
           - os: macos-latest
             python-version: '3.8'
             experimental: false
-            options: ""
-    container:
-      image: ${{ matrix.container }}
-      options: ${{ matrix.options }}
+    container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
     steps:
       - name: Check out head
