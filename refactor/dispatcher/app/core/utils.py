@@ -18,11 +18,9 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
-from covalent._dispatcher_plugins import BaseDispatcher
 from covalent._results_manager import Result
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
@@ -36,174 +34,6 @@ from covalent._shared_files.defaults import (
     subscript_prefix,
 )
 from covalent._workflow.lattice import Lattice
-from covalent._workflow.transport import _TransportGraph
-
-"""
-Main functions:
-    - dispatch workflow
-    - update workflow
-    - cancel workflow
-"""
-
-
-def dispatch_workflow(result_obj: Result) -> Result:
-    """Main dispatch function. Responsible for starting off the workflow dispatch."""
-
-    if result_obj.status == Result.NEW_OBJ:
-        result_obj = init_result_pre_dispatch(result_obj=result_obj)
-        result_obj._status = Result.RUNNING
-        result_obj = dispatch_tasks(result_obj=result_obj)
-
-    elif result_obj.status == Result.COMPLETED:
-        # TODO - Redispatch workflow for reproducibility
-
-        pass
-
-    elif result_obj.status == Result.CANCELLED:
-        # TODO - Redispatch cancelled workflow
-
-        # Change status to running if we want to redeploy this workflow
-        result_obj._status = Result.RUNNING
-
-        # TODO - Redispatch tasks
-
-    elif result_obj.status == Result.FAILED:
-        # TODO - Redispatch failed workflow
-
-        pass
-
-    return result_obj
-
-
-def update_workflow(task_execution_results: Dict, result_obj: Result) -> Result:
-    """Main update function. Called by the Runner API when there is an update for task
-    execution status."""
-
-    # Update the task results
-    result_obj._update_node(**task_execution_results)
-
-    # If workflow is completed, post-process result
-    if is_workflow_completed(result_obj=result_obj):
-
-        task_execution_order: List[
-            List
-        ] = result_obj.lattice.transport_graph.get_topologically_sorted_graph()
-
-        result_obj._result = _post_process(
-            lattice=result_obj.lattice,
-            task_outputs=result_obj.get_all_node_outputs(),
-            task_execution_order=task_execution_order,
-        )
-
-        result_obj._status = Result.COMPLETED
-        result_obj._end_time = datetime.now(timezone.utc)
-
-    return result_obj
-
-
-def cancel_workflow(result_obj: Result):
-    """Main cancel function. Called by the user via ct.cancel(dispatch_id)."""
-
-    # TODO - We need to know which tasks are currently running so that we can ask Runner API
-    #  to terminate those tasks
-    tasks_to_cancel = get_running_tasks()
-
-    # TODO - Call cancel tasks
-    cancelled_task_ids = cancel_task(tasks_to_cancel, result_obj)
-
-    # TODO - Update results object with cancelled tasks - Special attention needs to be taken to
-    #  cancel
-
-    pass
-
-
-def get_running_tasks():
-    pass
-
-
-"""
-Important helper functions:
-    - dispatch tasks: everything to do with dispatching tasks to the runner API
-
-"""
-
-
-def dispatch_tasks(result_obj: Result) -> Result:
-    """Responsible for preprocessing the tasks, and sending the tasks for execution to the
-    Runner API in batches. One of the underlying principles is that the Runner API doesn't
-    interact with the Data API."""
-
-    task_order: List[List] = get_task_order(result_obj=result_obj)
-
-    while not (
-        task_order or result_obj.status == Result.CANCELLED or result_obj.status == Result.FAILED
-    ):
-        tasks = task_order.pop(0)
-        input_args = []
-        executors = []
-
-        for task_id in tasks:
-            task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
-            inputs = get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
-            executor = result_obj.lattice.transport_graph.get_node_value(task_id, "metadata")[
-                "executor"
-            ]
-
-            if is_sublattice(task_name=task_name):
-
-                # TODO - Is deepcopy necessary here?
-                sublattice = deepcopy(get_sublattice(task_id=task_id, result_obj=result_obj))
-
-                sublattice.build_graph(inputs)
-
-                sublattice_result_obj = Result(
-                    lattice=sublattice,
-                    results_dir=result_obj.lattice.metadata["results_dir"],
-                    dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
-                )
-
-                dispatch_tasks(result_obj=sublattice_result_obj)
-
-            else:
-                preprocess_transport_graph(
-                    task_id=task_id, task_name=task_name, result_obj=result_obj
-                )
-                input_args.append(inputs)
-                executors.append(executor)
-
-        # Dispatching batch of tasks to the Runner API.
-        run_task(
-            result_obj=result_obj,
-            task_id_batch=tasks,
-            input_arg_batch=input_args,
-            executors=executors,
-        )
-
-    return result_obj
-
-
-def run_task(
-    result_obj: Result,
-    task_id_batch: List[int],
-    input_arg_batch: List[Dict],
-    executors: List[BaseDispatcher],
-):
-    """Ask Runner to execute tasks - get back True (False) if resources are (not) available.
-
-    The Runner might not have resources available to pick up the batch of tasks. In that case,
-    this function continues to try running the tasks until the runner becomes free.
-    """
-
-    pass
-
-
-def cancel_task(result_obj: Result, task_id_batch: List[int]) -> List:
-    """Returns a list of tasks that was cancelled before completion."""
-
-    pass
-
-
-"""Other helper functions."""
 
 
 def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result) -> Result:
@@ -330,21 +160,6 @@ def get_task_inputs(task_id: int, node_name: str, result_obj: Result) -> Dict:
 
                 task_input["kwargs"][key] = value
     return task_input
-
-
-"""
-Trivial functions
-"""
-
-
-def init_result_pre_dispatch(result_obj: Result):
-    """Initialize the result object transport graph before it is dispatched for execution."""
-
-    transport_graph = _TransportGraph()
-    transport_graph.deserialize(result_obj.lattice.transport_graph)
-    result_obj._lattice.transport_graph = transport_graph
-    result_obj._initialize_nodes()
-    return result_obj
 
 
 def is_sublattice(task_name: str = None) -> bool:
