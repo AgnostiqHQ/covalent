@@ -69,7 +69,7 @@ jobs:
           npm install -g yarn
       - name: Install NPM and Yarn on CentOS
         if: matrix.container == 'centos/python-38-centos7'
-        run: sudo npm install -g yarn
+        run: npm install yarn
       - name: Build webapp
         run: |
           cd ./covalent_ui/webapp
