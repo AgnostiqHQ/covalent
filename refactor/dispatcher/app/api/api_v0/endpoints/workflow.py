@@ -72,7 +72,7 @@ def submit_workflow(*, dispatch_id: str) -> Any:
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 
 
-@router.delete("/{dispatch_id}/cancel", status_code=200, response_model=CancelWorkflowResponse)
+@router.delete("/{dispatch_id}", status_code=200, response_model=CancelWorkflowResponse)
 def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     """
     Cancel a workflow
@@ -81,7 +81,7 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     return {"response": f"{dispatch_id} workflow cancelled successfully"}
 
 
-@router.put("/{dispatch_id}/update", status_code=200, response_model=UpdateWorkflowResponse)
+@router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
 def update_workflow(*, dispatch_id: str, task: Node) -> UpdateWorkflowResponse:
     """
     Update a workflow

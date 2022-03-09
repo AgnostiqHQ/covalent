@@ -25,10 +25,10 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-@router.post("/{dispatch_id}/task", status_code=202, response_model=RunTaskResponse)
-def run_task(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
+@router.post("/{dispatch_id}/tasks", status_code=202, response_model=RunTaskResponse)
+def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
     """
-    API Endpoint (/workflow/task/run) to run tasks
+    API Endpoint (/api/workflow/{dispatch_id}/tasks) to run tasks
     """
 
     return {"response": "execution of tasks started"}
@@ -37,18 +37,16 @@ def run_task(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
 @router.get("/{dispatch_id}/task/{task_id}", status_code=200, response_model=TaskStatus)
 def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
     """
-    API Endpoint (/api/workflow/task/status) to check status of a task
+    API Endpoint (/api/workflow/{dispatch_id}/task/{task_id}) to check status of a task
     """
 
     return {"status": "running"}
 
 
-@router.delete(
-    "/{dispatch_id}/task/{task_id}/cancel", status_code=200, response_model=CancelResponse
-)
+@router.delete("/{dispatch_id}/task/{task_id}", status_code=200, response_model=CancelResponse)
 def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     """
-    API Endpoint (/api/workflow/task/cancel) to cancel a task
+    API Endpoint (/api/workflow/{dispatch_id}/task/{task_id}) to cancel a task
     """
 
     return {"cancelled_dispatch_id": f"{dispatch_id}", "cancelled_task_id": f"{task_id}"}
