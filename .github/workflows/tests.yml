@@ -71,9 +71,9 @@ jobs:
         if: matrix.container == 'centos/python-38-centos7'
         run: |
           yum install sudo -y
-          curl --silent --location https://rpm.nodesource.com/setup_16.x | bash -
-          sudo yum install nodejs -y
-          sudo npm install yarn -y
+#          curl --silent --location https://rpm.nodesource.com/setup_16.x | bash -
+#          sudo yum install nodejs -y
+#          sudo npm install yarn -y
       - name: Build webapp
         run: |
           cd ./covalent_ui/webapp
