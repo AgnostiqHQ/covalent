@@ -78,6 +78,18 @@ jobs:
           cd ./covalent_ui/webapp
           yarn install
           yarn build
+      - name: Build Distribution
+        run: python setup.py sdist
+      - name: Validate Distribution
+        run: |
+          VERSION="$(cat ./VERSION)"
+          cd dist
+          tar xzf cova-${VERSION}.tar.gz
+          diff -r cova-${VERSION}/covalent ../covalent
+          diff -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x README.md cova-${VERSION}/covalent_ui ../covalent_ui 
+          diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
+          rm -rf cova-${VERSION}/
       - name: Install Covalent
         run: pip install -e .
       - name: Start Covalent dispatcher server
