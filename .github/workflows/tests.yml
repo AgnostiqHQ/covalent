@@ -70,10 +70,9 @@ jobs:
       - name: Install NPM and Yarn on CentOS
         if: matrix.container == 'centos/python-38-centos7'
         run: |
-          curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
+          curl --silent --location https://rpm.nodesource.com/setup_16.x | bash -
           yum install nodejs
-          yum install yarn
-          yarn --version
+          npm install yarn
       - name: Build webapp
         run: |
           cd ./covalent_ui/webapp
