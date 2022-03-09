@@ -25,7 +25,13 @@ from covalent._dispatcher_plugins import BaseDispatcher
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 
-from .utils import is_sublattice, get_sublattice, get_task_inputs, get_task_order, preprocess_transport_graph
+from .utils import (
+    get_sublattice,
+    get_task_inputs,
+    get_task_order,
+    is_sublattice,
+    preprocess_transport_graph,
+)
 
 
 def dispatch_workflow(result_obj: Result) -> Result:
@@ -134,4 +140,3 @@ def init_result_pre_dispatch(result_obj: Result):
     result_obj._lattice.transport_graph = transport_graph
     result_obj._initialize_nodes()
     return result_obj
-
