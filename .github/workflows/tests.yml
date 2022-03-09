@@ -30,7 +30,7 @@ jobs:
   tests:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+#      fail-fast: false
       matrix:
         os: ['ubuntu-latest']
         container:
@@ -45,6 +45,7 @@ jobs:
             python-version: '3.8'
             experimental: false
     container: ${{ matrix.container }}
+      options: --user root
     continue-on-error: ${{ matrix.experimental }}
     steps:
       - name: Check out head
@@ -60,7 +61,7 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
-      - name: Install NPM and Yarn
+      - name: Install NPM and Yarn on Ubuntu
         if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye'
         run: |
           apt-get update && apt-get install -y curl
@@ -70,17 +71,18 @@ jobs:
       - name: Install NPM and Yarn on CentOS
         if: matrix.container == 'centos/python-38-centos7'
         run: |
+          yum remove -y npm nodejs
           curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
-          yum install nodejs
-          npm install yarn
+          yum install -y npm nodejs
+          npm install -g yarn
       - name: Build webapp
         run: |
           cd ./covalent_ui/webapp
           yarn install
           yarn build
-      - name: Build Distribution
+      - name: Build distribution
         run: python setup.py sdist
-      - name: Validate Distribution
+      - name: Validate distribution
         run: |
           VERSION="$(cat ./VERSION)"
           cd dist
