@@ -60,19 +60,16 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
-      - name: Install NPM and Yarn
+      - name: Install Node
         if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye'
         run: |
           apt-get update && apt-get install -y curl
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
           apt-get install -y nodejs
-          npm install -g yarn
-      - name: Install NPM and Yarn on CentOS
-        if: matrix.container == 'centos/python-38-centos7'
-        run: npm install yarn
       - name: Build webapp
         run: |
           cd ./covalent_ui/webapp
+          npm install yarn
           yarn install
           yarn build
       - name: Install Covalent
