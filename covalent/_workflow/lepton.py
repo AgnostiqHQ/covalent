@@ -55,8 +55,9 @@ class Lepton(Electron):
     OUTPUT = 1
     INPUT_OUTPUT = 2
 
-    _LANG_PY = ["Python", "python"]
+    _LANG_PY = ["Python", "python", "py"]
     _LANG_C = ["C", "c"]
+    _LANG_JULIA = ["Julia", "julia", "jl"]
 
     def __init__(
         self,
@@ -203,10 +204,19 @@ class Lepton(Electron):
             else:
                 return tuple(return_vals)
 
+        def julia_wrapper(*args, **kwargs) -> Any:
+            """Invoke a Julia function."""
+
+            import julia
+
+            handle = julia.Julia()
+
         if self.language in Lepton._LANG_PY:
             wrapper = python_wrapper
         elif self.language in Lepton._LANG_C:
             wrapper = c_wrapper
+        elif self.language in Lepton._LANG_JULIA:
+            wrapper = julia_wrapper
         else:
             raise ValueError(f"Language '{self.language}' is not supported.")
 
