@@ -339,10 +339,16 @@ def _run_planned_workflow(result_object: Result) -> Result:
                 continue
 
             task_input = _get_task_inputs(node_id, node_name, result_object)
-
+            app_log.debug("Adding the task to the list for dask.")
+            app_log.debug("task_input")
+            app_log.debug(task_input)
+            app_log.debug("result_object")
+            app_log.debug(result_object)
+            app_log.debug("node_id")
+            app_log.debug(node_id)
             # Add the task generated for the node to the list of tasks
             tasks.append(dask.delayed(_run_task)(task_input, result_object, node_id))
-
+        app_log.debug("Running tasks in parallel using dask.")
         # run the tasks for the current iteration in parallel
         dask.compute(*tasks)
 
