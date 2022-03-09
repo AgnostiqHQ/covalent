@@ -69,13 +69,14 @@ jobs:
           npm install -g yarn
       - name: Install NPM and Yarn on CentOS
         if: matrix.container == 'centos/python-38-centos7'
-        run: npm install yarn
+        run: |
+          curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
+          yum install nodejs
+          yum install yarn
+          yarn --version
       - name: Build webapp
         run: |
           cd ./covalent_ui/webapp
-          curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
-          apt install -y nodejs
-          npm install yarn
           yarn install
           yarn build
       - name: Install Covalent
