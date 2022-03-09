@@ -25,6 +25,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 import io
+import os
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Dict, List
 
@@ -39,6 +40,14 @@ executor_plugin_name = "LocalExecutor"
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+_EXECUTOR_PLUGIN_DEFAULTS = {
+    "log_stdout": "stdout.log",
+    "log_stderr": "stderr.log",
+    "cache_dir": os.path.join(
+        os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
+    ),
+}
 
 
 class LocalExecutor(BaseExecutor):

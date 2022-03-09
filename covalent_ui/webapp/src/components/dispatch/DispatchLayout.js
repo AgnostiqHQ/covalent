@@ -24,21 +24,25 @@ import _ from 'lodash'
 import { Box } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { useStoreActions, useStoreState } from 'react-flow-renderer'
+import { useParams } from 'react-router-dom'
+import { useEffect } from 'react'
 
 import LatticeGraph from '../graph/LatticeGraph'
 import NotFound from '../NotFound'
 import NodeDrawer, { nodeDrawerWidth } from '../common/NodeDrawer'
-import { useEffect } from 'react'
+import PageLoading from '../common/PageLoading'
 import { graphBgColor } from '../../utils/theme'
 import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
 import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
-import { useParams } from 'react-router-dom'
 import { fetchResult } from '../../redux/resultsSlice'
 import DispatchDrawerContents from './DispatchDrawerContents'
 
 const DispatchLayout = () => {
   const { dispatchId } = useParams()
   const result = useSelector((state) => state.results.cache[dispatchId])
+  const isFetching = useSelector(
+    (state) => state.results.fetchResult.isFetching
+  )
 
   const selectedElectron = useStoreState((state) => {
     const nodeId = _.get(
@@ -61,18 +65,16 @@ const DispatchLayout = () => {
 
   const dispatch = useDispatch()
   useEffect(() => {
-    if (_.get(result, 'status') === 'RUNNING') {
-      dispatch(
-        fetchResult({
-          dispatchId: result.dispatch_id,
-          resultsDir: result.results_dir,
-        })
-      )
+    if (!result || _.get(result, 'status') === 'RUNNING') {
+      dispatch(fetchResult({ dispatchId }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatchId])
 
   if (!result) {
+    if (isFetching) {
+      return <PageLoading />
+    }
     return <NotFound text="Lattice dispatch not found." />
   }
 
