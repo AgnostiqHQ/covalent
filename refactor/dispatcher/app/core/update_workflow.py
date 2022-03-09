@@ -34,6 +34,13 @@ def update_workflow(task_execution_results: Dict, result_obj: Result) -> Result:
     result_obj._update_node(**task_execution_results)
     update_ui(result_obj=result_obj)
 
+    if task_execution_results["status"] == "FAILED":
+        # TODO - Update workflow execution to failed - The batch of tasks will finish
+        return result_obj
+
+    if task_execution_results["status"] == "CANCELLED":
+        return result_obj
+
     # If workflow is completed, post-process result
     if is_workflow_completed(result_obj=result_obj):
 

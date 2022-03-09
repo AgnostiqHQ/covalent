@@ -24,7 +24,6 @@ from typing import List
 import cloudpickle as pickle
 
 from covalent._results_manager import Result
-from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.transport import _TransportGraph
 
 from .utils import (
@@ -101,6 +100,11 @@ def _dispatch_tasks(result_obj: Result) -> Result:
                     results_dir=result_obj.lattice.metadata["results_dir"],
                     dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
                 )
+
+                result_obj.lattice.transport_graph.set_node_value(
+                    node_key=task_id, value_key="status", value=Result.RUNNING
+                )
+                update_ui(result_obj=result_obj)
 
                 _dispatch_tasks(result_obj=sublattice_result_obj)
 
