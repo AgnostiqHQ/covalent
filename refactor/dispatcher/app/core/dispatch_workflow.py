@@ -119,9 +119,6 @@ def _dispatch_tasks(result_obj: Result) -> Result:
             pickled_executors=pickle.dumps(executors),
         )
 
-        update_task_status(task_id_batch=tasks, result_obj=result_obj, status=Result.RUNNING)
-        update_ui(result_obj=result_obj)
-
     return result_obj
 
 
@@ -147,15 +144,4 @@ def init_result_pre_dispatch(result_obj: Result):
     transport_graph.deserialize(result_obj.lattice.transport_graph)
     result_obj._lattice.transport_graph = transport_graph
     result_obj._initialize_nodes()
-    return result_obj
-
-
-def update_task_status(
-    task_id_batch: List[int], result_obj: Result, status: RESULT_STATUS
-) -> Result:
-    """Update the task status batch to running."""
-
-    for task_id in task_id_batch:
-        result_obj._lattice.transport_graph.set_node_value(task_id, "status", status)
-
     return result_obj
