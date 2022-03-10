@@ -39,7 +39,8 @@ def _cancel_workflow(result_obj: Result, task_id_batch: List[int] = None) -> boo
 
 
 def cancel_task(dispatch_id: str, task_id_batch: List[int]) -> bool:
-    """Asks the Runner API to cancel the execution of these tasks and returns the status of whether it was successful."""
+    """Asks the Runner API to cancel the execution of these tasks and returns the status of whether it was
+    successful."""
 
     pass
 

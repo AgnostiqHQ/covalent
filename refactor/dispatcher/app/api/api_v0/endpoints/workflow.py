@@ -34,7 +34,7 @@ from fastapi import APIRouter
 from covalent._results_manager import Result
 
 from ....core.cancel_workflow import _cancel_workflow
-from ....core.dispatch_workflow import _dispatch_workflow
+from ....core.dispatch_workflow import _dispatch_workflow, _get_runnable_tasks
 from ....core.update_workflow import _update_workflow
 
 tasks_queue = MPQ()
@@ -109,13 +109,17 @@ def submit_workflow(*, dispatch_id: str) -> Any:
 @router.get("/{dispatch_id}", status_code=200, response_model=GetRunnableTasksResponse)
 def get_runnable_tasks(*, dispatch_id: str) -> Any:
     """
-    Get the next batch of tasks that can be run.
+    Get the next batch of tasks that can be run. This method should not modify the UI or the database. However, it will
+    modify the tasks queue.
     """
 
-    task_list = [1, 2, 3]
+    result_obj = get_result(dispatch_id)
+
+    # TODO - The interface for this method needs to be figured out properly
+    task_list = _get_runnable_tasks(tasks_queue, result_obj)
     return {
         "task_list": task_list,
-        "response": f"{dispatch_id} retrieved runnable tasks successfully",
+        "response": f"{dispatch_id} runnable tasks returned successfully",
     }
 
 

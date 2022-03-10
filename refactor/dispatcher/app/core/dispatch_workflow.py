@@ -151,6 +151,10 @@ def init_result_pre_dispatch(result_obj: Result):
     return result_obj
 
 
+def _get_runnable_tasks(tasks_queue: MPQ, result_obj: Result) -> List:
+    pass
+
+
 # task_schedule = [[1, 2, 3], [4, 5], [6, 7, 8]]
 #
 # 1. send to runner: [1, 2, 3], task_schedule = [[4, 5], [6, 7, 8]]
