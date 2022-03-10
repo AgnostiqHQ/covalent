@@ -56,6 +56,7 @@ jobs:
         run: |
           docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
           docker run -i -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
+          pip install -r requirements.txt
           echo 'Creating a test dispatch...'
           cat << EOF > test_dispatch.py
           import covalent as ct
