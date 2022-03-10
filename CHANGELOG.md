@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- When executing a task on an alternate Conda environment, Covalent does not have to be installed on that environment.
+- When executing a task on an alternate Conda environment, Covalent no longer has to be installed on that environment. Previously, a Covalent object (the execution function as a TransportableObject) was passed to the environment. Now it is deserialized to a "normal" Python function, which is passed to the alternate Conda environment.
 
 ## [0.29.3] - 2022-03-09
 
