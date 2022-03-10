@@ -52,9 +52,38 @@ jobs:
             TAG=$TAG-$SHORT_SHA
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
-      - name: Build and push image
+      - name: Build and run image
         run: |
           docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
+          docker run -i -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
+          echo 'Creating a test dispatch...'
+          cat << EOF > test_dispatch.py
+          import covalent as ct
+          from requests import request
+          @ct.electron
+          def join_words(a, b):
+            return ", ".join([a, b])
+          @ct.electron
+          def excitement(a):
+            return f"{a}!"
+          @ct.lattice
+          def simple_workflow(a, b):
+            phrase = join_words(a, b)
+            return excitement(phrase)
+          dispatch_id = ct.dispatch(simple_workflow)("Hello", "Covalent")
+          results_url = "http://localhost:48008/api/results"
+          results = request("GET", results_url, headers={}, data={}).json()
+          dispatch_result = results[-1]['result']
+          dispatch_status = results[-1]['status']
+          if not (dispatch_status == 'COMPLETED' and dispatch_result == 'Hello, Covalent!'):
+            raise AssertionError('Invalid dispatch result')
+          else:
+            print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
+            print(f'The output of the lattice is: {dispatch_result}')
+          EOF
+          echo 'Running test dispatch...'
+          python test_dispatch.py
+      - name: Push image
           docker push ${{ secrets.AWS_ECR_DEV_REPO }}
           docker tag ${{ secrets.AWS_ECR_DEV_REPO }} ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
           docker push ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
