@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - master
-      - test-pr
 
 jobs:
   publish_master:

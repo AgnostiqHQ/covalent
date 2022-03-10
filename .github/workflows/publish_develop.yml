@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - develop
-      - test-pr
 
 jobs:
   publish_develop:
@@ -80,7 +79,6 @@ jobs:
             print('Waiting for dispatch to be executed...')
             time.sleep(30)
           dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
-          print('Dispatch id is:', dispatch_id)
           results_url = "http://localhost:48008/api/results"
           results = request("GET", results_url, headers={}, data={}).json()
           dispatch_result = results[0]['result'] if results else None
@@ -97,7 +95,6 @@ jobs:
                           stdout=sys.stdout, stderr=subprocess.STDOUT)
           EOF
           python3 run_dispatch.py
-          echo 'Printing results of dispatch...'
           cat result1.txt
       - name: Push image
         run: |
