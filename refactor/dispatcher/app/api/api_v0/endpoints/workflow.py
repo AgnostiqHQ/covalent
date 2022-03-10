@@ -19,16 +19,23 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from multiprocessing import Queue as MPQ
 from typing import Any
 
 from app.schemas.workflow import (
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
+    GetRunnableTasksResponse,
     Node,
     UpdateWorkflowResponse,
 )
 from fastapi import APIRouter
 
+from ....core.cancel_workflow import cancel_workflow
+from ....core.dispatch_workflow import dispatch_workflow
+from ....core.update_workflow import update_workflow
+
+tasks_queue = MPQ()
 router = APIRouter()
 
 # Do we need this here?
@@ -70,6 +77,19 @@ def submit_workflow(*, dispatch_id: str) -> Any:
     """
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
+
+
+@router.get("/{dispatch_id}", status_code=200, response_model=GetRunnableTasksResponse)
+def get_runnable_tasks(*, dispatch_id: str) -> Any:
+    """
+    Get the next batch of tasks that can be run.
+    """
+
+    task_list = [1, 2, 3]
+    return {
+        "task_list": task_list,
+        "response": f"{dispatch_id} retrieved runnable tasks successfully",
+    }
 
 
 @router.delete("/{dispatch_id}", status_code=200, response_model=CancelWorkflowResponse)

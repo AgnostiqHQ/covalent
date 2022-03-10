@@ -20,7 +20,7 @@
 
 
 from datetime import datetime
-from typing import Any, Optional, Sequence
+from typing import Any, List, Optional
 
 from pydantic import BaseModel
 
@@ -41,6 +41,11 @@ class Node(BaseNode):
 
 
 class DispatchWorkflowResponse(BaseModel):
+    response: str
+
+
+class GetRunnableTasksResponse(BaseModel):
+    task_list: List[int]
     response: str
 
 
