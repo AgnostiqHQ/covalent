@@ -115,8 +115,7 @@ jobs:
             python3 run_dispatch.py
             echo 'Printing results of dispatch...'
             cat result1.txt
-            python test_dispatch.py
-          push: false
+          push: true
           tags: |
             ${{ secrets.AWS_ECR_REPO }}:latest
             ${{ secrets.AWS_ECR_REPO }}:${{ env.TAG }}
