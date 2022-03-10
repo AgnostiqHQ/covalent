@@ -20,23 +20,36 @@
 
 
 from typing import Any
+import pathlib
+import aiofiles
+import os 
 
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.fs import UploadResponse
-from fastapi import APIRouter, File, HTTPException
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
+
+
 
 router = APIRouter()
 
+upload_dir = f"{pathlib.Path(__file__).parents[4].resolve()}/uploads"
 
 @router.post("/upload", status_code=200, response_model=UploadResponse)
-def upload_file(*, file: bytes = File(...)) -> Any:
+async def upload_file(*, file: UploadFile) -> Any:
     """
     Upload a file
     """
+    fs_file_path = f"{upload_dir}/{file.filename}"
+
+    async with aiofiles.open(fs_file_path, 'wb') as fs_file:
+        content = await file.read()
+        await fs_file.write(content)
+        fs_file.close()
+    
     return {
-        "filename": "sample_input_file.sample",
-        "path": "/Users/aq/Documents/agnostiq/uploads/",
+        "filename":  file.filename,
+        "path":  fs_file_path,
     }
 
 
@@ -52,12 +65,11 @@ def upload_file(*, file: bytes = File(...)) -> Any:
         },
     },
 )
-def download_file(*, file_location: str) -> Any:
+def download_file(*, file_name: str) -> Any:
     """
     Download a file
     """
-    if not file_location:
+    fs_file_path = f"{upload_dir}/{file_name}"
+    if not os.path.isfile(fs_file_path):
         raise HTTPException(status_code=404, detail="File not found")
-    return FileResponse(
-        file_location, media_type="application/octet-stream", filename=file_location
-    )
+    return FileResponse(path=fs_file_path, media_type='application/octet-stream', filename=file_name)
