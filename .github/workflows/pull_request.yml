@@ -58,8 +58,6 @@ jobs:
           echo 'Creating a test dispatch...'
           cat << EOF > test_dispatch.py
           import covalent as ct
-          import covalent_dispatcher._cli.service as service
-          import time
           from requests import request
           @ct.electron
           def join_words(a, b):
@@ -71,9 +69,6 @@ jobs:
           def simple_workflow(a, b):
             phrase = join_words(a, b)
             return excitement(phrase)
-          if not service._is_server_running():
-            print(service._is_server_running())
-            service.start()
           dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
           print('Dispatch id is:', dispatch_id)
           results_url = "http://localhost:48008/api/results"
