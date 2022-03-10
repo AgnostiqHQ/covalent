@@ -84,7 +84,7 @@ def fetch_result(dispatch_id):
     else:
         response = ""
 
-    return app.response_class(response, status=200, mimetype="application/json")
+    return app.response_class(response, status=400, mimetype="application/json")
 
 
 @app.route("/api/results", methods=["DELETE"])
