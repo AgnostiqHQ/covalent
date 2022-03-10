@@ -5,11 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.29.4] - 2022-03-09
+## [0.30.2] - 2022-03-10
 
 ### Fixed
 
 - When executing a task on an alternate Conda environment, Covalent no longer has to be installed on that environment. Previously, a Covalent object (the execution function as a TransportableObject) was passed to the environment. Now it is deserialized to a "normal" Python function, which is passed to the alternate Conda environment.
+
+## [0.30.1] - 2022-03-10
+
+### Fixed
+
+- Eliminate unhandled exception in Covalent UI backend when calling fetch_result.
+
+## [0.30.0] - 2022-03-09
+
+### Added
+
+- Skeleton code for writing the different services corresponding to each component in the open source refactor.
+- OpenAPI specifications for each of the services.
 
 ## [0.29.3] - 2022-03-09
 
