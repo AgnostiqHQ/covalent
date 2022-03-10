@@ -29,7 +29,7 @@ from covalent._results_manager import Result
 from .utils import _post_process, is_workflow_completed
 
 
-def _update_workflow(task_execution_results: Dict, result_obj: Result, tasks_queue: MPQ) -> List:
+def _update_workflow(task_execution_results: Dict, result_obj: Result) -> List:
     """Main update function. Called by the Runner API when there is an update for task
     execution status."""
 
@@ -60,15 +60,4 @@ def _update_workflow(task_execution_results: Dict, result_obj: Result, tasks_que
     if result_obj.status != Result.RUNNING:
         result_obj._end_time = datetime.now(timezone.utc)
 
-    tasks_order = tasks_queue.get()
-    runnable_tasks = get_runnable_tasks(tasks_order[0])
-    non_runnable_tasks = [tasks for tasks in tasks_order[0] if tasks not in runnable_tasks]
-    tasks_order.pop(0)
-    tasks_order = non_runnable_tasks + tasks_order
-    tasks_queue.put(tasks_order)
-
-    return runnable_tasks
-
-
-def get_runnable_tasks(tasks_order: List, result_obj: Result) -> List:
-    pass
+    return result_obj

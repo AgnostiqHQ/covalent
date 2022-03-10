@@ -72,13 +72,16 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     Runner API in batches. One of the underlying principles is that the Runner API doesn't
     interact with the Data API."""
 
+    # TODO - Clear queue?
+
     result_obj = init_result_pre_dispatch(result_obj=result_obj)
     task_order: List[List] = get_task_order(result_obj=result_obj)
     tasks_queue.put(task_order)
-    tasks, input_args, executors = _get_runnable_tasks(result_obj, tasks_queue)
+    tasks, functions, input_args, executors = _get_runnable_tasks(result_obj, tasks_queue)
     _run_task(
         result_obj=result_obj,
         task_id_batch=tasks,
+        functions=functions,
         pickled_input_args=pickle.dumps(input_args),
         pickled_executors=pickle.dumps(executors),
     )
@@ -87,12 +90,9 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
 
 def _get_runnable_tasks(
     result_obj: Result, tasks_queue: MPQ
-) -> Tuple[List[int], List[Dict], List[BaseDispatcher]]:
+) -> Tuple[List[int], List[bytes], List[Dict], List[BaseDispatcher]]:
     """Return a list of tasks that can be run and the corresponding executors and input
     parameters."""
-
-    if tasks_queue.empty():
-        return [], [], []
 
     tasks_order = tasks_queue.get()
     tasks = tasks_order.pop(0)
@@ -101,8 +101,12 @@ def _get_runnable_tasks(
     executors = []
     runnable_tasks = []
     non_runnable_tasks = []
+    functions = []
 
     for task_id in tasks:
+        serialized_function = result_obj.lattice.transport_graph.get_node_value(
+            task_id, "function"
+        )
         task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
         task_inputs = get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
         executor = result_obj.lattice.transport_graph.get_node_value(task_id, "metadata")[
@@ -110,7 +114,7 @@ def _get_runnable_tasks(
         ]
 
         if is_sublattice(task_name):
-            sublattice = get_sublattice(task_id, result_obj)
+            sublattice = serialized_function.get_deserialized()
             sublattice.build_graph(task_inputs)
             sublattice_result_obj = Result(
                 lattice=sublattice,
@@ -120,29 +124,26 @@ def _get_runnable_tasks(
             result_obj.lattice.transport_graph.set_node_value(
                 node_key=task_id, value_key="status", value=Result.RUNNING
             )
-            sublattice_task_queue = MPQ()
             sublattice_task_order = get_task_order(sublattice_result_obj)
-            sublattice_task_queue.put(sublattice_task_order)
-            _get_runnable_tasks(
-                result_obj=sublattice_result_obj, tasks_queue=sublattice_task_queue
-            )
+            tasks_order = sublattice_task_order + tasks_order
+            tasks_queue.put(tasks_order)
+            _get_runnable_tasks(result_obj=sublattice_result_obj, tasks_queue=tasks_queue)
 
         elif _is_runnable_task(task_id, result_obj, tasks_queue):
             runnable_tasks.append(task_id)
             preprocess_transport_graph(task_id, task_name, result_obj)
             input_args.append(task_inputs)
             executors.append(executor)
+            functions.append(serialized_function)
 
         else:
             non_runnable_tasks.append(task_id)
 
     if non_runnable_tasks:
-        tasks = non_runnable_tasks + tasks
-        tasks_queue.put(tasks)
+        tasks_order = [non_runnable_tasks] + tasks_order
+        tasks_queue.put(tasks_order)
 
-    # TODO - Insert dispatch id?
-
-    return runnable_tasks, input_args, executors
+    return runnable_tasks, functions, input_args, executors
 
 
 def init_result_pre_dispatch(result_obj: Result):
@@ -158,6 +159,7 @@ def init_result_pre_dispatch(result_obj: Result):
 def _run_task(
     result_obj: Result,
     task_id_batch: List[int],
+    functions: List[bytes],
     pickled_input_args: bytes,
     pickled_executors: bytes,
 ):

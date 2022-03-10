@@ -173,13 +173,6 @@ def is_sublattice(task_name: str = None) -> bool:
     return False
 
 
-def get_sublattice(task_id: int, result_obj: Result) -> Lattice:
-    """If the task id corresponds to a sublattice, extract and return the sublattice."""
-
-    serialized_sublattice = result_obj.lattice.transport_graph.get_node_value(task_id, "function")
-    return serialized_sublattice.get_deserialized()
-
-
 def is_workflow_completed(result_obj: Result) -> bool:
     """Check if workflow is completed"""
 

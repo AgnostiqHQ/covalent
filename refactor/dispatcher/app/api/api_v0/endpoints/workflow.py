@@ -35,6 +35,7 @@ from covalent._results_manager import Result
 
 from ....core.cancel_workflow import _cancel_workflow
 from ....core.dispatch_workflow import _dispatch_workflow, _get_runnable_tasks
+from ....core.dispatch_workflow_v2 import _get_runnable_tasks
 from ....core.update_workflow import _update_workflow
 
 tasks_queue = MPQ()
@@ -116,6 +117,7 @@ def get_runnable_tasks(*, dispatch_id: str) -> Any:
     result_obj = get_result(dispatch_id)
 
     # TODO - The interface for this method needs to be figured out properly
+    # TODO - PROBLEM HERE
     task_list = _get_runnable_tasks(tasks_queue, result_obj)
     return {
         "task_list": task_list,
@@ -145,9 +147,7 @@ def update_workflow(*, dispatch_id: str, task_execution_results: Node) -> Update
     """
 
     result_obj = get_result(dispatch_id)
-
-    # TODO - Tasks queue might need to get moved from being an argument
-    result_obj = _update_workflow(task_execution_results, result_obj, tasks_queue)
+    result_obj = _update_workflow(task_execution_results, result_obj)
     write_results_to_db(result_obj)
     update_ui(dispatch_id)
 
