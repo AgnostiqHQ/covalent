@@ -18,7 +18,20 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from typing import Any, Callable, Dict, List
+
 from pydantic import BaseModel
+
+
+class Task(BaseModel):
+    task_id: int
+    task_func: Callable
+    task_args: List[Any]
+    task_kwargs: Dict[str, Any]
+
+
+class TaskPickleList(BaseModel):
+    tasks: List[bytes]
 
 
 class RunTaskResponse(BaseModel):

@@ -22,6 +22,7 @@ from pathlib import Path
 
 import covalent as ct
 from covalent._results_manager import results_manager as rm
+from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 the_executor = ct.executor.LocalExecutor(
     log_stdout="/tmp/log_stdout.txt", log_stderr="/tmp/log_stderr.txt"
@@ -80,6 +81,8 @@ def test_dispatcher_functional():
         output = "failed"
 
     rm._delete_result(dispatch_id)
+    with DispatchDB() as db:
+        db.delete([dispatch_id])
 
     assert output == "failed"
 
@@ -104,6 +107,9 @@ def test_results_dir_in_sublattice():
     output = ct.get_result(dispatch_id, wait=True).result
 
     rm._delete_result(dispatch_id, results_dir="/tmp/results")
+
+    with DispatchDB() as db:
+        db.delete([dispatch_id])
 
     assert output == 25
 

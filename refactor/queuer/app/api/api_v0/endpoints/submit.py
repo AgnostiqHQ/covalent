@@ -31,7 +31,12 @@ router = APIRouter()
 @router.post("/dispatch", status_code=202, response_model=SubmitResponse)
 async def submit_workflow(*, result: ResultPickle) -> SubmitResponse:
     """
-    Submit a workflow
+    Note: The object that contains the workflow function, interface to
+    update attributes in the transport graph, inputs of the workflow,
+    metadata, etc. is the result object that's why its type is ResultPickle
+    which contains the pickled result object. Its use however varies in
+    different components. We call it the result object because it is supposed
+    to be the ultimate thing the user will get and will contain everything in the workflow.
     """
 
     queue = Queuer()

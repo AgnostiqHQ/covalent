@@ -80,7 +80,7 @@ const mapGraphToElements = (graph, direction, showParams) => {
       id: `${source}-${target}`,
       source: String(source),
       target: String(target),
-      label: edge.variable,
+      label: edge.edge_name,
       type: 'directed',
     }
   })

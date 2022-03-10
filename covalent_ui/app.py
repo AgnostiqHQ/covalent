@@ -32,11 +32,11 @@ from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
-import covalent.executor as covalent_executor
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
+from covalent_dispatcher._db.dispatchdb import DispatchDB
 from covalent_dispatcher._service.app import bp
 
 WEBHOOK_PATH = "/api/webhook"
@@ -67,98 +67,34 @@ def handle_draw_request():
 
 @app.route("/api/results")
 def list_results():
-    path = request.args["resultsDir"]
-    dispatch_ids = [dir for dir in os.listdir(path) if os.path.isdir(os.path.join(path, dir))]
-    return jsonify(dispatch_ids)
-
-
-def encode_result(obj):
-    if isinstance(obj, Status):
-        return obj.STATUS
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    return str(obj)
-
-
-def extract_graph_node(node):
-    # doc string
-    f = node.get("function")
-    if f is not None:
-        node["doc"] = node["function"].get_deserialized().__doc__
-
-    # metadata
-    extract_executor_info(node.get("metadata"))
-
-    # prevent JSON encoding
-    node["kwargs"] = encode_dict(node.get("kwargs"))
-
-    # remove unused fields
-    node.pop("function", None)
-    node.pop("node_name", None)
-
-    return node
-
-
-def encode_dict(d):
-    """Avoid JSON encoding when python str() suffices"""
-    if not isinstance(d, dict):
-        return d
-    return {k: str(v) for (k, v) in d.items()}
-
-
-def extract_executor_info(metadata):
-    # executor details
-    try:
-
-        executor = covalent_executor._executor_manager.get_executor(name=metadata["executor"])
-
-        if executor is not None:
-            # extract attributes
-            metadata["executor"] = encode_dict(executor.__dict__)
-            if not isinstance(executor, str):
-                # if not named, replace with class name
-                metadata["executor"] = f"<{executor.__class__.__name__}>"
-    except (KeyError, AttributeError) as e:
-        pass
-
-
-def extract_graph(graph):
-    graph = nx.json_graph.node_link_data(graph)
-    nodes = list(map(extract_graph_node, graph["nodes"]))
-    return {
-        "nodes": nodes,
-        "links": graph["links"],
-    }
+    with DispatchDB() as db:
+        res = db.get()
+    if not res:
+        return jsonify([])
+    else:
+        return jsonify([simplejson.loads(r[1]) for r in res])
 
 
 @app.route("/api/results/<dispatch_id>")
 def fetch_result(dispatch_id):
-    results_dir = request.args["resultsDir"]
+    with DispatchDB() as db:
+        res = db.get([dispatch_id])
+    if len(res) > 0:
+        response = res[0][1]
+        status = 200
+    else:
+        response = ""
+        status = 400
 
-    result = rm.get_result(dispatch_id, results_dir=results_dir)
-    extract_executor_info(result.lattice.metadata)
+    return app.response_class(response, status=status, mimetype="application/json")
 
-    response = {
-        "dispatch_id": result.dispatch_id,
-        "status": result.status,
-        "result": result.result,
-        "start_time": result.start_time,
-        "end_time": result.end_time,
-        "results_dir": result.results_dir,
-        "lattice": {
-            "function_string": result.lattice.workflow_function_string,
-            "doc": result.lattice.__doc__,
-            "name": result.lattice.__name__,
-            "kwargs": encode_dict(result.lattice.kwargs),
-            "metadata": result.lattice.metadata,
-        },
-        "graph": extract_graph(result.lattice.transport_graph._graph),
-    }
 
-    # Use simplejson/ignore_nan=True to handle NaN/Infinity constants
-    response = simplejson.dumps(response, default=encode_result, ignore_nan=True)
-
-    return app.response_class(response, status=200, mimetype="application/json")
+@app.route("/api/results", methods=["DELETE"])
+def delete_results():
+    dispatch_ids = request.json.get("dispatchIds", [])
+    with DispatchDB() as db:
+        db.delete(dispatch_ids)
+    return jsonify({"ok": True})
 
 
 @app.route("/api/logoutput/<dispatch_id>")
@@ -222,4 +158,4 @@ if __name__ == "__main__":
     else:
         port = DEFAULT_PORT
     debug = True if args.develop is True else False
-    socketio.run(app, debug=debug, host="0.0.0.0", port=port)
+    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=True)
