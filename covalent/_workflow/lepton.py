@@ -57,6 +57,7 @@ class Lepton(Electron):
 
     _LANG_PY = ["Python", "python"]
     _LANG_C = ["C", "c"]
+    _LANG_SHELL = ["bash", "shell"]
 
     def __init__(
         self,
@@ -193,10 +194,43 @@ class Lepton(Electron):
             else:
                 return tuple(return_vals)
 
+        def shell_wrapper(*args, **kwargs) -> Any:
+            """Invoke a shell script."""
+
+            import subprocess
+            from pathlib import Path
+
+            if kwargs:
+                raise ValueError(
+                    f"Keyword arguments {kwargs} are not supported when calling {self.function}."
+                )
+
+            # Call a bash function in a script using library_name and function_name
+            # or
+            # Invoke a generic bash command using only function_name
+
+            run_lib = f"source {self.library_name} && " if self.library_name != "" else ""
+
+            mutated_args = ""
+            for arg in args:
+                mutated_args += f'"{arg}" '
+
+            proc = subprocess.run(
+                ["/bin/bash", "-c", f"{run_lib} {self.function_name} {mutated_args}"],
+                capture_output=True,
+            )
+
+            if proc.returncode != 0:
+                raise Exception(proc.stderr)
+
+            return proc.stdout
+
         if self.language in Lepton._LANG_PY:
             wrapper = python_wrapper
         elif self.language in Lepton._LANG_C:
             wrapper = c_wrapper
+        elif self.language in Lepton._LANG_SHELL:
+            wrapper = shell_wrapper
         else:
             raise ValueError(f"Language '{self.language}' is not supported.")
 
