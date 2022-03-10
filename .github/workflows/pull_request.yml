@@ -1,0 +1,88 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: publish-dev
+
+on:
+  pull_request
+
+jobs:
+  pull_request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Generate tag
+        run: |
+          aws --version
+          docker info
+          docker --version
+          TAG="$(cat ./VERSION)"
+          if aws ecr describe-images \
+            --repository-name covalent \
+            --image-ids imageTag=$TAG &> /dev/null ; then
+            SHORT_SHA="${GITHUB_SHA::8}"
+            TAG=$TAG-$SHORT_SHA
+          fi
+          echo "TAG=$TAG" >> $GITHUB_ENV
+      - name: Build and run image
+        run: |
+          docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
+          docker run -i -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
+          echo 'Creating a test dispatch...'
+          cat << EOF > test_dispatch.py
+          import covalent as ct
+          from requests import request
+          @ct.electron
+          def join_words(a, b):
+            return ", ".join([a, b])
+          @ct.electron
+          def excitement(a):
+            return f"{a}!"
+          @ct.lattice
+          def simple_workflow(a, b):
+            phrase = join_words(a, b)
+            return excitement(phrase)
+          dispatch_id = ct.dispatch(simple_workflow)("Hello", "Covalent")
+          results_url = "http://localhost:48008/api/results"
+          results = request("GET", results_url, headers={}, data={}).json()
+          dispatch_result = results[-1]['result']
+          dispatch_status = results[-1]['status']
+          if not (dispatch_status == 'COMPLETED' and dispatch_result == 'Hello, Covalent!'):
+            raise AssertionError('Invalid dispatch result')
+          else:
+            print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
+            print(f'The output of the lattice is: {dispatch_result}')
+          EOF
+          echo 'Running test dispatch...'
+          python test_dispatch.py
+      - name: Discard container
+        run:
+          docker kill ${{ secrets.AWS_ECR_DEV_REPO }}
+          docker rm ${{ secrets.AWS_ECR_DEV_REPO }}
+          docker rmi ${{ secrets.AWS_ECR_DEV_REPO }}
