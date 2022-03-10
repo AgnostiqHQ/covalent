@@ -97,4 +97,4 @@ jobs:
           echo 'Running test dispatch...'
           python3 run_dispatch.py
           echo 'Printing results of dispatch...'
-          cat results1.txt
+          cat result1.txt
