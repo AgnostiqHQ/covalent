@@ -59,6 +59,7 @@ jobs:
           echo 'Creating a test dispatch...'
           cat << EOF > test_dispatch.py
           import covalent as ct
+          import time
           from requests import request
           @ct.electron
           def join_words(a, b):
@@ -71,9 +72,11 @@ jobs:
             phrase = join_words(a, b)
             return excitement(phrase)
           dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
+          time.sleep(20)
           print('Dispatch id is:', dispatch_id)
           results_url = "http://localhost:48008/api/results"
           results = request("GET", results_url, headers={}, data={}).json()
+          time.sleep(20)
           if not results:
             raise Exception('Dispatch execution failed')
           else:
