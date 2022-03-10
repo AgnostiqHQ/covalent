@@ -109,8 +109,8 @@ def submit_workflow(*, dispatch_id: str) -> Any:
 @router.get("/{dispatch_id}", status_code=200, response_model=GetRunnableTasksResponse)
 def get_runnable_tasks(*, dispatch_id: str) -> Any:
     """
-    Get the next batch of tasks that can be run. This method should not modify the UI or the database. However, it will
-    modify the tasks queue.
+    Get the next batch of tasks that can be run. This method should not modify the UI or the
+    database. However, it will modify the tasks queue.
     """
 
     result_obj = get_result(dispatch_id)

@@ -22,10 +22,11 @@
 """Workflow dispatch functionality."""
 
 from multiprocessing import Queue as MPQ
-from typing import List
+from typing import Dict, List, Tuple
 
 import cloudpickle as pickle
 
+from covalent._dispatcher_plugins import BaseDispatcher
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 
@@ -42,7 +43,6 @@ def _dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for starting off the workflow dispatch."""
 
     if result_obj.status == Result.NEW_OBJ:
-        result_obj = init_result_pre_dispatch(result_obj=result_obj)
         result_obj._status = Result.RUNNING
         result_obj = start_dispatch(result_obj=result_obj, tasks_queue=tasks_queue)
 
@@ -72,55 +72,86 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     Runner API in batches. One of the underlying principles is that the Runner API doesn't
     interact with the Data API."""
 
+    result_obj = init_result_pre_dispatch(result_obj=result_obj)
     task_order: List[List] = get_task_order(result_obj=result_obj)
-    tasks = task_order.pop(0)
-
-    # TODO - Come back to this
     tasks_queue.put(task_order)
-
-    input_args = []
-    executors = []
-
-    for task_id in tasks:
-        task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
-        inputs = get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
-        executor = result_obj.lattice.transport_graph.get_node_value(task_id, "metadata")[
-            "executor"
-        ]
-
-        if is_sublattice(task_name=task_name):
-
-            sublattice = get_sublattice(task_id=task_id, result_obj=result_obj)
-
-            sublattice.build_graph(inputs)
-
-            sublattice_result_obj = Result(
-                lattice=sublattice,
-                results_dir=result_obj.lattice.metadata["results_dir"],
-                dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
-            )
-
-            result_obj.lattice.transport_graph.set_node_value(
-                node_key=task_id, value_key="status", value=Result.RUNNING
-            )
-
-            start_dispatch(result_obj=sublattice_result_obj)
-
-        else:
-            preprocess_transport_graph(task_id=task_id, task_name=task_name, result_obj=result_obj)
-            input_args.append(inputs)
-            executors.append(executor)
-
-        # get_runnable_tasks
-
-    # Dispatching batch of tasks to the Runner API.
+    tasks, input_args, executors = _get_runnable_tasks(result_obj, tasks_queue)
     _run_task(
         result_obj=result_obj,
         task_id_batch=tasks,
         pickled_input_args=pickle.dumps(input_args),
         pickled_executors=pickle.dumps(executors),
     )
+    return result_obj
 
+
+def _get_runnable_tasks(
+    result_obj: Result, tasks_queue: MPQ
+) -> Tuple[List[int], List[Dict], List[BaseDispatcher]]:
+    """Return a list of tasks that can be run and the corresponding executors and input
+    parameters."""
+
+    if tasks_queue.empty():
+        return [], [], []
+
+    tasks_order = tasks_queue.get()
+    tasks = tasks_order.pop(0)
+
+    input_args = []
+    executors = []
+    runnable_tasks = []
+    non_runnable_tasks = []
+
+    for task_id in tasks:
+        task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
+        task_inputs = get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
+        executor = result_obj.lattice.transport_graph.get_node_value(task_id, "metadata")[
+            "executor"
+        ]
+
+        if is_sublattice(task_name):
+            sublattice = get_sublattice(task_id, result_obj)
+            sublattice.build_graph(task_inputs)
+            sublattice_result_obj = Result(
+                lattice=sublattice,
+                results_dir=result_obj.lattice.metadata["results_dir"],
+                dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
+            )
+            result_obj.lattice.transport_graph.set_node_value(
+                node_key=task_id, value_key="status", value=Result.RUNNING
+            )
+            sublattice_task_queue = MPQ()
+            sublattice_task_order = get_task_order(sublattice_result_obj)
+            sublattice_task_queue.put(sublattice_task_order)
+            _get_runnable_tasks(
+                result_obj=sublattice_result_obj, tasks_queue=sublattice_task_queue
+            )
+
+        elif _is_runnable_task(task_id, result_obj, tasks_queue):
+            runnable_tasks.append(task_id)
+            preprocess_transport_graph(task_id, task_name, result_obj)
+            input_args.append(task_inputs)
+            executors.append(executor)
+
+        else:
+            non_runnable_tasks.append(task_id)
+
+    if non_runnable_tasks:
+        tasks = non_runnable_tasks + tasks
+        tasks_queue.put(tasks)
+
+    # TODO - Insert dispatch id?
+
+    return runnable_tasks, input_args, executors
+
+
+def init_result_pre_dispatch(result_obj: Result):
+    """Initialize the result object transport graph before it is dispatched for execution."""
+
+    transport_graph = _TransportGraph()
+    transport_graph.deserialize(result_obj.lattice.transport_graph)
+    result_obj._lattice.transport_graph = transport_graph
+    result_obj._initialize_nodes()
     return result_obj
 
 
@@ -139,22 +170,6 @@ def _run_task(
     pass
 
 
-def init_result_pre_dispatch(result_obj: Result):
-    """Initialize the result object transport graph before it is dispatched for execution."""
-
-    transport_graph = _TransportGraph()
-    transport_graph.deserialize(result_obj.lattice.transport_graph)
-    result_obj._lattice.transport_graph = transport_graph
-    result_obj._initialize_nodes()
-    return result_obj
-
-
-def _get_runnable_tasks(tasks_queue: MPQ, result_obj: Result) -> List:
+def _is_runnable_task(task_id, results_obj, tasks_queue) -> bool:
+    """Return status whether the task can be run"""
     pass
-
-
-# task_schedule = [[1, 2, 3], [4, 5], [6, 7, 8]]
-#
-# 1. send to runner: [1, 2, 3], task_schedule = [[4, 5], [6, 7, 8]]
-# 2. Update workflow called with node 1 completed, Look at [4, 5] and check which one only has 1 \
-#         as a parent.
