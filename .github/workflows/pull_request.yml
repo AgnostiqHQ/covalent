@@ -86,7 +86,6 @@ jobs:
           print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
           print(f'The result of the dispatch is: {dispatch_result}')
           EOF
-          echo 'Running test dispatch...'
           cat << EOF > run_dispatch.py
           import subprocess
           import sys
@@ -95,5 +94,7 @@ jobs:
             subprocess.check_call(['python3', 'test_dispatch.py'],
                           stdout=sys.stdout, stderr=subprocess.STDOUT)
           EOF
-          python3 test_dispatch.py
+          echo 'Running test dispatch...'
+          python3 run_dispatch.py
           echo 'Printing results of dispatch...'
+          cat results1.txt
