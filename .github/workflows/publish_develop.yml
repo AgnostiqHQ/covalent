@@ -77,7 +77,7 @@ jobs:
           if service._is_server_running():
             print('Dispatcher service has started')
           else:
-            print('Waiting for dispatcher service to start...')
+            print('Waiting for dispatch to be executed...')
             time.sleep(30)
           dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
           print('Dispatch id is:', dispatch_id)
@@ -99,10 +99,9 @@ jobs:
           EOF
           echo 'Running test dispatch...'
           python3 run_dispatch.py
-          echo 'Printing results of dispatch...'
           cat result1.txt
           python test_dispatch.py
-#      - name: Push image
-#          docker push ${{ secrets.AWS_ECR_DEV_REPO }}
-#          docker tag ${{ secrets.AWS_ECR_DEV_REPO }} ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
-#          docker push ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
+      - name: Push image
+          docker push ${{ secrets.AWS_ECR_DEV_REPO }}
+          docker tag ${{ secrets.AWS_ECR_DEV_REPO }} ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
+          docker push ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
