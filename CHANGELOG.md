@@ -5,11 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.30.0] - 2022-03-09
+## [0.31.0] - 2022-03-09
 
 ### Added
 
 - Dispatcher microservice API endpoint to dispatch and update workflow.
+
+## [0.30.0] - 2022-03-09
+
+- Skeleton code for writing the different services corresponding to each component in the open source refactor.
+- OpenAPI specifications for each of the services.
 
 ## [0.29.3] - 2022-03-09
 
