@@ -72,9 +72,9 @@ jobs:
             phrase = join_words(a, b)
             return excitement(phrase)
           if service._is_server_running():
-            print('Dispatcher service has started')
+            print('Dispatch service has started!')
           else:
-            print('Waiting for dispatcher service to start...')
+            print('Waiting for dispatch to be executed...')
             time.sleep(30)
           dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
           print('Dispatch id is:', dispatch_id)
@@ -82,7 +82,6 @@ jobs:
           results = request("GET", results_url, headers={}, data={}).json()
           dispatch_result = results[0]['result'] if results else None
           dispatch_status = results[0]['status'] if results else None
-          dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
           print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
           print(f'The result of the dispatch is: {dispatch_result}')
           EOF
@@ -94,7 +93,6 @@ jobs:
             subprocess.check_call(['python3', 'test_dispatch.py'],
                           stdout=sys.stdout, stderr=subprocess.STDOUT)
           EOF
-          echo 'Running test dispatch...'
           python3 run_dispatch.py
           echo 'Printing results of dispatch...'
           cat result1.txt
