@@ -19,10 +19,11 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-"""Main workflow dispatch functionality."""
+"""Workflow dispatch functionality."""
 
 
 from copy import deepcopy
+from multiprocessing import Queue as MPQ
 from typing import List
 
 import cloudpickle as pickle
@@ -31,6 +32,7 @@ from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 
 from .utils import (
+    _write_result_to_db,
     get_sublattice,
     get_task_inputs,
     get_task_order,
@@ -40,13 +42,13 @@ from .utils import (
 )
 
 
-def dispatch_workflow(result_obj: Result) -> Result:
+def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for starting off the workflow dispatch."""
 
     if result_obj.status == Result.NEW_OBJ:
         result_obj = init_result_pre_dispatch(result_obj=result_obj)
         result_obj._status = Result.RUNNING
-        result_obj = _dispatch_tasks(result_obj=result_obj)
+        result_obj = start_dispatch(result_obj=result_obj, tasks_queue=tasks_queue)
         update_ui(result_obj=result_obj)
 
     elif result_obj.status == Result.COMPLETED:
@@ -71,61 +73,61 @@ def dispatch_workflow(result_obj: Result) -> Result:
     return result_obj
 
 
-def _dispatch_tasks(result_obj: Result) -> Result:
+def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for preprocessing the tasks, and sending the tasks for execution to the
     Runner API in batches. One of the underlying principles is that the Runner API doesn't
     interact with the Data API."""
 
     task_order: List[List] = get_task_order(result_obj=result_obj)
+    tasks = task_order.pop(0)
 
-    while not (
-        task_order or result_obj.status == Result.CANCELLED or result_obj.status == Result.FAILED
-    ):
-        tasks = task_order.pop(0)
-        input_args = []
-        executors = []
+    # TODO - Come back to this
+    tasks_queue.put(task_order)
 
-        for task_id in tasks:
-            task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
-            inputs = get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
-            executor = result_obj.lattice.transport_graph.get_node_value(task_id, "metadata")[
-                "executor"
-            ]
+    input_args = []
+    executors = []
 
-            if is_sublattice(task_name=task_name):
+    for task_id in tasks:
+        task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
+        inputs = get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
+        executor = result_obj.lattice.transport_graph.get_node_value(task_id, "metadata")[
+            "executor"
+        ]
 
-                # TODO - Is deepcopy necessary here?
-                sublattice = deepcopy(get_sublattice(task_id=task_id, result_obj=result_obj))
+        if is_sublattice(task_name=task_name):
 
-                sublattice.build_graph(inputs)
+            sublattice = get_sublattice(task_id=task_id, result_obj=result_obj)
 
-                sublattice_result_obj = Result(
-                    lattice=sublattice,
-                    results_dir=result_obj.lattice.metadata["results_dir"],
-                    dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
-                )
+            sublattice.build_graph(inputs)
 
-                result_obj.lattice.transport_graph.set_node_value(
-                    node_key=task_id, value_key="status", value=Result.RUNNING
-                )
-                update_ui(result_obj=result_obj)
+            sublattice_result_obj = Result(
+                lattice=sublattice,
+                results_dir=result_obj.lattice.metadata["results_dir"],
+                dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
+            )
+            _write_result_to_db(sublattice_result_obj, f"{result_obj.dispatch_id}:{task_id}")
 
-                _dispatch_tasks(result_obj=sublattice_result_obj)
+            result_obj.lattice.transport_graph.set_node_value(
+                node_key=task_id, value_key="status", value=Result.RUNNING
+            )
+            update_ui(result_obj=result_obj)
 
-            else:
-                preprocess_transport_graph(
-                    task_id=task_id, task_name=task_name, result_obj=result_obj
-                )
-                input_args.append(inputs)
-                executors.append(executor)
+            start_dispatch(result_obj=sublattice_result_obj)
 
-        # Dispatching batch of tasks to the Runner API.
-        _run_task(
-            result_obj=result_obj,
-            task_id_batch=tasks,
-            pickled_input_args=pickle.dumps(input_args),
-            pickled_executors=pickle.dumps(executors),
-        )
+        else:
+            preprocess_transport_graph(task_id=task_id, task_name=task_name, result_obj=result_obj)
+            input_args.append(inputs)
+            executors.append(executor)
+
+        # get_runnable_tasks
+
+    # Dispatching batch of tasks to the Runner API.
+    _run_task(
+        result_obj=result_obj,
+        task_id_batch=tasks,
+        pickled_input_args=pickle.dumps(input_args),
+        pickled_executors=pickle.dumps(executors),
+    )
 
     return result_obj
 
@@ -153,3 +155,10 @@ def init_result_pre_dispatch(result_obj: Result):
     result_obj._lattice.transport_graph = transport_graph
     result_obj._initialize_nodes()
     return result_obj
+
+
+# task_schedule = [[1, 2, 3], [4, 5], [6, 7, 8]]
+#
+# 1. send to runner: [1, 2, 3], task_schedule = [[4, 5], [6, 7, 8]]
+# 2. Update workflow called with node 1 completed, Look at [4, 5] and check which one only has 1 \
+#         as a parent.

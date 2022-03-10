@@ -18,7 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Workflow result update functionality."""
+
 from datetime import datetime, timezone
+from multiprocessing import Queue as MPQ
 from typing import Dict, List
 
 from covalent._results_manager import Result
@@ -26,7 +29,7 @@ from covalent._results_manager import Result
 from .utils import _post_process, is_workflow_completed, update_ui
 
 
-def update_workflow(task_execution_results: Dict, result_obj: Result) -> Result:
+def update_workflow(task_execution_results: Dict, result_obj: Result, tasks_queue: MPQ) -> List:
     """Main update function. Called by the Runner API when there is an update for task
     execution status."""
 
@@ -59,4 +62,16 @@ def update_workflow(task_execution_results: Dict, result_obj: Result) -> Result:
         result_obj._end_time = datetime.now(timezone.utc)
 
     update_ui(result_obj=result_obj)
-    return result_obj
+
+    tasks_order = tasks_queue.get()
+    runnable_tasks = get_runnable_tasks(tasks_order[0])
+    non_runnable_tasks = [tasks for tasks in tasks_order[0] if tasks not in runnable_tasks]
+    tasks_order.pop(0)
+    tasks_order = non_runnable_tasks + tasks_order
+    tasks_queue.put(tasks_order)
+
+    return runnable_tasks
+
+
+def get_runnable_tasks(tasks_order: List, result_obj: Result) -> List:
+    pass
