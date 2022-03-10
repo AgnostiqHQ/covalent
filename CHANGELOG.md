@@ -5,6 +5,125 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.0] - 2022-03-09
+
+### Added
+
+- Skeleton code for writing the different services corresponding to each component in the open source refactor.
+- OpenAPI specifications for each of the services.
+
+## [0.29.3] - 2022-03-09
+
+### Fixed
+
+- Covalent UI is built in the Dockerfile, the setup file, the pypi workflow, the tests workflow, and the conda build script.
+
+## [0.29.2] - 2022-03-09
+
+### Added
+
+- Defaults defined in executor plugins are read and used to update the in-memory config, as well as the user config file. But only if the parameter in question wasn't already defined.
+
+### Changed
+
+- Input parameter names and docstrings in _shared_files.config.update_config were changed for clarity.
+
+## [0.29.1] - 2022-03-07
+
+### Changed
+
+- Updated fail-fast strategy to run all tests.
+
+## [0.29.0] - 2022-03-07
+
+### Added
+
+- DispatchDB for storing dispatched results
+
+### Changed
+
+- UI loads dispatches from DispatchDB instead of browser local storage
+
+## [0.28.3] - 2022-03-03
+
+### Fixed
+
+Installed executor plugins don't have to be referred to by their full module name. Eg, use "custom_executor", instead of "covalent_custom_plugin.custom_executor".
+
+## [0.28.2] - 2022-03-03
+
+### Added
+
+- A brief overview of the tutorial structure in the MNIST classification tutorial.
+
+## [0.28.1] - 2022-03-02
+
+### Added
+
+- Conda installation is only supported for Linux in the `Getting Started` guide.
+- MNIST classifier tutorial.
+
+### Removed
+
+- Removed handling of default values of function parameters in `get_named_params` in `covalent/_shared_files/utils.py`. So, it is actually being handled by not being handled since now `named_args` and `named_kwargs` will only contain parameters that were passed during the function call and not all of them.
+
+## [0.28.0] - 2022-03-02
+
+### Added
+
+- Lepton support, including for Python modules and C libraries
+- How-to guides showing how to use leptons for each of these
+
+## [0.27.6] - 2022-03-01
+
+### Added
+
+- Added feature development basic steps in CONTRIBUTING.md.
+- Added section on locally building RTD (read the docs) in the contributing guide.
+
+## [0.27.5] - 2022-03-01
+
+### Fixed
+
+- Missing UI input data after backend change - needed to be derived from graph for electrons, lattice inputs fixed on server-side, combining name and positional args
+- Broken UI graph due to variable->edge_name renaming
+- Missing UI executor data after server-side renaming
+
+## [0.27.4] - 2022-02-28
+
+### Fixed
+
+- Path used in `covalent/executor/__init__.py` for executor plugin modules needed updating to `covalent/executor/executor_plugins`
+
+### Removed
+
+- Disabled workflow cancellation test due to inconsistent outcomes. Test will be re-enabled after cancellation mechanisms are investigated further.
+
+## [0.27.3] - 2022-02-25
+
+### Added
+
+- Added `USING_DOCKER.md` guide for running docker container.
+- Added cli args to covalent UI flask server `covalent_ui/app.py` to modify port and log file path.
+
+### Removed
+- Removed gunicorn from cli and Dockerfile.
+
+### Changed
+- Updated cli `covalent_dispatcher/_cli/service.py` to run flask server directly, and removed dispatcher and UI flags.
+- Using Flask blueprints to merge Dispatcher and UI servers.
+- Updated Dockerfile to run flask server directly.
+- Creating server PID file manually in `covalent_dispatcher/_cli/service.py`.
+- Updated tests and docs to reflect merged servers.
+- Changed all mentions of port 47007 (for old UI server) to 48008.
+
+## [0.27.2] - 2022-02-24
+
+### Changed
+
+- Removed unnecessary blockquotes from the How-To guide for creating custom executors
+- Changed "Covalent Cloud" to "Covalent" in the main code text
+
 ## [0.27.1] - 2022-02-24
 
 ### Removed
@@ -53,7 +172,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added Local Executor section to the API
+- Added Local Executor section to the API read the docs.
 
 ## [0.26.0] - 2022-02-23
 

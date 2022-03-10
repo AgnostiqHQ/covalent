@@ -48,6 +48,8 @@ from covalent._workflow.lattice import Lattice
 from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
 
+from .._db.dispatchdb import DispatchDB
+
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
@@ -198,7 +200,8 @@ def _run_task(
             None,
             None,
         )
-
+        with DispatchDB() as db:
+            db.upsert(result_object.dispatch_id, result_object)
         result_object.save()
         result_webhook.send_update(result_object)
 
@@ -216,6 +219,8 @@ def _run_task(
         result_object._update_node(
             node_id, node_name, start_time, None, Result.RUNNING, None, None
         )
+        with DispatchDB() as db:
+            db.upsert(result_object.dispatch_id, result_object)
         result_object.save()
         result_webhook.send_update(result_object)
 
@@ -272,7 +277,8 @@ def _run_task(
             None,
             "".join(traceback.TracebackException.from_exception(ex).format()),
         )
-
+    with DispatchDB() as db:
+        db.upsert(result_object.dispatch_id, result_object)
     result_object.save()
     result_webhook.send_update(result_object)
 
@@ -351,6 +357,8 @@ def _run_planned_workflow(result_object: Result) -> Result:
                 result_object._status = Result.FAILED
                 result_object._end_time = datetime.now(timezone.utc)
                 result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
+                with DispatchDB() as db:
+                    db.upsert(result_object.dispatch_id, result_object)
                 result_object.save()
                 result_webhook.send_update(result_object)
                 return
@@ -358,6 +366,8 @@ def _run_planned_workflow(result_object: Result) -> Result:
             elif result_object._get_node_status(node_id) == Result.CANCELLED:
                 result_object._status = Result.CANCELLED
                 result_object._end_time = datetime.now(timezone.utc)
+                with DispatchDB() as db:
+                    db.upsert(result_object.dispatch_id, result_object)
                 result_object.save()
                 result_webhook.send_update(result_object)
                 return
@@ -369,6 +379,8 @@ def _run_planned_workflow(result_object: Result) -> Result:
 
     result_object._status = Result.COMPLETED
     result_object._end_time = datetime.now(timezone.utc)
+    with DispatchDB() as db:
+        db.upsert(result_object.dispatch_id, result_object)
     result_object.save(write_source=True)
     result_webhook.send_update(result_object)
 

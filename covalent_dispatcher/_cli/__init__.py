@@ -20,4 +20,4 @@
 
 """Import CLI tool functionalities."""
 
-from .service import _is_dispatcher_running, _is_ui_running
+from .service import _is_server_running
