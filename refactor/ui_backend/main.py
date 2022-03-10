@@ -23,14 +23,15 @@ from pathlib import Path
 from app.api.api_v0.api import api_router
 from app.core.config import settings
 from fastapi import FastAPI
+from fastapi_socketio import SocketManager
 
 BASE_PATH = Path(__file__).resolve().parent
 
 app = FastAPI(title="Covalent UI Backend Service API")
+sio = SocketManager(app=app)
 
 
 app.include_router(api_router, prefix=settings.API_V0_STR)
-
 
 if __name__ == "__main__":
     # Use this for debugging purposes only
