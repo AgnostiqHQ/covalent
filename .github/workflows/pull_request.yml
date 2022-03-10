@@ -77,15 +77,18 @@ jobs:
           results_url = "http://localhost:48008/api/results"
           results = request("GET", results_url, headers={}, data={}).json()
           time.sleep(20)
-          if not results:
-            raise Exception('Dispatch execution failed')
+          dispatch_result = results[0]['result']
+          dispatch_status = results[0]['status']
+          if not (dispatch_status == 'COMPLETED' and dispatch_result == 'Hello, Covalent!'):
+            raise AssertionError('Invalid result')
           else:
-            print(f'The result of executing the dispatch is: \n{results}')
+            print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
+            print(f'The result of the dispatch is: {dispatch_result}')
           EOF
           echo 'Running test dispatch...'
           python test_dispatch.py
       - name: Discard container
-        run:
-          docker kill ${{ secrets.AWS_ECR_DEV_REPO }}
-          docker rm ${{ secrets.AWS_ECR_DEV_REPO }}
-          docker rmi ${{ secrets.AWS_ECR_DEV_REPO }}
+        run: |
+          echo 'Discarding container...'
+          docker stop $(docker container ls -a | awk 'NR>1 {print $1}')
+          docker rm $(docker container ls -a | awk 'NR>1 {print $1}')
