@@ -18,9 +18,12 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import inspect
+import time
 from copy import deepcopy
 from functools import wraps
 from typing import Callable
+from socket import timeout
 
 import cloudpickle as pickle
 import requests
@@ -84,8 +87,14 @@ class LocalDispatcher(BaseDispatcher):
             pickled_res = pickle.dumps(Result(lattice, lattice.metadata["results_dir"]))
             test_url = f"http://{dispatcher_addr}/api/submit"
 
-            r = requests.post(test_url, data=pickled_res)
-            r.raise_for_status()
+            try:
+                r = requests.post(test_url, data=pickled_res)
+                r.raise_for_status()
+            except ConnectionResetError:
+                time.sleep(20)
+                pass
+            except timeout:
+                pass
             return r.content.decode("utf-8").strip().replace('"', "")
 
         return wrapper
