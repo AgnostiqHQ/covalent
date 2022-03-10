@@ -32,24 +32,21 @@ from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 
 from .utils import (
-    _write_result_to_db,
     get_sublattice,
     get_task_inputs,
     get_task_order,
     is_sublattice,
     preprocess_transport_graph,
-    update_ui,
 )
 
 
-def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
+def _dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for starting off the workflow dispatch."""
 
     if result_obj.status == Result.NEW_OBJ:
         result_obj = init_result_pre_dispatch(result_obj=result_obj)
         result_obj._status = Result.RUNNING
         result_obj = start_dispatch(result_obj=result_obj, tasks_queue=tasks_queue)
-        update_ui(result_obj=result_obj)
 
     elif result_obj.status == Result.COMPLETED:
         # TODO - Redispatch workflow for reproducibility
@@ -61,7 +58,6 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
 
         # Change status to running if we want to redeploy this workflow
         result_obj._status = Result.RUNNING
-        update_ui(result_obj=result_obj)
 
         # TODO - Redispatch tasks
 
@@ -105,12 +101,10 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
                 results_dir=result_obj.lattice.metadata["results_dir"],
                 dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
             )
-            _write_result_to_db(sublattice_result_obj, f"{result_obj.dispatch_id}:{task_id}")
 
             result_obj.lattice.transport_graph.set_node_value(
                 node_key=task_id, value_key="status", value=Result.RUNNING
             )
-            update_ui(result_obj=result_obj)
 
             start_dispatch(result_obj=sublattice_result_obj)
 

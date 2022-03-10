@@ -36,18 +36,6 @@ from covalent._shared_files.defaults import (
 from covalent._workflow.lattice import Lattice
 
 
-def _write_result_to_db(result_obj: Result) -> None:
-    pass
-
-
-def update_ui(result_obj: Result):
-    """Method to update the UI when the task / workflow execution status changes."""
-
-    _write_result_to_db(result_obj=result_obj)
-
-    # TODO - Request UI API to update according to the latest result object
-
-
 def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result) -> Result:
     """Ensure that the execution status of the task nodes in the transport graph are initialized
     properly."""
@@ -223,5 +211,10 @@ def get_task_order(result_obj: Result) -> List[List]:
     return result_obj.lattice.transport_graph.get_topologically_sorted_graph()
 
 
-def _write_result_to_db():
-    pass
+#
+# def _write_result_to_db() -> None:
+#     pass
+#
+#
+# def _get_result(dispatch_id) -> Result:
+#     pass

@@ -25,23 +25,21 @@ from typing import List
 from covalent._results_manager import Result
 
 
-def cancel_workflow(result_obj: Result, task_id_batch: List[int] = None):
+def _cancel_workflow(result_obj: Result, task_id_batch: List[int] = None) -> bool:
     """Main cancel function. Called by the user via ct.cancel(dispatch_id)."""
+
+    cancellation_status = True
 
     tasks = get_all_task_ids() if not task_id_batch else task_id_batch
 
     for task_id in tasks:
-        cancel_task(result_obj.dispatch_id, task_id)
+        if not cancel_task(result_obj.dispatch_id, task_id):
+            cancellation_status = False
+    return cancellation_status
 
 
 def cancel_task(dispatch_id: str, task_id_batch: List[int]) -> bool:
-    """Returns a list of tasks that was cancelled before completion."""
-
-    pass
-
-
-def is_task_running(dispatch_id, task_id):
-    """Runner API tells me if task has completed"""
+    """Asks the Runner API to cancel the execution of these tasks and returns the status of whether it was successful."""
 
     pass
 

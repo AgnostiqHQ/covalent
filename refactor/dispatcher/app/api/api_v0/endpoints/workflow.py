@@ -31,9 +31,11 @@ from app.schemas.workflow import (
 )
 from fastapi import APIRouter
 
-from ....core.cancel_workflow import cancel_workflow
-from ....core.dispatch_workflow import dispatch_workflow
-from ....core.update_workflow import update_workflow
+from covalent._results_manager import Result
+
+from ....core.cancel_workflow import _cancel_workflow
+from ....core.dispatch_workflow import _dispatch_workflow
+from ....core.update_workflow import _update_workflow
 
 tasks_queue = MPQ()
 router = APIRouter()
@@ -70,11 +72,36 @@ mock_result = {
 }
 
 
+"""
+Mock functions
+"""
+
+
+def get_result(dispatch_id) -> Result:
+    pass
+
+
+def write_results_to_db(result_obj):
+    pass
+
+
+def update_ui(dispatch_id: str):
+    """Method to update the UI when the task / workflow execution status changes."""
+
+    # TODO - Request UI API to update according to the latest result object
+    pass
+
+
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
 def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
+
+    result_obj = get_result(dispatch_id)
+    result_obj = _dispatch_workflow(result_obj, tasks_queue)
+    write_results_to_db(result_obj)
+    update_ui(dispatch_id)
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 
@@ -98,13 +125,26 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     Cancel a workflow
     """
 
-    return {"response": f"{dispatch_id} workflow cancelled successfully"}
+    result_obj = get_result(dispatch_id)
+    success = _cancel_workflow(result_obj)
+
+    if success:
+        return {"response": f"{dispatch_id} workflow cancelled successfully"}
+    else:
+        return {"response": f"{dispatch_id} workflow did not cancel successfully"}
 
 
 @router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
-def update_workflow(*, dispatch_id: str, task: Node) -> UpdateWorkflowResponse:
+def update_workflow(*, dispatch_id: str, task_execution_results: Node) -> UpdateWorkflowResponse:
     """
     Update a workflow
     """
+
+    result_obj = get_result(dispatch_id)
+
+    # TODO - Tasks queue might need to get moved from being an argument
+    result_obj = _update_workflow(task_execution_results, result_obj, tasks_queue)
+    write_results_to_db(result_obj)
+    update_ui(dispatch_id)
 
     return {"response": f"{dispatch_id} workflow updated successfully"}

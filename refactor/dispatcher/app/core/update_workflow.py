@@ -26,16 +26,15 @@ from typing import Dict, List
 
 from covalent._results_manager import Result
 
-from .utils import _post_process, is_workflow_completed, update_ui
+from .utils import _post_process, is_workflow_completed
 
 
-def update_workflow(task_execution_results: Dict, result_obj: Result, tasks_queue: MPQ) -> List:
+def _update_workflow(task_execution_results: Dict, result_obj: Result, tasks_queue: MPQ) -> List:
     """Main update function. Called by the Runner API when there is an update for task
     execution status."""
 
     # Update the task results
     result_obj._update_node(**task_execution_results)
-    update_ui(result_obj=result_obj)
 
     if task_execution_results["status"] == "FAILED":
         result_obj._status = Result.FAILED
@@ -60,8 +59,6 @@ def update_workflow(task_execution_results: Dict, result_obj: Result, tasks_queu
 
     if result_obj.status != Result.RUNNING:
         result_obj._end_time = datetime.now(timezone.utc)
-
-    update_ui(result_obj=result_obj)
 
     tasks_order = tasks_queue.get()
     runnable_tasks = get_runnable_tasks(tasks_order[0])
