@@ -102,6 +102,6 @@ jobs:
           cat result1.txt
           python test_dispatch.py
       - name: Push image
-          docker push ${{ secrets.AWS_ECR_DEV_REPO }}
-          docker tag ${{ secrets.AWS_ECR_DEV_REPO }} ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
-          docker push ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
+            docker push ${{ secrets.AWS_ECR_DEV_REPO }}
+            docker tag ${{ secrets.AWS_ECR_DEV_REPO }} ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
+            docker push ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
