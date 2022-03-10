@@ -81,10 +81,12 @@ def fetch_result(dispatch_id):
         res = db.get([dispatch_id])
     if len(res) > 0:
         response = res[0][1]
+        status = 200
     else:
         response = ""
+        status = 400
 
-    return app.response_class(response, status=400, mimetype="application/json")
+    return app.response_class(response, status=status, mimetype="application/json")
 
 
 @app.route("/api/results", methods=["DELETE"])
