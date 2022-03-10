@@ -89,16 +89,12 @@ class LocalDispatcher(BaseDispatcher):
 
             try:
                 r = requests.post(test_url, data=pickled_res)
-                time.sleep(20)
                 r.raise_for_status()
             except ConnectionResetError:
-                print("==> ConnectionResetError")
                 time.sleep(20)
                 pass
             except timeout:
-                print("==> Timeout")
                 pass
-            time.sleep(20)
             return r.content.decode("utf-8").strip().replace('"', "")
 
         return wrapper
