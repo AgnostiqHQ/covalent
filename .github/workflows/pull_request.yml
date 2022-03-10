@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-name: publish-dev
+name: pull-req
 
 on:
   pull_request
@@ -87,8 +87,3 @@ jobs:
           EOF
           echo 'Running test dispatch...'
           python test_dispatch.py
-      - name: Discard container
-        run: |
-          echo 'Discarding container...'
-          docker stop $(docker container ls -a | awk 'NR>1 {print $1}')
-          docker rm $(docker container ls -a | awk 'NR>1 {print $1}')
