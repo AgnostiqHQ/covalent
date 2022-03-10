@@ -4,6 +4,38 @@ info:
   version: 0.1.0
 paths:
   /api/v0/workflow/{dispatch_id}:
+    put:
+      tags:
+        - Workflow
+      summary: Update Workflow
+      description: Update a workflow
+      operationId: update_workflow_api_v0_workflow__dispatch_id__put
+      parameters:
+        - required: true
+          schema:
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Node'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateWorkflowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
     post:
       tags:
         - Workflow
@@ -30,13 +62,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/v0/workflow/{dispatch_id}/cancel:
     delete:
       tags:
         - Workflow
       summary: Cancel Workflow
       description: Cancel a workflow
-      operationId: cancel_workflow_api_v0_workflow__dispatch_id__cancel_delete
+      operationId: cancel_workflow_api_v0_workflow__dispatch_id__delete
       parameters:
         - required: true
           schema:
@@ -51,39 +82,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CancelWorkflowResponse'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/v0/workflow/{dispatch_id}/update:
-    put:
-      tags:
-        - Workflow
-      summary: Update Workflow
-      description: Update a workflow
-      operationId: update_workflow_api_v0_workflow__dispatch_id__update_put
-      parameters:
-        - required: true
-          schema:
-            title: Dispatch Id
-            type: string
-          name: dispatch_id
-          in: path
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Node'
-        required: true
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UpdateWorkflowResponse'
         '422':
           description: Validation Error
           content:

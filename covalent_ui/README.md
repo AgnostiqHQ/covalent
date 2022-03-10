@@ -1,32 +1,51 @@
 # Covalent UI
 
-## Running UI server
+## Setup
 
--   Start UI server
-
-```shell
-cd covalent_ui
-flask run --port 48008
-```
-
--   Open `http://localhost:48008` in your browser.
--   Dispatch workflows to explore them in the UI.
-
-## Setup details
-
--   Ensure python environment is properly set up with all required packages installed.
+-   Activate conda environment and install required packages:
 
 ```shell
 conda activate <covalent-env>
 pip install -r requirement.txt
 ```
 
--   The UI server does not require the **Covalent Dispatcher** to be running but it receives execution updates from it.
+-   Install `node` (v16 or later) and `npm`:
 
--   Results are currently persisted in the browser client's `localStorage`.
+```shell
+# Linux
+curl -sL https://deb.nodesource.com/setup_16.x | bash -
+apt-get install -y nodejs
+
+# macOS
+brew install node
+```
+
+-   Install `yarn`:
+
+```shell
+npm install --global yarn
+```
+
+## Build web app
+
+```
+cd covalent_ui/webapp
+yarn install
+yarn build
+```
+
+## Run server
+
+```shell
+cd covalent_ui
+python app.py -p <port>
+```
+
+-   Open `http://0.0.0.0:<port>` in your browser.
+-   Dispatch workflows to explore them in the UI.
 
 ## Frontend development
 
--   The optimized production build of the UI web app lives under `covalent_ui/webapp/build`. It is statically served by the UI server by default.
+-   The optimized production build of the UI web app lives under `covalent_ui/webapp/build`. It is statically served by the server by default.
 
--   See `covalent_ui/webapp/README.me` for details on how to build and run the development.
+-   For the development version of the web app, see `covalent_ui/webapp/README.me`
