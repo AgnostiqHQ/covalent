@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dispatcher microservice API endpoint to dispatch and update workflow.
 - Added get runnable task endpoint.
 
+## [0.30.1] - 2022-03-10
+
+### Fixed
+
+- Eliminate unhandled exception in Covalent UI backend when calling fetch_result.
+
 ## [0.30.0] - 2022-03-09
 
 - Skeleton code for writing the different services corresponding to each component in the open source refactor.
