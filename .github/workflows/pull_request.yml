@@ -59,6 +59,7 @@ jobs:
           cat << EOF > test_dispatch.py
           import covalent as ct
           from requests import request
+          import covalent_dispatcher._cli.service as service
           @ct.electron
           def join_words(a, b):
             return ", ".join([a, b])
