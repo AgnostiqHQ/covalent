@@ -52,6 +52,8 @@ jobs:
           echo "TAG=$TAG" >> $GITHUB_ENV
       - name: Build and run image
         run: |
+          pip install -r requirements.txt
+          pip install toml
           docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
           docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
           echo 'Creating a test dispatch...'
