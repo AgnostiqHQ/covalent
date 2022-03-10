@@ -209,6 +209,9 @@ class Lepton(Electron):
 
             import julia
 
+            j = julia.Julia()
+            j.eval(self.library_name)
+
             handle = julia.Julia()
 
         if self.language in Lepton._LANG_PY:
