@@ -74,9 +74,9 @@ jobs:
           dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
           print('Dispatch id is:', dispatch_id)
           results_url = "http://localhost:48008/api/results"
-          time.sleep(10)
+          time.sleep(60)
           results = request("GET", results_url, headers={}, data={}).json()
-          time.sleep(10)
+          time.sleep(60)
           dispatch_result = results[0]['result']
           dispatch_status = results[0]['status']
           if not (dispatch_status == 'COMPLETED' and dispatch_result == 'Hello, Covalent!'):
