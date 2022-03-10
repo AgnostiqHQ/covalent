@@ -93,6 +93,5 @@ jobs:
             subprocess.check_call(['python3', 'test_dispatch.py'],
                           stdout=sys.stdout, stderr=subprocess.STDOUT)
           EOF
-          python3 run_dispatch.py
-          echo 'Printing result of dispatch'
-          cat result1.txt
+          python3 test_dispatch.py
+          echo 'Printing results of dispatch...'
