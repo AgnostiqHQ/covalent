@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Runner component's main functionality to run a set of tasks, cancel a task, and get a task's status added to its api.
 
+## [0.30.5] - 2022-03-11
+
+### Updated
+
+- Updated Workflow endpoints & API spec to support upload & download of result objects as pickle files
+
 ## [0.30.4] - 2022-03-11
 
 ### Fixed

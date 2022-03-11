@@ -8,7 +8,7 @@ paths:
       tags:
         - Workflow
       summary: Get Result
-      description: Get a result object
+      description: Get a result object from the database
       operationId: get_result_api_v0_workflow_results__dispatch_id__get
       parameters:
         - required: true
@@ -19,13 +19,11 @@ paths:
           in: path
       responses:
         '200':
-          description: Successful Response
+          description: Return binary content of file.
           content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResultPickle'
+            application/octet-stream: {}
         '404':
-          description: The result was not found
+          description: Result was not found
           content:
             application/json:
               schema:
@@ -40,7 +38,7 @@ paths:
       tags:
         - Workflow
       summary: Update Result
-      description: Update a result object
+      description: Update a result object's task
       operationId: update_result_api_v0_workflow_results__dispatch_id__put
       parameters:
         - required: true
@@ -57,11 +55,17 @@ paths:
         required: true
       responses:
         '200':
-          description: Successful Response
+          description: Return message indicating success of updating task
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpdateResultResponse'
+        '404':
+          description: Result was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPExceptionSchema'
         '422':
           description: Validation Error
           content:
@@ -73,16 +77,13 @@ paths:
       tags:
         - Workflow
       summary: Insert Result
-      description: Insert a result object
+      description: Insert a result object to database by uploading pickled result object
       operationId: insert_result_api_v0_workflow_results_post
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              title: Result Object
-              anyOf:
-                - $ref: '#/components/schemas/Result'
-                - $ref: '#/components/schemas/ResultPickle'
+              $ref: '#/components/schemas/Body_insert_result_api_v0_workflow_results_post'
         required: true
       responses:
         '200':
@@ -156,6 +157,16 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    Body_insert_result_api_v0_workflow_results_post:
+      title: Body_insert_result_api_v0_workflow_results_post
+      required:
+        - result_pkl_file
+      type: object
+      properties:
+        result_pkl_file:
+          title: Result Pkl File
+          type: string
+          format: binary
     Body_upload_file_api_v0_fs_upload_post:
       title: Body_upload_file_api_v0_fs_upload_post
       required:
@@ -166,23 +177,6 @@ components:
           title: File
           type: string
           format: binary
-    Graph:
-      title: Graph
-      required:
-        - nodes
-        - links
-      type: object
-      properties:
-        nodes:
-          title: Nodes
-          type: array
-          items:
-            $ref: '#/components/schemas/Node'
-        links:
-          title: Links
-          type: array
-          items:
-            $ref: '#/components/schemas/Link'
     HTTPExceptionSchema:
       title: HTTPExceptionSchema
       required:
@@ -204,33 +198,12 @@ components:
     InsertResultResponse:
       title: InsertResultResponse
       required:
-        - response
+        - dispatch_id
       type: object
       properties:
-        response:
-          title: Response
+        dispatch_id:
+          title: Dispatch Id
           type: string
-    Link:
-      title: Link
-      required:
-        - edge_name
-        - param_type
-        - source
-        - target
-      type: object
-      properties:
-        edge_name:
-          title: Edge Name
-          type: string
-        param_type:
-          title: Param Type
-          type: string
-        source:
-          title: Source
-          type: integer
-        target:
-          title: Target
-          type: integer
     Node:
       title: Node
       required:
@@ -271,36 +244,6 @@ components:
         id:
           title: Id
           type: integer
-    Result:
-      title: Result
-      required:
-        - dispatch_id
-        - results_dir
-        - status
-        - graph
-      type: object
-      properties:
-        dispatch_id:
-          title: Dispatch Id
-          type: string
-        results_dir:
-          title: Results Dir
-          type: string
-        status:
-          title: Status
-          type: string
-        graph:
-          $ref: '#/components/schemas/Graph'
-    ResultPickle:
-      title: ResultPickle
-      required:
-        - result_object
-      type: object
-      properties:
-        result_object:
-          title: Result Object
-          type: string
-          format: binary
     UpdateResultResponse:
       title: UpdateResultResponse
       required:
