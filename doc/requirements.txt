@@ -2,6 +2,7 @@ autodocsumm==0.2.6
 docutils
 furo
 ipython
+ipython_genutils==0.2.0
 myst-parser
 nbsphinx
 Sphinx~=4.0.0
