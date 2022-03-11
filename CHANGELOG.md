@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.3] - 2022-03-11
+
+### Fixed
+
+- Fixed the order of output storage in `post_process` which should have been the order in which the electron functions are called instead of being the order in which they are executed. This fixes the order in which the replacement of function calls with their output happens, which further fixes any discrepencies in the results obtained by the user.
+
+- Fixed the `post_process` test to check the order as well.
+
 ## [0.30.2] - 2022-03-11
+
+### Fixed
 
 ### Changed
 
@@ -119,9 +129,11 @@ Installed executor plugins don't have to be referred to by their full module nam
 - Added cli args to covalent UI flask server `covalent_ui/app.py` to modify port and log file path.
 
 ### Removed
+
 - Removed gunicorn from cli and Dockerfile.
 
 ### Changed
+
 - Updated cli `covalent_dispatcher/_cli/service.py` to run flask server directly, and removed dispatcher and UI flags.
 - Using Flask blueprints to merge Dispatcher and UI servers.
 - Updated Dockerfile to run flask server directly.
