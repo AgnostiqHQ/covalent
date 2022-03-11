@@ -46,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.30.0] - 2022-03-09
 
+### Added
+
 - Skeleton code for writing the different services corresponding to each component in the open source refactor.
 - OpenAPI specifications for each of the services.
 
