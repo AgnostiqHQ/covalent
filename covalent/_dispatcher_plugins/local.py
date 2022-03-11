@@ -18,7 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import inspect
 from copy import deepcopy
 from functools import wraps
 from typing import Callable

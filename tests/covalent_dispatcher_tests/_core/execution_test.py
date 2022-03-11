@@ -34,7 +34,7 @@ TEST_RESULTS_DIR = "/tmp/results"
 
 @ct.electron
 def a(x):
-    return x, x ** 2
+    return x, x**2
 
 
 @ct.lattice
@@ -84,17 +84,55 @@ def test_plan_workflow():
 def test_post_process():
     """Test post-processing of results."""
 
-    p.build_graph(x=2)
-    order = p.transport_graph.get_topologically_sorted_graph()
+    import covalent as ct
+
+    @ct.electron
+    def construct_cu_slab(x):
+        return x
+
+    @ct.electron
+    def compute_system_energy(x):
+        return x
+
+    @ct.electron
+    def construct_n_molecule(x):
+        return x
+
+    @ct.electron
+    def get_relaxed_slab(x):
+        return x
+
+    @ct.lattice
+    def compute_energy():
+        N2 = construct_n_molecule(1)
+        e_N2 = compute_system_energy(N2)
+
+        slab = construct_cu_slab(2)
+        e_slab = compute_system_energy(slab)
+
+        relaxed_slab = get_relaxed_slab(3)
+        e_relaxed_slab = compute_system_energy(relaxed_slab)
+
+        return (N2, e_N2, slab, e_slab, relaxed_slab, e_relaxed_slab)
+
+    compute_energy.build_graph()
+
+    order = [
+        i for i in range(len(compute_energy.transport_graph.get_internal_graph_copy().nodes()))
+    ]
+
     node_outputs = {
-        "a(0)": (2, 4),
-        ":parameter:2(1)": 2,
-        ":generated:a()[0](2)": 2,
-        ":generated:a()[1](3)": 4,
-        "a(4)": (2, 4),
-        ":generated:a()[0](5)": 2,
-        ":generated:a()[1](6)": 4,
+        "construct_n_molecule(0)": 1,
+        ":parameter:1(1)": 1,
+        "compute_system_energy(2)": 1,
+        "construct_cu_slab(3)": 2,
+        ":parameter:2(4)": 2,
+        "compute_system_energy(5)": 2,
+        "get_relaxed_slab(6)": 3,
+        ":parameter:3(7)": 3,
+        "compute_system_energy(8)": 3,
     }
 
-    execution_result = _post_process(p, node_outputs, order)
-    assert execution_result == (4, 2)
+    execution_result = _post_process(compute_energy, node_outputs, order)
+
+    assert execution_result == compute_energy()
