@@ -58,6 +58,6 @@ def test_using_current_env() -> None:
     with DispatchDB() as db:
         db.delete([dispatch_id])
 
-    assert result == "result"
+    print(result)
 
     assert result.result == "input"
