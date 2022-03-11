@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dispatcher microservice API endpoint to dispatch and update workflow.
 - Added get runnable task endpoint.
 
+## [0.30.5] - 2022-03-11
+
+### Updated
+
+- Updated Workflow endpoints & API spec to support upload & download of result objects as pickle files
+
 ## [0.30.4] - 2022-03-11
 
 ### Fixed
