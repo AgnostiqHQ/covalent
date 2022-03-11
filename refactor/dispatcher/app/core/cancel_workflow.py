@@ -18,35 +18,35 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Workflow cancel functionality."""
 
-from datetime import datetime
-from typing import Any, List, Optional
+from typing import List
 
-from pydantic import BaseModel
-
-
-class BaseNode(BaseModel):
-    name: str
-    start_time: datetime
-    end_time: datetime
-    status: str
-    output: Any
-    error: Optional[str]
-    stdout: str
-    stderr: str
+from covalent._results_manager import Result
 
 
-class Node(BaseNode):
-    id: int
+def cancel_workflow_execution(result_obj: Result, task_id_batch: List[int] = None) -> bool:
+    """Main cancel function. Called by the user via ct.cancel(dispatch_id)."""
+
+    cancellation_status = True
+
+    tasks = get_all_task_ids() if not task_id_batch else task_id_batch
+
+    for task_id in tasks:
+        if not cancel_task(result_obj.dispatch_id, task_id):
+            cancellation_status = False
+
+    return cancellation_status
 
 
-class DispatchWorkflowResponse(BaseModel):
-    response: str
+def cancel_task(dispatch_id: str, task_id_batch: List[int]) -> bool:
+    """Asks the Runner API to cancel the execution of these tasks and returns the status of whether it was
+    successful."""
+
+    pass
 
 
-class CancelWorkflowResponse(BaseModel):
-    response: str
+def get_all_task_ids():
+    # TODO - return all task and sublattice task ids
 
-
-class UpdateWorkflowResponse(BaseModel):
-    response: str
+    pass

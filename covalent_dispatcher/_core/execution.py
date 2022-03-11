@@ -108,9 +108,6 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
                 )
 
                 task_input["kwargs"][key] = value
-
-    print(task_input)
-
     return task_input
 
 
