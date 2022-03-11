@@ -33,7 +33,7 @@ from covalent._workflow.transport import _TransportGraph
 from .utils import get_task_inputs, get_task_order, is_sublattice, preprocess_transport_graph
 
 
-def _dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
+def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for starting off the workflow dispatch."""
 
     if result_obj.status == Result.NEW_OBJ:
@@ -114,7 +114,7 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
         # get_runnable_tasks
 
     # Dispatching batch of tasks to the Runner API.
-    _run_task(
+    run_task(
         result_obj=result_obj,
         task_id_batch=tasks,
         pickled_input_args=pickle.dumps(input_args),
@@ -124,7 +124,7 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     return result_obj
 
 
-def _run_task(
+def run_task(
     result_obj: Result,
     task_id_batch: List[int],
     pickled_input_args: bytes,

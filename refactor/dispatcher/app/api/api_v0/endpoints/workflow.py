@@ -26,7 +26,6 @@ import requests
 from app.schemas.workflow import (
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
-    GetRunnableTasksResponse,
     Node,
     UpdateWorkflowResponse,
 )
@@ -34,9 +33,8 @@ from fastapi import APIRouter
 
 from covalent._results_manager import Result
 
-from ....core.cancel_workflow import _cancel_workflow
-from ....core.dispatch_workflow import _dispatch_workflow, _get_runnable_tasks
-from ....core.dispatch_workflow_v2 import _get_runnable_tasks
+from ....core.cancel_workflow import cancel_workflow_execution
+from ....core.dispatch_workflow_v2 import dispatch_workflow
 from ....core.update_workflow import _update_workflow
 
 # TODO - Figure out how this BASE URI will be determined when this is deployed.
@@ -86,33 +84,11 @@ def submit_workflow(*, dispatch_id: str) -> Any:
     resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
     result_obj = resp.json()["result_obj"]
 
-    result_obj = _dispatch_workflow(result_obj, tasks_queue)
+    result_obj = dispatch_workflow(result_obj, tasks_queue)
 
     requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
-
-
-@router.get("/{dispatch_id}", status_code=200, response_model=GetRunnableTasksResponse)
-def get_runnable_tasks(*, dispatch_id: str) -> Any:
-    """
-    Get the next batch of tasks that can be run. This method should not modify the UI or the
-    database. However, it will modify the tasks queue.
-    """
-
-    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-    result_obj = resp.json()["result_obj"]
-
-    # TODO - The interface for this method needs to be figured out properly
-    # TODO - PROBLEM HERE
-    task_list = _get_runnable_tasks(tasks_queue, result_obj)
-
-    requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
-
-    return {
-        "task_list": task_list,
-        "response": f"{dispatch_id} runnable tasks returned successfully",
-    }
 
 
 @router.delete("/{dispatch_id}", status_code=200, response_model=CancelWorkflowResponse)
@@ -124,7 +100,7 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
     result_obj = resp.json()["result_obj"]
 
-    success = _cancel_workflow(result_obj)
+    success = cancel_workflow_execution(result_obj)
 
     if success:
         return {"response": f"{dispatch_id} workflow cancelled successfully"}

@@ -25,7 +25,7 @@ from typing import List
 from covalent._results_manager import Result
 
 
-def _cancel_workflow(result_obj: Result, task_id_batch: List[int] = None) -> bool:
+def cancel_workflow_execution(result_obj: Result, task_id_batch: List[int] = None) -> bool:
     """Main cancel function. Called by the user via ct.cancel(dispatch_id)."""
 
     cancellation_status = True

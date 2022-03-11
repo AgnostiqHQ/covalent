@@ -21,7 +21,6 @@
 """Workflow result update functionality."""
 
 from datetime import datetime, timezone
-from multiprocessing import Queue as MPQ
 from typing import Dict, List
 
 from covalent._results_manager import Result
@@ -29,7 +28,7 @@ from covalent._results_manager import Result
 from .utils import _post_process, is_workflow_completed
 
 
-def _update_workflow(task_execution_results: Dict, result_obj: Result) -> List:
+def update_workflow_results(task_execution_results: Dict, result_obj: Result) -> Result:
     """Main update function. Called by the Runner API when there is an update for task
     execution status."""
 

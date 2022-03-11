@@ -44,11 +44,6 @@ class DispatchWorkflowResponse(BaseModel):
     response: str
 
 
-class GetRunnableTasksResponse(BaseModel):
-    task_list: List[int]
-    response: str
-
-
 class CancelWorkflowResponse(BaseModel):
     response: str
 

@@ -33,7 +33,7 @@ from covalent._workflow.transport import _TransportGraph
 from .utils import get_task_inputs, get_task_order, is_sublattice, preprocess_transport_graph
 
 
-def _dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
+def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for starting off the workflow dispatch."""
 
     if result_obj.status == Result.NEW_OBJ:
@@ -71,8 +71,8 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     result_obj = init_result_pre_dispatch(result_obj=result_obj)
     task_order: List[List] = get_task_order(result_obj=result_obj)
     tasks_queue.put(task_order)
-    tasks, functions, input_args, executors = _get_runnable_tasks(result_obj, tasks_queue)
-    _run_task(
+    tasks, functions, input_args, executors = get_runnable_tasks(result_obj, tasks_queue)
+    run_task(
         result_obj=result_obj,
         task_id_batch=tasks,
         functions=functions,
@@ -82,7 +82,7 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     return result_obj
 
 
-def _get_runnable_tasks(
+def get_runnable_tasks(
     result_obj: Result, tasks_queue: MPQ
 ) -> Tuple[List[int], List[bytes], List[Dict], List[BaseDispatcher]]:
     """Return a list of tasks that can be run and the corresponding executors and input
@@ -121,9 +121,9 @@ def _get_runnable_tasks(
             sublattice_task_order = get_task_order(sublattice_result_obj)
             tasks_order = sublattice_task_order + tasks_order
             tasks_queue.put(tasks_order)
-            _get_runnable_tasks(result_obj=sublattice_result_obj, tasks_queue=tasks_queue)
+            get_runnable_tasks(result_obj=sublattice_result_obj, tasks_queue=tasks_queue)
 
-        elif _is_runnable_task(task_id, result_obj, tasks_queue):
+        elif is_runnable_task(task_id, result_obj, tasks_queue):
             runnable_tasks.append(task_id)
             preprocess_transport_graph(task_id, task_name, result_obj)
             input_args.append(task_inputs)
@@ -150,7 +150,7 @@ def init_result_pre_dispatch(result_obj: Result):
     return result_obj
 
 
-def _run_task(
+def run_task(
     result_obj: Result,
     task_id_batch: List[int],
     functions: List[bytes],
@@ -166,6 +166,6 @@ def _run_task(
     pass
 
 
-def _is_runnable_task(task_id, results_obj, tasks_queue) -> bool:
+def is_runnable_task(task_id, results_obj, tasks_queue) -> bool:
     """Return status whether the task can be run"""
     pass
