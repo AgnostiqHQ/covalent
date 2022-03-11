@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Runner component's main functionality to run a set of tasks, cancel a task, and get a task's status added to its api.
 
+## [0.30.4] - 2022-03-11
+
+### Fixed
+
+- When executing a task on an alternate Conda environment, Covalent no longer has to be installed on that environment. Previously, a Covalent object (the execution function as a TransportableObject) was passed to the environment. Now it is deserialized to a "normal" Python function, which is passed to the alternate Conda environment.
+
 ## [0.30.3] - 2022-03-11
 
 ### Fixed
@@ -20,8 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed the `post_process` test to check the order as well.
 
 ## [0.30.2] - 2022-03-11
-
-### Fixed
 
 ### Changed
 
