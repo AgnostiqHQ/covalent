@@ -18,10 +18,11 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-
+import os
 from multiprocessing import Queue as MPQ
 from typing import Any
 
+import requests
 from app.schemas.workflow import (
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
@@ -37,6 +38,9 @@ from ....core.cancel_workflow import _cancel_workflow
 from ....core.dispatch_workflow import _dispatch_workflow, _get_runnable_tasks
 from ....core.dispatch_workflow_v2 import _get_runnable_tasks
 from ....core.update_workflow import _update_workflow
+
+# TODO - Figure out how this BASE URI will be determined when this is deployed.
+BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
 
 tasks_queue = MPQ()
 router = APIRouter()
@@ -73,36 +77,18 @@ mock_result = {
 }
 
 
-"""
-Mock functions
-"""
-
-
-def get_result(dispatch_id) -> Result:
-    pass
-
-
-def write_results_to_db(result_obj):
-    pass
-
-
-def update_ui(dispatch_id: str):
-    """Method to update the UI when the task / workflow execution status changes."""
-
-    # TODO - Request UI API to update according to the latest result object
-    pass
-
-
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
 def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
 
-    result_obj = get_result(dispatch_id)
+    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
+    result_obj = resp.json()["result_obj"]
+
     result_obj = _dispatch_workflow(result_obj, tasks_queue)
-    write_results_to_db(result_obj)
-    update_ui(dispatch_id)
+
+    requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 
@@ -114,11 +100,15 @@ def get_runnable_tasks(*, dispatch_id: str) -> Any:
     database. However, it will modify the tasks queue.
     """
 
-    result_obj = get_result(dispatch_id)
+    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
+    result_obj = resp.json()["result_obj"]
 
     # TODO - The interface for this method needs to be figured out properly
     # TODO - PROBLEM HERE
     task_list = _get_runnable_tasks(tasks_queue, result_obj)
+
+    requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
+
     return {
         "task_list": task_list,
         "response": f"{dispatch_id} runnable tasks returned successfully",
@@ -131,7 +121,9 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     Cancel a workflow
     """
 
-    result_obj = get_result(dispatch_id)
+    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
+    result_obj = resp.json()["result_obj"]
+
     success = _cancel_workflow(result_obj)
 
     if success:
@@ -146,9 +138,15 @@ def update_workflow(*, dispatch_id: str, task_execution_results: Node) -> Update
     Update a workflow
     """
 
-    result_obj = get_result(dispatch_id)
+    task_id = task_execution_results["task_id"]
+
+    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
+    result_obj = resp.json()["result_obj"]
+
     result_obj = _update_workflow(task_execution_results, result_obj)
-    write_results_to_db(result_obj)
-    update_ui(dispatch_id)
+
+    requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
+
+    requests.put(f"{BASE_URI}/api/v0/ui/workflow/{dispatch_id}/task/{task_id}")
 
     return {"response": f"{dispatch_id} workflow updated successfully"}

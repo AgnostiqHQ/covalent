@@ -30,13 +30,7 @@ from covalent._dispatcher_plugins import BaseDispatcher
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 
-from .utils import (
-    get_sublattice,
-    get_task_inputs,
-    get_task_order,
-    is_sublattice,
-    preprocess_transport_graph,
-)
+from .utils import get_task_inputs, get_task_order, is_sublattice, preprocess_transport_graph
 
 
 def _dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:

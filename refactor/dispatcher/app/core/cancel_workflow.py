@@ -35,6 +35,7 @@ def _cancel_workflow(result_obj: Result, task_id_batch: List[int] = None) -> boo
     for task_id in tasks:
         if not cancel_task(result_obj.dispatch_id, task_id):
             cancellation_status = False
+
     return cancellation_status
 
 
