@@ -5,12 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.31.0] - 2022-03-11
+## [0.32.0] - 2022-03-11
 
 ### Added
 
 - Dispatcher microservice API endpoint to dispatch and update workflow.
 - Added get runnable task endpoint.
+
+## [0.31.0] - 2022-03-11
+
+### Added
+
+- Runner component's main functionality to run a set of tasks, cancel a task, and get a task's status added to its api.
 
 ## [0.30.5] - 2022-03-11
 
