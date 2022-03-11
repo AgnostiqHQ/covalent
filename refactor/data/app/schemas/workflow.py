@@ -60,7 +60,7 @@ class Result(BaseModel):
 
 
 class InsertResultResponse(BaseModel):
-    response: str
+    dispatch_id: str
 
 
 class UpdateResultResponse(BaseModel):
