@@ -21,13 +21,8 @@ def test_submit_endpoint(test_app, monkeypatch):
     monkeypatch.setattr("refactor.queuer.app.core.api.DataService.create_result", mock_create_result)
 
     with open(filename, 'rb') as f:
-
-        # encode binary to base64
-        result_binary = f.read()
-        result_base64 = base64.b64encode(result_binary).decode('utf-8')
-
-        body = {
-            "result_object": result_base64
+        files = {
+            "result_pkl_file": f
         }
-        response = test_app.post("/api/v0/submit/dispatch", json=body)
+        response = test_app.post("/api/v0/submit/dispatch", files=files)
         assert response.status_code == 202
