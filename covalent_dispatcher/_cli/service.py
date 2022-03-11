@@ -25,7 +25,7 @@ import shutil
 import signal
 import socket
 import time
-from subprocess import DEVNULL, PIPE, Popen
+from subprocess import DEVNULL, Popen
 from typing import Optional
 
 import click
@@ -165,16 +165,17 @@ def _graceful_start(
 
     _rm_pid_file(pidfile)
 
+    pypath = f"PYTHONPATH={UI_SRVDIR}/../tests:$PYTHONPATH" if develop else ""
     dev_mode_flag = "--develop" if develop else ""
     port = _next_available_port(port)
-    launch_str = f"python app.py {dev_mode_flag} --port {port}"
+    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
 
-    with open(logfile, "a") as log:
-        proc = Popen(launch_str, shell=True, stdout=log, stderr=log, cwd=server_root)
-        pid = proc.pid
+    # with open(logfile, "a") as log:
+    proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
+    pid = proc.pid
 
-        with open(pidfile, "w") as PIDFILE:
-            PIDFILE.write(str(pid))
+    with open(pidfile, "w") as PIDFILE:
+        PIDFILE.write(str(pid))
 
     click.echo(f"Covalent server has started at http://0.0.0.0:{port}")
     return port
@@ -266,8 +267,6 @@ def restart(ctx, port: bool, develop: bool) -> None:
 
     pid = _read_pid(UI_PIDFILE)
     port = port or get_config("user_interface.port")
-
-    print("Invoking stop/start")
 
     ctx.invoke(stop)
     ctx.invoke(start, port=port, develop=develop)

@@ -145,6 +145,7 @@ if __name__ == "__main__":
         port = int(get_config("dispatcher.port"))
 
     debug = True if args.develop is True else False
-    reload = True if args.develop is True else False
+    # reload = True if args.develop is True else False
+    reload = False
 
     socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
