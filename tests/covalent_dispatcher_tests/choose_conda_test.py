@@ -33,7 +33,10 @@ def test_using_current_env() -> None:
 
     tmp_executor = ct.executor.LocalExecutor()
     has_conda = tmp_executor.get_conda_path()
-    assert has_conda
+    if not has_conda:
+        return
+
+    assert tmp_executor.conda_path == "path_to_conda"
 
     tmp_executor.get_conda_envs()
     conda_env = tmp_executor.current_env
