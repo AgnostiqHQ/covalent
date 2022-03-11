@@ -17,6 +17,14 @@ class TestAPIService:
         "test": "params"
     }
 
+    mocked_data = {
+        "test": "data"
+    }
+
+    mocked_files = {
+        "filename": b"" 
+    }
+
     mocked_base_url = "http://example.com"
     mocked_route = "/route"
     mocked_endpoint = "http://example.com/route"
@@ -34,9 +42,21 @@ class TestAPIService:
     @mock.patch.object(requests, 'post', autospec=True)
     def test_post(self, request_post_mock, api_service_format_mock):
         api_service = APIService(self.mocked_base_url)
-        api_service.post(self.mocked_route, json=self.mocked_json, params=self.mocked_params)
+        api_service.post(
+            self.mocked_route, 
+            json=self.mocked_json, 
+            params=self.mocked_params, 
+            data=self.mocked_data, 
+            files=self.mocked_files
+        )
         api_service_format_mock.assert_called()
-        request_post_mock.assert_called_once_with(self.mocked_endpoint, json=self.mocked_json, params=self.mocked_params)
+        request_post_mock.assert_called_once_with(
+            self.mocked_endpoint, 
+            json=self.mocked_json, 
+            params=self.mocked_params, 
+            data=self.mocked_data, 
+            files=self.mocked_files
+        )
 
     @mock.patch.object(APIService, '_format', autospec=True)
     @mock.patch.object(requests, 'get', autospec=True)
@@ -58,14 +78,14 @@ class TestAPIService:
     @mock.patch.object(requests, 'patch', autospec=True)
     def test_patch(self, request_patch_mock, api_service_format_mock):
         api_service = APIService(self.mocked_base_url)
-        api_service.patch(self.mocked_route, json=self.mocked_json, params=self.mocked_params)
+        api_service.patch(self.mocked_route, json=self.mocked_json, params=self.mocked_params, data=self.mocked_data)
         api_service_format_mock.assert_called()
-        request_patch_mock.assert_called_once_with(self.mocked_endpoint, json=self.mocked_json, params=self.mocked_params)
+        request_patch_mock.assert_called_once_with(self.mocked_endpoint, json=self.mocked_json, params=self.mocked_params, data=self.mocked_data)
         
     @mock.patch.object(APIService, '_format', autospec=True)
     @mock.patch.object(requests, 'put', autospec=True)
     def test_put(self, request_put_mock, api_service_format_mock):
         api_service = APIService(self.mocked_base_url)
-        api_service.put(self.mocked_route, json=self.mocked_json, params=self.mocked_params)
+        api_service.put(self.mocked_route, json=self.mocked_json, params=self.mocked_params, data=self.mocked_data)
         api_service_format_mock.assert_called()
-        request_put_mock.assert_called_once_with(self.mocked_endpoint, json=self.mocked_json, params=self.mocked_params)
+        request_put_mock.assert_called_once_with(self.mocked_endpoint, json=self.mocked_json, params=self.mocked_params, data=self.mocked_data)
