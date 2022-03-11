@@ -41,7 +41,6 @@ from covalent_dispatcher._service.app import bp
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
-DEFAULT_PORT = 5000
 
 app = Flask(__name__, static_folder=WEBAPP_PATH)
 app.register_blueprint(bp)
@@ -127,12 +126,7 @@ def serve(path):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument(
-        "-l",
-        "--log-file",
-        required=False,
-        help="Path to log file that will be written to by server.",
-    )
+
     ap.add_argument("-p", "--port", required=False, help="Server port number.")
     ap.add_argument(
         "-d",
@@ -141,21 +135,16 @@ if __name__ == "__main__":
         action="store_true",
         help="Start the server in developer mode.",
     )
-    args, unknown = ap.parse_known_args()
-    # log file to be specified by cli
-    if args.log_file:
-        import logging
 
-        log_file = args.log_file
-        logging.basicConfig(
-            filename=log_file,
-            level=logging.DEBUG,
-            format="%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s",
-        )
+    args, unknown = ap.parse_known_args()
+
     # port to be specified by cli
     if args.port:
         port = int(args.port)
     else:
-        port = DEFAULT_PORT
+        port = int(get_config("dispatcher.port"))
+
     debug = True if args.develop is True else False
-    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=True)
+    reload = True if args.develop is True else False
+
+    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)

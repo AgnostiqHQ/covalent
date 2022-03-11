@@ -102,13 +102,17 @@ def _next_available_port(requested_port: int) -> int:
 
     avail_port_found = False
     try_port = requested_port
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
     while not avail_port_found:
         try:
             sock.bind(("0.0.0.0", try_port))
             avail_port_found = True
         except:
             try_port += 1
+
     sock.close()
     assigned_port = try_port
 
@@ -116,6 +120,7 @@ def _next_available_port(requested_port: int) -> int:
         click.echo(
             f"Port {requested_port} was already in use. Using port {assigned_port} instead."
         )
+
     return assigned_port
 
 
@@ -162,11 +167,14 @@ def _graceful_start(
 
     dev_mode_flag = "--develop" if develop else ""
     port = _next_available_port(port)
-    launch_str = (
-        f"python app.py {dev_mode_flag} --port {port} --log-file {logfile} & echo $! >{pidfile}"
-    )
+    launch_str = f"python app.py {dev_mode_flag} --port {port}"
 
-    proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
+    with open(logfile, "a") as log:
+        proc = Popen(launch_str, shell=True, stdout=log, stderr=log, cwd=server_root)
+        pid = proc.pid
+
+        with open(pidfile, "w") as PIDFILE:
+            PIDFILE.write(str(pid))
 
     click.echo(f"Covalent server has started at http://0.0.0.0:{port}")
     return port
@@ -192,19 +200,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     else:
         click.echo("Covalent server was not running.")
     _rm_pid_file(pidfile)
-
-
-def _graceful_restart(pidfile: str) -> bool:
-    """Gracefully restart a server given a process ID."""
-
-    pid = _read_pid(pidfile)
-    if pid != -1:
-        os.kill(pid, signal.SIGHUP)
-        port = get_config("user_interface.port")
-        click.echo(f"Covalent server has restarted on port http://0.0.0.0:{port}.")
-        return True
-    else:
-        return False
 
 
 @click.command()
@@ -271,13 +266,11 @@ def restart(ctx, port: bool, develop: bool) -> None:
 
     pid = _read_pid(UI_PIDFILE)
     port = port or get_config("user_interface.port")
-    if pid == -1 or port != get_config("user_interface.port") or develop:
-        ctx.invoke(stop)
-        ctx.invoke(start, port=port, develop=develop)
-    elif pid != -1:
-        started = _graceful_restart(UI_PIDFILE)
-        if not started:
-            ctx.invoke(start, port=port, develop=develop)
+
+    print("Invoking stop/start")
+
+    ctx.invoke(stop)
+    ctx.invoke(start, port=port, develop=develop)
 
 
 @click.command()
