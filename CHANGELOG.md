@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.5] - 2022-03-11
+
+### Updated
+
+- Updated Workflow endpoints & API spec to support upload & download of result objects as pickle files
+
+## [0.30.4] - 2022-03-11
+
+### Fixed
+
+- When executing a task on an alternate Conda environment, Covalent no longer has to be installed on that environment. Previously, a Covalent object (the execution function as a TransportableObject) was passed to the environment. Now it is deserialized to a "normal" Python function, which is passed to the alternate Conda environment.
+
 ## [0.30.3] - 2022-03-11
 
 ### Fixed
@@ -14,8 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed the `post_process` test to check the order as well.
 
 ## [0.30.2] - 2022-03-11
-
-### Fixed
 
 ### Changed
 
