@@ -36,10 +36,10 @@ def test_using_current_env() -> None:
     if not has_conda:
         return
 
-    assert tmp_executor.conda_path == "path_to_conda"
-
     tmp_executor.get_conda_envs()
     conda_env = tmp_executor.current_env
+
+    assert conda_env != ""
 
     executor = ct.executor.LocalExecutor(conda_env=conda_env, current_env_on_conda_fail=False)
 
@@ -57,5 +57,7 @@ def test_using_current_env() -> None:
     rm._delete_result(dispatch_id)
     with DispatchDB() as db:
         db.delete([dispatch_id])
+
+    assert result == "result"
 
     assert result.result == "input"
