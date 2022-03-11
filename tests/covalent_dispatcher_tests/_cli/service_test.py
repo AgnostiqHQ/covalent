@@ -138,7 +138,7 @@ def test_graceful_start_when_pid_absent(mocker):
     popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
     click_echo_mock = mocker.patch("click.echo")
 
-    res = _graceful_start("", "", "", 15, False)
+    res = _graceful_start("", "", "output.log", 15, False)
     assert res == 1984
 
     rm_pid_file_mock.assert_called_once()
@@ -215,7 +215,7 @@ def test_stop(mocker, monkeypatch):
     "port_tag,port,server,pid,restart_called,start_called,stop_called",
     [
         ("port", 42, "ui", -1, False, True, True),
-        ("port", 42, "ui", 100, True, False, False),
+        ("port", 42, "ui", 100, True, True, True),
     ],
 )
 def test_restart(mocker, port_tag, port, pid, server, restart_called, start_called, stop_called):
