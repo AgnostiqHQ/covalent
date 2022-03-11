@@ -22,8 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.30.2] - 2022-03-11
 
-### Fixed
-
 ### Changed
 
 - Updated eventlet to 0.31.0
