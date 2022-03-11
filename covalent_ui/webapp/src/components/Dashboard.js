@@ -21,7 +21,13 @@
  */
 
 import _ from 'lodash'
-import { Container, Paper, Typography, Divider } from '@mui/material'
+import {
+  Container,
+  Paper,
+  Typography,
+  Divider,
+  CircularProgress,
+} from '@mui/material'
 import { useSelector } from 'react-redux'
 import { createSelector } from '@reduxjs/toolkit'
 import { differenceInSeconds, isValid, parseISO } from 'date-fns'
@@ -104,6 +110,9 @@ export const selectJobStats = createSelector(selectResultsCache, (cache) => {
 const Dashboard = () => {
   const dispatcherAddress = useSelector(selectDispatcherAddress)
   const stats = useSelector(selectJobStats)
+  const isFetching = useSelector(
+    (state) => state.results.fetchResults.isFetching
+  )
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -113,6 +122,7 @@ const Dashboard = () => {
         <Paper elevation={0} sx={{ p: 3, mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography fontSize="h5.fontSize">Dispatch list</Typography>
+            {isFetching && <CircularProgress size="1rem" sx={{ mx: 2 }} />}
 
             {dispatcherAddress && (
               <>

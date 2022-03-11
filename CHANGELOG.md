@@ -5,17 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.28.5] - 2022-03-11
+## [0.30.2] - 2022-03-11
 
 ### Changed
 
 - Updated eventlet to 0.31.0
 
-## [0.28.4] - 2022-03-07
+## [0.30.1] - 2022-03-10
 
 ### Fixed
 
-- Updated eventlet to 0.31.0
+- Eliminate unhandled exception in Covalent UI backend when calling fetch_result.
+
+## [0.30.0] - 2022-03-09
+
+### Added
+
+- Skeleton code for writing the different services corresponding to each component in the open source refactor.
+- OpenAPI specifications for each of the services.
+
+## [0.29.3] - 2022-03-09
+
+### Fixed
+
+- Covalent UI is built in the Dockerfile, the setup file, the pypi workflow, the tests workflow, and the conda build script.
+
+## [0.29.2] - 2022-03-09
+
+### Added
+
+- Defaults defined in executor plugins are read and used to update the in-memory config, as well as the user config file. But only if the parameter in question wasn't already defined.
+
+### Changed
+
+- Input parameter names and docstrings in _shared_files.config.update_config were changed for clarity.
+
+## [0.29.1] - 2022-03-07
+
+### Changed
+
+- Updated fail-fast strategy to run all tests.
+
+## [0.29.0] - 2022-03-07
+
+### Added
+
+- DispatchDB for storing dispatched results
+
+### Changed
+
+- UI loads dispatches from DispatchDB instead of browser local storage
 
 ## [0.28.3] - 2022-03-03
 
