@@ -46,14 +46,14 @@ jobs:
         if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: |
           git diff --name-only origin/develop | grep CHANGELOG
-          if [[ $(grep -c "\[${HEAD_VERSION}]\" CHANGELOG.md) > 1 ]]; then
+          if [[ $(grep -c "\[${HEAD_VERSION}\]" CHANGELOG.md) > 1 ]]; then
             echo 'There are duplicate entries in the changelog.'
             exit 4
-          elif [[ $(grep -c "\[${HEAD_VERSION}]\" CHANGELOG.md) < 1 ]]; then
+          elif [[ $(grep -c "\[${HEAD_VERSION}\]" CHANGELOG.md) < 1 ]]; then
             echo "There is not a changelog entry that matches the head version ${HEAD_VERSION}."
             exit 5
           fi
-          changedate=$(grep "\[${HEAD_VERSION}]\" CHANGELOG.md | awk '{ print $4 }')
+          changedate=$(grep "\[${HEAD_VERSION}\]" CHANGELOG.md | awk '{ print $4 }')
           date -I -d $changedate
           if [[ $changedate != $(date -I) ]]; then
             echo "There is a problem with the date in the changelog. Expecting today's date: $(date -I)"
