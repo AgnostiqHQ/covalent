@@ -52,7 +52,7 @@ def get_result(
     dispatch_id: str,
 ) -> Any:
     """
-    Get a result object from the database
+    Get a result object as pickle file
     """
     result: bytes = b'\x00\xF0'
     # update logic to db lookup
@@ -68,7 +68,7 @@ def insert_result(
     result_pkl_file: UploadFile,
 ) -> Any:
     """
-    Insert a result object to database by uploading pickled result object
+    Submit pickled result file
     """
     return {
         "dispatch_id": "e4efd26c-240d-4ab1-9826-26ada91e429f"
