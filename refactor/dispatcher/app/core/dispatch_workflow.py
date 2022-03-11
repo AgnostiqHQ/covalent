@@ -22,12 +22,12 @@
 """Workflow dispatch functionality."""
 
 from multiprocessing import Queue as MPQ
-from typing import List
+from typing import Dict, List, Tuple
 
 import cloudpickle as pickle
 
+from covalent._dispatcher_plugins import BaseDispatcher
 from covalent._results_manager import Result
-from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import _TransportGraph
 
 from .utils import get_task_inputs, get_task_order, is_sublattice, preprocess_transport_graph
@@ -37,7 +37,6 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for starting off the workflow dispatch."""
 
     if result_obj.status == Result.NEW_OBJ:
-        result_obj = init_result_pre_dispatch(result_obj=result_obj)
         result_obj._status = Result.RUNNING
         result_obj = start_dispatch(result_obj=result_obj, tasks_queue=tasks_queue)
 
@@ -62,81 +61,83 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     return result_obj
 
 
-def get_sublattice(task_id: int, result_obj: Result) -> Lattice:
-    serialized_function = result_obj.lattice.transport_graph.get_node_value(task_id, "function")
-    return serialized_function.get_deserialized()
-
-
 def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for preprocessing the tasks, and sending the tasks for execution to the
     Runner API in batches. One of the underlying principles is that the Runner API doesn't
     interact with the Data API."""
 
-    task_order: List[List] = get_task_order(result_obj=result_obj)
-    tasks = task_order.pop(0)
+    # TODO - Clear queue?
 
-    # TODO - Come back to this
+    result_obj = init_result_pre_dispatch(result_obj=result_obj)
+    task_order: List[List] = get_task_order(result_obj=result_obj)
     tasks_queue.put(task_order)
+    tasks, functions, input_args, executors = get_runnable_tasks(result_obj, tasks_queue)
+    run_task(
+        result_obj=result_obj,
+        task_id_batch=tasks,
+        functions=functions,
+        pickled_input_args=pickle.dumps(input_args),
+        pickled_executors=pickle.dumps(executors),
+    )
+    return result_obj
+
+
+def get_runnable_tasks(
+    result_obj: Result, tasks_queue: MPQ
+) -> Tuple[List[int], List[bytes], List[Dict], List[BaseDispatcher]]:
+    """Return a list of tasks that can be run and the corresponding executors and input
+    parameters."""
+
+    tasks_order = tasks_queue.get()
+    tasks = tasks_order.pop(0)
 
     input_args = []
     executors = []
+    runnable_tasks = []
+    non_runnable_tasks = []
+    functions = []
 
     for task_id in tasks:
+        serialized_function = result_obj.lattice.transport_graph.get_node_value(
+            task_id, "function"
+        )
         task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
-        inputs = get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
+        task_inputs = get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
         executor = result_obj.lattice.transport_graph.get_node_value(task_id, "metadata")[
             "executor"
         ]
 
-        if is_sublattice(task_name=task_name):
-
-            sublattice = get_sublattice(task_id=task_id, result_obj=result_obj)
-
-            sublattice.build_graph(inputs)
-
+        if is_sublattice(task_name):
+            sublattice = serialized_function.get_deserialized()
+            sublattice.build_graph(task_inputs)
             sublattice_result_obj = Result(
                 lattice=sublattice,
                 results_dir=result_obj.lattice.metadata["results_dir"],
                 dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
             )
-
             result_obj.lattice.transport_graph.set_node_value(
                 node_key=task_id, value_key="status", value=Result.RUNNING
             )
+            sublattice_task_order = get_task_order(sublattice_result_obj)
+            tasks_order = sublattice_task_order + tasks_order
+            tasks_queue.put(tasks_order)
+            get_runnable_tasks(result_obj=sublattice_result_obj, tasks_queue=tasks_queue)
 
-            start_dispatch(result_obj=sublattice_result_obj)
+        elif is_runnable_task(task_id, result_obj, tasks_queue):
+            runnable_tasks.append(task_id)
+            preprocess_transport_graph(task_id, task_name, result_obj)
+            input_args.append(task_inputs)
+            executors.append(executor)
+            functions.append(serialized_function)
 
         else:
-            preprocess_transport_graph(task_id=task_id, task_name=task_name, result_obj=result_obj)
-            input_args.append(inputs)
-            executors.append(executor)
+            non_runnable_tasks.append(task_id)
 
-        # get_runnable_tasks
+    if non_runnable_tasks:
+        tasks_order = [non_runnable_tasks] + tasks_order
+        tasks_queue.put(tasks_order)
 
-    # Dispatching batch of tasks to the Runner API.
-    run_task(
-        result_obj=result_obj,
-        task_id_batch=tasks,
-        pickled_input_args=pickle.dumps(input_args),
-        pickled_executors=pickle.dumps(executors),
-    )
-
-    return result_obj
-
-
-def run_task(
-    result_obj: Result,
-    task_id_batch: List[int],
-    pickled_input_args: bytes,
-    pickled_executors: bytes,
-):
-    """Ask Runner to execute tasks - get back True (False) if resources are (not) available.
-
-    The Runner might not have resources available to pick up the batch of tasks. In that case,
-    this function continues to try running the tasks until the runner becomes free.
-    """
-
-    pass
+    return runnable_tasks, functions, input_args, executors
 
 
 def init_result_pre_dispatch(result_obj: Result):
@@ -149,12 +150,22 @@ def init_result_pre_dispatch(result_obj: Result):
     return result_obj
 
 
-def _get_runnable_tasks(tasks_queue: MPQ, result_obj: Result) -> List:
+def run_task(
+    result_obj: Result,
+    task_id_batch: List[int],
+    functions: List[bytes],
+    pickled_input_args: bytes,
+    pickled_executors: bytes,
+):
+    """Ask Runner to execute tasks - get back True (False) if resources are (not) available.
+
+    The Runner might not have resources available to pick up the batch of tasks. In that case,
+    this function continues to try running the tasks until the runner becomes free.
+    """
+
     pass
 
 
-# task_schedule = [[1, 2, 3], [4, 5], [6, 7, 8]]
-#
-# 1. send to runner: [1, 2, 3], task_schedule = [[4, 5], [6, 7, 8]]
-# 2. Update workflow called with node 1 completed, Look at [4, 5] and check which one only has 1 \
-#         as a parent.
+def is_runnable_task(task_id, results_obj, tasks_queue) -> bool:
+    """Return status whether the task can be run"""
+    pass

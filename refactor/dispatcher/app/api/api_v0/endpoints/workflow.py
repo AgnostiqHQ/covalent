@@ -34,7 +34,7 @@ from fastapi import APIRouter
 from covalent._results_manager import Result
 
 from ....core.cancel_workflow import cancel_workflow_execution
-from ....core.dispatch_workflow_v2 import dispatch_workflow
+from ....core.dispatch_workflow import dispatch_workflow
 from ....core.update_workflow import _update_workflow
 
 # TODO - Figure out how this BASE URI will be determined when this is deployed.
