@@ -17,36 +17,3 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
-
-from datetime import datetime
-from typing import Any, List, Optional
-
-from pydantic import BaseModel
-
-
-class BaseNode(BaseModel):
-    name: str
-    start_time: datetime
-    end_time: datetime
-    status: str
-    output: Any
-    error: Optional[str]
-    stdout: str
-    stderr: str
-
-
-class Node(BaseNode):
-    id: int
-
-
-class DispatchWorkflowResponse(BaseModel):
-    response: str
-
-
-class CancelWorkflowResponse(BaseModel):
-    response: str
-
-
-class UpdateWorkflowResponse(BaseModel):
-    response: str
