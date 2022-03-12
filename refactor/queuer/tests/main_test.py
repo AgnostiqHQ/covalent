@@ -3,7 +3,7 @@ import base64
 from refactor.queuer.app.core.queuer import Queuer
 
 dirname = os.path.dirname(__file__)
-filename = os.path.join(dirname, './_test_assets/result.pkl')
+filename = os.path.join(dirname, './_test_assets/result')
 
 
 def test_submit_endpoint(test_app, monkeypatch):
