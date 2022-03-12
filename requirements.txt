@@ -11,3 +11,7 @@ requests==2.24.0
 simplejson==3.17.6
 tailer==0.4.1
 toml==0.10.2
+uvicorn==0.15.0
+python-dotenv==0.19.2
+pydantic==1.9.0
+fastapi==0.74.0
