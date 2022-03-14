@@ -42,6 +42,22 @@ def cancel_task(process):
     pass
 
 
+def new_cancel_task(*args, keyword_only_arg, **kwargs):
+    executor = object
+    process = object
+
+    # Two options for cancel method of an executor,
+    # 1. Executor's cancel method should not take any arguments
+    # 2. It does take arguments, this will be more difficult because now
+    # we're gonna have to pass arguments from the user straight to this method
+    # through http which again will require pickling. One solution that might work
+    # is if we limit the types of arguments to be only of jsonify-able type.
+    executor.cancel()
+
+    process.terminate()
+    process.join()
+
+
 def update_status_queue(task_id, status, track_status_queue):
 
     statuses = track_status_queue.get()

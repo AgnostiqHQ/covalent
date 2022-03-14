@@ -53,6 +53,7 @@ covalent/**/*.ipynb
 covalent/*.ipynb
 covalent_dispatcher/**/*.ipynb
 covalent_dispatcher/*.ipynb
+refactor/runner/*.ipynb
 
 # IPython
 profile_default/
