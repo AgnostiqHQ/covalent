@@ -57,7 +57,7 @@ import {
 import Fuse from 'fuse.js'
 import { createSelector } from '@reduxjs/toolkit'
 
-import { fetchResult, removeResult } from '../../redux/resultsSlice'
+import { fetchResults, deleteResults } from '../../redux/resultsSlice'
 import CopyButton from '../common/CopyButton'
 import { formatDate } from '../../utils/misc'
 import Runtime from './Runtime'
@@ -272,13 +272,6 @@ const ResultListing = () => {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
-  const runningResults = useSelector((state) =>
-    _.filter(
-      state.results.cache,
-      (result) => _.get(result, 'status') === 'RUNNING'
-    )
-  )
-
   const results = useSelector((state) =>
     !selectNormQuery(state, query)
       ? selectResults(state)
@@ -287,14 +280,7 @@ const ResultListing = () => {
 
   // refresh still-running results on first render
   useEffect(() => {
-    _.each(runningResults, (result) => {
-      dispatch(
-        fetchResult({
-          dispatchId: result.dispatch_id,
-          resultsDir: result.results_dir,
-        })
-      )
-    })
+    dispatch(fetchResults())
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch])
 
@@ -324,12 +310,14 @@ const ResultListing = () => {
     }
   }
   const handleDeleteSelected = () => {
-    dispatch(removeResult(selected))
-    // move to last page if necessary
-    const lastPage =
-      Math.ceil((_.size(results) - _.size(selected)) / rowsPerPage) - 1
-    setPage(Math.min(page, lastPage))
-    setSelected([])
+    dispatch(deleteResults({ dispatchIds: selected })).then((action) => {
+      if (action.type === deleteResults.fulfilled.type) {
+        // last page may not exist anymore
+        const lastPossible = Math.ceil(_.size(results) / rowsPerPage) - 1
+        setPage(Math.min(page, lastPossible))
+        setSelected([])
+      }
+    })
   }
 
   const handleSelectAllClick = () => {

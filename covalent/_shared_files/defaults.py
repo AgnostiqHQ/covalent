@@ -31,6 +31,7 @@ subscript_prefix = f"{prefix_separator}subscripted{prefix_separator}"
 generator_prefix = f"{prefix_separator}generated{prefix_separator}"
 sublattice_prefix = f"{prefix_separator}sublattice{prefix_separator}"
 attr_prefix = f"{prefix_separator}attribute{prefix_separator}"
+arg_prefix = f"{prefix_separator}arg{prefix_separator}"
 
 # Default configuration settings
 _DEFAULT_CONFIG = {
@@ -57,17 +58,11 @@ _DEFAULT_CONFIG = {
     },
     "user_interface": {
         "address": "0.0.0.0",
-        "port": 47007,
+        "port": 48008,
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
-    },
-    "executors": {
-        "local": {
-            "log_stdout": "stdout.log",
-            "log_stderr": "stderr.log",
-            "cache_dir": "/tmp/covalent",
-        },
-        # Add entries for custom executors here
+        "dispatch_db": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
+        + "/covalent/dispatch_db.sqlite",
     },
 }
 

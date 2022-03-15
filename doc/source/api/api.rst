@@ -1,7 +1,7 @@
 .. currentmodule:: covalent
-####
+############
 Covalent API
-####
+############
 
 The following API documentation describes how to use Covalent.
 
@@ -9,7 +9,7 @@ The following API documentation describes how to use Covalent.
 - :ref:`local_executor` is used to execute electrons locally
 - :ref:`results_api` is used for collecting and manipulating results
 - :ref:`dispatcher_api` is used for dispatching workflows
-- The :ref:`dispatcher_server_api` is used for interfacing with the Covalent servers
+- The :ref:`dispatcher_server_api` is used for interfacing with the Covalent server
 
 .. _electrons_api:
 
@@ -57,7 +57,7 @@ Executing tasks (electrons) directly on the local machine
 Dispatcher
 """"""""""""""
 
-Dispatching jobs to the dispatcher servers
+Dispatching jobs to the server
 
 .. autofunction:: dispatch
 .. autofunction:: dispatch_sync
@@ -88,7 +88,7 @@ Collecting and managing results
 Covalent CLI Tool
 """"""""""""""""""
 
-This Command Line Interface (CLI) tool is used to manage Covalent's dispatch and UI servers.
+This Command Line Interface (CLI) tool is used to manage Covalent server.
 
 .. click:: covalent_dispatcher._cli.cli:cli
     :prog: covalent

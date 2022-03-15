@@ -30,22 +30,22 @@ Users can also install Covalent as a package in a Conda environment:
 
 .. note::
 
-   Sometimes Conda can have trouble resolving packages. Use the flag :code:`--override-channels` to speed things up.
+   Installation via Conda is currently only supported for Linux. Sometimes Conda can have trouble resolving packages. Use the flag :code:`--override-channels` to speed things up.
 
 Docker Install
 --------------
 
-Covalent is also provided as a Docker image. This image can be used as a developer environment or simply to run the Covalent dispatch server in a container:
+Covalent is also provided as a Docker image. This image can be used as a developer environment or simply to run the Covalent server in a container:
 
 .. code:: bash
 
-   docker pull public.ecr.aws/i9y7r1d8/covalent
+   docker pull public.ecr.aws/covalent/covalent
 
    # Run the container as a developer environment
    docker run -it --rm covalent bash
 
-   # Run the container as a dispatch server
-   docker run -d -p 48008 covalent
+   # Run the container as a server
+   docker run -d -p 48008:8080 covalent
 
 .. note::
 
@@ -90,17 +90,17 @@ You can validate Covalent has been properly installed if the following returns w
 
    python -c "import covalent"
 
-Start the Servers
+Start the Server
 #################
 
-Covalent uses two local services: a dispatcher server and a UI server. These servers are managed by the Covalent CLI tool. The following are some useful commands to help you get started.
+Use the Covalent CLI tool to manage the Covalent server. The following commands will help you get started.
 
 .. code:: console
 
    $ covalent --help
    Usage: covalent [OPTIONS] COMMAND [ARGS]...
 
-     Covalent CLI tool used to manage the dispatcher and UI servers.
+     Covalent CLI tool used to manage the server.
 
    Options:
      -v, --version  Display version information.
@@ -108,26 +108,24 @@ Covalent uses two local services: a dispatcher server and a UI server. These ser
 
    Commands:
      purge    Delete the cache and config settings.
-     restart  Restart the dispatcher and/or UI servers.
-     start    Start the dispatcher and/or UI servers.
-     status   Query the status of the dispatcher and UI servers.
-     stop     Stop the dispatcher and/or UI servers.
+     restart  Restart the server.
+     start    Start the server.
+     status   Query the status of the server.
+     stop     Stop the server.
 
 Start the Covalent server:
 
 .. code:: console
 
    $ covalent start
-   Covalent dispatcher server has started at http://0.0.0.0:48008
-   Covalent UI server has started at http://0.0.0.0:47007
+   Covalent server has started at http://0.0.0.0:48008
 
-Optionally, confirm the servers are running:
+Optionally, confirm the server is running:
 
 .. code:: console
 
    $ covalent status
-   Covalent dispatcher server is running at http://0.0.0.0:48008.
-   Covalent UI server is running at http://0.0.0.0:47007.
+   Covalent server is running at http://0.0.0.0:48008.
 
 Now, navigate to the Covalent UI by entering the address into your web browser.  This is where dispatched jobs will appear.
 
@@ -158,7 +156,7 @@ Let's look at a simple example to get started with Covalent. Before starting, en
    # Dispatch the workflow
    dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
 
-Navigate to the Covalent UI at `<http://0.0.0.0:47007>`_ to see your workflow in the queue:
+Navigate to the Covalent UI at `<http://0.0.0.0:48008>`_ to see your workflow in the queue:
 
 |
 
@@ -168,7 +166,7 @@ Navigate to the Covalent UI at `<http://0.0.0.0:47007>`_ to see your workflow in
 |
 
 .. warning::
-   In some browsers and operating systems, the address `0.0.0.0` does not resolve to localhost. If you experience issues, try instead navigating to `<http://localhost:47007>`_.
+   In some browsers and operating systems, the address `0.0.0.0` does not resolve to localhost. If you experience issues, try instead navigating to `<http://localhost:48008>`_.
 
 Click on the dispatch ID to view the workflow graph:
 
@@ -178,7 +176,7 @@ Click on the dispatch ID to view the workflow graph:
    :align: center
 
 
-While the workflow is being processed by the dispatch server, you are free to terminate the Jupyter kernel or Python console process without losing access to the results. Make sure the Covalent servers remain in the "running" state while you have running workflows.
+While the workflow is being processed by the dispatch server, you are free to terminate the Jupyter kernel or Python console process without losing access to the results. Make sure the Covalent server remains in the "running" state while you have running workflows.
 
 When the workflow has completed, you can start a new session and query the results:
 
@@ -189,13 +187,12 @@ When the workflow has completed, you can start a new session and query the resul
    dispatch_id = "8a7bfe54-d3c7-4ca1-861b-f55af6d5964a"
    result_string = ct.get_result(dispatch_id).result
 
-When you are done using Covalent, stop the servers:
+When you are done using Covalent, stop the server:
 
 .. code:: console
 
    $ covalent stop
-   Covalent dispatcher server has stopped.
-   Covalent UI server has stopped.
+   Covalent server has stopped.
 
 Even if you forget to query or save your workflow results, Covalent saves them after each task's execution. The full results, including metadata, are stored on disk in the format shown below:
 

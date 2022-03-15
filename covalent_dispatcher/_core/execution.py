@@ -48,6 +48,8 @@ from covalent._workflow.lattice import Lattice
 from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
 
+from .._db.dispatchdb import DispatchDB
+
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
@@ -106,9 +108,6 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
                 )
 
                 task_input["kwargs"][key] = value
-
-    print(task_input)
-
     return task_input
 
 
@@ -134,18 +133,11 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         result: The result of the lattice function.
     """
 
-    keys_of_outputs = list(node_outputs.keys())
-    values_of_outputs = list(node_outputs.values())
-
-    ordered_node_outputs = []
-    for node_id_list in execution_order:
-        ordered_node_outputs.extend(
-            values_of_outputs[node_id]
-            for node_id in node_id_list
-            # Here we only need outputs of nodes which are executable
-            if not keys_of_outputs[node_id].startswith(prefix_separator)
-            or keys_of_outputs[node_id].startswith(sublattice_prefix)
-        )
+    ordered_node_outputs = [
+        val
+        for key, val in node_outputs.items()
+        if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix)
+    ]
 
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
@@ -198,7 +190,8 @@ def _run_task(
             None,
             None,
         )
-
+        with DispatchDB() as db:
+            db.upsert(result_object.dispatch_id, result_object)
         result_object.save()
         result_webhook.send_update(result_object)
 
@@ -216,6 +209,8 @@ def _run_task(
         result_object._update_node(
             node_id, node_name, start_time, None, Result.RUNNING, None, None
         )
+        with DispatchDB() as db:
+            db.upsert(result_object.dispatch_id, result_object)
         result_object.save()
         result_webhook.send_update(result_object)
 
@@ -272,7 +267,8 @@ def _run_task(
             None,
             "".join(traceback.TracebackException.from_exception(ex).format()),
         )
-
+    with DispatchDB() as db:
+        db.upsert(result_object.dispatch_id, result_object)
     result_object.save()
     result_webhook.send_update(result_object)
 
@@ -351,6 +347,8 @@ def _run_planned_workflow(result_object: Result) -> Result:
                 result_object._status = Result.FAILED
                 result_object._end_time = datetime.now(timezone.utc)
                 result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
+                with DispatchDB() as db:
+                    db.upsert(result_object.dispatch_id, result_object)
                 result_object.save()
                 result_webhook.send_update(result_object)
                 return
@@ -358,6 +356,8 @@ def _run_planned_workflow(result_object: Result) -> Result:
             elif result_object._get_node_status(node_id) == Result.CANCELLED:
                 result_object._status = Result.CANCELLED
                 result_object._end_time = datetime.now(timezone.utc)
+                with DispatchDB() as db:
+                    db.upsert(result_object.dispatch_id, result_object)
                 result_object.save()
                 result_webhook.send_update(result_object)
                 return
@@ -369,6 +369,8 @@ def _run_planned_workflow(result_object: Result) -> Result:
 
     result_object._status = Result.COMPLETED
     result_object._end_time = datetime.now(timezone.utc)
+    with DispatchDB() as db:
+        db.upsert(result_object.dispatch_id, result_object)
     result_object.save(write_source=True)
     result_webhook.send_update(result_object)
 
