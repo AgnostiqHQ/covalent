@@ -36,20 +36,32 @@ def file_reader(filename: str):
 class LocalStorageBackend(StorageBackend):
     """Filesystem storage backend.
 
-    Buckets = plain directories and object_names resolve to usual file
+    Buckets = plain directories and object_names resolve to file
     paths. Custom metadata is not supported.
 
-
+    Attributes:
+        base_dir: root directory in which all buckets will be created
+        bucket_name: current working bucket name (default: "default")
 
     """
 
     def __init__(self, base_dir: Path):
-        self._base_dir = base_dir
+        self.base_dir = base_dir
         self.bucket_name = "default"
 
     def get(self, bucket_name: str, object_name: str) -> Union[Generator[bytes, None, None], None]:
+        """Get object from storage.
 
-        p = self._base_dir / Path(bucket_name) / Path(object_name)
+        Args:
+            bucket_name: name of the bucket
+            object_name: name of the object
+
+
+        Returns:
+            A generator yielding a byte stream
+        """
+
+        p = self.base_dir / Path(bucket_name) / Path(object_name)
         if not p.is_file():
             return None
         return file_reader(p)
@@ -62,20 +74,45 @@ class LocalStorageBackend(StorageBackend):
         length: int,
         metadata: dict = None,
     ) -> (str, str):
+        """Upload object to storage.
 
-        # Resolve any relative paths to ensure that path final path
-        # belongs to the bucket.
+        Args:
+            data: a binary file-like object
+            bucket_name: name of the bucket
+            object_name: name of the destination object
+            length: number of bytes to upload
+            metadata: not supported
 
-        abs_object_name = Path(object_name).resolve()
-        p = self._base_dir / Path(bucket_name) / abs_object_name
+        Returns:
+            (bucket_name, object_name) if write succeeds and ("", "") otherwise
+
+        """
+
+        p = self.base_dir / Path(bucket_name) / Path(object_name)
+        # Check that bucket name resolves to a subdirectory of base_dir
+        # and bucket_name/object_name resolves to under bucket_name.
+        try:
+            abs_base = str(Path(self.base_dir).resolve(True))
+            abs_bucket = str((abs_base / Path(bucket_name)).resolve(True))
+        except FileNotFoundError:
+            return ("", "")
+
+        abs_p = str(p.resolve())
+
+        if not abs_bucket.startswith(abs_base):
+            return ("", "")
+
+        if not abs_p.startswith(abs_bucket):
+            return ("", "")
+
         if not p.parent.is_dir():
             p.parent.mkdir(parents=True)
 
-        tmpdir = self._base_dir / Path(".tmp")
+        tmpdir = self.base_dir / Path(".tmp")
         if not tmpdir.is_dir():
             tmpdir.mkdir()
 
-        tmppath = tmpdir / abs_object_name
+        tmppath = tmpdir / Path(object_name)
 
         try:
             # Ensure atomicity by writing to a temp file first and
@@ -86,6 +123,6 @@ class LocalStorageBackend(StorageBackend):
 
             os.replace(tmppath, p)
 
-            return (bucket_name, str(abs_object_name))
+            return (bucket_name, object_name)
         except:
             return ("", "")
