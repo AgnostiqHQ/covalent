@@ -19,6 +19,12 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import io
+import logging
+import os
+import random
+import sqlite3
+import string
+import time
 from typing import Any, Union
 
 from app.schemas.common import HTTPExceptionSchema
@@ -29,10 +35,45 @@ from app.schemas.workflow import (
     ResultPickle,
     UpdateResultResponse,
 )
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
+logging.config.fileConfig("../../../../logging.conf", disable_existing_loggers=False)
+
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
+
+
+@router.middleware("http")
+async def log_requests(request: Request, call_next):
+    idem = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    logger.info(f"rid={idem} start request path={request.url.path}")
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    process_time = (time.time() - start_time) * 1000
+    formatted_process_time = "{0:.2f}".format(process_time)
+    logger.info(
+        f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}"
+    )
+
+    return response
+
+
+def _db(sql):
+    results_db = os.environ.get("RESULTS_DB")
+    if not results_db:
+        results_db = "results.db"
+    con = sqlite3.connect(results_db)
+    cur = con.cursor()
+    logger.info("Executing SQL command.")
+    logger.info(sql)
+    cur.execute(sql)
+    con.commit()
+    con.close()
+    return cur.fetchone()
 
 
 @router.get(
@@ -54,6 +95,7 @@ def get_result(
     """
     Get a result object as pickle file
     """
+    sql = "SELECT ? FROM results WHERE dispatch_id=?"
     result: bytes = b"\x00\xF0"
     # update logic to db lookup
     if not dispatch_id:
