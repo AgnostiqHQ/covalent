@@ -17,3 +17,18 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+
+# syntax=docker/dockerfile:1
+FROM python:3.8-slim-buster
+WORKDIR /app
+
+# Copy and install required packages to run Queuer
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+
+COPY . .
+
+ENV PORT 8000
+EXPOSE $PORT
+
+CMD [ "python", "main.py"]
