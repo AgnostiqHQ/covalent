@@ -22,11 +22,9 @@
 
 import os
 import shutil
-import signal
 import socket
 import time
 from subprocess import DEVNULL, Popen
-from typing import Optional
 
 import click
 import psutil
@@ -173,6 +171,8 @@ def _graceful_start(
     # with open(logfile, "a") as log:
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
+    print(f"process id: {pid}")
+    print(f"parent id: {psutil.Process(pid).ppid()}")
 
     with open(pidfile, "w") as PIDFILE:
         PIDFILE.write(str(pid))
