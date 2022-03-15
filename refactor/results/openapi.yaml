@@ -1,0 +1,230 @@
+openapi: 3.0.2
+info:
+  title: Covalent Data Service API
+  version: 0.1.0
+paths:
+  /api/v0/workflow/results/{dispatch_id}:
+    get:
+      tags:
+        - Workflow
+      summary: Get Result
+      description: Get a result object from the database
+      operationId: get_result_api_v0_workflow_results__dispatch_id__get
+      parameters:
+        - required: true
+          schema:
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
+          in: path
+      responses:
+        '200':
+          description: Return binary content of file.
+          content:
+            application/octet-stream: {}
+        '404':
+          description: Result was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPExceptionSchema'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      tags:
+        - Workflow
+      summary: Update Result
+      description: Update a result object's task
+      operationId: update_result_api_v0_workflow_results__dispatch_id__put
+      parameters:
+        - required: true
+          schema:
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Node'
+        required: true
+      responses:
+        '200':
+          description: Return message indicating success of updating task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateResultResponse'
+        '404':
+          description: Result was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPExceptionSchema'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v0/workflow/results:
+    post:
+      tags:
+        - Workflow
+      summary: Insert Result
+      description: Insert a result object to database by uploading pickled result object
+      operationId: insert_result_api_v0_workflow_results_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_insert_result_api_v0_workflow_results_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsertResultResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    Body_insert_result_api_v0_workflow_results_post:
+      title: Body_insert_result_api_v0_workflow_results_post
+      required:
+        - result_pkl_file
+      type: object
+      properties:
+        result_pkl_file:
+          title: Result Pkl File
+          type: string
+          format: binary
+    Body_upload_file_api_v0_fs_upload_post:
+      title: Body_upload_file_api_v0_fs_upload_post
+      required:
+        - file
+      type: object
+      properties:
+        file:
+          title: File
+          type: string
+          format: binary
+    HTTPExceptionSchema:
+      title: HTTPExceptionSchema
+      required:
+        - detail
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: string
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    InsertResultResponse:
+      title: InsertResultResponse
+      required:
+        - dispatch_id
+      type: object
+      properties:
+        dispatch_id:
+          title: Dispatch Id
+          type: string
+    Node:
+      title: Node
+      required:
+        - name
+        - start_time
+        - end_time
+        - status
+        - stdout
+        - stderr
+        - id
+      type: object
+      properties:
+        name:
+          title: Name
+          type: string
+        start_time:
+          title: Start Time
+          type: string
+          format: date-time
+        end_time:
+          title: End Time
+          type: string
+          format: date-time
+        status:
+          title: Status
+          type: string
+        output:
+          title: Output
+        error:
+          title: Error
+          type: string
+        stdout:
+          title: Stdout
+          type: string
+        stderr:
+          title: Stderr
+          type: string
+        id:
+          title: Id
+          type: integer
+    UpdateResultResponse:
+      title: UpdateResultResponse
+      required:
+        - response
+      type: object
+      properties:
+        response:
+          title: Response
+          type: string
+    UploadResponse:
+      title: UploadResponse
+      required:
+        - filename
+        - path
+      type: object
+      properties:
+        filename:
+          title: Filename
+          type: string
+        path:
+          title: Path
+          type: string
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
