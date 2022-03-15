@@ -28,7 +28,6 @@ from click.testing import CliRunner
 from psutil import pid_exists
 
 from covalent_dispatcher._cli.service import (
-    _graceful_restart,
     _graceful_shutdown,
     _graceful_start,
     _is_server_running,
@@ -139,8 +138,9 @@ def test_graceful_start_when_pid_absent(mocker):
     popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
     click_echo_mock = mocker.patch("click.echo")
 
-    res = _graceful_start("", "", "", 15, False)
-    assert res == 1984
+    with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open()):
+        res = _graceful_start("", "", "output.log", 15, False)
+        assert res == 1984
 
     rm_pid_file_mock.assert_called_once()
     next_available_port_mock.assert_called_once()
@@ -164,7 +164,7 @@ def test_graceful_shutdown_running_server(mocker):
     click_echo_mock.assert_called_once_with("Covalent server has stopped.")
     rm_pid_file_mock.assert_called_once_with("mock")
     read_pid_mock.assert_called_once()
-    process_mock.assert_called_once_with(12)
+    assert process_mock.called
 
 
 def test_graceful_shutdown_stopped_server(mocker):
@@ -181,37 +181,6 @@ def test_graceful_shutdown_stopped_server(mocker):
     click_echo_mock.assert_called_once_with("Covalent server was not running.")
     rm_pid_file_mock.assert_called_once_with("mock")
     assert not process_mock.called
-
-
-def test_graceful_restart_valid_pid(mocker):
-    """Test the graceful restart method for a valid pid file and pid."""
-
-    read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=20)
-    os_kill_mock = mocker.patch("os.kill")
-    click_echo_mock = mocker.patch("click.echo")
-    mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=15)
-    res = _graceful_restart(pidfile="mock")
-    assert res
-
-    os_kill_mock.assert_called_once()
-    read_pid_mock.assert_called_once_with("mock")
-    click_echo_mock.assert_called_once_with(
-        "Covalent server has restarted on port http://0.0.0.0:15."
-    )
-
-
-def test_graceful_restart_nonexistent_pid(mocker):
-    """Test the graceful restart method for a non-existent pid file."""
-
-    read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=-1)
-    os_kill_mock = mocker.patch("os.kill")
-    click_echo_mock = mocker.patch("click.echo")
-    mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=15)
-    res = _graceful_restart(pidfile="mock")
-    assert not res
-    assert not os_kill_mock.called
-    assert not click_echo_mock.called
-    read_pid_mock.assert_called_once()
 
 
 def test_start(mocker, monkeypatch):
@@ -247,7 +216,7 @@ def test_stop(mocker, monkeypatch):
     "port_tag,port,server,pid,restart_called,start_called,stop_called",
     [
         ("port", 42, "ui", -1, False, True, True),
-        ("port", 42, "ui", 100, True, False, False),
+        ("port", 42, "ui", 100, True, True, True),
     ],
 )
 def test_restart(mocker, port_tag, port, pid, server, restart_called, start_called, stop_called):
@@ -259,11 +228,9 @@ def test_restart(mocker, port_tag, port, pid, server, restart_called, start_call
 
     obj = mocker.MagicMock()
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
-    restart_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_restart")
 
     runner = CliRunner()
     runner.invoke(restart, f"--{port_tag} {port}", obj=obj)
-    assert restart_mock.called is restart_called
     assert start.called is start_called
     assert stop.called is stop_called
 
