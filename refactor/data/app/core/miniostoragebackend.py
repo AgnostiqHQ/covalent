@@ -29,13 +29,30 @@ from .storagebackend import StorageBackend
 
 
 class MinioStorageBackend(ABC):
-    """Thin wrapper for Minio client"""
+    """Thin wrapper for Minio client
+
+    Attributes:
+        client: Minio client instance
+        bucket_name: current working bucket name (default: "default")
+    """
 
     def __init__(self, client):
         self.bucket_name = "default"
         self.client = client
 
     def get(self, bucket_name: str, object_name: str) -> Union[Generator[bytes, None, None], None]:
+        """Get object from storage.
+
+        Args:
+            bucket_name: name of the bucket
+            object_name: name of the object
+
+        Returns:
+            A generator yielding a byte stream or None if an
+            error occurred in retrieving the object
+
+        """
+
         try:
             resp = self.client.get_object(bucket_name, object_name)
         except Exception as e:
@@ -57,6 +74,21 @@ class MinioStorageBackend(ABC):
         length: int,
         metadata: dict = None,
     ) -> (str, str):
+
+        """Upload object to storage.
+
+        Args:
+            data: a binary file-like object
+            bucket_name: name of the bucket
+            object_name: name of the destination object
+            length: number of bytes to upload
+            metadata: an optional dict of metadata to upload
+
+        Returns:
+            (bucket_name, object_name) if write succeeds and ("", "") otherwise
+
+        """
+
         try:
             res = self.client.put_object(bucket_name, object_name, data, length, metadata=metadata)
         except Exception as e:

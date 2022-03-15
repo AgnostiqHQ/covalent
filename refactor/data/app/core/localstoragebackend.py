@@ -56,9 +56,10 @@ class LocalStorageBackend(StorageBackend):
             bucket_name: name of the bucket
             object_name: name of the object
 
-
         Returns:
-            A generator yielding a byte stream
+            A generator yielding a byte stream or None if an
+            error occurred in retrieving the object
+
         """
 
         p = self.base_dir / Path(bucket_name) / Path(object_name)
@@ -99,6 +100,7 @@ class LocalStorageBackend(StorageBackend):
 
         abs_p = str(p.resolve())
 
+        # TODO: improve error handling and logging
         if not abs_bucket.startswith(abs_base):
             return ("", "")
 

@@ -33,7 +33,7 @@ from ....core.miniostoragebackend import MinioStorageBackend
 
 router = APIRouter()
 
-# Initialize backend from config
+# TODO: Select and initialize backend from config
 backend = LocalStorageBackend(Path("data"))
 # minio_client = Minio(
 #     "localhost:9000", access_key="minioadmin", secret_key="minioadmin", secure=False
