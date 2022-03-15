@@ -35,8 +35,13 @@ def file_reader(filename: str):
 
 class LocalStorageBackend(StorageBackend):
     """Filesystem storage backend.
-    Buckets = plain directories, object_names resolve to usual file paths.
-    No support for custom metadata"""
+
+    Buckets = plain directories and object_names resolve to usual file
+    paths. Custom metadata is not supported.
+
+
+
+    """
 
     def __init__(self, base_dir: Path):
         self._base_dir = base_dir
@@ -58,7 +63,11 @@ class LocalStorageBackend(StorageBackend):
         metadata: dict = None,
     ) -> (str, str):
 
-        p = self._base_dir / Path(bucket_name) / Path(object_name)
+        # Resolve any relative paths to ensure that path final path
+        # belongs to the bucket.
+
+        abs_object_name = Path(object_name).resolve()
+        p = self._base_dir / Path(bucket_name) / abs_object_name
         if not p.parent.is_dir():
             p.parent.mkdir(parents=True)
 
@@ -66,7 +75,7 @@ class LocalStorageBackend(StorageBackend):
         if not tmpdir.is_dir():
             tmpdir.mkdir()
 
-        tmppath = tmpdir / Path(object_name)
+        tmppath = tmpdir / abs_object_name
 
         try:
             # Ensure atomicity by writing to a temp file first and
@@ -77,6 +86,6 @@ class LocalStorageBackend(StorageBackend):
 
             os.replace(tmppath, p)
 
-            return (bucket_name, object_name)
+            return (bucket_name, str(abs_object_name))
         except:
             return ("", "")
