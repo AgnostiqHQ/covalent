@@ -73,6 +73,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           run: |
             pip install -r requirements.txt
+            echo 'The name of the ecr master repo is ${{ secrets.AWS_ECR_REPO }}'
             docker build -t ${{ secrets.AWS_ECR_REPO }}
             docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_REPO }}
             echo 'Creating a test dispatch...'
