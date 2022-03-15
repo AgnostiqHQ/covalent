@@ -25,8 +25,9 @@ import random
 import sqlite3
 import string
 import time
-from typing import Any, Union
+from typing import Any, Optional, Union
 
+import requests
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import (
     InsertResultResponse,
@@ -43,6 +44,11 @@ logging.config.fileConfig("../../../../logging.conf", disable_existing_loggers=F
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+fs_server_address = os.environ.get("FS_SERVER_ADDRESS")
+if not fs_server_address:
+    fs_server_address = "localhost:8000"
+base_url = fs_server_address + "/api/v0/fs"
 
 
 @router.middleware("http")
@@ -62,7 +68,7 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-def _db(sql):
+def _db(sql: str, key: str = None) -> Optional[tuple[Union[bool, str]]]:
     results_db = os.environ.get("RESULTS_DB")
     if not results_db:
         results_db = "results.db"
@@ -70,10 +76,25 @@ def _db(sql):
     cur = con.cursor()
     logger.info("Executing SQL command.")
     logger.info(sql)
-    cur.execute(sql)
+    value = (False,)
+    if key:
+        logger.info("Searching for key " + key)
+        cur.execute(sql, (key,))
+        value = cur.fetchone()
+    else:
+        cur.execute(sql)
+        value = (True,)
     con.commit()
     con.close()
-    return cur.fetchone()
+    return value
+
+
+def _get_result_from_db(dispatch_id: str, field: str) -> Optional[str]:
+    sql = f"SELECT {field} FROM results WHERE dispatch_id=?"
+    value = _db(sql, key=dispatch_id)
+    if value:
+        (value,) = value
+    return value
 
 
 @router.get(
@@ -95,11 +116,14 @@ def get_result(
     """
     Get a result object as pickle file
     """
-    sql = "SELECT ? FROM results WHERE dispatch_id=?"
-    result: bytes = b"\x00\xF0"
-    # update logic to db lookup
-    if not dispatch_id:
+    filename = _get_result_from_db(dispatch_id, "filename")
+    path = _get_result_from_db(dispatch_id, "path")
+    if not dispatch_id or not filename or not path:
         raise HTTPException(status_code=404, detail="Result not found")
+    r = requests.get(
+        f"http://{base_url}/download", params={"file_location": filename}, stream=True
+    )
+    result: bytes = r.raw
     return StreamingResponse(io.BytesIO(result), media_type="application/octet-stream")
 
 
