@@ -1,0 +1,7 @@
+nats-py==2.0.0
+python-multipart==0.0.5
+python-dotenv==0.19.2
+pydantic==1.9.0
+fastapi==0.74.1
+uvicorn==0.17.5
+
