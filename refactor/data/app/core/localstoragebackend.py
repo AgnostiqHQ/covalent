@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import os
 import shutil
 from abc import ABC
 from pathlib import Path
@@ -32,7 +33,6 @@ def file_reader(filename: str):
         yield from f
 
 
-# TODO: investigate thread-safety
 class LocalStorageBackend(StorageBackend):
     """Filesystem storage backend.
     Buckets = plain directories, object_names resolve to usual file paths.
@@ -62,9 +62,21 @@ class LocalStorageBackend(StorageBackend):
         if not p.parent.is_dir():
             p.parent.mkdir(parents=True)
 
+        tmpdir = self._base_dir / Path(".tmp")
+        if not tmpdir.is_dir():
+            tmpdir.mkdir()
+
+        tmppath = tmpdir / Path(object_name)
+
         try:
-            with p.open("wb") as f:
-                shutil.copyfileobj(data, f)
+            # Ensure atomicity by writing to a temp file first and
+            # then renaming it.
+
+            with tmppath.open("wb") as tmp:
+                shutil.copyfileobj(data, tmp)
+
+            os.replace(tmppath, p)
+
             return (bucket_name, object_name)
         except:
             return ("", "")
