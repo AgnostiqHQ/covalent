@@ -19,31 +19,39 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from pathlib import Path
 from typing import Any
 
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.fs import UploadResponse
-from fastapi import APIRouter, File, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
+
+from ....core.localstoragebackend import LocalStorageBackend
 
 router = APIRouter()
 
+# Initialize backend from config
+backend = LocalStorageBackend(Path("data"))
+
 
 @router.post("/upload", status_code=200, response_model=UploadResponse)
-def upload_file(*, file: bytes = File(...)) -> Any:
+def upload_file(*, file: UploadFile) -> Any:
     """
     Upload a file
     """
+    path, filename = backend.put(file.file, backend.bucket_name, file.filename)
+
     return {
-        "filename": "sample_input_file.sample",
-        "path": "/Users/aq/Documents/agnostiq/uploads/",
+        "filename": filename,
+        "path": backend.bucket_name,
     }
 
 
 @router.get(
     "/download",
     status_code=200,
-    response_class=FileResponse,
+    response_class=StreamingResponse,
     responses={
         404: {"model": HTTPExceptionSchema, "description": "File was not found"},
         200: {
@@ -56,8 +64,8 @@ def download_file(*, file_location: str) -> Any:
     """
     Download a file
     """
-    if not file_location:
+    g = backend.get(backend.bucket_name, file_location)
+    if not g:
         raise HTTPException(status_code=404, detail="File not found")
-    return FileResponse(
-        file_location, media_type="application/octet-stream", filename=file_location
-    )
+
+    return StreamingResponse(g, media_type="application/octet-stream")
