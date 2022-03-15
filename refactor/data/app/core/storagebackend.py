@@ -31,7 +31,12 @@ class StorageBackend(ABC):
         raise NotImplementedError
 
     def put(
-        self, data: BinaryIO, bucket_name: str, object_name: str, metadata: dict = None
+        self,
+        data: BinaryIO,
+        bucket_name: str,
+        object_name: str,
+        length: int,
+        metadata: dict = None,
     ) -> (str, str):
         raise NotImplementedError
 

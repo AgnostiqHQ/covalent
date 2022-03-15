@@ -23,31 +23,31 @@ from abc import ABC
 from pathlib import Path
 from typing import BinaryIO, Generator, List, Union
 
+from minio import Minio
+
 from .storagebackend import StorageBackend
 
 
-def file_reader(filename: str):
-    """Construct generator from file"""
-    with open(filename, "rb") as f:
-        yield from f
+class MinioStorageBackend(ABC):
+    """Thin wrapper for Minio client"""
 
-
-# TODO: investigate thread-safety
-class LocalStorageBackend(StorageBackend):
-    """Filesystem storage backend.
-    Buckets = plain directories, object_names resolve to usual file paths.
-    No support for custom metadata"""
-
-    def __init__(self, base_dir: Path):
-        self._base_dir = base_dir
+    def __init__(self, client):
         self.bucket_name = "default"
+        self.client = client
 
     def get(self, bucket_name: str, object_name: str) -> Union[Generator[bytes, None, None], None]:
-
-        p = self._base_dir / Path(bucket_name) / Path(object_name)
-        if not p.is_file():
+        try:
+            resp = self.client.get_object(bucket_name, object_name)
+        except Exception as e:
+            # TODO: better logging
+            print("Exception in MinioStorageBackend:")
+            print(e)
             return None
-        return file_reader(p)
+
+        if resp.status == 200:
+            return resp.stream()
+        else:
+            return None
 
     def put(
         self,
@@ -57,14 +57,18 @@ class LocalStorageBackend(StorageBackend):
         length: int,
         metadata: dict = None,
     ) -> (str, str):
-
-        p = self._base_dir / Path(bucket_name) / Path(object_name)
-        if not p.parent.is_dir():
-            p.parent.mkdir(parents=True)
-
         try:
-            with p.open("wb") as f:
-                shutil.copyfileobj(data, f)
+            res = self.client.put_object(bucket_name, object_name, data, length, metadata=metadata)
+        except Exception as e:
+            # TODO: better logging
+            print("Exception in MinioStorageBackend:")
+            print(e)
+            res = None
+
+        if res:
             return (bucket_name, object_name)
-        except:
+        else:
             return ("", "")
+
+    def delete(self, bucket_name: str, object_names: List[str]):
+        raise NotImplementedError

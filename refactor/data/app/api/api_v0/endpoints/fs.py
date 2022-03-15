@@ -26,13 +26,19 @@ from app.schemas.common import HTTPExceptionSchema
 from app.schemas.fs import UploadResponse
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
+from minio import Minio
 
 from ....core.localstoragebackend import LocalStorageBackend
+from ....core.miniostoragebackend import MinioStorageBackend
 
 router = APIRouter()
 
 # Initialize backend from config
 backend = LocalStorageBackend(Path("data"))
+# minio_client = Minio(
+#     "localhost:9000", access_key="minioadmin", secret_key="minioadmin", secure=False
+# )
+# backend = MinioStorageBackend(minio_client)
 
 
 @router.post("/upload", status_code=200, response_model=UploadResponse)
@@ -40,11 +46,17 @@ def upload_file(*, file: UploadFile) -> Any:
     """
     Upload a file
     """
-    path, filename = backend.put(file.file, backend.bucket_name, file.filename)
+
+    file.file.seek(0, 2)
+    length = file.file.tell()
+    file.file.seek(0)
+
+    path, filename = backend.put(file.file, backend.bucket_name, file.filename, length)
+    print("DEBUG: ", path, filename)
 
     return {
         "filename": filename,
-        "path": backend.bucket_name,
+        "path": path,
     }
 
 
