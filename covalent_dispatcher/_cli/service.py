@@ -25,6 +25,7 @@ import shutil
 import socket
 import time
 from subprocess import DEVNULL, Popen
+from typing import Optional
 
 import click
 import psutil
@@ -108,8 +109,7 @@ def _next_available_port(requested_port: int) -> int:
         try:
             sock.bind(("0.0.0.0", try_port))
             avail_port_found = True
-        except Exception as e:
-            print(e)
+        except:
             try_port += 1
 
     sock.close()
@@ -169,11 +169,8 @@ def _graceful_start(
     port = _next_available_port(port)
     launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
 
-    # with open(logfile, "a") as log:
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
-    print(f"process id: {pid}")
-    print(f"parent id: {psutil.Process(pid).ppid()}")
 
     with open(pidfile, "w") as PIDFILE:
         PIDFILE.write(str(pid))
@@ -193,7 +190,6 @@ def _terminate_child_processes(pid: int) -> None:
     """
 
     for child_proc in psutil.Process(pid).children(recursive=True):
-        print(f"Shutting down process id: {child_proc.pid}")
         child_proc.kill()
         child_proc.wait()
 
@@ -214,12 +210,17 @@ def _graceful_shutdown(pidfile: str) -> None:
         proc = psutil.Process(pid)
         _terminate_child_processes(pid)
 
-        if psutil.pid_exists(pid):
+        try:
             proc.terminate()
-        proc.wait()
+            proc.wait()
+        except psutil.NoSuchProcess:
+            pass
+
         click.echo("Covalent server has stopped.")
+
     else:
         click.echo("Covalent server was not running.")
+
     _rm_pid_file(pidfile)
 
 
