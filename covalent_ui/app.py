@@ -36,7 +36,7 @@ from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
-from covalent_dispatcher._db.dispatchdb import DispatchDB
+from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
 
 WEBHOOK_PATH = "/api/webhook"
@@ -72,6 +72,16 @@ def list_results():
         return jsonify([])
     else:
         return jsonify([simplejson.loads(r[1]) for r in res])
+
+
+@app.route("/api/dev/results/<dispatch_id>")
+def fetch_result_dev(dispatch_id):
+    results_dir = request.args["resultsDir"]
+    result = rm.get_result(dispatch_id, results_dir=results_dir)
+
+    jsonified_result = encode_result(result)
+
+    return app.response_class(jsonified_result, status=200, mimetype="application/json")
 
 
 @app.route("/api/results/<dispatch_id>")

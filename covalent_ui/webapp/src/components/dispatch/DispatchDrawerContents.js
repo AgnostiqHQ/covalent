@@ -43,7 +43,7 @@ import { ReactComponent as AtomSvg } from '../../assets/atom.svg'
 import { selectResultProgress } from '../dispatches/ResultProgress'
 import LatticeDispatchOverview from './LatticeDispatchOverview'
 import { statusIcon, truncateMiddle } from '../../utils/misc'
-import LogOutput from '../common/LogOutput'
+import { LatticeOutput } from '../common/LogOutput'
 import ErrorCard from '../common/ErrorCard'
 
 const DispatchDrawerContents = () => {
@@ -84,7 +84,8 @@ const DispatchDrawerContents = () => {
         </TabPanel>
 
         <TabPanel value="output" sx={{ px: 0, py: 1 }}>
-          <LogOutput dispatchId={dispatchId} />
+          <LatticeOutput dispatchId={dispatchId} />
+          {/* <LogOutput dispatchId={dispatchId} /> */}
         </TabPanel>
       </TabContext>
     </Box>
