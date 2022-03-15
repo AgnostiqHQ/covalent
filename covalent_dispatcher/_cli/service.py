@@ -22,7 +22,6 @@
 
 import os
 import shutil
-import signal
 import socket
 import time
 from subprocess import DEVNULL, Popen
@@ -73,7 +72,7 @@ def _rm_pid_file(filename: str) -> None:
         os.remove(filename)
 
 
-def _port_from_pid(pid: int) -> int:
+def _port_from_pid(pid: int) -> Optional[int]:
     """
     Return the port in use by a process.
 
@@ -110,7 +109,8 @@ def _next_available_port(requested_port: int) -> int:
         try:
             sock.bind(("0.0.0.0", try_port))
             avail_port_found = True
-        except:
+        except Exception as e:
+            print(e)
             try_port += 1
 
     sock.close()
@@ -181,6 +181,22 @@ def _graceful_start(
     return port
 
 
+def _terminate_child_processes(pid: int) -> None:
+    """For a given process, find all the child processes and terminate them.
+
+    Args:
+        pid: Process ID file for the main server process.
+
+    Returns:
+        None
+    """
+
+    for child_proc in psutil.Process(pid).children(recursive=True):
+        print(f"Shutting down process id: {child_proc.pid}")
+        child_proc.kill()
+        child_proc.wait()
+
+
 def _graceful_shutdown(pidfile: str) -> None:
     """
     Gracefully shut down a server given a process ID.
@@ -195,7 +211,10 @@ def _graceful_shutdown(pidfile: str) -> None:
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         proc = psutil.Process(pid)
-        proc.terminate()
+        _terminate_child_processes(pid)
+
+        if psutil.pid_exists(pid):
+            proc.terminate()
         proc.wait()
         click.echo("Covalent server has stopped.")
     else:
@@ -265,7 +284,6 @@ def restart(ctx, port: bool, develop: bool) -> None:
     Restart the server.
     """
 
-    pid = _read_pid(UI_PIDFILE)
     port = port or get_config("user_interface.port")
 
     ctx.invoke(stop)
