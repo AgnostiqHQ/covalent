@@ -24,6 +24,7 @@ on:
   push:
     branches:
       - develop
+      - i-8-test
 
 jobs:
   publish_develop:
@@ -55,6 +56,7 @@ jobs:
       - name: Build and push image
         run: |
           pip install -r requirements.txt
+          echo 'The name of this branch is ${{github.ref}} and the repository is {{github.repository}}'
           docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
           docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
           echo 'Creating a test dispatch...'

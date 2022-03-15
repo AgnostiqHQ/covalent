@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-name: pull-req
+name: pull-request
 
 on:
   pull_request
