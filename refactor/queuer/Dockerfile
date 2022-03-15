@@ -24,7 +24,7 @@ WORKDIR /app
 
 # Copy and install required packages to run Queuer
 COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 COPY . .
 
