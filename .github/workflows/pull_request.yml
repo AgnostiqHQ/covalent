@@ -54,17 +54,11 @@ jobs:
         run: |
           docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
           docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
-      - name:  Setup Python
-      - uses: actions/setup-python@v2
-        with:
-            python-version: '3.x'
-      - name: Install dependencies and run dispatch
-        run: | 
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          echo 'Running dispatch...'
+          echo 'Running an example dispatch...'
           for idx in {0..1..1}; do
             echo 'Dispatch number: '$idx
-            python test_dispatch.py
+            python example_dispatch.py
           done
           
