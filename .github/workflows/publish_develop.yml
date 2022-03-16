@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - develop
-      - i-8-test
 
 jobs:
   publish_develop:

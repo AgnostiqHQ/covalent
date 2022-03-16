@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - master
-      - i-8-test
 
 jobs:
   publish_master:
