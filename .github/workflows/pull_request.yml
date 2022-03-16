@@ -58,11 +58,10 @@ jobs:
       - uses: actions/setup-python@v2
         with:
             python-version: '3.x'
-      - name: Install dependencies
+      - name: Install dependencies and run dispatch
+        run: | 
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Run dispatch
-        run: | 
           echo 'Running dispatch...'
           for idx in {0..1..1}; do
             echo 'Dispatch number: '$idx
