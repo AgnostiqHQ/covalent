@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """
-An example dispatch that combines two words from a list and returns a phrase
+An example script containing a simple workflow that can be dispatched to Covalent
 """
 
 import time
@@ -50,15 +50,10 @@ else:
     print('Dispatcher service is starting...')
     time.sleep(20)
 
-
 dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
-print('Dispatch id is:', dispatch_id)
 results_url = "http://localhost:48008/api/results"
 results = request("GET", results_url, headers={}, data={}).json()
 dispatch_result = results[0]['result'] if results else None
 dispatch_status = results[0]['status'] if results else None
-dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
 print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
 print(f'The result of the dispatch is: {dispatch_result}')
-
-
