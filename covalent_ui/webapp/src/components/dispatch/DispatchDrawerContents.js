@@ -85,7 +85,6 @@ const DispatchDrawerContents = () => {
 
         <TabPanel value="output" sx={{ px: 0, py: 1 }}>
           <LatticeOutput dispatchId={dispatchId} />
-          {/* <LogOutput dispatchId={dispatchId} /> */}
         </TabPanel>
       </TabContext>
     </Box>

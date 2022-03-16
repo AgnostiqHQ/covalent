@@ -53,7 +53,6 @@ const mapGraphToElements = (graph, direction, showParams) => {
   }
 
   const nodes = _.map(graph.nodes, (node) => {
-    // const { inputs, outputs } = countEdges(node.id, graph.links)
     const handlePositions = getHandlePositions(direction)
     const isParam = isParameter(node)
 
@@ -66,8 +65,6 @@ const mapGraphToElements = (graph, direction, showParams) => {
         fullName: name,
         label: _.truncate(name, { length: 70 }),
         status: node.status,
-        // inputs,
-        // outputs,
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,
@@ -158,20 +155,20 @@ const getHandlePositions = (direction) => {
   }
 }
 
-// const countEdges = (nodeId, edges) => {
-//   return _.reduce(
-//     edges,
-//     (res, edge) => {
-//       if (edge.source === nodeId) {
-//         res.outputs++
-//       }
-//       if (edge.target === nodeId) {
-//         res.inputs++
-//       }
-//       return res
-//     },
-//     { inputs: 0, outputs: 0 }
-//   )
-// }
+export const countEdges = (nodeId, edges) => {
+  return _.reduce(
+    edges,
+    (res, edge) => {
+      if (edge.source === nodeId) {
+        res.outputs++
+      }
+      if (edge.target === nodeId) {
+        res.inputs++
+      }
+      return res
+    },
+    { inputs: 0, outputs: 0 }
+  )
+}
 
 export default layout
