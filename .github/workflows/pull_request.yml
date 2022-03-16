@@ -52,40 +52,13 @@ jobs:
           echo "TAG=$TAG" >> $GITHUB_ENV
       - name: Build and run image
         run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
           docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
           docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
-          pip install -r requirements.txt
           echo 'Creating a test dispatch...'
-          cat << EOF > test_dispatch.py
-          import time
-          import covalent as ct
-          from requests import request
-          import covalent_dispatcher._cli.service as service
-          @ct.electron
-          def join_words(a, b):
-            return ", ".join([a, b])
-          @ct.electron
-          def excitement(a):
-            return f"{a}!"
-          @ct.lattice
-          def simple_workflow(a, b):
-            phrase = join_words(a, b)
-            return excitement(phrase)
-          if service._is_server_running():
-            print('Dispatch service has started!')
-          else:
-            print('Waiting for dispatch to be executed...')
-            time.sleep(15)
-          dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
-          results_url = "http://localhost:48008/api/results"
-          results = request("GET", results_url, headers={}, data={}).json()
-          dispatch_result = results[0]['result'] if results else None
-          dispatch_status = results[0]['status'] if results else None
-          print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
-          print(f'The result of the dispatch is: {dispatch_result}')
-          EOF
           for idx in {0..1..1}; do
             echo 'Dispatch number: '$idx 
-            python3 test_dispatch.py
+            python3 scripts/test_dispatch.py
           done
           
