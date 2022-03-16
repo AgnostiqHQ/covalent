@@ -94,7 +94,6 @@ jobs:
             echo 'Dispatch number: '$idx 
             python3 test_dispatch.py
           done
-          docker push cova-dev
           docker tag cova-dev ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
           docker push ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
 
