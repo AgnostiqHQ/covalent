@@ -54,13 +54,13 @@ jobs:
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
       - name: Build and push image
-        if: github.ref == 'refs/heads/master'
-          echo 'Running this step in ${{ github.ref }} branch'
+        if: github.ref == 'refs/heads/develop'
+          echo 'Building image from the ${{ github.ref }} branch'
         run: |
+          docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
+          docker images | grep ${{ secrets.AWS_ECR_DEV_REPO }}
+          docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
           pip install -r requirements.txt
-          docker build -t covalent-dev .
-          docker images
-          docker run -d -p 48008:8080 covalent-dev.
           echo 'Creating a test dispatch...'
           cat << EOF > test_dispatch.py
           import covalent as ct
