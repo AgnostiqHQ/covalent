@@ -52,9 +52,9 @@ jobs:
           echo "TAG=$TAG" >> $GITHUB_ENV
       - name: Build and run image
         run: |
-          pip install -r requirements.txt
           docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
           docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
+          pip install -r requirements.txt
           echo 'Creating a test dispatch...'
           cat << EOF > test_dispatch.py
           import time
@@ -75,7 +75,7 @@ jobs:
             print('Dispatch service has started!')
           else:
             print('Waiting for dispatch to be executed...')
-            time.sleep(30)
+            time.sleep(15)
           dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
           results_url = "http://localhost:48008/api/results"
           results = request("GET", results_url, headers={}, data={}).json()
@@ -84,13 +84,8 @@ jobs:
           print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
           print(f'The result of the dispatch is: {dispatch_result}')
           EOF
-          cat << EOF > run_dispatch.py
-          import subprocess
-          import sys
-          for idx in range(2):
-            sys.stdout = open('result%s.txt' % idx, 'w')
-            subprocess.check_call(['python3', 'test_dispatch.py'],
-                          stdout=sys.stdout, stderr=subprocess.STDOUT)
-          EOF
-          python3 run_dispatch.py
-          cat result1.txt
+          for idx in {0..1..1}; do
+            echo 'Dispatch number: '$idx 
+            python3 test_dispatch.py
+          done
+          
