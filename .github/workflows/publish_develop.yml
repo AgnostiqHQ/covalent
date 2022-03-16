@@ -57,9 +57,9 @@ jobs:
         if: github.ref == 'refs/heads/develop'
           echo 'Building image from the ${{ github.ref }} branch'
         run: |
-          docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
-          docker images | grep ${{ secrets.AWS_ECR_DEV_REPO }}
-          docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
+          docker build -t cova-dev .
+          docker images | grep cova-dev
+          docker run -d -p 48008:8080 cova-dev
           pip install -r requirements.txt
           echo 'Creating a test dispatch...'
           cat << EOF > test_dispatch.py
@@ -94,7 +94,7 @@ jobs:
             echo 'Dispatch number: '$idx 
             python3 test_dispatch.py
           done
-          docker push ${{ secrets.AWS_ECR_DEV_REPO }}
-          docker tag ${{ secrets.AWS_ECR_DEV_REPO }} ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
+          docker push cova-dev
+          docker tag cova-dev ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
           docker push ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
 
