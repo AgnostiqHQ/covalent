@@ -53,50 +53,18 @@ jobs:
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
       - name: Build and push image
+        if: github.ref == 'refs/heads/develop'
+          echo 'Building image from the ${{ github.ref }} branch'
         run: |
+          docker build -t cova-dev .
+          docker run -d -p 48008:8080 cova-dev
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
-          docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
-          echo 'Creating a test dispatch...'
-          cat << EOF > test_dispatch.py
-          import covalent as ct
-          import time
-          from requests import request
-          import covalent_dispatcher._cli.service as service
-          @ct.electron
-          def join_words(a, b):
-            return ", ".join([a, b])
-          @ct.electron
-          def excitement(a):
-            return f"{a}!"
-          @ct.lattice
-          def simple_workflow(a, b):
-            phrase = join_words(a, b)
-            return excitement(phrase)
-          if service._is_server_running():
-            print('Dispatch service has started!')
-          else:
-            print('Waiting for dispatch to be executed...')
-            time.sleep(30)
-          dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
-          results_url = "http://localhost:48008/api/results"
-          results = request("GET", results_url, headers={}, data={}).json()
-          dispatch_result = results[0]['result'] if results else None
-          dispatch_status = results[0]['status'] if results else None
-          print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
-          print(f'The result of the dispatch is: {dispatch_result}')
-          EOF
-          cat << EOF > run_dispatch.py
-          import subprocess
-          import sys
-          for idx in range(2):
-            sys.stdout = open('result%s.txt' % idx, 'w')
-            subprocess.check_call(['python3', 'test_dispatch.py'],
-                          stdout=sys.stdout, stderr=subprocess.STDOUT)
-          EOF
-          python3 run_dispatch.py
-          cat result1.txt
-          docker push ${{ secrets.AWS_ECR_DEV_REPO }}
-          docker tag ${{ secrets.AWS_ECR_DEV_REPO }} ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
+          echo 'Running an example dispatch...'
+          for idx in {0..1..1}; do
+            echo 'Dispatch number: '$idx
+            python example_dispatch.py
+          done
+          docker tag cova-dev:latest ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
           docker push ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
 

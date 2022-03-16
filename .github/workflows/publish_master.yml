@@ -70,52 +70,18 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
+          if: github.ref == 'refs/heads/master'
+            echo 'Building image from the ${{ github.ref }} branch'
           run: |
+            docker build -t cova-master .
+            docker run -d -p 48008:8080 cova-master
+            python -m pip install --upgrade pip
             pip install -r requirements.txt
-            docker build -t ${{ secrets.AWS_ECR_REPO }}
-            docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_REPO }}
-            echo 'Creating a test dispatch...'
-            cat << EOF > test_dispatch.py
-            import covalent as ct
-            import time
-            from requests import request
-            import covalent_dispatcher._cli.service as service
-            @ct.electron
-            def join_words(a, b):
-              return ", ".join([a, b])
-            @ct.electron
-            def excitement(a):
-              return f"{a}!"
-            @ct.lattice
-            def simple_workflow(a, b):
-              phrase = join_words(a, b)
-              return excitement(phrase)
-            if service._is_server_running():
-              print('Dispatcher service has started')
-            else:
-              print('Waiting for dispatcher service to start...')
-              time.sleep(30)
-            dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
-            print('Dispatch id is:', dispatch_id)
-            results_url = "http://localhost:48008/api/results"
-            results = request("GET", results_url, headers={}, data={}).json()
-            dispatch_result = results[0]['result'] if results else None
-            dispatch_status = results[0]['status'] if results else None
-            dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
-            print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
-            print(f'The result of the dispatch is: {dispatch_result}')
-            EOF
-            cat << EOF > run_dispatch.py
-            import subprocess
-            import sys
-            for idx in range(2):
-              sys.stdout = open('result%s.txt' % idx, 'w')
-              subprocess.check_call(['python3', 'test_dispatch.py'],stdout=sys.stdout, stderr=subprocess.STDOUT)
-            EOF
-            echo 'Running test dispatch...'
-            python3 run_dispatch.py
-            echo 'Printing results of dispatch...'
-            cat result1.txt
+            echo 'Running an example dispatch...'
+            for idx in {0..1..1}; do
+              echo 'Dispatch number: '$idx
+              python example_dispatch.py
+            done
           push: true
           tags: |
             ${{ secrets.AWS_ECR_REPO }}:latest
