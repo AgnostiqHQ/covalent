@@ -72,7 +72,7 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           if: github.ref == 'refs/heads/master'
-          echo 'Building image from the ${{ github.ref }} branch'
+            echo 'Building image from the ${{ github.ref }} branch'
           run: |
             docker build -t cova-master .
             docker run -d -p 48008:8080 cova-master
