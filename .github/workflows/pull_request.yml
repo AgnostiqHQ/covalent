@@ -56,7 +56,7 @@ jobs:
           pip install -r requirements.txt
           docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
           docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
-          cd .. && ll scripts/
+          cd .. && ls scripts/
 #          echo 'Running dispatch...'
 #          for idx in {0..1..1}; do
 #            echo 'Dispatch number: '$idx
