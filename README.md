@@ -216,6 +216,10 @@ To contribute to Covalent, refer to the [Contribution Guidelines](https://github
 
 Release notes are available in the [Changelog](https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md).
 
+## 💥 Known Issues
+
+- Tensorflow isn't stable with M1 Macs right now due to which the [Classifying discrete spacetimes by dimension](https://github.com/AgnostiqHQ/covalent/blob/master/doc/source/tutorials/quantum_gravity/spacetime_classification.ipynb) tutorial does not work with M1 Macs.
+
 ## ⚓ Citation
 
 Please use the following citation in any publications:

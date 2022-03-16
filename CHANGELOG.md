@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Images for graphs generated in tutorials and how-tos.
 - Note for quantum gravity tutorial to tell users that `tensorflow` doesn't work on M1 Macs.
+- `Known Issues` added to `README.md`
 
 ### Fixed
 
