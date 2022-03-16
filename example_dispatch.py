@@ -23,10 +23,9 @@ An example script containing a simple workflow that can be dispatched to Covalen
 """
 
 import time
-
 import covalent as ct
-from requests import request
 import covalent_dispatcher._cli.service as service
+from requests import request
 
 
 @ct.electron
@@ -48,7 +47,7 @@ if service._is_server_running():
     print('Dispatcher service has started')
 else:
     print('Dispatcher service is starting...')
-    time.sleep(20)
+    time.sleep(15)
 
 dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
 results_url = "http://localhost:48008/api/results"
