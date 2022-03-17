@@ -33,6 +33,74 @@ import { isDemo } from '../../utils/demo/setup'
 const FETCH_INTERVAL_MS = 2000
 const MAX_LINES = 80
 
+/**
+ * Temporary solution to log output until backend file logs are sorted out. See
+ * LogOutput below.
+ */
+export const LatticeOutput = ({ dispatchId }) => {
+  const output = useSelector((state) => {
+    const result = state.results.cache[dispatchId]
+    return _.reduce(
+      _.get(result, 'graph.nodes'),
+      (logs, node) => {
+        _.each(
+          [{ key: 'stdout' }, { key: 'stderr', isErr: true }],
+          ({ key, isErr }) => {
+            const text = node[key]
+            if (text) {
+              logs.push({
+                name: `${node.name} [${key}]`,
+                lines: _.split(text, '\n'),
+                isErr,
+              })
+            }
+          }
+        )
+        return logs
+      },
+      []
+    )
+  })
+
+  return _.map(output, (node) => <NodeOutput node={node} />)
+}
+
+const NodeOutput = ({ node }) => {
+  const { name, lines, isErr } = node
+
+  // auto-scroll to last line on updates
+  const bottomRef = useRef(null)
+  useEffect(() => {
+    bottomRef.current.scrollIntoView({ behavoir: 'smooth' })
+  }, [lines])
+
+  return (
+    <div key={name}>
+      <Heading>{name}</Heading>
+      <Paper>
+        <Typography
+          sx={{
+            fontSize: 'small',
+            overflow: 'auto',
+            maxHeight: 200,
+            whiteSpace: 'nowrap',
+            color: isErr ? 'error.light' : 'inherit',
+            p: 1,
+          }}
+        >
+          {_.map(lines, (line, index) => (
+            <span key={index}>
+              {line}
+              <br />
+            </span>
+          ))}
+          <div ref={bottomRef} />
+        </Typography>
+      </Paper>
+    </div>
+  )
+}
+
 const LogOutput = ({ dispatchId }) => {
   const isRunning = useSelector(
     (state) => _.get(state.results.cache[dispatchId], 'status') === 'RUNNING'

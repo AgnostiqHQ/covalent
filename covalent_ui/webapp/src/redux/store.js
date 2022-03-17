@@ -32,7 +32,9 @@ export default function configureAppStore(preloadedState) {
     preloadedState,
     enhancers: [
       // persist state across sessions except for demo
-      isDemo ? demoEnhancer : persistState(['latticePreview']),
+      isDemo
+        ? demoEnhancer
+        : persistState(['latticePreview'], { key: 'cache' }),
     ],
   })
 

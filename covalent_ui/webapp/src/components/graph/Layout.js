@@ -53,7 +53,6 @@ const mapGraphToElements = (graph, direction, showParams) => {
   }
 
   const nodes = _.map(graph.nodes, (node) => {
-    const { inputs, outputs } = countEdges(node.id, graph.links)
     const handlePositions = getHandlePositions(direction)
     const isParam = isParameter(node)
 
@@ -66,8 +65,6 @@ const mapGraphToElements = (graph, direction, showParams) => {
         fullName: name,
         label: _.truncate(name, { length: 70 }),
         status: node.status,
-        inputs,
-        outputs,
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,
@@ -103,8 +100,9 @@ const assignNodePositions = (elements, direction) => {
   dagreGraph.setDefaultEdgeLabel(() => ({}))
   dagreGraph.setGraph({
     rankdir: direction,
-    nodesep: 75,
-    ranksep: 100,
+    nodesep: 50,
+    ranksep: 75,
+    edgesep: 10,
   })
 
   _.each(elements, (el) => {
@@ -157,7 +155,7 @@ const getHandlePositions = (direction) => {
   }
 }
 
-const countEdges = (nodeId, edges) => {
+export const countEdges = (nodeId, edges) => {
   return _.reduce(
     edges,
     (res, edge) => {
