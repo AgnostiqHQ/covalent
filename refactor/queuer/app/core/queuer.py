@@ -12,7 +12,7 @@ class QueueTopics(Enum):
 
 class Queuer():
 
-    topics: QueueTopics = QueueTopics()
+    topics: QueueTopics = QueueTopics
 
     def get_client(self) -> Any:
        return nats.connect(settings.MQ_CONNECTION_URI)
