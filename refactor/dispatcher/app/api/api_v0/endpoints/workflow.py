@@ -35,7 +35,7 @@ from covalent._results_manager import Result
 
 from ....core.cancel_workflow import cancel_workflow_execution
 from ....core.dispatch_workflow import dispatch_workflow
-from ....core.update_workflow import _update_workflow
+from ....core.update_workflow import update_workflow_results
 
 # TODO - Figure out how this BASE URI will be determined when this is deployed.
 BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
@@ -119,7 +119,7 @@ def update_workflow(*, dispatch_id: str, task_execution_results: Node) -> Update
     resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
     result_obj = resp.json()["result_obj"]
 
-    result_obj = _update_workflow(task_execution_results, result_obj)
+    result_obj = update_workflow_results(task_execution_results, result_obj)
 
     requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
 
