@@ -70,7 +70,14 @@ class Lepton(Electron):
         ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     ) -> None:
         self.language = language
-        self.library_name = library_name
+
+        if library_name.endswith(".py"):
+            self.library_name = library_name[:-3]
+            self.library_path = library_name
+        else:
+            self.library_name = library_name
+            self.library_path = library_name + ".py"
+
         self.function_name = function_name
         # Types must be stored as strings, since not all type objects can be pickled
         self.argtypes = [(arg[0].__name__, arg[1]) for arg in argtypes]
@@ -90,15 +97,19 @@ class Lepton(Electron):
             import importlib
 
             try:
-                module = importlib.import_module(self.library_name)
-            except ModuleNotFoundError:
-                app_log.warning(f"Could not import the module '{self.library_name}'.")
+                module_spec = importlib.util.spec_from_file_location(
+                    self.library_name, self.library_path
+                )
+                module = importlib.util.module_from_spec(module_spec)
+                module_spec.loader.exec_module(module)
+            except (ModuleNotFoundError, AttributeError):
+                app_log.error(f"Could not import the module '{self.library_name}'.")
                 raise
 
             try:
                 func = getattr(module, self.function_name)
             except AttributeError:
-                app_log.warning(
+                app_log.error(
                     f"Could not find the function '{self.function_name}' in '{self.library_name}'."
                 )
                 raise
