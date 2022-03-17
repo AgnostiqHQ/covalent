@@ -73,13 +73,11 @@ const ElectronNode = ({
           borderWidth: hasBorder ? 1 : 0,
         }}
       >
-        {!!data.inputs && (
-          <Handle
-            type="target"
-            position={targetPosition}
-            isConnectable={isConnectable}
-          />
-        )}
+        <Handle
+          type="target"
+          position={targetPosition}
+          isConnectable={isConnectable}
+        />
         {(() => {
           switch (data.status) {
             case 'NEW_OBJECT':
@@ -107,13 +105,11 @@ const ElectronNode = ({
         })()}
 
         <Typography sx={{ fontSize: 12 }}>{data.label}</Typography>
-        {!!data.outputs && (
-          <Handle
-            type="source"
-            position={sourcePosition}
-            isConnectable={isConnectable}
-          />
-        )}
+        <Handle
+          type="source"
+          position={sourcePosition}
+          isConnectable={isConnectable}
+        />
       </Paper>
     </ElectronTooltip>
   )
