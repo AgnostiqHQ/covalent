@@ -26,8 +26,12 @@ from pydantic import AnyHttpUrl, BaseSettings, validator
 load_dotenv() 
 
 class Settings(BaseSettings):
+
     API_V0_STR: str = "/api/v0"
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    DATA_OS_SVC_HOST_URI: str = os.getenv('DATA_OS_SVC_HOST_URI')
+    MQ_CONNECTION_URI: str = os.getenv('MQ_CONNECTION_URI')
+    MQ_DISPATCH_TOPIC: str = os.getenv('MQ_DISPATCH_TOPIC')
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

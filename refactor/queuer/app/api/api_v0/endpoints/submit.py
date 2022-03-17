@@ -45,7 +45,7 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
 
     dispatch_id = created_result["dispatch_id"]
     
-    await queue.publish(os.environ.get("MQ_DISPATCH_TOPIC"), {
+    await queue.publish(queue.topics.DIPATCH, {
         "dispatch_id": dispatch_id
     })
 

@@ -3,6 +3,8 @@ import requests
 
 from urllib.parse import urljoin
 
+from refactor.queuer.app.core.config import settings
+
 class APIService():
 
     def __init__(self, BASE_URI: str):
@@ -39,7 +41,7 @@ class APIService():
 
 class DataService(APIService):
     def __init__(self):
-        super().__init__(os.environ.get("DATA_OS_SVC_HOST_URI"))
+        super().__init__(settings.DATA_OS_SVC_HOST_URI)
 
     async def create_result(self, result_pkl_file: bytes):
         return self.post('fs/upload', files={
