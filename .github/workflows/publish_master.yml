@@ -24,6 +24,7 @@ on:
   push:
     branches:
       - master
+      - i-8
 
 jobs:
   publish_master:
@@ -63,26 +64,36 @@ jobs:
           registry: public.ecr.aws
           username: ${{ secrets.AWS_KEY_ID }}
           password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      - name: Build and push image
+      - name: Build image and push to test repo
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
-          if: github.ref == 'refs/heads/master'
-            echo 'Building image from the ${{ github.ref }} branch'
-          run: |
-            docker build -t cova-master .
-            docker run -d -p 48008:8080 cova-master
-            python -m pip install --upgrade pip
-            pip install -r requirements.txt
-            echo 'Running an example dispatch...'
-            for idx in {0..1..1}; do
-              echo 'Dispatch number: '$idx
-              python example_dispatch.py
-            done
           push: true
           tags: |
-            ${{ secrets.AWS_ECR_REPO }}:latest
-            ${{ secrets.AWS_ECR_REPO }}:${{ env.TAG }}
+            ${{ secrets.AWS_ECR_DEV_REPO }}:latest
+#      - name: Run image from test repo
+#        run: |
+#          docker pull ${{ secrets.AWS_ECR_DEV_REPO }}:latest
+#          docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_TEST_REPO }}:latest
+#          python -m pip install --upgrade pip
+#          pip install -r requirements.txt
+#          echo 'Running an example dispatch...'
+#          for idx in {0..1..1}; do
+#            echo 'Dispatch number: '$idx
+#            python example_dispatch.py
+#          done
+#      - name: Build image and push to master repo
+#        uses: docker/build-push-action@v2
+#        with:
+#          builder: ${{ steps.buildx.outputs.name }}
+#          context: .
+#          file: ./Dockerfile
+#          platforms: linux/amd64,linux/arm64
+#          push: true
+#          tags: |
+#            ${{ secrets.AWS_ECR_REPO }}:latest
+#            ${{ secrets.AWS_ECR_REPO }}:${{ env.TAG }}
+
