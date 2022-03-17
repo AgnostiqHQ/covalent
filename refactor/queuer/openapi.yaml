@@ -9,8 +9,6 @@ paths:
         - Submit
       summary: Submit Workflow
       description: |-
-        Submit a workflow
-
         Note: The object that contains the workflow function, interface to
         update attributes in the transport graph, inputs of the workflow,
         metadata, etc. is the result object that's why its type is ResultPickle
@@ -20,9 +18,9 @@ paths:
       operationId: submit_workflow_api_v0_submit_dispatch_post
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ResultPickle'
+              $ref: '#/components/schemas/Body_submit_workflow_api_v0_submit_dispatch_post'
         required: true
       responses:
         '202':
@@ -39,6 +37,16 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    Body_submit_workflow_api_v0_submit_dispatch_post:
+      title: Body_submit_workflow_api_v0_submit_dispatch_post
+      required:
+        - result_pkl_file
+      type: object
+      properties:
+        result_pkl_file:
+          title: Result Pkl File
+          type: string
+          format: binary
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -48,16 +56,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
-    ResultPickle:
-      title: ResultPickle
-      required:
-        - result_object
-      type: object
-      properties:
-        result_object:
-          title: Result Object
-          type: string
-          format: binary
     SubmitResponse:
       title: SubmitResponse
       required:
