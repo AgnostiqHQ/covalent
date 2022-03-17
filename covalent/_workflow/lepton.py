@@ -70,13 +70,7 @@ class Lepton(Electron):
         ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     ) -> None:
         self.language = language
-
-        if library_name.endswith(".py"):
-            self.library_name = library_name[:-3]
-            self.library_path = library_name
-        else:
-            self.library_name = library_name
-            self.library_path = library_name + ".py"
+        self.library_name = library_name
 
         self.function_name = function_name
         # Types must be stored as strings, since not all type objects can be pickled
@@ -88,7 +82,7 @@ class Lepton(Electron):
         # Assign metadata defaults
         super().set_metadata("executor", executor)
 
-    def wrap_task(self) -> Callable:
+    def wrap_task(self) -> Callable:  # noqa: max-complexity: 30
         """Return a lepton wrapper function."""
 
         def python_wrapper(*args, **kwargs) -> Any:
@@ -96,10 +90,15 @@ class Lepton(Electron):
 
             import importlib
 
+            if self.library_name.endswith(".py"):
+                lib_name = self.library_name[:-3]
+                lib_path = self.library_name
+            else:
+                lib_name = self.library_name
+                lib_path = self.library_name + ".py"
+
             try:
-                module_spec = importlib.util.spec_from_file_location(
-                    self.library_name, self.library_path
-                )
+                module_spec = importlib.util.spec_from_file_location(lib_name, lib_path)
                 module = importlib.util.module_from_spec(module_spec)
                 module_spec.loader.exec_module(module)
             except (ModuleNotFoundError, AttributeError):
