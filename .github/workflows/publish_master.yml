@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - master
-      - i-8
 
 jobs:
   publish_master:
@@ -63,12 +62,12 @@ jobs:
       - name: Build image and push to test repo
         run: |
           docker build -t covalent_test .
-          docker tag covalent_test:latest ${{ secrets.AWS_ECR_DEV_REPO }}:latest
-          docker push ${{ secrets.AWS_ECR_DEV_REPO }}:latest
+          docker tag covalent_test:latest ${{ secrets.AWS_ECR_TEST_REPO }}:latest
+          docker push ${{ secrets.AWS_ECR_TEST_REPO }}:latest
       - name: Test image
         run: |
-          docker pull ${{ secrets.AWS_ECR_DEV_REPO }}:latest
-          docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}:latest
+          docker pull ${{ secrets.AWS_ECR_TEST_REPO }}:latest
+          docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_TEST_REPO}}:latest
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           echo 'Running an example dispatch...'

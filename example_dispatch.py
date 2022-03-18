@@ -49,7 +49,7 @@ else:
     print('Dispatcher service is starting...')
     time.sleep(15)
 
-dispatch_id = ct.dispatch(simple_workflow, dispatcher_addr='localhost:48008')("Hello", "Covalent")
+dispatch_id = ct.dispatch(simple_workflow)("Hello", "Covalent")
 results_url = "http://localhost:48008/api/results"
 results = request("GET", results_url, headers={}, data={}).json()
 dispatch_result = results[0]['result'] if results else None
