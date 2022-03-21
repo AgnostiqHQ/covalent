@@ -11,6 +11,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ensure that runner and dispatcher work properly together.
 
+## [0.32.5] - 2022-03-21
+
+### Fixed
+
+- Fix HTTP status code for blank POST requests.
+
+## [0.32.4] - 2022-03-17
+
+### Fixed
+
+- Docker commands in docs
+
+## [0.32.3] - 2022-03-16
+
+### Fixed
+
+- Fix missing UI graph edges between parameters and electrons in certain cases.
+- Fix UI crashes in cases where legacy localStorage state was being loaded.
+
+## [0.32.2] - 2022-03-16
+
+### Added
+
+- Images for graphs generated in tutorials and how-tos.
+- Note for quantum gravity tutorial to tell users that `tensorflow` doesn't work on M1 Macs.
+- `Known Issues` added to `README.md`
+
+### Fixed
+
+- `draw` function usage in tutorials and how-tos now reflects the UI images generated instead of using graphviz.
+- Images now render properly in RTD of how-tos.
+
+### Changed
+
+- Reran all the tutorials that could run, generating the outputs again.
+
+## [0.32.1] - 2022-03-15
+
+### Fixed
+
+- CLI now starts server directly in the subprocess instead of as a daemon
+- Logs are provided as pipes to Popen instead of using a shell redirect
+- Restart behavior fixed
+- Default port in `covalent_ui/app.py` uses the config manager
+
+### Removed
+
+- `_graceful_restart` function no longer needed without gunicorn
+
 ## [0.32.0] - 2022-03-11
 
 ### Added

@@ -28,7 +28,7 @@ def extract_graph_node(node):
     # doc string
     f = node.get("function")
     if f is not None:
-        node["doc"] = node["function"].get_deserialized().__doc__
+        node["doc"] = f.get_deserialized().__doc__
 
     # metadata
     node["metadata"] = extract_metadata(node["metadata"])
@@ -80,12 +80,40 @@ def extract_graph(graph):
     }
 
 
-def encode_result(obj):
+def result_encoder(obj):
     if isinstance(obj, Status):
         return obj.STATUS
     if isinstance(obj, datetime):
         return obj.isoformat()
     return str(obj)
+
+
+def encode_result(result_obj):
+    lattice = result_obj.lattice
+    ((named_args, named_kwargs),) = (
+        get_named_params(lattice.workflow_function, lattice.args, lattice.kwargs),
+    )
+    result_dict = {
+        "dispatch_id": result_obj.dispatch_id,
+        "status": result_obj.status,
+        "result": result_obj.result,
+        "start_time": result_obj.start_time,
+        "end_time": result_obj.end_time,
+        "results_dir": result_obj.results_dir,
+        "error": result_obj.error,
+        "lattice": {
+            "function_string": lattice.workflow_function_string,
+            "doc": lattice.__doc__,
+            "name": lattice.__name__,
+            "inputs": encode_dict({**named_args, **named_kwargs}),
+            "metadata": extract_metadata(lattice.metadata),
+        },
+        "graph": extract_graph(result_obj.lattice.transport_graph._graph),
+    }
+
+    jsonified_result = simplejson.dumps(result_dict, default=result_encoder, ignore_nan=True)
+
+    return jsonified_result
 
 
 class DispatchDB:
@@ -163,29 +191,8 @@ class DispatchDB:
 
         The Result is turned into a dictionary and stored as json.
         """
-        lattice = result_obj.lattice
-        ((named_args, named_kwargs),) = (
-            get_named_params(lattice.workflow_function, lattice.args, lattice.kwargs),
-        )
-        result_dict = {
-            "dispatch_id": result_obj.dispatch_id,
-            "status": result_obj.status,
-            "result": result_obj.result,
-            "start_time": result_obj.start_time,
-            "end_time": result_obj.end_time,
-            "results_dir": result_obj.results_dir,
-            "error": result_obj.error,
-            "lattice": {
-                "function_string": lattice.workflow_function_string,
-                "doc": lattice.__doc__,
-                "name": lattice.__name__,
-                "kwargs": encode_dict(lattice.kwargs),
-                "metadata": extract_metadata(lattice.metadata),
-            },
-            "graph": extract_graph(result_obj.lattice.transport_graph._graph),
-        }
 
-        jsonified_result = simplejson.dumps(result_dict, default=encode_result, ignore_nan=True)
+        jsonified_result = encode_result(result_obj)
 
         try:
             sql = "INSERT INTO dispatches (dispatch_id, result_dict) VALUES (?, ?)"
