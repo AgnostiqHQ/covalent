@@ -83,6 +83,30 @@ class BuildUI(Command):
         ("clean", "c", "clean directory"),
     ]
 
+    @staticmethod
+    def _node_versions():
+        import requests
+
+        r = requests.get("https://nodejs.org/download/release/index.json")
+        return r.json()
+
+    @staticmethod
+    def _latest_lts(node_versions):
+        for version in node_versions:
+            if version["lts"]:
+                return version["version"]
+
+    @staticmethod
+    def _node_lts(node_versions):
+        import subprocess
+
+        proc = subprocess.Popen(["node", "-v"], stdout=subprocess.PIPE)
+        installed_version = proc.stdout.read().decode("utf-8")[:-1]
+        print(f"The installed Node.js version is {installed_version}.")
+        for version in node_versions:
+            if version["version"] == installed_version:
+                return version["lts"]
+
     def initialize_options(self):
         self.clean = False
 
@@ -90,12 +114,12 @@ class BuildUI(Command):
         pass
 
     def run(self):
+        node_versions = self._node_versions()
         if self.clean:
             import shutil
 
             shutil.rmtree("covalent_ui/webapp/build", ignore_errors=True)
-
-        else:
+        elif self._node_lts(node_versions):
             import subprocess
 
             subprocess.run(
@@ -103,6 +127,15 @@ class BuildUI(Command):
             )
             subprocess.run(
                 ["yarn", "build"], cwd="covalent_ui/webapp", check=True, capture_output=True
+            )
+        else:
+            lts = self._latest_lts(node_versions)[1:]
+            print(
+                "The installed Node.js version is incompatible with the yarn build.\n",
+                "You must use a Node.js LTS version to install the Covalent webapp. ",
+                f"The latest LTS version is {lts}.\n",
+                "See https://stackoverflow.com/a/69778087/5513030 for more information ",
+                f"or simply run `nvm use {lts}`.",
             )
 
 
