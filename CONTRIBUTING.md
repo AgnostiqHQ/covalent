@@ -20,6 +20,8 @@ conda activate covalent-dev
 
 Install Covalent's core requirements as well as the developer requirements:
 ```shell
+conda config --add channels conda-forge
+conda config --set channel_priority strict
 conda install setuptools pip nodejs yarn requests
 python setup.py webapp
 pip install -e .
