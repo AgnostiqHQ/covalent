@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix HTTP status code for blank POST requests. #156
+- Fix HTTP status code for blank POST requests.
 
 ## [0.32.4] - 2022-03-17
 
