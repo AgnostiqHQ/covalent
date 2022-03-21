@@ -53,7 +53,7 @@ requirements:
         - poetry
         {% for package in data.get('install_requires', []) -%}
         {%   if not ( package.startswith('sentinel') ) -%}
-        {%   if not ( package.startswith('nats-py') ) -%}
+        {%   elif not ( package.startswith('nats-py') ) -%}
         - {{ package }}
         {%   endif -%}
         {% endfor %}
