@@ -21,6 +21,7 @@ async def main():
         data = msg.data.decode()
         print(f"Received a msg on '{subject} {reply}': {data}")
 
+    # TODO - We need to pick up the dispatch id and submit the corresponding workflow
     print(f"Subscribing to topic {TOPIC}.\nListening for msgs ... ")
     sub = await nc.subscribe(TOPIC, cb=msg_handler)
 

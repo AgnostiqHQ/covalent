@@ -18,10 +18,12 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import asyncio
 import os
 from multiprocessing import Queue as MPQ
 from typing import Any
 
+import nats
 import requests
 from app.schemas.workflow import (
     CancelWorkflowResponse,
@@ -29,19 +31,25 @@ from app.schemas.workflow import (
     Node,
     UpdateWorkflowResponse,
 )
+from dotenv import load_dotenv
 from fastapi import APIRouter
-
-from covalent._results_manager import Result
 
 from ....core.cancel_workflow import cancel_workflow_execution
 from ....core.dispatch_workflow import dispatch_workflow
 from ....core.update_workflow import update_workflow_results
+from ....core.utils import is_workflow_completed
 
 # TODO - Figure out how this BASE URI will be determined when this is deployed.
 BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
 
+load_dotenv()
+
+TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
+MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
+
 tasks_queue = MPQ()
 router = APIRouter()
+RESOURCE_AVAILABLE = True
 
 # Do we need this here?
 mock_result = {
@@ -88,6 +96,9 @@ def submit_workflow(*, dispatch_id: str) -> Any:
 
     requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
 
+    global RESOURCE_AVAILABLE
+    RESOURCE_AVAILABLE = False
+
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 
 
@@ -125,4 +136,45 @@ def update_workflow(*, dispatch_id: str, task_execution_results: Node) -> Update
 
     requests.put(f"{BASE_URI}/api/v0/ui/workflow/{dispatch_id}/task/{task_id}")
 
+    # TODO - Update resource availability status
+    global RESOURCE_AVAILABLE
+
+    if is_workflow_completed(result_obj=result_obj):
+        RESOURCE_AVAILABLE = True
+
     return {"response": f"{dispatch_id} workflow updated successfully"}
+
+
+async def main():
+    # TODO - Implement code to read dispatch ids
+
+    global RESOURCE_AVAILABLE
+
+    nc = await nats.connect(MQ_CONNECTION_URI)
+
+    async def msg_handler(msg):
+        # TODO - Figure out how to get the dispatch id
+        while not RESOURCE_AVAILABLE:
+            pass
+        submit_workflow(dispatch_id=msg.reply)
+
+    sub = await nc.subscribe(TOPIC, cb=msg_handler)
+
+    # TODO - Ask Alejandro for some clarification
+    try:
+        async for msg in sub.messages:
+            print(f"Received a message on '{msg.subject} {msg.reply}': {msg.data.decode()}")
+            await sub.unsubscribe()
+    except Exception as e:
+        pass
+
+
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    try:
+        asyncio.ensure_future(main())
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        loop.close()
