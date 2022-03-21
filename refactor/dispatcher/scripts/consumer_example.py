@@ -19,11 +19,25 @@ async def main():
         subject = msg.subject
         reply = msg.reply
         data = msg.data.decode()
-        print(f"Recieved a msg on '{subject} {reply}': {data}")
+        print(f"Received a msg on '{subject} {reply}': {data}")
+
+    print(f"Subscribing to topic {TOPIC}.\nListening for msgs ... ")
+    sub = await nc.subscribe(TOPIC, cb=msg_handler)
+
+    try:
+        async for msg in sub.messages:
+            print(f"Received a message on '{msg.subject} {msg.reply}': {msg.data.decode()}")
+            await sub.unsubscribe()
+    except Exception as e:
+        pass
 
 
-#
-# if __name__ == "__main__":
-#     loop = asyncio.get_event_loop()
-#     try:
-#         asyncio.ensure_future(main)
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    try:
+        asyncio.ensure_future(main())
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        loop.close()
