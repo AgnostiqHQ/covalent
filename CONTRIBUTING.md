@@ -34,6 +34,13 @@ Start the Covalent servers in developer mode:
 covalent start -d
 ```
 
+:bulb:*Note*
+We have seen `OSError: protocol not found` when running Covalent in development mode for the first time on some Debian based systems. Running this command may fix the problem.
+```
+apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
+```
+See more information on [Stackoverflow](https://stackoverflow.com/questions/65745342/oserror-protocol-not-found).
+
 Check the [writing tests](#writing-tests) section for more details on installing test specific packages. Finally, run the tests to verify your installation:
 ```shell
 pytest -v
