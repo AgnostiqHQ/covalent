@@ -90,4 +90,3 @@ jobs:
           tags: |
             ${{ secrets.AWS_ECR_REPO }}:latest
             ${{ secrets.AWS_ECR_REPO }}:${{ env.TAG }}
-
