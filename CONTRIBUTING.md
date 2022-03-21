@@ -20,7 +20,7 @@ conda activate covalent-dev
 
 Install Covalent's core requirements as well as the developer requirements:
 ```shell
-conda install setuptools pip nodejs yarn
+conda install setuptools pip nodejs yarn requests
 python setup.py webapp
 pip install -e .
 pip install -r tests/requirements.txt
