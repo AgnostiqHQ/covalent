@@ -60,14 +60,18 @@ jobs:
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v1
       - name: Build image and push to test repo
-        run: |
-          docker build -t covalent_test .
-          docker tag covalent_test:latest ${{ secrets.AWS_ECR_TEST_REPO }}:latest
-          docker push ${{ secrets.AWS_ECR_TEST_REPO }}:latest
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.AWS_ECR_TEST_REPO }}:${{ env.TAG }}
       - name: Test image
         run: |
-          docker pull ${{ secrets.AWS_ECR_TEST_REPO }}:latest
-          docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_TEST_REPO}}:latest
+          docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_TEST_REPO}}:${{ env.TAG }}
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           echo 'Running an example dispatch...'
