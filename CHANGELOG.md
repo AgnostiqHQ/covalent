@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.35.0] - 2022-03-24
+
+### Added
+
+- Results management endpoints; GET, PUT, POST for results object
+
 ## [0.34.1] - 2022-03-24
 
 ### Fixed
@@ -55,6 +61,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Input path for external libraries in the Lepton wrapper can (and should) now be a full path to the file.
+
+## [0.32.6] - 2022-03-21
+
+### Added
+
+- Checks in setup.py to confirm node version compatibility.
+- Instructions in CONTRIBUTING to address some common Debian setup issues.
 
 ## [0.32.5] - 2022-03-21
 
