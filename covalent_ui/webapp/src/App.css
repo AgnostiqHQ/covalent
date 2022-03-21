@@ -33,10 +33,11 @@
   }
 }
 
-/* TODO quick hack to disable handles */
+/* don't show handles */
 .react-flow__handle {
   visibility: hidden;
 }
+/* adjust handle for edge positioning */
 .react-flow__handle-bottom {
   bottom: 0px !important;
 }

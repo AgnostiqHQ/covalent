@@ -5,12 +5,100 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.31.0] - 2022-03-10
+## [0.32.5] - 2022-03-21
 
 ### Added
 
 - Support for Bash tasks
 - How-to guide demonstrating usage
+
+## [0.32.4] - 2022-03-17
+
+### Fixed
+
+- Docker commands in docs
+
+## [0.32.3] - 2022-03-16
+
+### Fixed
+
+- Fix missing UI graph edges between parameters and electrons in certain cases.
+- Fix UI crashes in cases where legacy localStorage state was being loaded.
+
+## [0.32.2] - 2022-03-16
+
+### Added
+
+- Images for graphs generated in tutorials and how-tos.
+- Note for quantum gravity tutorial to tell users that `tensorflow` doesn't work on M1 Macs.
+- `Known Issues` added to `README.md`
+
+### Fixed
+
+- `draw` function usage in tutorials and how-tos now reflects the UI images generated instead of using graphviz.
+- Images now render properly in RTD of how-tos.
+
+### Changed
+
+- Reran all the tutorials that could run, generating the outputs again.
+
+## [0.32.1] - 2022-03-15
+
+### Fixed
+
+- CLI now starts server directly in the subprocess instead of as a daemon
+- Logs are provided as pipes to Popen instead of using a shell redirect
+- Restart behavior fixed
+- Default port in `covalent_ui/app.py` uses the config manager
+
+### Removed
+
+- `_graceful_restart` function no longer needed without gunicorn
+
+## [0.32.0] - 2022-03-11
+
+### Added
+
+- Dispatcher microservice API endpoint to dispatch and update workflow.
+- Added get runnable task endpoint.
+
+## [0.31.0] - 2022-03-11
+
+### Added
+
+- Runner component's main functionality to run a set of tasks, cancel a task, and get a task's status added to its api.
+
+## [0.30.5] - 2022-03-11
+
+### Updated
+
+- Updated Workflow endpoints & API spec to support upload & download of result objects as pickle files
+
+## [0.30.4] - 2022-03-11
+
+### Fixed
+
+- When executing a task on an alternate Conda environment, Covalent no longer has to be installed on that environment. Previously, a Covalent object (the execution function as a TransportableObject) was passed to the environment. Now it is deserialized to a "normal" Python function, which is passed to the alternate Conda environment.
+
+## [0.30.3] - 2022-03-11
+
+### Fixed
+
+- Fixed the order of output storage in `post_process` which should have been the order in which the electron functions are called instead of being the order in which they are executed. This fixes the order in which the replacement of function calls with their output happens, which further fixes any discrepencies in the results obtained by the user.
+
+- Fixed the `post_process` test to check the order as well.
+
+## [0.30.2] - 2022-03-11
+
+### Changed
+
+- Updated eventlet to 0.31.0
+
+## [0.30.1] - 2022-03-10
+
+### Fixed
+
+- Eliminate unhandled exception in Covalent UI backend when calling fetch_result.
 
 ## [0.30.0] - 2022-03-09
 
@@ -114,9 +202,11 @@ Installed executor plugins don't have to be referred to by their full module nam
 - Added cli args to covalent UI flask server `covalent_ui/app.py` to modify port and log file path.
 
 ### Removed
+
 - Removed gunicorn from cli and Dockerfile.
 
 ### Changed
+
 - Updated cli `covalent_dispatcher/_cli/service.py` to run flask server directly, and removed dispatcher and UI flags.
 - Using Flask blueprints to merge Dispatcher and UI servers.
 - Updated Dockerfile to run flask server directly.

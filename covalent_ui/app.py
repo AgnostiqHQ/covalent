@@ -36,12 +36,11 @@ from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
-from covalent_dispatcher._db.dispatchdb import DispatchDB
+from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
-DEFAULT_PORT = 5000
 
 app = Flask(__name__, static_folder=WEBAPP_PATH)
 app.register_blueprint(bp)
@@ -75,13 +74,28 @@ def list_results():
         return jsonify([simplejson.loads(r[1]) for r in res])
 
 
+@app.route("/api/dev/results/<dispatch_id>")
+def fetch_result_dev(dispatch_id):
+    results_dir = request.args["resultsDir"]
+    result = rm.get_result(dispatch_id, results_dir=results_dir)
+
+    jsonified_result = encode_result(result)
+
+    return app.response_class(jsonified_result, status=200, mimetype="application/json")
+
+
 @app.route("/api/results/<dispatch_id>")
 def fetch_result(dispatch_id):
     with DispatchDB() as db:
         res = db.get([dispatch_id])
-    response = res[0][1]
+    if len(res) > 0:
+        response = res[0][1]
+        status = 200
+    else:
+        response = ""
+        status = 400
 
-    return app.response_class(response, status=200, mimetype="application/json")
+    return app.response_class(response, status=status, mimetype="application/json")
 
 
 @app.route("/api/results", methods=["DELETE"])
@@ -122,12 +136,7 @@ def serve(path):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument(
-        "-l",
-        "--log-file",
-        required=False,
-        help="Path to log file that will be written to by server.",
-    )
+
     ap.add_argument("-p", "--port", required=False, help="Server port number.")
     ap.add_argument(
         "-d",
@@ -136,21 +145,17 @@ if __name__ == "__main__":
         action="store_true",
         help="Start the server in developer mode.",
     )
-    args, unknown = ap.parse_known_args()
-    # log file to be specified by cli
-    if args.log_file:
-        import logging
 
-        log_file = args.log_file
-        logging.basicConfig(
-            filename=log_file,
-            level=logging.DEBUG,
-            format="%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s",
-        )
+    args, unknown = ap.parse_known_args()
+
     # port to be specified by cli
     if args.port:
         port = int(args.port)
     else:
-        port = DEFAULT_PORT
+        port = int(get_config("dispatcher.port"))
+
     debug = True if args.develop is True else False
-    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=True)
+    # reload = True if args.develop is True else False
+    reload = False
+
+    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)

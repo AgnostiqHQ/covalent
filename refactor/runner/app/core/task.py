@@ -19,34 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from datetime import datetime
-from typing import Any, List, Optional
+from multiprocessing import Queue as MPQ
 
-from pydantic import BaseModel
+from .execution import get_task_status, run_available_tasks
 
-
-class BaseNode(BaseModel):
-    name: str
-    start_time: datetime
-    end_time: datetime
-    status: str
-    output: Any
-    error: Optional[str]
-    stdout: str
-    stderr: str
-
-
-class Node(BaseNode):
-    id: int
-
-
-class DispatchWorkflowResponse(BaseModel):
-    response: str
-
-
-class CancelWorkflowResponse(BaseModel):
-    response: str
-
-
-class UpdateWorkflowResponse(BaseModel):
-    response: str
+cancelled_tasks_queue = MPQ()
+track_status_queue = MPQ()

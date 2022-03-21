@@ -19,8 +19,19 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from multiprocessing import Queue as MPQ
+
+from app.core.execution import get_task_status, run_available_tasks
 from app.schemas.task import CancelResponse, RunTaskResponse, TaskPickleList, TaskStatus
 from fastapi import APIRouter
+
+# These are not queues in the traditional sense
+# consider them as thread-safe, process-safe shared variables
+cancelled_tasks_queue = MPQ()
+track_status_queue = MPQ()
+
+AVAILABLE_RESOURCES = 4
+
 
 router = APIRouter()
 
@@ -58,6 +69,8 @@ def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
     ```
     """
 
+    # run_available_tasks(dispatch_id, cancelled_tasks_queue, track_status_queue, tasks, AVAILABLE_RESOURCES)
+
     return {"response": "execution of tasks started"}
 
 
@@ -67,6 +80,8 @@ def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
     Check status of a task
     """
 
+    # task_status = get_task_status(task_id, track_status_queue)
+
     return {"status": "running"}
 
 
@@ -75,5 +90,7 @@ def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     """
     Cancel a task
     """
+
+    # cancelled_tasks_queue.put(task_id)
 
     return {"cancelled_dispatch_id": f"{dispatch_id}", "cancelled_task_id": f"{task_id}"}
