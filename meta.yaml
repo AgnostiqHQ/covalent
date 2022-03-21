@@ -52,8 +52,7 @@ requirements:
         - yarn
         - poetry
         {% for package in data.get('install_requires', []) -%}
-        {%   if not ( package.startswith('sentinel') ) -%}
-        {%   elif not ( package.startswith('nats-py') ) -%}
+        {%   if not ( package.startswith('sentinel') or package.startswith('nats-py') ) -%}
         - {{ package }}
         {%   endif -%}
         {% endfor %}
