@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Retrieving results from running container via HTTP
+- Adding tests for Docker image in workflows
 
 ## [0.33.0] - 2022-03-24
 
