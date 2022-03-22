@@ -35,9 +35,11 @@ const connect = () => {
     }
   }
 
-  const socket = io(process.env.REACT_APP_API_URL, {
+  const socket = io(process.env.REACT_APP_UI_BACKEND_SVC_URI, {
     // required for CORS
     withCredentials: true,
+    transports: ['websocket', 'polling'],
+    path: "/ws/socket.io/"
   })
 
   socket.on('connect', () => {

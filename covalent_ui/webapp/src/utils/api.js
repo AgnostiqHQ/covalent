@@ -23,7 +23,7 @@
 import axios from 'axios'
 
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
+  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
 })
 
 API.interceptors.response.use(
