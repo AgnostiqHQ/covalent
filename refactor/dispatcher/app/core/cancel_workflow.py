@@ -36,15 +36,18 @@ load_dotenv()
 BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
 
 
-def cancel_workflow_execution(result_obj: Result, task_id_batch: List[int] = None) -> bool:
-    """Main cancel function. Called by the user via ct.cancel(dispatch_id)."""
+def cancel_workflow_execution(
+    result_obj: Result, task_id_batch: List[Tuple[str, int]] = None
+) -> bool:
+    """Main cancel function. Called by the user via ct.cancel(dispatch_id). The task_id_batch is composed of both
+    dispatch id and task ids in the form of a tuple."""
 
     cancellation_status = True
 
-    tasks = get_all_task_ids() if not task_id_batch else task_id_batch
+    tasks = get_all_task_ids(result_obj) if not task_id_batch else task_id_batch
 
-    for task_id in tasks:
-        if not cancel_task(result_obj.dispatch_id, task_id):
+    for dispatch_id, task_id in tasks:
+        if not cancel_task(dispatch_id, task_id):
             cancellation_status = False
 
     return cancellation_status
