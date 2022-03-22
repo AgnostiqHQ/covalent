@@ -84,20 +84,6 @@ def start_task(task_id, func, args, kwargs, executor, info_queue, dispatch_id):
     done_callback_to_runner(dispatch_id, task_id)
 
 
-def new_cancel_task(process, executor, info_queue):
-
-    # Using MPQ to get any information that execute method wanted to
-    # share with cancel method
-    executor.cancel(info_queue.get())
-
-    # Close the info_queue for any more data transfer
-    info_queue.close()
-    info_queue.join_thread()
-
-    process.terminate()
-    process.join()
-
-
 def run_tasks_with_resources(
     dispatch_id: str,
     tasks_left_to_run: List[Dict],
@@ -144,3 +130,26 @@ def run_tasks_with_resources(
         p.start()
 
     return tasks_data, tasks_left_to_run
+
+
+def get_task_status(executor, info_queue):
+
+    info = info_queue.get()
+    status = executor.get_status(info)
+    info_queue.put(info)
+
+    return status
+
+
+def cancel_running_task(process, executor, info_queue):
+
+    # Using MPQ to get any information that execute method wanted to
+    # share with cancel method
+    executor.cancel(info_queue.get())
+
+    # Close the info_queue for any more data transfer
+    info_queue.close()
+    info_queue.join_thread()
+
+    process.terminate()
+    process.join()

@@ -22,14 +22,9 @@
 from multiprocessing import Queue as MPQ
 
 import cloudpickle as pickle
-from app.core.execution import run_tasks_with_resources
+from app.core.execution import cancel_running_task, get_task_status, run_tasks_with_resources
 from app.schemas.task import CancelResponse, RunTaskResponse, TaskPickleList, TaskStatus
 from fastapi import APIRouter
-
-# These are not queues in the traditional sense
-# consider them as thread-safe, process-safe shared variables
-cancelled_tasks_queue = MPQ()
-track_status_queue = MPQ()
 
 INITAL_AVAILABLE_RESOURCES = 4
 
@@ -115,9 +110,13 @@ def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
     Check status of a task
     """
 
-    # task_status = get_task_status(task_id, track_status_queue)
+    # Pass in the executor and info_queue to get status from the executor
+    task_status = get_task_status(
+        ultimate_dict[dispatch_id][task_id].executor,
+        ultimate_dict[dispatch_id][task_id].info_queue,
+    )
 
-    return {"status": "running"}
+    return {"status": f"{task_status}"}
 
 
 @router.delete("/{dispatch_id}/task/{task_id}", status_code=200, response_model=CancelResponse)
@@ -126,7 +125,13 @@ def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     Cancel a task
     """
 
-    # cancelled_tasks_queue.put(task_id)
+    # Cancel a task by calling its executor's cancel method and terminating the process
+    cancel_running_task(
+        process=ultimate_dict[dispatch_id][task_id].process,
+        executor=ultimate_dict[dispatch_id][task_id].executor,
+        info_queue=ultimate_dict[dispatch_id][task_id].info_queue,
+    )
+
     resources.put(resources.get() + 1)
 
     return {"cancelled_dispatch_id": f"{dispatch_id}", "cancelled_task_id": f"{task_id}"}
