@@ -19,9 +19,15 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from dataclasses import dataclass
+from multiprocessing import Process
 from multiprocessing import Queue as MPQ
 
-from .execution import get_task_status, run_available_tasks
+from covalent.executor.base import BaseExecutor
 
-cancelled_tasks_queue = MPQ()
-track_status_queue = MPQ()
+
+@dataclass
+class TaskData:
+    process: Process
+    executor: BaseExecutor
+    info: MPQ

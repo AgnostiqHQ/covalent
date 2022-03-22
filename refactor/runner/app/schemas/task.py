@@ -25,9 +25,10 @@ from pydantic import BaseModel
 
 class Task(BaseModel):
     task_id: int
-    task_func: Callable
-    task_args: List[Any]
-    task_kwargs: Dict[str, Any]
+    func: Callable
+    args: List[Any]
+    kwargs: Dict[str, Any]
+    executor: Any
 
 
 class TaskPickleList(BaseModel):
@@ -35,7 +36,7 @@ class TaskPickleList(BaseModel):
 
 
 class RunTaskResponse(BaseModel):
-    response: str
+    left_out_task_ids: List
 
 
 class CancelResponse(BaseModel):

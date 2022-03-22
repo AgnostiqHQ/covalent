@@ -21,7 +21,8 @@
 
 from multiprocessing import Queue as MPQ
 
-from app.core.execution import get_task_status, run_available_tasks
+import cloudpickle as pickle
+from app.core.execution import run_tasks_with_resources
 from app.schemas.task import CancelResponse, RunTaskResponse, TaskPickleList, TaskStatus
 from fastapi import APIRouter
 
@@ -30,10 +31,30 @@ from fastapi import APIRouter
 cancelled_tasks_queue = MPQ()
 track_status_queue = MPQ()
 
-AVAILABLE_RESOURCES = 4
+INITAL_AVAILABLE_RESOURCES = 4
+
+resources = MPQ()
+resources.put(INITAL_AVAILABLE_RESOURCES)
 
 
 router = APIRouter()
+
+# Sample:
+# example_ultimate_data = {
+
+#     "dispatch_id_1": {
+#         "task_id_1": TaskData(None, None, None),
+#         "task_id_2": TaskData(None, None, None),
+#     },
+
+#     "dispatch_id_2": {
+#         "task_id_1": TaskData(None, None, None),
+#         "task_id_2": TaskData(None, None, None),
+#     }
+
+# }
+
+ultimate_dict = {}
 
 
 @router.post("/{dispatch_id}/tasks", status_code=202, response_model=RunTaskResponse)
@@ -44,7 +65,7 @@ def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
     Note: The request body contains a list of "string"s which are pickled objects (bytes) containing
     the following info about the Task:
 
-    `id`: Task ID \n
+    `task_id`: Task ID \n
     `func`: Callable function which will be run \n
     `args`: Positional arguments for `func` \n
     `kwargs`: Keyword arguments for `func` \n
@@ -62,16 +83,29 @@ def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
     executor_1 = LocalExecutor() \n
     executor_2 = LocalExecutor()
 
-    task_1 = pickle.dumps({"id": 0, "func": task_func_1, "args": (1, 2), "kwargs": {}, "executor": executor_1}) \n
-    task_2 = pickle.dumps({"id": 1, "func": task_func_2, "args": (3,), "kwargs": {}, "executor": executor_2})
+    task_1 = pickle.dumps({"task_id": 0, "func": task_func_1, "args": (1, 2), "kwargs": {}, "executor": executor_1}) \n
+    task_2 = pickle.dumps({"task_id": 1, "func": task_func_2, "args": (3,), "kwargs": {}, "executor": executor_2})
 
     requests.post(f'localhost:48008/api/workflow/{dispatch_id}/tasks', body=pickle.dumps([task_1, task_2]))
     ```
     """
 
-    # run_available_tasks(dispatch_id, cancelled_tasks_queue, track_status_queue, tasks, AVAILABLE_RESOURCES)
+    runnable_tasks = [pickle.loads(task) for task in tasks]
 
-    return {"response": "execution of tasks started"}
+    tasks_data, tasks_left_to_run = run_tasks_with_resources(
+        dispatch_id, runnable_tasks, resources
+    )
+
+    # Adding tasks_data to the ultimate dict
+    if ultimate_dict.get(dispatch_id, False):
+        ultimate_dict[dispatch_id].extend(tasks_data)
+    else:
+        ultimate_dict[dispatch_id] = tasks_data
+
+    # Returning the task ids which were not run due to insufficient resources
+    left_out_task_ids = [task["task_id"] for task in tasks_left_to_run]
+
+    return {"left_out_task_ids": left_out_task_ids}
 
 
 @router.get("/{dispatch_id}/task/{task_id}", status_code=200, response_model=TaskStatus)

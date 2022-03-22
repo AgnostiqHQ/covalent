@@ -21,116 +21,124 @@
 
 from multiprocessing import Process
 from multiprocessing import Queue as MPQ
-from queue import Empty
+from typing import Dict, List
+
+from .utils import TaskData
 
 
-def send_node_update_to_dispatcher(dispatch_id, task_id, node_output):
+def generate_task_result(task_id, status, output, error, stdout, stderr):
+    return {
+        "task_id": task_id,
+        "status": status,
+        "output": output,
+        "error": error,
+        "stdout": stdout,
+        "stderr": stderr,
+    }
+
+
+def send_task_update_to_dispatcher(dispatch_id, task_id, task_result):
+
     pass
 
 
-def start_task(task_id, result_queue, func, args, kwargs, executor):
+def start_task(task_id, func, args, kwargs, executor, info_queue, dispatch_id, resources):
 
     # And adding some other stuff if needed to this functions parameters
 
-    result = executor.execute(func, args, kwargs)
-    result_queue.put_nowait((task_id, result))
+    task_result = generate_task_result(
+        task_id=task_id,
+        status="RUNNING",
+        output=None,
+        error=None,
+        stdout=None,
+        stderr=None,
+    )
+
+    # Set task as running and send update to dispatcher
+    send_task_update_to_dispatcher(dispatch_id, task_id, task_result)
+
+    task_output = executor.execute(func, args, kwargs)
+
+    task_result = generate_task_result(
+        task_id=task_id,
+        status="RUNNING",
+        output=task_output,
+        error=None,
+        stdout=None,
+        stderr=None,
+    )
+
+    # Update available resources
+    available_resources = resources.get()
+    resources.put(available_resources + 1)
+
+    # Set task as complete and send update to dispatcher
+    send_task_update_to_dispatcher(dispatch_id, task_id, task_result)
 
 
-def cancel_task(process):
+def new_cancel_task(process, executor, info_queue):
+
+    # Using MPQ to get any information that execute method wanted to
+    # share with cancel method
+    executor.cancel(info_queue.get())
+
+    # Close the info_queue for any more data transfer
+    info_queue.close()
+    info_queue.join_thread()
+
     process.terminate()
     process.join()
-    pass
 
 
-def new_cancel_task(*args, keyword_only_arg, **kwargs):
-    executor = object
-    process = object
-
-    # Two options for cancel method of an executor,
-    # 1. Executor's cancel method should not take any arguments
-    # 2. It does take arguments, this will be more difficult because now
-    # we're gonna have to pass arguments from the user straight to this method
-    # through http which again will require pickling. One solution that might work
-    # is if we limit the types of arguments to be only of jsonify-able type.
-    executor.cancel()
-
-    process.terminate()
-    process.join()
-
-
-def update_status_queue(task_id, status, track_status_queue):
-
-    statuses = track_status_queue.get()
-    statuses[task_id] = status
-    track_status_queue.put(statuses)
-
-
-def get_task_status(task_id, track_status_queue):
-
-    statuses = track_status_queue.get()
-    task_status = statuses[task_id]
-    track_status_queue.put(statuses)
-    return task_status
-
-
-def check_task_cancellation(cancelled_queue, track_status_queue, available_tasks, processes):
-
-    try:
-        cancelled_task_id = cancelled_queue.get_nowait()
-        cancel_task(processes[cancelled_task_id])
-        update_status_queue(cancelled_task_id, "CANCELLED", track_status_queue)
-        available_tasks.pop(cancelled_task_id)
-    except Empty:
-        pass
-
-    return available_tasks
-
-
-def run_available_tasks(
+def run_tasks_with_resources(
     dispatch_id: str,
-    cancelled_queue: MPQ,
-    track_status_queue: MPQ,
-    available_tasks: list,
-    available_resources: int,
+    tasks_left_to_run: List[Dict],
+    resources: MPQ,
 ):
+    # Example task:
+    # {
+    #    "task_id": 3,
+    #    "func": Callable,
+    #    "args": [1, 2, 3],
+    #    "kwargs": {"a": 1, "b": 2},
+    #    "executor": Executor,
+    # }
 
-    processes = {}
+    tasks_data = {}
+    available_resources = resources.get()
+    processes = []
 
-    result_queue = MPQ()
+    for _ in range(available_resources):
 
-    while available_tasks:
+        # Popping first element from tasks_left_to_run
+        task = tasks_left_to_run.pop(0)
+        info_queue = MPQ()
 
-        available_tasks = check_task_cancellation(
-            cancelled_queue, track_status_queue, available_tasks, processes
+        # Organizing the args to be sent
+        starting_args = (
+            task["task_id"],
+            task["func"],
+            task["args"],
+            task["kwargs"],
+            task["executor"],
+            info_queue,
+            dispatch_id,
+            resources,
         )
 
-        for i in range(available_resources):
-            task_id, func, args, kwargs, executor = available_tasks[i]
-            starting_args = (task_id, result_queue, func, args, kwargs, executor)
+        process = Process(target=start_task, args=starting_args, daemon=True)
+        processes.append(process)
 
-            processes[task_id] = Process(target=start_task, args=starting_args, daemon=True)
-
-            available_tasks.pop(i)
-            available_resources -= 1
-
-        for task_id, proc in processes.items():
-            proc.start()
-            update_status_queue(task_id, "RUNNING", track_status_queue)
-
-        while True:
-            try:
-                completed_task_id, completed_task_result = result_queue.get_nowait()
-                processes[completed_task_id].join()
-                del processes[completed_task_id]
-                update_status_queue(completed_task_id, "COMPLETED", track_status_queue)
-
-                break
-            except Empty:
-                available_tasks = check_task_cancellation(
-                    cancelled_queue, track_status_queue, available_tasks, processes
-                )
-
-        available_resources += 1
-        available_tasks += send_node_update_to_dispatcher(
-            dispatch_id, completed_task_id, completed_task_result
+        tasks_data[task["task_id"]] = TaskData(
+            process=process, executor=task["executor"], info=info_queue
         )
+
+    # Setting the available resources as 0
+    resources.put(0)
+
+    # Starting the processes
+    for p in processes:
+        p.start()
+
+    return tasks_data, tasks_left_to_run
