@@ -33,7 +33,7 @@ from .utils import is_sublattice
 load_dotenv()
 
 
-BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
+BASE_URI = os.environ.get("BASE_URI")
 
 
 def cancel_workflow_execution(

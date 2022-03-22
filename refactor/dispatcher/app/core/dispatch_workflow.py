@@ -21,16 +21,24 @@
 
 """Workflow dispatch functionality."""
 
+import os
 from multiprocessing import Queue as MPQ
 from typing import Dict, List, Tuple
 
 import cloudpickle as pickle
+import requests
+from dotenv import load_dotenv
 
 from covalent._dispatcher_plugins import BaseDispatcher
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 
 from .utils import get_task_inputs, get_task_order, is_sublattice, preprocess_transport_graph
+
+load_dotenv()
+
+
+BASE_URI = os.environ.get("BASE_URI")
 
 
 def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
@@ -163,7 +171,7 @@ def run_task(
     this function continues to try running the tasks until the runner becomes free.
     """
 
-    pass
+    resp = requests.post(f"{BASE_URI}/api/v0/workflow/{result_obj.dispatch_id}/task")
 
 
 def is_runnable_task(task_id, results_obj, tasks_queue) -> bool:

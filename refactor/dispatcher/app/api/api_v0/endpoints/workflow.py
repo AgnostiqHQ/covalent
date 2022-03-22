@@ -39,7 +39,7 @@ from ....core.dispatch_workflow import dispatch_workflow
 from ....core.update_workflow import update_workflow_results
 
 # TODO - Figure out how this BASE URI will be determined when this is deployed.
-BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
+BASE_URI = os.environ.get("BASE_URI")
 
 tasks_queue = MPQ()
 router = APIRouter()
