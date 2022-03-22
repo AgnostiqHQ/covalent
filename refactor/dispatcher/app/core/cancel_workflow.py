@@ -21,12 +21,14 @@
 """Workflow cancel functionality."""
 
 import os
-from typing import List
+from typing import List, Tuple
 
 import requests
 from dotenv import load_dotenv
 
 from covalent._results_manager import Result
+
+from .utils import is_sublattice
 
 load_dotenv()
 
@@ -63,7 +65,20 @@ def cancel_task(dispatch_id: str, task_id: int) -> bool:
     return False
 
 
-def get_all_task_ids():
-    # TODO - return all task and sublattice task ids
+def get_all_task_ids(result_obj: Result) -> List[Tuple[str, int]]:
+    """Get all the task ids and the corresponding dispatch ids for a given lattice. When a sublattice is encountered,
+    the dispatch iud corresponding to the sublattice `dispatch_id:task_id` is used."""
 
-    pass
+    task_ids = []
+    for task_id in range(result_obj._num_nodes):
+        task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
+        if not is_sublattice(task_name):
+            task_ids.append((result_obj.dispatch_id, task_id))
+        else:
+            resp = requests.get(
+                f"{BASE_URI}/api/v0/workflow/results/{result_obj.dispatch_id}:{task_id}"
+            )
+            sublattice_result_obj = resp.json()["result_obj"]
+            task_ids = task_ids + get_all_task_ids(sublattice_result_obj)
+
+    return task_ids
