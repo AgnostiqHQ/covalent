@@ -19,3 +19,4 @@ nats-py==2.0.0
 python-multipart==0.0.5
 aiolimiter==1.0.0
 fastapi-socketio==0.0.9
+websockets==10.2
