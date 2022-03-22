@@ -23,7 +23,7 @@ from pydantic import BaseModel
 
 
 class ResultPickle(BaseModel):
-    result_object: bytes
+    result_object: str
 
 
 class SubmitResponse(BaseModel):
