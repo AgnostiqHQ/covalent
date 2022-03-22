@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import logging
+
 from pathlib import Path
 
 from app.api.api_v0.api import api_router
@@ -30,7 +32,7 @@ BASE_PATH = Path(__file__).resolve().parent
 app = FastAPI(title="Covalent UI Backend Service API")
 sio = SocketManager(app=app)
 
-
+logging.basicConfig(level=logging.DEBUG)
 app.include_router(api_router, prefix=settings.API_V0_STR)
 
 if __name__ == "__main__":
