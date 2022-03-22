@@ -81,7 +81,7 @@ jobs:
             python example_dispatch.py
           done
       - name: Login to ECR for master push
-        uses: docker/login-action@v1
+        uses: aws-actions/amazon-ecr-login@v1
       - name: Build image and push to master repo
         uses: docker/build-push-action@v2
         with:
