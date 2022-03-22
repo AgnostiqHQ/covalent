@@ -33,12 +33,16 @@ source:
     - url: https://files.pythonhosted.org/packages/a9/d4/2f63aebfb1f284f359a7d035908b27378a32a0fc59a8fe57d1d4f27094e5/nats-py-2.0.0.tar.gz
       sha256: e983751199f38edad89eedc764d295f7359a2c0cc610d886e48e5a465b6a1ad1
       folder: nats-py
+    - url: https://files.pythonhosted.org/packages/33/c9/854de19ff2b2a83111e892ef3028504a927f1aa19347de3f62abf38c2c99/aiolimiter-1.0.0.tar.gz
+      sha256: 9d40767e4476048145dfa9f61948445168d6e63cf42c95785a20b9aaff2e4564
+      folder: aiolimiter
 
 build:
     script:
         - pip install ./sentinel
         - pip install ./cova
         - pip install ./nats-py
+        - pip install ./aiolimiter
         - |
           cd ./cova/covalent_ui/webapp
           npm install
@@ -52,7 +56,7 @@ requirements:
         - yarn
         - poetry
         {% for package in data.get('install_requires', []) -%}
-        {%   if not ( package.startswith('sentinel') or package.startswith('nats-py') ) -%}
+        {%   if not ( package.startswith('sentinel') or package.startswith('nats-py') or package.startswith('aiolimiter') ) -%}
         - {{ package }}
         {%   endif -%}
         {% endfor %}
