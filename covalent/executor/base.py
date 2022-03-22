@@ -27,7 +27,7 @@ import subprocess
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, ContextManager, Dict, Iterable, List, Tuple
+from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
 import cloudpickle as pickle
 
@@ -154,7 +154,8 @@ class BaseExecutor(ABC):
 
     def execute_in_conda_env(
         self,
-        function: TransportableObject,
+        fn: Callable,
+        fn_version: str,
         args: List,
         kwargs: Dict,
         conda_env: str,
@@ -165,8 +166,9 @@ class BaseExecutor(ABC):
         Execute the function with the given arguments, in a Conda environment.
 
         Args:
-            function: The input python function which will be executed and whose result
+            fn: The input python function which will be executed and whose result
                 is ultimately returned by this function.
+            fn_version: The python version the function was created with.
             args: List of positional arguments to be used by the function.
             kwargs: Dictionary of keyword arguments to be used by the function.
             conda_env: Name of a Conda environment in which to execute the task.
@@ -178,12 +180,12 @@ class BaseExecutor(ABC):
         """
 
         if not self.get_conda_path():
-            return self._on_conda_env_fail(function, args, kwargs, node_id)
+            return self._on_conda_env_fail(fn, args, kwargs, node_id)
 
         # Pickle the function
         temp_filename = ""
         with tempfile.NamedTemporaryFile(dir=cache_dir, delete=False) as f:
-            pickle.dump(function, f)
+            pickle.dump(fn, f)
             temp_filename = f.name
 
         result_filename = os.path.join(cache_dir, f'result_{temp_filename.split("/")[-1]}')
@@ -201,7 +203,7 @@ class BaseExecutor(ABC):
         else:
             message = "No Conda installation found on this compute node."
             app_log.warning(message)
-            return self._on_conda_env_fail(function, args, kwargs, node_id)
+            return self._on_conda_env_fail(fn, args, kwargs, node_id)
 
         shell_commands += f"conda activate {conda_env}\n"
         shell_commands += "retval=$?\n"
@@ -215,9 +217,9 @@ class BaseExecutor(ABC):
 
         # Check Python version and give a warning if there is a mismatch:
         shell_commands += "py_version=`python -V | awk '{{print $2}}'`\n"
-        shell_commands += f'if [[ "{function.python_version}" != "$py_version" ]]; then\n'
+        shell_commands += f'if [[ "{fn_version}" != "$py_version" ]]; then\n'
         shell_commands += '  echo "Warning: Python version mismatch:"\n'
-        shell_commands += f'  echo "Workflow version is {function.python_version}. Conda environment version is $py_version."\n'
+        shell_commands += f'  echo "Workflow version is {fn_version}. Conda environment version is $py_version."\n'
         shell_commands += "fi\n\n"
 
         shell_commands += "python - <<EOF\n"
@@ -226,11 +228,10 @@ class BaseExecutor(ABC):
 
         # Add Python commands to run the pickled function:
         shell_commands += f'with open("{temp_filename}", "rb") as f:\n'
-        shell_commands += "    function = pickle.load(f)\n\n"
+        shell_commands += "    fn = pickle.load(f)\n\n"
 
         shell_commands += f'os.remove("{temp_filename}")\n\n'
 
-        shell_commands += "fn = function.get_deserialized()\n"
         shell_commands += f"result = fn(*{args}, **{kwargs})\n\n"
 
         shell_commands += f'with open("{result_filename}", "wb") as f:\n'
@@ -250,7 +251,7 @@ class BaseExecutor(ABC):
 
             if out.returncode != 0:
                 app_log.warning(out.stderr)
-                return self._on_conda_env_fail(function, args, kwargs, node_id)
+                return self._on_conda_env_fail(fn, args, kwargs, node_id)
 
         with open(result_filename, "rb") as f:
             result = pickle.load(f)
@@ -259,13 +260,11 @@ class BaseExecutor(ABC):
             app_log.debug(message)
             return result
 
-    def _on_conda_env_fail(
-        self, func: TransportableObject, args: List, kwargs: Dict, node_id: int
-    ):
+    def _on_conda_env_fail(self, fn: Callable, args: List, kwargs: Dict, node_id: int):
         """
 
         Args:
-            func: The serialized input python function which will be executed and
+            fn: The input python function which will be executed and
                 whose result may be returned by this function.
             args: List of positional arguments to be used by the function.
             kwargs: Dictionary of keyword arguments to be used by the function.
@@ -281,7 +280,6 @@ class BaseExecutor(ABC):
         if self.current_env_on_conda_fail:
             message += "\nExecuting on the current Conda environment."
             app_log.warning(message)
-            fn = func.get_deserialized()
             result = fn(*args, **kwargs)
 
         else:

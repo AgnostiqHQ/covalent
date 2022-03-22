@@ -20,7 +20,7 @@
 
 
 from datetime import datetime
-from typing import Any, Optional, Sequence
+from typing import Any, List, Optional
 
 from pydantic import BaseModel
 

@@ -73,6 +73,7 @@ def test_execute_in_conda_env(mocker):
     conda_env_fail_mock = mocker.patch("covalent.executor.BaseExecutor._on_conda_env_fail")
     me.execute_in_conda_env(
         "function",
+        "function_version",
         "args",
         "kwargs",
         "conda_env",
