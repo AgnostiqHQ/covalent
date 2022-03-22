@@ -1,6 +1,6 @@
 from enum import Enum
 import json
-import os
+import logging
 
 import nats
 from typing import Any
@@ -18,6 +18,11 @@ class Queuer():
        return nats.connect(settings.MQ_CONNECTION_URI)
 
     async def publish(self, topic: str, msg: Any) -> Any:
+        # get enum value
+        topic = topic.value
         client = await self.get_client()
-        res = await client.publish(topic, json.dumps(msg).encode())
+        msg_json = json.dumps(msg)
+        logging.info(f"Publishing message to topic {topic}:")
+        logging.info(msg_json)
+        res = await client.publish(topic, msg_json.encode())
         return res
