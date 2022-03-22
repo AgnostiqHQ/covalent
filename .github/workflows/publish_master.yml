@@ -24,7 +24,7 @@ on:
   push:
     branches:
       - master
-      
+
 jobs:
   publish_master:
     runs-on: ubuntu-latest
@@ -94,5 +94,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-             ${{ secrets.AWS_ECR_REPO }}:latest
-             ${{ secrets.AWS_ECR_REPO }}:${{ env.TAG }}
+            ${{ secrets.AWS_ECR_REPO }}:latest
+            ${{ secrets.AWS_ECR_REPO }}:${{ env.TAG }}
