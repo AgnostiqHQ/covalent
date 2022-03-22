@@ -38,11 +38,14 @@ def generate_task_result(task_id, status, output, error, stdout, stderr):
 
 
 def send_task_update_to_dispatcher(dispatch_id, task_id, task_result):
-
     pass
 
 
-def start_task(task_id, func, args, kwargs, executor, info_queue, dispatch_id, resources):
+def done_callback_to_runner(dispatch_id, task_id):
+    pass
+
+
+def start_task(task_id, func, args, kwargs, executor, info_queue, dispatch_id):
 
     # And adding some other stuff if needed to this functions parameters
 
@@ -58,23 +61,27 @@ def start_task(task_id, func, args, kwargs, executor, info_queue, dispatch_id, r
     # Set task as running and send update to dispatcher
     send_task_update_to_dispatcher(dispatch_id, task_id, task_result)
 
+    # TODO: Get the correct results back here once we see what
+    # the executor is actually returning
     task_output = executor.execute(func, args, kwargs)
 
     task_result = generate_task_result(
         task_id=task_id,
-        status="RUNNING",
+        status="COMPLETE",
         output=task_output,
         error=None,
         stdout=None,
         stderr=None,
     )
 
-    # Update available resources
-    available_resources = resources.get()
-    resources.put(available_resources + 1)
+    # No more info needs to be stored about execution
+    info_queue.close()
 
     # Set task as complete and send update to dispatcher
     send_task_update_to_dispatcher(dispatch_id, task_id, task_result)
+
+    # Callback to the runner to close this process and free resources
+    done_callback_to_runner(dispatch_id, task_id)
 
 
 def new_cancel_task(process, executor, info_queue):
@@ -94,7 +101,7 @@ def new_cancel_task(process, executor, info_queue):
 def run_tasks_with_resources(
     dispatch_id: str,
     tasks_left_to_run: List[Dict],
-    resources: MPQ,
+    available_resources: int,
 ):
     # Example task:
     # {
@@ -106,7 +113,6 @@ def run_tasks_with_resources(
     # }
 
     tasks_data = {}
-    available_resources = resources.get()
     processes = []
 
     for _ in range(available_resources):
@@ -124,7 +130,6 @@ def run_tasks_with_resources(
             task["executor"],
             info_queue,
             dispatch_id,
-            resources,
         )
 
         process = Process(target=start_task, args=starting_args, daemon=True)
@@ -133,9 +138,6 @@ def run_tasks_with_resources(
         tasks_data[task["task_id"]] = TaskData(
             process=process, executor=task["executor"], info=info_queue
         )
-
-    # Setting the available resources as 0
-    resources.put(0)
 
     # Starting the processes
     for p in processes:

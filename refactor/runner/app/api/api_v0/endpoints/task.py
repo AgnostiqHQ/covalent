@@ -93,8 +93,9 @@ def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
     runnable_tasks = [pickle.loads(task) for task in tasks]
 
     tasks_data, tasks_left_to_run = run_tasks_with_resources(
-        dispatch_id, runnable_tasks, resources
+        dispatch_id, runnable_tasks, resources.get()
     )
+    resources.put(0)
 
     # Adding tasks_data to the ultimate dict
     if ultimate_dict.get(dispatch_id, False):
@@ -126,5 +127,18 @@ def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     """
 
     # cancelled_tasks_queue.put(task_id)
+    resources.put(resources.get() + 1)
 
     return {"cancelled_dispatch_id": f"{dispatch_id}", "cancelled_task_id": f"{task_id}"}
+
+
+@router.post("/{dispatch_id}/task/{task_id}/done", status_code=200)
+def task_done(*, dispatch_id: str, task_id: int) -> None:
+    """
+    Callback to the runner to join the process and free resources
+    """
+
+    resources.put(resources.get() + 1)
+
+    ultimate_dict[dispatch_id][task_id].process.terminate()
+    ultimate_dict[dispatch_id][task_id].process.join()
