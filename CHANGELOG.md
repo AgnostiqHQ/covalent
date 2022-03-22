@@ -9,7 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Picking up dispatch jobs from the queue.
+- Picking up dispatch jobs from the queue and ensuring that only one workflow is processed (locally) at any given time.
+
+## [0.32.7] - 2022-03-22
+
+### Added
+
+- Queuer API submit endpoint to publish dispatch message to MQ & send result file to Data Service
+- API Service class for interfacing with local services
+- Tests covering submit endpoint and API Service
+
+## [0.32.6] - 2022-03-22
+
+### Fixed
+
+- Input path for external libraries in the Lepton wrapper can (and should) now be a full path to the file.
+
+## [0.32.5] - 2022-03-21
+
+### Fixed
+
+- Fix HTTP status code for blank POST requests.
+
+## [0.32.4] - 2022-03-17
+
+### Fixed
+
+- Docker commands in docs
 
 ## [0.32.3] - 2022-03-16
 

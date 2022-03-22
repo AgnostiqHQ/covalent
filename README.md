@@ -48,19 +48,6 @@ Covalent is developed using Python version 3.8 on Linux and macOS. The easiest w
 pip install cova
 ```
 
-Covalent can also be run using Docker
-
-```console
-docker pull public.ecr.aws/covalent/covalent
-
-# Run the container as a server
-docker run -d -p 48008:8080 covalent
-
-# Or run the container as a developer environment
-docker run -it --rm covalent bash
-
-```
-
 Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for more details on setting up.
 
 ## 📖 Example
@@ -69,6 +56,13 @@ Begin by starting the Covalent servers:
 
 ```console
 covalent start
+```
+
+As an alternative, Covalent can be run using Docker:
+
+```console
+# Run the container as a server
+docker run -d -p 48008:8080 public.ecr.aws/covalent/covalent
 ```
 
 Navigate to the user interface at `http://localhost:48008` to monitor workflow execution progress.

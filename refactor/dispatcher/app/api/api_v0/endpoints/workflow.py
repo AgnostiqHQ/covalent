@@ -134,7 +134,7 @@ def update_workflow(*, dispatch_id: str, task_execution_results: Node) -> Update
 
 
 async def main():
-    # TODO - Implement code to read dispatch ids
+    """Pick up workflows from the message queue and dispatch them one by one."""
 
     nc = await nats.connect(MQ_CONNECTION_URI)
 
