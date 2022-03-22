@@ -79,20 +79,23 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     result_obj = init_result_pre_dispatch(result_obj=result_obj)
     task_order: List[List] = get_task_order(result_obj=result_obj)
     tasks_queue.put(task_order)
-    tasks, functions, input_args, executors = get_runnable_tasks(result_obj, tasks_queue)
+    tasks, functions, input_args, input_kwargs, executors = get_runnable_tasks(
+        result_obj, tasks_queue
+    )
     run_task(
         result_obj=result_obj,
         task_id_batch=tasks,
         functions=functions,
-        pickled_input_args=pickle.dumps(input_args),
-        pickled_executors=pickle.dumps(executors),
+        input_args=input_args,
+        input_kwargs=input_kwargs,
+        executors=pickle.dumps(executors),
     )
     return result_obj
 
 
 def get_runnable_tasks(
     result_obj: Result, tasks_queue: MPQ
-) -> Tuple[List[int], List[bytes], List[Dict], List[BaseDispatcher]]:
+) -> Tuple[List[int], List[bytes], List[List], List[Dict], List[BaseDispatcher]]:
     """Return a list of tasks that can be run and the corresponding executors and input
     parameters."""
 
@@ -100,6 +103,7 @@ def get_runnable_tasks(
     tasks = tasks_order.pop(0)
 
     input_args = []
+    input_kwargs = []
     executors = []
     runnable_tasks = []
     non_runnable_tasks = []
@@ -134,7 +138,8 @@ def get_runnable_tasks(
         elif is_runnable_task(task_id, result_obj, tasks_queue):
             runnable_tasks.append(task_id)
             preprocess_transport_graph(task_id, task_name, result_obj)
-            input_args.append(task_inputs)
+            input_args.append(task_inputs["args"])
+            input_kwargs.append(task_inputs["kwargs"])
             executors.append(executor)
             functions.append(serialized_function)
 
@@ -145,7 +150,7 @@ def get_runnable_tasks(
         tasks_order = [non_runnable_tasks] + tasks_order
         tasks_queue.put(tasks_order)
 
-    return runnable_tasks, functions, input_args, executors
+    return runnable_tasks, functions, input_args, input_kwargs, executors
 
 
 def init_result_pre_dispatch(result_obj: Result):
@@ -162,8 +167,9 @@ def run_task(
     result_obj: Result,
     task_id_batch: List[int],
     functions: List[bytes],
-    pickled_input_args: bytes,
-    pickled_executors: bytes,
+    input_args: List[List],
+    input_kwargs: List[Dict],
+    executors: List[bytes],
 ):
     """Ask Runner to execute tasks - get back True (False) if resources are (not) available.
 
@@ -171,7 +177,25 @@ def run_task(
     this function continues to try running the tasks until the runner becomes free.
     """
 
-    resp = requests.post(f"{BASE_URI}/api/v0/workflow/{result_obj.dispatch_id}/task")
+    request_body = []
+    for task_id, func, args, kwargs, executor in zip(
+        task_id_batch, functions, input_args, input_kwargs, executors
+    ):
+        request_body.append(
+            pickle.dumps(
+                {
+                    "task_id": task_id,
+                    "func": func,
+                    "args": args,
+                    "kwargs": kwargs,
+                    "executor": executor,
+                }
+            )
+        )
+    requests.post(
+        f"{BASE_URI}/api/v0/workflow/{result_obj.dispatch_id}/task",
+        data=pickle.dumps(request_body),
+    )
 
 
 def is_runnable_task(task_id, results_obj, tasks_queue) -> bool:
