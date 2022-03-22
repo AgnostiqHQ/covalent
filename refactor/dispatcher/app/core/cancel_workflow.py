@@ -20,9 +20,18 @@
 
 """Workflow cancel functionality."""
 
+import os
 from typing import List
 
+import requests
+from dotenv import load_dotenv
+
 from covalent._results_manager import Result
+
+load_dotenv()
+
+
+BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
 
 
 def cancel_workflow_execution(result_obj: Result, task_id_batch: List[int] = None) -> bool:
@@ -39,11 +48,19 @@ def cancel_workflow_execution(result_obj: Result, task_id_batch: List[int] = Non
     return cancellation_status
 
 
-def cancel_task(dispatch_id: str, task_id_batch: List[int]) -> bool:
+def cancel_task(dispatch_id: str, task_id: int) -> bool:
     """Asks the Runner API to cancel the execution of these tasks and returns the status of whether it was
     successful."""
 
-    pass
+    resp = requests.delete(f"{BASE_URI}/api/v0/workflow/{dispatch_id}/task/{task_id}/cancel")
+    if (
+        ("cancelled_dispatch_id" and "cancelled_task_id" in resp.json())
+        and (resp.json()["cancelled_dispatch_id"] == dispatch_id)
+        and (resp.json()["cancelled_task_id"] == task_id)
+    ):
+        return True
+
+    return False
 
 
 def get_all_task_ids():
