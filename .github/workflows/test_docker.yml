@@ -18,13 +18,13 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-name: pull-request
+name: test-docker
 
 on:
   pull_request
 
 jobs:
-  pull_request:
+  test_docker:
     runs-on: ubuntu-latest
     steps:
       - name: Check out head
