@@ -52,8 +52,7 @@ _DEFAULT_CONFIG = {
         "port": 48008,
         "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
-        "results_db": "results",
-        "results_db_file": "results.db",
+        "results_dir": os.environ.get("COVALENT_RESULTS_DIR", "results"),
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
     },
