@@ -19,14 +19,20 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import traceback
 from multiprocessing import Process
 from multiprocessing import Queue as MPQ
 from typing import Dict, List
 
+import cloudpickle as pickle
+import requests
+
+from covalent._results_manager.result import Result
+
 from .utils import TaskData
 
 
-def generate_task_result(task_id, status, output, error, stdout, stderr):
+def generate_task_result(task_id, status, output, error, stdout, stderr, info):
     return {
         "task_id": task_id,
         "status": status,
@@ -34,51 +40,73 @@ def generate_task_result(task_id, status, output, error, stdout, stderr):
         "error": error,
         "stdout": stdout,
         "stderr": stderr,
+        "info": info,
     }
 
 
-def send_task_update_to_dispatcher(dispatch_id, task_id, task_result):
-    pass
+def send_task_update_to_dispatcher(dispatch_id, task_result):
+
+    url = f"http://localhost:8000/api/v0/workflow/{dispatch_id}"
+    requests.post(url=url, data=pickle.dumps(task_result))
+
+
+def free_resources_call_to_runner(dispatch_id, task_id):
+
+    url = f"http://localhost:8000/api/v0/workflow/{dispatch_id}/task/{task_id}/free"
+    requests.post(url=url)
 
 
 def done_callback_to_runner(dispatch_id, task_id):
-    pass
+
+    url = f"http://localhost:8000/api/v0/workflow/{dispatch_id}/task/{task_id}/done"
+    requests.post(url=url)
 
 
-def start_task(task_id, func, args, kwargs, executor, info_queue, dispatch_id):
+def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, dispatch_id):
 
     # And adding some other stuff if needed to this functions parameters
 
     task_result = generate_task_result(
         task_id=task_id,
-        status="RUNNING",
+        status=Result.RUNNING,
         output=None,
         error=None,
         stdout=None,
         stderr=None,
+        info=None,
     )
 
     # Set task as running and send update to dispatcher
-    send_task_update_to_dispatcher(dispatch_id, task_id, task_result)
+    send_task_update_to_dispatcher(dispatch_id, task_result)
 
-    # TODO: Get the correct results back here once we see what
-    # the executor is actually returning
-    task_output = executor.execute(func, args, kwargs)
+    task_output, exception, stdout, stderr = executor.execute(
+        function=func,
+        args=args,
+        kwargs=kwargs,
+        info_queue=info_queue,
+        task_id=task_id,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+    )
 
     task_result = generate_task_result(
         task_id=task_id,
-        status="COMPLETE",
+        status=Result.COMPLETED,
         output=task_output,
-        error=None,
-        stdout=None,
-        stderr=None,
+        error="".join(traceback.TracebackException.from_exception(exception).format()),
+        stdout=stdout,
+        stderr=stderr,
+        info=info_queue.get(),
     )
 
     # No more info needs to be stored about execution
     info_queue.close()
 
+    # Free resources callback to runner
+    free_resources_call_to_runner(dispatch_id, task_id)
+
     # Set task as complete and send update to dispatcher
-    send_task_update_to_dispatcher(dispatch_id, task_id, task_result)
+    send_task_update_to_dispatcher(dispatch_id, task_result)
 
     # Callback to the runner to close this process and free resources
     done_callback_to_runner(dispatch_id, task_id)
@@ -96,6 +124,7 @@ def run_tasks_with_resources(
     #    "args": [1, 2, 3],
     #    "kwargs": {"a": 1, "b": 2},
     #    "executor": Executor,
+    #    "results_dir": "/path/to/results/"
     # }
 
     tasks_data = {}
@@ -114,6 +143,7 @@ def run_tasks_with_resources(
             task["args"],
             task["kwargs"],
             task["executor"],
+            task["results_dir"],
             info_queue,
             dispatch_id,
         )
@@ -122,7 +152,7 @@ def run_tasks_with_resources(
         processes.append(process)
 
         tasks_data[task["task_id"]] = TaskData(
-            process=process, executor=task["executor"], info=info_queue
+            process=process, executor=task["executor"], info_queue=info_queue
         )
 
     # Starting the processes

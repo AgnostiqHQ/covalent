@@ -30,4 +30,4 @@ from covalent.executor.base import BaseExecutor
 class TaskData:
     process: Process
     executor: BaseExecutor
-    info: MPQ
+    info_queue: MPQ

@@ -137,13 +137,25 @@ def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     return {"cancelled_dispatch_id": f"{dispatch_id}", "cancelled_task_id": f"{task_id}"}
 
 
-@router.post("/{dispatch_id}/task/{task_id}/done", status_code=200)
-def task_done(*, dispatch_id: str, task_id: int) -> None:
+@router.post("/{dispatch_id}/task/{task_id}/free", status_code=200)
+def free_resources(*, dispatch_id: str, task_id: int) -> None:
     """
-    Callback to the runner to join the process and free resources
+    Callback to the runner to free resources
     """
 
     resources.put(resources.get() + 1)
 
+
+@router.post("/{dispatch_id}/task/{task_id}/done", status_code=200)
+def task_done(*, dispatch_id: str, task_id: int) -> None:
+    """
+    Callback to the runner to join the process
+    """
+
     ultimate_dict[dispatch_id][task_id].process.terminate()
     ultimate_dict[dispatch_id][task_id].process.join()
+
+    del ultimate_dict[dispatch_id][task_id]
+
+    if not ultimate_dict[dispatch_id]:
+        del ultimate_dict[dispatch_id]
