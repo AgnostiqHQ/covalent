@@ -54,7 +54,7 @@ def get_result(
     """
     Get a result object as pickle file
     """
-    result: bytes = b"\x00\xF0"
+    result: bytes = b'\x00\xF0'
     # update logic to db lookup
     if not dispatch_id:
         raise HTTPException(status_code=404, detail="Result not found")
