@@ -26,11 +26,13 @@ import os
 import subprocess
 import tempfile
 from abc import ABC, abstractmethod
+from multiprocessing import Queue as MPQ
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
 import cloudpickle as pickle
 
+from .._results_manager.result import Result
 from .._shared_files import logger
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
@@ -127,9 +129,10 @@ class BaseExecutor(ABC):
         function: TransportableObject,
         args: List,
         kwargs: Dict,
+        info_queue: MPQ,
+        task_id: int,
         dispatch_id: str,
         results_dir: str,
-        node_id: int = -1,
     ) -> Any:
         """
         Execute the function with the given arguments.
@@ -141,10 +144,12 @@ class BaseExecutor(ABC):
                       is ultimately returned by this function.
             args: List of positional arguments to be used by the function.
             kwargs: Dictionary of keyword arguments to be used by the function.
+            info_queue: A multiprocessing Queue object used for shared variables across
+                processes. Information about, eg, status, can be stored here.
+            task_id: ID of the task in the transport graph which is using this executor.
             dispatch_id: The unique identifier of the external lattice process which is
                          calling this function.
             results_dir: The location of the results directory.
-            node_id: ID of the node in the transport graph which is using this executor.
 
         Returns:
             output: The result of the function execution.
@@ -160,7 +165,8 @@ class BaseExecutor(ABC):
         kwargs: Dict,
         conda_env: str,
         cache_dir: str,
-        node_id: int,
+        info_queue: MPQ,
+        task_id: int,
     ) -> Tuple[bool, Any]:
         """
         Execute the function with the given arguments, in a Conda environment.
@@ -173,14 +179,16 @@ class BaseExecutor(ABC):
             kwargs: Dictionary of keyword arguments to be used by the function.
             conda_env: Name of a Conda environment in which to execute the task.
             cache_dir: The directory where temporary files and logs (if any) are stored.
-            node_id: The integer identifier for the current node.
+            info_queue: A multiprocessing Queue object used for shared variables across
+                processes. Information about, eg, status, can be stored here.
+            task_id: The integer identifier for the current task.
 
         Returns:
             output: The result of the function execution.
         """
 
         if not self.get_conda_path():
-            return self._on_conda_env_fail(fn, args, kwargs, node_id)
+            return self._on_conda_env_fail(fn, args, kwargs, info_queue, task_id)
 
         # Pickle the function
         temp_filename = ""
@@ -203,7 +211,7 @@ class BaseExecutor(ABC):
         else:
             message = "No Conda installation found on this compute node."
             app_log.warning(message)
-            return self._on_conda_env_fail(fn, args, kwargs, node_id)
+            return self._on_conda_env_fail(fn, args, kwargs, info_queue, task_id)
 
         shell_commands += f"conda activate {conda_env}\n"
         shell_commands += "retval=$?\n"
@@ -251,16 +259,23 @@ class BaseExecutor(ABC):
 
             if out.returncode != 0:
                 app_log.warning(out.stderr)
-                return self._on_conda_env_fail(fn, args, kwargs, node_id)
+                return self._on_conda_env_fail(fn, args, kwargs, info_queue, task_id)
 
         with open(result_filename, "rb") as f:
             result = pickle.load(f)
 
-            message = f"Executed node {node_id} on Conda environment {self.conda_env}."
+            message = f"Executed task ID {task_id} on Conda environment {self.conda_env}."
             app_log.debug(message)
             return result
 
-    def _on_conda_env_fail(self, fn: Callable, args: List, kwargs: Dict, node_id: int):
+    def _on_conda_env_fail(
+        self,
+        fn: Callable,
+        args: List,
+        kwargs: Dict,
+        info_queue: MPQ,
+        task_id: int,
+    ):
         """
 
         Args:
@@ -268,7 +283,9 @@ class BaseExecutor(ABC):
                 whose result may be returned by this function.
             args: List of positional arguments to be used by the function.
             kwargs: Dictionary of keyword arguments to be used by the function.
-            node_id: The integer identifier for the current node.
+            info_queue: A multiprocessing Queue object used for shared variables across
+                processes. Information about, eg, status, can be stored here.
+            task_id: The integer identifier for the current task.
 
         Returns:
             output: The result of the function execution, if
@@ -276,7 +293,7 @@ class BaseExecutor(ABC):
         """
 
         result = None
-        message = f"Failed to execute node {node_id} on Conda environment {self.conda_env}."
+        message = f"Failed to execute task ID {task_id} on Conda environment {self.conda_env}."
         if self.current_env_on_conda_fail:
             message += "\nExecuting on the current Conda environment."
             app_log.warning(message)
@@ -341,3 +358,28 @@ class BaseExecutor(ABC):
             return False
         self.conda_path = which_conda
         return True
+
+    def cancel(self, info_dict: dict = {}) -> Tuple[Any, str, str]:
+        """
+        Cancel the execution task.
+
+        Args:
+            info_dict: a dictionary containing any neccessary parameters
+                needed to halt the task execution.
+
+        Returns:
+            Null values in the same structure as a successful return value (a 4-element tuple).
+        """
+
+        return (None, "", "", InterruptedError)
+
+    @abstractmethod
+    def get_status(self, info_dict: dict = {}) -> Result:
+        """
+        Get the current status of the task.
+
+        Args:
+            info_dict: a dictionary containing any neccessary parameters needed to query the status.
+        """
+
+        raise NotImplementedError
