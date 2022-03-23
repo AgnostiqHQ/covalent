@@ -29,6 +29,7 @@ class Task(BaseModel):
     args: List[Any]
     kwargs: Dict[str, Any]
     executor: Any
+    results_dir: str
 
 
 class TaskPickleList(BaseModel):

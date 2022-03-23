@@ -21,6 +21,7 @@
 
 """Workflow dispatch functionality."""
 
+import json
 import os
 from multiprocessing import Queue as MPQ
 from typing import Dict, List, Tuple
@@ -82,13 +83,14 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     tasks, functions, input_args, input_kwargs, executors = get_runnable_tasks(
         result_obj, tasks_queue
     )
-    run_task(
-        result_obj=result_obj,
+    run_tasks(
+        results_dir=result_obj.results_dir,
+        dispatch_id=result_obj.dispatch_id,
         task_id_batch=tasks,
         functions=functions,
         input_args=input_args,
         input_kwargs=input_kwargs,
-        executors=pickle.dumps(executors),
+        executors=executors,
     )
     return result_obj
 
@@ -163,8 +165,9 @@ def init_result_pre_dispatch(result_obj: Result):
     return result_obj
 
 
-def run_task(
-    result_obj: Result,
+def run_tasks(
+    results_dir: str,
+    dispatch_id: str,
     task_id_batch: List[int],
     functions: List[bytes],
     input_args: List[List],
@@ -177,25 +180,29 @@ def run_task(
     this function continues to try running the tasks until the runner becomes free.
     """
 
-    request_body = []
-    for task_id, func, args, kwargs, executor in zip(
-        task_id_batch, functions, input_args, input_kwargs, executors
-    ):
-        request_body.append(
-            pickle.dumps(
-                {
-                    "task_id": task_id,
-                    "func": func,
-                    "args": args,
-                    "kwargs": kwargs,
-                    "executor": executor,
-                }
-            )
+    request_body = [
+        pickle.dumps(
+            {
+                "task_id": task_id,
+                "func": func,
+                "args": args,
+                "kwargs": kwargs,
+                "executor": executor,
+                "results_dir": results_dir,
+            }
         )
-    requests.post(
-        f"{BASE_URI}/api/v0/workflow/{result_obj.dispatch_id}/task",
+        for task_id, func, args, kwargs, executor in zip(
+            task_id_batch, functions, input_args, input_kwargs, executors
+        )
+    ]
+
+    response = requests.post(
+        f"{BASE_URI}/api/v0/workflow/{dispatch_id}/tasks",
         data=pickle.dumps(request_body),
     )
+    response.raise_for_status()
+
+    return json.loads(response.text)["left_out_task_ids"]
 
 
 def is_runnable_task(task_id, results_obj, tasks_queue) -> bool:

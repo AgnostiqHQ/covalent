@@ -55,14 +55,14 @@ def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result)
                 output = output[key]
 
         result_obj._update_node(
-            task_id,
-            f"{task_name}({task_id})",
-            datetime.now(timezone.utc),
-            datetime.now(timezone.utc),
-            Result.COMPLETED,
-            output,
-            None,
+            node_id=task_id,
+            node_name=f"{task_name}({task_id})",
+            start_time=datetime.now(timezone.utc),
+            end_time=datetime.now(timezone.utc),
+            status=Result.COMPLETED,
+            output=output,
         )
+
     return result_obj
 
 
@@ -167,10 +167,7 @@ def is_sublattice(task_name: str = None) -> bool:
     dispatched, the build graph step is responsible for attaching a `sublattice` prefix to the
     corresponding task node."""
 
-    if task_name.startswith(sublattice_prefix):
-        return True
-
-    return False
+    return task_name.startswith(sublattice_prefix)
 
 
 def is_workflow_completed(result_obj: Result) -> bool:

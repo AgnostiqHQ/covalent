@@ -82,6 +82,6 @@ def get_all_task_ids(result_obj: Result) -> List[Tuple[str, int]]:
                 f"{BASE_URI}/api/v0/workflow/results/{result_obj.dispatch_id}:{task_id}"
             )
             sublattice_result_obj = resp.json()["result_obj"]
-            task_ids = task_ids + get_all_task_ids(sublattice_result_obj)
+            task_ids += get_all_task_ids(sublattice_result_obj)
 
     return task_ids
