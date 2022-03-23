@@ -113,7 +113,7 @@ def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
 
 
 @router.get("/{dispatch_id}/task/{task_id}", status_code=200, response_model=TaskStatus)
-def check_status(*, dispatch_id: str, task_id: int, info: dict) -> TaskStatus:
+def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
     """
     Check status of a task
     """
@@ -121,14 +121,14 @@ def check_status(*, dispatch_id: str, task_id: int, info: dict) -> TaskStatus:
     # Pass in the executor and info_queue to get status from the executor
     task_status = get_task_status(
         ultimate_dict[dispatch_id][task_id].executor,
-        info,
+        ultimate_dict[dispatch_id][task_id].info_queue,
     )
 
     return {"status": f"{task_status}"}
 
 
 @router.delete("/{dispatch_id}/task/{task_id}", status_code=200, response_model=CancelResponse)
-def cancel_task(*, dispatch_id: str, task_id: int, info: dict) -> CancelResponse:
+def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     """
     Cancel a task
     """
@@ -136,12 +136,8 @@ def cancel_task(*, dispatch_id: str, task_id: int, info: dict) -> CancelResponse
     # Cancel a task by calling its executor's cancel method and closing the info_queue
     cancel_running_task(
         executor=ultimate_dict[dispatch_id][task_id].executor,
-        info=info,
+        info_queue=ultimate_dict[dispatch_id][task_id].info_queue,
     )
-
-    # Close the info_queue for any more data transfer
-    ultimate_dict[dispatch_id][task_id].info_queue.close()
-    ultimate_dict[dispatch_id][task_id].info_queue.join_thread()
 
     # Terminate the process
     task_done(dispatch_id=dispatch_id, task_id=task_id)

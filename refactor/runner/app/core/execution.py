@@ -181,9 +181,21 @@ def run_tasks_with_resources(
     return tasks_data, tasks_left_to_run
 
 
-def get_task_status(executor, info):
-    return executor.get_status(info)
+def get_task_status(executor, info_queue):
+
+    info = info_queue.get()
+    status = executor.get_status(info)
+    info_queue.put(info)
+
+    return status
 
 
-def cancel_running_task(executor, info):
-    executor.cancel(info)
+def cancel_running_task(executor, info_queue):
+
+    # Using MPQ to get any information that execute method wanted to
+    # share with cancel method
+    executor.cancel(info_queue.get())
+
+    # Close the info_queue for any more data transfer
+    info_queue.close()
+    info_queue.join_thread()
