@@ -1,6 +1,6 @@
 import covalent as ct
 
-notify = [ct.webhooks.slack.NotifySlack(display_name="will")]
+endpoints = [ct.webhooks.slack.NotifySlack(display_name="will")]
 
 
 @ct.electron
@@ -8,7 +8,7 @@ def my_task(x, y):
     return x + y
 
 
-@ct.lattice(notify=notify)
+@ct.lattice(notify=endpoints)
 def workflow(x, y):
     return my_task(x, y)
 

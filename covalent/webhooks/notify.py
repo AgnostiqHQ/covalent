@@ -18,19 +18,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Notification objects which can be attached to lattices and electrons."""
 
-from app.schemas.ui import UpdateUIResponse
-from fastapi import APIRouter
-
-router = APIRouter()
+from abc import ABC, abstractmethod
 
 
-@router.put(
-    "/workflow/{dispatch_id}/task/{task_id}", status_code=200, response_model=UpdateUIResponse
-)
-def update_ui(*, dispatch_id: str, task_id: int) -> UpdateUIResponse:
-    """
-    API Endpoint (/api/workflow/task) to update ui frontend
+class NotifyEndpoint(ABC):
+    """Base notification endpoint class used for defining other types of
+    notification endpoints. Subclasses must define a notify function which
+    accepts a notification string forwarded to the endpoint. Other settings
+    specific to the subclass should be passed in its constructor.
     """
 
-    return {"response": "UI Updated"}
+    @abstractmethod
+    def notify(self, message: str) -> None:
+        raise NotImplementedError

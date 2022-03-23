@@ -21,14 +21,14 @@
 """Slack direct message and incoming webhook support."""
 
 import os
-from abc import ABC, abstractmethod
 from typing import Dict, Optional
 
-import requests
 import slack_sdk
 
 from .._shared_files.config import get_config, update_config
 from .._shared_files.logger import app_log
+from .notify import NotifyEndpoint
+from .webhook import NotifyWebhook
 
 _SLACK_DEFAULT_CONFIG = {
     "webhooks": {
@@ -44,48 +44,50 @@ _SLACK_DEFAULT_CONFIG = {
 update_config(_SLACK_DEFAULT_CONFIG, override_existing=False)
 
 
-class NotifyEndpoint(ABC):
-    @abstractmethod
-    def notify(self, message: str) -> None:
-        raise NotImplementedError
-
-
-class NotifyWebhook(NotifyEndpoint):
-    def __init__(
-        self,
-        webhook_url: str,
-    ) -> None:
-        self.webhook_url = webhook_url
-
-    def notify(self, message: str) -> None:
-
-        headers = {"content-type": "application/json"}
-        payload = {"text": message}
-
-        r = requests.post(self.webhook_url, headers=headers, data=payload)
-        r.raise_for_status()
-
-
 class NotifySlack(NotifyEndpoint):
+    """Slack notification endpoint. Both incoming webhooks and direct messages are supported
+    depending on what is provided to the constructor.
+
+    Args:
+        webhook_url: A URL to an incoming webhook.
+        token: A Slack bot token with permissions users:read, chat:write, groups:write, im:write,
+               mpim:write. Begins with xoxb-. Only required if a channel or display_name are
+               provided.
+        channel: A slack channel ID to direct message.
+        display_name: A user's display name to direct message.
+    """
+
     def __init__(
         self,
+        webhook_url: str = get_config("webhooks.slack.webhook_url"),
         token: str = get_config("webhooks.slack.token"),
         channel: str = get_config("webhooks.slack.channel"),
         display_name: str = get_config("webhooks.slack.display_name"),
     ):
+        self.webhook_url = webhook_url
         self.token = token
         self.channel = channel
         self.display_name = display_name
 
-        if not bool(self.channel) ^ bool(self.display_name):
-            error_msg = "NotifySlack requires just one of either channel or display_name."
+        if (
+            int(bool(self.webhook_url)) + int(bool(self.channel)) + int(bool(self.display_name))
+            != 1
+        ):
+            error_msg = (
+                "NotifySlack requires just one of either webhook_url, channel, or display_name."
+            )
             app_log.warning(error_msg)
             raise ValueError(error_msg)
 
-        self.client = slack_sdk.WebClient(token=self.token)
+        if self.webhook_url:
+            self.endpoint = NotifyWebhook(self.webhook_url)
+        else:
+            self.client = slack_sdk.WebClient(token=self.token)
+            # Raises SlackApiError if token is invalid
+            self.client.api_test()
 
         # Convert display name to user ID
-        if not self.channel:
+        if self.display_name:
             response = self.client.users_list()
             members = response["members"]
 
@@ -104,4 +106,15 @@ class NotifySlack(NotifyEndpoint):
             self.channel = response["channel"]["id"]
 
     def notify(self, message: str) -> None:
-        self.client.chat_postMessage(channel=self.channel, text=message)
+        """Notify a Slack endpoint with a message.
+
+        Args:
+            message: A message forwarded to an incoming webhook or a bot.
+        """
+        if not message:
+            return
+
+        if self.webhook_url:
+            self.endpoint.notify(message)
+        else:
+            self.client.chat_postMessage(channel=self.channel, text=message)
