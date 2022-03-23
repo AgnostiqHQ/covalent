@@ -22,8 +22,8 @@ import logging
 
 from app.schemas.submit import ResultPickle, SubmitResponse
 from fastapi import APIRouter, File, HTTPException
-from refactor.queuer.app.core.api import DataService
-from refactor.queuer.app.core.queuer import Queuer
+from app.core.api import DataService
+from app.core.queuer import Queuer
 
 router = APIRouter()
 
