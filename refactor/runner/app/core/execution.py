@@ -20,6 +20,7 @@
 
 
 import traceback
+from datetime import datetime, timezone
 from multiprocessing import Process
 from multiprocessing import Queue as MPQ
 from typing import Dict, List
@@ -32,9 +33,22 @@ from covalent._results_manager.result import Result
 from .utils import TaskData
 
 
-def generate_task_result(task_id, status, output, error, stdout, stderr, info):
+def generate_task_result(
+    task_id,
+    start_time=None,
+    end_time=None,
+    status=None,
+    output=None,
+    error=None,
+    stdout=None,
+    stderr=None,
+    info=None,
+):
+
     return {
         "task_id": task_id,
+        "start_time": start_time,
+        "end_time": end_time,
         "status": status,
         "output": output,
         "error": error,
@@ -64,16 +78,10 @@ def done_callback_to_runner(dispatch_id, task_id):
 
 def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, dispatch_id):
 
-    # And adding some other stuff if needed to this functions parameters
-
     task_result = generate_task_result(
         task_id=task_id,
+        start_time=datetime.now(timezone.utc),
         status=Result.RUNNING,
-        output=None,
-        error=None,
-        stdout=None,
-        stderr=None,
-        info=None,
     )
 
     # Set task as running and send update to dispatcher
@@ -91,6 +99,7 @@ def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, d
 
     task_result = generate_task_result(
         task_id=task_id,
+        end_time=datetime.now(timezone.utc),
         status=Result.COMPLETED,
         output=task_output,
         error="".join(traceback.TracebackException.from_exception(exception).format()),
@@ -115,7 +124,7 @@ def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, d
 def run_tasks_with_resources(
     dispatch_id: str,
     tasks_left_to_run: List[Dict],
-    available_resources: int,
+    resources: MPQ,
 ):
     # Example task:
     # {
@@ -130,7 +139,14 @@ def run_tasks_with_resources(
     tasks_data = {}
     processes = []
 
-    for _ in range(available_resources):
+    # Get number of available resources
+    available_resources = resources.get()
+    resources.put(available_resources)
+
+    while available_resources > 0 and len(tasks_left_to_run) > 0:
+
+        # Reduce the number of available resources
+        resources.put(resources.get() - 1)
 
         # Popping first element from tasks_left_to_run
         task = tasks_left_to_run.pop(0)
@@ -155,6 +171,9 @@ def run_tasks_with_resources(
             process=process, executor=task["executor"], info_queue=info_queue
         )
 
+        available_resources = resources.get()
+        resources.put(available_resources)
+
     # Starting the processes
     for p in processes:
         p.start()
@@ -171,7 +190,7 @@ def get_task_status(executor, info_queue):
     return status
 
 
-def cancel_running_task(process, executor, info_queue):
+def cancel_running_task(executor, info_queue):
 
     # Using MPQ to get any information that execute method wanted to
     # share with cancel method
@@ -180,6 +199,3 @@ def cancel_running_task(process, executor, info_queue):
     # Close the info_queue for any more data transfer
     info_queue.close()
     info_queue.join_thread()
-
-    process.terminate()
-    process.join()

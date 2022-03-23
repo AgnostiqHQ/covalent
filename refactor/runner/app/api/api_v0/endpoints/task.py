@@ -19,12 +19,21 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from datetime import datetime, timezone
 from multiprocessing import Queue as MPQ
 
 import cloudpickle as pickle
-from app.core.execution import cancel_running_task, get_task_status, run_tasks_with_resources
+from app.core.execution import (
+    cancel_running_task,
+    generate_task_result,
+    get_task_status,
+    run_tasks_with_resources,
+    send_task_update_to_dispatcher,
+)
 from app.schemas.task import CancelResponse, RunTaskResponse, TaskPickleList, TaskStatus
 from fastapi import APIRouter
+
+from covalent._results_manager.result import Result
 
 INITAL_AVAILABLE_RESOURCES = 4
 
@@ -88,9 +97,8 @@ def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
     runnable_tasks = [pickle.loads(task) for task in tasks]
 
     tasks_data, tasks_left_to_run = run_tasks_with_resources(
-        dispatch_id, runnable_tasks, resources.get()
+        dispatch_id, runnable_tasks, resources
     )
-    resources.put(0)
 
     # Adding tasks_data to the ultimate dict
     if ultimate_dict.get(dispatch_id, False):
@@ -125,14 +133,26 @@ def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     Cancel a task
     """
 
-    # Cancel a task by calling its executor's cancel method and terminating the process
+    # Cancel a task by calling its executor's cancel method and closing the info_queue
     cancel_running_task(
-        process=ultimate_dict[dispatch_id][task_id].process,
         executor=ultimate_dict[dispatch_id][task_id].executor,
         info_queue=ultimate_dict[dispatch_id][task_id].info_queue,
     )
 
-    resources.put(resources.get() + 1)
+    # Terminate the process
+    task_done(dispatch_id=dispatch_id, task_id=task_id)
+
+    # Free the resources
+    free_resources(dispatch_id=dispatch_id, task_id=task_id)
+
+    # Send updated task result to dispatcher
+    task_result = generate_task_result(
+        task_id=task_id,
+        end_time=datetime.now(timezone.utc()),
+        status=Result.CANCELLED,
+    )
+
+    send_task_update_to_dispatcher(dispatch_id=dispatch_id, task_result=task_result)
 
     return {"cancelled_dispatch_id": f"{dispatch_id}", "cancelled_task_id": f"{task_id}"}
 
