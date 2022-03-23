@@ -23,9 +23,8 @@ import os
 from multiprocessing import Queue as MPQ
 
 import nats
+from app.core.queue_consumer import submit_workflow
 from dotenv import load_dotenv
-
-from ..api.api_v0.endpoints.workflow import submit_workflow
 
 load_dotenv()
 
