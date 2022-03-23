@@ -30,9 +30,6 @@ TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
 MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
 
-# TODO - Is there a strong reason for using asyncio in this case?
-
-
 async def main():
     nc = await nats.connect(MQ_CONNECTION_URI)
     await nc.publish(TOPIC, b"lkjlkjsgdfsg4df65g46")

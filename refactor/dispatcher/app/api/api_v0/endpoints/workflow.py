@@ -20,6 +20,7 @@
 
 import asyncio
 import os
+import time
 from multiprocessing import Queue as MPQ
 from typing import Any
 
@@ -37,7 +38,6 @@ from fastapi import APIRouter
 from ....core.cancel_workflow import cancel_workflow_execution
 from ....core.dispatch_workflow import dispatch_workflow
 from ....core.update_workflow import update_workflow_results
-from ....core.utils import is_workflow_completed
 
 load_dotenv()
 
@@ -46,6 +46,7 @@ TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
 MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
 tasks_queue = MPQ()
+workflow_status_queue = MPQ()
 router = APIRouter()
 
 # Do we need this here?
@@ -93,6 +94,8 @@ def submit_workflow(*, dispatch_id: str) -> Any:
 
     requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
 
+    workflow_status_queue.put("RUNNING")
+
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 
 
@@ -108,6 +111,8 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     success = cancel_workflow_execution(result_obj)
 
     if success:
+        workflow_status_queue.get()
+
         return {"response": f"{dispatch_id} workflow cancelled successfully"}
     else:
         return {"response": f"{dispatch_id} workflow did not cancel successfully"}
@@ -126,6 +131,9 @@ def update_workflow(*, dispatch_id: str, task_execution_results: Node) -> Update
 
     result_obj = update_workflow_results(task_execution_results, result_obj)
 
+    if result_obj._status != "RUNNING":
+        workflow_status_queue.get()
+
     requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
 
     requests.put(f"{BASE_URI}/api/v0/ui/workflow/{dispatch_id}/task/{task_id}")
@@ -140,11 +148,13 @@ async def main():
 
     async def msg_handler(msg):
         dispatch_id = msg.data.decode()
-        resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-        result_obj = resp.json()["result_obj"]
 
-        while not is_workflow_completed(result_obj):
-            pass
+        while True:
+            await asyncio.sleep(0.5)
+            if workflow_status_queue.empty():
+                break
+
+        submit_workflow(dispatch_id)
 
     sub = await nc.subscribe(TOPIC, cb=msg_handler)
 
