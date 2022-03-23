@@ -34,7 +34,6 @@ from fastapi import APIRouter
 
 from ....core.cancel_workflow import cancel_workflow_execution
 from ....core.dispatch_workflow import dispatch_workflow
-from ....core.queue_consumer import workflow_status_queue
 from ....core.update_workflow import update_workflow_results
 
 load_dotenv()
@@ -44,6 +43,7 @@ TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
 MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
 tasks_queue = MPQ()
+workflow_status_queue = MPQ()
 router = APIRouter()
 
 # Do we need this here?
@@ -129,7 +129,8 @@ def update_workflow(*, dispatch_id: str, task_execution_results: Node) -> Update
     result_obj = update_workflow_results(task_execution_results, result_obj)
 
     if result_obj._status != "RUNNING":
-        workflow_status_queue.get()  # Empty queue when workflow is no longer running (completed or failed)
+        workflow_status_queue.get()  # Empty queue when workflow is no longer running (completed
+        # or failed)
 
     requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
 

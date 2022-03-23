@@ -20,10 +20,9 @@
 
 import asyncio
 import os
-from multiprocessing import Queue as MPQ
 
 import nats
-from app.core.queue_consumer import submit_workflow
+from app.api.api_v0.endpoints.workflow import submit_workflow, workflow_status_queue
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -31,8 +30,6 @@ load_dotenv()
 BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
 TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
 MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
-
-workflow_status_queue = MPQ()
 
 
 async def main():
@@ -44,17 +41,17 @@ async def main():
         dispatch_id = msg.data.decode()
 
         while True:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.1)
             if workflow_status_queue.empty():
                 break
 
-        submit_workflow(dispatch_id)
+        submit_workflow(dispatch_id=dispatch_id)
 
     sub = await nc.subscribe(TOPIC, cb=msg_handler)
 
     try:
         await sub.next_msg()
-    except:
+    except nats.errors.TimeoutError:
         pass
 
 
@@ -66,4 +63,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     finally:
+        loop.stop()
         loop.close()
