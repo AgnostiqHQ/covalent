@@ -20,44 +20,38 @@
 
 import asyncio
 import os
-import time
+from multiprocessing import Queue as MPQ
 
 import nats
 from dotenv import load_dotenv
-from nats.errors import ConnectionClosedError, NoServersError, TimeoutError
+
+from ..api.api_v0.endpoints.workflow import submit_workflow
 
 load_dotenv()
 
+BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
 TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
 MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
-
-def complete_workflow():
-    time.sleep(10)
-    return True
+workflow_status_queue = MPQ()
 
 
 async def main():
-    print("Connecting to NATS...")
+    """Pick up workflows from the message queue and dispatch them one by one."""
+
     nc = await nats.connect(MQ_CONNECTION_URI)
 
     async def msg_handler(msg):
-        data = msg.data.decode()
-        print(f"Workflow dispatched with id: {data}")
-        print("starting workflow ...")
-        complete_workflow()
-        print("workflow done")
+        dispatch_id = msg.data.decode()
 
-    # TODO - We need to pick up the dispatch id and submit the corresponding workflow
-    print(f"Subscribing to topic {TOPIC}.\nListening for msgs ... ")
+        while True:
+            await asyncio.sleep(0.5)
+            if workflow_status_queue.empty():
+                break
+
+        submit_workflow(dispatch_id)
+
     sub = await nc.subscribe(TOPIC, cb=msg_handler)
-
-    # try:
-    #     async for msg in sub.messages:
-    #         print(f"Received a message on '{msg.subject} {msg.reply}': {msg.data.decode()}")
-    #         await sub.unsubscribe()
-    # except Exception as e:
-    #     pass
 
     try:
         await sub.next_msg()
