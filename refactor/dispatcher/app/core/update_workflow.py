@@ -21,7 +21,7 @@
 """Workflow result update functionality."""
 
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Dict
 
 from covalent._results_manager import Result
 
@@ -44,14 +44,9 @@ def update_workflow_results(task_execution_results: Dict, result_obj: Result) ->
     # If workflow is completed, post-process result
     elif is_workflow_completed(result_obj=result_obj):
 
-        task_execution_order: List[
-            List
-        ] = result_obj.lattice.transport_graph.get_topologically_sorted_graph()
-
         result_obj._result = _post_process(
             lattice=result_obj.lattice,
             task_outputs=result_obj.get_all_node_outputs(),
-            task_execution_order=task_execution_order,
         )
 
         result_obj._status = Result.COMPLETED
