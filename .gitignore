@@ -124,3 +124,4 @@ ipython_config.py
 
 # Temporary files
 covalent_dispatcher/_service/tmp*
+*_scratch.py
