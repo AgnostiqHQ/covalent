@@ -29,6 +29,7 @@ from typing import Optional
 
 import click
 import psutil
+import requests
 
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
@@ -123,7 +124,7 @@ def _next_available_port(requested_port: int) -> int:
     return assigned_port
 
 
-def _is_server_running() -> bool:
+def _is_server_running(port: int) -> bool:
     """Check status of the Covalent server.
 
     Returns:
@@ -131,6 +132,11 @@ def _is_server_running() -> bool:
     """
 
     if _read_pid(UI_PIDFILE) == -1:
+        return False
+    try:
+        r = requests.get(f"http://0.0.0.0:{port}")
+    except:
+        click.echo("Unable to connect to server.")
         return False
     return True
 
@@ -230,6 +236,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     "--port",
     default=get_config("user_interface.port"),
     show_default=True,
+    type=int,
     help="Server port number.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
@@ -281,7 +288,7 @@ def stop() -> None:
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
 @click.pass_context
-def restart(ctx, port: bool, develop: bool) -> None:
+def restart(ctx, port: int, develop: bool) -> None:
     """
     Restart the server.
     """
@@ -293,14 +300,21 @@ def restart(ctx, port: bool, develop: bool) -> None:
 
 
 @click.command()
-def status() -> None:
+@click.option(
+    "-p",
+    "--port",
+    default=get_config("user_interface.port"),
+    show_default=True,
+    type=int,
+    help="Check server status on a specific port.",
+)
+def status(port: int) -> None:
     """
     Query the status of the Covalent server.
     """
+    if port and _is_server_running(port):
 
-    if _read_pid(UI_PIDFILE) != -1:
-        ui_port = get_config("user_interface.port")
-        click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
+        click.echo(f"Covalent server is running at http://0.0.0.0:{port}.")
     else:
         _rm_pid_file(UI_PIDFILE)
         click.echo("Covalent server is stopped.")
