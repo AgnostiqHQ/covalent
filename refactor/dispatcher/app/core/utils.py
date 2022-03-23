@@ -202,12 +202,3 @@ def get_task_order(result_obj: Result) -> List[List]:
     """
 
     return result_obj.lattice.transport_graph.get_topologically_sorted_graph()
-
-
-#
-# def _write_result_to_db() -> None:
-#     pass
-#
-#
-# def _get_result(dispatch_id) -> Result:
-#     pass
