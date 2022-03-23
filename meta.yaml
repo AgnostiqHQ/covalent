@@ -33,12 +33,21 @@ source:
     - url: https://files.pythonhosted.org/packages/a9/d4/2f63aebfb1f284f359a7d035908b27378a32a0fc59a8fe57d1d4f27094e5/nats-py-2.0.0.tar.gz
       sha256: e983751199f38edad89eedc764d295f7359a2c0cc610d886e48e5a465b6a1ad1
       folder: nats-py
+    - url: https://files.pythonhosted.org/packages/33/c9/854de19ff2b2a83111e892ef3028504a927f1aa19347de3f62abf38c2c99/aiolimiter-1.0.0.tar.gz
+      sha256: 9d40767e4476048145dfa9f61948445168d6e63cf42c95785a20b9aaff2e4564
+      folder: aiolimiter
+    - url: https://files.pythonhosted.org/packages/67/a4/79a79ec12f315d18ace30d4fcb77e63b492be62a8e4bbc5f2dc0ddbf81b6/fastapi-socketio-0.0.9.tar.gz
+      sha256: 8c73aa94fe1bf1c9964ff89233a6ba52eeeec3ac8b9de0024d9d82b11e46bde5
+      folder: fastapi-socketio
+      
 
 build:
     script:
         - pip install ./sentinel
         - pip install ./cova
         - pip install ./nats-py
+        - pip install ./aiolimiter
+        - pip install ./fastapi-socketio
         - |
           cd ./cova/covalent_ui/webapp
           npm install
@@ -52,7 +61,7 @@ requirements:
         - yarn
         - poetry
         {% for package in data.get('install_requires', []) -%}
-        {%   if not ( package.startswith('sentinel') or package.startswith('nats-py') ) -%}
+        {%   if not ( package.startswith('sentinel') or package.startswith('nats-py') or package.startswith('aiolimiter') or package.startswith('fastapi-socketio') ) -%}
         - {{ package }}
         {%   endif -%}
         {% endfor %}
