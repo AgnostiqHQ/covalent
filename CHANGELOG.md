@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.32.9] - 2022-03-23
+
+### Fixed
+
+- Updated OS Queuer imports to remove top level modules `refactor.queuer` 
+
+## [0.32.8] - 2022-03-22
+
+### Added
+
+- Websocket notify endpoint with leaky bucket algo implementation to rate limit messages to frontend
+
+## [0.32.7] - 2022-03-22
+
+### Added
+
+- Queuer API submit endpoint to publish dispatch message to MQ & send result file to Data Service
+- API Service class for interfacing with local services
+- Tests covering submit endpoint and API Service
+
+## [0.32.6] - 2022-03-22
+
+### Fixed
+
+- Input path for external libraries in the Lepton wrapper can (and should) now be a full path to the file.
+
+## [0.32.5] - 2022-03-21
+
+### Fixed
+
+- Fix HTTP status code for blank POST requests.
+
 ## [0.32.4] - 2022-03-17
 
 ### Fixed

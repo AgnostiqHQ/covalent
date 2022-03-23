@@ -71,6 +71,7 @@ class Lepton(Electron):
     ) -> None:
         self.language = language
         self.library_name = library_name
+
         self.function_name = function_name
         # Types must be stored as strings, since not all type objects can be pickled
         self.argtypes = [(arg[0].__name__, arg[1]) for arg in argtypes]
@@ -81,7 +82,7 @@ class Lepton(Electron):
         # Assign metadata defaults
         super().set_metadata("executor", executor)
 
-    def wrap_task(self) -> Callable:
+    def wrap_task(self) -> Callable:  # noqa: max-complexity: 30
         """Return a lepton wrapper function."""
 
         def python_wrapper(*args, **kwargs) -> Any:
@@ -89,16 +90,25 @@ class Lepton(Electron):
 
             import importlib
 
+            if self.library_name.endswith(".py"):
+                lib_name = self.library_name[:-3]
+                lib_path = self.library_name
+            else:
+                lib_name = self.library_name
+                lib_path = self.library_name + ".py"
+
             try:
-                module = importlib.import_module(self.library_name)
-            except ModuleNotFoundError:
-                app_log.warning(f"Could not import the module '{self.library_name}'.")
+                module_spec = importlib.util.spec_from_file_location(lib_name, lib_path)
+                module = importlib.util.module_from_spec(module_spec)
+                module_spec.loader.exec_module(module)
+            except (ModuleNotFoundError, AttributeError):
+                app_log.error(f"Could not import the module '{self.library_name}'.")
                 raise
 
             try:
                 func = getattr(module, self.function_name)
             except AttributeError:
-                app_log.warning(
+                app_log.error(
                     f"Could not find the function '{self.function_name}' in '{self.library_name}'."
                 )
                 raise

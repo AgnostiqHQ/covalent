@@ -18,18 +18,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import logging
 
 from app.schemas.submit import ResultPickle, SubmitResponse
-from fastapi import APIRouter
+from fastapi import APIRouter, File, HTTPException
+from app.core.api import DataService
+from app.core.queuer import Queuer
 
 router = APIRouter()
 
-
 @router.post("/dispatch", status_code=202, response_model=SubmitResponse)
-async def submit_workflow(*, result: ResultPickle) -> SubmitResponse:
+async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitResponse:
     """
-    Submit a workflow
-
     Note: The object that contains the workflow function, interface to
     update attributes in the transport graph, inputs of the workflow,
     metadata, etc. is the result object that's why its type is ResultPickle
@@ -37,4 +37,25 @@ async def submit_workflow(*, result: ResultPickle) -> SubmitResponse:
     different components. We call it the result object because it is supposed
     to be the ultimate thing the user will get and will contain everything in the workflow.
     """
-    return {"dispatch_id": "48f1d3b7-27bb-4c5d-97fe-c0c61c197fd5"}
+
+    queue = Queuer()
+    data_svc = DataService()
+
+    try:
+        
+        created_result = await data_svc.create_result(result_pkl_file)
+
+        dispatch_id = created_result["dispatch_id"]
+        
+        await queue.publish(queue.topics.DIPATCH, {
+            "dispatch_id": dispatch_id
+        })
+
+        return {
+            "dispatch_id": dispatch_id
+        }
+
+    except Exception as err:
+        error_message = "Error dispatching workflow."
+        logging.exception(error_message)
+        raise HTTPException(status_code=400, detail=error_message)
