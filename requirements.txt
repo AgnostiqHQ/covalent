@@ -20,3 +20,4 @@ python-multipart==0.0.5
 aiolimiter==1.0.0
 fastapi-socketio==0.0.9
 websockets==10.2
+supervisor==4.2.4
