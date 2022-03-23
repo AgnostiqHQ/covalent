@@ -22,7 +22,9 @@
 
 import requests
 
-from .notify import NotifyEndpoint
+from covalent.notify.notify import NotifyEndpoint
+
+notification_plugin_name = "NotifyWebhook"
 
 
 class NotifyWebhook(NotifyEndpoint):

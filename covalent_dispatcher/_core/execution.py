@@ -48,7 +48,7 @@ from covalent._shared_files.defaults import (
 )
 from covalent._workflow.lattice import Lattice
 from covalent.executor import _executor_manager
-from covalent.webhooks.slack import NotifyEndpoint
+from covalent.notify.notify import NotifyEndpoint
 from covalent_ui import result_webhook
 
 from .._db.dispatchdb import DispatchDB

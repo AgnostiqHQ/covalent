@@ -42,7 +42,7 @@ from .._shared_files.utils import (
     get_serialized_function_str,
     required_params_passed,
 )
-from ..webhooks.slack import NotifyEndpoint
+from ..notify.notify import NotifyEndpoint
 from .transport import _TransportGraph
 
 if TYPE_CHECKING:

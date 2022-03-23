@@ -1,6 +1,6 @@
 import covalent as ct
 
-endpoints = [ct.webhooks.slack.NotifySlack(display_name="will")]
+endpoints = [ct.notify.NotifySlack(display_name="will")]
 
 
 @ct.electron
