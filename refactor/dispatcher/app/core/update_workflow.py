@@ -35,10 +35,10 @@ def update_workflow_results(task_execution_results: Dict, result_obj: Result) ->
     # Update the task results
     result_obj._update_node(**task_execution_results)
 
-    if task_execution_results["status"] == "FAILED":
+    if task_execution_results["status"] == Result.FAILED:
         result_obj._status = Result.FAILED
 
-    elif task_execution_results["status"] == "CANCELLED":
+    elif task_execution_results["status"] == Result.CANCELLED:
         result_obj._status = Result.CANCELLED
 
     # If workflow is completed, post-process result
