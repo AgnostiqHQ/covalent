@@ -27,15 +27,10 @@ import string
 import time
 from typing import Any, Optional, Union
 
+import cloudpickle as pickle
 import requests
 from app.schemas.common import HTTPExceptionSchema
-from app.schemas.workflow import (
-    InsertResultResponse,
-    Node,
-    Result,
-    ResultPickle,
-    UpdateResultResponse,
-)
+from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResultResponse
 from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
@@ -66,6 +61,11 @@ async def log_requests(request: Request, call_next):
     )
 
     return response
+
+
+def _handle_error_response(status_code: int, response: dict):
+    if status_code >= 400:
+        raise HTTPException(status_code=status_code, detail=response["detail"])
 
 
 def _db(sql: str, key: str = None) -> Optional[tuple[Union[bool, str]]]:
@@ -135,6 +135,18 @@ def insert_result(
     """
     Submit pickled result file
     """
+    try:
+        results_object = pickle.load(result_pkl_file.file)
+        dispatch_id = results_object.dispatch_id
+        r = requests.post(
+            f"http://{base_url}/upload",
+            files=[("file", ("result.pkl", result_pkl_file.file, "application/octet-stream"))],
+        )
+        response = r.json()
+        _handle_error_response(r.status_code, response)
+
+    except:
+        raise HTTPException(status_code=422, detail="Error in upload body.")
     return {"dispatch_id": "e4efd26c-240d-4ab1-9826-26ada91e429f"}
 
 
