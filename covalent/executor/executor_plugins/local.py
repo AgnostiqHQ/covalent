@@ -103,10 +103,10 @@ class LocalExecutor(BaseExecutor):
             io.StringIO()
         ) as stdout, redirect_stderr(io.StringIO()) as stderr:
 
+            result = None
             if self.conda_env != "":
-                result = None
 
-                result = self.execute_in_conda_env(
+                result, exception = self.execute_in_conda_env(
                     fn,
                     fn_version,
                     args,
@@ -131,7 +131,10 @@ class LocalExecutor(BaseExecutor):
         )
 
         info_dict = info_queue.get()
-        info_dict["STATUS"] = result.status
+        if result is None:
+            info_dict["STATUS"] = Result.Failed
+        else:
+            info_dict["STATUS"] = result.status
         info_queue.put(info_dict)
 
         return (result, stdout.getvalue(), stderr.getvalue(), exception)

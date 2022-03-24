@@ -184,7 +184,8 @@ class BaseExecutor(ABC):
             task_id: The integer identifier for the current task.
 
         Returns:
-            output: The result of the function execution.
+            output: A tuple of (result, exception); the result of the function execution and
+                the exception if there was one, or None, if there were not.
         """
 
         if not self.get_conda_path():
@@ -240,10 +241,15 @@ class BaseExecutor(ABC):
 
         shell_commands += f'os.remove("{temp_filename}")\n\n'
 
-        shell_commands += f"result = fn(*{args}, **{kwargs})\n\n"
+        shell_commands += "exception = None\n"
+        shell_commands += "result = None\n"
+        shell_commands += "try:\n"
+        shell_commands += f"    result = fn(*{args}, **{kwargs})\n"
+        shell_commands += "except Exception as e:\n"
+        shell_commands += "    exception = e\n\n"
 
         shell_commands += f'with open("{result_filename}", "wb") as f:\n'
-        shell_commands += "    pickle.dump(result, f)\n"
+        shell_commands += "    pickle.dump((result,exception), f)\n"
         shell_commands += "EOF\n"
 
         # Run the script and unpickle the result
@@ -262,11 +268,11 @@ class BaseExecutor(ABC):
                 return self._on_conda_env_fail(fn, args, kwargs, info_queue, task_id)
 
         with open(result_filename, "rb") as f:
-            result = pickle.load(f)
+            result, exception = pickle.load(f)
 
             message = f"Executed task ID {task_id} on Conda environment {self.conda_env}."
             app_log.debug(message)
-            return result
+            return (result, exception)
 
     def _on_conda_env_fail(
         self,
@@ -288,22 +294,29 @@ class BaseExecutor(ABC):
             task_id: The integer identifier for the current task.
 
         Returns:
-            output: The result of the function execution, if
-                self.current_env_on_conda_fail == True, otherwise, return value is None.
+            output: If self.current_env_on_conda_fail == True, a tuple of (result, exception);
+                the result of the function execution and the exception if there was one, or None,
+                if there were not.
+                If self.current_env_on_conda_fail == False, an exception is raised.
         """
 
         result = None
+        exception = None
         message = f"Failed to execute task ID {task_id} on Conda environment {self.conda_env}."
         if self.current_env_on_conda_fail:
             message += "\nExecuting on the current Conda environment."
             app_log.warning(message)
-            result = fn(*args, **kwargs)
+
+            try:
+                result = fn(*args, **kwargs)
+            except Exception as e:
+                exception = e
 
         else:
             app_log.error(message)
             raise RuntimeError
 
-        return result
+        return result, exception
 
     def get_conda_envs(self) -> None:
         """
