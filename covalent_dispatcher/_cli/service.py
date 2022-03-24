@@ -40,11 +40,42 @@ UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
 SD_PIDFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../sd.pid"
 
 
+def is_port_in_use(port: int, host: str = 'localhost') -> bool:
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        return sock.connect_ex((host, port)) == 0
+
 def _get_project_root_cwd() -> str:
     return os.path.dirname(os.path.abspath(__file__)) + "/../../"
 
-def _ensure_supervisord_running() -> bool:
-    
+def _ensure_supervisord_running():
+    cwd = _get_project_root_cwd()
+    pid = _read_pid(SD_PIDFILE)    
+    if psutil.pid_exists(pid):
+        click.echo(f"Supervisord already running in process {pid}.")
+    else:
+        proc = Popen(["supervisord"], stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
+        pid = proc.pid
+        with open(SD_PIDFILE, "w") as PIDFILE:
+            PIDFILE.write(str(pid))
+        count = 0
+        while not is_port_in_use(9001):
+            # if 30 seconds passes timeout
+            if count > 300:
+                click.echo("Supervisord was unable to start")
+                break
+            count+=1
+            time.sleep(0.1)
+        click.echo(f"Started Supervisord process {pid}.")
+
+def _stop_services() -> None:
+    _ensure_supervisord_running()
+    cwd = _get_project_root_cwd()
+    proc = Popen(["supervisorctl", "stop", "covalent:"], stdout=PIPE, cwd=cwd)
+    while True:
+        line = proc.stdout.readline()
+        print(line.decode("utf-8").split("\n")[0])
+        if not line: break
 
 def _read_pid(filename: str) -> int:
     """
@@ -234,118 +265,83 @@ def _graceful_shutdown(pidfile: str) -> None:
 
 @click.command()
 @click.pass_context
-def sstart(ctx) -> None:
+def start(ctx) -> None:
     cwd = _get_project_root_cwd()
-    existing_pid = _read_pid(SD_PIDFILE)
-    if psutil.pid_exists(existing_pid):
-        click.echo(f"Supervisord already running with pid {existing_pid}.")
-    else:
-        launch_str = "supervisord"
-        proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
-        pid = proc.pid
-        with open(SD_PIDFILE, "w") as PIDFILE:
-            PIDFILE.write(str(pid))
-        click.echo(f"Started supervisord with pid: {pid}")
-    proc = Popen(["supervisorctl", "start", "covalent:"], stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
-    
-
-
-@click.command()
-def sstatus() -> None:
-    cwd = _get_project_root_cwd()
-    existing_pid = _read_pid(SD_PIDFILE)
-
-    if psutil.pid_exists(existing_pid):
-        proc = Popen(["supervisorctl", "status"], stdout=PIPE, cwd=cwd)
-        click.echo("\nCovalent Services Status:")
-        while True:
-            line = proc.stdout.readline()
-            print(line.decode("utf-8").split("\n")[0])
-            if not line: break
-    else:
-        click.echo("Supervisord not running.")
-
-@click.command()
-@click.option(
-    "-p",
-    "--port",
-    default=get_config("user_interface.port"),
-    show_default=True,
-    help="Server port number.",
-)
-@click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
-@click.pass_context
-def start(ctx, port: int, develop: bool) -> None:
-    """
-    Start the Covalent server.
-    """
-
-    port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
-    set_config(
-        {
-            "user_interface.address": "0.0.0.0",
-            "user_interface.port": port,
-            "dispatcher.address": "0.0.0.0",
-            "dispatcher.port": port,
-        }
-    )
-
-    # Wait until the server actually starts listening on the port
-    server_listening = False
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    while not server_listening:
-        try:
-            sock.bind(("0.0.0.0", port))
-            sock.close()
-        except OSError:
-            server_listening = True
-
-        time.sleep(1)
-
-
-@click.command()
-def stop() -> None:
-    """
-    Stop the Covalent server.
-    """
-
-    _graceful_shutdown(UI_PIDFILE)
-
-
-@click.command()
-@click.option(
-    "-p",
-    "--port",
-    default=None,
-    type=int,
-    help="Restart Covalent server on a different port.",
-)
-@click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
-@click.pass_context
-def restart(ctx, port: bool, develop: bool) -> None:
-    """
-    Restart the server.
-    """
-
-    port = port or get_config("user_interface.port")
-
-    ctx.invoke(stop)
-    ctx.invoke(start, port=port, develop=develop)
-
+    _ensure_supervisord_running()
+    proc = Popen(["supervisorctl", "start","covalent:"], stdout=PIPE, cwd=cwd)
+    while True:
+        line = proc.stdout.readline()
+        click.echo(line.decode("utf-8").split("\n")[0])
+        if not line: break
+       
 
 @click.command()
 def status() -> None:
-    """
-    Query the status of the Covalent server.
-    """
+    _ensure_supervisord_running()
+    cwd = _get_project_root_cwd()
+    proc = Popen(["supervisorctl", "status"], stdout=PIPE, cwd=cwd)
+    while True:
+        line = proc.stdout.readline()
+        click.echo(line.decode("utf-8").split("\n")[0])
+        if not line: break
 
-    if _read_pid(UI_PIDFILE) != -1:
-        ui_port = get_config("user_interface.port")
-        click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
-    else:
-        _rm_pid_file(UI_PIDFILE)
-        click.echo("Covalent server is stopped.")
+@click.command()
+def stop() -> None:
+    _stop_services()
 
+@click.command()
+def restart() -> None:
+    _ensure_supervisord_running()
+    cwd = _get_project_root_cwd()
+    proc = Popen(["supervisorctl", "restart", "covalent:"], stdout=PIPE, cwd=cwd)
+    while True:
+        line = proc.stdout.readline()
+        click.echo(line.decode("utf-8").split("\n")[0])
+        if not line: break
+
+@click.command()
+@click.option(
+    "-s",
+    "--service",
+    help="Service name",
+)
+@click.option(
+    "-l",
+    "--lines",
+    default=1000,
+    show_default=True,
+    help="Lines (in bytes) to show for error logs",
+)
+def logs(service: str, lines: int) -> None:
+    if not service:
+        click.echo("No service name provided, please use '-s <service_name>' or '--service <service_name>")
+        return
+    _ensure_supervisord_running()
+    cwd = _get_project_root_cwd()
+    click.echo("_________________")
+    click.echo(f"Errors last {str(lines)} bytes:")
+    click.echo("_________________")
+    proc = Popen(["supervisorctl", "tail", f"-{str(lines)}",f"covalent:{service}", "stderr"], stdout=PIPE, cwd=cwd)
+    while True:
+        line = proc.stdout.readline()
+        print(line.decode("utf-8").split("\n")[0])
+        if not line: break
+    click.echo("_________________")
+    click.echo(f"Stdout last {str(lines)} bytes:")
+    click.echo("_________________")
+    proc = Popen(["supervisorctl", "tail", f"-{str(lines)}",f"covalent:{service}"], stdout=PIPE, cwd=cwd)
+    while True:
+        line = proc.stdout.readline()
+        print(line.decode("utf-8").split("\n")[0])
+        if not line: break
+    click.echo("_________________")
+    click.echo("Tailing current logs:")
+    click.echo("_________________")
+    proc = Popen(["supervisorctl", "tail", "-f",f"covalent:{service}"], stdout=PIPE, cwd=cwd)
+    while True:
+        line = proc.stdout.readline()
+        print(line.decode("utf-8").split("\n")[0])
+        if not line: break
 
 @click.command()
 def purge() -> None:
@@ -354,7 +350,8 @@ def purge() -> None:
     """
 
     # Shutdown server.
-    _graceful_shutdown(UI_PIDFILE)
+    _stop_services()
+    _graceful_shutdown(SD_PIDFILE)
 
     shutil.rmtree(get_config("sdk.log_dir"), ignore_errors=True)
     shutil.rmtree(get_config("dispatcher.cache_dir"), ignore_errors=True)

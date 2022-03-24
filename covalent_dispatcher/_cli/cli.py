@@ -24,7 +24,7 @@
 
 import click
 
-from .service import purge, restart, start, status, stop, sstart, sstatus
+from .service import purge, restart, start, status, stop, logs
 
 
 # Main entrypoint
@@ -54,8 +54,7 @@ cli.add_command(stop)
 cli.add_command(restart)
 cli.add_command(status)
 cli.add_command(purge)
-cli.add_command(sstart)
-cli.add_command(sstatus)
+cli.add_command(logs)
 
 if __name__ == "__main__":
     cli()
