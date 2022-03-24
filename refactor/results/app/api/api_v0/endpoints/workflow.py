@@ -63,6 +63,34 @@ async def log_requests(request: Request, call_next):
     return response
 
 
+def _get_result_file(dispatch_id: str) -> bytes:
+    filename = _get_result_from_db(dispatch_id, "filename")
+    path = _get_result_from_db(dispatch_id, "path")
+    if not dispatch_id or not filename or not path:
+        raise HTTPException(status_code=404, detail="Result was not found")
+    r = requests.get(
+        f"http://{base_url}/download", params={"file_location": filename}, stream=True
+    )
+    return r.raw
+
+
+def _upload_file(result_pkl_file: UploadFile):
+    results_object = {}
+    dispatch_id = ""
+    try:
+        results_object = pickle.load(result_pkl_file.file)
+        dispatch_id = results_object.dispatch_id
+    except:
+        raise HTTPException(status_code=422, detail="Error in upload body.")
+    r = requests.post(
+        f"http://{base_url}/upload",
+        files=[("file", ("result.pkl", result_pkl_file.file, "application/octet-stream"))],
+    )
+    response = r.json()
+    _handle_error_response(r.status_code, response)
+    return (response, dispatch_id)
+
+
 def _handle_error_response(status_code: int, response: dict):
     if status_code >= 400:
         raise HTTPException(status_code=status_code, detail=response["detail"])
@@ -124,14 +152,7 @@ def get_result(
     """
     Get a result object as pickle file
     """
-    filename = _get_result_from_db(dispatch_id, "filename")
-    path = _get_result_from_db(dispatch_id, "path")
-    if not dispatch_id or not filename or not path:
-        raise HTTPException(status_code=404, detail="Result not found")
-    r = requests.get(
-        f"http://{base_url}/download", params={"file_location": filename}, stream=True
-    )
-    result: bytes = r.raw
+    result: bytes = _get_result_file(dispatch_id)
     return StreamingResponse(io.BytesIO(result), media_type="application/octet-stream")
 
 
@@ -143,19 +164,7 @@ def insert_result(
     """
     Submit pickled result file
     """
-    results_object = {}
-    dispatch_id = ""
-    try:
-        results_object = pickle.load(result_pkl_file.file)
-        dispatch_id = results_object.dispatch_id
-    except:
-        raise HTTPException(status_code=422, detail="Error in upload body.")
-    r = requests.post(
-        f"http://{base_url}/upload",
-        files=[("file", ("result.pkl", result_pkl_file.file, "application/octet-stream"))],
-    )
-    response = r.json()
-    _handle_error_response(r.status_code, response)
+    (response, dispatch_id) = _upload_file(result_pkl_file)
     filename = response.get("filename")
     path = response.get("path")
     error_detail = "Error in response from data service. " + str(response)
@@ -182,7 +191,8 @@ def update_result(*, dispatch_id: str, task: Node) -> Any:
     """
     Update a result object's task
     """
-    # update logic to db lookup
+    result = _get_result_file(dispatch_id)
+    results_object = pickle.loads(result)
     if not dispatch_id:
         raise HTTPException(status_code=404, detail="Result not found")
     return {"response": "Task updated successfully"}
