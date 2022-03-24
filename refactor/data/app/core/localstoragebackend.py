@@ -20,6 +20,7 @@
 
 import os
 import shutil
+import traceback
 from abc import ABC
 from pathlib import Path
 from typing import BinaryIO, Generator, List, Union
@@ -90,12 +91,19 @@ class LocalStorageBackend(StorageBackend):
         """
 
         p = self.base_dir / Path(bucket_name) / Path(object_name)
+        # This is a hack to get this working, but we need to think about if it's the right thing to do.
+        try:
+            os.makedirs(self.base_dir / Path(bucket_name))
+        except FileExistsError:
+            pass
         # Check that bucket name resolves to a subdirectory of base_dir
         # and bucket_name/object_name resolves to under bucket_name.
         try:
             abs_base = str(Path(self.base_dir).resolve(True))
             abs_bucket = str((abs_base / Path(bucket_name)).resolve(True))
         except FileNotFoundError:
+            traceback.print_exception()
+            traceback.print_stack()
             return ("", "")
 
         abs_p = str(p.resolve())
