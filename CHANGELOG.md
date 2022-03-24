@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Slack and webhook notifications
 
+## [0.32.9] - 2022-03-23
+
+### Fixed
+
+- Updated OS Queuer imports to remove top level modules `refactor.queuer`
+
+## [0.32.8] - 2022-03-22
+
+### Added
+
+- Websocket notify endpoint with leaky bucket algo implementation to rate limit messages to frontend
+
 ## [0.32.7] - 2022-03-22
 
 ### Added
