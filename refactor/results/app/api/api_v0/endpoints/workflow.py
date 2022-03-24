@@ -75,17 +75,21 @@ def _get_result_file(dispatch_id: str) -> bytes:
     r = requests.get(
         f"http://{base_url}/download", params={"file_location": filename}, stream=True
     )
-    return r.raw
+    return r.content
 
 
 def _upload_file(result_pkl_file: BinaryIO):
     results_object = {}
     dispatch_id = ""
+    length = result_pkl_file.seek(0, 2)
+    result_pkl_file.seek(0)
     try:
         results_object = pickle.load(result_pkl_file)
         dispatch_id = results_object.dispatch_id
+        assert length > 0
     except:
         raise HTTPException(status_code=422, detail="Error in upload body.")
+    result_pkl_file.seek(0)
     r = requests.post(
         f"http://{base_url}/upload",
         files=[("file", ("result.pkl", result_pkl_file, "application/octet-stream"))],
@@ -138,7 +142,17 @@ def _get_result_from_db(dispatch_id: str, field: str) -> Optional[str]:
 
 
 def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
-    sql = f"INSERT INTO results VALUES('{dispatch_id}','{filename}','{path}')"
+    sql = ""
+    if _get_result_from_db(dispatch_id, "filename"):
+        sql = (
+            "UPDATE results "
+            f"SET filename = '{filename}', path = '{path}' "
+            f"WHERE dispatch_id = '{dispatch_id}' "
+            # f"ORDER BY dispatch_id "
+            # "LIMIT 1"
+        )
+    else:
+        sql = f"INSERT INTO results VALUES('{dispatch_id}','{filename}','{path}')"
     insert = _db(sql)
     if insert:
         (insert,) = insert
