@@ -205,6 +205,13 @@ def run_tasks(
     return json.loads(response.text)["left_out_task_ids"]
 
 
-def is_runnable_task(task_id, results_obj, tasks_queue) -> bool:
-    """Return status whether the task can be run"""
-    pass
+def is_runnable_task(task_id: int, results_obj: Result, tasks_queue: MPQ) -> bool:
+    """Return status whether the task can be run."""
+
+    parent_node_ids = results_obj.lattice.transport_graph.get_dependencies(task_id)
+
+    for node_id in parent_node_ids:
+        if results_obj._get_node_status(node_id) != Result.COMPLETED:
+            return False
+
+    return True
