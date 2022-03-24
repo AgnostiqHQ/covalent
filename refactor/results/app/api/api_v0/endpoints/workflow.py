@@ -88,7 +88,7 @@ def _upload_file(result_pkl_file: BinaryIO):
         raise HTTPException(status_code=422, detail="Error in upload body.")
     r = requests.post(
         f"http://{base_url}/upload",
-        files=[("file", ("result.pkl", result_pkl_file.file, "application/octet-stream"))],
+        files=[("file", ("result.pkl", result_pkl_file, "application/octet-stream"))],
     )
     response = r.json()
     _handle_error_response(r.status_code, response)
@@ -138,7 +138,7 @@ def _get_result_from_db(dispatch_id: str, field: str) -> Optional[str]:
 
 
 def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
-    sql = f"INSERT INTO results VALUES({dispatch_id},{filename},{path})"
+    sql = f"INSERT INTO results VALUES('{dispatch_id}','{filename}','{path}')"
     insert = _db(sql)
     if insert:
         (insert,) = insert
