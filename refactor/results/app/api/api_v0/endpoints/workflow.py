@@ -27,7 +27,8 @@ import sqlite3
 import string
 import time
 from os import path
-from typing import Any, Optional, Tuple, Union
+from tempfile import TemporaryFile
+from typing import Any, BinaryIO, Optional, Tuple, Union
 
 import cloudpickle as pickle
 import requests
@@ -77,11 +78,11 @@ def _get_result_file(dispatch_id: str) -> bytes:
     return r.raw
 
 
-def _upload_file(result_pkl_file: UploadFile):
+def _upload_file(result_pkl_file: BinaryIO):
     results_object = {}
     dispatch_id = ""
     try:
-        results_object = pickle.load(result_pkl_file.file)
+        results_object = pickle.load(result_pkl_file)
         dispatch_id = results_object.dispatch_id
     except:
         raise HTTPException(status_code=422, detail="Error in upload body.")
@@ -91,7 +92,15 @@ def _upload_file(result_pkl_file: UploadFile):
     )
     response = r.json()
     _handle_error_response(r.status_code, response)
-    return (response, dispatch_id)
+    filename = response.get("filename")
+    path = response.get("path")
+    error_detail = "Error in response from data service. " + str(response)
+    if filename and path:
+        if _add_record_to_db(dispatch_id, filename, path):
+            return {"dispatch_id": dispatch_id}
+        else:
+            error_detail = "Error adding record to database."
+    raise HTTPException(status_code=500, detail="Error adding record to database.")
 
 
 def _handle_error_response(status_code: int, response: dict):
@@ -167,16 +176,7 @@ def insert_result(
     """
     Submit pickled result file
     """
-    (response, dispatch_id) = _upload_file(result_pkl_file)
-    filename = response.get("filename")
-    path = response.get("path")
-    error_detail = "Error in response from data service. " + str(response)
-    if filename and path:
-        if _add_record_to_db(dispatch_id, filename, path):
-            return {"dispatch_id": dispatch_id}
-        else:
-            error_detail = "Error adding record to database."
-    raise HTTPException(status_code=500, detail="Error adding record to database.")
+    return _upload_file(result_pkl_file.file)
 
 
 @router.put(
@@ -196,6 +196,10 @@ def update_result(*, dispatch_id: str, task: Node) -> Any:
     """
     result = _get_result_file(dispatch_id)
     results_object = pickle.loads(result)
-    if not dispatch_id:
-        raise HTTPException(status_code=404, detail="Result not found")
-    return {"response": "Task updated successfully"}
+    task = pickle.loads(task)
+    results_object._update_node(**task)
+
+    pickled_result = TemporaryFile()
+    pickle.dump(results_object, pickled_result)
+    if _upload_file(pickled_result):
+        return {"response": "Task updated successfully"}
