@@ -39,7 +39,7 @@ source:
     - url: https://files.pythonhosted.org/packages/67/a4/79a79ec12f315d18ace30d4fcb77e63b492be62a8e4bbc5f2dc0ddbf81b6/fastapi-socketio-0.0.9.tar.gz
       sha256: 8c73aa94fe1bf1c9964ff89233a6ba52eeeec3ac8b9de0024d9d82b11e46bde5
       folder: fastapi-socketio
-      
+
 
 build:
     script:

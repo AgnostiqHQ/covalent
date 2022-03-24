@@ -18,24 +18,26 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import logging
-from pathlib import Path
+name: test-docker
 
-from app.api.api_v0.api import api_router
-from app.core.config import settings
-from fastapi import FastAPI
-from fastapi_socketio import SocketManager
+on:
+  pull_request
 
-BASE_PATH = Path(__file__).resolve().parent
-
-app = FastAPI(title="Covalent UI Backend Service API")
-sio = SocketManager(app=app)
-
-logging.basicConfig(level=logging.DEBUG)
-app.include_router(api_router, prefix=settings.API_V0_STR)
-
-if __name__ == "__main__":
-    # Use this for debugging purposes only
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, log_level="debug", reload=True)
+jobs:
+  test_docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v2
+      - name: Build and run image
+        run: |
+          docker build -t cova .
+          docker run -d -p 48008:8080 cova
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          echo 'Running an example dispatch...'
+          for idx in {0..1..1}; do
+            echo 'Dispatch number: '$idx
+            python example_dispatch.py
+          done
+          

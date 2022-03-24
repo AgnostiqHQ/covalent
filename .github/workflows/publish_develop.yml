@@ -55,6 +55,14 @@ jobs:
       - name: Build and push image
         run: |
           docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
+          docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          echo 'Running an example dispatch...'
+          for idx in {0..1..1}; do
+            echo 'Dispatch number: '$idx
+            python example_dispatch.py
+          done
           docker push ${{ secrets.AWS_ECR_DEV_REPO }}
           docker tag ${{ secrets.AWS_ECR_DEV_REPO }} ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
           docker push ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG

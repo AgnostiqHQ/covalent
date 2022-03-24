@@ -33,7 +33,7 @@ from covalent._workflow.transport import TransportableObject, _TransportGraph
 def subtask(x):
     """Workflow subtask."""
 
-    return x ** 2
+    return x**2
 
 
 def subtask_2(x):
