@@ -53,8 +53,6 @@ class BaseExecutor(ABC):
     that environment.
 
     Attributes:
-        log_stdout: The path to the file to be used for redirecting stdout.
-        log_stderr: The path to the file to be used for redirecting stderr.
         conda_env: The name of the Conda environment to be used.
         cache_dir: The location used for cached files in the executor.
         current_env_on_conda_fail: If True, the current environment will be used
@@ -63,14 +61,10 @@ class BaseExecutor(ABC):
 
     def __init__(
         self,
-        log_stdout: str = "",
-        log_stderr: str = "",
         conda_env: str = "",
         cache_dir: str = "",
         current_env_on_conda_fail: bool = False,
     ) -> None:
-        self.log_stdout = log_stdout
-        self.log_stderr = log_stderr
         self.conda_env = conda_env
         self.cache_dir = cache_dir
         self.current_env_on_conda_fail = current_env_on_conda_fail
