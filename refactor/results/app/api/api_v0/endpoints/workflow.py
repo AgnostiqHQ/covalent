@@ -97,6 +97,14 @@ def _get_result_from_db(dispatch_id: str, field: str) -> Optional[str]:
     return value
 
 
+def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
+    sql = f"INSERT INTO results VALUES({dispatch_id},{filename},{path})"
+    insert = _db(sql)
+    if insert:
+        (insert,) = insert
+    return insert
+
+
 @router.get(
     "/results/{dispatch_id}",
     status_code=200,
@@ -135,19 +143,28 @@ def insert_result(
     """
     Submit pickled result file
     """
+    results_object = {}
+    dispatch_id = ""
     try:
         results_object = pickle.load(result_pkl_file.file)
         dispatch_id = results_object.dispatch_id
-        r = requests.post(
-            f"http://{base_url}/upload",
-            files=[("file", ("result.pkl", result_pkl_file.file, "application/octet-stream"))],
-        )
-        response = r.json()
-        _handle_error_response(r.status_code, response)
-
     except:
         raise HTTPException(status_code=422, detail="Error in upload body.")
-    return {"dispatch_id": "e4efd26c-240d-4ab1-9826-26ada91e429f"}
+    r = requests.post(
+        f"http://{base_url}/upload",
+        files=[("file", ("result.pkl", result_pkl_file.file, "application/octet-stream"))],
+    )
+    response = r.json()
+    _handle_error_response(r.status_code, response)
+    filename = response.get("filename")
+    path = response.get("path")
+    error_detail = "Error in response from data service. " + str(response)
+    if filename and path:
+        if _add_record_to_db(dispatch_id, filename, path):
+            return {"dispatch_id": dispatch_id}
+        else:
+            error_detail = "Error adding record to database."
+    raise HTTPException(status_code=500, detail="Error adding record to database.")
 
 
 @router.put(
