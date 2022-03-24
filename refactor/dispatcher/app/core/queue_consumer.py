@@ -22,7 +22,8 @@ import asyncio
 import os
 
 import nats
-from app.api.api_v0.endpoints.workflow import submit_workflow, workflow_status_queue
+from refactor.dispatcher.app.api.api_v0.endpoints.workflow import submit_workflow, workflow_status_queue
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -39,16 +40,16 @@ async def main():
 
     async def msg_handler(msg):
         dispatch_id = msg.data.decode()
-
+        print(f"Got dispatch_id: {dispatch_id}")
         while True:
             await asyncio.sleep(0.1)
             if workflow_status_queue.empty():
                 break
-
         submit_workflow(dispatch_id=dispatch_id)
 
     sub = await nc.subscribe(TOPIC, cb=msg_handler)
 
+    print(f"Subscribed to topic: {TOPIC}")
     try:
         await sub.next_msg()
     except nats.errors.TimeoutError:
@@ -56,12 +57,11 @@ async def main():
 
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
         asyncio.ensure_future(main())
         loop.run_forever()
     except KeyboardInterrupt:
-        pass
-    finally:
-        loop.stop()
         loop.close()
+        pass

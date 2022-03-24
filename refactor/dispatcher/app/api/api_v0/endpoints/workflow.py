@@ -21,9 +21,10 @@
 import os
 from multiprocessing import Queue as MPQ
 from typing import Any
-
+from io import BytesIO
 import requests
-from app.schemas.workflow import (
+import cloudpickle as pickle
+from refactor.dispatcher.app.schemas.workflow import (
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
     Node,
@@ -77,20 +78,25 @@ mock_result = {
     },
 }
 
+def get_result(dispatch_id: str):
+    # dirname = os.path.dirname(__file__)
+    # filename = os.path.join(dirname, './result.pkl')
+    # with open(filename, 'rb') as f:   
+    #     return f.read()
+    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
+    return resp.content
 
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
 def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
-
-    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-    result_obj = resp.json()["result_obj"]
-
-    result_obj = dispatch_workflow(result_obj, tasks_queue)
-
-    requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
-
+    result_pkl_bytes = get_result(dispatch_id)
+    result = pickle.loads(result_pkl_bytes)
+    result = dispatch_workflow(result, tasks_queue)
+    result_pkl_bytes = pickle.dumps(result)
+    result_file = BytesIO(result_pkl_bytes)
+    requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", files={'result_pkl_file': result_file})
     workflow_status_queue.put("RUNNING")  # Populate queue when workflow is running
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
