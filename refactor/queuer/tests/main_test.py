@@ -1,6 +1,6 @@
 import os
 import base64
-from refactor.queuer.app.core.queuer import Queuer
+from app.core.queuer import Queuer
 
 dirname = os.path.dirname(__file__)
 filename = os.path.join(dirname, './_test_assets/result')
@@ -17,8 +17,8 @@ def test_submit_endpoint(test_app, monkeypatch):
             "dispatch_id": MOCK_DISPATCH_ID
         }
 
-    monkeypatch.setattr("refactor.queuer.app.core.queuer.Queuer.publish", mock_publish)
-    monkeypatch.setattr("refactor.queuer.app.core.api.DataService.create_result", mock_create_result)
+    monkeypatch.setattr("app.core.queuer.Queuer.publish", mock_publish)
+    monkeypatch.setattr("app.core.api.DataService.create_result", mock_create_result)
 
     with open(filename, 'rb') as f:
         files = {

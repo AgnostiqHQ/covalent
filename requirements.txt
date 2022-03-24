@@ -1,7 +1,9 @@
+aiolimiter==1.0.0
 cloudpickle==2.0.0
 dask[distributed]==2022.1.0
 eventlet==0.31.0
 fastapi==0.74.0
+fastapi-socketio==0.0.9
 flask==2.0.1
 flask-cors==3.0.10
 flask-socketio==5.1.1
@@ -16,3 +18,4 @@ simplejson==3.17.6
 tailer==0.4.1
 toml==0.10.2
 uvicorn==0.15.0
+websockets==10.2

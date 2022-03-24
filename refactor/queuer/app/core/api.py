@@ -3,7 +3,7 @@ import requests
 
 from urllib.parse import urljoin
 
-from refactor.queuer.app.core.config import settings
+from app.core.config import settings
 
 class APIService():
 

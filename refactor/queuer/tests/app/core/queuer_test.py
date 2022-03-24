@@ -1,7 +1,7 @@
 import os
 import mock
 import requests
-from refactor.queuer.app.core.queuer import Queuer
+from app.core.queuer import Queuer
 import nats
 
 class TestQueuer:
