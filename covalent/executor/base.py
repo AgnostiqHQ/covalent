@@ -62,7 +62,10 @@ class BaseExecutor(ABC):
     def __init__(
         self,
         conda_env: str = "",
-        cache_dir: str = "",
+        cache_dir: str = os.path.join(
+            os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+            "covalent",
+        ),
         current_env_on_conda_fail: bool = False,
     ) -> None:
         self.conda_env = conda_env
