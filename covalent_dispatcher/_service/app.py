@@ -19,12 +19,14 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from typing import Union
+
 import cloudpickle as pickle
 from flask import Blueprint, Flask, Response, jsonify, request
 
 import covalent_dispatcher as dispatcher
 
 bp = Blueprint("dispatcher", __name__, url_prefix="/api")
+
 
 def check_empty_post() -> Union[Response, None]:
     """
@@ -37,10 +39,12 @@ def check_empty_post() -> Union[Response, None]:
         None: Otherwise.
     """
     if request.method == "POST" and not request.content_length:
-        return Response(response='Empty request body.', status=400)
+        return Response(response="Empty request body.", status=400)
     return None
 
+
 bp.before_app_request(check_empty_post)
+
 
 @bp.route("/submit", methods=["POST"])
 def submit() -> Response:

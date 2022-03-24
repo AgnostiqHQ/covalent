@@ -22,6 +22,7 @@
 Defines the core functionality of the dispatcher
 """
 
+import socket
 import traceback
 from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
@@ -33,6 +34,7 @@ from covalent import dispatch_sync
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
+from covalent._shared_files.config import get_config
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
     attr_prefix,
@@ -46,6 +48,7 @@ from covalent._shared_files.defaults import (
 )
 from covalent._workflow.lattice import Lattice
 from covalent.executor import _executor_manager
+from covalent.notify.notify import NotifyEndpoint
 from covalent_ui import result_webhook
 
 from .._db.dispatchdb import DispatchDB
@@ -351,6 +354,11 @@ def _run_planned_workflow(result_object: Result) -> Result:
                     db.upsert(result_object.dispatch_id, result_object)
                 result_object.save()
                 result_webhook.send_update(result_object)
+                _notify_endpoints(
+                    result_object.dispatch_id,
+                    result_object._status,
+                    result_object.lattice.get_metadata("notify"),
+                )
                 return
 
             elif result_object._get_node_status(node_id) == Result.CANCELLED:
@@ -360,6 +368,11 @@ def _run_planned_workflow(result_object: Result) -> Result:
                     db.upsert(result_object.dispatch_id, result_object)
                 result_object.save()
                 result_webhook.send_update(result_object)
+                _notify_endpoints(
+                    result_object.dispatch_id,
+                    result_object._status,
+                    result_object.lattice.get_metadata("notify"),
+                )
                 return
 
     # post process the lattice
@@ -373,6 +386,22 @@ def _run_planned_workflow(result_object: Result) -> Result:
         db.upsert(result_object.dispatch_id, result_object)
     result_object.save(write_source=True)
     result_webhook.send_update(result_object)
+    _notify_endpoints(
+        result_object.dispatch_id,
+        result_object._status,
+        result_object.lattice.get_metadata("notify"),
+    )
+
+
+def _notify_endpoints(dispatch_id: str, status: str, endpoints: List[NotifyEndpoint]) -> None:
+    ui_port = get_config("user_interface.port")
+    ui_url = f"http://{socket.getfqdn()}:{ui_port}/{dispatch_id}"
+    notification_message = (
+        f"Covalent lattice has finished running with status '{status}'. View results at {ui_url}."
+    )
+
+    for endpoint in endpoints:
+        endpoint.notify(notification_message)
 
 
 def _plan_workflow(result_object: Result) -> None:

@@ -21,7 +21,9 @@
 """Unit tests for the DispatcherServiceApp."""
 
 import unittest
+
 from flask import Flask
+
 from covalent_dispatcher._service.app import bp
 
 
@@ -29,7 +31,7 @@ class TestDispatacherServiceApp(unittest.TestCase):
     """Test dispath service app"""
 
     def setUp(self) -> None:
-        """Basic setup """
+        """Basic setup"""
 
         self.app = Flask(__name__)
         self.app.register_blueprint(bp, url_prefix="")
@@ -41,12 +43,10 @@ class TestDispatacherServiceApp(unittest.TestCase):
         with self.app.test_client() as client:
             response = client.post("/submit")
             self.assertEqual(response.status_code, 400)
-            self.assertEqual(response.data.decode("utf-8").strip(),
-                    'Empty request body.')
+            self.assertEqual(response.data.decode("utf-8").strip(), "Empty request body.")
             response = client.post("/cancel")
             self.assertEqual(response.status_code, 400)
-            self.assertEqual(response.data.decode("utf-8").strip(),
-                    'Empty request body.')
+            self.assertEqual(response.data.decode("utf-8").strip(), "Empty request body.")
 
     def test_random_post(self):
         """Test random POST requests"""
@@ -57,5 +57,6 @@ class TestDispatacherServiceApp(unittest.TestCase):
             self.assertEqual(response.status_code, 500)
             response = client.post("/cancel", data=random_string)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.data.decode("utf-8").strip(),
-                    f'"Dispatch {random_string} cancelled."')
+            self.assertEqual(
+                response.data.decode("utf-8").strip(), f'"Dispatch {random_string} cancelled."'
+            )
