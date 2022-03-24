@@ -49,11 +49,12 @@ class DataService(APIService):
         super().__init__(settings.DATA_OS_SVC_HOST_URI)
 
     async def get_result(self, dispatch_id: str):
-        dirname = os.path.dirname(__file__)
-        filename = os.path.join(dirname, './result.pkl')
-        with open(filename, 'rb') as f:   
-            return f.read()
-        #return self.get('workflow/results/{dispatch_id}', raw=True)
+        # dirname = os.path.dirname(__file__)
+        # filename = os.path.join(dirname, './result.pkl')
+        # with open(filename, 'rb') as f:   
+        #     return f.read()
+        res = self.get('workflow/results/{dispatch_id}', raw=True)
+        return res.content
 
     async def create_result(self, result_pkl_file: bytes):
         return self.post('workflow/results', files={
