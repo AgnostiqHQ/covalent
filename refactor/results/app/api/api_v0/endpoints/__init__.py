@@ -21,11 +21,13 @@
 """Results management service."""
 
 import logging
+import logging.config
 import os
 import sqlite3
+from os import path
 
 # setup loggers
-logging.config.fileConfig("../../../../logging.conf", disable_existing_loggers=False)
+logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
 
 results_db = os.environ.get("RESULTS_DB")

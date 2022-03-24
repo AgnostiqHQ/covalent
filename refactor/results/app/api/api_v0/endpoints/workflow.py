@@ -20,12 +20,14 @@
 
 import io
 import logging
+import logging.config
 import os
 import random
 import sqlite3
 import string
 import time
-from typing import Any, Optional, Union
+from os import path
+from typing import Any, Optional, Tuple, Union
 
 import cloudpickle as pickle
 import requests
@@ -34,7 +36,7 @@ from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResul
 from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
-logging.config.fileConfig("../../../../logging.conf", disable_existing_loggers=False)
+logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +48,8 @@ if not fs_server_address:
 base_url = fs_server_address + "/api/v0/fs"
 
 
-@router.middleware("http")
+# @router.middleware("http")
+# TODO: figure out why the middleware doesn't work
 async def log_requests(request: Request, call_next):
     idem = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
     logger.info(f"rid={idem} start request path={request.url.path}")
@@ -96,7 +99,7 @@ def _handle_error_response(status_code: int, response: dict):
         raise HTTPException(status_code=status_code, detail=response["detail"])
 
 
-def _db(sql: str, key: str = None) -> Optional[tuple[Union[bool, str]]]:
+def _db(sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
     results_db = os.environ.get("RESULTS_DB")
     if not results_db:
         results_db = "results.db"
