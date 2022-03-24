@@ -25,7 +25,7 @@ from typing import Dict
 
 from covalent._results_manager import Result
 
-from .utils import _post_process, is_workflow_completed
+from .utils import _post_process, are_tasks_running
 
 
 def update_workflow_results(task_execution_results: Dict, result_obj: Result) -> Result:
@@ -42,7 +42,7 @@ def update_workflow_results(task_execution_results: Dict, result_obj: Result) ->
         result_obj._status = Result.CANCELLED
 
     # If workflow is completed, post-process result
-    elif is_workflow_completed(result_obj=result_obj):
+    elif not are_tasks_running(result_obj=result_obj):
 
         result_obj._result = _post_process(
             lattice=result_obj.lattice,

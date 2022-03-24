@@ -75,8 +75,6 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     Runner API in batches. One of the underlying principles is that the Runner API doesn't
     interact with the Data API."""
 
-    # TODO - Clear queue?
-
     result_obj = init_result_pre_dispatch(result_obj=result_obj)
     task_order: List[List] = get_task_order(result_obj=result_obj)
     tasks_queue.put(task_order)
@@ -137,7 +135,7 @@ def get_runnable_tasks(
             tasks_queue.put(tasks_order)
             get_runnable_tasks(result_obj=sublattice_result_obj, tasks_queue=tasks_queue)
 
-        elif is_runnable_task(task_id, result_obj, tasks_queue):
+        elif is_runnable_task(task_id, result_obj):
             runnable_tasks.append(task_id)
             preprocess_transport_graph(task_id, task_name, result_obj)
             input_args.append(task_inputs["args"])
@@ -205,7 +203,7 @@ def run_tasks(
     return json.loads(response.text)["left_out_task_ids"]
 
 
-def is_runnable_task(task_id: int, results_obj: Result, tasks_queue: MPQ) -> bool:
+def is_runnable_task(task_id: int, results_obj: Result) -> bool:
     """Return status whether the task can be run."""
 
     parent_node_ids = results_obj.lattice.transport_graph.get_dependencies(task_id)

@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Utility functions for the Dispatcher microservice."""
+
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
@@ -162,23 +164,12 @@ def is_sublattice(task_name: str = None) -> bool:
     return task_name.startswith(sublattice_prefix)
 
 
-def is_workflow_completed(result_obj: Result) -> bool:
-    """Check if workflow is completed"""
+def are_tasks_running(result_obj: Result) -> bool:
+    """Check if any of the tasks are still running. A task is considered not `running` if it was completed, failed or cancelled."""
 
-    if result_obj == Result.COMPLETED:
-        return True
-    elif result_obj == Result.FAILED:
-        return True
-    else:
-        task_ids = [i for i in range(result_obj._num_nodes)]
-
-        for task_id in task_ids:
-            if result_obj._get_node_status(task_id) in [
-                Result.FAILED,
-                Result.RUNNING,
-                Result.CANCELLED,
-            ]:
-                return False
+    for task_id in range(result_obj._num_nodes):
+        if result_obj._get_node_status(task_id) not in [Result.RUNNING, Result.NEW_OBJ]:
+            return False
 
     return True
 

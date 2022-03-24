@@ -103,6 +103,9 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
 
     success = cancel_workflow_execution(result_obj)
 
+    if tasks_queue.not_empty():
+        tasks_queue.get()  # Pop the last set of tasks from the queue since the workflow is being cancelled.
+
     if success:
         return {"response": f"{dispatch_id} workflow cancelled successfully"}
     else:
