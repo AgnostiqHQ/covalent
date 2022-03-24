@@ -215,6 +215,7 @@ class Lepton(Electron):
             run_lib = f"source {self.library_name} && " if self.library_name != "" else ""
 
             output_string = ""
+            named_outputs = None
             if kwargs:
                 if "named_outputs" in kwargs:
                     named_outputs = kwargs["named_outputs"]
