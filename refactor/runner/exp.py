@@ -1,18 +1,22 @@
+import logging
 from multiprocessing import Process, Queue
 
 
-def om(e):
-    return e
+def execute(qq):
+    res = "X" * 10
+    logging.warning(f"queue inside execute function {qq}")
+    qq.put(res)
 
 
-def f(q):
-    res = om("X" * 10)
-    q.put(res)
+def start_task(q):
+    logging.warning(f"queue inside start_task function {q}")
+    execute(q)
 
 
 if __name__ == "__main__":
     queue = Queue()
-    p = Process(target=f, args=(queue,))
-    p.start()
-    p.join()  # this deadlocks
+    logging.warning(f"queue inside main function {queue}")
+    p = Process(target=start_task, args=(queue,))
     print(queue.get())
+    p.start()
+    p.join()

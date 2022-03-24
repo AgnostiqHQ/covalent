@@ -92,9 +92,8 @@ class LocalExecutor(BaseExecutor):
 
         exception = None
 
-        info_dict = {} if info_queue.empty() else info_queue.get()
-        info_dict["STATUS"] = Result.RUNNING
-        info_queue.put(info_dict)
+        info_dict = {"STATUS": Result.RUNNING}
+        info_queue.put_nowait(info_dict)
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()

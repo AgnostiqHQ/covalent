@@ -100,15 +100,13 @@ async def run_tasks(*, dispatch_id: str, tasks: Request) -> RunTaskResponse:
     tasks = await tasks.body()
     runnable_tasks = pickle.loads(tasks)
 
-    tasks_data, tasks_left_to_run = run_tasks_with_resources(
-        dispatch_id, runnable_tasks, resources
+    logger.warning(f"ultimate dict before {ultimate_dict}")
+
+    tasks_left_to_run = run_tasks_with_resources(
+        dispatch_id, runnable_tasks, resources, ultimate_dict
     )
 
-    # Adding tasks_data to the ultimate dict
-    if ultimate_dict.get(dispatch_id, False):
-        ultimate_dict[dispatch_id].extend(tasks_data)
-    else:
-        ultimate_dict[dispatch_id] = tasks_data
+    logger.warning(f"ultimate dict after {ultimate_dict}")
 
     # Returning the task ids which were not run due to insufficient resources
     left_out_task_ids = [task["task_id"] for task in tasks_left_to_run]
@@ -126,8 +124,8 @@ async def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
 
     # Pass in the executor and info_queue to get status from the executor
     task_status = get_task_status(
-        ultimate_dict[dispatch_id][task_id].executor,
-        ultimate_dict[dispatch_id][task_id].info_queue,
+        ultimate_dict[dispatch_id][task_id]["executor"],
+        ultimate_dict[dispatch_id][task_id]["info_queue"],
     )
 
     return {"status": f"{task_status}"}
@@ -141,26 +139,28 @@ async def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
 
     logger.warning(f"DELETE on /{dispatch_id}/task/{task_id} called to cancel task")
 
+    logger.warning(f"ultimate dict in cancel {ultimate_dict}")
+
     # Cancel a task by calling its executor's cancel method and closing the info_queue
     cancel_running_task(
-        executor=ultimate_dict[dispatch_id][task_id].executor,
-        info_queue=ultimate_dict[dispatch_id][task_id].info_queue,
+        executor=ultimate_dict[dispatch_id][task_id]["executor"],
+        info_queue=ultimate_dict[dispatch_id][task_id]["info_queue"],
     )
 
-    # Terminate the process
-    await task_done(dispatch_id=dispatch_id, task_id=task_id)
-
     # Free the resources
-    await free_resources(dispatch_id=dispatch_id, task_id=task_id)
+    free_resources(dispatch_id=dispatch_id, task_id=task_id)
+
+    # Terminate the process
+    task_done(dispatch_id=dispatch_id, task_id=task_id)
 
     # Send updated task result to dispatcher
     task_result = generate_task_result(
         task_id=task_id,
-        end_time=datetime.now(timezone.utc()),
+        end_time=datetime.now(timezone.utc),
         status=Result.CANCELLED,
     )
 
-    send_task_update_to_dispatcher(dispatch_id=dispatch_id, task_result=task_result)
+    # send_task_update_to_dispatcher(dispatch_id=dispatch_id, task_result=task_result)
 
     return {"cancelled_dispatch_id": f"{dispatch_id}", "cancelled_task_id": f"{task_id}"}
 
@@ -186,8 +186,8 @@ def task_done(*, dispatch_id: str, task_id: int) -> None:
         f"POST on /{dispatch_id}/task/{task_id}/done called to terminate and join the process"
     )
 
-    ultimate_dict[dispatch_id][task_id].process.terminate()
-    ultimate_dict[dispatch_id][task_id].process.join()
+    ultimate_dict[dispatch_id][task_id]["process"].terminate()
+    ultimate_dict[dispatch_id][task_id]["process"].join()
 
     del ultimate_dict[dispatch_id][task_id]
 

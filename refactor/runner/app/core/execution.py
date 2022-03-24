@@ -32,7 +32,6 @@ from covalent._results_manager.result import Result
 from covalent.executor import _executor_manager
 
 from .runner_logger import logger
-from .utils import TaskData
 
 
 def generate_task_result(
@@ -94,6 +93,8 @@ def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, d
 
     executor = _executor_manager.get_executor(executor)
 
+    logger.warning(f"info queue when inside the process {info_queue}")
+
     task_output, stdout, stderr, exception = executor.execute(
         function=func,
         args=args,
@@ -134,6 +135,7 @@ def run_tasks_with_resources(
     dispatch_id: str,
     tasks_left_to_run: List[Dict],
     resources: MPQ,
+    ultimate_dict: dict,
 ):
     # Example task:
     # {
@@ -145,8 +147,8 @@ def run_tasks_with_resources(
     #    "results_dir": "/path/to/results/"
     # }
 
-    tasks_data = {}
-    processes = []
+    if not ultimate_dict.get(dispatch_id, False):
+        ultimate_dict[dispatch_id] = {}
 
     # Get number of available resources
     available_resources = resources.get()
@@ -161,6 +163,8 @@ def run_tasks_with_resources(
         task = tasks_left_to_run.pop(0)
         info_queue = MPQ()
 
+        logger.warning(f"info queue when starting the process {info_queue}")
+
         # Organizing the args to be sent
         starting_args = (
             task["task_id"],
@@ -174,20 +178,18 @@ def run_tasks_with_resources(
         )
 
         process = Process(target=start_task, args=starting_args, daemon=True)
-        processes.append(process)
+        process.start()
 
-        tasks_data[task["task_id"]] = TaskData(
-            process=process, executor=task["executor"], info_queue=info_queue
-        )
+        ultimate_dict[dispatch_id][task["task_id"]] = {
+            "process": process,
+            "executor": task["executor"],
+            "info_queue": info_queue,
+        }
 
         available_resources = resources.get()
         resources.put(available_resources)
 
-    # Starting the processes
-    for p in processes:
-        p.start()
-
-    return tasks_data, tasks_left_to_run
+    return tasks_left_to_run
 
 
 def get_task_status(executor, info_queue):

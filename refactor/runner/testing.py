@@ -1,6 +1,5 @@
-import json
+import time
 import uuid
-from pprint import pprint
 
 import cloudpickle as pickle
 import requests
@@ -16,6 +15,9 @@ url = f"http://localhost:8000/api/v0/workflow/{dispatch_id}/tasks"
 
 @ct.electron
 def task_1(a):
+    import time
+
+    time.sleep(10)
     return a**2
 
 
@@ -66,3 +68,12 @@ response.raise_for_status()
 
 left_task_ids = response.json()
 print(left_task_ids)
+
+time.sleep(5)
+
+task_id = 0
+url = f"http://localhost:8000/api/v0/workflow/{dispatch_id}/task/{task_id}"
+response = requests.delete(url=url)
+response.raise_for_status()
+
+print(response.json())
