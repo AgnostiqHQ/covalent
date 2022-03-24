@@ -18,26 +18,26 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-FROM python:3.8-slim-buster
+name: test-docker
 
-RUN apt-get update \
-  && apt-get install -y curl gcc \
-  && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
-  && apt-get install -y nodejs \
-  && npm install --global yarn \
-  && rm -rf /var/lib/apt/lists/*
+on:
+  pull_request
 
-RUN mkdir -p /opt/covalent
-COPY . /opt/covalent
-RUN pip install --no-cache-dir --use-feature=in-tree-build /opt/covalent
-RUN cd /opt/covalent/covalent_ui/webapp \
-  && yarn install --network-timeout 100000 \
-  && yarn build --network-timeout 100000
-
-WORKDIR /opt/covalent
-
-ENV PLATFORM Docker
-
-EXPOSE 8080
-ENTRYPOINT [ "python" ]
-CMD ["/opt/covalent/covalent_ui/app.py", "--port", "8080"]
+jobs:
+  test_docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v2
+      - name: Build and run image
+        run: |
+          docker build -t cova .
+          docker run -d -p 48008:8080 cova
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          echo 'Running an example dispatch...'
+          for idx in {0..1..1}; do
+            echo 'Dispatch number: '$idx
+            python example_dispatch.py
+          done
+          
