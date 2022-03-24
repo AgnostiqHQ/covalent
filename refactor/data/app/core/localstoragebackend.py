@@ -21,6 +21,7 @@
 import os
 import shutil
 import traceback
+import uuid
 from abc import ABC
 from pathlib import Path
 from typing import BinaryIO, Generator, List, Union
@@ -89,7 +90,7 @@ class LocalStorageBackend(StorageBackend):
             (bucket_name, object_name) if write succeeds and ("", "") otherwise
 
         """
-
+        # TODO: Fix this to be less hacky.
         p = self.base_dir / Path(bucket_name) / Path(object_name)
         # This is a hack to get this working, but we need to think about if it's the right thing to do.
         try:
@@ -105,7 +106,12 @@ class LocalStorageBackend(StorageBackend):
             traceback.print_exception()
             traceback.print_stack()
             return ("", "")
-
+        try:
+            abs_p = str(p.resolve(True))
+            object_name = f"{uuid.uuid4()}.pkl"
+            p = self.base_dir / Path(bucket_name) / Path(object_name)
+        except FileNotFoundError:
+            pass
         abs_p = str(p.resolve())
 
         # TODO: improve error handling and logging
