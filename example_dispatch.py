@@ -23,9 +23,13 @@ An example script containing a simple workflow that can be dispatched to Covalen
 """
 
 import time
+
+from requests import request
+
 import covalent as ct
 import covalent_dispatcher._cli.service as service
-from requests import request
+
+port = 48008
 
 
 @ct.electron
@@ -43,16 +47,17 @@ def simple_workflow(a, b):
     phrase = join_words(a, b)
     return excitement(phrase)
 
-if service._is_server_running():
-    print('Dispatcher service has started')
+
+if service._is_server_running(port):
+    print("Dispatcher service has started")
 else:
-    print('Dispatcher service is starting...')
+    print("Dispatcher service is starting...")
     time.sleep(15)
 
 dispatch_id = ct.dispatch(simple_workflow)("Hello", "Covalent")
-results_url = "http://localhost:48008/api/results"
+results_url = f"http://localhost:{port}/api/results"
 results = request("GET", results_url, headers={}, data={}).json()
-dispatch_result = results[0]['result'] if results else None
-dispatch_status = results[0]['status'] if results else None
-print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
-print(f'The result of the dispatch is: {dispatch_result}')
+dispatch_result = results[0]["result"] if results else None
+dispatch_status = results[0]["status"] if results else None
+print(f"Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}")
+print(f"The result of the dispatch is: {dispatch_result}")
