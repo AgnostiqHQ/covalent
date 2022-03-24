@@ -30,6 +30,7 @@ from app.core.execution import (
     run_tasks_with_resources,
     send_task_update_to_dispatcher,
 )
+from app.core.runner_logger import logger
 from app.schemas.task import CancelResponse, RunTaskResponse, TaskPickleList, TaskStatus
 from fastapi import APIRouter
 
@@ -59,6 +60,8 @@ router = APIRouter()
 # }
 
 ultimate_dict = {}
+
+logger.warning("Inside Runner")
 
 
 @router.post("/{dispatch_id}/tasks", status_code=202, response_model=RunTaskResponse)
@@ -94,6 +97,8 @@ def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
     ```
     """
 
+    logger.warning(f"POST on /{dispatch_id}/tasks called to submit a list of tasks")
+
     runnable_tasks = [pickle.loads(task) for task in tasks]
 
     tasks_data, tasks_left_to_run = run_tasks_with_resources(
@@ -118,6 +123,8 @@ def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
     Check status of a task
     """
 
+    logger.warning(f"GET on /{dispatch_id}/task/{task_id} called to check status")
+
     # Pass in the executor and info_queue to get status from the executor
     task_status = get_task_status(
         ultimate_dict[dispatch_id][task_id].executor,
@@ -132,6 +139,8 @@ def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     """
     Cancel a task
     """
+
+    logger.warning(f"DELETE on /{dispatch_id}/task/{task_id} called to cancel task")
 
     # Cancel a task by calling its executor's cancel method and closing the info_queue
     cancel_running_task(
@@ -163,6 +172,8 @@ def free_resources(*, dispatch_id: str, task_id: int) -> None:
     Callback to the runner to free resources
     """
 
+    logger.warning(f"POST on /{dispatch_id}/task/{task_id}/free called to free resources")
+
     resources.put(resources.get() + 1)
 
 
@@ -171,6 +182,10 @@ def task_done(*, dispatch_id: str, task_id: int) -> None:
     """
     Callback to the runner to join the process
     """
+
+    logger.warning(
+        f"POST on /{dispatch_id}/task/{task_id}/done called to terminate and join the process"
+    )
 
     ultimate_dict[dispatch_id][task_id].process.terminate()
     ultimate_dict[dispatch_id][task_id].process.join()
