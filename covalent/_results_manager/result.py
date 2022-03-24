@@ -203,10 +203,30 @@ Node Outputs
 
         self._num_nodes = self.lattice.transport_graph.get_internal_graph_copy().number_of_nodes()
         for node_id in range(self._num_nodes):
-            self._update_node(
-                node_id=node_id,
-                status=Result.NEW_OBJ,
+
+            node_name = (
+                self._lattice.transport_graph.get_node_value(node_id, "name") + f"({node_id})"
             )
+
+            self._lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
+
+            self._lattice.transport_graph.set_node_value(node_id, "start_time", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "end_time", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "status", Result.NEW_OBJ)
+
+            self._lattice.transport_graph.set_node_value(node_id, "output", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "error", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "sublattice_result", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "stdout", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "stderr", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "info", None)
 
     def get_node_result(self, node_id: int) -> dict:
         """Return the result of a particular node.

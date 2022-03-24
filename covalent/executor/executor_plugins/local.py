@@ -92,10 +92,7 @@ class LocalExecutor(BaseExecutor):
 
         exception = None
 
-        if info_queue.empty():
-            info_dict = {}
-        else:
-            info_dict = info_queue.get()
+        info_dict = {} if info_queue.empty() else info_queue.get()
         info_dict["STATUS"] = Result.RUNNING
         info_queue.put(info_dict)
 
@@ -131,15 +128,12 @@ class LocalExecutor(BaseExecutor):
         )
 
         info_dict = info_queue.get()
-        if result is None:
-            info_dict["STATUS"] = Result.Failed
-        else:
-            info_dict["STATUS"] = result.status
+        info_dict["STATUS"] = Result.FAILED if result is None else Result.COMPLETED
         info_queue.put(info_dict)
 
         return (result, stdout.getvalue(), stderr.getvalue(), exception)
 
-    def get_status(self, info_dict: dict = {}) -> Result:
+    def get_status(self, info_dict: dict) -> Result:
         """
         Get the current status of the task.
 
@@ -152,7 +146,4 @@ class LocalExecutor(BaseExecutor):
             A Result status object (or None, if "STATUS" is not in info_dict).
         """
 
-        if "STATUS" in info_dict:
-            return info_dict["STATUS"]
-        else:
-            return None
+        return info_dict.get("STATUS", Result.NEW_OBJ)

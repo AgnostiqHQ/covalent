@@ -30,7 +30,7 @@ file_handler = logging.FileHandler("logs/dispatcher_logs.log")
 file_handler.setLevel(logging.WARNING)
 
 # Creating the file formatter and adding it to the file handler
-file_formatter = logging.Formatter("%(utctime)s - %(name)s - %(levelname)s - %(message)s")
+file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 file_handler.setFormatter(file_formatter)
 
 # Add handlers to the logger

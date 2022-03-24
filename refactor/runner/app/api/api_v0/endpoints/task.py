@@ -32,7 +32,7 @@ from app.core.execution import (
 )
 from app.core.runner_logger import logger
 from app.schemas.task import CancelResponse, RunTaskResponse, TaskPickleList, TaskStatus
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from covalent._results_manager.result import Result
 
@@ -61,11 +61,9 @@ router = APIRouter()
 
 ultimate_dict = {}
 
-logger.warning("Inside Runner")
-
 
 @router.post("/{dispatch_id}/tasks", status_code=202, response_model=RunTaskResponse)
-def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
+async def run_tasks(*, dispatch_id: str, tasks: Request) -> RunTaskResponse:
     """
     Run a list of tasks
 
@@ -99,7 +97,8 @@ def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
 
     logger.warning(f"POST on /{dispatch_id}/tasks called to submit a list of tasks")
 
-    runnable_tasks = [pickle.loads(task) for task in tasks]
+    tasks = await tasks.body()
+    runnable_tasks = pickle.loads(tasks)
 
     tasks_data, tasks_left_to_run = run_tasks_with_resources(
         dispatch_id, runnable_tasks, resources
@@ -118,7 +117,7 @@ def run_tasks(*, dispatch_id: str, tasks: TaskPickleList) -> RunTaskResponse:
 
 
 @router.get("/{dispatch_id}/task/{task_id}", status_code=200, response_model=TaskStatus)
-def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
+async def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
     """
     Check status of a task
     """
@@ -135,7 +134,7 @@ def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
 
 
 @router.delete("/{dispatch_id}/task/{task_id}", status_code=200, response_model=CancelResponse)
-def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
+async def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     """
     Cancel a task
     """
@@ -149,10 +148,10 @@ def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     )
 
     # Terminate the process
-    task_done(dispatch_id=dispatch_id, task_id=task_id)
+    await task_done(dispatch_id=dispatch_id, task_id=task_id)
 
     # Free the resources
-    free_resources(dispatch_id=dispatch_id, task_id=task_id)
+    await free_resources(dispatch_id=dispatch_id, task_id=task_id)
 
     # Send updated task result to dispatcher
     task_result = generate_task_result(

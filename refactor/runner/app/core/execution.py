@@ -29,7 +29,9 @@ import cloudpickle as pickle
 import requests
 
 from covalent._results_manager.result import Result
+from covalent.executor import _executor_manager
 
+from .runner_logger import logger
 from .utils import TaskData
 
 
@@ -63,6 +65,9 @@ def send_task_update_to_dispatcher(dispatch_id, task_result):
     url = f"http://localhost:8000/api/v0/workflow/{dispatch_id}"
     requests.post(url=url, data=pickle.dumps(task_result))
 
+    logger.warning(f"{dispatch_id}")
+    logger.warning(f"{task_result}")
+
 
 def free_resources_call_to_runner(dispatch_id, task_id):
 
@@ -87,7 +92,9 @@ def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, d
     # Set task as running and send update to dispatcher
     send_task_update_to_dispatcher(dispatch_id, task_result)
 
-    task_output, exception, stdout, stderr = executor.execute(
+    executor = _executor_manager.get_executor(executor)
+
+    task_output, stdout, stderr, exception = executor.execute(
         function=func,
         args=args,
         kwargs=kwargs,
@@ -102,7 +109,9 @@ def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, d
         end_time=datetime.now(timezone.utc),
         status=Result.COMPLETED,
         output=task_output,
-        error="".join(traceback.TracebackException.from_exception(exception).format()),
+        error="".join(traceback.TracebackException.from_exception(exception).format())
+        if exception
+        else None,
         stdout=stdout,
         stderr=stderr,
         info=info_queue.get(),
@@ -143,7 +152,7 @@ def run_tasks_with_resources(
     available_resources = resources.get()
     resources.put(available_resources)
 
-    while available_resources > 0 and len(tasks_left_to_run) > 0:
+    while available_resources > 0 and tasks_left_to_run:
 
         # Reduce the number of available resources
         resources.put(resources.get() - 1)
@@ -183,6 +192,8 @@ def run_tasks_with_resources(
 
 def get_task_status(executor, info_queue):
 
+    executor = _executor_manager.get_executor(executor)
+
     info = info_queue.get()
     status = executor.get_status(info)
     info_queue.put(info)
@@ -191,6 +202,8 @@ def get_task_status(executor, info_queue):
 
 
 def cancel_running_task(executor, info_queue):
+
+    executor = _executor_manager.get_executor(executor)
 
     # Using MPQ to get any information that execute method wanted to
     # share with cancel method
