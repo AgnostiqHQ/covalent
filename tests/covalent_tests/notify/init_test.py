@@ -25,8 +25,6 @@ import os
 import tempfile
 from pathlib import Path
 
-import pytest
-
 from covalent._shared_files.config import _config_manager, _ConfigManager
 from covalent.notify import _NotificationManager
 
