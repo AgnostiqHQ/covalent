@@ -126,6 +126,7 @@ ipython_config.py
 covalent_dispatcher/_service/tmp*
 *_scratch.py
 
-# Supervisord Log Files
+# Supervisord Files
 *err.log
 *out.log
+sd.pid

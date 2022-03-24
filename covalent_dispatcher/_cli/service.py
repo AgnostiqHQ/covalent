@@ -23,8 +23,9 @@
 import os
 import shutil
 import socket
+from sys import stderr
 import time
-from subprocess import DEVNULL, Popen
+from subprocess import DEVNULL, Popen, PIPE
 from typing import Optional
 
 import click
@@ -36,7 +37,14 @@ from covalent._shared_files.config import get_config, set_config
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
+SD_PIDFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../sd.pid"
 
+
+def _get_project_root_cwd() -> str:
+    return os.path.dirname(os.path.abspath(__file__)) + "/../../"
+
+def _ensure_supervisord_running() -> bool:
+    
 
 def _read_pid(filename: str) -> int:
     """
@@ -223,6 +231,39 @@ def _graceful_shutdown(pidfile: str) -> None:
 
     _rm_pid_file(pidfile)
 
+
+@click.command()
+@click.pass_context
+def sstart(ctx) -> None:
+    cwd = _get_project_root_cwd()
+    existing_pid = _read_pid(SD_PIDFILE)
+    if psutil.pid_exists(existing_pid):
+        click.echo(f"Supervisord already running with pid {existing_pid}.")
+    else:
+        launch_str = "supervisord"
+        proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
+        pid = proc.pid
+        with open(SD_PIDFILE, "w") as PIDFILE:
+            PIDFILE.write(str(pid))
+        click.echo(f"Started supervisord with pid: {pid}")
+    proc = Popen(["supervisorctl", "start", "covalent:"], stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
+    
+
+
+@click.command()
+def sstatus() -> None:
+    cwd = _get_project_root_cwd()
+    existing_pid = _read_pid(SD_PIDFILE)
+
+    if psutil.pid_exists(existing_pid):
+        proc = Popen(["supervisorctl", "status"], stdout=PIPE, cwd=cwd)
+        click.echo("\nCovalent Services Status:")
+        while True:
+            line = proc.stdout.readline()
+            print(line.decode("utf-8").split("\n")[0])
+            if not line: break
+    else:
+        click.echo("Supervisord not running.")
 
 @click.command()
 @click.option(
