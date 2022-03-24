@@ -18,24 +18,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import logging
-from pathlib import Path
+"""Notification objects which can be attached to lattices and electrons."""
 
-from app.api.api_v0.api import api_router
-from app.core.config import settings
-from fastapi import FastAPI
-from fastapi_socketio import SocketManager
+from abc import ABC, abstractmethod
 
-BASE_PATH = Path(__file__).resolve().parent
 
-app = FastAPI(title="Covalent UI Backend Service API")
-sio = SocketManager(app=app)
+class NotifyEndpoint(ABC):
+    """Base notification endpoint class used for defining other types of
+    notification endpoints. Subclasses must define a notify function which
+    accepts a notification string forwarded to the endpoint. Other settings
+    specific to the subclass should be passed in its constructor.
+    """
 
-logging.basicConfig(level=logging.DEBUG)
-app.include_router(api_router, prefix=settings.API_V0_STR)
-
-if __name__ == "__main__":
-    # Use this for debugging purposes only
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, log_level="debug", reload=True)
+    @abstractmethod
+    def notify(self, message: str) -> None:
+        raise NotImplementedError

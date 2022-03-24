@@ -18,24 +18,25 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import logging
-from pathlib import Path
+import pytest
 
-from app.api.api_v0.api import api_router
-from app.core.config import settings
-from fastapi import FastAPI
-from fastapi_socketio import SocketManager
+import covalent as ct
 
-BASE_PATH = Path(__file__).resolve().parent
 
-app = FastAPI(title="Covalent UI Backend Service API")
-sio = SocketManager(app=app)
+@pytest.mark.skip(reason="test not working")
+def test_notify_webhook(mocker):
+    @ct.electron
+    def task(x):
+        return x
 
-logging.basicConfig(level=logging.DEBUG)
-app.include_router(api_router, prefix=settings.API_V0_STR)
+    mock_notify = mocker.patch(
+        "covalent.notify.notification_plugins.webhook.NotifyWebhook.notify", return_value=None
+    )
+    endpoint = ct.notify.notification_plugins.webhook.NotifyWebhook(webhook_url="test_url")
 
-if __name__ == "__main__":
-    # Use this for debugging purposes only
-    import uvicorn
+    @ct.lattice(notify=[endpoint])
+    def workflow(x):
+        return task(x)
 
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, log_level="debug", reload=True)
+    ct.dispatch_sync(workflow)(x=1)
+    mock_notify.assert_called()
