@@ -41,7 +41,7 @@ from ....core.update_workflow import update_workflow_results
 # TODO - Figure out how this BASE URI will be determined when this is deployed.
 BASE_URI = os.environ.get("BASE_URI")
 
-tasks_queue = MPQ()
+workflow_tasks_queue = MPQ()
 router = APIRouter()
 
 # Do we need this here?
@@ -76,18 +76,49 @@ mock_result = {
 }
 
 
+def get_result_object(dispatch_id: str):
+
+    import covalent as ct
+
+    # resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
+    # result_object = pickle.loads(resp.content)
+    @ct.electron
+    def task_1(a):
+        import time
+
+        time.sleep(10)
+        return a**2
+
+    @ct.electron
+    def task_2(a, b):
+        return a * b
+
+    @ct.lattice
+    def workflow(x, y):
+        res_1 = task_1(x + 2)
+        res_2 = task_2(x, y)
+
+        return res_1, res_2
+
+    workflow.build_graph(2, 10)
+    result_object = Result(workflow, workflow.metadata["results_dir"])
+    result_object._lattice.transport_graph = result_object._lattice.transport_graph.serialize()
+    return result_object
+
+
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
 def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
 
-    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-    result_obj = resp.json()["result_obj"]
+    # Get the result object
+    result_obj = get_result_object(dispatch_id=dispatch_id)
 
-    result_obj = dispatch_workflow(result_obj, tasks_queue)
+    # Dispatch the workflow
+    dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
 
-    requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
+    # requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 
@@ -103,8 +134,8 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
 
     success = cancel_workflow_execution(result_obj)
 
-    if tasks_queue.not_empty():
-        tasks_queue.get()  # Pop the last set of tasks from the queue since the workflow is being cancelled.
+    if workflow_tasks_queue.not_empty():
+        workflow_tasks_queue.get()  # Pop the last set of tasks from the queue since the workflow is being cancelled.
 
     if success:
         return {"response": f"{dispatch_id} workflow cancelled successfully"}

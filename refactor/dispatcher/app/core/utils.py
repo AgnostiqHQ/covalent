@@ -42,6 +42,8 @@ def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result)
     """Ensure that the execution status of the task nodes in the transport graph are initialized
     properly."""
 
+    is_executable_node = True
+
     if task_name.startswith((subscript_prefix, generator_prefix, parameter_prefix, attr_prefix)):
         if task_name.startswith(parameter_prefix):
             output = result_obj.lattice.transport_graph.get_node_value(task_id, "value")
@@ -65,7 +67,9 @@ def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result)
             output=output,
         )
 
-    return result_obj
+        is_executable_node = False
+
+    return result_obj, is_executable_node
 
 
 def _post_process(lattice: Lattice, task_outputs: Dict) -> Any:
@@ -125,16 +129,16 @@ def get_task_inputs(task_id: int, node_name: str, result_obj: Result) -> Dict:
             result_obj.lattice.transport_graph.get_node_value(parent, "output")
             for parent in result_obj.lattice.transport_graph.get_dependencies(task_id)
         ]
-        task_input = {"args": [], "kwargs": {"x": values}}
+        task_inputs = {"args": [], "kwargs": {"x": values}}
     elif node_name.startswith(electron_dict_prefix):
         values = {}
         for parent in result_obj.lattice.transport_graph.get_dependencies(task_id):
             key = result_obj.lattice.transport_graph.get_edge_value(parent, task_id, "edge_name")
             value = result_obj.lattice.transport_graph.get_node_value(parent, "output")
             values[key] = value
-        task_input = {"args": [], "kwargs": {"x": values}}
+        task_inputs = {"args": [], "kwargs": {"x": values}}
     else:
-        task_input = {"args": [], "kwargs": {}}
+        task_inputs = {"args": [], "kwargs": {}}
 
         for parent in result_obj.lattice.transport_graph.get_dependencies(task_id):
 
@@ -145,15 +149,15 @@ def get_task_inputs(task_id: int, node_name: str, result_obj: Result) -> Dict:
             value = result_obj.lattice.transport_graph.get_node_value(parent, "output")
 
             if param_type == "arg":
-                task_input["args"].append(value)
+                task_inputs["args"].append(value)
 
             elif param_type == "kwarg":
                 key = result_obj.lattice.transport_graph.get_edge_value(
                     parent, task_id, "edge_name"
                 )
 
-                task_input["kwargs"][key] = value
-    return task_input
+                task_inputs["kwargs"][key] = value
+    return task_inputs
 
 
 def is_sublattice(task_name: str = None) -> bool:
