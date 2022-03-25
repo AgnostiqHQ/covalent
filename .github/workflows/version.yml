@@ -67,33 +67,13 @@ jobs:
             echo 'The most recent CHANGELOG release does not match the VERSION'.
             exit 5
           fi
-         #TODO: Check that the lines in the diff are between unreleased_header_line and latest_release
-
-      - name: Check out base
-        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
-        run: git checkout develop
-      - name: Read base version
-        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
-        run: |
-          BASE_VERSION="$(cat ./VERSION)"
-          echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
-      - name: Validate version change
-        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
-        run: |
-          echo "head version is ${HEAD_VERSION}"
-          echo "base version is ${BASE_VERSION}"
-          if [[ $BASE_VERSION =~ $SEMVER_REGEX ]] && 
-             [[ $HEAD_VERSION =~ $SEMVER_REGEX ]] && 
-             dpkg --compare-versions $HEAD_VERSION 'gt' $BASE_VERSION ; then
-            echo "Validated version incremented correctly."
-            exit 0
-          elif [[ $BASE_VERSION =~ $SEMVER_REGEX ]] && 
-               [[ $HEAD_VERSION =~ $SEMVER_REGEX ]] ; then
-            echo "You must increment the version to merge this branch."
-            exit 1
-          elif [[ $BASE_VERSION =~ $SEMVER_REGEX ]] ; then
-            echo "The version number in this branch is not a valid semantic version."
-            exit 2
-          else
-            echo "Pass due to bad version format in develop branch."
+          #Check that the lines in the diff are between unreleased_header_line and latest_release
+          IFS='@-+,' read -ra LINES <<< "$(git diff develop -- CHANGELOG.md | sed '5q;d')"
+          start_head="${LINES[5]}"
+          lines_head="${LINES[6]}"
+          if [[ $start_head -gt $unreleased_header_line ]] ||
+             [[ $((start_head + lines_head)) -lt $unreleased_header_line ]] ||
+             [[ $((start_head + lines_head)) -gt $latest_release ]] ; then
+            echo 'Changes outside the UNRELEASED block are prohibited in pull requests.'
+            exit 6
           fi
