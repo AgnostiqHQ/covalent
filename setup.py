@@ -84,6 +84,17 @@ class BuildUI(Command):
     ]
 
     @staticmethod
+    def _run(command, stdout=None, cwd=None, check=False, capture_output=False):
+        import subprocess
+
+        proc = subprocess.run(
+            command, stdout=stdout, cwd=cwd, check=check, capture_output=capture_output
+        )
+        if proc.returncode != 0:
+            raise Exception(proc.stderr.decode("utf-8").strip())
+        return proc
+
+    @staticmethod
     def _node_versions():
         import requests
 
@@ -100,8 +111,8 @@ class BuildUI(Command):
     def _node_lts(node_versions):
         import subprocess
 
-        proc = subprocess.Popen(["node", "-v"], stdout=subprocess.PIPE)
-        installed_version = proc.stdout.read().decode("utf-8")[:-1]
+        proc = BuildUI._run(["node", "-v"], stdout=subprocess.PIPE)
+        installed_version = proc.stdout.decode("utf-8")[:-1]
         print(f"The installed Node.js version is {installed_version}.")
         for version in node_versions:
             if version["version"] == installed_version:
@@ -122,12 +133,10 @@ class BuildUI(Command):
         elif self._node_lts(node_versions):
             import subprocess
 
-            subprocess.run(
+            self._run(
                 ["yarn", "install"], cwd="covalent_ui/webapp", check=True, capture_output=True
             )
-            subprocess.run(
-                ["yarn", "build"], cwd="covalent_ui/webapp", check=True, capture_output=True
-            )
+            self._run(["yarn", "build"], cwd="covalent_ui/webapp", check=True, capture_output=True)
         else:
             lts = self._latest_lts(node_versions)[1:]
             print(
