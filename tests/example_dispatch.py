@@ -26,24 +26,25 @@ An example script containing a simple workflow that can be dispatched to Covalen
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.pardir, '../covalent')))
+sys.path.append(os.path.abspath(os.path.join(os.path.pardir, '../covalent/_workflow')))
 
-import covalent._workflow as ctw
+import covalent as ct
 import time
 from requests import request
 from covalent._dispatcher_plugins import local_dispatch as dispatch
 
 
-@ctw.electron
+@ct.electron
 def join_words(a, b):
     return ", ".join([a, b])
 
 
-@ctw.electron
+@ct.electron
 def excitement(a):
     return f"{a}!"
 
 
-@ctw.lattice
+@ct.lattice
 def simple_workflow(a, b):
     phrase = join_words(a, b)
     return excitement(phrase)
@@ -55,6 +56,7 @@ time.sleep(10)
 dispatch_id = dispatch(simple_workflow)("Hello", "Covalent")
 results_url = "http://localhost:48008/api/results"
 results = request("GET", results_url, headers={}, data={}).json()
+print(results)
 dispatch_result = results[0]['result'] if results else None
 dispatch_status = results[0]['status'] if results else None
 print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
