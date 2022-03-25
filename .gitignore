@@ -133,3 +133,8 @@ refactor/**/logs/*.log
 
 # Node Modules
 refactor/ui_backend/webapp/node_modules
+
+# Supervisord Files
+*err.log
+*out.log
+sd.pid
