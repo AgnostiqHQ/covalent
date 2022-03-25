@@ -20,13 +20,14 @@
 
 import json
 import logging
-import cloudpickle as pickle
 from typing import Any, Optional, Sequence
 
-from app.schemas.results import Result
-from covalent_dispatcher._db.dispatchdb import encode_result
-from fastapi import APIRouter, HTTPException
+import cloudpickle as pickle
 from app.core.api import DataService
+from app.schemas.results import Result
+from fastapi import APIRouter, HTTPException
+
+from covalent_dispatcher._db.dispatchdb import encode_result
 
 router = APIRouter()
 
@@ -43,11 +44,9 @@ async def fetch_result(*, dispatch_id: str) -> Any:
 
         result_pkl_bytes = await data.get_result(dispatch_id)
         result = pickle.loads(result_pkl_bytes)
-        result_json = json.loads(encode_result(result))
-        
-        return result_json
+        return json.loads(encode_result(result))
 
     except Exception as err:
         error_message = "Error fetching result object"
         logging.exception(error_message)
-        raise HTTPException(status_code=400, detail=error_message) 
+        raise HTTPException(status_code=400, detail=error_message) from err

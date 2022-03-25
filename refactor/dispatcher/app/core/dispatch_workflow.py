@@ -117,7 +117,13 @@ def send_task_update_to_result_service(dispatch_id: str, task_execution_result: 
 
 
 def send_task_update_to_ui(dispatch_id: str, task_id: int):
-    pass
+
+    url_endpoint = f"http://localhost:8005/api/v0/ui/workflow/{dispatch_id}/task/{task_id}"
+
+    response = requests.put(url=url_endpoint)
+    response.raise_for_status()
+
+    return response.text
 
 
 def get_result_object_from_result_service(dispatch_id: str):

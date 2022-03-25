@@ -149,6 +149,6 @@ def update_workflow(
 
     send_result_object_to_result_service(updated_result_obj)
 
-    # send_task_update_to_ui(dispatch_id=dispatch_id, task_id=task_id)
+    send_task_update_to_ui(dispatch_id=dispatch_id, task_id=task_id)
 
     return {"response": f"{dispatch_id} workflow updated successfully"}
