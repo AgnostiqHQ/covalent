@@ -19,48 +19,42 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import io
-import logging
-import logging.config
 import os
 import random
 import sqlite3
 import string
 import time
-from os import path
 from tempfile import TemporaryFile
 from typing import Any, BinaryIO, Optional, Tuple, Union
 
 import cloudpickle as pickle
 import requests
+from app.core.results_logger import logger
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResultResponse
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
-
-logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 fs_server_address = os.environ.get("FS_SERVER_ADDRESS")
 if not fs_server_address:
     fs_server_address = "localhost:8000"
-base_url = fs_server_address + "/api/v0/fs"
+base_url = f"{fs_server_address}/api/v0/fs"
 
 
 # @router.middleware("http")
 # TODO: figure out why the middleware doesn't work
 async def log_requests(request: Request, call_next):
     idem = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    logger.info(f"rid={idem} start request path={request.url.path}")
+    logger.warning(f"rid={idem} start request path={request.url.path}")
     start_time = time.time()
 
     response = await call_next(request)
 
     process_time = (time.time() - start_time) * 1000
     formatted_process_time = "{0:.2f}".format(process_time)
-    logger.info(
+    logger.warning(
         f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}"
     )
 
@@ -98,13 +92,13 @@ def _upload_file(result_pkl_file: BinaryIO):
     _handle_error_response(r.status_code, response)
     filename = response.get("filename")
     path = response.get("path")
-    error_detail = "Error in response from data service. " + str(response)
+    error_detail = f"Error in response from data service. {str(response)}"
     if filename and path:
         if _add_record_to_db(dispatch_id, filename, path):
             return {"dispatch_id": dispatch_id}
         else:
             error_detail = "Error adding record to database."
-    raise HTTPException(status_code=500, detail="Error adding record to database.")
+    raise HTTPException(status_code=500, detail=error_detail)
 
 
 def _handle_error_response(status_code: int, response: dict):
@@ -118,11 +112,11 @@ def _db(sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
         results_db = "results.db"
     con = sqlite3.connect(results_db)
     cur = con.cursor()
-    logger.info("Executing SQL command.")
-    logger.info(sql)
+    logger.warning("Executing SQL command.")
+    logger.warning(sql)
     value = (False,)
     if key:
-        logger.info("Searching for key " + key)
+        logger.warning(f"Searching for key {key}")
         cur.execute(sql, (key,))
         value = cur.fetchone()
     else:
@@ -160,7 +154,7 @@ def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
 
 
 @router.get(
-    "/results/{dispatch_id}",
+    "/{dispatch_id}",
     status_code=200,
     response_class=FileResponse,
     responses={
@@ -182,7 +176,7 @@ def get_result(
     return StreamingResponse(io.BytesIO(result), media_type="application/octet-stream")
 
 
-@router.post("/results", status_code=200, response_model=InsertResultResponse)
+@router.post("/insert", status_code=200, response_model=InsertResultResponse)
 def insert_result(
     *,
     result_pkl_file: UploadFile,
@@ -194,7 +188,7 @@ def insert_result(
 
 
 @router.put(
-    "/results/{dispatch_id}",
+    "/{dispatch_id}",
     status_code=200,
     responses={
         404: {"model": HTTPExceptionSchema, "description": "Result was not found"},
@@ -204,10 +198,11 @@ def insert_result(
         },
     },
 )
-def update_result(*, dispatch_id: str, task: Node) -> Any:
+def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
     """
     Update a result object's task
     """
+
     result = _get_result_file(dispatch_id)
     results_object = pickle.loads(result)
     task = pickle.loads(task)
