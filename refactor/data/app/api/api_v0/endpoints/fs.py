@@ -26,10 +26,12 @@ from app.schemas.common import HTTPExceptionSchema
 from app.schemas.fs import UploadResponse
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
-from minio import Minio
 
 from ....core.localstoragebackend import LocalStorageBackend
-from ....core.miniostoragebackend import MinioStorageBackend
+
+# from minio import Minio
+
+# from ....core.miniostoragebackend import MinioStorageBackend
 
 router = APIRouter()
 

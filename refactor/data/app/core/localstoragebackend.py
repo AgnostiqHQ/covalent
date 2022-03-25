@@ -18,13 +18,13 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import contextlib
 import os
 import shutil
 import traceback
 import uuid
-from abc import ABC
 from pathlib import Path
-from typing import BinaryIO, Generator, List, Union
+from typing import BinaryIO, Generator, List, Tuple, Union
 
 from .storagebackend import StorageBackend
 
@@ -76,7 +76,7 @@ class LocalStorageBackend(StorageBackend):
         object_name: str,
         length: int,
         metadata: dict = None,
-    ) -> (str, str):
+    ) -> Tuple[str, str]:
         """Upload object to storage.
 
         Args:
@@ -90,13 +90,14 @@ class LocalStorageBackend(StorageBackend):
             (bucket_name, object_name) if write succeeds and ("", "") otherwise
 
         """
+
         # TODO: Fix this to be less hacky.
         p = self.base_dir / Path(bucket_name) / Path(object_name)
+
         # This is a hack to get this working, but we need to think about if it's the right thing to do.
-        try:
+        with contextlib.suppress(FileExistsError):
             os.makedirs(self.base_dir / Path(bucket_name))
-        except FileExistsError:
-            pass
+
         # Check that bucket name resolves to a subdirectory of base_dir
         # and bucket_name/object_name resolves to under bucket_name.
         try:
@@ -106,12 +107,12 @@ class LocalStorageBackend(StorageBackend):
             traceback.print_exception()
             traceback.print_stack()
             return ("", "")
-        try:
+
+        with contextlib.suppress(FileNotFoundError):
             abs_p = str(p.resolve(True))
             object_name = f"{uuid.uuid4()}.pkl"
             p = self.base_dir / Path(bucket_name) / Path(object_name)
-        except FileNotFoundError:
-            pass
+
         abs_p = str(p.resolve())
 
         # TODO: improve error handling and logging
