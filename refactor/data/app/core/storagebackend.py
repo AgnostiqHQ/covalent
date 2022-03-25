@@ -18,24 +18,27 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import logging
+from abc import ABC
 from pathlib import Path
+from typing import BinaryIO, Generator, List, Union
 
-from app.api.api_v0.api import api_router
-from app.core.config import settings
-from fastapi import FastAPI
-from fastapi_socketio import SocketManager
 
-BASE_PATH = Path(__file__).resolve().parent
+class StorageBackend(ABC):
+    def __init__(self):
+        pass
 
-app = FastAPI(title="Covalent UI Backend Service API")
-sio = SocketManager(app=app)
+    def get(self, bucket_name: str, object_name: str) -> Union[Generator[bytes, None, None], None]:
+        raise NotImplementedError
 
-logging.basicConfig(level=logging.DEBUG)
-app.include_router(api_router, prefix=settings.API_V0_STR)
+    def put(
+        self,
+        data: BinaryIO,
+        bucket_name: str,
+        object_name: str,
+        length: int,
+        metadata: dict = None,
+    ) -> (str, str):
+        raise NotImplementedError
 
-if __name__ == "__main__":
-    # Use this for debugging purposes only
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=settings.PORT, log_level="debug", reload=True)
+    def delete(self, bucket_name: str, object_names: List[str]):
+        raise NotImplementedError

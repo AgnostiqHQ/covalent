@@ -122,7 +122,10 @@ setup_info = {
     "include_package_data": True,
     "zip_safe": False,
     "package_data": {
-        "covalent": ["executor/executor_plugins/local.py"],
+        "covalent": [
+            "executor/executor_plugins/local.py",
+            "notify/notification_plugins/notify.py",
+        ],
         "covalent_dispatcher": ["_service/app.py"],
         "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
     },

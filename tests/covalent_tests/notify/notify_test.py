@@ -18,24 +18,19 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import logging
-from pathlib import Path
+"""Tests for abstract notify endpoint class."""
 
-from app.api.api_v0.api import api_router
-from app.core.config import settings
-from fastapi import FastAPI
-from fastapi_socketio import SocketManager
+from covalent.notify.notify import NotifyEndpoint
 
-BASE_PATH = Path(__file__).resolve().parent
 
-app = FastAPI(title="Covalent UI Backend Service API")
-sio = SocketManager(app=app)
+def test_notify_base_class(mocker):
+    mock_notify = mocker.patch("covalent.notify.notify.NotifyEndpoint.notify", return_value=None)
 
-logging.basicConfig(level=logging.DEBUG)
-app.include_router(api_router, prefix=settings.API_V0_STR)
+    class MockEndpoint(NotifyEndpoint):
+        def notify(self, message: str) -> None:
+            super().notify(message)
 
-if __name__ == "__main__":
-    # Use this for debugging purposes only
-    import uvicorn
+    endpoint = MockEndpoint()
+    endpoint.notify("test message")
 
-    uvicorn.run("main:app", host="0.0.0.0", port=settings.PORT, log_level="debug", reload=True)
+    mock_notify.assert_called_once_with("test message")
