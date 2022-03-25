@@ -24,10 +24,8 @@ An example script containing a simple workflow that can be dispatched to Covalen
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.pardir, '../covalent')))
-sys.path.append(os.path.abspath(os.path.join(os.path.pardir, '../covalent/covalent_dispatcher')))
 
 import covalent as ct
-import covalent_dispatcher._cli.service as service
 import time
 from requests import request
 
@@ -47,11 +45,9 @@ def simple_workflow(a, b):
     phrase = join_words(a, b)
     return excitement(phrase)
 
-if service._is_server_running():
-    print('Dispatcher service has started')
-else:
-    print('Dispatcher service is starting...')
-    time.sleep(15)
+
+print('Dispatcher service is starting...')
+time.sleep(15)
 
 dispatch_id = ct.dispatch(simple_workflow)("Hello", "Covalent")
 results_url = "http://localhost:48008/api/results"
