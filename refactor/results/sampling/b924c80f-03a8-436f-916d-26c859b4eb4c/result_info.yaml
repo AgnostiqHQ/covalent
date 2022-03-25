@@ -1,0 +1,5 @@
+dispatch_id: b924c80f-03a8-436f-916d-26c859b4eb4c
+end_time: null
+result_status: !!python/object:covalent._shared_files.util_classes.Status
+  STATUS: NEW_OBJECT
+start_time: null

@@ -18,7 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import io
 import os
 import random
 import sqlite3
@@ -33,13 +32,13 @@ from app.core.results_logger import logger
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResultResponse
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, Response, StreamingResponse
 
 router = APIRouter()
 
 fs_server_address = os.environ.get("FS_SERVER_ADDRESS")
 if not fs_server_address:
-    fs_server_address = "localhost:8000"
+    fs_server_address = "localhost:8001"
 base_url = f"{fs_server_address}/api/v0/fs"
 
 
@@ -73,31 +72,41 @@ def _get_result_file(dispatch_id: str) -> bytes:
 
 
 def _upload_file(result_pkl_file: BinaryIO):
+
     results_object = {}
     dispatch_id = ""
+
     length = result_pkl_file.seek(0, 2)
     result_pkl_file.seek(0)
+
     try:
         results_object = pickle.load(result_pkl_file)
         dispatch_id = results_object.dispatch_id
         assert length > 0
     except:
         raise HTTPException(status_code=422, detail="Error in upload body.")
+
     result_pkl_file.seek(0)
+
     r = requests.post(
         f"http://{base_url}/upload",
         files=[("file", ("result.pkl", result_pkl_file, "application/octet-stream"))],
     )
+
     response = r.json()
+
     _handle_error_response(r.status_code, response)
+
     filename = response.get("filename")
     path = response.get("path")
     error_detail = f"Error in response from data service. {str(response)}"
+
     if filename and path:
         if _add_record_to_db(dispatch_id, filename, path):
             return {"dispatch_id": dispatch_id}
         else:
             error_detail = "Error adding record to database."
+
     raise HTTPException(status_code=500, detail=error_detail)
 
 
@@ -107,6 +116,7 @@ def _handle_error_response(status_code: int, response: dict):
 
 
 def _db(sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
+
     results_db = os.environ.get("RESULTS_DB")
     if not results_db:
         results_db = "results.db"
@@ -115,6 +125,7 @@ def _db(sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
     logger.warning("Executing SQL command.")
     logger.warning(sql)
     value = (False,)
+
     if key:
         logger.warning(f"Searching for key {key}")
         cur.execute(sql, (key,))
@@ -122,8 +133,10 @@ def _db(sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
     else:
         cur.execute(sql)
         value = (True,)
+
     con.commit()
     con.close()
+
     return value
 
 
@@ -173,7 +186,8 @@ def get_result(
     Get a result object as pickle file
     """
     result: bytes = _get_result_file(dispatch_id)
-    return StreamingResponse(io.BytesIO(result), media_type="application/octet-stream")
+    # return StreamingResponse(io.BytesIO(result), media_type="application/octet-stream")
+    return Response(content=result)
 
 
 @router.post("/results", status_code=200, response_model=InsertResultResponse)
@@ -184,6 +198,9 @@ def insert_result(
     """
     Submit pickled result file
     """
+
+    logger.warning("Inside insert_result to do _upload_file")
+
     return _upload_file(result_pkl_file.file)
 
 

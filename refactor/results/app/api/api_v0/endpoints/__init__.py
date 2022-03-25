@@ -20,15 +20,11 @@
 
 """Results management service."""
 
-import logging
-import logging.config
 import os
 import sqlite3
 from os import path
 
-# setup loggers
-logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
-logger = logging.getLogger(__name__)
+from app.core.results_logger import logger
 
 results_db = os.environ.get("RESULTS_DB")
 if not results_db:
@@ -42,8 +38,8 @@ sql = (
     "path text NOT NULL, "
     "PRIMARY KEY (dispatch_id))"
 )
-logger.info("Executing SQL command.")
-logger.info(sql)
+logger.warning("Executing SQL command.")
+logger.warning(sql)
 cur.execute(sql)
 con.commit()
 con.close()
