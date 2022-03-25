@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Automated changelog and version management
 
+### Fixed
+
+- Single quotes in github env
+
 ## [0.34.5] - 2022-03-28
 
 ### Fixed 
