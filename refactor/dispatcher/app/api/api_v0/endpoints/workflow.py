@@ -23,6 +23,7 @@ from multiprocessing import Queue as MPQ
 from typing import Any
 
 import requests
+from app.core.dispatcher_logger import logger
 from app.schemas.workflow import (
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
@@ -76,6 +77,9 @@ mock_result = {
 }
 
 
+logger.warning("Dispatcher Service Started")
+
+
 def get_result_object(dispatch_id: str):
 
     import covalent as ct
@@ -101,22 +105,28 @@ def get_result_object(dispatch_id: str):
         return res_1, res_2
 
     workflow.build_graph(2, 10)
-    result_object = Result(workflow, workflow.metadata["results_dir"])
+    result_object = Result(
+        lattice=workflow, results_dir=workflow.metadata["results_dir"], dispatch_id=dispatch_id
+    )
     result_object._lattice.transport_graph = result_object._lattice.transport_graph.serialize()
     return result_object
 
 
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
-def submit_workflow(*, dispatch_id: str) -> Any:
+async def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
+
+    logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
 
     # Get the result object
     result_obj = get_result_object(dispatch_id=dispatch_id)
 
     # Dispatch the workflow
     dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
+
+    logger.warning(f"Inside submit_workflow dispatching done with dispatch_id: {dispatch_id}")
 
     # requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
 
@@ -149,15 +159,15 @@ def update_workflow(*, dispatch_id: str, task_execution_results: Node) -> Update
     Update a workflow
     """
 
-    task_id = task_execution_results["task_id"]
+    # task_id = task_execution_results["task_id"]
 
-    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-    result_obj = resp.json()["result_obj"]
+    # resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
+    # result_obj = resp.json()["result_obj"]
 
-    result_obj = update_workflow_results(task_execution_results, result_obj)
+    # result_obj = update_workflow_results(task_execution_results, result_obj)
 
-    requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
+    # requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
 
-    requests.put(f"{BASE_URI}/api/v0/ui/workflow/{dispatch_id}/task/{task_id}")
+    # requests.put(f"{BASE_URI}/api/v0/ui/workflow/{dispatch_id}/task/{task_id}")
 
     return {"response": f"{dispatch_id} workflow updated successfully"}

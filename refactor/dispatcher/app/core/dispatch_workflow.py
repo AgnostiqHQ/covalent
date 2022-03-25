@@ -28,6 +28,7 @@ from typing import Dict, List, Tuple, Union
 
 import cloudpickle as pickle
 import requests
+from app.core.dispatcher_logger import logger
 from dotenv import load_dotenv
 
 from covalent._results_manager import Result
@@ -42,8 +43,54 @@ load_dotenv()
 BASE_URI = os.environ.get("BASE_URI")
 
 
+def send_task_list_to_runner(dispatch_id, tasks_list):
+
+    logger.warning(f"Inside send_task_list_to_runner with dispatch_id {dispatch_id}")
+    logger.warning(f"Inside send_task_list_to_runner with tasks_list {tasks_list}")
+
+    # Example tasks_list:
+    # tasks_list = [
+    #     {
+    #         "task_id": 0,
+    #         "func": result_object.lattice.transport_graph.get_node_value(0, "function"),
+    #         "args": [2 + 2],
+    #         "kwargs": {},
+    #         "executor": result_object.lattice.transport_graph.get_node_value(0, "metadata")[
+    #             "executor"
+    #         ],
+    #         "results_dir": result_object.results_dir,
+    #     },
+    #     {
+    #         "task_id": 2,
+    #         "func": result_object.lattice.transport_graph.get_node_value(2, "function"),
+    #         "args": [2, 10],
+    #         "kwargs": {},
+    #         "executor": result_object.lattice.transport_graph.get_node_value(2, "metadata")[
+    #             "executor"
+    #         ],
+    #         "results_dir": result_object.results_dir,
+    #     },
+    # ]
+    # response = requests.post(url=url_endpoint, files={"tasks": pickle.dumps(tasks_list)})
+
+    # Set the url endpoint
+    url_endpoint = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/tasks"
+
+    from io import BytesIO
+
+    # Send the tasks list as file
+    response = requests.post(url=url_endpoint, files={"tasks": BytesIO(pickle.dumps(tasks_list))})
+
+    # Raise error if occurred
+    response.raise_for_status()
+
+    return response.json()["left_out_task_ids"]
+
+
 def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for starting off the workflow dispatch."""
+
+    logger.warning(f"Inside dispatch_workflow with dispatch_id {result_obj.dispatch_id}")
 
     if result_obj.status == Result.NEW_OBJ:
         result_obj._status = Result.RUNNING
@@ -75,6 +122,8 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     Runner API in batches. One of the underlying principles is that the Runner API doesn't
     interact with the Data API."""
 
+    logger.warning(f"Inside start_dispatch with dispatch_id {result_obj.dispatch_id}")
+
     # Initialize the result object
     result_obj = init_result_pre_dispatch(result_obj=result_obj)
 
@@ -83,6 +132,7 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
 
     while task_order:
 
+        logger.warning(f"task_order: {task_order}")
         # Put the order in tasks_queue to be later used to get runnable tasks
         tasks_queue.put(task_order)
 
@@ -92,17 +142,23 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
             tasks_queue=tasks_queue,
         )
 
-        unrun_tasks = run_tasks(
-            results_dir=result_obj.results_dir,
-            dispatch_id=result_obj.dispatch_id,
-            task_id_batch=tasks,
-            functions=functions,
-            input_args=input_args,
-            input_kwargs=input_kwargs,
-            executors=executors,
-        )
+        if tasks:
+            unrun_tasks = run_tasks(
+                results_dir=result_obj.results_dir,
+                dispatch_id=result_obj.dispatch_id,
+                task_id_batch=tasks,
+                functions=functions,
+                input_args=input_args,
+                input_kwargs=input_kwargs,
+                executors=executors,
+            )
 
-        task_order = [unrun_tasks] + tasks_queue.get()
+            task_order = [unrun_tasks] + tasks_queue.get() if unrun_tasks else tasks_queue.get()
+
+        else:
+            task_order = tasks_queue.get()
+
+    logger.warning(f"Inside start_dispatch with finished dispatch_id {result_obj.dispatch_id}")
 
     return result_obj
 
@@ -115,6 +171,8 @@ def get_runnable_tasks(
 
     # Getting the first list of task_ids to be run
     tasks_order = tasks_queue.get()
+    logger.warning(f"In get_runnable_tasks task_order after get: {tasks_order}")
+
     task_ids = tasks_order.pop(0)
 
     input_args = []
@@ -197,7 +255,9 @@ def get_runnable_tasks(
 
     if non_runnable_tasks:
         tasks_order = [non_runnable_tasks] + tasks_order
-        tasks_queue.put(tasks_order)
+
+    tasks_queue.put(tasks_order)
+    logger.warning(f"In get_runnable_tasks task_order after put: {tasks_order}")
 
     return runnable_tasks, functions, input_args, input_kwargs, executors
 
@@ -210,45 +270,6 @@ def init_result_pre_dispatch(result_obj: Result):
     result_obj._lattice.transport_graph = transport_graph
     result_obj._initialize_nodes()
     return result_obj
-
-
-def send_task_list_to_runner(dispatch_id, tasks_list):
-
-    # Example tasks_list:
-    # tasks_list = [
-    #     {
-    #         "task_id": 0,
-    #         "func": result_object.lattice.transport_graph.get_node_value(0, "function"),
-    #         "args": [2 + 2],
-    #         "kwargs": {},
-    #         "executor": result_object.lattice.transport_graph.get_node_value(0, "metadata")[
-    #             "executor"
-    #         ],
-    #         "results_dir": result_object.results_dir,
-    #     },
-    #     {
-    #         "task_id": 2,
-    #         "func": result_object.lattice.transport_graph.get_node_value(2, "function"),
-    #         "args": [2, 10],
-    #         "kwargs": {},
-    #         "executor": result_object.lattice.transport_graph.get_node_value(2, "metadata")[
-    #             "executor"
-    #         ],
-    #         "results_dir": result_object.results_dir,
-    #     },
-    # ]
-    # response = requests.post(url=url_endpoint, files={"tasks": pickle.dumps(tasks_list)})
-
-    # Set the url endpoint
-    url_endpoint = f"http://localhost:8000/api/v0/workflow/{dispatch_id}/tasks"
-
-    # Send the tasks list as file
-    response = requests.post(url=url_endpoint, files={"tasks": pickle.dumps(tasks_list)})
-
-    # Raise error if occurred
-    response.raise_for_status()
-
-    return response.json()["left_out_task_ids"]
 
 
 def run_tasks(

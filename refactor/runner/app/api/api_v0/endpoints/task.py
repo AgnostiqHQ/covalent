@@ -32,7 +32,7 @@ from app.core.execution import (
 )
 from app.core.runner_logger import logger
 from app.schemas.task import CancelResponse, RunTaskResponse, TaskPickleList, TaskStatus
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, File
 
 from covalent._results_manager.result import Result
 
@@ -61,9 +61,11 @@ router = APIRouter()
 
 ultimate_dict = {}
 
+logger.warning("Runner Service Started")
+
 
 @router.post("/{dispatch_id}/tasks", status_code=202, response_model=RunTaskResponse)
-async def run_tasks(*, dispatch_id: str, tasks: Request) -> RunTaskResponse:
+async def run_tasks(*, dispatch_id: str, tasks: bytes = File(...)) -> RunTaskResponse:
     """
     Run a list of tasks
 
@@ -97,7 +99,6 @@ async def run_tasks(*, dispatch_id: str, tasks: Request) -> RunTaskResponse:
 
     logger.warning(f"POST on /{dispatch_id}/tasks called to submit a list of tasks")
 
-    tasks = await tasks.body()
     runnable_tasks = pickle.loads(tasks)
 
     logger.warning(f"ultimate dict before {ultimate_dict}")
