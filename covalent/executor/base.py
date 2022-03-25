@@ -26,11 +26,13 @@ import os
 import subprocess
 import tempfile
 from abc import ABC, abstractmethod
+from multiprocessing import Queue as MPQ
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
 import cloudpickle as pickle
 
+from .._results_manager.result import Result
 from .._shared_files import logger
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
@@ -51,8 +53,6 @@ class BaseExecutor(ABC):
     that environment.
 
     Attributes:
-        log_stdout: The path to the file to be used for redirecting stdout.
-        log_stderr: The path to the file to be used for redirecting stderr.
         conda_env: The name of the Conda environment to be used.
         cache_dir: The location used for cached files in the executor.
         current_env_on_conda_fail: If True, the current environment will be used
@@ -61,14 +61,13 @@ class BaseExecutor(ABC):
 
     def __init__(
         self,
-        log_stdout: str = "",
-        log_stderr: str = "",
         conda_env: str = "",
-        cache_dir: str = "",
+        cache_dir: str = os.path.join(
+            os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+            "covalent",
+        ),
         current_env_on_conda_fail: bool = False,
     ) -> None:
-        self.log_stdout = log_stdout
-        self.log_stderr = log_stderr
         self.conda_env = conda_env
         self.cache_dir = cache_dir
         self.current_env_on_conda_fail = current_env_on_conda_fail
@@ -127,9 +126,10 @@ class BaseExecutor(ABC):
         function: TransportableObject,
         args: List,
         kwargs: Dict,
+        info_queue: MPQ,
+        task_id: int,
         dispatch_id: str,
         results_dir: str,
-        node_id: int = -1,
     ) -> Any:
         """
         Execute the function with the given arguments.
@@ -141,10 +141,12 @@ class BaseExecutor(ABC):
                       is ultimately returned by this function.
             args: List of positional arguments to be used by the function.
             kwargs: Dictionary of keyword arguments to be used by the function.
+            info_queue: A multiprocessing Queue object used for shared variables across
+                processes. Information about, eg, status, can be stored here.
+            task_id: ID of the task in the transport graph which is using this executor.
             dispatch_id: The unique identifier of the external lattice process which is
                          calling this function.
             results_dir: The location of the results directory.
-            node_id: ID of the node in the transport graph which is using this executor.
 
         Returns:
             output: The result of the function execution.
@@ -160,7 +162,8 @@ class BaseExecutor(ABC):
         kwargs: Dict,
         conda_env: str,
         cache_dir: str,
-        node_id: int,
+        info_queue: MPQ,
+        task_id: int,
     ) -> Tuple[bool, Any]:
         """
         Execute the function with the given arguments, in a Conda environment.
@@ -173,14 +176,17 @@ class BaseExecutor(ABC):
             kwargs: Dictionary of keyword arguments to be used by the function.
             conda_env: Name of a Conda environment in which to execute the task.
             cache_dir: The directory where temporary files and logs (if any) are stored.
-            node_id: The integer identifier for the current node.
+            info_queue: A multiprocessing Queue object used for shared variables across
+                processes. Information about, eg, status, can be stored here.
+            task_id: The integer identifier for the current task.
 
         Returns:
-            output: The result of the function execution.
+            output: A tuple of (result, exception); the result of the function execution and
+                the exception if there was one, or None, if there were not.
         """
 
         if not self.get_conda_path():
-            return self._on_conda_env_fail(fn, args, kwargs, node_id)
+            return self._on_conda_env_fail(fn, args, kwargs, info_queue, task_id)
 
         # Pickle the function
         temp_filename = ""
@@ -203,7 +209,7 @@ class BaseExecutor(ABC):
         else:
             message = "No Conda installation found on this compute node."
             app_log.warning(message)
-            return self._on_conda_env_fail(fn, args, kwargs, node_id)
+            return self._on_conda_env_fail(fn, args, kwargs, info_queue, task_id)
 
         shell_commands += f"conda activate {conda_env}\n"
         shell_commands += "retval=$?\n"
@@ -232,10 +238,15 @@ class BaseExecutor(ABC):
 
         shell_commands += f'os.remove("{temp_filename}")\n\n'
 
-        shell_commands += f"result = fn(*{args}, **{kwargs})\n\n"
+        shell_commands += "exception = None\n"
+        shell_commands += "result = None\n"
+        shell_commands += "try:\n"
+        shell_commands += f"    result = fn(*{args}, **{kwargs})\n"
+        shell_commands += "except Exception as e:\n"
+        shell_commands += "    exception = e\n\n"
 
         shell_commands += f'with open("{result_filename}", "wb") as f:\n'
-        shell_commands += "    pickle.dump(result, f)\n"
+        shell_commands += "    pickle.dump((result,exception), f)\n"
         shell_commands += "EOF\n"
 
         # Run the script and unpickle the result
@@ -251,16 +262,23 @@ class BaseExecutor(ABC):
 
             if out.returncode != 0:
                 app_log.warning(out.stderr)
-                return self._on_conda_env_fail(fn, args, kwargs, node_id)
+                return self._on_conda_env_fail(fn, args, kwargs, info_queue, task_id)
 
         with open(result_filename, "rb") as f:
-            result = pickle.load(f)
+            result, exception = pickle.load(f)
 
-            message = f"Executed node {node_id} on Conda environment {self.conda_env}."
+            message = f"Executed task ID {task_id} on Conda environment {self.conda_env}."
             app_log.debug(message)
-            return result
+            return (result, exception)
 
-    def _on_conda_env_fail(self, fn: Callable, args: List, kwargs: Dict, node_id: int):
+    def _on_conda_env_fail(
+        self,
+        fn: Callable,
+        args: List,
+        kwargs: Dict,
+        info_queue: MPQ,
+        task_id: int,
+    ):
         """
 
         Args:
@@ -268,25 +286,34 @@ class BaseExecutor(ABC):
                 whose result may be returned by this function.
             args: List of positional arguments to be used by the function.
             kwargs: Dictionary of keyword arguments to be used by the function.
-            node_id: The integer identifier for the current node.
+            info_queue: A multiprocessing Queue object used for shared variables across
+                processes. Information about, eg, status, can be stored here.
+            task_id: The integer identifier for the current task.
 
         Returns:
-            output: The result of the function execution, if
-                self.current_env_on_conda_fail == True, otherwise, return value is None.
+            output: If self.current_env_on_conda_fail == True, a tuple of (result, exception);
+                the result of the function execution and the exception if there was one, or None,
+                if there were not.
+                If self.current_env_on_conda_fail == False, an exception is raised.
         """
 
         result = None
-        message = f"Failed to execute node {node_id} on Conda environment {self.conda_env}."
+        exception = None
+        message = f"Failed to execute task ID {task_id} on Conda environment {self.conda_env}."
         if self.current_env_on_conda_fail:
             message += "\nExecuting on the current Conda environment."
             app_log.warning(message)
-            result = fn(*args, **kwargs)
+
+            try:
+                result = fn(*args, **kwargs)
+            except Exception as e:
+                exception = e
 
         else:
             app_log.error(message)
             raise RuntimeError
 
-        return result
+        return result, exception
 
     def get_conda_envs(self) -> None:
         """
@@ -341,3 +368,28 @@ class BaseExecutor(ABC):
             return False
         self.conda_path = which_conda
         return True
+
+    def cancel(self, info_dict: dict = {}) -> Tuple[Any, str, str]:
+        """
+        Cancel the execution task.
+
+        Args:
+            info_dict: a dictionary containing any neccessary parameters
+                needed to halt the task execution.
+
+        Returns:
+            Null values in the same structure as a successful return value (a 4-element tuple).
+        """
+
+        return (None, "", "", InterruptedError)
+
+    @abstractmethod
+    def get_status(self, info_dict: dict = {}) -> Result:
+        """
+        Get the current status of the task.
+
+        Args:
+            info_dict: a dictionary containing any neccessary parameters needed to query the status.
+        """
+
+        raise NotImplementedError

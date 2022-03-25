@@ -18,10 +18,20 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import logging
+from pathlib import Path
 
-from multiprocessing import Queue as MPQ
+# Creating a custom logger
+logger = logging.getLogger(__name__)
 
-from .execution import get_task_status, run_available_tasks
+# File handler for saving logs
+Path("logs").mkdir(exist_ok=True)
+file_handler = logging.FileHandler("logs/queuer_logs.log")
+file_handler.setLevel(logging.WARNING)
 
-cancelled_tasks_queue = MPQ()
-track_status_queue = MPQ()
+# Creating the file formatter and adding it to the file handler
+file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(file_formatter)
+
+# Add handlers to the logger
+logger.addHandler(file_handler)

@@ -23,24 +23,25 @@ from multiprocessing import Queue as MPQ
 from typing import Any
 
 import requests
+from app.core.cancel_workflow import cancel_workflow_execution
+from app.core.dispatch_workflow import dispatch_workflow, get_result_object_from_result_service
+from app.core.dispatcher_logger import logger
+from app.core.update_workflow import update_workflow_results
 from app.schemas.workflow import (
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
     Node,
     UpdateWorkflowResponse,
 )
+from dotenv import load_dotenv
 from fastapi import APIRouter
 
 from covalent._results_manager import Result
 
-from ....core.cancel_workflow import cancel_workflow_execution
-from ....core.dispatch_workflow import dispatch_workflow
-from ....core.update_workflow import _update_workflow
-
 # TODO - Figure out how this BASE URI will be determined when this is deployed.
-BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
+BASE_URI = os.environ.get("BASE_URI")
 
-tasks_queue = MPQ()
+workflow_tasks_queue = MPQ()
 router = APIRouter()
 
 # Do we need this here?
@@ -75,18 +76,26 @@ mock_result = {
 }
 
 
+logger.warning("Dispatcher Service Started")
+
+
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
-def submit_workflow(*, dispatch_id: str) -> Any:
+async def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
 
-    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-    result_obj = resp.json()["result_obj"]
+    logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
 
-    result_obj = dispatch_workflow(result_obj, tasks_queue)
+    # Get the result object
+    result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
-    requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
+    # Dispatch the workflow
+    dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
+
+    logger.warning(f"Inside submit_workflow dispatching done with dispatch_id: {dispatch_id}")
+
+    # requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 
@@ -102,6 +111,9 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
 
     success = cancel_workflow_execution(result_obj)
 
+    if workflow_tasks_queue.not_empty():
+        workflow_tasks_queue.get()  # Pop the last set of tasks from the queue since the workflow is being cancelled.
+
     if success:
         return {"response": f"{dispatch_id} workflow cancelled successfully"}
     else:
@@ -114,15 +126,15 @@ def update_workflow(*, dispatch_id: str, task_execution_results: Node) -> Update
     Update a workflow
     """
 
-    task_id = task_execution_results["task_id"]
+    # task_id = task_execution_results["task_id"]
 
-    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-    result_obj = resp.json()["result_obj"]
+    # resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
+    # result_obj = resp.json()["result_obj"]
 
-    result_obj = _update_workflow(task_execution_results, result_obj)
+    # result_obj = update_workflow_results(task_execution_results, result_obj)
 
-    requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
+    # requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
 
-    requests.put(f"{BASE_URI}/api/v0/ui/workflow/{dispatch_id}/task/{task_id}")
+    # requests.put(f"{BASE_URI}/api/v0/ui/workflow/{dispatch_id}/task/{task_id}")
 
     return {"response": f"{dispatch_id} workflow updated successfully"}

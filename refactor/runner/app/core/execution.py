@@ -19,102 +19,198 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import traceback
+from datetime import datetime, timezone
 from multiprocessing import Process
 from multiprocessing import Queue as MPQ
-from queue import Empty
+from typing import Dict, List
+
+import cloudpickle as pickle
+import requests
+
+from covalent._results_manager.result import Result
+from covalent.executor import _executor_manager
+
+from .runner_logger import logger
 
 
-def send_node_update_to_dispatcher(dispatch_id, task_id, node_output):
-    pass
-
-
-def start_task(task_id, result_queue, func, args, kwargs, executor):
-
-    # And adding some other stuff if needed to this functions parameters
-
-    result = executor.execute(func, args, kwargs)
-    result_queue.put_nowait((task_id, result))
-
-
-def cancel_task(process):
-    process.terminate()
-    process.join()
-    pass
-
-
-def update_status_queue(task_id, status, track_status_queue):
-
-    statuses = track_status_queue.get()
-    statuses[task_id] = status
-    track_status_queue.put(statuses)
-
-
-def get_task_status(task_id, track_status_queue):
-
-    statuses = track_status_queue.get()
-    task_status = statuses[task_id]
-    track_status_queue.put(statuses)
-    return task_status
-
-
-def check_task_cancellation(cancelled_queue, track_status_queue, available_tasks, processes):
-
-    try:
-        cancelled_task_id = cancelled_queue.get_nowait()
-        cancel_task(processes[cancelled_task_id])
-        update_status_queue(cancelled_task_id, "CANCELLED", track_status_queue)
-        available_tasks.pop(cancelled_task_id)
-    except Empty:
-        pass
-
-    return available_tasks
-
-
-def run_available_tasks(
-    dispatch_id: str,
-    cancelled_queue: MPQ,
-    track_status_queue: MPQ,
-    available_tasks: list,
-    available_resources: int,
+def generate_task_result(
+    task_id,
+    start_time=None,
+    end_time=None,
+    status=None,
+    output=None,
+    error=None,
+    stdout=None,
+    stderr=None,
+    info=None,
 ):
 
-    processes = {}
+    return {
+        "task_id": task_id,
+        "start_time": start_time,
+        "end_time": end_time,
+        "status": status,
+        "output": output,
+        "error": error,
+        "stdout": stdout,
+        "stderr": stderr,
+        "info": info,
+    }
 
-    result_queue = MPQ()
 
-    while available_tasks:
+def send_task_update_to_dispatcher(dispatch_id, task_result):
 
-        available_tasks = check_task_cancellation(
-            cancelled_queue, track_status_queue, available_tasks, processes
+    url = f"http://localhost:8000/api/v0/workflow/{dispatch_id}"
+    requests.put(url=url, data=pickle.dumps(task_result))
+
+    logger.warning(f"{dispatch_id}")
+    logger.warning(f"{task_result}")
+
+
+def free_resources_call_to_runner(dispatch_id, task_id):
+
+    url = f"http://localhost:8000/api/v0/workflow/{dispatch_id}/task/{task_id}/free"
+    requests.post(url=url)
+
+
+def done_callback_to_runner(dispatch_id, task_id):
+
+    url = f"http://localhost:8000/api/v0/workflow/{dispatch_id}/task/{task_id}/done"
+    requests.post(url=url)
+
+
+def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, dispatch_id):
+
+    task_result = generate_task_result(
+        task_id=task_id,
+        start_time=datetime.now(timezone.utc),
+        status=Result.RUNNING,
+    )
+
+    # Set task as running and send update to dispatcher
+    send_task_update_to_dispatcher(dispatch_id, task_result)
+
+    executor = _executor_manager.get_executor(executor)
+
+    logger.warning(f"info queue when inside the process {info_queue}")
+
+    task_output, stdout, stderr, exception = executor.execute(
+        function=func,
+        args=args,
+        kwargs=kwargs,
+        info_queue=info_queue,
+        task_id=task_id,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+    )
+
+    task_result = generate_task_result(
+        task_id=task_id,
+        end_time=datetime.now(timezone.utc),
+        status=Result.COMPLETED,
+        output=task_output,
+        error="".join(traceback.TracebackException.from_exception(exception).format())
+        if exception
+        else None,
+        stdout=stdout,
+        stderr=stderr,
+        info=info_queue.get(),
+    )
+
+    # No more info needs to be stored about execution
+    info_queue.close()
+
+    # Free resources callback to runner
+    free_resources_call_to_runner(dispatch_id, task_id)
+
+    # Set task as complete and send update to dispatcher
+    send_task_update_to_dispatcher(dispatch_id, task_result)
+
+    # Callback to the runner to close this process and free resources
+    done_callback_to_runner(dispatch_id, task_id)
+
+
+def run_tasks_with_resources(
+    dispatch_id: str,
+    tasks_left_to_run: List[Dict],
+    resources: MPQ,
+    ultimate_dict: dict,
+):
+    # Example task:
+    # {
+    #    "task_id": 3,
+    #    "func": Callable,
+    #    "args": [1, 2, 3],
+    #    "kwargs": {"a": 1, "b": 2},
+    #    "executor": Executor,
+    #    "results_dir": "/path/to/results/"
+    # }
+
+    if not ultimate_dict.get(dispatch_id, False):
+        ultimate_dict[dispatch_id] = {}
+
+    # Get number of available resources
+    available_resources = resources.get()
+    resources.put(available_resources)
+
+    while available_resources > 0 and tasks_left_to_run:
+
+        # Reduce the number of available resources
+        resources.put(resources.get() - 1)
+
+        # Popping first element from tasks_left_to_run
+        task = tasks_left_to_run.pop(0)
+        info_queue = MPQ()
+
+        logger.warning(f"info queue when starting the process {info_queue}")
+
+        # Organizing the args to be sent
+        starting_args = (
+            task["task_id"],
+            task["func"],
+            task["args"],
+            task["kwargs"],
+            task["executor"],
+            task["results_dir"],
+            info_queue,
+            dispatch_id,
         )
 
-        for i in range(available_resources):
-            task_id, func, args, kwargs, executor = available_tasks[i]
-            starting_args = (task_id, result_queue, func, args, kwargs, executor)
+        process = Process(target=start_task, args=starting_args, daemon=True)
+        process.start()
 
-            processes[task_id] = Process(target=start_task, args=starting_args, daemon=True)
+        ultimate_dict[dispatch_id][task["task_id"]] = {
+            "process": process,
+            "executor": task["executor"],
+            "info_queue": info_queue,
+        }
 
-            available_tasks.pop(i)
-            available_resources -= 1
+        available_resources = resources.get()
+        resources.put(available_resources)
 
-        for task_id, proc in processes.items():
-            proc.start()
-            update_status_queue(task_id, "RUNNING", track_status_queue)
+    return tasks_left_to_run
 
-        while True:
-            try:
-                completed_task_id, completed_task_result = result_queue.get_nowait()
-                processes[completed_task_id].join()
-                del processes[completed_task_id]
-                update_status_queue(completed_task_id, "COMPLETED", track_status_queue)
 
-                break
-            except Empty:
-                available_tasks = check_task_cancellation(
-                    cancelled_queue, track_status_queue, available_tasks, processes
-                )
+def get_task_status(executor, info_queue):
 
-        available_resources += 1
-        available_tasks += send_node_update_to_dispatcher(
-            dispatch_id, completed_task_id, completed_task_result
-        )
+    executor = _executor_manager.get_executor(executor)
+
+    info = info_queue.get()
+    status = executor.get_status(info)
+    info_queue.put(info)
+
+    return status
+
+
+def cancel_running_task(executor, info_queue):
+
+    executor = _executor_manager.get_executor(executor)
+
+    # Using MPQ to get any information that execute method wanted to
+    # share with cancel method
+    executor.cancel(info_queue.get())
+
+    # Close the info_queue for any more data transfer
+    info_queue.close()
+    info_queue.join_thread()

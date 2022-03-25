@@ -21,11 +21,11 @@
 """Workflow result update functionality."""
 
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Dict
 
 from covalent._results_manager import Result
 
-from .utils import _post_process, is_workflow_completed
+from .utils import _post_process, are_tasks_running
 
 
 def update_workflow_results(task_execution_results: Dict, result_obj: Result) -> Result:
@@ -35,23 +35,18 @@ def update_workflow_results(task_execution_results: Dict, result_obj: Result) ->
     # Update the task results
     result_obj._update_node(**task_execution_results)
 
-    if task_execution_results["status"] == "FAILED":
+    if task_execution_results["status"] == Result.FAILED:
         result_obj._status = Result.FAILED
 
-    elif task_execution_results["status"] == "CANCELLED":
+    elif task_execution_results["status"] == Result.CANCELLED:
         result_obj._status = Result.CANCELLED
 
     # If workflow is completed, post-process result
-    elif is_workflow_completed(result_obj=result_obj):
-
-        task_execution_order: List[
-            List
-        ] = result_obj.lattice.transport_graph.get_topologically_sorted_graph()
+    elif not are_tasks_running(result_obj=result_obj):
 
         result_obj._result = _post_process(
             lattice=result_obj.lattice,
             task_outputs=result_obj.get_all_node_outputs(),
-            task_execution_order=task_execution_order,
         )
 
         result_obj._status = Result.COMPLETED

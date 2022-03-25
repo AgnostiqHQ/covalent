@@ -18,22 +18,20 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import logging
 from pathlib import Path
 
-from app.api.api_v0.api import api_router
-from app.core.config import settings
-from fastapi import FastAPI
+# Creating a custom logger
+logger = logging.getLogger(__name__)
 
-BASE_PATH = Path(__file__).resolve().parent
+# File handler for saving logs
+Path("logs").mkdir(exist_ok=True)
+file_handler = logging.FileHandler("logs/ui_backend_logs.log")
+file_handler.setLevel(logging.WARNING)
 
-app = FastAPI(title="Covalent Runner Service API")
+# Creating the file formatter and adding it to the file handler
+file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(file_formatter)
 
-
-app.include_router(api_router, prefix=settings.API_V0_STR)
-
-
-if __name__ == "__main__":
-    # Use this for debugging purposes only
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=8004, log_level="debug", reload=True)
+# Add handlers to the logger
+logger.addHandler(file_handler)
