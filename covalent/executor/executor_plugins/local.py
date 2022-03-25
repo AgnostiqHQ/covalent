@@ -55,7 +55,37 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 class LocalExecutor(BaseExecutor):
     """
     Local executor class that directly invokes the input function.
+
+    Args:
+        log_stdout: The path to the file to be used for redirecting stdout.
+        log_stderr: The path to the file to be used for redirecting stderr.
+        cache_dir: The location used for cached files in the executor.
+        kwargs: Key-word arguments to be passed to the parent class (BaseExecutor)
     """
+
+    def __init__(
+        self,
+        log_stdout: str = "stdout.log",
+        log_stderr: str = "stderr.log",
+        cache_dir: str = os.path.join(
+            os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+            "covalent",
+        ),
+        **kwargs,
+    ):
+        self.log_stdout = log_stdout
+        self.log_stderr = log_stderr
+        self.cache_dir = cache_dir
+
+        base_kwargs = {"cache_dir": self.cache_dir}
+        for key in kwargs:
+            if key in [
+                "conda_env",
+                "current_env_on_conda_fail",
+            ]:
+                base_kwargs[key] = kwargs[key]
+
+        super().__init__(**base_kwargs)
 
     def execute(
         self,
