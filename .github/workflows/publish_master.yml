@@ -73,7 +73,7 @@ jobs:
         run: |
           docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_TEST_REPO}}:${{ env.TAG }}
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt cova
           echo 'Running an example dispatch...'
           for idx in {0..1..1}; do
             echo 'Dispatch number: '$idx
