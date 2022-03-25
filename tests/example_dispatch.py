@@ -53,7 +53,7 @@ print('Dispatcher service is starting...')
 time.sleep(10)
 
 dispatch_id = dispatch(simple_workflow)("Hello", "Covalent")
-results_url = "http://localhost:48009/api/results"
+results_url = "http://localhost:48008/api/results"
 results = request("GET", results_url, headers={}, data={}).json()
 dispatch_result = results[0]['result'] if results else None
 dispatch_status = results[0]['status'] if results else None
