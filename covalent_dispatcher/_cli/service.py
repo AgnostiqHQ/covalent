@@ -27,6 +27,8 @@ from sys import stderr
 import time
 from subprocess import DEVNULL, Popen, PIPE
 from typing import Optional
+from jinja2 import Template
+from dotenv import dotenv_values
 
 import click
 import psutil
@@ -34,10 +36,12 @@ import psutil
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
 
+SUPERVISORD_PORT = 9001
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
 SD_PIDFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../sd.pid"
+SD_CONFIG_FILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.conf"
 
 
 def is_port_in_use(port: int, host: str = 'localhost') -> bool:
@@ -48,7 +52,44 @@ def is_port_in_use(port: int, host: str = 'localhost') -> bool:
 def _get_project_root_cwd() -> str:
     return os.path.dirname(os.path.abspath(__file__)) + "/../../"
 
+def _generate_supervisord_config():
+    project_root_path = os.path.dirname(os.path.abspath(__file__)) + "/../.."
+    # TODO consider using an external .env file for configuring defaults
+    # print({
+    #     **dotenv_values(f"{project_root_path}/.env")
+    # })
+    with open(f'{project_root_path}/covalent_dispatcher/_cli/supervisord.template.conf', 'r') as file:
+        template = file.read()
+        j2_template = Template(template)
+        config = j2_template.render({
+            "project_root": project_root_path,
+            "queuer_svc_port": "8001",
+            "dispatcher_svc_port": "8002",
+            "runner_svc_port": "8003",
+            "data_svc_port": "8004",
+            "ui_backend_svc_port": "8005",
+            "results_svc_port": "8006",
+            "mq_connection_uri": "localhost:4222",
+            "mq_dispatch_topic": "workflow.dispatch",
+            "sd_dashboard_port": str(SUPERVISORD_PORT)
+        })
+        return config
+
+def _create_config_if_not_exists() -> str:
+    config_file_content = _generate_supervisord_config()
+    exists = False
+    try:
+        open(SD_CONFIG_FILE, "r").readline()
+        exists = True
+    except FileNotFoundError:
+        exists = False
+    if not exists:
+        with open(SD_CONFIG_FILE, "w") as config_file:
+            config_file.write(config_file_content)
+    return config_file_content
+
 def _ensure_supervisord_running():
+    _create_config_if_not_exists()
     cwd = _get_project_root_cwd()
     pid = _read_pid(SD_PIDFILE)    
     if psutil.pid_exists(pid):
@@ -59,13 +100,16 @@ def _ensure_supervisord_running():
         with open(SD_PIDFILE, "w") as PIDFILE:
             PIDFILE.write(str(pid))
         count = 0
-        while not is_port_in_use(9001):
-            # if 30 seconds passes timeout
-            if count > 300:
-                click.echo("Supervisord was unable to start")
-                break
+        total_wait_time_in_secs = 15
+        wait_interval_in_secs = 0.1
+        while not is_port_in_use(SUPERVISORD_PORT):
+            # if 15 seconds passes timeout
+            if count > total_wait_time_in_secs/wait_interval_in_secs:
+                raise click.ClickException("Supervisord was unable to start")
+            elif count == 2:
+                print('Checking if covalent has started (this may take a few seconds)...')
             count+=1
-            time.sleep(0.1)
+            time.sleep(wait_interval_in_secs)
         click.echo(f"Started Supervisord process {pid}.")
 
 def _stop_services() -> None:
@@ -290,6 +334,11 @@ def stop() -> None:
     _stop_services()
 
 @click.command()
+def config() -> None:
+    config_file_content = _create_config_if_not_exists()
+    click.echo(config_file_content)
+
+@click.command()
 def restart() -> None:
     _ensure_supervisord_running()
     cwd = _get_project_root_cwd()
@@ -352,6 +401,9 @@ def purge() -> None:
     # Shutdown server.
     _stop_services()
     _graceful_shutdown(SD_PIDFILE)
+
+    if os.path.exists(SD_CONFIG_FILE):
+        os.remove(SD_CONFIG_FILE)
 
     shutil.rmtree(get_config("sdk.log_dir"), ignore_errors=True)
     shutil.rmtree(get_config("dispatcher.cache_dir"), ignore_errors=True)
