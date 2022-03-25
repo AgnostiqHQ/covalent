@@ -50,7 +50,6 @@ time.sleep(10)
 dispatch_id = ct.dispatch(simple_workflow)("Hello", "Covalent")
 results_url = "http://localhost:48008/api/results"
 results = request("GET", results_url, headers={}, data={}).json()
-print(results)
 dispatch_result = results[0]['result'] if results else None
 dispatch_status = results[0]['status'] if results else None
 print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
