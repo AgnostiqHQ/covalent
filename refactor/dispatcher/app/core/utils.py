@@ -171,11 +171,10 @@ def is_sublattice(task_name: str = None) -> bool:
 def are_tasks_running(result_obj: Result) -> bool:
     """Check if any of the tasks are still running. A task is considered not `running` if it was completed, failed or cancelled."""
 
-    for task_id in range(result_obj._num_nodes):
-        if result_obj._get_node_status(task_id) not in [Result.RUNNING, Result.NEW_OBJ]:
-            return False
-
-    return True
+    return all(
+        result_obj._get_node_status(task_id) in [Result.RUNNING, Result.NEW_OBJ]
+        for task_id in range(result_obj._num_nodes)
+    )
 
 
 def get_task_order(result_obj: Result) -> List[List]:
