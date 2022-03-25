@@ -42,6 +42,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Slack and webhook notifications
 
+## [0.32.10] - 2022-03-23
+
+### Added
+
+- Picking up dispatch jobs from the queue and ensuring that only one workflow is processed (locally) at any given time.
+
 ## [0.32.9] - 2022-03-23
 
 ### Fixed

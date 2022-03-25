@@ -138,3 +138,6 @@ refactor/ui_backend/webapp/node_modules
 *err.log
 *out.log
 sd.pid
+
+# Ignore log files
+*.log

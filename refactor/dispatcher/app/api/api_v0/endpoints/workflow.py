@@ -44,10 +44,16 @@ from fastapi import APIRouter, File
 
 from covalent._results_manager import Result
 
-# TODO - Figure out how this BASE URI will be determined when this is deployed.
-BASE_URI = os.environ.get("BASE_URI")
+load_dotenv()
+
+BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
+TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
+MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
 workflow_tasks_queue = MPQ()
+workflow_status_queue = MPQ()
+
+
 router = APIRouter()
 
 # Do we need this here?
@@ -82,6 +88,15 @@ mock_result = {
 }
 
 
+def get_result(dispatch_id: str):
+    # dirname = os.path.dirname(__file__)
+    # filename = os.path.join(dirname, './result.pkl')
+    # with open(filename, 'rb') as f:
+    #     return f.read()
+    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
+    return resp.content
+
+
 logger.warning("Dispatcher Service Started")
 
 
@@ -104,6 +119,7 @@ async def submit_workflow(*, dispatch_id: str) -> Any:
     logger.warning(f"Inside submit_workflow dispatching done with dispatch_id: {dispatch_id}")
 
     send_result_object_to_result_service(updated_result_object)
+    workflow_status_queue.put("RUNNING")  # Populate queue when workflow is running
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 
@@ -122,10 +138,11 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     if workflow_tasks_queue.not_empty():
         workflow_tasks_queue.get()  # Pop the last set of tasks from the queue since the workflow is being cancelled.
 
-    if success:
-        return {"response": f"{dispatch_id} workflow cancelled successfully"}
-    else:
+    if not success:
         return {"response": f"{dispatch_id} workflow did not cancel successfully"}
+    workflow_status_queue.get()  # Empty queue when workflow is terminated
+
+    return {"response": f"{dispatch_id} workflow cancelled successfully"}
 
 
 @router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
@@ -146,6 +163,10 @@ def update_workflow(
     updated_result_obj = update_workflow_results(
         task_execution_results=task_execution_results, result_obj=latest_result_obj
     )
+
+    if updated_result_obj._status != "RUNNING":
+        workflow_status_queue.get()  # Empty queue when workflow is no longer running (completed
+        # or failed)
 
     send_result_object_to_result_service(updated_result_obj)
 
