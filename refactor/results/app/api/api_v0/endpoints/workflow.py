@@ -154,7 +154,7 @@ def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
 
 
 @router.get(
-    "/{dispatch_id}",
+    "/results/{dispatch_id}",
     status_code=200,
     response_class=FileResponse,
     responses={
@@ -176,7 +176,7 @@ def get_result(
     return StreamingResponse(io.BytesIO(result), media_type="application/octet-stream")
 
 
-@router.post("/insert", status_code=200, response_model=InsertResultResponse)
+@router.post("/results", status_code=200, response_model=InsertResultResponse)
 def insert_result(
     *,
     result_pkl_file: UploadFile,
@@ -188,7 +188,7 @@ def insert_result(
 
 
 @router.put(
-    "/{dispatch_id}",
+    "/results/{dispatch_id}",
     status_code=200,
     responses={
         404: {"model": HTTPExceptionSchema, "description": "Result was not found"},
