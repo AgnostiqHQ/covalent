@@ -81,7 +81,7 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     tasks, functions, input_args, input_kwargs, executors = get_runnable_tasks(
         result_obj, tasks_queue
     )
-    run_tasks(
+    unrun_task_ids = run_tasks(
         results_dir=result_obj.results_dir,
         dispatch_id=result_obj.dispatch_id,
         task_id_batch=tasks,
@@ -90,6 +90,11 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
         input_kwargs=input_kwargs,
         executors=executors,
     )
+
+    if unrun_task_ids:
+        task_order = tasks_queue.get()
+        tasks_queue.put([unrun_task_ids] + task_order)
+
     return result_obj
 
 
