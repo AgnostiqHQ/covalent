@@ -20,23 +20,39 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import axios from 'axios'
+import { alpha, AppBar, IconButton, Toolbar } from '@mui/material'
+import { Menu as MenuIcon } from '@mui/icons-material'
 
-const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
-})
+import { toggleLatticeDrawer } from '../../redux/commonSlice'
+import { useDispatch } from 'react-redux'
 
-API.interceptors.response.use(
-  // unwrap response data
-  ({ data }) => data,
+const MobileAppBar = () => {
+  const dispatch = useDispatch()
 
-  // catch statusCode != 200 responses and format error
-  (error) => {
-    if (error.response) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject({ message: error.message })
-  }
-)
+  return (
+    <AppBar
+      position="fixed"
+      sx={(theme) => ({
+        display: {
+          xs: 'block',
+          md: 'none',
+        },
+        bgcolor: alpha(theme.palette.background.paper, 0.3),
+        backdropFilter: 'blur(16px)',
+      })}
+    >
+      <Toolbar>
+        <IconButton
+          sx={{ mr: 2 }}
+          color="inherit"
+          edge="start"
+          onClick={() => dispatch(toggleLatticeDrawer())}
+        >
+          <MenuIcon />
+        </IconButton>
+      </Toolbar>
+    </AppBar>
+  )
+}
 
-export default API
+export default MobileAppBar

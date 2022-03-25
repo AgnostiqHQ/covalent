@@ -19,9 +19,10 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from app.api.api_v0.endpoints import ui
+from app.api.api_v0.endpoints import ui, results
 from fastapi import APIRouter
 
 api_router = APIRouter()
 
 api_router.include_router(ui.router, prefix="/ui", tags=["UI"])
+api_router.include_router(results.router, prefix="/results", tags=["Results"])

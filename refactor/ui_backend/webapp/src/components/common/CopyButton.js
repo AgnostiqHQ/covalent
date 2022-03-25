@@ -20,23 +20,33 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import axios from 'axios'
+import { useState } from 'react'
+import copy from 'copy-to-clipboard'
+import { IconButton, Tooltip } from '@mui/material'
+import { ContentCopyRounded, CheckRounded } from '@mui/icons-material'
 
-const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
-})
+const CopyButton = ({ content, title = 'Copy', ...props }) => {
+  const [copied, setCopied] = useState(false)
 
-API.interceptors.response.use(
-  // unwrap response data
-  ({ data }) => data,
+  return (
+    <Tooltip title={copied ? 'Copied!' : title} placement="right">
+      <IconButton
+        onClick={() => {
+          copy(content)
+          setCopied(true)
+          setTimeout(() => setCopied(false), 1200)
+        }}
+        sx={{ color: 'text.secondary' }}
+        {...props}
+      >
+        {copied ? (
+          <CheckRounded fontSize="inherit" />
+        ) : (
+          <ContentCopyRounded fontSize="inherit" />
+        )}
+      </IconButton>
+    </Tooltip>
+  )
+}
 
-  // catch statusCode != 200 responses and format error
-  (error) => {
-    if (error.response) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject({ message: error.message })
-  }
-)
-
-export default API
+export default CopyButton

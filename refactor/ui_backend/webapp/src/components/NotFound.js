@@ -20,23 +20,33 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import axios from 'axios'
+import {
+  AppBar,
+  Container,
+  Link,
+  Paper,
+  Toolbar,
+  Typography,
+} from '@mui/material'
 
-const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
-})
+import { ReactComponent as Logo } from '../assets/covalent-full-logo.svg'
 
-API.interceptors.response.use(
-  // unwrap response data
-  ({ data }) => data,
+const NotFound = ({ text = 'Page not found.', children }) => {
+  return (
+    <Container>
+      <AppBar position="static" color="transparent">
+        <Toolbar disableGutters sx={{ my: 2 }}>
+          <Link href="/">
+            <Logo />
+          </Link>
+        </Toolbar>
+      </AppBar>
 
-  // catch statusCode != 200 responses and format error
-  (error) => {
-    if (error.response) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject({ message: error.message })
-  }
-)
+      <Paper elevation={4} sx={{ p: 2 }}>
+        {children || <Typography variant="h5">{text}</Typography>}
+      </Paper>
+    </Container>
+  )
+}
 
-export default API
+export default NotFound

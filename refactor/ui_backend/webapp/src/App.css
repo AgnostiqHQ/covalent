@@ -20,23 +20,33 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import axios from 'axios'
+.spin-electron {
+  animation: spin-icon infinite 2s linear;
+}
 
-const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
-})
-
-API.interceptors.response.use(
-  // unwrap response data
-  ({ data }) => data,
-
-  // catch statusCode != 200 responses and format error
-  (error) => {
-    if (error.response) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject({ message: error.message })
+@keyframes spin-icon {
+  from {
+    transform: rotate(0deg);
   }
-)
+  to {
+    transform: rotate(360deg);
+  }
+}
 
-export default API
+/* don't show handles */
+.react-flow__handle {
+  visibility: hidden;
+}
+/* adjust handle for edge positioning */
+.react-flow__handle-bottom {
+  bottom: 0px !important;
+}
+.react-flow__handle-top {
+  top: 0px !important;
+}
+.react-flow__handle-left {
+  left: 0px !important;
+}
+.react-flow__handle-right {
+  right: 0px !important;
+}

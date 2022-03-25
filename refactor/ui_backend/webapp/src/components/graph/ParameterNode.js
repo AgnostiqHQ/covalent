@@ -20,23 +20,38 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import axios from 'axios'
+import { Typography } from '@mui/material'
+import { Handle } from 'react-flow-renderer'
 
-const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
-})
+const ParameterNode = ({
+  id,
+  data,
+  type,
+  selected,
+  sourcePosition,
+  targetPosition,
+  isConnectable,
+}) => {
+  return (
+    <Typography
+      component="div"
+      sx={(theme) => ({
+        px: 2,
+        py: 0.5,
+        borderRadius: 3,
+        color: 'text.disabled',
+        bgcolor: theme.palette.background.paper,
+        fontSize: 12,
+      })}
+    >
+      {data.label}
+      <Handle
+        type="source"
+        position={sourcePosition}
+        isConnectable={isConnectable}
+      />
+    </Typography>
+  )
+}
 
-API.interceptors.response.use(
-  // unwrap response data
-  ({ data }) => data,
-
-  // catch statusCode != 200 responses and format error
-  (error) => {
-    if (error.response) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject({ message: error.message })
-  }
-)
-
-export default API
+export default ParameterNode
