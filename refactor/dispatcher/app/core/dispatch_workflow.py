@@ -87,6 +87,43 @@ def send_task_list_to_runner(dispatch_id, tasks_list):
     return response.json()["left_out_task_ids"]
 
 
+def get_result_object_from_result_service(dispatch_id: str, result_obj=None):
+
+    if result_obj:
+        # resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
+        # result_object = pickle.loads(resp.content)
+        result_object = result_obj
+
+    else:
+        import covalent as ct
+
+        @ct.electron
+        def task_1(a):
+            import time
+
+            time.sleep(10)
+            return a**2
+
+        @ct.electron
+        def task_2(a, b):
+            return a * b
+
+        @ct.lattice
+        def workflow(x, y):
+            res_1 = task_1(x + 2)
+            res_2 = task_2(x, y)
+
+            return res_1, res_2
+
+        workflow.build_graph(2, 10)
+        result_object = Result(
+            lattice=workflow, results_dir=workflow.metadata["results_dir"], dispatch_id=dispatch_id
+        )
+        result_object._lattice.transport_graph = result_object._lattice.transport_graph.serialize()
+
+    return result_object
+
+
 def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for starting off the workflow dispatch."""
 
@@ -157,6 +194,11 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
 
         else:
             task_order = tasks_queue.get()
+
+        # Get the latest result object from result service
+        result_obj = get_result_object_from_result_service(
+            dispatch_id=result_obj.dispatch_id, result_obj=result_obj
+        )
 
     logger.warning(f"Inside start_dispatch with finished dispatch_id {result_obj.dispatch_id}")
 

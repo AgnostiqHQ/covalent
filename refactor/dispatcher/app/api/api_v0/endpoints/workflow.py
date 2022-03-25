@@ -23,7 +23,10 @@ from multiprocessing import Queue as MPQ
 from typing import Any
 
 import requests
+from app.core.cancel_workflow import cancel_workflow_execution
+from app.core.dispatch_workflow import dispatch_workflow, get_result_object_from_result_service
 from app.core.dispatcher_logger import logger
+from app.core.update_workflow import update_workflow_results
 from app.schemas.workflow import (
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
@@ -34,10 +37,6 @@ from dotenv import load_dotenv
 from fastapi import APIRouter
 
 from covalent._results_manager import Result
-
-from ....core.cancel_workflow import cancel_workflow_execution
-from ....core.dispatch_workflow import dispatch_workflow
-from ....core.update_workflow import update_workflow_results
 
 # TODO - Figure out how this BASE URI will be determined when this is deployed.
 BASE_URI = os.environ.get("BASE_URI")
@@ -80,38 +79,6 @@ mock_result = {
 logger.warning("Dispatcher Service Started")
 
 
-def get_result_object(dispatch_id: str):
-
-    import covalent as ct
-
-    # resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-    # result_object = pickle.loads(resp.content)
-    @ct.electron
-    def task_1(a):
-        import time
-
-        time.sleep(10)
-        return a**2
-
-    @ct.electron
-    def task_2(a, b):
-        return a * b
-
-    @ct.lattice
-    def workflow(x, y):
-        res_1 = task_1(x + 2)
-        res_2 = task_2(x, y)
-
-        return res_1, res_2
-
-    workflow.build_graph(2, 10)
-    result_object = Result(
-        lattice=workflow, results_dir=workflow.metadata["results_dir"], dispatch_id=dispatch_id
-    )
-    result_object._lattice.transport_graph = result_object._lattice.transport_graph.serialize()
-    return result_object
-
-
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
 async def submit_workflow(*, dispatch_id: str) -> Any:
     """
@@ -121,7 +88,7 @@ async def submit_workflow(*, dispatch_id: str) -> Any:
     logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
 
     # Get the result object
-    result_obj = get_result_object(dispatch_id=dispatch_id)
+    result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
     # Dispatch the workflow
     dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
