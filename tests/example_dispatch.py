@@ -21,11 +21,15 @@
 """
 An example script containing a simple workflow that can be dispatched to Covalent
 """
-
+import sys
+import os
 import time
+from requests import request
+sys.path.append(os.path.abspath(os.path.join(os.path.pardir, '../covalent')))
+
 import covalent as ct
 import covalent_dispatcher._cli.service as service
-from requests import request
+
 
 
 @ct.electron
