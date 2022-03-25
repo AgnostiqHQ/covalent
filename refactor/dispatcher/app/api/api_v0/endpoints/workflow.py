@@ -138,6 +138,8 @@ def update_workflow(
 
     task_execution_results = pickle.loads(task_execution_results)
     task_id = task_execution_results["task_id"]
+    del task_execution_results["task_id"]
+    task_execution_results["node_id"] = task_id
 
     latest_result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 

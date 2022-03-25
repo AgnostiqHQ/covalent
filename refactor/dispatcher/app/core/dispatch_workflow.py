@@ -97,7 +97,7 @@ def send_result_object_to_result_service(result_object: Result):
     url_endpoint = "http://localhost:8002/api/v0/workflow/results/"
 
     response = requests.post(
-        url=url_endpoint, files={"task": BytesIO(pickle.dumps(result_object))}
+        url=url_endpoint, files={"result_pkl_file": BytesIO(pickle.dumps(result_object))}
     )
     response.raise_for_status()
 
@@ -205,7 +205,7 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
             task_order = tasks_queue.get()
 
         # Get the latest result object from result service
-        result_obj = get_result_object_from_result_service(dispatch_id=result_obj.dispatch_id)
+        # result_obj = get_result_object_from_result_service(dispatch_id=result_obj.dispatch_id)
 
     logger.warning(f"Inside start_dispatch with finished dispatch_id {result_obj.dispatch_id}")
 

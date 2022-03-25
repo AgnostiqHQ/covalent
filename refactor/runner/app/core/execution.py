@@ -62,7 +62,8 @@ def generate_task_result(
 def send_task_update_to_dispatcher(dispatch_id, task_result):
 
     url = f"http://localhost:8003/api/v0/workflow/{dispatch_id}"
-    requests.put(url=url, data=pickle.dumps(task_result))
+    response = requests.put(url=url, files={"task_execution_results": pickle.dumps(task_result)})
+    response.raise_for_status()
 
     logger.warning(f"{dispatch_id}")
     logger.warning(f"{task_result}")
@@ -71,13 +72,16 @@ def send_task_update_to_dispatcher(dispatch_id, task_result):
 def free_resources_call_to_runner(dispatch_id, task_id):
 
     url = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/task/{task_id}/free"
-    requests.post(url=url)
+
+    response = requests.post(url=url)
+    response.raise_for_status()
 
 
 def done_callback_to_runner(dispatch_id, task_id):
 
     url = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/task/{task_id}/done"
-    requests.post(url=url)
+    response = requests.post(url=url)
+    response.raise_for_status()
 
 
 def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, dispatch_id):
