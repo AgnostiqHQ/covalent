@@ -19,4 +19,53 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from .fs import UploadResponse
+from datetime import datetime
+from typing import Any, Optional, Sequence
+
+from pydantic import BaseModel
+
+
+class BaseNode(BaseModel):
+    name: str
+    start_time: datetime
+    end_time: datetime
+    status: str
+    output: Any
+    error: Optional[str]
+    stdout: str
+    stderr: str
+
+
+class Link(BaseModel):
+    edge_name: str
+    param_type: str
+    source: int
+    target: int
+
+
+class Node(BaseNode):
+    id: int
+
+
+class Graph(BaseModel):
+    nodes: Sequence[Node]
+    links: Sequence[Link]
+
+
+class Result(BaseModel):
+    dispatch_id: str
+    results_dir: str
+    status: str
+    graph: Graph
+
+
+class InsertResultResponse(BaseModel):
+    dispatch_id: str
+
+
+class UpdateResultResponse(BaseModel):
+    response: str
+
+
+class ResultPickle(BaseModel):
+    result_object: bytes

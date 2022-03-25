@@ -22,6 +22,7 @@
 **/results/**
 **/result_*
 !covalent_ui/result_webhook.py
+!refactor/results/**
 
 *.xml
 

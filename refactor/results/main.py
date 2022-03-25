@@ -18,5 +18,21 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from pathlib import Path
 
-from .fs import UploadResponse
+from app.api.api_v0.api import api_router
+from app.core.config import settings
+from fastapi import FastAPI
+
+BASE_PATH = Path(__file__).resolve().parent
+
+app = FastAPI(title="Covalent Results Service API")
+
+app.include_router(api_router, prefix=settings.API_V0_STR)
+
+
+if __name__ == "__main__":
+    # Use this for debugging purposes only
+    import uvicorn
+
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, log_level="debug", reload=True)

@@ -20,7 +20,9 @@ conda activate covalent-dev
 
 Install Covalent's core requirements as well as the developer requirements:
 ```shell
-conda install setuptools pip nodejs yarn
+conda config --add channels conda-forge
+conda config --set channel_priority strict
+conda install setuptools pip nodejs yarn requests
 python setup.py webapp
 pip install -e .
 pip install -r tests/requirements.txt
@@ -31,6 +33,13 @@ Start the Covalent servers in developer mode:
 ```shell
 covalent start -d
 ```
+
+:bulb:*Note*
+We have seen `OSError: protocol not found` when running Covalent in development mode for the first time on some Debian based systems. Running this command may fix the problem.
+```
+apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
+```
+See more information on [Stackoverflow](https://stackoverflow.com/questions/65745342/oserror-protocol-not-found).
 
 Check the [writing tests](#writing-tests) section for more details on installing test specific packages. Finally, run the tests to verify your installation:
 ```shell
