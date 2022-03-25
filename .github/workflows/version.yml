@@ -37,6 +37,17 @@ jobs:
           if git merge-base --is-ancestor $GITHUB_SHA origin/develop; then
             echo "DEVELOP_COMMIT_HISTORY=$GITHUB_SHA" >> $GITHUB_ENV
           fi
+      - name: Check for version change
+        id: changed-version-file
+        uses: tj-actions/changed-files@v18.4
+        with:
+          files: |
+            VERSION
+      - name: Fail if version changed
+        if: ${{ steps.changed-version-file.outputs.any_changed == 'true' && github.sha != env.DEVELOP_COMMIT_HISTORY }}
+        run: |
+          echo "Version changes are prohibited in pull requests."
+          exit 10
       - name: Read head version
         if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: |
@@ -46,19 +57,14 @@ jobs:
         if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: |
           git diff --name-only origin/develop | grep CHANGELOG
-          if [[ $(grep -c "\[${HEAD_VERSION}\]" CHANGELOG.md) > 1 ]]; then
-            echo 'There are duplicate entries in the changelog.'
+          unreleased_header_line=8
+          if [[ $(sed "${unreleased_header_line}q;d" CHANGELOG.md) != "## [UNRELEASED]" ]] ; then
+            echo 'Removing the [UNRELEASED] header is prohibited in pull requests.'
             exit 4
-          elif [[ $(grep -c "\[${HEAD_VERSION}\]" CHANGELOG.md) < 1 ]]; then
-            echo "There is not a changelog entry that matches the head version ${HEAD_VERSION}."
-            exit 5
-          fi
-          changedate=$(grep "\[${HEAD_VERSION}\]" CHANGELOG.md | awk '{ print $4 }')
-          date -I -d $changedate
-          if [[ $changedate != $(date -I) ]]; then
-            echo "There is a problem with the date in the changelog. Expecting today's date: $(date -I)"
-            exit 3
-          fi
+         latest_release=$(sed -n "/\[[0-9]\+\.[0-9]\+\.[0-9]\+\]/=" CHANGELOG.md | head -n 1)
+         #TODO: Check that the lines in the diff are between unreleased_header_line and latest_release
+         #TODO: The latest release should match the VERSION
+
       - name: Check out base
         if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: git checkout develop
