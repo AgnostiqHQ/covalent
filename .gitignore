@@ -125,8 +125,10 @@ ipython_config.py
 # Temporary files
 covalent_dispatcher/_service/tmp*
 *_scratch.py
+refactor/ui_backend/webapp/node_modules
 
 # Supervisord Files
 *err.log
 *out.log
 sd.pid
+supervisord.conf
