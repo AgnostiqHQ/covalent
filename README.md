@@ -58,7 +58,14 @@ Begin by starting the Covalent servers:
 covalent start
 ```
 
-Navigate to the user interface at `http://localhost:47007` to monitor workflow execution progress.
+As an alternative, Covalent can be run using Docker:
+
+```console
+# Run the container as a server
+docker run -d -p 48008:8080 public.ecr.aws/covalent/covalent
+```
+
+Navigate to the user interface at `http://localhost:48008` to monitor workflow execution progress.
 
 In your Python code, it's as simple as adding a few decorators!  Consider the following example which uses a support vector machine (SVM) to classify types of iris flowers.
 
@@ -154,8 +161,9 @@ def run_experiment(C=1.0, gamma=0.7):
     )
     return score
 
-dispatch_id =
-    run_experiment.dispatch(
+dispatchable_func = ct.dispatch(run_experiment)
+
+dispatch_id = dispatchable_func(
     	C=1.0,
     	gamma=0.7
     )
@@ -201,6 +209,10 @@ To contribute to Covalent, refer to the [Contribution Guidelines](https://github
 ## 📝 Release Notes
 
 Release notes are available in the [Changelog](https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md).
+
+## 💥 Known Issues
+
+- Tensorflow isn't stable with M1 Macs right now due to which the [Classifying discrete spacetimes by dimension](https://github.com/AgnostiqHQ/covalent/blob/master/doc/source/tutorials/quantum_gravity/spacetime_classification.ipynb) tutorial does not work with M1 Macs.
 
 ## ⚓ Citation
 

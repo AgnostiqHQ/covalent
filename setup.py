@@ -33,6 +33,26 @@ with open("requirements.txt") as f:
     required = f.read().splitlines()
 
 
+def recursively_append_files(directory: str):
+    """
+    Append files recursively in a given directory
+
+    Args:
+        directory: Directory within which all the subdirs and files reside
+
+    Returns:
+        filepaths: List of all file paths found recursively in the directory
+    """
+
+    filepaths = []
+
+    for path, _, filenames in os.walk(directory):
+        for filename in filenames:
+            filepaths.append(os.path.join(path, filename).split("/", 1)[1])
+
+    return filepaths
+
+
 class Docs(Command):
     """Generate HTML documentation"""
 
@@ -54,17 +74,37 @@ class Docs(Command):
         generate_docs.run(self.clean)
 
 
-def package_files(directory):
-    paths = []
-    for (path, directories, filenames) in os.walk(directory):
-        for filename in filenames:
-            paths.append(os.path.join("..", path, filename))
-    return paths
+class BuildUI(Command):
+    """Build UI webapp"""
 
+    description = "Build the front-end webapp from source"
 
-package_data_dirs = package_files("covalent_dispatcher/_service")
-package_data_dirs += package_files("doc")
-package_data_dirs += package_files("tests")
+    user_options = [
+        ("clean", "c", "clean directory"),
+    ]
+
+    def initialize_options(self):
+        self.clean = False
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        if self.clean:
+            import shutil
+
+            shutil.rmtree("covalent_ui/webapp/build", ignore_errors=True)
+
+        else:
+            import subprocess
+
+            subprocess.run(
+                ["yarn", "install"], cwd="covalent_ui/webapp", check=True, capture_output=True
+            )
+            subprocess.run(
+                ["yarn", "build"], cwd="covalent_ui/webapp", check=True, capture_output=True
+            )
+
 
 setup_info = {
     "name": "cova",
@@ -82,7 +122,12 @@ setup_info = {
     "include_package_data": True,
     "zip_safe": False,
     "package_data": {
-        "": package_data_dirs,
+        "covalent": [
+            "executor/executor_plugins/local.py",
+            "notify/notification_plugins/notify.py",
+        ],
+        "covalent_dispatcher": ["_service/app.py"],
+        "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
     },
     "install_requires": required,
     "classifiers": [
@@ -106,6 +151,7 @@ setup_info = {
     ],
     "cmdclass": {
         "docs": Docs,
+        "webapp": BuildUI,
     },
     "entry_points": {
         "console_scripts": [

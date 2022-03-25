@@ -19,22 +19,29 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import json
+import os
 
 import requests
 
+import covalent_ui.app as ui_server
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-
-from .app import WEBHOOK_PATH
+from covalent._shared_files.utils import get_named_params
+from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
 
 DEFAULT_PORT = get_config("user_interface.port")
 
 app_log = logger.app_log
 
 # UI server webhook for result updates
-WEBHOOK_BASE_URL = f"http://localhost:{DEFAULT_PORT}"
-WEBHOOK_URL = f"{WEBHOOK_BASE_URL}{WEBHOOK_PATH}"
+
+
+def get_ui_url(path):
+    port = 8080 if os.environ.get("PLATFORM") == "Docker" else DEFAULT_PORT
+    baseUrl = f"http://localhost:{port}"
+    app_log.debug(f"ui url is {baseUrl}{path}")
+    return f"{baseUrl}{path}"
 
 
 def send_update(result: Result) -> None:
@@ -50,7 +57,7 @@ def send_update(result: Result) -> None:
 
     result_update = json.dumps(
         {
-            "event": "change",
+            "event": "result-update",
             "result": {
                 "dispatch_id": result.dispatch_id,
                 "results_dir": result.results_dir,
@@ -61,7 +68,48 @@ def send_update(result: Result) -> None:
 
     try:
         # ignore response
-        requests.post(WEBHOOK_URL, data=result_update)
+        requests.post(get_ui_url(ui_server.WEBHOOK_PATH), data=result_update)
     except requests.exceptions.RequestException:
         # catch all requests-related exceptions
-        app_log.warning("Unable to send result update to UI server.")
+        app_log.exception("Unable to send result update to UI server.")
+
+
+def send_draw_request(lattice) -> None:
+    """
+    Sends a lattice draw request to UI server along with all necessary lattice
+    graph data.
+
+    Args: lattice: The lattice to draw with a pre-built graph.
+
+    Returns: None
+    """
+
+    graph = lattice.transport_graph.get_internal_graph_copy()
+
+    ((named_args, named_kwargs),) = (
+        get_named_params(lattice.workflow_function, lattice.args, lattice.kwargs),
+    )
+
+    draw_request = json.dumps(
+        {
+            "event": "draw-request",
+            "payload": {
+                "lattice": {
+                    "function_string": lattice.workflow_function_string,
+                    "doc": lattice.__doc__,
+                    "name": lattice.__name__,
+                    "inputs": encode_dict({**named_args, **named_kwargs}),
+                    "metadata": extract_metadata(lattice.metadata),
+                },
+                "graph": extract_graph(graph),
+            },
+        }
+    )
+
+    try:
+        response = requests.post(get_ui_url("/api/draw"), data=draw_request)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as ex:
+        app_log.error(ex)
+    except requests.exceptions.RequestException:
+        app_log.error("Connection failure. Please check Covalent server is running.")

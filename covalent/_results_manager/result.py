@@ -23,17 +23,21 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 import cloudpickle as pickle
 import yaml
 
-from .._shared_files.util_classes import RESULT_STATUS
+from .._shared_files import logger
+from .._shared_files.util_classes import RESULT_STATUS, Status
 from .utils import convert_to_lattice_function_call
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import Status
     from .._workflow.lattice import Lattice
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 
 class Result:
@@ -79,7 +83,12 @@ class Result:
         self._status = Result.NEW_OBJ
 
         self._result = None
-        self._inputs = lattice.kwargs
+
+        self._inputs = {"args": [], "kwargs": {}}
+        if lattice.args:
+            self._inputs["args"] = lattice.args
+        if lattice.kwargs:
+            self._inputs["kwargs"] = lattice.kwargs
 
         self._error = None
 
@@ -109,7 +118,7 @@ Node Outputs
         return show_result_str
 
     @property
-    def start_time(self):
+    def start_time(self) -> datetime:
         """
         Start time of processing the dispatch.
         """
@@ -117,7 +126,7 @@ Node Outputs
         return self._start_time
 
     @property
-    def end_time(self):
+    def end_time(self) -> datetime:
         """
         End time of processing the dispatch.
         """
@@ -125,7 +134,7 @@ Node Outputs
         return self._end_time
 
     @property
-    def results_dir(self):
+    def results_dir(self) -> str:
         """
         Results directory used to save this result object.
         """
@@ -133,7 +142,7 @@ Node Outputs
         return self._results_dir
 
     @property
-    def lattice(self):
+    def lattice(self) -> "Lattice":
         """
         "Lattice" object which was dispatched.
         """
@@ -141,7 +150,7 @@ Node Outputs
         return self._lattice
 
     @property
-    def dispatch_id(self):
+    def dispatch_id(self) -> str:
         """
         Dispatch id of current dispatch.
         """
@@ -149,7 +158,7 @@ Node Outputs
         return self._dispatch_id
 
     @property
-    def status(self):
+    def status(self) -> Status:
         """
         Status of current dispatch.
         """
@@ -157,7 +166,7 @@ Node Outputs
         return self._status
 
     @property
-    def result(self):
+    def result(self) -> Union[int, float, list, dict]:
         """
         Final result of current dispatch.
         """
@@ -165,7 +174,7 @@ Node Outputs
         return self._result
 
     @property
-    def inputs(self):
+    def inputs(self) -> dict:
         """
         Inputs sent to the "Lattice" function for dispatching.
         """
@@ -173,7 +182,7 @@ Node Outputs
         return self._inputs
 
     @property
-    def error(self):
+    def error(self) -> str:
         """
         Error due to which the dispatch failed.
         """
@@ -369,7 +378,7 @@ Node Outputs
         self._lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
         self._lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
 
-    def save(self, directory: str = None) -> None:
+    def save(self, directory: str = None, write_source: bool = False) -> None:
         """
         Save the result object to a file.
 
@@ -404,7 +413,8 @@ Node Outputs
         with open(os.path.join(result_folder_path, "result_info.yaml"), "w") as f:
             yaml.dump(result_info, f)
 
-        self._write_dispatch_to_python_file()
+        if write_source:
+            self._write_dispatch_to_python_file()
 
     def _convert_to_electron_result(self) -> Any:
         """
@@ -434,11 +444,13 @@ Node Outputs
 
         import pkg_resources
 
-        dispatch_function = (
-            f"# File created by Covalent using covalent version {pkg_resources.get_distribution('cova').version}\n"
-            f"# Note that this file does not contain any global imports you did in your original dispatch\n"
-            f"# Covalent result -"
-        )
+        dispatch_function = f"# File created by Covalent using version {pkg_resources.get_distribution('cova').version}\n"
+        dispatch_function += f"# Dispatch ID: {self.dispatch_id}\n"
+        dispatch_function += f"# Workflow status: {self.status}\n"
+        dispatch_function += f"# Workflow start time: {self.start_time}\n"
+        dispatch_function += f"# Workflow end time: {self.end_time}" + "\n"
+
+        dispatch_function += "# Covalent result -"
         result_string_lines = str(self.result).split("\n")
         if len(result_string_lines) == 1:
             dispatch_function += f" {self.result}\n\n"
@@ -447,6 +459,9 @@ Node Outputs
             for line in result_string_lines:
                 dispatch_function += f"# {line}\n"
             dispatch_function += "\n"
+
+        # add imports
+        dispatch_function += self.lattice.lattice_imports + "\n" * 2
 
         directory = directory or self.results_dir
         result_folder_path = os.path.join(directory, f"{self.dispatch_id}")
@@ -462,9 +477,14 @@ Node Outputs
                 ).get_deserialized()
                 if function is not None and function.__name__ not in functions_added:
 
-                    dispatch_function += self.lattice.transport_graph.get_node_value(
+                    function_str = self.lattice.transport_graph.get_node_value(
                         nodes, value_key="function_string"
                     )
+                    function_str = _filter_cova_decorators(
+                        function_str,
+                        self.lattice.cova_imports,
+                    )
+                    dispatch_function += function_str
                     functions_added.append(function.__name__)
 
         lattice_function_str = convert_to_lattice_function_call(
@@ -472,7 +492,42 @@ Node Outputs
             self.lattice.workflow_function.__name__,
             self.inputs,
         )
+        lattice_function_str = _filter_cova_decorators(
+            lattice_function_str,
+            self.lattice.cova_imports,
+        )
         dispatch_function += lattice_function_str
 
         with open(os.path.join(result_folder_path, "dispatch_source.py"), "w") as f:
             f.write(dispatch_function)
+
+
+def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:
+    """
+    Given a string representing a function, comment out any Covalent-related decorators.
+
+    Args
+        function_string: A string representation of a workflow function.
+
+    Returns:
+        The function string with Covalent-related decorators commented out.
+    """
+
+    has_cova_decorator = False
+    in_decorator = 0
+    function_lines = function_string.split("\n")
+    for i in range(len(function_lines)):
+        line = function_lines[i].strip()
+        if in_decorator > 0:
+            function_lines[i] = f"# {function_lines[i]}"
+            in_decorator += line.count("(")
+            in_decorator -= line.count(")")
+        elif line.startswith("@"):
+            decorator_name = line.split("@")[1].split(".")[0].split("(")[0]
+            if decorator_name in cova_imports:
+                function_lines[i] = f"# {function_lines[i]}"
+                has_cova_decorator = True
+                in_decorator += line.count("(")
+                in_decorator -= line.count(")")
+
+    return "\n".join(function_lines) if has_cova_decorator else function_string

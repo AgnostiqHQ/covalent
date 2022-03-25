@@ -20,11 +20,9 @@
 
 """General utils for Covalent."""
 
-import ast
 import inspect
 from datetime import timedelta
-from io import TextIOWrapper
-from typing import Callable, Dict, Set, Union
+from typing import Callable, Dict, Set, Tuple
 
 from . import logger
 
@@ -38,7 +36,6 @@ def get_timedelta(time_limit: str) -> timedelta:
 
     Args:
         time_limit: The time limit string.
-
     Returns:
         timedelta: The `datetime.timedelta` object.
     """
@@ -56,11 +53,11 @@ def reformat(t: int) -> str:
     """
     Reformat an integer to a readable time-like string. For example, if t = 1, return "01".
 
-    Args:
-        t: The integer to reformat.
+     Args:
+         t: The integer to reformat.
 
-    Returns:
-        ref_string: The reformatted string.
+     Returns:
+         ref_string: The reformatted string.
     """
 
     return f"0{t}" if len(str(t)) == 1 else str(t)
@@ -72,7 +69,6 @@ def get_time(time_delta: timedelta) -> str:
 
     Args:
         time_delta: The timedelta object.
-
     Returns:
         time_string: The compatible reformatted time string.
     """
@@ -96,9 +92,6 @@ def get_serialized_function_str(function):
         function_str: The string representation of the function definition.
     """
 
-    imports = _get_imports_from_source()
-    ct_decorators = _get_cova_imports(imports)
-
     input_function = function
     # If a Lattice or electron object was passed as the function input, we need the
     # underlying function describing the lattice.
@@ -108,121 +101,48 @@ def get_serialized_function_str(function):
     try:
         # function_str is the string representation of one function, with decorators, if any.
         function_str = inspect.getsource(input_function)
-
-        # Check if the function has covalent decorators that need to be commented out.
-        commented_lines = set()
-        parsed_source = ast.parse(function_str)
-        for node in ast.iter_child_nodes(parsed_source):
-            for decorator in node.decorator_list:
-                start = decorator.lineno
-                end = decorator.end_lineno
-                decorator_name = ""
-                if hasattr(decorator, "id"):
-                    decorator_name = decorator.id
-                elif hasattr(decorator, "func"):
-                    decorator_name = decorator.func.value.id
-                else:
-                    decorator_name = decorator.value.id
-                if decorator_name in ct_decorators:
-                    for i in range(start - 1, end):
-                        commented_lines.add(i)
-
-        function_str_list = function_str.split("\n")
-        for i in range(len(function_str_list)):
-            if i in commented_lines:
-                line = function_str_list[i].lstrip()
-                function_str_list[i] = f"# {function_str_list[i]}"
-        function_str = "\n".join(function_str_list)
     except Exception:
         function_str = f"# {function.__name__} was not inspectable"
+
     return function_str + "\n\n"
 
 
-def _get_cova_imports(imports_set: Set[Union[ast.Import, ast.ImportFrom]]) -> Set[str]:
-    """Get a set of Covalent-related imports (and aliases) from a set of imports.
+def get_imports(func: Callable) -> Tuple[str, Set[str]]:
+    """
+    Given an input workflow function, find the imports that were used, and determine
+        which ones are Covalent-related.
 
     Args:
-        imports_set: A complete set of modules that have been imported.
+        func: workflow function.
 
     Returns:
-        imports: A set of Covalent-related imports, inluding any aliases.
+        A tuple consisting of a string of import statements and a set of names that
+            Covalent-related modules have been imported as.
     """
 
-    ct_imports = set()
-    for node in imports_set:
-        if isinstance(node, ast.Import):
-            for i in range(len(node.names)):
-                if node.names[i].name == "covalent":
-                    if node.names[i].asname is None:
-                        ct_imports.add("covalent")
-                    else:
-                        ct_imports.add(node.names[i].asname)
-        elif isinstance(node, ast.ImportFrom):
-            if node.module == "covalent":
-                for i in range(len(node.names)):
-                    if node.names[i].asname is None:
-                        ct_imports.add(node.names[i].name)
-                    else:
-                        ct_imports.add(node.names[i].asname)
+    imports_str = ""
+    cova_imports = set()
+    for i, j in func.__globals__.items():
+        if inspect.ismodule(j) or (
+            inspect.isfunction(j) and j.__name__ in ["lattice", "electron"]
+        ):
+            if j.__name__ == i:
+                import_line = f"import {j.__name__}\n"
+            else:
+                import_line = f"import {j.__name__} as {i}\n"
 
-    return ct_imports
+            if j.__name__ in ["covalent", "lattice", "electron"]:
+                import_line = f"# {import_line}"
+                cova_imports.add(i)
 
+            imports_str += import_line
 
-def _get_imports_from_source(
-    source: Union[str, TextIOWrapper] = "",
-    is_filename: bool = True,
-    imports: set = set(),
-) -> Set[Union[ast.Import, ast.ImportFrom]]:
-    """Get (or add to) a set of imports from a source file.
-
-    Args:
-        source: The input source code (as a string), filename or file-handler object. If empty
-            all files in scope are scanned.
-        is_filename: If input source is a non-empty string, this denotes whether it is the source code
-            itself, or a filename.
-        imports: If non-empty, any imports found are added to this set and returned.
-
-    Returns:
-        imports: A set of imports (ast.node objects) found in the specified module code file.
-    """
-
-    if isinstance(source, str):
-        if source == "":
-            for frame_info in inspect.stack():
-                frame = frame_info.frame
-                try:
-                    source = inspect.getsource(frame)
-                    imports = _get_imports_from_source(
-                        source=source, is_filename=False, imports=imports
-                    )
-                except (IndentationError, OSError) as e:
-                    # This is scanning all files that are utilized. We don't want any minor error, that
-                    # possibly could come from outside the Covalent code-base, to derail the process.
-                    app_log.debug(e)
-        elif is_filename:
-            with open(source, "r") as fh:
-                source = fh.read()
-        else:
-            # source is the actual source as a str object
-            pass
-    elif isinstance(source, TextIOWrapper):
-        source = source.read()
-    else:
-        raise TypeError
-
-    try:
-        parsed_source = ast.parse(source)
-        for node in ast.iter_child_nodes(parsed_source):
-            if isinstance(node, (ast.Import, ast.ImportFrom)):
-                imports.add(node)
-    except IndentationError as e:
-        app_log.debug(e)
-
-    return imports
+    return imports_str, cova_imports
 
 
 def required_params_passed(func: Callable, kwargs: Dict) -> bool:
-    """Check to see that values for all parameters without default values have been passed.
+    """
+    DEPRECATED: Check to see that values for all parameters without default values have been passed.
 
     Args:
         func: Callable function.
@@ -239,3 +159,29 @@ def required_params_passed(func: Callable, kwargs: Dict) -> bool:
             required_arg_set.add(str(param))
 
     return required_arg_set.issubset(set(kwargs.keys()))
+
+
+def get_named_params(func, args, kwargs):
+    ordered_params_dict = inspect.signature(func).parameters
+    named_args = {}
+    named_kwargs = {}
+
+    for ind, parameter_dict in enumerate(ordered_params_dict.items()):
+
+        param_name, param = parameter_dict
+
+        if param.kind in [param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD]:
+            if param_name in kwargs:
+                named_kwargs[param_name] = kwargs[param_name]
+            elif ind < len(args):
+                named_args[param_name] = args[ind]
+        elif param.kind == param.VAR_POSITIONAL:
+            for i in range(ind, len(args)):
+                named_args[f"arg[{i}]"] = args[i]
+
+        elif param.kind in [param.KEYWORD_ONLY, param.VAR_KEYWORD]:
+            for key, value in kwargs.items():
+                if key != param_name:
+                    named_kwargs[key] = value
+
+    return (named_args, named_kwargs)

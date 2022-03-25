@@ -29,11 +29,14 @@ import { Routes, Route } from 'react-router-dom'
 
 import './App.css'
 import Dashboard from './components/Dashboard'
-import ResultLayout from './components/result/ResultLayout'
 import socket from './utils/socket'
 import { fetchResult } from './redux/resultsSlice'
+import { setLattice } from './redux/latticePreviewSlice'
 import theme from './utils/theme'
 import { ReactFlowProvider } from 'react-flow-renderer'
+import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
+import DispatchLayout from './components/dispatch/DispatchLayout'
+import NotFound from './components/NotFound'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -54,18 +57,27 @@ const App = () => {
     }
   }, [dispatch])
 
+  useEffect(() => {
+    const onDrawRequest = (request) => {
+      dispatch(setLattice(request.payload))
+    }
+    socket.on('draw-request', onDrawRequest)
+    return () => {
+      socket.off('draw-request', onDrawRequest)
+    }
+  })
+
   return (
     <HelmetProvider>
       <ReactFlowProvider>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <Helmet
-            defaultTitle="Covalent Dashboard"
-            titleTemplate="%s - Covalent Dashboard"
-          />
+          <Helmet defaultTitle="Covalent" titleTemplate="%s - Covalent" />
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/:dispatchId" element={<ResultLayout />} />
+            <Route path="/:dispatchId" element={<DispatchLayout />} />
+            <Route path="/preview" element={<LatticePreviewLayout />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </ThemeProvider>
       </ReactFlowProvider>

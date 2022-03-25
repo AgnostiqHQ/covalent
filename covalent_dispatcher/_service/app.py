@@ -18,15 +18,37 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from typing import Union
+
 import cloudpickle as pickle
-from flask import Flask, Response, jsonify, request
+from flask import Blueprint, Flask, Response, jsonify, request
 
 import covalent_dispatcher as dispatcher
+from covalent._shared_files import logger
 
-app = Flask(__name__)
+bp = Blueprint("dispatcher", __name__, url_prefix="/api")
+app_log = logger.app_log
 
 
-@app.route("/api/submit", methods=["POST"])
+def check_empty_post() -> Union[Response, None]:
+    """
+    Function to check if a request has empty body
+
+    Args:
+        None
+    Returns:
+        Reponse: An Http status code 400 if body of the post request is empty.
+        None: Otherwise.
+    """
+    if request.method == "POST" and not request.content_length:
+        return Response(response="Empty request body.", status=400)
+    return None
+
+
+bp.before_app_request(check_empty_post)
+
+
+@bp.route("/submit", methods=["POST"])
 def submit() -> Response:
     """
     Function to accept the submit request of
@@ -37,18 +59,20 @@ def submit() -> Response:
         None
 
     Returns:
-        dispatch_id: The dispatch id in a json format
-                     returned as a Flask Response object.
+        The dispatch id in a json format
+        returned as a Flask Response object.
     """
 
     data = request.get_data()
     result_object = pickle.loads(data)
+    app_log.debug("submit")
+    app_log.debug("results directory is " + result_object._results_dir)
     dispatch_id = dispatcher.run_dispatcher(result_object)
 
     return jsonify(dispatch_id)
 
 
-@app.route("/api/cancel", methods=["POST"])
+@bp.route("/cancel", methods=["POST"])
 def cancel() -> Response:
     """
     Function to accept the cancel request of
@@ -66,7 +90,3 @@ def cancel() -> Response:
     dispatcher.cancel_running_dispatch(dispatch_id)
 
     return jsonify(f"Dispatch {dispatch_id} cancelled.")
-
-
-if __name__ == "__main__":
-    app.run()

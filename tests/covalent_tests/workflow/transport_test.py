@@ -33,7 +33,7 @@ from covalent._workflow.transport import TransportableObject, _TransportGraph
 def subtask(x):
     """Workflow subtask."""
 
-    return x ** 2
+    return x**2
 
 
 def subtask_2(x):
@@ -130,16 +130,16 @@ def test_transport_graph_get_and_set_edges(workflow_transport_graph):
     """Test the setting and retrieval of edges to the transport graph."""
 
     wtg = workflow_transport_graph
-    wtg.add_edge(x=0, y=1, variable="apples")
-    assert wtg._graph.get_edge_data(0, 1) == {"variable": "apples"}
-    assert wtg.get_edge_value(dep_key=0, node_key=1, value_key="variable") == "apples"
+    wtg.add_edge(x=0, y=1, edge_name="apples")
+    assert wtg._graph.get_edge_data(0, 1) == {"edge_name": "apples"}
+    assert wtg.get_edge_value(dep_key=0, node_key=1, value_key="edge_name") == "apples"
 
 
 def test_transport_graph_transport_graph_reset(workflow_transport_graph):
     """Test that the transport graph reset method resets the graph."""
 
     wtg = workflow_transport_graph
-    wtg.add_edge(x=0, y=1, variable="apples")
+    wtg.add_edge(x=0, y=1, edge_name="apples")
     assert list(wtg._graph.nodes) == [0, 1]
     assert list(wtg._graph.edges) == [(0, 1)]
     wtg.reset()
@@ -176,7 +176,7 @@ def test_transport_graph_get_dependencies(workflow_transport_graph):
     assert list(wtg.get_dependencies(node_key=1)) == []
 
     # Add edge relation
-    wtg.add_edge(x=0, y=1, variable="apples")
+    wtg.add_edge(x=0, y=1, edge_name="apples")
 
     assert list(wtg.get_dependencies(node_key=0)) == []
     assert list(wtg.get_dependencies(node_key=1)) == [0]
@@ -195,27 +195,25 @@ def test_transport_graph_serialize(workflow_transport_graph):
     """Test the transport graph serialization method."""
 
     wtg = workflow_transport_graph
-    wtg.add_edge(x=0, y=1, variable="apples")
+    wtg.add_edge(x=0, y=1, edge_name="apples")
     wtg.lattice_metadata = mock_lattice_metadata = {"mock_lattice_metadata_field": "mock_value"}
 
     # Check node information is not filtered out when metadata_only is False
     serialized_data = cloudpickle.loads(wtg.serialize(metadata_only=False))
-    for field in ["name", "function", "kwargs"]:
+    for field in ["name", "function", "metadata"]:
         assert field in serialized_data["nodes"][0]
 
-    # TODO - If args get added in, update this test
-    assert "args" not in serialized_data["nodes"][0]
-
-    # Check link field "variable" is not filtered out when metadata_only is False
-    assert "variable" in serialized_data["links"][0]
+    # Check link field "edge_name" is not filtered out when metadata_only is False
+    assert "edge_name" in serialized_data["links"][0]
 
     # Check node information is filtered out when metadata_only is True
     serialized_data = cloudpickle.loads(wtg.serialize(metadata_only=True))
-    for field in ["name", "args", "function", "kwargs"]:
-        assert field not in serialized_data["nodes"][0]
+    for _ in range(len(serialized_data["nodes"])):
+        assert len(serialized_data["nodes"][0]) == 1
+        assert "metadata" in serialized_data["nodes"][0]
 
-    # Check link field "variable" is filtered out when metadata_only is True
-    assert "variable" not in serialized_data["links"][0]
+    # Check link field "edge_name" is filtered out when metadata_only is True
+    assert "edge_name" not in serialized_data["links"][0]
 
     # Check that parameter nodes get filtered out when metadata_only is True
     wtg.add_node(
@@ -237,7 +235,7 @@ def test_transport_graph_deserialize(workflow_transport_graph):
     """Test the transport graph deserialization method."""
 
     wtg = workflow_transport_graph
-    wtg.add_edge(x=0, y=1, variable="apples")
+    wtg.add_edge(x=0, y=1, edge_name="apples")
     wtg.lattice_metadata = {"mock_lattice_metadata_field": "mock_value"}
     wtg.add_node(
         name=f"{parameter_prefix}.param",

@@ -18,25 +18,32 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import argparse
 import os
 from datetime import datetime
+from distutils.log import debug
 from logging.handlers import DEFAULT_TCP_LOGGING_PORT
+from pathlib import Path
 
 import networkx as nx
 import simplejson
 import tailer
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
+from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
+from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
+from covalent_dispatcher._service.app import bp
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
 
 app = Flask(__name__, static_folder=WEBAPP_PATH)
+app.register_blueprint(bp)
 # allow cross-origin requests when API and static files are served separately
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -49,75 +56,69 @@ def handle_result_update():
     return jsonify({"ok": True})
 
 
+@app.route("/api/draw", methods=["POST"])
+def handle_draw_request():
+    draw_request = request.get_json(force=True)
+
+    socketio.emit("draw-request", draw_request)
+    return jsonify({"ok": True})
+
+
 @app.route("/api/results")
 def list_results():
-    path = request.args["resultsDir"]
-    dispatch_ids = [dir for dir in os.listdir(path) if os.path.isdir(os.path.join(path, dir))]
-    return jsonify(dispatch_ids)
+    with DispatchDB() as db:
+        res = db.get()
+    if not res:
+        return jsonify([])
+    else:
+        return jsonify([simplejson.loads(r[1]) for r in res])
 
 
-def encode_result(obj):
-    if isinstance(obj, Status):
-        return obj.STATUS
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    return str(obj)
+@app.route("/api/dev/results/<dispatch_id>")
+def fetch_result_dev(dispatch_id):
+    results_dir = request.args["resultsDir"]
+    result = rm.get_result(dispatch_id, results_dir=results_dir)
 
+    jsonified_result = encode_result(result)
 
-def extract_graph_node(node):
-    # TODO placeholder for advanced node transformations Eventually, will pick
-    # instead of omit keys, currently just strip unused fields
-    f = node.get("function")
-    if f is not None:
-        node["doc"] = node["function"].get_deserialized().__doc__
-    node.pop("function")
-    node.pop("node_name")
-    return node
-
-
-def extract_graph(result):
-    graph = nx.json_graph.node_link_data(result.lattice.transport_graph._graph)
-    nodes = list(map(extract_graph_node, graph["nodes"]))
-    return {
-        "nodes": nodes,
-        "links": graph["links"],
-    }
+    return app.response_class(jsonified_result, status=200, mimetype="application/json")
 
 
 @app.route("/api/results/<dispatch_id>")
 def fetch_result(dispatch_id):
-    results_dir = request.args["resultsDir"]
+    with DispatchDB() as db:
+        res = db.get([dispatch_id])
+    if len(res) > 0:
+        response = res[0][1]
+        status = 200
+    else:
+        response = ""
+        status = 400
 
-    result = rm.get_result(dispatch_id, results_dir=results_dir)
-
-    response = {
-        "dispatch_id": result.dispatch_id,
-        "status": result.status,
-        "result": result.result,
-        "start_time": result.start_time,
-        "end_time": result.end_time,
-        "results_dir": result.results_dir,
-        "lattice": {
-            "function_string": result.lattice.workflow_function_string,
-            "doc": result.lattice.__doc__,
-            "name": result.lattice.__name__,
-            "inputs": result.lattice.kwargs,
-            "metadata": result.lattice.metadata,
-        },
-        "graph": extract_graph(result),
-    }
-
-    # Use simplejson/ignore_nan=True to handle NaN/Infinity constants
-    response = simplejson.dumps(response, default=encode_result, ignore_nan=True)
-
-    return app.response_class(response, status=200, mimetype="application/json")
+    return app.response_class(response, status=status, mimetype="application/json")
 
 
-@app.route("/api/logoutput")
-def fetch_file():
+@app.route("/api/results", methods=["DELETE"])
+def delete_results():
+    dispatch_ids = request.json.get("dispatchIds", [])
+    with DispatchDB() as db:
+        db.delete(dispatch_ids)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/logoutput/<dispatch_id>")
+def fetch_file(dispatch_id):
     path = request.args.get("path")
     n = int(request.args.get("n", 10))
-    lines = tailer.tail(open(path), n)
+
+    if not Path(path).expanduser().is_absolute():
+        path = os.path.join(get_config("dispatcher.results_dir"), dispatch_id, path)
+
+    try:
+        lines = tailer.tail(open(path), n)
+    except Exception as ex:
+        return make_response(jsonify({"message": str(ex)}), 404)
+
     return jsonify({"lines": lines})
 
 
@@ -134,4 +135,27 @@ def serve(path):
 
 
 if __name__ == "__main__":
-    socketio.run(app)
+    ap = argparse.ArgumentParser()
+
+    ap.add_argument("-p", "--port", required=False, help="Server port number.")
+    ap.add_argument(
+        "-d",
+        "--develop",
+        required=False,
+        action="store_true",
+        help="Start the server in developer mode.",
+    )
+
+    args, unknown = ap.parse_known_args()
+
+    # port to be specified by cli
+    if args.port:
+        port = int(args.port)
+    else:
+        port = int(get_config("dispatcher.port"))
+
+    debug = True if args.develop is True else False
+    # reload = True if args.develop is True else False
+    reload = False
+
+    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)

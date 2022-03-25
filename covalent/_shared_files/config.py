@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import copy
 import os
 import shutil
 from functools import reduce
@@ -43,15 +44,17 @@ class _ConfigManager:
         ) + "/covalent"
         self.config_file = f"{config_dir}/covalent.conf"
 
+        self.generate_default_config()
         if os.path.exists(self.config_file):
-            self.read_config()
+            # Update config with user configuration file:
+            self.update_config()
         else:
             Path(config_dir).mkdir(parents=True, exist_ok=True)
 
-            self.generate_default_config()
             self.write_config()
 
         Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
+        Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
         Path(self.get("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
         Path(self.get("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
         Path(self.get("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
@@ -70,7 +73,49 @@ class _ConfigManager:
 
         from .defaults import _DEFAULT_CONFIG
 
-        self.config_data = _DEFAULT_CONFIG
+        # self.config_data may be modified later, and we don't want it to affect _DEFAULT_CONFIG
+        self.config_data = copy.deepcopy(_DEFAULT_CONFIG)
+
+    def update_config(
+        self, new_entries: Optional[Dict] = None, override_existing: bool = True
+    ) -> None:
+        """
+        Update the exising configuration dictionary with the configuration stored in file.
+            Optionally, update configuration data with an input dict.
+
+        Args:
+            new_entries: Dictionary of new entries added or updated in the config.
+            override_existing: If True (default), config values from the config file
+                or the input dictionary (new_entries) take precedence over any existing
+                values in the config.
+
+        Returns:
+            None
+        """
+
+        def update_nested_dict(old_dict, new_dict, override_existing: bool = True):
+            for key, value in new_dict.items():
+                if isinstance(value, dict) and key in old_dict and isinstance(old_dict[key], dict):
+                    update_nested_dict(old_dict[key], value, override_existing)
+                else:
+                    if override_existing:
+                        # Values provided should override existing values.
+                        old_dict[key] = value
+                    else:
+                        # Values provided are defaults, and shouldn't override existing values
+                        # unless the existing value is empty.
+                        if key in old_dict and old_dict[key] == "":
+                            old_dict[key] = value
+                        else:
+                            old_dict.setdefault(key, value)
+
+        if os.path.exists(self.config_file):
+            file_config = toml.load(self.config_file)
+            update_nested_dict(self.config_data, file_config)
+            if new_entries:
+                update_nested_dict(self.config_data, new_entries, override_existing)
+
+        self.write_config()
 
     def read_config(self) -> None:
         """
@@ -110,7 +155,8 @@ class _ConfigManager:
             None
         """
 
-        shutil.rmtree(os.path.dirname(self.config_file), ignore_errors=True)
+        dir_name = os.path.dirname(self.config_file)
+        shutil.rmtree(dir_name, ignore_errors=True)
 
     def get(self, key: str) -> Any:
         """
@@ -139,13 +185,21 @@ class _ConfigManager:
         """
 
         keys = key.split(".")
-        reduce(getitem, keys[:-1], self.config_data)[keys[-1]] = value
+
+        try:
+            reduce(getitem, keys[:-1], self.config_data)[keys[-1]] = value
+        except KeyError:
+            data = self.config_data
+            for key in keys:
+                data[key] = {}
+                data = data[key]
+            data[keys[-1]] = value
 
 
 _config_manager = _ConfigManager()
 
 
-def set_config(new_config: Union[Dict, str], new_value: Optional[Any] = None) -> None:
+def set_config(new_config: Union[Dict, str], new_value: Any = None) -> None:
     """
     Update the configuration.
 
@@ -211,3 +265,21 @@ def reload_config() -> None:
     """
 
     _config_manager.read_config()
+
+
+def update_config(new_entries: Optional[Dict] = None, override_existing: bool = True) -> None:
+    """
+    Read the configuration from the TOML file and append to default
+        (or existing) configuration. Optionally, update configuration
+        data with an input dict.
+
+    Args:
+        new_entries: Dictionary of new entries added or updated in the config
+        defaults: If False (which is the default), default values do not overwrite
+            existing entries.
+
+    Returns:
+        None
+    """
+
+    _config_manager.update_config(new_entries, override_existing)

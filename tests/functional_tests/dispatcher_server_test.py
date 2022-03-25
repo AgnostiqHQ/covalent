@@ -19,6 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import covalent as ct
+import covalent._results_manager.results_manager as rm
+from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 
 @ct.electron
@@ -43,7 +45,7 @@ def pipeline(a, b):
 
 def test_dispatcher_server():
     # After the dispatcher server has been started, you can run the following
-    dispatch_id = pipeline.dispatch(a=2, b=1)
+    dispatch_id = ct.dispatch(pipeline)(a=2, b=1)
     assert dispatch_id is not None
 
     # Wait for it to complete
@@ -55,3 +57,7 @@ def test_dispatcher_server():
     assert result.end_time > result.start_time
     assert result.status == ct.status.COMPLETED
     assert result.result == 3
+
+    rm._delete_result(dispatch_id)
+    with DispatchDB() as db:
+        db.delete([dispatch_id])

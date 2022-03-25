@@ -25,8 +25,9 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 import io
+import os
 from contextlib import redirect_stderr, redirect_stdout
-from typing import Any
+from typing import Any, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import logger
@@ -40,6 +41,14 @@ executor_plugin_name = "LocalExecutor"
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
+_EXECUTOR_PLUGIN_DEFAULTS = {
+    "log_stdout": "stdout.log",
+    "log_stderr": "stderr.log",
+    "cache_dir": os.path.join(
+        os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
+    ),
+}
+
 
 class LocalExecutor(BaseExecutor):
     """
@@ -49,9 +58,10 @@ class LocalExecutor(BaseExecutor):
     def execute(
         self,
         function: TransportableObject,
-        kwargs: Any,
-        execution_args: dict,
+        args: List,
+        kwargs: Dict,
         dispatch_id: str,
+        results_dir: str,
         node_id: int = -1,
     ) -> Any:
         """
@@ -60,10 +70,11 @@ class LocalExecutor(BaseExecutor):
         Args:
             function: The input python function which will be executed and whose result
                       is ultimately returned by this function.
-            kwargs: Keyword arguments to be used by function.
-            execution_args: Executor-specific arguments.
+            args: List of positional arguments to be used by the function.
+            kwargs: Dictionary of keyword arguments to be used by the function.
             dispatch_id: The unique identifier of the external lattice process which is
                          calling this function.
+            results_dir: The location of the results directory.
             node_id: The node ID of this task in the bigger workflow graph.
 
         Returns:
@@ -71,55 +82,36 @@ class LocalExecutor(BaseExecutor):
         """
 
         dispatch_info = DispatchInfo(dispatch_id)
+        fn = function.get_deserialized()
+        fn_version = function.python_version
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()
         ) as stdout, redirect_stderr(io.StringIO()) as stderr:
 
+            app_log.warning(self.conda_env)
+
             if self.conda_env != "":
-                success = False
                 result = None
 
-                # Extract any executor-specific bash commands from execution_args that are
-                # needed. Each command should be an entry in executor_specific_execution_args.
-                # This executor has none.
-                executor_specific_exec_cmds = []
-
-                success, result = self.execute_in_conda_env(
-                    function,
+                result = self.execute_in_conda_env(
+                    fn,
+                    fn_version,
+                    args,
                     kwargs,
-                    execution_args,
-                    executor_specific_exec_cmds,
-                    dispatch_info,
                     self.conda_env,
                     self.cache_dir,
+                    node_id,
                 )
 
-                if success:
-                    message = f"Executed node {node_id} on Conda environment {self.conda_env}."
-                    app_log.debug(message)
-
-                else:
-                    message = (
-                        f"Failed to execute node {node_id} on Conda environment {self.conda_env}."
-                    )
-                    if self.current_env_on_conda_fail:
-                        message += "\nExecuting on the current Conda environment."
-                        app_log.warning(message)
-                        fn = function.get_deserialized()
-                        result = fn(**kwargs)
-
-                    else:
-                        app_log.error(message)
-
-                        raise RuntimeError
-
             else:
-                fn = function.get_deserialized()
-                result = fn(**kwargs)
+                result = fn(*args, **kwargs)
 
         self.write_streams_to_file(
-            (stdout.getvalue(), stderr.getvalue()), (self.log_stdout, self.log_stderr), dispatch_id
+            (stdout.getvalue(), stderr.getvalue()),
+            (self.log_stdout, self.log_stderr),
+            dispatch_id,
+            results_dir,
         )
 
         return (result, stdout.getvalue(), stderr.getvalue())

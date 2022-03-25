@@ -7,44 +7,38 @@ In order to dispatch lattice workflows for execution, the user needs to start th
 .. code-block:: sh
 
     $ covalent start
-    Covalent dispatcher server has started at http://0.0.0.0:48008
-    Covalent UI server has started at http://0.0.0.0:47007
+    Covalent server has started at http://0.0.0.0:48008
 
-.. note:: By default, the dispatcher server port is set to `48008` and the UI server port is set to `47007`. Users should navigate to http://0.0.0.0:47007 to view the browser-based UI.
+.. note:: By default, the server port is set to `48008`. Users should navigate to http://0.0.0.0:47008 to view the browser-based UI.
 
 The user can check the server status using the command below.
 
 .. code-block:: sh
 
     $ covalent status
-    Covalent dispatcher server is running at http://0.0.0.0:48008.
-    Covalent UI server is running at http://0.0.0.0:47007.
+    Covalent server is running at http://0.0.0.0:48008.
 
 In order to stop the server, use the shell command below.
 
 .. code-block:: sh
 
     $ covalent stop
-    Covalent dispatcher server has stopped.
-    Covalent UI server has stopped.
+    Covalent server has stopped.
 
 Covalent also lets the user stop and restart the server via:
 
 .. code-block:: sh
 
     $ covalent restart
-    Covalent dispatcher server has stopped.
-    Covalent dispatcher server has started at http://0.0.0.0:48008
-    Covalent UI server has stopped.
-    Covalent UI server has started at http://0.0.0.0:47007
+    Covalent server has stopped.
+    Covalent server has started at http://0.0.0.0:48008
 
 Custom ports can be specified using the `--port` flag.
 
 .. code-block:: sh
 
     $ covalent start --port 5001
-    Covalent dispatcher server has started at http://0.0.0.0:5001
-    Covalent UI server has started at http://0.0.0.0:47007
+    Covalent server has started at http://0.0.0.0:5001
 
 It is important to note that the default port value can also be specified in the global config file as discussed in the :doc:`configuration customization<../config/customization>` how-to guide.
 

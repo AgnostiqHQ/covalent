@@ -27,23 +27,17 @@ import subprocess
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
 import cloudpickle as pickle
 
 from .._shared_files import logger
-from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
 from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-class ExecutorResult:
-    output: Any
-    error: Union[str, Exception]
 
 
 class BaseExecutor(ABC):
@@ -67,10 +61,10 @@ class BaseExecutor(ABC):
 
     def __init__(
         self,
-        log_stdout: Optional[str] = "",
-        log_stderr: Optional[str] = "",
-        conda_env: Optional[str] = "",
-        cache_dir: Optional[str] = "",
+        log_stdout: str = "",
+        log_stderr: str = "",
+        conda_env: str = "",
+        cache_dir: str = "",
         current_env_on_conda_fail: bool = False,
     ) -> None:
         self.log_stdout = log_stdout
@@ -80,7 +74,7 @@ class BaseExecutor(ABC):
         self.current_env_on_conda_fail = current_env_on_conda_fail
         self.current_env = ""
 
-    def get_dispatch_context(self, dispatch_info) -> None:
+    def get_dispatch_context(self, dispatch_info: DispatchInfo) -> ContextManager[DispatchInfo]:
         """
         Start a context manager that will be used to
         access the dispatch info for the executor.
@@ -89,27 +83,33 @@ class BaseExecutor(ABC):
             dispatch_info: The dispatch info to be used inside current context.
 
         Returns:
-            None
+            A context manager object that handles the dispatch info.
         """
 
         return active_dispatch_info_manager.claim(dispatch_info)
 
-    def write_streams_to_file(self, stream_strings, filepaths, dispatch_id="") -> None:
+    def write_streams_to_file(
+        self,
+        stream_strings: Iterable[str],
+        filepaths: Iterable[str],
+        dispatch_id: str,
+        results_dir: str,
+    ) -> None:
         """
         Write the contents of stdout and stderr to respective files.
 
         Args:
             stream_strings: The stream_strings to be written to files.
             filepaths: The filepaths to be used for writing the streams.
+            dispatch_id: The ID of the dispatch which initiated the request.
+            results_dir: The location of the results directory.
         """
 
         for ss, filepath in zip(stream_strings, filepaths):
             if filepath:
                 # If it is a relative path, attach to results dir
                 if not Path(filepath).expanduser().is_absolute():
-                    filepath = os.path.join(
-                        os.path.join(get_config("dispatcher.results_dir"), dispatch_id), filepath
-                    )
+                    filepath = os.path.join(results_dir, dispatch_id, filepath)
 
                 filename = Path(filepath)
                 filename = filename.expanduser()
@@ -125,9 +125,10 @@ class BaseExecutor(ABC):
     def execute(
         self,
         function: TransportableObject,
-        kwargs: Any,
-        execution_args: dict,
+        args: List,
+        kwargs: Dict,
         dispatch_id: str,
+        results_dir: str,
         node_id: int = -1,
     ) -> Any:
         """
@@ -138,10 +139,12 @@ class BaseExecutor(ABC):
         Args:
             function: The input python function which will be executed and whose result
                       is ultimately returned by this function.
-            kwargs: Keyword arguments to be used by function.
-            execution_args: Executor-specific arguments.
+            args: List of positional arguments to be used by the function.
+            kwargs: Dictionary of keyword arguments to be used by the function.
             dispatch_id: The unique identifier of the external lattice process which is
                          calling this function.
+            results_dir: The location of the results directory.
+            node_id: ID of the node in the transport graph which is using this executor.
 
         Returns:
             output: The result of the function execution.
@@ -151,47 +154,44 @@ class BaseExecutor(ABC):
 
     def execute_in_conda_env(
         self,
-        function: TransportableObject,
-        kwargs: Any,
-        execution_args: dict,
-        executor_specific_exec_cmds: dict,
-        dispatch_info: DispatchInfo,
+        fn: Callable,
+        fn_version: str,
+        args: List,
+        kwargs: Dict,
         conda_env: str,
         cache_dir: str,
+        node_id: int,
     ) -> Tuple[bool, Any]:
         """
         Execute the function with the given arguments, in a Conda environment.
 
         Args:
-            function: The input python function which will be executed and whose result
-                      is ultimately returned by this function.
-            kwargs: Keyword arguments to be used by function.
-            execution_args: Executor-specific arguments.
-            dispatch_info: Dispatch information, e.g., the dispatch ID.
+            fn: The input python function which will be executed and whose result
+                is ultimately returned by this function.
+            fn_version: The python version the function was created with.
+            args: List of positional arguments to be used by the function.
+            kwargs: Dictionary of keyword arguments to be used by the function.
             conda_env: Name of a Conda environment in which to execute the task.
+            cache_dir: The directory where temporary files and logs (if any) are stored.
+            node_id: The integer identifier for the current node.
 
         Returns:
             output: The result of the function execution.
         """
 
         if not self.get_conda_path():
-            return (False, None)
+            return self._on_conda_env_fail(fn, args, kwargs, node_id)
 
         # Pickle the function
         temp_filename = ""
         with tempfile.NamedTemporaryFile(dir=cache_dir, delete=False) as f:
-            pickle.dump(function, f)
+            pickle.dump(fn, f)
             temp_filename = f.name
 
-        result_filename = os.path.join(cache_dir, "result_" + temp_filename.split("/")[-1])
+        result_filename = os.path.join(cache_dir, f'result_{temp_filename.split("/")[-1]}')
 
         # Write a bash script to activate the environment
         shell_commands = "#!/bin/bash\n"
-
-        # Add any executor-specific lines:
-        if executor_specific_exec_cmds:
-            for line in executor_specific_exec_cmds:
-                shell_commands += line + "\n"
 
         # Add commands to initialize the Conda shell and activate the environment:
         conda_sh = os.path.join(
@@ -203,7 +203,7 @@ class BaseExecutor(ABC):
         else:
             message = "No Conda installation found on this compute node."
             app_log.warning(message)
-            return (False, None)
+            return self._on_conda_env_fail(fn, args, kwargs, node_id)
 
         shell_commands += f"conda activate {conda_env}\n"
         shell_commands += "retval=$?\n"
@@ -217,9 +217,9 @@ class BaseExecutor(ABC):
 
         # Check Python version and give a warning if there is a mismatch:
         shell_commands += "py_version=`python -V | awk '{{print $2}}'`\n"
-        shell_commands += f'if [[ "{function.python_version}" != "$py_version" ]]; then\n'
+        shell_commands += f'if [[ "{fn_version}" != "$py_version" ]]; then\n'
         shell_commands += '  echo "Warning: Python version mismatch:"\n'
-        shell_commands += f'  echo "Workflow version is {function.python_version}. Conda environment version is $py_version."\n'
+        shell_commands += f'  echo "Workflow version is {fn_version}. Conda environment version is $py_version."\n'
         shell_commands += "fi\n\n"
 
         shell_commands += "python - <<EOF\n"
@@ -228,12 +228,11 @@ class BaseExecutor(ABC):
 
         # Add Python commands to run the pickled function:
         shell_commands += f'with open("{temp_filename}", "rb") as f:\n'
-        shell_commands += "    function = pickle.load(f)\n\n"
+        shell_commands += "    fn = pickle.load(f)\n\n"
 
         shell_commands += f'os.remove("{temp_filename}")\n\n'
 
-        shell_commands += "fn = function.get_deserialized()\n"
-        shell_commands += f"result = fn(**{kwargs})\n\n"
+        shell_commands += f"result = fn(*{args}, **{kwargs})\n\n"
 
         shell_commands += f'with open("{result_filename}", "wb") as f:\n'
         shell_commands += "    pickle.dump(result, f)\n"
@@ -252,12 +251,42 @@ class BaseExecutor(ABC):
 
             if out.returncode != 0:
                 app_log.warning(out.stderr)
-                return (False, None)
+                return self._on_conda_env_fail(fn, args, kwargs, node_id)
 
         with open(result_filename, "rb") as f:
             result = pickle.load(f)
 
-        return (True, result)
+            message = f"Executed node {node_id} on Conda environment {self.conda_env}."
+            app_log.debug(message)
+            return result
+
+    def _on_conda_env_fail(self, fn: Callable, args: List, kwargs: Dict, node_id: int):
+        """
+
+        Args:
+            fn: The input python function which will be executed and
+                whose result may be returned by this function.
+            args: List of positional arguments to be used by the function.
+            kwargs: Dictionary of keyword arguments to be used by the function.
+            node_id: The integer identifier for the current node.
+
+        Returns:
+            output: The result of the function execution, if
+                self.current_env_on_conda_fail == True, otherwise, return value is None.
+        """
+
+        result = None
+        message = f"Failed to execute node {node_id} on Conda environment {self.conda_env}."
+        if self.current_env_on_conda_fail:
+            message += "\nExecuting on the current Conda environment."
+            app_log.warning(message)
+            result = fn(*args, **kwargs)
+
+        else:
+            app_log.error(message)
+            raise RuntimeError
+
+        return result
 
     def get_conda_envs(self) -> None:
         """

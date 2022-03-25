@@ -26,8 +26,12 @@ from typing import List, Optional, Union
 
 import cloudpickle as pickle
 
+from .._shared_files import logger
 from .._shared_files.config import get_config
 from .result import Result
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 
 def get_result(
@@ -101,7 +105,9 @@ def _get_result_from_file(
 
 
 def _delete_result(
-    dispatch_id: str, results_dir: str = get_config("dispatcher.results_dir")
+    dispatch_id: str,
+    results_dir: str = get_config("dispatcher.results_dir"),
+    remove_parent_directory: bool = False,
 ) -> None:
     """
     Internal function to delete the result.
@@ -109,6 +115,7 @@ def _delete_result(
     Args:
         dispatch_id: The dispatch id of the result.
         results_dir: The directory where the results are stored in dispatch id named folders.
+        remove_parent_directory: Status of whether to delete the parent directory when removing the result.
 
     Returns:
         None
@@ -129,15 +136,17 @@ def _delete_result(
     except OSError:
         pass
 
+    if remove_parent_directory:
+        shutil.rmtree(results_dir, ignore_errors=True)
+
 
 def redispatch_result(result_object: Result, dispatcher: str = None) -> str:
     """
-    Redispatch the result as a new dispatch.
+    Function to redispatch the result as a new dispatch.
 
     Args:
         result_object: The result object to be redispatched.
         dispatcher: The address to the dispatcher in the form of hostname:port, e.g. "localhost:8080".
-
     Returns:
         dispatch_id: The dispatch id of the new dispatch.
     """

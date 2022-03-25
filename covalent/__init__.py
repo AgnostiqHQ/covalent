@@ -23,10 +23,12 @@
 import os
 
 from . import executor
+from ._dispatcher_plugins import local_dispatch as dispatch
+from ._dispatcher_plugins import local_dispatch_sync as dispatch_sync
 from ._results_manager.results_manager import cancel, get_result, sync
 from ._shared_files.config import get_config, reload_config, set_config
 from ._shared_files.util_classes import RESULT_STATUS as status
-from ._workflow import electron, lattice
+from ._workflow import Lepton, electron, lattice
 
 try:
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../VERSION")) as f:

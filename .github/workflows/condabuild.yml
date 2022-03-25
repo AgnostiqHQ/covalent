@@ -20,11 +20,7 @@
 
 name: conda
 
-on:
-  push:
-    branches-ignore:
-      - develop
-      - master
+on: pull_request
 
 jobs:
   conda:
@@ -46,4 +42,3 @@ jobs:
           conda create --name buildenv python=3.8
           $CONDA/bin/activate buildenv
           conda build --override-channels .
-        

@@ -25,6 +25,7 @@ Tests for self-contained entry point for the dispatcher
 import covalent
 import covalent_dispatcher as dispatcher
 from covalent._results_manager import results_manager as rm
+from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 from .data import TEST_RESULTS_DIR, get_mock_result
 
@@ -38,8 +39,11 @@ def test_run_dispatcher():
         dispatch_id = dispatcher.run_dispatcher(result_object=get_mock_result())
     except Exception as e:
         assert False, f"Exception raised: {e}"
+    assert dispatch_id
 
     rm._delete_result(dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR)
+    with DispatchDB() as db:
+        db.delete([dispatch_id])
 
 
 def test_get_result():
@@ -54,4 +58,8 @@ def test_get_result():
     )
     assert isinstance(result, covalent._results_manager.result.Result)
 
-    rm._delete_result(dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR)
+    rm._delete_result(
+        dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR, remove_parent_directory=True
+    )
+    with DispatchDB() as db:
+        db.delete([dispatch_id])

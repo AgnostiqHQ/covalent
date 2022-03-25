@@ -88,12 +88,12 @@ class TransportableObject:
         )
 
     @staticmethod
-    def deserialize(data) -> "TransportableObject":
+    def deserialize(data: bytes) -> "TransportableObject":
         """
         Deserialize the transportable object.
 
         Args:
-            data: The serialized transportable object.
+            data: Cloudpickled function.
 
         Returns:
             object: The deserialized transportable object.
@@ -123,15 +123,15 @@ class _TransportGraph:
         self._graph = nx.DiGraph()
         self.lattice_metadata = None
 
-    def add_node(self, name: str, kwargs: Dict, function: Callable, metadata: Dict) -> int:
+    def add_node(self, name: str, function: Callable, metadata: Dict, **attr) -> int:
         """
         Adds a node to the graph.
 
         Args:
             name: The name of the node.
-            kwargs: The keyword arguments to be passed to the function.
             function: The function to be executed.
             metadata: The metadata of the node.
+            attr: Any other attributes that need to be added to the node.
 
         Returns:
             node_key: The node id.
@@ -141,20 +141,21 @@ class _TransportGraph:
         self._graph.add_node(
             node_id,
             name=name,
-            kwargs=kwargs,
             function=TransportableObject(function),
             metadata=metadata,
+            **attr,
         )
         return node_id
 
-    def add_edge(self, x: int, y: int, variable: Any) -> None:
+    def add_edge(self, x: int, y: int, edge_name: Any, **attr) -> None:
         """
-        Add an edge to the graph and assigns a variable to it.
+        Adds an edge to the graph and assigns a name to it.
 
         Args:
             x: The node id for first node.
             y: The node id for second node.
-            variable: The variable to be assigned to the edge.
+            edge_name: The name to be assigned to the edge.
+            attr: Any other attributes that need to be added to the edge.
 
         Returns:
             None
@@ -163,7 +164,7 @@ class _TransportGraph:
             ValueError: If the edge already exists.
         """
 
-        self._graph.add_edge(x, y, variable=variable)
+        self._graph.add_edge(x, y, edge_name=edge_name, **attr)
 
     def reset(self) -> None:
         """
@@ -316,15 +317,17 @@ class _TransportGraph:
                 if node["id"] in parameter_node_id:
                     data["nodes"].remove(node)
 
-            # Remove the fields 'function' and 'kwargs' from the scheduler workflow input data.
-            unwanted_fields = ["function", "args", "kwargs", "name"]
+            # Remove the non-metadata fields such as 'function', 'name', etc from the scheduler workflow input data.
             for idx, node in enumerate(data["nodes"]):
-                for field in unwanted_fields:
-                    data["nodes"][idx].pop(field, None)
+                for field in data["nodes"][idx].copy():
+                    if field != "metadata":
+                        data["nodes"][idx].pop(field, None)
 
-            # Remove the field 'variable' from the scheduler workflow input data.
+            # Remove the non-source-target fields from the scheduler workflow input data.
             for idx, node in enumerate(data["links"]):
-                data["links"][idx].pop("variable", None)
+                for name in data["links"][idx].copy():
+                    if name not in ["source", "target"]:
+                        data["links"][idx].pop("edge_name", None)
 
         data["lattice_metadata"] = self.lattice_metadata
         return cloudpickle.dumps(data)

@@ -23,6 +23,8 @@ Integration test for choosing Conda environments within an executor.
 """
 
 import covalent as ct
+import covalent._results_manager.results_manager as rm
+from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 
 def test_using_current_env() -> None:
@@ -39,7 +41,7 @@ def test_using_current_env() -> None:
 
     executor = ct.executor.LocalExecutor(conda_env=conda_env, current_env_on_conda_fail=True)
 
-    @ct.electron(backend=executor)
+    @ct.electron(executor=executor)
     def passthrough(x):
         return x
 
@@ -47,7 +49,11 @@ def test_using_current_env() -> None:
     def workflow(y):
         return passthrough(x=y)
 
-    dispatch_id = workflow.dispatch(y="input")
-    output = ct.get_result(dispatch_id, wait=True)
+    dispatch_id = ct.dispatch(workflow)(y="input")
+    result = ct.get_result(dispatch_id, wait=True)
 
-    assert output.result == "input"
+    rm._delete_result(dispatch_id)
+    with DispatchDB() as db:
+        db.delete([dispatch_id])
+
+    assert result.result == "input"

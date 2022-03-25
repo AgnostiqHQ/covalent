@@ -20,11 +20,7 @@
 
 name: version
 
-on:
-  push:
-    branches-ignore:
-      - develop
-      - master
+on: pull_request
 
 jobs:
   version:
@@ -36,34 +32,43 @@ jobs:
         uses: actions/checkout@v1
         with:
           fetch-depth: 0
+      - name: Check git history
+        run: |
+          if git merge-base --is-ancestor $GITHUB_SHA origin/develop; then
+            echo "DEVELOP_COMMIT_HISTORY=$GITHUB_SHA" >> $GITHUB_ENV
+          fi
       - name: Read head version
+        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: |
           HEAD_VERSION="$(cat ./VERSION)"
           echo "HEAD_VERSION=$HEAD_VERSION" >> $GITHUB_ENV
       - name: Validate changelog entry
+        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: |
           git diff --name-only origin/develop | grep CHANGELOG
-          if [[ $(grep -c "\b${HEAD_VERSION}\b" CHANGELOG.md) > 1 ]]; then
+          if [[ $(grep -c "\[${HEAD_VERSION}\]" CHANGELOG.md) > 1 ]]; then
             echo 'There are duplicate entries in the changelog.'
             exit 4
-          elif [[ $(grep -c "\b${HEAD_VERSION}\b" CHANGELOG.md) < 1 ]]; then
+          elif [[ $(grep -c "\[${HEAD_VERSION}\]" CHANGELOG.md) < 1 ]]; then
             echo "There is not a changelog entry that matches the head version ${HEAD_VERSION}."
             exit 5
           fi
-          changedate=$(grep "\b${HEAD_VERSION}\b" CHANGELOG.md | awk '{ print $4 }')
+          changedate=$(grep "\[${HEAD_VERSION}\]" CHANGELOG.md | awk '{ print $4 }')
           date -I -d $changedate
-          if [[ $changedate > $(date -I) ]] ||
-             [[ $changedate < $(date -I --date='-1 year') ]] ; then
-            echo "There is a problem with the date in the changelog."
+          if [[ $changedate != $(date -I) ]]; then
+            echo "There is a problem with the date in the changelog. Expecting today's date: $(date -I)"
             exit 3
           fi
       - name: Check out base
+        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: git checkout develop
       - name: Read base version
+        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: |
           BASE_VERSION="$(cat ./VERSION)"
           echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
       - name: Validate version change
+        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
         run: |
           echo "head version is ${HEAD_VERSION}"
           echo "base version is ${BASE_VERSION}"
@@ -82,12 +87,3 @@ jobs:
           else
             echo "Pass due to bad version format in develop branch."
           fi
-      - name: Notify failure
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: "covalent-ci"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "Failed to validate version or changelog."
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_COLOR: ${{ job.status }}

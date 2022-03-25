@@ -5,7 +5,714 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [UNCHANGED] - 2022-01-26
+## [0.34.2] - 2022-03-25
+
+### Added
+
+- Tests for lattice.py
+
+## [0.34.1] - 2022-03-24
+
+### Fixed
+
+- Pinned jinja2 to less than 3.1.0 so that nbconvert remains stable in the docs build.
+
+## [0.34.0] - 2022-03-24
+
+### Added
+
+- API endpoints to upload and download files
+
+## [0.33.1] - 2022-03-24
+
+### Fixed
+
+- Retrieving results from running container via HTTP
+- Adding tests for Docker image in workflows
+
+## [0.33.0] - 2022-03-24
+
+### Added
+
+- Slack and webhook notifications
+
+## [0.32.9] - 2022-03-23
+
+### Fixed
+
+- Updated OS Queuer imports to remove top level modules `refactor.queuer`
+
+## [0.32.8] - 2022-03-22
+
+### Added
+
+- Websocket notify endpoint with leaky bucket algo implementation to rate limit messages to frontend
+
+## [0.32.7] - 2022-03-22
+
+### Added
+
+- Queuer API submit endpoint to publish dispatch message to MQ & send result file to Data Service
+- API Service class for interfacing with local services
+- Tests covering submit endpoint and API Service
+
+## [0.32.6] - 2022-03-22
+
+### Fixed
+
+- Input path for external libraries in the Lepton wrapper can (and should) now be a full path to the file.
+
+## [0.32.5] - 2022-03-21
+
+### Fixed
+
+- Fix HTTP status code for blank POST requests.
+
+## [0.32.4] - 2022-03-17
+
+### Fixed
+
+- Docker commands in docs
+
+## [0.32.3] - 2022-03-16
+
+### Fixed
+
+- Fix missing UI graph edges between parameters and electrons in certain cases.
+- Fix UI crashes in cases where legacy localStorage state was being loaded.
+
+## [0.32.2] - 2022-03-16
+
+### Added
+
+- Images for graphs generated in tutorials and how-tos.
+- Note for quantum gravity tutorial to tell users that `tensorflow` doesn't work on M1 Macs.
+- `Known Issues` added to `README.md`
+
+### Fixed
+
+- `draw` function usage in tutorials and how-tos now reflects the UI images generated instead of using graphviz.
+- Images now render properly in RTD of how-tos.
+
+### Changed
+
+- Reran all the tutorials that could run, generating the outputs again.
+
+## [0.32.1] - 2022-03-15
+
+### Fixed
+
+- CLI now starts server directly in the subprocess instead of as a daemon
+- Logs are provided as pipes to Popen instead of using a shell redirect
+- Restart behavior fixed
+- Default port in `covalent_ui/app.py` uses the config manager
+
+### Removed
+
+- `_graceful_restart` function no longer needed without gunicorn
+
+## [0.32.0] - 2022-03-11
+
+### Added
+
+- Dispatcher microservice API endpoint to dispatch and update workflow.
+- Added get runnable task endpoint.
+
+## [0.31.0] - 2022-03-11
+
+### Added
+
+- Runner component's main functionality to run a set of tasks, cancel a task, and get a task's status added to its api.
+
+## [0.30.5] - 2022-03-11
+
+### Updated
+
+- Updated Workflow endpoints & API spec to support upload & download of result objects as pickle files
+
+## [0.30.4] - 2022-03-11
+
+### Fixed
+
+- When executing a task on an alternate Conda environment, Covalent no longer has to be installed on that environment. Previously, a Covalent object (the execution function as a TransportableObject) was passed to the environment. Now it is deserialized to a "normal" Python function, which is passed to the alternate Conda environment.
+
+## [0.30.3] - 2022-03-11
+
+### Fixed
+
+- Fixed the order of output storage in `post_process` which should have been the order in which the electron functions are called instead of being the order in which they are executed. This fixes the order in which the replacement of function calls with their output happens, which further fixes any discrepencies in the results obtained by the user.
+
+- Fixed the `post_process` test to check the order as well.
+
+## [0.30.2] - 2022-03-11
+
+### Changed
+
+- Updated eventlet to 0.31.0
+
+## [0.30.1] - 2022-03-10
+
+### Fixed
+
+- Eliminate unhandled exception in Covalent UI backend when calling fetch_result.
+
+## [0.30.0] - 2022-03-09
+
+### Added
+
+- Skeleton code for writing the different services corresponding to each component in the open source refactor.
+- OpenAPI specifications for each of the services.
+
+## [0.29.3] - 2022-03-09
+
+### Fixed
+
+- Covalent UI is built in the Dockerfile, the setup file, the pypi workflow, the tests workflow, and the conda build script.
+
+## [0.29.2] - 2022-03-09
+
+### Added
+
+- Defaults defined in executor plugins are read and used to update the in-memory config, as well as the user config file. But only if the parameter in question wasn't already defined.
+
+### Changed
+
+- Input parameter names and docstrings in _shared_files.config.update_config were changed for clarity.
+
+## [0.29.1] - 2022-03-07
+
+### Changed
+
+- Updated fail-fast strategy to run all tests.
+
+## [0.29.0] - 2022-03-07
+
+### Added
+
+- DispatchDB for storing dispatched results
+
+### Changed
+
+- UI loads dispatches from DispatchDB instead of browser local storage
+
+## [0.28.3] - 2022-03-03
+
+### Fixed
+
+Installed executor plugins don't have to be referred to by their full module name. Eg, use "custom_executor", instead of "covalent_custom_plugin.custom_executor".
+
+## [0.28.2] - 2022-03-03
+
+### Added
+
+- A brief overview of the tutorial structure in the MNIST classification tutorial.
+
+## [0.28.1] - 2022-03-02
+
+### Added
+
+- Conda installation is only supported for Linux in the `Getting Started` guide.
+- MNIST classifier tutorial.
+
+### Removed
+
+- Removed handling of default values of function parameters in `get_named_params` in `covalent/_shared_files/utils.py`. So, it is actually being handled by not being handled since now `named_args` and `named_kwargs` will only contain parameters that were passed during the function call and not all of them.
+
+## [0.28.0] - 2022-03-02
+
+### Added
+
+- Lepton support, including for Python modules and C libraries
+- How-to guides showing how to use leptons for each of these
+
+## [0.27.6] - 2022-03-01
+
+### Added
+
+- Added feature development basic steps in CONTRIBUTING.md.
+- Added section on locally building RTD (read the docs) in the contributing guide.
+
+## [0.27.5] - 2022-03-01
+
+### Fixed
+
+- Missing UI input data after backend change - needed to be derived from graph for electrons, lattice inputs fixed on server-side, combining name and positional args
+- Broken UI graph due to variable->edge_name renaming
+- Missing UI executor data after server-side renaming
+
+## [0.27.4] - 2022-02-28
+
+### Fixed
+
+- Path used in `covalent/executor/__init__.py` for executor plugin modules needed updating to `covalent/executor/executor_plugins`
+
+### Removed
+
+- Disabled workflow cancellation test due to inconsistent outcomes. Test will be re-enabled after cancellation mechanisms are investigated further.
+
+## [0.27.3] - 2022-02-25
+
+### Added
+
+- Added `USING_DOCKER.md` guide for running docker container.
+- Added cli args to covalent UI flask server `covalent_ui/app.py` to modify port and log file path.
+
+### Removed
+
+- Removed gunicorn from cli and Dockerfile.
+
+### Changed
+
+- Updated cli `covalent_dispatcher/_cli/service.py` to run flask server directly, and removed dispatcher and UI flags.
+- Using Flask blueprints to merge Dispatcher and UI servers.
+- Updated Dockerfile to run flask server directly.
+- Creating server PID file manually in `covalent_dispatcher/_cli/service.py`.
+- Updated tests and docs to reflect merged servers.
+- Changed all mentions of port 47007 (for old UI server) to 48008.
+
+## [0.27.2] - 2022-02-24
+
+### Changed
+
+- Removed unnecessary blockquotes from the How-To guide for creating custom executors
+- Changed "Covalent Cloud" to "Covalent" in the main code text
+
+## [0.27.1] - 2022-02-24
+
+### Removed
+
+- Removed AQ-Engineers from CODEOWNERS in order to fix PR review notifications
+
+## [0.27.0] - 2022-02-24
+
+### Added
+
+- Support for positional only, positional or keyword, variable positional, keyword only, variable keyword types of parameters is now added, e.g an electron can now use variable args and variable kwargs if the number/names of parameters are unknown during definition as `def task(*args, **kwargs)` which wasn't possible before.
+
+- `Lattice.args` added to store positional arguments passed to the lattice's workflow function.
+
+- `get_named_params` function added in `_shared_files/utils.py` which will return a tuple containing named positional arguments and named keyword arguments. The names help in showing and storing these parameters in the transport graph.
+
+- Tests to verify whether all kinds of input paramaters are supported by electron or a lattice.
+
+### Changed
+
+- No longer merging positional arguments with keyword arguments, instead they are separately stored in respective nodes in the transport graph.
+
+- `inputs` returned from `_get_inputs` function in `covalent_dispatcher/_core/execution.py` now contains positional as well as keyword arguments which further get passed to the executor.
+
+- Executors now support positional and keyword arguments as inputs to their executable functions.
+
+- Result object's `_inputs` attribute now contains both `args` and `kwargs`.
+
+- `add_node_for_nested_iterables` is renamed to `connect_node_with_others` and `add_node_to_graph` also renamed to `add_collection_node_to_graph` in `electron.py`. Some more variable renames to have appropriate self-explanatory names.
+
+- Nodes and edges in the transport graph now have a better interface to assign attributes to them.
+
+- Edge attribute `variable` renamed to `edge_name`.
+
+- In `serialize` function of the transport graph, if `metadata_only` is True, then only `metadata` attribute of node and `source` and `target` attributes of edge are kept in the then return serialized `data`.
+
+- Updated the tests wherever necessary to reflect the above changes
+
+### Removed
+
+- Deprecated `required_params_passed` since an error will automatically be thrown by the `build_graph` function if any of the required parameters are not passed.
+
+- Removed duplicate attributes from nodes in the transport graph.
+
+## [0.26.1] - 2022-02-23
+
+### Added
+
+- Added Local Executor section to the API read the docs.
+
+## [0.26.0] - 2022-02-23
+
+### Added
+
+- Automated reminders to update the changelog
+
+## [0.25.3] - 2022-02-23
+
+## Added
+
+- Listed common mocking commands in the CONTRIBUTING.md guide.
+- Additional guidelines on testing.
+
+## [0.25.2] - 2022-02-21
+
+### Changed
+
+- `backend` metadata name changed to `executor`.
+- `_plan_workflow` usage updated to reflect how that executor related information is now stored in the specific executor object.
+- Updated tests to reflect the above changes.
+- Improved the dispatch cancellation test to provide a robust solution which earlier took 10 minutes to run with uncertainty of failing every now and then.
+
+### Removed
+
+- Removed `TaskExecutionMetadata` as a consequence of removing `execution_args`.
+
+## [0.25.1] - 2022-02-18
+
+### Fixed
+
+- Tracking imports that have been used in the workflow takes less time.
+
+### Added
+
+- User-imports are included in the dispatch_source.py script. Covalent-related imports are commented out.
+
+## [0.25.0] - 2022-02-18
+
+### Added
+
+- UI: Lattice draw() method displays in web UI
+- UI: New navigation panel
+
+### Changed
+
+- UI: Animated graph changes, panel opacity
+
+### Fixed
+
+- UI: Fixed "Not Found" pages
+
+## [0.24.21] - 2022-02-18
+
+### Added
+
+- RST document describing the expectations from a tutorial.
+
+## [0.24.20] - 2022-02-17
+
+### Added
+
+- Added how to create custom executors
+
+### Changed
+
+- Changed the description of the hyperlink for choosing executors
+- Fixed typos in doc/source/api/getting_started/how_to/execution/creating_custom_executors.ipynb
+
+## [0.24.19] - 2022-02-16
+
+### Added
+
+- CODEOWNERS for certain files.
+
+## [0.24.18] - 2022-02-15
+
+### Added
+
+- The user configuration file can now specify an executor plugin directory.
+
+## [0.24.17] - 2022-02-15
+
+### Added
+
+- Added a how-to for making custom executors.
+
+## [0.24.16] - 2022-02-12
+
+### Added
+
+- Errors now contain the traceback as well as the error message in the result object.
+- Added test for `_post_process` in `tests/covalent_dispatcher_tests/_core/execution_test.py`.
+
+### Changed
+
+- Post processing logic in `electron` and dispatcher now relies on the order of execution in the transport graph rather than node's function names to allow for a more reliable pairing of nodes and their outputs.
+
+- Renamed `init_test.py` in `tests/covalent_dispatcher_tests/_core/` to `execution_test.py`.
+
+### Removed
+
+- `exclude_from_postprocess` list which contained some non executable node types removed since only executable nodes are post processed now.
+
+## [0.24.15] - 2022-02-11
+
+### Fixed
+
+- If a user's configuration file does not have a needed exeutor parameter, the default parameter (defined in _shared_files/defaults.py) is used.
+- Each executor plugin is no longer initialized upon the import of Covalent. This allows required parameters in executor plugins.
+
+## Changed
+
+- Upon updating the configuration data with a user's configuration file, the complete set is written back to file.
+
+## Added
+
+- Tests for the local and base executors.
+
+## [0.24.14] - 2022-02-11
+
+### Added
+
+- UI: add dashboard cards
+- UI: add scaling dots background
+
+### Changed
+
+- UI: reduce sidebar font sizes, refine color theme
+- UI: refine scrollbar styling, show on container hover
+- UI: format executor parameters as YAML code
+- UI: update syntax highlighting scheme
+- UI: update index.html description meta tag
+
+## [0.24.13] - 2022-02-11
+
+### Added
+
+- Tests for covalent/_shared_files/config.py
+
+## [0.24.12] - 2022-02-10
+
+### Added
+
+- CodeQL code analyzer
+
+## [0.24.11] - 2022-02-10
+
+### Added
+
+- A new dictionary `_DEFAULT_CONSTRAINTS_DEPRECATED` in defaults.py
+
+### Changed
+
+- The `_DEFAULT_CONSTRAINT_VALUES` dictionary now only contains the `backend` argument
+
+## [0.24.10] - 2022-02-09
+
+### Fixed
+
+- Sporadically failing workflow cancellation test in tests/workflow_stack_test.py
+
+## [0.24.9] - 2022-02-09
+
+## Changed
+
+- Implementation of `_port_from_pid` in covalent_dispatcher/_cli/service.py.
+
+## Added
+
+- Unit tests for command line interface (CLI) functionalities in covalent_dispatcher/_cli/service.py and covalent_dispatcher/_cli/cli.py.
+
+## [0.24.8] - 2022-02-07
+
+### Fixed
+
+- If a user's configuration file does not have a needed parameter, the default parameter (defined in _shared_files/defaults.py) is used.
+
+## [0.24.7] - 2022-02-07
+
+### Added
+
+- Typing: Add Type hint `dispatch_info` parameter.
+- Documentation: Updated the return_type description in docstring.
+
+### Changed
+
+- Typing: Change return type annotation to `Generator`.
+
+## [0.24.6] - 2022-02-06
+
+### Added
+
+- Type hint to `deserialize` method of `TransportableObject` of `covalent/_workflow/transport.py`.
+
+### Changed
+
+- Description of `data` in `deserialize` method of `TransportableObject` of `covalent/_workflow/transport.py` from `The serialized transportable object` to `Cloudpickled function`.
+
+## [0.24.5] - 2022-02-05
+
+### Fixed
+
+- Removed dependence on Sentinel module
+
+## [0.24.4] - 2022-02-04
+
+### Added
+
+- Tests across multiple versions of Python and multiple operating systems
+- Documentation reflecting supported configurations
+
+## [0.24.3] - 2022-02-04
+
+### Changed
+
+- Typing: Use `bool` in place of `Optional[bool]` as type annotation for `develop` parameter in `covalent_dispatcher.service._graceful_start`
+- Typing: Use `Any` in place of `Optional[Any]` as type annotation for `new_value` parameter in `covalent._shared_files.config.get_config`
+
+## [0.24.2] - 2022-02-04
+
+### Fixed
+
+- Updated hyperlink of "How to get the results" from "./collection/query_electron_execution_result" to "./collection/query_multiple_lattice_execution_results" in "doc/source/how_to/index.rst".
+- Updated hyperlink of "How to get the result of a particular electron" from "./collection/query_multiple_lattice_execution_results" to "./collection/query_electron_execution_result" in "doc/source/how_to/index.rst".
+
+## [0.24.1] - 2022-02-04
+
+### Changed
+
+- Changelog entries are now required to have the current date to enforce ordering.
+
+## [0.24.0] - 2022-02-03
+
+### Added
+
+- UI: log file output - display in Output tab of all available log file output
+- UI: show lattice and electron inputs
+- UI: display executor attributes
+- UI: display error message on failed status for lattice and electron
+
+### Changed
+
+- UI: re-order sidebar sections according to latest figma designs
+- UI: update favicon
+- UI: remove dispatch id from tab title
+- UI: fit new uuids
+- UI: adjust theme text primary and secondary colors
+
+### Fixed
+
+- UI: auto-refresh result state on initial render of listing and graph pages
+- UI: graph layout issues: truncate long electron/param names
+
+## [0.23.0] - 2022-02-03
+
+### Added
+
+- Added `BaseDispatcher` class to be used for creating custom dispatchers which allow connection to a dispatcher server.
+- `LocalDispatcher` inheriting from `BaseDispatcher` allows connection to a local dispatcher server running on the user's machine.
+- Covalent only gives interface to the `LocalDispatcher`'s `dispatch` and `dispatch_sync` methods.
+- Tests for both `LocalDispatcher` and `BaseDispatcher` added.
+
+### Changed
+
+- Switched from using `lattice.dispatch` and `lattice.dispatch_sync` to `covalent.dispatch` and `covalent.dispatch_sync`.
+- Dispatcher address now is passed as a parameter (`dispatcher_addr`) to `covalent.dispatch` and `covalent.dispatch_sync` instead of a metadata field to lattice.
+- Updated tests, how tos, and tutorials to use `covalent.dispatch` and `covalent.dispatch_sync`.
+- All the contents of `covalent_dispatcher/_core/__init__.py` are moved to `covalent_dispatcher/_core/execution.py` for better organization. `__init__.py` only contains function imports which are needed by external modules.
+- `dispatch`, `dispatch_sync` methods deprecated from `Lattice`.
+
+### Removed
+
+- `_server_dispatch` method removed from `Lattice`.
+- `dispatcher` metadata field removed from `lattice`.
+
+## [0.22.19] - 2022-02-03
+
+### Fixed
+
+- `_write_dispatch_to_python_file` isn't called each time a task is saved. It is now only called in the final save in `_run_planned_workflow` (in covalent_dispatcher/_core/__init__.py).
+
+## [0.22.18] - 2022-02-03
+
+### Fixed
+
+- Added type information to result.py
+
+## [0.22.17] - 2022-02-02
+
+### Added
+
+- Replaced `"typing.Optional"` with `"str"` in covalent/executor/base.py
+- Added missing type hints to `get_dispatch_context` and `write_streams_to_file` in covalent/executor/base.py, BaseExecutor
+
+## [0.22.16] - 2022-02-02
+
+### Added
+
+- Functions to check if UI and dispatcher servers are running.
+- Tests for the `is_ui_running` and `is_server_running` in covalent_dispatcher/_cli/service.py.
+
+## [0.22.15] - 2022-02-01
+
+### Fixed
+
+- Covalent CLI command `covalent purge` will now stop the servers before deleting all the pid files.
+
+### Added
+
+- Test for `purge` method in covalent_dispatcher/_cli/service.py.
+
+### Removed
+
+- Unused `covalent_dispatcher` import from covalent_dispatcher/_cli/service.py.
+
+### Changed
+
+- Moved `_config_manager` import from within the `purge` method to the covalent_dispatcher/_cli/service.py for the purpose of mocking in tests.
+
+## [0.22.14] - 2022-02-01
+
+### Added
+
+- Type hint to `_server_dispatch` method in `covalent/_workflow/lattice.py`.
+
+## [0.22.13] - 2022-01-26
+
+### Fixed
+
+- When the local executor's `log_stdout` and `log_stderr` config variables are relative paths, they should go inside the results directory. Previously that was queried from the config, but now it's queried from the lattice metadata.
+
+### Added
+
+- Tests for the corresponding functions in (`covalent_dispatcher/_core/__init__.py`, `covalent/executor/base.py`, `covalent/executor/executor_plugins/local.py` and `covalent/executor/__init__.py`) affected by the bug fix.
+
+### Changed
+
+- Refactored `_delete_result` in result manager to give the option of deleting the result parent directory.
+
+## [0.22.12] - 2022-01-31
+
+### Added
+
+- Diff check in pypi.yml ensures correct files are packaged
+
+## [0.22.11] - 2022-01-31
+
+### Changed
+
+- Removed codecov token
+- Removed Slack notifications from feature branches
+
+## [0.22.10] - 2022-01-29
+
+### Changed
+
+- Running tests, conda, and version workflows on pull requests, not just pushes
+
+## [0.22.9] - 2022-01-27
+
+### Fixed
+
+- Fixing version check action so that it doesn't run on commits that are in develop
+- Edited PR template so that markdown checklist appears properly
+
+## [0.22.8] - 2022-01-27
+
+### Fixed
+
+- publish workflow, using `docker buildx` to build images for x86 and ARM, prepare manifest and push to ECR so that pulls will match the correct architecture.
+- typo in CONTRIBUTING
+- installing `gcc` in Docker image so Docker can build wheels for `dask` and other packages that don't provide ARM wheels
+
+### Changed
+
+- updated versions in `requirements.txt` for `matplotlib` and `dask`
+
+## [0.22.7] - 2022-01-27
+
+### Added
+
+- `MANIFEST.in` did not have `covalent_dispatcher/_service` in it due to which the PyPi package was not being built correctly. Added the `covalent_dispatcher/_service` to the `MANIFEST.in` file.
+
+### Fixed
+
+- setuptools properly including data files during installation
 
 ## [0.22.6] - 2022-01-26
 

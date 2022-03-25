@@ -21,7 +21,7 @@
  */
 
 import {
-  Box,
+  Paper,
   SvgIcon,
   Tooltip,
   tooltipClasses,
@@ -33,9 +33,8 @@ import { Handle } from 'react-flow-renderer'
 import { ReactComponent as AtomSvg } from '../../assets/atom.svg'
 import { statusColor } from '../../utils/misc'
 import { Check, WarningAmber } from '@mui/icons-material'
-import theme from '../../utils/theme'
 
-const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
+export const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
 
 const ElectronTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -58,28 +57,27 @@ const ElectronNode = ({
   const hasBorder = data.status !== 'NEW_OBJECT'
 
   return (
-    <ElectronTooltip title={data.label} arrow placement="bottom-end">
-      <Box
+    <ElectronTooltip title={data.fullName} arrow placement="bottom-end">
+      <Paper
+        elevation={!selected ? 1 : 5}
         sx={{
           display: 'flex',
           alignItems: 'center',
           px: 1,
           py: 0.5,
           borderRadius: 1,
-          bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
+          // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
           color: !selected ? NODE_TEXT_COLOR : '#FAFAFA',
           borderColor: color,
           borderStyle: 'solid',
           borderWidth: hasBorder ? 1 : 0,
         }}
       >
-        {!!data.inputs && (
-          <Handle
-            type="target"
-            position={targetPosition}
-            isConnectable={isConnectable}
-          />
-        )}
+        <Handle
+          type="target"
+          position={targetPosition}
+          isConnectable={isConnectable}
+        />
         {(() => {
           switch (data.status) {
             case 'NEW_OBJECT':
@@ -107,14 +105,12 @@ const ElectronNode = ({
         })()}
 
         <Typography sx={{ fontSize: 12 }}>{data.label}</Typography>
-        {!!data.outputs && (
-          <Handle
-            type="source"
-            position={sourcePosition}
-            isConnectable={isConnectable}
-          />
-        )}
-      </Box>
+        <Handle
+          type="source"
+          position={sourcePosition}
+          isConnectable={isConnectable}
+        />
+      </Paper>
     </ElectronTooltip>
   )
 }

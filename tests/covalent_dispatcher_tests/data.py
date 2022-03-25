@@ -40,7 +40,6 @@ def get_mock_result() -> Result:
         return identity(x=y)
 
     pipeline.build_graph(y=1)
-    pipeline.check_consumable()
 
     # Serializing the transport graph and then passing it to the Result object
     transport_graph = pipeline.transport_graph.serialize()
@@ -69,7 +68,6 @@ def get_mock_result_2() -> Result:
         return identity(x=res)
 
     pipeline.build_graph(x=1, y=1)
-    pipeline.check_consumable()
 
     # Serializing the transport graph and then passing it to the Result object
     transport_graph = pipeline.transport_graph.serialize()
@@ -90,7 +88,6 @@ def get_mock_result_3() -> Result:
         return x * y
 
     pipeline.build_graph(x=1, y=1)
-    pipeline.check_consumable()
 
     # Serializing the transport graph and then passing it to the Result object
     transport_graph = pipeline.transport_graph.serialize()

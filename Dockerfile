@@ -20,10 +20,24 @@
 
 FROM python:3.8-slim-buster
 
+RUN apt-get update \
+  && apt-get install -y curl gcc \
+  && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+  && apt-get install -y nodejs \
+  && npm install --global yarn \
+  && rm -rf /var/lib/apt/lists/*
+
 RUN mkdir -p /opt/covalent
 COPY . /opt/covalent
-RUN pip install --no-cache-dir /opt/covalent
+RUN pip install --no-cache-dir --use-feature=in-tree-build /opt/covalent
+RUN cd /opt/covalent/covalent_ui/webapp \
+  && yarn install --network-timeout 100000 \
+  && yarn build --network-timeout 100000
 
-EXPOSE 80
+WORKDIR /opt/covalent
 
-ENTRYPOINT gunicorn -w 1 -t 30 -b 0.0.0.0:80 --chdir /opt/covalent/covalent_dispatcher/_service app:app
+ENV PLATFORM Docker
+
+EXPOSE 8080
+ENTRYPOINT [ "python" ]
+CMD ["/opt/covalent/covalent_ui/app.py", "--port", "8080"]

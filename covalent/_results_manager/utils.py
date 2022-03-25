@@ -37,7 +37,13 @@ def convert_to_lattice_function_call(
         function_call_str: The converted lattice function string.
     """
 
-    inp = "".join(key + "=" + str(value) + ", " for key, value in inputs.items())[:-2]
+    inp = ""
+
+    if inputs["args"]:
+        inp += "".join(f"{value}, " for value in inputs["args"])
+    if inputs["kwargs"]:
+        inp += "".join(f"{key}={value}, " for key, value in inputs["kwargs"].items())
+
     function_call_str = lattice_function_string
     function_call_str += f'if __name__ == "__main__":\n    {lattice_function_name}({inp})\n'
     return function_call_str

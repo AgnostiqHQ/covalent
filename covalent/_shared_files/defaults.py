@@ -22,8 +22,6 @@
 
 import os
 
-import sentinel
-
 prefix_separator = ":"
 
 parameter_prefix = f"{prefix_separator}parameter{prefix_separator}"
@@ -33,8 +31,7 @@ subscript_prefix = f"{prefix_separator}subscripted{prefix_separator}"
 generator_prefix = f"{prefix_separator}generated{prefix_separator}"
 sublattice_prefix = f"{prefix_separator}sublattice{prefix_separator}"
 attr_prefix = f"{prefix_separator}attribute{prefix_separator}"
-
-exclude_from_postprocess = [attr_prefix, subscript_prefix, generator_prefix]
+arg_prefix = f"{prefix_separator}arg{prefix_separator}"
 
 # Default configuration settings
 _DEFAULT_CONFIG = {
@@ -46,6 +43,9 @@ _DEFAULT_CONFIG = {
         + "/covalent",
         "log_level": os.environ.get("LOGLEVEL", "WARNING").lower(),
         "enable_logging": os.environ.get("COVALENT_LOG_TO_FILE", "false").lower(),
+        "executor_dir": os.environ.get("COVALENT_EXECUTOR_DIR")
+        or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
+        + "/covalent/executor_plugins",
     },
     "dispatcher": {
         "address": "0.0.0.0",
@@ -58,22 +58,20 @@ _DEFAULT_CONFIG = {
     },
     "user_interface": {
         "address": "0.0.0.0",
-        "port": 47007,
+        "port": 48008,
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
-    },
-    "executors": {
-        "local": {
-            "log_stdout": "stdout.log",
-            "log_stderr": "stderr.log",
-            "cache_dir": "/tmp/covalent",
-        },
-        # Add entries for custom executors here
+        "dispatch_db": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
+        + "/covalent/dispatch_db.sqlite",
     },
 }
 
 # Metadata which may influence execution behavior
-default_constraints_dict = {
+_DEFAULT_CONSTRAINT_VALUES = {"executor": "local"}
+
+# Going forward we may only want to return the executor field of DEFAULT_CONSTRAINT_VALUES
+# The rest of those parameters will now be in this dictionary
+_DEFAULT_CONSTRAINTS_DEPRECATED = {
     "schedule": False,
     "num_cpu": 1,
     "cpu_feature_set": [],
@@ -81,13 +79,8 @@ default_constraints_dict = {
     "gpu_type": "",
     "gpu_compute_capability": [],
     "memory": "1G",
-    "backend": "local",
+    "executor": "local",
     "time_limit": "00-00:00:00",
     "budget": 0,
     "conda_env": "",
 }
-
-_DEFAULT_CONSTRAINT_VALUES = sentinel.create(
-    "_DEFAULT_CONSTRAINT_VALUES",
-    cls_dict=default_constraints_dict.copy(),
-)
