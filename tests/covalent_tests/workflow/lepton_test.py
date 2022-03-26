@@ -21,6 +21,7 @@
 """Unit tests for leptons."""
 
 import inspect
+import os
 from contextlib import nullcontext
 
 import pytest
@@ -79,10 +80,13 @@ def test_lepton_attributes():
     assert sorted(electron_attributes + expected_attributes) == sorted(lepton_attributes)
 
 
-@pytest.mark.parametrize("language", ["python", "c", "unsupported"])
-def test_wrap_task(mocker, language):
-    init_mock = mocker.patch("covalent._workflow.lepton.Lepton.__init__", return_value=None)
+@pytest.fixture
+def init_mock(mocker):
+    return mocker.patch("covalent._workflow.lepton.Lepton.__init__", return_value=None)
 
+
+@pytest.mark.parametrize("language", ["python", "c", "unsupported"])
+def test_wrap_task(mocker, init_mock, language):
     lepton = Lepton()
     init_mock.assert_called_once()
 
@@ -102,3 +106,48 @@ def test_wrap_task(mocker, language):
     assert task.__qualname__ == "Lepton.mylib.myfunc"
     assert task.__module__ == "covalent._workflow.lepton.mylib"
     assert task.__doc__ == f"Lepton interface for {language} function 'myfunc'."
+
+
+@pytest.mark.parametrize(
+    "library_name,function_name",
+    [
+        ("test_module", "test_func"),
+        ("test_module.py", "test_func"),
+        ("bad_module", ""),
+        ("bad_module.py", ""),
+        ("test_module", "bad_func"),
+    ],
+)
+def test_python_wrapper(mocker, init_mock, library_name, function_name):
+    python_test_module_str = """\
+def test_func(x, y):
+    return x + y\
+"""
+
+    with open("test_module.py", "w") as f:
+        f.write(python_test_module_str)
+
+    lepton = Lepton()
+    lepton.language = "python"
+    lepton.library_name = library_name
+    lepton.function_name = function_name
+    task = lepton.wrap_task()
+
+    init_mock.assert_called_once_with()
+
+    if library_name.startswith("bad_module"):
+        context = pytest.raises((ModuleNotFoundError, FileNotFoundError, AttributeError))
+    elif function_name == "bad_func":
+        context = pytest.raises(AttributeError)
+    else:
+        context = nullcontext()
+
+    with context:
+        result = task(1, 2)
+
+    os.remove("test_module.py")
+
+    if library_name.startswith("bad_module") or function_name == "bad_func":
+        return
+
+    assert result == 3
