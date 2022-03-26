@@ -22,6 +22,7 @@
 """Unit tests for lattice."""
 
 import importlib
+from pathlib import Path
 from typing import Callable, List
 
 import networkx as nx
@@ -84,6 +85,11 @@ def sample_values():
     return [1, 2]
 
 
+@pytest.fixture
+def init_mock(mocker):
+    return mocker.patch("covalent._workflow.lattice.Lattice.__init__", return_value=None)
+
+
 def test_lattice_init(mocker):
     sample_import_string = """\
 import pytest
@@ -124,7 +130,29 @@ def workflow(x):
     assert test_lattice.cova_imports == sample_imports
 
 
-# TODO: Complete this test
+def test_set_metadata(mocker, init_mock):
+    test_lattice = Lattice(sample_workflow)
+    test_lattice.metadata = {}
+    init_mock.assert_called_once_with(sample_workflow)
+
+    test_lattice.set_metadata("test_key", "test_value")
+
+    assert test_lattice.metadata["test_key"] == "test_value"
+
+
+def test_get_metadata(mocker, init_mock):
+    test_lattice = Lattice(sample_workflow)
+    test_lattice.metadata = {"test_key": "test_value"}
+    init_mock.assert_called_once_with(sample_workflow)
+
+    value = test_lattice.get_metadata("test_key")
+    assert value == "test_value"
+
+    bad_value = test_lattice.get_metadata("missing_entry")
+    assert bad_value is None
+
+
+# TODO: Complete and improve this test
 def test_lattice_build_graph(test_lattice: Lattice, task_arg_name: str, sample_values: List):
     """Test that the graph is built correctly."""
 
@@ -169,6 +197,24 @@ def test_lattice_build_graph(test_lattice: Lattice, task_arg_name: str, sample_v
     assert nx.graph_edit_distance(graph_to_test, sample_graph, node_match=are_matching_nodes) == 0
 
 
+def test_draw(mocker, init_mock):
+    test_lattice = Lattice(sample_workflow)
+
+    build_graph_mock = mocker.patch(
+        "covalent._workflow.lattice.Lattice.build_graph", return_value=None
+    )
+    webhook_call_mock = mocker.patch(
+        "covalent._workflow.lattice.result_webhook.send_draw_request", return_value=None
+    )
+
+    test_args = [1, 2, 3]
+    test_kwargs = {"x": 1, "y": 2, "z": 3}
+    test_lattice.draw(*test_args, **test_kwargs)
+
+    build_graph_mock.assert_called_once_with(*test_args, **test_kwargs)
+    webhook_call_mock.assert_called_once_with(test_lattice)
+
+
 def test_lattice_call(
     test_workflow_function: Callable, test_task_function: Callable, sample_values: List
 ):
@@ -205,3 +251,49 @@ def test_lattice_check_consumable():
 
     # TODO: Same as above.
     pass
+
+
+def test_lattice_decorator(mocker, monkeypatch):
+    mock_config_call = mocker.patch(
+        "covalent._workflow.lattice.get_config", return_value="results"
+    )
+    monkeypatch.setattr(
+        "covalent._shared_files.defaults._DEFAULT_CONSTRAINT_VALUES", {"executor": "local"}
+    )
+
+    # Test lattice can be called using no arguments to return a decorator function
+    empty_lattice = lattice()
+    assert callable(empty_lattice)
+    assert empty_lattice.__name__ == "decorator_lattice"
+
+    # Use 1: delayed application of the decorator
+    test_lattice_1 = empty_lattice(sample_workflow)
+    assert callable(test_lattice_1)
+    assert isinstance(test_lattice_1, Lattice)
+    # A few functional assertions
+    assert test_lattice_1.__name__ == sample_workflow.__name__
+    assert test_lattice_1(1, 2) == sample_workflow(1, 2)
+
+    # Use 2: direct application of the decorator
+    test_lattice_2 = lattice(sample_workflow)
+    assert callable(test_lattice_2)
+    assert isinstance(test_lattice_2, Lattice)
+
+    # Use 3: wrap a function
+    @lattice
+    def test_workflow(x):
+        return sample_task(x)
+
+    assert isinstance(test_workflow, Lattice)
+    assert test_workflow.__name__ == "test_workflow"
+
+    # Test the constraints are applied
+    assert test_workflow.metadata == {
+        "executor": "local",
+        "results_dir": str(Path("results").expanduser().resolve()),
+        "notify": [],
+    }
+
+    # Finally test deprecated variables are properly forwarded
+    test_lattice_3 = lattice(sample_workflow, backend="custom_backend")
+    assert test_lattice_3.metadata["executor"] == "custom_backend"
