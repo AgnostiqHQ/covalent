@@ -159,7 +159,6 @@ def test_func(x, y):
     [
         ("test_empty.so", [], [], {}),
         ("test_lib.so", [], [], {"bad_kwarg": "bad_value"}),
-        ("bad_library.so", [], [], {}),
     ],
 )
 def test_c_wrapper(mocker, init_mock, library_name, argtypes, args, kwargs):
@@ -172,18 +171,24 @@ def test_c_wrapper(mocker, init_mock, library_name, argtypes, args, kwargs):
 
     init_mock.assert_called_once_with()
 
+    class MockCCall:
+        def __call__(*args, **kwargs):
+            return None
+
+    cdll_mock = mocker.patch("ctypes.CDLL", return_value={"test_func": MockCCall})
+
     if kwargs:
         context = pytest.raises(ValueError)
-    elif library_name == "bad_library.so":
-        context = pytest.raises(OSError)
     else:
         context = nullcontext()
 
     with context:
         result = task(*args, **kwargs)
 
-    if "bad_kwarg" in kwargs or library_name == "bad_library.so":
+    if "bad_kwarg" in kwargs:
         return
+
+    cdll_mock.assert_called_once_with(library_name)
 
     if library_name == "test_empty.so":
         assert result is None
