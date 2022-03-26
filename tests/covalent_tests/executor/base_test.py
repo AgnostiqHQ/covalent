@@ -31,6 +31,25 @@ class MockExecutor(BaseExecutor):
         pass
 
 
+def test_base_init(mocker):
+    mocker.patch.multiple(BaseExecutor, __abstractmethods__=set())
+
+    executor = BaseExecutor(
+        log_stdout="logout",
+        log_stderr="logerr",
+        conda_env="conda",
+        cache_dir="cache",
+        current_env_on_conda_fail=True,
+    )
+
+    assert executor.log_stdout == "logout"
+    assert executor.log_stderr == "logerr"
+    assert executor.conda_env == "conda"
+    assert executor.cache_dir == "cache"
+    assert executor.current_env_on_conda_fail
+    assert executor.current_env == ""
+
+
 def test_write_streams_to_file(mocker):
     """Test write log streams to file method in BaseExecutor via LocalExecutor."""
 
