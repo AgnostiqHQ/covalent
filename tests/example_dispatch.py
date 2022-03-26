@@ -23,6 +23,11 @@ An example script containing a simple workflow that can be dispatched to Covalen
 
 """
 
+
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.pardir, '../covalent')))
+print(sys.path)
 import time
 from requests import request
 import covalent as ct
