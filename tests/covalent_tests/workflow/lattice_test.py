@@ -21,24 +21,32 @@
 
 """Unit tests for lattice."""
 
+import importlib
+from typing import Callable, List
+
 import networkx as nx
 import pytest
 
-from typing import Callable, List
-
-from covalent._shared_files.defaults import default_constraints_dict, parameter_prefix
+from covalent._dispatcher_plugins.local import LocalDispatcher
+from covalent._results_manager.result import Result
+from covalent._shared_files.config import get_config
+from covalent._shared_files.defaults import (
+    _DEFAULT_CONFIG,
+    _DEFAULT_CONSTRAINT_VALUES,
+    parameter_prefix,
+)
 from covalent._workflow.electron import electron
 from covalent._workflow.lattice import Lattice, lattice
 from covalent._workflow.transport import _TransportGraph
-from covalent._results_manager.result import Result
-from covalent._shared_files.config import get_config
+
+dispatcher = LocalDispatcher()
 
 
 @electron
 def sample_task(x):
     """Sample task."""
 
-    return x ** 2
+    return x**2
 
 
 def sample_workflow(a, b):
@@ -54,6 +62,7 @@ def test_task_function():
     """Test function."""
 
     return sample_task
+
 
 @pytest.fixture
 def test_workflow_function():
@@ -75,6 +84,47 @@ def sample_values():
     return [1, 2]
 
 
+def test_lattice_init(mocker):
+    sample_import_string = """\
+import pytest
+import platform as pf
+# import covalent as ct\
+"""
+    sample_imports = set()
+    sample_imports.add("ct")
+
+    get_imports_mock = mocker.patch(
+        "covalent._workflow.lattice.get_imports",
+        return_value=(sample_import_string, sample_imports),
+    )
+
+    serialized_function_str = """\
+@ct.lattice
+def workflow(x):
+    return func(x)\
+"""
+    get_ser_func_string_mock = mocker.patch(
+        "covalent._workflow.lattice.get_serialized_function_str",
+        return_value=serialized_function_str,
+    )
+
+    test_lattice = Lattice(sample_workflow)
+
+    get_imports_mock.assert_called_once_with(sample_workflow)
+    get_ser_func_string_mock.assert_called_once_with(sample_workflow)
+
+    # Also test an empty transport graph can be passed
+    test_lattice_alt = Lattice(sample_workflow, _TransportGraph())
+
+    assert test_lattice.workflow_function == sample_workflow
+    assert test_lattice.workflow_function_string == serialized_function_str
+    assert test_lattice.__name__ == sample_workflow.__name__
+    assert test_lattice.lattice_imports == sample_import_string
+    test_lattice.cova_imports.update({"electron"})
+    assert test_lattice.cova_imports == sample_imports
+
+
+# TODO: Complete this test
 def test_lattice_build_graph(test_lattice: Lattice, task_arg_name: str, sample_values: List):
     """Test that the graph is built correctly."""
 
@@ -83,14 +133,19 @@ def test_lattice_build_graph(test_lattice: Lattice, task_arg_name: str, sample_v
     # Start adding node and edge to the graph
     for val in sample_values:
         node_id_1 = new_graph.add_node(
-            sample_task.__name__, {task_arg_name: val}, sample_task, {"backend": "local"}
+            name=sample_task.__name__,
+            function=sample_task,
+            metadata={"executor": "local"},
+            key=0,
+            task_arg_name=val,
         )
 
         node_id_2 = new_graph.add_node(
-            parameter_prefix + str(val),
-            {task_arg_name: val},
-            None,
-            default_constraints_dict.copy(),
+            name=parameter_prefix + str(val),
+            function=None,
+            metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+            key=1,
+            task_arg_name=val,
         )
 
         new_graph.add_edge(node_id_2, node_id_1, task_arg_name)
@@ -101,7 +156,7 @@ def test_lattice_build_graph(test_lattice: Lattice, task_arg_name: str, sample_v
     def are_matching_nodes(node_1, node_2):
         """Check if two nodes are the same."""
 
-        attr_to_check = ["name", "kwargs", "metadata"]
+        attr_to_check = ["name", "metadata"]
         return all(node_1[attr] == node_2[attr] for attr in attr_to_check)
 
     # Testing the graph
@@ -114,7 +169,9 @@ def test_lattice_build_graph(test_lattice: Lattice, task_arg_name: str, sample_v
     assert nx.graph_edit_distance(graph_to_test, sample_graph, node_match=are_matching_nodes) == 0
 
 
-def test_lattice_call(test_workflow_function: Callable, test_task_function: Callable, sample_values: List):
+def test_lattice_call(
+    test_workflow_function: Callable, test_task_function: Callable, sample_values: List
+):
     """Test that lattice can be called as a normal function"""
 
     output_1, output_2 = test_workflow_function(sample_values[0], sample_values[1])
@@ -123,10 +180,11 @@ def test_lattice_call(test_workflow_function: Callable, test_task_function: Call
     assert output_2 == test_task_function(sample_values[1])
 
 
+@pytest.mark.skip(reason="not yet implemented")
 def test_lattice_check_constraint_specific_sum(test_workflow_function: Callable):
     """Test that lattice can check constraint specific sum."""
 
-    # TODO: This is getting really hard to test because first, we don't 
+    # TODO: This is getting really hard to test because first, we don't
     # have an interface to the electron to change the `budget` and `time_limit` constraints
     # and second, this is an old function which is only here for so that if needed, we can
     # support validating that electron constraints don't exceed lattice's constraints.
@@ -141,36 +199,9 @@ def test_lattice_check_constraint_specific_sum(test_workflow_function: Callable)
     pass
 
 
+@pytest.mark.skip(reason="not yet implemented")
 def test_lattice_check_consumable():
     """Test that lattice can check consumable constraint limits."""
 
     # TODO: Same as above.
     pass
-
-
-def test_lattice_dispatch(test_lattice: Lattice):
-    """Test that the lattice can dispatch."""
-
-    id = test_lattice.dispatch(1, 2)
-
-    assert id is not None
-    assert isinstance(id, str)
-
-
-def test_lattice_dispatch_sync(test_lattice: Lattice):
-    """Test that the lattice can dispatch synchronously and waits for the calculation to complete."""
-
-    result = test_lattice.dispatch_sync(1, 2)
-
-    assert isinstance(result, Result)
-    assert result.status == Result.COMPLETED
-
-
-def test_lattice_server_dispatch(test_lattice: Lattice):
-    """Test that the lattice can send its result object to the dispatcher server"""
-
-    id = test_lattice._server_dispatch(Result(test_lattice, results_dir=get_config("dispatcher.results_dir")))
-
-    assert id is not None
-    assert isinstance(id, str)
-
