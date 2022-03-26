@@ -21,6 +21,7 @@
 """Unit tests for leptons."""
 
 import inspect
+from contextlib import nullcontext
 
 import pytest
 
@@ -78,6 +79,26 @@ def test_lepton_attributes():
     assert sorted(electron_attributes + expected_attributes) == sorted(lepton_attributes)
 
 
-@pytest.mark.parametrize("language", ["python", "C"])
+@pytest.mark.parametrize("language", ["python", "c", "unsupported"])
 def test_wrap_task(mocker, language):
-    pass
+    init_mock = mocker.patch("covalent._workflow.lepton.Lepton.__init__", return_value=None)
+
+    lepton = Lepton()
+    init_mock.assert_called_once()
+
+    lepton.language = language
+    lepton.library_name = "mylib"
+    lepton.function_name = "myfunc"
+
+    context = pytest.raises(ValueError) if language == "unsupported" else nullcontext()
+    with context:
+        task = lepton.wrap_task()
+
+    if language == "unsupported":
+        return
+
+    assert task.__code__.co_name == f"{language}_wrapper"
+    assert task.__name__ == "myfunc"
+    assert task.__qualname__ == "Lepton.mylib.myfunc"
+    assert task.__module__ == "covalent._workflow.lepton.mylib"
+    assert task.__doc__ == f"Lepton interface for {language} function 'myfunc'."
