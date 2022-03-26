@@ -126,6 +126,7 @@ def test_func(x, y):
 
     with open("test_module.py", "w") as f:
         f.write(python_test_module_str)
+        f.flush()
 
     lepton = Lepton()
     lepton.language = "python"
@@ -151,3 +152,40 @@ def test_func(x, y):
         return
 
     assert result == 3
+
+
+@pytest.mark.parametrize(
+    "library_name,argtypes,args,kwargs",
+    [
+        ("test_empty.so", [], [], {}),
+        ("test_lib.so", [], [], {"bad_kwarg": "bad_value"}),
+        ("bad_library.so", [], [], {}),
+    ],
+)
+def test_c_wrapper(mocker, init_mock, library_name, argtypes, args, kwargs):
+    lepton = Lepton()
+    lepton.language = "C"
+    lepton.library_name = library_name
+    lepton.function_name = "test_func"
+    lepton.argtypes = argtypes
+    task = lepton.wrap_task()
+
+    init_mock.assert_called_once_with()
+
+    if kwargs:
+        context = pytest.raises(ValueError)
+    elif library_name == "bad_library.so":
+        context = pytest.raises(OSError)
+    else:
+        context = nullcontext()
+
+    with context:
+        result = task(*args, **kwargs)
+
+    if "bad_kwarg" in kwargs or library_name == "bad_library.so":
+        return
+
+    if library_name == "test_empty.so":
+        assert result is None
+
+    # TODO: Still need to test variable translations

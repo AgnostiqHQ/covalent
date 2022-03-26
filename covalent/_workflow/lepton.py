@@ -123,7 +123,7 @@ class Lepton(Electron):
 
             if kwargs:
                 raise ValueError(
-                    f"Keyword arguments {kwargs} are not supported when calling {self.function}."
+                    f"Keyword arguments {kwargs} are not supported when calling {self.function_name}."
                 )
 
             try:
