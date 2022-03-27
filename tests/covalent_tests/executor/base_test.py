@@ -100,3 +100,32 @@ def test_execute_in_conda_env(mocker):
         "node_id",
     )
     conda_env_fail_mock.assert_called_once_with("function", "args", "kwargs", "node_id")
+
+
+def test_conda_env_fail(mocker):
+    pass
+
+
+def test_get_conda_envs(mocker):
+    conda_env_str = """\
+# conda environments:
+#
+base * /home/user/miniconda3
+test /home/user/miniconda3/envs/test\
+"""
+
+    class SubprocMock:
+        def __init__(self):
+            self.stdout = conda_env_str
+            self.stderr = ""
+
+    subprocess_mocker = mocker.patch("subprocess.run", return_value=SubprocMock())
+
+    me = MockExecutor()
+    me.get_conda_envs()
+
+    subprocess_mocker.assert_called_once_with(
+        ["conda", "env", "list"], capture_output=True, encoding="utf-8"
+    )
+    assert me.conda_envs == ["base", "test"]
+    assert me.current_env == "base"
