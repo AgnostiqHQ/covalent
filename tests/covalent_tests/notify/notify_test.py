@@ -20,6 +20,8 @@
 
 """Tests for abstract notify endpoint class."""
 
+import pytest
+
 from covalent.notify.notify import NotifyEndpoint
 
 
