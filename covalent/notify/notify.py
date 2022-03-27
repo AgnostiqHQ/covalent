@@ -31,5 +31,5 @@ class NotifyEndpoint(ABC):
     """
 
     @abstractmethod
-    def notify(self, message: str) -> None:
+    def notify(self, message: str) -> None:  # pragma: no cover
         raise NotImplementedError
