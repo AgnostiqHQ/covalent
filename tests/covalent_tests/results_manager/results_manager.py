@@ -25,8 +25,14 @@ from contextlib import nullcontext
 from unittest.mock import call
 
 import pytest
+import requests
 
-from covalent._results_manager.results_manager import _get_result_from_file, get_result, sync
+from covalent._results_manager.results_manager import (
+    _get_result_from_file,
+    cancel,
+    get_result,
+    sync,
+)
 
 
 @pytest.mark.parametrize("wait", [True, False])
@@ -100,4 +106,15 @@ def test_sync(mocker, dispatch_id):
 
 
 def test_cancel(mocker):
-    pass
+    response = requests.Response()
+    response.status_code = 200
+    response._content = "ok".encode("utf-8")
+    post_mock = mocker.patch("requests.post", return_value=response)
+
+    r = cancel("sample-dispatch-id", "dispatcher:8000")
+
+    post_mock.assert_called_once_with(
+        "http://dispatcher:8000/api/cancel", data="sample-dispatch-id".encode("utf-8")
+    )
+
+    assert r == "ok"
