@@ -20,6 +20,6 @@
 
 """Import workflow utilities."""
 
-from .electron import electron
-from .lattice import lattice
+from .electron import electron as electron_func
+from .lattice import lattice as lattice_func
 from .lepton import Lepton
