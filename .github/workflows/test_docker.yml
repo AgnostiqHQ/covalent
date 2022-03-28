@@ -38,6 +38,6 @@ jobs:
           echo 'Running an example dispatch...'
           for idx in {0..1..1}; do
             echo 'Dispatch number: '$idx
-            python example_dispatch.py
+            python tests/example_dispatch.py
           done
           
