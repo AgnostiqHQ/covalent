@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Picking up dispatch jobs from the queue and ensuring that only one workflow is processed (locally) at any given time.
+- Automated changelog and version management
+- Added a Dockerfile to build an image for OS Queuer.
+- Added the required packages to run a container instance of the Queuer.
+
+### Fixed
+
+- Single quotes in github env
+- Don't use for loops to iterate over a variable in bash
+
+## [0.34.5] - 2022-03-28
+
+### Fixed
+
+- Moved `example_dispatch.py` into `tests/` directory.
 
 ## [0.34.4] - 2022-03-28
 
