@@ -7,5 +7,5 @@
 -->
 
 - [ ] I have added the tests to cover my changes.
-- [ ] I have updated the documentation, VERSION, and CHANGELOG accordingly.
+- [ ] I have updated the documentation and CHANGELOG accordingly.
 - [ ] I have read the CONTRIBUTING document.

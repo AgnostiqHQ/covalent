@@ -101,7 +101,7 @@ Contributing to the Covalent codebase should be an easy process, but there are a
 -   Input parameters to scripts should be passed using flags, rather than positional arguments. This may be implemented using the `getopt` libraries.  Bash scripts may accept parameters passed with or without flags.
 -   Functions should perform a single task.  Generally functions should not contain more than 30 lines of code, not including line breaks, comments, and whitespace.
 -   Use the `pylint` tool to improve the quality of your code. Contributions which decrease the codebase's code quality will be rejected.
--   All changes must be documented in the [changelog](./CHANGELOG.md) as a new version.
+-   All changes must be documented in the [changelog](./CHANGELOG.md).
 -   New features or changes to UX must include a usage description in the form of a [how-to guide](https://covalent.readthedocs.io/en/latest/how_to/index.html).
 -   All software source files should contain the copyright boilerplate displayed below, which includes a docstring describing the purpose of the file.
 
