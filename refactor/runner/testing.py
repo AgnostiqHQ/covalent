@@ -10,7 +10,7 @@ from covalent.executor import _executor_manager
 
 dispatch_id = str(uuid.uuid4())
 
-url = f"http://localhost:8000/api/v0/workflow/{dispatch_id}/tasks"
+url = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/tasks"
 
 
 @ct.electron
@@ -72,7 +72,7 @@ print(left_task_ids)
 time.sleep(5)
 
 task_id = 0
-url = f"http://localhost:8000/api/v0/workflow/{dispatch_id}/task/{task_id}"
+url = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/task/{task_id}"
 response = requests.delete(url=url)
 response.raise_for_status()
 

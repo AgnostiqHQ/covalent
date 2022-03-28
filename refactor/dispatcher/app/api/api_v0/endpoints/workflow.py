@@ -22,9 +22,15 @@ import os
 from multiprocessing import Queue as MPQ
 from typing import Any
 
+import cloudpickle as pickle
 import requests
 from app.core.cancel_workflow import cancel_workflow_execution
-from app.core.dispatch_workflow import dispatch_workflow, get_result_object_from_result_service
+from app.core.dispatch_workflow import (
+    dispatch_workflow,
+    get_result_object_from_result_service,
+    send_result_object_to_result_service,
+    send_task_update_to_ui,
+)
 from app.core.dispatcher_logger import logger
 from app.core.update_workflow import update_workflow_results
 from app.schemas.workflow import (
@@ -34,7 +40,7 @@ from app.schemas.workflow import (
     UpdateWorkflowResponse,
 )
 from dotenv import load_dotenv
-from fastapi import APIRouter
+from fastapi import APIRouter, File
 
 from covalent._results_manager import Result
 
@@ -91,11 +97,13 @@ async def submit_workflow(*, dispatch_id: str) -> Any:
     result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
     # Dispatch the workflow
-    dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
+    updated_result_object = dispatch_workflow(
+        result_obj=result_obj, tasks_queue=workflow_tasks_queue
+    )
 
     logger.warning(f"Inside submit_workflow dispatching done with dispatch_id: {dispatch_id}")
 
-    # requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
+    send_result_object_to_result_service(updated_result_object)
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 
@@ -121,20 +129,26 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
 
 
 @router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
-def update_workflow(*, dispatch_id: str, task_execution_results: Node) -> UpdateWorkflowResponse:
+def update_workflow(
+    *, dispatch_id: str, task_execution_results: bytes = File(...)
+) -> UpdateWorkflowResponse:
     """
     Update a workflow
     """
 
-    # task_id = task_execution_results["task_id"]
+    task_execution_results = pickle.loads(task_execution_results)
+    task_id = task_execution_results["task_id"]
+    del task_execution_results["task_id"]
+    task_execution_results["node_id"] = task_id
 
-    # resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-    # result_obj = resp.json()["result_obj"]
+    latest_result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
-    # result_obj = update_workflow_results(task_execution_results, result_obj)
+    updated_result_obj = update_workflow_results(
+        task_execution_results=task_execution_results, result_obj=latest_result_obj
+    )
 
-    # requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
+    send_result_object_to_result_service(updated_result_obj)
 
-    # requests.put(f"{BASE_URI}/api/v0/ui/workflow/{dispatch_id}/task/{task_id}")
+    # send_task_update_to_ui(dispatch_id=dispatch_id, task_id=task_id)
 
     return {"response": f"{dispatch_id} workflow updated successfully"}

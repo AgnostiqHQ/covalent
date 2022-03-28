@@ -23,6 +23,7 @@
 
 import os
 from datetime import datetime, timezone
+from io import BytesIO
 from multiprocessing import Queue as MPQ
 from typing import Dict, List, Tuple, Union
 
@@ -35,7 +36,13 @@ from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 from covalent.executor import BaseExecutor
 
-from .utils import get_task_inputs, get_task_order, is_sublattice, preprocess_transport_graph
+from .utils import (
+    _post_process,
+    get_task_inputs,
+    get_task_order,
+    is_sublattice,
+    preprocess_transport_graph,
+)
 
 load_dotenv()
 
@@ -76,8 +83,6 @@ def send_task_list_to_runner(dispatch_id, tasks_list):
     # Set the url endpoint
     url_endpoint = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/tasks"
 
-    from io import BytesIO
-
     # Send the tasks list as file
     response = requests.post(url=url_endpoint, files={"tasks": BytesIO(pickle.dumps(tasks_list))})
 
@@ -87,41 +92,42 @@ def send_task_list_to_runner(dispatch_id, tasks_list):
     return response.json()["left_out_task_ids"]
 
 
-def get_result_object_from_result_service(dispatch_id: str, result_obj=None):
+def send_result_object_to_result_service(result_object: Result):
 
-    if result_obj:
-        # resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-        # result_object = pickle.loads(resp.content)
-        result_object = result_obj
+    url_endpoint = "http://localhost:8002/api/v0/workflow/results/"
 
-    else:
-        import covalent as ct
+    response = requests.post(
+        url=url_endpoint, files={"result_pkl_file": BytesIO(pickle.dumps(result_object))}
+    )
+    response.raise_for_status()
 
-        @ct.electron
-        def task_1(a):
-            import time
+    return response.text
 
-            time.sleep(10)
-            return a**2
 
-        @ct.electron
-        def task_2(a, b):
-            return a * b
+def send_task_update_to_result_service(dispatch_id: str, task_execution_result: dict):
 
-        @ct.lattice
-        def workflow(x, y):
-            res_1 = task_1(x + 2)
-            res_2 = task_2(x, y)
+    url_endpoint = f"http://localhost:8002/api/v0/workflow/results/{dispatch_id}"
 
-            return res_1, res_2
+    response = requests.put(
+        url=url_endpoint, files={"task": BytesIO(pickle.dumps(task_execution_result))}
+    )
+    response.raise_for_status()
 
-        workflow.build_graph(2, 10)
-        result_object = Result(
-            lattice=workflow, results_dir=workflow.metadata["results_dir"], dispatch_id=dispatch_id
-        )
-        result_object._lattice.transport_graph = result_object._lattice.transport_graph.serialize()
+    return response.text
 
-    return result_object
+
+def send_task_update_to_ui(dispatch_id: str, task_id: int):
+    pass
+
+
+def get_result_object_from_result_service(dispatch_id: str):
+
+    url_endpoint = f"http://localhost:8002/api/v0/workflow/results/{dispatch_id}"
+
+    response = requests.get(url=url_endpoint)
+    response.raise_for_status()
+
+    return pickle.loads(response.content)
 
 
 def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
@@ -164,6 +170,9 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     # Initialize the result object
     result_obj = init_result_pre_dispatch(result_obj=result_obj)
 
+    # Send the initialized result to the result service
+    send_result_object_to_result_service(result_object=result_obj)
+
     # Get the order of tasks to be run
     task_order: List[List] = get_task_order(result_obj=result_obj)
 
@@ -196,9 +205,7 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
             task_order = tasks_queue.get()
 
         # Get the latest result object from result service
-        result_obj = get_result_object_from_result_service(
-            dispatch_id=result_obj.dispatch_id, result_obj=result_obj
-        )
+        # result_obj = get_result_object_from_result_service(dispatch_id=result_obj.dispatch_id)
 
     logger.warning(f"Inside start_dispatch with finished dispatch_id {result_obj.dispatch_id}")
 
