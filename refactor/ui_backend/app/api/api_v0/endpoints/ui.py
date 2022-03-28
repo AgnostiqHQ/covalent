@@ -17,38 +17,41 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-import logging 
-from aiolimiter import AsyncLimiter
+import logging
 
+from aiolimiter import AsyncLimiter
 from app.schemas.ui import UpdateUIResponse
-from fastapi import APIRouter, Request, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Request
 
 dispatch_set = set()
 limiter = AsyncLimiter(1, 2)
 
 router = APIRouter()
 
+
 async def notify_frontend(app, dispatch_id, task_id):
     logging.debug(f"Emitting websocket event to update task {task_id} in workflow {dispatch_id}")
     dispatch_set.remove((dispatch_id, task_id))
-    await app.sio.emit("result-update",{
-        "result": {
-            "dispatch_id": dispatch_id,
-            "task_id": task_id
-        }
-    })
+    await app.sio.emit(
+        "result-update", {"result": {"dispatch_id": dispatch_id, "task_id": task_id}}
+    )
+
 
 async def add_to_bucket(app, dispatch_id, task_id):
     global dispatch_set
     if (dispatch_id, task_id) not in dispatch_set:
-        dispatch_set.add((dispatch_id,task_id))
+        dispatch_set.add((dispatch_id, task_id))
         async with limiter:
             await notify_frontend(app, dispatch_id, task_id)
-        
 
-@router.put("/workflow/{dispatch_id}/task/{task_id}", status_code=200, response_model=UpdateUIResponse)
-async def update_ui(*, dispatch_id: str, task_id: int, request: Request, background_tasks: BackgroundTasks) -> UpdateUIResponse:
-    
+
+@router.put(
+    "/workflow/{dispatch_id}/task/{task_id}", status_code=200, response_model=UpdateUIResponse
+)
+async def update_ui(
+    *, dispatch_id: str, task_id: int, request: Request, background_tasks: BackgroundTasks
+) -> UpdateUIResponse:
+
     """
     API Endpoint (/api/workflow/task) to update ui frontend
     """

@@ -1,6 +1,6 @@
 # Covalent Queuer Service API
 
-## Getting started 
+## Getting started
 
 You must run NATS MQ in order to run the server:
 
@@ -15,4 +15,3 @@ python main.py
 ```
 
 You can access the API docs at [http://localhost:8000/docs](http://localhost:8000/docs)
-

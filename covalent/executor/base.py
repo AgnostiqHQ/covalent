@@ -73,6 +73,8 @@ class BaseExecutor(ABC):
         self.current_env_on_conda_fail = current_env_on_conda_fail
         self.current_env = ""
 
+        Path(self.cache_dir).expanduser().resolve().mkdir(parents=True, exist_ok=True)
+
     def get_dispatch_context(self, dispatch_info: DispatchInfo) -> ContextManager[DispatchInfo]:
         """
         Start a context manager that will be used to

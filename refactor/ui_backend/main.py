@@ -19,7 +19,6 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import logging
-
 from pathlib import Path
 
 from app.api.api_v0.api import api_router
