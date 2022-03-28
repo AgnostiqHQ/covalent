@@ -42,9 +42,10 @@ from .._shared_files.utils import (
     get_serialized_function_str,
     required_params_passed,
 )
+from ..notify.notify import NotifyEndpoint
 from .transport import _TransportGraph
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
 
@@ -160,7 +161,7 @@ class Lattice:
                     )
                     raise
 
-    def draw_inline(self, ax: plt.Axes = None, *args, **kwargs) -> None:
+    def draw_inline(self, ax: plt.Axes = None, *args, **kwargs) -> None:  # pragma: no cover
         """
         Rebuilds the graph according to the kwargs passed and draws it on the given axis.
         If no axis is given then a new figure is created.
@@ -231,7 +232,9 @@ class Lattice:
 
         return self.workflow_function(*args, **kwargs)
 
-    def check_constraint_specific_sum(self, constraint_name: str, node_list: List[dict]) -> bool:
+    def check_constraint_specific_sum(
+        self, constraint_name: str, node_list: List[dict]
+    ) -> bool:  # pragma: no cover
         """
         Function to check whether the sum of the given constraint in each electron
         are within the constraint specified for the lattice.
@@ -276,7 +279,7 @@ class Lattice:
                 self.get_metadata(constraint_name)
             )
 
-    def check_consumable(self) -> None:
+    def check_consumable(self) -> None:  # pragma: no cover
         """
         Function to check whether all consumable constraints in all the nodes are
         within the limits of what is specified for the lattice.
@@ -301,7 +304,7 @@ class Lattice:
                     )
                 )
 
-    def dispatch(self, *args, **kwargs) -> str:
+    def dispatch(self, *args, **kwargs) -> str:  # pragma: no cover
         """
         DEPRECATED: Function to dispatch workflows.
 
@@ -322,7 +325,7 @@ class Lattice:
 
         return local_dispatch(self)(*args, **kwargs)
 
-    def dispatch_sync(self, *args, **kwargs) -> "Result":
+    def dispatch_sync(self, *args, **kwargs) -> "Result":  # pragma: no cover
         """
         DEPRECATED: Function to dispatch workflows synchronously by waiting for the result too.
 
@@ -352,6 +355,7 @@ def lattice(
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
+    notify: Optional[List[NotifyEndpoint]] = [],
     # Add custom metadata fields here
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
@@ -383,6 +387,7 @@ def lattice(
     constraints = {
         "executor": executor,
         "results_dir": results_dir,
+        "notify": notify,
     }
 
     def decorator_lattice(func=None):

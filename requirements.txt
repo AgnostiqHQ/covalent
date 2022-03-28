@@ -8,6 +8,7 @@ flask==2.0.1
 flask-cors==3.0.10
 flask-socketio==5.1.1
 matplotlib==3.5.1
+minio==7.1.5
 nats-py==2.0.0
 networkx==2.5
 pydantic==1.9.0

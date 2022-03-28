@@ -20,12 +20,13 @@
 
 import logging
 
-from app.schemas.submit import ResultPickle, SubmitResponse
-from fastapi import APIRouter, File, HTTPException
 from app.core.api import DataService
 from app.core.queuer import Queuer
+from app.schemas.submit import ResultPickle, SubmitResponse
+from fastapi import APIRouter, File, HTTPException
 
 router = APIRouter()
+
 
 @router.post("/dispatch", status_code=202, response_model=SubmitResponse)
 async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitResponse:
@@ -42,18 +43,14 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
     data_svc = DataService()
 
     try:
-        
+
         created_result = await data_svc.create_result(result_pkl_file)
 
         dispatch_id = created_result["dispatch_id"]
-        
-        await queue.publish(queue.topics.DIPATCH, {
-            "dispatch_id": dispatch_id
-        })
 
-        return {
-            "dispatch_id": dispatch_id
-        }
+        await queue.publish(queue.topics.DIPATCH, {"dispatch_id": dispatch_id})
+
+        return {"dispatch_id": dispatch_id}
 
     except Exception as err:
         error_message = "Error dispatching workflow."

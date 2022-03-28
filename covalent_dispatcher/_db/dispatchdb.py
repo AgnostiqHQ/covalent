@@ -9,6 +9,7 @@ import simplejson
 
 import covalent.executor as covalent_executor
 from covalent._results_manager.result import Result
+from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
 from covalent._shared_files.utils import get_named_params
@@ -19,6 +20,8 @@ from covalent._shared_files.utils import get_named_params
 # * result_dict text ; json-serialied dictionary representation of Result
 
 # TODO: Move these to a common utils module
+
+app_log = logger.app_log
 
 
 def extract_graph_node(node):
@@ -141,6 +144,7 @@ class DispatchDB:
             self.conn.commit()
         except sqlite3.OperationalError:
             pass
+        app_log.debug("Instantiated DispatchDB")
 
     def __enter__(self):
         return self
@@ -165,6 +169,8 @@ class DispatchDB:
             A list of pairs (dispatch_id, [jsonified result dictionary]).
         """
         if len(dispatch_ids) > 0:
+            app_log.debug("DispatchDB.get() is retrieving results for dispatch ids.")
+            app_log.debug(dispatch_ids)
             placeholders = "({})".format(", ".join(["?" for i in dispatch_ids]))
             sql = (
                 "SELECT * FROM dispatches WHERE \
@@ -173,6 +179,8 @@ class DispatchDB:
             )
 
             res = self.conn.execute(sql, dispatch_ids).fetchall()
+            app_log.debug("DispatchDB.get() is returning the following response object.")
+            app_log.debug(res)
 
         else:
             sql = "SELECT * FROM dispatches"

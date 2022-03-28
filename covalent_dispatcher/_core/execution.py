@@ -22,6 +22,7 @@
 Defines the core functionality of the dispatcher
 """
 
+import socket
 import traceback
 from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
@@ -33,6 +34,7 @@ from covalent import dispatch_sync
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
+from covalent._shared_files.config import get_config
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
     attr_prefix,
@@ -46,6 +48,7 @@ from covalent._shared_files.defaults import (
 )
 from covalent._workflow.lattice import Lattice
 from covalent.executor import _executor_manager
+from covalent.notify.notify import NotifyEndpoint
 from covalent_ui import result_webhook
 
 from .._db.dispatchdb import DispatchDB
@@ -168,7 +171,7 @@ def _run_task(
     Returns:
         None
     """
-
+    app_log.debug("_run_task")
     serialized_callable = result_object.lattice.transport_graph.get_node_value(node_id, "function")
     selected_executor = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
         "executor"
@@ -204,6 +207,7 @@ def _run_task(
     executor = _executor_manager.get_executor(selected_executor)
 
     # run the task on the executor and register any failures
+    app_log.debug("run the task on the executor")
     try:
         start_time = datetime.now(timezone.utc)
         result_object._update_node(
@@ -270,6 +274,7 @@ def _run_task(
     with DispatchDB() as db:
         db.upsert(result_object.dispatch_id, result_object)
     result_object.save()
+    app_log.debug("_run_task end")
     result_webhook.send_update(result_object)
 
 
@@ -286,7 +291,7 @@ def _run_planned_workflow(result_object: Result) -> Result:
     Returns:
         None
     """
-
+    app_log.debug("_run_planned_workflow")
     shared_var = Variable(result_object.dispatch_id, client=dask_client)
     shared_var.set(str(Result.RUNNING))
 
@@ -334,10 +339,16 @@ def _run_planned_workflow(result_object: Result) -> Result:
                 continue
 
             task_input = _get_task_inputs(node_id, node_name, result_object)
-
+            app_log.debug("Adding the task to the list for dask.")
+            app_log.debug("task_input")
+            app_log.debug(task_input)
+            app_log.debug("result_object")
+            app_log.debug(result_object)
+            app_log.debug("node_id")
+            app_log.debug(node_id)
             # Add the task generated for the node to the list of tasks
             tasks.append(dask.delayed(_run_task)(task_input, result_object, node_id))
-
+        app_log.debug("Running tasks in parallel using dask.")
         # run the tasks for the current iteration in parallel
         dask.compute(*tasks)
 
@@ -351,6 +362,11 @@ def _run_planned_workflow(result_object: Result) -> Result:
                     db.upsert(result_object.dispatch_id, result_object)
                 result_object.save()
                 result_webhook.send_update(result_object)
+                _notify_endpoints(
+                    result_object.dispatch_id,
+                    result_object._status,
+                    result_object.lattice.get_metadata("notify"),
+                )
                 return
 
             elif result_object._get_node_status(node_id) == Result.CANCELLED:
@@ -359,10 +375,17 @@ def _run_planned_workflow(result_object: Result) -> Result:
                 with DispatchDB() as db:
                     db.upsert(result_object.dispatch_id, result_object)
                 result_object.save()
+                app_log.debug("result cancelled")
                 result_webhook.send_update(result_object)
+                _notify_endpoints(
+                    result_object.dispatch_id,
+                    result_object._status,
+                    result_object.lattice.get_metadata("notify"),
+                )
                 return
 
     # post process the lattice
+    app_log.debug("post process the lattice")
     result_object._result = _post_process(
         result_object.lattice, result_object.get_all_node_outputs(), order
     )
@@ -373,6 +396,22 @@ def _run_planned_workflow(result_object: Result) -> Result:
         db.upsert(result_object.dispatch_id, result_object)
     result_object.save(write_source=True)
     result_webhook.send_update(result_object)
+    _notify_endpoints(
+        result_object.dispatch_id,
+        result_object._status,
+        result_object.lattice.get_metadata("notify"),
+    )
+
+
+def _notify_endpoints(dispatch_id: str, status: str, endpoints: List[NotifyEndpoint]) -> None:
+    ui_port = get_config("user_interface.port")
+    ui_url = f"http://{socket.getfqdn()}:{ui_port}/{dispatch_id}"
+    notification_message = (
+        f"Covalent lattice has finished running with status '{status}'. View results at {ui_url}."
+    )
+
+    for endpoint in endpoints:
+        endpoint.notify(notification_message)
 
 
 def _plan_workflow(result_object: Result) -> None:

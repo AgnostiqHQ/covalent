@@ -5,11 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.32.10] - 2022-03-23
+## [UNRELEASED]
 
 ### Added
 
 - Picking up dispatch jobs from the queue and ensuring that only one workflow is processed (locally) at any given time.
+
+## [0.34.4] - 2022-03-28
+
+### Added
+
+- Unit tests for utils, leptons, and base executor
+
+## [0.34.3] - 2022-03-27
+
+### Added
+
+- Tests for lattice.py
+
+## [0.34.2] - 2022-03-27
+
+### Added
+
+- Unit tests for the base executor, the results manager, the logger, and leptons
+
+## [0.34.1] - 2022-03-24
+
+### Fixed
+
+- Pinned jinja2 to less than 3.1.0 so that nbconvert remains stable in the docs build.
+
+## [0.34.0] - 2022-03-24
+
+### Added
+
+- API endpoints to upload and download files
+
+## [0.33.1] - 2022-03-24
+
+### Fixed
+
+- Retrieving results from running container via HTTP
+- Adding tests for Docker image in workflows
+
+## [0.33.0] - 2022-03-24
+
+### Added
+
+- Slack and webhook notifications
 
 ## [0.32.9] - 2022-03-23
 
