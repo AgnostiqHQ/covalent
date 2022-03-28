@@ -36,11 +36,14 @@ jobs:
       - name: Update version number
         run: |
           HEAD_VERSION="$(cat ./VERSION)"
-          changediff=$(git diff HEAD^ -- CHANGELOG.md)
+          begin=8
+          end=$(tail -n +$((begin+1)) ./CHANGELOG.md |
+            grep -n -m 1 "\b${HEAD_VERSION}\b" | 
+            cut -d ':' -f 1)
           patch=false
           minor=false
           noupdate=false
-          for line in $changediff; do
+          while IFS= read -r line ; do
             if [[ $line = *"### Added"* ]] ||
                [[ $line = *"### Changed"* ]] ||
                [[ $line = *"### Removed"* ]] ; then
@@ -53,7 +56,7 @@ jobs:
                [[ $line = *"### Docs"* ]] ; then
               noupdate=true
             fi
-          done
+          done <<< "$(tail +$begin ./CHANGELOG.md | head -$end)"
           IFS='.' read -ra semver <<< "$HEAD_VERSION"
           vmajor="${semver[0]}"
           vminor="${semver[1]}"
