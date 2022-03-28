@@ -49,9 +49,10 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     steps:
       - name: Check out head
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Set up Python
         if: matrix.os == 'macos-latest'
         uses: actions/setup-python@v2
