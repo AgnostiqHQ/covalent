@@ -45,7 +45,7 @@ from .._shared_files.utils import (
 from ..notify.notify import NotifyEndpoint
 from .transport import _TransportGraph
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
 
