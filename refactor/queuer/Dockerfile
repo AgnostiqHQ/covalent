@@ -18,26 +18,23 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-name: test-docker
+# syntax=docker/dockerfile:1
+FROM python:3.8-slim-buster
 
-on:
-  pull_request
+ENV PROJECT_DIR=/queuer
+ENV REQ_DIR=/requirements
 
-jobs:
-  test_docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out head
-        uses: actions/checkout@v2
-      - name: Build and run image
-        run: |
-          docker build -t cova .
-          docker run -d -p 48008:8080 cova
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          echo 'Running an example dispatch...'
-          for idx in {0..1..1}; do
-            echo 'Dispatch number: '$idx
-            python tests/example_dispatch.py
-          done
-          
+RUN mkdir $PROJECT_DIR $REQ_DIR
+RUN chmod 0777 $PROJECT_DIR $REQ_DIR
+
+WORKDIR $PROJECT_DIR
+
+COPY requirements $REQ_DIR
+RUN pip install  --no-cache-dir --upgrade -r $REQ_DIR/dist.txt
+
+COPY . .
+
+ENV PORT 8000
+EXPOSE $PORT
+
+CMD [ "python", "main.py"]

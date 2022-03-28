@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [UNRELEASED]
+
+### Added
+
+- Automated changelog and version management
+- Added a Dockerfile to build an image for OS Queuer.
+- Added the required packages to run a container instance of the Queuer.
+
+### Fixed
+
+- Single quotes in github env
+- Don't use for loops to iterate over a variable in bash
+- Issue with checkout actions
+- Run tests on changelog workflow completion instead of push to develop to avoid race condition
+
+## [0.34.5] - 2022-03-28
+
+### Fixed
+
+- Moved `example_dispatch.py` into `tests/` directory.
+
+## [0.34.4] - 2022-03-28
+
+### Added
+
+- Unit tests for utils, leptons, and base executor
+
+## [0.34.3] - 2022-03-27
+
+### Added
+
+- Tests for lattice.py
+
+## [0.34.2] - 2022-03-27
+
+### Added
+
+- Unit tests for the base executor, the results manager, the logger, and leptons
+
 ## [0.34.1] - 2022-03-24
 
 ### Fixed
