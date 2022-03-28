@@ -26,7 +26,7 @@ from .._shared_files import logger
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .electron import Electron
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from ..executor import BaseExecutor
 
 app_log = logger.app_log
