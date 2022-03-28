@@ -20,6 +20,7 @@
 
 """Unit tests for leptons."""
 
+import ctypes
 import inspect
 import os
 from contextlib import nullcontext
@@ -28,6 +29,20 @@ import pytest
 
 from covalent._workflow.electron import Electron
 from covalent._workflow.lepton import Lepton
+
+
+class MockCCall:
+    def __call__(*mock_args, **mock_kwargs):
+        return None
+
+
+class MockHandle:
+    def __init__(self):
+        self.argtypes = None
+        self.restype = None
+
+    def __getitem__(self, item):
+        return MockCCall()
 
 
 def test_lepton_init(mocker, monkeypatch):
@@ -155,27 +170,28 @@ def test_func(x, y):
 
 
 @pytest.mark.parametrize(
-    "library_name,argtypes,args,kwargs",
+    "library_name,argtypes,args,kwargs,response",
     [
-        ("test_empty.so", [], [], {}),
-        ("test_lib.so", [], [], {"bad_kwarg": "bad_value"}),
+        ("test_empty", [], [], {}, None),
+        ("test_kwarg", [], [], {"bad_kwarg": "bad_value"}, None),
+        ("scalar_input", [(ctypes.c_int, Lepton.INPUT)], [1], {}, None),
     ],
 )
-def test_c_wrapper(mocker, init_mock, library_name, argtypes, args, kwargs):
+def test_c_wrapper(mocker, init_mock, library_name, argtypes, args, kwargs, response):
     lepton = Lepton()
     lepton.language = "C"
     lepton.library_name = library_name
     lepton.function_name = "test_func"
-    lepton.argtypes = argtypes
-    task = lepton.wrap_task()
+    lepton.argtypes = [(arg[0].__name__, arg[1]) for arg in argtypes]
 
+    task = lepton.wrap_task()
     init_mock.assert_called_once_with()
 
-    class MockCCall:
-        def __call__(*args, **kwargs):
-            return None
+    mock_handle = MockHandle()
+    cdll_mock = mocker.patch("ctypes.CDLL", return_value=mock_handle)
+    func_call_mock = mocker.patch(f"{__name__}.MockCCall.__call__", return_value=response)
 
-    cdll_mock = mocker.patch("ctypes.CDLL", return_value={"test_func": MockCCall})
+    c_int_mock = mocker.patch("ctypes.c_int", return_value=1)
 
     if kwargs:
         context = pytest.raises(ValueError)
@@ -185,12 +201,18 @@ def test_c_wrapper(mocker, init_mock, library_name, argtypes, args, kwargs):
     with context:
         result = task(*args, **kwargs)
 
-    if "bad_kwarg" in kwargs:
+    if library_name == "test_kwarg":
         return
 
     cdll_mock.assert_called_once_with(library_name)
+    assert mock_handle.restype is None
 
-    if library_name == "test_empty.so":
+    if library_name == "test_empty":
+        func_call_mock.assert_called_once_with()
+        assert result is None
+    elif library_name == "scalar_input":
+        func_call_mock.assert_called_once_with(1)
+        c_int_mock.assert_called_once_with(1)
         assert result is None
 
     # TODO: Still need to test variable translations
