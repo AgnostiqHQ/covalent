@@ -14,10 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Single quotes in github env
+- Don't use for loops to iterate over a variable in bash
 
 ## [0.34.5] - 2022-03-28
 
-### Fixed 
+### Fixed
 
 - Moved `example_dispatch.py` into `tests/` directory.
 
