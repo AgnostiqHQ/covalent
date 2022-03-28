@@ -6,15 +6,12 @@ import requests
 import covalent as ct
 from covalent._results_manager.result import Result
 
-dispatch_id = "my_new_world"
+dispatch_id = "new_dispatch"
 url_endpoint = "http://localhost:8002/api/v0/workflow/results/"
 
 
 @ct.electron
 def task_1(a):
-    import time
-
-    time.sleep(10)
     return a**2
 
 
@@ -31,7 +28,7 @@ def workflow(x, y):
     return res_1, res_2
 
 
-workflow.build_graph(3, 10)
+workflow.build_graph(2, 10)
 result_object = Result(
     lattice=workflow, results_dir=workflow.metadata["results_dir"], dispatch_id=dispatch_id
 )

@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 import logging
+import traceback
 
 from aiolimiter import AsyncLimiter
 from app.schemas.ui import UpdateUIResponse
@@ -55,5 +56,8 @@ async def update_ui(
     """
     API Endpoint (/api/workflow/task) to update ui frontend
     """
-    background_tasks.add_task(add_to_bucket, request.app, dispatch_id, task_id)
+    try:
+        background_tasks.add_task(add_to_bucket, request.app, dispatch_id, task_id)
+    except Exception as e:
+        traceback.print_stack()
     return {"response": "UI Updated"}

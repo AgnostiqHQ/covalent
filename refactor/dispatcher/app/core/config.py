@@ -25,7 +25,7 @@ from pydantic import AnyHttpUrl, BaseSettings, validator
 
 
 class Settings(BaseSettings):
-    PORT: int = os.getenv('PORT',8001)
+    PORT: int = os.getenv("PORT", 8003)
     API_V0_STR: str = "/api/v0"
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 

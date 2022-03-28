@@ -1,7 +1,7 @@
 import cloudpickle as pickle
 import requests
 
-dispatch_id = "my_new_world"
+dispatch_id = "new_dispatch"
 
 url = "http://localhost:8002/api/v0/workflow/results/"
 

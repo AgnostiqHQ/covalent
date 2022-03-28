@@ -1,6 +1,6 @@
 import requests
 
-dispatch_id = "my_new_world"
+dispatch_id = "new_dispatch"
 url_endpoint = f"http://localhost:8003/api/v0/workflow/{dispatch_id}"
 
 response = requests.post(url=url_endpoint)
