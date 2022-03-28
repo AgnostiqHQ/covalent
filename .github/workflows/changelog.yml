@@ -73,7 +73,7 @@ jobs:
             exit 1
           fi
           version="${major}.${minor}.${patch}"
-          changelog_header = "## [${version}] - $(date -I)"
+          changelog_header="## [${version}] - $(date -I)"
           message="noop"
           if $minor || $patch ; then
             message="The new version will be $version"
