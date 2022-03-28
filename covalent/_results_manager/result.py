@@ -32,7 +32,7 @@ from .._shared_files import logger
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .utils import convert_to_lattice_function_call
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .._shared_files.util_classes import Status
     from .._workflow.lattice import Lattice
 

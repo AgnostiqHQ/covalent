@@ -18,26 +18,27 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-name: test-docker
+from abc import ABC
+from pathlib import Path
+from typing import BinaryIO, Generator, List, Union
 
-on:
-  pull_request
 
-jobs:
-  test_docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out head
-        uses: actions/checkout@v2
-      - name: Build and run image
-        run: |
-          docker build -t cova .
-          docker run -d -p 48008:8080 cova
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          echo 'Running an example dispatch...'
-          for idx in {0..1..1}; do
-            echo 'Dispatch number: '$idx
-            python tests/example_dispatch.py
-          done
-          
+class StorageBackend(ABC):
+    def __init__(self):
+        pass
+
+    def get(self, bucket_name: str, object_name: str) -> Union[Generator[bytes, None, None], None]:
+        raise NotImplementedError
+
+    def put(
+        self,
+        data: BinaryIO,
+        bucket_name: str,
+        object_name: str,
+        length: int,
+        metadata: dict = None,
+    ) -> (str, str):
+        raise NotImplementedError
+
+    def delete(self, bucket_name: str, object_names: List[str]):
+        raise NotImplementedError

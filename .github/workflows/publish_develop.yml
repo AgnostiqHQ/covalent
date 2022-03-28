@@ -61,7 +61,7 @@ jobs:
           echo 'Running an example dispatch...'
           for idx in {0..1..1}; do
             echo 'Dispatch number: '$idx
-            python example_dispatch.py
+            python tests/example_dispatch.py
           done
           docker push ${{ secrets.AWS_ECR_DEV_REPO }}
           docker tag ${{ secrets.AWS_ECR_DEV_REPO }} ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
