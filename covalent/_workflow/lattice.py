@@ -161,7 +161,7 @@ class Lattice:
                     )
                     raise
 
-    def draw_inline(self, ax: plt.Axes = None, *args, **kwargs) -> None:
+    def draw_inline(self, ax: plt.Axes = None, *args, **kwargs) -> None:  # pragma: no cover
         """
         Rebuilds the graph according to the kwargs passed and draws it on the given axis.
         If no axis is given then a new figure is created.
@@ -232,7 +232,9 @@ class Lattice:
 
         return self.workflow_function(*args, **kwargs)
 
-    def check_constraint_specific_sum(self, constraint_name: str, node_list: List[dict]) -> bool:
+    def check_constraint_specific_sum(
+        self, constraint_name: str, node_list: List[dict]
+    ) -> bool:  # pragma: no cover
         """
         Function to check whether the sum of the given constraint in each electron
         are within the constraint specified for the lattice.
@@ -277,7 +279,7 @@ class Lattice:
                 self.get_metadata(constraint_name)
             )
 
-    def check_consumable(self) -> None:
+    def check_consumable(self) -> None:  # pragma: no cover
         """
         Function to check whether all consumable constraints in all the nodes are
         within the limits of what is specified for the lattice.
@@ -302,7 +304,7 @@ class Lattice:
                     )
                 )
 
-    def dispatch(self, *args, **kwargs) -> str:
+    def dispatch(self, *args, **kwargs) -> str:  # pragma: no cover
         """
         DEPRECATED: Function to dispatch workflows.
 
@@ -323,7 +325,7 @@ class Lattice:
 
         return local_dispatch(self)(*args, **kwargs)
 
-    def dispatch_sync(self, *args, **kwargs) -> "Result":
+    def dispatch_sync(self, *args, **kwargs) -> "Result":  # pragma: no cover
         """
         DEPRECATED: Function to dispatch workflows synchronously by waiting for the result too.
 
