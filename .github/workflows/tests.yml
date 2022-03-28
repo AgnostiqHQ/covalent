@@ -22,9 +22,9 @@ name: tests
 
 on: 
   pull_request:
-  push:
-    branches:
-      - develop
+  workflow_run:
+    workflows: [changelog]
+    types: [completed]
 
 jobs:
   tests:
