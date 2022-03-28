@@ -109,14 +109,14 @@ jobs:
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
           VERSION="$(cat ./VERSION)"
-          if [ $VERSION = '0.32.3' ] ; then
+          if dpkg --compare-versions $VERSION 'gt' '0.32.3' ; then
             git config user.name "CovalentOpsBot"
             git config user.email "covalentopsbot@users.noreply.github.com"
             git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
             git fetch --unshallow
             git push origin HEAD:master
           else
-            echo "Master is frozen on 0.32.3."
+            echo "We cannot release versions less than 0.32.3."
           fi
       - name: Format Slack message
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
