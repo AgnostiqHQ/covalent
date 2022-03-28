@@ -169,12 +169,33 @@ def test_func(x, y):
     assert result == 3
 
 
+class MockType:
+    def __call__(self, *args, **kwargs):
+        return list(args)
+
+    def __mul__(self, other):
+        return self
+
+    def __rmul__(self, other):
+        return self
+
+
+class MockPointer:
+    def __init__(self):
+        self.__name__ = "LP_c_int"
+        self._type_ = MockType()
+
+    def __getitem__(self, item):
+        return None
+
+
 @pytest.mark.parametrize(
     "library_name,argtypes,args,kwargs,response",
     [
         ("test_empty", [], [], {}, None),
         ("test_kwarg", [], [], {"bad_kwarg": "bad_value"}, None),
         ("scalar_input", [(ctypes.c_int, Lepton.INPUT)], [1], {}, None),
+        ("list_input", [(ctypes.POINTER(ctypes.c_int), Lepton.INPUT)], [[1]], {}, None),
     ],
 )
 def test_c_wrapper(mocker, init_mock, library_name, argtypes, args, kwargs, response):
@@ -192,6 +213,7 @@ def test_c_wrapper(mocker, init_mock, library_name, argtypes, args, kwargs, resp
     func_call_mock = mocker.patch(f"{__name__}.MockCCall.__call__", return_value=response)
 
     c_int_mock = mocker.patch("ctypes.c_int", return_value=1)
+    c_pointer_mock = mocker.patch("ctypes.POINTER", return_value=MockPointer())
 
     if kwargs:
         context = pytest.raises(ValueError)
@@ -214,5 +236,7 @@ def test_c_wrapper(mocker, init_mock, library_name, argtypes, args, kwargs, resp
         func_call_mock.assert_called_once_with(1)
         c_int_mock.assert_called_once_with(1)
         assert result is None
+    elif library_name == "list_input":
+        func_call_mock.assert_called_once_with([1])
 
     # TODO: Still need to test variable translations
