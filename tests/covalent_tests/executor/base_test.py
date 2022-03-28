@@ -23,6 +23,7 @@
 import os
 import shutil
 import tempfile
+from contextlib import nullcontext
 from pathlib import Path
 from unittest.mock import call
 
@@ -167,8 +168,24 @@ def test_execute_in_conda_env(mocker, conda_installed, successful_task, index):
     os.remove(f"script_file{index}.sh")
 
 
-def test_conda_env_fail(mocker):
-    pass
+@pytest.mark.parametrize("use_current", [True, False])
+def test_conda_env_fail(mocker, use_current):
+    me = MockExecutor()
+    me.conda_path = "/path/to/conda"
+    me.current_env_on_conda_fail = use_current
+
+    def test_func(a, /, *, b):
+        return a + b
+
+    node_id = 1
+
+    context = pytest.raises(RuntimeError) if not use_current else nullcontext()
+
+    with context:
+        result = me._on_conda_env_fail(test_func, [1], {"b": 2}, node_id)
+
+    if use_current:
+        assert result == 3
 
 
 def test_get_conda_envs(mocker):
