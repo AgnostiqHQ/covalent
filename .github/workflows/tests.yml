@@ -27,6 +27,11 @@ on:
     types: [completed]
 
 jobs:
+  trailing-whitespace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: harupy/find-trailing-whitespace@master
   tests:
     runs-on: ${{ matrix.os }}
     strategy:
