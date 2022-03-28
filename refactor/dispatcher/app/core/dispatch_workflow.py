@@ -116,6 +116,7 @@ def send_task_update_to_result_service(dispatch_id: str, task_execution_result: 
     return response.text
 
 
+# TODO - Implement method when integrating with UI backend microservice.
 def send_task_update_to_ui(dispatch_id: str, task_id: int):
     pass
 
@@ -158,6 +159,10 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
         pass
 
     return result_obj
+
+
+def dispatch_runnable_tasks():
+    pass
 
 
 def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
@@ -290,6 +295,9 @@ def get_runnable_tasks(
             # If task is not executable then continue loop to next task
             if not is_executable:
                 continue
+
+            [[("lat", 1), ("lat", 2)], [("lat", 3)]]
+            [[("lat:1", 1), ("lat:1", 2)], [("lat", 2)], [("lat", 3)]]
 
             # Add the details of this task to respective lists
             runnable_tasks.append(task_id)

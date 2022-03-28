@@ -54,4 +54,27 @@ def update_workflow_results(task_execution_results: Dict, result_obj: Result) ->
     if result_obj.status != Result.RUNNING:
         result_obj._end_time = datetime.now(timezone.utc)
 
+    # if task_execution_results["status"] == Result.COMPLETED:
+    #     # To get the runnable tasks
+    #     tasks, functions, input_args, input_kwargs, executors = get_runnable_tasks(
+    #         result_obj=result_obj,
+    #         tasks_queue=tasks_queue,
+    #     )
+
+    #     if tasks:
+    #         unrun_tasks = run_tasks(
+    #             results_dir=result_obj.results_dir,
+    #             dispatch_id=result_obj.dispatch_id,
+    #             task_id_batch=tasks,
+    #             functions=functions,
+    #             input_args=input_args,
+    #             input_kwargs=input_kwargs,
+    #             executors=executors,
+    #         )
+
+    #         task_order = [unrun_tasks] + tasks_queue.get() if unrun_tasks else tasks_queue.get()
+
+    #     else:
+    #         task_order = tasks_queue.get()
+
     return result_obj

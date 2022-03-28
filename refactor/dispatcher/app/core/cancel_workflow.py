@@ -28,6 +28,7 @@ from dotenv import load_dotenv
 
 from covalent._results_manager import Result
 
+from .dispatch_workflow import get_result_object_from_result_service
 from .utils import is_sublattice
 
 load_dotenv()
@@ -78,10 +79,9 @@ def get_all_task_ids(result_obj: Result) -> List[Tuple[str, int]]:
         if not is_sublattice(task_name):
             task_ids.append((result_obj.dispatch_id, task_id))
         else:
-            resp = requests.get(
-                f"{BASE_URI}/api/v0/workflow/results/{result_obj.dispatch_id}:{task_id}"
+            sublattice_result_obj = get_result_object_from_result_service(
+                f"{result_obj.dispatch_id}:{task_id}"
             )
-            sublattice_result_obj = resp.json()["result_obj"]
             task_ids += get_all_task_ids(sublattice_result_obj)
 
     return task_ids

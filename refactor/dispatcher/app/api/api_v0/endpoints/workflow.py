@@ -86,7 +86,7 @@ logger.warning("Dispatcher Service Started")
 
 
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
-async def submit_workflow(*, dispatch_id: str) -> Any:
+def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
@@ -149,6 +149,6 @@ def update_workflow(
 
     send_result_object_to_result_service(updated_result_obj)
 
-    # send_task_update_to_ui(dispatch_id=dispatch_id, task_id=task_id)
+    send_task_update_to_ui(dispatch_id=dispatch_id, task_id=task_id)
 
     return {"response": f"{dispatch_id} workflow updated successfully"}
