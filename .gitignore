@@ -130,5 +130,5 @@ refactor/ui_backend/webapp/node_modules
 # Supervisord Files
 *err.log
 *out.log
-sd.pid
+supervisord.pid
 supervisord.conf

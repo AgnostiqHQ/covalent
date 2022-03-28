@@ -40,7 +40,7 @@ SUPERVISORD_PORT = 9001
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
-SD_PIDFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../sd.pid"
+SD_PIDFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.pid"
 SD_CONFIG_FILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.conf"
 
 
@@ -71,7 +71,8 @@ def _generate_supervisord_config():
             "results_svc_port": "8006",
             "mq_connection_uri": "localhost:4222",
             "mq_dispatch_topic": "workflow.dispatch",
-            "sd_dashboard_port": str(SUPERVISORD_PORT)
+            "sd_dashboard_port": str(SUPERVISORD_PORT),
+            "sd_pid_file_path": SD_PIDFILE
         })
         return config
 
@@ -91,14 +92,11 @@ def _create_config_if_not_exists() -> str:
 def _ensure_supervisord_running():
     _create_config_if_not_exists()
     cwd = _get_project_root_cwd()
-    pid = _read_pid(SD_PIDFILE)    
+    pid = _read_pid(SD_PIDFILE)  
     if psutil.pid_exists(pid):
         click.echo(f"Supervisord already running in process {pid}.")
     else:
         proc = Popen(["supervisord"], stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
-        pid = proc.pid
-        with open(SD_PIDFILE, "w") as PIDFILE:
-            PIDFILE.write(str(pid))
         count = 0
         total_wait_time_in_secs = 15
         wait_interval_in_secs = 0.1
@@ -110,6 +108,8 @@ def _ensure_supervisord_running():
                 print('Checking if covalent has started (this may take a few seconds)...')
             count+=1
             time.sleep(wait_interval_in_secs)
+        # get new pid as a result of starting supervisord
+        pid = _read_pid(SD_PIDFILE)  
         click.echo(f"Started Supervisord process {pid}.")
 
 def _stop_services() -> None:
