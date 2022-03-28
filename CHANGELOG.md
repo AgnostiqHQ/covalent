@@ -5,16 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.34.6] - 2022-03-28
+## [UNRELEASED]
 
 ### Added
 
+- Automated changelog and version management
 - Added a Dockerfile to build an image for OS Queuer.
 - Added the required packages to run a container instance of the Queuer.
 
+### Fixed
+
+- Single quotes in github env
+- Don't use for loops to iterate over a variable in bash
+
 ## [0.34.5] - 2022-03-28
 
-### Fixed 
+### Fixed
 
 - Moved `example_dispatch.py` into `tests/` directory.
 
