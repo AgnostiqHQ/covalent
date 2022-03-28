@@ -29,7 +29,7 @@ from app.schemas.workflow import (
     ResultPickle,
     UpdateResultResponse,
 )
-from fastapi import APIRouter, UploadFile, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
 router = APIRouter()
@@ -44,8 +44,8 @@ router = APIRouter()
         200: {
             "content": {"application/octet-stream": {}},
             "description": "Return binary content of file.",
-        }
-    }
+        },
+    },
 )
 def get_result(
     *,
@@ -54,12 +54,11 @@ def get_result(
     """
     Get a result object as pickle file
     """
-    result: bytes = b'\x00\xF0'
+    result: bytes = b"\x00\xF0"
     # update logic to db lookup
     if not dispatch_id:
         raise HTTPException(status_code=404, detail="Result not found")
     return StreamingResponse(io.BytesIO(result), media_type="application/octet-stream")
-
 
 
 @router.post("/results", status_code=200, response_model=InsertResultResponse)
@@ -70,32 +69,25 @@ def insert_result(
     """
     Submit pickled result file
     """
-    return {
-        "dispatch_id": "e4efd26c-240d-4ab1-9826-26ada91e429f"
-    }
+    return {"dispatch_id": "e4efd26c-240d-4ab1-9826-26ada91e429f"}
 
 
 @router.put(
-    "/results/{dispatch_id}", 
+    "/results/{dispatch_id}",
     status_code=200,
     responses={
         404: {"model": HTTPExceptionSchema, "description": "Result was not found"},
         200: {
             "model": UpdateResultResponse,
             "description": "Return message indicating success of updating task",
-        }
-})
-def update_result(
-    *,
-    dispatch_id: str,
-    task: Node
-) -> Any:
+        },
+    },
+)
+def update_result(*, dispatch_id: str, task: Node) -> Any:
     """
     Update a result object's task
     """
     # update logic to db lookup
     if not dispatch_id:
         raise HTTPException(status_code=404, detail="Result not found")
-    return {
-        "response": "Task updated successfully"
-    }
+    return {"response": "Task updated successfully"}

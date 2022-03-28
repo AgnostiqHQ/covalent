@@ -63,3 +63,4 @@ jobs:
           body: ${{ env.MESSAGE }}
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
           tag: ${{ env.RELEASE }}
+          prerelease: true

@@ -39,6 +39,7 @@ def test_run_dispatcher():
         dispatch_id = dispatcher.run_dispatcher(result_object=get_mock_result())
     except Exception as e:
         assert False, f"Exception raised: {e}"
+    assert dispatch_id
 
     rm._delete_result(dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR)
     with DispatchDB() as db:

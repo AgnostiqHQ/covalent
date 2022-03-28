@@ -73,7 +73,7 @@ def get_time(time_delta: timedelta) -> str:
         time_string: The compatible reformatted time string.
     """
 
-    days = reformat(time_delta.days)
+    days = time_delta.days
     hours = reformat(time_delta.seconds // 3600)
     minutes = reformat((time_delta.seconds // 60) % 60)
     seconds = reformat(time_delta.seconds % 60)
@@ -140,7 +140,7 @@ def get_imports(func: Callable) -> Tuple[str, Set[str]]:
     return imports_str, cova_imports
 
 
-def required_params_passed(func: Callable, kwargs: Dict) -> bool:
+def required_params_passed(func: Callable, kwargs: Dict) -> bool:  # pragma: no cover
     """
     DEPRECATED: Check to see that values for all parameters without default values have been passed.
 

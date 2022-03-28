@@ -31,10 +31,12 @@ RUN mkdir -p /opt/covalent
 COPY . /opt/covalent
 RUN pip install --no-cache-dir --use-feature=in-tree-build /opt/covalent
 RUN cd /opt/covalent/covalent_ui/webapp \
-  && yarn install  \
-  && yarn build
+  && yarn install --network-timeout 100000 \
+  && yarn build --network-timeout 100000
 
 WORKDIR /opt/covalent
+
+ENV PLATFORM Docker
 
 EXPOSE 8080
 ENTRYPOINT [ "python" ]
