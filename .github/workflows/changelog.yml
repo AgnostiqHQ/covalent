@@ -39,6 +39,7 @@ jobs:
           changediff=$(git diff HEAD^ -- CHANGELOG.md)
           patch=false
           minor=false
+          noupdate=false
           for line in $changediff; do
             if [[ $line = "### Added" ]] ||
                [[ $line = "### Changed" ]] ||
@@ -48,12 +49,47 @@ jobs:
             if [[ $line = "### Fixed" ]] ; then
               patch=true
             fi
+            if [[ $line = "### Tests" ]] ||
+               [[ $line = "### Docs" ]] ; then
+              noupdate=true
+            fi
           done
+          IFS='.' read -ra semver <<< "$HEAD_VERSION"
+          vmajor="${semver[0]}"
+          vminor="${semver[1]}"
+          vpatch="${semver[2]}"
           if $minor; then
             #increment minor version
+            vminor="$(( vminor + 1 ))"
+            vpatch=0
           elif $patch; then
             #increment patch version
+            vpatch="$(( vpatch + 1 ))"
+          elif $noupdate; then
+            #do nothing
+            :
           else
             echo 'Changelog does not contain enough information to update the version.'
             exit 1
+          fi
+          version="${major}.${minor}.${patch}"
+          changelog_header = "## [${version}] - $(date -I)"
+          message="noop"
+          if $minor || $patch ; then
+            message="The new version will be $version"
+            nl=$'\n'
+            sed -i "/UNRELEASED/ a $nl$nl$changelog_header" CHANGELOG.md
+            echo $version > VERSION
+            echo $message
+          else
+            echo "This PR only contains updates to tests and docs. No release will be created."
+          fi
+          echo "MESSAGE=$message" >> $GITHUB_ENV
+      - name: Commit
+        if: ${{ env.MESSAGE != "noop" }}
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: CovalentOpsBot
+          author_email: covalentopsbot@users.noreply.github.com
+          message: ${{ env.MESSAGE }}
 
