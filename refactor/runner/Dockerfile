@@ -21,7 +21,7 @@
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
 
-ENV PROJECT_DIR=/dispatcher
+ENV PROJECT_DIR=/runner
 ENV REQ_DIR=/requirements
 
 RUN mkdir $PROJECT_DIR $REQ_DIR
