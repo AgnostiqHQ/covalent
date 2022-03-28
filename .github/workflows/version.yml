@@ -64,7 +64,7 @@ jobs:
           IFS='[]' read -ra changelog_version <<< $(sed "${latest_release}q;d" CHANGELOG.md)
           if [[ "${changelog_version[1]}" != $HEAD_VERSION ]] ; then
             echo 'The most recent CHANGELOG release does not match the VERSION'.
-            exit 5
+            exit 3
           fi
           #Check that the lines in the diff are between unreleased_header_line and latest_release
           IFS='@-+,' read -ra LINES <<< "$(git diff develop -- CHANGELOG.md | sed '5q;d')"

@@ -41,16 +41,16 @@ jobs:
           minor=false
           noupdate=false
           for line in $changediff; do
-            if [[ $line = "### Added" ]] ||
-               [[ $line = "### Changed" ]] ||
-               [[ $line = "### Removed" ]] ; then
+            if [[ $line = *"### Added"* ]] ||
+               [[ $line = *"### Changed"* ]] ||
+               [[ $line = *"### Removed"* ]] ; then
               minor=true
             fi
-            if [[ $line = "### Fixed" ]] ; then
+            if [[ $line = *"### Fixed"* ]] ; then
               patch=true
             fi
-            if [[ $line = "### Tests" ]] ||
-               [[ $line = "### Docs" ]] ; then
+            if [[ $line = *"### Tests"* ]] ||
+               [[ $line = *"### Docs"* ]] ; then
               noupdate=true
             fi
           done
