@@ -108,7 +108,13 @@ jobs:
       - name: Push to master
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
+          git checkout master
+          MASTER_VERSION="$(cat ./VERSION)"
+          git checkout develop
           VERSION="$(cat ./VERSION)"
+          if [ $MASTER_VERSION == $VERSION ] ; then
+            echo "$VERSION has been previously released."
+            exit 1
           if dpkg --compare-versions $VERSION 'gt' '0.32.3' ; then
             git config user.name "CovalentOpsBot"
             git config user.email "covalentopsbot@users.noreply.github.com"
