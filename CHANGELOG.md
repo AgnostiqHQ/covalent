@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Automated changelog and version management
+- Added a Dockerfile to build an image for OS Queuer.
+- Added the required packages to run a container instance of the Queuer.
 
 ### Fixed
 
