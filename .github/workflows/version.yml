@@ -61,7 +61,8 @@ jobs:
             exit 4
           fi
           latest_release=$(sed -n "/\[[0-9]\+\.[0-9]\+\.[0-9]\+\]/=" CHANGELOG.md | head -n 1)
-          if [[ $(sed "${latest_release}q;d" CHANGELOG.md) != "## [${HEAD_VERSION}]" ]] ; then
+          IFS='[]' read -ra changelog_version <<< $(sed "${latest_release}q;d" CHANGELOG.md)
+          if [[ "${changelog_version[1]}" != $HEAD_VERSION ]] ; then
             echo 'The most recent CHANGELOG release does not match the VERSION'.
             exit 5
           fi
