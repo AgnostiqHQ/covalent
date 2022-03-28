@@ -44,7 +44,13 @@ SD_PIDFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.pi
 SD_CONFIG_FILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.conf"
 
 
-def is_port_in_use(port: int, host: str = 'localhost') -> bool:
+def _read_process_stdout(proc):
+    while True:
+        line = proc.stdout.readline()
+        click.echo(line.decode("utf-8").split("\n")[0])
+        if not line: break
+
+def _is_port_in_use(port: int, host: str = 'localhost') -> bool:
     import socket
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         return sock.connect_ex((host, port)) == 0
@@ -89,18 +95,22 @@ def _create_config_if_not_exists() -> str:
             config_file.write(config_file_content)
     return config_file_content
 
+def _is_supervisord_running() -> bool:
+    pid = _read_pid(SD_PIDFILE)  
+    return psutil.pid_exists(pid)
+
 def _ensure_supervisord_running():
     _create_config_if_not_exists()
     cwd = _get_project_root_cwd()
-    pid = _read_pid(SD_PIDFILE)  
-    if psutil.pid_exists(pid):
+    if _is_supervisord_running():
+        pid = _read_pid(SD_PIDFILE)  
         click.echo(f"Supervisord already running in process {pid}.")
     else:
-        proc = Popen(["supervisord"], stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
+        Popen(["supervisord"], stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
         count = 0
         total_wait_time_in_secs = 15
         wait_interval_in_secs = 0.1
-        while not is_port_in_use(SUPERVISORD_PORT):
+        while not _is_port_in_use(SUPERVISORD_PORT):
             # if 15 seconds passes timeout
             if count > total_wait_time_in_secs/wait_interval_in_secs:
                 raise click.ClickException("Supervisord was unable to start")
@@ -112,14 +122,29 @@ def _ensure_supervisord_running():
         pid = _read_pid(SD_PIDFILE)  
         click.echo(f"Started Supervisord process {pid}.")
 
-def _stop_services() -> None:
+def _sd_status() -> None:
+    _ensure_supervisord_running()
+    cwd = _get_project_root_cwd()
+    proc = Popen(["supervisorctl", "status"], stdout=PIPE, cwd=cwd)
+    _read_process_stdout(proc)
+
+def _sd_restart_services() -> None:
+    _ensure_supervisord_running()
+    cwd = _get_project_root_cwd()
+    proc = Popen(["supervisorctl", "restart", "covalent:"], stdout=PIPE, cwd=cwd)
+    _read_process_stdout(proc)
+
+def _sd_start_services() -> None:
+    cwd = _get_project_root_cwd()
+    _ensure_supervisord_running()
+    proc = Popen(["supervisorctl", "start","covalent:"], stdout=PIPE, cwd=cwd)
+    _read_process_stdout(proc)
+
+def _sd_stop_services() -> None:
     _ensure_supervisord_running()
     cwd = _get_project_root_cwd()
     proc = Popen(["supervisorctl", "stop", "covalent:"], stdout=PIPE, cwd=cwd)
-    while True:
-        line = proc.stdout.readline()
-        print(line.decode("utf-8").split("\n")[0])
-        if not line: break
+    _read_process_stdout(proc)
 
 def _read_pid(filename: str) -> int:
     """
@@ -308,30 +333,62 @@ def _graceful_shutdown(pidfile: str) -> None:
 
 
 @click.command()
-@click.pass_context
-def start(ctx) -> None:
-    cwd = _get_project_root_cwd()
-    _ensure_supervisord_running()
-    proc = Popen(["supervisorctl", "start","covalent:"], stdout=PIPE, cwd=cwd)
-    while True:
-        line = proc.stdout.readline()
-        click.echo(line.decode("utf-8").split("\n")[0])
-        if not line: break
+@click.option('--refactor', is_flag=True, help="Use post refactor cli command [with Supervisord]")
+@click.option(
+    "-p",
+    "--port",
+    default=get_config("user_interface.port"),
+    show_default=True,
+    help="Server port number.",
+)
+@click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
+def start(refactor, port: int, develop: bool) -> None:
+    if refactor:
+        _sd_start_services()
+    else:
+        port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
+        set_config(
+            {
+                "user_interface.address": "0.0.0.0",
+                "user_interface.port": port,
+                "dispatcher.address": "0.0.0.0",
+                "dispatcher.port": port,
+            }
+        )
+
+        # Wait until the server actually starts listening on the port
+        server_listening = False
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        while not server_listening:
+            try:
+                sock.bind(("0.0.0.0", port))
+                sock.close()
+            except OSError:
+                server_listening = True
+
+            time.sleep(1)
        
 
 @click.command()
-def status() -> None:
-    _ensure_supervisord_running()
-    cwd = _get_project_root_cwd()
-    proc = Popen(["supervisorctl", "status"], stdout=PIPE, cwd=cwd)
-    while True:
-        line = proc.stdout.readline()
-        click.echo(line.decode("utf-8").split("\n")[0])
-        if not line: break
+@click.option('--refactor', is_flag=True, help="Use post refactor cli command [with Supervisord]")
+def status(refactor) -> None:
+    if refactor:
+       _sd_status()
+    else:
+        if _read_pid(UI_PIDFILE) != -1:
+            ui_port = get_config("user_interface.port")
+            click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
+        else:
+            _rm_pid_file(UI_PIDFILE)
+            click.echo("Covalent server is stopped.")
 
 @click.command()
-def stop() -> None:
-    _stop_services()
+@click.option('--refactor', is_flag=True, help="Use post refactor cli command [with Supervisord]")
+def stop(refactor) -> None:
+    if refactor:
+        _sd_stop_services()
+    else:
+        _graceful_shutdown(UI_PIDFILE)
 
 @click.command()
 def config() -> None:
@@ -339,14 +396,26 @@ def config() -> None:
     click.echo(config_file_content)
 
 @click.command()
-def restart() -> None:
-    _ensure_supervisord_running()
-    cwd = _get_project_root_cwd()
-    proc = Popen(["supervisorctl", "restart", "covalent:"], stdout=PIPE, cwd=cwd)
-    while True:
-        line = proc.stdout.readline()
-        click.echo(line.decode("utf-8").split("\n")[0])
-        if not line: break
+@click.option(
+    "-p",
+    "--port",
+    default=None,
+    type=int,
+    help="Restart Covalent server on a different port.",
+)
+@click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
+@click.option('--refactor', is_flag=True, help="Use post refactor cli command [with Supervisord]")
+@click.pass_context
+def restart(ctx, port, develop, refactor) -> None:
+    """
+    Restart the server(s).
+    """
+    if refactor:
+       _sd_restart_services()
+    else:
+        port = port or get_config("user_interface.port")
+        ctx.invoke(stop)
+        ctx.invoke(start, port=port, develop=develop)
 
 @click.command()
 @click.option(
@@ -393,17 +462,23 @@ def logs(service: str, lines: int) -> None:
         if not line: break
 
 @click.command()
-def purge() -> None:
+@click.option('--refactor', is_flag=True, help="Use post refactor cli command [with Supervisord]")
+def purge(refactor) -> None:
     """
     Shutdown server and delete the cache and config settings.
-    """
+    """ 
 
-    # Shutdown server.
-    _stop_services()
-    _graceful_shutdown(SD_PIDFILE)
+    # Shutdown servers and supervisord
+    if refactor and _is_supervisord_running():
+        _sd_stop_services()
+        _graceful_shutdown(SD_PIDFILE)
 
     if os.path.exists(SD_CONFIG_FILE):
         os.remove(SD_CONFIG_FILE)
+
+    # Shutdown legacy server
+    if not refactor:
+        _graceful_shutdown(UI_PIDFILE)
 
     shutil.rmtree(get_config("sdk.log_dir"), ignore_errors=True)
     shutil.rmtree(get_config("dispatcher.cache_dir"), ignore_errors=True)
