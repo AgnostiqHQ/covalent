@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.39.0] - 2022-03-29
+
 ### Changed
 
 - Runner and dispatcher implementation in order to integrate the microservices partially complete.
