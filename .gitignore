@@ -22,6 +22,7 @@
 **/results/**
 **/result_*
 !covalent_ui/result_webhook.py
+!refactor/results/**
 
 *.xml
 
@@ -129,3 +130,4 @@ covalent_dispatcher/_service/tmp*
 
 # Logs
 refactor/**/logs/*.log
+refactor/ui_backend/webapp/node_modules

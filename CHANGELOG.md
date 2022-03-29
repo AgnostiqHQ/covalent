@@ -11,6 +11,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Runner and dispatcher implementation in order to integrate the microservices partially complete.
 
+### Added
+
+- Added UI backend component to serve post-refactor frontend and dispatch websocket messages to UI using Socket.io
+- Updated UI socket.io configuration to use different ws path, and using localstorage for fetching all results (temporary)
+
+## [0.37.1] - 2022-03-29
+
+### Fixed
+
+- Oneline bugfix in tests.yml
+
+## [0.37.0] - 2022-03-29
+
+### Added
+
+- Results management endpoints; GET, PUT, POST for results object
+- Checks in setup.py to confirm node version compatibility.
+- Instructions in CONTRIBUTING to address some common Debian setup issues.
+
+## [0.36.1] - 2022-03-29
+
+### Fixed
+
+- Filesystem service now reads config from environment variables.
+
+## [0.36.0] - 2022-03-29
+
+### Added
+
+- Picking up dispatch jobs from the queue and ensuring that only one workflow is processed (locally) at any given time.
+
+### Changed
+
+- Dispatcher implementation in order to integrate with Queuer microservice.
+
 ## [0.35.0] - 2022-03-29
 
 ### Added

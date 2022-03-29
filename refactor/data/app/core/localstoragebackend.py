@@ -47,9 +47,9 @@ class LocalStorageBackend(StorageBackend):
 
     """
 
-    def __init__(self, base_dir: Path):
+    def __init__(self, base_dir: Path, bucket_name: str = "default"):
         self.base_dir = base_dir
-        self.bucket_name = "default"
+        self.bucket_name = bucket_name
 
     def get(self, bucket_name: str, object_name: str) -> Union[Generator[bytes, None, None], None]:
         """Get object from storage.
