@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.37.0] - 2022-03-29
+
 ### Added
 
 - Results management endpoints; GET, PUT, POST for results object
