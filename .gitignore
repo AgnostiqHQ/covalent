@@ -131,3 +131,9 @@ covalent_dispatcher/_service/tmp*
 # Logs
 refactor/**/logs/*.log
 refactor/ui_backend/webapp/node_modules
+
+# Supervisord Files
+*err.log
+*out.log
+supervisord.pid
+supervisord.conf

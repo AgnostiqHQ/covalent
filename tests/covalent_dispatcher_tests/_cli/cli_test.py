@@ -47,4 +47,4 @@ def test_cli_commands():
     """Test the list of commands associated with Covalent CLI."""
 
     ctx = click.Context
-    assert cli.list_commands(ctx) == ["purge", "restart", "start", "status", "stop"]
+    assert cli.list_commands(ctx) == ["config", "logs", "purge", "restart", "start", "status", "stop"]
