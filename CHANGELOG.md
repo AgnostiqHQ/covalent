@@ -12,6 +12,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added post-refactor cli commands to use Supervisord to manage local service processes
 - Added `covalent logs` and `covalent config` cli commands
 
+## [0.36.1] - 2022-03-29
+
+### Fixed
+
+- Filesystem service now reads config from environment variables.
+
+## [0.36.0] - 2022-03-29
+
+### Added
+- Picking up dispatch jobs from the queue and ensuring that only one workflow is processed (locally) at any given time.
+
+### Changed
+- Dispatcher implementation in order to integrate with Queuer microservice.
+
 ## [0.35.0] - 2022-03-29
 
 

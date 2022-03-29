@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import logging
 import shutil
 from abc import ABC
 from pathlib import Path
@@ -26,6 +27,8 @@ from typing import BinaryIO, Generator, List, Union
 from minio import Minio
 
 from .storagebackend import StorageBackend
+
+logger = logging.getLogger(__name__)
 
 
 class MinioStorageBackend(ABC):
@@ -36,8 +39,8 @@ class MinioStorageBackend(ABC):
         bucket_name: current working bucket name (default: "default")
     """
 
-    def __init__(self, client):
-        self.bucket_name = "default"
+    def __init__(self, client, bucket_name="default"):
+        self.bucket_name = bucket_name
         self.client = client
 
     def get(self, bucket_name: str, object_name: str) -> Union[Generator[bytes, None, None], None]:
@@ -57,8 +60,8 @@ class MinioStorageBackend(ABC):
             resp = self.client.get_object(bucket_name, object_name)
         except Exception as e:
             # TODO: better logging
-            print("Exception in MinioStorageBackend:")
-            print(e)
+            logger.debug("Exception in MinioStorageBackend:")
+            logger.debug(e)
             return None
 
         if resp.status == 200:
@@ -93,8 +96,8 @@ class MinioStorageBackend(ABC):
             res = self.client.put_object(bucket_name, object_name, data, length, metadata=metadata)
         except Exception as e:
             # TODO: better logging
-            print("Exception in MinioStorageBackend:")
-            print(e)
+            logger.debug("Exception in MinioStorageBackend:")
+            logger.debug(e)
             res = None
 
         if res:
