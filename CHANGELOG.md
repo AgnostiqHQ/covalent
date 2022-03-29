@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Results management endpoints; GET, PUT, POST for results object
+- Checks in setup.py to confirm node version compatibility.
+- Instructions in CONTRIBUTING to address some common Debian setup issues.
 
 ## [0.36.1] - 2022-03-29
 
@@ -118,13 +120,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Input path for external libraries in the Lepton wrapper can (and should) now be a full path to the file.
-
-## [0.32.6] - 2022-03-21
-
-### Added
-
-- Checks in setup.py to confirm node version compatibility.
-- Instructions in CONTRIBUTING to address some common Debian setup issues.
 
 ## [0.32.5] - 2022-03-21
 
