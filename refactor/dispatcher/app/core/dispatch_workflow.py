@@ -165,6 +165,14 @@ def dispatch_runnable_tasks():
     pass
 
 
+def convert_lol(dispatch_id: str, lol: List[List]):
+
+    # How it is: [[3, 4], [1, 2, 5], [6, 7, 8]]
+    # How it should be: [{d_id_1:[[4]]}, {d_id_2:[[1, 2, 5]]}]
+
+    pass
+
+
 def is_empty(mp_queue: MPQ):
     if elem := mp_queue.get():
         mp_queue.put(elem)
@@ -201,10 +209,11 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     )
 
     # The next set of tasks that can be run afterwards
+    # This is the case of a new dispatch id in the list of dictionaries
     if is_empty(tasks_queue):
-        tasks_queue.put(next_tasks_order)
+        tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}])
     else:
-        tasks_queue.put(next_tasks_order + tasks_queue.get())
+        tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}] + tasks_queue.get())
 
     # Tasks which were not able to run
     unrun_tasks = run_tasks(
@@ -218,10 +227,14 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     )
 
     # Will add those unrun tasks back to the tasks_queue
-    task_order = [unrun_tasks] + tasks_queue.get() if unrun_tasks else tasks_queue.get()
+    final_task_order = tasks_queue.get()
+    if unrun_tasks:
+        final_task_order[0][result_obj.dispatch_id] = [unrun_tasks] + final_task_order[0][
+            result_obj.dispatch_id
+        ]
 
     # Put the task order back into the queue
-    tasks_queue.put(task_order)
+    tasks_queue.put(final_task_order)
 
     # logger.warning(f"Inside start_dispatch with finished dispatch_id {result_obj.dispatch_id}")
 

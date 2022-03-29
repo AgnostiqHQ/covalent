@@ -25,56 +25,42 @@ from typing import Dict
 
 from covalent._results_manager import Result
 
+from .dispatch_workflow import (
+    get_result_object_from_result_service,
+    send_result_object_to_result_service,
+)
 from .utils import _post_process, are_tasks_running
 
 
-def update_workflow_results(task_execution_results: Dict, result_obj: Result) -> Result:
+def update_workflow_results(task_execution_results: Dict, dispatch_id: str) -> Result:
     """Main update function. Called by the Runner API when there is an update for task
     execution status."""
 
+    # SOMEWHERE HERE
+    latest_result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
+
     # Update the task results
-    result_obj._update_node(**task_execution_results)
+    latest_result_obj._update_node(**task_execution_results)
 
     if task_execution_results["status"] == Result.FAILED:
-        result_obj._status = Result.FAILED
+        latest_result_obj._status = Result.FAILED
 
     elif task_execution_results["status"] == Result.CANCELLED:
-        result_obj._status = Result.CANCELLED
+        latest_result_obj._status = Result.CANCELLED
 
     # If workflow is completed, post-process result
-    elif not are_tasks_running(result_obj=result_obj):
+    elif not are_tasks_running(result_obj=latest_result_obj):
 
-        result_obj._result = _post_process(
-            lattice=result_obj.lattice,
-            task_outputs=result_obj.get_all_node_outputs(),
+        latest_result_obj._result = _post_process(
+            lattice=latest_result_obj.lattice,
+            task_outputs=latest_result_obj.get_all_node_outputs(),
         )
 
-        result_obj._status = Result.COMPLETED
+        latest_result_obj._status = Result.COMPLETED
 
-    if result_obj.status != Result.RUNNING:
-        result_obj._end_time = datetime.now(timezone.utc)
+    if latest_result_obj.status != Result.RUNNING:
+        latest_result_obj._end_time = datetime.now(timezone.utc)
 
     # if task_execution_results["status"] == Result.COMPLETED:
-    #     # To get the runnable tasks
-    #     tasks, functions, input_args, input_kwargs, executors = get_runnable_tasks(
-    #         result_obj=result_obj,
-    #         tasks_queue=tasks_queue,
-    #     )
 
-    #     if tasks:
-    #         unrun_tasks = run_tasks(
-    #             results_dir=result_obj.results_dir,
-    #             dispatch_id=result_obj.dispatch_id,
-    #             task_id_batch=tasks,
-    #             functions=functions,
-    #             input_args=input_args,
-    #             input_kwargs=input_kwargs,
-    #             executors=executors,
-    #         )
-
-    #         task_order = [unrun_tasks] + tasks_queue.get() if unrun_tasks else tasks_queue.get()
-
-    #     else:
-    #         task_order = tasks_queue.get()
-
-    return result_obj
+    return latest_result_obj

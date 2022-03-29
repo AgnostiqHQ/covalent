@@ -141,10 +141,9 @@ def update_workflow(
     del task_execution_results["task_id"]
     task_execution_results["node_id"] = task_id
 
-    latest_result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
-
     updated_result_obj = update_workflow_results(
-        task_execution_results=task_execution_results, result_obj=latest_result_obj
+        task_execution_results=task_execution_results,
+        dispatch_id=dispatch_id,
     )
 
     send_result_object_to_result_service(updated_result_obj)
