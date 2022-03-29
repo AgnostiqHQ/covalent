@@ -20,23 +20,29 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import axios from 'axios'
+import { configureStore } from '@reduxjs/toolkit'
+import persistState from 'redux-localstorage'
 
-const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
-})
+import rootReducer from './reducers'
+import { isDemo, demoEnhancer } from '../utils/demo/setup'
 
-API.interceptors.response.use(
-  // unwrap response data
-  ({ data }) => data,
+export default function configureAppStore(preloadedState) {
+  const store = configureStore({
+    reducer: rootReducer,
+    preloadedState,
+    enhancers: [
+      // persist state across sessions except for demo
+      isDemo
+        ? demoEnhancer
+        : persistState(['latticePreview'], { key: 'cache' }),
+    ],
+  })
 
-  // catch statusCode != 200 responses and format error
-  (error) => {
-    if (error.response) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject({ message: error.message })
+  if (process.env.NODE_ENV !== 'production' && module.hot) {
+    module.hot.accept('./reducers', () => {
+      store.replaceReducer(rootReducer)
+    })
   }
-)
 
-export default API
+  return store
+}

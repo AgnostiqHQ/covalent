@@ -20,23 +20,20 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import axios from 'axios'
+import { createSlice } from '@reduxjs/toolkit'
 
-const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
+const initialState = {
+  lattice: null,
+}
+
+export const latticePreviewSlice = createSlice({
+  name: 'latticePreview',
+  initialState,
+  reducers: {
+    setLattice(state, { payload: lattice }) {
+      state.lattice = lattice
+    },
+  },
 })
 
-API.interceptors.response.use(
-  // unwrap response data
-  ({ data }) => data,
-
-  // catch statusCode != 200 responses and format error
-  (error) => {
-    if (error.response) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject({ message: error.message })
-  }
-)
-
-export default API
+export const { setLattice } = latticePreviewSlice.actions

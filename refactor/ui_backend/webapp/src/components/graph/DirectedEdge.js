@@ -20,23 +20,20 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import axios from 'axios'
+import { BezierEdge } from 'react-flow-renderer'
 
-const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
-})
+import { graphBgColor } from '../../utils/theme'
+import { NODE_TEXT_COLOR } from './ElectronNode'
 
-API.interceptors.response.use(
-  // unwrap response data
-  ({ data }) => data,
+const DirectedEdge = (props) => {
+  return (
+    <BezierEdge
+      {...props}
+      labelBgStyle={{ fill: graphBgColor }}
+      labelStyle={{ fill: NODE_TEXT_COLOR }}
+      arrowHeadType="arrow"
+    />
+  )
+}
 
-  // catch statusCode != 200 responses and format error
-  (error) => {
-    if (error.response) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject({ message: error.message })
-  }
-)
-
-export default API
+export default DirectedEdge

@@ -20,23 +20,15 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import axios from 'axios'
+import { Typography } from '@mui/material'
 
-const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
-})
-
-API.interceptors.response.use(
-  // unwrap response data
-  ({ data }) => data,
-
-  // catch statusCode != 200 responses and format error
-  (error) => {
-    if (error.response) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject({ message: error.message })
-  }
+const Heading = (props) => (
+  <Typography
+    color="text.secondary"
+    fontSize="caption.fontSize"
+    sx={{ mt: 3, mb: 0.5 }}
+    {...props}
+  />
 )
 
-export default API
+export default Heading

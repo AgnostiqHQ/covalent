@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     PORT: int = os.getenv('PORT',8004)
     API_V0_STR: str = "/api/v0"
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    DATA_OS_SVC_HOST_URI: str = os.getenv('DATA_OS_SVC_HOST_URI')
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
