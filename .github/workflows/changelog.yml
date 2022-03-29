@@ -24,15 +24,18 @@ on:
   push:
     branches:
       - develop
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'VERSION'
 
 jobs:
   changelog:
     runs-on: ubuntu-latest
     steps:
       - name: Check out head
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
       - name: Update version number
         run: |
           HEAD_VERSION="$(cat ./VERSION)"
@@ -75,13 +78,13 @@ jobs:
             echo 'Changelog does not contain enough information to update the version.'
             exit 1
           fi
-          version="${major}.${minor}.${patch}"
+          version="${vmajor}.${vminor}.${vpatch}"
           changelog_header="## [${version}] - $(date -I)"
           message="noop"
           if $minor || $patch ; then
             message="The new version will be $version"
             nl=$'\n'
-            sed -i "/UNRELEASED/ a $nl$nl$changelog_header" CHANGELOG.md
+            sed -i '/UNRELEASED/a\'$'\n''\'$'\n'"$changelog_header" CHANGELOG.md
             echo $version > VERSION
             echo $message
           else
@@ -95,4 +98,5 @@ jobs:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
           message: ${{ env.MESSAGE }}
+          push: origin develop --force
 

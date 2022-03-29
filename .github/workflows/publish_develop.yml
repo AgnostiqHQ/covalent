@@ -24,6 +24,9 @@ on:
   push:
     branches:
       - develop
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'VERSION'
 
 jobs:
   publish_develop:
