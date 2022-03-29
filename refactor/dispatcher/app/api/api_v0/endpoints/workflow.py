@@ -144,6 +144,7 @@ def update_workflow(
     updated_result_obj = update_workflow_results(
         task_execution_results=task_execution_results,
         dispatch_id=dispatch_id,
+        tasks_queue=workflow_tasks_queue,
     )
 
     send_result_object_to_result_service(updated_result_obj)

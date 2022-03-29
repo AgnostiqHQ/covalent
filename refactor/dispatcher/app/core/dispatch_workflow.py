@@ -161,44 +161,11 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     return result_obj
 
 
-def dispatch_runnable_tasks():
-    pass
-
-
-def convert_lol(dispatch_id: str, lol: List[List]):
-
-    # How it is: [[3, 4], [1, 2, 5], [6, 7, 8]]
-    # How it should be: [{d_id_1:[[4]]}, {d_id_2:[[1, 2, 5]]}]
-
-    pass
-
-
-def is_empty(mp_queue: MPQ):
-    if elem := mp_queue.get():
-        mp_queue.put(elem)
-        return True
-    else:
-        mp_queue.put(None)
-        return False
-
-
-def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
-    """Responsible for preprocessing the tasks, and sending the tasks for execution to the
-    Runner API in batches. One of the underlying principles is that the Runner API doesn't
-    interact with the Data API."""
-
-    # logger.warning(f"Inside start_dispatch with dispatch_id {result_obj.dispatch_id}")
-
-    # Initialize the result object
-    result_obj = init_result_pre_dispatch(result_obj=result_obj)
-
-    # Send the initialized result to the result service
-    send_result_object_to_result_service(result_object=result_obj)
+def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ) -> None:
+    """Get runnable tasks and dispatch them to the Runner API. Put the tasks that weren't picked up by the Runner API back in the queue."""
 
     # Get the order of tasks to be run
     task_order: List[List] = get_task_order(result_obj=result_obj)
-
-    # logger.warning(f"task_order: {task_order}")
 
     # To get the runnable tasks from first task order list
     # Sending the tasks_queue as well to handle the case of sublattices
@@ -235,6 +202,40 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
 
     # Put the task order back into the queue
     tasks_queue.put(final_task_order)
+
+
+def convert_lol(dispatch_id: str, lol: List[List]):
+
+    # How it is: [[3, 4], [1, 2, 5], [6, 7, 8]]
+    # How it should be: [{d_id_1:[[4]]}, {d_id_2:[[1, 2, 5]]}]
+
+    pass
+
+
+def is_empty(mp_queue: MPQ):
+    if elem := mp_queue.get():
+        mp_queue.put(elem)
+        return True
+    else:
+        mp_queue.put(None)
+        return False
+
+
+def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
+    """Responsible for preprocessing the tasks, and sending the tasks for execution to the
+    Runner API in batches. One of the underlying principles is that the Runner API doesn't
+    interact with the Data API."""
+
+    # logger.warning(f"Inside start_dispatch with dispatch_id {result_obj.dispatch_id}")
+
+    # Initialize the result object
+    result_obj = init_result_pre_dispatch(result_obj=result_obj)
+
+    # Send the initialized result to the result service
+    send_result_object_to_result_service(result_object=result_obj)
+
+    # logger.warning(f"task_order: {task_order}")
+    dispatch_runnable_tasks(result_obj, tasks_queue)
 
     # logger.warning(f"Inside start_dispatch with finished dispatch_id {result_obj.dispatch_id}")
 
