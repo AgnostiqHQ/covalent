@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.39.0] - 2022-03-29
+
+### Changed
+
+- Runner and dispatcher implementation in order to integrate the microservices partially complete.
+
 ## [0.38.0] - 2022-03-29
 
 ### Added
@@ -39,14 +45,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.36.0] - 2022-03-29
 
 ### Added
+
 - Picking up dispatch jobs from the queue and ensuring that only one workflow is processed (locally) at any given time.
 
 ### Changed
+
 - Dispatcher implementation in order to integrate with Queuer microservice.
 
-
 ## [0.35.0] - 2022-03-29
-
 
 ### Added
 

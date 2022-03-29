@@ -21,20 +21,120 @@
 
 """Workflow dispatch functionality."""
 
+import os
+from datetime import datetime, timezone
+from io import BytesIO
 from multiprocessing import Queue as MPQ
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import cloudpickle as pickle
+import requests
+from app.core.dispatcher_logger import logger
+from dotenv import load_dotenv
 
-from covalent._dispatcher_plugins import BaseDispatcher
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
+from covalent.executor import BaseExecutor
 
-from .utils import get_task_inputs, get_task_order, is_sublattice, preprocess_transport_graph
+from .utils import (
+    _post_process,
+    get_task_inputs,
+    get_task_order,
+    is_sublattice,
+    preprocess_transport_graph,
+)
+
+load_dotenv()
+
+
+BASE_URI = os.environ.get("BASE_URI")
+
+
+def send_task_list_to_runner(dispatch_id, tasks_list):
+
+    logger.warning(f"Inside send_task_list_to_runner with dispatch_id {dispatch_id}")
+    logger.warning(f"Inside send_task_list_to_runner with tasks_list {tasks_list}")
+
+    # Example tasks_list:
+    # tasks_list = [
+    #     {
+    #         "task_id": 0,
+    #         "func": result_object.lattice.transport_graph.get_node_value(0, "function"),
+    #         "args": [2 + 2],
+    #         "kwargs": {},
+    #         "executor": result_object.lattice.transport_graph.get_node_value(0, "metadata")[
+    #             "executor"
+    #         ],
+    #         "results_dir": result_object.results_dir,
+    #     },
+    #     {
+    #         "task_id": 2,
+    #         "func": result_object.lattice.transport_graph.get_node_value(2, "function"),
+    #         "args": [2, 10],
+    #         "kwargs": {},
+    #         "executor": result_object.lattice.transport_graph.get_node_value(2, "metadata")[
+    #             "executor"
+    #         ],
+    #         "results_dir": result_object.results_dir,
+    #     },
+    # ]
+    # response = requests.post(url=url_endpoint, files={"tasks": pickle.dumps(tasks_list)})
+
+    # Set the url endpoint
+    url_endpoint = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/tasks"
+
+    # Send the tasks list as file
+    response = requests.post(url=url_endpoint, files={"tasks": BytesIO(pickle.dumps(tasks_list))})
+
+    # Raise error if occurred
+    response.raise_for_status()
+
+    return response.json()["left_out_task_ids"]
+
+
+def send_result_object_to_result_service(result_object: Result):
+
+    url_endpoint = "http://localhost:8002/api/v0/workflow/results/"
+
+    response = requests.post(
+        url=url_endpoint, files={"result_pkl_file": BytesIO(pickle.dumps(result_object))}
+    )
+    response.raise_for_status()
+
+    return response.text
+
+
+def send_task_update_to_result_service(dispatch_id: str, task_execution_result: dict):
+
+    url_endpoint = f"http://localhost:8002/api/v0/workflow/results/{dispatch_id}"
+
+    response = requests.put(
+        url=url_endpoint, files={"task": BytesIO(pickle.dumps(task_execution_result))}
+    )
+    response.raise_for_status()
+
+    return response.text
+
+
+# TODO - Implement method when integrating with UI backend microservice.
+def send_task_update_to_ui(dispatch_id: str, task_id: int):
+    pass
+
+
+def get_result_object_from_result_service(dispatch_id: str):
+
+    url_endpoint = f"http://localhost:8002/api/v0/workflow/results/{dispatch_id}"
+
+    response = requests.get(url=url_endpoint)
+    response.raise_for_status()
+
+    return pickle.loads(response.content)
 
 
 def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for starting off the workflow dispatch."""
+
+    # logger.warning(f"Inside dispatch_workflow with dispatch_id {result_obj.dispatch_id}")
 
     if result_obj.status == Result.NEW_OBJ:
         result_obj._status = Result.RUNNING
@@ -61,83 +161,180 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     return result_obj
 
 
+def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ) -> None:
+    """Get runnable tasks and dispatch them to the Runner API. Put the tasks that weren't picked up by the Runner API back in the queue."""
+
+    # Get the order of tasks to be run
+    task_order: List[List] = get_task_order(result_obj=result_obj)
+
+    # To get the runnable tasks from first task order list
+    # Sending the tasks_queue as well to handle the case of sublattices
+    tasks, functions, input_args, input_kwargs, executors, next_tasks_order = get_runnable_tasks(
+        result_obj=result_obj,
+        tasks_order=task_order,
+        tasks_queue=tasks_queue,
+    )
+
+    # The next set of tasks that can be run afterwards
+    # This is the case of a new dispatch id in the list of dictionaries
+    if is_empty(tasks_queue):
+        tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}])
+    else:
+        tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}] + tasks_queue.get())
+
+    # Tasks which were not able to run
+    unrun_tasks = run_tasks(
+        results_dir=result_obj.results_dir,
+        dispatch_id=result_obj.dispatch_id,
+        task_id_batch=tasks,
+        functions=functions,
+        input_args=input_args,
+        input_kwargs=input_kwargs,
+        executors=executors,
+    )
+
+    # Will add those unrun tasks back to the tasks_queue
+    final_task_order = tasks_queue.get()
+    if unrun_tasks:
+        final_task_order[0][result_obj.dispatch_id] = [unrun_tasks] + final_task_order[0][
+            result_obj.dispatch_id
+        ]
+
+    # Put the task order back into the queue
+    tasks_queue.put(final_task_order)
+
+
+def convert_lol(dispatch_id: str, lol: List[List]):
+
+    # How it is: [[3, 4], [1, 2, 5], [6, 7, 8]]
+    # How it should be: [{d_id_1:[[4]]}, {d_id_2:[[1, 2, 5]]}]
+
+    pass
+
+
+def is_empty(mp_queue: MPQ):
+    if elem := mp_queue.get():
+        mp_queue.put(elem)
+        return True
+    else:
+        mp_queue.put(None)
+        return False
+
+
 def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for preprocessing the tasks, and sending the tasks for execution to the
     Runner API in batches. One of the underlying principles is that the Runner API doesn't
     interact with the Data API."""
 
-    # TODO - Clear queue?
+    # logger.warning(f"Inside start_dispatch with dispatch_id {result_obj.dispatch_id}")
 
+    # Initialize the result object
     result_obj = init_result_pre_dispatch(result_obj=result_obj)
-    task_order: List[List] = get_task_order(result_obj=result_obj)
-    tasks_queue.put(task_order)
-    tasks, functions, input_args, executors = get_runnable_tasks(result_obj, tasks_queue)
-    run_task(
-        result_obj=result_obj,
-        task_id_batch=tasks,
-        functions=functions,
-        pickled_input_args=pickle.dumps(input_args),
-        pickled_executors=pickle.dumps(executors),
-    )
+
+    # Send the initialized result to the result service
+    send_result_object_to_result_service(result_object=result_obj)
+
+    # logger.warning(f"task_order: {task_order}")
+    dispatch_runnable_tasks(result_obj, tasks_queue)
+
+    # logger.warning(f"Inside start_dispatch with finished dispatch_id {result_obj.dispatch_id}")
+
+    send_result_object_to_result_service(result_obj)
+
     return result_obj
 
 
 def get_runnable_tasks(
-    result_obj: Result, tasks_queue: MPQ
-) -> Tuple[List[int], List[bytes], List[Dict], List[BaseDispatcher]]:
+    result_obj: Result,
+    tasks_order: List[List],
+    tasks_queue: MPQ,
+) -> Tuple[List[int], List[bytes], List[List], List[Dict], List[BaseExecutor]]:
     """Return a list of tasks that can be run and the corresponding executors and input
     parameters."""
 
-    tasks_order = tasks_queue.get()
-    tasks = tasks_order.pop(0)
+    # logger.warning(f"In get_runnable_tasks task_order after get: {tasks_order}")
+
+    task_ids = tasks_order.pop(0)
 
     input_args = []
+    input_kwargs = []
     executors = []
     runnable_tasks = []
     non_runnable_tasks = []
     functions = []
 
-    for task_id in tasks:
+    for task_id in task_ids:
         serialized_function = result_obj.lattice.transport_graph.get_node_value(
             task_id, "function"
         )
         task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
+
+        # Get the task inputs from parents and edge names of this node
         task_inputs = get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
+
         executor = result_obj.lattice.transport_graph.get_node_value(task_id, "metadata")[
             "executor"
         ]
 
+        # Check whether the node is a sublattice
         if is_sublattice(task_name):
+
+            # Get the sublattice
             sublattice = serialized_function.get_deserialized()
-            sublattice.build_graph(task_inputs)
+
+            # Build the graph for this sublattice
+            sublattice.build_graph(*task_inputs["args"], **task_inputs["kwargs"])
+
+            # Construct the result object for this sublattice
             sublattice_result_obj = Result(
                 lattice=sublattice,
                 results_dir=result_obj.lattice.metadata["results_dir"],
                 dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
             )
-            result_obj.lattice.transport_graph.set_node_value(
-                node_key=task_id, value_key="status", value=Result.RUNNING
-            )
-            sublattice_task_order = get_task_order(sublattice_result_obj)
-            tasks_order = sublattice_task_order + tasks_order
-            tasks_queue.put(tasks_order)
-            get_runnable_tasks(result_obj=sublattice_result_obj, tasks_queue=tasks_queue)
 
-        elif is_runnable_task(task_id, result_obj, tasks_queue):
+            # Serialize its transport graph
+            sublattice_result_obj._lattice.transport_graph = (
+                sublattice_result_obj._lattice.transport_graph.serialize()
+            )
+
+            # Update the status of this node in result object
+            result_obj._update_node(
+                node_id=task_id,
+                start_time=datetime.now(timezone.utc),
+                status=Result.RUNNING,
+            )
+
+            # Dispatch the sublattice recursively
+            dispatch_workflow(result_obj=sublattice_result_obj, tasks_queue=tasks_queue)
+
+        elif is_runnable_task(task_id, result_obj):
+            # If the task is runnable, i.e, its parents have completed execution
+
+            # Check whether task is of non-executable type
+            result_obj, is_executable = preprocess_transport_graph(task_id, task_name, result_obj)
+
+            # If task is not executable then continue loop to next task
+            if not is_executable:
+                continue
+
+            # Add the details of this task to respective lists
             runnable_tasks.append(task_id)
-            preprocess_transport_graph(task_id, task_name, result_obj)
-            input_args.append(task_inputs)
-            executors.append(executor)
             functions.append(serialized_function)
+            input_args.append(task_inputs["args"])
+            input_kwargs.append(task_inputs["kwargs"])
+            executors.append(executor)
 
         else:
+            # If the task is not runnable, i.e, its parents have not completed execution
             non_runnable_tasks.append(task_id)
 
-    if non_runnable_tasks:
-        tasks_order = [non_runnable_tasks] + tasks_order
-        tasks_queue.put(tasks_order)
+    # If there are non runnable tasks then add them as well to next task order list else
+    # only keep the node lists already present in tasks_order
+    next_tasks_order = [non_runnable_tasks] + tasks_order if non_runnable_tasks else tasks_order
 
-    return runnable_tasks, functions, input_args, executors
+    # logger.warning(f"In get_runnable_tasks task_order after put: {next_tasks_order}")
+
+    return runnable_tasks, functions, input_args, input_kwargs, executors, next_tasks_order
 
 
 def init_result_pre_dispatch(result_obj: Result):
@@ -150,12 +347,14 @@ def init_result_pre_dispatch(result_obj: Result):
     return result_obj
 
 
-def run_task(
-    result_obj: Result,
+def run_tasks(
+    results_dir: str,
+    dispatch_id: str,
     task_id_batch: List[int],
     functions: List[bytes],
-    pickled_input_args: bytes,
-    pickled_executors: bytes,
+    input_args: List[List],
+    input_kwargs: List[Dict],
+    executors: List[Union[bytes, str]],
 ):
     """Ask Runner to execute tasks - get back True (False) if resources are (not) available.
 
@@ -163,9 +362,28 @@ def run_task(
     this function continues to try running the tasks until the runner becomes free.
     """
 
-    pass
+    tasks_list = [
+        {
+            "task_id": task_id,
+            "func": func,
+            "args": args,
+            "kwargs": kwargs,
+            "executor": executor,
+            "results_dir": results_dir,
+        }
+        for task_id, func, args, kwargs, executor in zip(
+            task_id_batch, functions, input_args, input_kwargs, executors
+        )
+    ]
+
+    return send_task_list_to_runner(dispatch_id=dispatch_id, tasks_list=tasks_list)
 
 
-def is_runnable_task(task_id, results_obj, tasks_queue) -> bool:
-    """Return status whether the task can be run"""
-    pass
+def is_runnable_task(task_id: int, results_obj: Result) -> bool:
+    """Return status whether the task can be run."""
+
+    parent_node_ids = results_obj.lattice.transport_graph.get_dependencies(task_id)
+
+    return all(
+        results_obj._get_node_status(node_id) == Result.COMPLETED for node_id in parent_node_ids
+    )
