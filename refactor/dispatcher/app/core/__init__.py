@@ -17,27 +17,3 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
-name: test-docker
-
-on:
-  pull_request
-
-jobs:
-  test_docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out head
-        uses: actions/checkout@v2
-      - name: Build and run image
-        run: |
-          docker build -t cova .
-          docker run -d -p 48008:8080 cova
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          echo 'Running an example dispatch...'
-          for idx in {0..1..1}; do
-            echo 'Dispatch number: '$idx
-            python tests/example_dispatch.py
-          done
-          

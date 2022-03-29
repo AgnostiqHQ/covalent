@@ -25,6 +25,9 @@ import os
 import tempfile
 from pathlib import Path
 
+import pkg_resources
+import pytest
+
 from covalent._shared_files.config import _config_manager, _ConfigManager
 from covalent.notify import _NotificationManager
 
@@ -45,6 +48,11 @@ def test_load_plugins(mocker):
     """Test the load_plugins method of the notification manager object."""
 
     init_mock = mocker.patch("covalent.notify._NotificationManager.__init__", return_value=None)
+    iter_entry_mock = mocker.patch(
+        "pkg_resources.iter_entry_points",
+        return_value=[pkg_resources.EntryPoint(name="test_name", module_name="test_module_name")],
+    )
+    load_mock = mocker.patch("pkg_resources.EntryPoint.load", return_value="test_module")
 
     nm = _NotificationManager()
     init_mock.assert_called_once_with()
@@ -55,13 +63,16 @@ def test_load_plugins(mocker):
 
     nm._load_plugins()
 
-    load_from_module_mock.assert_called()
-
     assert load_from_module_mock.call_count >= 1
+    iter_entry_mock.assert_called_once_with("covalent.notify.notification_plugins")
+    load_from_module_mock.assert_any_call("test_module")
     assert hasattr(nm, "notification_plugins_map")
 
 
-def test_load_plugin(mocker, monkeypatch):
+@pytest.mark.parametrize(
+    "well_defined,class_defined", [(True, True), (False, True), (True, False)]
+)
+def test_load_plugin(mocker, monkeypatch, well_defined, class_defined):
     """Test the load_plugin_from_module method of the notification manager object."""
 
     init_mock = mocker.patch("covalent.notify._NotificationManager.__init__", return_value=None)
@@ -84,17 +95,27 @@ def test_load_plugin(mocker, monkeypatch):
     )
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".py") as plugin_file:
+        if well_defined:
+            plugin_name_str = 'notification_plugin_name = "TestNotifyPlugin"'
+        else:
+            plugin_name_str = ""
+
+        if class_defined:
+            class_def_str = "class TestNotifyPlugin(NotifyEndpoint):"
+        else:
+            class_def_str = "class SomethingElse():"
+
         plugin_file.write(
             """
 from covalent.notify.notify import NotifyEndpoint
 
-notification_plugin_name = "TestNotifyPlugin"
+{plugin_name_str}
 
-_NOTIFICATION_PLUGIN_DEFAULTS = {
+_NOTIFICATION_PLUGIN_DEFAULTS = {{
     "test_var": "test_value"
-}
+}}
 
-class TestNotifyPlugin(NotifyEndpoint):
+{class_def_str}
     def notify(self, message):
         pass
 
@@ -104,7 +125,9 @@ class TestNotifyPlugin(NotifyEndpoint):
 class DummyClass(NotifyEndpoint):
     def notify(self, message):
         pass
-"""
+""".format(
+                plugin_name_str=plugin_name_str, class_def_str=class_def_str
+            )
         )
 
         plugin_file.flush()
@@ -118,10 +141,14 @@ class DummyClass(NotifyEndpoint):
 
         nm._load_plugin_from_module(the_module)
 
-        write_mock.assert_called_once_with()
-        assert module_name in nm.notification_plugins_map
-        assert nm.notification_plugins_map[module_name].__name__ == "TestNotifyPlugin"
-        assert "notify" in cm.config_data
-        assert module_name in cm.config_data["notify"]
-        assert "test_var" in cm.config_data["notify"][module_name]
-        assert cm.config_data["notify"][module_name]["test_var"] == "test_value"
+        if well_defined and class_defined:
+            write_mock.assert_called_once_with()
+            assert module_name in nm.notification_plugins_map
+            assert nm.notification_plugins_map[module_name].__name__ == "TestNotifyPlugin"
+            assert "notify" in cm.config_data
+            assert module_name in cm.config_data["notify"]
+            assert "test_var" in cm.config_data["notify"][module_name]
+            assert cm.config_data["notify"][module_name]["test_var"] == "test_value"
+        else:
+            write_mock.assert_not_called()
+            assert not nm.notification_plugins_map

@@ -22,9 +22,9 @@ name: tests
 
 on: 
   pull_request:
-  push:
-    branches:
-      - develop
+  workflow_run:
+    workflows: [changelog]
+    types: [completed]
 
 jobs:
   tests:
@@ -49,9 +49,10 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     steps:
       - name: Check out head
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Set up Python
         if: matrix.os == 'macos-latest'
         uses: actions/setup-python@v2
@@ -108,15 +109,21 @@ jobs:
       - name: Push to master
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
+          git checkout master
+          MASTER_VERSION="$(cat ./VERSION)"
+          git checkout develop
           VERSION="$(cat ./VERSION)"
-          if [ $VERSION = '0.32.3' ] ; then
+          if [ $MASTER_VERSION == $VERSION ] ; then
+            echo "$VERSION has been previously released."
+            exit 1
+          if dpkg --compare-versions $VERSION 'gt' '0.32.3' ; then
             git config user.name "CovalentOpsBot"
             git config user.email "covalentopsbot@users.noreply.github.com"
             git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
             git fetch --unshallow
             git push origin HEAD:master
           else
-            echo "Master is frozen on 0.32.3."
+            echo "We cannot release versions less than 0.32.3."
           fi
       - name: Format Slack message
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
