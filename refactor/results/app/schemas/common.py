@@ -19,4 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from .fs import UploadResponse
+from pydantic import BaseModel
+
+
+class HTTPExceptionSchema(BaseModel):
+    detail: str
