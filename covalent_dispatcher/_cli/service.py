@@ -436,17 +436,21 @@ def restart(ctx, port: int, develop: bool, refactor: bool) -> None:
     help="Check server status on a specific port.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
-def status(ctx, port: int, develop: bool) -> None:
+@click.option('--refactor', is_flag=True, help="Use post refactor cli command [with Supervisord]")
+@click.pass_context
+def status(ctx, port: int, develop: bool, refactor: bool) -> None:
     """
     Query the status of the Covalent server.
     """
-    if port and _is_server_running(port):
-
-        click.echo(f"Covalent server is running at http://0.0.0.0:{port}.")
+    if refactor:
+        _sd_status()
     else:
-        port = port or get_config("user_interface.port")
-        ctx.invoke(stop)
-        ctx.invoke(start, port=port, develop=develop)
+        if port and _is_server_running(port):
+            click.echo(f"Covalent server is running at http://0.0.0.0:{port}.")
+        else:
+            port = port or get_config("user_interface.port")
+            ctx.invoke(stop)
+            ctx.invoke(start, port=port, develop=develop)
 
 @click.command()
 @click.option(
