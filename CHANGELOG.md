@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Don't use for loops to iterate over a variable in bash
 - Issue with checkout actions
 - Run tests on changelog workflow completion instead of push to develop to avoid race condition
+- Use covalent ops bot token for automated pushes to develop
 
 ## [0.34.5] - 2022-03-28
 
