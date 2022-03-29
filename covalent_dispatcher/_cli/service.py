@@ -435,7 +435,8 @@ def restart(ctx, port: int, develop: bool, refactor: bool) -> None:
     type=int,
     help="Check server status on a specific port.",
 )
-def status(port: int) -> None:
+@click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
+def status(ctx, port: int, develop: bool) -> None:
     """
     Query the status of the Covalent server.
     """
