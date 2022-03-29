@@ -84,7 +84,7 @@ jobs:
           if $minor || $patch ; then
             message="The new version will be $version"
             nl=$'\n'
-            sed -i "/UNRELEASED/ a $nl$nl$changelog_header" CHANGELOG.md
+            sed -i '/UNRELEASED/a\'$'\n''\'$'\n'"$changelog_header" CHANGELOG.md
             echo $version > VERSION
             echo $message
           else
