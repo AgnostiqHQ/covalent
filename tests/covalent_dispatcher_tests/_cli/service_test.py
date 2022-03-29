@@ -244,10 +244,11 @@ def test_status(mocker, port_val, pid, echo_output, file_removed):
 
     mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port_val)
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
+    mocker.patch("requests.get", return_value=True)
     rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
 
     runner = CliRunner()
-    res = runner.invoke(status)
+    res = runner.invoke(status, ["--port", port_val])
 
     assert res.output == echo_output
     assert rm_pid_file_mock.called is file_removed
@@ -257,10 +258,20 @@ def test_is_server_running(mocker):
     """Test the server status checking function."""
 
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=1)
-    assert _is_server_running()
+    mocker.patch("requests.get", return_value=True)
+    assert _is_server_running("8000")
+
+    mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=1)
+    mocker.patch("requests.get", side_effect=Exception("mocked error"))
+    assert not _is_server_running("8000")
 
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=-1)
-    assert not _is_server_running()
+    mocker.patch("requests.get", return_value=True)
+    assert not _is_server_running("8000")
+
+    mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=-1)
+    mocker.patch("requests.get", side_effect=Exception("mocked error"))
+    assert not _is_server_running("8000")
 
 
 def test_purge(mocker):
