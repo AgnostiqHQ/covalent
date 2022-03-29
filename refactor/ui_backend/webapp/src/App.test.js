@@ -20,23 +20,11 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import axios from 'axios'
+import { render, screen } from '@testing-library/react'
+import App from './App'
 
-const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
+test('renders title home link', () => {
+  render(<App />)
+  const linkElement = screen.getByText(/covalent dashboard/i)
+  expect(linkElement).toBeInTheDocument()
 })
-
-API.interceptors.response.use(
-  // unwrap response data
-  ({ data }) => data,
-
-  // catch statusCode != 200 responses and format error
-  (error) => {
-    if (error.response) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject({ message: error.message })
-  }
-)
-
-export default API

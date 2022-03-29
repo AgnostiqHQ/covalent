@@ -20,23 +20,34 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import axios from 'axios'
+import _ from 'lodash'
+import { Paper } from '@mui/material'
 
-const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
-})
+import Heading from './Heading'
+import SyntaxHighlighter from './SyntaxHighlighter'
 
-API.interceptors.response.use(
-  // unwrap response data
-  ({ data }) => data,
+const ExecutorSection = ({ metadata }) => {
+  const executorType = _.get(metadata, 'executor_name')
+  const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
+  const src = _.join(
+    _.map(executorParams, (value, key) => `${key}: ${value}`),
+    '\n'
+  )
 
-  // catch statusCode != 200 responses and format error
-  (error) => {
-    if (error.response) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject({ message: error.message })
-  }
-)
+  return (
+    <>
+      {!_.isEmpty(executorType)}
+      <Heading>
+        Executor: <strong>{executorType}</strong>
+      </Heading>
 
-export default API
+      {!_.isEmpty(executorParams) && (
+        <Paper elevation={0}>
+          <SyntaxHighlighter language="yaml" src={src} />
+        </Paper>
+      )}
+    </>
+  )
+}
+
+export default ExecutorSection

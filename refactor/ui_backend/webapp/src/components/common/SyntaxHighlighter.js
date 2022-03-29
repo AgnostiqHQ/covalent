@@ -20,23 +20,32 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import axios from 'axios'
+import _ from 'lodash'
+import { Light } from 'react-syntax-highlighter'
+import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python'
+import yaml from 'react-syntax-highlighter/dist/esm/languages/hljs/yaml'
+import style from 'react-syntax-highlighter/dist/esm/styles/hljs/monokai-sublime'
 
-const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
-})
+Light.registerLanguage('python', python)
+Light.registerLanguage('yaml', yaml)
 
-API.interceptors.response.use(
-  // unwrap response data
-  ({ data }) => data,
+const SyntaxHighlighter = ({ src, ...props }) => {
+  return (
+    <Light
+      language="python"
+      style={style}
+      customStyle={{
+        margin: 0,
+        padding: 10,
+        maxHeight: 240,
+        fontSize: 12,
+        backgroundColor: 'transparent',
+      }}
+      {...props}
+    >
+      {_.trim(src, '\n')}
+    </Light>
+  )
+}
 
-  // catch statusCode != 200 responses and format error
-  (error) => {
-    if (error.response) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject({ message: error.message })
-  }
-)
-
-export default API
+export default SyntaxHighlighter
