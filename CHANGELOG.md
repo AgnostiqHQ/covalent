@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.38.0] - 2022-03-29
+
 ### Added
 
 - Added UI backend component to serve post-refactor frontend and dispatch websocket messages to UI using Socket.io
