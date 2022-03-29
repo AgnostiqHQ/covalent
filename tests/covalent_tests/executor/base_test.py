@@ -113,6 +113,8 @@ def test_execute_in_conda_env(mocker, conda_installed, successful_task, index):
     def test_func(a, /, *, b):
         return a + b
 
+    assert os.path.isdir("cache_dir")
+
     result_filename = f"cache_dir/result_pickle_file{index}.pkl"
     with open(result_filename, "wb") as f:
         pickle.dump(3, f)
