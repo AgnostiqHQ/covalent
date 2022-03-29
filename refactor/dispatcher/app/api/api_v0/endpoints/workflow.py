@@ -79,10 +79,6 @@ mock_result = {
 }
 
 def get_result(dispatch_id: str):
-    # dirname = os.path.dirname(__file__)
-    # filename = os.path.join(dirname, './result.pkl')
-    # with open(filename, 'rb') as f:   
-    #     return f.read()
     resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
     return resp.content
 
