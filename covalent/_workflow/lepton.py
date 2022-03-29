@@ -26,7 +26,7 @@ from .._shared_files import logger
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .electron import Electron
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from ..executor import BaseExecutor
 
 app_log = logger.app_log
@@ -101,7 +101,7 @@ class Lepton(Electron):
                 module_spec = importlib.util.spec_from_file_location(lib_name, lib_path)
                 module = importlib.util.module_from_spec(module_spec)
                 module_spec.loader.exec_module(module)
-            except (ModuleNotFoundError, AttributeError):
+            except (ModuleNotFoundError, FileNotFoundError, AttributeError):
                 app_log.error(f"Could not import the module '{self.library_name}'.")
                 raise
 
@@ -123,7 +123,7 @@ class Lepton(Electron):
 
             if kwargs:
                 raise ValueError(
-                    f"Keyword arguments {kwargs} are not supported when calling {self.function}."
+                    f"Keyword arguments {kwargs} are not supported when calling {self.function_name}."
                 )
 
             try:
