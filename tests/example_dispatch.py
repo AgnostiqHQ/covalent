@@ -26,8 +26,14 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.pardir, '../covalent/covalent')))
 import time
+
+from requests import request
+
 import covalent as ct
 from requests import request
+import covalent_dispatcher._cli.service as service
+
+port = 48008
 
 
 @ct.electron
@@ -46,13 +52,16 @@ def simple_workflow(a, b):
     return excitement(phrase)
 
 
-print('Dispatcher service is starting...')
-time.sleep(5)
+if service._is_server_running(port):
+    print("Dispatcher service has started")
+else:
+    print("Dispatcher service is starting...")
+    time.sleep(15)
 
 dispatch_id = ct.dispatch(simple_workflow)("Hello", "Covalent")
-results_url = "http://localhost:48008/api/results"
+results_url = f"http://localhost:{port}/api/results"
 results = request("GET", results_url, headers={}, data={}).json()
-dispatch_result = results[0]['result'] if results else None
-dispatch_status = results[0]['status'] if results else None
-print(f'Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}')
-print(f'The result of the dispatch is: {dispatch_result}')
+dispatch_result = results[0]["result"] if results else None
+dispatch_status = results[0]["status"] if results else None
+print(f"Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}")
+print(f"The result of the dispatch is: {dispatch_result}")
