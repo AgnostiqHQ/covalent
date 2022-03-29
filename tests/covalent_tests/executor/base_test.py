@@ -102,70 +102,73 @@ def test_write_streams_to_file(mocker):
 def test_execute_in_conda_env(mocker, conda_installed, successful_task, index):
     """Test execute in conda enve method in Base Executor object."""
 
-    me = MockExecutor(cache_dir="cache_dir")
-    me.conda_path = "/path/to/conda"
+    with tempfile.TemporaryDirectory() as tmp_cache:
+        me = MockExecutor(cache_dir=tmp_cache)
+        me.conda_path = "/path/to/conda"
 
-    subproc = SubprocMock()
-    subproc.stdout = ""
-    subproc.stderr = "Error"
-    subproc.returncode = 0 if successful_task else 1
+        subproc = SubprocMock()
+        subproc.stdout = ""
+        subproc.stderr = "Error"
+        subproc.returncode = 0 if successful_task else 1
 
-    def test_func(a, /, *, b):
-        return a + b
+        def test_func(a, /, *, b):
+            return a + b
 
-    result_filename = f"cache_dir/result_pickle_file{index}.pkl"
-    with open(result_filename, "wb") as f:
-        pickle.dump(3, f)
+        result_filename = f"{tmp_cache}/result_pickle_file{index}.pkl"
+        with open(result_filename, "wb") as f:
+            pickle.dump(3, f)
 
-    def get_temp_file(dir, delete=None, mode=None):
-        if delete is not None:
-            return open(f"pickle_file{index}.pkl", "wb")
-        elif mode == "w":
-            return open(f"script_file{index}.sh", "w")
+        def get_temp_file(dir, delete=None, mode=None):
+            if delete is not None:
+                return open(f"pickle_file{index}.pkl", "wb")
+            elif mode == "w":
+                return open(f"script_file{index}.sh", "w")
 
-    get_conda_path_mock = mocker.patch(
-        "covalent.executor.BaseExecutor.get_conda_path", return_value=conda_installed
-    )
-    conda_env_fail_mock = mocker.patch("covalent.executor.base.BaseExecutor._on_conda_env_fail")
-    pickle_dump_mock = mocker.patch("covalent.executor.base.pickle.dump", return_value=None)
-    pickle_load_mock = mocker.patch("covalent.executor.base.pickle.load", return_value=3)
-    tempfile_mock = mocker.patch("tempfile.NamedTemporaryFile", side_effect=get_temp_file)
-    path_exists_mock = mocker.patch("os.path.exists", return_value=conda_installed)
-    subprocess_mock = mocker.patch("subprocess.run", return_value=subproc)
+        get_conda_path_mock = mocker.patch(
+            "covalent.executor.BaseExecutor.get_conda_path", return_value=conda_installed
+        )
+        conda_env_fail_mock = mocker.patch(
+            "covalent.executor.base.BaseExecutor._on_conda_env_fail"
+        )
+        pickle_dump_mock = mocker.patch("covalent.executor.base.pickle.dump", return_value=None)
+        pickle_load_mock = mocker.patch("covalent.executor.base.pickle.load", return_value=3)
+        tempfile_mock = mocker.patch("tempfile.NamedTemporaryFile", side_effect=get_temp_file)
+        path_exists_mock = mocker.patch("os.path.exists", return_value=conda_installed)
+        subprocess_mock = mocker.patch("subprocess.run", return_value=subproc)
 
-    result = me.execute_in_conda_env(
-        fn=test_func,
-        fn_version="function_version",
-        args=[1],
-        kwargs={"b": 2},
-        conda_env="conda_env",
-        cache_dir="cache_dir",
-        node_id=100,
-    )
+        result = me.execute_in_conda_env(
+            fn=test_func,
+            fn_version="function_version",
+            args=[1],
+            kwargs={"b": 2},
+            conda_env="conda_env",
+            cache_dir=tmp_cache,
+            node_id=100,
+        )
 
-    get_conda_path_mock.assert_called_once_with()
-    if (not conda_installed) or (not successful_task):
-        conda_env_fail_mock.assert_called_once_with(test_func, [1], {"b": 2}, 100)
-        if conda_installed:
-            os.remove(f"pickle_file{index}.pkl")
-            os.remove(f"script_file{index}.sh")
-        return
+        get_conda_path_mock.assert_called_once_with()
+        if (not conda_installed) or (not successful_task):
+            conda_env_fail_mock.assert_called_once_with(test_func, [1], {"b": 2}, 100)
+            if conda_installed:
+                os.remove(f"pickle_file{index}.pkl")
+                os.remove(f"script_file{index}.sh")
+            return
 
-    assert Path(f"pickle_file{index}.pkl").exists()
-    assert Path(f"script_file{index}.sh").exists()
+        assert Path(f"pickle_file{index}.pkl").exists()
+        assert Path(f"script_file{index}.sh").exists()
 
-    tempfile_mock.assert_has_calls(
-        [call(dir="cache_dir", delete=False), call(dir="cache_dir", mode="w")]
-    )
-    pickle_dump_mock.assert_called_once()
-    path_exists_mock.assert_called_once_with("/path/to/../etc/profile.d/conda.sh")
-    subprocess_mock.assert_called_once_with(
-        ["bash", f"script_file{index}.sh"], capture_output=True, encoding="utf-8"
-    )
-    pickle_load_mock.assert_called_once()
+        tempfile_mock.assert_has_calls(
+            [call(dir=tmp_cache, delete=False), call(dir=tmp_cache, mode="w")]
+        )
+        pickle_dump_mock.assert_called_once()
+        path_exists_mock.assert_called_once_with("/path/to/../etc/profile.d/conda.sh")
+        subprocess_mock.assert_called_once_with(
+            ["bash", f"script_file{index}.sh"], capture_output=True, encoding="utf-8"
+        )
+        pickle_load_mock.assert_called_once()
 
-    os.remove(f"pickle_file{index}.pkl")
-    os.remove(f"script_file{index}.sh")
+        os.remove(f"pickle_file{index}.pkl")
+        os.remove(f"script_file{index}.sh")
 
 
 @pytest.mark.parametrize("use_current", [True, False])

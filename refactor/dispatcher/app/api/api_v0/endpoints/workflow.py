@@ -21,21 +21,28 @@
 import os
 from multiprocessing import Queue as MPQ
 from typing import Any
-from io import BytesIO
-import requests
+
 import cloudpickle as pickle
-from refactor.dispatcher.app.schemas.workflow import (
+import requests
+from app.core.cancel_workflow import cancel_workflow_execution
+from app.core.dispatch_workflow import (
+    dispatch_workflow,
+    get_result_object_from_result_service,
+    send_result_object_to_result_service,
+    send_task_update_to_ui,
+)
+from app.core.dispatcher_logger import logger
+from app.core.update_workflow import update_workflow_results
+from app.schemas.workflow import (
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
     Node,
     UpdateWorkflowResponse,
 )
 from dotenv import load_dotenv
-from fastapi import APIRouter
+from fastapi import APIRouter, File
 
-from ....core.cancel_workflow import cancel_workflow_execution
-from ....core.dispatch_workflow import dispatch_workflow
-from ....core.update_workflow import update_workflow_results
+from covalent._results_manager import Result
 
 load_dotenv()
 
@@ -43,8 +50,13 @@ BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
 TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
 MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
-tasks_queue = MPQ()
+workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()
+
+# Using sentinel to indicate that the queue is empty since MPQ.empty() is an unreliable method
+workflow_tasks_queue.put(None)
+
+
 router = APIRouter()
 
 # Do we need this here?
@@ -78,22 +90,30 @@ mock_result = {
     },
 }
 
+
 def get_result(dispatch_id: str):
     resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
     return resp.content
+
+
+logger.warning("Dispatcher Service Started")
+
 
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
 def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
-    result_pkl_bytes = get_result(dispatch_id)
-    result = pickle.loads(result_pkl_bytes)
-    result = dispatch_workflow(result, tasks_queue)
-    result_pkl_bytes = pickle.dumps(result)
-    result_file = BytesIO(result_pkl_bytes)
-    requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", files={'result_pkl_file': result_file})
-    workflow_status_queue.put("RUNNING")  # Populate queue when workflow is running
+
+    # logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
+
+    # Get the result object
+    result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
+
+    # Dispatch the workflow
+    dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
+
+    # logger.warning(f"Inside submit_workflow dispatching done with dispatch_id: {dispatch_id}")
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 
@@ -109,6 +129,9 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
 
     success = cancel_workflow_execution(result_obj)
 
+    if workflow_tasks_queue.not_empty():
+        workflow_tasks_queue.get()  # Pop the last set of tasks from the queue since the workflow is being cancelled.
+
     if success:
         workflow_status_queue.get()  # Empty queue when workflow is terminated
 
@@ -118,24 +141,30 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
 
 
 @router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
-def update_workflow(*, dispatch_id: str, task_execution_results: Node) -> UpdateWorkflowResponse:
+def update_workflow(
+    *, dispatch_id: str, task_execution_results: bytes = File(...)
+) -> UpdateWorkflowResponse:
     """
     Update a workflow
     """
 
+    task_execution_results = pickle.loads(task_execution_results)
     task_id = task_execution_results["task_id"]
+    del task_execution_results["task_id"]
+    task_execution_results["node_id"] = task_id
 
-    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-    result_obj = resp.json()["result_obj"]
+    updated_result_obj = update_workflow_results(
+        task_execution_results=task_execution_results,
+        dispatch_id=dispatch_id,
+        tasks_queue=workflow_tasks_queue,
+    )
 
-    result_obj = update_workflow_results(task_execution_results, result_obj)
-
-    if result_obj._status != "RUNNING":
+    if updated_result_obj._status != "RUNNING":
         workflow_status_queue.get()  # Empty queue when workflow is no longer running (completed
         # or failed)
 
-    requests.put(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}", data={result_obj})
+    send_result_object_to_result_service(updated_result_obj)
 
-    requests.put(f"{BASE_URI}/api/v0/ui/workflow/{dispatch_id}/task/{task_id}")
+    send_task_update_to_ui(dispatch_id=dispatch_id, task_id=task_id)
 
     return {"response": f"{dispatch_id} workflow updated successfully"}

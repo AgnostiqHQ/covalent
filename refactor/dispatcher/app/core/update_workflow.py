@@ -21,42 +21,53 @@
 """Workflow result update functionality."""
 
 from datetime import datetime, timezone
-from typing import Dict, List
+from multiprocessing import Queue as MPQ
+from typing import Dict
 
 from covalent._results_manager import Result
 
-from .utils import _post_process, is_workflow_completed
+from .dispatch_workflow import (
+    dispatch_runnable_tasks,
+    get_result_object_from_result_service,
+    send_result_object_to_result_service,
+)
+from .utils import _post_process, are_tasks_running
 
 
-def update_workflow_results(task_execution_results: Dict, result_obj: Result) -> Result:
+def update_workflow_results(
+    task_execution_results: Dict, dispatch_id: str, tasks_queue: MPQ
+) -> Result:
     """Main update function. Called by the Runner API when there is an update for task
     execution status."""
 
+    # TODO: Place it in somewhere where only this result object needs to get updated
+    latest_result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
+
     # Update the task results
-    result_obj._update_node(**task_execution_results)
+    latest_result_obj._update_node(**task_execution_results)
 
-    if task_execution_results["status"] == "FAILED":
-        result_obj._status = Result.FAILED
+    if task_execution_results["status"] == Result.FAILED:
+        latest_result_obj._status = Result.FAILED
 
-    elif task_execution_results["status"] == "CANCELLED":
-        result_obj._status = Result.CANCELLED
+    elif task_execution_results["status"] == Result.CANCELLED:
+        latest_result_obj._status = Result.CANCELLED
 
     # If workflow is completed, post-process result
-    elif is_workflow_completed(result_obj=result_obj):
+    elif not are_tasks_running(result_obj=latest_result_obj):
 
-        task_execution_order: List[
-            List
-        ] = result_obj.lattice.transport_graph.get_topologically_sorted_graph()
-
-        result_obj._result = _post_process(
-            lattice=result_obj.lattice,
-            task_outputs=result_obj.get_all_node_outputs(),
-            task_execution_order=task_execution_order,
+        latest_result_obj._result = _post_process(
+            lattice=latest_result_obj.lattice,
+            task_outputs=latest_result_obj.get_all_node_outputs(),
         )
 
-        result_obj._status = Result.COMPLETED
+        latest_result_obj._status = Result.COMPLETED
 
-    if result_obj.status != Result.RUNNING:
-        result_obj._end_time = datetime.now(timezone.utc)
+    if latest_result_obj.status != Result.RUNNING:
+        latest_result_obj._end_time = datetime.now(timezone.utc)
 
-    return result_obj
+    if task_execution_results["status"] == Result.COMPLETED:
+
+        # TODO: This logic might need change
+        dispatch_runnable_tasks(latest_result_obj, tasks_queue)
+
+    return latest_result_obj
