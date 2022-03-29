@@ -448,9 +448,8 @@ def status(ctx, port: int, develop: bool, refactor: bool) -> None:
         if port and _is_server_running(port):
             click.echo(f"Covalent server is running at http://0.0.0.0:{port}.")
         else:
-            port = port or get_config("user_interface.port")
-            ctx.invoke(stop)
-            ctx.invoke(start, port=port, develop=develop)
+            _rm_pid_file(UI_PIDFILE)
+            click.echo("Covalent server is stopped.")
 
 @click.command()
 @click.option(
