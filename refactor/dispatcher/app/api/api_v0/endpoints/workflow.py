@@ -48,6 +48,10 @@ from covalent._results_manager import Result
 BASE_URI = os.environ.get("BASE_URI")
 
 workflow_tasks_queue = MPQ()
+
+# Using sentinel to indicate that the queue is empty since MPQ.empty() is an unreliable method
+workflow_tasks_queue.put(None)
+
 router = APIRouter()
 
 # Do we need this here?
@@ -91,19 +95,15 @@ def submit_workflow(*, dispatch_id: str) -> Any:
     Submit a workflow
     """
 
-    logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
+    # logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
 
     # Get the result object
     result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
     # Dispatch the workflow
-    updated_result_object = dispatch_workflow(
-        result_obj=result_obj, tasks_queue=workflow_tasks_queue
-    )
+    dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
 
-    logger.warning(f"Inside submit_workflow dispatching done with dispatch_id: {dispatch_id}")
-
-    send_result_object_to_result_service(updated_result_object)
+    # logger.warning(f"Inside submit_workflow dispatching done with dispatch_id: {dispatch_id}")
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 

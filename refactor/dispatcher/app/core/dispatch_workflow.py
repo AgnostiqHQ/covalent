@@ -134,7 +134,7 @@ def get_result_object_from_result_service(dispatch_id: str):
 def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for starting off the workflow dispatch."""
 
-    logger.warning(f"Inside dispatch_workflow with dispatch_id {result_obj.dispatch_id}")
+    # logger.warning(f"Inside dispatch_workflow with dispatch_id {result_obj.dispatch_id}")
 
     if result_obj.status == Result.NEW_OBJ:
         result_obj._status = Result.RUNNING
@@ -165,12 +165,21 @@ def dispatch_runnable_tasks():
     pass
 
 
+def is_empty(mp_queue: MPQ):
+    if elem := mp_queue.get():
+        mp_queue.put(elem)
+        return True
+    else:
+        mp_queue.put(None)
+        return False
+
+
 def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for preprocessing the tasks, and sending the tasks for execution to the
     Runner API in batches. One of the underlying principles is that the Runner API doesn't
     interact with the Data API."""
 
-    logger.warning(f"Inside start_dispatch with dispatch_id {result_obj.dispatch_id}")
+    # logger.warning(f"Inside start_dispatch with dispatch_id {result_obj.dispatch_id}")
 
     # Initialize the result object
     result_obj = init_result_pre_dispatch(result_obj=result_obj)
@@ -181,51 +190,55 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     # Get the order of tasks to be run
     task_order: List[List] = get_task_order(result_obj=result_obj)
 
-    while task_order:
+    # logger.warning(f"task_order: {task_order}")
 
-        logger.warning(f"task_order: {task_order}")
-        # Put the order in tasks_queue to be later used to get runnable tasks
-        tasks_queue.put(task_order)
+    # To get the runnable tasks from first task order list
+    # Sending the tasks_queue as well to handle the case of sublattices
+    tasks, functions, input_args, input_kwargs, executors, next_tasks_order = get_runnable_tasks(
+        result_obj=result_obj,
+        tasks_order=task_order,
+        tasks_queue=tasks_queue,
+    )
 
-        # To get the runnable tasks
-        tasks, functions, input_args, input_kwargs, executors = get_runnable_tasks(
-            result_obj=result_obj,
-            tasks_queue=tasks_queue,
-        )
+    # The next set of tasks that can be run afterwards
+    if is_empty(tasks_queue):
+        tasks_queue.put(next_tasks_order)
+    else:
+        tasks_queue.put(next_tasks_order + tasks_queue.get())
 
-        if tasks:
-            unrun_tasks = run_tasks(
-                results_dir=result_obj.results_dir,
-                dispatch_id=result_obj.dispatch_id,
-                task_id_batch=tasks,
-                functions=functions,
-                input_args=input_args,
-                input_kwargs=input_kwargs,
-                executors=executors,
-            )
+    # Tasks which were not able to run
+    unrun_tasks = run_tasks(
+        results_dir=result_obj.results_dir,
+        dispatch_id=result_obj.dispatch_id,
+        task_id_batch=tasks,
+        functions=functions,
+        input_args=input_args,
+        input_kwargs=input_kwargs,
+        executors=executors,
+    )
 
-            task_order = [unrun_tasks] + tasks_queue.get() if unrun_tasks else tasks_queue.get()
+    # Will add those unrun tasks back to the tasks_queue
+    task_order = [unrun_tasks] + tasks_queue.get() if unrun_tasks else tasks_queue.get()
 
-        else:
-            task_order = tasks_queue.get()
+    # Put the task order back into the queue
+    tasks_queue.put(task_order)
 
-        # Get the latest result object from result service
-        # result_obj = get_result_object_from_result_service(dispatch_id=result_obj.dispatch_id)
+    # logger.warning(f"Inside start_dispatch with finished dispatch_id {result_obj.dispatch_id}")
 
-    logger.warning(f"Inside start_dispatch with finished dispatch_id {result_obj.dispatch_id}")
+    send_result_object_to_result_service(result_obj)
 
     return result_obj
 
 
 def get_runnable_tasks(
-    result_obj: Result, tasks_queue: MPQ
+    result_obj: Result,
+    tasks_order: List[List],
+    tasks_queue: MPQ,
 ) -> Tuple[List[int], List[bytes], List[List], List[Dict], List[BaseExecutor]]:
     """Return a list of tasks that can be run and the corresponding executors and input
     parameters."""
 
-    # Getting the first list of task_ids to be run
-    tasks_order = tasks_queue.get()
-    logger.warning(f"In get_runnable_tasks task_order after get: {tasks_order}")
+    # logger.warning(f"In get_runnable_tasks task_order after get: {tasks_order}")
 
     task_ids = tasks_order.pop(0)
 
@@ -261,7 +274,7 @@ def get_runnable_tasks(
             # Construct the result object for this sublattice
             sublattice_result_obj = Result(
                 lattice=sublattice,
-                results_dir=sublattice.metadata["results_dir"],
+                results_dir=result_obj.lattice.metadata["results_dir"],
                 dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
             )
 
@@ -277,14 +290,8 @@ def get_runnable_tasks(
                 status=Result.RUNNING,
             )
 
-            sublattice_task_queue = MPQ()
-
-            dispatch_workflow(result_obj=sublattice_result_obj, tasks_queue=sublattice_task_queue)
-
-            # sublattice_task_order = get_task_order(sublattice_result_obj)
-            # tasks_order = sublattice_task_order + tasks_order
-            # tasks_queue.put(tasks_order)
-            # get_runnable_tasks(result_obj=sublattice_result_obj, tasks_queue=tasks_queue)
+            # Dispatch the sublattice recursively
+            dispatch_workflow(result_obj=sublattice_result_obj, tasks_queue=tasks_queue)
 
         elif is_runnable_task(task_id, result_obj):
             # If the task is runnable, i.e, its parents have completed execution
@@ -295,9 +302,6 @@ def get_runnable_tasks(
             # If task is not executable then continue loop to next task
             if not is_executable:
                 continue
-
-            [[("lat", 1), ("lat", 2)], [("lat", 3)]]
-            [[("lat:1", 1), ("lat:1", 2)], [("lat", 2)], [("lat", 3)]]
 
             # Add the details of this task to respective lists
             runnable_tasks.append(task_id)
@@ -310,13 +314,13 @@ def get_runnable_tasks(
             # If the task is not runnable, i.e, its parents have not completed execution
             non_runnable_tasks.append(task_id)
 
-    if non_runnable_tasks:
-        tasks_order = [non_runnable_tasks] + tasks_order
+    # If there are non runnable tasks then add them as well to next task order list else
+    # only keep the node lists already present in tasks_order
+    next_tasks_order = [non_runnable_tasks] + tasks_order if non_runnable_tasks else tasks_order
 
-    tasks_queue.put(tasks_order)
-    logger.warning(f"In get_runnable_tasks task_order after put: {tasks_order}")
+    # logger.warning(f"In get_runnable_tasks task_order after put: {next_tasks_order}")
 
-    return runnable_tasks, functions, input_args, input_kwargs, executors
+    return runnable_tasks, functions, input_args, input_kwargs, executors, next_tasks_order
 
 
 def init_result_pre_dispatch(result_obj: Result):
