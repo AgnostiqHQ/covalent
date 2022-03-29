@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+- Picking up dispatch jobs from the queue and ensuring that only one workflow is processed (locally) at any given time.
 ### Changed
 - Dispatcher implementation in order to integrate with Queuer microservice.
 
@@ -14,7 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Picking up dispatch jobs from the queue and ensuring that only one workflow is processed (locally) at any given time.
 - Automated changelog and version management
 - Added a Dockerfile to build an image for OS Queuer.
 - Added the required packages to run a container instance of the Queuer.
