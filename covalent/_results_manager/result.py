@@ -383,36 +383,36 @@ Node Outputs
             None
         """
 
-        if node_name:
+        if node_name is not None:
             self._lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
 
-        if start_time:
+        if start_time is not None:
             self._lattice.transport_graph.set_node_value(node_id, "start_time", start_time)
 
-        if end_time:
+        if end_time is not None:
             self._lattice.transport_graph.set_node_value(node_id, "end_time", end_time)
 
-        if status:
+        if status is not None:
             self._lattice.transport_graph.set_node_value(node_id, "status", status)
 
-        if output:
+        if output is not None:
             self._lattice.transport_graph.set_node_value(node_id, "output", output)
 
-        if error:
+        if error is not None:
             self._lattice.transport_graph.set_node_value(node_id, "error", error)
 
-        if sublattice_result:
+        if sublattice_result is not None:
             self._lattice.transport_graph.set_node_value(
                 node_id, "sublattice_result", sublattice_result
             )
 
-        if stdout:
+        if stdout is not None:
             self._lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
 
-        if stderr:
+        if stderr is not None:
             self._lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
 
-        if info:
+        if info is not None:
             self._lattice.transport_graph.set_node_value(node_id, "info", info)
 
     def save(self, directory: str = None, write_source: bool = False) -> None:
