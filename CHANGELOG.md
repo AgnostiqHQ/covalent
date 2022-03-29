@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added UI backend component to serve post-refactor frontend and dispatch websocket messages to UI using Socket.io
 - Updated UI socket.io configuration to use different ws path, and using localstorage for fetching all results (temporary)
 
+## [0.37.1] - 2022-03-29
+
+### Fixed
+
+- Oneline bugfix in tests.yml
+
 ## [0.37.0] - 2022-03-29
 
 ### Added
