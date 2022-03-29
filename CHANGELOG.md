@@ -7,8 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Added
-
 - Added post-refactor cli commands to use Supervisord to manage local service processes
 - Added `covalent logs` and `covalent config` cli commands
 
@@ -39,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Dispatcher implementation in order to integrate with Queuer microservice.
+
 
 ## [0.35.0] - 2022-03-29
 
