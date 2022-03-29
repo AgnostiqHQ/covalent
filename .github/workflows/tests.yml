@@ -52,7 +52,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-          fetch-depth: 0
       - name: Set up Python
         if: matrix.os == 'macos-latest'
         uses: actions/setup-python@v2
@@ -106,14 +105,18 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           files: ./coverage.xml
+      - name: Get latest release
+        id: get-latest-tag
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        with:
+          semver_only: true
       - name: Push to master
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
-          git checkout master
-          MASTER_VERSION="$(cat ./VERSION)"
-          git checkout develop
+          release="${{ steps.get-latest-tag.outputs.tag }}"
+          MASTER_VERSION="${release:1}"
           VERSION="$(cat ./VERSION)"
-          if [ $MASTER_VERSION == $VERSION ] ; then
+          if [ "$MASTER_VERSION" = "$VERSION" ] ; then
             echo "$VERSION has been previously released."
             exit 1
           elif dpkg --compare-versions $VERSION 'gt' '0.32.3' ; then
