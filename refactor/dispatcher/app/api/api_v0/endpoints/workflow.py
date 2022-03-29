@@ -44,13 +44,18 @@ from fastapi import APIRouter, File
 
 from covalent._results_manager import Result
 
-# TODO - Figure out how this BASE URI will be determined when this is deployed.
-BASE_URI = os.environ.get("BASE_URI")
+load_dotenv()
+
+BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
+TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
+MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
 workflow_tasks_queue = MPQ()
+workflow_status_queue = MPQ()
 
 # Using sentinel to indicate that the queue is empty since MPQ.empty() is an unreliable method
 workflow_tasks_queue.put(None)
+
 
 router = APIRouter()
 
@@ -84,6 +89,11 @@ mock_result = {
         },
     },
 }
+
+
+def get_result(dispatch_id: str):
+    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
+    return resp.content
 
 
 logger.warning("Dispatcher Service Started")
@@ -123,6 +133,8 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
         workflow_tasks_queue.get()  # Pop the last set of tasks from the queue since the workflow is being cancelled.
 
     if success:
+        workflow_status_queue.get()  # Empty queue when workflow is terminated
+
         return {"response": f"{dispatch_id} workflow cancelled successfully"}
     else:
         return {"response": f"{dispatch_id} workflow did not cancel successfully"}
@@ -146,6 +158,10 @@ def update_workflow(
         dispatch_id=dispatch_id,
         tasks_queue=workflow_tasks_queue,
     )
+
+    if updated_result_obj._status != "RUNNING":
+        workflow_status_queue.get()  # Empty queue when workflow is no longer running (completed
+        # or failed)
 
     send_result_object_to_result_service(updated_result_obj)
 
