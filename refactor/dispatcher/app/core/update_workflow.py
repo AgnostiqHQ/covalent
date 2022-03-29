@@ -40,7 +40,7 @@ def update_workflow_results(
     """Main update function. Called by the Runner API when there is an update for task
     execution status."""
 
-    # SOMEWHERE HERE
+    # TODO: Place it in somewhere where only this result object needs to get updated
     latest_result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
     # Update the task results
@@ -66,6 +66,8 @@ def update_workflow_results(
         latest_result_obj._end_time = datetime.now(timezone.utc)
 
     if task_execution_results["status"] == Result.COMPLETED:
+
+        # TODO: This logic might need change
         dispatch_runnable_tasks(latest_result_obj, tasks_queue)
 
     return latest_result_obj
