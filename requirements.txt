@@ -19,4 +19,5 @@ simplejson==3.17.6
 tailer==0.4.1
 toml==0.10.2
 uvicorn==0.15.0
+supervisor==4.2.4
 websockets==10.2
