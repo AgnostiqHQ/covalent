@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Results management endpoints; GET, PUT, POST for results object
+- Checks in setup.py to confirm node version compatibility.
+- Instructions in CONTRIBUTING to address some common Debian setup issues.
+
 ## [0.36.1] - 2022-03-29
 
 ### Fixed
