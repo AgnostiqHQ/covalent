@@ -34,7 +34,7 @@ RUN pip install  --no-cache-dir --upgrade -r $REQ_DIR/dist.txt
 
 COPY . .
 
-ENV PORT 5000
+ENV PORT 8002
 EXPOSE $PORT
 
 CMD [ "python", "main.py"]
