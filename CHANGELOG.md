@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Oneline bugfix in tests.yml
 
+## [0.36.1] - 2022-03-29
+
+### Fixed
+
+- Filesystem service now reads config from environment variables.
+
 ## [0.36.0] - 2022-03-29
 
 ### Added
