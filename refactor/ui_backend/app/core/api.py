@@ -53,10 +53,10 @@ class DataService(APIService):
         # filename = os.path.join(dirname, './result.pkl')
         # with open(filename, 'rb') as f:   
         #     return f.read()
-        res = self.get('workflow/results/{dispatch_id}', raw=True)
+        res = self.get(f'api/v0/workflow/results/{dispatch_id}', raw=True)
         return res.content
 
     async def create_result(self, result_pkl_file: bytes):
-        return self.post('workflow/results', files={
+        return self.post('api/v0/workflow/results', files={
             "result_pkl_file": result_pkl_file
         })
