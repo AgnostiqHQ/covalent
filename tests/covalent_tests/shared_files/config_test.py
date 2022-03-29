@@ -18,7 +18,9 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import importlib
 import os
+import shutil
 import tempfile
 from unittest.mock import patch
 
@@ -232,3 +234,23 @@ def test_config_manager_set(mocker):
         "mock_section": {"mock_dir": "final_value", "new_mock_dir": "mock_value"},
         "new_mock_section": {"new_mock_dir": {"new_mock_dir": "mock_value"}},
     }
+
+
+def test_log_to_file(mocker):
+    def config(value):
+        if value == "sdk.log_level":
+            return "DEBUG"
+        elif value == "sdk.enable_logging":
+            return "TRUE"
+        elif value == "sdk.log_dir":
+            return "/tmp/covalent/tests"
+
+    get_config_mock = mocker.patch("covalent._shared_files.config.get_config", side_effect=config)
+
+    module_spec = importlib.util.find_spec("covalent._shared_files.logger")
+    module = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(module)
+
+    assert get_config_mock.call_count == 3
+
+    shutil.rmtree("/tmp/covalent/tests")

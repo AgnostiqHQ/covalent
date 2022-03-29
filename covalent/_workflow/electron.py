@@ -43,7 +43,7 @@ from .lattice import Lattice
 
 consumable_constraints = ["budget", "time_limit"]
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from ..executor import BaseExecutor
     from .transport import _TransportGraph
 
