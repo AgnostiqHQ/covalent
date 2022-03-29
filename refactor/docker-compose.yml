@@ -1,2 +1,15 @@
 version: "3.8"
 
+services:
+  queuer:
+    build:
+      context: .
+      dockerfile: ./queuer/Dockerfile
+    image: queuer-svc
+    command: sh -c "python main.py"
+    ports:
+      - "8000:8000"
+    volumes:
+      - /queuer:/queuer
+
+
