@@ -12,6 +12,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added post-refactor cli commands to use Supervisord to manage local service processes
 - Added `covalent logs` and `covalent config` cli commands
 
+## [0.37.1] - 2022-03-29
+
+### Fixed
+
+- Oneline bugfix in tests.yml
+
+## [0.37.0] - 2022-03-29
+
+### Added
+
+- Results management endpoints; GET, PUT, POST for results object
+- Checks in setup.py to confirm node version compatibility.
+- Instructions in CONTRIBUTING to address some common Debian setup issues.
+
 ## [0.36.1] - 2022-03-29
 
 ### Fixed

@@ -18,5 +18,32 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Results management service."""
 
-from .fs import UploadResponse
+import logging
+import logging.config
+import os
+import sqlite3
+from os import path
+
+# setup loggers
+logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
+logger = logging.getLogger(__name__)
+
+results_db = os.environ.get("RESULTS_DB")
+if not results_db:
+    results_db = "results.db"
+con = sqlite3.connect(results_db)
+cur = con.cursor()
+sql = (
+    "CREATE TABLE IF NOT EXISTS results ("
+    "dispatch_id text NOT NULL, "
+    "filename text NOT NULL, "
+    "path text NOT NULL, "
+    "PRIMARY KEY (dispatch_id))"
+)
+logger.info("Executing SQL command.")
+logger.info(sql)
+cur.execute(sql)
+con.commit()
+con.close()
