@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Dockerized the Data and UI-backend services.
+- Required packages to run containerized instances of the Data and UI-backend.
+
 ## [0.39.0] - 2022-03-29
 
 ### Changed
