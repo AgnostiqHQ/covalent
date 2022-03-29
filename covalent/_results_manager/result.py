@@ -203,17 +203,30 @@ Node Outputs
 
         self._num_nodes = self.lattice.transport_graph.get_internal_graph_copy().number_of_nodes()
         for node_id in range(self._num_nodes):
-            self._update_node(
-                node_id,
-                "",
-                None,
-                None,
-                Result.NEW_OBJ,
-                None,
-                None,
-                None,
-                None,
+
+            node_name = (
+                self._lattice.transport_graph.get_node_value(node_id, "name") + f"({node_id})"
             )
+
+            self._lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
+
+            self._lattice.transport_graph.set_node_value(node_id, "start_time", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "end_time", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "status", Result.NEW_OBJ)
+
+            self._lattice.transport_graph.set_node_value(node_id, "output", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "error", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "sublattice_result", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "stdout", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "stderr", None)
+
+            self._lattice.transport_graph.set_node_value(node_id, "info", None)
 
     def get_node_result(self, node_id: int) -> dict:
         """Return the result of a particular node.
@@ -233,6 +246,7 @@ Node Outputs
                             - sublattice_result: The result of the sublattice if any.
                             - stdout: The stdout of the node execution.
                             - stderr: The stderr of the node execution.
+                            - info: Any execution related information found during runtime.
         """
 
         return {
@@ -248,6 +262,7 @@ Node Outputs
             ),
             "stdout": self.lattice.transport_graph.get_node_value(node_id, "stdout"),
             "stderr": self.lattice.transport_graph.get_node_value(node_id, "stderr"),
+            "info": self.lattice.transport_graph.get_node_value(node_id, "info"),
         }
 
     def get_all_node_outputs(self) -> dict:
@@ -336,15 +351,16 @@ Node Outputs
     def _update_node(
         self,
         node_id: int,
-        node_name: str,
-        start_time: "datetime",
-        end_time: "datetime",
-        status: "Status",
-        output: Any,
-        error: Exception,
+        node_name: str = None,
+        start_time: "datetime" = None,
+        end_time: "datetime" = None,
+        status: "Status" = None,
+        output: Any = None,
+        error: Exception = None,
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
+        info: str = None,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -361,22 +377,43 @@ Node Outputs
             sublattice_result: The result of the sublattice if any.
             stdout: The stdout of the node execution.
             stderr: The stderr of the node execution.
+            info: Any execution related information found during runtime.
 
         Returns:
             None
         """
 
-        self._lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
-        self._lattice.transport_graph.set_node_value(node_id, "start_time", start_time)
-        self._lattice.transport_graph.set_node_value(node_id, "end_time", end_time)
-        self._lattice.transport_graph.set_node_value(node_id, "status", status)
-        self._lattice.transport_graph.set_node_value(node_id, "output", output)
-        self._lattice.transport_graph.set_node_value(node_id, "error", error)
-        self._lattice.transport_graph.set_node_value(
-            node_id, "sublattice_result", sublattice_result
-        )
-        self._lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
-        self._lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
+        if node_name is not None:
+            self._lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
+
+        if start_time is not None:
+            self._lattice.transport_graph.set_node_value(node_id, "start_time", start_time)
+
+        if end_time is not None:
+            self._lattice.transport_graph.set_node_value(node_id, "end_time", end_time)
+
+        if status is not None:
+            self._lattice.transport_graph.set_node_value(node_id, "status", status)
+
+        if output is not None:
+            self._lattice.transport_graph.set_node_value(node_id, "output", output)
+
+        if error is not None:
+            self._lattice.transport_graph.set_node_value(node_id, "error", error)
+
+        if sublattice_result is not None:
+            self._lattice.transport_graph.set_node_value(
+                node_id, "sublattice_result", sublattice_result
+            )
+
+        if stdout is not None:
+            self._lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
+
+        if stderr is not None:
+            self._lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
+
+        if info is not None:
+            self._lattice.transport_graph.set_node_value(node_id, "info", info)
 
     def save(self, directory: str = None, write_source: bool = False) -> None:
         """

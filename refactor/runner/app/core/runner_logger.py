@@ -18,32 +18,20 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from typing import Any, Callable, Dict, List
+import logging
+from pathlib import Path
 
-from pydantic import BaseModel
+# Creating a custom logger
+logger = logging.getLogger(__name__)
 
+# File handler for saving logs
+Path("logs").mkdir(exist_ok=True)
+file_handler = logging.FileHandler("logs/runner_logs.log")
+file_handler.setLevel(logging.WARNING)
 
-class Task(BaseModel):
-    task_id: int
-    func: Callable
-    args: List[Any]
-    kwargs: Dict[str, Any]
-    executor: Any
-    results_dir: str
+# Creating the file formatter and adding it to the file handler
+file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(file_formatter)
 
-
-class TaskPickleList(BaseModel):
-    tasks: List[bytes]
-
-
-class RunTaskResponse(BaseModel):
-    left_out_task_ids: List
-
-
-class CancelResponse(BaseModel):
-    cancelled_dispatch_id: str
-    cancelled_task_id: str
-
-
-class TaskStatus(BaseModel):
-    status: str
+# Add handlers to the logger
+logger.addHandler(file_handler)

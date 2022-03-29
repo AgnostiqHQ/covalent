@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Utility functions for the Dispatcher microservice."""
+
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
@@ -40,6 +42,8 @@ def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result)
     """Ensure that the execution status of the task nodes in the transport graph are initialized
     properly."""
 
+    is_executable_node = True
+
     if task_name.startswith((subscript_prefix, generator_prefix, parameter_prefix, attr_prefix)):
         if task_name.startswith(parameter_prefix):
             output = result_obj.lattice.transport_graph.get_node_value(task_id, "value")
@@ -55,18 +59,20 @@ def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result)
                 output = output[key]
 
         result_obj._update_node(
-            task_id,
-            f"{task_name}({task_id})",
-            datetime.now(timezone.utc),
-            datetime.now(timezone.utc),
-            Result.COMPLETED,
-            output,
-            None,
+            node_id=task_id,
+            node_name=f"{task_name}({task_id})",
+            start_time=datetime.now(timezone.utc),
+            end_time=datetime.now(timezone.utc),
+            status=Result.COMPLETED,
+            output=output,
         )
-    return result_obj
+
+        is_executable_node = False
+
+    return result_obj, is_executable_node
 
 
-def _post_process(lattice: Lattice, task_outputs: Dict, task_execution_order: List[List]) -> Any:
+def _post_process(lattice: Lattice, task_outputs: Dict) -> Any:
     """
     Post processing function to be called after the lattice execution.
     This takes care of executing statements that were not an electron
@@ -81,29 +87,21 @@ def _post_process(lattice: Lattice, task_outputs: Dict, task_execution_order: Li
 
     Args:
         lattice: Lattice object that was dispatched.
-        task_outputs: Dictionary containing the output of all the nodes.
-        task_execution_order: List of lists containing the order of execution of the nodes.
+        task_outputs: Dictionary containing the output of all the tasks.
 
     Returns:
         result: The result of the lattice function.
     """
 
-    keys_of_outputs = list(task_outputs.keys())
-    values_of_outputs = list(task_outputs.values())
-
-    ordered_node_outputs = []
-    for node_id_list in task_execution_order:
-        ordered_node_outputs.extend(
-            values_of_outputs[node_id]
-            for node_id in node_id_list
-            # Here we only need outputs of nodes which are executable
-            if not keys_of_outputs[node_id].startswith(prefix_separator)
-            or keys_of_outputs[node_id].startswith(sublattice_prefix)
-        )
+    ordered_task_outputs = [
+        val
+        for key, val in task_outputs.items()
+        if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix)
+    ]
 
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
-        lattice.electron_outputs = ordered_node_outputs
+        lattice.electron_outputs = ordered_task_outputs
         result = lattice.workflow_function(*lattice.args, **lattice.kwargs)
         lattice.post_processing = False
         return result
@@ -131,16 +129,16 @@ def get_task_inputs(task_id: int, node_name: str, result_obj: Result) -> Dict:
             result_obj.lattice.transport_graph.get_node_value(parent, "output")
             for parent in result_obj.lattice.transport_graph.get_dependencies(task_id)
         ]
-        task_input = {"args": [], "kwargs": {"x": values}}
+        task_inputs = {"args": [], "kwargs": {"x": values}}
     elif node_name.startswith(electron_dict_prefix):
         values = {}
         for parent in result_obj.lattice.transport_graph.get_dependencies(task_id):
             key = result_obj.lattice.transport_graph.get_edge_value(parent, task_id, "edge_name")
             value = result_obj.lattice.transport_graph.get_node_value(parent, "output")
             values[key] = value
-        task_input = {"args": [], "kwargs": {"x": values}}
+        task_inputs = {"args": [], "kwargs": {"x": values}}
     else:
-        task_input = {"args": [], "kwargs": {}}
+        task_inputs = {"args": [], "kwargs": {}}
 
         for parent in result_obj.lattice.transport_graph.get_dependencies(task_id):
 
@@ -151,15 +149,15 @@ def get_task_inputs(task_id: int, node_name: str, result_obj: Result) -> Dict:
             value = result_obj.lattice.transport_graph.get_node_value(parent, "output")
 
             if param_type == "arg":
-                task_input["args"].append(value)
+                task_inputs["args"].append(value)
 
             elif param_type == "kwarg":
                 key = result_obj.lattice.transport_graph.get_edge_value(
                     parent, task_id, "edge_name"
                 )
 
-                task_input["kwargs"][key] = value
-    return task_input
+                task_inputs["kwargs"][key] = value
+    return task_inputs
 
 
 def is_sublattice(task_name: str = None) -> bool:
@@ -167,32 +165,16 @@ def is_sublattice(task_name: str = None) -> bool:
     dispatched, the build graph step is responsible for attaching a `sublattice` prefix to the
     corresponding task node."""
 
-    if task_name.startswith(sublattice_prefix):
-        return True
-
-    return False
+    return task_name.startswith(sublattice_prefix)
 
 
-def is_workflow_completed(result_obj: Result) -> bool:
-    """Check if workflow is completed"""
+def are_tasks_running(result_obj: Result) -> bool:
+    """Check if any of the tasks are still running. A task is considered not `running` if it was completed, failed or cancelled."""
 
-    if result_obj == Result.COMPLETED:
-        return True
-    elif result_obj == Result.FAILED:
-        return True
-    else:
-        task_id_batches = result_obj.lattice.transport_graph.get_topologically_sorted_graph()
-
-        # TODO - This logic here needs to get double checked.
-        for task_batch in task_id_batches:
-            for node_id in task_batch:
-                if (
-                    result_obj._get_node_status(node_id) == Result.FAILED
-                    or Result.RUNNING
-                    or Result.CANCELLED
-                ):
-                    return False
-    return True
+    return all(
+        result_obj._get_node_status(task_id) in [Result.RUNNING, Result.NEW_OBJ]
+        for task_id in range(result_obj._num_nodes)
+    )
 
 
 def get_task_order(result_obj: Result) -> List[List]:
@@ -202,12 +184,3 @@ def get_task_order(result_obj: Result) -> List[List]:
     """
 
     return result_obj.lattice.transport_graph.get_topologically_sorted_graph()
-
-
-#
-# def _write_result_to_db() -> None:
-#     pass
-#
-#
-# def _get_result(dispatch_id) -> Result:
-#     pass
