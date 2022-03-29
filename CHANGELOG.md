@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Fixed POST call from queuer to create result object
+
 ## [0.39.0] - 2022-03-29
 
 ### Changed
