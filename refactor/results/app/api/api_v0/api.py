@@ -19,4 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from .fs import UploadResponse
+from app.api.api_v0.endpoints import workflow
+from fastapi import APIRouter
+
+api_router = APIRouter()
+api_router.include_router(workflow.router, prefix="/workflow", tags=["Workflow"])
