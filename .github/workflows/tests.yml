@@ -106,6 +106,7 @@ jobs:
         with:
           files: ./coverage.xml
       - name: Get latest release
+        uses: actions-ecosystem/action-get-latest-tag@v1
         id: get-latest-tag
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         with:
