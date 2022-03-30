@@ -25,19 +25,13 @@ from typing import Any
 import cloudpickle as pickle
 import requests
 from app.core.cancel_workflow import cancel_workflow_execution
-from app.core.dispatch_workflow import (
-    dispatch_workflow,
-    get_result_object_from_result_service,
-    send_result_object_to_result_service,
-    send_task_update_to_ui,
-)
+from app.core.dispatch_workflow import dispatch_workflow, get_result_object_from_result_service
 from app.core.dispatcher_logger import logger
 from app.core.update_workflow import update_workflow_results
 from app.core.utils import update_result_and_ui
 from app.schemas.workflow import (
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
-    Node,
     UpdateWorkflowResponse,
 )
 from dotenv import load_dotenv
@@ -48,8 +42,6 @@ from covalent._results_manager import Result
 load_dotenv()
 
 BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
-TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
-MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
 workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()

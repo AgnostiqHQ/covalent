@@ -22,7 +22,7 @@
 
 from datetime import datetime, timezone
 from io import BytesIO
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 import cloudpickle as pickle
 import requests
@@ -234,6 +234,7 @@ def send_task_list_to_runner(dispatch_id, tasks_list):
 
 
 def send_result_object_to_result_service(result_object: Result):
+    """Send result object to the result microservice."""
 
     url_endpoint = "http://localhost:8002/api/v0/workflow/results/"
 
@@ -257,9 +258,15 @@ def send_task_update_to_result_service(dispatch_id: str, task_execution_result: 
     return response.text
 
 
-# TODO - Implement method when integrating with UI backend microservice.
 def send_task_update_to_ui(dispatch_id: str, task_id: int):
-    pass
+    """Send task update to UI backend microservice."""
+
+    url_endpoint = f"http://localhost:8004//api/v0/ui/workflow/{dispatch_id}/task/{task_id}"
+
+    response = requests.put(url=url_endpoint)
+    response.raise_for_status()
+
+    return response.text
 
 
 def get_result_object_from_result_service(dispatch_id: str):
@@ -272,8 +279,9 @@ def get_result_object_from_result_service(dispatch_id: str):
     return pickle.loads(response.content)
 
 
-def update_result_and_ui(result_obj: Result, dispatch_id: str, task_id: int):
+def update_result_and_ui(result_obj: Result, dispatch_id: str, task_id: int) -> Dict[str, str]:
     """Write the updated result to the database and update the UI."""
 
-    send_result_object_to_result_service(result_obj)
-    send_task_update_to_ui(dispatch_id=dispatch_id, task_id=task_id)
+    resp_1 = send_result_object_to_result_service(result_obj)
+    resp_2 = send_task_update_to_ui(dispatch_id=dispatch_id, task_id=task_id)
+    return {"update_result_response": resp_1, "update_ui_response": resp_2}
