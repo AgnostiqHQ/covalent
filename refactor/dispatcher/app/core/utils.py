@@ -21,7 +21,12 @@
 """Utility functions for the Dispatcher microservice."""
 
 from datetime import datetime, timezone
+from io import BytesIO
 from typing import Any, Dict, List
+
+import cloudpickle as pickle
+import requests
+from app.core.dispatcher_logger import logger
 
 from covalent._results_manager import Result
 from covalent._shared_files.context_managers import active_lattice_manager
@@ -184,3 +189,91 @@ def get_task_order(result_obj: Result) -> List[List]:
     """
 
     return result_obj.lattice.transport_graph.get_topologically_sorted_graph()
+
+
+def send_task_list_to_runner(dispatch_id, tasks_list):
+
+    logger.warning(f"Inside send_task_list_to_runner with dispatch_id {dispatch_id}")
+    logger.warning(f"Inside send_task_list_to_runner with tasks_list {tasks_list}")
+
+    # Example tasks_list:
+    # tasks_list = [
+    #     {
+    #         "task_id": 0,
+    #         "func": result_object.lattice.transport_graph.get_node_value(0, "function"),
+    #         "args": [2 + 2],
+    #         "kwargs": {},
+    #         "executor": result_object.lattice.transport_graph.get_node_value(0, "metadata")[
+    #             "executor"
+    #         ],
+    #         "results_dir": result_object.results_dir,
+    #     },
+    #     {
+    #         "task_id": 2,
+    #         "func": result_object.lattice.transport_graph.get_node_value(2, "function"),
+    #         "args": [2, 10],
+    #         "kwargs": {},
+    #         "executor": result_object.lattice.transport_graph.get_node_value(2, "metadata")[
+    #             "executor"
+    #         ],
+    #         "results_dir": result_object.results_dir,
+    #     },
+    # ]
+    # response = requests.post(url=url_endpoint, files={"tasks": pickle.dumps(tasks_list)})
+
+    # Set the url endpoint
+    url_endpoint = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/tasks"
+
+    # Send the tasks list as file
+    response = requests.post(url=url_endpoint, files={"tasks": BytesIO(pickle.dumps(tasks_list))})
+
+    # Raise error if occurred
+    response.raise_for_status()
+
+    return response.json()["left_out_task_ids"]
+
+
+def send_result_object_to_result_service(result_object: Result):
+
+    url_endpoint = "http://localhost:8002/api/v0/workflow/results/"
+
+    response = requests.post(
+        url=url_endpoint, files={"result_pkl_file": BytesIO(pickle.dumps(result_object))}
+    )
+    response.raise_for_status()
+
+    return response.text
+
+
+def send_task_update_to_result_service(dispatch_id: str, task_execution_result: dict):
+
+    url_endpoint = f"http://localhost:8002/api/v0/workflow/results/{dispatch_id}"
+
+    response = requests.put(
+        url=url_endpoint, files={"task": BytesIO(pickle.dumps(task_execution_result))}
+    )
+    response.raise_for_status()
+
+    return response.text
+
+
+# TODO - Implement method when integrating with UI backend microservice.
+def send_task_update_to_ui(dispatch_id: str, task_id: int):
+    pass
+
+
+def get_result_object_from_result_service(dispatch_id: str):
+
+    url_endpoint = f"http://localhost:8002/api/v0/workflow/results/{dispatch_id}"
+
+    response = requests.get(url=url_endpoint)
+    response.raise_for_status()
+
+    return pickle.loads(response.content)
+
+
+def update_result_and_ui(result_obj: Result, dispatch_id: str, task_id: int):
+    """Write the updated result to the database and update the UI."""
+
+    send_result_object_to_result_service(result_obj)
+    send_task_update_to_ui(dispatch_id=dispatch_id, task_id=task_id)
