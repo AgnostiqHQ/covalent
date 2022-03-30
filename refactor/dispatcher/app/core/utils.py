@@ -22,7 +22,7 @@
 
 from datetime import datetime, timezone
 from io import BytesIO
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 import cloudpickle as pickle
 import requests
