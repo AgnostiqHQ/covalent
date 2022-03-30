@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Supervisord now brings up dispatcher queue consumer worker
 
+## [0.41.2] - 2022-03-30
+
+### Fixed
+
+- Oneline bugfix to remove `fetch --unshallow`
+
 ## [0.41.1] - 2022-03-30
 
 ### Fixed
