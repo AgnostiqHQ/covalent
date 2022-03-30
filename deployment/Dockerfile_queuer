@@ -34,7 +34,7 @@ WORKDIR $PROJECT_DIR
 #COPY queuer/requirements $REQ_DIR
 #RUN pip install  --no-cache-dir --upgrade -r $REQ_DIR/dist.txt
 
-COPY queuer $PROJECT_DIR
+COPY refactor/queuer $PROJECT_DIR
 RUN pip install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
 
 ENV PORT 8000

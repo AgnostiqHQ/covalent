@@ -1,0 +1,77 @@
+version: "3.9"
+
+services:
+  covalent-data:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile_data
+    image: covalent-data
+    command: sh -c "python main.py"
+    ports:
+      - "8003:8003"
+    working_dir: /data
+    networks:
+     covalent:
+
+  covalent-dispatcher:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile_dispatcher
+    image: covalent-dispatcher
+    command: sh -c "python main.py"
+    ports:
+      - "8001:8001"
+    working_dir: /dispatcher
+    networks:
+     covalent:
+
+  covalent-queuer:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile_queuer
+    image: covalent-queuer
+    command: sh -c "python main.py"
+    ports:
+      - "8000:8000"
+    working_dir: /queuer
+    networks:
+      covalent:
+
+#  covalent-results:
+#    build:
+#      context: .
+#      dockerfile: ./results/Dockerfile_data
+#    image: covalent-results
+#    command: sh -c "python main.py"
+#    ports:
+#      - "8006:8006"
+#    working_dir: /results
+#    networks:
+#     covalent:
+
+  covalent-runner:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile_runner
+    image: covalent-runner
+    command: sh -c "python main.py"
+    ports:
+      - "8002:8002"
+    working_dir: /runner
+    networks:
+      covalent:
+
+  covalent-ui:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile_ui_backend
+    image: covalent-ui
+    command: sh -c "python main.py"
+    ports:
+      - "8005:8005"
+    working_dir: /ui_backend
+      - ./ui_backend:./ui_backend
+    networks:
+      covalent:
+networks:
+  covalent:
