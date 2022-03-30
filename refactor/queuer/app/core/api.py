@@ -43,4 +43,4 @@ class DataService(APIService):
         super().__init__(settings.DATA_OS_SVC_HOST_URI)
 
     async def create_result(self, result_pkl_file: bytes):
-        return self.post("workflow/results", files={"result_pkl_file": result_pkl_file})
+        return self.post("api/v0/workflow/results", files={"result_pkl_file": result_pkl_file})
