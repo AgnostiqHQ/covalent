@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Function to call UI update method in the UI microservice for use in the Dispatcher micro-service.
+- Refactor updating results and ui into one function.
+
 ## [0.41.2] - 2022-03-30
 
 ### Fixed
