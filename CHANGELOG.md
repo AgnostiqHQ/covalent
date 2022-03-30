@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.41.0] - 2022-03-30
+
+### Added
+
+- Dockerized the Dispatcher and Runner Services.
+- Added required packages for running containerized instances of the Dispatcher and Runner.
+
+## [0.40.0] - 2022-03-30
+
+### Added
+
+- Dockerized the Data and UI-backend services.
+- Required packages to run containerized instances of the Data and UI-backend.
+
+## [0.39.1] - 2022-03-30
+
+### Fixed
+
+- Supervisord & Results service integration by making results service port configurable by an env var
+
 ## [0.39.0] - 2022-03-29
 
 ### Changed
