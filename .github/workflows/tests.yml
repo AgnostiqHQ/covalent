@@ -114,8 +114,7 @@ jobs:
       - name: Push to master
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
-          release="${{ steps.get-latest-tag.outputs.tag }}"
-          MASTER_VERSION="${release:1}"
+          MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
           VERSION="$(cat ./VERSION)"
           if [ "$MASTER_VERSION" = "$VERSION" ] ; then
             echo "$VERSION has been previously released."
