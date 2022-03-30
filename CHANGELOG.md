@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Moved some unused for-the-future files to the refactor directory and out of the main codebase.
+
 ## [0.41.2] - 2022-03-30
 
 ### Fixed
