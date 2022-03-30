@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.39.1] - 2022-03-30
+
 ### Fixed
 
 - Supervisord & Results service integration by making results service port configurable by an env var
