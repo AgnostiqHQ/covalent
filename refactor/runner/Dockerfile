@@ -18,22 +18,23 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from pathlib import Path
+# syntax=docker/dockerfile:1
+FROM python:3.8-slim-buster
 
-from app.api.api_v0.api import api_router
-from app.core.config import settings
-from fastapi import FastAPI
+ENV PROJECT_DIR=/runner
+ENV REQ_DIR=/requirements
 
-BASE_PATH = Path(__file__).resolve().parent
+RUN mkdir $PROJECT_DIR $REQ_DIR
+RUN chmod 0777 $PROJECT_DIR $REQ_DIR
 
-app = FastAPI(title="Covalent Runner Service API")
+WORKDIR $PROJECT_DIR
 
+COPY requirements $REQ_DIR
+RUN pip install  --no-cache-dir --upgrade -r $REQ_DIR/dist.txt
 
-app.include_router(api_router, prefix=settings.API_V0_STR)
+COPY . .
 
+ENV PORT 8002
+EXPOSE $PORT
 
-if __name__ == "__main__":
-    # Use this for debugging purposes only
-    import uvicorn
-    
-    uvicorn.run("main:app", host="0.0.0.0", port=settings.PORT, log_level="debug", reload=True)
+CMD [ "python", "main.py"]

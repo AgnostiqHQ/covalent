@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Dockerized the Dispatcher and Runner Services.
+- Added required packages for running containerized instances of the Dispatcher and Runner.
+
 ## [0.40.0] - 2022-03-30
 
 ### Added
