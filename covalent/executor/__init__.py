@@ -119,7 +119,7 @@ class _ExecutorManager:
             app_log.error(message)
             raise TypeError
 
-    def _check_version(self, the_module: Any) -> None:
+    def _check_version(self, the_module: Any) -> bool:
         """
         Attempt to compare the version number of the plugin module to be imported with
         the minimum compatible plugin version.
@@ -127,6 +127,11 @@ class _ExecutorManager:
         Args
             the_module: The plugin module being imported.
         """
+
+        if the_module.__file__.endswith("executor_plugins/local.py"):
+            # The built-in local executor doesn't need a version check.
+            return True
+
         mod_version = None
         if hasattr(the_module,"__version__"):
             # Simple (non-package) plugins where __version__ has been defined.
@@ -148,7 +153,9 @@ class _ExecutorManager:
             message += "An update is needed. "
             message += f"Please see the up-to-date example template at {TEMPLATE_ADDRESS}."
             app_log.error(message)
-            return
+            return False
+
+        return True
 
     def _populate_executor_map_from_module(self, the_module: Any) -> None:
         """
@@ -162,7 +169,8 @@ class _ExecutorManager:
             None
         """
 
-        self._check_version(the_module)
+        if not self._check_version(the_module):
+            return
 
         if not hasattr(the_module, "executor_plugin_name"):
             message = f"{the_module.__name__} does not seem to have a well-defined plugin class.\n"
