@@ -279,9 +279,9 @@ def get_result_object_from_result_service(dispatch_id: str):
     return pickle.loads(response.content)
 
 
-def update_result_and_ui(result_obj: Result, dispatch_id: str, task_id: int) -> Dict[str, str]:
+def update_result_and_ui(result_obj: Result, task_id: int) -> Dict[str, str]:
     """Write the updated result to the database and update the UI."""
 
     resp_1 = send_result_object_to_result_service(result_obj)
-    resp_2 = send_task_update_to_ui(dispatch_id=dispatch_id, task_id=task_id)
+    resp_2 = send_task_update_to_ui(dispatch_id=result_obj.dispatch_id, task_id=task_id)
     return {"update_result_response": resp_1, "update_ui_response": resp_2}

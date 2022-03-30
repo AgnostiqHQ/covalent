@@ -151,6 +151,6 @@ def update_workflow(
         workflow_status_queue.get()  # Empty queue when workflow is no longer running (completed
         # or failed)
 
-    update_result_and_ui()
+    update_result_and_ui(updated_result_obj, task_id)
 
     return {"response": f"{dispatch_id} workflow updated successfully"}
