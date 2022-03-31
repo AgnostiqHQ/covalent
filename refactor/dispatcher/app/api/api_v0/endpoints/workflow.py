@@ -116,7 +116,8 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
 
     success = cancel_workflow_execution(result_obj)
 
-    if workflow_tasks_queue.not_empty():
+    # Note - The queue should be populated in theory.
+    if not workflow_tasks_queue.is_empty():
         workflow_tasks_queue.get()  # Pop the last set of tasks from the queue since the workflow is being cancelled.
 
     if success:
@@ -146,7 +147,7 @@ def update_workflow(
         tasks_queue=workflow_tasks_queue,
     )
 
-    if updated_result_obj._status != "RUNNING":
+    if updated_result_obj._status != Result.RUNNING:
         workflow_status_queue.get()  # Empty queue when workflow is no longer running (completed
         # or failed)
 
