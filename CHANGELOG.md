@@ -11,6 +11,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Using `io.BytesIO` in `update_result` in the results service to prevent creation of a new file in the file system.
 
+## [0.43.0] - 2022-03-31
+
+### Added
+
+- Function to call UI update method in the UI microservice for use in the Dispatcher micro-service.
+- Refactor updating results and ui into one function.
+
+## [0.42.2] - 2022-03-31
+
+### Fixed
+
+- Using functions for getting result object in cancel endpoint and sending cancel task signal to runner in the dispatcher.
+
+## [0.42.1] - 2022-03-31
+
+### Fixed
+
+- `update_workflow_results` in `update_workflow.py` now also takes care of sending the next set of tasks to the runner.
+
+- Also handling the cases of sublattices in `update_workflow_results`.
+
 ## [0.42.0] - 2022-03-31
 
 ### Changed

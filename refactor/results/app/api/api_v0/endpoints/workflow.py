@@ -43,9 +43,11 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-fs_server_address = os.environ.get("FS_SERVER_ADDRESS")
-if not fs_server_address:
-    fs_server_address = "localhost:8000"
+# TODO - The incorrect port info was making this service fail. Fix with proper port info.
+# fs_server_address = os.environ.get("FS_SERVER_ADDRESS")
+# if not fs_server_address:
+#     fs_server_address = "localhost:8004"
+fs_server_address = "localhost:8004"
 base_url = fs_server_address + "/api/v0/fs"
 
 
