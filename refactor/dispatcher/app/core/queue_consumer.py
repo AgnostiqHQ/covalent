@@ -22,8 +22,8 @@ import asyncio
 import os
 
 import nats
-from refactor.dispatcher.app.api.api_v0.endpoints.workflow import submit_workflow, workflow_status_queue
-
+from app.api.api_v0.endpoints.workflow import submit_workflow, workflow_status_queue
+from app.core.utils import is_empty
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -42,7 +42,7 @@ async def main():
         print(f"Got dispatch_id: {dispatch_id}")
         while True:
             await asyncio.sleep(0.1)
-            if workflow_status_queue.empty():
+            if is_empty(workflow_status_queue):
                 break
         submit_workflow(dispatch_id=dispatch_id)
 
