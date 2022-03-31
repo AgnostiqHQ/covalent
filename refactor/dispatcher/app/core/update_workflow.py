@@ -27,11 +27,10 @@ from typing import Dict
 from covalent._results_manager import Result
 
 from .dispatch_workflow import (
+    _post_process,
     dispatch_runnable_tasks,
     get_result_object_from_result_service,
-    get_runnable_tasks,
     is_empty,
-    run_tasks,
     send_result_object_to_result_service,
 )
 from .utils import _post_process, are_tasks_running
