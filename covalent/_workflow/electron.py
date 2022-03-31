@@ -455,9 +455,7 @@ def electron(
     _func: Optional[Callable] = None,
     *,
     backend: Optional[str] = None,
-    executor: Optional[
-        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+    executor: Optional[Union[str, "BaseExecutor"]] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     # Add custom metadata fields here
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns a new :obj:`Electron <covalent._workflow.electron.Electron>` object.
@@ -480,6 +478,10 @@ def electron(
             exc_info=DeprecationWarning,
         )
         executor = backend
+
+    from ..executor import _executor_manager
+
+    executor = _executor_manager.get_executor(executor)
 
     constraints = {
         "executor": executor,
