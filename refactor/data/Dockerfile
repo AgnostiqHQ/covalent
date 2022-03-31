@@ -20,8 +20,9 @@
 
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
-
 ENV PROJECT_DIR=/data
+ENV PORT 8003
+EXPOSE $PORT
 
 RUN mkdir $PROJECT_DIR \
     && chmod 0777 $PROJECT_DIR
@@ -29,9 +30,6 @@ RUN mkdir $PROJECT_DIR \
 WORKDIR $PROJECT_DIR
 
 COPY refactor/data/ $PROJECT_DIR
-RUN pip install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
-
-ENV PORT 8003
-EXPOSE $PORT
+RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
 
 CMD [ "python", "main.py"]

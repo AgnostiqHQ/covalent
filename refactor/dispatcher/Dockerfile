@@ -20,9 +20,9 @@
 
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
-ENV PROJECT_DIR=/ui_backend
+ENV PROJECT_DIR=/dispatcher
 ENV COVALENT_ROOT=/covalent
-ENV PORT 8005
+ENV PORT 8001
 EXPOSE $PORT
 
 RUN apt-get update \
@@ -43,7 +43,7 @@ COPY covalent_ui/ $COVALENT_ROOT/covalent_ui
 COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$COVALENT_ROOT/"]
 RUN pip3 install $COVALENT_ROOT
 
-COPY refactor/ui_backend/ $PROJECT_DIR
+COPY refactor/dispatcher/ $PROJECT_DIR
 
 WORKDIR $PROJECT_DIR
 CMD [ "python", "main.py"]

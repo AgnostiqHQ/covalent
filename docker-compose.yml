@@ -13,17 +13,17 @@ services:
     networks:
      covalent:
 
-#  covalent-dispatcher:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile_dispatcher
-#    image: covalent-dispatcher
-#    command: sh -c "python main.py"
-#    ports:
-#      - "8001:8001"
-#    working_dir: /dispatcher
-#    networks:
-#     covalent:
+  covalent-dispatcher:
+    build:
+      context: .
+      dockerfile: refactor/dispatcher/Dockerfile
+    image: covalent-dispatcher
+    command: sh -c "python main.py"
+    ports:
+      - "8001:8001"
+    working_dir: /dispatcher
+    networks:
+     covalent:
 
   covalent-queuer:
     build:
@@ -37,29 +37,29 @@ services:
     networks:
       covalent:
 
-#  covalent-results:
-#    build:
-#      context: .
-#      dockerfile: ./results/Dockerfile_data
-#    image: covalent-results
-#    command: sh -c "python main.py"
-#    ports:
-#      - "8006:8006"
-#    working_dir: /results
-#    networks:
-#     covalent:
+  covalent-results:
+    build:
+      context: .
+      dockerfile: refactor/results/Dockerfile
+    image: covalent-results
+    command: sh -c "python main.py"
+    ports:
+      - "8006:8006"
+    working_dir: /results
+    networks:
+     covalent:
 
-#  covalent-runner:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile_runner
-#    image: covalent-runner
-#    command: sh -c "python main.py"
-#    ports:
-#      - "8002:8002"
-#    working_dir: /runner
-#    networks:
-#      covalent:
+  covalent-runner:
+    build:
+      context: .
+      dockerfile: refactor/runner/Dockerfile
+    image: covalent-runner
+    command: sh -c "python main.py"
+    ports:
+      - "8002:8002"
+    working_dir: /runner
+    networks:
+      covalent:
 
   covalent-ui:
     build:
