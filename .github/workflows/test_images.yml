@@ -29,12 +29,18 @@ jobs:
     steps:
       - name: Check out head
         uses: actions/checkout@v2
-      - name: Build and run images
+      - name: Test images
         run: |
           docker-compose -f docker-compose.dev.yml up --build -d
           echo 'Displaying containers...'
           docker ps
-          echo 'Stopping and Removing containers '
+          echo 'Testing images...'
+           if [curl -I http://localhost:8001/docs 2>/dev/null | head -n 1 | cut -d$' ' -f2 == 200]; then \
+            echo 'Container is healthy';
+           else
+            echo 'curl -I http://localhost:8006/docs 2>/dev/null | head -n 1 | cut -d$' ' -f2'
+          fi
+          echo 'Stopping and Removing containers...'
           docker-compose down && docker-compose rm $(docker-compose ps -aq)
           
           
