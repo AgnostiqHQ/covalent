@@ -20,13 +20,17 @@
 
 """Utility functions for the Dispatcher microservice."""
 
+import os
 from datetime import datetime, timezone
 from io import BytesIO
+from multiprocessing import Queue as MPQ
+from queue import Empty
 from typing import Any, Dict, List
 
 import cloudpickle as pickle
 import requests
 from app.core.dispatcher_logger import logger
+from dotenv import load_dotenv
 
 from covalent._results_manager import Result
 from covalent._shared_files.context_managers import active_lattice_manager
@@ -41,6 +45,29 @@ from covalent._shared_files.defaults import (
     subscript_prefix,
 )
 from covalent._workflow.lattice import Lattice
+
+load_dotenv()
+
+
+BASE_URI = os.environ.get("BASE_URI")
+
+
+def is_empty(mp_queue: MPQ):
+    """The underlying assumption is that mpq contains only one element at any given time."""
+
+    try:
+        elem = mp_queue.get(timeout=1)
+    except Empty:
+        mp_queue.put(None)
+        return True
+
+    if elem is None:
+        status = True
+    else:
+        status = False
+
+    mp_queue.put(elem)
+    return status
 
 
 def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result) -> Result:
@@ -285,3 +312,10 @@ def update_result_and_ui(result_obj: Result, task_id: int) -> Dict[str, str]:
     resp_1 = send_result_object_to_result_service(result_obj)
     resp_2 = send_task_update_to_ui(dispatch_id=result_obj.dispatch_id, task_id=task_id)
     return {"update_result_response": resp_1, "update_ui_response": resp_2}
+
+
+def send_cancel_task_to_runner(dispatch_id: str, task_id: int):
+    response = requests.delete(f"{BASE_URI}/api/v0/workflow/{dispatch_id}/task/{task_id}/cancel")
+    response.raise_for_status()
+
+    return response.json()["cancelled_dispatch_id"], response.json()["cancelled_task_id"]
