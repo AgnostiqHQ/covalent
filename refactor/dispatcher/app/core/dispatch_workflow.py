@@ -26,7 +26,7 @@ from multiprocessing import Queue as MPQ
 from typing import Dict, List, Tuple, Union
 
 from app.core.dispatcher_logger import logger
-from app.core.utils import send_result_object_to_result_service, send_task_list_to_runner
+from app.core.utils import is_empty, send_result_object_to_result_service, send_task_list_to_runner
 
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
@@ -107,23 +107,6 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
 
     # Put the task order back into the queue
     tasks_queue.put(final_task_order)
-
-
-def convert_lol(dispatch_id: str, lol: List[List]):
-
-    # How it is: [[3, 4], [1, 2, 5], [6, 7, 8]]
-    # How it should be: [{d_id_1:[[4]]}, {d_id_2:[[1, 2, 5]]}]
-
-    pass
-
-
-def is_empty(mp_queue: MPQ):
-    if elem := mp_queue.get():
-        mp_queue.put(elem)
-        return True
-    else:
-        mp_queue.put(None)
-        return False
 
 
 def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
