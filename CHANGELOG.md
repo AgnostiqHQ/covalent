@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.41.3] - 2022-03-31
+
 ### Fixed
 
 - Dispatch DB is now created upon server start.
