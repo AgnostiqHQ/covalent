@@ -21,17 +21,17 @@
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
 
-ENV PROJECT_DIR=/queuer
+ENV PROJECT_DIR=/data
 
-RUN mkdir $PROJECT_DIR
-RUN chmod 0777 $PROJECT_DIR
+RUN mkdir $PROJECT_DIR \
+    && chmod 0777 $PROJECT_DIR
 
 WORKDIR $PROJECT_DIR
 
-COPY refactor/queuer $PROJECT_DIR
+COPY refactor/data/ $PROJECT_DIR
 RUN pip install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
 
-ENV PORT 8000
+ENV PORT 8003
 EXPOSE $PORT
 
 CMD [ "python", "main.py"]

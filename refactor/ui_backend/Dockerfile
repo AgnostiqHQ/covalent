@@ -21,6 +21,7 @@
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
 ENV PROJECT_DIR=/ui_backend
+ENV COVALENT_ROOT=/covalent
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends git gcc g++ make \
@@ -29,15 +30,20 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 
-RUN mkdir $PROJECT_DIR
+RUN mkdir -p $PROJECT_DIR $COVALENT_ROOT/{covalent,covalent_dispatcher,covalent_ui}
 RUN chmod 0777 $PROJECT_DIR  && cd $PROJECT_DIR \
     && mkdir webapp && cd webapp \
     && mkdir build
 
+COPY covalent/ $COVALENT_ROOT/covalent
+COPY covalent_dispatcher/ $COVALENT_ROOT/covalent_dispatcher
+COPY covalent_ui/ $COVALENT_ROOT/covalent_ui
+COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$COVALENT_ROOT/"]
+RUN pip3 install $COVALENT_ROOT
+
 WORKDIR $PROJECT_DIR
 
-COPY refactor/ui_backend $PROJECT_DIR
-COPY . .
+COPY refactor/ui_backend/ $PROJECT_DIR
 RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
 
 ENV PORT 8005
