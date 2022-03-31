@@ -213,7 +213,7 @@ def update_result(*, dispatch_id: str, task: Node) -> Any:
     task = pickle.loads(task)
     results_object._update_node(**task)
 
-    pickled_result = TemporaryFile()
-    pickle.dump(results_object, pickled_result)
+    pickled_result = io.BytesIO(pickle.dumps(results_object))
+
     if _upload_file(pickled_result):
         return {"response": "Task updated successfully"}
