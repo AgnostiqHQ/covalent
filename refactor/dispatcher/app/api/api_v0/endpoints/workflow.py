@@ -129,6 +129,7 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     # Empty queue when workflow is terminated
     if success:
         workflow_status_queue.get()
+        workflow_status_queue.put(None)
 
         return {"response": f"{dispatch_id} workflow cancelled successfully"}
     else:

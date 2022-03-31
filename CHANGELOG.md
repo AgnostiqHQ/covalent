@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Using `Result.RUNNING` instead of str "RUNNING"
 - Using process safe `is_empty` method rather than `empty()` method for multiprocessing queue.
+- Multprocessing `is_queue` method.
 
 ### Added
 
