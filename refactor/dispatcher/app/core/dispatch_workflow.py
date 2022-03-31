@@ -65,11 +65,8 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     return result_obj
 
 
-def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ) -> None:
+def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: List[List]) -> None:
     """Get runnable tasks and dispatch them to the Runner API. Put the tasks that weren't picked up by the Runner API back in the queue."""
-
-    # Get the order of tasks to be run
-    task_order: List[List] = get_task_order(result_obj=result_obj)
 
     # To get the runnable tasks from first task order list
     # Sending the tasks_queue as well to handle the case of sublattices
@@ -81,10 +78,11 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ) -> None:
 
     # The next set of tasks that can be run afterwards
     # This is the case of a new dispatch id in the list of dictionaries
-    if is_empty(tasks_queue):
-        tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}])
-    else:
-        tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}] + tasks_queue.get())
+    if next_tasks_order:
+        if is_empty(tasks_queue):
+            tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}])
+        else:
+            tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}] + tasks_queue.get())
 
     # Tasks which were not able to run
     unrun_tasks = run_tasks(
@@ -100,9 +98,12 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ) -> None:
     # Will add those unrun tasks back to the tasks_queue
     final_task_order = tasks_queue.get()
     if unrun_tasks:
-        final_task_order[0][result_obj.dispatch_id] = [unrun_tasks] + final_task_order[0][
-            result_obj.dispatch_id
-        ]
+        if final_task_order is not None:
+            final_task_order[0][result_obj.dispatch_id] = [unrun_tasks] + final_task_order[0][
+                result_obj.dispatch_id
+            ]
+        else:
+            final_task_order = [{result_obj.dispatch_id: [unrun_tasks]}]
 
     # Put the task order back into the queue
     tasks_queue.put(final_task_order)
@@ -138,8 +139,11 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     # Send the initialized result to the result service
     send_result_object_to_result_service(result_object=result_obj)
 
+    # Get the order of tasks to be run
+    task_order: List[List] = get_task_order(result_obj=result_obj)
+
     # logger.warning(f"task_order: {task_order}")
-    dispatch_runnable_tasks(result_obj, tasks_queue)
+    dispatch_runnable_tasks(result_obj, tasks_queue, task_order)
 
     # logger.warning(f"Inside start_dispatch with finished dispatch_id {result_obj.dispatch_id}")
 
