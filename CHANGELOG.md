@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-- Added a test for the _check_version method in covalent/executor/__init__.py.
+- Added a test for the `_check_version` method in `covalent/executor/__init__.py`.
 
 ## [0.44.0] - 2022-03-31
 
