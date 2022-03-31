@@ -4,7 +4,7 @@ services:
   covalent-data:
     build:
       context: .
-      dockerfile: deployment/Dockerfile_data
+      dockerfile: Dockerfile_data
     image: covalent-data
     command: sh -c "python main.py"
     ports:
@@ -16,7 +16,7 @@ services:
   covalent-dispatcher:
     build:
       context: .
-      dockerfile: deployment/Dockerfile_dispatcher
+      dockerfile: Dockerfile_dispatcher
     image: covalent-dispatcher
     command: sh -c "python main.py"
     ports:
@@ -28,7 +28,7 @@ services:
   covalent-queuer:
     build:
       context: .
-      dockerfile: deployment/Dockerfile_queuer
+      dockerfile: Dockerfile_queuer
     image: covalent-queuer
     command: sh -c "python main.py"
     ports:
@@ -52,7 +52,7 @@ services:
   covalent-runner:
     build:
       context: .
-      dockerfile: deployment/Dockerfile_runner
+      dockerfile: Dockerfile_runner
     image: covalent-runner
     command: sh -c "python main.py"
     ports:
@@ -64,13 +64,12 @@ services:
   covalent-ui:
     build:
       context: .
-      dockerfile: deployment/Dockerfile_ui_backend
+      dockerfile: Dockerfile_ui_backend
     image: covalent-ui
     command: sh -c "python main.py"
     ports:
       - "8005:8005"
     working_dir: /ui_backend
-      - ./ui_backend:./ui_backend
     networks:
       covalent:
 networks:

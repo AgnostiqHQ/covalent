@@ -18,26 +18,24 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-# syntax=docker/dockerfile:1
-FROM python:3.8-slim-buster
-
-ENV PROJECT_DIR=/queuer
-#ENV REQ_DIR=requirements
-
-#RUN mkdir $PROJECT_DIR $REQ_DIR
-#RUN chmod 0777 $PROJECT_DIR $REQ_DIR
-RUN mkdir $PROJECT_DIR
-RUN chmod 0777 $PROJECT_DIR
-
-WORKDIR $PROJECT_DIR
-
-#COPY queuer/requirements $REQ_DIR
-#RUN pip install  --no-cache-dir --upgrade -r $REQ_DIR/dist.txt
-
-COPY refactor/queuer $PROJECT_DIR
-RUN pip install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
-
-ENV PORT 8000
-EXPOSE $PORT
-
-CMD [ "python", "main.py"]
+.github
+.tox
+.pytest_cache
+.git
+__pycache__
+tests
+env
+venv
+README*
+VERSION
+docker-compose*
+requirements.txt
+*.rst
+docs
+supervisord.*
+*err.log
+*out.log
+CHANGELOG*
+CODE_OF_CONDUCT*
+CONTRIBUTING*
+Dockerfile*
