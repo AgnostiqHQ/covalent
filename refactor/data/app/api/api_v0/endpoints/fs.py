@@ -58,7 +58,7 @@ else:
 
 
 @router.post("/upload", status_code=200, response_model=UploadResponse)
-def upload_file(*, file: UploadFile) -> Any:
+def upload_file(*, file: UploadFile, overwrite: bool) -> Any:
     """
     Upload a file
     """
@@ -67,7 +67,9 @@ def upload_file(*, file: UploadFile) -> Any:
     length = file.file.tell()
     file.file.seek(0)
 
-    path, filename = backend.put(file.file, backend.bucket_name, file.filename, length)
+    path, filename = backend.put(
+        file.file, backend.bucket_name, file.filename, length, overwrite=overwrite
+    )
 
     return {
         "filename": filename,

@@ -93,6 +93,7 @@ def _upload_file(result_pkl_file: BinaryIO):
     r = requests.post(
         f"http://{base_url}/upload",
         files=[("file", ("result.pkl", result_pkl_file, "application/octet-stream"))],
+        params={"overwrite": True},
     )
     response = r.json()
     _handle_error_response(r.status_code, response)
