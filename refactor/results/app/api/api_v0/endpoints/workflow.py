@@ -36,6 +36,7 @@ from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResultResponse
 from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
+from refactor.results.app.core.config import settings
 
 from refactor.results.app.core.get_svc_uri import DataURI
 
@@ -44,7 +45,6 @@ logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
 
 # @router.middleware("http")
 # TODO: figure out why the middleware doesn't work
@@ -110,10 +110,7 @@ def _handle_error_response(status_code: int, response: dict):
 
 
 def _db(sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
-    results_db = os.environ.get("RESULTS_DB")
-    if not results_db:
-        results_db = "results.db"
-    con = sqlite3.connect(results_db)
+    con = sqlite3.connect(settings.RESULTS_DB)
     cur = con.cursor()
     logger.info("Executing SQL command.")
     logger.info(sql)

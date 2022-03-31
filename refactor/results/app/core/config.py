@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     RESULTS_SVC_PORT: int = 8006
     DATA_SVC_PORT: int = 8004
+    RESULTS_DB: str = "results.db"
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
