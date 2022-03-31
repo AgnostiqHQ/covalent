@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.45.0] - 2022-03-31
+
 ### Changed
 
 - Using `Result.RUNNING` instead of str "RUNNING"
