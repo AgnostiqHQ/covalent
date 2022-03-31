@@ -17,7 +17,6 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-import base64
 import os
 
 from app.core.localstoragebackend import LocalStorageBackend
