@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- LocalStorageBackend (for the data service) now allows overwriting objects.
+
 ## [0.42.1] - 2022-03-31
 
 ### Fixed

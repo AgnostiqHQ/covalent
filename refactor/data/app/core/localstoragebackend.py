@@ -106,12 +106,7 @@ class LocalStorageBackend(StorageBackend):
             traceback.print_exception()
             traceback.print_stack()
             return ("", "")
-        try:
-            abs_p = str(p.resolve(True))
-            object_name = f"{uuid.uuid4()}.pkl"
-            p = self.base_dir / Path(bucket_name) / Path(object_name)
-        except FileNotFoundError:
-            pass
+
         abs_p = str(p.resolve())
 
         # TODO: improve error handling and logging
