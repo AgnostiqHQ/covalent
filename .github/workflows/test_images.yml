@@ -29,8 +29,12 @@ jobs:
     steps:
       - name: Check out head
         uses: actions/checkout@v2
-      - name: Build and run image
+      - name: Build and run images
         run: |
-          docker-compose -f docker-compose.dev.yml up --build
+          docker-compose -f docker-compose.dev.yml up --build -d
+          echo 'Displaying containers...'
+          docker ps
+          echo 'Stopping and Removing containers '
+          docker-compose down && docker-compose rm $(docker-compose ps -aq)
           
           
