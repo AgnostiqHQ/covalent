@@ -35,11 +35,7 @@ jobs:
           echo 'Displaying containers...'
           docker ps
           echo 'Testing images...'
-           if [curl -I http://localhost:8001/docs 2>/dev/null | head -n 1 | cut -d$' ' -f2 == 200]; then \
-            echo 'Container is healthy';
-           else
-            echo 'curl -I http://localhost:8006/docs 2>/dev/null | head -n 1 | cut -d$' ' -f2'
-          fi
+          curl -I http://localhost:8001/docs 2>/dev/null | head -n 1 | cut -d$' ' -f2
           echo 'Stopping and Removing containers...'
           docker-compose down && docker-compose rm $(docker-compose ps -aq)
           
