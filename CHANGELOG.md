@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.42.2] - 2022-03-31
+
 ### Fixed
 
 - Using functions for getting result object in cancel endpoint and sending cancel task signal to runner in the dispatcher.
