@@ -23,6 +23,7 @@
 import pytest
 
 from covalent.executor import BaseExecutor, _executor_manager, _ExecutorManager
+from covalent.executor.plugin_info import MIN_PLUGIN_VERSION
 
 
 def test_get_executor_local(mocker):
@@ -120,3 +121,19 @@ def test_load_installed_plugins(mocker):
     em = _ExecutorManager()
     em._load_installed_plugins()
     populate_executor_map_from_module_mock.assert_called()
+
+
+def test_version_check():
+    """Test that out-of-date plugins aren't loaded."""
+
+    from covalent.executor.executor_plugins import local
+
+    # local is usually ignored by the version check, based on its file path. So reset it
+    # here to force the check.
+    local.__file__ = ""
+
+    local.__version__ = "0.0.1"
+    assert _executor_manager._check_version(local) is False
+
+    local.__version__ = MIN_PLUGIN_VERSION
+    assert _executor_manager._check_version(local) is True

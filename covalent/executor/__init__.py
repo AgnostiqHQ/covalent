@@ -28,8 +28,8 @@ import inspect
 import os
 from typing import Any, Dict, List, Union
 
-from packaging import version
 import pkg_resources
+from packaging import version
 
 from .._shared_files import logger
 from .._shared_files.config import get_config, update_config
@@ -133,7 +133,7 @@ class _ExecutorManager:
             return True
 
         mod_version = None
-        if hasattr(the_module,"__version__"):
+        if hasattr(the_module, "__version__"):
             # Simple (non-package) plugins where __version__ has been defined.
             mod_version = str(the_module.__version__)
         else:
@@ -143,7 +143,7 @@ class _ExecutorManager:
             except importlib.metadata.PackageNotFoundError:
                 pass
 
-        cova_version = pkg_resources.get_distribution('cova').version
+        cova_version = pkg_resources.get_distribution("cova").version
         if mod_version is None:
             message = f"No version number found for plugin {the_module}.\n"
             message += f"Compatibility with Covalent version {cova_version} is not guaranteed."
