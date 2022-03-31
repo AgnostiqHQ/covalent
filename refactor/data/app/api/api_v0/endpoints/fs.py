@@ -58,7 +58,7 @@ else:
 
 
 @router.post("/upload", status_code=200, response_model=UploadResponse)
-def upload_file(*, file: UploadFile, overwrite: bool) -> Any:
+def upload_file(*, file: UploadFile, overwrite: bool = False) -> Any:
     """
     Upload a file
     """
