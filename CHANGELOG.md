@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- A version check is done at Covalent startup to ensure that executor plugins are compatible.
+
 ## [0.42.2] - 2022-03-31
 
 ### Fixed
