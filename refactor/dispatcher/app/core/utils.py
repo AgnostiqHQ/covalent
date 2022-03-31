@@ -261,7 +261,7 @@ def send_task_update_to_result_service(dispatch_id: str, task_execution_result: 
 def send_task_update_to_ui(dispatch_id: str, task_id: int):
     """Send task update to UI backend microservice."""
 
-    url_endpoint = f"http://localhost:8004//api/v0/ui/workflow/{dispatch_id}/task/{task_id}"
+    url_endpoint = f"http://localhost:8005/api/v0/ui/workflow/{dispatch_id}/task/{task_id}"
 
     response = requests.put(url=url_endpoint)
     response.raise_for_status()
