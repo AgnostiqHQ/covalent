@@ -1,12 +1,15 @@
-# This file is used for Covalent cloud deployment workflows with ECR
-# Example usage: Run "docker-compose --env-file .env.compose up" from the root of the project
-# to pull the images from ECR and start the containers.
+# This file should be used for local development
+# Run "docker-compose -f docker-compose.dev.yml build" to build the images
+# and "docker-compose up" to start the containers.
 
 version: "3.9"
 
 services:
   covalent-data:
-    image: "${COVALENT_DATA_REPO}"
+    build:
+      context: .
+      dockerfile: refactor/data/Dockerfile
+    image: covalent-data
     command: sh -c "python main.py"
     ports:
       - "8003:8003"
@@ -15,7 +18,10 @@ services:
      covalent:
 
   covalent-dispatcher:
-    image: "${COVALENT_DISPATCHER_REPO}"
+    build:
+      context: .
+      dockerfile: refactor/dispatcher/Dockerfile
+    image: covalent-dispatcher
     command: sh -c "python main.py"
     ports:
       - "8001:8001"
@@ -24,7 +30,10 @@ services:
      covalent:
 
   covalent-queuer:
-    image: "${COVALENT_QUEUER_REPO}"
+    build:
+      context: .
+      dockerfile: refactor/queuer/Dockerfile
+    image: covalent-queuer
     command: sh -c "python main.py"
     ports:
       - "8000:8000"
@@ -33,7 +42,10 @@ services:
       covalent:
 
   covalent-results:
-    image: "${COVALENT_RESULTS_REPO}"
+    build:
+      context: .
+      dockerfile: refactor/results/Dockerfile
+    image: covalent-results
     command: sh -c "python main.py"
     ports:
       - "8006:8006"
@@ -42,7 +54,10 @@ services:
      covalent:
 
   covalent-runner:
-    image: "${COVALENT_RUNNER_REPO}"
+    build:
+      context: .
+      dockerfile: refactor/runner/Dockerfile
+    image: covalent-runner
     command: sh -c "python main.py"
     ports:
       - "8002:8002"
@@ -51,7 +66,10 @@ services:
       covalent:
 
   covalent-ui:
-    image: "${COVALENT_UI_REPO}"
+    build:
+      context: .
+      dockerfile: refactor/ui_backend/Dockerfile
+    image: covalent-ui
     command: sh -c "python main.py"
     ports:
       - "8005:8005"
