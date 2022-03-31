@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Consumers of results service now specify `stream=True` in their get requests.
+
 ## [0.45.0] - 2022-03-31
 
 ### Changed
