@@ -30,11 +30,11 @@ from typing import Dict, List, Tuple, Union
 import cloudpickle as pickle
 import requests
 from app.core.dispatcher_logger import logger
-from dotenv import load_dotenv
 
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 from covalent.executor import BaseExecutor
+from refactor.dispatcher.app.core.get_svc_uri import RunnerURI, ResultsURI
 
 from .utils import (
     _post_process,
@@ -44,10 +44,6 @@ from .utils import (
     preprocess_transport_graph,
 )
 
-load_dotenv()
-
-
-BASE_URI = os.environ.get("BASE_URI")
 
 
 def send_task_list_to_runner(dispatch_id, tasks_list):
@@ -81,7 +77,7 @@ def send_task_list_to_runner(dispatch_id, tasks_list):
     # response = requests.post(url=url_endpoint, files={"tasks": pickle.dumps(tasks_list)})
 
     # Set the url endpoint
-    url_endpoint = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/tasks"
+    url_endpoint = RunnerURI().get_route(f'workflow/{dispatch_id}/tasks')
 
     # Send the tasks list as file
     response = requests.post(url=url_endpoint, files={"tasks": BytesIO(pickle.dumps(tasks_list))})
@@ -94,7 +90,7 @@ def send_task_list_to_runner(dispatch_id, tasks_list):
 
 def send_result_object_to_result_service(result_object: Result):
 
-    url_endpoint = "http://localhost:8002/api/v0/workflow/results/"
+    url_endpoint = ResultsURI().get_route('workflow/results/')
 
     response = requests.post(
         url=url_endpoint, files={"result_pkl_file": BytesIO(pickle.dumps(result_object))}
@@ -106,7 +102,7 @@ def send_result_object_to_result_service(result_object: Result):
 
 def send_task_update_to_result_service(dispatch_id: str, task_execution_result: dict):
 
-    url_endpoint = f"http://localhost:8002/api/v0/workflow/results/{dispatch_id}"
+    url_endpoint = ResultsURI().get_route(f'workflow/results/{dispatch_id}')
 
     response = requests.put(
         url=url_endpoint, files={"task": BytesIO(pickle.dumps(task_execution_result))}
@@ -123,7 +119,7 @@ def send_task_update_to_ui(dispatch_id: str, task_id: int):
 
 def get_result_object_from_result_service(dispatch_id: str):
 
-    url_endpoint = f"http://localhost:8002/api/v0/workflow/results/{dispatch_id}"
+    url_endpoint = ResultsURI().get_route(f'workflow/results/{dispatch_id}')
 
     response = requests.get(url=url_endpoint)
     response.raise_for_status()

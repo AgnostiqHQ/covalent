@@ -39,16 +39,11 @@ from app.schemas.workflow import (
     Node,
     UpdateWorkflowResponse,
 )
-from dotenv import load_dotenv
 from fastapi import APIRouter, File
 
 from covalent._results_manager import Result
+from refactor.dispatcher.app.core.get_svc_uri import ResultsURI
 
-load_dotenv()
-
-BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
-TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
-MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
 workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()
@@ -91,11 +86,6 @@ mock_result = {
 }
 
 
-def get_result(dispatch_id: str):
-    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-    return resp.content
-
-
 logger.warning("Dispatcher Service Started")
 
 
@@ -124,7 +114,7 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     Cancel a workflow
     """
 
-    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
+    resp = requests.get(ResultsURI().get_route(f'workflow/results/{dispatch_id}'))
     result_obj = resp.json()["result_obj"]
 
     success = cancel_workflow_execution(result_obj)

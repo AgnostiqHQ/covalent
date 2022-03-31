@@ -27,14 +27,10 @@ import requests
 from dotenv import load_dotenv
 
 from covalent._results_manager import Result
+from refactor.dispatcher.app.core.get_svc_uri import RunnerURI
 
 from .dispatch_workflow import get_result_object_from_result_service
 from .utils import is_sublattice
-
-load_dotenv()
-
-
-BASE_URI = os.environ.get("BASE_URI")
 
 
 def cancel_workflow_execution(
@@ -58,7 +54,7 @@ def cancel_task(dispatch_id: str, task_id: int) -> bool:
     """Asks the Runner API to cancel the execution of these tasks and returns the status of whether it was
     successful."""
 
-    resp = requests.delete(f"{BASE_URI}/api/v0/workflow/{dispatch_id}/task/{task_id}/cancel")
+    resp = requests.delete(RunnerURI().get_route(f'workflow/{dispatch_id}/task/{task_id}/cancel'))
     if (
         ("cancelled_dispatch_id" and "cancelled_task_id" in resp.json())
         and (resp.json()["cancelled_dispatch_id"] == dispatch_id)
