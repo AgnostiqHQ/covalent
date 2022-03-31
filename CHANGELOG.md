@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Using `Result.RUNNING` instead of str "RUNNING"
+- Using process safe `is_empty` method rather than `empty()` method for multiprocessing queue.
+
+### Added
+
+- Workflow status as running in the `workflow_status_queue`.
+
 ## [0.43.0] - 2022-03-31
 
 ### Added
