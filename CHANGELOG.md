@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Workflow status as running in the `workflow_status_queue`.
 
+## [0.44.0] - 2022-03-31
+
+### Added
+
+- Added a test for the `_check_version` method in `covalent/executor/__init__.py`.
+- A version check is done at Covalent startup to ensure that executor plugins are compatible.
+
 ## [0.43.0] - 2022-03-31
 
 ### Added
