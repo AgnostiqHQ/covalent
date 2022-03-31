@@ -280,7 +280,10 @@ def delete_result(*, dispatch_id: str) -> Any:
     filename = _get_result_from_db(dispatch_id, "filename")
     r = requests.delete(f"http://{base_url}/delete", params={"obj_name": filename})
 
-    sql = "DELETE FROM results WHERE dispatch_id = ?"
-    _db(sql, dispatch_id)
+    delete_result = r.json()
 
-    return r.json()
+    if delete_result["items_deleted"] > 0:
+        sql = "DELETE FROM results WHERE dispatch_id = ?"
+        _db(sql, dispatch_id)
+
+    return delete_result

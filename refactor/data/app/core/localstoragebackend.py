@@ -185,6 +185,9 @@ class LocalStorageBackend(StorageBackend):
                 os.remove(p)
             except FileNotFoundError:
                 pass
+            except Exception:
+                # e.g. permission errors
+                continue
 
             deleted_objects.append(obj_name)
 
