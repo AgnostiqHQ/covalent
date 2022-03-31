@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- `update_workflow_results` in `update_workflow.py` now also takes care of sending the next set of tasks to the runner.
+
+- Also handling the cases of sublattices in `update_workflow_results`.
+
 ## [0.42.0] - 2022-03-31
 
 ### Changed
