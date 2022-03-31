@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.42.0] - 2022-03-31
+
+### Changed
+
+- Moved some unused for-the-future files to the refactor directory and out of the main codebase.
+
+## [0.41.3] - 2022-03-31
+
+### Fixed
+
+- Dispatch DB is now created upon server start.
+
 ## [0.41.2] - 2022-03-30
 
 ### Fixed

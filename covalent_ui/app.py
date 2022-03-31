@@ -48,6 +48,10 @@ app.register_blueprint(bp)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+# Create the dispatch sqlite db if it doesn't already exist
+with DispatchDB() as db:
+    pass
+
 
 @app.route(WEBHOOK_PATH, methods=["POST"])
 def handle_result_update():
