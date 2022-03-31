@@ -25,18 +25,13 @@ from typing import Any
 import cloudpickle as pickle
 import requests
 from app.core.cancel_workflow import cancel_workflow_execution
-from app.core.dispatch_workflow import (
-    dispatch_workflow,
-    get_result_object_from_result_service,
-    send_result_object_to_result_service,
-    send_task_update_to_ui,
-)
+from app.core.dispatch_workflow import dispatch_workflow, get_result_object_from_result_service
 from app.core.dispatcher_logger import logger
 from app.core.update_workflow import update_workflow_results
+from app.core.utils import update_result_and_ui
 from app.schemas.workflow import (
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
-    Node,
     UpdateWorkflowResponse,
 )
 from fastapi import APIRouter, File
@@ -114,8 +109,7 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     Cancel a workflow
     """
 
-    resp = requests.get(ResultsURI().get_route(f'workflow/results/{dispatch_id}'))
-    result_obj = resp.json()["result_obj"]
+    result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
     success = cancel_workflow_execution(result_obj)
 
@@ -153,8 +147,6 @@ def update_workflow(
         workflow_status_queue.get()  # Empty queue when workflow is no longer running (completed
         # or failed)
 
-    send_result_object_to_result_service(updated_result_obj)
-
-    send_task_update_to_ui(dispatch_id=dispatch_id, task_id=task_id)
+    update_result_and_ui(updated_result_obj, task_id)
 
     return {"response": f"{dispatch_id} workflow updated successfully"}
