@@ -25,7 +25,6 @@ from datetime import datetime, timezone
 from multiprocessing import Queue as MPQ
 from typing import Dict, List, Tuple, Union
 
-from app.api.api_v0.endpoints.workflow import workflow_status_queue
 from app.core.dispatcher_logger import logger
 from app.core.utils import is_empty, send_result_object_to_result_service, send_task_list_to_runner
 
@@ -44,7 +43,6 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     if result_obj.status == Result.NEW_OBJ:
         result_obj._status = Result.RUNNING
         result_obj = start_dispatch(result_obj=result_obj, tasks_queue=tasks_queue)
-        workflow_status_queue.put(result_obj.status)
 
     elif result_obj.status == Result.COMPLETED:
         # TODO - Redispatch workflow for reproducibility

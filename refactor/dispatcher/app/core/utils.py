@@ -24,6 +24,7 @@ import os
 from datetime import datetime, timezone
 from io import BytesIO
 from multiprocessing import Queue as MPQ
+from queue import Empty
 from typing import Any, Dict, List
 
 import cloudpickle as pickle
@@ -52,12 +53,21 @@ BASE_URI = os.environ.get("BASE_URI")
 
 
 def is_empty(mp_queue: MPQ):
-    if elem := mp_queue.get():
-        mp_queue.put(elem)
-        return True
-    else:
+    """The underlying assumption is that mpq contains only one element at any given time."""
+
+    try:
+        elem = mp_queue.get(timeout=1)
+    except Empty:
         mp_queue.put(None)
-        return False
+        return True
+
+    if elem is None:
+        status = True
+    else:
+        status = False
+
+    mp_queue.put(elem)
+    return status
 
 
 def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result) -> Result:

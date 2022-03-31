@@ -43,7 +43,7 @@ async def main():
         print(f"Got dispatch_id: {dispatch_id}")
         while True:
             await asyncio.sleep(0.1)
-            if workflow_status_queue.is_empty():
+            if is_empty(workflow_status_queue):
                 break
         submit_workflow(dispatch_id=dispatch_id)
 
