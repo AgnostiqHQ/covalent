@@ -51,6 +51,35 @@ class LocalStorageBackend(StorageBackend):
         self.base_dir = base_dir
         self.bucket_name = bucket_name
 
+    def are_names_sane(self, bucket_name: str, object_name: str) -> bool:
+        """Sanity check for bucket_name and object_name.
+
+        Check that bucket name exists, resolves to a subdirectory of
+        base_dir, and that bucket_name/object_name resolves to a
+        location under bucket_name (e.g. bucket_name/../.. is
+        forbidden)
+        """
+
+        p = self.base_dir / Path(bucket_name) / Path(object_name)
+
+        try:
+            abs_base = str(Path(self.base_dir).resolve(True))
+            abs_bucket = str((abs_base / Path(bucket_name)).resolve(True))
+        except FileNotFoundError:
+            traceback.print_exception()
+            traceback.print_stack()
+            return False
+
+        abs_p = str(p.resolve())
+
+        if abs_bucket == abs_base or not abs_bucket.startswith(abs_base):
+            return False
+
+        if abs_p == abs_bucket or not abs_p.startswith(abs_bucket):
+            return False
+
+        return True
+
     def get(self, bucket_name: str, object_name: str) -> Union[Generator[bytes, None, None], None]:
         """Get object from storage.
 
@@ -143,3 +172,20 @@ class LocalStorageBackend(StorageBackend):
             return (bucket_name, object_name)
         except:
             return ("", "")
+
+    def delete(self, bucket_name: str, object_names: List[str]):
+        deleted_objects = []
+        for obj_name in object_names:
+            if not self.are_names_sane(bucket_name, obj_name):
+                continue
+
+            p = self.base_dir / Path(bucket_name) / Path(obj_name)
+
+            try:
+                os.remove(p)
+            except FileNotFoundError:
+                pass
+
+            deleted_objects.append(obj_name)
+
+        return deleted_objects
