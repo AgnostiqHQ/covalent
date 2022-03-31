@@ -26,10 +26,7 @@ __pycache__
 tests
 env
 venv
-README*
-VERSION
 docker-compose*
-requirements.txt
 *.rst
 docs
 supervisord.*
