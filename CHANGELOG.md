@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.42.2] - 2022-03-31
+
+### Fixed
+
+- Using functions for getting result object in cancel endpoint and sending cancel task signal to runner in the dispatcher.
+
+## [0.42.1] - 2022-03-31
+
+### Fixed
+
+- `update_workflow_results` in `update_workflow.py` now also takes care of sending the next set of tasks to the runner.
+
+- Also handling the cases of sublattices in `update_workflow_results`.
+
+## [0.42.0] - 2022-03-31
+
+### Changed
+
+- Moved some unused for-the-future files to the refactor directory and out of the main codebase.
+
+## [0.41.3] - 2022-03-31
+
+### Fixed
+
+- Dispatch DB is now created upon server start.
+
+## [0.41.2] - 2022-03-30
+
+### Fixed
+
+- Oneline bugfix to remove `fetch --unshallow`
+
+## [0.41.1] - 2022-03-30
+
+### Fixed
+
+- Get master version from release tags rather than master branch
+
+## [0.41.0] - 2022-03-30
+
+### Added
+
+- Dockerized the Dispatcher and Runner Services.
+- Added required packages for running containerized instances of the Dispatcher and Runner.
+
+## [0.40.0] - 2022-03-30
+
+### Added
+
+- Dockerized the Data and UI-backend services.
+- Required packages to run containerized instances of the Data and UI-backend.
+
+## [0.39.1] - 2022-03-30
+
+### Fixed
+
+- Supervisord & Results service integration by making results service port configurable by an env var
+
 ## [0.39.0] - 2022-03-29
 
 ### Changed
