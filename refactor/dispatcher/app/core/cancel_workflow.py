@@ -37,6 +37,13 @@ load_dotenv()
 BASE_URI = os.environ.get("BASE_URI")
 
 
+def send_cancel_task_to_runner(dispatch_id: str, task_id: int):
+    response = requests.delete(f"{BASE_URI}/api/v0/workflow/{dispatch_id}/task/{task_id}/cancel")
+    response.raise_for_status()
+
+    return response.json()["cancelled_dispatch_id"], response.json()["cancelled_task_id"]
+
+
 def cancel_workflow_execution(
     result_obj: Result, task_id_batch: List[Tuple[str, int]] = None
 ) -> bool:
@@ -45,8 +52,10 @@ def cancel_workflow_execution(
 
     cancellation_status = True
 
-    tasks = get_all_task_ids(result_obj) if not task_id_batch else task_id_batch
+    tasks = task_id_batch or get_all_task_ids(result_obj)
 
+    # Using the cancellation_status variable because we still want to continue
+    # attempting cancellation of further tasks even if one of them has failed
     for dispatch_id, task_id in tasks:
         if not cancel_task(dispatch_id, task_id):
             cancellation_status = False
@@ -58,11 +67,13 @@ def cancel_task(dispatch_id: str, task_id: int) -> bool:
     """Asks the Runner API to cancel the execution of these tasks and returns the status of whether it was
     successful."""
 
-    resp = requests.delete(f"{BASE_URI}/api/v0/workflow/{dispatch_id}/task/{task_id}/cancel")
+    cancelled_dispatch_id, cancelled_task_id = send_cancel_task_to_runner(
+        dispatch_id=dispatch_id, task_id=task_id
+    )
     if (
-        ("cancelled_dispatch_id" and "cancelled_task_id" in resp.json())
-        and (resp.json()["cancelled_dispatch_id"] == dispatch_id)
-        and (resp.json()["cancelled_task_id"] == task_id)
+        (cancelled_dispatch_id and cancelled_task_id)
+        and (cancelled_dispatch_id == dispatch_id)
+        and (cancelled_task_id == task_id)
     ):
         return True
 

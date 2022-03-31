@@ -124,8 +124,7 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     Cancel a workflow
     """
 
-    resp = requests.get(f"{BASE_URI}/api/v0/workflow/results/{dispatch_id}")
-    result_obj = resp.json()["result_obj"]
+    result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
     success = cancel_workflow_execution(result_obj)
 
