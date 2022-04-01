@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added updated dispatching and getting result functions with the option to download result as a file.
+
 ## [0.45.0] - 2022-03-31
 
 ### Changed
