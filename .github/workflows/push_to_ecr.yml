@@ -42,10 +42,13 @@ jobs:
               uses: aws-actions/amazon-ecr-login@v1
             - name: Push to ECR
               run: |
+                docker-compose -f docker-compose.dev.yml up --build -d
+                echo 'Displaying containers...'
+                docker ps
                 source .env.compose
-                docker tag covalent-ui:latest $COVALENT_UI_REPO
-                docker tag covalent-data:latest $COVALENT_DATA_REPO
-                docker push $COVALENT_UI_REPO
-                docker push $COVALENT_DATA_REPO
+                docker tag covalent-results:latest $COVALENT_RESULTS_REPO
+                docker tag covalent-runner:latest $COVALENT_RUNNER_REPO
+                docker push $COVALENT_RESULTS_REPO
+                docker push $COVALENT_RUNNER_REPO
 
           
