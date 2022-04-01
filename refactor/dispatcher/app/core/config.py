@@ -18,16 +18,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import os
 from typing import List, Union
 
 from pydantic import AnyHttpUrl, BaseSettings, validator
 
 
 class Settings(BaseSettings):
-    PORT: int = os.getenv('PORT',8001)
     API_V0_STR: str = "/api/v0"
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    RUNNER_SVC_PORT: int = 8003
+    RESULTS_SVC_PORT: int = 8006
+    DISPATCHER_SVC_PORT: int = 8002
+    UI_SVC_PORT: int = 8004
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

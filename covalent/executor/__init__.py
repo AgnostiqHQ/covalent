@@ -29,10 +29,12 @@ import os
 from typing import Any, Dict, List, Union
 
 import pkg_resources
+from packaging import version
 
 from .._shared_files import logger
 from .._shared_files.config import get_config, update_config
 from .base import BaseExecutor
+from .plugin_info import MIN_PLUGIN_VERSION, TEMPLATE_ADDRESS
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -117,6 +119,44 @@ class _ExecutorManager:
             app_log.error(message)
             raise TypeError
 
+    def _check_version(self, the_module: Any) -> bool:
+        """
+        Attempt to compare the version number of the plugin module to be imported with
+        the minimum compatible plugin version.
+
+        Args
+            the_module: The plugin module being imported.
+        """
+
+        if the_module.__file__.endswith("executor_plugins/local.py"):
+            # The built-in local executor doesn't need a version check.
+            return True
+
+        mod_version = None
+        if hasattr(the_module, "__version__"):
+            # Simple (non-package) plugins where __version__ has been defined.
+            mod_version = str(the_module.__version__)
+        else:
+            try:
+                # Plugins which have been installed as a package.
+                mod_version = importlib.metadata.version(the_module.__name__.split(".")[0])
+            except importlib.metadata.PackageNotFoundError:
+                pass
+
+        cova_version = pkg_resources.get_distribution("cova").version
+        if mod_version is None:
+            message = f"No version number found for plugin {the_module}.\n"
+            message += f"Compatibility with Covalent version {cova_version} is not guaranteed."
+            app_log.warning(message)
+        elif version.parse(mod_version) < version.parse(MIN_PLUGIN_VERSION):
+            message = f"The module {the_module} is not compatible with Covalent version {cova_version}.\n"
+            message += "An update is needed. "
+            message += f"Please see the up-to-date example template at {TEMPLATE_ADDRESS}."
+            app_log.error(message)
+            return False
+
+        return True
+
     def _populate_executor_map_from_module(self, the_module: Any) -> None:
         """
         Populate the executor map from a module.
@@ -128,6 +168,9 @@ class _ExecutorManager:
         Returns:
             None
         """
+
+        if not self._check_version(the_module):
+            return
 
         if not hasattr(the_module, "executor_plugin_name"):
             message = f"{the_module.__name__} does not seem to have a well-defined plugin class.\n"
