@@ -29,32 +29,26 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from minio import Minio
 
+from refactor.data.app.core.config import settings
+
 from ....core.localstoragebackend import LocalStorageBackend
 from ....core.miniostoragebackend import MinioStorageBackend
 
 router = APIRouter()
 
-# TODO: Improve config management
-storage_backend_selector = os.environ.get("FS_STORAGE_BACKEND", "local")
-local_storage_root = os.environ.get("FS_LOCAL_STORAGE_ROOT", "data")
-bucket_name = os.environ.get("FS_STORAGE_BUCKET", "default")
-minio_endpoint = os.environ.get("MINIO_ENDPOINT", "localhost:9000")
-minio_access_key = os.environ.get("MINIO_ACCESS_KEY", "minioadmin")
-minio_secret_key = os.environ.get("MINIO_SECRET_KEY", "minioadmin")
-minio_use_tls = os.environ.get("MINIO_DISABLE_TLS", "").lower() not in ("true", "1")
-
+MINIO_USE_TLS = settings.MINIO_DISABLE_TLS.lower() not in ("true", "1")
 
 # TODO: support additional minio config options
-if storage_backend_selector == "minio":
+if settings.FS_STORAGE_BACKEND == "minio":
     minio_client = Minio(
-        endpoint=minio_endpoint,
-        access_key=minio_access_key,
-        secret_key=minio_secret_key,
-        secure=minio_use_tls,
+        endpoint=settings.MINIO_ENDPOINT,
+        access_key=settings.MINIO_ACCESS_KEY,
+        secret_key=settings.MINIO_SECRET_KEY,
+        secure=MINIO_USE_TLS,
     )
-    backend = MinioStorageBackend(minio_client, bucket_name)
+    backend = MinioStorageBackend(minio_client, settings.FS_STORAGE_BUCKET)
 else:
-    backend = LocalStorageBackend(Path(local_storage_root), bucket_name)
+    backend = LocalStorageBackend(Path(settings.FS_LOCAL_STORAGE_ROOT), settings.FS_STORAGE_BUCKET)
 
 
 @router.post("/upload", status_code=200, response_model=UploadResponse)

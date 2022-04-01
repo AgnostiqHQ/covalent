@@ -36,20 +36,15 @@ from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResultResponse
 from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
+from refactor.results.app.core.config import settings
+
+from refactor.results.app.core.get_svc_uri import DataURI
 
 logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-# TODO - The incorrect port info was making this service fail. Fix with proper port info.
-# fs_server_address = os.environ.get("FS_SERVER_ADDRESS")
-# if not fs_server_address:
-#     fs_server_address = "localhost:8004"
-fs_server_address = "localhost:8004"
-base_url = fs_server_address + "/api/v0/fs"
-
 
 # @router.middleware("http")
 # TODO: figure out why the middleware doesn't work
@@ -75,7 +70,7 @@ def _get_result_file(dispatch_id: str) -> bytes:
     if not dispatch_id or not filename or not path:
         raise HTTPException(status_code=404, detail="Result was not found")
     r = requests.get(
-        f"http://{base_url}/download", params={"file_location": filename}, stream=True
+        DataURI().get_route('/fs/download'), params={"file_location": filename}, stream=True
     )
     return r.content
 
@@ -93,7 +88,7 @@ def _upload_file(result_pkl_file: BinaryIO):
         raise HTTPException(status_code=422, detail="Error in upload body.")
     result_pkl_file.seek(0)
     r = requests.post(
-        f"http://{base_url}/upload",
+        DataURI().get_route('/fs/upload'),
         files=[("file", ("result.pkl", result_pkl_file, "application/octet-stream"))],
         params={"overwrite": True},
     )
@@ -116,10 +111,7 @@ def _handle_error_response(status_code: int, response: dict):
 
 
 def _db(sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
-    results_db = os.environ.get("RESULTS_DB")
-    if not results_db:
-        results_db = "results.db"
-    con = sqlite3.connect(results_db)
+    con = sqlite3.connect(settings.RESULTS_DB)
     cur = con.cursor()
     logger.info("Executing SQL command.")
     logger.info(sql)

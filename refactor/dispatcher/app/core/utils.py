@@ -20,13 +20,17 @@
 
 """Utility functions for the Dispatcher microservice."""
 
+import os
 from datetime import datetime, timezone
 from io import BytesIO
+from multiprocessing import Queue as MPQ
+from queue import Empty
 from typing import Any, Dict, List
 
 import cloudpickle as pickle
 import requests
 from app.core.dispatcher_logger import logger
+from dotenv import load_dotenv
 
 from covalent._results_manager import Result
 from covalent._shared_files.context_managers import active_lattice_manager
@@ -41,6 +45,30 @@ from covalent._shared_files.defaults import (
     subscript_prefix,
 )
 from covalent._workflow.lattice import Lattice
+from refactor.dispatcher.app.core.get_svc_uri import ResultsURI, RunnerURI, UIBackendURI
+
+load_dotenv()
+
+
+BASE_URI = os.environ.get("BASE_URI")
+
+
+def is_empty(mp_queue: MPQ):
+    """The underlying assumption is that mpq contains only one element at any given time."""
+
+    try:
+        elem = mp_queue.get(timeout=1)
+    except Empty:
+        mp_queue.put(None)
+        return True
+
+    if elem is None:
+        status = True
+    else:
+        status = False
+
+    mp_queue.put(elem)
+    return status
 
 
 def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result) -> Result:
@@ -222,7 +250,7 @@ def send_task_list_to_runner(dispatch_id, tasks_list):
     # response = requests.post(url=url_endpoint, files={"tasks": pickle.dumps(tasks_list)})
 
     # Set the url endpoint
-    url_endpoint = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/tasks"
+    url_endpoint = RunnerURI().get_route(f"workflow/{dispatch_id}/tasks")
 
     # Send the tasks list as file
     response = requests.post(url=url_endpoint, files={"tasks": BytesIO(pickle.dumps(tasks_list))})
@@ -236,7 +264,7 @@ def send_task_list_to_runner(dispatch_id, tasks_list):
 def send_result_object_to_result_service(result_object: Result):
     """Send result object to the result microservice."""
 
-    url_endpoint = "http://localhost:8002/api/v0/workflow/results/"
+    url_endpoint = ResultsURI().get_route("workflow/results")
 
     response = requests.post(
         url=url_endpoint, files={"result_pkl_file": BytesIO(pickle.dumps(result_object))}
@@ -248,7 +276,7 @@ def send_result_object_to_result_service(result_object: Result):
 
 def send_task_update_to_result_service(dispatch_id: str, task_execution_result: dict):
 
-    url_endpoint = f"http://localhost:8002/api/v0/workflow/results/{dispatch_id}"
+    url_endpoint = ResultsURI().get_route(f"workflow/results/{dispatch_id}")
 
     response = requests.put(
         url=url_endpoint, files={"task": BytesIO(pickle.dumps(task_execution_result))}
@@ -261,7 +289,7 @@ def send_task_update_to_result_service(dispatch_id: str, task_execution_result: 
 def send_task_update_to_ui(dispatch_id: str, task_id: int):
     """Send task update to UI backend microservice."""
 
-    url_endpoint = f"http://localhost:8005/api/v0/ui/workflow/{dispatch_id}/task/{task_id}"
+    url_endpoint = UIBackendURI().get_route(f"ui/workflow/{dispatch_id}/task/{task_id}")
 
     response = requests.put(url=url_endpoint)
     response.raise_for_status()
@@ -271,9 +299,9 @@ def send_task_update_to_ui(dispatch_id: str, task_id: int):
 
 def get_result_object_from_result_service(dispatch_id: str):
 
-    url_endpoint = f"http://localhost:8002/api/v0/workflow/results/{dispatch_id}"
+    url_endpoint = ResultsURI().get_route(f"workflow/results/{dispatch_id}")
 
-    response = requests.get(url=url_endpoint)
+    response = requests.get(url=url_endpoint, stream=True)
     response.raise_for_status()
 
     return pickle.loads(response.content)
@@ -285,3 +313,12 @@ def update_result_and_ui(result_obj: Result, task_id: int) -> Dict[str, str]:
     resp_1 = send_result_object_to_result_service(result_obj)
     resp_2 = send_task_update_to_ui(dispatch_id=result_obj.dispatch_id, task_id=task_id)
     return {"update_result_response": resp_1, "update_ui_response": resp_2}
+
+
+def send_cancel_task_to_runner(dispatch_id: str, task_id: int):
+
+    url_endpoint = RunnerURI().get_route(f"workflow/{dispatch_id}/task/{task_id}/cancel")
+    response = requests.delete(url=url_endpoint)
+    response.raise_for_status()
+
+    return response.json()["cancelled_dispatch_id"], response.json()["cancelled_task_id"]
