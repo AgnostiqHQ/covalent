@@ -134,7 +134,7 @@ def _db(sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
     return value
 
 
-async def rate_limited_download_and_serialize(sem, file_name, session):
+async def _concurrent_download_and_serialize(sem, file_name, session):
     async with sem:
          async with session.get(DataURI().get_route('/fs/download'), params={ "file_location": file_name }) as resp:
             result_binary = await resp.read()
@@ -145,7 +145,7 @@ async def rate_limited_download_and_serialize(sem, file_name, session):
 def _get_results_from_db() -> Optional[str]:
     con = sqlite3.connect(settings.RESULTS_DB)
     cur = con.cursor()
-    cur.execute(f"SELECT dispatch_id, filename FROM results")
+    cur.execute("SELECT dispatch_id, filename FROM results")
     rows = cur.fetchall()
     return rows
 
@@ -197,7 +197,7 @@ async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
         # Send requests in parallel to Data Service for download
         for result in results:
             dispatch_id, file_name = result
-            task = asyncio.ensure_future(rate_limited_download_and_serialize(sem, file_name, session))
+            task = asyncio.ensure_future(_concurrent_download_and_serialize(sem, file_name, session))
             tasks.append(task)
         # Wait until parallel tasks return and gather results
         responses = await asyncio.gather(*tasks, return_exceptions=False)
