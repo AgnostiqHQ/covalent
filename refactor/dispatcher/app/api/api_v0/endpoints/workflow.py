@@ -33,14 +33,11 @@ from app.schemas.workflow import (
     DispatchWorkflowResponse,
     UpdateWorkflowResponse,
 )
-from dotenv import load_dotenv
 from fastapi import APIRouter, File
 
 from covalent._results_manager import Result
+from refactor.dispatcher.app.core.get_svc_uri import ResultsURI
 
-load_dotenv()
-
-BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
 
 workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()
