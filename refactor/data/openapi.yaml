@@ -105,6 +105,14 @@ paths:
       summary: Upload File
       description: Upload a file
       operationId: upload_file_api_v0_fs_upload_post
+        - required: false
+          schema:
+            title: Overwrite file
+            type: boolean
+            default: false
+          name: overwrite
+          in: query
+          description: Pass overwrite=true to overwrite a file on upload.
       requestBody:
         content:
           multipart/form-data:
