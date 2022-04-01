@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Folders for tests.
+
+### Changed
+
+- Organization of covalent tests.
+
 ## [0.49.0] - 2022-04-01
 
 ### Added
