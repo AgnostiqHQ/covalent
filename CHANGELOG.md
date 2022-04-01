@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## Changed
+### Added
+
+- Added updated dispatching and getting result functions with the option to download result as a file.
+
+### Changed
 
 - Hardcoded filepaths to standardized ServiceURL.`get_route(...)` method when making API requests.
 
