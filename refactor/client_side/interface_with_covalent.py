@@ -70,8 +70,8 @@ def get_result(dispatch_id: str, download=False):
     if not download:
         return pickle.loads(response.content)
 
-    filename = f"result_{dispatch_id}"
+    filename = f"result_{dispatch_id}.pkl"
     with open(filename, "wb") as f:
-        pickle.dump(response.content, f)
+        f.write(response.content)
 
     return filename
