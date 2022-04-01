@@ -300,7 +300,7 @@ def get_result_object_from_result_service(dispatch_id: str):
 
     url_endpoint = f"http://localhost:8002/api/v0/workflow/results/{dispatch_id}"
 
-    response = requests.get(url=url_endpoint)
+    response = requests.get(url=url_endpoint, stream=True)
     response.raise_for_status()
 
     return pickle.loads(response.content)

@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated API calls accross services to use standarized env vars from Settings class
 - Normalized env vars accross services and updated Supervisord template
 
+## [0.46.0] - 2022-03-31
+
+### Changed
+
+- Consumers of results service now specify `stream=True` in their get requests.
+
 ## [0.45.0] - 2022-03-31
 
 ### Changed
