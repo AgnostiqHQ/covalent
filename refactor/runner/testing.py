@@ -7,11 +7,11 @@ import requests
 import covalent as ct
 from covalent._results_manager.result import Result
 from covalent.executor import _executor_manager
+from refactor.runner.app.core.get_svc_uri import RunnerURI
 
 dispatch_id = str(uuid.uuid4())
 
-url = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/tasks"
-
+url = RunnerURI().get_route(f"workflow/{dispatch_id}/tasks")
 
 @ct.electron
 def task_1(a):
@@ -72,7 +72,7 @@ print(left_task_ids)
 time.sleep(5)
 
 task_id = 0
-url = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/task/{task_id}"
+url = RunnerURI().get_route(f"workflow/{dispatch_id}/task/{task_id}")
 response = requests.delete(url=url)
 response.raise_for_status()
 

@@ -2,7 +2,8 @@ import os
 from urllib.parse import urljoin
 
 import requests
-from app.core.config import settings
+
+from refactor.queuer.app.core.config import settings
 
 
 class APIService:
@@ -26,7 +27,7 @@ class APIService:
 
     def get(self, path, params={}, raw=False):
         route = self._get_route(path)
-        return self._format(requests.get(route, params=params), raw)
+        return self._format(requests.get(route, params=params, stream=True), raw)
 
     def delete(self, path, params={}):
         route = self._get_route(path)

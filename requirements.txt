@@ -21,3 +21,4 @@ toml==0.10.2
 uvicorn==0.15.0
 supervisor==4.2.4
 websockets==10.2
+furl==2.1.3
