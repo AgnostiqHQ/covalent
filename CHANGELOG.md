@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.49.1] - 2022-04-01
+
 ### Fixed
 
 - Using `io.BytesIO` in `update_result` in the results service to prevent creation of a new file in the file system.
