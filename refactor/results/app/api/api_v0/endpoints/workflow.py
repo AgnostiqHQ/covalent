@@ -137,8 +137,8 @@ def _db(sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
     return value
 
 
-async def _concurrent_download_and_serialize(sem, file_name, session):
-    async with sem:
+async def _concurrent_download_and_serialize(semaphore, file_name, session):
+    async with semaphore:
          async with session.get(DataURI().get_route('/fs/download'), params={ "file_location": file_name }) as resp:
             result_binary = await resp.read()
             result = pickle.loads(result_binary)
@@ -195,12 +195,12 @@ async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
     results = _get_results_from_db()
     tasks = []
     # Set 10 concurrent requests at a time
-    sem = asyncio.Semaphore(10) 
+    semaphore = asyncio.Semaphore(10) 
     async with ClientSession() as session:
         # Send requests in parallel to Data Service for download
         for result in results:
             dispatch_id, file_name = result
-            task = asyncio.ensure_future(_concurrent_download_and_serialize(sem, file_name, session))
+            task = asyncio.ensure_future(_concurrent_download_and_serialize(semaphore, file_name, session))
             tasks.append(task)
         # Wait until parallel tasks return and gather results
         responses = await asyncio.gather(*tasks, return_exceptions=False)
