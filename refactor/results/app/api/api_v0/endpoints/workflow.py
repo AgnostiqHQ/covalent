@@ -200,7 +200,7 @@ async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
         # Send requests in parallel to Data Service for download
         for result in results:
             dispatch_id, file_name = result
-            task = asyncio.ensure_future(_concurrent_download_and_serialize(semaphore, file_name, session))
+            task = asyncio.create_task(_concurrent_download_and_serialize(semaphore, file_name, session))
             tasks.append(task)
         # Wait until parallel tasks return and gather results
         responses = await asyncio.gather(*tasks, return_exceptions=False)
