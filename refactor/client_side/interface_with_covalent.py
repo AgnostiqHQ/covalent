@@ -33,7 +33,8 @@ import requests
 from covalent._results_manager.result import Result
 from covalent._workflow.lattice import Lattice
 
-QUEUER_ADDR = "http://localhost:8000"
+SUBMIT_DISPATCH_QUEUER_ADDR = "http://localhost:8000/api/v0/submit/dispatch"
+GET_RESULT_ADDR = "http://localhost:8000//api/v0/workflow/results"
 
 
 def dispatch(
@@ -50,14 +51,27 @@ def dispatch(
         lattice.transport_graph = lattice.transport_graph.serialize()
 
         pickled_res = pickle.dumps(Result(lattice, lattice.metadata["results_dir"]))
-        test_url = f"{QUEUER_ADDR}/api/v0/submit/dispatch"
 
-        r = requests.post(test_url, files={"result_pkl_file": BytesIO(pickled_res)})
+        r = requests.post(
+            SUBMIT_DISPATCH_QUEUER_ADDR, files={"result_pkl_file": BytesIO(pickled_res)}
+        )
         r.raise_for_status()
+
+        # Returns assigned dispatch id
         return r.content.decode("utf-8").strip().replace('"', "")
 
     return wrapper
 
 
-def get_result():
-    pass
+def get_result(dispatch_id: str, download=False):
+    response = requests.get(f"{GET_RESULT_ADDR}/{dispatch_id}", stream=True)
+    response.raise_for_status()
+
+    if not download:
+        return pickle.loads(response.content)
+
+    filename = f"result_{dispatch_id}"
+    with open(filename, "wb") as f:
+        pickle.dump(response.content, f)
+
+    return filename
