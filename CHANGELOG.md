@@ -20,6 +20,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed redundant local storage cache on frontend  
 
+## [0.49.1] - 2022-04-01
+
+### Fixed
+
+- Using `io.BytesIO` in `update_result` in the results service to prevent creation of a new file in the file system.
+
+## [0.49.0] - 2022-04-01
+
+### Added
+
+- Implement an `overwrite` query param in the `upload` method so that we don't create a new object for every result update
+
 ## [0.48.0] - 2022-04-01
 
 ### Added

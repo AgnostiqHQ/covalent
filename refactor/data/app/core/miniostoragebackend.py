@@ -20,11 +20,13 @@
 
 import logging
 import shutil
+import uuid
 from abc import ABC
 from pathlib import Path
 from typing import BinaryIO, Generator, List, Union
 
 from minio import Minio
+from minio.error import S3Error
 
 from .storagebackend import StorageBackend
 
@@ -76,6 +78,7 @@ class MinioStorageBackend(ABC):
         object_name: str,
         length: int,
         metadata: dict = None,
+        overwrite: bool = False,
     ) -> (str, str):
 
         """Upload object to storage.
@@ -91,6 +94,13 @@ class MinioStorageBackend(ABC):
             (bucket_name, object_name) if write succeeds and ("", "") otherwise
 
         """
+
+        if not overwrite:
+            try:
+                res = self.client.stat_object(bucket_name, object_name)
+                object_name = f"{uuid.uuid4()}.pkl"
+            except S3Error as e:
+                pass
 
         try:
             res = self.client.put_object(bucket_name, object_name, data, length, metadata=metadata)
