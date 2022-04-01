@@ -26,14 +26,14 @@ from typing import Dict
 
 from covalent._results_manager import Result
 
-from .dispatch_workflow import (
+from .dispatch_workflow import dispatch_runnable_tasks
+from .utils import (
     _post_process,
-    dispatch_runnable_tasks,
+    are_tasks_running,
     get_result_object_from_result_service,
     is_empty,
     send_result_object_to_result_service,
 )
-from .utils import _post_process, are_tasks_running
 
 
 def update_workflow_results(

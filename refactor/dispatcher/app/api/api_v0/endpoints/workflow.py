@@ -24,23 +24,19 @@ from typing import Any
 
 import cloudpickle as pickle
 from app.core.cancel_workflow import cancel_workflow_execution
-from app.core.dispatch_workflow import dispatch_workflow, get_result_object_from_result_service
+from app.core.dispatch_workflow import dispatch_workflow
 from app.core.dispatcher_logger import logger
 from app.core.update_workflow import update_workflow_results
-from app.core.utils import is_empty, update_result_and_ui
+from app.core.utils import get_result_object_from_result_service, is_empty, update_result_and_ui
 from app.schemas.workflow import (
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
     UpdateWorkflowResponse,
 )
-from dotenv import load_dotenv
 from fastapi import APIRouter, File
 
 from covalent._results_manager import Result
-
-load_dotenv()
-
-BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
+from refactor.dispatcher.app.core.get_svc_uri import ResultsURI
 
 workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()
