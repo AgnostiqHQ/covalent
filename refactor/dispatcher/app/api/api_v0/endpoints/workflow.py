@@ -20,7 +20,7 @@
 
 import os
 from multiprocessing import Queue as MPQ
-from typing import Any
+from typing import Any, List
 
 import cloudpickle as pickle
 from app.core.cancel_workflow import cancel_workflow_execution
@@ -29,6 +29,7 @@ from app.core.dispatcher_logger import logger
 from app.core.update_workflow import update_workflow_results
 from app.core.utils import get_result_object_from_result_service, is_empty, update_result_and_ui
 from app.schemas.workflow import (
+    BatchCancelWorkflowResponse,
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
     UpdateWorkflowResponse,
@@ -130,6 +131,21 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
         return {"response": f"{dispatch_id} workflow cancelled successfully"}
     else:
         return {"response": f"{dispatch_id} workflow did not cancel successfully"}
+
+
+@router.post("/cancel", status_code=200, response_model=BatchCancelWorkflowResponse)
+def cancel_workflows(*, dispatch_ids: List[str]) -> BatchCancelWorkflowResponse:
+    """
+    Cancel a set of workflows
+    """
+
+    # Mock response here
+
+    return {
+        "response": [
+            f"{dispatch_id} workflow cancelled successfully" for dispatch_id in dispatch_ids
+        ]
+    }
 
 
 @router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
