@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Implement an `overwrite` query param in the `upload` method so that we don't create a new object for every result update
+
 ## [0.48.0] - 2022-04-01
 
 ### Added
