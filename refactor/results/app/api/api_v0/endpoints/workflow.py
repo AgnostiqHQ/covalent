@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import asyncio
 import io
 import logging
 import logging.config
@@ -32,7 +33,8 @@ import json
 
 from os import path
 from tempfile import TemporaryFile
-from typing import Any, BinaryIO, Optional, Tuple, Union
+from typing import Any, BinaryIO, List, Optional, Tuple, Union
+from aiohttp import ClientSession
 
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResultResponse
@@ -132,6 +134,22 @@ def _db(sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
     return value
 
 
+async def rate_limited_download_and_serialize(sem, file_name, session):
+    async with sem:
+         async with session.get(DataURI().get_route('/fs/download'), params={ "file_location": file_name }) as resp:
+            result_binary = await resp.read()
+            result = pickle.loads(result_binary)
+            result_json = json.loads(encode_result(result))
+            return result_json
+        
+def _get_results_from_db() -> Optional[str]:
+    con = sqlite3.connect(settings.RESULTS_DB)
+    cur = con.cursor()
+    cur.execute(f"SELECT dispatch_id, filename FROM results")
+    rows = cur.fetchall()
+    return rows
+
+
 def _get_result_from_db(dispatch_id: str, field: str) -> Optional[str]:
     sql = f"SELECT {field} FROM results WHERE dispatch_id=?"
     value = _db(sql, key=dispatch_id)
@@ -157,6 +175,34 @@ def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
         (insert,) = insert
     return insert
 
+@router.get(
+    "/results",
+    status_code=200,
+    responses={
+        200: {
+            "model": List[Result],
+            "description": "Return JSON serialized result objects from the database",
+        },
+    },
+)
+async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
+    """
+    Return JSON serialized result objects from the database
+    """
+    results = _get_results_from_db()
+    tasks = []
+    # Set 10 concurrent requests at a time
+    sem = asyncio.Semaphore(10) 
+    async with ClientSession() as session:
+        # Send requests in parallel to Data Service for download
+        for result in results:
+            dispatch_id, file_name = result
+            task = asyncio.ensure_future(rate_limited_download_and_serialize(sem, file_name, session))
+            tasks.append(task)
+        # Wait until parallel tasks return and gather results
+        responses = await asyncio.gather(*tasks, return_exceptions=False)
+        return responses
+        
 
 @router.get(
     "/results/{dispatch_id}",
@@ -173,7 +219,7 @@ def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
 def get_result(
     *,
     dispatch_id: str,
-    format: ResultFormats = 'binary'
+    format: ResultFormats = ResultFormats.BINARY
 ) -> Any:
     """
     Get a result object as pickle file
