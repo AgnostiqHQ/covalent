@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## Changed
+
+- Hardcoded filepaths in microservice requests in favor of standardized 'global' variable.
+
 ## [0.47.2] - 2022-04-01
 
 ### Fixed
