@@ -48,8 +48,6 @@ jobs:
 #          docker-compose down && docker-compose rm $(docker-compose ps -aq)
       - name: Push to ECR
         run: |
-          $(docker images --format "{{.Repository}}) | grep covalent" >> COVALENT_REPOS
-          echo $COVALENT_REPOS
           source .env.compose
           docker-compose tag covalent-ui:latest $COVALENT_UI_REPO
           docker-compose tag covalent-data:latest $COVALENT_DATA_REPO
