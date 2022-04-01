@@ -49,8 +49,8 @@ jobs:
       - name: Push to ECR
         run: |
           source .env.compose
-          docker-compose tag covalent-ui:latest $COVALENT_UI_REPO
-          docker-compose tag covalent-data:latest $COVALENT_DATA_REPO
+          docker tag covalent-ui:latest $COVALENT_UI_REPO
+          docker tag covalent-data:latest $COVALENT_DATA_REPO
           docker push $COVALENT_UI_REPO
           docker push $COVALENT_DATA_REPO
 
