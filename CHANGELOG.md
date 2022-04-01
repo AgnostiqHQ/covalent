@@ -10,8 +10,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Supervisord now brings up dispatcher queue consumer worker
-- 
-=======
+
+## [0.47.0] - 2022-04-01
+
+### Changed
+
+- Updated API calls accross services to use standarized env vars from Settings class
+- Normalized env vars accross services and updated Supervisord template
+
+## [0.46.0] - 2022-03-31
+
+### Changed
+
+- Consumers of results service now specify `stream=True` in their get requests.
+
+## [0.45.0] - 2022-03-31
+
+### Changed
+
+- Using `Result.RUNNING` instead of str "RUNNING"
+- Using process safe `is_empty` method rather than `empty()` method for multiprocessing queue.
+- Multprocessing `is_queue` method.
+
+### Added
+
+- Workflow status as running in the `workflow_status_queue`.
+
+### Tests
+
 - Added a test for the `_check_version` method in `covalent/executor/__init__.py`.
 
 ## [0.44.0] - 2022-03-31

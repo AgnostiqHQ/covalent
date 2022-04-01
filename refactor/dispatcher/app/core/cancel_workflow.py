@@ -20,28 +20,13 @@
 
 """Workflow cancel functionality."""
 
-import os
 from typing import List, Tuple
 
-import requests
-from dotenv import load_dotenv
-
 from covalent._results_manager import Result
+from refactor.dispatcher.app.core.get_svc_uri import RunnerURI
 
 from .dispatch_workflow import get_result_object_from_result_service
-from .utils import is_sublattice
-
-load_dotenv()
-
-
-BASE_URI = os.environ.get("BASE_URI")
-
-
-def send_cancel_task_to_runner(dispatch_id: str, task_id: int):
-    response = requests.delete(f"{BASE_URI}/api/v0/workflow/{dispatch_id}/task/{task_id}/cancel")
-    response.raise_for_status()
-
-    return response.json()["cancelled_dispatch_id"], response.json()["cancelled_task_id"]
+from .utils import is_sublattice, send_cancel_task_to_runner
 
 
 def cancel_workflow_execution(
