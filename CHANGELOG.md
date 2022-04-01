@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Queue consumer import paths fixed
+- Syntax errors in the supervisord template fixed
+
 ## [0.47.1] - 2022-04-01
 
 ### Fixed
