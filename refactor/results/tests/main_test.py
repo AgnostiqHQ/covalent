@@ -18,47 +18,53 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 import os
+from unittest.mock import patch
 
-from app.core.localstoragebackend import LocalStorageBackend
+from app.core import db
 
 DIRNAME = os.path.dirname(__file__)
 FILENAME = os.path.join(DIRNAME, "./_test_assets/result")
 MOCK_DISPATCH_ID = "1234"
+FS_SERVER_ADDRESS = "localhost:8004"
+BASE_URL = FS_SERVER_ADDRESS + "/api/v0/fs"
+
+
+def file_reader():
+    with open(FILENAME, "rb") as f:
+        yield from f
 
 
 def test_get(test_app, monkeypatch):
+    async def mock_download(_, filename):
+        return next(file_reader(), None)
 
-    # TODO: mock response from /download
+    def mock_value(_, sql: str, key: str = None):
+        return (True,)
 
-    mock_object_name = "mockresult"
+    monkeypatch.setattr("app.core.api.DataService.download", mock_download)
+    monkeypatch.setattr("app.core.db.Database.value", mock_value)
 
-    def mock_put(_, data, bucket_name, object_name, length, metadata=None):
-        return (bucket_name, object_name)
-
-    monkeypatch.setattr("app.core.localstoragebackend.LocalStorageBackend.put", mock_put)
-
-    with open(FILENAME, "rb") as f:
-        response = test_app.post(
-            "/api/v0/fs/upload",
-            files=[("file", (mock_object_name, f, "application/octet-stream"))],
-        )
-        d = response.json()
-        assert d["filename"] == mock_object_name
-        assert d["path"] == "default"
-
-
-def test_download_endpoint(test_app, monkeypatch):
-    mock_object_name = "mockresult"
-
-    def mock_file_reader(filename):
-        with open(filename, "rb") as f:
-            yield from f
-
-    def mock_get(_, bucket_name, object_name):
-        return mock_file_reader(FILENAME)
-
-    monkeypatch.setattr("app.core.localstoragebackend.LocalStorageBackend.get", mock_get)
-
-    response = test_app.get("/api/v0/fs/download", params={"file_location": FILENAME}, stream=True)
+    response = test_app.get(f"/api/v0/workflow/results/{MOCK_DISPATCH_ID}")
     assert response.status_code < 400
     assert len(response.content) > 0
+
+
+def test_post(test_app, monkeypatch):
+    mock_object_name = "mockresult"
+
+    async def mock_upload(_, file):
+        return {"filename": FILENAME, "path": DIRNAME}
+
+    def mock_value(_, sql: str, key: str = None):
+        return (True,)
+
+    monkeypatch.setattr("app.core.api.DataService.upload", mock_upload)
+    monkeypatch.setattr("app.core.db.Database.value", mock_value)
+    with open(FILENAME, "rb") as f:
+        response = test_app.post(
+            "/api/v0/workflow/results",
+            files=[("result_pkl_file", (mock_object_name, f, "application/octet-stream"))],
+        )
+        d = response.json()
+        print(d)
+        assert len(d["dispatch_id"]) > 0

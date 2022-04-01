@@ -35,6 +35,10 @@ from typing import Any, BinaryIO, List, Optional, Tuple, Union
 import cloudpickle as pickle
 import requests
 from aiohttp import ClientSession
+
+
+from app.core.api import DataService
+from app.core.db import Database
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import (
     DeleteResultResponse,
@@ -57,6 +61,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+data_svc = DataService()
+db = Database()
+
 
 # @router.middleware("http")
 # TODO: figure out why the middleware doesn't work
@@ -76,36 +83,34 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-def _get_result_file(dispatch_id: str) -> bytes:
+async def _get_result_file(dispatch_id: str) -> bytes:
     filename = _get_result_from_db(dispatch_id, "filename")
     path = _get_result_from_db(dispatch_id, "path")
     if not dispatch_id or not filename or not path:
         raise HTTPException(status_code=404, detail="Result was not found")
-    r = requests.get(
-        DataURI().get_route("/fs/download"), params={"file_location": filename}, stream=True
-    )
-    return r.content
+    file = await data_svc.download(filename)
+    return file
 
 
-def _upload_file(result_pkl_file: BinaryIO):
+async def _upload_file(result_pkl_file: BinaryIO):
+    print("upload_file")
     results_object = {}
     dispatch_id = ""
     length = result_pkl_file.seek(0, 2)
+    print(length)
     result_pkl_file.seek(0)
     try:
+        print("unpickling")
+        # TODO: The test gets stuck here!
         results_object = pickle.load(result_pkl_file)
+        print(results_object)
         dispatch_id = results_object.dispatch_id
         assert length > 0
     except:
         raise HTTPException(status_code=422, detail="Error in upload body.")
+    print("result file seek")
     result_pkl_file.seek(0)
-    r = requests.post(
-        DataURI().get_route("/fs/upload"),
-        files=[("file", ("result.pkl", result_pkl_file, "application/octet-stream"))],
-        params={"overwrite": True},
-    )
-    response = r.json()
-    _handle_error_response(r.status_code, response)
+    response = await data_svc.upload(result_pkl_file)
     filename = response.get("filename")
     path = response.get("path")
     error_detail = "Error in response from data service. " + str(response)
@@ -116,28 +121,6 @@ def _upload_file(result_pkl_file: BinaryIO):
             error_detail = "Error adding record to database."
     raise HTTPException(status_code=500, detail="Error adding record to database.")
 
-
-def _handle_error_response(status_code: int, response: dict):
-    if status_code >= 400:
-        raise HTTPException(status_code=status_code, detail=response["detail"])
-
-
-def _db(sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
-    con = sqlite3.connect(settings.RESULTS_DB)
-    cur = con.cursor()
-    logger.info("Executing SQL command.")
-    logger.info(sql)
-    value = (False,)
-    if key:
-        logger.info("Searching for key " + key)
-        cur.execute(sql, (key,))
-        value = cur.fetchone()
-    else:
-        cur.execute(sql)
-        value = (True,)
-    con.commit()
-    con.close()
-    return value
 
 
 async def _concurrent_download_and_serialize(semaphore, file_name, session):
@@ -161,7 +144,7 @@ def _get_results_from_db() -> List[Tuple[str, str]]:
 
 def _get_result_from_db(dispatch_id: str, field: str) -> Optional[str]:
     sql = f"SELECT {field} FROM results WHERE dispatch_id=?"
-    value = _db(sql, key=dispatch_id)
+    value = db.value(sql, key=dispatch_id)
     if value:
         (value,) = value
     return value
@@ -179,7 +162,7 @@ def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
         )
     else:
         sql = f"INSERT INTO results VALUES('{dispatch_id}','{filename}','{path}')"
-    insert = _db(sql)
+    insert = db.value(sql)
     if insert:
         (insert,) = insert
     return insert
@@ -228,11 +211,15 @@ async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
         },
     },
 )
-def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.BINARY) -> Any:
+async def get_result(
+    *,
+    dispatch_id: str,
+    format: ResultFormats = ResultFormats.BINARY
+) -> Any:
     """
     Get a result object as pickle file
     """
-    result_binary: bytes = _get_result_file(dispatch_id)
+    result_binary: bytes = await _get_result_file(dispatch_id)
     if format == ResultFormats.JSON:
         result = pickle.loads(result_binary)
         result_json_stringified = encode_result(result)
@@ -242,14 +229,16 @@ def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.BINARY
 
 
 @router.post("/results", status_code=200, response_model=InsertResultResponse)
-def insert_result(
+async def insert_result(
     *,
     result_pkl_file: UploadFile,
 ) -> Any:
     """
     Submit pickled result file
     """
-    return _upload_file(result_pkl_file.file)
+    print("hello post")
+    response = await _upload_file(result_pkl_file.file)
+    return response
 
 
 @router.put(
@@ -263,18 +252,19 @@ def insert_result(
         },
     },
 )
-def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
+async def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
     """
     Update a result object's task
     """
-    result = _get_result_file(dispatch_id)
+    result = await _get_result_file(dispatch_id)
     results_object = pickle.loads(result)
     task = pickle.loads(task)
     results_object._update_node(**task)
 
     pickled_result = io.BytesIO(pickle.dumps(results_object))
+    uploaded = await _upload_file(pickled_result)
 
-    if _upload_file(pickled_result):
+    if uploaded:
         return {"response": "Task updated successfully"}
 
 
