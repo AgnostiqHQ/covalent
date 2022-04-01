@@ -33,8 +33,9 @@ import requests
 from covalent._results_manager.result import Result
 from covalent._workflow.lattice import Lattice
 
-SUBMIT_DISPATCH_QUEUER_ADDR = "http://localhost:8000/api/v0/submit/dispatch"
-GET_RESULT_ADDR = "http://localhost:8000//api/v0/workflow/results"
+from .get_svc_uri import QueuerURI, ResultsURI
+
+SUBMIT_DISPATCH_QUEUER_ADDR = QueuerURI().get_route("submit/dispatch")
 
 
 def dispatch(
@@ -64,7 +65,7 @@ def dispatch(
 
 
 def get_result(dispatch_id: str, download=False):
-    response = requests.get(f"{GET_RESULT_ADDR}/{dispatch_id}", stream=True)
+    response = requests.get(ResultsURI().get_route(f"workflow/results/{dispatch_id}"), stream=True)
     response.raise_for_status()
 
     if not download:
