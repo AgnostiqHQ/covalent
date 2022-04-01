@@ -29,29 +29,14 @@ jobs:
     steps:
       - name: Check out head
         uses: actions/checkout@v2
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Login to ECR
-        uses: aws-actions/amazon-ecr-login@v1
-      - name: Test images
+      - name: Build and run images
         run: |
           docker-compose -f docker-compose.dev.yml up --build -d
           echo 'Displaying containers...'
           docker ps
-#          echo 'Testing images...'
-#          curl -I http://localhost:8001/docs 2>/dev/null | head -n 1 | cut -d$' ' -f2
-#          echo 'Stopping and Removing containers...'
-#          docker-compose down && docker-compose rm $(docker-compose ps -aq)
-      - name: Push to ECR
-        run: |
-          source .env.compose
-          docker tag covalent-ui:latest $COVALENT_UI_REPO
-          docker tag covalent-data:latest $COVALENT_DATA_REPO
-          docker push $COVALENT_UI_REPO
-          docker push $COVALENT_DATA_REPO
+          echo 'Testing images...'
+          curl -I http://localhost:8001/docs 2>/dev/null | head -n 1 | cut -d$' ' -f2
+          echo 'Stopping and Removing containers...'
+          docker-compose down && docker-compose rm $(docker-compose ps -aq)
 
           
