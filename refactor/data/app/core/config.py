@@ -18,7 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import os
 from typing import List, Union
 
 from dotenv import load_dotenv
