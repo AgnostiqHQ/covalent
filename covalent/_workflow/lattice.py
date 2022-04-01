@@ -351,9 +351,7 @@ def lattice(
     _func: Optional[Callable] = None,
     *,
     backend: Optional[str] = None,
-    executor: Optional[
-        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+    executor: Optional[Union[str, "BaseExecutor"]] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     notify: Optional[List[NotifyEndpoint]] = [],
     # Add custom metadata fields here
@@ -383,6 +381,10 @@ def lattice(
         executor = backend
 
     results_dir = str(Path(results_dir).expanduser().resolve())
+
+    from ..executor import _executor_manager
+
+    executor = _executor_manager.get_executor(executor)
 
     constraints = {
         "executor": executor,

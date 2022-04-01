@@ -65,9 +65,7 @@ class Lepton(Electron):
         function_name: str = "",
         argtypes: Optional[List] = [],
         *,
-        executor: Union[
-            List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
-        ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+        executor: Union[str, "BaseExecutor"] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     ) -> None:
         self.language = language
         self.library_name = library_name
@@ -80,6 +78,9 @@ class Lepton(Electron):
         super().__init__(self.wrap_task())
 
         # Assign metadata defaults
+        from ..executor import _executor_manager
+
+        executor = _executor_manager.get_executor(executor)
         super().set_metadata("executor", executor)
 
     def wrap_task(self) -> Callable:  # noqa: max-complexity: 30
