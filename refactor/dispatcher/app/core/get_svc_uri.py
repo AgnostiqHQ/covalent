@@ -48,6 +48,11 @@ class ServiceURI:
         return base_url.url
 
 
+class UIBackendURI(ServiceURI):
+    def __init__(self) -> None:
+        super().__init__(port=settings.UI_SVC_PORT)
+
+
 class RunnerURI(ServiceURI):
     def __init__(self) -> None:
         super().__init__(port=settings.RUNNER_SVC_PORT)
