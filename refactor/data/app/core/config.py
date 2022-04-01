@@ -18,7 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import os
 from typing import List, Union
 
 from dotenv import load_dotenv
@@ -28,9 +27,16 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-    PORT: int = os.getenv('PORT',8003)
     API_V0_STR: str = "/api/v0"
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    DATA_SVC_PORT: int = 8004
+    FS_STORAGE_BACKEND: str = "local"
+    FS_LOCAL_STORAGE_ROOT: str = "data"
+    FS_STORAGE_BUCKET: str = "default"
+    MINIO_ENDPOINT: str = "localhost:9000"
+    MINIO_ACCESS_KEY: str = "minioadmin"
+    MINIO_SECRET_KEY: str = "minioadmin"
+    MINIO_DISABLE_TLS: str = ""
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

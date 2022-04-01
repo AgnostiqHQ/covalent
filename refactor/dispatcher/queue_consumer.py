@@ -28,7 +28,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
 TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
 MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
