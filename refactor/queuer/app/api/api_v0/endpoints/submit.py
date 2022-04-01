@@ -48,7 +48,7 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
 
         dispatch_id = created_result["dispatch_id"]
 
-        await queue.publish(queue.topics.DIPATCH, {"dispatch_id": dispatch_id})
+        await queue.publish(queue.topics.DISPATCH, {"dispatch_id": dispatch_id})
 
         return {"dispatch_id": dispatch_id}
 
