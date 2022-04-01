@@ -37,6 +37,7 @@ class StorageBackend(ABC):
         object_name: str,
         length: int,
         metadata: dict = None,
+        overwrite: bool = False,
     ) -> (str, str):
         raise NotImplementedError
 
