@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added GET all results endpoint in Results service
+- Optional formatting of GET result endpoint that supports: `binary` or `json`
+
+### Changed
+
+- Changed frontend to support updated result service endpoints with json format
+
+### Removed
+
+- Removed redundant local storage cache on frontend  
+
 ## [0.48.0] - 2022-04-01
 
 ### Added
