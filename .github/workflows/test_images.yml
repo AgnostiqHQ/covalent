@@ -37,21 +37,21 @@ jobs:
           aws-region: us-east-1
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v1
-      - name: Test images
-        run: |
-          docker-compose -f docker-compose.dev.yml up --build -d
-          echo 'Displaying containers...'
-          docker ps
-#          echo 'Testing images...'
-#          curl -I http://localhost:8001/docs 2>/dev/null | head -n 1 | cut -d$' ' -f2
-#          echo 'Stopping and Removing containers...'
-#          docker-compose down && docker-compose rm $(docker-compose ps -aq)
-      - name: Push to ECR
-        run: |
-          $(docker images --format "{{.Repository}}) | grep covalent" >> COVALENT_REPOS
-          echo $COVALENT_REPOS
-          source .env.compose
-          docker-compose tag covalent-ui:latest $COVALENT_UI_REPO
-          docker push $COVALENT_UI_REPO
+#      - name: Test images
+#        run: |
+#          docker-compose -f docker-compose.dev.yml up --build -d
+#          echo 'Displaying containers...'
+#          docker ps
+##          echo 'Testing images...'
+##          curl -I http://localhost:8001/docs 2>/dev/null | head -n 1 | cut -d$' ' -f2
+##          echo 'Stopping and Removing containers...'
+##          docker-compose down && docker-compose rm $(docker-compose ps -aq)
+#      - name: Push to ECR
+#        run: |
+#          $(docker images --format "{{.Repository}}) | grep covalent" >> COVALENT_REPOS
+#          echo $COVALENT_REPOS
+#          source .env.compose
+#          docker-compose tag covalent-ui:latest $COVALENT_UI_REPO
+#          docker push $COVALENT_UI_REPO
 
           
