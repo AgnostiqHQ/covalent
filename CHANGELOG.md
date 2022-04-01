@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Changed
 
-- Hardcoded filepaths in microservice requests in favor of standardized 'global' variable.
+- Hardcoded filepaths to standardized ServiceURL.`get_route(...)` method when making API requests.
 
 ## [0.47.2] - 2022-04-01
 
