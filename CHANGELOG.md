@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- List type removed from type annotation for the executor argument in the electron definition.
+- Input executor argument is converted to an executor class object (if it were a string) in the electron definition instead of just before execution in execution.py. As a result, calls to _executor_manager.get_executor are removed from execution.py.
+- In covalent/executor/__init__.py, `from importlib import metadata` is used instead of `importlib.metadata`.
+
 ## [0.46.0] - 2022-03-31
 
 ### Changed
