@@ -21,6 +21,7 @@
 
 from datetime import datetime
 from typing import Any, Optional, Sequence
+from enum import Enum
 
 from pydantic import BaseModel
 
@@ -69,3 +70,7 @@ class UpdateResultResponse(BaseModel):
 
 class ResultPickle(BaseModel):
     result_object: bytes
+
+class ResultFormats(str,Enum):
+    BINARY = 'binary'
+    JSON = 'json'

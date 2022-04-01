@@ -26,19 +26,24 @@ import random
 import sqlite3
 import string
 import time
+import cloudpickle as pickle
+import requests
+import json
+
 from os import path
 from tempfile import TemporaryFile
 from typing import Any, BinaryIO, Optional, Tuple, Union
 
-import cloudpickle as pickle
-import requests
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResultResponse
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi import APIRouter, HTTPException, Request, UploadFile, Response
 from fastapi.responses import FileResponse, StreamingResponse
-from refactor.results.app.core.config import settings
 
+from refactor.results.app.core.config import settings
 from refactor.results.app.core.get_svc_uri import DataURI
+from refactor.results.app.schemas.workflow import ResultFormats
+
+from covalent_dispatcher._db.dispatchdb import encode_result
 
 logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
 
@@ -160,7 +165,7 @@ def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
     responses={
         404: {"model": HTTPExceptionSchema, "description": "Result was not found"},
         200: {
-            "content": {"application/octet-stream": {}},
+            "content": {"application/octet-stream": {} },
             "description": "Return binary content of file.",
         },
     },
@@ -168,12 +173,19 @@ def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
 def get_result(
     *,
     dispatch_id: str,
+    format: ResultFormats = 'binary'
 ) -> Any:
     """
     Get a result object as pickle file
     """
-    result: bytes = _get_result_file(dispatch_id)
-    return StreamingResponse(io.BytesIO(result), media_type="application/octet-stream")
+    result_binary: bytes = _get_result_file(dispatch_id)
+    if format == ResultFormats.JSON:
+        result = pickle.loads(result_binary)
+        result_json_stringified = encode_result(result)
+        return Response(content=result_json_stringified, media_type="application/json")
+    else:
+        return StreamingResponse(io.BytesIO(result_binary), media_type="application/octet-stream")
+
 
 
 @router.post("/results", status_code=200, response_model=InsertResultResponse)
