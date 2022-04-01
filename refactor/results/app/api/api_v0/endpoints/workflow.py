@@ -34,7 +34,7 @@ import cloudpickle as pickle
 import requests
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResultResponse
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
 from refactor.results.app.core.config import settings
@@ -200,7 +200,7 @@ def insert_result(
         },
     },
 )
-def update_result(*, dispatch_id: str, task: Node) -> Any:
+def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
     """
     Update a result object's task
     """
