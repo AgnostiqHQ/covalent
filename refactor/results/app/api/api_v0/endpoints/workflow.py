@@ -34,10 +34,10 @@ import cloudpickle as pickle
 import requests
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResultResponse
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
-from refactor.results.app.core.config import settings
 
+from refactor.results.app.core.config import settings
 from refactor.results.app.core.get_svc_uri import DataURI
 
 logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
@@ -45,6 +45,7 @@ logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
 
 # @router.middleware("http")
 # TODO: figure out why the middleware doesn't work
@@ -70,7 +71,7 @@ def _get_result_file(dispatch_id: str) -> bytes:
     if not dispatch_id or not filename or not path:
         raise HTTPException(status_code=404, detail="Result was not found")
     r = requests.get(
-        DataURI().get_route('/fs/download'), params={"file_location": filename}, stream=True
+        DataURI().get_route("/fs/download"), params={"file_location": filename}, stream=True
     )
     return r.content
 
@@ -88,7 +89,7 @@ def _upload_file(result_pkl_file: BinaryIO):
         raise HTTPException(status_code=422, detail="Error in upload body.")
     result_pkl_file.seek(0)
     r = requests.post(
-        DataURI().get_route('/fs/upload'),
+        DataURI().get_route("/fs/upload"),
         files=[("file", ("result.pkl", result_pkl_file, "application/octet-stream"))],
         params={"overwrite": True},
     )
@@ -199,7 +200,7 @@ def insert_result(
         },
     },
 )
-def update_result(*, dispatch_id: str, task: Node) -> Any:
+def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
     """
     Update a result object's task
     """
@@ -208,7 +209,7 @@ def update_result(*, dispatch_id: str, task: Node) -> Any:
     task = pickle.loads(task)
     results_object._update_node(**task)
 
-    pickled_result = TemporaryFile()
-    pickle.dump(results_object, pickled_result)
+    pickled_result = io.BytesIO(pickle.dumps(results_object))
+
     if _upload_file(pickled_result):
         return {"response": "Task updated successfully"}
