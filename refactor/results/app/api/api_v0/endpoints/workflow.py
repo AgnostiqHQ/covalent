@@ -145,7 +145,7 @@ async def _concurrent_download_and_serialize(semaphore, file_name, session):
             result_json = json.loads(encode_result(result))
             return result_json
         
-def _get_results_from_db() -> Optional[str]:
+def _get_results_from_db() -> List[Tuple[str,str]]:
     con = sqlite3.connect(settings.RESULTS_DB)
     cur = con.cursor()
     cur.execute("SELECT dispatch_id, filename FROM results")
