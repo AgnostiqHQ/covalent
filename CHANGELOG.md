@@ -15,6 +15,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Organization of covalent tests.
 
+## [0.50.0] - 2022-04-03
+
+### Added
+
+- Added GET all results endpoint in Results service
+- Optional formatting of GET result endpoint that supports: `binary` or `json`
+
+### Changed
+
+- Changed frontend to support updated result service endpoints with json format
+
+### Removed
+
+- Removed redundant local storage cache on frontend
+
 ## [0.49.1] - 2022-04-01
 
 ### Fixed
