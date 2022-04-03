@@ -229,7 +229,7 @@ class Electron:
                     )
                     node_name += f"[{i}]"
 
-                tmp_metadata = _replace_default_executor()
+                tmp_metadata = _init_metadata_executor()
 
                 node_id = active_lattice.transport_graph.add_node(
                     name=node_name,
@@ -265,7 +265,7 @@ class Electron:
                 )
                 node_name += f".{attr}"
 
-            tmp_metadata = _replace_default_executor()
+            tmp_metadata = _init_metadata_executor()
 
             node_id = active_lattice.transport_graph.add_node(
                 name=node_name,
@@ -292,7 +292,7 @@ class Electron:
                 )
                 node_name += f"[{key}]"
 
-            tmp_metadata = _replace_default_executor()
+            tmp_metadata = _init_metadata_executor()
 
             node_id = active_lattice.transport_graph.add_node(
                 name=node_name,
@@ -330,7 +330,7 @@ class Electron:
         if active_lattice.post_processing:
             return active_lattice.electron_outputs.pop(0)
 
-        tmp_metadata = _replace_default_executor()
+        tmp_metadata = _init_metadata_executor()
 
         # Setting metadata for default values according to lattice's metadata
         # If metadata is default, then set it to lattice's default
@@ -418,7 +418,7 @@ class Electron:
 
         else:
 
-            tmp_metadata = _replace_default_executor()
+            tmp_metadata = _init_metadata_executor()
 
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
@@ -448,7 +448,7 @@ class Electron:
         def to_electron_collection(**x):
             return list(x.values())[0]
 
-        tmp_metadata = _replace_default_executor()
+        tmp_metadata = _init_metadata_executor()
 
         node_id = graph.add_node(
             name=prefix,
@@ -513,7 +513,7 @@ def electron(
         return decorator_electron(_func)
 
 
-def _replace_default_executor():
+def _init_metadata_executor():
     defaults = _DEFAULT_CONSTRAINT_VALUES.copy()
     from ..executor import _executor_manager
 
