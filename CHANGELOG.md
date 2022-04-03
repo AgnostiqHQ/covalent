@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.50.0] - 2022-04-03
+
 ### Added
 
 - Added GET all results endpoint in Results service
