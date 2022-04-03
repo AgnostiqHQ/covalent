@@ -9,9 +9,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- List type removed from type annotation for the executor argument in the electron definition.
-- Input executor argument is converted to an executor class object (if it were a string) in the electron definition instead of just before execution in execution.py. As a result, calls to _executor_manager.get_executor are removed from execution.py.
+- List type removed from type annotation for the executor argument in electron/lattice/lepton definitions.
+- Input executor argument is converted to an executor class object (if it were a string) in electron/lattice/lepton definitions instead of just before execution in execution.py. As a result, calls to _executor_manager.get_executor are removed from execution.py.
 - In covalent/executor/__init__.py, `from importlib import metadata` is used instead of `importlib.metadata`.
+- Rewritten tests to take into account the type change of executor identifiers from strings to executor class objects.
+
+## [0.49.1] - 2022-04-01
+
+### Fixed
+
+- Using `io.BytesIO` in `update_result` in the results service to prevent creation of a new file in the file system.
+
+## [0.49.0] - 2022-04-01
+
+### Added
+
+- Implement an `overwrite` query param in the `upload` method so that we don't create a new object for every result update
+
+## [0.48.0] - 2022-04-01
+
+### Added
+
+- Added updated dispatching and getting result functions with the option to download result as a file.
+
+### Changed
+
+- Hardcoded filepaths to standardized ServiceURL.`get_route(...)` method when making API requests.
+
+## [0.47.2] - 2022-04-01
+
+### Fixed
+
+- Queue consumer import paths fixed
+- Syntax errors in the supervisord template fixed
+
+## [0.47.1] - 2022-04-01
+
+### Fixed
+
+- Supervisord now brings up dispatcher queue consumer worker
+
+## [0.47.0] - 2022-04-01
+
+### Changed
+
+- Updated API calls accross services to use standarized env vars from Settings class
+- Normalized env vars accross services and updated Supervisord template
 
 ## [0.46.0] - 2022-03-31
 

@@ -8,7 +8,7 @@ from app.core.config import settings
 
 
 class QueueTopics(Enum):
-    DIPATCH = settings.MQ_DISPATCH_TOPIC
+    DISPATCH = settings.MQ_DISPATCH_TOPIC
 
 
 class Queuer:

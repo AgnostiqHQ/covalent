@@ -29,6 +29,7 @@ import cloudpickle as pickle
 import requests
 
 from covalent._results_manager.result import Result
+from refactor.runner.app.core.get_svc_uri import DispatcherURI, RunnerURI
 
 from .runner_logger import logger
 
@@ -60,7 +61,7 @@ def generate_task_result(
 
 def send_task_update_to_dispatcher(dispatch_id, task_result):
 
-    url = f"http://localhost:8003/api/v0/workflow/{dispatch_id}"
+    url = DispatcherURI().get_route(f"workflow/{dispatch_id}")
     response = requests.put(url=url, files={"task_execution_results": pickle.dumps(task_result)})
     response.raise_for_status()
 
@@ -70,15 +71,14 @@ def send_task_update_to_dispatcher(dispatch_id, task_result):
 
 def free_resources_call_to_runner(dispatch_id, task_id):
 
-    url = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/task/{task_id}/free"
-
+    url = RunnerURI().get_route(f"workflow/{dispatch_id}/task/{task_id}/free")
     response = requests.post(url=url)
     response.raise_for_status()
 
 
 def done_callback_to_runner(dispatch_id, task_id):
 
-    url = f"http://localhost:8004/api/v0/workflow/{dispatch_id}/task/{task_id}/done"
+    url = RunnerURI().get_route(f"workflow/{dispatch_id}/task/{task_id}/done")
     response = requests.post(url=url)
     response.raise_for_status()
 

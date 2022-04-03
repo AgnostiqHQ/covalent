@@ -31,6 +31,7 @@ from app.core.utils import is_empty, send_result_object_to_result_service, send_
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 from covalent.executor import BaseExecutor
+from refactor.dispatcher.app.core.get_svc_uri import RunnerURI, ResultsURI
 
 from .utils import get_task_inputs, get_task_order, is_sublattice, preprocess_transport_graph
 
