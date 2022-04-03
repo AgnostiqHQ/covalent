@@ -14,6 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In covalent/executor/__init__.py, `from importlib import metadata` is used instead of `importlib.metadata`.
 - Rewritten tests to take into account the type change of executor identifiers from strings to executor class objects.
 
+## [0.50.0] - 2022-04-03
+
+### Added
+
+- Added GET all results endpoint in Results service
+- Optional formatting of GET result endpoint that supports: `binary` or `json`
+
+### Changed
+
+- Changed frontend to support updated result service endpoints with json format
+
+### Removed
+
+- Removed redundant local storage cache on frontend
+
 ## [0.49.1] - 2022-04-01
 
 ### Fixed
