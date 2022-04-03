@@ -150,7 +150,7 @@ class BuildUI(Command):
 
 setup_info = {
     "name": "cova",
-    "packages": find_packages(exclude=["tests", "covalent.tests", "covalent_dispatcher.tests"]),
+    "packages": find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     "version": version,
     "maintainer": "Agnostiq",
     "url": "https://github.com/AgnostiqHQ/covalent",
