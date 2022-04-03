@@ -7,13 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Added
-
-- Added a test for the `_check_version` method in `covalent/executor/__init__.py`.
-
 ### Changed
 
 - Changed global variable executor_plugin_name to EXECUTOR_PLUGIN_NAME in executors to conform with PEP8.
+
+## [0.50.0] - 2022-04-03
+
+### Added
+
+- Added GET all results endpoint in Results service
+- Optional formatting of GET result endpoint that supports: `binary` or `json`
+
+### Changed
+
+- Changed frontend to support updated result service endpoints with json format
+
+### Removed
+
+- Removed redundant local storage cache on frontend
+
+## [0.49.1] - 2022-04-01
+
+### Fixed
+
+- Using `io.BytesIO` in `update_result` in the results service to prevent creation of a new file in the file system.
+
+## [0.49.0] - 2022-04-01
+
+### Added
+
+- Implement an `overwrite` query param in the `upload` method so that we don't create a new object for every result update
+
+## [0.48.0] - 2022-04-01
+
+### Added
+
+- Added updated dispatching and getting result functions with the option to download result as a file.
+
+### Changed
+
+- Hardcoded filepaths to standardized ServiceURL.`get_route(...)` method when making API requests.
+
+## [0.47.2] - 2022-04-01
+
+### Fixed
+
+- Queue consumer import paths fixed
+- Syntax errors in the supervisord template fixed
+
+## [0.47.1] - 2022-04-01
+
+### Fixed
+
+- Supervisord now brings up dispatcher queue consumer worker
+
+## [0.47.0] - 2022-04-01
+
+### Changed
+
+- Updated API calls accross services to use standarized env vars from Settings class
+- Normalized env vars accross services and updated Supervisord template
+
+## [0.46.0] - 2022-03-31
+
+### Changed
+
+- Consumers of results service now specify `stream=True` in their get requests.
+
+## [0.45.0] - 2022-03-31
+
+### Changed
+
+- Using `Result.RUNNING` instead of str "RUNNING"
+- Using process safe `is_empty` method rather than `empty()` method for multiprocessing queue.
+- Multprocessing `is_queue` method.
+
+### Added
+
+- Workflow status as running in the `workflow_status_queue`.
+
+### Tests
+
+- Added a test for the `_check_version` method in `covalent/executor/__init__.py`.
 
 ## [0.44.0] - 2022-03-31
 

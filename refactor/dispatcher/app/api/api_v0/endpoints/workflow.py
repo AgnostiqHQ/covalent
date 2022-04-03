@@ -23,31 +23,28 @@ from multiprocessing import Queue as MPQ
 from typing import Any
 
 import cloudpickle as pickle
-import requests
 from app.core.cancel_workflow import cancel_workflow_execution
-from app.core.dispatch_workflow import dispatch_workflow, get_result_object_from_result_service
+from app.core.dispatch_workflow import dispatch_workflow
 from app.core.dispatcher_logger import logger
 from app.core.update_workflow import update_workflow_results
-from app.core.utils import update_result_and_ui
+from app.core.utils import get_result_object_from_result_service, is_empty, update_result_and_ui
 from app.schemas.workflow import (
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
     UpdateWorkflowResponse,
 )
-from dotenv import load_dotenv
 from fastapi import APIRouter, File
 
 from covalent._results_manager import Result
-
-load_dotenv()
-
-BASE_URI = os.environ.get("DATA_OS_SVC_HOST_URI")
+from refactor.dispatcher.app.core.get_svc_uri import ResultsURI
 
 workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()
 
+
 # Using sentinel to indicate that the queue is empty since MPQ.empty() is an unreliable method
 workflow_tasks_queue.put(None)
+workflow_status_queue.put(None)
 
 
 router = APIRouter()
@@ -95,6 +92,10 @@ def submit_workflow(*, dispatch_id: str) -> Any:
 
     # logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
 
+    # Change workflow status to RUNNING
+    workflow_status_queue.get()
+    workflow_status_queue.put(Result.RUNNING)
+
     # Get the result object
     result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
@@ -116,11 +117,15 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
 
     success = cancel_workflow_execution(result_obj)
 
-    if workflow_tasks_queue.not_empty():
-        workflow_tasks_queue.get()  # Pop the last set of tasks from the queue since the workflow is being cancelled.
+    # Note - The queue should be populated in theory.
+    if not is_empty(workflow_tasks_queue):
+        workflow_tasks_queue.get()
+        workflow_status_queue.put(None)
 
+    # Empty queue when workflow is terminated
     if success:
-        workflow_status_queue.get()  # Empty queue when workflow is terminated
+        workflow_status_queue.get()
+        workflow_status_queue.put(None)
 
         return {"response": f"{dispatch_id} workflow cancelled successfully"}
     else:
@@ -146,9 +151,10 @@ def update_workflow(
         tasks_queue=workflow_tasks_queue,
     )
 
-    if updated_result_obj._status != "RUNNING":
-        workflow_status_queue.get()  # Empty queue when workflow is no longer running (completed
-        # or failed)
+    # Empty queue when workflow is no longer running (completed # or failed)
+    if updated_result_obj._status != Result.RUNNING:
+        workflow_status_queue.get()
+        workflow_status_queue.put(None)
 
     update_result_and_ui(updated_result_obj, task_id)
 
