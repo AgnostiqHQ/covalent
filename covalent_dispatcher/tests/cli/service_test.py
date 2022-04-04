@@ -284,13 +284,7 @@ def test_status_refactor(mocker, monkeypatch):
     popen_command, = popen_mock.call_args[0] 
     assert popen_command == ['supervisorctl','status']
 
-@pytest.mark.parametrize(
-    "MOCK_SERVICE_NAME",
-    [
-        ("queuer"),
-        (None),
-    ],
-)
+@pytest.mark.parametrize("MOCK_SERVICE_NAME",[("queuer"), (None)])
 def test_logs_refactor(mocker, MOCK_SERVICE_NAME):
     """Test the logs CLI command."""
 
@@ -307,7 +301,7 @@ def test_logs_refactor(mocker, MOCK_SERVICE_NAME):
     if MOCK_SERVICE_NAME:
         # invoke command with service name
         runner.invoke(logs, f"--service {MOCK_SERVICE_NAME}")
-         # assertions
+        # assertions
         ensure_sd_running.assert_called_once()
         assert len(read_process_stdout.mock_calls) == NUM_TAIL_COMMANDS
         assert len(popen_mock.mock_calls) == NUM_TAIL_COMMANDS
@@ -320,6 +314,38 @@ def test_logs_refactor(mocker, MOCK_SERVICE_NAME):
          res = runner.invoke(logs)
          assert res.output.strip() == NO_SERVICE_PROVIDED_TO_LOGS_ECHO.strip()
 
+@pytest.mark.parametrize("is_supervisord_running_flag",[(True), (False)])
+def test_purge_refactor(mocker, monkeypatch, is_supervisord_running_flag):
+    """Test the refactor CLI command."""
+
+    runner = CliRunner()
+
+    SD_PIDFILE_MOCK = 'some/path/pid'
+    SD_CONFIG_FILE = "some/path/supervisord.conf"
+
+    # mock methods
+    sd_stop_services = mocker.patch("covalent_dispatcher._cli.service._sd_stop_services")
+    graceful_shutdown = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
+    os_remove = mocker.patch("os.remove")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.SD_PIDFILE", SD_PIDFILE_MOCK)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.SD_CONFIG_FILE", SD_CONFIG_FILE)
+
+    # Supervisord autocreates it's pid file hence if it is running we can assume the pid file to exist
+    mocker.patch("os.path.exists", return_value=is_supervisord_running_flag)
+    mocker.patch("covalent_dispatcher._cli.service._is_supervisord_running", return_value=is_supervisord_running_flag)
+
+    # invoke command
+    runner.invoke(purge, f"--refactor")
+
+    if is_supervisord_running_flag:
+        sd_stop_services.assert_called_once()
+        graceful_shutdown.assert_called_once_with(SD_PIDFILE_MOCK)
+        os_remove.assert_called_once_with(SD_CONFIG_FILE)
+    else:
+        sd_stop_services.assert_not_called()
+        graceful_shutdown.assert_not_called()
+        os_remove.assert_not_called()
+        
 
 def test_stop(mocker, monkeypatch):
     """Test the stop CLI command."""
