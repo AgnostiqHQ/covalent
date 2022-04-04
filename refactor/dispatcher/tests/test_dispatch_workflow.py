@@ -20,11 +20,14 @@
 
 """Unit tests for dispatch workflow."""
 
+from copy import deepcopy
+
 import pytest
 from app.core.dispatch_workflow import init_result_pre_dispatch
 
 import covalent as ct
 from covalent._results_manager.result import Result
+from refactor.dispatcher.app.core.dispatch_workflow import is_runnable_task
 
 
 @pytest.fixture
@@ -45,19 +48,27 @@ def mock_result_uninitialized():
 
     @ct.lattice
     def workflow(x, y, z):
+
         a = add(x, y)
         b = square(z)
         final = multiply(a, b)
         return final
 
-    return Result(lattice=workflow, results_dir="", dispatch_id="mock_dispatch_id")
+    lattice = deepcopy(workflow)
+    lattice.build_graph(x=1, y=2, z=3)
+    lattice.transport_graph = lattice.transport_graph.serialize()
+
+    return Result(lattice=lattice, results_dir="", dispatch_id="mock_dispatch_id")
 
 
 @pytest.fixture
 def mock_result_initialized(mock_result_uninitialized):
     """Construct mock result object."""
 
-    return init_result_pre_dispatch(mock_result_uninitialized)
+    result_obj = mock_result_uninitialized
+
+    init_result_pre_dispatch(result_obj)
+    return result_obj
 
 
 def test_dispatch_workflow_func():
@@ -84,8 +95,22 @@ def test_run_tasks():
     pass
 
 
-def test_is_runnable_task(mock_result_initialized):
+@pytest.mark.parametrize(
+    "node_0_status,node_3_status,expected_runnable_status",
+    [
+        (Result.RUNNING, Result.RUNNING, False),
+        (Result.COMPLETED, Result.RUNNING, False),
+        (Result.FAILED, Result.RUNNING, False),
+        (Result.COMPLETED, Result.COMPLETED, True),
+    ],
+)
+def test_is_runnable_task(
+    mock_result_initialized, node_0_status, node_3_status, expected_runnable_status
+):
     """Test function that returns status of whether a task is runnable."""
 
-    result_obj = mock_result_uninitialized
-    print(result_obj)
+    result_obj = mock_result_initialized
+    result_obj.lattice.transport_graph.set_node_value(0, "status", node_0_status)
+    result_obj.lattice.transport_graph.set_node_value(3, "status", node_3_status)
+
+    assert is_runnable_task(task_id=5, result_obj=result_obj) == expected_runnable_status

@@ -271,11 +271,12 @@ def run_tasks(
     return send_task_list_to_runner(dispatch_id=dispatch_id, tasks_list=tasks_list)
 
 
-def is_runnable_task(task_id: int, results_obj: Result) -> bool:
+def is_runnable_task(task_id: int, result_obj: Result) -> bool:
     """Return status whether the task can be run based on whether the parent tasks have finished executing."""
 
-    parent_node_ids: List[int] = results_obj.lattice.transport_graph.get_dependencies(task_id)
+    parent_node_ids: List[int] = result_obj.lattice.transport_graph.get_dependencies(task_id)
+    print(parent_node_ids)
 
     return all(
-        results_obj._get_node_status(node_id) == Result.COMPLETED for node_id in parent_node_ids
+        result_obj._get_node_status(node_id) == Result.COMPLETED for node_id in parent_node_ids
     )
