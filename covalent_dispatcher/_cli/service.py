@@ -419,11 +419,10 @@ def restart(ctx, port: int, develop: bool, refactor: bool) -> None:
     """
     if refactor:
        _sd_restart_services()
-
-    port = port or get_config("user_interface.port")
-
-    ctx.invoke(stop)
-    ctx.invoke(start, port=port, develop=develop)
+    else:
+        port = port or get_config("user_interface.port")
+        ctx.invoke(stop)
+        ctx.invoke(start, port=port, develop=develop)
 
 
 @click.command()
@@ -474,26 +473,17 @@ def logs(service: str, lines: int) -> None:
     click.echo(f"Errors last {str(lines)} bytes:")
     click.echo("_________________")
     proc = Popen(["supervisorctl", "tail", f"-{str(lines)}",f"covalent:{service}", "stderr"], stdout=PIPE, cwd=cwd)
-    while True:
-        line = proc.stdout.readline()
-        print(line.decode("utf-8").split("\n")[0])
-        if not line: break
+    _read_process_stdout(proc)
     click.echo("_________________")
     click.echo(f"Stdout last {str(lines)} bytes:")
     click.echo("_________________")
     proc = Popen(["supervisorctl", "tail", f"-{str(lines)}",f"covalent:{service}"], stdout=PIPE, cwd=cwd)
-    while True:
-        line = proc.stdout.readline()
-        print(line.decode("utf-8").split("\n")[0])
-        if not line: break
+    _read_process_stdout(proc)
     click.echo("_________________")
     click.echo("Tailing current logs:")
     click.echo("_________________")
     proc = Popen(["supervisorctl", "tail", "-f",f"covalent:{service}"], stdout=PIPE, cwd=cwd)
-    while True:
-        line = proc.stdout.readline()
-        print(line.decode("utf-8").split("\n")[0])
-        if not line: break
+    _read_process_stdout(proc)
 
 @click.command()
 @click.option('--refactor', is_flag=True, help="Use post refactor cli command [with Supervisord]")
