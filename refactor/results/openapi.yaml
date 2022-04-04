@@ -4,6 +4,30 @@ info:
   version: 0.1.0
 paths:
   /api/v0/workflow/results/{dispatch_id}:
+    delete:
+      operationId: delete_result_api_v0_workflow_results__dispatch_id__delete
+      parameters:
+      - in: path
+        name: dispatch_id
+        required: true
+        schema:
+          title: Dispatch Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete Result
+      tags:
+      - Workflow
     get:
       tags:
         - Workflow

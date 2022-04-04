@@ -163,6 +163,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v0/fs/delete:
+    delete:
+      summary: Delete file
+      description: Delete a file
+      operationId: delete_file_api_v0_fs_delete_delete
+      parameters:
+      - in: query
+        name: obj_name
+        required: true
+        schema:
+          title: Obj Name
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete File
+      tags:
+      - Data
 components:
   schemas:
     Body_insert_result_api_v0_workflow_results_post:
