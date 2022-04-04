@@ -1,6 +1,6 @@
 # This file should be used for local development
-# Run "docker-compose -f docker-compose.dev.yml build" to build the images
-# and "docker-compose up" to start the containers.
+# Example Usage: Run "docker-compose -f docker-compose.dev.yml up --build" from the root of the project
+# to build the images using this file and start the containers.
 
 version: "3.9"
 
@@ -12,7 +12,7 @@ services:
     image: covalent-data
     command: sh -c "python main.py"
     ports:
-      - "8003:8003"
+      - "8004:8004"
     working_dir: /data
     networks:
      covalent:
@@ -24,7 +24,7 @@ services:
     image: covalent-dispatcher
     command: sh -c "python main.py"
     ports:
-      - "8001:8001"
+      - "8002:8002"
     working_dir: /dispatcher
     networks:
      covalent:
@@ -36,7 +36,20 @@ services:
     image: covalent-queuer
     command: sh -c "python main.py"
     ports:
-      - "8000:8000"
+      - "8001:8001"
+    working_dir: /queuer
+    networks:
+      covalent:
+
+  # Queue-consumer uses the same Dockerfile configurations as the Queuer
+  covalent-queue-consumer:
+    build:
+      context: .
+      dockerfile: refactor/queuer/Dockerfile
+    image: covalent-queue-consumer
+    command: sh -c "python main.py"
+    ports:
+      - "3000:8001"
     working_dir: /queuer
     networks:
       covalent:
@@ -60,7 +73,7 @@ services:
     image: covalent-runner
     command: sh -c "python main.py"
     ports:
-      - "8002:8002"
+      - "8003:8003"
     working_dir: /runner
     networks:
       covalent:

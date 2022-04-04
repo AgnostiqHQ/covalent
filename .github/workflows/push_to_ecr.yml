@@ -46,9 +46,19 @@ jobs:
                 echo 'Displaying containers...'
                 docker ps
                 source .env.compose
-                docker tag covalent-results:latest $COVALENT_RESULTS_REPO
-                docker tag covalent-runner:latest $COVALENT_RUNNER_REPO
-                docker push $COVALENT_RESULTS_REPO
-                docker push $COVALENT_RUNNER_REPO
+                docker tag covalent-results:test $DATA_REPO
+                docker tag covalent-runner:test $DISPATCHER_REPO
+                docker tag covalent-results:test $QUEUER_REPO
+                docker tag covalent-runner:test $QUEUE_CONSUMER_REPO
+                docker tag covalent-results:test $RESULTS_REPO
+                docker tag covalent-runner:test $RUNNER_REPO
+                docker tag covalent-runner:test $UI_REPO
+                docker push $DATA_REPO
+                docker push $DISPATCHER_REPO
+                docker push $QUEUER_REPO
+                docker push $QUEUE_CONSUMER_REPO
+                docker push $RESULTS_REPO
+                docker push $RUNNER_REPO
+                docker push $UI_REPO
 
           
