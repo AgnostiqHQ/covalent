@@ -87,8 +87,8 @@ jobs:
           VERSION="$(cat ./VERSION)"
           cd dist
           tar xzf cova-${VERSION}.tar.gz
-          diff -r cova-${VERSION}/covalent ../covalent
-          diff -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x tests -r cova-${VERSION}/covalent ../covalent
+          diff -x tests -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
           diff -x README.md cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
@@ -97,7 +97,7 @@ jobs:
       - name: Start Covalent dispatcher server
         run: covalent start -d
       - name: Run tests and measure coverage
-        run: pytest -v --cov=covalent --cov=covalent_dispatcher --ignore=covalent_services
+        run: pytest tests covalent/tests covalent_dispatcher/tests -vv --cov=covalent --cov=covalent_dispatcher --ignore=covalent/tests --ignore=covalent_dispatcher/tests --ignore=covalent_services
       - name: Generate coverage report
         run: coverage xml
       - name: Upload report to Codecov

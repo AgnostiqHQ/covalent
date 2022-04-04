@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Changed all references of `refactor` to `covalent_services`.
 
+## [0.51.0] - 2022-04-04
+
+### Added
+
+- Folders for tests.
+
+### Changed
+
+- Organization of covalent tests.
+
 ## [0.50.0] - 2022-04-03
 
 ### Added
