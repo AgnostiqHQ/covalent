@@ -33,6 +33,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 import matplotlib.pyplot as plt
 import networkx as nx
 
+import covalent_ui.result_webhook as result_webhook
 from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
 
 from .._shared_files import logger
@@ -213,7 +214,25 @@ class Lattice:
         plt.tight_layout()
         return ax
 
+
     def draw(self, *args, **kwargs) -> None:
+        """
+        Generate lattice graph and display in UI taking into account passed in
+        arguments.
+
+        Args:
+            *args: Positional arguments to be passed to build the graph.
+            **kwargs: Keyword arguments to be passed to build the graph.
+
+        Returns:
+            None
+        """
+
+        self.build_graph(*args, **kwargs)
+        result_webhook.send_draw_request(self)
+
+
+    def draw_refactor(self, *args, **kwargs) -> None:
         """
         Generate lattice graph and display in UI taking into account passed in
         arguments.
