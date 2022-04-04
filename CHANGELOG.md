@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added tests for post-refactor covalent cli commands: start, stop, restart, status, and logs
 
+## [0.54.0] - 2022-04-04
+
+### Added
+
+- Draw workflow draft API to ui_backend service
+
 ## [0.53.0] - 2022-04-04
 
 ### Added

@@ -19,7 +19,12 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from pydantic import BaseModel
+from typing import Dict
 
 
 class UpdateUIResponse(BaseModel):
     response: str
+
+
+class DrawRequest(BaseModel):
+    payload: Dict
