@@ -270,3 +270,18 @@ def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
 
     if _upload_file(pickled_result):
         return {"response": "Task updated successfully"}
+
+
+@router.delete("/results/{dispatch_id}", status_code=200)
+def delete_result(*, dispatch_id: str) -> Any:
+    # Retrieve file path from db and request deletion from data service
+    filename = _get_result_from_db(dispatch_id, "filename")
+    r = requests.delete(DataURI().get_route("/fs/delete"), params={"obj_name": filename})
+
+    delete_result = r.json()
+
+    if delete_result["items_deleted"] > 0:
+        sql = "DELETE FROM results WHERE dispatch_id = ?"
+        _db(sql, dispatch_id)
+
+    return delete_result
