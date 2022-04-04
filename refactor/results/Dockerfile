@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
@@ -20,31 +18,22 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Test for Covalent CLI Tool."""
+# syntax=docker/dockerfile:1
+FROM python:3.8-slim-buster
+ENV PROJECT_DIR=/results
+ENV PORT 8006
+EXPOSE $PORT
 
-import click
-from click.testing import CliRunner
+RUN mkdir -p $PROJECT_DIR $COVALENT_ROOT/{covalent,covalent_dispatcher,covalent_ui}
+RUN chmod 0777 $PROJECT_DIR
 
-from covalent_dispatcher._cli.cli import cli
+COPY refactor/results $PROJECT_DIR
+COPY covalent/ $COVALENT_ROOT/covalent
+COPY covalent_dispatcher/ $COVALENT_ROOT/covalent_dispatcher
+COPY covalent_ui/ $COVALENT_ROOT/covalent_ui
+COPY ["setup.py", "VERSION", "README.md", "$COVALENT_ROOT/"]
 
+RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
 
-def test_cli(mocker):
-    """Test the main CLI function."""
-
-    runner = CliRunner()
-    response = runner.invoke(cli, "--version")
-    assert (
-        ("python" in response.output.lower())
-        and ("agnostiq" in response.output.lower())
-        and ("copyright" in response.output.lower())
-    )
-
-    response = runner.invoke(cli)
-    assert ("options" in response.output.lower()) and ("commands" in response.output.lower())
-
-
-def test_cli_commands():
-    """Test the list of commands associated with Covalent CLI."""
-
-    ctx = click.Context
-    assert cli.list_commands(ctx) == ["config", "logs", "purge", "restart", "start", "status", "stop"]
+WORKDIR $PROJECT_DIR
+CMD [ "python", "main.py"]

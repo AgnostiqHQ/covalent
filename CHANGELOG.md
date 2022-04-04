@@ -11,6 +11,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Changed global variable executor_plugin_name to EXECUTOR_PLUGIN_NAME in executors to conform with PEP8.
 
+## [0.55.0] - 2022-04-04
+
+### Changed
+
+- Changed supervisord http server's default to listen on all interfaces, so that covalent can run on any computer in a trusted LAN (without firewalls/auth).
+
+## [0.54.0] - 2022-04-04
+
+### Added
+
+- Draw workflow draft API to ui_backend service
+
+## [0.53.0] - 2022-04-04
+
+### Added
+
+- Added docker-compose file to run covalent microservices.
+
+## [0.52.0] - 2022-04-04
+
+### Added
+
+- Added delete endpoint to data and results services.
+
+## [0.51.0] - 2022-04-04
+
+### Added
+
+- Folders for tests.
+
+### Changed
+
+- Organization of covalent tests.
+
 ## [0.50.0] - 2022-04-03
 
 ### Added

@@ -18,13 +18,21 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from pydantic import BaseModel
-from typing import Dict
-
-
-class UpdateUIResponse(BaseModel):
-    response: str
-
-
-class DrawRequest(BaseModel):
-    payload: Dict
+.github
+.tox
+.pytest_cache
+.git
+__pycache__
+tests
+env
+venv
+docker-compose*
+*.rst
+docs
+supervisord.*
+*err.log
+*out.log
+CHANGELOG*
+CODE_OF_CONDUCT*
+CONTRIBUTING*
+Dockerfile
