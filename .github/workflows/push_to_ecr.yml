@@ -24,7 +24,6 @@ on:
     push:
         branches:
             - develop
-            - 22-integrate-docker-compose
 
 jobs:
     push_to_ecr:
