@@ -14,6 +14,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In covalent/executor/__init__.py, `from importlib import metadata` is used instead of `importlib.metadata`.
 - Rewritten tests to take into account the type change of executor identifiers from strings to executor class objects.
 
+## [0.53.0] - 2022-04-04
+
+### Added
+
+- Added docker-compose file to run covalent microservices.
+
+## [0.52.0] - 2022-04-04
+
+### Added
+
+- Added delete endpoint to data and results services.
+
+## [0.51.0] - 2022-04-04
+
+### Added
+
+- Folders for tests.
+
+### Changed
+
+- Organization of covalent tests.
+
 ## [0.50.0] - 2022-04-03
 
 ### Added
