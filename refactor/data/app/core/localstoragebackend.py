@@ -76,6 +76,7 @@ class LocalStorageBackend(StorageBackend):
         object_name: str,
         length: int,
         metadata: dict = None,
+        overwrite: bool = False,
     ) -> (str, str):
         """Upload object to storage.
 
@@ -108,7 +109,7 @@ class LocalStorageBackend(StorageBackend):
             return ("", "")
         try:
             abs_p = str(p.resolve(True))
-            object_name = f"{uuid.uuid4()}.pkl"
+            object_name = f"{uuid.uuid4()}.pkl" if not overwrite else object_name
             p = self.base_dir / Path(bucket_name) / Path(object_name)
         except FileNotFoundError:
             pass
