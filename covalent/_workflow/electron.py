@@ -35,6 +35,7 @@ from .._shared_files.defaults import (
     electron_list_prefix,
     generator_prefix,
     parameter_prefix,
+    prefix_separator,
     sublattice_prefix,
     subscript_prefix,
 )
@@ -152,7 +153,7 @@ class Electron:
                 if hasattr(op2, "function"):
                     op2_name = op2.function.__name__
 
-                f.__name__ = f"{op1_name}_{op}_{op2_name}"
+                f.__name__ = f"{prefix_separator}{op1_name}_{op}_{op2_name}{prefix_separator}"
                 return f
 
             return decorator

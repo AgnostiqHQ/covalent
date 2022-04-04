@@ -11,8 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - List type removed from type annotation for the executor argument in electron/lattice/lepton definitions.
 - Input executor argument is converted to an executor class object (if it were a string) in electron/lattice/lepton definitions instead of just before execution in execution.py. As a result, calls to _executor_manager.get_executor are removed from execution.py.
-- In covalent/executor/__init__.py, `from importlib import metadata` is used instead of `importlib.metadata`.
 - Rewritten tests to take into account the type change of executor identifiers from strings to executor class objects.
+
+### Fixed
+
+- In covalent/executor/__init__.py, `from importlib import metadata` is used instead of `importlib.metadata`.
+-
 
 ## [0.53.0] - 2022-04-04
 
