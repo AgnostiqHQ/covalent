@@ -304,7 +304,6 @@ def test_logs_refactor(mocker, MOCK_SERVICE_NAME):
     read_process_stdout = mocker.patch("covalent_dispatcher._cli.service._read_process_stdout")
     popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
 
-    print(f'testing svc name: {MOCK_SERVICE_NAME}')
     if MOCK_SERVICE_NAME:
         # invoke command with service name
         runner.invoke(logs, f"--service {MOCK_SERVICE_NAME}")
