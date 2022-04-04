@@ -52,7 +52,7 @@ else:
 
 
 @router.post("/upload", status_code=200, response_model=UploadResponse)
-def upload_file(*, file: UploadFile) -> Any:
+def upload_file(*, file: UploadFile, overwrite: bool = False) -> Any:
     """
     Upload a file
     """
@@ -61,7 +61,9 @@ def upload_file(*, file: UploadFile) -> Any:
     length = file.file.tell()
     file.file.seek(0)
 
-    path, filename = backend.put(file.file, backend.bucket_name, file.filename, length)
+    path, filename = backend.put(
+        file.file, backend.bucket_name, file.filename, length, overwrite=overwrite
+    )
 
     return {
         "filename": filename,
@@ -90,3 +92,9 @@ def download_file(*, file_location: str) -> Any:
         raise HTTPException(status_code=404, detail="File not found")
 
     return StreamingResponse(g, media_type="application/octet-stream")
+
+
+@router.delete("/delete", status_code=200)
+def delete_file(*, obj_name: str) -> Any:
+    res = backend.delete(backend.bucket_name, [obj_name])
+    return {"items_deleted": len(res)}

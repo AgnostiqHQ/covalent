@@ -7,6 +7,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.53.0] - 2022-04-04
+
+### Added
+
+- Added docker-compose file to run covalent microservices.
+
+## [0.52.0] - 2022-04-04
+
+### Added
+
+- Added delete endpoint to data and results services.
+
+## [0.51.0] - 2022-04-04
+
+### Added
+
+- Folders for tests.
+
+### Changed
+
+- Organization of covalent tests.
+
+## [0.50.0] - 2022-04-03
+
+### Added
+
+- Added GET all results endpoint in Results service
+- Optional formatting of GET result endpoint that supports: `binary` or `json`
+
+### Changed
+
+- Changed frontend to support updated result service endpoints with json format
+
+### Removed
+
+- Removed redundant local storage cache on frontend
+
+## [0.49.1] - 2022-04-01
+
+### Fixed
+
+- Using `io.BytesIO` in `update_result` in the results service to prevent creation of a new file in the file system.
+
+## [0.49.0] - 2022-04-01
+
+### Added
+
+- Implement an `overwrite` query param in the `upload` method so that we don't create a new object for every result update
+
+## [0.48.0] - 2022-04-01
+
+### Added
+
+- Added updated dispatching and getting result functions with the option to download result as a file.
+
+### Changed
+
+- Hardcoded filepaths to standardized ServiceURL.`get_route(...)` method when making API requests.
+
 ## [0.47.2] - 2022-04-01
 
 ### Fixed

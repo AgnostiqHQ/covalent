@@ -18,29 +18,24 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from pathlib import Path
+name: test-images
 
-from app.api.api_v0.api import api_router
-from app.core.config import settings
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+on:
+  pull_request
 
-BASE_PATH = Path(__file__).resolve().parent
+jobs:
+  test_images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v2
+      - name: Build and run images
+        run: |
+          docker-compose -f docker-compose.dev.yml up --build -d
+          echo 'Displaying containers...'
+      - name: Test Containers
+          run: |
+            # commands for testing container networking will go here
+          
 
-app = FastAPI(title="Covalent Results Service API")
-
-app.include_router(api_router, prefix=settings.API_V0_STR)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-if __name__ == "__main__":
-    # Use this for debugging purposes only
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=settings.RESULTS_SVC_PORT, log_level="debug", reload=True)
+          

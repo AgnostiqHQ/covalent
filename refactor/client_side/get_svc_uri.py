@@ -20,7 +20,8 @@
 
 from furl import furl
 
-from refactor.dispatcher.app.core.config import settings
+from refactor.queuer.app.core.config import settings as queuer_settings
+from refactor.results.app.core.config import settings as results_settings
 
 
 class ServiceURI:
@@ -48,21 +49,11 @@ class ServiceURI:
         return base_url.url
 
 
-class UIBackendURI(ServiceURI):
+class QueuerURI(ServiceURI):
     def __init__(self) -> None:
-        super().__init__(port=settings.UI_SVC_PORT)
-
-
-class RunnerURI(ServiceURI):
-    def __init__(self) -> None:
-        super().__init__(port=settings.RUNNER_SVC_PORT)
+        super().__init__(port=queuer_settings.QUEUER_SVC_PORT)
 
 
 class ResultsURI(ServiceURI):
     def __init__(self) -> None:
-        super().__init__(port=settings.RESULTS_SVC_PORT)
-
-
-class DispatcherURI(ServiceURI):
-    def __init__(self) -> None:
-        super().__init__(port=settings.DISPATCHER_SVC_PORT)
+        super().__init__(port=results_settings.RESULTS_SVC_PORT)
