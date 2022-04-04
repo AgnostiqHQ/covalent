@@ -45,7 +45,6 @@ jobs:
                 echo 'Displaying containers...'
                 docker ps
                 source .env.compose
-                # Cleanup
                 docker tag covalent-data:latest $DATA_REPO
                 docker tag covalent-dispatcher:latest $DISPATCHER_REPO
                 docker tag covalent-queuer:latest $QUEUER_REPO
