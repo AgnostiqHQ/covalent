@@ -35,8 +35,6 @@ from typing import Any, BinaryIO, List, Optional, Tuple, Union
 import cloudpickle as pickle
 import requests
 from aiohttp import ClientSession
-
-
 from app.core.api import DataService
 from app.core.db import Database
 from app.schemas.common import HTTPExceptionSchema
@@ -120,7 +118,6 @@ async def _upload_file(result_pkl_file: BinaryIO):
         else:
             error_detail = "Error adding record to database."
     raise HTTPException(status_code=500, detail="Error adding record to database.")
-
 
 
 async def _concurrent_download_and_serialize(semaphore, file_name, session):
@@ -211,11 +208,7 @@ async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
         },
     },
 )
-async def get_result(
-    *,
-    dispatch_id: str,
-    format: ResultFormats = ResultFormats.BINARY
-) -> Any:
+async def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.BINARY) -> Any:
     """
     Get a result object as pickle file
     """
