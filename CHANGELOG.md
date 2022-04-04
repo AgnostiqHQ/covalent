@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Changed supervisord http server's default to listen on all interfaces, so that covalent can run on any computer in a trusted LAN (without firewalls/auth).
+
 ## [0.54.0] - 2022-04-04
 
 ### Added
