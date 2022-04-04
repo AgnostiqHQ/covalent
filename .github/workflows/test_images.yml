@@ -33,10 +33,9 @@ jobs:
         run: |
           docker-compose -f docker-compose.dev.yml up --build -d
           echo 'Displaying containers...'
-          docker ps
-          echo 'Testing images...'
-          curl -I http://localhost:8001/docs 2>/dev/null | head -n 1 | cut -d$' ' -f2
-          echo 'Stopping and Removing containers...'
-          docker-compose down && docker-compose rm $(docker-compose ps -aq)
+      - name: Test Containers
+          run: |
+            # commands for testing container networking will go here
+          
 
           

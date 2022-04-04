@@ -27,7 +27,7 @@ on:
             - 22-integrate-docker-compose
 
 jobs:
-    publish:
+    push_to_ecr:
         runs-on: ubuntu-latest
         steps:
             - name: Check out head
