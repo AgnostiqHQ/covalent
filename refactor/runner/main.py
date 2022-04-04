@@ -36,4 +36,4 @@ if __name__ == "__main__":
     # Use this for debugging purposes only
     import uvicorn
     
-    uvicorn.run("main:app", host="0.0.0.0", port=settings.RUNNER_SVC_PORT, log_level="debug", reload=True)
+    uvicorn.run("main:app", host=settings.RUNNER_SVC_HOST, port=settings.RUNNER_SVC_PORT, log_level="debug", reload=True)
