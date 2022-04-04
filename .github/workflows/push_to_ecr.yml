@@ -1,0 +1,63 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: push-to-ecr
+
+on:
+    push:
+        branches:
+            - develop
+
+jobs:
+    push_to_ecr:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out head
+              uses: actions/checkout@v2
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v1
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: us-east-1
+            - name: Login to ECR
+              uses: aws-actions/amazon-ecr-login@v1
+            - name: Push to ECR
+              run: |
+                docker-compose -f docker-compose.dev.yml up --build -d
+                echo 'Displaying containers...'
+                docker ps
+                source .env.compose
+                docker tag covalent-data:latest $DATA_REPO
+                docker tag covalent-dispatcher:latest $DISPATCHER_REPO
+                docker tag covalent-queuer:latest $QUEUER_REPO
+                docker tag covalent-queue-consumer:latest $QUEUE_CONSUMER_REPO
+                docker tag covalent-results:latest $RESULTS_REPO
+                docker tag covalent-runner:latest $RUNNER_REPO
+                docker tag covalent-ui:latest $UI_REPO
+                docker push $DATA_REPO
+                docker push $DISPATCHER_REPO
+                docker push $QUEUER_REPO
+                docker push $QUEUE_CONSUMER_REPO
+                docker push $RESULTS_REPO
+                docker push $RUNNER_REPO
+                docker push $UI_REPO
+
+          

@@ -166,7 +166,7 @@ setup_info = {
     "package_data": {
         "covalent": [
             "executor/executor_plugins/local.py",
-            "notify/notification_plugins/notify.py",
+            "notify/notification_plugins/webhook.py",
         ],
         "covalent_dispatcher": ["_service/app.py"],
         "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
