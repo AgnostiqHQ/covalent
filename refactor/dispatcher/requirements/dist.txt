@@ -1,6 +1,0 @@
-cloudpickle==2.0.0
-fastapi==0.74.0
-fastapi-socketio==0.0.9
-requests==2.24.0
-pydantic==1.9.0
-python-dotenv==0.19.2

@@ -22,7 +22,7 @@
 **/results/**
 **/result_*
 !covalent_ui/result_webhook.py
-!refactor/results/**
+!covalent_services/results/**
 
 *.xml
 
@@ -54,7 +54,7 @@ covalent/**/*.ipynb
 covalent/*.ipynb
 covalent_dispatcher/**/*.ipynb
 covalent_dispatcher/*.ipynb
-refactor/runner/*.ipynb
+covalent_services/runner/*.ipynb
 
 # IPython
 profile_default/
@@ -129,8 +129,8 @@ covalent_dispatcher/_service/tmp*
 *_scratch.py
 
 # Logs
-refactor/**/logs/*.log
-refactor/ui_backend/webapp/node_modules
+covalent_services/**/logs/*.log
+covalent_services/ui_backend/webapp/node_modules
 
 # Supervisord Files
 *err.log
