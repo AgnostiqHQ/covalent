@@ -52,4 +52,4 @@ print(dispatch_id)
 # time.sleep(3)
 
 # No matter what dispatch id is sent, it returns from the last one only
-# print(interface_with_covalent.get_result("158f4a28-0965-4383-bd00-570b0828b9a4"))
+print(interface_with_covalent.get_result("f659c221-362f-4b91-8e69-b10e3b8543f0"))

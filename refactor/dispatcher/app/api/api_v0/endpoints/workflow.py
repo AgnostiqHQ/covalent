@@ -90,7 +90,7 @@ def submit_workflow(*, dispatch_id: str) -> Any:
     Submit a workflow
     """
 
-    # logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
+    logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
 
     # Change workflow status to RUNNING
     workflow_status_queue.get()
@@ -98,6 +98,8 @@ def submit_workflow(*, dispatch_id: str) -> Any:
 
     # Get the result object
     result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
+
+    logger.warning(f"Inside submit_workflow with result_object: {result_obj}")
 
     # Dispatch the workflow
     dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)

@@ -31,7 +31,7 @@ from app.core.utils import is_empty, send_result_object_to_result_service, send_
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 from covalent.executor import BaseExecutor
-from refactor.dispatcher.app.core.get_svc_uri import RunnerURI, ResultsURI
+from refactor.dispatcher.app.core.get_svc_uri import ResultsURI, RunnerURI
 
 from .utils import get_task_inputs, get_task_order, is_sublattice, preprocess_transport_graph
 
@@ -76,6 +76,8 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
         tasks_order=task_order,
         tasks_queue=tasks_queue,
     )
+
+    logger.warning(f"In dispatch_runnable_tasks with tasks: {tasks}")
 
     # The next set of tasks that can be run afterwards
     # This is the case of a new dispatch id in the list of dictionaries
@@ -126,7 +128,7 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     # Get the order of tasks to be run
     task_order: List[List] = get_task_order(result_obj=result_obj)
 
-    # logger.warning(f"task_order: {task_order}")
+    logger.warning(f"task_order: {task_order}")
     dispatch_runnable_tasks(result_obj, tasks_queue, task_order)
 
     # logger.warning(f"Inside start_dispatch with finished dispatch_id {result_obj.dispatch_id}")
