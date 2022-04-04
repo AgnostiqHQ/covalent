@@ -18,13 +18,24 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from pydantic import BaseModel
-from typing import Dict
+name: test-images
 
+on:
+  pull_request
 
-class UpdateUIResponse(BaseModel):
-    response: str
+jobs:
+  test_images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v2
+      - name: Build and run images
+        run: |
+          docker-compose -f docker-compose.dev.yml up --build -d
+          echo 'Displaying containers...'
+      - name: Test Containers
+          run: |
+            # commands for testing container networking will go here
+          
 
-
-class DrawRequest(BaseModel):
-    payload: Dict
+          

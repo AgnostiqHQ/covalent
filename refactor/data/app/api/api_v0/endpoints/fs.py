@@ -92,3 +92,9 @@ def download_file(*, file_location: str) -> Any:
         raise HTTPException(status_code=404, detail="File not found")
 
     return StreamingResponse(g, media_type="application/octet-stream")
+
+
+@router.delete("/delete", status_code=200)
+def delete_file(*, obj_name: str) -> Any:
+    res = backend.delete(backend.bucket_name, [obj_name])
+    return {"items_deleted": len(res)}
