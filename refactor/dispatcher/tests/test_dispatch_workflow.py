@@ -27,6 +27,7 @@ from app.core.dispatch_workflow import init_result_pre_dispatch
 
 import covalent as ct
 from covalent._results_manager.result import Result
+from covalent._workflow.transport import _TransportGraph
 from refactor.dispatcher.app.core.dispatch_workflow import is_runnable_task
 
 
@@ -65,7 +66,7 @@ def mock_result_uninitialized():
 def mock_result_initialized(mock_result_uninitialized):
     """Construct mock result object."""
 
-    result_obj = mock_result_uninitialized
+    result_obj = deepcopy(mock_result_uninitialized)
 
     init_result_pre_dispatch(result_obj)
     return result_obj
@@ -87,8 +88,19 @@ def test_get_runnable_tasks():
     pass
 
 
-def test_init_result_pre_dispatch():
-    pass
+def test_init_result_pre_dispatch(mocker, mock_result_uninitialized):
+    """Test the result object initialization method."""
+
+    mock_initialize_nodes = mocker.patch(
+        "covalent._results_manager.result.Result._initialize_nodes"
+    )
+
+    assert isinstance(mock_result_uninitialized.lattice.transport_graph, bytes)
+
+    post_init_result_obj = init_result_pre_dispatch(mock_result_uninitialized)
+    assert isinstance(post_init_result_obj.lattice.transport_graph, _TransportGraph)
+
+    mock_initialize_nodes.assert_called_once_with()
 
 
 def test_run_tasks():
