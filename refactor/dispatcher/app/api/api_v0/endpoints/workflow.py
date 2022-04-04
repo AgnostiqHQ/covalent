@@ -133,19 +133,19 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
         return {"response": f"{dispatch_id} workflow did not cancel successfully"}
 
 
-@router.post("/cancel", status_code=200, response_model=BatchCancelWorkflowResponse)
-def cancel_workflows(*, dispatch_ids: List[str]) -> BatchCancelWorkflowResponse:
+@router.delete("/cancel", status_code=200, response_model=BatchCancelWorkflowResponse)
+async def cancel_workflows(*, dispatch_ids: List[str]) -> BatchCancelWorkflowResponse:
     """
     Cancel a set of workflows
     """
 
     # Mock response here
-
-    return {
-        "response": [
-            f"{dispatch_id} workflow cancelled successfully" for dispatch_id in dispatch_ids
-        ]
+    mock_response = {
+        "cancelled": ["dispatch_id0", "dispatch_id1", "dispatch_id3"],
+        "failed": ["dispatch_id2"],
     }
+
+    return {"response": mock_response}
 
 
 @router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
