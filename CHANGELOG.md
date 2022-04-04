@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Folders for tests.
+
+### Changed
+
+- Organization of covalent tests.
+
 ## [0.50.0] - 2022-04-03
 
 ### Added
@@ -20,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed redundant local storage cache on frontend  
+- Removed redundant local storage cache on frontend
 
 ## [0.49.1] - 2022-04-01
 
