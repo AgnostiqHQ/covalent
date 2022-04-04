@@ -44,6 +44,7 @@ async def main():
         logger.warning(f"Got dispatch_id: {dispatch_id} with type {type(dispatch_id)}")
         while True:
             await asyncio.sleep(0.1)
+            # logger.warning("Checking empty queue")
             if is_empty(workflow_status_queue):
                 break
 

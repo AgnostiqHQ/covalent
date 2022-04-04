@@ -94,17 +94,16 @@ def submit_workflow(*, dispatch_id: str) -> Any:
 
     # Change workflow status to RUNNING
     workflow_status_queue.get()
+
     workflow_status_queue.put(Result.RUNNING)
 
     # Get the result object
     result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
-    logger.warning(f"Inside submit_workflow with result_object: {result_obj}")
-
     # Dispatch the workflow
     dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
 
-    # logger.warning(f"Inside submit_workflow dispatching done with dispatch_id: {dispatch_id}")
+    logger.warning(f"Inside submit_workflow dispatching done with dispatch_id: {dispatch_id}")
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 

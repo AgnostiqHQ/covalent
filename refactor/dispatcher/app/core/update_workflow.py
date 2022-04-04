@@ -27,6 +27,7 @@ from typing import Dict
 from covalent._results_manager import Result
 
 from .dispatch_workflow import dispatch_runnable_tasks
+from .dispatcher_logger import logger
 from .utils import (
     _post_process,
     are_tasks_running,
@@ -43,12 +44,17 @@ def update_workflow_results(
     execution status."""
 
     # TODO: Place it in somewhere where only this result object needs to get updated
-    latest_result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
+    latest_result_obj: Result = get_result_object_from_result_service(dispatch_id=dispatch_id)
+
+    logger.warning(f"Updating with task as {task_execution_results}")
 
     # Update the task results
     latest_result_obj._update_node(**task_execution_results)
 
-    if task_execution_results["status"] == Result.FAILED:
+    if task_execution_results["status"] == Result.RUNNING:
+        return latest_result_obj
+
+    elif task_execution_results["status"] == Result.FAILED:
         latest_result_obj._status = Result.FAILED
 
     elif task_execution_results["status"] == Result.CANCELLED:

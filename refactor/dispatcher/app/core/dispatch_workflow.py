@@ -131,8 +131,6 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     logger.warning(f"task_order: {task_order}")
     dispatch_runnable_tasks(result_obj, tasks_queue, task_order)
 
-    # logger.warning(f"Inside start_dispatch with finished dispatch_id {result_obj.dispatch_id}")
-
     send_result_object_to_result_service(result_obj)
 
     return result_obj
@@ -158,10 +156,22 @@ def get_runnable_tasks(
     functions = []
 
     for task_id in task_ids:
+
+        task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
+
+        # Check whether task is of non-executable type
+        result_obj, is_executable = preprocess_transport_graph(task_id, task_name, result_obj)
+
+        if not is_executable:
+            if task_id == task_ids[-1] and not runnable_tasks:
+                return get_runnable_tasks(
+                    result_obj=result_obj, tasks_order=tasks_order, tasks_queue=tasks_queue
+                )
+            continue
+
         serialized_function = result_obj.lattice.transport_graph.get_node_value(
             task_id, "function"
         )
-        task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
 
         # Get the task inputs from parents and edge names of this node
         task_inputs = get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
@@ -202,14 +212,6 @@ def get_runnable_tasks(
             dispatch_workflow(result_obj=sublattice_result_obj, tasks_queue=tasks_queue)
 
         elif is_runnable_task(task_id, result_obj):
-            # If the task is runnable, i.e, its parents have completed execution
-
-            # Check whether task is of non-executable type
-            result_obj, is_executable = preprocess_transport_graph(task_id, task_name, result_obj)
-
-            # If task is not executable then continue loop to next task
-            if not is_executable:
-                continue
 
             # Add the details of this task to respective lists
             runnable_tasks.append(task_id)
