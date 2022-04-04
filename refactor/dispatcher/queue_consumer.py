@@ -19,10 +19,12 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import asyncio
+import json
 import os
 
 import nats
 from app.api.api_v0.endpoints.workflow import submit_workflow, workflow_status_queue
+from app.core.dispatcher_logger import logger
 from app.core.utils import is_empty
 from dotenv import load_dotenv
 
@@ -38,12 +40,13 @@ async def main():
     nc = await nats.connect(MQ_CONNECTION_URI)
 
     async def msg_handler(msg):
-        dispatch_id = msg.data.decode()
-        print(f"Got dispatch_id: {dispatch_id}")
+        dispatch_id = json.loads(msg.data.decode())["dispatch_id"]
+        logger.warning(f"Got dispatch_id: {dispatch_id} with type {type(dispatch_id)}")
         while True:
             await asyncio.sleep(0.1)
             if is_empty(workflow_status_queue):
                 break
+
         submit_workflow(dispatch_id=dispatch_id)
 
     sub = await nc.subscribe(TOPIC, cb=msg_handler)
