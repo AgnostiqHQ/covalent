@@ -19,6 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import time
+
 import interface_with_covalent
 
 import covalent as ct
@@ -46,3 +48,8 @@ def workflow(a):
 dispatch_id = interface_with_covalent.dispatch(workflow)(3)
 
 print(dispatch_id)
+
+# time.sleep(3)
+
+# No matter what dispatch id is sent, it returns from the last one only
+# print(interface_with_covalent.get_result("158f4a28-0965-4383-bd00-570b0828b9a4"))

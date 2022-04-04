@@ -20,6 +20,7 @@
 
 import logging
 import uuid
+from io import BytesIO
 
 import cloudpickle as pickle
 from app.core.api import DataService
@@ -51,9 +52,9 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
 
         result_obj._dispatch_id = dispatch_id
 
-        pickled_result = pickle.dumps(result_obj)
+        result_pkl_file = BytesIO(pickle.dumps(result_obj))
 
-        await data_svc.create_result(pickled_result)
+        await data_svc.create_result(result_pkl_file)
 
         # dispatch_id = created_result["dispatch_id"]
 

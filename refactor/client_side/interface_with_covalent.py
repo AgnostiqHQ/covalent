@@ -58,7 +58,7 @@ def dispatch(
         r.raise_for_status()
 
         # Returns assigned dispatch id
-        return r.content.decode("utf-8").strip().replace('"', "")
+        return r.json()["dispatch_id"]
 
     return wrapper
 
