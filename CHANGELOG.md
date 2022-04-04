@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added docker-compose file to run covalent microservices.
+
 ## [0.52.0] - 2022-04-04
 
 ### Added
