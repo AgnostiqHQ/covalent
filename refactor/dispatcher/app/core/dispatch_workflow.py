@@ -31,7 +31,7 @@ from app.core.utils import is_empty, send_result_object_to_result_service, send_
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 from covalent.executor import BaseExecutor
-from refactor.dispatcher.app.core.get_svc_uri import RunnerURI, ResultsURI
+from refactor.dispatcher.app.core.get_svc_uri import ResultsURI, RunnerURI
 
 from .utils import get_task_inputs, get_task_order, is_sublattice, preprocess_transport_graph
 
@@ -272,9 +272,9 @@ def run_tasks(
 
 
 def is_runnable_task(task_id: int, results_obj: Result) -> bool:
-    """Return status whether the task can be run."""
+    """Return status whether the task can be run based on whether the parent tasks have finished executing."""
 
-    parent_node_ids = results_obj.lattice.transport_graph.get_dependencies(task_id)
+    parent_node_ids: List[int] = results_obj.lattice.transport_graph.get_dependencies(task_id)
 
     return all(
         results_obj._get_node_status(node_id) == Result.COMPLETED for node_id in parent_node_ids
