@@ -44,6 +44,7 @@ UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
 SD_PIDFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.pid"
 SD_CONFIG_FILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.conf"
 
+SD_START_TIMEOUT_IN_SECS = 15
 
 def _read_process_stdout(proc):
     while True:
@@ -109,14 +110,13 @@ def _ensure_supervisord_running():
     else:
         Popen(["supervisord"], stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
         count = 0
-        total_wait_time_in_secs = 15
         wait_interval_in_secs = 0.1
         while not _is_port_in_use(SUPERVISORD_PORT):
             # if 15 seconds passes timeout
-            if count > total_wait_time_in_secs/wait_interval_in_secs:
+            if count > (SD_START_TIMEOUT_IN_SECS / wait_interval_in_secs):
                 raise click.ClickException("Supervisord was unable to start")
             elif count == 2:
-                print('Checking if covalent has started (this may take a few seconds)...')
+                click.echo('Checking if covalent has started (this may take a few seconds)...')
             count+=1
             time.sleep(wait_interval_in_secs)
         # get new pid as a result of starting supervisord
