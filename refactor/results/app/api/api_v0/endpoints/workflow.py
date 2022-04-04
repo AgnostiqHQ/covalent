@@ -20,6 +20,7 @@
 
 import asyncio
 import io
+import json
 import logging
 import logging.config
 import os
@@ -27,29 +28,24 @@ import random
 import sqlite3
 import string
 import time
-import cloudpickle as pickle
-import requests
-import json
-
 from os import path
 from tempfile import TemporaryFile
 from typing import Any, BinaryIO, List, Optional, Tuple
+
+import cloudpickle as pickle
+import requests
 from aiohttp import ClientSession
-
-
 from app.core.api import DataService
 from app.core.db import Database
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResultResponse
-
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile, Response
+from fastapi import APIRouter, File, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
+from covalent_dispatcher._db.dispatchdb import encode_result
 from refactor.results.app.core.config import settings
 from refactor.results.app.core.get_svc_uri import DataURI
 from refactor.results.app.schemas.workflow import ResultFormats
-
-from covalent_dispatcher._db.dispatchdb import encode_result
 
 logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
 
@@ -118,16 +114,18 @@ async def _upload_file(result_pkl_file: BinaryIO):
     raise HTTPException(status_code=500, detail="Error adding record to database.")
 
 
-
 async def _concurrent_download_and_serialize(semaphore, file_name, session):
     async with semaphore:
-         async with session.get(DataURI().get_route('/fs/download'), params={ "file_location": file_name }) as resp:
+        async with session.get(
+            DataURI().get_route("/fs/download"), params={"file_location": file_name}
+        ) as resp:
             result_binary = await resp.read()
             result = pickle.loads(result_binary)
             result_json = json.loads(encode_result(result))
             return result_json
-        
-def _get_results_from_db() -> List[Tuple[str,str]]:
+
+
+def _get_results_from_db() -> List[Tuple[str, str]]:
     con = sqlite3.connect(settings.RESULTS_DB)
     cur = con.cursor()
     cur.execute("SELECT dispatch_id, filename FROM results")
@@ -160,6 +158,7 @@ def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
         (insert,) = insert
     return insert
 
+
 @router.get(
     "/results",
     status_code=200,
@@ -177,17 +176,19 @@ async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
     results = _get_results_from_db()
     tasks = []
     # Set 10 concurrent requests at a time
-    semaphore = asyncio.Semaphore(10) 
+    semaphore = asyncio.Semaphore(10)
     async with ClientSession() as session:
         # Send requests in parallel to Data Service for download
         for result in results:
             dispatch_id, file_name = result
-            task = asyncio.create_task(_concurrent_download_and_serialize(semaphore, file_name, session))
+            task = asyncio.create_task(
+                _concurrent_download_and_serialize(semaphore, file_name, session)
+            )
             tasks.append(task)
         # Wait until parallel tasks return and gather results
         responses = await asyncio.gather(*tasks, return_exceptions=False)
         return responses
-        
+
 
 @router.get(
     "/results/{dispatch_id}",
@@ -196,16 +197,12 @@ async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
     responses={
         404: {"model": HTTPExceptionSchema, "description": "Result was not found"},
         200: {
-            "content": {"application/octet-stream": {} },
+            "content": {"application/octet-stream": {}},
             "description": "Return binary content of file.",
         },
     },
 )
-async def get_result(
-    *,
-    dispatch_id: str,
-    format: ResultFormats = ResultFormats.BINARY
-) -> Any:
+async def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.BINARY) -> Any:
     """
     Get a result object as pickle file
     """
@@ -216,11 +213,6 @@ async def get_result(
         return Response(content=result_json_stringified, media_type="application/json")
     else:
         return StreamingResponse(io.BytesIO(result_binary), media_type="application/octet-stream")
-
-
-sult_file(dispatch_id)
-ytesIO(result), media_type="application/octet-stream")
-#146)
 
 
 @router.post("/results", status_code=200, response_model=InsertResultResponse)

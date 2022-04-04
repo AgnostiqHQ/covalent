@@ -70,7 +70,7 @@ class APIService:
 
 class DataService(APIService):
     def __init__(self):
-        super().__init__(DataURI().get_base_url)
+        super().__init__(str(DataURI().get_base_url()))
 
     async def download(self, filename: str):
         return self.get(
