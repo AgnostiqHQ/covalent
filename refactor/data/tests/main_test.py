@@ -28,7 +28,7 @@ FILENAME = os.path.join(DIRNAME, "./_test_assets/result")
 def test_upload_endpoint(test_app, monkeypatch):
     mock_object_name = "mockresult"
 
-    def mock_put(_, data, bucket_name, object_name, length, metadata=None):
+    def mock_put(_, data, bucket_name, object_name, length, metadata=None, overwrite=False):
         return (bucket_name, object_name)
 
     monkeypatch.setattr("app.core.localstoragebackend.LocalStorageBackend.put", mock_put)
