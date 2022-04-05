@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Mark pypi releases as pre
+
 ## [0.57.0] - 2022-04-05
 
 ### Added

@@ -49,7 +49,7 @@ jobs:
           yarn install
           yarn build
       - name: Build Distribution
-        run: python setup.py sdist
+        run: python setup.py --tag-build=pre sdist
       - name: Validate Distribution
         run: |
           VERSION="$(cat ./VERSION)"
