@@ -23,15 +23,27 @@ import json
 import os
 
 import nats
+import requests
 from app.api.api_v0.endpoints.workflow import submit_workflow, workflow_status_queue
 from app.core.dispatcher_logger import logger
 from app.core.utils import is_empty
 from dotenv import load_dotenv
 
+from refactor.dispatcher.app.core.config import settings
+
 load_dotenv()
 
 TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
 MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
+
+
+def send_dispatch_id(dispatch_id: str):
+    resp = requests.post(
+        f"http://localhost:{settings.DISPATCHER_SVC_PORT}/api/v0/workflow/{dispatch_id}"
+    )
+    resp.raise_for_status()
+
+    logger.warning(f"Dispatch id {dispatch_id} sent successfully.")
 
 
 async def main():
@@ -48,7 +60,7 @@ async def main():
             if is_empty(workflow_status_queue):
                 break
 
-        submit_workflow(dispatch_id=dispatch_id)
+        send_dispatch_id(dispatch_id=dispatch_id)
 
     sub = await nc.subscribe(TOPIC, cb=msg_handler)
 

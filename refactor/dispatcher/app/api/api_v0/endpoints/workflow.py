@@ -18,11 +18,13 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+
 from multiprocessing import Queue as MPQ
 from queue import Empty
 from typing import Any
 
 import cloudpickle as pickle
+from aiocache import Cache
 from app.core.cancel_workflow import cancel_workflow_execution
 from app.core.dispatch_workflow import dispatch_workflow
 from app.core.dispatcher_logger import logger
@@ -37,6 +39,32 @@ from fastapi import APIRouter, File
 
 from covalent._results_manager import Result
 from refactor.dispatcher.app.core.get_svc_uri import ResultsURI
+
+##################
+
+
+# cache = Cache(Cache.REDIS, endpoint="localhost", port=6379, namespace="main")
+
+
+# class Meta:
+#     def __init__(self):
+#         pass
+
+#     async def get_count(self) -> int:
+#         return await cache.get("count", default=0)
+
+#     async def set_count(self, value: int) -> None:
+#         await cache.set("count", value)
+
+#     async def increment_count(self) -> None:
+#         await cache.increment("count", 1)
+
+
+# meta = Meta()
+
+
+##################
+
 
 workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()
@@ -86,12 +114,14 @@ logger.warning("Dispatcher Service Started")
 
 
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
-def submit_workflow(*, dispatch_id: str) -> Any:
+async def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
 
     testing_queue.put("SOMETHING NEW")
+
+    # logger.warning(f"CURRENT COUNT IS: {meta.get_count()}")
 
     logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
 
@@ -118,7 +148,7 @@ def submit_workflow(*, dispatch_id: str) -> Any:
 
 
 @router.delete("/{dispatch_id}", status_code=200, response_model=CancelWorkflowResponse)
-def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
+async def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     """
     Cancel a workflow
     """
@@ -143,7 +173,7 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
 
 
 @router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
-def update_workflow(
+async def update_workflow(
     *, dispatch_id: str, task_execution_results: bytes = File(...)
 ) -> UpdateWorkflowResponse:
     """
@@ -164,9 +194,7 @@ def update_workflow(
     # workflow_tasks_queue.put(val)
 
     try:
-        logger.warning(
-            f"VALUE OF TESTING QUEUE IN UPDATE WORKFLOW IS: {testing_queue.get_nowait()}"
-        )
+        logger.warning(f"VALUE OF TESTING QUEUE IN UPDATE WORKFLOW IS: {testing_queue.get()}")
 
     except Empty:
         logger.warning("VALUE OF TESTING QUEUE IN UPDATE WORKFLOW IS EMPTY")
