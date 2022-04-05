@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Variables to assign service hosts
 
+## [0.56.1] - 2022-04-05
+
+### Fixed
+
+- Fixed various module import errors in the containers for the microservices.
+
 ### Tests
 
 - Added tests for post-refactor covalent cli commands: start, stop, restart, status, and logs
