@@ -53,7 +53,8 @@ from refactor.results.app.core.config import settings
 from refactor.results.app.core.get_svc_uri import DataURI
 from refactor.results.app.schemas.workflow import ResultFormats
 
-logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
+logconf = os.path.realpath(os.path.dirname(__file__) + "/../../../../logging.conf")
+logging.config.fileConfig(logconf, disable_existing_loggers=False)
 
 logger = logging.getLogger(__name__)
 

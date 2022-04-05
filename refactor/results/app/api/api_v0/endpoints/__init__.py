@@ -25,5 +25,6 @@ import logging.config
 import os
 
 # setup loggers
-logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
+logconf = os.path.realpath(os.path.dirname(__file__) + "/../../../../logging.conf")
+logging.config.fileConfig(logconf, disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
