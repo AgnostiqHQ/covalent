@@ -27,8 +27,9 @@ from pydantic import AnyHttpUrl, BaseSettings, validator
 class Settings(BaseSettings):
     API_V0_STR: str = "/api/v0"
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
-    DATA_OS_SVC_HOST_URI: str = os.getenv('DATA_OS_SVC_HOST_URI')
+    DATA_OS_SVC_HOST_URI: str = os.getenv("DATA_OS_SVC_HOST_URI")
     UI_SVC_PORT: int = 8004
+    UI_SVC_HOST: str = "localhost"
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
