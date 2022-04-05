@@ -203,6 +203,8 @@ def _run_task(
     if result_object._get_node_status(node_id) == Result.COMPLETED:
         return
 
+    executor = _executor_manager.get_executor(executor)
+
     # run the task on the executor and register any failures
     app_log.debug("run the task on the executor")
     try:
