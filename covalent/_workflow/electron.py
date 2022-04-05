@@ -482,6 +482,7 @@ def electron(
         )
         executor = backend
 
+    from .._shared_files.config import get_config, update_config
     from ..executor import _executor_manager
 
     executor = _executor_manager.get_executor(executor)
