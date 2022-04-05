@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Variables to assign service hosts
 
+## [0.56.0] - 2022-04-05
+
+### Changed
+
+- Changed global variable executor_plugin_name to EXECUTOR_PLUGIN_NAME in executors to conform with PEP8.
+
+## [0.55.0] - 2022-04-04
+
+### Changed
+
+- Changed supervisord http server's default to listen on all interfaces, so that covalent can run on any computer in a trusted LAN (without firewalls/auth).
+
+## [0.54.0] - 2022-04-04
+
+### Added
+
+- Draw workflow draft API to ui_backend service
+
 ## [0.53.0] - 2022-04-04
 
 ### Added
