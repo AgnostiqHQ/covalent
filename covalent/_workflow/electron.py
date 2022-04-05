@@ -482,7 +482,12 @@ def electron(
         )
         executor = backend
 
-    from .._shared_files.config import get_config, update_config
+    import os
+
+    from .._shared_files.config import _config_manager
+
+    assert os.path.exists(os.path.dirname(_config_manager.config_file))
+
     from ..executor import _executor_manager
 
     executor = _executor_manager.get_executor(executor)
