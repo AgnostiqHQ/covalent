@@ -85,7 +85,18 @@ def mock_tasks_queue():
     return MPQ()
 
 
-def test_dispatch_workflow_func(mocker, mock_result_initialized, mock_tasks_queue):
+@pytest.mark.parametrize(
+    "initial_status,start_dispatch_call_status",
+    [
+        (Result.NEW_OBJ, True),
+        (Result.COMPLETED, False),
+        (Result.RUNNING, False),
+        (Result.FAILED, False),
+    ],
+)
+def test_dispatch_workflow_func(
+    mocker, mock_result_initialized, mock_tasks_queue, initial_status, start_dispatch_call_status
+):
     """Test that the dispatch workflow function calls the appropriate method depending on the result object status."""
 
     mock_update_result_obj = mocker.Mock()
@@ -94,20 +105,20 @@ def test_dispatch_workflow_func(mocker, mock_result_initialized, mock_tasks_queu
         return_value=mock_update_result_obj,
     )
 
-    assert mock_result_initialized.status == Result.NEW_OBJ
+    mock_result_initialized._status = initial_status
+    print(mock_result_initialized.status)
 
     result_obj = dispatch_workflow(
         result_obj=mock_result_initialized, tasks_queue=mock_tasks_queue
     )
 
-    mock_start_dispatch.assert_called_once_with(
-        result_obj=mock_result_initialized, tasks_queue=mock_tasks_queue
-    )
-    print(mock_start_dispatch.mock_calls)
+    if start_dispatch_call_status:
+        mock_start_dispatch.assert_called_once_with(
+            result_obj=mock_result_initialized, tasks_queue=mock_tasks_queue
+        )
+        assert result_obj == mock_update_result_obj
 
-    assert result_obj == mock_update_result_obj
-
-    # mock_start_dispatch.assert_called_once_with(mock_result_initialized, mock_tasks_queue)
+    assert mock_start_dispatch.called is start_dispatch_call_status
 
 
 def test_dispatch_runnable_tasks():
