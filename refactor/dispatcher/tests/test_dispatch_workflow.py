@@ -23,11 +23,15 @@
 from copy import deepcopy
 
 import pytest
-from app.core.dispatch_workflow import init_result_pre_dispatch, is_runnable_task
 
 import covalent as ct
 from covalent._results_manager.result import Result
 from covalent._workflow.transport import _TransportGraph
+from refactor.dispatcher.app.core.dispatch_workflow import (
+    dispatch_workflow,
+    init_result_pre_dispatch,
+    is_runnable_task,
+)
 
 
 @pytest.fixture
@@ -83,9 +87,17 @@ def mock_tasks_queue():
 def test_dispatch_workflow_func(mocker, mock_result_initialized, mock_tasks_queue):
     """Test that the dispatch workflow function calls the appropriate method depending on the result object status."""
 
-    mock_submit_workflow = mocker.patch("app.core.dispatch_workflow.submit_workflow")
+    mock_start_dispatch = mocker.patch(
+        "refactor.dispatcher.app.core.dispatch_workflow.start_dispatch"
+    )
 
     assert mock_result_initialized.status == Result.NEW_OBJ
+
+    result_obj = dispatch_workflow(mock_result_initialized, mock_tasks_queue)
+
+    mock_start_dispatch.assert_called_once()
+
+    assert result_obj.status == Result.RUNNING
 
 
 def test_dispatch_runnable_tasks():

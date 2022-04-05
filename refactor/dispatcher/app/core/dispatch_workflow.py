@@ -25,13 +25,16 @@ from datetime import datetime, timezone
 from multiprocessing import Queue as MPQ
 from typing import Dict, List, Tuple, Union
 
-from app.core.dispatcher_logger import logger
-from app.core.utils import is_empty, send_result_object_to_result_service, send_task_list_to_runner
-
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 from covalent.executor import BaseExecutor
+from refactor.dispatcher.app.core.dispatcher_logger import logger
 from refactor.dispatcher.app.core.get_svc_uri import ResultsURI, RunnerURI
+from refactor.dispatcher.app.core.utils import (
+    is_empty,
+    send_result_object_to_result_service,
+    send_task_list_to_runner,
+)
 
 from .utils import get_task_inputs, get_task_order, is_sublattice, preprocess_transport_graph
 
