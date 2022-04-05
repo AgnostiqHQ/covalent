@@ -23,6 +23,7 @@
 
 from datetime import datetime, timezone
 from multiprocessing import Queue as MPQ
+from queue import Empty
 from typing import Dict, List, Tuple, Union
 
 from app.core.dispatcher_logger import logger
@@ -79,10 +80,14 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
 
     logger.warning(f"In dispatch_runnable_tasks with tasks: {tasks}")
 
+    logger.warning(f"Set of next tasks to be run {next_tasks_order}")
+
     # The next set of tasks that can be run afterwards
     # This is the case of a new dispatch id in the list of dictionaries
     if next_tasks_order:
         if is_empty(tasks_queue):
+            v = tasks_queue.get()
+            logger.warning(f"LETS SEE IF TASKS QUEUE IS EMPTY ITS VAL IS: {v}")
             tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}])
         else:
             tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}] + tasks_queue.get())
@@ -100,6 +105,7 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
 
     # Will add those unrun tasks back to the tasks_queue
     final_task_order = tasks_queue.get()
+
     if unrun_tasks:
         if final_task_order is not None:
             final_task_order[0][result_obj.dispatch_id] = [unrun_tasks] + final_task_order[0][
@@ -107,6 +113,14 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
             ]
         else:
             final_task_order = [{result_obj.dispatch_id: [unrun_tasks]}]
+
+    logger.warning(f"Tasks which are yet to execute {final_task_order}")
+
+    try:
+        logger.warning(f"Before we put in final_task_order {tasks_queue.get_nowait()}")
+
+    except Empty:
+        logger.warning("Before we put in final_task_order, its empty")
 
     # Put the task order back into the queue
     tasks_queue.put(final_task_order)

@@ -20,6 +20,7 @@
 
 import os
 from multiprocessing import Queue as MPQ
+from queue import Empty
 from typing import Any
 
 import cloudpickle as pickle
@@ -40,7 +41,6 @@ from refactor.dispatcher.app.core.get_svc_uri import ResultsURI
 
 workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()
-
 
 # Using sentinel to indicate that the queue is empty since MPQ.empty() is an unreliable method
 workflow_tasks_queue.put(None)
@@ -140,6 +140,19 @@ def update_workflow(
     """
     Update a workflow
     """
+
+    # val = workflow_tasks_queue.get()
+
+    # logger.warning(f"workflow_tasks_queue looks like in update_workflow: {val}")
+
+    # try:
+    #     new_val = workflow_tasks_queue.get_nowait()
+    #     logger.warning(f"New val is: {new_val}")
+
+    # except Empty:
+    #     logger.warning("Empty after second get")
+
+    # workflow_tasks_queue.put(val)
 
     task_execution_results = pickle.loads(task_execution_results)
     task_id = task_execution_results["task_id"]
