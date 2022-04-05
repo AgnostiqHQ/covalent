@@ -63,6 +63,8 @@ def update_workflow_results(
     # If workflow is completed, post-process result
     elif not are_tasks_running(result_obj=latest_result_obj):
 
+        logger.warning(f"Post processing result with status {task_execution_results['status']}")
+
         latest_result_obj._result = _post_process(
             lattice=latest_result_obj.lattice,
             task_outputs=latest_result_obj.get_all_node_outputs(),
@@ -71,6 +73,8 @@ def update_workflow_results(
         latest_result_obj._status = Result.COMPLETED
 
     elif task_execution_results["status"] == Result.COMPLETED and not is_empty(tasks_queue):
+
+        logger.warning(f"Will send next list of tasks, status: {task_execution_results['status']}")
 
         tasks_order_lod = tasks_queue.get()
 
@@ -93,6 +97,11 @@ def update_workflow_results(
             dispatch_runnable_tasks(
                 result_obj=latest_result_obj, tasks_queue=tasks_queue, task_order=new_tasks_order
             )
+
+    else:
+        logger.warning(
+            f"None of the above with status {task_execution_results['status']} and {is_empty(tasks_queue)}"
+        )
 
     if latest_result_obj.status != Result.RUNNING:
         latest_result_obj._end_time = datetime.now(timezone.utc)

@@ -24,19 +24,22 @@ import time
 import interface_with_covalent
 
 import covalent as ct
+from refactor.executor.executor_plugins.local import LocalExecutor
+
+executor = LocalExecutor()
 
 
-@ct.electron
+@ct.electron(executor=executor)
 def task_1(x):
     return x**2
 
 
-@ct.electron
+@ct.electron(executor=executor)
 def task_2(y, z):
     return y * z
 
 
-@ct.lattice
+@ct.lattice(executor=executor)
 def workflow(a):
 
     r1 = task_1(a)
