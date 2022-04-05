@@ -29,7 +29,6 @@ import pytest
 
 from covalent._workflow.electron import Electron
 from covalent._workflow.lepton import Lepton
-from covalent.executor import LocalExecutor
 
 
 class MockCCall:
@@ -47,7 +46,9 @@ class MockHandle:
 
 
 def test_lepton_init(mocker, monkeypatch):
-
+    monkeypatch.setattr(
+        "covalent._shared_files.defaults._DEFAULT_CONSTRAINT_VALUES", {"executor": "local"}
+    )
     init_mock = mocker.patch("covalent._workflow.lepton.Electron.__init__", return_value=None)
     set_metadata_mock = mocker.patch(
         "covalent._workflow.lepton.Electron.set_metadata", return_value=None
@@ -56,18 +57,16 @@ def test_lepton_init(mocker, monkeypatch):
         "covalent._workflow.lepton.Lepton.wrap_task", return_value="wrapper function"
     )
 
-    executor = LocalExecutor()
     lepton = Lepton(
         language="lang",
         library_name="libname",
         function_name="funcname",
         argtypes=[(int, "type")],
-        executor=executor,
     )
 
     init_mock.assert_called_once_with("wrapper function")
     wrap_mock.assert_called_once_with()
-    set_metadata_mock.assert_called_once_with("executor", executor)
+    set_metadata_mock.assert_called_once_with("executor", "local")
 
     assert lepton.language == "lang"
     assert lepton.library_name == "libname"

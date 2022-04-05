@@ -39,7 +39,6 @@ from covalent._shared_files.defaults import (
 from covalent._workflow.electron import electron
 from covalent._workflow.lattice import Lattice, lattice
 from covalent._workflow.transport import _TransportGraph
-from covalent.executor import LocalExecutor
 
 dispatcher = LocalDispatcher()
 
@@ -154,26 +153,17 @@ def test_get_metadata(mocker, init_mock):
 
 
 # TODO: Complete and improve this test
-def test_lattice_build_graph(task_arg_name: str, sample_values: List):
+def test_lattice_build_graph(test_lattice: Lattice, task_arg_name: str, sample_values: List):
     """Test that the graph is built correctly."""
 
-    @lattice
-    def reference_lattice(a, b):
-        """Sample workflow."""
-
-        c = sample_task(a)
-        d = sample_task(b)
-        return c, d
-
     new_graph = _TransportGraph()
-    executor = LocalExecutor()
 
     # Start adding node and edge to the graph
     for val in sample_values:
         node_id_1 = new_graph.add_node(
             name=sample_task.__name__,
             function=sample_task,
-            metadata={"executor": executor},
+            metadata={"executor": "local"},
             key=0,
             task_arg_name=val,
         )
@@ -181,51 +171,28 @@ def test_lattice_build_graph(task_arg_name: str, sample_values: List):
         node_id_2 = new_graph.add_node(
             name=parameter_prefix + str(val),
             function=None,
-            metadata={"executor": executor},
+            metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
             key=1,
             task_arg_name=val,
         )
 
         new_graph.add_edge(node_id_2, node_id_1, task_arg_name)
 
-    # Building the reference graph
-    reference_lattice.build_graph(sample_values[0], sample_values[1])
-
-    def dict_match(dict1, dict2) -> bool:
-        """Check if two dictionaries are equal, barring 'complicated' objects."""
-
-        for key in dict1:
-            if key not in dict2:
-                return False
-            if key == "executor":
-                if not isinstance(dict1[key], type(dict2[key])):
-                    return False
-            elif dict1[key] != dict2[key]:
-                return False
-        for key in dict2:
-            if key not in dict1:
-                return False
-        return True
+    # Building the graph
+    test_lattice.build_graph(sample_values[0], sample_values[1])
 
     def are_matching_nodes(node_1, node_2):
         """Check if two nodes are the same."""
 
         attr_to_check = ["name", "metadata"]
-        node_match = [
-            dict_match(node_1[attr], node_2[attr])
-            if attr == "metadata"
-            else node_1[attr] == node_2[attr]
-            for attr in attr_to_check
-        ]
-        return all(node_match)
+        return all(node_1[attr] == node_2[attr] for attr in attr_to_check)
 
     # Testing the graph
-    graph_to_test = reference_lattice.transport_graph.get_internal_graph_copy()
+    graph_to_test = test_lattice.transport_graph.get_internal_graph_copy()
     sample_graph = new_graph.get_internal_graph_copy()
 
     # Check similarity without considering node attributes
     assert nx.graph_edit_distance(graph_to_test, sample_graph) == 0
-
     # Check similarity considering node attributes
     assert nx.graph_edit_distance(graph_to_test, sample_graph, node_match=are_matching_nodes) == 0
 
@@ -321,10 +288,12 @@ def test_lattice_decorator(mocker, monkeypatch):
     assert test_workflow.__name__ == "test_workflow"
 
     # Test the constraints are applied
-    assert isinstance(test_workflow.metadata["executor"], LocalExecutor)
-    assert test_workflow.metadata["results_dir"] == str(Path("results").expanduser().resolve())
-    assert test_workflow.metadata["notify"] == []
+    assert test_workflow.metadata == {
+        "executor": "local",
+        "results_dir": str(Path("results").expanduser().resolve()),
+        "notify": [],
+    }
 
     # Finally test deprecated variables are properly forwarded
-    test_lattice_3 = lattice(sample_workflow, backend="local")
-    assert isinstance(test_lattice_3.metadata["executor"], LocalExecutor)
+    test_lattice_3 = lattice(sample_workflow, backend="custom_backend")
+    assert test_lattice_3.metadata["executor"] == "custom_backend"
