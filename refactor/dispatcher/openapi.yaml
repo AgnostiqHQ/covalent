@@ -89,21 +89,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/v0/workflow/cancel:
-    post:
+    delete:
       tags:
         - Workflow
       summary: Cancel Workflows
       description: Cancel a set of workflows
-      operationId: cancel_workflows_api_v0_workflow_cancel_post
-      requestBody:
-        content:
-          application/json:
-            schema:
-              title: Dispatch Ids
-              type: array
-              items:
-                type: string
-        required: true
+      operationId: cancel_workflows_api_v0_workflow_cancel_delete
+      parameters:
+        - required: false
+          schema:
+            title: Dispatch Ids
+            type: array
+            items:
+              type: string
+            default: []
+          name: dispatch_ids
+          in: query
       responses:
         '200':
           description: Successful Response
@@ -122,11 +123,17 @@ components:
     BatchCancelWorkflowResponse:
       title: BatchCancelWorkflowResponse
       required:
-        - response
+        - cancelled
+        - failed
       type: object
       properties:
-        response:
-          title: Response
+        cancelled:
+          title: Cancelled
+          type: array
+          items:
+            type: string
+        failed:
+          title: Failed
           type: array
           items:
             type: string

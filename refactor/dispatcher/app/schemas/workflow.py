@@ -20,7 +20,7 @@
 
 
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, List, Optional
 
 from pydantic import BaseModel
 
@@ -49,7 +49,8 @@ class CancelWorkflowResponse(BaseModel):
 
 
 class BatchCancelWorkflowResponse(BaseModel):
-    response: Dict
+    cancelled: List[str]
+    failed: List[str]
 
 
 class UpdateWorkflowResponse(BaseModel):

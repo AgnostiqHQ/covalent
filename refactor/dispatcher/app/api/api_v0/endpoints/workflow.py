@@ -34,7 +34,7 @@ from app.schemas.workflow import (
     DispatchWorkflowResponse,
     UpdateWorkflowResponse,
 )
-from fastapi import APIRouter, File
+from fastapi import APIRouter, File, Query
 
 from covalent._results_manager import Result
 from refactor.dispatcher.app.core.get_svc_uri import ResultsURI
@@ -134,18 +134,18 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
 
 
 @router.delete("/cancel", status_code=200, response_model=BatchCancelWorkflowResponse)
-async def cancel_workflows(*, dispatch_ids: List[str]) -> BatchCancelWorkflowResponse:
+async def cancel_workflows(*, dispatch_ids: List[str] = Query([])) -> BatchCancelWorkflowResponse:
     """
     Cancel a set of workflows
     """
 
     # Mock response here
     mock_response = {
-        "cancelled": ["dispatch_id0", "dispatch_id1", "dispatch_id3"],
-        "failed": ["dispatch_id2"],
+        "cancelled": ["string"],
+        "failed": ["string"],
     }
 
-    return {"response": mock_response}
+    return mock_response
 
 
 @router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
