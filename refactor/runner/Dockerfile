@@ -21,8 +21,7 @@
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
 ENV PROJECT_DIR=/runner
-ENV COVALENT_ROOT=/covalent
-ENV PORT 8002
+ENV PORT 8003
 EXPOSE $PORT
 
 RUN apt-get update \
@@ -31,16 +30,22 @@ RUN apt-get update \
   && pip3 install --upgrade pip \
   && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir $PROJECT_DIR
-RUN chmod 0777 $PROJECT_DIR
-
-COPY covalent/ $COVALENT_ROOT/covalent
-COPY covalent_dispatcher/ $COVALENT_ROOT/covalent_dispatcher
-COPY covalent_ui/ $COVALENT_ROOT/covalent_ui
-COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$COVALENT_ROOT/"]
-RUN pip3 install $COVALENT_ROOT
+RUN mkdir $PROJECT_DIR && chmod 0777 $PROJECT_DIR
 
 COPY refactor/runner $PROJECT_DIR
+COPY refactor/ $PROJECT_DIR/refactor
+COPY covalent/ $PROJECT_DIR/covalent
+COPY covalent_dispatcher/ $PROJECT_DIR/covalent_dispatcher
+COPY covalent_ui/ $PROJECT_DIR/covalent_ui
+COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$PROJECT_DIR/"]
+
+RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
+RUN cd $PROJECT_DIR/refactor/  \
+    && rm -rf client_side/  && rm -rf data/ \
+    && rm -rf  dispatcher/ && rm -rf executor/ \
+    && rm -rf queuer/ && rm -rf results/  \
+    && rm -rf ui_backend/
+
 WORKDIR $PROJECT_DIR
 CMD [ "python", "main.py"]
 
