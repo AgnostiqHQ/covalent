@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.56.0] - 2022-04-05
+
 ### Changed
 
 - Changed global variable executor_plugin_name to EXECUTOR_PLUGIN_NAME in executors to conform with PEP8.
