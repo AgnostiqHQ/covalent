@@ -21,6 +21,7 @@
 """Unit tests for dispatch workflow."""
 
 from copy import deepcopy
+from unittest.mock import Mock
 
 import pytest
 
@@ -87,17 +88,26 @@ def mock_tasks_queue():
 def test_dispatch_workflow_func(mocker, mock_result_initialized, mock_tasks_queue):
     """Test that the dispatch workflow function calls the appropriate method depending on the result object status."""
 
+    mock_update_result_obj = mocker.Mock()
     mock_start_dispatch = mocker.patch(
-        "refactor.dispatcher.app.core.dispatch_workflow.start_dispatch"
+        "refactor.dispatcher.app.core.dispatch_workflow.start_dispatch",
+        return_value=mock_update_result_obj,
     )
 
     assert mock_result_initialized.status == Result.NEW_OBJ
 
-    result_obj = dispatch_workflow(mock_result_initialized, mock_tasks_queue)
+    result_obj = dispatch_workflow(
+        result_obj=mock_result_initialized, tasks_queue=mock_tasks_queue
+    )
 
-    mock_start_dispatch.assert_called_once()
+    mock_start_dispatch.assert_called_once_with(
+        result_obj=mock_result_initialized, tasks_queue=mock_tasks_queue
+    )
+    print(mock_start_dispatch.mock_calls)
 
-    assert result_obj.status == Result.RUNNING
+    assert result_obj == mock_update_result_obj
+
+    # mock_start_dispatch.assert_called_once_with(mock_result_initialized, mock_tasks_queue)
 
 
 def test_dispatch_runnable_tasks():
