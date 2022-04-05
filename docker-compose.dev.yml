@@ -1,4 +1,4 @@
-# This file should be used for local development
+# This file should be used for local development with docker-compose
 # Example Usage: Run "docker-compose -f docker-compose.dev.yml up --build" from the root of the project
 # to build the images using this file and start the containers.
 
@@ -85,6 +85,7 @@ services:
     image: covalent-ui
     command: sh -c "python main.py"
     ports:
+      - "8004:8004"
       - "8005:8005"
     working_dir: /ui_backend
     networks:

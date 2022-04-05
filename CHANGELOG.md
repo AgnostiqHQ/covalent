@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.56.1] - 2022-04-05
+
+### Fixed
+
+- Fixed various module import errors in the containers for the microservices.
+
 ### Tests
 
 - Dispatcher service tests for the `dispatch_workflow.py` module.

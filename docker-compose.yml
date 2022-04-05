@@ -1,4 +1,4 @@
-# This file is used for Covalent cloud deployment workflows with ECR
+# This file is used for pulling Covalent images from ECR using docker-compose
 # Example usage: Run "docker-compose --env-file .env.compose up" from the root of the project
 # to pull the images from ECR and start the containers.
 
@@ -37,7 +37,7 @@ services:
     image: "${QUEUE_CONSUMER_REPO}"
     command: sh -c "python main.py"
     ports:
-      - "5000:8000"
+      - "3000:8001"
     working_dir: /queuer
     networks:
       covalent:
@@ -64,6 +64,7 @@ services:
     image: "${UI_REPO}"
     command: sh -c "python main.py"
     ports:
+      - "8004:8004"
       - "8005:8005"
     working_dir: /ui_backend
     networks:
