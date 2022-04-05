@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Fixed various module import errors in the containers for the microservices.
+
 ## [0.56.0] - 2022-04-05
 
 ### Changed
