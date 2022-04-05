@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In covalent/executor/__init__.py, `from importlib import metadata` is used instead of `importlib.metadata`.
 - Electron.get_op_function.rename now uses the correct separator string when renaming a function.
 
+## [0.57.0] - 2022-04-05
+
+### Added
+
+- Variables to assign service hosts
+
 ## [0.56.1] - 2022-04-05
 
 ### Fixed

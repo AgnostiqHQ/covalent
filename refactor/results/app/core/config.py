@@ -31,7 +31,9 @@ class Settings(BaseSettings):
     API_V0_STR: str = "/api/v0"
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     RESULTS_SVC_PORT: int = 8006
+    RESULTS_SVC_HOST: str = "localhost"
     DATA_SVC_PORT: int = 8004
+    DATA_SVC_HOST: str = "localhost"
     RESULTS_DB: str = "results.db"
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
