@@ -21,6 +21,7 @@
 """Unit tests for dispatch workflow."""
 
 from copy import deepcopy
+from cProfile import run
 from unittest.mock import Mock
 
 import pytest
@@ -32,6 +33,7 @@ from refactor.dispatcher.app.core.dispatch_workflow import (
     dispatch_workflow,
     init_result_pre_dispatch,
     is_runnable_task,
+    run_tasks,
 )
 
 
@@ -148,8 +150,73 @@ def test_init_result_pre_dispatch(mocker, mock_result_uninitialized):
     mock_initialize_nodes.assert_called_once_with()
 
 
-def test_run_tasks():
-    pass
+def test_run_tasks(mocker):
+    """Test the method that sends tasks to the Runner service for execution."""
+
+    mock_send_task_list_to_runner = mocker.patch(
+        "refactor.dispatcher.app.core.dispatch_workflow.send_task_list_to_runner", return_value=[2]
+    )
+
+    mock_results_dir = "mock_results_dir"
+    mock_dispatch_id = "mock_dispatch_id"
+
+    unrun_tasks = run_tasks(
+        results_dir=mock_results_dir,
+        dispatch_id=mock_dispatch_id,
+        task_id_batch=[1, 2],
+        functions=[b"f1", b"f2"],
+        input_args=[{}, {}],
+        input_kwargs=[{}, {}],
+        executors=[b"e1", b"e2"],
+    )
+
+    mock_task_list = [
+        {
+            "task_id": 1,
+            "func": b"f1",
+            "args": {},
+            "kwargs": {},
+            "executor": b"e1",
+            "results_dir": "mock_results_dir",
+        },
+        {
+            "task_id": 2,
+            "func": b"f2",
+            "args": {},
+            "kwargs": {},
+            "executor": b"e2",
+            "results_dir": "mock_results_dir",
+        },
+    ]
+
+    print(mock_send_task_list_to_runner.mock_calls)
+
+    assert (
+        mocker.call(
+            dispatch_id="mock_dispatch_id",
+            tasks_list=[
+                {
+                    "task_id": 1,
+                    "func": b"f1",
+                    "args": {},
+                    "kwargs": {},
+                    "executor": b"e1",
+                    "results_dir": "mock_results_dir",
+                },
+                {
+                    "task_id": 2,
+                    "func": b"f2",
+                    "args": {},
+                    "kwargs": {},
+                    "executor": b"e2",
+                    "results_dir": "mock_results_dir",
+                },
+            ],
+        )
+        in mock_send_task_list_to_runner.mock_calls
+    )
+
+    assert unrun_tasks == [2]
 
 
 @pytest.mark.parametrize(

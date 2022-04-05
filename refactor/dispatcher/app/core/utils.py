@@ -219,7 +219,7 @@ def get_task_order(result_obj: Result) -> List[List]:
     return result_obj.lattice.transport_graph.get_topologically_sorted_graph()
 
 
-def send_task_list_to_runner(dispatch_id, tasks_list):
+def send_task_list_to_runner(dispatch_id, tasks_list) -> List[int]:
 
     logger.warning(f"Inside send_task_list_to_runner with dispatch_id {dispatch_id}")
     logger.warning(f"Inside send_task_list_to_runner with tasks_list {tasks_list}")

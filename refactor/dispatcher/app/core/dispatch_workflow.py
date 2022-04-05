@@ -252,11 +252,11 @@ def run_tasks(
     input_args: List[List],
     input_kwargs: List[Dict],
     executors: List[Union[bytes, str]],
-):
-    """Ask Runner to execute tasks - get back True (False) if resources are (not) available.
+) -> List[int]:
+    """Request Runner to execute tasks.
 
-    The Runner might not have resources available to pick up the batch of tasks. In that case,
-    this function continues to try running the tasks until the runner becomes free.
+    The Runner might not have resources available to pick up the full batch of tasks. In that case,
+    this function returns the list of task ids that were not picked up.
     """
 
     tasks_list = [
@@ -280,7 +280,6 @@ def is_runnable_task(task_id: int, result_obj: Result) -> bool:
     """Return status whether the task can be run based on whether the parent tasks have finished executing."""
 
     parent_node_ids: List[int] = result_obj.lattice.transport_graph.get_dependencies(task_id)
-    print(parent_node_ids)
 
     return all(
         result_obj._get_node_status(node_id) == Result.COMPLETED for node_id in parent_node_ids
