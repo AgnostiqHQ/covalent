@@ -48,4 +48,3 @@ RUN cd $PROJECT_DIR/refactor/  \
 
 WORKDIR $PROJECT_DIR
 CMD [ "python", "main.py"]
-
