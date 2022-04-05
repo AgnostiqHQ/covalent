@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Fixed various module import errors in the containers for the microservices.
+
 ### Tests
 
 - Added tests for post-refactor covalent cli commands: start, stop, restart, status, and logs
