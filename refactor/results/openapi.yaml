@@ -109,22 +109,22 @@ paths:
           name: format
           in: query
       responses:
-        '200':
+        "200":
           description: Return binary content of file.
           content:
             application/octet-stream: {}
-        '404':
+        "404":
           description: Result was not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPExceptionSchema'
-        '422':
+                $ref: "#/components/schemas/HTTPExceptionSchema"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
     put:
       tags:
         - Workflow
@@ -145,19 +145,19 @@ paths:
               $ref: '#/components/schemas/Body_update_result_api_v0_workflow_results__dispatch_id__put'
         required: true
       responses:
-        '200':
+        "200":
           description: Return message indicating success of updating task
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateResultResponse'
-        '404':
+                $ref: "#/components/schemas/UpdateResultResponse"
+        "404":
           description: Result was not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPExceptionSchema'
-        '422':
+                $ref: "#/components/schemas/HTTPExceptionSchema"
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -236,7 +236,7 @@ components:
           title: Detail
           type: array
           items:
-            $ref: '#/components/schemas/ValidationError'
+            $ref: "#/components/schemas/ValidationError"
     InsertResultResponse:
       title: InsertResultResponse
       required:
