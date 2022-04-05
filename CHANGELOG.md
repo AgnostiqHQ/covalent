@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- `nats` service in `docker-compose` files
+
 ## [0.57.0] - 2022-04-05
 
 ### Added

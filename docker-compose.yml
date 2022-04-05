@@ -69,5 +69,13 @@ services:
     working_dir: /ui_backend
     networks:
       covalent:
+
+  covalent-nats:
+    image: nats
+    ports:
+      - "4222:4222"
+    networks:
+      covalent:
+
 networks:
   covalent:
