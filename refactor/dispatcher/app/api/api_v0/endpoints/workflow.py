@@ -18,7 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import os
 from multiprocessing import Queue as MPQ
 from queue import Empty
 from typing import Any
@@ -41,6 +40,8 @@ from refactor.dispatcher.app.core.get_svc_uri import ResultsURI
 
 workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()
+
+testing_queue = MPQ()
 
 # Using sentinel to indicate that the queue is empty since MPQ.empty() is an unreliable method
 workflow_tasks_queue.put(None)
@@ -90,6 +91,8 @@ def submit_workflow(*, dispatch_id: str) -> Any:
     Submit a workflow
     """
 
+    testing_queue.put("SOMETHING NEW")
+
     logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
 
     # Change workflow status to RUNNING
@@ -102,6 +105,12 @@ def submit_workflow(*, dispatch_id: str) -> Any:
 
     # Dispatch the workflow
     dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
+
+    vv = workflow_tasks_queue.get()
+
+    logger.warning(f"IT SHOULD NOT BE EMPTY HERE {vv}")
+
+    workflow_tasks_queue.put(vv)
 
     logger.warning(f"Inside submit_workflow dispatching done with dispatch_id: {dispatch_id}")
 
@@ -153,6 +162,14 @@ def update_workflow(
     #     logger.warning("Empty after second get")
 
     # workflow_tasks_queue.put(val)
+
+    try:
+        logger.warning(
+            f"VALUE OF TESTING QUEUE IN UPDATE WORKFLOW IS: {testing_queue.get_nowait()}"
+        )
+
+    except Empty:
+        logger.warning("VALUE OF TESTING QUEUE IN UPDATE WORKFLOW IS EMPTY")
 
     task_execution_results = pickle.loads(task_execution_results)
     task_id = task_execution_results["task_id"]
