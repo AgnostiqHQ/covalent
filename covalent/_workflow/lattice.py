@@ -23,7 +23,6 @@
 import inspect
 import json
 import os
-import requests
 import warnings
 from contextlib import redirect_stdout
 from functools import wraps
@@ -32,6 +31,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 import matplotlib.pyplot as plt
 import networkx as nx
+import requests
 
 import covalent_ui.result_webhook as result_webhook
 from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
@@ -214,7 +214,6 @@ class Lattice:
         plt.tight_layout()
         return ax
 
-
     def draw(self, *args, **kwargs) -> None:
         """
         Generate lattice graph and display in UI taking into account passed in
@@ -230,7 +229,6 @@ class Lattice:
 
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
-
 
     def draw_refactor(self, *args, **kwargs) -> None:
         """
@@ -269,13 +267,14 @@ class Lattice:
         )
 
         try:
-            response = requests.post("http://localhost:8005/api/v0/ui/workflow/draft", data=draw_request)
+            response = requests.post(
+                "http://localhost:8005/api/v0/ui/workflow/draft", data=draw_request
+            )
             response.raise_for_status()
         except requests.exceptions.HTTPError as ex:
             app_log.error(ex)
         except requests.exceptions.RequestException:
             app_log.error("Connection failure. Please check ui_backend service is running.")
-
 
     def __call__(self, *args, **kwargs):
         """Execute lattice as an ordinary function for testing purposes."""
@@ -434,7 +433,7 @@ def lattice(
 
     from ..executor import _executor_manager
 
-    executor = _executor_manager.get_executor(executor)
+    # executor = _executor_manager.get_executor(executor)
 
     constraints = {
         "executor": executor,

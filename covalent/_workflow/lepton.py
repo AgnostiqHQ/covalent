@@ -80,7 +80,7 @@ class Lepton(Electron):
         # Assign metadata defaults
         from ..executor import _executor_manager
 
-        executor = _executor_manager.get_executor(executor)
+        # executor = _executor_manager.get_executor(executor)
         super().set_metadata("executor", executor)
 
     def wrap_task(self) -> Callable:  # noqa: max-complexity: 30
