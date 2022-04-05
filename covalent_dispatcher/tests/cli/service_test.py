@@ -25,6 +25,7 @@ import tempfile
 import mock
 import pytest
 from click.testing import CliRunner
+from click.exceptions import ClickException
 from psutil import pid_exists
 
 from covalent_dispatcher._cli.service import (
@@ -40,11 +41,17 @@ from covalent_dispatcher._cli.service import (
     start,
     status,
     stop,
+    logs,
+    _ensure_supervisord_running
 )
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
 RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://0.0.0.0:42.\n"
 
+STARTED_SUPERVISORD_ECHO = "Started Supervisord process {}."
+NO_SERVICE_PROVIDED_TO_LOGS_ECHO = "No service name provided, please use '-s <service_name>' or '--service <service_name>"
+RUNNING_SUPERVISORD_ECHO = "Supervisord already running in process {}."
+SUPEVISORD_PROGRAM_GROUP_NAME = 'covalent'
 
 def test_read_pid_nonexistent_file():
     """Test the process id read function when the pid file does not exist."""
@@ -201,6 +208,192 @@ def test_start(mocker, monkeypatch):
     graceful_start_mock.assert_called_once()
     set_config_mock.assert_called_once()
 
+def test_start_refactor(mocker, monkeypatch):
+    """Test the start CLI command."""
+
+    runner = CliRunner()
+
+    # mock methods
+    ensure_sd_running = mocker.patch("covalent_dispatcher._cli.service._ensure_supervisord_running")
+    read_process_stdout = mocker.patch("covalent_dispatcher._cli.service._read_process_stdout")
+    popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
+
+    # invoke command
+    runner.invoke(start, f"--refactor")
+
+    # assertions
+    ensure_sd_running.assert_called_once()
+    read_process_stdout.assert_called_once()
+    # using call_args instead of 'assert_called_with' to ignore additional args supplied to Popen 
+    popen_command, = popen_mock.call_args[0] 
+    assert popen_command == ['supervisorctl','start',f'{SUPEVISORD_PROGRAM_GROUP_NAME}:']
+
+def test_stop_refactor(mocker, monkeypatch):
+    """Test the stop CLI command."""
+
+    runner = CliRunner()
+
+    # mock methods
+    ensure_sd_running = mocker.patch("covalent_dispatcher._cli.service._ensure_supervisord_running")
+    read_process_stdout = mocker.patch("covalent_dispatcher._cli.service._read_process_stdout")
+    popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
+
+    # invoke command
+    runner.invoke(stop, f"--refactor")
+
+    # assertions
+    ensure_sd_running.assert_called_once()
+    read_process_stdout.assert_called_once()
+    # using call_args instead of 'assert_called_with' to ignore additional args supplied to Popen 
+    popen_command, = popen_mock.call_args[0] 
+    assert popen_command == ['supervisorctl','stop',f'{SUPEVISORD_PROGRAM_GROUP_NAME}:']
+
+def test_restart_refactor(mocker, monkeypatch):
+    """Test the restart CLI command."""
+
+    runner = CliRunner()
+
+    # mock methods
+    ensure_sd_running = mocker.patch("covalent_dispatcher._cli.service._ensure_supervisord_running")
+    read_process_stdout = mocker.patch("covalent_dispatcher._cli.service._read_process_stdout")
+    popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
+
+    # invoke command
+    runner.invoke(restart, f"--refactor")
+
+    # assertions
+    ensure_sd_running.assert_called_once()
+    read_process_stdout.assert_called_once()
+    # using call_args instead of 'assert_called_with' to ignore additional args supplied to Popen 
+    popen_command, = popen_mock.call_args[0] 
+    assert popen_command == ['supervisorctl','restart',f'{SUPEVISORD_PROGRAM_GROUP_NAME}:']
+
+def test_status_refactor(mocker, monkeypatch):
+    """Test the status CLI command."""
+
+    runner = CliRunner()
+
+    # mock methods
+    ensure_sd_running = mocker.patch("covalent_dispatcher._cli.service._ensure_supervisord_running")
+    read_process_stdout = mocker.patch("covalent_dispatcher._cli.service._read_process_stdout")
+    popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
+
+    # invoke command
+    runner.invoke(status, f"--refactor")
+
+    # assertions
+    ensure_sd_running.assert_called_once()
+    read_process_stdout.assert_called_once()
+    # using call_args instead of 'assert_called_with' to ignore additional args supplied to Popen 
+    popen_command, = popen_mock.call_args[0] 
+    assert popen_command == ['supervisorctl','status']
+
+@pytest.mark.parametrize("MOCK_SERVICE_NAME",[("queuer"), (None)])
+def test_logs_refactor(mocker, MOCK_SERVICE_NAME):
+    """Test the logs CLI command."""
+
+    runner = CliRunner()
+
+    # number of times supervisord is called to get logs (1 sterr, 2 stdout, 3 tail real-time logs)
+    NUM_TAIL_COMMANDS = 3
+
+    # mock methods
+    ensure_sd_running = mocker.patch("covalent_dispatcher._cli.service._ensure_supervisord_running")
+    read_process_stdout = mocker.patch("covalent_dispatcher._cli.service._read_process_stdout")
+    popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
+
+    if MOCK_SERVICE_NAME:
+        # invoke command with service name
+        runner.invoke(logs, f"--service {MOCK_SERVICE_NAME}")
+        # assertions
+        ensure_sd_running.assert_called_once()
+        assert len(read_process_stdout.mock_calls) == NUM_TAIL_COMMANDS
+        assert len(popen_mock.mock_calls) == NUM_TAIL_COMMANDS
+        # using call_args instead of 'assert_called_with' to ignore additional args supplied to Popen 
+        # getting args of last call to popen
+        popen_command, = popen_mock.call_args[0] 
+        assert popen_command == ['supervisorctl','tail','-f',f"{SUPEVISORD_PROGRAM_GROUP_NAME}:{MOCK_SERVICE_NAME}"]
+    else:  
+         # invoke command without service name
+         res = runner.invoke(logs)
+         assert res.output.strip() == NO_SERVICE_PROVIDED_TO_LOGS_ECHO.strip()
+
+@pytest.mark.parametrize("is_supervisord_running_flag",[(True), (False)])
+def test_purge_refactor(mocker, monkeypatch, is_supervisord_running_flag):
+    """Test the refactor CLI command."""
+
+    runner = CliRunner()
+
+    SD_PIDFILE_MOCK = 'some/path/pid'
+    SD_CONFIG_FILE = "some/path/supervisord.conf"
+
+    # mock methods
+    sd_stop_services = mocker.patch("covalent_dispatcher._cli.service._sd_stop_services")
+    graceful_shutdown = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
+    os_remove = mocker.patch("os.remove")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.SD_PIDFILE", SD_PIDFILE_MOCK)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.SD_CONFIG_FILE", SD_CONFIG_FILE)
+
+    # Supervisord autocreates it's pid file hence if it is running we can assume the pid file to exist
+    mocker.patch("os.path.exists", return_value=is_supervisord_running_flag)
+    mocker.patch("covalent_dispatcher._cli.service._is_supervisord_running", return_value=is_supervisord_running_flag)
+
+    # invoke command
+    runner.invoke(purge, f"--refactor")
+
+    if is_supervisord_running_flag:
+        sd_stop_services.assert_called_once()
+        graceful_shutdown.assert_called_once_with(SD_PIDFILE_MOCK)
+        os_remove.assert_called_once_with(SD_CONFIG_FILE)
+    else:
+        sd_stop_services.assert_not_called()
+        graceful_shutdown.assert_not_called()
+        os_remove.assert_not_called()
+        
+@pytest.mark.parametrize("is_supervisord_running_flag, is_started_success",[(True, True),(False,True),(False,False)])
+def test_is_supervisord_running(mocker, monkeypatch, is_supervisord_running_flag, is_started_success):
+    """Test the refactor CLI command."""
+
+    SD_PIDFILE_MOCK = 'some/path/pid'
+    SD_CONFIG_FILE = "some/path/supervisord.conf"
+    SUPERVISORD_PORT_MOCK = 9009
+    SUPERVISORD_PID_MOCK = 18290
+
+    # mock methods
+    monkeypatch.setattr("covalent_dispatcher._cli.service.SD_PIDFILE", SD_PIDFILE_MOCK)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.SD_CONFIG_FILE", SD_CONFIG_FILE)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.SUPERVISORD_PORT", SUPERVISORD_PORT_MOCK)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.SD_START_TIMEOUT_IN_SECS", 0.1)
+
+    create_config_if_not_exists = mocker.patch("covalent_dispatcher._cli.service._create_config_if_not_exists")
+    read_pid = mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=SUPERVISORD_PID_MOCK)
+    is_port_in_use = mocker.patch("covalent_dispatcher._cli.service._is_port_in_use", return_value=is_started_success)
+    mocker.patch("covalent_dispatcher._cli.service._is_supervisord_running", return_value=is_supervisord_running_flag)
+    popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
+    echo_mock = mocker.patch("click.echo")
+
+    if not is_supervisord_running_flag and not is_started_success:
+        # should raise exception if supervisord port is not binded to within timeout 
+        with pytest.raises(ClickException) as e:   
+            _ensure_supervisord_running()
+    else: 
+        _ensure_supervisord_running()
+
+    create_config_if_not_exists.assert_called_once()
+
+    # if supervisord is already running when calling covalent start
+    if is_supervisord_running_flag:
+        read_pid.assert_called_once_with(SD_PIDFILE_MOCK)
+        echo_mock.assert_called_once_with(RUNNING_SUPERVISORD_ECHO.format(SUPERVISORD_PID_MOCK))
+    else: 
+        popen_command, = popen_mock.call_args[0] 
+        assert popen_command == ['supervisord']
+
+        if is_started_success:
+            is_port_in_use.assert_called_once_with(SUPERVISORD_PORT_MOCK)
+            read_pid.assert_called_once_with(SD_PIDFILE_MOCK)
+            echo_mock.assert_called_once_with(STARTED_SUPERVISORD_ECHO.format(SUPERVISORD_PID_MOCK))
+    
 
 def test_stop(mocker, monkeypatch):
     """Test the stop CLI command."""

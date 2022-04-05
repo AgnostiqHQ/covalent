@@ -21,7 +21,9 @@
 """Class corresponding to computation workflow."""
 
 import inspect
+import json
 import os
+import requests
 import warnings
 from contextlib import redirect_stdout
 from functools import wraps
@@ -32,6 +34,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 import covalent_ui.result_webhook as result_webhook
+from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
 
 from .._shared_files import logger
 from .._shared_files.config import get_config
@@ -211,6 +214,7 @@ class Lattice:
         plt.tight_layout()
         return ax
 
+
     def draw(self, *args, **kwargs) -> None:
         """
         Generate lattice graph and display in UI taking into account passed in
@@ -226,6 +230,52 @@ class Lattice:
 
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
+
+
+    def draw_refactor(self, *args, **kwargs) -> None:
+        """
+        Generate lattice graph and display in UI taking into account passed in
+        arguments.
+
+        Args:
+            *args: Positional arguments to be passed to build the graph.
+            **kwargs: Keyword arguments to be passed to build the graph.
+
+        Returns:
+            None
+        """
+
+        self.build_graph(*args, **kwargs)
+
+        graph = self.transport_graph.get_internal_graph_copy()
+
+        ((named_args, named_kwargs),) = (
+            get_named_params(self.workflow_function, self.args, self.kwargs),
+        )
+
+        draw_request = json.dumps(
+            {
+                "payload": {
+                    "lattice": {
+                        "function_string": self.workflow_function_string,
+                        "doc": self.__doc__,
+                        "name": self.__name__,
+                        "inputs": encode_dict({**named_args, **named_kwargs}),
+                        "metadata": extract_metadata(self.metadata),
+                    },
+                    "graph": extract_graph(graph),
+                },
+            }
+        )
+
+        try:
+            response = requests.post("http://localhost:8005/api/v0/ui/workflow/draft", data=draw_request)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as ex:
+            app_log.error(ex)
+        except requests.exceptions.RequestException:
+            app_log.error("Connection failure. Please check ui_backend service is running.")
+
 
     def __call__(self, *args, **kwargs):
         """Execute lattice as an ordinary function for testing purposes."""
