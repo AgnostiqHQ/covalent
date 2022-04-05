@@ -227,7 +227,7 @@ def test_lattice_build_graph(task_arg_name: str, sample_values: List):
     assert nx.graph_edit_distance(graph_to_test, sample_graph) == 0
 
     # Check similarity considering node attributes
-    # assert nx.graph_edit_distance(graph_to_test, sample_graph, node_match=are_matching_nodes) == 0
+    assert nx.graph_edit_distance(graph_to_test, sample_graph, node_match=are_matching_nodes) == 0
 
 
 def test_draw(mocker, init_mock):
@@ -321,10 +321,10 @@ def test_lattice_decorator(mocker, monkeypatch):
     assert test_workflow.__name__ == "test_workflow"
 
     # Test the constraints are applied
-    # assert isinstance(test_workflow.metadata["executor"], LocalExecutor)
+    assert isinstance(test_workflow.metadata["executor"], LocalExecutor)
     assert test_workflow.metadata["results_dir"] == str(Path("results").expanduser().resolve())
     assert test_workflow.metadata["notify"] == []
 
     # Finally test deprecated variables are properly forwarded
     test_lattice_3 = lattice(sample_workflow, backend="local")
-    # assert isinstance(test_lattice_3.metadata["executor"], LocalExecutor)
+    assert isinstance(test_lattice_3.metadata["executor"], LocalExecutor)

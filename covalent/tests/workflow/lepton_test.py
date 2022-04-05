@@ -67,7 +67,7 @@ def test_lepton_init(mocker, monkeypatch):
 
     init_mock.assert_called_once_with("wrapper function")
     wrap_mock.assert_called_once_with()
-    # set_metadata_mock.assert_called_once_with("executor", executor)
+    set_metadata_mock.assert_called_once_with("executor", executor)
 
     assert lepton.language == "lang"
     assert lepton.library_name == "libname"

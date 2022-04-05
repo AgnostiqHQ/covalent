@@ -433,7 +433,7 @@ def lattice(
 
     from ..executor import _executor_manager
 
-    # executor = _executor_manager.get_executor(executor)
+    executor = _executor_manager.get_executor(executor)
 
     constraints = {
         "executor": executor,
