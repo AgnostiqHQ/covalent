@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Added tests for post-refactor covalent cli commands: start, stop, restart, status, and logs
+
 ## [0.56.0] - 2022-04-05
 
 ### Changed
