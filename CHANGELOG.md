@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- The results and data service now support batch deleting via query strings
+
 ## [0.56.1] - 2022-04-05
 
 ### Fixed
