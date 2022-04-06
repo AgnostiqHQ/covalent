@@ -21,9 +21,9 @@
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
 ENV PROJECT_DIR=/ui_backend
-ENV FE_PORT 8005
+ENV UI_PORT 8005
 ENV BE_PORT 8004
-EXPOSE $BE_PORT $FE_PORT
+EXPOSE $BE_PORT $UI_PORT
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends git gcc g++ make curl\
@@ -36,18 +36,8 @@ RUN apt-get update \
 
 RUN mkdir -p $PROJECT_DIR && chmod 0777 $PROJECT_DIR
 
-RUN cd $PROJECT_DIR \
-    && mkdir webapp \
-    && mkdir refactor \
-    && mkdir covalent \
-    && mkdir covalent_dispatcher \
-    && mkdir covalent_ui
-
 COPY refactor/ui_backend/ $PROJECT_DIR
 COPY refactor/ui_backend/webapp $PROJECT_DIR/webapp
-COPY covalent/ $PROJECT_DIR/covalent
-COPY covalent_dispatcher/ $PROJECT_DIR/covalent_dispatcher
-COPY covalent_ui/ $PROJECT_DIR/covalent_ui
 COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$PROJECT_DIR/"]
 
 RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
