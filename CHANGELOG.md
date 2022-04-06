@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Fixed the version validation in pypi workflow
+
 ## [0.63.0] - 2022-04-06
 
 ### Changed
