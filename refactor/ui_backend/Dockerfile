@@ -45,17 +45,12 @@ RUN cd $PROJECT_DIR \
 
 COPY refactor/ui_backend/ $PROJECT_DIR
 COPY refactor/ui_backend/webapp $PROJECT_DIR/webapp
-COPY refactor/ $PROJECT_DIR/refactor
 COPY covalent/ $PROJECT_DIR/covalent
 COPY covalent_dispatcher/ $PROJECT_DIR/covalent_dispatcher
 COPY covalent_ui/ $PROJECT_DIR/covalent_ui
 COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$PROJECT_DIR/"]
 
 RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
-RUN cd $PROJECT_DIR/refactor/  \
-    && rm -rf client_side/  && rm -rf data/ \
-    && rm -rf dispatcher/ && rm -rf queuer/ \
-    && rm -rf results/ && rm -rf runner/
 
 RUN cd $PROJECT_DIR/webapp \
     && yarn install --network-timeout 100000 \
