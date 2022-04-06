@@ -85,6 +85,8 @@ def done_callback_to_runner(dispatch_id, task_id):
 
 def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, dispatch_id):
 
+    executor = pickle.loads(executor)
+
     task_result = generate_task_result(
         task_id=task_id,
         start_time=datetime.now(timezone.utc),
@@ -109,7 +111,7 @@ def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, d
     task_result = generate_task_result(
         task_id=task_id,
         end_time=datetime.now(timezone.utc),
-        status=Result.COMPLETED,
+        status=Result.FAILED if exception else Result.COMPLETED,
         output=task_output,
         error="".join(traceback.TracebackException.from_exception(exception).format())
         if exception
@@ -128,7 +130,7 @@ def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, d
     # Set task as complete and send update to dispatcher
     send_task_update_to_dispatcher(dispatch_id, task_result)
 
-    # Callback to the runner to close this process and free resources
+    # Callback to the runner to close this process
     done_callback_to_runner(dispatch_id, task_id)
 
 
@@ -172,7 +174,7 @@ def run_tasks_with_resources(
             task["func"],
             task["args"],
             task["kwargs"],
-            task["executor"],
+            pickle.dumps(task["executor"]),
             task["results_dir"],
             info_queue,
             dispatch_id,
@@ -183,7 +185,7 @@ def run_tasks_with_resources(
 
         ultimate_dict[dispatch_id][task["task_id"]] = {
             "process": process,
-            "executor": task["executor"],
+            "executor": pickle.dumps(task["executor"]),
             "info_queue": info_queue,
         }
 
