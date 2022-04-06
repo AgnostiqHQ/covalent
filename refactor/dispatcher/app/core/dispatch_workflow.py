@@ -135,18 +135,18 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
 
     # logger.warning(f"Inside start_dispatch with dispatch_id {result_obj.dispatch_id}")
 
-    # Change result status to running
+    # Change result status to running and set workflow execution start time.
     result_obj._status = Result.RUNNING
     result_obj._start_time = datetime.now(timezone.utc)
 
     # Initialize the result object
-    result_obj = init_result_pre_dispatch(result_obj=result_obj)
+    result_obj = init_result_pre_dispatch(result_obj)
 
     # Send the initialized result to the result service
-    send_result_object_to_result_service(result_object=result_obj)
+    send_result_object_to_result_service(result_obj)
 
     # Get the order of tasks to be run
-    task_order: List[List] = get_task_order(result_obj=result_obj)
+    task_order: List[List] = get_task_order(result_obj)
 
     logger.warning(f"task_order: {task_order}")
     dispatch_runnable_tasks(result_obj, tasks_queue, task_order)

@@ -130,23 +130,32 @@ def test_dispatch_runnable_tasks():
 def test_start_dispatch(mocker, mock_result_initialized, mock_tasks_queue):
     """Test the start_dispatch method which kicks of the workflow execution."""
 
-    mocker.patch(
+    mock_result_init = mocker.patch(
         "refactor.dispatcher.app.core.dispatch_workflow.init_result_pre_dispatch",
         return_value=mock_result_initialized,
     )
-    mocker.patch(
+    mock_send_result = mocker.patch(
         "refactor.dispatcher.app.core.dispatch_workflow.send_result_object_to_result_service"
     )
     mocker.patch(
         "refactor.dispatcher.app.core.dispatch_workflow.get_task_order",
         return_value=[[0], [1, 2, 3], [4, 5], [6]],
     )
-    mocker.patch("refactor.dispatcher.app.core.dispatch_workflow.dispatch_runnable_tasks")
+    mock_dispatch_runnable_tasks = mocker.patch(
+        "refactor.dispatcher.app.core.dispatch_workflow.dispatch_runnable_tasks"
+    )
 
     result_obj = start_dispatch(mock_result_initialized, mock_tasks_queue)
 
     assert result_obj.status == Result.RUNNING
     assert result_obj.start_time is not None
+
+    mock_result_init.assert_called_once_with(mock_result_initialized)
+    assert mocker.call(mock_result_initialized) in mock_send_result.mock_calls
+    assert len(mock_send_result.mock_calls) == 2
+    mock_dispatch_runnable_tasks.assert_called_once_with(
+        mock_result_initialized, mock_tasks_queue, [[0], [1, 2, 3], [4, 5], [6]]
+    )
 
 
 def test_get_runnable_tasks():
