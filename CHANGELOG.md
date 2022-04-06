@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Pushing microservice images to public ECR
 
+## [0.63.0] - 2022-04-06
+
+### Changed
+
+- Mark pypi releases as pre
+
 ## [0.62.1] - 2022-04-06
 
 ### Fixed
