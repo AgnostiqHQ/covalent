@@ -43,7 +43,6 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     # logger.warning(f"Inside dispatch_workflow with dispatch_id {result_obj.dispatch_id}")
 
     if result_obj.status == Result.NEW_OBJ:
-        result_obj._status = Result.RUNNING
         result_obj = start_dispatch(result_obj=result_obj, tasks_queue=tasks_queue)
 
     elif result_obj.status == Result.COMPLETED:
@@ -132,6 +131,9 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     interact with the Data API."""
 
     # logger.warning(f"Inside start_dispatch with dispatch_id {result_obj.dispatch_id}")
+
+    result_obj._status = Result.RUNNING
+    result_obj._start_time = datetime.now(timezone.utc)
 
     # Initialize the result object
     result_obj = init_result_pre_dispatch(result_obj=result_obj)

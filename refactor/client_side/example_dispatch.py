@@ -43,7 +43,7 @@ def task_2(y, z):
 def workflow(a):
 
     r1 = task_1(a)
-    r2 = task_2(r1)
+    r2 = task_2(a, r1)
 
     return r1 + r2
 

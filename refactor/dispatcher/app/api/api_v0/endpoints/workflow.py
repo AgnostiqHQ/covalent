@@ -119,7 +119,7 @@ async def submit_workflow(*, dispatch_id: str) -> Any:
     Submit a workflow
     """
 
-    testing_queue.put("SOMETHING NEW")
+    # testing_queue.put("SOMETHING NEW")
 
     # logger.warning(f"CURRENT COUNT IS: {meta.get_count()}")
 
@@ -193,11 +193,11 @@ async def update_workflow(
 
     # workflow_tasks_queue.put(val)
 
-    try:
-        logger.warning(f"VALUE OF TESTING QUEUE IN UPDATE WORKFLOW IS: {testing_queue.get()}")
+    # try:
+    #     logger.warning(f"VALUE OF TESTING QUEUE IN UPDATE WORKFLOW IS: {testing_queue.get()}")
 
-    except Empty:
-        logger.warning("VALUE OF TESTING QUEUE IN UPDATE WORKFLOW IS EMPTY")
+    # except Empty:
+    #     logger.warning("VALUE OF TESTING QUEUE IN UPDATE WORKFLOW IS EMPTY")
 
     task_execution_results = pickle.loads(task_execution_results)
     task_id = task_execution_results["task_id"]
@@ -211,10 +211,27 @@ async def update_workflow(
     )
 
     # Empty queue when workflow is no longer running (completed # or failed)
-    if updated_result_obj._status != Result.RUNNING:
+    if updated_result_obj.status != Result.RUNNING:
+
+        logger.warning("updated_result_obj status is not RUNNING")
+
         workflow_status_queue.get()
         workflow_status_queue.put(None)
 
     update_result_and_ui(updated_result_obj, task_id)
 
+    logger.warning("updated_result_obj status is done")
+
     return {"response": f"{dispatch_id} workflow updated successfully"}
+
+
+@router.get("/status", status_code=200)
+async def get_status():
+
+    if is_empty(workflow_status_queue):
+        return {"status": "EMPTY"}
+
+    status = workflow_status_queue.get()
+    workflow_status_queue.put(status)
+
+    return {"status": f"{status}"}

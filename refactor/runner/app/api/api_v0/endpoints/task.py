@@ -176,6 +176,8 @@ def free_resources(*, dispatch_id: str, task_id: int) -> None:
 
     resources.put(resources.get() + 1)
 
+    logger.warning("FREEING RESOURCES DONE")
+
 
 @router.post("/{dispatch_id}/task/{task_id}/done", status_code=200)
 def task_done(*, dispatch_id: str, task_id: int) -> None:

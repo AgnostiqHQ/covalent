@@ -24,7 +24,6 @@ import os
 
 import nats
 import requests
-from app.api.api_v0.endpoints.workflow import submit_workflow, workflow_status_queue
 from app.core.dispatcher_logger import logger
 from app.core.utils import is_empty
 from dotenv import load_dotenv
@@ -46,6 +45,13 @@ def send_dispatch_id(dispatch_id: str):
     logger.warning(f"Dispatch id {dispatch_id} sent successfully.")
 
 
+def get_status():
+    resp = requests.get(f"http://localhost:{settings.DISPATCHER_SVC_PORT}/api/v0/workflow/status")
+    resp.raise_for_status()
+
+    return resp.json()["status"]
+
+
 async def main():
     """Pick up workflows from the message queue and dispatch them one by one."""
 
@@ -57,7 +63,7 @@ async def main():
         while True:
             await asyncio.sleep(0.1)
             # logger.warning("Checking empty queue")
-            if is_empty(workflow_status_queue):
+            if get_status() == "EMPTY":
                 break
 
         send_dispatch_id(dispatch_id=dispatch_id)

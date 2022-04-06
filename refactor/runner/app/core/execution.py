@@ -114,7 +114,7 @@ def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, d
     task_result = generate_task_result(
         task_id=task_id,
         end_time=datetime.now(timezone.utc),
-        status=Result.COMPLETED,
+        status=Result.FAILED if exception else Result.COMPLETED,
         output=task_output,
         error="".join(traceback.TracebackException.from_exception(exception).format())
         if exception
