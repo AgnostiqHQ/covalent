@@ -21,8 +21,6 @@
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
 ENV PROJECT_DIR=/data
-ENV PORT 8004
-EXPOSE $PORT
 
 RUN mkdir $PROJECT_DIR \
     && chmod 0777 $PROJECT_DIR
