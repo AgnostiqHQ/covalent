@@ -34,7 +34,7 @@ RUN apt-get update \
   && pip3 install --upgrade pip \
   && rm -rf /var/lib/apt/lists/* \
 
-RUN mkdir $COVALENT_DIR && chmod 0777 $PROJECT_DIR
+RUN mkdir -p $PROJECT_DIR && $COVALENT_DIR && chmod 0777 $PROJECT_DIR
 
 COPY refactor/ui_backend/ $PROJECT_DIR
 COPY refactor/ $PROJECT_DIR/refactor
