@@ -29,8 +29,8 @@ import cloudpickle as pickle
 import requests
 
 from covalent._results_manager.result import Result
-from covalent.executor import _executor_manager
 from refactor.runner.app.core.get_svc_uri import DispatcherURI, RunnerURI
+
 from .runner_logger import logger
 
 
@@ -71,19 +71,21 @@ def send_task_update_to_dispatcher(dispatch_id, task_result):
 
 def free_resources_call_to_runner(dispatch_id, task_id):
 
-    url = RunnerURI().get_route(f'workflow/{dispatch_id}/task/{task_id}/free')
+    url = RunnerURI().get_route(f"workflow/{dispatch_id}/task/{task_id}/free")
     response = requests.post(url=url)
     response.raise_for_status()
 
 
 def done_callback_to_runner(dispatch_id, task_id):
 
-    url = RunnerURI().get_route(f'workflow/{dispatch_id}/task/{task_id}/done')
+    url = RunnerURI().get_route(f"workflow/{dispatch_id}/task/{task_id}/done")
     response = requests.post(url=url)
     response.raise_for_status()
 
 
 def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, dispatch_id):
+
+    executor = pickle.loads(executor)
 
     task_result = generate_task_result(
         task_id=task_id,
@@ -93,8 +95,6 @@ def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, d
 
     # Set task as running and send update to dispatcher
     send_task_update_to_dispatcher(dispatch_id, task_result)
-
-    executor = _executor_manager.get_executor(executor)
 
     logger.warning(f"info queue when inside the process {info_queue}")
 
@@ -111,7 +111,7 @@ def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, d
     task_result = generate_task_result(
         task_id=task_id,
         end_time=datetime.now(timezone.utc),
-        status=Result.COMPLETED,
+        status=Result.FAILED if exception else Result.COMPLETED,
         output=task_output,
         error="".join(traceback.TracebackException.from_exception(exception).format())
         if exception
@@ -130,7 +130,7 @@ def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, d
     # Set task as complete and send update to dispatcher
     send_task_update_to_dispatcher(dispatch_id, task_result)
 
-    # Callback to the runner to close this process and free resources
+    # Callback to the runner to close this process
     done_callback_to_runner(dispatch_id, task_id)
 
 
@@ -174,7 +174,7 @@ def run_tasks_with_resources(
             task["func"],
             task["args"],
             task["kwargs"],
-            task["executor"],
+            pickle.dumps(task["executor"]),
             task["results_dir"],
             info_queue,
             dispatch_id,
@@ -185,7 +185,7 @@ def run_tasks_with_resources(
 
         ultimate_dict[dispatch_id][task["task_id"]] = {
             "process": process,
-            "executor": task["executor"],
+            "executor": pickle.dumps(task["executor"]),
             "info_queue": info_queue,
         }
 
@@ -197,8 +197,6 @@ def run_tasks_with_resources(
 
 def get_task_status(executor, info_queue):
 
-    executor = _executor_manager.get_executor(executor)
-
     info = info_queue.get()
     status = executor.get_status(info)
     info_queue.put(info)
@@ -207,8 +205,6 @@ def get_task_status(executor, info_queue):
 
 
 def cancel_running_task(executor, info_queue):
-
-    executor = _executor_manager.get_executor(executor)
 
     # Using MPQ to get any information that execute method wanted to
     # share with cancel method

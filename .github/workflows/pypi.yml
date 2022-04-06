@@ -49,14 +49,14 @@ jobs:
           yarn install
           yarn build
       - name: Build Distribution
-        run: python setup.py sdist
+        run: python setup.py --tag-build=pre sdist
       - name: Validate Distribution
         run: |
           VERSION="$(cat ./VERSION)"
           cd dist
           tar xzf cova-${VERSION}.tar.gz
-          diff -r cova-${VERSION}/covalent ../covalent
-          diff -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x tests -r cova-${VERSION}/covalent ../covalent
+          diff -x tests -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
           diff -x README.md cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
@@ -65,3 +65,13 @@ jobs:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: twine upload dist/*
+      - name: Alert Slack
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "covalent"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: "The pypi.yml workflow is failing in master!"
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ":warning:  Attention Required  :warning:"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}

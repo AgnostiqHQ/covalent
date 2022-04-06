@@ -20,7 +20,7 @@
 import logging
 
 from aiolimiter import AsyncLimiter
-from app.schemas.ui import UpdateUIResponse, DrawRequest
+from app.schemas.ui import DrawRequest, UpdateUIResponse
 from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.encoders import jsonable_encoder
 
@@ -61,12 +61,10 @@ async def update_ui(
     return {"response": "UI Updated"}
 
 
-@router.post("/workflow/draft",
-             status_code=200,
-             response_model=UpdateUIResponse)
+@router.post("/workflow/draft", status_code=200, response_model=UpdateUIResponse)
 async def draw_draft(*, payload: DrawRequest, request: Request) -> UpdateUIResponse:
     """
-    API Endpoint (/api/workflow/draft) to draw workflow draft 
+    API Endpoint (/api/workflow/draft) to draw workflow draft
     """
 
     await notify_frontend(request.app, "draw-request", jsonable_encoder(payload))

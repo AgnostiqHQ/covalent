@@ -23,7 +23,6 @@
 import inspect
 import json
 import os
-import requests
 import warnings
 from contextlib import redirect_stdout
 from functools import wraps
@@ -32,12 +31,13 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 import matplotlib.pyplot as plt
 import networkx as nx
+import requests
 
 import covalent_ui.result_webhook as result_webhook
 from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
 
 from .._shared_files import logger
-from .._shared_files.config import get_config
+from .._shared_files.config import _config_manager, get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .._shared_files.utils import (
@@ -214,7 +214,6 @@ class Lattice:
         plt.tight_layout()
         return ax
 
-
     def draw(self, *args, **kwargs) -> None:
         """
         Generate lattice graph and display in UI taking into account passed in
@@ -230,7 +229,6 @@ class Lattice:
 
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
-
 
     def draw_refactor(self, *args, **kwargs) -> None:
         """
@@ -269,13 +267,14 @@ class Lattice:
         )
 
         try:
-            response = requests.post("http://localhost:8005/api/v0/ui/workflow/draft", data=draw_request)
+            response = requests.post(
+                "http://localhost:8005/api/v0/ui/workflow/draft", data=draw_request
+            )
             response.raise_for_status()
         except requests.exceptions.HTTPError as ex:
             app_log.error(ex)
         except requests.exceptions.RequestException:
             app_log.error("Connection failure. Please check ui_backend service is running.")
-
 
     def __call__(self, *args, **kwargs):
         """Execute lattice as an ordinary function for testing purposes."""
@@ -401,9 +400,7 @@ def lattice(
     _func: Optional[Callable] = None,
     *,
     backend: Optional[str] = None,
-    executor: Optional[
-        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+    executor: Optional[Union[str, "BaseExecutor"]] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     notify: Optional[List[NotifyEndpoint]] = [],
     # Add custom metadata fields here
@@ -433,6 +430,10 @@ def lattice(
         executor = backend
 
     results_dir = str(Path(results_dir).expanduser().resolve())
+
+    from ..executor import _executor_manager
+
+    executor = _executor_manager.get_executor(executor)
 
     constraints = {
         "executor": executor,

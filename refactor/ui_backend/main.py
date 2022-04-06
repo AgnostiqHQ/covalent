@@ -18,18 +18,17 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import os
 import logging
+import os
 from pathlib import Path
 
 from app.api.api_v0.api import api_router
 from app.core.config import settings
 from fastapi import FastAPI, Request
-from fastapi_socketio import SocketManager
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse, FileResponse, HTMLResponse
-
+from fastapi_socketio import SocketManager
 
 BASE_PATH = Path(__file__).resolve().parent
 FRONTEND_PATH = "/webapp/build"
@@ -55,4 +54,10 @@ if __name__ == "__main__":
     # Use this for debugging purposes only
     import uvicorn
 
-    uvicorn.run("main:app", host=settings.UI_SVC_HOST, port=settings.UI_SVC_PORT, log_level="debug", reload=True)
+    uvicorn.run(
+        "main:app",
+        host=settings.UI_SVC_HOST,
+        port=settings.UI_SVC_PORT,
+        log_level="debug",
+        reload=True,
+    )

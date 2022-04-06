@@ -173,7 +173,7 @@ def _run_task(
     """
     app_log.debug("_run_task")
     serialized_callable = result_object.lattice.transport_graph.get_node_value(node_id, "function")
-    selected_executor = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
+    executor = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
         "executor"
     ]
     node_name = (
@@ -202,9 +202,6 @@ def _run_task(
 
     if result_object._get_node_status(node_id) == Result.COMPLETED:
         return
-
-    # the executor is determined during scheduling and provided in the execution metadata
-    executor = _executor_manager.get_executor(selected_executor)
 
     # run the task on the executor and register any failures
     app_log.debug("run the task on the executor")

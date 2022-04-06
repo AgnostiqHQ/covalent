@@ -19,17 +19,36 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import asyncio
+import json
 import os
 
 import nats
-from app.api.api_v0.endpoints.workflow import submit_workflow, workflow_status_queue
-from app.core.utils import is_empty
+import requests
+from app.core.dispatcher_logger import logger
 from dotenv import load_dotenv
+
+from refactor.dispatcher.app.core.config import settings
+from refactor.dispatcher.app.core.get_svc_uri import DispatcherURI
 
 load_dotenv()
 
 TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
 MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
+
+
+def send_dispatch_id(dispatch_id: str):
+
+    resp = requests.post(DispatcherURI().get_route(f"workflow/{dispatch_id}"))
+    resp.raise_for_status()
+
+    logger.warning(f"Dispatch id {dispatch_id} sent successfully.")
+
+
+def get_status():
+    resp = requests.get(DispatcherURI().get_route("workflow/status"))
+    resp.raise_for_status()
+
+    return resp.json()["status"]
 
 
 async def main():
@@ -38,13 +57,15 @@ async def main():
     nc = await nats.connect(MQ_CONNECTION_URI)
 
     async def msg_handler(msg):
-        dispatch_id = msg.data.decode()
-        print(f"Got dispatch_id: {dispatch_id}")
+        dispatch_id = json.loads(msg.data.decode())["dispatch_id"]
+        logger.warning(f"Got dispatch_id: {dispatch_id} with type {type(dispatch_id)}")
         while True:
             await asyncio.sleep(0.1)
-            if is_empty(workflow_status_queue):
+            # logger.warning("Checking empty queue")
+            if get_status() == "EMPTY":
                 break
-        submit_workflow(dispatch_id=dispatch_id)
+
+        send_dispatch_id(dispatch_id=dispatch_id)
 
     sub = await nc.subscribe(TOPIC, cb=msg_handler)
 
