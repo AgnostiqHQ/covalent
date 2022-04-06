@@ -38,4 +38,4 @@ RUN cd $PROJECT_DIR/refactor/  \
     && rm -rf results/ && rm -rf runner/  \
     && rm -rf ui_backend/
 
-CMD [ "python", "main.py"]
+ENTRYPOINT [ "python", "main.py"]

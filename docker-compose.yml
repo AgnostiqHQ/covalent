@@ -7,7 +7,6 @@ version: "3.9"
 services:
   covalent-data:
     image: "${DATA_REPO}"
-    command: sh -c "python main.py"
     ports:
       - "8004:8004"
     working_dir: /data
@@ -16,7 +15,6 @@ services:
 
   covalent-dispatcher:
     image: "${DISPATCHER_REPO}"
-    command: sh -c "python main.py"
     ports:
       - "8002:8002"
     working_dir: /dispatcher
@@ -25,7 +23,6 @@ services:
 
   covalent-queuer:
     image: "${QUEUER_REPO}"
-    command: sh -c "python main.py"
     ports:
       - "8001:8001"
     working_dir: /queuer
@@ -35,7 +32,6 @@ services:
   # Queue-consumer uses the same Dockerfile configurations as the Queuer
   covalent-queue-consumer:
     image: "${QUEUE_CONSUMER_REPO}"
-    command: sh -c "python main.py"
     ports:
       - "3000:8001"
     working_dir: /queuer
@@ -44,7 +40,6 @@ services:
 
   covalent-results:
     image: "${RESULTS_REPO}"
-    command: sh -c "python main.py"
     ports:
       - "8006:8006"
     working_dir: /results
@@ -53,7 +48,6 @@ services:
 
   covalent-runner:
     image: "${RUNNER_REPO}"
-    command: sh -c "python main.py"
     ports:
       - "8003:8003"
     working_dir: /runner
@@ -62,7 +56,6 @@ services:
 
   covalent-ui:
     image: "${UI_REPO}"
-    command: sh -c "python main.py"
     ports:
       - 3001:8004
       - 8005:8005

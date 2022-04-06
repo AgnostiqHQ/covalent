@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.62.0] - 2022-04-06
+
+### Changed
+
+- Using `ENTRYPOINT` in dockerfiles instead of `CMD`
+- Remove `command` option from all services in `docker-compose.yml` 
+
 ## [0.61.1] - 2022-04-06
 
 ### Fixed
