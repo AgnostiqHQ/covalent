@@ -38,10 +38,8 @@ RUN mkdir -p $PROJECT_DIR && chmod 0777 $PROJECT_DIR
 
 COPY refactor/ui_backend/ $PROJECT_DIR
 COPY refactor/ui_backend/webapp $PROJECT_DIR/webapp
-COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$PROJECT_DIR/"]
 
 RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
-
 RUN cd $PROJECT_DIR/webapp \
     && yarn install --network-timeout 100000 \
     && yarn build --network-timeout 100000
