@@ -55,8 +55,8 @@ jobs:
           VERSION="$(cat ./VERSION)"
           cd dist
           tar xzf cova-${VERSION}.tar.gz
-          diff -r cova-${VERSION}/covalent ../covalent
-          diff -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x tests -r cova-${VERSION}/covalent ../covalent
+          diff -x tests -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
           diff -x README.md cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
