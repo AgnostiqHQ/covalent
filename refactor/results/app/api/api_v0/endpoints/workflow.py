@@ -92,22 +92,16 @@ async def _get_result_file(dispatch_id: str) -> bytes:
 
 
 async def _upload_file(result_pkl_file: BinaryIO):
-    print("upload_file")
     results_object = {}
     dispatch_id = ""
     length = result_pkl_file.seek(0, 2)
-    print(length)
     result_pkl_file.seek(0)
     try:
-        print("unpickling")
-        # TODO: The test gets stuck here!
         results_object = pickle.load(result_pkl_file)
-        print(results_object)
         dispatch_id = results_object.dispatch_id
         assert length > 0
     except:
         raise HTTPException(status_code=422, detail="Error in upload body.")
-    print("result file seek")
     result_pkl_file.seek(0)
     response = await data_svc.upload(result_pkl_file)
     filename = response.get("filename")
