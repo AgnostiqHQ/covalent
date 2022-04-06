@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.62.1] - 2022-04-06
+
 ### Fixed
 
 - Workflows which run on `develop` or `master` will send Slack alerts to the dev team if they fail.
