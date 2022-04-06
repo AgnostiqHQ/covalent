@@ -21,21 +21,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Node'
+              $ref: "#/components/schemas/Node"
         required: true
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateWorkflowResponse'
-        '422':
+                $ref: "#/components/schemas/UpdateWorkflowResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
     post:
       tags:
         - Workflow
@@ -50,18 +50,18 @@ paths:
           name: dispatch_id
           in: path
       responses:
-        '202':
+        "202":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DispatchWorkflowResponse'
-        '422':
+                $ref: "#/components/schemas/DispatchWorkflowResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
     delete:
       tags:
         - Workflow
@@ -76,18 +76,18 @@ paths:
           name: dispatch_id
           in: path
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CancelWorkflowResponse'
-        '422':
+                $ref: "#/components/schemas/CancelWorkflowResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
 components:
   schemas:
     CancelWorkflowResponse:
@@ -116,7 +116,7 @@ components:
           title: Detail
           type: array
           items:
-            $ref: '#/components/schemas/ValidationError'
+            $ref: "#/components/schemas/ValidationError"
     Node:
       title: Node
       required:

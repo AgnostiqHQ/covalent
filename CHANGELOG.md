@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - egg_info invocation
 
+## [0.64.0] - 2022-04-06
+
+### Fixed
+
+- Style fixes via `pre-commit run --all-files`
+
+### Changed
+
+- Pushing microservice images to public ECR
+
 ## [0.63.1] - 2022-04-06
 
 ### Fixed

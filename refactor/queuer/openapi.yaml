@@ -20,21 +20,21 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Body_submit_workflow_api_v0_submit_dispatch_post'
+              $ref: "#/components/schemas/Body_submit_workflow_api_v0_submit_dispatch_post"
         required: true
       responses:
-        '202':
+        "202":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubmitResponse'
-        '422':
+                $ref: "#/components/schemas/SubmitResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
 components:
   schemas:
     Body_submit_workflow_api_v0_submit_dispatch_post:
@@ -55,7 +55,7 @@ components:
           title: Detail
           type: array
           items:
-            $ref: '#/components/schemas/ValidationError'
+            $ref: "#/components/schemas/ValidationError"
     SubmitResponse:
       title: SubmitResponse
       required:
