@@ -98,7 +98,7 @@ jobs:
             ${{ secrets.AWS_ECR_REPO }}:${{ env.TAG }}
       - name: Push to ECR
         run: |
-          docker-compose -f docker-compose.dev.yml up --build -d
+          docker-compose -f docker-compose.yml up --build -d
           echo 'Displaying containers...'
           docker ps
           docker tag covalent-data:latest ${{ secrets.DATA_REPO }}

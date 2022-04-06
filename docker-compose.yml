@@ -1,5 +1,5 @@
-# This file should be used for local development with docker-compose
-# Example Usage: Run "docker-compose -f docker-compose.dev.yml up --build" from the root of the project
+# This file is used for local development with docker-compose and for building microservice images in the CD pipeline.
+# Example Usage: Run "docker-compose -f docker-compose.yml up --build" from the root of the project
 # to build the images using this file and start the containers.
 
 version: "3.9"
