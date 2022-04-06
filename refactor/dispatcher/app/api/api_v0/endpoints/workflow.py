@@ -40,8 +40,6 @@ from covalent._results_manager import Result
 workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()
 
-testing_queue = MPQ()
-
 # Using sentinel to indicate that the queue is empty since MPQ.empty() is an unreliable method
 workflow_tasks_queue.put(None)
 workflow_status_queue.put(None)
@@ -89,10 +87,6 @@ async def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
-
-    # testing_queue.put("SOMETHING NEW")
-
-    # logger.warning(f"CURRENT COUNT IS: {meta.get_count()}")
 
     logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
 
@@ -150,25 +144,6 @@ async def update_workflow(
     """
     Update a workflow
     """
-
-    # val = workflow_tasks_queue.get()
-
-    # logger.warning(f"workflow_tasks_queue looks like in update_workflow: {val}")
-
-    # try:
-    #     new_val = workflow_tasks_queue.get_nowait()
-    #     logger.warning(f"New val is: {new_val}")
-
-    # except Empty:
-    #     logger.warning("Empty after second get")
-
-    # workflow_tasks_queue.put(val)
-
-    # try:
-    #     logger.warning(f"VALUE OF TESTING QUEUE IN UPDATE WORKFLOW IS: {testing_queue.get()}")
-
-    # except Empty:
-    #     logger.warning("VALUE OF TESTING QUEUE IN UPDATE WORKFLOW IS EMPTY")
 
     task_execution_results = pickle.loads(task_execution_results)
     task_id = task_execution_results["task_id"]
