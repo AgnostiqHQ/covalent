@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Mark pypi releases as pre
 
+## [0.62.1] - 2022-04-06
+
+### Fixed
+
+- Workflows which run on `develop` or `master` will send Slack alerts to the dev team if they fail.
+
+## [0.62.0] - 2022-04-06
+
+### Changed
+
+- Update `covalent-ui` service in `docker-compose.yaml` to ensure that the uvicorn server listens on `0.0.0.0` for all incoming requests
+- Using `ENTRYPOINT` in dockerfiles instead of `CMD`
+- Remove `command` option from all services in `docker-compose.yml`
+
 ## [0.61.1] - 2022-04-06
 
 ### Fixed
