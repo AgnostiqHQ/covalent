@@ -141,3 +141,17 @@ jobs:
           SLACK_USERNAME: "CovalentOpsBot"
           SLACK_MESSAGE: ${{ env.SLACK_MSG }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      - name: Manual failure
+        run: which cmd_doesnt_exist
+      - name: Alert Slack
+        #if: github.ref == 'ref/heads/develop' && failure()
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "covalent"
+          SLACK_USERNAME: "CovalentOpsBot"
+          #SLACK_MESSAGE: "The tests.yml workflow is failing in develop!"
+          SLACK_MESSAGE: "This is a test alert!"
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ":warning: Alert :warning:"
+
