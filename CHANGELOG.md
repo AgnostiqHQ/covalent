@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The `.dockerignore` file now ignores any unnecessary front-end build files
 
+## [0.64.1] - 2022-04-06
+
+### Fixed
+
+- egg_info invocation
+
 ## [0.64.0] - 2022-04-06
 
 ### Fixed
