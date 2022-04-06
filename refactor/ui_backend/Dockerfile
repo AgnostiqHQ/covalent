@@ -32,12 +32,10 @@ RUN apt-get update \
   && npm install --global yarn \
   && cd /usr/local/bin \
   && pip3 install --upgrade pip \
-  && rm -rf /var/lib/apt/lists/* \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir $PROJECT_DIR \
-    && mkdir $COVALENT_DIR \
-    && chmod 0777 $PROJECT_DIR \
-    && chmod 0777 $COVALENT_DIR
+RUN mkdir $PROJECT_DIR && mkdir $COVALENT_DIR/{covalent_ui, covalent, covalent_dispatcher}
+RUN chmod 0777 $PROJECT_DIR
 
 COPY refactor/ui_backend/ $PROJECT_DIR
 COPY refactor/ $PROJECT_DIR/refactor
