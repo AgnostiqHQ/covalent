@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- egg_info invocation
+
 ## [0.63.1] - 2022-04-06
 
 ### Fixed
