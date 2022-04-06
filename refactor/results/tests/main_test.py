@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 import os
+import tempfile
 from unittest.mock import patch
 
 from app.core import db
@@ -68,3 +69,21 @@ def test_post(test_app, monkeypatch):
         d = response.json()
         print(d)
         assert len(d["dispatch_id"]) > 0
+
+
+def test_db_value():
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+        resultsdb = f.name
+    test_db = db.Database(resultsdb)
+
+    sql = f"INSERT INTO results VALUES('{MOCK_DISPATCH_ID}','{FILENAME}','{DIRNAME}')"
+
+    insert = test_db.value(sql)
+
+    sql = "SELECT filename FROM results WHERE dispatch_id=?"
+    value = test_db.value(sql, key=MOCK_DISPATCH_ID)
+
+    os.remove(resultsdb)
+
+    assert insert == (True,)
+    assert value == (FILENAME,)
