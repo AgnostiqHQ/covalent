@@ -34,6 +34,7 @@ from refactor.dispatcher.app.core.dispatch_workflow import (
     init_result_pre_dispatch,
     is_runnable_task,
     run_tasks,
+    start_dispatch,
 )
 
 
@@ -108,7 +109,6 @@ def test_dispatch_workflow_func(
     )
 
     mock_result_initialized._status = initial_status
-    print(mock_result_initialized.status)
 
     result_obj = dispatch_workflow(
         result_obj=mock_result_initialized, tasks_queue=mock_tasks_queue
@@ -127,8 +127,26 @@ def test_dispatch_runnable_tasks():
     pass
 
 
-def test_start_dispatch():
-    pass
+def test_start_dispatch(mocker, mock_result_initialized, mock_tasks_queue):
+    """Test the start_dispatch method which kicks of the workflow execution."""
+
+    mocker.patch(
+        "refactor.dispatcher.app.core.dispatch_workflow.init_result_pre_dispatch",
+        return_value=mock_result_initialized,
+    )
+    mocker.patch(
+        "refactor.dispatcher.app.core.dispatch_workflow.send_result_object_to_result_service"
+    )
+    mocker.patch(
+        "refactor.dispatcher.app.core.dispatch_workflow.get_task_order",
+        return_value=[[0], [1, 2, 3], [4, 5], [6]],
+    )
+    mocker.patch("refactor.dispatcher.app.core.dispatch_workflow.dispatch_runnable_tasks")
+
+    result_obj = start_dispatch(mock_result_initialized, mock_tasks_queue)
+
+    assert result_obj.status == Result.RUNNING
+    assert result_obj.start_time is not None
 
 
 def test_get_runnable_tasks():
@@ -189,30 +207,8 @@ def test_run_tasks(mocker):
         },
     ]
 
-    print(mock_send_task_list_to_runner.mock_calls)
-
     assert (
-        mocker.call(
-            dispatch_id="mock_dispatch_id",
-            tasks_list=[
-                {
-                    "task_id": 1,
-                    "func": b"f1",
-                    "args": {},
-                    "kwargs": {},
-                    "executor": b"e1",
-                    "results_dir": "mock_results_dir",
-                },
-                {
-                    "task_id": 2,
-                    "func": b"f2",
-                    "args": {},
-                    "kwargs": {},
-                    "executor": b"e2",
-                    "results_dir": "mock_results_dir",
-                },
-            ],
-        )
+        mocker.call(dispatch_id="mock_dispatch_id", tasks_list=mock_task_list)
         in mock_send_task_list_to_runner.mock_calls
     )
 

@@ -30,7 +30,6 @@ from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 from covalent.executor import BaseExecutor
 from refactor.dispatcher.app.core.dispatcher_logger import logger
-from refactor.dispatcher.app.core.get_svc_uri import ResultsURI, RunnerURI
 from refactor.dispatcher.app.core.utils import (
     is_empty,
     send_result_object_to_result_service,
@@ -70,7 +69,8 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
 
 
 def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: List[List]) -> None:
-    """Get runnable tasks and dispatch them to the Runner API. Put the tasks that weren't picked up by the Runner API back in the queue."""
+    """Get runnable tasks and dispatch them to the Runner API. Put the tasks that weren't picked
+    up by the Runner API back in the queue."""
 
     # To get the runnable tasks from first task order list
     # Sending the tasks_queue as well to handle the case of sublattices
@@ -160,7 +160,7 @@ def get_runnable_tasks(
     result_obj: Result,
     tasks_order: List[List],
     tasks_queue: MPQ,
-) -> Tuple[List[int], List[bytes], List[List], List[Dict], List[BaseExecutor]]:
+) -> Tuple[List[int], List[bytes], List[List], List[Dict], List[BaseExecutor], List[List[int]]]:
     """Return a list of tasks that can be run and the corresponding executors and input
     parameters."""
 
@@ -296,7 +296,8 @@ def run_tasks(
 
 
 def is_runnable_task(task_id: int, result_obj: Result) -> bool:
-    """Return status whether the task can be run based on whether the parent tasks have finished executing."""
+    """Return status whether the task can be run based on whether the parent tasks have finished
+    executing."""
 
     parent_node_ids: List[int] = result_obj.lattice.transport_graph.get_dependencies(task_id)
 
