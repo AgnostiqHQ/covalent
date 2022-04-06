@@ -40,9 +40,9 @@ RUN chmod 0777 $PROJECT_DIR
 COPY refactor/ui_backend/ $PROJECT_DIR
 COPY refactor/ $PROJECT_DIR/refactor
 COPY refactor/ui_backend/webapp $PROJECT_DIR/webapp
-COPY covalent_ui/ $COVALENT_DIR/covalent_ui
-COPY covalent/ $COVALENT_DIR/covalent
-COPY covalent_dispatcher/ $COVALENT_DIR/covalent_dispatcher
+COPY ../covalent_ui/ $COVALENT_DIR/covalent_ui
+COPY ../covalent/ $COVALENT_DIR/covalent
+COPY ../covalent_dispatcher/ $COVALENT_DIR/covalent_dispatcher
 COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$COVALENT_DIR/"]
 
 RUN pip3 install -r $COVALENT_DIR/requirements.txt
