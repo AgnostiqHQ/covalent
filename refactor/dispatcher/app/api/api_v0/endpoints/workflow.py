@@ -20,11 +20,9 @@
 
 
 from multiprocessing import Queue as MPQ
-from queue import Empty
 from typing import Any
 
 import cloudpickle as pickle
-from aiocache import Cache
 from app.core.cancel_workflow import cancel_workflow_execution
 from app.core.dispatch_workflow import dispatch_workflow
 from app.core.dispatcher_logger import logger
@@ -38,33 +36,6 @@ from app.schemas.workflow import (
 from fastapi import APIRouter, File
 
 from covalent._results_manager import Result
-from refactor.dispatcher.app.core.get_svc_uri import ResultsURI
-
-##################
-
-
-# cache = Cache(Cache.REDIS, endpoint="localhost", port=6379, namespace="main")
-
-
-# class Meta:
-#     def __init__(self):
-#         pass
-
-#     async def get_count(self) -> int:
-#         return await cache.get("count", default=0)
-
-#     async def set_count(self, value: int) -> None:
-#         await cache.set("count", value)
-
-#     async def increment_count(self) -> None:
-#         await cache.increment("count", 1)
-
-
-# meta = Meta()
-
-
-##################
-
 
 workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()
