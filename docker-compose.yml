@@ -8,7 +8,7 @@ services:
   covalent-data:
     image: "public.ecr.aws/covalent/covalent_data"
     ports:
-      - "8004:8004"
+      - "80:8004"
     working_dir: /data
     networks:
       covalent:
@@ -16,7 +16,7 @@ services:
   covalent-dispatcher:
     image: "public.ecr.aws/covalent/covalent_dispatcher"
     ports:
-      - "8002:8002"
+      - "80:8002"
     working_dir: /dispatcher
     networks:
       covalent:
@@ -24,7 +24,7 @@ services:
   covalent-queuer:
     image: "public.ecr.aws/covalent/covalent_queuer"
     ports:
-      - "8001:8001"
+      - "80:8001"
     working_dir: /queuer
     networks:
       covalent:
@@ -33,7 +33,7 @@ services:
   covalent-queue-consumer:
     image: "public.ecr.aws/covalent/covalent_queuer"
     ports:
-      - "3000:8001"
+      - "80:8001"
     working_dir: /queuer
     networks:
       covalent:
@@ -41,7 +41,7 @@ services:
   covalent-results:
     image: "public.ecr.aws/covalent/covalent_results"
     ports:
-      - "8006:8006"
+      - "80:8006"
     working_dir: /results
     networks:
       covalent:
@@ -49,7 +49,7 @@ services:
   covalent-runner:
     image: "public.ecr.aws/covalent/covalent_runner"
     ports:
-      - "8003:8003"
+      - "80:8003"
     working_dir: /runner
     networks:
       covalent:
@@ -57,11 +57,7 @@ services:
   covalent-ui:
     image: "public.ecr.aws/covalent/covalent_ui"
     ports:
-      - 3001:8004
-      - 8005:8005
-    environment:
-      UI_SVC_HOST: 0.0.0.0
-      UI_SVC_PORT: 8004
+      - "80:8004"
     working_dir: /ui_backend
     networks:
       covalent:
