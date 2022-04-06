@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Mark pypi releases as pre
 
+## [0.59.0] - 2022-04-06
+
+### Changed
+
+- Fixes for making the whole pipeline work in tandem.
+
+## [0.58.0] - 2022-04-06
+
+### Added
+
+- `nats` service in `docker-compose` files
+
 ## [0.57.0] - 2022-04-05
 
 ### Added

@@ -125,7 +125,7 @@ async def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
 
     # Pass in the executor and info_queue to get status from the executor
     task_status = get_task_status(
-        ultimate_dict[dispatch_id][task_id]["executor"],
+        pickle.loads(ultimate_dict[dispatch_id][task_id]["executor"]),
         ultimate_dict[dispatch_id][task_id]["info_queue"],
     )
 
@@ -144,7 +144,7 @@ async def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
 
     # Cancel a task by calling its executor's cancel method and closing the info_queue
     cancel_running_task(
-        executor=ultimate_dict[dispatch_id][task_id]["executor"],
+        pickle.loads(executor=ultimate_dict[dispatch_id][task_id]["executor"]),
         info_queue=ultimate_dict[dispatch_id][task_id]["info_queue"],
     )
 
@@ -175,6 +175,8 @@ def free_resources(*, dispatch_id: str, task_id: int) -> None:
     logger.warning(f"POST on /{dispatch_id}/task/{task_id}/free called to free resources")
 
     resources.put(resources.get() + 1)
+
+    logger.warning("FREEING RESOURCES DONE")
 
 
 @router.post("/{dispatch_id}/task/{task_id}/done", status_code=200)

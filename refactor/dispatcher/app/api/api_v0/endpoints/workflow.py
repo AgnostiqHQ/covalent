@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import os
+
 from multiprocessing import Queue as MPQ
 from typing import Any
 
@@ -36,11 +36,9 @@ from app.schemas.workflow import (
 from fastapi import APIRouter, File
 
 from covalent._results_manager import Result
-from refactor.dispatcher.app.core.get_svc_uri import ResultsURI
 
 workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()
-
 
 # Using sentinel to indicate that the queue is empty since MPQ.empty() is an unreliable method
 workflow_tasks_queue.put(None)
@@ -85,15 +83,16 @@ logger.warning("Dispatcher Service Started")
 
 
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
-def submit_workflow(*, dispatch_id: str) -> Any:
+async def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
 
-    # logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
+    logger.warning(f"Inside submit_workflow with dispatch_id: {dispatch_id}")
 
     # Change workflow status to RUNNING
     workflow_status_queue.get()
+
     workflow_status_queue.put(Result.RUNNING)
 
     # Get the result object
@@ -102,13 +101,19 @@ def submit_workflow(*, dispatch_id: str) -> Any:
     # Dispatch the workflow
     dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
 
-    # logger.warning(f"Inside submit_workflow dispatching done with dispatch_id: {dispatch_id}")
+    vv = workflow_tasks_queue.get()
+
+    logger.warning(f"IT SHOULD NOT BE EMPTY HERE {vv}")
+
+    workflow_tasks_queue.put(vv)
+
+    logger.warning(f"Inside submit_workflow dispatching done with dispatch_id: {dispatch_id}")
 
     return {"response": f"{dispatch_id} workflow dispatched successfully"}
 
 
 @router.delete("/{dispatch_id}", status_code=200, response_model=CancelWorkflowResponse)
-def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
+async def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     """
     Cancel a workflow
     """
@@ -133,7 +138,7 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
 
 
 @router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
-def update_workflow(
+async def update_workflow(
     *, dispatch_id: str, task_execution_results: bytes = File(...)
 ) -> UpdateWorkflowResponse:
     """
@@ -152,10 +157,27 @@ def update_workflow(
     )
 
     # Empty queue when workflow is no longer running (completed # or failed)
-    if updated_result_obj._status != Result.RUNNING:
+    if updated_result_obj.status != Result.RUNNING:
+
+        logger.warning("updated_result_obj status is not RUNNING")
+
         workflow_status_queue.get()
         workflow_status_queue.put(None)
 
     update_result_and_ui(updated_result_obj, task_id)
 
+    logger.warning("updated_result_obj status is done")
+
     return {"response": f"{dispatch_id} workflow updated successfully"}
+
+
+@router.get("/status", status_code=200)
+async def get_status():
+
+    if is_empty(workflow_status_queue):
+        return {"status": "EMPTY"}
+
+    status = workflow_status_queue.get()
+    workflow_status_queue.put(status)
+
+    return {"status": f"{status}"}
