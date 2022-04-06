@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Mark pypi releases as pre
 
+## [0.61.1] - 2022-04-06
+
+### Fixed
+
+- Fixed failures in pushing images to ECR.
+
+## [0.61.0] - 2022-04-06
+
+### Changed
+
+- The results and data service now support batch deleting via query strings
+
 ## [0.60.0] - 2022-04-06
 
 ### Changed

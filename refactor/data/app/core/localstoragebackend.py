@@ -175,6 +175,7 @@ class LocalStorageBackend(StorageBackend):
 
     def delete(self, bucket_name: str, object_names: List[str]):
         deleted_objects = []
+        failed = []
         for obj_name in object_names:
             if not self.are_names_sane(bucket_name, obj_name):
                 continue
@@ -184,11 +185,13 @@ class LocalStorageBackend(StorageBackend):
             try:
                 os.remove(p)
             except FileNotFoundError:
+                failed.append(obj_name)
                 pass
             except Exception:
                 # e.g. permission errors
+                failed.append(obj_name)
                 continue
 
             deleted_objects.append(obj_name)
 
-        return deleted_objects
+        return deleted_objects, failed
