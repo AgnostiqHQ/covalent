@@ -20,8 +20,8 @@
 
 
 from datetime import datetime
-from typing import Any, Optional, Sequence
 from enum import Enum
+from typing import Any, List, Optional, Sequence
 
 from pydantic import BaseModel
 
@@ -71,6 +71,12 @@ class UpdateResultResponse(BaseModel):
 class ResultPickle(BaseModel):
     result_object: bytes
 
-class ResultFormats(str,Enum):
-    BINARY = 'binary'
-    JSON = 'json'
+
+class ResultFormats(str, Enum):
+    BINARY = "binary"
+    JSON = "json"
+
+
+class DeleteResultResponse(BaseModel):
+    deleted: List[str]
+    failed: List[str]
