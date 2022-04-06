@@ -34,18 +34,22 @@ RUN apt-get update \
   && pip3 install --upgrade pip \
   && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir $PROJECT_DIR && mkdir $COVALENT_DIR/{covalent_ui, covalent, covalent_dispatcher}
-RUN chmod 0777 $PROJECT_DIR
+RUN mkdir -p $PROJECT_DIR && chmod 0777 $PROJECT_DIR
 
 COPY refactor/ui_backend/ $PROJECT_DIR
-COPY refactor/ $PROJECT_DIR/refactor
 COPY refactor/ui_backend/webapp $PROJECT_DIR/webapp
-COPY ../covalent_ui/ $COVALENT_DIR/covalent_ui
-COPY ../covalent/ $COVALENT_DIR/covalent
-COPY ../covalent_dispatcher/ $COVALENT_DIR/covalent_dispatcher
-COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$COVALENT_DIR/"]
+COPY refactor/ $PROJECT_DIR/refactor
+COPY covalent/ $PROJECT_DIR/covalent
+COPY covalent_dispatcher/ $PROJECT_DIR/covalent_dispatcher
+COPY covalent_ui/ $PROJECT_DIR/covalent_ui
+COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$PROJECT_DIR/"]
 
-RUN pip3 install -r $COVALENT_DIR/requirements.txt
+RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
+RUN cd $PROJECT_DIR/refactor/  \
+    && rm -rf client_side/  && rm -rf data/ \
+    && rm -rf dispatcher/ && rm -rf queuer/ \
+    && rm -rf results/ && rm -rf runner/
+
 RUN cd $PROJECT_DIR/webapp \
     && yarn install --network-timeout 100000 \
     && yarn build --network-timeout 100000
