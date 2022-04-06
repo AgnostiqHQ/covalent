@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Style fixes via `pre-commit run --all-files`
+
+### Changed
+
+- Pushing microservice images to public ECR
+
 ## [0.63.1] - 2022-04-06
 
 ### Fixed
