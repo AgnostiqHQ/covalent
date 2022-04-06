@@ -1,0 +1,102 @@
+# This file should be used for local development with docker-compose
+# Example Usage: Run "docker-compose -f docker-compose.dev.yml up --build" from the root of the project
+# to build the images using this file and start the containers.
+
+version: "3.9"
+
+services:
+  covalent-data:
+    build:
+      context: .
+      dockerfile: refactor/data/Dockerfile
+    image: covalent-data
+    command: sh -c "python main.py"
+    ports:
+      - "8004:8004"
+    working_dir: /data
+    networks:
+     covalent:
+
+  covalent-dispatcher:
+    build:
+      context: .
+      dockerfile: refactor/dispatcher/Dockerfile
+    image: covalent-dispatcher
+    command: sh -c "python main.py"
+    ports:
+      - "8002:8002"
+    working_dir: /dispatcher
+    networks:
+     covalent:
+
+  covalent-queuer:
+    build:
+      context: .
+      dockerfile: refactor/queuer/Dockerfile
+    image: covalent-queuer
+    command: sh -c "python main.py"
+    ports:
+      - "8001:8001"
+    working_dir: /queuer
+    networks:
+      covalent:
+
+  # Queue-consumer uses the same Dockerfile configurations as the Queuer
+  covalent-queue-consumer:
+    build:
+      context: .
+      dockerfile: refactor/queuer/Dockerfile
+    image: covalent-queue-consumer
+    command: sh -c "python main.py"
+    ports:
+      - "3000:8001"
+    working_dir: /queuer
+    networks:
+      covalent:
+
+  covalent-results:
+    build:
+      context: .
+      dockerfile: refactor/results/Dockerfile
+    image: covalent-results
+    command: sh -c "python main.py"
+    ports:
+      - "8006:8006"
+    working_dir: /results
+    networks:
+     covalent:
+
+  covalent-runner:
+    build:
+      context: .
+      dockerfile: refactor/runner/Dockerfile
+    image: covalent-runner
+    command: sh -c "python main.py"
+    ports:
+      - "8003:8003"
+    working_dir: /runner
+    networks:
+      covalent:
+
+  covalent-ui:
+    build:
+      context: .
+      dockerfile: refactor/ui_backend/Dockerfile
+    image: covalent-ui
+    command: sh -c "python main.py"
+    ports:
+      - "8004:8004"
+      - "8005:8005"
+    working_dir: /ui_backend
+    networks:
+      covalent:
+
+  covalent-nats:
+    image: nats
+    ports:
+      - "4222:4222"
+    networks:
+      covalent:
+
+networks:
+  covalent:

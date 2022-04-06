@@ -25,10 +25,10 @@ import os
 import nats
 import requests
 from app.core.dispatcher_logger import logger
-from app.core.utils import is_empty
 from dotenv import load_dotenv
 
 from refactor.dispatcher.app.core.config import settings
+from refactor.dispatcher.app.core.get_svc_uri import DispatcherURI
 
 load_dotenv()
 
@@ -37,16 +37,15 @@ MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 
 
 def send_dispatch_id(dispatch_id: str):
-    resp = requests.post(
-        f"http://localhost:{settings.DISPATCHER_SVC_PORT}/api/v0/workflow/{dispatch_id}"
-    )
+
+    resp = requests.post(DispatcherURI().get_route(f"workflow/{dispatch_id}"))
     resp.raise_for_status()
 
     logger.warning(f"Dispatch id {dispatch_id} sent successfully.")
 
 
 def get_status():
-    resp = requests.get(f"http://localhost:{settings.DISPATCHER_SVC_PORT}/api/v0/workflow/status")
+    resp = requests.get(DispatcherURI().get_route("workflow/status"))
     resp.raise_for_status()
 
     return resp.json()["status"]

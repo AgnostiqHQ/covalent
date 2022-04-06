@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
+        host=settings.DISPATCHER_SVC_HOST,
         port=settings.DISPATCHER_SVC_PORT,
         log_level="debug",
         reload=True,

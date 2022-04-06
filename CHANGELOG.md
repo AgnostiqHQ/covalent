@@ -11,6 +11,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixes for making the whole pipeline work in tandem.
 
+## [0.58.0] - 2022-04-06
+
+### Added
+
+- `nats` service in `docker-compose` files
+
+## [0.57.0] - 2022-04-05
+
+### Added
+
+- Variables to assign service hosts
+
+## [0.56.1] - 2022-04-05
+
+### Fixed
+
+- Fixed various module import errors in the containers for the microservices.
+
+### Tests
+
+- Added tests for post-refactor covalent cli commands: start, stop, restart, status, and logs
+
+## [0.56.0] - 2022-04-05
+
+### Changed
+
+- Changed global variable executor_plugin_name to EXECUTOR_PLUGIN_NAME in executors to conform with PEP8.
+
+## [0.55.0] - 2022-04-04
+
+### Changed
+
+- Changed supervisord http server's default to listen on all interfaces, so that covalent can run on any computer in a trusted LAN (without firewalls/auth).
+
+## [0.54.0] - 2022-04-04
+
+### Added
+
+- Draw workflow draft API to ui_backend service
+
+## [0.53.0] - 2022-04-04
+
+### Added
+
+- Added docker-compose file to run covalent microservices.
+
+## [0.52.0] - 2022-04-04
+
+### Added
+
+- Added delete endpoint to data and results services.
+
+## [0.51.0] - 2022-04-04
+
+### Added
+
+- Folders for tests.
+
+### Changed
+
+- Organization of covalent tests.
+
 ## [0.50.0] - 2022-04-03
 
 ### Added

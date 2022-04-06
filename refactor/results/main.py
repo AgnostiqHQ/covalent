@@ -44,5 +44,9 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(
-        "main:app", host="0.0.0.0", port=settings.RESULTS_SVC_PORT, log_level="debug", reload=True
+        "main:app",
+        host=settings.RESULTS_SVC_HOST,
+        port=settings.RESULTS_SVC_PORT,
+        log_level="debug",
+        reload=True,
     )
