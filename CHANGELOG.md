@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Only one docker-compose
+
 ## [0.64.2] - 2022-04-06
 
 ### Fixed
