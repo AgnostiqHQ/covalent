@@ -36,6 +36,13 @@ RUN apt-get update \
 
 RUN mkdir -p $PROJECT_DIR && chmod 0777 $PROJECT_DIR
 
+RUN cd $PROJECT_DIR \
+    && mkdir webapp \
+    && mkdir refactor \
+    && mkdir covalent \
+    && mkdir covalent_dispatcher \
+    && mkdir covalent_ui
+
 COPY refactor/ui_backend/ $PROJECT_DIR
 COPY refactor/ui_backend/webapp $PROJECT_DIR/webapp
 COPY refactor/ $PROJECT_DIR/refactor
