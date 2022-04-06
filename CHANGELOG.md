@@ -7,14 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## [0.61.1] - 2022-04-06
-
-### Fixed
-
-- Fixed failures in pushing images to ECR.
-
-## [0.61.0] - 2022-04-06
-
 ### Changed
 
 - Update `covalent-ui` service in `docker-compose.yaml` to ensure that the uvicorn server listens on `0.0.0.0` for all incoming requests
@@ -26,12 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed failures in pushing images to ECR.
-
-## [0.61.0] - 2022-04-06
-
-### Changed
-
-- Update `covalent-ui` service in `docker-compose.yaml` to ensure that the uvicorn server listens on `0.0.0.0` for all incoming requests
 
 ## [0.61.0] - 2022-04-06
 
