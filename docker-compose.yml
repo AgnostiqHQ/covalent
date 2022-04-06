@@ -64,8 +64,11 @@ services:
     image: "${UI_REPO}"
     command: sh -c "python main.py"
     ports:
-      - "8004:8004"
-      - "8005:8005"
+      - 3001:8004
+      - 8005:8005
+    environment:
+      UI_SVC_HOST: 0.0.0.0
+      UI_SVC_PORT: 8004
     working_dir: /ui_backend
     networks:
       covalent:
