@@ -41,9 +41,7 @@ jobs:
               uses: aws-actions/amazon-ecr-login@v1
             - name: Push to ECR
               run: |
-                docker-compose -f docker-compose.dev.yml up --build -d
-                echo 'Displaying containers...'
-                docker ps
+                docker-compose -f docker-compose.dev.yml build
                 source .env.compose
                 docker tag covalent-data:latest $DATA_REPO
                 docker tag covalent-dispatcher:latest $DISPATCHER_REPO
