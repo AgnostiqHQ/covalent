@@ -37,7 +37,7 @@ import covalent_ui.result_webhook as result_webhook
 from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
 
 from .._shared_files import logger
-from .._shared_files.config import get_config
+from .._shared_files.config import _config_manager, get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .._shared_files.utils import (
@@ -400,9 +400,7 @@ def lattice(
     _func: Optional[Callable] = None,
     *,
     backend: Optional[str] = None,
-    executor: Optional[
-        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+    executor: Optional[Union[str, "BaseExecutor"]] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     notify: Optional[List[NotifyEndpoint]] = [],
     # Add custom metadata fields here
@@ -432,6 +430,10 @@ def lattice(
         executor = backend
 
     results_dir = str(Path(results_dir).expanduser().resolve())
+
+    from ..executor import _executor_manager
+
+    executor = _executor_manager.get_executor(executor)
 
     constraints = {
         "executor": executor,
