@@ -486,6 +486,7 @@ def electron(
 
     from .._shared_files.config import _config_manager
 
+    os.makedirs(os.path.dirname(_config_manager.config_file), exist_ok=True)
     assert os.path.exists(os.path.dirname(_config_manager.config_file))
 
     from ..executor import _executor_manager
