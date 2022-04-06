@@ -41,9 +41,7 @@ jobs:
               uses: aws-actions/amazon-ecr-login@v1
             - name: Push to ECR
               run: |
-                docker-compose -f docker-compose.dev.yml up --build -d
-                echo 'Displaying containers...'
-                docker ps
+                docker-compose -f docker-compose.dev.yml build
                 source .env.compose
                 docker tag covalent-data:latest $DATA_REPO
                 docker tag covalent-dispatcher:latest $DISPATCHER_REPO
@@ -60,4 +58,14 @@ jobs:
                 docker push $RUNNER_REPO
                 docker push $UI_REPO
 
+            - name: Alert Slack
+              if: failure()
+              uses: rtCamp/action-slack-notify@v2
+              env:
+                SLACK_CHANNEL: "covalent"
+                SLACK_USERNAME: "CovalentOpsBot"
+                SLACK_MESSAGE: "The push-to-ecr.yml workflow is failing in develop!"
+                SLACK_COLOR: ${{ job.status }}
+                SLACK_TITLE: ":warning:  Attention Required  :warning:"
+                SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
           
