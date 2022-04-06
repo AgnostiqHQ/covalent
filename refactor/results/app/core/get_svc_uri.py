@@ -23,5 +23,5 @@ class ServiceURI():
 
 class DataURI(ServiceURI):
     def __init__(self) -> None:
-        super().__init__(port=settings.DATA_SVC_PORT)
+        super().__init__(port=settings.DATA_SVC_PORT, host=settings.DATA_SVC_HOST)
 

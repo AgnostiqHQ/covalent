@@ -51,9 +51,9 @@ class ServiceURI:
 
 class QueuerURI(ServiceURI):
     def __init__(self) -> None:
-        super().__init__(port=queuer_settings.QUEUER_SVC_PORT)
+        super().__init__(port=queuer_settings.QUEUER_SVC_PORT, host=queuer_settings.QUEUER_SVC_HOST)
 
 
 class ResultsURI(ServiceURI):
     def __init__(self) -> None:
-        super().__init__(port=results_settings.RESULTS_SVC_PORT)
+        super().__init__(port=results_settings.RESULTS_SVC_PORT, host=results_settings.RESULTS_SVC_HOST)

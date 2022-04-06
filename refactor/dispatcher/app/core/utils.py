@@ -62,11 +62,7 @@ def is_empty(mp_queue: MPQ):
         mp_queue.put(None)
         return True
 
-    if elem is None:
-        status = True
-    else:
-        status = False
-
+    status = elem is None
     mp_queue.put(elem)
     return status
 
@@ -204,7 +200,7 @@ def is_sublattice(task_name: str = None) -> bool:
 def are_tasks_running(result_obj: Result) -> bool:
     """Check if any of the tasks are still running. A task is considered not `running` if it was completed, failed or cancelled."""
 
-    return all(
+    return any(
         result_obj._get_node_status(task_id) in [Result.RUNNING, Result.NEW_OBJ]
         for task_id in range(result_obj._num_nodes)
     )
@@ -298,6 +294,7 @@ def send_task_update_to_ui(dispatch_id: str, task_id: int):
 
 
 def get_result_object_from_result_service(dispatch_id: str):
+    logger.warning(f"getting result object with id {dispatch_id}")
 
     url_endpoint = ResultsURI().get_route(f"workflow/results/{dispatch_id}")
 
