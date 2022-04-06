@@ -6,59 +6,106 @@ version: "3.9"
 
 services:
   covalent-data:
-    image: "${DATA_REPO}"
+    build:
+      context: '.'
+      dockerfile: ./refactor/data/Dockerfile
+    image: ${DATA_REPO}
+    container_name: covalent-data
     ports:
-      - "8004:8004"
+      - 80:8004
     working_dir: /data
     networks:
      covalent:
+    environment:
+      DATA_SVC_HOST: 0.0.0.0
+      DATA_SVC_PORT: 8004
 
   covalent-dispatcher:
-    image: "${DISPATCHER_REPO}"
+    build:
+      context: '.'
+      dockerfile: ./refactor/dispatcher/Dockerfile
+    image: ${DISPATCHER_REPO}
     ports:
-      - "8002:8002"
+      - 80:8002
     working_dir: /dispatcher
     networks:
      covalent:
+    environment:
+      RUNNER_SVC_PORT: 8003
+      RUNNER_SVC_HOST: ${RUNNER_SVC_HOST}
+      RESULTS_SVC_HOST: ${RESULTS_SVC_HOST}
+      RESULTS_SVC_PORT: 8006
+      DISPATCHER_SVC_HOST: 0.0.0.0
+      DISPATCHER_SVC_PORT: 8002
+      UI_SVC_HOST: ${UI_SVC_HOST}
+      UI_SVC_PORT: 8004
+
 
   covalent-queuer:
+    build:
+      context: '.'
+      dockerfile: ./refactor/queuer/Dockerfile
     image: "${QUEUER_REPO}"
     ports:
-      - "8001:8001"
+      - 80:8001
     working_dir: /queuer
     networks:
       covalent:
+    environment:
+      QUEUER_SVC_HOST: 0.0.0.0
+      QUEUER_SVC_PORT: 8001
 
   # Queue-consumer uses the same Dockerfile configurations as the Queuer
   covalent-queue-consumer:
-    image: "${QUEUE_CONSUMER_REPO}"
+    build:
+      context: '.'
+      dockerfile: ./refactor/queuer/Dockerfile
+    image: ${QUEUE_CONSUMER_REPO}
     ports:
-      - "3000:8001"
+      - 80:8001
     working_dir: /queuer
     networks:
       covalent:
+    environment:
+      QUEUER_SVC_HOST: 0.0.0.0
+      QUEUER_SVC_PORT: 8001
+
 
   covalent-results:
-    image: "${RESULTS_REPO}"
+    build:
+      context: '.'
+      dockerfile: ./refactor/results/Dockerfile
+    image: ${RESULTS_REPO}
     ports:
-      - "8006:8006"
+      - 80:8006
     working_dir: /results
     networks:
      covalent:
+    environment:
+      RESULTS_SVC_HOST: 0.0.0.0
+      RESULTS_SVC_PORT: 8006
 
   covalent-runner:
-    image: "${RUNNER_REPO}"
+    build:
+      context: '.'
+      dockerfile: ./refactor/runner/Dockerfile
+    image: ${RUNNER_REPO}
     ports:
-      - "8003:8003"
+      - 80:8003
     working_dir: /runner
     networks:
       covalent:
+    environment:
+      RUNNER_SVC_HOST: 0.0.0.0
+      RUNNER_SVC_PORT: 8003
 
   covalent-ui:
-    image: "${UI_REPO}"
+    build:
+      context: '.'
+      dockerfile: ./refactor/ui_backend/Dockerfile
+    image: ${UI_REPO}
     ports:
-      - 3001:8004
-      - 8005:8005
+      - 80:8004
     environment:
       UI_SVC_HOST: 0.0.0.0
       UI_SVC_PORT: 8004
