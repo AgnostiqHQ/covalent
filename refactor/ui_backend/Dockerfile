@@ -47,8 +47,8 @@ COPY ["setup.py", "VERSION", "README.md", "$PROJECT_DIR/"]
 
 RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
 RUN cd $PROJECT_DIR/webapp \
-    && yarn install \
-    && yarn build
+    && yarn install --network-timeout 100000 \
+    && yarn build --network-timeout 100000
 
 WORKDIR $PROJECT_DIR
 CMD [ "python", "main.py"]

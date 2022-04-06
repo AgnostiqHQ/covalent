@@ -24,6 +24,7 @@ on:
     push:
         branches:
             - develop
+            - 305-fix-ecr-push
 
 jobs:
     push_to_ecr:
