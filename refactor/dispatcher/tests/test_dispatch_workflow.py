@@ -21,16 +21,18 @@
 """Unit tests for dispatch workflow."""
 
 from copy import deepcopy
-from cProfile import run
-from unittest.mock import Mock
+from datetime import datetime, timezone
 
 import pytest
 
 import covalent as ct
 from covalent._results_manager.result import Result
-from covalent._workflow.transport import _TransportGraph
+from covalent._workflow.transport import TransportableObject, _TransportGraph
+from covalent.executor import BaseExecutor
 from refactor.dispatcher.app.core.dispatch_workflow import (
+    dispatch_runnable_tasks,
     dispatch_workflow,
+    get_runnable_tasks,
     init_result_pre_dispatch,
     is_runnable_task,
     run_tasks,
@@ -123,10 +125,6 @@ def test_dispatch_workflow_func(
     assert mock_start_dispatch.called is start_dispatch_call_status
 
 
-def test_dispatch_runnable_tasks():
-    pass
-
-
 def test_start_dispatch(mocker, mock_result_initialized, mock_tasks_queue):
     """Test the start_dispatch method which kicks of the workflow execution."""
 
@@ -156,10 +154,6 @@ def test_start_dispatch(mocker, mock_result_initialized, mock_tasks_queue):
     mock_dispatch_runnable_tasks.assert_called_once_with(
         mock_result_initialized, mock_tasks_queue, [[0], [1, 2, 3], [4, 5], [6]]
     )
-
-
-def test_get_runnable_tasks():
-    pass
 
 
 def test_init_result_pre_dispatch(mocker, mock_result_uninitialized):
@@ -243,3 +237,95 @@ def test_is_runnable_task(
     result_obj.lattice.transport_graph.set_node_value(3, "status", node_3_status)
 
     assert is_runnable_task(task_id=5, result_obj=result_obj) == expected_runnable_status
+
+
+def test_get_runnable_tasks_lattice(mocker, mock_result_initialized, mock_tasks_queue):
+    """Test get_runnable_tasks method."""
+
+    # Tasks order of mock workflow - [[1, 2, 4], [0, 3], [5]]
+    mock_tasks_order = (
+        mock_result_initialized.lattice.transport_graph.get_topologically_sorted_graph()
+    )
+    mock_tasks_queue.put([{mock_result_initialized.dispatch_id: mock_tasks_order}])
+
+    (
+        runnable_tasks,
+        functions,
+        input_args,
+        input_kwargs,
+        executors,
+        next_tasks_order,
+    ) = get_runnable_tasks(
+        result_obj=mock_result_initialized,
+        tasks_order=mock_tasks_order,
+        tasks_queue=mock_tasks_queue,
+    )
+
+    assert runnable_tasks == [0, 3]
+    assert isinstance(functions[0], TransportableObject)
+    assert isinstance(functions[1], TransportableObject)
+    assert input_args == [[1, 2], [3]]
+    assert input_kwargs == [{}, {}]
+    assert isinstance(executors[0], BaseExecutor)
+    assert isinstance(executors[1], BaseExecutor)
+    assert next_tasks_order == [[5]]
+
+    _, _, _, _, next_tasks_order = get_runnable_tasks(
+        result_obj=mock_result_initialized,
+        tasks_order=next_tasks_order,
+        tasks_queue=mock_tasks_queue,
+    )
+
+    # Since the task statuses of [0, 3] have not been changed to completed, task 5 should not be runnable.
+    assert next_tasks_order == [[5]]
+
+    # Update node results to ensure that task 5 becomes runnable
+    mock_result_initialized._update_node(
+        node_id=0,
+        end_time=datetime.now(timezone.utc),
+        status=Result.COMPLETED,
+    )
+    mock_result_initialized._update_node(
+        node_id=3,
+        end_time=datetime.now(timezone.utc),
+        status=Result.COMPLETED,
+    )
+
+    mock_tasks_queue.get()
+    mock_tasks_queue.put(next_tasks_order)
+
+    _, _, _, _, _, next_tasks_order = get_runnable_tasks(
+        result_obj=mock_result_initialized,
+        tasks_order=next_tasks_order,
+        tasks_queue=mock_tasks_queue,
+    )
+
+    assert next_tasks_order == []
+
+
+def test_dispatch_runnable_tasks(mocker, mock_result_initialized, mock_tasks_queue):
+    """Test the dispatch_runnable_tasks method."""
+
+    # mock_get_runnable_tasks = \
+    # mocker.patch(
+    #     "refactor.dispatcher.app.core.dispatch_workflow.get_runnable_tasks",
+    #     return_value=(
+    #         [1, 2],
+    #         [b"f1", b"f2"],
+    #         [[], []],
+    #         [{}, {}],
+    #         ["Base-executor", "Base-executor"],
+    #         [[1, 2, 3], [4, 5]]
+    #     )
+    #     )
+    # mock_run_tasks = mocker.patch(
+    #     "refactor.dispatcher.app.core.dispatch_workflow.run_tasks", return_value=[2]
+    # )
+
+    # dispatch_runnable_tasks(
+    #     result_obj=mock_result_initialized,
+    #     tasks_queue=mock_tasks_queue,
+    #     task_order=[[0], [1, 2, 3], [4, 5], [6]]
+    # )
+
+    pass
