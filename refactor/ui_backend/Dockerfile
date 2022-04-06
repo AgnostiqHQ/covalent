@@ -32,20 +32,19 @@ RUN apt-get update \
   && npm install --global yarn \
   && cd /usr/local/bin \
   && pip3 install --upgrade pip \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/* \
 
-
-RUN mkdir -p $PROJECT_DIR && chmod 0777 $PROJECT_DIR
+RUN mkdir $COVALENT_DIR && chmod 0777 $PROJECT_DIR
 
 COPY refactor/ui_backend/ $PROJECT_DIR
 COPY refactor/ $PROJECT_DIR/refactor
 COPY refactor/ui_backend/webapp $PROJECT_DIR/webapp
-COPY covalent/ $PROJECT_DIR/covalent
-COPY covalent_dispatcher/ $PROJECT_DIR/covalent_dispatcher
-COPY covalent_ui/ $PROJECT_DIR/covalent_ui
-COPY ["setup.py", "VERSION", "README.md", "$PROJECT_DIR/"]
+COPY covalent_ui/ $COVALENT_DIR/covalent_ui
+COPY covalent/ $COVALENT_DIR/covalent
+COPY covalent_dispatcher/ $COVALENT_DIR/covalent_dispatcher
+COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$COVALENT_DIR/"]
 
-RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
+RUN pip3 install -r $COVALENT_DIR/requirements.txt
 RUN cd $PROJECT_DIR/webapp \
     && yarn install --network-timeout 100000 \
     && yarn build --network-timeout 100000
