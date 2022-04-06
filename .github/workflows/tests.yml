@@ -61,8 +61,6 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
-      - name: Manual failure
-        run: which cmd_doesnt_exist
       - name: Install NPM and Yarn on Ubuntu
         if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye'
         run: |
@@ -144,15 +142,12 @@ jobs:
           SLACK_MESSAGE: ${{ env.SLACK_MSG }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
       - name: Alert Slack
-        #if: github.ref == 'ref/heads/develop' && failure()
-        if: failure()
+        if: github.ref == 'ref/heads/develop' && failure()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent"
           SLACK_USERNAME: "CovalentOpsBot"
-          #SLACK_MESSAGE: "The tests.yml workflow is failing in develop!"
-          SLACK_MESSAGE: "This is a test alert!"
+          SLACK_MESSAGE: "The tests.yml workflow is failing in develop!"
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: ":warning: Alert :warning:"
+          SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
-
