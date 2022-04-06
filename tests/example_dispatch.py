@@ -24,6 +24,8 @@ An example script containing a simple workflow that can be dispatched to Covalen
 """
 import os
 import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.pardir, "../covalent/covalent")))
 import time
 
 from requests import request
@@ -32,7 +34,6 @@ import covalent as ct
 import covalent_dispatcher._cli.service as service
 
 port = 48008
-sys.path.append(os.path.abspath(os.path.join(os.path.pardir, "../covalent/covalent")))
 
 
 @ct.electron

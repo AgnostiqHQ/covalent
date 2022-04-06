@@ -49,6 +49,10 @@ repos:
     rev: 3.9.2
     hooks:
       - id: flake8
+        exclude: |
+          (?x)^(
+              tests/example_dispatch.py
+          )$
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.6.2
