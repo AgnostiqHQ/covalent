@@ -23,6 +23,7 @@
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._shared_files import logger
+from .._shared_files.config import _config_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .electron import Electron
 
@@ -65,9 +66,7 @@ class Lepton(Electron):
         function_name: str = "",
         argtypes: Optional[List] = [],
         *,
-        executor: Union[
-            List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
-        ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+        executor: Union[str, "BaseExecutor"] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     ) -> None:
         self.language = language
         self.library_name = library_name
@@ -80,6 +79,9 @@ class Lepton(Electron):
         super().__init__(self.wrap_task())
 
         # Assign metadata defaults
+        from ..executor import _executor_manager
+
+        executor = _executor_manager.get_executor(executor)
         super().set_metadata("executor", executor)
 
     def wrap_task(self) -> Callable:  # noqa: max-complexity: 30

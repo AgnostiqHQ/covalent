@@ -26,6 +26,7 @@ import glob
 import importlib
 import inspect
 import os
+from importlib import metadata
 from typing import Any, Dict, List, Union
 
 import pkg_resources
@@ -139,8 +140,8 @@ class _ExecutorManager:
         else:
             try:
                 # Plugins which have been installed as a package.
-                mod_version = importlib.metadata.version(the_module.__name__.split(".")[0])
-            except importlib.metadata.PackageNotFoundError:
+                mod_version = metadata.version(the_module.__name__.split(".")[0])
+            except metadata.PackageNotFoundError:
                 pass
 
         cova_version = pkg_resources.get_distribution("cova").version
