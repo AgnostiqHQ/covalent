@@ -45,4 +45,4 @@ RUN cd $PROJECT_DIR/webapp \
     && yarn build --network-timeout 100000
 
 WORKDIR $PROJECT_DIR
-CMD [ "python", "main.py"]
+ENTRYPOINT [ "python", "main.py"]

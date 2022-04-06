@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Update `covalent-ui` service in `docker-compose.yaml` to ensure that the uvicorn server listens on `0.0.0.0` for all incoming requests
+- Using `ENTRYPOINT` in dockerfiles instead of `CMD`
+- Remove `command` option from all services in `docker-compose.yml`
+
 ## [0.61.1] - 2022-04-06
 
 ### Fixed
