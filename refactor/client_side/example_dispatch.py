@@ -18,28 +18,41 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from pathlib import Path
 
-from app.api.api_v0.api import api_router
-from app.core.config import settings
-from fastapi import FastAPI
+import time
 
-BASE_PATH = Path(__file__).resolve().parent
+import interface_with_covalent
 
-app = FastAPI(title="Covalent Queuer Service API")
+import covalent as ct
+from refactor.executor.executor_plugins.local import LocalExecutor
 
-
-app.include_router(api_router, prefix=settings.API_V0_STR)
+executor = LocalExecutor()
 
 
-if __name__ == "__main__":
-    # Use this for debugging purposes only
-    import uvicorn
+@ct.electron(executor=executor)
+def task_1(x):
+    return x**2
 
-    uvicorn.run(
-        "main:app",
-        host=settings.QUEUER_SVC_HOST,
-        port=settings.QUEUER_SVC_PORT,
-        log_level="debug",
-        reload=True,
-    )
+
+@ct.electron(executor=executor)
+def task_2(y, z):
+    return y * z
+
+
+@ct.lattice(executor=executor)
+def workflow(a):
+
+    r1 = task_1(a)
+    r2 = task_2(a, r1)
+
+    return r1 + r2
+
+
+dispatch_id = interface_with_covalent.dispatch(workflow)(3)
+
+print(dispatch_id)
+
+# time.sleep(3)
+
+# No matter what dispatch id is sent, it returns from the last one only
+# print(interface_with_covalent.get_result("f659c221-362f-4b91-8e69-b10e3b8543f0"))

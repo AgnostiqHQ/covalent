@@ -18,6 +18,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In covalent/executor/__init__.py, `from importlib import metadata` is used instead of `importlib.metadata`.
 - Electron.get_op_function.rename now uses the correct separator string when renaming a function.
 
+## [0.59.0] - 2022-04-06
+
+### Changed
+
+- Fixes for making the whole pipeline work in tandem.
+
+## [0.58.0] - 2022-04-06
+
+### Added
+
+- `nats` service in `docker-compose` files
+
 ## [0.57.0] - 2022-04-05
 
 ### Added

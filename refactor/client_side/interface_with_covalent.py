@@ -28,14 +28,13 @@ from functools import wraps
 from io import BytesIO
 
 import cloudpickle as pickle
+import get_svc_uri
 import requests
 
 from covalent._results_manager.result import Result
 from covalent._workflow.lattice import Lattice
 
-from .get_svc_uri import QueuerURI, ResultsURI
-
-SUBMIT_DISPATCH_QUEUER_ADDR = QueuerURI().get_route("submit/dispatch")
+SUBMIT_DISPATCH_QUEUER_ADDR = get_svc_uri.QueuerURI().get_route("submit/dispatch")
 
 
 def dispatch(
@@ -59,13 +58,15 @@ def dispatch(
         r.raise_for_status()
 
         # Returns assigned dispatch id
-        return r.content.decode("utf-8").strip().replace('"', "")
+        return r.json()["dispatch_id"]
 
     return wrapper
 
 
 def get_result(dispatch_id: str, download=False):
-    response = requests.get(ResultsURI().get_route(f"workflow/results/{dispatch_id}"), stream=True)
+    response = requests.get(
+        get_svc_uri.ResultsURI().get_route(f"workflow/results/{dispatch_id}"), stream=True
+    )
     response.raise_for_status()
 
     if not download:
