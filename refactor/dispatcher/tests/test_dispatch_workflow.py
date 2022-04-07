@@ -270,7 +270,7 @@ def test_get_runnable_tasks_lattice(mocker, mock_result_initialized, mock_tasks_
     assert isinstance(executors[1], BaseExecutor)
     assert next_tasks_order == [[5]]
 
-    _, _, _, _, next_tasks_order = get_runnable_tasks(
+    _, _, _, _, _, next_tasks_order = get_runnable_tasks(
         result_obj=mock_result_initialized,
         tasks_order=next_tasks_order,
         tasks_queue=mock_tasks_queue,
@@ -303,34 +303,49 @@ def test_get_runnable_tasks_lattice(mocker, mock_result_initialized, mock_tasks_
     assert next_tasks_order == []
 
 
+@pytest.mark.parametrize(
+    "unrun_tasks,expected_mock_tasks_queue",
+    [
+        ([3], [{"mock_dispatch_id": [[3], [5]]}]),
+        ([0, 3], [{"mock_dispatch_id": [[0, 3], [5]]}]),
+        ([], [{"mock_dispatch_id": [[5]]}]),
+    ],
+)
+def test_dispatch_runnable_tasks(
+    mocker, mock_result_initialized, mock_tasks_queue, unrun_tasks, expected_mock_tasks_queue
+):
+    """Test the dispatch_runnable_tasks method."""
+
+    mock_get_runnable_tasks = mocker.patch(
+        "refactor.dispatcher.app.core.dispatch_workflow.get_runnable_tasks",
+        return_value=(
+            [0, 3],
+            [b"f0", b"f3"],
+            [[1, 2], [3]],
+            [{}, {}],
+            ["BaseExecutor", "BaseExecutor"],
+            [[5]],
+        ),
+    )
+    mock_run_tasks = mocker.patch(
+        "refactor.dispatcher.app.core.dispatch_workflow.run_tasks", return_value=unrun_tasks
+    )
+
+    dispatch_runnable_tasks(
+        result_obj=mock_result_initialized,
+        tasks_queue=mock_tasks_queue,
+        task_order=[[1, 2, 4], [0, 3], [5]],
+    )
+
+    val = mock_tasks_queue.get()
+    assert val == expected_mock_tasks_queue
+
+
 # TODO
 def test_get_runnable_tasks_sublattice():
     pass
 
 
-def test_dispatch_runnable_tasks(mocker, mock_result_initialized, mock_tasks_queue):
-    """Test the dispatch_runnable_tasks method."""
-
-    # mock_get_runnable_tasks = \
-    # mocker.patch(
-    #     "refactor.dispatcher.app.core.dispatch_workflow.get_runnable_tasks",
-    #     return_value=(
-    #         [1, 2],
-    #         [b"f1", b"f2"],
-    #         [[], []],
-    #         [{}, {}],
-    #         ["Base-executor", "Base-executor"],
-    #         [[1, 2, 3], [4, 5]]
-    #     )
-    #     )
-    # mock_run_tasks = mocker.patch(
-    #     "refactor.dispatcher.app.core.dispatch_workflow.run_tasks", return_value=[2]
-    # )
-
-    # dispatch_runnable_tasks(
-    #     result_obj=mock_result_initialized,
-    #     tasks_queue=mock_tasks_queue,
-    #     task_order=[[0], [1, 2, 3], [4, 5], [6]]
-    # )
-
+# TODO
+def test_dispatch_runnable_tasks_sublattice():
     pass

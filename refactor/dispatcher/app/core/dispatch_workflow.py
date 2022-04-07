@@ -105,7 +105,7 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
         executors=executors,
     )
 
-    # Will add those unrun tasks back to the tasks_queue
+    # Add unrun tasks back to the tasks_queue
     final_task_order = tasks_queue.get()
 
     if unrun_tasks:
