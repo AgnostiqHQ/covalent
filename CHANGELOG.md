@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.67.0] - 2022-04-07
+
 ### Added
 - Added environment variables to service declarations in ``docker-compose``.
 - Added the Dockerfile and docker-compose configurations for the ``queue-consumer``.
