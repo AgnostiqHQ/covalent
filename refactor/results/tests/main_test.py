@@ -37,7 +37,7 @@ def file_reader():
 
 def test_get(test_app, monkeypatch):
     async def mock_download(_, filename):
-        return next(file_reader(), None)
+        return b"".join(file_reader())
 
     def mock_value(_, sql: str, key: str = None):
         return (True,)
