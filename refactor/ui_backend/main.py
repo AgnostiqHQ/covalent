@@ -41,13 +41,14 @@ class SinglePageApp(StaticFiles):
     app by overriding the handling of 404 exceptions and passing control to the
     app instead (/index.html)
     """
+
     async def get_response(self, path: str, scope):
         try:
             response = await super().get_response(path, scope)
         except HTTPException as e:
             if e.status_code == 404:
                 # return /index.html
-                response = await super().get_response('.', scope)
+                response = await super().get_response(".", scope)
         return response
 
 
@@ -59,9 +60,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 app.include_router(api_router, prefix=settings.API_V0_STR)
 
-app.mount("/",
-          SinglePageApp(directory=f"{BASE_PATH}{FRONTEND_PATH}", html=True),
-          name="static")
+app.mount("/", SinglePageApp(directory=f"{BASE_PATH}{FRONTEND_PATH}", html=True), name="static")
 
 app.add_middleware(
     CORSMiddleware,
