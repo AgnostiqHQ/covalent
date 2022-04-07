@@ -48,5 +48,10 @@ class CancelWorkflowResponse(BaseModel):
     response: str
 
 
+class BatchCancelWorkflowResponse(BaseModel):
+    cancelled: List[str]
+    failed: List[str]
+
+
 class UpdateWorkflowResponse(BaseModel):
     response: str

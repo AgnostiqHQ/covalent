@@ -20,7 +20,7 @@
 
 
 from multiprocessing import Queue as MPQ
-from typing import Any
+from typing import Any, List
 
 import cloudpickle as pickle
 from app.core.cancel_workflow import cancel_workflow_execution
@@ -29,11 +29,12 @@ from app.core.dispatcher_logger import logger
 from app.core.update_workflow import update_workflow_results
 from app.core.utils import get_result_object_from_result_service, is_empty, update_result_and_ui
 from app.schemas.workflow import (
+    BatchCancelWorkflowResponse,
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
     UpdateWorkflowResponse,
 )
-from fastapi import APIRouter, File
+from fastapi import APIRouter, File, Query
 
 from covalent._results_manager import Result
 
@@ -135,6 +136,21 @@ async def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
         return {"response": f"{dispatch_id} workflow cancelled successfully"}
     else:
         return {"response": f"{dispatch_id} workflow did not cancel successfully"}
+
+
+@router.delete("/cancel", status_code=200, response_model=BatchCancelWorkflowResponse)
+async def cancel_workflows(*, dispatch_ids: List[str] = Query([])) -> BatchCancelWorkflowResponse:
+    """
+    Cancel a set of workflows
+    """
+
+    # Mock response here
+    mock_response = {
+        "cancelled": ["string"],
+        "failed": ["string"],
+    }
+
+    return mock_response
 
 
 @router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)

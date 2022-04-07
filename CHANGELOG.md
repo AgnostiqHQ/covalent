@@ -11,6 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Switched UI to results service delete API
 
+## [0.67.0] - 2022-04-07
+
+### Added
+- Added environment variables to service declarations in ``docker-compose``.
+- Added the Dockerfile and docker-compose configurations for the ``queue-consumer``.
+
+## [0.66.0] - 2022-04-07
+
+### Added
+
+- Batch cancellation endpoint to dispatcher, e.g., `DELETE /api/v0/workflow/cancel?dispatch_id1,dispatch_id2`
+
+### Tests
+
+- Added tests for UI backend endpoints
+
+## [0.65.3] - 2022-04-07
+
+### Fixed
+
+- Syntax error in the `tests.yml` workflow
+
 ## [0.65.2] - 2022-04-07
 
 ### Fixed
