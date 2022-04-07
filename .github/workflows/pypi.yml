@@ -62,8 +62,8 @@ jobs:
           rm -rf cova-${VERSION}rc0/
       - name: Upload Distribution
         env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: twine upload dist/*
       - name: Alert Slack
         if: failure()
