@@ -1,4 +1,6 @@
 import asyncio
+import os
+from time import sleep
 from unittest.mock import MagicMock
 
 import pytest
@@ -61,6 +63,12 @@ def test_ui_update_endpoint(test_app, mocker):
 
 @pytest.mark.asyncio
 async def test_draft_endpoint(test_app, mocker):
+
+    # socketio_obj_mock = AsyncMock()
+    # monkeypatch.setattr(test_app,"sio",socketio_obj_mock)
+    notify_frontend = mocker.patch(
+        "refactor.ui_backend.app.api.api_v0.endpoints.ui.notify_frontend"
+    )
 
     # socketio_obj_mock = AsyncMock()
     # monkeypatch.setattr(test_app,"sio",socketio_obj_mock)

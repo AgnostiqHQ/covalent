@@ -29,9 +29,28 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
+from starlette.exceptions import HTTPException
 
 BASE_PATH = Path(__file__).resolve().parent
 FRONTEND_PATH = "/webapp/build"
+
+
+class SinglePageApp(StaticFiles):
+    """
+    Allow URL paths (e.g. /preview or /[dispatch_id]) to be handled by the web
+    app by overriding the handling of 404 exceptions and passing control to the
+    app instead (/index.html)
+    """
+
+    async def get_response(self, path: str, scope):
+        try:
+            response = await super().get_response(path, scope)
+        except HTTPException as e:
+            if e.status_code == 404:
+                # return /index.html
+                response = await super().get_response(".", scope)
+        return response
+
 
 app = FastAPI(title="Covalent UI Backend Service API")
 
@@ -40,7 +59,8 @@ sio = SocketManager(app=app)
 logging.basicConfig(level=logging.DEBUG)
 
 app.include_router(api_router, prefix=settings.API_V0_STR)
-app.mount("/", StaticFiles(directory=f"{BASE_PATH}{FRONTEND_PATH}", html=True), name="static")
+
+app.mount("/", SinglePageApp(directory=f"{BASE_PATH}{FRONTEND_PATH}", html=True), name="static")
 
 app.add_middleware(
     CORSMiddleware,
