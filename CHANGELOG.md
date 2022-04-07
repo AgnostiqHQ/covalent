@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The `package-lock.json` file is no longer committed to the codebase
 
+## [0.67.1] - 2022-04-07
+
+### Fixed
+
+- Switched UI to results service delete API
+
+## [0.67.0] - 2022-04-07
+
+### Added
+- Added environment variables to service declarations in ``docker-compose``.
+- Added the Dockerfile and docker-compose configurations for the ``queue-consumer``.
+
 ## [0.66.0] - 2022-04-07
 
 ### Added
