@@ -23,7 +23,7 @@ async def test_throttle_request_update(test_app, mocker, monkeypatch):
 
     monkeypatch.setattr("app.api.api_v0.endpoints.ui.limiter",limiter_one_per_second)
     monkeypatch.setattr(test_app,"sio",socketio_obj_mock)
-    
+
     tasks = []
 
     # should only call on edges 1st and last time as all calls within 2 second window
@@ -32,14 +32,14 @@ async def test_throttle_request_update(test_app, mocker, monkeypatch):
         tasks.append(asyncio.create_task(throttle_request_update_notify(test_app, MOCK_DISPATCH_ID, MOCK_TASK_ID)))
 
     await asyncio.gather(*tasks)
-    assert socketio_obj_mock.emit.call_count == 2 
-   
+    assert socketio_obj_mock.emit.call_count == 2
+
 
 
 def test_ui_update_endpoint(test_app, mocker):
 
-    
-    
+
+
     spy = mocker.spy(BackgroundTasks, "add_task")
 
     response = test_app.put(f"/api/v0/ui/workflow/{MOCK_DISPATCH_ID}/task/{MOCK_TASK_ID}",)
@@ -63,7 +63,7 @@ async def test_draft_endpoint(test_app, mocker, monkeypatch):
     REQUEST_BODY = {
         "payload": {}
     }
-    
+
     response = test_app.post(f"/api/v0/ui/workflow/draft", json=REQUEST_BODY)
     assert response.status_code == 200
 
