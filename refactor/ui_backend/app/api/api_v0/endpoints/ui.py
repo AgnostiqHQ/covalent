@@ -40,8 +40,12 @@ async def throttle_request_update_notify(app, dispatch_id, task_id):
         dispatch_set.add((dispatch_id, task_id))
         async with limiter:
             dispatch_set.remove((dispatch_id, task_id))
-            logging.debug(f"Emitting websocket event to update task {task_id} in workflow {dispatch_id}")
-            await notify_frontend(app, "result-update", {"result": {"dispatch_id": dispatch_id, "task_id": task_id}})
+            logging.debug(
+                f"Emitting websocket event to update task {task_id} in workflow {dispatch_id}"
+            )
+            await notify_frontend(
+                app, "result-update", {"result": {"dispatch_id": dispatch_id, "task_id": task_id}}
+            )
 
 
 @router.put(
