@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- The `package-lock.json` file is no longer committed to the codebase
+
 ## [0.66.0] - 2022-04-07
 
 ### Added
