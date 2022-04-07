@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 - Tests for data and results services
 
+## [0.67.3] - 2022-04-07
+
+### Fixed
+
+- The `package-lock.json` file is no longer committed to the codebase
+
+## [0.67.2] - 2022-04-07
+
+### Fixed
+
+- PyPI uploads use a token instead of a username/password pair
+
 ## [0.67.1] - 2022-04-07
 
 ### Fixed
