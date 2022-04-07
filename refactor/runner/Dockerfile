@@ -21,8 +21,6 @@
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
 ENV PROJECT_DIR=/runner
-ENV PORT 8003
-EXPOSE $PORT
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends git gcc g++ make \

@@ -21,9 +21,6 @@
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
 ENV PROJECT_DIR=/ui_backend
-ENV UI_PORT 8005
-ENV BE_PORT 8004
-EXPOSE $BE_PORT $UI_PORT
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends git gcc g++ make curl\

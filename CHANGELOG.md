@@ -11,6 +11,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added tests for UI backend endpoints
 
+## [0.65.3] - 2022-04-07
+
+### Fixed
+
+- Syntax error in the `tests.yml` workflow
+
+## [0.65.2] - 2022-04-07
+
+### Fixed
+
+- pypi validation using pre-release tag
+
+## [0.65.1] - 2022-04-07
+
+### Fixed
+
+- Don't fail the CI workflow just because we aren't doing a release
+
+## [0.65.0] - 2022-04-06
+
+### Changed
+
+- Only one docker-compose
+
+## [0.64.2] - 2022-04-06
+
+### Fixed
+
+- The `.dockerignore` file now ignores any unnecessary front-end build files
+
+## [0.64.1] - 2022-04-06
+
+### Fixed
+
+- egg_info invocation
+
 ## [0.64.0] - 2022-04-06
 
 ### Fixed

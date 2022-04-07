@@ -116,17 +116,19 @@ jobs:
         run: |
           MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
           VERSION="$(cat ./VERSION)"
+          release=false
           if [ "$MASTER_VERSION" = "$VERSION" ] ; then
             echo "$VERSION has been previously released."
-            exit 1
           elif dpkg --compare-versions $VERSION 'gt' '0.32.3' ; then
             git config user.name "CovalentOpsBot"
             git config user.email "covalentopsbot@users.noreply.github.com"
             git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
             git push origin HEAD:master
+            release=true
           else
             echo "We cannot release versions less than 0.32.3."
           fi
+          echo "RELEASE=$release" >> $GITHUB_ENV
       - name: Format Slack message
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
@@ -134,7 +136,7 @@ jobs:
           SLACK_MSG=":rocket: Version $VERSION is now available."
           echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
       - name: Notify Slack
-        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && env.RELEASE == 'true'
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent-ci"
