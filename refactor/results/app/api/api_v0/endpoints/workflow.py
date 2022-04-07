@@ -224,7 +224,7 @@ async def insert_result(
     """
     Submit pickled result file
     """
-    print("hello post")
+
     response = await _upload_file(result_pkl_file.file)
     return response
 
