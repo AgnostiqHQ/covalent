@@ -20,7 +20,7 @@
 import logging
 
 from aiolimiter import AsyncLimiter
-from app.schemas.ui import UpdateUIResponse, DrawRequest
+from app.schemas.ui import DrawRequest, UpdateUIResponse
 from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.encoders import jsonable_encoder
 
@@ -30,20 +30,18 @@ limiter = AsyncLimiter(1, 2)
 router = APIRouter()
 
 
-async def notify_frontend(app, dispatch_id, task_id):
-    logging.debug(f"Emitting websocket event to update task {task_id} in workflow {dispatch_id}")
-    dispatch_set.remove((dispatch_id, task_id))
-    await app.sio.emit(
-        "result-update", {"result": {"dispatch_id": dispatch_id, "task_id": task_id}}
-    )
+async def notify_frontend(app, topic: str, payload):
+    await app.sio.emit(topic, payload)
 
 
-async def add_to_bucket(app, dispatch_id, task_id):
+async def throttle_request_update_notify(app, dispatch_id, task_id):
     global dispatch_set
     if (dispatch_id, task_id) not in dispatch_set:
         dispatch_set.add((dispatch_id, task_id))
         async with limiter:
-            await notify_frontend(app, dispatch_id, task_id)
+            dispatch_set.remove((dispatch_id, task_id))
+            logging.debug(f"Emitting websocket event to update task {task_id} in workflow {dispatch_id}")
+            await notify_frontend(app, "result-update", {"result": {"dispatch_id": dispatch_id, "task_id": task_id}})
 
 
 @router.put(
@@ -56,17 +54,19 @@ async def update_ui(
     """
     API Endpoint (/api/workflow/task) to update ui frontend
     """
-    background_tasks.add_task(add_to_bucket, request.app, dispatch_id, task_id)
+
+    # throttle notify frontend calls in background
+    background_tasks.add_task(throttle_request_update_notify, request.app, dispatch_id, task_id)
+
     return {"response": "UI Updated"}
 
 
-@router.post("/workflow/draft",
-             status_code=200,
-             response_model=UpdateUIResponse)
+@router.post("/workflow/draft", status_code=200, response_model=UpdateUIResponse)
 async def draw_draft(*, payload: DrawRequest, request: Request) -> UpdateUIResponse:
     """
-    API Endpoint (/api/workflow/draft) to draw workflow draft 
+    API Endpoint (/api/workflow/draft) to draw workflow draft
     """
-    await request.app.sio.emit("draw-request", jsonable_encoder(payload))
+
+    await notify_frontend(request.app, "draw-request", jsonable_encoder(payload))
 
     return {"response": "UI Workflow Draft Sent"}

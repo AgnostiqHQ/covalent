@@ -7,6 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.67.0] - 2022-04-07
+
+### Added
+- Added environment variables to service declarations in ``docker-compose``.
+- Added the Dockerfile and docker-compose configurations for the ``queue-consumer``.
+
+## [0.66.0] - 2022-04-07
+
+### Added
+
+- Batch cancellation endpoint to dispatcher, e.g., `DELETE /api/v0/workflow/cancel?dispatch_id1,dispatch_id2`
+
+### Tests
+
+- Added tests for UI backend endpoints
+
+## [0.65.3] - 2022-04-07
+
+### Fixed
+
+- Syntax error in the `tests.yml` workflow
+
+## [0.65.2] - 2022-04-07
+
+### Fixed
+
+- pypi validation using pre-release tag
+
+## [0.65.1] - 2022-04-07
+
+### Fixed
+
+- Don't fail the CI workflow just because we aren't doing a release
+
+## [0.65.0] - 2022-04-06
+
+### Changed
+
+- Only one docker-compose
+
+## [0.64.2] - 2022-04-06
+
+### Fixed
+
+- The `.dockerignore` file now ignores any unnecessary front-end build files
+
+## [0.64.1] - 2022-04-06
+
+### Fixed
+
+- egg_info invocation
+
+## [0.64.0] - 2022-04-06
+
+### Fixed
+
+- Style fixes via `pre-commit run --all-files`
+
+### Changed
+
+- Pushing microservice images to public ECR
+
 ## [0.63.1] - 2022-04-06
 
 ### Fixed

@@ -2,8 +2,11 @@ from furl import furl
 
 from refactor.results.app.core.config import settings
 
-class ServiceURI():
-    def __init__(self, scheme: str = "http", host: str = "localhost", port = None, preffix = 'api/v0') -> None:
+
+class ServiceURI:
+    def __init__(
+        self, scheme: str = "http", host: str = "localhost", port=None, preffix="api/v0"
+    ) -> None:
         self.scheme = scheme
         self.host = host
         self.port = port
@@ -24,4 +27,3 @@ class ServiceURI():
 class DataURI(ServiceURI):
     def __init__(self) -> None:
         super().__init__(port=settings.DATA_SVC_PORT, host=settings.DATA_SVC_HOST)
-

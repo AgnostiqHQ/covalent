@@ -1,68 +1,127 @@
-# This file is used for pulling Covalent images from ECR using docker-compose
-# Example usage: Run "docker-compose --env-file .env.compose up" from the root of the project
-# to pull the images from ECR and start the containers.
+# This file is used for local development with docker-compose and for building microservice images in the CD pipeline.
+# Example Usage: Run "docker-compose -f docker-compose.yml up --build" from the root of the project
+# to build the images using this file and start the containers.
 
 version: "3.9"
 
 services:
   covalent-data:
-    image: "${DATA_REPO}"
+    build:
+      context: .
+      dockerfile: refactor/data/Dockerfile
+    image: covalent-data
+    environment:
+      DATA_SVC_HOST: 0.0.0.0
     ports:
       - "8004:8004"
     working_dir: /data
-    networks:
-     covalent:
-
-  covalent-dispatcher:
-    image: "${DISPATCHER_REPO}"
-    ports:
-      - "8002:8002"
-    working_dir: /dispatcher
-    networks:
-     covalent:
-
-  covalent-queuer:
-    image: "${QUEUER_REPO}"
-    ports:
-      - "8001:8001"
-    working_dir: /queuer
+    container_name: covalent_data
     networks:
       covalent:
 
-  # Queue-consumer uses the same Dockerfile configurations as the Queuer
-  covalent-queue-consumer:
-    image: "${QUEUE_CONSUMER_REPO}"
+  covalent-dispatcher:
+    build:
+      context: .
+      dockerfile: refactor/dispatcher/Dockerfile
+    image: covalent-dispatcher
+    environment:
+      RUNNER_SVC_HOST: covalent_runner
+      RUNNER_SVC_PORT: 8003
+      RESULTS_SVC_PORT: 8006
+      RESULTS_SVC_HOST: covalent_results
+      DISPATCHER_SVC_PORT: 8002
+      DISPATCHER_SVC_HOST: 0.0.0.0
+      UI_SVC_PORT: 8004
+      UI_SVC_HOST: covalent_ui
     ports:
-      - "3000:8001"
+      - "8002:8002"
+    working_dir: /dispatcher
+    container_name: covalent_dispatcher
+    networks:
+      covalent:
+
+  covalent-queuer:
+    build:
+      context: .
+      dockerfile: refactor/queuer/Dockerfile
+    image: covalent-queuer
+    ports:
+      - "8001:8001"
     working_dir: /queuer
+    environment:
+      MQ_CONNECTION_URI: covalent_nats:4222
+      QUEUER_SVC_PORT: 8001
+      QUEUER_SVC_HOST: 0.0.0.0
+    container_name: covalent_queuer
+    depends_on:
+      - covalent-nats
+    networks:
+      covalent:
+
+  covalent-queue-consumer:
+    build:
+      context: .
+      dockerfile: refactor/dispatcher/Dockerfile.queue_consumer
+    image: covalent-queue-consumer
+    working_dir: /dispatcher
+    container_name: queue_consumer
+    environment:
+      MQ_CONNECTION_URI: covalent_nats:4222
+      DISPATCHER_SVC_HOST: covalent_dispatcher
+      DISPATCHER_SVC_PORT: 8002
+    depends_on:
+      - covalent-nats
     networks:
       covalent:
 
   covalent-results:
-    image: "${RESULTS_REPO}"
+    build:
+      context: .
+      dockerfile: refactor/results/Dockerfile
+    image: covalent-results
     ports:
       - "8006:8006"
     working_dir: /results
+    container_name: covalent_results
+    environment:
+      RESULTS_SVC_PORT: 8006
+      RESULTS_SVC_HOST: 0.0.0.0
+      DATA_SVC_PORT: 8004
+      DATA_SVC_HOST: covalent_data
     networks:
-     covalent:
+      covalent:
 
   covalent-runner:
-    image: "${RUNNER_REPO}"
+    build:
+      context: .
+      dockerfile: refactor/runner/Dockerfile
+    image: covalent-runner
     ports:
       - "8003:8003"
     working_dir: /runner
+    environment:
+      RUNNER_SVC_PORT: 8003
+      RUNNER_SVC_HOST: 0.0.0.0
+      RESULTS_SVC_PORT: 8006
+      RESULTS_SVC_HOST: covalent_results
+      DISPATCHER_SVC_PORT: 8002
+      DISPATCHER_SVC_HOST: covalent_dispatcher
+    container_name: covalent_runner
     networks:
       covalent:
 
   covalent-ui:
-    image: "${UI_REPO}"
+    build:
+      context: .
+      dockerfile: refactor/ui_backend/Dockerfile
+    image: covalent-ui
     ports:
-      - 3001:8004
-      - 8005:8005
-    environment:
-      UI_SVC_HOST: 0.0.0.0
-      UI_SVC_PORT: 8004
+      - "8005:8004"
     working_dir: /ui_backend
+    container_name: covalent_ui
+    environment:
+      UI_SVC_PORT: 8004
+      UI_SVC_HOST: 0.0.0.0
     networks:
       covalent:
 
@@ -70,6 +129,7 @@ services:
     image: nats
     ports:
       - "4222:4222"
+    container_name: covalent_nats
     networks:
       covalent:
 
