@@ -32,11 +32,11 @@ from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
 import cloudpickle as pickle
 
-from .._results_manager.result import Result
-from .._shared_files import logger
-from .._shared_files.context_managers import active_dispatch_info_manager
-from .._shared_files.util_classes import DispatchInfo
-from .._workflow.transport import TransportableObject
+from covalent._results_manager.result import Result
+from covalent._shared_files import logger
+from covalent._shared_files.context_managers import active_dispatch_info_manager
+from covalent._shared_files.util_classes import DispatchInfo
+from covalent._workflow.transport import TransportableObject
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info

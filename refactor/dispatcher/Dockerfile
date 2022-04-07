@@ -21,9 +21,6 @@
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
 ENV PROJECT_DIR=/dispatcher
-ENV COVALENT_ROOT=/covalent
-ENV PORT 8001
-EXPOSE $PORT
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends git gcc g++ make \
@@ -32,18 +29,24 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 
-RUN mkdir -p $PROJECT_DIR $COVALENT_ROOT/{covalent,covalent_dispatcher,covalent_ui}
-RUN chmod 0777 $PROJECT_DIR  && cd $PROJECT_DIR \
+RUN mkdir -p $PROJECT_DIR && chmod 0777 $PROJECT_DIR \
+    && cd $PROJECT_DIR \
     && mkdir webapp && cd webapp \
     && mkdir build
 
-COPY covalent/ $COVALENT_ROOT/covalent
-COPY covalent_dispatcher/ $COVALENT_ROOT/covalent_dispatcher
-COPY covalent_ui/ $COVALENT_ROOT/covalent_ui
-COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$COVALENT_ROOT/"]
-RUN pip3 install $COVALENT_ROOT
-
 COPY refactor/dispatcher/ $PROJECT_DIR
+COPY refactor/ $PROJECT_DIR/refactor
+COPY covalent/ $PROJECT_DIR/covalent
+COPY covalent_dispatcher/ $PROJECT_DIR/covalent_dispatcher
+COPY covalent_ui/ $PROJECT_DIR/covalent_ui
+COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$PROJECT_DIR/"]
+
+RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
+RUN cd $PROJECT_DIR/refactor/  \
+    && rm -rf client_side/  && rm -rf data/ \
+    && rm -rf executor/ && rm -rf queuer/ \
+    && rm -rf results/ && rm -rf runner/  \
+    && rm -rf ui_backend/
 
 WORKDIR $PROJECT_DIR
-CMD [ "python", "main.py"]
+ENTRYPOINT [ "python", "main.py"]

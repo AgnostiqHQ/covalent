@@ -23,29 +23,44 @@ default_stages: [commit]
 fail_fast: true
 
 repos:
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.0.1
-      hooks:
-          - id: trailing-whitespace
-          - id: end-of-file-fixer
-          - id: check-added-large-files
-            args: ["--maxkb=10000"]
-          - id: check-merge-conflict
-          - id: requirements-txt-fixer
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+        args: ["--maxkb=10000"]
+      - id: check-merge-conflict
+      - id: requirements-txt-fixer
 
-    - repo: https://github.com/pre-commit/mirrors-isort
-      rev: v5.8.0
-      hooks:
-          - id: isort
-            args: ["--profile", "black"]
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.8.0
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
 
-    - repo: https://github.com/ambv/black
-      rev: 22.1.0
-      hooks:
-          - id: black
-            language_version: python3.8
+  - repo: https://github.com/ambv/black
+    rev: 22.1.0
+    hooks:
+      - id: black
+        language_version: python3.8
 
-    - repo: https://github.com/PyCQA/flake8
-      rev: 3.9.2
-      hooks:
-          - id: flake8
+  - repo: https://github.com/PyCQA/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        exclude: |
+          (?x)^(
+              tests/example_dispatch.py
+          )$
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.6.2
+    hooks:
+      - id: prettier
+        types: [yaml]
+        exclude: |
+          (?x)^(
+              meta.yaml|
+              refactor/data/openapi.yaml
+          )$

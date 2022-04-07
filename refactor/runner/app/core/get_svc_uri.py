@@ -1,8 +1,12 @@
 from furl import furl
+
 from refactor.runner.app.core.config import settings
 
-class ServiceURI():
-    def __init__(self, scheme: str = "http", host: str = "localhost", port = None, preffix = 'api/v0') -> None:
+
+class ServiceURI:
+    def __init__(
+        self, scheme: str = "http", host: str = "localhost", port=None, preffix="api/v0"
+    ) -> None:
         self.scheme = scheme
         self.host = host
         self.port = port
@@ -22,13 +26,14 @@ class ServiceURI():
 
 class RunnerURI(ServiceURI):
     def __init__(self) -> None:
-        super().__init__(port=settings.RUNNER_SVC_PORT)
+        super().__init__(port=settings.RUNNER_SVC_PORT, host=settings.RUNNER_SVC_HOST)
+
 
 class ResultsURI(ServiceURI):
     def __init__(self) -> None:
-        super().__init__(port=settings.RESULTS_SVC_PORT)
+        super().__init__(port=settings.RESULTS_SVC_PORT, host=settings.RESULTS_SVC_HOST)
+
 
 class DispatcherURI(ServiceURI):
     def __init__(self) -> None:
-        super().__init__(port=settings.DISPATCHER_SVC_PORT)
-
+        super().__init__(port=settings.DISPATCHER_SVC_PORT, host=settings.DISPATCHER_SVC_HOST)

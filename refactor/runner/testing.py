@@ -13,6 +13,7 @@ dispatch_id = str(uuid.uuid4())
 
 url = RunnerURI().get_route(f"workflow/{dispatch_id}/tasks")
 
+
 @ct.electron
 def task_1(a):
     import time

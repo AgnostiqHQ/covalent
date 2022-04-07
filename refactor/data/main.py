@@ -34,5 +34,11 @@ app.include_router(api_router, prefix=settings.API_V0_STR)
 if __name__ == "__main__":
     # Use this for debugging purposes only
     import uvicorn
-    
-    uvicorn.run("main:app", host="0.0.0.0", port=settings.DATA_SVC_PORT, log_level="debug", reload=True)
+
+    uvicorn.run(
+        "main:app",
+        host=settings.DATA_SVC_HOST,
+        port=settings.DATA_SVC_PORT,
+        log_level="debug",
+        reload=True,
+    )
