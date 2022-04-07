@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Added tests for UI backend endpoints
+
 ## [0.65.3] - 2022-04-07
 
 ### Fixed
