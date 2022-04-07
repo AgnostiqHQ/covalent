@@ -1,7 +1,7 @@
 import pytest
+from fastapi_socketio import SocketManager
 from main import app
 from starlette.testclient import TestClient
-from fastapi_socketio import SocketManager
 
 
 @pytest.fixture(scope="module")
