@@ -2,10 +2,12 @@ import asyncio
 import os
 from time import sleep
 from unittest.mock import MagicMock, Mock
-from aiolimiter import AsyncLimiter
-from fastapi import BackgroundTasks
+
 import pytest
-from app.api.api_v0.endpoints.ui import throttle_request_update_notify, dispatch_set
+from aiolimiter import AsyncLimiter
+from app.api.api_v0.endpoints.ui import dispatch_set, throttle_request_update_notify
+from fastapi import BackgroundTasks
+
 
 class AsyncMock(MagicMock):
     async def __call__(self, *args, **kwargs):
