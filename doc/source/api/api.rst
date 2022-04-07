@@ -10,7 +10,7 @@ The following API documentation describes how to use Covalent.
 - :ref:`results_api` is used for collecting and manipulating results
 - :ref:`dispatcher_api` is used for dispatching workflows
 - The :ref:`dispatcher_server_api` is used for interfacing with the Covalent server
-- (Advanced) A set of :doc:`microservices <./microservices>` are spun up to orchistrate workflows 
+- (Advanced) A set of :doc:`microservices <./microservices>` are spun up to orchistrate workflows
 
 .. _electrons_api:
 
