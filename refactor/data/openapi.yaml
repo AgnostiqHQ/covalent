@@ -3,101 +3,6 @@ info:
   title: Covalent Data Service API
   version: 0.1.0
 paths:
-  /api/v0/workflow/results/{dispatch_id}:
-    get:
-      tags:
-        - Workflow
-      summary: Get Result
-      description: Get a result object from the database
-      operationId: get_result_api_v0_workflow_results__dispatch_id__get
-      parameters:
-        - required: true
-          schema:
-            title: Dispatch Id
-            type: string
-          name: dispatch_id
-          in: path
-      responses:
-        '200':
-          description: Return binary content of file.
-          content:
-            application/octet-stream: {}
-        '404':
-          description: Result was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPExceptionSchema'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-    put:
-      tags:
-        - Workflow
-      summary: Update Result
-      description: Update a result object's task
-      operationId: update_result_api_v0_workflow_results__dispatch_id__put
-      parameters:
-        - required: true
-          schema:
-            title: Dispatch Id
-            type: string
-          name: dispatch_id
-          in: path
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Node'
-        required: true
-      responses:
-        '200':
-          description: Return message indicating success of updating task
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UpdateResultResponse'
-        '404':
-          description: Result was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPExceptionSchema'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/v0/workflow/results:
-    post:
-      tags:
-        - Workflow
-      summary: Insert Result
-      description: Insert a result object to database by uploading pickled result object
-      operationId: insert_result_api_v0_workflow_results_post
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Body_insert_result_api_v0_workflow_results_post'
-        required: true
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InsertResultResponse'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
   /api/v0/fs/upload:
     post:
       tags:
@@ -105,14 +10,14 @@ paths:
       summary: Upload File
       description: Upload a file
       operationId: upload_file_api_v0_fs_upload_post
+      parameters:
         - required: false
           schema:
-            title: Overwrite file
+            title: Overwrite
             type: boolean
             default: false
           name: overwrite
           in: query
-          description: Pass overwrite=true to overwrite a file on upload.
       requestBody:
         content:
           multipart/form-data:
@@ -163,18 +68,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v0/fs/delete:
+    delete:
+      tags:
+        - Data
+      summary: Delete File
+      operationId: delete_file_api_v0_fs_delete_delete
+      parameters:
+        - required: false
+          schema:
+            title: Obj Names
+            type: array
+            items:
+              type: string
+            default: []
+          name: obj_names
+          in: query
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    Body_insert_result_api_v0_workflow_results_post:
-      title: Body_insert_result_api_v0_workflow_results_post
-      required:
-        - result_pkl_file
-      type: object
-      properties:
-        result_pkl_file:
-          title: Result Pkl File
-          type: string
-          format: binary
     Body_upload_file_api_v0_fs_upload_post:
       title: Body_upload_file_api_v0_fs_upload_post
       required:
@@ -185,6 +109,23 @@ components:
           title: File
           type: string
           format: binary
+    DeleteResponse:
+      title: DeleteResponse
+      required:
+        - deleted
+        - failed
+      type: object
+      properties:
+        deleted:
+          title: Deleted
+          type: array
+          items:
+            type: string
+        failed:
+          title: Failed
+          type: array
+          items:
+            type: string
     HTTPExceptionSchema:
       title: HTTPExceptionSchema
       required:
@@ -203,64 +144,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
-    InsertResultResponse:
-      title: InsertResultResponse
-      required:
-        - dispatch_id
-      type: object
-      properties:
-        dispatch_id:
-          title: Dispatch Id
-          type: string
-    Node:
-      title: Node
-      required:
-        - name
-        - start_time
-        - end_time
-        - status
-        - stdout
-        - stderr
-        - id
-      type: object
-      properties:
-        name:
-          title: Name
-          type: string
-        start_time:
-          title: Start Time
-          type: string
-          format: date-time
-        end_time:
-          title: End Time
-          type: string
-          format: date-time
-        status:
-          title: Status
-          type: string
-        output:
-          title: Output
-        error:
-          title: Error
-          type: string
-        stdout:
-          title: Stdout
-          type: string
-        stderr:
-          title: Stderr
-          type: string
-        id:
-          title: Id
-          type: integer
-    UpdateResultResponse:
-      title: UpdateResultResponse
-      required:
-        - response
-      type: object
-      properties:
-        response:
-          title: Response
-          type: string
     UploadResponse:
       title: UploadResponse
       required:

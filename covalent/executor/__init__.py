@@ -26,6 +26,7 @@ import glob
 import importlib
 import inspect
 import os
+from importlib import metadata
 from typing import Any, Dict, List, Union
 
 import pkg_resources
@@ -62,7 +63,7 @@ class _ExecutorManager:
         These executor plugins are loaded by importing the module that
         contains the plugin.
 
-        The module should have an attribute named executor_plugin_name
+        The module should have an attribute named EXECUTOR_PLUGIN_NAME
         which is set to the class name defining the plugin.
 
         Args:
@@ -139,8 +140,8 @@ class _ExecutorManager:
         else:
             try:
                 # Plugins which have been installed as a package.
-                mod_version = importlib.metadata.version(the_module.__name__.split(".")[0])
-            except importlib.metadata.PackageNotFoundError:
+                mod_version = metadata.version(the_module.__name__.split(".")[0])
+            except metadata.PackageNotFoundError:
                 pass
 
         cova_version = pkg_resources.get_distribution("cova").version
@@ -160,7 +161,7 @@ class _ExecutorManager:
     def _populate_executor_map_from_module(self, the_module: Any) -> None:
         """
         Populate the executor map from a module.
-        Also checks whether `executor_plugin_name` is defined in the module.
+        Also checks whether `EXECUTOR_PLUGIN_NAME` is defined in the module.
 
         Args:
             the_module: The module to populate the executor map from.
@@ -172,9 +173,9 @@ class _ExecutorManager:
         if not self._check_version(the_module):
             return
 
-        if not hasattr(the_module, "executor_plugin_name"):
+        if not hasattr(the_module, "EXECUTOR_PLUGIN_NAME"):
             message = f"{the_module.__name__} does not seem to have a well-defined plugin class.\n"
-            message += f"Specify the plugin class with 'executor_plugin_name = <plugin class name>' in the {the_module.__name__} module."
+            message += f"Specify the plugin class with 'EXECUTOR_PLUGIN_NAME = <plugin class name>' in the {the_module.__name__} module."
             app_log.warning(message)
             return
 
@@ -182,9 +183,9 @@ class _ExecutorManager:
         all_classes = inspect.getmembers(the_module, inspect.isclass)
         # Classes that are defined in the module:
         module_classes = [c[1] for c in all_classes if c[1].__module__ == the_module.__name__]
-        # The module should have a global attribute named executor_plugin_name
+        # The module should have a global attribute named EXECUTOR_PLUGIN_NAME
         # which is set to the class name defining the plugin.
-        plugin_class = [c for c in module_classes if c.__name__ == the_module.executor_plugin_name]
+        plugin_class = [c for c in module_classes if c.__name__ == the_module.EXECUTOR_PLUGIN_NAME]
 
         if len(plugin_class):
             plugin_class = plugin_class[0]
@@ -199,7 +200,7 @@ class _ExecutorManager:
 
         else:
             # The requested plugin (the_module.module_name) was not found in the module.
-            message = f"Requested executor plugin {the_module.executor_plugin_name} was not found in {the_module.__name__}"
+            message = f"Requested executor plugin {the_module.EXECUTOR_PLUGIN_NAME} was not found in {the_module.__name__}"
             app_log.warning(message)
 
     def _load_installed_plugins(self) -> None:

@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     MQ_CONNECTION_URI: str = os.getenv("MQ_CONNECTION_URI")
     MQ_DISPATCH_TOPIC: str = os.getenv("MQ_DISPATCH_TOPIC")
     QUEUER_SVC_PORT: int = 8001
+    QUEUER_SVC_HOST: str = "localhost"
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

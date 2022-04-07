@@ -18,7 +18,9 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import asyncio
 import io
+import json
 import logging
 import logging.config
 import os
@@ -28,23 +30,33 @@ import string
 import time
 from os import path
 from tempfile import TemporaryFile
-from typing import Any, BinaryIO, Optional, Tuple, Union
+from typing import Any, BinaryIO, List, Optional, Tuple, Union
 
 import cloudpickle as pickle
 import requests
+from aiohttp import ClientSession
 from app.schemas.common import HTTPExceptionSchema
-from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResultResponse
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from app.schemas.workflow import (
+    DeleteResultResponse,
+    InsertResultResponse,
+    Node,
+    Result,
+    UpdateResultResponse,
+)
+from fastapi import APIRouter, File, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
-from refactor.results.app.core.config import settings
 
+from covalent_dispatcher._db.dispatchdb import encode_result
+from refactor.results.app.core.config import settings
 from refactor.results.app.core.get_svc_uri import DataURI
+from refactor.results.app.schemas.workflow import ResultFormats
 
 logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
 
 # @router.middleware("http")
 # TODO: figure out why the middleware doesn't work
@@ -70,7 +82,7 @@ def _get_result_file(dispatch_id: str) -> bytes:
     if not dispatch_id or not filename or not path:
         raise HTTPException(status_code=404, detail="Result was not found")
     r = requests.get(
-        DataURI().get_route('/fs/download'), params={"file_location": filename}, stream=True
+        DataURI().get_route("/fs/download"), params={"file_location": filename}, stream=True
     )
     return r.content
 
@@ -88,7 +100,7 @@ def _upload_file(result_pkl_file: BinaryIO):
         raise HTTPException(status_code=422, detail="Error in upload body.")
     result_pkl_file.seek(0)
     r = requests.post(
-        DataURI().get_route('/fs/upload'),
+        DataURI().get_route("/fs/upload"),
         files=[("file", ("result.pkl", result_pkl_file, "application/octet-stream"))],
         params={"overwrite": True},
     )
@@ -128,6 +140,25 @@ def _db(sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
     return value
 
 
+async def _concurrent_download_and_serialize(semaphore, file_name, session):
+    async with semaphore:
+        async with session.get(
+            DataURI().get_route("/fs/download"), params={"file_location": file_name}
+        ) as resp:
+            result_binary = await resp.read()
+            result = pickle.loads(result_binary)
+            result_json = json.loads(encode_result(result))
+            return result_json
+
+
+def _get_results_from_db() -> List[Tuple[str, str]]:
+    con = sqlite3.connect(settings.RESULTS_DB)
+    cur = con.cursor()
+    cur.execute("SELECT dispatch_id, filename FROM results")
+    rows = cur.fetchall()
+    return rows
+
+
 def _get_result_from_db(dispatch_id: str, field: str) -> Optional[str]:
     sql = f"SELECT {field} FROM results WHERE dispatch_id=?"
     value = _db(sql, key=dispatch_id)
@@ -155,6 +186,37 @@ def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
 
 
 @router.get(
+    "/results",
+    status_code=200,
+    responses={
+        200: {
+            "model": List[Result],
+            "description": "Return JSON serialized result objects from the database",
+        },
+    },
+)
+async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
+    """
+    Return JSON serialized result objects from the database
+    """
+    results = _get_results_from_db()
+    tasks = []
+    # Set 10 concurrent requests at a time
+    semaphore = asyncio.Semaphore(10)
+    async with ClientSession() as session:
+        # Send requests in parallel to Data Service for download
+        for result in results:
+            dispatch_id, file_name = result
+            task = asyncio.create_task(
+                _concurrent_download_and_serialize(semaphore, file_name, session)
+            )
+            tasks.append(task)
+        # Wait until parallel tasks return and gather results
+        responses = await asyncio.gather(*tasks, return_exceptions=False)
+        return responses
+
+
+@router.get(
     "/results/{dispatch_id}",
     status_code=200,
     response_class=FileResponse,
@@ -166,15 +228,17 @@ def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
         },
     },
 )
-def get_result(
-    *,
-    dispatch_id: str,
-) -> Any:
+def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.BINARY) -> Any:
     """
     Get a result object as pickle file
     """
-    result: bytes = _get_result_file(dispatch_id)
-    return StreamingResponse(io.BytesIO(result), media_type="application/octet-stream")
+    result_binary: bytes = _get_result_file(dispatch_id)
+    if format == ResultFormats.JSON:
+        result = pickle.loads(result_binary)
+        result_json_stringified = encode_result(result)
+        return Response(content=result_json_stringified, media_type="application/json")
+    else:
+        return StreamingResponse(io.BytesIO(result_binary), media_type="application/octet-stream")
 
 
 @router.post("/results", status_code=200, response_model=InsertResultResponse)
@@ -199,7 +263,7 @@ def insert_result(
         },
     },
 )
-def update_result(*, dispatch_id: str, task: Node) -> Any:
+def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
     """
     Update a result object's task
     """
@@ -208,7 +272,38 @@ def update_result(*, dispatch_id: str, task: Node) -> Any:
     task = pickle.loads(task)
     results_object._update_node(**task)
 
-    pickled_result = TemporaryFile()
-    pickle.dump(results_object, pickled_result)
+    pickled_result = io.BytesIO(pickle.dumps(results_object))
+
     if _upload_file(pickled_result):
         return {"response": "Task updated successfully"}
+
+
+@router.delete("/results", status_code=200, response_model=DeleteResultResponse)
+def delete_result(*, dispatch_ids: List[str] = Query([])) -> DeleteResultResponse:
+    # Retrieve file paths from db
+    filenames = []
+
+    # TODO: add batch method to request set of results
+    for dispatch_id in dispatch_ids:
+        filenames += [_get_result_from_db(dispatch_id, "filename")]
+
+    # Request deletion from the data service
+    r = requests.delete(DataURI().get_route("/fs/delete"), params={"obj_names": filenames})
+
+    deleted_results = r.json()["deleted"]
+
+    deleted_ids = []
+    failed_ids = []
+    sql = "DELETE FROM results WHERE dispatch_id = ?"
+    # TODO: perform this in a single SQL command
+    for idx, dispatch_id in enumerate(dispatch_ids):
+        if filenames[idx] in deleted_results:
+            deleted_ids.append(dispatch_id)
+            _db(sql, dispatch_id)
+        else:
+            failed_ids.append(dispatch_id)
+
+    return {
+        "deleted": deleted_ids,
+        "failed": failed_ids,
+    }

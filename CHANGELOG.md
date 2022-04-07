@@ -7,6 +7,193 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.65.3] - 2022-04-07
+
+### Fixed
+
+- Syntax error in the `tests.yml` workflow
+
+## [0.65.2] - 2022-04-07
+
+### Fixed
+
+- pypi validation using pre-release tag
+
+## [0.65.1] - 2022-04-07
+
+### Fixed
+
+- Don't fail the CI workflow just because we aren't doing a release
+
+## [0.65.0] - 2022-04-06
+
+### Changed
+
+- Only one docker-compose
+
+## [0.64.2] - 2022-04-06
+
+### Fixed
+
+- The `.dockerignore` file now ignores any unnecessary front-end build files
+
+## [0.64.1] - 2022-04-06
+
+### Fixed
+
+- egg_info invocation
+
+## [0.64.0] - 2022-04-06
+
+### Fixed
+
+- Style fixes via `pre-commit run --all-files`
+
+### Changed
+
+- Pushing microservice images to public ECR
+
+## [0.63.1] - 2022-04-06
+
+### Fixed
+
+- Fixed the version validation in pypi workflow
+
+## [0.63.0] - 2022-04-06
+
+### Changed
+
+- Mark pypi releases as pre
+
+## [0.62.1] - 2022-04-06
+
+### Fixed
+
+- Workflows which run on `develop` or `master` will send Slack alerts to the dev team if they fail.
+
+## [0.62.0] - 2022-04-06
+
+### Changed
+
+- Update `covalent-ui` service in `docker-compose.yaml` to ensure that the uvicorn server listens on `0.0.0.0` for all incoming requests
+- Using `ENTRYPOINT` in dockerfiles instead of `CMD`
+- Remove `command` option from all services in `docker-compose.yml`
+
+## [0.61.1] - 2022-04-06
+
+### Fixed
+
+- Fixed failures in pushing images to ECR.
+
+## [0.61.0] - 2022-04-06
+
+### Changed
+
+- The results and data service now support batch deleting via query strings
+
+## [0.60.0] - 2022-04-06
+
+### Changed
+
+- List type removed from type annotation for the executor argument in electron/lattice/lepton definitions.
+- Input executor argument is converted to an executor class object (if it were a string) in electron/lattice/lepton definitions instead of just before execution in execution.py. As a result, calls to _executor_manager.get_executor are removed from execution.py.
+- Rewritten tests to take into account the type change of executor identifiers from strings to executor class objects.
+
+### Fixed
+
+- In covalent/executor/__init__.py, `from importlib import metadata` is used instead of `importlib.metadata`.
+- Electron.get_op_function.rename now uses the correct separator string when renaming a function.
+
+## [0.59.0] - 2022-04-06
+
+### Changed
+
+- Fixes for making the whole pipeline work in tandem.
+
+## [0.58.0] - 2022-04-06
+
+### Added
+
+- `nats` service in `docker-compose` files
+
+## [0.57.0] - 2022-04-05
+
+### Added
+
+- Variables to assign service hosts
+
+## [0.56.1] - 2022-04-05
+
+### Fixed
+
+- Fixed various module import errors in the containers for the microservices.
+
+### Tests
+
+- Added tests for post-refactor covalent cli commands: start, stop, restart, status, and logs
+
+## [0.56.0] - 2022-04-05
+
+### Changed
+
+- Changed global variable executor_plugin_name to EXECUTOR_PLUGIN_NAME in executors to conform with PEP8.
+
+## [0.55.0] - 2022-04-04
+
+### Changed
+
+- Changed supervisord http server's default to listen on all interfaces, so that covalent can run on any computer in a trusted LAN (without firewalls/auth).
+
+## [0.54.0] - 2022-04-04
+
+### Added
+
+- Draw workflow draft API to ui_backend service
+
+
+## [0.53.0] - 2022-04-04
+
+### Added
+
+- Added docker-compose file to run covalent microservices.
+
+## [0.52.0] - 2022-04-04
+
+### Added
+
+- Added delete endpoint to data and results services.
+
+## [0.51.0] - 2022-04-04
+
+### Added
+
+- Folders for tests.
+
+### Changed
+
+- Organization of covalent tests.
+
+## [0.50.0] - 2022-04-03
+
+### Added
+
+- Added GET all results endpoint in Results service
+- Optional formatting of GET result endpoint that supports: `binary` or `json`
+
+### Changed
+
+- Changed frontend to support updated result service endpoints with json format
+
+### Removed
+
+- Removed redundant local storage cache on frontend
+
+## [0.49.1] - 2022-04-01
+
+### Fixed
+
+- Using `io.BytesIO` in `update_result` in the results service to prevent creation of a new file in the file system.
+
 ## [0.49.0] - 2022-04-01
 
 ### Added

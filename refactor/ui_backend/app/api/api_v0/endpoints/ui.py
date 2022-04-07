@@ -20,8 +20,9 @@
 import logging
 
 from aiolimiter import AsyncLimiter
-from app.schemas.ui import UpdateUIResponse
+from app.schemas.ui import DrawRequest, UpdateUIResponse
 from fastapi import APIRouter, BackgroundTasks, Request
+from fastapi.encoders import jsonable_encoder
 
 dispatch_set = set()
 limiter = AsyncLimiter(1, 2)
@@ -57,3 +58,13 @@ async def update_ui(
     """
     background_tasks.add_task(add_to_bucket, request.app, dispatch_id, task_id)
     return {"response": "UI Updated"}
+
+
+@router.post("/workflow/draft", status_code=200, response_model=UpdateUIResponse)
+async def draw_draft(*, payload: DrawRequest, request: Request) -> UpdateUIResponse:
+    """
+    API Endpoint (/api/workflow/draft) to draw workflow draft
+    """
+    await request.app.sio.emit("draw-request", jsonable_encoder(payload))
+
+    return {"response": "UI Workflow Draft Sent"}

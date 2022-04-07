@@ -26,22 +26,6 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import api from '../utils/api'
 
 
-const RESULTS_CACHE_KEY = 'results';
-
-(()=>{
-  if(!localStorage.getItem(RESULTS_CACHE_KEY)){
-    console.log('Creating results cache...')
-    localStorage.setItem(RESULTS_CACHE_KEY, JSON.stringify({}))
-  }
-})();
-
-const addResultToCache = (result) => {
-  const results = JSON.parse(localStorage.getItem(RESULTS_CACHE_KEY));
-  results[result.dispatch_id] = result;
-  console.log(`Adding result ${result.dispatch_id} to cache...`, results)
-  localStorage.setItem(RESULTS_CACHE_KEY, JSON.stringify(results))
-}
-
 const initialState = {
   // results cache mapped by dispatch id
   cache: {
@@ -57,15 +41,12 @@ const initialState = {
 export const fetchResult = createAsyncThunk(
   'results/fetchResult',
   ({ dispatchId }, thunkAPI) =>
-    api.get(`/api/v0/results/${dispatchId}`).catch(thunkAPI.rejectWithValue)
+    api.get(`/api/v0/workflow/results/${dispatchId}`, { params: { format: 'json' } }).catch(thunkAPI.rejectWithValue)
 )
 
 export const fetchResults = createAsyncThunk(
   'results/fetchResults',
-  (values, thunkAPI) => new Promise((resolve)=>{
-    const results = Object.values(JSON.parse(localStorage.getItem(RESULTS_CACHE_KEY)));
-    resolve(results);
-  })
+  (values, thunkAPI) => api.get(`/api/v0/workflow/results`, { params: { format: 'json' } }).catch(thunkAPI.rejectWithValue)
 )
 
 export const deleteResults = createAsyncThunk(
@@ -87,7 +68,6 @@ export const resultsSlice = createSlice({
         state.fetchResult.isFetching = false
         // update results cache
         state.cache[payload.dispatch_id] = payload
-        addResultToCache(payload)
       })
       .addCase(fetchResult.pending, (state, { payload }) => {
         state.fetchResult.isFetching = true

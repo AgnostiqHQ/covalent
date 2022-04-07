@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     API_V0_STR: str = "/api/v0"
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     DATA_SVC_PORT: int = 8004
+    DATA_SVC_HOST: str = "localhost"
     FS_STORAGE_BACKEND: str = "local"
     FS_LOCAL_STORAGE_ROOT: str = "data"
     FS_STORAGE_BUCKET: str = "default"

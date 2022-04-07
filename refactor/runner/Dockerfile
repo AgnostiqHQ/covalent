@@ -20,21 +20,29 @@
 
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
-
 ENV PROJECT_DIR=/runner
-ENV REQ_DIR=/requirements
 
-RUN mkdir $PROJECT_DIR $REQ_DIR
-RUN chmod 0777 $PROJECT_DIR $REQ_DIR
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends git gcc g++ make \
+  && cd /usr/local/bin \
+  && pip3 install --upgrade pip \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir $PROJECT_DIR && chmod 0777 $PROJECT_DIR
+
+COPY refactor/runner $PROJECT_DIR
+COPY refactor/ $PROJECT_DIR/refactor
+COPY covalent/ $PROJECT_DIR/covalent
+COPY covalent_dispatcher/ $PROJECT_DIR/covalent_dispatcher
+COPY covalent_ui/ $PROJECT_DIR/covalent_ui
+COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$PROJECT_DIR/"]
+
+RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
+RUN cd $PROJECT_DIR/refactor/  \
+    && rm -rf client_side/  && rm -rf data/ \
+    && rm -rf  dispatcher/ && rm -rf executor/ \
+    && rm -rf queuer/ && rm -rf results/  \
+    && rm -rf ui_backend/
 
 WORKDIR $PROJECT_DIR
-
-COPY requirements $REQ_DIR
-RUN pip install  --no-cache-dir --upgrade -r $REQ_DIR/dist.txt
-
-COPY . .
-
-ENV PORT 8002
-EXPOSE $PORT
-
-CMD [ "python", "main.py"]
+ENTRYPOINT [ "python", "main.py"]

@@ -150,7 +150,7 @@ class BuildUI(Command):
 
 setup_info = {
     "name": "cova",
-    "packages": find_packages(exclude=["tests"]),
+    "packages": find_packages(exclude=["*tests*"]),
     "version": version,
     "maintainer": "Agnostiq",
     "url": "https://github.com/AgnostiqHQ/covalent",
@@ -166,7 +166,7 @@ setup_info = {
     "package_data": {
         "covalent": [
             "executor/executor_plugins/local.py",
-            "notify/notification_plugins/notify.py",
+            "notify/notification_plugins/webhook.py",
         ],
         "covalent_dispatcher": ["_service/app.py"],
         "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
