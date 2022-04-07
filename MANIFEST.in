@@ -6,4 +6,4 @@ recursive-include covalent/notify/notification_plugins/ *
 recursive-include covalent_dispatcher/_service/ *
 recursive-exclude covalent_ui/webapp/ *
 recursive-include covalent_ui/webapp/build/ *
-recursive-exclude **/tests/ *
+recursive-include **/tests/ *
