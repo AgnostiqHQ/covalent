@@ -1,0 +1,204 @@
+openapi: 3.0.2
+info:
+  title: Covalent Dispatcher Service API
+  version: 0.1.0
+paths:
+  /api/v0/workflow/{dispatch_id}:
+    put:
+      tags:
+        - Workflow
+      summary: Update Workflow
+      description: Update a workflow
+      operationId: update_workflow_api_v0_workflow__dispatch_id__put
+      parameters:
+        - required: true
+          schema:
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
+          in: path
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Body_update_workflow_api_v0_workflow__dispatch_id__put"
+        required: true
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateWorkflowResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+    post:
+      tags:
+        - Workflow
+      summary: Submit Workflow
+      description: Submit a workflow
+      operationId: submit_workflow_api_v0_workflow__dispatch_id__post
+      parameters:
+        - required: true
+          schema:
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
+          in: path
+      responses:
+        "202":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DispatchWorkflowResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+    delete:
+      tags:
+        - Workflow
+      summary: Cancel Workflow
+      description: Cancel a workflow
+      operationId: cancel_workflow_api_v0_workflow__dispatch_id__delete
+      parameters:
+        - required: true
+          schema:
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
+          in: path
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancelWorkflowResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v0/workflow/cancel:
+    delete:
+      tags:
+        - Workflow
+      summary: Cancel Workflows
+      description: Cancel a set of workflows
+      operationId: cancel_workflows_api_v0_workflow_cancel_delete
+      parameters:
+        - required: false
+          schema:
+            title: Dispatch Ids
+            type: array
+            items:
+              type: string
+            default: []
+          name: dispatch_ids
+          in: query
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchCancelWorkflowResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+components:
+  schemas:
+    BatchCancelWorkflowResponse:
+      title: BatchCancelWorkflowResponse
+      required:
+        - cancelled
+        - failed
+      type: object
+      properties:
+        cancelled:
+          title: Cancelled
+          type: array
+          items:
+            type: string
+        failed:
+          title: Failed
+          type: array
+          items:
+            type: string
+    Body_update_workflow_api_v0_workflow__dispatch_id__put:
+      title: Body_update_workflow_api_v0_workflow__dispatch_id__put
+      required:
+        - task_execution_results
+      type: object
+      properties:
+        task_execution_results:
+          title: Task Execution Results
+          type: string
+          format: binary
+    CancelWorkflowResponse:
+      title: CancelWorkflowResponse
+      required:
+        - response
+      type: object
+      properties:
+        response:
+          title: Response
+          type: string
+    DispatchWorkflowResponse:
+      title: DispatchWorkflowResponse
+      required:
+        - response
+      type: object
+      properties:
+        response:
+          title: Response
+          type: string
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+    UpdateWorkflowResponse:
+      title: UpdateWorkflowResponse
+      required:
+        - response
+      type: object
+      properties:
+        response:
+          title: Response
+          type: string
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
