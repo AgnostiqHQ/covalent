@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- PyPI uploads use a token instead of a username/password pair
+
 ## [0.67.1] - 2022-04-07
 
 ### Fixed
