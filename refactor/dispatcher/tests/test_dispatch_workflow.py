@@ -303,6 +303,11 @@ def test_get_runnable_tasks_lattice(mocker, mock_result_initialized, mock_tasks_
     assert next_tasks_order == []
 
 
+# TODO
+def test_get_runnable_tasks_sublattice():
+    pass
+
+
 def test_dispatch_runnable_tasks(mocker, mock_result_initialized, mock_tasks_queue):
     """Test the dispatch_runnable_tasks method."""
 
