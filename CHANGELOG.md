@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Dispatcher service tests for the `dispatch_workflow.py` module.
+
+### Changed
+
+- Minor refactor of `dispatch_workflow.py` module in Dispatcher service.
+
 ## [0.67.0] - 2022-04-07
 
 ### Added
@@ -143,14 +151,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed various module import errors in the containers for the microservices.
-
-### Tests
-
-- Dispatcher service tests for the `dispatch_workflow.py` module.
-
-### Changed
-
-- Minor refactor of `dispatch_workflow.py` module in Dispatcher service.
 
 ### Tests
 
