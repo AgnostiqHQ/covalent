@@ -46,8 +46,12 @@ def test_get(test_app, monkeypatch):
     monkeypatch.setattr("app.core.db.Database.value", mock_value)
 
     response = test_app.get(f"/api/v0/workflow/results/{MOCK_DISPATCH_ID}")
+
+    with open(FILENAME, "rb") as f:
+        file_length = f.seek(0, 2)
+
     assert response.status_code < 400
-    assert len(response.content) > 0
+    assert len(response.content) == file_length
 
 
 def test_post(test_app, monkeypatch):
