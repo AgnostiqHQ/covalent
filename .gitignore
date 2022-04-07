@@ -131,6 +131,7 @@ covalent_dispatcher/_service/tmp*
 # Logs
 refactor/**/logs/*.log
 refactor/ui_backend/webapp/node_modules
+refactor/ui_backend/webapp/package-lock.json
 
 # Supervisord Files
 *err.log

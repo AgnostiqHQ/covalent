@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix handling of webapp url paths by ui_backend.
 
+## [0.67.3] - 2022-04-07
+
+### Fixed
+
+- The `package-lock.json` file is no longer committed to the codebase
+
+## [0.67.2] - 2022-04-07
+
+### Fixed
+
+- PyPI uploads use a token instead of a username/password pair
+
 ## [0.67.1] - 2022-04-07
 
 ### Fixed
