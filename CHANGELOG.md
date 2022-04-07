@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.65.1] - 2022-04-07
+
 ### Fixed
 
 - Don't fail the CI workflow just because we aren't doing a release
