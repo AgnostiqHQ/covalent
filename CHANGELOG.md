@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.66.0] - 2022-04-07
+
 ### Added
 
 - Batch cancellation endpoint to dispatcher, e.g., `DELETE /api/v0/workflow/cancel?dispatch_id1,dispatch_id2`
