@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Fix handling of webapp url paths by ui_backend.
+
 ## [0.67.3] - 2022-04-07
 
 ### Fixed
