@@ -19,9 +19,16 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from typing import List
+
 from pydantic import BaseModel
 
 
 class UploadResponse(BaseModel):
     filename: str
     path: str
+
+
+class DeleteResponse(BaseModel):
+    deleted: List[str]
+    failed: List[str]

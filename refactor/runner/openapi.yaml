@@ -57,21 +57,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TaskPickleList'
+              $ref: "#/components/schemas/TaskPickleList"
         required: true
       responses:
-        '202':
+        "202":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RunTaskResponse'
-        '422':
+                $ref: "#/components/schemas/RunTaskResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /api/v0/workflow/{dispatch_id}/task/{task_id}:
     get:
       tags:
@@ -93,18 +93,18 @@ paths:
           name: task_id
           in: path
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskStatus'
-        '422':
+                $ref: "#/components/schemas/TaskStatus"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
     delete:
       tags:
         - Task
@@ -125,18 +125,18 @@ paths:
           name: task_id
           in: path
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CancelResponse'
-        '422':
+                $ref: "#/components/schemas/CancelResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
 components:
   schemas:
     CancelResponse:
@@ -160,7 +160,7 @@ components:
           title: Detail
           type: array
           items:
-            $ref: '#/components/schemas/ValidationError'
+            $ref: "#/components/schemas/ValidationError"
     RunTaskResponse:
       title: RunTaskResponse
       required:

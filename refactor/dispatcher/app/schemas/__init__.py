@@ -20,6 +20,7 @@
 
 
 from .workflow import (
+    BatchCancelWorkflowResponse,
     CancelWorkflowResponse,
     DispatchWorkflowResponse,
     Node,

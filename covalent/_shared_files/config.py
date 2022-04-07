@@ -141,6 +141,7 @@ class _ConfigManager:
             None
         """
 
+        os.makedirs(os.path.dirname(self.config_file), exist_ok=True)
         with open(self.config_file, "w") as f:
             toml.dump(self.config_data, f)
 

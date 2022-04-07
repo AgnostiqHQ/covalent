@@ -30,7 +30,7 @@ import string
 import time
 from os import path
 from tempfile import TemporaryFile
-from typing import Any, BinaryIO, List, Optional, Tuple
+from typing import Any, BinaryIO, List, Optional, Tuple, Union
 
 import cloudpickle as pickle
 import requests
@@ -38,8 +38,14 @@ from aiohttp import ClientSession
 from app.core.api import DataService
 from app.core.db import Database
 from app.schemas.common import HTTPExceptionSchema
-from app.schemas.workflow import InsertResultResponse, Node, Result, UpdateResultResponse
-from fastapi import APIRouter, File, HTTPException, Request, Response, UploadFile
+from app.schemas.workflow import (
+    DeleteResultResponse,
+    InsertResultResponse,
+    Node,
+    Result,
+    UpdateResultResponse,
+)
+from fastapi import APIRouter, File, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
 from covalent_dispatcher._db.dispatchdb import encode_result
@@ -197,7 +203,7 @@ async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
         },
     },
 )
-async def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.BINARY) -> Any:
+def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.BINARY) -> Any:
     """
     Get a result object as pickle file
     """
@@ -248,3 +254,34 @@ async def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
 
     if uploaded:
         return {"response": "Task updated successfully"}
+
+
+@router.delete("/results", status_code=200, response_model=DeleteResultResponse)
+def delete_result(*, dispatch_ids: List[str] = Query([])) -> DeleteResultResponse:
+    # Retrieve file paths from db
+    filenames = []
+
+    # TODO: add batch method to request set of results
+    for dispatch_id in dispatch_ids:
+        filenames += [_get_result_from_db(dispatch_id, "filename")]
+
+    # Request deletion from the data service
+    r = requests.delete(DataURI().get_route("/fs/delete"), params={"obj_names": filenames})
+
+    deleted_results = r.json()["deleted"]
+
+    deleted_ids = []
+    failed_ids = []
+    sql = "DELETE FROM results WHERE dispatch_id = ?"
+    # TODO: perform this in a single SQL command
+    for idx, dispatch_id in enumerate(dispatch_ids):
+        if filenames[idx] in deleted_results:
+            deleted_ids.append(dispatch_id)
+            db.value(sql, dispatch_id)
+        else:
+            failed_ids.append(dispatch_id)
+
+    return {
+        "deleted": deleted_ids,
+        "failed": failed_ids,
+    }

@@ -28,8 +28,12 @@ import covalent_dispatcher as dispatcher
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.defaults import parameter_prefix
 from covalent_dispatcher._db.dispatchdb import DispatchDB
-
-from .data import TEST_RESULTS_DIR, get_mock_result, get_mock_result_2, get_mock_result_3
+from covalent_dispatcher.tests.data import (
+    TEST_RESULTS_DIR,
+    get_mock_result,
+    get_mock_result_2,
+    get_mock_result_3,
+)
 
 
 @pytest.mark.parametrize(

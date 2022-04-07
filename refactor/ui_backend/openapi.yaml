@@ -24,20 +24,55 @@ paths:
           name: task_id
           in: path
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateUIResponse'
-        '422':
+                $ref: "#/components/schemas/UpdateUIResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v0/ui/workflow/draft:
+    post:
+      tags:
+        - UI
+      summary: Draw Draft
+      description: "API Endpoint (/api/workflow/draft) to draw workflow draft "
+      operationId: draw_draft_api_v0_ui_workflow_draft_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DrawRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateUIResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
 components:
   schemas:
+    DrawRequest:
+      title: DrawRequest
+      required:
+        - payload
+      type: object
+      properties:
+        payload:
+          title: Payload
+          type: object
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -46,7 +81,7 @@ components:
           title: Detail
           type: array
           items:
-            $ref: '#/components/schemas/ValidationError'
+            $ref: "#/components/schemas/ValidationError"
     UpdateUIResponse:
       title: UpdateUIResponse
       required:

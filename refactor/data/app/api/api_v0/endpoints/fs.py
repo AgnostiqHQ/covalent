@@ -21,11 +21,11 @@
 
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 from app.schemas.common import HTTPExceptionSchema
-from app.schemas.fs import UploadResponse
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from app.schemas.fs import DeleteResponse, UploadResponse
+from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from minio import Minio
 
@@ -92,3 +92,12 @@ def download_file(*, file_location: str) -> Any:
         raise HTTPException(status_code=404, detail="File not found")
 
     return StreamingResponse(g, media_type="application/octet-stream")
+
+
+@router.delete("/delete", status_code=200, response_model=DeleteResponse)
+def delete_file(*, obj_names: List[str] = Query([])) -> DeleteResponse:
+    deleted, failed = backend.delete(backend.bucket_name, obj_names)
+    return {
+        "deleted": deleted,
+        "failed": failed,
+    }

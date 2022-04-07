@@ -20,21 +20,26 @@
 
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
+ENV PROJECT_DIR=/ui_backend
 
-ENV PROJECT_DIR=/covalent_ui
-ENV REQ_DIR=/requirements
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends git gcc g++ make curl\
+  && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+  && apt-get install -y nodejs \
+  && npm install --global yarn \
+  && cd /usr/local/bin \
+  && pip3 install --upgrade pip \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir $PROJECT_DIR $REQ_DIR
-RUN chmod 0777 $PROJECT_DIR $REQ_DIR
+RUN mkdir -p $PROJECT_DIR && chmod 0777 $PROJECT_DIR
+
+COPY refactor/ui_backend/ $PROJECT_DIR
+COPY refactor/ui_backend/webapp $PROJECT_DIR/webapp
+
+RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
+RUN cd $PROJECT_DIR/webapp \
+    && yarn install --network-timeout 100000 \
+    && yarn build --network-timeout 100000
 
 WORKDIR $PROJECT_DIR
-
-COPY requirements $REQ_DIR
-RUN pip install  --no-cache-dir --upgrade -r $REQ_DIR/dist.txt
-
-COPY . .
-
-ENV PORT 8004
-EXPOSE $PORT
-
-CMD [ "python", "main.py"]
+ENTRYPOINT [ "python", "main.py"]
