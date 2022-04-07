@@ -74,11 +74,11 @@ class DataService(APIService):
 
     async def download(self, filename: str):
         return self.get(
-            "/fs/download", params={"file_location": filename}, stream=True, content=True
+            "/api/v0/fs/download", params={"file_location": filename}, stream=True, content=True
         )
 
     async def upload(self, result_pkl_file: bytes):
         return self.post(
-            "/fs/upload",
+            "/api/v0/fs/upload",
             files=[("file", ("result.pkl", result_pkl_file, "application/octet-stream"))],
         )
