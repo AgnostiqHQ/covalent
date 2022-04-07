@@ -58,7 +58,6 @@ services:
     networks:
       covalent:
 
-  # Queue-consumer uses the same Dockerfile configurations as the Queuer
   covalent-queue-consumer:
     build:
       context: .
