@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 import os
+import pickle
 import tempfile
 from unittest.mock import patch
 
@@ -73,6 +74,33 @@ def test_post(test_app, monkeypatch):
         d = response.json()
         print(d)
         assert len(d["dispatch_id"]) > 0
+
+
+def test_put(test_app, monkeypatch):
+    async def mock_download(_, filename):
+        return b"".join(file_reader())
+
+    async def mock_upload(_, file):
+        return {"filename": FILENAME, "path": DIRNAME}
+
+    def mock_value(_, sql: str, key: str = None):
+        return (True,)
+
+    mock_object_name = "mocktask"
+
+    monkeypatch.setattr("app.core.api.DataService.download", mock_download)
+    monkeypatch.setattr("app.core.api.DataService.upload", mock_upload)
+    monkeypatch.setattr("app.core.db.Database.value", mock_value)
+    task = {"node_id": 0, "node_name": "join_words", "output": "HELLO!"}
+
+    response = test_app.put(
+        f"/api/v0/workflow/results/{MOCK_DISPATCH_ID}", files={"task": pickle.dumps(task)}
+    )
+
+    d = response.json()
+    print(response.status_code)
+    print(d)
+    assert d["response"] == "Task updated successfully"
 
 
 def test_db_value():
