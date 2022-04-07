@@ -18,24 +18,41 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-name: test-images
 
-on:
-  pull_request
+import time
 
-jobs:
-  test_images:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out head
-        uses: actions/checkout@v2
-      - name: Build and run images
-        run: |
-          docker-compose -f docker-compose.yml up --build -d
-          echo 'Displaying containers...'
-      - name: Test Containers
-          run: |
-            echo 'Commands for testing container networking will go here...'
-          
+import interface_with_covalent
 
-          
+import covalent as ct
+from refactor.executor.executor_plugins.local import LocalExecutor
+
+executor = LocalExecutor()
+
+
+@ct.electron(executor=executor)
+def task_1(x):
+    return x**2
+
+
+@ct.electron(executor=executor)
+def task_2(y, z):
+    return y * z
+
+
+@ct.lattice(executor=executor)
+def workflow(a):
+
+    r1 = task_1(a)
+    r2 = task_2(a, r1)
+
+    return r1 + r2
+
+
+dispatch_id = interface_with_covalent.dispatch(workflow)(3)
+
+print(dispatch_id)
+
+# time.sleep(3)
+
+# No matter what dispatch id is sent, it returns from the last one only
+# print(interface_with_covalent.get_result("f659c221-362f-4b91-8e69-b10e3b8543f0"))

@@ -21,8 +21,6 @@
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster
 ENV PROJECT_DIR=/results
-ENV PORT 8006
-EXPOSE $PORT
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends git gcc g++ make \
@@ -47,4 +45,4 @@ RUN cd $PROJECT_DIR/refactor/  \
     && rm -rf ui_backend/
 
 WORKDIR $PROJECT_DIR
-CMD [ "python", "main.py"]
+ENTRYPOINT [ "python", "main.py"]

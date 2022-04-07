@@ -35,6 +35,7 @@ from .._shared_files.defaults import (
     electron_list_prefix,
     generator_prefix,
     parameter_prefix,
+    prefix_separator,
     sublattice_prefix,
     subscript_prefix,
 )
@@ -152,7 +153,7 @@ class Electron:
                 if hasattr(op2, "function"):
                     op2_name = op2.function.__name__
 
-                f.__name__ = f"{op1_name}_{op}_{op2_name}"
+                f.__name__ = f"{prefix_separator}{op1_name}_{op}_{op2_name}{prefix_separator}"
                 return f
 
             return decorator
@@ -229,10 +230,12 @@ class Electron:
                     )
                     node_name += f"[{i}]"
 
+                tmp_metadata = _init_metadata_executor()
+
                 node_id = active_lattice.transport_graph.add_node(
                     name=node_name,
                     function=None,
-                    metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                    metadata=tmp_metadata,
                     key=i,
                 )
 
@@ -263,10 +266,12 @@ class Electron:
                 )
                 node_name += f".{attr}"
 
+            tmp_metadata = _init_metadata_executor()
+
             node_id = active_lattice.transport_graph.add_node(
                 name=node_name,
                 function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                metadata=tmp_metadata,
                 attribute_name=attr,
             )
 
@@ -288,10 +293,12 @@ class Electron:
                 )
                 node_name += f"[{key}]"
 
+            tmp_metadata = _init_metadata_executor()
+
             node_id = active_lattice.transport_graph.add_node(
                 name=node_name,
                 function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                metadata=tmp_metadata,
                 key=key,
             )
 
@@ -324,13 +331,12 @@ class Electron:
         if active_lattice.post_processing:
             return active_lattice.electron_outputs.pop(0)
 
+        tmp_metadata = _init_metadata_executor()
+
         # Setting metadata for default values according to lattice's metadata
         # If metadata is default, then set it to lattice's default
         for k in self.metadata:
-            if (
-                k not in consumable_constraints
-                and self.get_metadata(k) is _DEFAULT_CONSTRAINT_VALUES[k]
-            ):
+            if k not in consumable_constraints and self.get_metadata(k) is tmp_metadata[k]:
                 self.set_metadata(k, active_lattice.get_metadata(k))
 
         # Add a node to the transport graph of the active lattice
@@ -413,10 +419,12 @@ class Electron:
 
         else:
 
+            tmp_metadata = _init_metadata_executor()
+
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                metadata=tmp_metadata,
                 value=param_value,
             )
             transport_graph.add_edge(
@@ -441,10 +449,12 @@ class Electron:
         def to_electron_collection(**x):
             return list(x.values())[0]
 
+        tmp_metadata = _init_metadata_executor()
+
         node_id = graph.add_node(
             name=prefix,
             function=to_electron_collection,
-            metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+            metadata=tmp_metadata,
             function_string=get_serialized_function_str(to_electron_collection),
         )
 
@@ -455,9 +465,7 @@ def electron(
     _func: Optional[Callable] = None,
     *,
     backend: Optional[str] = None,
-    executor: Optional[
-        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+    executor: Optional[Union[str, "BaseExecutor"]] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     # Add custom metadata fields here
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns a new :obj:`Electron <covalent._workflow.electron.Electron>` object.
@@ -481,6 +489,10 @@ def electron(
         )
         executor = backend
 
+    from ..executor import _executor_manager
+
+    executor = _executor_manager.get_executor(executor)
+
     constraints = {
         "executor": executor,
     }
@@ -500,3 +512,15 @@ def electron(
         return decorator_electron
     else:  # decorator is called without arguments
         return decorator_electron(_func)
+
+
+def _init_metadata_executor():
+    defaults = _DEFAULT_CONSTRAINT_VALUES.copy()
+
+    executor_name = _DEFAULT_CONSTRAINT_VALUES.get("executor", None)
+    if executor_name is not None:
+        from ..executor import _executor_manager
+
+        executor = _executor_manager.get_executor(executor_name)
+        defaults["executor"] = executor
+    return defaults
