@@ -203,7 +203,7 @@ async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
         },
     },
 )
-def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.BINARY) -> Any:
+async def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.BINARY) -> Any:
     """
     Get a result object as pickle file
     """
