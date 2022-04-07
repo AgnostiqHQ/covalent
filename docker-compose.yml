@@ -10,10 +10,12 @@ services:
       context: .
       dockerfile: refactor/data/Dockerfile
     image: covalent-data
-    command: sh -c "python main.py"
+    environment:
+      DATA_SVC_HOST: 0.0.0.0
     ports:
       - "8004:8004"
     working_dir: /data
+    container_name: covalent_data
     networks:
       covalent:
 
@@ -22,10 +24,19 @@ services:
       context: .
       dockerfile: refactor/dispatcher/Dockerfile
     image: covalent-dispatcher
-    command: sh -c "python main.py"
+    environment:
+      RUNNER_SVC_HOST: covalent_runner
+      RUNNER_SVC_PORT: 8003
+      RESULTS_SVC_PORT: 8006
+      RESULTS_SVC_HOST: covalent_results
+      DISPATCHER_SVC_PORT: 8002
+      DISPATCHER_SVC_HOST: 0.0.0.0
+      UI_SVC_PORT: 8004
+      UI_SVC_HOST: covalent_ui
     ports:
       - "8002:8002"
     working_dir: /dispatcher
+    container_name: covalent_dispatcher
     networks:
       covalent:
 
@@ -34,10 +45,16 @@ services:
       context: .
       dockerfile: refactor/queuer/Dockerfile
     image: covalent-queuer
-    command: sh -c "python main.py"
     ports:
       - "8001:8001"
     working_dir: /queuer
+    environment:
+      MQ_CONNECTION_URI: covalent_nats:4222
+      QUEUER_SVC_PORT: 8001
+      QUEUER_SVC_HOST: 0.0.0.0
+    container_name: covalent_queuer
+    depends_on:
+      - covalent-nats
     networks:
       covalent:
 
@@ -45,12 +62,16 @@ services:
   covalent-queue-consumer:
     build:
       context: .
-      dockerfile: refactor/queuer/Dockerfile
+      dockerfile: refactor/dispatcher/Dockerfile.queue_consumer
     image: covalent-queue-consumer
-    command: sh -c "python main.py"
-    ports:
-      - "3000:8001"
-    working_dir: /queuer
+    working_dir: /dispatcher
+    container_name: queue_consumer
+    environment:
+      MQ_CONNECTION_URI: covalent_nats:4222
+      DISPATCHER_SVC_HOST: covalent_dispatcher
+      DISPATCHER_SVC_PORT: 8002
+    depends_on:
+      - covalent-nats
     networks:
       covalent:
 
@@ -59,10 +80,15 @@ services:
       context: .
       dockerfile: refactor/results/Dockerfile
     image: covalent-results
-    command: sh -c "python main.py"
     ports:
       - "8006:8006"
     working_dir: /results
+    container_name: covalent_results
+    environment:
+      RESULTS_SVC_PORT: 8006
+      RESULTS_SVC_HOST: 0.0.0.0
+      DATA_SVC_PORT: 8004
+      DATA_SVC_HOST: covalent_data
     networks:
       covalent:
 
@@ -71,10 +97,17 @@ services:
       context: .
       dockerfile: refactor/runner/Dockerfile
     image: covalent-runner
-    command: sh -c "python main.py"
     ports:
       - "8003:8003"
     working_dir: /runner
+    environment:
+      RUNNER_SVC_PORT: 8003
+      RUNNER_SVC_HOST: 0.0.0.0
+      RESULTS_SVC_PORT: 8006
+      RESULTS_SVC_HOST: covalent_results
+      DISPATCHER_SVC_PORT: 8002
+      DISPATCHER_SVC_HOST: covalent_dispatcher
+    container_name: covalent_runner
     networks:
       covalent:
 
@@ -83,10 +116,13 @@ services:
       context: .
       dockerfile: refactor/ui_backend/Dockerfile
     image: covalent-ui
-    command: sh -c "python main.py"
     ports:
       - "8005:8004"
     working_dir: /ui_backend
+    container_name: covalent_ui
+    environment:
+      UI_SVC_PORT: 8004
+      UI_SVC_HOST: 0.0.0.0
     networks:
       covalent:
 
@@ -94,6 +130,7 @@ services:
     image: nats
     ports:
       - "4222:4222"
+    container_name: covalent_nats
     networks:
       covalent:
 
