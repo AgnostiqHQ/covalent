@@ -97,7 +97,7 @@ jobs:
       - name: Start Covalent dispatcher server
         run: covalent start -d
       - name: Run tests and measure coverage
-        run: pytest tests covalent_dispatcher/tests covalent/tests refactor/dispatcher/tests --cov-config=.coveragerc --cov=covalent_dispatcher --cov=refactor/dispatcher --cov=covalent --cov=refactor/data --cov=refactor/runner --cov=refactor/queuer --cov=refactor/ui_backend
+        run: pytest tests covalent_dispatcher/tests covalent/tests refactor/data/tests refactor/results/tests refactor/queuer/tests refactor/runner/tests refactor/ui_backend/tests refactor/dispatcher/tests --cov-config=.coveragerc --cov=covalent_dispatcher --cov=refactor/dispatcher --cov=covalent --cov=refactor/data --cov=refactor/runner --cov=refactor/queuer --cov=refactor/ui_backend
       - name: Generate coverage report
         run: coverage xml
       - name: Upload report to Codecov

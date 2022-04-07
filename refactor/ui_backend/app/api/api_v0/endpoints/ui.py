@@ -20,9 +20,10 @@
 import logging
 
 from aiolimiter import AsyncLimiter
-from app.schemas.ui import DrawRequest, UpdateUIResponse
 from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.encoders import jsonable_encoder
+
+from refactor.ui_backend.app.schemas.ui import DrawRequest, UpdateUIResponse
 
 dispatch_set = set()
 limiter = AsyncLimiter(1, 2)
@@ -40,8 +41,12 @@ async def throttle_request_update_notify(app, dispatch_id, task_id):
         dispatch_set.add((dispatch_id, task_id))
         async with limiter:
             dispatch_set.remove((dispatch_id, task_id))
-            logging.debug(f"Emitting websocket event to update task {task_id} in workflow {dispatch_id}")
-            await notify_frontend(app, "result-update", {"result": {"dispatch_id": dispatch_id, "task_id": task_id}})
+            logging.debug(
+                f"Emitting websocket event to update task {task_id} in workflow {dispatch_id}"
+            )
+            await notify_frontend(
+                app, "result-update", {"result": {"dispatch_id": dispatch_id, "task_id": task_id}}
+            )
 
 
 @router.put(
