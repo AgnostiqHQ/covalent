@@ -19,9 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from app.api.api_v0.endpoints import ui
 from fastapi import APIRouter
-
-from refactor.ui_backend.app.api.api_v0.endpoints import ui
 
 api_router = APIRouter()
 

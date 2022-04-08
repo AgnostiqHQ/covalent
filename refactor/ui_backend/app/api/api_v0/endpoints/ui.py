@@ -20,10 +20,9 @@
 import logging
 
 from aiolimiter import AsyncLimiter
+from app.schemas.ui import DrawRequest, UpdateUIResponse
 from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.encoders import jsonable_encoder
-
-from refactor.ui_backend.app.schemas.ui import DrawRequest, UpdateUIResponse
 
 dispatch_set = set()
 limiter = AsyncLimiter(1, 2)
