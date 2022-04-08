@@ -17,14 +17,9 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-import logging
-import os
-import sqlite3
-from typing import Optional, Tuple, Union
 from urllib.parse import urljoin
 
 import requests
-from app.core.config import settings
 from fastapi import HTTPException
 
 from refactor.results.app.core.get_svc_uri import DataURI

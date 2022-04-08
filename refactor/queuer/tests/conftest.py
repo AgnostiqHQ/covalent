@@ -1,6 +1,7 @@
 import pytest
-from main import app
 from starlette.testclient import TestClient
+
+from refactor.queuer.main import app
 
 
 @pytest.fixture(scope="module")

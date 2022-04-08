@@ -22,7 +22,7 @@ import pickle
 import tempfile
 from unittest.mock import patch
 
-from app.core import db
+from refactor.results.app.core import db
 
 DIRNAME = os.path.dirname(__file__)
 FILENAME = os.path.join(DIRNAME, "./_test_assets/result")
@@ -43,8 +43,8 @@ def test_get(test_app, monkeypatch):
     def mock_value(_, sql: str, key: str = None):
         return (True,)
 
-    monkeypatch.setattr("app.core.api.DataService.download", mock_download)
-    monkeypatch.setattr("app.core.db.Database.value", mock_value)
+    monkeypatch.setattr("refactor.results.app.core.api.DataService.download", mock_download)
+    monkeypatch.setattr("refactor.results.app.core.db.Database.value", mock_value)
 
     response = test_app.get(f"/api/v0/workflow/results/{MOCK_DISPATCH_ID}")
 
@@ -64,8 +64,8 @@ def test_post(test_app, monkeypatch):
     def mock_value(_, sql: str, key: str = None):
         return (True,)
 
-    monkeypatch.setattr("app.core.api.DataService.upload", mock_upload)
-    monkeypatch.setattr("app.core.db.Database.value", mock_value)
+    monkeypatch.setattr("refactor.results.app.core.api.DataService.upload", mock_upload)
+    monkeypatch.setattr("refactor.results.app.core.db.Database.value", mock_value)
     with open(FILENAME, "rb") as f:
         response = test_app.post(
             "/api/v0/workflow/results",
@@ -88,9 +88,9 @@ def test_put(test_app, monkeypatch):
 
     mock_object_name = "mocktask"
 
-    monkeypatch.setattr("app.core.api.DataService.download", mock_download)
-    monkeypatch.setattr("app.core.api.DataService.upload", mock_upload)
-    monkeypatch.setattr("app.core.db.Database.value", mock_value)
+    monkeypatch.setattr("refactor.results.app.core.api.DataService.download", mock_download)
+    monkeypatch.setattr("refactor.results.app.core.api.DataService.upload", mock_upload)
+    monkeypatch.setattr("refactor.results.app.core.db.Database.value", mock_value)
     task = {"node_id": 0, "node_name": "join_words", "output": "HELLO!"}
 
     response = test_app.put(
