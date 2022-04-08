@@ -1,13 +1,12 @@
 import asyncio
 import os
 from time import sleep
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from aiolimiter import AsyncLimiter
+from app.api.api_v0.endpoints.ui import dispatch_set, throttle_request_update_notify
 from fastapi import BackgroundTasks
-
-from refactor.ui_backend.app.api.api_v0.endpoints.ui import throttle_request_update_notify
 
 
 class AsyncMock(MagicMock):
@@ -20,7 +19,7 @@ MOCK_TASK_ID = 123
 
 
 @pytest.mark.asyncio
-async def test_throttle_request_update(test_app, monkeypatch):
+async def test_throttle_request_update(test_app, mocker, monkeypatch):
 
     socketio_obj_mock = AsyncMock()
     limiter_one_per_second = AsyncLimiter(1, 2)  # enforce throttle of 1 call every 2 seconds
@@ -62,19 +61,11 @@ def test_ui_update_endpoint(test_app, mocker):
 
 
 @pytest.mark.asyncio
-async def test_draft_endpoint(test_app, mocker):
+async def test_draft_endpoint(test_app, mocker, monkeypatch):
 
     # socketio_obj_mock = AsyncMock()
     # monkeypatch.setattr(test_app,"sio",socketio_obj_mock)
-    notify_frontend = mocker.patch(
-        "refactor.ui_backend.app.api.api_v0.endpoints.ui.notify_frontend"
-    )
-
-    # socketio_obj_mock = AsyncMock()
-    # monkeypatch.setattr(test_app,"sio",socketio_obj_mock)
-    notify_frontend = mocker.patch(
-        "refactor.ui_backend.app.api.api_v0.endpoints.ui.notify_frontend"
-    )
+    notify_frontend = mocker.patch("app.api.api_v0.endpoints.ui.notify_frontend")
 
     REQUEST_BODY = {"payload": {}}
 
