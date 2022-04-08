@@ -41,8 +41,10 @@ SUPERVISORD_PORT = 9001
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
-SD_PIDFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.pid"
 SD_CONFIG_FILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.conf"
+
+# Auto-created by Supervisord in CWD of conf file
+SD_PIDFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.pid"
 
 SD_START_TIMEOUT_IN_SECS = 15
 
@@ -77,13 +79,7 @@ def _generate_supervisord_config():
     ) as file:
         template = file.read()
         j2_template = Template(template)
-        config = j2_template.render(
-            {
-                "project_root": project_root_path,
-                "sd_dashboard_port": str(SUPERVISORD_PORT),
-                "sd_pid_file_path": SD_PIDFILE,
-            }
-        )
+        config = j2_template.render({"sd_dashboard_port": str(SUPERVISORD_PORT)})
         return config
 
 
