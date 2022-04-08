@@ -5,14 +5,14 @@ Microservices
 
 .. note::
 
-  This documentation is for debugging and/or extending the functionallity of covalent.
+  This documentation is for debugging and/or extending the functionality of Covalent.
 
 
 ===========================================
 Architecture
 ===========================================
 
-Covalent is composed of a set of services which expose APIs and orchistrate the running of workflows.
+Covalent is composed of a set of services which expose APIs. These services interact in a way that allows Covalent to perform well at scale.
 
 The services are as follows:
 
@@ -27,7 +27,6 @@ The services are as follows:
 
 .. image:: ./../_static/Covalent_Local_Microservices.png
    :width: 737
-   :height: 476
    :align: center
 
 
@@ -72,4 +71,4 @@ The UI Backend API documentation is located in `here <https://app.swaggerhub.com
 
 NATS Message Queue
 """""""""""""""""""""""""""
-The `NATS Message Queue <https://nats.io/>`_ is a message queue that acts as an message bus between the microservices.
+The `NATS Message Queue <https://nats.io/>`_ is a message queue that acts as a message bus between the microservices.
