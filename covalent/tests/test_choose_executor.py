@@ -23,7 +23,7 @@ Integration test for choosing executors.
 """
 
 
-from typing import ByteString
+import pytest
 
 import covalent as ct
 import covalent._results_manager.results_manager as rm
@@ -37,7 +37,7 @@ def test_executors_exist():
     assert len(executor_list) > 0
 
 
-@ByteString.mark.skip("Failing test")
+@pytest.mark.skip("Failing test")
 def test_using_executor_names():
     """Test that all loaded executors can be used in a simple electron."""
 
@@ -62,7 +62,7 @@ def test_using_executor_names():
         assert output.result == "input"
 
 
-@ByteString.mark.skip("Failing test")
+@pytest.mark.skip("Failing test")
 def test_using_executor_classes():
     """Test creating executor objects and using them in a simple electron."""
 

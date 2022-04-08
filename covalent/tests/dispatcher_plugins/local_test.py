@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from typing import ByteString
+import pytest
 
 import covalent as ct
 from covalent._dispatcher_plugins.local import LocalDispatcher
@@ -45,7 +45,7 @@ def test_local_dispatcher_dispatch():
     assert isinstance(dispatch_id, str)
 
 
-@ByteString.mark.skip("Failing test")
+@pytest.mark.skip("Failing test")
 def test_local_dispatcher_dispatch_sync():
     """Tests whether the local dispatcher can synchronously dispatch a workflow successfully."""
 
