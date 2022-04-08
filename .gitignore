@@ -67,8 +67,6 @@ ipython_config.py
 __pypackages__/
 
 # Environments
-*.env
-!.covalent.env
 *.ini
 .venv
 env/

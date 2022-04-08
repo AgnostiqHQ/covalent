@@ -30,7 +30,6 @@ load_dotenv()
 class Settings(BaseSettings):
     API_V0_STR: str = "/api/v0"
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
-    DATA_OS_SVC_HOST_URI: str = "http://localhost:8006"
     UI_SVC_PORT: int = 8005
     UI_SVC_HOST: str = "localhost"
 
@@ -44,7 +43,7 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = True
-        env_file = ".covalent.env"
+        env_file = ".env"
 
 
 settings = Settings()
