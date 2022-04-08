@@ -19,17 +19,16 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import logging
-import os
 from pathlib import Path
 
-from app.api.api_v0.api import api_router
-from app.core.config import settings
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 from starlette.exceptions import HTTPException
+
+from refactor.ui_backend.app.api.api_v0.api import api_router
+from refactor.ui_backend.app.core.config import settings
 
 BASE_PATH = Path(__file__).resolve().parent
 FRONTEND_PATH = "/webapp/build"

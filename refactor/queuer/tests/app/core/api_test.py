@@ -2,7 +2,8 @@ import os
 
 import mock
 import requests
-from app.core.api import APIService, DataService
+
+from refactor.queuer.app.core.api import APIService
 
 dirname = os.path.dirname(__file__)
 filename = os.path.join(dirname, "./_test_assets/result.pkl")

@@ -23,10 +23,11 @@ import uuid
 from io import BytesIO
 
 import cloudpickle as pickle
-from app.core.api import DataService
-from app.core.queuer import Queuer
-from app.schemas.submit import ResultPickle, SubmitResponse
 from fastapi import APIRouter, File, HTTPException
+
+from refactor.queuer.app.core.api import DataService
+from refactor.queuer.app.core.queuer import Queuer
+from refactor.queuer.app.schemas.submit import SubmitResponse
 
 router = APIRouter()
 

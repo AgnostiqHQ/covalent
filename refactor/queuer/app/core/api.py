@@ -1,8 +1,8 @@
-import os
 from urllib.parse import urljoin
 
 import requests
-from app.core.config import settings
+
+from refactor.queuer.app.core.config import settings
 
 
 class APIService:
