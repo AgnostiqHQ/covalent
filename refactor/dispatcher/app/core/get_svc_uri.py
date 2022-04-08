@@ -18,9 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from app.core.config import settings
 from furl import furl
-
-from refactor.dispatcher.app.core.config import settings
 
 
 class ServiceURI:

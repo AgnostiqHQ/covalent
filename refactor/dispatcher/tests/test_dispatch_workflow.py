@@ -24,12 +24,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 
 import pytest
-
-import covalent as ct
-from covalent._results_manager.result import Result
-from covalent._workflow.transport import TransportableObject, _TransportGraph
-from covalent.executor import BaseExecutor
-from refactor.dispatcher.app.core.dispatch_workflow import (
+from app.core.dispatch_workflow import (
     dispatch_runnable_tasks,
     dispatch_workflow,
     get_runnable_tasks,
@@ -38,6 +33,11 @@ from refactor.dispatcher.app.core.dispatch_workflow import (
     run_tasks,
     start_dispatch,
 )
+
+import covalent as ct
+from covalent._results_manager.result import Result
+from covalent._workflow.transport import TransportableObject, _TransportGraph
+from covalent.executor import BaseExecutor
 
 
 @pytest.fixture
@@ -106,7 +106,7 @@ def test_dispatch_workflow_func(
 
     mock_update_result_obj = mocker.Mock()
     mock_start_dispatch = mocker.patch(
-        "refactor.dispatcher.app.core.dispatch_workflow.start_dispatch",
+        "app.core.dispatch_workflow.start_dispatch",
         return_value=mock_update_result_obj,
     )
 
@@ -129,18 +129,18 @@ def test_start_dispatch(mocker, mock_result_initialized, mock_tasks_queue):
     """Test the start_dispatch method which kicks of the workflow execution."""
 
     mock_result_init = mocker.patch(
-        "refactor.dispatcher.app.core.dispatch_workflow.init_result_pre_dispatch",
+        "app.core.dispatch_workflow.init_result_pre_dispatch",
         return_value=mock_result_initialized,
     )
     mock_send_result = mocker.patch(
-        "refactor.dispatcher.app.core.dispatch_workflow.send_result_object_to_result_service"
+        "app.core.dispatch_workflow.send_result_object_to_result_service"
     )
     mocker.patch(
-        "refactor.dispatcher.app.core.dispatch_workflow.get_task_order",
+        "app.core.dispatch_workflow.get_task_order",
         return_value=[[0], [1, 2, 3], [4, 5], [6]],
     )
     mock_dispatch_runnable_tasks = mocker.patch(
-        "refactor.dispatcher.app.core.dispatch_workflow.dispatch_runnable_tasks"
+        "app.core.dispatch_workflow.dispatch_runnable_tasks"
     )
 
     result_obj = start_dispatch(mock_result_initialized, mock_tasks_queue)
@@ -175,7 +175,7 @@ def test_run_tasks(mocker):
     """Test the method that sends tasks to the Runner service for execution."""
 
     mock_send_task_list_to_runner = mocker.patch(
-        "refactor.dispatcher.app.core.dispatch_workflow.send_task_list_to_runner", return_value=[2]
+        "app.core.dispatch_workflow.send_task_list_to_runner", return_value=[2]
     )
 
     mock_results_dir = "mock_results_dir"
@@ -317,7 +317,7 @@ def test_dispatch_runnable_tasks(
     """Test the dispatch_runnable_tasks method."""
 
     mock_get_runnable_tasks = mocker.patch(
-        "refactor.dispatcher.app.core.dispatch_workflow.get_runnable_tasks",
+        "app.core.dispatch_workflow.get_runnable_tasks",
         return_value=(
             [0, 3],
             [b"f0", b"f3"],
@@ -327,9 +327,7 @@ def test_dispatch_runnable_tasks(
             [[5]],
         ),
     )
-    mock_run_tasks = mocker.patch(
-        "refactor.dispatcher.app.core.dispatch_workflow.run_tasks", return_value=unrun_tasks
-    )
+    mock_run_tasks = mocker.patch("app.core.dispatch_workflow.run_tasks", return_value=unrun_tasks)
 
     dispatch_runnable_tasks(
         result_obj=mock_result_initialized,

@@ -29,6 +29,8 @@ from typing import Any, Dict, List
 
 import cloudpickle as pickle
 import requests
+from app.core.dispatcher_logger import logger
+from app.core.get_svc_uri import ResultsURI, RunnerURI, UIBackendURI
 from dotenv import load_dotenv
 
 from covalent._results_manager import Result
@@ -44,8 +46,6 @@ from covalent._shared_files.defaults import (
     subscript_prefix,
 )
 from covalent._workflow.lattice import Lattice
-from refactor.dispatcher.app.core.dispatcher_logger import logger
-from refactor.dispatcher.app.core.get_svc_uri import ResultsURI, RunnerURI, UIBackendURI
 
 load_dotenv()
 
