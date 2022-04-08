@@ -2,12 +2,10 @@ import os
 
 import mock
 import nats
-import pytest
+import requests
+from app.core.queuer import Queuer
 
-from refactor.queuer.app.core.queuer import Queuer
 
-
-@pytest.mark.skip(reason="failing")
 class TestQueuer:
 
     MOCK_MQ_CONNECTION_URI = "NATS:4222"
