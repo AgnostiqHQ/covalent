@@ -80,14 +80,6 @@ def _generate_supervisord_config():
         config = j2_template.render(
             {
                 "project_root": project_root_path,
-                "queuer_svc_port": "8001",
-                "dispatcher_svc_port": "8002",
-                "runner_svc_port": "8003",
-                "data_svc_port": "8004",
-                "ui_backend_svc_port": "8005",
-                "results_svc_port": "8006",
-                "mq_connection_uri": "localhost:4222",
-                "mq_dispatch_topic": "workflow.dispatch",
                 "sd_dashboard_port": str(SUPERVISORD_PORT),
                 "sd_pid_file_path": SD_PIDFILE,
             }

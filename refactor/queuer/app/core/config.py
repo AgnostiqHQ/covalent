@@ -21,7 +21,7 @@
 import os
 from typing import List, Union
 
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 from pydantic import AnyHttpUrl, BaseSettings, validator
 
 load_dotenv()
@@ -30,9 +30,9 @@ load_dotenv()
 class Settings(BaseSettings):
     API_V0_STR: str = "/api/v0"
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
-    DATA_OS_SVC_HOST_URI: str = os.getenv("DATA_OS_SVC_HOST_URI")
-    MQ_CONNECTION_URI: str = os.getenv("MQ_CONNECTION_URI")
-    MQ_DISPATCH_TOPIC: str = os.getenv("MQ_DISPATCH_TOPIC")
+    DATA_OS_SVC_HOST_URI: str = "http://localhost:8006"
+    MQ_CONNECTION_URI: str = "locahost:4222"
+    MQ_DISPATCH_TOPIC: str = "workflow.dispatch"
     QUEUER_SVC_PORT: int = 8001
     QUEUER_SVC_HOST: str = "localhost"
 
@@ -46,6 +46,10 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = True
+        env_file = ".covalent.env"
 
 
 settings = Settings()
+
+print("Configuration:")
+print(settings)
