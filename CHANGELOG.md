@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.68.0] - 2022-04-07
+
+### Added
+
+- Tests for data and results services
+
+## [0.67.4] - 2022-04-07
+
+### Fixed
+
+- Fix handling of webapp url paths by ui_backend.
+
+## [0.67.3] - 2022-04-07
+
+### Fixed
+
+- The `package-lock.json` file is no longer committed to the codebase
+
+## [0.67.2] - 2022-04-07
+
+### Fixed
+
+- PyPI uploads use a token instead of a username/password pair
+
+## [0.67.1] - 2022-04-07
+
+### Fixed
+
+- Switched UI to results service delete API
+
+## [0.67.0] - 2022-04-07
+
+### Added
+- Added environment variables to service declarations in ``docker-compose``.
+- Added the Dockerfile and docker-compose configurations for the ``queue-consumer``.
+
+## [0.66.0] - 2022-04-07
+
+### Added
+
+- Batch cancellation endpoint to dispatcher, e.g., `DELETE /api/v0/workflow/cancel?dispatch_id1,dispatch_id2`
+
+### Tests
+
+- Added tests for UI backend endpoints
+
 ## [0.65.3] - 2022-04-07
 
 ### Fixed
