@@ -5,7 +5,7 @@ from starlette.testclient import TestClient
 from refactor.ui_backend.main import app
 
 
-@pytest.skip.reason("test failing")
+@pytest.mark.skip("test failing")
 @pytest.fixture(scope="module")
 def test_app():
     client = TestClient(app)

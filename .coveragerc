@@ -1,11 +1,4 @@
 [run]
 omit =
-    refactor/dispatcher/tests/*
-    refactor/data/tests/*
-    refactor/executor/tests/*
-    refactor/queuer/tests/*
-    refactor/results/tests/*
-    refactor/runner/tests/*
-    refactor/ui_backend/tests/*
     covalent/tests/*
     covalent_dispatcher/tests/*

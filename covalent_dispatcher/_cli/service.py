@@ -296,11 +296,7 @@ def _graceful_start(
 
     _rm_pid_file(pidfile)
 
-    pypath = (
-        f"PYTHONPATH={UI_SRVDIR}/../tests:{UI_SRVDIR}/../covalent/tests:{UI_SRVDIR}/../covalent_dispatcher/tests:{UI_SRVDIR}/../refactor/dispatcher/tests:$PYTHONPATH"
-        if develop
-        else ""
-    )
+    pypath = f"PYTHONPATH={UI_SRVDIR}/../tests:$PYTHONPATH" if develop else ""
     dev_mode_flag = "--develop" if develop else ""
     port = _next_available_port(port)
     launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
