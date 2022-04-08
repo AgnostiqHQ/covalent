@@ -19,6 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 import os
 
+from app.core.localstoragebackend import LocalStorageBackend
+
 DIRNAME = os.path.dirname(__file__)
 FILENAME = os.path.join(DIRNAME, "./_test_assets/result")
 
@@ -29,9 +31,7 @@ def test_upload_endpoint(test_app, monkeypatch):
     def mock_put(_, data, bucket_name, object_name, length, metadata=None, overwrite=False):
         return (bucket_name, object_name)
 
-    monkeypatch.setattr(
-        "refactor.data.app.core.localstoragebackend.LocalStorageBackend.put", mock_put
-    )
+    monkeypatch.setattr("app.core.localstoragebackend.LocalStorageBackend.put", mock_put)
 
     with open(FILENAME, "rb") as f:
         response = test_app.post(
@@ -53,9 +53,7 @@ def test_download_endpoint(test_app, monkeypatch):
     def mock_get(_, bucket_name, object_name):
         return mock_file_reader(FILENAME)
 
-    monkeypatch.setattr(
-        "refactor.data.app.core.localstoragebackend.LocalStorageBackend.get", mock_get
-    )
+    monkeypatch.setattr("app.core.localstoragebackend.LocalStorageBackend.get", mock_get)
 
     response = test_app.get("/api/v0/fs/download", params={"file_location": FILENAME}, stream=True)
     assert response.status_code < 400

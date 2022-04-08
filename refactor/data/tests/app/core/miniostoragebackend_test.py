@@ -20,7 +20,7 @@
 
 import os
 
-from refactor.data.app.core.miniostoragebackend import MinioStorageBackend
+from app.core.miniostoragebackend import MinioStorageBackend
 
 DIRNAME = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
 BUCKET = "_test_assets"

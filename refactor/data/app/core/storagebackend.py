@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from abc import ABC
+from pathlib import Path
 from typing import BinaryIO, Generator, List, Union
 
 

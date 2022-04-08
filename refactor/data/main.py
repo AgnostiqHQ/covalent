@@ -20,10 +20,9 @@
 
 from pathlib import Path
 
+from app.api.api_v0.api import api_router
+from app.core.config import settings
 from fastapi import FastAPI
-
-from refactor.data.app.api.api_v0.api import api_router
-from refactor.data.app.core.config import settings
 
 BASE_PATH = Path(__file__).resolve().parent
 
