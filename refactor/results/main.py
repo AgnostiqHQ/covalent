@@ -22,9 +22,8 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from refactor.results.app.api.api_v0.api import api_router
-from refactor.results.app.core.config import settings
+from results.app.api.api_v0.api import api_router
+from results.app.core.config import settings
 
 BASE_PATH = Path(__file__).resolve().parent
 
