@@ -4,8 +4,7 @@ from enum import Enum
 from typing import Any
 
 import nats
-
-from refactor.queuer.app.core.config import settings
+from app.core.config import settings
 
 
 class QueueTopics(Enum):
