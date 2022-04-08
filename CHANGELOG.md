@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Minor refactor of `dispatch_workflow.py` module in Dispatcher service.
 
+## [0.68.0] - 2022-04-07
+
+### Added
+
+- Tests for data and results services
+
 ## [0.67.4] - 2022-04-07
 
 ### Fixed

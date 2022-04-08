@@ -18,13 +18,12 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Results management service."""
+import pytest
+from main import app
+from starlette.testclient import TestClient
 
-import logging
-import logging.config
-import os
 
-# setup loggers
-logconf = os.path.realpath(os.path.dirname(__file__) + "/../../../../logging.conf")
-logging.config.fileConfig(logconf, disable_existing_loggers=False)
-logger = logging.getLogger(__name__)
+@pytest.fixture(scope="module")
+def test_app():
+    client = TestClient(app)
+    yield client

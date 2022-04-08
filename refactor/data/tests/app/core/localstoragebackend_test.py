@@ -18,13 +18,27 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Results management service."""
-
-import logging
-import logging.config
 import os
 
-# setup loggers
-logconf = os.path.realpath(os.path.dirname(__file__) + "/../../../../logging.conf")
-logging.config.fileConfig(logconf, disable_existing_loggers=False)
-logger = logging.getLogger(__name__)
+from app.core.localstoragebackend import LocalStorageBackend
+
+DIRNAME = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+BUCKET = "_test_assets"
+OBJECT = "result"
+FILENAME = os.path.join(DIRNAME, BUCKET, OBJECT)
+
+
+class TestLocalStorageBackend:
+    def test_get(self):
+        backend = LocalStorageBackend(DIRNAME)
+        result = backend.get(BUCKET, OBJECT)
+        assert len(next(result, None)) > 0
+
+    def test_put(self):
+        backend = LocalStorageBackend(DIRNAME)
+        with open(FILENAME, "rb") as f:
+            f.seek(0, 2)
+            length = f.tell()
+            f.seek(0)
+            path, filename = backend.put(f, BUCKET, OBJECT, length)
+            assert os.path.exists(os.path.join(DIRNAME, path, filename))
