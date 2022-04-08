@@ -20,16 +20,21 @@
 
 """Unit tests for Cancel Workflow."""
 
-def test_cancel_workflow_execution():
-    # This will test cancel_workflow_execution()
-    pass
+from unittest.mock import Mock
 
 
-def test_cancel_task():
-    # This will test cancel_task()
-    pass
+class TestCancelWorkflow:
+    def __init__(self):
+        pass
 
+    def test_cancel_workflow_execution(self):
+        # This will test cancel_workflow_execution()
+        pass
 
-def test_get_all_task_ids():
-    # This will test the get_all_task_ids()
-    pass
+    def test_cancel_task(self):
+        # This will test cancel_task()
+        pass
+
+    def test_get_all_task_ids(self):
+        # This will test the get_all_task_ids()
+        pass
