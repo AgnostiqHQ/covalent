@@ -24,8 +24,6 @@ from unittest.mock import Mock
 
 
 class TestCancelWorkflow:
-    def __init__(self):
-        pass
 
     def test_cancel_workflow_execution(self):
         # This will test cancel_workflow_execution()
