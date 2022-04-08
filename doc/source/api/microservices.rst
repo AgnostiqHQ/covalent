@@ -25,7 +25,7 @@ The services are as follows:
 - :ref:`nats`
 
 
-.. image:: ./../_static/Local-Microservices.jpeg
+.. image:: ./../_static/Covalent_Local_Microservices.png
    :width: 737
    :height: 476
    :align: center
