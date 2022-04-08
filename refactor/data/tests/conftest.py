@@ -19,8 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import pytest
-from main import app
 from starlette.testclient import TestClient
+
+from refactor.data.main import app
 
 
 @pytest.fixture(scope="module")

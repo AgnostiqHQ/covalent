@@ -20,7 +20,7 @@
 
 import os
 
-from app.core.localstoragebackend import LocalStorageBackend
+from refactor.data.app.core.localstoragebackend import LocalStorageBackend
 
 DIRNAME = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
 BUCKET = "_test_assets"
