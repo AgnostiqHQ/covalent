@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.69.0] - 2022-04-08
+
 ### Added
 
 - Added Microservices section with links to Swagger hub for individual API docs
