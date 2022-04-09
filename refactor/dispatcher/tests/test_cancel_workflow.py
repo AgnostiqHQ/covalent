@@ -20,13 +20,49 @@
 
 """Unit tests for Cancel Workflow."""
 
-from unittest.mock import Mock
+from copy import deepcopy
+
+import pytest
+
+import covalent as ct
 
 
 class TestCancelWorkflow:
-    def test_cancel_workflow_execution(self):
-        # This will test cancel_workflow_execution()
-        pass
+    @pytest.fixture
+    def mock_result_construct(self):
+        """Construct mock result object."""
+
+        @ct.electron
+        def add(x, y):
+            return x + y
+
+        @ct.electron
+        def multiply(x, y):
+            return x * y
+
+        @ct.electron
+        def square(x):
+            return x**2
+
+        @ct.lattice
+        def workflow(x, y, z):
+            a = add(x, y)
+            b = square(z)
+            final = multiply(a, b)
+            return final
+
+        lattice = deepcopy(workflow)
+        lattice.build_graph(x=1, y=2, z=3)
+        lattice.transport_graph = lattice.transport_graph.serialize()
+
+        return lattice.electron_outputs
+
+    def test_cancel_workflow_execution(
+        self,
+        mock_result_construct,
+    ):
+
+        return mock_result_construct
 
     def test_cancel_task(self):
         # This will test cancel_task()
