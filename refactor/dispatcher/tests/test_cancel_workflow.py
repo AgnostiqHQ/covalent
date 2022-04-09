@@ -55,7 +55,7 @@ class TestCancelWorkflow:
         lattice.build_graph(x=1, y=2, z=3)
         lattice.transport_graph = lattice.transport_graph.serialize()
 
-        return lattice.electron_outputs
+        return lattice
 
     def test_cancel_workflow_execution(
         self,
