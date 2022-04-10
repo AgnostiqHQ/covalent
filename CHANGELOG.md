@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Tests for update workflow in Dispatcher service update_workflow.py module.
+
 ## [0.69.0] - 2022-04-08
 
 ### Added
