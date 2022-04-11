@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.70.0] - 2022-04-11
+
+### Tests
+
+- Dispatcher service tests for the `dispatch_workflow.py` module.
+
+### Changed
+
+- Minor refactor of `dispatch_workflow.py` module in Dispatcher service.
+
+## [0.69.0] - 2022-04-08
+
+### Added
+
+- Added Microservices section with links to Swagger hub for individual API docs
+
 ## [0.68.0] - 2022-04-07
 
 ### Added
