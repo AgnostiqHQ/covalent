@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.71.0] - 2022-04-11
+
+### Changed
+
+- Updated Supervisord template configuration to bring up NATS server with high priority before all other services
+
 ## [0.70.0] - 2022-04-11
 
 ### Tests
