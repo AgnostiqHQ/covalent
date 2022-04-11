@@ -319,3 +319,7 @@ def send_cancel_task_to_runner(dispatch_id: str, task_id: int):
     response.raise_for_status()
 
     return response.json()["cancelled_dispatch_id"], response.json()["cancelled_task_id"]
+
+
+def is_sublattice_dispatch_id(dispatch_id: str):
+    return ":" in dispatch_id

@@ -43,7 +43,6 @@ def update_workflow_results(
     """Main update function. Called by the Runner API when there is an update for task
     execution status."""
 
-    # TODO: Place it in somewhere where only this result object needs to get updated
     latest_result_obj: Result = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
     logger.warning(f"Updating with task as {task_execution_results}")

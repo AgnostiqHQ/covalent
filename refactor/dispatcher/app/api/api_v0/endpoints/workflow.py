@@ -27,7 +27,12 @@ from app.core.cancel_workflow import cancel_workflow_execution
 from app.core.dispatch_workflow import dispatch_workflow
 from app.core.dispatcher_logger import logger
 from app.core.update_workflow import update_workflow_results
-from app.core.utils import get_result_object_from_result_service, is_empty, update_result_and_ui
+from app.core.utils import (
+    get_result_object_from_result_service,
+    is_empty,
+    is_sublattice_dispatch_id,
+    update_result_and_ui,
+)
 from app.schemas.workflow import (
     BatchCancelWorkflowResponse,
     CancelWorkflowResponse,
@@ -173,7 +178,9 @@ async def update_workflow(
     )
 
     # Empty queue when workflow is no longer running (completed # or failed)
-    if updated_result_obj.status != Result.RUNNING:
+    if updated_result_obj.status != Result.RUNNING and not is_sublattice_dispatch_id(
+        updated_result_obj.dispatch_id
+    ):
 
         logger.warning("updated_result_obj status is not RUNNING")
 
