@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Argumennts and keyword arguments to the function are pickled with cloudpickle, allowing objects that are not pickleable with "normal" pickle to be sent to different processes with the multiprocessing module.
+
 ## [0.71.0] - 2022-04-11
 
 ### Changed
