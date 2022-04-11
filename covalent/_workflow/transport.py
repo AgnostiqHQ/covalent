@@ -257,7 +257,7 @@ class _TransportGraph:
 
         return self._graph.get_edge_data(dep_key, node_key)[value_key]
 
-    def get_dependencies(self, node_key: int) -> list:
+    def get_dependencies(self, node_key: int) -> List[int]:
         """
         Gets the parent node ids of a node.
 
