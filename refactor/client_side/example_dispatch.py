@@ -35,6 +35,7 @@ def task_1(x):
 
 
 @ct.electron(executor=executor)
+@ct.lattice
 def task_2(y, z):
     return y * z
 
@@ -43,9 +44,7 @@ def task_2(y, z):
 def workflow(a):
 
     r1 = task_1(a)
-    r2 = task_2(a, r1)
-
-    return r1 + r2
+    return task_2(a, r1)
 
 
 dispatch_id = interface_with_covalent.dispatch(workflow)(3)
