@@ -84,11 +84,12 @@ def update_workflow_results(
     return latest_result_obj
 
 
-def _update_execution_endtime(result_obj: Result):
+def _update_execution_endtime(result_obj: Result) -> Result:
     """Update the workflow execution end time."""
 
-    if result_obj.status != Result.RUNNING:
+    if result_obj.status != Result.RUNNING and result_obj != Result.NEW_OBJ:
         result_obj._end_time = datetime.now(timezone.utc)
+    return result_obj
 
 
 def _update_completed_workflow(result_obj: Result, task_execution_results: Dict):
