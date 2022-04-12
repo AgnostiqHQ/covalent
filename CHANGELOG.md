@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Updated the example to use a sublattice.
+
+### Fixed
+
+- Fixed updation of result objects for sublattice and parent lattice.
+- Fixed the regular expression to show sublattice results in the UI.
+
 ## [0.71.0] - 2022-04-11
 
 ### Changed
