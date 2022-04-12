@@ -24,10 +24,11 @@ from copy import deepcopy
 from datetime import datetime
 
 import pytest
+from app.core.dispatch_workflow import init_result_pre_dispatch
 from app.core.update_workflow import (
-    _update_completed_tasks,
-    _update_completed_workflow,
-    _update_workflow_endtime,
+    update_completed_tasks,
+    update_completed_workflow,
+    update_workflow_endtime,
     update_workflow_results,
 )
 
@@ -66,6 +67,16 @@ def mock_result_uninitialized():
     return Result(lattice=lattice, results_dir="", dispatch_id="mock_dispatch_id")
 
 
+@pytest.fixture
+def mock_result_initialized(mock_result_uninitialized):
+    """Construct mock result object."""
+
+    result_obj = deepcopy(mock_result_uninitialized)
+
+    init_result_pre_dispatch(result_obj)
+    return result_obj
+
+
 def test_update_workflow_results():
     """Test updating a workflow's results."""
 
@@ -89,16 +100,63 @@ def test_update_execution_endtime(
 
     mock_result_uninitialized._status = workflow_status
 
-    output = _update_workflow_endtime(mock_result_uninitialized)
+    output = update_workflow_endtime(mock_result_uninitialized)
 
     assert isinstance(output, Result)
     assert isinstance(mock_result_uninitialized._end_time, expected_endtime_type)
 
 
-def test_update_completed_workflow():
-    """Test updating a completed workflow's results."""
+def test_update_completed_workflow_lattice(mocker, mock_result_initialized):
+    """Test updating a completed lattice workflow's results."""
 
-    pass
+    mocker.patch("app.core.update_workflow._post_process", return_value="mock_result")
+    mock_is_sublattice = mocker.patch(
+        "app.core.update_workflow.is_sublattice_dispatch_id", return_value=False
+    )
+    mock_generate_task_result = mocker.patch(
+        "app.core.update_workflow.generate_task_result", return_value={}
+    )
+    mock_send_task_update_to_dispatcher = mocker.patch(
+        "app.core.update_workflow.send_task_update_to_dispatcher"
+    )
+
+    output = update_completed_workflow(mock_result_initialized)
+
+    mock_is_sublattice.assert_called_once_with(mock_result_initialized.dispatch_id)
+
+    assert mock_generate_task_result.mock_calls == []
+    assert mock_send_task_update_to_dispatcher.mock_calls == []
+
+    assert isinstance(output, Result)
+    assert mock_result_initialized.status == Result.COMPLETED
+    assert mock_result_initialized.result == "mock_result"
+
+
+def test_update_completed_workflow_sublattice(mocker, mock_result_initialized):
+    """Test updating a completed sublattice workflow's results."""
+
+    mock_result_initialized._dispatch_id = "parent_dispatch_id:1"
+
+    mocker.patch("app.core.update_workflow._post_process", return_value="mock_result")
+    mock_is_sublattice = mocker.patch(
+        "app.core.update_workflow.is_sublattice_dispatch_id", return_value=True
+    )
+    mock_generate_task_result = mocker.patch(
+        "app.core.update_workflow.generate_task_result", return_value={}
+    )
+    mock_send_task_update_to_dispatcher = mocker.patch(
+        "app.core.update_workflow.send_task_update_to_dispatcher"
+    )
+
+    output = update_completed_workflow(mock_result_initialized)
+
+    mock_is_sublattice.assert_called_once_with(mock_result_initialized.dispatch_id)
+    mock_generate_task_result.assert_called_once()
+    mock_send_task_update_to_dispatcher.assert_called_once()
+
+    assert isinstance(output, Result)
+    assert mock_result_initialized.status == Result.COMPLETED
+    assert mock_result_initialized.result == "mock_result"
 
 
 def test_update_completed_task():
