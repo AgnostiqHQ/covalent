@@ -48,8 +48,9 @@ def task_2(y, z):
 @ct.lattice(executor=executor)
 def workflow(a):
 
-    r1 = task_1(a)
-    return task_2(a, r1)
+    task_2(a, 10)
+
+    return task_1(a)
 
 
 dispatch_id = interface_with_covalent.dispatch(workflow)(3)

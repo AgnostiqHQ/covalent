@@ -25,6 +25,8 @@ from datetime import datetime, timezone
 from multiprocessing import Queue as MPQ
 from typing import Dict
 
+import cloudpickle as pickle
+
 from covalent._results_manager import Result
 
 from .dispatch_workflow import dispatch_runnable_tasks
@@ -71,34 +73,36 @@ def update_workflow_results(
             f"Post processing result with status {task_execution_results['status']} started"
         )
 
-        logger.warning(f"Result object looks like this: {latest_result_obj}")
-
         latest_result_obj._result = _post_process(
             lattice=latest_result_obj.lattice,
             task_outputs=latest_result_obj.get_all_node_outputs(),
         )
 
+        latest_result_obj._status = Result.COMPLETED
+
+        logger.warning(f"Result object looks like this: {latest_result_obj}")
+
         logger.warning(
             f"Post processing result with status {task_execution_results['status']} done"
         )
-
-        latest_result_obj._status = Result.COMPLETED
 
         if is_sublattice_dispatch_id(latest_result_obj.dispatch_id):
             splits = latest_result_obj.dispatch_id.split(":")
             parent_dispatch_id, task_id = ":".join(splits[:-1]), splits[-1]
 
             task_result = generate_task_result(
-                task_id=task_id,
+                task_id=int(task_id),
                 end_time=datetime.now(timezone.utc),
                 status=Result.COMPLETED,
                 output=latest_result_obj.result,
             )
 
-            print(f"PARENT ID: {parent_dispatch_id}", file=sys.stdout)
-            print(f"TASK ID: {task_id}", file=sys.stdout)
+            logger.warning(f"PARENT ID: {parent_dispatch_id}")
+            logger.warning(f"TASK ID: {task_id}")
 
             send_task_update_to_dispatcher(parent_dispatch_id, task_result)
+
+        logger.warning("Sent task update to dispatcher")
 
     elif task_execution_results["status"] == Result.COMPLETED and not is_empty(tasks_queue):
 

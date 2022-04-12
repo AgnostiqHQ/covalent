@@ -333,7 +333,16 @@ def is_sublattice_dispatch_id(dispatch_id: str):
 def send_task_update_to_dispatcher(dispatch_id, task_result):
 
     url = DispatcherURI().get_route(f"workflow/{dispatch_id}")
+
+    logger.warning(
+        f"Sending task result to get updated in dispatcher with task result: {task_result}"
+    )
+    logger.warning(f"URL: {url}")
+
     response = requests.put(url=url, files={"task_execution_results": pickle.dumps(task_result)})
+
+    logger.warning("Put done with response")
+
     response.raise_for_status()
 
 
