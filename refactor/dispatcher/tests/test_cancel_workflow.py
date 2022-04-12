@@ -86,10 +86,6 @@ def test_cancel_workflow_execution(mocker, mock_result_obj, mock_task_id_batch):
     the cancel task function is called.
     """
 
-    mock_send_task_list_to_runner = mocker.patch(
-        "refactor.dispatcher.app.core.dispatch_workflow.send_task_list_to_runner", return_value=[2]
-    )
-
     mock_cancellation_status = True
     mock_cancel_task = mock.Mock(name="cancel task mock", return_value=mock_cancellation_status)
 
