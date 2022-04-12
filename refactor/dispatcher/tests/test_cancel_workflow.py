@@ -21,53 +21,98 @@
 """Unit tests for Cancel Workflow."""
 
 from copy import deepcopy
+from unittest import mock
 
 import pytest
 
 import covalent as ct
+from covalent._results_manager.result import Result
+from covalent._workflow.transport import TransportableObject, _TransportGraph
+
+# remember to remove refactor.dispatcher in the import prefixes
+from refactor.dispatcher.app.core.cancel_workflow import (
+    cancel_task,
+    cancel_workflow_execution,
+    get_all_task_ids,
+)
+from refactor.dispatcher.app.core.utils import send_cancel_task_to_runner
 
 
-class TestCancelWorkflow:
-    @pytest.fixture
-    def mock_result_construct(self):
-        """Construct mock result object."""
+@pytest.fixture
+def mock_result_obj():
+    """Construct mock result object."""
 
-        @ct.electron
-        def add(x, y):
-            return x + y
+    @ct.electron
+    def add(x, y):
+        return x + y
 
-        @ct.electron
-        def multiply(x, y):
-            return x * y
+    @ct.electron
+    def multiply(x, y):
+        return x * y
 
-        @ct.electron
-        def square(x):
-            return x**2
+    @ct.electron
+    def square(x):
+        return x**2
 
-        @ct.lattice
-        def workflow(x, y, z):
-            a = add(x, y)
-            b = square(z)
-            final = multiply(a, b)
-            return final
+    @ct.lattice
+    def workflow(x, y, z):
+        a = add(x, y)
+        b = square(z)
+        final = multiply(a, b)
+        return final
 
-        lattice = deepcopy(workflow)
-        lattice.build_graph(x=1, y=2, z=3)
-        lattice.transport_graph = lattice.transport_graph.serialize()
+    lattice = deepcopy(workflow)
+    lattice.build_graph(x=1, y=2, z=3)
+    lattice.transport_graph = lattice.transport_graph.serialize()
 
-        return lattice
+    return Result(lattice=lattice, results_dir="", dispatch_id="mock_dispatch_id")
 
-    def test_cancel_workflow_execution(
-        self,
-        mock_result_construct,
-    ):
 
-        return mock_result_construct
+@pytest.fixture
+def mock_task_id_batch():
+    """Construct a list of mocked tasks. A task is composed of a dispatch id and a task id in the form of a tuple"""
+    mocked_tasks = list()
+    num_of_tasks = 3
 
-    def test_cancel_task(self):
-        # This will test cancel_task()
-        pass
+    for task_num in range(num_of_tasks):
+        mocked_tasks.append((str(task_num), task_num))
+    print("mocked tasks", mocked_tasks)
+    return mocked_tasks
 
-    def test_get_all_task_ids(self):
-        # This will test the get_all_task_ids()
-        pass
+
+def test_cancel_workflow_execution(mocker, mock_result_obj, mock_task_id_batch):
+    """
+    Test that the cancel workflow function updates the cancellation status of a list of tasks when
+    the cancel task function is called.
+    """
+
+    mock_send_task_list_to_runner = mocker.patch(
+        "refactor.dispatcher.app.core.dispatch_workflow.send_task_list_to_runner", return_value=[2]
+    )
+
+    mock_cancellation_status = True
+    mock_cancel_task = mock.Mock(name="cancel task mock", return_value=mock_cancellation_status)
+
+    mock_cancellation_status = mocker.patch(
+        "refactor.dispatcher.app.core.cancel_workflow.cancel_workflow_execution",
+        return_value=mock_cancellation_status,
+    )
+
+    for dispatch_id, task_id in mock_task_id_batch:
+        assert (mock_cancel_task(dispatch_id, task_id)) == mock_cancellation_status.return_value
+
+
+def test_cancel_task(mocker, mock_dispatch_id="3", mock_task_id=2):
+    """Test that the cancel task function successfully calls the Runner API to cancel a task and return its cancellation
+    status"""
+
+    mock_response = mock_dispatch_id, mock_task_id
+    mock_send_cancel_task_to_runner = mocker.patch(
+        "refactor.dispatcher.app.core.utils.send_task_list_to_runner", return_value=mock_response
+    )
+    pass
+
+
+def test_get_all_task_ids():
+    # This will test the get_all_task_ids()
+    pass
