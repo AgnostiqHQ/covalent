@@ -85,6 +85,10 @@ def done_callback_to_runner(dispatch_id, task_id):
 
 def start_task(task_id, func, args, kwargs, executor, results_dir, info_queue, dispatch_id):
 
+    # These objects were pickled (with cloudpickle) in run_tasks_with_resources so as to be
+    # compatible (pickleable) with multiprocessing processes.
+    args = pickle.loads(args)
+    kwargs = pickle.loads(kwargs)
     executor = pickle.loads(executor)
 
     task_result = generate_task_result(
@@ -172,8 +176,8 @@ def run_tasks_with_resources(
         starting_args = (
             task["task_id"],
             task["func"],
-            task["args"],
-            task["kwargs"],
+            pickle.dumps(task["args"]),
+            pickle.dumps(task["kwargs"]),
             pickle.dumps(task["executor"]),
             task["results_dir"],
             info_queue,
