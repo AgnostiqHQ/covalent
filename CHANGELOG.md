@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.72.0] - 2022-04-12
+
 ### Changed
 
 - Updated the example to use a sublattice.
