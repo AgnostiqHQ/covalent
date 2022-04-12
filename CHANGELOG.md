@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.74.0] - 2022-04-12
+
 ### Changed
 
 - Removed misnamed dispatcher plugin stuff and now using the interface functions directly (dispatch, dispatch_sync, get_result).
