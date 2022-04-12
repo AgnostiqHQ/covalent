@@ -25,9 +25,9 @@ from datetime import datetime
 
 import pytest
 from app.core.update_workflow import (
-    _update_completed_task,
+    _update_completed_tasks,
     _update_completed_workflow,
-    _update_execution_endtime,
+    _update_workflow_endtime,
     update_workflow_results,
 )
 
@@ -89,7 +89,7 @@ def test_update_execution_endtime(
 
     mock_result_uninitialized._status = workflow_status
 
-    output = _update_execution_endtime(mock_result_uninitialized)
+    output = _update_workflow_endtime(mock_result_uninitialized)
 
     assert isinstance(output, Result)
     assert isinstance(mock_result_uninitialized._end_time, expected_endtime_type)

@@ -90,7 +90,7 @@ def update_workflow_results(
 def _update_workflow_endtime(result_obj: Result) -> Result:
     """Update workflow end time if it has stopped running."""
 
-    if result_obj.status != Result.RUNNING:
+    if (result_obj.status != Result.RUNNING) and (result_obj._status != Result.NEW_OBJ):
         result_obj._end_time = datetime.now(timezone.utc)
 
     return result_obj
