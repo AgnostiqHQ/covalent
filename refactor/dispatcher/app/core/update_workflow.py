@@ -20,9 +20,12 @@
 
 """Workflow result update functionality."""
 
+import sys
 from datetime import datetime, timezone
 from multiprocessing import Queue as MPQ
 from typing import Dict
+
+import cloudpickle as pickle
 
 from covalent._results_manager import Result
 
@@ -58,82 +61,45 @@ def update_workflow_results(
         return latest_result_obj
 
     elif task_execution_results["status"] == Result.FAILED:
-
         latest_result_obj._status = Result.FAILED
 
     elif task_execution_results["status"] == Result.CANCELLED:
-
         latest_result_obj._status = Result.CANCELLED
 
     # If workflow is completed, post-process result
     elif not are_tasks_running(result_obj=latest_result_obj):
 
-        latest_result_obj = _update_completed_workflow(result_obj=latest_result_obj)
+        _update_completed_workflow(task_execution_results, latest_result_obj)
 
     elif task_execution_results["status"] == Result.COMPLETED and not is_empty(tasks_queue):
 
-        _update_completed_task(task_execution_results, latest_result_obj, tasks_queue, dispatch_id)
+        _update_completed_tasks(
+            task_execution_results, dispatch_id, tasks_queue, latest_result_obj
+        )
 
     else:
         logger.warning(
             f"None of the above with status {task_execution_results['status']} and {is_empty(tasks_queue)}"
         )
 
-    latest_result_obj = _update_execution_endtime(latest_result_obj)
+    latest_result_obj = _update_workflow_endtime(latest_result_obj)
 
     return latest_result_obj
 
 
-def _update_execution_endtime(result_obj: Result) -> Result:
-    """Update the workflow execution end time."""
+def _update_workflow_endtime(result_obj: Result) -> Result:
+    """Update workflow end time if it has stopped running."""
 
-    if result_obj.status != Result.RUNNING and result_obj != Result.NEW_OBJ:
+    if result_obj.status != Result.RUNNING:
         result_obj._end_time = datetime.now(timezone.utc)
-    return result_obj
-
-
-def _update_completed_workflow(result_obj: Result, task_execution_results: Dict):
-    """Update after sublattice / lattice workflow is completed."""
-
-    logger.warning(
-        f"Post processing result with status {task_execution_results['status']} started"
-    )
-
-    result_obj._result = _post_process(
-        lattice=result_obj.lattice,
-        task_outputs=result_obj.get_all_node_outputs(),
-    )
-
-    result_obj._status = Result.COMPLETED
-
-    logger.warning(f"Result object looks like this: {result_obj}")
-
-    logger.warning(f"Post processing result with status {task_execution_results['status']} done")
-
-    if is_sublattice_dispatch_id(result_obj.dispatch_id):
-
-        splits = result_obj.dispatch_id.split(":")
-        parent_dispatch_id, task_id = ":".join(splits[:-1]), splits[-1]
-
-        task_result = generate_task_result(
-            task_id=int(task_id),
-            end_time=datetime.now(timezone.utc),
-            status=Result.COMPLETED,
-            output=result_obj.result,
-        )
-
-        logger.warning(f"PARENT ID: {parent_dispatch_id}")
-        logger.warning(f"TASK ID: {task_id}")
-
-        send_task_update_to_dispatcher(parent_dispatch_id, task_result)
 
     return result_obj
 
 
-def _update_completed_task(
-    task_execution_results: Dict, result_obj: Result, tasks_queue: MPQ, dispatch_id: str
-):
-    """Update after a task is completed but the workflow is not completed."""
+def _update_completed_tasks(
+    task_execution_results: Dict, dispatch_id: str, tasks_queue: MPQ, result_obj: Result
+) -> Result:
+    """Update completed tasks while the parent workflow is still not completed."""
 
     logger.warning(f"Will send next list of tasks, status: {task_execution_results['status']}")
 
@@ -178,3 +144,43 @@ def _update_completed_task(
         )
 
         logger.warning("dispatch_runnable_tasks SUCCESS")
+
+    return result_obj
+
+
+def _update_completed_workflow(task_execution_results: Dict, result_obj: Result) -> Result:
+
+    logger.warning(
+        f"Post processing result with status {task_execution_results['status']} started"
+    )
+
+    result_obj._result = _post_process(
+        lattice=result_obj.lattice,
+        task_outputs=result_obj.get_all_node_outputs(),
+    )
+
+    result_obj._status = Result.COMPLETED
+
+    logger.warning(f"Result object looks like this: {result_obj}")
+
+    logger.warning(f"Post processing result with status {task_execution_results['status']} done")
+
+    if is_sublattice_dispatch_id(result_obj.dispatch_id):
+        splits = result_obj.dispatch_id.split(":")
+        parent_dispatch_id, task_id = ":".join(splits[:-1]), splits[-1]
+
+        task_result = generate_task_result(
+            task_id=int(task_id),
+            end_time=datetime.now(timezone.utc),
+            status=Result.COMPLETED,
+            output=result_obj.result,
+        )
+
+        logger.warning(f"PARENT ID: {parent_dispatch_id}")
+        logger.warning(f"TASK ID: {task_id}")
+
+        send_task_update_to_dispatcher(parent_dispatch_id, task_result)
+
+    logger.warning("Sent task update to dispatcher")
+
+    return result_obj
