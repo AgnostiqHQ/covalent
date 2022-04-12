@@ -11,6 +11,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Tests for update workflow in Dispatcher service update_workflow.py module.
 
+## [0.72.0] - 2022-04-12
+
+### Changed
+
+- Updated the example to use a sublattice.
+
+### Fixed
+
+- Fixed updation of result objects for sublattice and parent lattice.
+- Fixed the regular expression to show sublattice results in the UI.
+
+## [0.71.0] - 2022-04-11
+
+### Changed
+
+- Updated Supervisord template configuration to bring up NATS server with high priority before all other services
+
+## [0.70.0] - 2022-04-11
+
+### Tests
+
+- Dispatcher service tests for the `dispatch_workflow.py` module.
+
+### Changed
+
+- Minor refactor of `dispatch_workflow.py` module in Dispatcher service.
+
 ## [0.69.0] - 2022-04-08
 
 ### Added

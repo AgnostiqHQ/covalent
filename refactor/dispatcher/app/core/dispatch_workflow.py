@@ -21,6 +21,7 @@
 
 """Workflow dispatch functionality."""
 
+import sys
 from datetime import datetime, timezone
 from multiprocessing import Queue as MPQ
 from queue import Empty
@@ -32,7 +33,6 @@ from app.core.utils import is_empty, send_result_object_to_result_service, send_
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
 from covalent.executor import BaseExecutor
-from refactor.dispatcher.app.core.get_svc_uri import ResultsURI, RunnerURI
 
 from .utils import get_task_inputs, get_task_order, is_sublattice, preprocess_transport_graph
 
@@ -67,7 +67,8 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
 
 
 def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: List[List]) -> None:
-    """Get runnable tasks and dispatch them to the Runner API. Put the tasks that weren't picked up by the Runner API back in the queue."""
+    """Get runnable tasks and dispatch them to the Runner API. Put the tasks that weren't picked
+    up by the Runner API back in the queue."""
 
     # To get the runnable tasks from first task order list
     # Sending the tasks_queue as well to handle the case of sublattices
@@ -102,7 +103,7 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
         executors=executors,
     )
 
-    # Will add those unrun tasks back to the tasks_queue
+    # Add unrun tasks back to the tasks_queue
     final_task_order = tasks_queue.get()
 
     if unrun_tasks:
@@ -132,17 +133,18 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
 
     # logger.warning(f"Inside start_dispatch with dispatch_id {result_obj.dispatch_id}")
 
+    # Change result status to running and set workflow execution start time.
     result_obj._status = Result.RUNNING
     result_obj._start_time = datetime.now(timezone.utc)
 
     # Initialize the result object
-    result_obj = init_result_pre_dispatch(result_obj=result_obj)
+    result_obj = init_result_pre_dispatch(result_obj)
 
     # Send the initialized result to the result service
-    send_result_object_to_result_service(result_object=result_obj)
+    send_result_object_to_result_service(result_obj)
 
     # Get the order of tasks to be run
-    task_order: List[List] = get_task_order(result_obj=result_obj)
+    task_order: List[List] = get_task_order(result_obj)
 
     logger.warning(f"task_order: {task_order}")
     dispatch_runnable_tasks(result_obj, tasks_queue, task_order)
@@ -156,7 +158,7 @@ def get_runnable_tasks(
     result_obj: Result,
     tasks_order: List[List],
     tasks_queue: MPQ,
-) -> Tuple[List[int], List[bytes], List[List], List[Dict], List[BaseExecutor]]:
+) -> Tuple[List[int], List[bytes], List[List], List[Dict], List[BaseExecutor], List[List[int]]]:
     """Return a list of tasks that can be run and the corresponding executors and input
     parameters."""
 
@@ -199,6 +201,8 @@ def get_runnable_tasks(
         # Check whether the node is a sublattice
         if is_sublattice(task_name):
 
+            print("INSIDE SUBLATTICE", file=sys.stderr)
+
             # Get the sublattice
             sublattice = serialized_function.get_deserialized()
 
@@ -210,6 +214,11 @@ def get_runnable_tasks(
                 lattice=sublattice,
                 results_dir=result_obj.lattice.metadata["results_dir"],
                 dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
+            )
+
+            print(
+                f"TASKS ORDER IN SUBLATTICE CONDITION: {get_task_order(sublattice_result_obj)}",
+                file=sys.stderr,
             )
 
             # Serialize its transport graph
@@ -267,11 +276,11 @@ def run_tasks(
     input_args: List[List],
     input_kwargs: List[Dict],
     executors: List[Union[bytes, str]],
-):
-    """Ask Runner to execute tasks - get back True (False) if resources are (not) available.
+) -> List[int]:
+    """Request Runner to execute tasks.
 
-    The Runner might not have resources available to pick up the batch of tasks. In that case,
-    this function continues to try running the tasks until the runner becomes free.
+    The Runner might not have resources available to pick up the full batch of tasks. In that case,
+    this function returns the list of task ids that were not picked up.
     """
 
     tasks_list = [
@@ -291,11 +300,12 @@ def run_tasks(
     return send_task_list_to_runner(dispatch_id=dispatch_id, tasks_list=tasks_list)
 
 
-def is_runnable_task(task_id: int, results_obj: Result) -> bool:
-    """Return status whether the task can be run."""
+def is_runnable_task(task_id: int, result_obj: Result) -> bool:
+    """Return status whether the task can be run based on whether the parent tasks have finished
+    executing."""
 
-    parent_node_ids = results_obj.lattice.transport_graph.get_dependencies(task_id)
+    parent_node_ids: List[int] = result_obj.lattice.transport_graph.get_dependencies(task_id)
 
     return all(
-        results_obj._get_node_status(node_id) == Result.COMPLETED for node_id in parent_node_ids
+        result_obj._get_node_status(node_id) == Result.COMPLETED for node_id in parent_node_ids
     )

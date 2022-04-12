@@ -18,10 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Unit tests for updating workflows."""
 
-from fastapi import APIRouter
 
-from refactor.queuer.app.api.api_v0.endpoints import submit
+def test_update_workflow_results():
+    """Test updating a workflow's results."""
 
-api_router = APIRouter()
-api_router.include_router(submit.router, prefix="/submit", tags=["Submit"])
+    pass
