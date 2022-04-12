@@ -45,7 +45,12 @@ from covalent._shared_files.defaults import (
     subscript_prefix,
 )
 from covalent._workflow.lattice import Lattice
-from refactor.dispatcher.app.core.get_svc_uri import ResultsURI, RunnerURI, UIBackendURI
+from refactor.dispatcher.app.core.get_svc_uri import (
+    DispatcherURI,
+    ResultsURI,
+    RunnerURI,
+    UIBackendURI,
+)
 
 load_dotenv()
 
@@ -323,3 +328,35 @@ def send_cancel_task_to_runner(dispatch_id: str, task_id: int):
 
 def is_sublattice_dispatch_id(dispatch_id: str):
     return ":" in dispatch_id
+
+
+def send_task_update_to_dispatcher(dispatch_id, task_result):
+
+    url = DispatcherURI().get_route(f"workflow/{dispatch_id}")
+    response = requests.put(url=url, files={"task_execution_results": pickle.dumps(task_result)})
+    response.raise_for_status()
+
+
+def generate_task_result(
+    task_id,
+    start_time=None,
+    end_time=None,
+    status=None,
+    output=None,
+    error=None,
+    stdout=None,
+    stderr=None,
+    info=None,
+):
+
+    return {
+        "task_id": task_id,
+        "start_time": start_time,
+        "end_time": end_time,
+        "status": status,
+        "output": output,
+        "error": error,
+        "stdout": stdout,
+        "stderr": stderr,
+        "info": info,
+    }

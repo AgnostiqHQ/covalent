@@ -20,6 +20,7 @@
 
 """Workflow result update functionality."""
 
+import sys
 from datetime import datetime, timezone
 from multiprocessing import Queue as MPQ
 from typing import Dict
@@ -31,9 +32,12 @@ from .dispatcher_logger import logger
 from .utils import (
     _post_process,
     are_tasks_running,
+    generate_task_result,
     get_result_object_from_result_service,
     is_empty,
+    is_sublattice_dispatch_id,
     send_result_object_to_result_service,
+    send_task_update_to_dispatcher,
 )
 
 
@@ -79,6 +83,22 @@ def update_workflow_results(
         )
 
         latest_result_obj._status = Result.COMPLETED
+
+        if is_sublattice_dispatch_id(latest_result_obj.dispatch_id):
+            splits = latest_result_obj.dispatch_id.split(":")
+            parent_dispatch_id, task_id = ":".join(splits[:-1]), splits[-1]
+
+            task_result = generate_task_result(
+                task_id=task_id,
+                end_time=datetime.now(timezone.utc),
+                status=Result.COMPLETED,
+                output=latest_result_obj.result,
+            )
+
+            print(f"PARENT ID: {parent_dispatch_id}", file=sys.stdout)
+            print(f"TASK ID: {task_id}", file=sys.stdout)
+
+            send_task_update_to_dispatcher(parent_dispatch_id, task_result)
 
     elif task_execution_results["status"] == Result.COMPLETED and not is_empty(tasks_queue):
 
