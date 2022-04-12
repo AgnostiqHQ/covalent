@@ -25,9 +25,8 @@ from urllib.parse import urljoin
 
 import requests
 from app.core.config import settings
+from app.core.get_svc_uri import DataURI
 from fastapi import HTTPException
-
-from refactor.results.app.core.get_svc_uri import DataURI
 
 
 class APIService:
