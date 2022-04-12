@@ -22,8 +22,9 @@
 
 from typing import List, Tuple
 
+from app.core.get_svc_uri import RunnerURI
+
 from covalent._results_manager import Result
-from refactor.dispatcher.app.core.get_svc_uri import RunnerURI
 
 from .utils import get_result_object_from_result_service, is_sublattice, send_cancel_task_to_runner
 
