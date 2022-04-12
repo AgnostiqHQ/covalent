@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Removed misnamed dispatcher plugin stuff and now using the interface functions directly (dispatch, dispatch_sync, get_result).
+
+- `ct.dispatch`, `ct.dispatch_sync`, `ct.get_result`, etc. are going to use the covalent services instead.
+
 ## [0.73.0] - 2022-04-12
 
 ### Changed
