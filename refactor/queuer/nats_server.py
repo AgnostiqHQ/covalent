@@ -29,11 +29,27 @@ import refactor
 
 
 def main():
-    if shutil.which("nats-server"):
-        # NATS is already installed elsewhere
+    nats_path = shutil.which("nats-server")
+    nats_exec_type = "binary"
+
+    if nats_path:
+        try:
+            with open(nats_path, "r") as f:
+                f.readline()
+            nats_exec_type = "text"
+        except UnicodeDecodeError:
+            pass
+
+    if nats_path and nats_exec_type == "binary":
+        # NATS is already installed
         command = "nats-server"
     else:
         # NATS is packaged with Covalent
         command = refactor.__path__[0] + "/queuer/nats-server"
 
-    subprocess.Popen([command])
+    subprocess.run([command])
+
+
+if __name__ == "__main__":
+    # For debugging only
+    main()
