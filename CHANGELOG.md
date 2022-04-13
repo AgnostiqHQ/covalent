@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.77.0] - 2022-04-13
+
 ### Added
 
 - nats is installed in the wheel build if not otherwise installed.
