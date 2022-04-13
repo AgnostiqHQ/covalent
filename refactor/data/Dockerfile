@@ -1,39 +1,34 @@
-# Copyright 2021 Agnostiq Inc.
-#
-# This file is part of Covalent.
-#
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
-#
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
-#
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+FROM python:3.8-slim-buster as venv
 
-# syntax=docker/dockerfile:1
-FROM python:3.8-slim-buster
-ENV PROJECT_DIR=/data
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends build-essential && \
+  pip install --upgrade pip && \
+  rm -rf /var/lib/apt/lists/*
 
-RUN mkdir $PROJECT_DIR \
-    && chmod 0777 $PROJECT_DIR
+COPY . /app/
+RUN cd /app && \
+    python -m venv --copies /app/.venv && \
+    . /app/.venv/bin/activate && \
+    pip install -e .
 
-WORKDIR $PROJECT_DIR
+# Final image
+FROM python:3.8-slim-buster as prod
 
-COPY refactor/data/ $PROJECT_DIR
-COPY refactor/ $PROJECT_DIR/refactor
-RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
-RUN cd $PROJECT_DIR/refactor/  \
-    && rm -rf client_side/  && rm -rf dispatcher/ \
-    && rm -rf executor/ && rm -rf queuer/ \
-    && rm -rf results/ && rm -rf runner/  \
-    && rm -rf ui_backend/
+# Placeholders/default environment variables
+ENV DATA_SVC_HOST="0.0.0.0"
+ENV DATA_SVC_PORT="8004"
+ENV FS_STORAGE_BACKEND="local"
+ENV FS_LOCAL_STORAGE_ROOT="data"
+ENV FS_STORAGE_BUCKET="default"
+ENV MINIO_ENDPOINT="localhost:9000"
+ENV MINIO_ACCESS_KEY="minioadmin"
+ENV MINIO_SECRET_KEY="minioadmin"
+ENV MINIO_DISABLE_TLS=""
 
-ENTRYPOINT [ "python", "main.py"]
+COPY --from=venv /app/.venv/ /app/.venv
+COPY --from=venv /app/covalent/ /app/covalent
+COPY --from=venv /app/covalent_ui/ /app/covalent_ui
+COPY --from=venv /app/covalent_dispatcher/ /app/covalent_dispatcher
+COPY --from=venv /app/refactor/data/ /app/refactor/data
+
+CMD ["/app/.venv/bin/python", "/app/refactor/data/main.py"]

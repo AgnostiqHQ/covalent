@@ -5,100 +5,101 @@
 version: "3.9"
 
 services:
-  covalent-data:
+  covalent_data:
     build:
       context: .
       dockerfile: refactor/data/Dockerfile
-    image: covalent-data
+    image: covalent_data
+    container_name: covalent_data
+    ports:
+      - 8004:8004
     environment:
       DATA_SVC_HOST: 0.0.0.0
-    ports:
-      - "8004:8004"
-    working_dir: /data
-    container_name: covalent_data
+      DATA_SVC_PORT: 8004
     networks:
       covalent:
 
-  covalent-dispatcher:
+  covalent_dispatcher:
     build:
       context: .
       dockerfile: refactor/dispatcher/Dockerfile
-    image: covalent-dispatcher
+    image: covalent_dispatcher
+    container_name: covalent_dispatcher
     environment:
-      RUNNER_SVC_HOST: covalent_runner
       RUNNER_SVC_PORT: 8003
       RESULTS_SVC_PORT: 8006
-      RESULTS_SVC_HOST: covalent_results
       DISPATCHER_SVC_PORT: 8002
+      UI_SVC_PORT: 8005
       DISPATCHER_SVC_HOST: 0.0.0.0
-      UI_SVC_PORT: 8004
+      RUNNER_SVC_HOST: covalent_runner
+      RESULTS_SVC_HOST: covalent_results
       UI_SVC_HOST: covalent_ui
     ports:
-      - "8002:8002"
-    working_dir: /dispatcher
-    container_name: covalent_dispatcher
+      - 8002:8002
     networks:
       covalent:
 
-  covalent-queuer:
+  covalent_queuer:
     build:
       context: .
       dockerfile: refactor/queuer/Dockerfile
-    image: covalent-queuer
+    image: covalent_queuer
+    container_name: covalent_queuer
     ports:
-      - "8001:8001"
-    working_dir: /queuer
+      - 8001:8001
     environment:
-      MQ_CONNECTION_URI: covalent_nats:4222
+      MQ_CONNECTION_URI: nats://covalent_nats:4222
+      MQ_DISPATCH_TOPIC: 
+      DATA_OS_SVC_HOST_URI: http://covalent_results:8006
       QUEUER_SVC_PORT: 8001
       QUEUER_SVC_HOST: 0.0.0.0
-    container_name: covalent_queuer
     depends_on:
-      - covalent-nats
+      - covalent_nats
     networks:
       covalent:
 
-  covalent-queue-consumer:
+  # Queue-consumer uses the same Dockerfile configurations as the Queuer
+  covalent_queue_consumer:
     build:
       context: .
       dockerfile: refactor/dispatcher/Dockerfile.queue_consumer
-    image: covalent-queue-consumer
-    working_dir: /dispatcher
-    container_name: queue_consumer
+    image: covalent_queue_consumer
+    container_name: covalent_queue_consumer
     environment:
-      MQ_CONNECTION_URI: covalent_nats:4222
+      MQ_CONNECTION_URI: nats://covalent_nats:4222
+      MQ_DISPATCH_TOPIC: workflow.dispatch
       DISPATCHER_SVC_HOST: covalent_dispatcher
       DISPATCHER_SVC_PORT: 8002
     depends_on:
-      - covalent-nats
+      - covalent_nats
     networks:
       covalent:
 
-  covalent-results:
+  covalent_results:
     build:
       context: .
       dockerfile: refactor/results/Dockerfile
-    image: covalent-results
+    image: covalent_results
     ports:
-      - "8006:8006"
-    working_dir: /results
+      - 8006:8006
     container_name: covalent_results
     environment:
       RESULTS_SVC_PORT: 8006
       RESULTS_SVC_HOST: 0.0.0.0
       DATA_SVC_PORT: 8004
       DATA_SVC_HOST: covalent_data
+      RESULTS_DB: results.db
     networks:
       covalent:
 
-  covalent-runner:
+  covalent_runner:
     build:
       context: .
       dockerfile: refactor/runner/Dockerfile
-    image: covalent-runner
+    image: covalent_runner
+    container_name: covalent_runner
     ports:
-      - "8003:8003"
-    working_dir: /runner
+      - 8003:8003
     environment:
       RUNNER_SVC_PORT: 8003
       RUNNER_SVC_HOST: 0.0.0.0
@@ -106,29 +107,28 @@ services:
       RESULTS_SVC_HOST: covalent_results
       DISPATCHER_SVC_PORT: 8002
       DISPATCHER_SVC_HOST: covalent_dispatcher
-    container_name: covalent_runner
     networks:
       covalent:
 
-  covalent-ui:
+  covalent_ui:
     build:
       context: .
       dockerfile: refactor/ui_backend/Dockerfile
-    image: covalent-ui
-    ports:
-      - "8005:8004"
-    working_dir: /ui_backend
+    image: covalent_ui
     container_name: covalent_ui
+    ports:
+      - 8005:8005
     environment:
-      UI_SVC_PORT: 8004
+      UI_SVC_PORT: 8005
       UI_SVC_HOST: 0.0.0.0
+      DATA_OS_SVC_HOST_URI: http://covalent_results:8006
     networks:
       covalent:
 
-  covalent-nats:
+  covalent_nats:
     image: nats
     ports:
-      - "4222:4222"
+      - 4222:4222
     container_name: covalent_nats
     networks:
       covalent:

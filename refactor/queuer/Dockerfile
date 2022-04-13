@@ -19,14 +19,37 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 # syntax=docker/dockerfile:1
-FROM python:3.8-slim-buster
-ENV PROJECT_DIR=/queuer
+FROM python:3.8-slim-buster as venv
 
-RUN mkdir $PROJECT_DIR
-RUN chmod 0777 $PROJECT_DIR
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential && \
+    pip install --upgrade pip && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY refactor/queuer/ $PROJECT_DIR
-RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
+# Create virtualenv and install dependencies
+COPY . /app/
+RUN cd /app && \
+    python -m venv --copies /app/.venv && \
+    . /app/.venv/bin/activate && \
+    pip install -e .
 
-WORKDIR $PROJECT_DIR
-ENTRYPOINT [ "python", "main.py"]
+FROM python:3.8-slim-buster as prod
+
+ENV QUEUER_SVC_HOST="0.0.0.0"
+ENV QUEUER_SVC_PORT="8001"
+
+# Placeholders/defaults
+# Results service
+ENV DATA_OS_SVC_HOST_URI="http://localhost:8006"
+# NATS service
+ENV MQ_CONNECTION_URI="nats://localhost:4222"
+# Dispatch topic
+ENV MQ_DISPATCH_TOPIC="workflow.dispatch"
+
+COPY --from=venv /app/.venv/ /app/.venv
+COPY --from=venv /app/covalent/ /app/covalent
+COPY --from=venv /app/covalent_ui/ /app/covalent_ui
+# Needs to be changed when directories are restructured
+COPY --from=venv /app/refactor/queuer/ /app/refactor/queuer
+
+ENTRYPOINT [ "/app/.venv/bin/python", "/app/refactor/queuer/main.py"]

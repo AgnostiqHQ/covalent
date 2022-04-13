@@ -19,7 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import time
 
+from refactor.client_side import interface_with_covalent
 
 import covalent as ct
 from refactor.executor.executor_plugins.local import LocalExecutor
@@ -33,25 +35,20 @@ def task_1(x):
 
 
 @ct.electron(executor=executor)
-def subtask(a, b):
-    return a**b
-
-
-@ct.electron(executor=executor)
-@ct.lattice
 def task_2(y, z):
-    return subtask(y, z)
+    return y * z
 
 
 @ct.lattice(executor=executor)
 def workflow(a):
 
-    task_2(a, 10)
+    r1 = task_1(a)
+    r2 = task_2(a, r1)
 
-    return task_1(a)
+    return r1 + r2
 
 
-dispatch_id = ct.dispatch(workflow)(3)
+dispatch_id = interface_with_covalent.dispatch(workflow)(3)
 
 print(dispatch_id)
 
