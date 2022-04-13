@@ -19,10 +19,14 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import os
+import platform
+import shutil
 import site
 import sys
 
 from setuptools import Command, find_packages, setup
+from setuptools.command.build_py import build_py
+from setuptools.command.install import install
 
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
@@ -148,6 +152,32 @@ class BuildUI(Command):
             )
 
 
+class BuildCovalent(build_py):
+    """Build Covalent with NATS server"""
+
+    def run(self):
+        import subprocess
+
+        if platform.system() == "Darwin":
+            subprocess.run(["brew", "install", "nats-server"], check=True)
+        elif platform.system() == "Linux":
+            import requests
+
+            r = requests.get(
+                "https://github.com/nats-io/nats-server/releases/download/v2.7.4/nats-server-v2.7.4-linux-amd64.zip",
+                allow_redirects=True,
+            )
+            open("nats-server-v2.7.4-linux-amd64.zip", "wb").write(r.content)
+            subprocess.run(["unzip", "nats-server-v2.7.4-linux-amd64.zip"], check=True)
+            shutil.move(
+                "nats-server-v2.7.4-linux-amd64/nats-server", "refactor/queuer/nats-server"
+            )
+            shutil.rmtree("nats-server-v2.7.4-linux-amd64")
+            os.remove("nats-server-v2.7.4-linux-amd64.zip")
+
+        build_py.run(self)
+
+
 setup_info = {
     "name": "cova",
     "packages": find_packages(exclude=["*tests*"]),
@@ -170,6 +200,7 @@ setup_info = {
         ],
         "covalent_dispatcher": ["_service/app.py"],
         "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
+        "refactor": ["queuer/nats-server"],
     },
     "install_requires": required,
     "classifiers": [
@@ -192,12 +223,14 @@ setup_info = {
         "Topic :: System :: Distributed Computing",
     ],
     "cmdclass": {
+        "build_py": BuildCovalent,
         "docs": Docs,
         "webapp": BuildUI,
     },
     "entry_points": {
         "console_scripts": [
             "covalent = covalent_dispatcher._cli.cli:cli",
+            "nats-server = refactor.queuer.nats_server:main",
         ],
     },
 }
