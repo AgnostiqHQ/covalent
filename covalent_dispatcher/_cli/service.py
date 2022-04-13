@@ -410,10 +410,14 @@ def stop(refactor) -> None:
 @click.argument("args", nargs=-1)
 def config(args):
     args = dict([arg.split("=") for arg in args])
-    for var_key, var_value in args.items():
-        cm.set(var_key, var_value)
-    for var_key, var_value in cm.config_data.items():
-        click.echo(f"{var_key}={var_value}")
+    if len(args.items()) == 0:
+        # display config values
+        for var_key, var_value in cm.config_data.items():
+            click.echo(f"{var_key}={var_value}")
+    else:
+        # set config values
+        for var_key, var_value in args.items():
+            cm.set(var_key, var_value)
 
 
 @click.command()
