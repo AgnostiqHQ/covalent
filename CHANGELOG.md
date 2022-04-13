@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+- Fix errors in Dockerfiles
+- Update Dockerfiles to use `multi-stage` container builds to reduce final image size
+- Install all necessary Python modules in all containers
+
 ## [0.76.0] - 2022-04-13
 
 ### Added
