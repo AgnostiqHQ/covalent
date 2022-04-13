@@ -19,30 +19,35 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 # syntax=docker/dockerfile:1
-FROM python:3.8-slim-buster
-ENV PROJECT_DIR=/results
+FROM python:3.8-slim-buster as venv
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends git gcc g++ make \
-  && cd /usr/local/bin \
-  && pip3 install --upgrade pip \
-  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential && \
+    pip install --upgrade pip && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p $PROJECT_DIR && chmod 0777 $PROJECT_DIR
+# Create virtualenv and install dependencies
+COPY . /app/
+RUN cd /app && \
+    python -m venv --copies /app/.venv && \
+    . /app/.venv/bin/activate && \
+    pip install -e .
 
-COPY refactor/results $PROJECT_DIR
-COPY refactor/ $PROJECT_DIR/refactor
-COPY covalent_dispatcher/ $PROJECT_DIR/covalent_dispatcher
-COPY covalent/ $PROJECT_DIR/covalent
-COPY covalent_ui/ $PROJECT_DIR/covalent_ui
-COPY ["setup.py", "VERSION", "README.md", "$PROJECT_DIR/"]
+FROM python:3.8-slim-buster as prod
 
-RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
-RUN cd $PROJECT_DIR/refactor/  \
-    && rm -rf client_side/  && rm -rf data/ \
-    && rm -rf  dispatcher/ && rm -rf executor/ \
-    && rm -rf queuer/ && rm -rf runner/  \
-    && rm -rf ui_backend/
+ENV RESULTS_SVC_HOST="0.0.0.0"
+ENV RESULTS_SVC_PORT="8006"
 
-WORKDIR $PROJECT_DIR
-ENTRYPOINT [ "python", "main.py"]
+# Placeholders/defaults
+ENV DATA_SVC_PORT="8004"
+ENV DATA_SVC_HOST="localhost"
+ENV RESULTS_DB="results.db"
+
+COPY --from=venv /app/.venv/ /app/.venv
+COPY --from=venv /app/covalent/ /app/covalent
+COPY --from=venv /app/covalent_ui/ /app/covalent_ui
+COPY --from=venv /app/covalent_dispatcher/ /app/covalent_dispatcher
+# Needs to be changed when directories are restructured
+COPY --from=venv /app/refactor/results/ /app/refactor/results
+
+ENTRYPOINT [ "/app/.venv/bin/python", "/app/refactor/results/main.py"]
