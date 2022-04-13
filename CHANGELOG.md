@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Tests for update workflow in Dispatcher service update_workflow.py module.
 
+### Changed
+
+- Implementation of update_workflow_results in update_workflow.py module in Dispatcher service.
+
 ## [0.72.0] - 2022-04-12
 
 ### Changed
