@@ -21,8 +21,6 @@
 
 import time
 
-import interface_with_covalent
-
 import covalent as ct
 from refactor.executor.executor_plugins.local import LocalExecutor
 
@@ -53,7 +51,7 @@ def workflow(a):
     return task_1(a)
 
 
-dispatch_id = interface_with_covalent.dispatch(workflow)(3)
+dispatch_id = ct.dispatch(workflow)(3)
 
 print(dispatch_id)
 
