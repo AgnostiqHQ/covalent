@@ -19,34 +19,40 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 # syntax=docker/dockerfile:1
-FROM python:3.8-slim-buster
-ENV PROJECT_DIR=/dispatcher
+FROM python:3.8-slim-buster as venv
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends git gcc g++ make \
-  && cd /usr/local/bin \
-  && pip3 install --upgrade pip \
-  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential && \
+    pip install --upgrade pip && \
+    rm -rf /var/lib/apt/lists/*
 
+# Create virtualenv and install dependencies
+COPY . /app/
+RUN cd /app && \
+    python -m venv --copies /app/.venv && \
+    . /app/.venv/bin/activate && \
+    pip install -e .
 
-RUN mkdir -p $PROJECT_DIR && chmod 0777 $PROJECT_DIR \
-    && cd $PROJECT_DIR \
-    && mkdir webapp && cd webapp \
-    && mkdir build
+FROM python:3.8-slim-buster as prod
 
-COPY refactor/dispatcher/ $PROJECT_DIR
-COPY refactor/ $PROJECT_DIR/refactor
-COPY covalent/ $PROJECT_DIR/covalent
-COPY covalent_dispatcher/ $PROJECT_DIR/covalent_dispatcher
-COPY covalent_ui/ $PROJECT_DIR/covalent_ui
-COPY ["setup.py", "requirements.txt", "VERSION", "README.md", "$PROJECT_DIR/"]
+ENV DISPATCHER_SVC_PORT="8002"
+ENV DISPATCHER_SVC_HOST="0.0.0.0"
 
-RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
-RUN cd $PROJECT_DIR/refactor/  \
-    && rm -rf client_side/  && rm -rf data/ \
-    && rm -rf executor/ && rm -rf queuer/ \
-    && rm -rf results/ && rm -rf runner/  \
-    && rm -rf ui_backend/
+# These are placeholders/default values and
+# must be overridden with appropriate values
+# from command line when launching
+ENV RESULTS_SVC_PORT="8006"
+ENV UI_SVC_PORT="8005"
+ENV RUNNER_SVC_PORT="8003"
+ENV RUNNER_SVC_HOST="localhost"
+ENV RESULTS_SVC_HOST="localhost"
+ENV UI_SVC_HOST="localhost"
 
-WORKDIR $PROJECT_DIR
-ENTRYPOINT [ "python", "main.py"]
+COPY --from=venv /app/.venv/ /app/.venv
+COPY --from=venv /app/covalent/ /app/covalent
+COPY --from=venv /app/covalent_ui/ /app/covalent_ui
+COPY --from=venv /app/covalent_dispatcher/ /app/covalent_dispatcher
+# Needs to be changed when directories are restructured
+COPY --from=venv /app/refactor/dispatcher/ /app/refactor/dispatcher
+
+ENTRYPOINT [ "/app/.venv/bin/python", "/app/refactor/dispatcher/main.py"]
