@@ -1,6 +1,5 @@
+from app.core.config import settings
 from furl import furl
-
-from refactor.results.app.core.config import settings
 
 
 class ServiceURI:

@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Switched to the local executor which is compatible with covalent microservices and removed the old executor.
 
+## [0.75.0] - 2022-04-13
+
+### Tests
+
+- Tests for update workflow in Dispatcher service update_workflow.py module.
+
+### Changed
+
+- Implementation of update_workflow_results in update_workflow.py module in Dispatcher service.
+
 ## [0.74.0] - 2022-04-12
 
 ### Changed

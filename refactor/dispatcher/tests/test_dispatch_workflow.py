@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Unit tests for dispatch workflow."""
+"""Unit tests for dispatching workflows."""
 
 from copy import deepcopy
 from datetime import datetime, timezone
