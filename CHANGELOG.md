@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- `ct.get_result` will return result object if no wait is used.
+
+- Using initial resource as 1 until there is better resource management in runner.
+
 ## [0.77.0] - 2022-04-13
 
 ### Added
