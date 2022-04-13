@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any, Dict, List, MutableMapping, Optional, Union
 
 import toml
-from dotenv import dotenv_values, find_dotenv, set_key
+from dotenv import dotenv_values, find_dotenv, load_dotenv, set_key
 
 """Configuration manager."""
 
@@ -80,8 +80,12 @@ class _ConfigManager:
 
     def __init__(self) -> None:
 
+        # ensure .env exists, if not copy from .env.example
         self.ensure_config_file_exists()
         env_file_path = find_dotenv(CONFIG_FILE_NAME)
+
+        # load .env values into os.environ or use explicitly set environment vars
+        load_dotenv(CONFIG_FILE_NAME)
 
         self.config_dir = (
             os.environ.get("COVALENT_CONFIG_DIR")
@@ -99,10 +103,15 @@ class _ConfigManager:
 
     @property
     def config_data(self):
+        # should yield the same result as doing load_env()
+        # environment vars take precedence, then config values
         config = {}
-        values = dotenv_values()
-        for key, value in values.items():
-            dict_set(config, key, value)
+        config_file_values = dotenv_values()
+
+        environment_vars = {**config_file_values, **os.environ}
+
+        for key in config_file_values.keys():
+            dict_set(config, key, environment_vars[key] or "")
         return config
 
     def ensure_config_file_exists(self):
