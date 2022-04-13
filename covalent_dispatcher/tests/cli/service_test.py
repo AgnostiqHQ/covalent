@@ -354,6 +354,8 @@ def test_purge_refactor(mocker, monkeypatch, is_supervisord_running_flag):
     # mock methods
     sd_stop_services = mocker.patch("covalent_dispatcher._cli.service._sd_stop_services")
     graceful_shutdown = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
+    shutil_rmtree_mock = mocker.patch("covalent_dispatcher._cli.service.shutil.rmtree")
+    purge_config_mock = mocker.patch("covalent_dispatcher._cli.service.cm.purge_config")
     os_remove = mocker.patch("os.remove")
     monkeypatch.setattr("covalent_dispatcher._cli.service.SD_PIDFILE", SD_PIDFILE_MOCK)
     monkeypatch.setattr("covalent_dispatcher._cli.service.SD_CONFIG_FILE", SD_CONFIG_FILE)
