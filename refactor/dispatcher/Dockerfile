@@ -39,7 +39,7 @@ ENV DISPATCHER_SVC_PORT="8002"
 ENV DISPATCHER_SVC_HOST="0.0.0.0"
 
 # These are placeholders/default values and
-# must be overridden with appropriate values 
+# must be overridden with appropriate values
 # from command line when launching
 ENV RESULTS_SVC_PORT="8006"
 ENV UI_SVC_PORT="8005"

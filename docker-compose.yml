@@ -49,7 +49,7 @@ services:
       - 8001:8001
     environment:
       MQ_CONNECTION_URI: nats://covalent_nats:4222
-      MQ_DISPATCH_TOPIC: 
+      MQ_DISPATCH_TOPIC:
       DATA_OS_SVC_HOST_URI: http://covalent_results:8006
       QUEUER_SVC_PORT: 8001
       QUEUER_SVC_HOST: 0.0.0.0
