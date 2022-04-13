@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
@@ -18,25 +20,36 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-[tool.black]
-target_version = ['py38']
-line-length = 99
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.tox
-  | \.venv
-)/
-'''
+"""This file is a wrapper for the NATS binary when installed via setuptools."""
 
-[tool.isort]
-py_version = 38
-line_length = 99
-multi_line_output = 3
-include_trailing_comma = true
-profile = 'black'
-skip_gitignore = true
+import shutil
+import subprocess
 
-[build-system]
-requires = ["requests", "setuptools", "wheel"] # PEP 518
+import refactor
+
+
+def main():
+    nats_path = shutil.which("nats-server")
+    nats_exec_type = "binary"
+
+    if nats_path:
+        try:
+            with open(nats_path, "r") as f:
+                f.readline()
+            nats_exec_type = "text"
+        except UnicodeDecodeError:
+            pass
+
+    if nats_path and nats_exec_type == "binary":
+        # NATS is already installed
+        command = "nats-server"
+    else:
+        # NATS is packaged with Covalent
+        command = refactor.__path__[0] + "/queuer/nats-server"
+
+    subprocess.run([command])
+
+
+if __name__ == "__main__":
+    # For debugging only
+    main()
