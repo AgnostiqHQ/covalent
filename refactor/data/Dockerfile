@@ -18,22 +18,37 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-# syntax=docker/dockerfile:1
-FROM python:3.8-slim-buster
-ENV PROJECT_DIR=/data
+FROM python:3.8-slim-buster as venv
 
-RUN mkdir $PROJECT_DIR \
-    && chmod 0777 $PROJECT_DIR
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends build-essential && \
+  pip install --upgrade pip && \
+  rm -rf /var/lib/apt/lists/*
 
-WORKDIR $PROJECT_DIR
+COPY . /app/
+RUN cd /app && \
+    python -m venv --copies /app/.venv && \
+    . /app/.venv/bin/activate && \
+    pip install -e .
 
-COPY refactor/data/ $PROJECT_DIR
-COPY refactor/ $PROJECT_DIR/refactor
-RUN pip3 install  --no-cache-dir --upgrade -r $PROJECT_DIR/requirements/dist.txt
-RUN cd $PROJECT_DIR/refactor/  \
-    && rm -rf client_side/  && rm -rf dispatcher/ \
-    && rm -rf executor/ && rm -rf queuer/ \
-    && rm -rf results/ && rm -rf runner/  \
-    && rm -rf ui_backend/
+# Final image
+FROM python:3.8-slim-buster as prod
 
-ENTRYPOINT [ "python", "main.py"]
+# Placeholders/default environment variables
+ENV DATA_SVC_HOST="0.0.0.0"
+ENV DATA_SVC_PORT="8004"
+ENV FS_STORAGE_BACKEND="local"
+ENV FS_LOCAL_STORAGE_ROOT="data"
+ENV FS_STORAGE_BUCKET="default"
+ENV MINIO_ENDPOINT="localhost:9000"
+ENV MINIO_ACCESS_KEY="minioadmin"
+ENV MINIO_SECRET_KEY="minioadmin"
+ENV MINIO_DISABLE_TLS=""
+
+COPY --from=venv /app/.venv/ /app/.venv
+COPY --from=venv /app/covalent/ /app/covalent
+COPY --from=venv /app/covalent_ui/ /app/covalent_ui
+COPY --from=venv /app/covalent_dispatcher/ /app/covalent_dispatcher
+COPY --from=venv /app/refactor/data/ /app/refactor/data
+
+CMD ["/app/.venv/bin/python", "/app/refactor/data/main.py"]
