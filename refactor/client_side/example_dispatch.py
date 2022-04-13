@@ -41,8 +41,7 @@ def task_2(y, z):
 @ct.lattice
 def workflow(a):
 
-    for _ in range(5):
-        task_2(a, 10)
+    task_2(a, 10)
 
     return task_1(a)
 

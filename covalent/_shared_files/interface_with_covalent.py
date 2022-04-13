@@ -69,9 +69,6 @@ def dispatch(
 
         lattice.build_graph(*args, **kwargs)
 
-        # Serializing the transport graph and then passing it to the Result object
-        lattice.transport_graph = lattice.transport_graph.serialize()
-
         pickled_res = pickle.dumps(Result(lattice, lattice.metadata["results_dir"]))
 
         r = requests.post(queuer_addr, files={"result_pkl_file": BytesIO(pickled_res)})

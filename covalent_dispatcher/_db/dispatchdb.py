@@ -91,7 +91,7 @@ def result_encoder(obj):
     return str(obj)
 
 
-def encode_result(result_obj):
+def encode_result(result_obj: Result):
     lattice = result_obj.lattice
     ((named_args, named_kwargs),) = (
         get_named_params(lattice.workflow_function, lattice.args, lattice.kwargs),
@@ -111,7 +111,7 @@ def encode_result(result_obj):
             "inputs": encode_dict({**named_args, **named_kwargs}),
             "metadata": extract_metadata(lattice.metadata),
         },
-        "graph": extract_graph(result_obj.lattice.transport_graph._graph),
+        "graph": extract_graph(result_obj.transport_graph._graph),
     }
 
     jsonified_result = simplejson.dumps(result_dict, default=result_encoder, ignore_nan=True)

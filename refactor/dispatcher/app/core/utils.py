@@ -81,16 +81,16 @@ def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result)
 
     if task_name.startswith((subscript_prefix, generator_prefix, parameter_prefix, attr_prefix)):
         if task_name.startswith(parameter_prefix):
-            output = result_obj.lattice.transport_graph.get_node_value(task_id, "value")
+            output = result_obj.transport_graph.get_node_value(task_id, "value")
         else:
-            parent = result_obj.lattice.transport_graph.get_dependencies(task_id)[0]
-            output = result_obj.lattice.transport_graph.get_node_value(parent, "output")
+            parent = result_obj.transport_graph.get_dependencies(task_id)[0]
+            output = result_obj._get_node_output(parent)
 
             if task_name.startswith(attr_prefix):
-                attr = result_obj.lattice.transport_graph.get_node_value(task_id, "attribute_name")
+                attr = result_obj.transport_graph.get_node_value(task_id, "attribute_name")
                 output = getattr(output, attr)
             else:
-                key = result_obj.lattice.transport_graph.get_node_value(task_id, "key")
+                key = result_obj.transport_graph.get_node_value(task_id, "key")
                 output = output[key]
 
         result_obj._update_node(
@@ -161,35 +161,31 @@ def get_task_inputs(task_id: int, node_name: str, result_obj: Result) -> Dict:
 
     if node_name.startswith(electron_list_prefix):
         values = [
-            result_obj.lattice.transport_graph.get_node_value(parent, "output")
-            for parent in result_obj.lattice.transport_graph.get_dependencies(task_id)
+            result_obj._get_node_output(parent)
+            for parent in result_obj.transport_graph.get_dependencies(task_id)
         ]
         task_inputs = {"args": [], "kwargs": {"x": values}}
     elif node_name.startswith(electron_dict_prefix):
         values = {}
-        for parent in result_obj.lattice.transport_graph.get_dependencies(task_id):
-            key = result_obj.lattice.transport_graph.get_edge_value(parent, task_id, "edge_name")
-            value = result_obj.lattice.transport_graph.get_node_value(parent, "output")
+        for parent in result_obj.transport_graph.get_dependencies(task_id):
+            key = result_obj.transport_graph.get_edge_value(parent, task_id, "edge_name")
+            value = result_obj._get_node_output(parent)
             values[key] = value
         task_inputs = {"args": [], "kwargs": {"x": values}}
     else:
         task_inputs = {"args": [], "kwargs": {}}
 
-        for parent in result_obj.lattice.transport_graph.get_dependencies(task_id):
+        for parent in result_obj.transport_graph.get_dependencies(task_id):
 
-            param_type = result_obj.lattice.transport_graph.get_edge_value(
-                parent, task_id, "param_type"
-            )
+            param_type = result_obj.transport_graph.get_edge_value(parent, task_id, "param_type")
 
-            value = result_obj.lattice.transport_graph.get_node_value(parent, "output")
+            value = result_obj._get_node_output(parent)
 
             if param_type == "arg":
                 task_inputs["args"].append(value)
 
             elif param_type == "kwarg":
-                key = result_obj.lattice.transport_graph.get_edge_value(
-                    parent, task_id, "edge_name"
-                )
+                key = result_obj.transport_graph.get_edge_value(parent, task_id, "edge_name")
 
                 task_inputs["kwargs"][key] = value
     return task_inputs
@@ -218,7 +214,7 @@ def get_task_order(result_obj: Result) -> List[List]:
     this function can become much more sophisticated and optimized.
     """
 
-    return result_obj.lattice.transport_graph.get_topologically_sorted_graph()
+    return result_obj.transport_graph.get_topologically_sorted_graph()
 
 
 def send_task_list_to_runner(dispatch_id, tasks_list) -> List[int]:
@@ -230,20 +226,20 @@ def send_task_list_to_runner(dispatch_id, tasks_list) -> List[int]:
     # tasks_list = [
     #     {
     #         "task_id": 0,
-    #         "func": result_object.lattice.transport_graph.get_node_value(0, "function"),
+    #         "func": result_object.transport_graph.get_node_value(0, "function"),
     #         "args": [2 + 2],
     #         "kwargs": {},
-    #         "executor": result_object.lattice.transport_graph.get_node_value(0, "metadata")[
+    #         "executor": result_object.transport_graph.get_node_value(0, "metadata")[
     #             "executor"
     #         ],
     #         "results_dir": result_object.results_dir,
     #     },
     #     {
     #         "task_id": 2,
-    #         "func": result_object.lattice.transport_graph.get_node_value(2, "function"),
+    #         "func": result_object.transport_graph.get_node_value(2, "function"),
     #         "args": [2, 10],
     #         "kwargs": {},
-    #         "executor": result_object.lattice.transport_graph.get_node_value(2, "metadata")[
+    #         "executor": result_object.transport_graph.get_node_value(2, "metadata")[
     #             "executor"
     #         ],
     #         "results_dir": result_object.results_dir,
