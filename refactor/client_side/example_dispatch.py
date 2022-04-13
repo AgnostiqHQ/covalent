@@ -18,34 +18,26 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-
-import time
-
-import interface_with_covalent
-
 import covalent as ct
-from refactor.executor.executor_plugins.local import LocalExecutor
-
-executor = LocalExecutor()
 
 
-@ct.electron(executor=executor)
+@ct.electron
 def task_1(x):
     return x**2
 
 
-@ct.electron(executor=executor)
+@ct.electron
 def subtask(a, b):
     return a**b
 
 
-@ct.electron(executor=executor)
+@ct.electron
 @ct.lattice
 def task_2(y, z):
     return subtask(y, z)
 
 
-@ct.lattice(executor=executor)
+@ct.lattice
 def workflow(a):
 
     task_2(a, 10)
@@ -53,10 +45,18 @@ def workflow(a):
     return task_1(a)
 
 
-dispatch_id = interface_with_covalent.dispatch(workflow)(3)
+dispatch_id = ct.dispatch(workflow)(3)
 
 print(dispatch_id)
 
+result = ct.get_result(dispatch_id=dispatch_id, wait=True)
+
+print(result)
+
+
+print("Now using dispatch_sync: ")
+
+print(ct.dispatch_sync(workflow)(2))
 # time.sleep(3)
 
 # No matter what dispatch id is sent, it returns from the last one only
