@@ -120,6 +120,45 @@ def test_update_workflow_results_pattern_1(mocker, mock_result_initialized, mock
     assert mock_result_initialized._get_node_output(0) == "mock_output"
 
 
+@pytest.mark.parametrize(
+    "status",
+    [
+        (Result.FAILED),
+        (Result.CANCELLED),
+    ],
+)
+def test_update_workflow_results_pattern_2(
+    mocker, status, mock_result_initialized, mock_tasks_queue
+):
+    """Test updating a workflow's results."""
+
+    mock_get_result = mocker.patch(
+        "app.core.update_workflow.get_result_object_from_result_service",
+        return_value=mock_result_initialized,
+    )
+    mock_update_endtime = mocker.patch(
+        "app.core.update_workflow.update_workflow_endtime", return_value=mock_result_initialized
+    )
+    mock_update_complete_workflow = mocker.patch(
+        "app.core.update_workflow.update_completed_workflow"
+    )
+    mock_update_completed_tasks = mocker.patch("app.core.update_workflow.update_completed_tasks")
+
+    ter = {"node_id": 0, "status": status, "output": "mock_output"}
+
+    output = update_workflow_results(
+        task_execution_results=ter, dispatch_id="mock_dispatch_id", tasks_queue=mock_tasks_queue
+    )
+
+    mock_get_result.assert_called_once()
+    mock_update_endtime.assert_called_once()
+    assert mock_update_complete_workflow.mock_calls == []
+    assert mock_update_completed_tasks.mock_calls == []
+    assert isinstance(output, Result)
+    assert mock_result_initialized.status == status
+    assert mock_result_initialized._get_node_output(0) == "mock_output"
+
+
 def test_update_workflow_results_pattern_3(mocker, mock_result_initialized, mock_tasks_queue):
     """Test updating a workflow's results."""
 
@@ -189,18 +228,12 @@ def test_update_workflow_results_pattern_4(mocker, mock_result_initialized, mock
     assert mock_result_initialized._get_node_output(0) == "mock_output"
 
 
-@pytest.mark.parametrize(
-    "status",
-    [
-        (Result.FAILED),
-        (Result.CANCELLED),
-    ],
-)
-def test_update_workflow_results_pattern_2(
-    mocker, status, mock_result_initialized, mock_tasks_queue
-):
+def test_update_workflow_results_pattern_5(mocker, mock_result_initialized, mock_tasks_queue):
     """Test updating a workflow's results."""
 
+    mock_are_tasks_running = mocker.patch(
+        "app.core.update_workflow.are_tasks_running", return_value=True
+    )
     mock_get_result = mocker.patch(
         "app.core.update_workflow.get_result_object_from_result_service",
         return_value=mock_result_initialized,
@@ -213,18 +246,19 @@ def test_update_workflow_results_pattern_2(
     )
     mock_update_completed_tasks = mocker.patch("app.core.update_workflow.update_completed_tasks")
 
-    ter = {"node_id": 0, "status": status, "output": "mock_output"}
+    ter = {"node_id": 0, "status": Result.COMPLETED, "output": "mock_output"}
 
+    mock_tasks_queue.put(None)
     output = update_workflow_results(
         task_execution_results=ter, dispatch_id="mock_dispatch_id", tasks_queue=mock_tasks_queue
     )
 
+    mock_are_tasks_running.assert_called_once()
     mock_get_result.assert_called_once()
     mock_update_endtime.assert_called_once()
     assert mock_update_complete_workflow.mock_calls == []
     assert mock_update_completed_tasks.mock_calls == []
     assert isinstance(output, Result)
-    assert mock_result_initialized.status == status
     assert mock_result_initialized._get_node_output(0) == "mock_output"
 
 
