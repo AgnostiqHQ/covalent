@@ -38,6 +38,5 @@ include_trailing_comma = true
 profile = 'black'
 skip_gitignore = true
 
-#[build-system]
-#requires = ["requests", "setuptools", "wheel"] # PEP 518
-#build-backend = "setup"
+[build-system]
+requires = ["requests", "setuptools", "wheel"] # PEP 518
