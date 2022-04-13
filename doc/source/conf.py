@@ -84,8 +84,8 @@ html_theme_options = {
     "light_logo": "covalent-logo-horizontal-blue.png",
     "dark_logo": "covalent-logo-horizontal-light.png",
     "light_css_variables": {
-        "color-brand-primary": "#E35050",
-        "color-brand-content": "#2386FA",
+        "color-brand-primary": "#5552FF",
+        "color-brand-content": "#AD7BFF",
     },
     "dark_css_variables": {
         "color-brand-primary": "#E35050",
