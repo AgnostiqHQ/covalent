@@ -147,7 +147,7 @@ def get_result(dispatch_id: str, download=False, wait=False):
             result_object: Result = pickle.loads(response.content)
 
     if not download:
-        return result_object
+        return pickle.loads(response.content)
 
     filename = f"result_{dispatch_id}.pkl"
     with open(filename, "wb") as f:

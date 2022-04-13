@@ -68,9 +68,15 @@ def update_workflow_results(
         update_completed_tasks(dispatch_id, tasks_queue, latest_result_obj)
 
     else:
-        logger.warning(
+        print(
             f"None of the above with status {task_execution_results['status']} and {is_empty(tasks_queue)}"
         )
+
+    print(
+        f"task id: {task_execution_results['node_id']} in dispatch id: {dispatch_id} marked as: {task_execution_results['status']}"
+    )
+
+    print(f"Result Object as :\n {latest_result_obj}")
 
     latest_result_obj = update_workflow_endtime(latest_result_obj)
 
@@ -90,6 +96,11 @@ def update_completed_tasks(dispatch_id: str, tasks_queue: MPQ, result_obj: Resul
     """Update completed tasks while the parent workflow is still not completed."""
 
     tasks_order_lod = tasks_queue.get()
+
+    print(
+        f"In update_completed_tasks with dispatch_id: {dispatch_id} and tasks_queue: {tasks_order_lod}"
+    )
+
     tasks_dict = tasks_order_lod.pop(0)
     new_dispatch_id, new_tasks_order = zip(*tasks_dict.items())
 
@@ -129,6 +140,7 @@ def update_completed_workflow(result_obj: Result) -> Result:
     result_obj._status = Result.COMPLETED
 
     if is_sublattice_dispatch_id(result_obj.dispatch_id):
+        print(f"sublattice dispatch id in update_completed_workflow: {result_obj.dispatch_id}")
         splits = result_obj.dispatch_id.split(":")
         parent_dispatch_id, task_id = ":".join(splits[:-1]), splits[-1]
 

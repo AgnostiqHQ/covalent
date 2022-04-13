@@ -36,7 +36,9 @@ from fastapi import APIRouter, File
 
 from covalent._results_manager.result import Result
 
-INITAL_AVAILABLE_RESOURCES = 4
+INITAL_AVAILABLE_RESOURCES = 1
+
+print(f"INITIAL_AVAILABLE_RESOURCES: {INITAL_AVAILABLE_RESOURCES}")
 
 resources = MPQ()
 resources.put(INITAL_AVAILABLE_RESOURCES)
@@ -194,5 +196,5 @@ def task_done(*, dispatch_id: str, task_id: int) -> None:
 
     del ultimate_dict[dispatch_id][task_id]
 
-    if not ultimate_dict[dispatch_id]:
+    if not ultimate_dict.get(dispatch_id, None):
         del ultimate_dict[dispatch_id]
