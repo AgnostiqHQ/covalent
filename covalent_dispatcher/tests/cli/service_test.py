@@ -37,6 +37,7 @@ from covalent_dispatcher._cli.service import (
     _port_from_pid,
     _read_pid,
     _rm_pid_file,
+    config,
     logs,
     purge,
     restart,
@@ -511,6 +512,20 @@ def test_is_server_running(mocker):
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=-1)
     mocker.patch("requests.get", side_effect=Exception("mocked error"))
     assert not _is_server_running("8000")
+
+
+@pytest.mark.parametrize("multiple_vars", [(False), (True)])
+def test_config(mocker, multiple_vars):
+    """Test the 'covalent config' CLI command."""
+    runner = CliRunner()
+    config_set_mock = mocker.patch("covalent_dispatcher._cli.service.cm.set")
+
+    if multiple_vars:
+        runner.invoke(config, "var1=val1 var2=val2")
+        config_set_mock.assert_has_calls([mock.call("var1", "val1"), mock.call("var2", "val2")])
+    else:
+        runner.invoke(config, "var1=val1")
+        config_set_mock.assert_called_once_with("var1", "val1")
 
 
 def test_purge(mocker):
