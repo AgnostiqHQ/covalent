@@ -46,6 +46,7 @@ ENV RESULTS_DB="results.db"
 COPY --from=venv /app/.venv/ /app/.venv
 COPY --from=venv /app/covalent/ /app/covalent
 COPY --from=venv /app/covalent_ui/ /app/covalent_ui
+COPY --from=venv /app/covalent_dispatcher/ /app/covalent_dispatcher
 # Needs to be changed when directories are restructured
 COPY --from=venv /app/refactor/results/ /app/refactor/results
 
