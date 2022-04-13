@@ -117,22 +117,37 @@ def dispatch_sync(
         """
 
         return get_result(
-            dispatch(lattice, queuer_addr)(*args, **kwargs),
-            lattice.metadata["results_dir"],
+            dispatch_id=dispatch(lattice, queuer_addr)(*args, **kwargs),
             wait=True,
         )
 
     return wrapper
 
 
-def get_result(dispatch_id: str, download=False):
-    response = requests.get(
-        get_svc_uri.ResultsURI().get_route(f"workflow/results/{dispatch_id}"), stream=True
-    )
-    response.raise_for_status()
+def get_result(dispatch_id: str, download=False, wait=False):
+
+    session = requests.Session()
+
+    def retrieve_result_response():
+        response = session.get(
+            get_svc_uri.ResultsURI().get_route(f"workflow/results/{dispatch_id}"), stream=True
+        )
+
+        response.raise_for_status()
+
+        return response
+
+    response = retrieve_result_response()
+
+    if wait:
+        result_object: Result = pickle.loads(response.content)
+
+        while result_object.status not in [Result.COMPLETED, Result.FAILED, Result.CANCELLED]:
+            response = retrieve_result_response()
+            result_object: Result = pickle.loads(response.content)
 
     if not download:
-        return pickle.loads(response.content)
+        return result_object
 
     filename = f"result_{dispatch_id}.pkl"
     with open(filename, "wb") as f:
