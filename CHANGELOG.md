@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.78.0] - 2022-04-13
+
 ### Changed
 
 - `ct.get_result` will return result object if no wait is used.
