@@ -22,6 +22,8 @@
 
 from copy import deepcopy
 from datetime import datetime
+from multiprocessing import Queue as MPQ
+from turtle import update
 
 import pytest
 from app.core.dispatch_workflow import init_result_pre_dispatch
@@ -65,6 +67,15 @@ def mock_result_uninitialized():
     lattice.transport_graph = lattice.transport_graph.serialize()
 
     return Result(lattice=lattice, results_dir="", dispatch_id="mock_dispatch_id")
+
+
+@pytest.fixture
+def mock_tasks_queue():
+    """Construct mock tasks queue."""
+
+    from multiprocessing import Queue as MPQ
+
+    return MPQ()
 
 
 @pytest.fixture
@@ -159,7 +170,39 @@ def test_update_completed_workflow_sublattice(mocker, mock_result_initialized):
     assert mock_result_initialized.result == "mock_result"
 
 
-def test_update_completed_task():
+def test_update_completed_electron_task(mocker, mock_result_initialized, mock_tasks_queue):
     """Test updating a completed task's results."""
 
-    pass
+    mock_get_result = mocker.patch(
+        "app.core.update_workflow.get_result_object_from_result_service"
+    )
+    mock_dispatch_runnable_tasks = mocker.patch("app.core.update_workflow.dispatch_runnable_tasks")
+    mock_send_result = mocker.patch(
+        "app.core.update_workflow.send_result_object_to_result_service"
+    )
+
+    mock_tasks_queue.put([{"dispatch_id": [[0], [1, 2, 3], [4, 5], [6]]}])
+    update_completed_tasks("dispatch_id", mock_tasks_queue, mock_result_initialized)
+
+    assert mock_get_result.mock_calls == []
+    assert mock_send_result.mock_calls == []
+    mock_dispatch_runnable_tasks.assert_called_once()
+
+
+def test_update_completed_sublattice_task(mocker, mock_result_initialized, mock_tasks_queue):
+    """Test updating a completed task's results."""
+
+    mock_get_result = mocker.patch(
+        "app.core.update_workflow.get_result_object_from_result_service"
+    )
+    mock_dispatch_runnable_tasks = mocker.patch("app.core.update_workflow.dispatch_runnable_tasks")
+    mock_send_result = mocker.patch(
+        "app.core.update_workflow.send_result_object_to_result_service"
+    )
+
+    mock_tasks_queue.put([{"dispatch_id": [[0], [1, 2, 3], [4, 5], [6]]}])
+    update_completed_tasks("dispatch_id", mock_tasks_queue, mock_result_initialized)
+
+    assert mock_get_result.mock_calls == []
+    assert mock_send_result.mock_calls == []
+    mock_dispatch_runnable_tasks.assert_called_once()

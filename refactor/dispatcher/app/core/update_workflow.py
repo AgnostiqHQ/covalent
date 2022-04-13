@@ -48,13 +48,10 @@ def update_workflow_results(
 
     latest_result_obj: Result = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
-    logger.warning(f"Updating with task as {task_execution_results}")
-
     # Update the task results
     latest_result_obj._update_node(**task_execution_results)
 
     if task_execution_results["status"] == Result.RUNNING:
-
         return latest_result_obj
 
     elif task_execution_results["status"] == Result.FAILED:
@@ -65,12 +62,10 @@ def update_workflow_results(
 
     # If workflow is completed, post-process result
     elif not are_tasks_running(result_obj=latest_result_obj):
-
         update_completed_workflow(latest_result_obj)
 
     elif task_execution_results["status"] == Result.COMPLETED and not is_empty(tasks_queue):
-
-        update_completed_tasks(task_execution_results, dispatch_id, tasks_queue, latest_result_obj)
+        update_completed_tasks(dispatch_id, tasks_queue, latest_result_obj)
 
     else:
         logger.warning(
@@ -91,17 +86,10 @@ def update_workflow_endtime(result_obj: Result) -> Result:
     return result_obj
 
 
-def update_completed_tasks(
-    task_execution_results: Dict, dispatch_id: str, tasks_queue: MPQ, result_obj: Result
-) -> Result:
+def update_completed_tasks(dispatch_id: str, tasks_queue: MPQ, result_obj: Result) -> Result:
     """Update completed tasks while the parent workflow is still not completed."""
 
-    logger.warning(f"Will send next list of tasks, status: {task_execution_results['status']}")
-
     tasks_order_lod = tasks_queue.get()
-
-    logger.warning(f"tasks_order_lod is this: {tasks_order_lod}")
-
     tasks_dict = tasks_order_lod.pop(0)
     new_dispatch_id, new_tasks_order = zip(*tasks_dict.items())
 
@@ -109,36 +97,23 @@ def update_completed_tasks(
     new_tasks_order = new_tasks_order[0]
 
     if tasks_order_lod:
-        logger.warning("tasks_order_lod is not empty")
         tasks_queue.put(tasks_order_lod)
     else:
-        logger.warning("tasks_order_lod is empty")
         # Mark queue as empty
         tasks_queue.put(None)
 
-    logger.warning(f"NEW DISPATCH_ID: {new_dispatch_id}, OLD DISPATCH_ID: {dispatch_id}")
-
     if new_dispatch_id != dispatch_id:
-        logger.warning("CASE OF SUBLATTICE WITH DIFFERING DISPATCH IDS")
 
         next_result_obj = get_result_object_from_result_service(dispatch_id=new_dispatch_id)
-
         dispatch_runnable_tasks(
             result_obj=next_result_obj, tasks_queue=tasks_queue, task_order=new_tasks_order
         )
-
-        logger.warning("dispatch_runnable_tasks SUCCESS")
-
         send_result_object_to_result_service(result_object=next_result_obj)
     else:
-
-        logger.warning("SAME DISPATCH ID, running dispatch_runnable_tasks")
 
         dispatch_runnable_tasks(
             result_obj=result_obj, tasks_queue=tasks_queue, task_order=new_tasks_order
         )
-
-        logger.warning("dispatch_runnable_tasks SUCCESS")
 
     return result_obj
 
