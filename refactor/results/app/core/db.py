@@ -22,7 +22,7 @@ import os
 import sqlite3
 from typing import Optional, Tuple, Union
 
-from refactor.results.app.core.config import settings
+from app.core.config import settings
 
 
 class Database:
