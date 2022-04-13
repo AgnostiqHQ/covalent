@@ -96,17 +96,14 @@ def test_get():
     assert cm.get("legacy_dispatcher.port") == cm.config_data["legacy_dispatcher"]["port"]
 
 
-# def test_purge_config(mocker):
-#     """Test the purge_config method for config manager."""
+def test_purge_config(mocker, monkeypatch):
+    """Test the purge_config method for config manager."""
 
-#     cm = _ConfigManager()
-#     os_dir_mock = mocker.patch(
-#         "covalent._shared_files.config.os.path.dirname", return_value="mock_dir"
-#     )
-#     rmtree_mock = mocker.patch("covalent._shared_files.config.shutil.rmtree")
-#     cm.purge_config()
-#     os_dir_mock.assert_called_once_with(cm.config_file)
-#     rmtree_mock.assert_called_once_with("mock_dir", ignore_errors=True)
+    cm = _ConfigManager()
+    monkeypatch.setattr(cm, "config_dir", "mock_dir")
+    rmtree_mock = mocker.patch("covalent._shared_files.config.shutil.rmtree")
+    cm.purge_config()
+    rmtree_mock.assert_called_once_with("mock_dir", ignore_errors=True)
 
 
 def test_get_config():
