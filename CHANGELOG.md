@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.74.0] - 2022-04-12
+
+### Changed
+
+- Removed misnamed dispatcher plugin stuff and now using the interface functions directly (dispatch, dispatch_sync, get_result).
+
+- `ct.dispatch`, `ct.dispatch_sync`, `ct.get_result`, etc. are going to use the covalent services instead.
+
+## [0.73.0] - 2022-04-12
+
+### Changed
+
+- Arguments and keyword arguments to the function are pickled with cloudpickle, allowing objects that are not pickleable with "normal" pickle to be sent to different processes with the multiprocessing module.
+
+## [0.72.0] - 2022-04-12
+
+### Changed
+
+- Updated the example to use a sublattice.
+
+### Fixed
+
+- Fixed updation of result objects for sublattice and parent lattice.
+- Fixed the regular expression to show sublattice results in the UI.
+
+## [0.71.0] - 2022-04-11
+
+### Changed
+
+- Updated Supervisord template configuration to bring up NATS server with high priority before all other services
+
+## [0.70.0] - 2022-04-11
+
+### Tests
+
+- Dispatcher service tests for the `dispatch_workflow.py` module.
+
+### Changed
+
+- Minor refactor of `dispatch_workflow.py` module in Dispatcher service.
+
+## [0.69.0] - 2022-04-08
+
+### Added
+
+- Added Microservices section with links to Swagger hub for individual API docs
+
 ## [0.68.0] - 2022-04-07
 
 ### Added

@@ -27,7 +27,12 @@ from app.core.cancel_workflow import cancel_workflow_execution
 from app.core.dispatch_workflow import dispatch_workflow
 from app.core.dispatcher_logger import logger
 from app.core.update_workflow import update_workflow_results
-from app.core.utils import get_result_object_from_result_service, is_empty, update_result_and_ui
+from app.core.utils import (
+    get_result_object_from_result_service,
+    is_empty,
+    is_sublattice_dispatch_id,
+    update_result_and_ui,
+)
 from app.schemas.workflow import (
     BatchCancelWorkflowResponse,
     CancelWorkflowResponse,
@@ -84,7 +89,7 @@ logger.warning("Dispatcher Service Started")
 
 
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
-async def submit_workflow(*, dispatch_id: str) -> Any:
+def submit_workflow(*, dispatch_id: str) -> Any:
     """
     Submit a workflow
     """
@@ -114,7 +119,7 @@ async def submit_workflow(*, dispatch_id: str) -> Any:
 
 
 @router.delete("/{dispatch_id}", status_code=200, response_model=CancelWorkflowResponse)
-async def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
+def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     """
     Cancel a workflow
     """
@@ -139,7 +144,7 @@ async def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
 
 
 @router.delete("/cancel", status_code=200, response_model=BatchCancelWorkflowResponse)
-async def cancel_workflows(*, dispatch_ids: List[str] = Query([])) -> BatchCancelWorkflowResponse:
+def cancel_workflows(*, dispatch_ids: List[str] = Query([])) -> BatchCancelWorkflowResponse:
     """
     Cancel a set of workflows
     """
@@ -154,12 +159,14 @@ async def cancel_workflows(*, dispatch_ids: List[str] = Query([])) -> BatchCance
 
 
 @router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
-async def update_workflow(
+def update_workflow(
     *, dispatch_id: str, task_execution_results: bytes = File(...)
 ) -> UpdateWorkflowResponse:
     """
     Update a workflow
     """
+
+    logger.warning(f"Received to update task for id: {dispatch_id}")
 
     task_execution_results = pickle.loads(task_execution_results)
     task_id = task_execution_results["task_id"]
@@ -173,7 +180,9 @@ async def update_workflow(
     )
 
     # Empty queue when workflow is no longer running (completed # or failed)
-    if updated_result_obj.status != Result.RUNNING:
+    if updated_result_obj.status != Result.RUNNING and not is_sublattice_dispatch_id(
+        updated_result_obj.dispatch_id
+    ):
 
         logger.warning("updated_result_obj status is not RUNNING")
 
@@ -188,7 +197,7 @@ async def update_workflow(
 
 
 @router.get("/status", status_code=200)
-async def get_status():
+def get_status():
 
     if is_empty(workflow_status_queue):
         return {"status": "EMPTY"}

@@ -97,7 +97,7 @@ jobs:
       - name: Start Covalent dispatcher server
         run: covalent start -d
       - name: Run tests and measure coverage
-        run: pytest tests covalent/tests covalent_dispatcher/tests -vv --cov=covalent --cov=covalent_dispatcher --ignore=covalent/tests --ignore=covalent_dispatcher/tests
+        run: pytest tests covalent/tests covalent_dispatcher/tests -vv --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
       - name: Generate coverage report
         run: coverage xml
       - name: Upload report to Codecov
@@ -119,14 +119,14 @@ jobs:
           release=false
           if [ "$MASTER_VERSION" = "$VERSION" ] ; then
             echo "$VERSION has been previously released."
-          elif dpkg --compare-versions $VERSION 'gt' '0.32.3' ; then
+          elif [ $VERSION = '0.71.0' ] ; then
             git config user.name "CovalentOpsBot"
             git config user.email "covalentopsbot@users.noreply.github.com"
             git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
             git push origin HEAD:master
             release=true
           else
-            echo "We cannot release versions less than 0.32.3."
+            echo "Master is frozen on 0.71.0"
           fi
           echo "RELEASE=$release" >> $GITHUB_ENV
       - name: Format Slack message

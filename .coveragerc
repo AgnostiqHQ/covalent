@@ -1,0 +1,4 @@
+[run]
+omit =
+    covalent/tests/*
+    covalent_dispatcher/tests/*
