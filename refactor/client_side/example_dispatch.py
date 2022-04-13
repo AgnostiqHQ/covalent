@@ -40,7 +40,8 @@ def task_2(y, z):
 @ct.lattice
 def workflow(a):
 
-    task_2(a, 10)
+    for _ in range(5):
+        task_2(a, 10)
 
     return task_1(a)
 
@@ -54,9 +55,9 @@ result = ct.get_result(dispatch_id=dispatch_id, wait=True)
 print(result)
 
 
-print("Now using dispatch_sync: ")
+# print("Now using dispatch_sync: ")
 
-print(ct.dispatch_sync(workflow)(2))
+# print(ct.dispatch_sync(workflow)(2))
 # time.sleep(3)
 
 # No matter what dispatch id is sent, it returns from the last one only
