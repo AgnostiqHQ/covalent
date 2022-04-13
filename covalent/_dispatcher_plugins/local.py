@@ -41,9 +41,9 @@ class LocalDispatcher(BaseDispatcher):
     @staticmethod
     def dispatch(
         orig_lattice: Lattice,
-        dispatcher_addr: str = get_config("dispatcher.address")
+        dispatcher_addr: str = get_config("legacy_dispatcher.host")
         + ":"
-        + str(get_config("dispatcher.port")),
+        + str(get_config("legacy_dispatcher.port")),
     ) -> Callable:
         """
         Wrapping the dispatching functionality to allow input passing
@@ -93,9 +93,9 @@ class LocalDispatcher(BaseDispatcher):
     @staticmethod
     def dispatch_sync(
         lattice: Lattice,
-        dispatcher_addr: str = get_config("dispatcher.address")
+        dispatcher_addr: str = get_config("legacy_dispatcher.host")
         + ":"
-        + str(get_config("dispatcher.port")),
+        + str(get_config("legacy_dispatcher.port")),
     ) -> Callable:
         """
         Wrapping the synchronous dispatching functionality to allow input

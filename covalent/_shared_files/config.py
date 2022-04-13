@@ -24,11 +24,52 @@ import shutil
 from functools import reduce
 from operator import getitem
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, MutableMapping, Optional, Union
 
 import toml
+from dotenv import dotenv_values, find_dotenv, set_key
 
 """Configuration manager."""
+
+CONFIG_FILE_NAME = ".env"
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__)) + "/../.."
+HOME_PATH = os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")
+
+# TODO: add tests for below functions
+
+
+def deep_get(dictionary, key, default=None):
+    value = dictionary
+    try:
+        for key in key.split("."):
+            if isinstance(value, dict):
+                value = value[key]
+                continue
+            else:
+                return default
+    except KeyError:
+        return default
+    else:
+        return value
+
+
+def deep_set(dictionary, key, value):
+    keys = key.split(".")
+    latest = keys.pop()
+    for k in keys:
+        dictionary = dictionary.setdefault(k, {})
+    dictionary[latest] = value
+
+
+def deep_flatten(d: MutableMapping, parent_key: str = "", sep: str = ".") -> MutableMapping:
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, MutableMapping):
+            items.extend(deep_flatten(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 
 class _ConfigManager:
@@ -38,20 +79,20 @@ class _ConfigManager:
     """
 
     def __init__(self) -> None:
-        config_dir = (
+
+        self.ensure_config_file_exists()
+        env_file_path = find_dotenv(CONFIG_FILE_NAME)
+
+        self.config_dir = (
             os.environ.get("COVALENT_CONFIG_DIR")
             or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
         ) + "/covalent"
-        self.config_file = f"{config_dir}/covalent.conf"
 
-        self.generate_default_config()
-        if os.path.exists(self.config_file):
-            # Update config with user configuration file:
-            self.update_config()
-        else:
-            Path(config_dir).mkdir(parents=True, exist_ok=True)
+        self.config_file = env_file_path
 
-            self.write_config()
+        # print(f"Config Dir: {self.config_dir}")
+        # print(f"Config File: {self.config_file}")
+        # print(f"SDK log dir: {self.get('sdk.log_dir')}")
 
         Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
         Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
@@ -60,21 +101,31 @@ class _ConfigManager:
         Path(self.get("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
         Path(self.get("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
 
-    def generate_default_config(self) -> None:
-        """
-        Load the default configuration into memory.
+    @property
+    def config_data(self):
+        config = {}
+        values = dotenv_values()
+        for key, value in values.items():
+            deep_set(config, key, value)
+        return config
 
-        Args:
-            None
-
-        Returns:
-            None
-        """
-
-        from .defaults import _DEFAULT_CONFIG
-
-        # self.config_data may be modified later, and we don't want it to affect _DEFAULT_CONFIG
-        self.config_data = copy.deepcopy(_DEFAULT_CONFIG)
+    def ensure_config_file_exists(self):
+        if find_dotenv(CONFIG_FILE_NAME) == "":
+            shutil.copyfile(f"{PROJECT_ROOT}/.env.example", f"{PROJECT_ROOT}/{CONFIG_FILE_NAME}")
+            self.set("sdk.log_dir", f'{os.environ.get("COVALENT_LOGDIR") or HOME_PATH}')
+            self.set("sdk.log_level", os.environ.get("LOGLEVEL", "WARNING").lower())
+            self.set("sdk.enable_logging", os.environ.get("COVALENT_LOG_TO_FILE", "false").lower())
+            self.set(
+                "sdk.executor_dir",
+                os.environ.get("COVALENT_EXECUTOR_DIR")
+                or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
+                + "/covalent/executor_plugins",
+            )
+            self.set("dispatcher.cache_dir", f"{HOME_PATH}/covalent")
+            self.set("dispatcher.results_dir", os.environ.get("COVALENT_RESULTS_DIR", "results"))
+            self.set("dispatcher.log_dir", f"{HOME_PATH}/covalent")
+            self.set("user_interface.log_dir", f"{HOME_PATH}/covalent")
+            self.set("user_interface.dispatch_db", f"{HOME_PATH}/covalent/dispatch_db.sqlite")
 
     def update_config(
         self, new_entries: Optional[Dict] = None, override_existing: bool = True
@@ -93,57 +144,10 @@ class _ConfigManager:
             None
         """
 
-        def update_nested_dict(old_dict, new_dict, override_existing: bool = True):
-            for key, value in new_dict.items():
-                if isinstance(value, dict) and key in old_dict and isinstance(old_dict[key], dict):
-                    update_nested_dict(old_dict[key], value, override_existing)
-                else:
-                    if override_existing:
-                        # Values provided should override existing values.
-                        old_dict[key] = value
-                    else:
-                        # Values provided are defaults, and shouldn't override existing values
-                        # unless the existing value is empty.
-                        if key in old_dict and old_dict[key] == "":
-                            old_dict[key] = value
-                        else:
-                            old_dict.setdefault(key, value)
-
-        if os.path.exists(self.config_file):
-            file_config = toml.load(self.config_file)
-            update_nested_dict(self.config_data, file_config)
-            if new_entries:
-                update_nested_dict(self.config_data, new_entries, override_existing)
-
-        self.write_config()
-
-    def read_config(self) -> None:
-        """
-        Read the configuration from file.
-
-        Args:
-            None
-
-        Returns:
-            None
-        """
-
-        self.config_data = toml.load(self.config_file)
-
-    def write_config(self) -> None:
-        """
-        Write the configuration to file.
-
-        Args:
-            None
-
-        Returns:
-            None
-        """
-
-        os.makedirs(os.path.dirname(self.config_file), exist_ok=True)
-        with open(self.config_file, "w") as f:
-            toml.dump(self.config_data, f)
+        if new_entries:
+            flattened_config_dict = deep_flatten(new_entries)
+            for key, value in flattened_config_dict.items():
+                self.set(key, value)
 
     def purge_config(self) -> None:
         """
@@ -156,8 +160,7 @@ class _ConfigManager:
             None
         """
 
-        dir_name = os.path.dirname(self.config_file)
-        shutil.rmtree(dir_name, ignore_errors=True)
+        shutil.rmtree(self.config_dir, ignore_errors=True)
 
     def get(self, key: str) -> Any:
         """
@@ -165,13 +168,16 @@ class _ConfigManager:
 
         Args:
             key: Key value in period-delimited format, e.g., config[dispatcher][port]
-                 is queried by passing "dispatcher.port" as the key.
+                 is queried by passing "legacy_dispatcher.port" as the key.
 
         Returns:
             value: The corresponding configuration value, usually a string or int.
         """
-
-        return reduce(getitem, key.split("."), self.config_data)
+        try:
+            value = deep_get(self.config_data, key)
+        except KeyError as e:
+            value = None
+        return value
 
     def set(self, key: str, value: Any) -> None:
         """
@@ -184,17 +190,7 @@ class _ConfigManager:
         Returns:
             None
         """
-
-        keys = key.split(".")
-
-        try:
-            reduce(getitem, keys[:-1], self.config_data)[keys[-1]] = value
-        except KeyError:
-            data = self.config_data
-            for key in keys:
-                data[key] = {}
-                data = data[key]
-            data[keys[-1]] = value
+        set_key(find_dotenv(CONFIG_FILE_NAME), key, str(value))
 
 
 _config_manager = _ConfigManager()
@@ -220,7 +216,6 @@ def set_config(new_config: Union[Dict, str], new_value: Any = None) -> None:
     else:
         for key, value in new_config.items():
             _config_manager.set(key, value)
-    _config_manager.write_config()
 
 
 def get_config(entries: Union[str, List] = []) -> Union[Dict, Union[str, int]]:
@@ -252,20 +247,6 @@ def get_config(entries: Union[str, List] = []) -> Union[Dict, Union[str, int]]:
         # If a set of keys are passed, return a corresponding dict of key-value pairs
         values = [_config_manager.get(entry) for entry in entries]
         return dict(zip(entries, values))
-
-
-def reload_config() -> None:
-    """
-    Reload the configuration from the TOML file.
-
-    Args:
-        None
-
-    Returns:
-        None
-    """
-
-    _config_manager.read_config()
 
 
 def update_config(new_entries: Optional[Dict] = None, override_existing: bool = True) -> None:

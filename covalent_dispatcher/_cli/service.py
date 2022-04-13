@@ -84,6 +84,7 @@ def _generate_supervisord_config():
 
 
 def _create_config_if_not_exists() -> str:
+    cm.ensure_config_file_exists()
     config_file_content = _generate_supervisord_config()
     exists = False
     try:
@@ -278,7 +279,7 @@ def _graceful_start(
 
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
-        port = get_config("user_interface.port")
+        port = get_config("legacy_ui.port")
         click.echo(f"Covalent server is already running at http://0.0.0.0:{port}.")
         return port
 
@@ -349,7 +350,7 @@ def _graceful_shutdown(pidfile: str) -> None:
 @click.option(
     "-p",
     "--port",
-    default=get_config("user_interface.port"),
+    default=get_config("legacy_ui.port"),
     show_default=True,
     type=int,
     help="Server port number.",
@@ -362,10 +363,10 @@ def start(refactor, port: int, develop: bool) -> None:
         port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
         set_config(
             {
-                "user_interface.address": "0.0.0.0",
-                "user_interface.port": port,
-                "dispatcher.address": "0.0.0.0",
-                "dispatcher.port": port,
+                "legacy_ui.host": "0.0.0.0",
+                "legacy_ui.port": port,
+                "legacy_dispatcher.host": "0.0.0.0",
+                "legacy_dispatcher.port": port,
             }
         )
 
@@ -389,7 +390,7 @@ def status(refactor) -> None:
         _sd_status()
     else:
         if _read_pid(UI_PIDFILE) != -1:
-            ui_port = get_config("user_interface.port")
+            ui_port = get_config("legacy_ui.port")
             click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
         else:
             _rm_pid_file(UI_PIDFILE)
@@ -429,7 +430,7 @@ def restart(ctx, port: int, develop: bool, refactor: bool) -> None:
     if refactor:
         _sd_restart_services()
     else:
-        port = port or get_config("user_interface.port")
+        port = port or get_config("legacy_ui.port")
         ctx.invoke(stop)
         ctx.invoke(start, port=port, develop=develop)
 
@@ -438,7 +439,7 @@ def restart(ctx, port: int, develop: bool, refactor: bool) -> None:
 @click.option(
     "-p",
     "--port",
-    default=get_config("user_interface.port"),
+    default=get_config("legacy_ui.port"),
     show_default=True,
     type=int,
     help="Check server status on a specific port.",
