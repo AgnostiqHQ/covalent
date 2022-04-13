@@ -38,7 +38,7 @@ HOME_PATH = os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")
 # TODO: add tests for below functions
 
 
-def deep_get(dictionary, key, default=None):
+def dict_get(dictionary, key, default=None):
     value = dictionary
     try:
         for key in key.split("."):
@@ -53,7 +53,7 @@ def deep_get(dictionary, key, default=None):
         return value
 
 
-def deep_set(dictionary, key, value):
+def dict_set(dictionary, key, value):
     keys = key.split(".")
     latest = keys.pop()
     for k in keys:
@@ -61,12 +61,12 @@ def deep_set(dictionary, key, value):
     dictionary[latest] = value
 
 
-def deep_flatten(d: MutableMapping, parent_key: str = "", sep: str = ".") -> MutableMapping:
+def dict_flatten(d: MutableMapping, parent_key: str = "", sep: str = ".") -> MutableMapping:
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
         if isinstance(v, MutableMapping):
-            items.extend(deep_flatten(v, new_key, sep=sep).items())
+            items.extend(dict_flatten(v, new_key, sep=sep).items())
         else:
             items.append((new_key, v))
     return dict(items)
@@ -102,7 +102,7 @@ class _ConfigManager:
         config = {}
         values = dotenv_values()
         for key, value in values.items():
-            deep_set(config, key, value)
+            dict_set(config, key, value)
         return config
 
     def ensure_config_file_exists(self):
@@ -141,7 +141,7 @@ class _ConfigManager:
         """
 
         if new_entries:
-            flattened_config_dict = deep_flatten(new_entries)
+            flattened_config_dict = dict_flatten(new_entries)
             for key, value in flattened_config_dict.items():
                 self.set(key, value)
 
@@ -170,7 +170,7 @@ class _ConfigManager:
             value: The corresponding configuration value, usually a string or int.
         """
         try:
-            value = deep_get(self.config_data, key)
+            value = dict_get(self.config_data, key)
         except KeyError as e:
             value = None
         return value
