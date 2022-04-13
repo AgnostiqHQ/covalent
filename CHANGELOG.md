@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.76.0] - 2022-04-13
+
+### Added
+
+- `wait` argument to `ct.get_result`.
+
+### Changed
+
+- Switched to the local executor which is compatible with covalent microservices and removed the old executor.
+
 ## [0.75.0] - 2022-04-13
 
 ### Tests
