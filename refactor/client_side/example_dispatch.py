@@ -41,7 +41,8 @@ def task_2(y, z):
 @ct.lattice
 def workflow(a):
 
-    task_2(a, 10)
+    for _ in range(5):
+        task_2(a, 10)
 
     return task_1(a)
 
@@ -53,12 +54,3 @@ print(dispatch_id)
 result = ct.get_result(dispatch_id=dispatch_id, wait=True)
 
 print(result)
-
-
-print("Now using dispatch_sync: ")
-
-print(ct.dispatch_sync(workflow)(2))
-# time.sleep(3)
-
-# No matter what dispatch id is sent, it returns from the last one only
-# print(interface_with_covalent.get_result("f659c221-362f-4b91-8e69-b10e3b8543f0"))
