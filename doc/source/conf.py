@@ -79,7 +79,7 @@ templates_path = ["_templates"]
 html_theme = "furo"
 
 html_title = ""
-html_favicon = "_static/favcon.png"
+html_favicon = "_static/covalent-logo-blue-favicon.png"
 html_theme_options = {
     "light_logo": "covalent-logo-horizontal-blue.png",
     "dark_logo": "covalent-logo-horizontal-light.png",
