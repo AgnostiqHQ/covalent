@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+# syntax=docker/dockerfile:1
 FROM python:3.8-slim-buster as venv
 
 RUN apt-get update && \
