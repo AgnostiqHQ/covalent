@@ -20,9 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Switched to the local executor which is compatible with covalent microservices and removed the old executor.
-- Fix errors in Dockerfiles
-- Update Dockerfiles to use `multi-stage` container builds to reduce final image size
-- Install all necessary Python modules in all containers
 
 ## [0.75.0] - 2022-04-13
 
