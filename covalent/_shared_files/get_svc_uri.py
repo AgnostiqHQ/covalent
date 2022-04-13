@@ -22,6 +22,8 @@ import os
 
 from furl import furl
 
+from .config import _config_manager as cm
+
 
 class ServiceURI:
     def __init__(
@@ -51,21 +53,19 @@ class ServiceURI:
 class DispatcherURI(ServiceURI):
     def __init__(self) -> None:
         super().__init__(
-            port=os.getenv("DISPATCHER_SVC_PORT", 8002),
-            host=os.getenv("DISPATCHER_SVC_HOST", "localhost"),
+            port=cm.get("DISPATCHER_SVC_PORT"),
+            host=cm.get("DISPATCHER_SVC_HOST"),
         )
 
 
 class QueuerURI(ServiceURI):
     def __init__(self) -> None:
-        super().__init__(
-            port=os.getenv("QUEUER_SVC_PORT", 8001), host=os.getenv("QUEUER_SVC_HOST", "localhost")
-        )
+        super().__init__(port=cm.get("QUEUER_SVC_PORT"), host=cm.get("QUEUER_SVC_HOST"))
 
 
 class ResultsURI(ServiceURI):
     def __init__(self) -> None:
         super().__init__(
-            port=os.getenv("RESULTS_SVC_PORT", 8006),
-            host=os.getenv("RESULTS_SVC_HOST", "localhost"),
+            port=cm.get("RESULTS_SVC_PORT"),
+            host=cm.get("RESULTS_SVC_HOST"),
         )

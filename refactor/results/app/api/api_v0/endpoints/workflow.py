@@ -117,6 +117,7 @@ async def _upload_file(result_pkl_file: BinaryIO):
 
 async def _concurrent_download_and_serialize(semaphore, file_name, session):
     async with semaphore:
+        logger.debug(f"Downloading & serializing: {file_name}...")
         async with session.get(
             DataURI().get_route("/fs/download"), params={"file_location": file_name}
         ) as resp:
