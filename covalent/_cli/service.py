@@ -149,13 +149,10 @@ def _sd_restart_services() -> None:
 
 def _sd_start_services() -> None:
     cwd = _get_project_root_cwd()
-
-    if _is_supervisord_running():
-        _sd_status()
-    else:
-        _ensure_supervisord_running()
-        proc = Popen(["supervisorctl", "start", "covalent:"], stdout=PIPE, cwd=cwd)
-        _read_process_stdout(proc)
+    _ensure_supervisord_running()
+    proc = Popen(["supervisorctl", "start", "covalent:"], stdout=PIPE, cwd=cwd)
+    _read_process_stdout(proc)
+    _sd_status()
 
 
 def _sd_stop_services() -> None:
