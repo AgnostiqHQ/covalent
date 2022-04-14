@@ -10,9 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Re-enabling test actions
-
-## Fixed
-
 - Resolving ui backend endpoint in draw function using config manager
 
 ## [0.80.2] - 2022-04-14
