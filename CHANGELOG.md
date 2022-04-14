@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## Fixed
+### Fixed
 
 - Accessing `ENV_DEST_DIR` env var using `os.environ.get`
+- Missing requirements `pyyaml`, `jinja`, and `psutil` added to reqs file
 
 ## [0.80.0] - 2022-04-14
 
