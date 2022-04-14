@@ -150,6 +150,7 @@ def _sd_start_services() -> None:
     if _is_supervisord_running():
         _sd_status()
     else:
+        _ensure_supervisord_running()
         proc = Popen(["supervisorctl", "start", "covalent:"], stdout=PIPE, cwd=cwd)
         _read_process_stdout(proc)
 
