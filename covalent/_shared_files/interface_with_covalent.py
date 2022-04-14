@@ -27,7 +27,6 @@ import cloudpickle as pickle
 import requests
 
 from .._results_manager.result import Result
-from .._results_manager.results_manager import get_result
 from .._workflow.lattice import Lattice
 from . import get_svc_uri
 

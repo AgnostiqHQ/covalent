@@ -19,12 +19,17 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import numpy as np
+from sklearn.preprocessing import SplineTransformer
+
 import covalent as ct
 
 
 @ct.electron
-def task_1(x):
-    return x**2
+def task_1():
+    X = np.arange(5).reshape(5, 1)
+    spline = SplineTransformer(degree=2, n_knots=3)
+    return spline.fit_transform(X)
 
 
 @ct.electron
@@ -50,6 +55,6 @@ dispatch_id = ct.dispatch(workflow)(3)
 
 print(dispatch_id)
 
-result = ct.get_result(dispatch_id=dispatch_id, wait=True)
+result = ct.get_result(dispatch_id=dispatch_id, wait=True, download=True)
 
 print(result)
