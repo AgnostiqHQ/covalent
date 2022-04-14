@@ -139,6 +139,7 @@ def _sd_status() -> None:
 
 def _sd_restart_services() -> None:
 
+    _ensure_supervisord_running()
     cwd = _get_project_root_cwd()
     proc = Popen(["supervisorctl", "restart", "covalent:"], stdout=PIPE, cwd=cwd)
     _read_process_stdout(proc)
