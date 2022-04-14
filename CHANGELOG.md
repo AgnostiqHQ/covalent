@@ -7,10 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.80.2] - 2022-04-14
+
+### Fixed
+
+- Some legacy config variables are removed.
+- The config references `ENV_DEST_DIR` everywhere now
+
 ## Fixed
 
 - Resolving ui backend endpoint in draw function using config manager
+
+## [0.80.1] - 2022-04-14
+
+### Fixed
+
 - Accessing `ENV_DEST_DIR` env var using `os.environ.get`
+- Missing requirements `pyyaml`, `jinja`, and `psutil` added to reqs file
 
 ## [0.80.0] - 2022-04-14
 
