@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Some legacy config variables are removed.
+- The config references `ENV_DEST_DIR` everywhere now
+
 ## Fixed
 
 - Accessing `ENV_DEST_DIR` env var using `os.environ.get`
