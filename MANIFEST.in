@@ -7,6 +7,12 @@ include **/openapi.yaml
 recursive-include **/requirements/ *
 recursive-include covalent/executor/executor_plugins/ *
 recursive-include covalent/notify/notification_plugins/ *
+recursive-include covalent_dispatcher/ *
+recursive-include covalent_data/ *
+recursive-include covalent_queuer/ *
+recursive-include covalent_results/ *
+recursive-include covalent_runner/ *
+recursive-include covalent_ui/ *
 recursive-exclude covalent_ui/webapp/ *
 recursive-include covalent_ui/webapp/build/ *
 recursive-exclude **/tests/ *
