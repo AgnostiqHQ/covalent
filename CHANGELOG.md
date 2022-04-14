@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## Fixed
+### Changed
+
+- Made `supervisord` use a specific configuration file instead of root.
+
+### Fixed
+
+- Fixed string comparison to determine whether `COVA_SDK` env variable exists or not.
 
 - Resolving ui backend endpoint in draw function using config manager
 
