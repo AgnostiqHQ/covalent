@@ -104,6 +104,7 @@ jobs:
           diff -x tests -r cova-${VERSION}/covalent_data ../covalent_data
           diff -x tests -r cova-${VERSION}/covalent_queuer ../covalent_queuer
           diff -x tests -r cova-${VERSION}/covalent_results ../covalent_results
+          diff -x tests -r cova-${VERSION}/covalent_runner ../covalent_runner
           diff -x README.md -x tests -x webapp cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
@@ -112,7 +113,12 @@ jobs:
       - name: Start Covalent dispatcher server
         run: covalent start
       - name: Run tests and measure coverage
-        run: pytest tests covalent/tests covalent_dispatcher/tests -vv --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+        run: |
+          PYTHONPATH=$PWD/covalent_data pytest covalent_data -vv --cov=covalent_data --cov-config=.coveragerc
+          PYTHONPATH=$PWD/covalent_dispatcher pytest covalent_dispatcher -vv --cov=covalent_dispatcher --cov-config=.coveragerc
+          PYTHONPATH=$PWD/covalent_queuer pytest covalent_queuer -vv --cov=covalent_queuer --cov-config=.coveragerc
+          PYTHONPATH=$PWD/covalent_results pytest covalent_results -vv --cov=covalent_results --cov-config=.coveragerc
+          PYTHONPATH=$PWD/covalent_ui pytest covalent_ui -vv --cov=covalent_ui --cov-config=.coveragerc
       - name: Generate coverage report
         run: coverage xml
       - name: Upload report to Codecov

@@ -9,12 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Made `supervisord` use a specific configuration file instead of root.
+- Made `supervisord` use a specific configuration file instead of looking at root directory.
 
 ### Fixed
 
 - Fixed string comparison to determine whether `COVA_SDK` env variable exists or not.
 
+## [0.80.3] - 2022-04-14
+
+### Fixed
+
+- Re-enabling test actions
 - Resolving ui backend endpoint in draw function using config manager
 
 ## [0.80.2] - 2022-04-14
