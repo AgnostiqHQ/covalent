@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Installation using `pip install -e .` is fixed with regards to the nats installation.
+- Several missing `__init__.py` files are now included.
+
 ## [0.78.0] - 2022-04-13
 
 ### Changed

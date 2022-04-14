@@ -26,7 +26,7 @@ import sys
 
 from setuptools import Command, find_packages, setup
 from setuptools.command.build_py import build_py
-from setuptools.command.install import install
+from setuptools.command.develop import develop
 
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
@@ -152,39 +152,48 @@ class BuildUI(Command):
             )
 
 
+def install_nats():
+    import subprocess
+
+    if platform.system() == "Darwin":
+        subprocess.run(["brew", "install", "nats-server"], check=True)
+    elif platform.system() == "Linux":
+        import requests
+
+        r = requests.get(
+            "https://github.com/nats-io/nats-server/releases/download/v2.7.4/nats-server-v2.7.4-linux-amd64.zip",
+            allow_redirects=True,
+        )
+        r.raise_for_status()
+
+        open("nats-server-v2.7.4-linux-amd64.zip", "wb").write(r.content)
+        subprocess.run(["unzip", "nats-server-v2.7.4-linux-amd64.zip"], check=True)
+        shutil.move("nats-server-v2.7.4-linux-amd64/nats-server", "refactor/queuer/nats-server")
+
+        shutil.rmtree("nats-server-v2.7.4-linux-amd64")
+        os.remove("nats-server-v2.7.4-linux-amd64.zip")
+    else:
+        print(
+            "Platform is not natively supported. Please manually install nats-server.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
 class BuildCovalent(build_py):
     """Build Covalent with NATS server"""
 
     def run(self):
-        import subprocess
-
-        if platform.system() == "Darwin":
-            subprocess.run(["brew", "install", "nats-server"], check=True)
-        elif platform.system() == "Linux":
-            import requests
-
-            r = requests.get(
-                "https://github.com/nats-io/nats-server/releases/download/v2.7.4/nats-server-v2.7.4-linux-amd64.zip",
-                allow_redirects=True,
-            )
-            r.raise_for_status()
-
-            open("nats-server-v2.7.4-linux-amd64.zip", "wb").write(r.content)
-            subprocess.run(["unzip", "nats-server-v2.7.4-linux-amd64.zip"], check=True)
-            shutil.move(
-                "nats-server-v2.7.4-linux-amd64/nats-server", "refactor/queuer/nats-server"
-            )
-
-            shutil.rmtree("nats-server-v2.7.4-linux-amd64")
-            os.remove("nats-server-v2.7.4-linux-amd64.zip")
-        else:
-            print(
-                "Platform is not natively supported. Please manually install nats-server.",
-                file=sys.stderr,
-            )
-            sys.exit(1)
-
+        install_nats()
         build_py.run(self)
+
+
+class DevelopCovalent(develop):
+    """Install Covalent in develop mode with NATS server"""
+
+    def run(self):
+        install_nats()
+        develop.run(self)
 
 
 setup_info = {
@@ -233,6 +242,7 @@ setup_info = {
     ],
     "cmdclass": {
         "build_py": BuildCovalent,
+        "develop": DevelopCovalent,
         "docs": Docs,
         "webapp": BuildUI,
     },
