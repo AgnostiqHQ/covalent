@@ -22,13 +22,19 @@
 
 """This file is a wrapper for the NATS binary when installed via setuptools."""
 
+import platform
 import subprocess
 
 import covalent_queuer
 
 
 def main():
-    command = covalent_queuer.__path__[0] + "/nats-server"
+
+    if platform.system() == "Darwin":
+        command = "nats-server"
+
+    else:
+        command = f"{covalent_queuer.__path__[0]}/nats-server"
 
     subprocess.run([command])
 

@@ -157,6 +157,8 @@ def _sd_start_services() -> None:
 
 def _sd_stop_services() -> None:
     if _is_supervisord_running():
+        pid = _read_pid(SD_PIDFILE)
+        click.echo(f"Supervisord is running in process {pid}.")
         cwd = _get_project_root_cwd()
         proc = Popen(["supervisorctl", "stop", "covalent:"], stdout=PIPE, cwd=cwd)
         _read_process_stdout(proc)
