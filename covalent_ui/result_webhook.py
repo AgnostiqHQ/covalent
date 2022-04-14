@@ -30,7 +30,7 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.utils import get_named_params
 from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
 
-DEFAULT_PORT = get_config("user_interface.port")
+DEFAULT_PORT = get_config("legacy_ui.port")
 
 app_log = logger.app_log
 

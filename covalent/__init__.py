@@ -26,7 +26,7 @@ import os
 
 from . import executor
 from ._results_manager.results_manager import sync
-from ._shared_files.config import get_config, reload_config, set_config
+from ._shared_files.config import get_config, set_config
 from ._shared_files.interface_with_covalent import (
     cancel_workflow,
     dispatch,

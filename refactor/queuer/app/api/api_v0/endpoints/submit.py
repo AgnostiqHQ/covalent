@@ -23,7 +23,7 @@ import uuid
 from io import BytesIO
 
 import cloudpickle as pickle
-from app.core.api import DataService
+from app.core.api import ResultsService
 from app.core.queuer import Queuer
 from app.schemas.submit import ResultPickle, SubmitResponse
 from fastapi import APIRouter, File, HTTPException
@@ -43,7 +43,7 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
     """
 
     queue = Queuer()
-    data_svc = DataService()
+    results_svc = ResultsService()
 
     try:
 
@@ -54,9 +54,7 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
 
         result_pkl_file = BytesIO(pickle.dumps(result_obj))
 
-        await data_svc.create_result(result_pkl_file)
-
-        # dispatch_id = created_result["dispatch_id"]
+        await results_svc.create_result(result_pkl_file)
 
         await queue.publish(queue.topics.DISPATCH, {"dispatch_id": dispatch_id})
 

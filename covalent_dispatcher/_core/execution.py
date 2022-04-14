@@ -401,7 +401,7 @@ def _run_planned_workflow(result_object: Result) -> Result:
 
 
 def _notify_endpoints(dispatch_id: str, status: str, endpoints: List[NotifyEndpoint]) -> None:
-    ui_port = get_config("user_interface.port")
+    ui_port = get_config("legacy_ui.port")
     ui_url = f"http://{socket.getfqdn()}:{ui_port}/{dispatch_id}"
     notification_message = (
         f"Covalent lattice has finished running with status '{status}'. View results at {ui_url}."
