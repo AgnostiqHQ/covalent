@@ -37,6 +37,7 @@ from .._shared_files import logger
 from .._shared_files.config import _config_manager, get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
+from .._shared_files.get_svc_uri import UIBackendURI
 from .._shared_files.utils import (
     encode_dict,
     extract_graph,
@@ -272,7 +273,7 @@ class Lattice:
 
         try:
             response = requests.post(
-                "http://localhost:8005/api/v0/ui/workflow/draft", data=draw_request
+                UIBackendURI().get_route("/ui/workflow/draft"), data=draw_request
             )
             response.raise_for_status()
         except requests.exceptions.HTTPError as ex:
