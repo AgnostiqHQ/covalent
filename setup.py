@@ -256,6 +256,5 @@ setup_info = {
 
 if __name__ == "__main__":
     if os.getenv("COVA_SDK"):
-        print("HEELLELELELELELEOEOEOEOOEEO")
         setup_info["packages"] = find_packages(exclude=["*tests*", "*_legacy"])
     setup(**setup_info)
