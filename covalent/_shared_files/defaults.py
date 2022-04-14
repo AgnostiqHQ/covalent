@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Create custom sentinels and defaults for Covalent"""
+"""Covalent defaults."""
 
 import os
 
@@ -33,7 +33,7 @@ sublattice_prefix = f"{prefix_separator}sublattice{prefix_separator}"
 attr_prefix = f"{prefix_separator}attribute{prefix_separator}"
 arg_prefix = f"{prefix_separator}arg{prefix_separator}"
 
-# Default configuration settings
+# Legacy default configuration settings
 _DEFAULT_CONFIG = {
     "sdk": {
         "log_dir": (

@@ -21,8 +21,7 @@
 # Ignore results folders
 **/results/**
 **/result_*
-!covalent_ui/result_webhook.py
-!refactor/results/**
+!covalent_ui_legacy/result_webhook.py
 
 *.xml
 
@@ -53,9 +52,9 @@ __pycache__/
 *.ipynb_checkpoints
 covalent/**/*.ipynb
 covalent/*.ipynb
-covalent_dispatcher/**/*.ipynb
-covalent_dispatcher/*.ipynb
-refactor/runner/*.ipynb
+covalent_dispatcher_legacy/**/*.ipynb
+covalent_dispatcher_legacy/*.ipynb
+covalent_runner/*.ipynb
 
 # IPython
 profile_default/
@@ -126,13 +125,15 @@ ipython_config.py
 .coverage
 
 # Temporary files
-covalent_dispatcher/_service/tmp*
+covalent_dispatcher_legacy/_service/tmp*
 *_scratch.py
 
 # Logs
-refactor/**/logs/*.log
-refactor/ui_backend/webapp/node_modules
-refactor/ui_backend/webapp/package-lock.json
+**/logs/*.log
+covalent_ui/webapp/node_modules/**
+covalent_ui/webapp/package-lock.json
+covalent_ui_legacy/webapp/node_modules/**
+covalent_ui_legacy/webapp/package-lock.json
 legacy_config/*.log
 
 # Supervisord Files
@@ -142,4 +143,4 @@ supervisord.pid
 supervisord.conf
 
 # NATS Server
-refactor/queuer/nats-server
+covalent_queuer/nats-server

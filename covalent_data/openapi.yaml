@@ -1,0 +1,178 @@
+openapi: 3.0.2
+info:
+  title: Covalent Data Service API
+  version: 0.1.0
+paths:
+  /api/v0/fs/upload:
+    post:
+      tags:
+        - Data
+      summary: Upload File
+      description: Upload a file
+      operationId: upload_file_api_v0_fs_upload_post
+      parameters:
+        - required: false
+          schema:
+            title: Overwrite
+            type: boolean
+            default: false
+          name: overwrite
+          in: query
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Body_upload_file_api_v0_fs_upload_post"
+        required: true
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v0/fs/download:
+    get:
+      tags:
+        - Data
+      summary: Download File
+      description: Download a file
+      operationId: download_file_api_v0_fs_download_get
+      parameters:
+        - required: true
+          schema:
+            title: File Location
+            type: string
+          name: file_location
+          in: query
+      responses:
+        "200":
+          description: Return binary content of file.
+          content:
+            application/octet-stream: {}
+        "404":
+          description: File was not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPExceptionSchema"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v0/fs/delete:
+    delete:
+      tags:
+        - Data
+      summary: Delete File
+      operationId: delete_file_api_v0_fs_delete_delete
+      parameters:
+        - required: false
+          schema:
+            title: Obj Names
+            type: array
+            items:
+              type: string
+            default: []
+          name: obj_names
+          in: query
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+components:
+  schemas:
+    Body_upload_file_api_v0_fs_upload_post:
+      title: Body_upload_file_api_v0_fs_upload_post
+      required:
+        - file
+      type: object
+      properties:
+        file:
+          title: File
+          type: string
+          format: binary
+    DeleteResponse:
+      title: DeleteResponse
+      required:
+        - deleted
+        - failed
+      type: object
+      properties:
+        deleted:
+          title: Deleted
+          type: array
+          items:
+            type: string
+        failed:
+          title: Failed
+          type: array
+          items:
+            type: string
+    HTTPExceptionSchema:
+      title: HTTPExceptionSchema
+      required:
+        - detail
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: string
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+    UploadResponse:
+      title: UploadResponse
+      required:
+        - filename
+        - path
+      type: object
+      properties:
+        filename:
+          title: Filename
+          type: string
+        path:
+          title: Path
+          type: string
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string

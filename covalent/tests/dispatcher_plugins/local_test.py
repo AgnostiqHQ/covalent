@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import covalent as ct
-from covalent._shared_files.interface_with_covalent import dispatch, dispatch_sync
+from covalent._shared_files.interface import dispatch, dispatch_sync
 
 
 @ct.electron

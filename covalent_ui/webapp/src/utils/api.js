@@ -22,9 +22,12 @@
 
 import axios from 'axios'
 
+const baseURL = process.env.REACT_APP_RESULTS_SVC_URI;
 const API = axios.create({
-  baseURL: process.env.REACT_APP_RESULTS_SVC_URI,
+  baseURL,
 })
+
+console.debug(`Using Results API Host: ${baseURL}`)
 
 API.interceptors.response.use(
   // unwrap response data

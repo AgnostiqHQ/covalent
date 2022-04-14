@@ -87,10 +87,11 @@ class _ConfigManager:
         # load .env values into os.environ or use explicitly set environment vars
         load_dotenv(CONFIG_FILE_NAME)
 
-        self.config_dir = (
-            os.environ.get("COVALENT_CONFIG_DIR")
-            or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
-        ) + "/covalent"
+        # Deprecated
+        # self.config_dir = (
+        #    os.environ.get("COVALENT_CONFIG_DIR")
+        #    or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
+        # ) + "/covalent"
 
         self.config_file = env_file_path
 
@@ -167,7 +168,11 @@ class _ConfigManager:
             None
         """
 
-        shutil.rmtree(self.config_dir, ignore_errors=True)
+        # shutil.rmtree(self.config_dir, ignore_errors=True)
+        try:
+            os.remove(self.config_file)
+        except FileNotFoundError:
+            pass
 
     def get(self, key: str) -> Any:
         """

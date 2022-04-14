@@ -8,7 +8,7 @@ services:
   covalent_data:
     build:
       context: .
-      dockerfile: refactor/data/Dockerfile
+      dockerfile: covalent_data/Dockerfile
     image: covalent_data
     container_name: covalent_data
     ports:
@@ -22,7 +22,7 @@ services:
   covalent_dispatcher:
     build:
       context: .
-      dockerfile: refactor/dispatcher/Dockerfile
+      dockerfile: covalent_ispatcher/Dockerfile
     image: covalent_dispatcher
     container_name: covalent_dispatcher
     environment:
@@ -42,7 +42,7 @@ services:
   covalent_queuer:
     build:
       context: .
-      dockerfile: refactor/queuer/Dockerfile
+      dockerfile: covalent_queuer/Dockerfile
     image: covalent_queuer
     container_name: covalent_queuer
     ports:
@@ -62,7 +62,7 @@ services:
   covalent_queue_consumer:
     build:
       context: .
-      dockerfile: refactor/dispatcher/Dockerfile.queue_consumer
+      dockerfile: covalent_dispatcher/Dockerfile.queue_consumer
     image: covalent_queue_consumer
     container_name: covalent_queue_consumer
     environment:
@@ -78,7 +78,7 @@ services:
   covalent_results:
     build:
       context: .
-      dockerfile: refactor/results/Dockerfile
+      dockerfile: covalent_results/Dockerfile
     image: covalent_results
     ports:
       - 8006:8006
@@ -95,7 +95,7 @@ services:
   covalent_runner:
     build:
       context: .
-      dockerfile: refactor/runner/Dockerfile
+      dockerfile: covalent_runner/Dockerfile
     image: covalent_runner
     container_name: covalent_runner
     ports:
@@ -113,7 +113,7 @@ services:
   covalent_ui:
     build:
       context: .
-      dockerfile: refactor/ui_backend/Dockerfile
+      dockerfile: covalent_ui/Dockerfile
     image: covalent_ui
     container_name: covalent_ui
     ports:
