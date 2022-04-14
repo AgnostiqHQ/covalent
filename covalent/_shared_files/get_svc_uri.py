@@ -50,6 +50,11 @@ class ServiceURI:
         return base_url.url
 
 
+class UIBackendURI(ServiceURI):
+    def __init__(self) -> None:
+        super().__init__(port=cm.get("UI_SVC_PORT"), host=cm.get("UI_SVC_HOST"))
+
+
 class DispatcherURI(ServiceURI):
     def __init__(self) -> None:
         super().__init__(
