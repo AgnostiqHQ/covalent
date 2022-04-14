@@ -140,3 +140,6 @@ legacy_config/*.log
 *out.log
 supervisord.pid
 supervisord.conf
+
+# NATS Server
+refactor/queuer/nats-server
