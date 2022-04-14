@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed bug where `covalent start` and `covalent stop` would not bring the services back up
+- Fixed bug where `covalent stop` and `covalent start` would not bring the services back up
 
 ## [0.80.3] - 2022-04-14
 
