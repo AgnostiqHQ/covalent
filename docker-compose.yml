@@ -22,7 +22,7 @@ services:
   covalent_dispatcher:
     build:
       context: .
-      dockerfile: covalent_ispatcher/Dockerfile
+      dockerfile: covalent_dispatcher/Dockerfile
     image: covalent_dispatcher
     container_name: covalent_dispatcher
     environment:

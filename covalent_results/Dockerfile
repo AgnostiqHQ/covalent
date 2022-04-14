@@ -22,7 +22,7 @@
 FROM python:3.8-slim-buster as venv
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential && \
+    apt-get install -y --no-install-recommends build-essential unzip && \
     pip install --upgrade pip && \
     rm -rf /var/lib/apt/lists/*
 
@@ -31,7 +31,15 @@ COPY . /app/
 RUN cd /app && \
     python -m venv --copies /app/.venv && \
     . /app/.venv/bin/activate && \
-    pip install -e .
+    pip install --no-cache-dir -r /app/requirements.txt && \
+    pip install --no-cache-dir -r /app/covalent_results/requirements/dist.txt
+
+ENV COVA_SDK "true"
+RUN cd /app && \
+    . /app/.venv/bin/activate && \
+    export COVA_SDK="TRUE" && \
+    python setup.py install
+
 
 FROM python:3.8-slim-buster as prod
 
@@ -47,4 +55,6 @@ COPY --from=venv /app/.venv/ /app/.venv
 COPY --from=venv /app/covalent/ /app/covalent
 COPY --from=venv /app/covalent_results/ /app/covalent_results
 
+ENV ENV_DEST_DIR "/app"
+WORKDIR /app
 ENTRYPOINT [ "/app/.venv/bin/python", "/app/covalent_results/main.py"]

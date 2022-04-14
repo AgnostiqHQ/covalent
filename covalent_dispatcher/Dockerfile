@@ -22,25 +22,31 @@
 FROM python:3.8-slim-buster as venv
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential && \
+    apt-get install -y --no-install-recommends build-essential unzip && \
     pip install --upgrade pip && \
     rm -rf /var/lib/apt/lists/*
 
 # Create virtualenv and install dependencies
-COPY . /app/
+COPY . /app
 RUN cd /app && \
     python -m venv --copies /app/.venv && \
     . /app/.venv/bin/activate && \
-    pip install -e .
+    pip install --no-cache-dir -r /app/covalent_dispatcher/requirements/dist.txt
+
+ENV COVA_SDK "true"
+RUN cd /app && \
+    . /app/.venv/bin/activate && \
+    export COVA_SDK="TRUE" && \
+    python setup.py install
 
 FROM python:3.8-slim-buster as prod
 
 ENV DISPATCHER_SVC_PORT="8002"
 ENV DISPATCHER_SVC_HOST="0.0.0.0"
 
-# These are placeholders/default values and
-# must be overridden with appropriate values
-# from command line when launching
+## These are placeholders/default values and
+## must be overridden with appropriate values
+## from command line when launching
 ENV RESULTS_SVC_PORT="8006"
 ENV UI_SVC_PORT="8005"
 ENV RUNNER_SVC_PORT="8003"
@@ -49,7 +55,9 @@ ENV RESULTS_SVC_HOST="localhost"
 ENV UI_SVC_HOST="localhost"
 
 COPY --from=venv /app/.venv/ /app/.venv
-COPY --from=venv /app/covalent /app/covalent
+COPY --from=venv /app/covalent/ /app/covalent
 COPY --from=venv /app/covalent_dispatcher/ /app/covalent_dispatcher
 
+ENV ENV_DEST_DIR "/app"
+WORKDIR /app
 ENTRYPOINT [ "/app/.venv/bin/python", "/app/covalent_dispatcher/main.py"]

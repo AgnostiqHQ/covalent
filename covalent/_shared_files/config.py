@@ -117,9 +117,16 @@ class _ConfigManager:
 
     def ensure_config_file_exists(self):
         if find_dotenv(CONFIG_FILE_NAME) == "":
-            shutil.copyfile(
-                f"{PROJECT_ROOT}/covalent/.env.example", f"{PROJECT_ROOT}/{CONFIG_FILE_NAME}"
-            )
+            if os.environ["ENV_DEST_DIR"] != "":
+                shutil.copyfile(
+                    f"{PROJECT_ROOT}/covalent/.env.example",
+                    f"{os.environ.get('ENV_DEST_DIR')}/{CONFIG_FILE_NAME}",
+                )
+            else:
+                shutil.copyfile(
+                    f"{PROJECT_ROOT}/covalent/.env.example", f"{PROJECT_ROOT}/{CONFIG_FILE_NAME}"
+                )
+
             self.set("sdk.log_dir", f'{os.environ.get("COVALENT_LOGDIR") or HOME_PATH}')
             self.set("sdk.log_level", os.environ.get("LOGLEVEL", "WARNING").lower())
             self.set("sdk.enable_logging", os.environ.get("COVALENT_LOG_TO_FILE", "false").lower())

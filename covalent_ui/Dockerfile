@@ -22,7 +22,7 @@
 FROM python:3.8-slim-buster as venv
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential curl && \
+    apt-get install -y --no-install-recommends build-essential curl  unzip && \
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt-get install -y nodejs && \
     npm install --global yarn && \
@@ -34,10 +34,17 @@ COPY . /app/
 RUN cd /app && \
     python -m venv --copies /app/.venv && \
     . /app/.venv/bin/activate && \
-    pip install -e . && \
+    pip install --no-cache-dir -r /app/requirements.txt && \
+    pip install --no-cache-dir -r /app/covalent_ui/requirements/dist.txt && \
     cd /app/covalent_ui/webapp && \
     yarn install --network-timeout 100000 && \
     yarn build --network-timeout 100000
+
+ENV COVA_SDK "true"
+RUN cd /app && \
+    . /app/.venv/bin/activate && \
+    export COVA_SDK="TRUE" && \
+    python setup.py install
 
 FROM python:3.8-slim-buster as prod
 
@@ -52,4 +59,6 @@ ENV PROJECT_DIR=/covalent_ui
 COPY --from=venv /app/.venv/ /app/.venv
 COPY --from=venv /app/covalent_ui/ /app/covalent_ui
 
+ENV ENV_DEST_DIR "/app"
+WORKDIR /app
 ENTRYPOINT [ "/app/.venv/bin/python", "/app/covalent_ui/main.py"]
