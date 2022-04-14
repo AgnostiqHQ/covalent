@@ -117,7 +117,7 @@ class _ConfigManager:
 
     def ensure_config_file_exists(self):
         if find_dotenv(CONFIG_FILE_NAME) == "":
-            if os.environ["ENV_DEST_DIR"] != "":
+            if os.environ.get("ENV_DEST_DIR"):
                 shutil.copyfile(
                     f"{PROJECT_ROOT}/covalent/.env.example",
                     f"{os.environ.get('ENV_DEST_DIR')}/{CONFIG_FILE_NAME}",
