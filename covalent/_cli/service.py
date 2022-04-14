@@ -125,14 +125,20 @@ def _ensure_supervisord_running():
 
 
 def _sd_status() -> None:
-    _ensure_supervisord_running()
-    cwd = _get_project_root_cwd()
-    proc = Popen(["supervisorctl", "status"], stdout=PIPE, cwd=cwd)
-    _read_process_stdout(proc)
+
+    if _is_supervisord_running():
+        pid = _read_pid(SD_PIDFILE)
+        click.echo(f"Supervisord is running in process {pid}.")
+        cwd = _get_project_root_cwd()
+        proc = Popen(["supervisorctl", "status"], stdout=PIPE, cwd=cwd)
+        _read_process_stdout(proc)
+
+    else:
+        click.echo("Supervisord is not running.")
 
 
 def _sd_restart_services() -> None:
-    _ensure_supervisord_running()
+
     cwd = _get_project_root_cwd()
     proc = Popen(["supervisorctl", "restart", "covalent:"], stdout=PIPE, cwd=cwd)
     _read_process_stdout(proc)
@@ -140,16 +146,22 @@ def _sd_restart_services() -> None:
 
 def _sd_start_services() -> None:
     cwd = _get_project_root_cwd()
-    _ensure_supervisord_running()
-    proc = Popen(["supervisorctl", "start", "covalent:"], stdout=PIPE, cwd=cwd)
-    _read_process_stdout(proc)
+
+    if _is_supervisord_running():
+        _sd_status()
+    else:
+        proc = Popen(["supervisorctl", "start", "covalent:"], stdout=PIPE, cwd=cwd)
+        _read_process_stdout(proc)
 
 
 def _sd_stop_services() -> None:
-    _ensure_supervisord_running()
-    cwd = _get_project_root_cwd()
-    proc = Popen(["supervisorctl", "stop", "covalent:"], stdout=PIPE, cwd=cwd)
-    _read_process_stdout(proc)
+    if _is_supervisord_running():
+        cwd = _get_project_root_cwd()
+        proc = Popen(["supervisorctl", "stop", "covalent:"], stdout=PIPE, cwd=cwd)
+        _read_process_stdout(proc)
+
+    else:
+        click.echo("Supervisord is not running.")
 
 
 def _read_pid(filename: str) -> int:
@@ -470,7 +482,11 @@ def logs(service: str, lines: int) -> None:
             "No service name provided, please use '-s <service_name>' or '--service <service_name>"
         )
         return
-    _ensure_supervisord_running()
+
+    if not _is_supervisord_running():
+        click.echo("Supervisord is not running.")
+        return
+
     cwd = _get_project_root_cwd()
     click.echo("_________________")
     click.echo(f"Errors last {str(lines)} bytes:")
