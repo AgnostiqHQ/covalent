@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Fixed
 
+- Resolving ui backend endpoint in draw function using config manager
 - Accessing `ENV_DEST_DIR` env var using `os.environ.get`
 
 ## [0.80.0] - 2022-04-14
