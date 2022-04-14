@@ -55,6 +55,6 @@ dispatch_id = ct.dispatch(workflow)(3)
 
 print(dispatch_id)
 
-result = ct.get_result(dispatch_id=dispatch_id, wait=True, download=True)
+result = ct.get_result(dispatch_id=dispatch_id, wait=True)
 
 print(result)
