@@ -69,3 +69,8 @@ class ResultsURI(ServiceURI):
             port=cm.get("RESULTS_SVC_PORT"),
             host=cm.get("RESULTS_SVC_HOST"),
         )
+
+
+class UIBackendURI(ServiceURI):
+    def __init__(self) -> None:
+        super().__init__(port=cm.get("UI_SVC_PORT"), host=cm.get("UI_SVC_HOST"))

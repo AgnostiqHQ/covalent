@@ -36,7 +36,7 @@ import requests
 import covalent_ui.result_webhook as result_webhook
 from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
 
-from .._shared_files import logger
+from .._shared_files import get_svc_uri, logger
 from .._shared_files.config import _config_manager, get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
@@ -268,7 +268,7 @@ class Lattice:
 
         try:
             response = requests.post(
-                "http://localhost:8005/api/v0/ui/workflow/draft", data=draw_request
+                get_svc_uri.UIBackendURI().get_route("ui/workflow/draft"), data=draw_request
             )
             response.raise_for_status()
         except requests.exceptions.HTTPError as ex:

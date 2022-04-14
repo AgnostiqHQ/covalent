@@ -43,12 +43,15 @@ class SinglePageApp(StaticFiles):
     """
 
     async def get_response(self, path: str, scope):
+        response = None
         try:
             response = await super().get_response(path, scope)
         except HTTPException as e:
             if e.status_code == 404:
                 # return /index.html
                 response = await super().get_response(".", scope)
+            else:
+                raise HTTPException(status_code=404, detail="Not found.")
         return response
 
 
