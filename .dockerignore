@@ -36,7 +36,7 @@ CHANGELOG*
 CODE_OF_CONDUCT*
 CONTRIBUTING*
 Dockerfile
+covalent_ui_legacy/webapp/node_modules/**
+covalent_ui_legacy/webapp/build/**
 covalent_ui/webapp/node_modules/**
 covalent_ui/webapp/build/**
-refactor/ui_backend/node_modules/**
-refactor/ui_backend/build/**

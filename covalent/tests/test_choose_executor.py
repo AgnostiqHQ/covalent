@@ -24,7 +24,7 @@ Integration test for choosing executors.
 
 import covalent as ct
 import covalent._results_manager.results_manager as rm
-from covalent_dispatcher._db.dispatchdb import DispatchDB
+from covalent_dispatcher_legacy._db.dispatchdb import DispatchDB
 
 
 def test_executors_exist():

@@ -87,10 +87,11 @@ class _ConfigManager:
         # load .env values into os.environ or use explicitly set environment vars
         load_dotenv(CONFIG_FILE_NAME)
 
-        self.config_dir = (
-            os.environ.get("COVALENT_CONFIG_DIR")
-            or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
-        ) + "/covalent"
+        # Deprecated
+        # self.config_dir = (
+        #    os.environ.get("COVALENT_CONFIG_DIR")
+        #    or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
+        # ) + "/covalent"
 
         self.config_file = env_file_path
 
@@ -116,9 +117,16 @@ class _ConfigManager:
 
     def ensure_config_file_exists(self):
         if find_dotenv(CONFIG_FILE_NAME) == "":
-            shutil.copyfile(
-                f"{PROJECT_ROOT}/covalent/.env.example", f"{PROJECT_ROOT}/{CONFIG_FILE_NAME}"
-            )
+            if os.environ["ENV_DEST_DIR"] != "":
+                shutil.copyfile(
+                    f"{PROJECT_ROOT}/covalent/.env.example",
+                    f"{os.environ.get('ENV_DEST_DIR')}/{CONFIG_FILE_NAME}",
+                )
+            else:
+                shutil.copyfile(
+                    f"{PROJECT_ROOT}/covalent/.env.example", f"{PROJECT_ROOT}/{CONFIG_FILE_NAME}"
+                )
+
             self.set("sdk.log_dir", f'{os.environ.get("COVALENT_LOGDIR") or HOME_PATH}')
             self.set("sdk.log_level", os.environ.get("LOGLEVEL", "WARNING").lower())
             self.set("sdk.enable_logging", os.environ.get("COVALENT_LOG_TO_FILE", "false").lower())
@@ -167,7 +175,11 @@ class _ConfigManager:
             None
         """
 
-        shutil.rmtree(self.config_dir, ignore_errors=True)
+        # shutil.rmtree(self.config_dir, ignore_errors=True)
+        try:
+            os.remove(self.config_file)
+        except FileNotFoundError:
+            pass
 
     def get(self, key: str) -> Any:
         """

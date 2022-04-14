@@ -62,5 +62,4 @@ repos:
         exclude: |
           (?x)^(
               meta.yaml|
-              refactor/data/openapi.yaml
           )$
