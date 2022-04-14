@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.80.1] - 2022-04-14
+
 ### Fixed
 
 - Accessing `ENV_DEST_DIR` env var using `os.environ.get`
