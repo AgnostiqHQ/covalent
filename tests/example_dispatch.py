@@ -35,6 +35,8 @@ import covalent_dispatcher._cli.service as service
 
 port = 48008
 
+# TODO: LEGACY This file needs updating to be compatible with microservices
+
 
 @ct.electron
 def join_words(a, b):

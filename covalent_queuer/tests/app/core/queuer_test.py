@@ -8,7 +8,7 @@ from app.core.queuer import Queuer
 
 class TestQueuer:
 
-    MOCK_MQ_CONNECTION_URI = "NATS:4222"
+    MOCK_MQ_CONNECTION_URI = "localhost:4222"
 
     @mock.patch.object(nats, "connect", autospec=True)
     @mock.patch.dict(os.environ, {"MQ_CONNECTION_URI": MOCK_MQ_CONNECTION_URI})

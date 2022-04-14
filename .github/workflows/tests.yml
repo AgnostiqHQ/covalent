@@ -61,6 +61,18 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
+          pip install --no-cache-dir -r ./covalent_data/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_data/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_dispatcher/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_dispatcher/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_queuer/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_queuer/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_results/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_results/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_runner/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_runner/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_ui/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_ui/requirements/dev.txt
       - name: Install NPM and Yarn on Ubuntu
         if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye'
         run: |
