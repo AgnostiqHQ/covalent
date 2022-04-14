@@ -104,6 +104,7 @@ jobs:
           diff -x tests -r cova-${VERSION}/covalent_data ../covalent_data
           diff -x tests -r cova-${VERSION}/covalent_queuer ../covalent_queuer
           diff -x tests -r cova-${VERSION}/covalent_results ../covalent_results
+          diff -x tests -r cova-${VERSION}/covalent_runner ../covalent_runner
           diff -x README.md -x tests -x webapp cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
