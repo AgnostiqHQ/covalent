@@ -41,8 +41,10 @@ SUPERVISORD_PORT = 9001
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
-SD_PIDFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.pid"
 SD_CONFIG_FILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.conf"
+
+# Auto-created by Supervisord in CWD of conf file
+SD_PIDFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.pid"
 
 SD_START_TIMEOUT_IN_SECS = 15
 
@@ -77,25 +79,12 @@ def _generate_supervisord_config():
     ) as file:
         template = file.read()
         j2_template = Template(template)
-        config = j2_template.render(
-            {
-                "project_root": project_root_path,
-                "queuer_svc_port": "8001",
-                "dispatcher_svc_port": "8002",
-                "runner_svc_port": "8003",
-                "data_svc_port": "8004",
-                "ui_backend_svc_port": "8005",
-                "results_svc_port": "8006",
-                "mq_connection_uri": "localhost:4222",
-                "mq_dispatch_topic": "workflow.dispatch",
-                "sd_dashboard_port": str(SUPERVISORD_PORT),
-                "sd_pid_file_path": SD_PIDFILE,
-            }
-        )
+        config = j2_template.render({"sd_dashboard_port": str(SUPERVISORD_PORT)})
         return config
 
 
 def _create_config_if_not_exists() -> str:
+    cm.ensure_config_file_exists()
     config_file_content = _generate_supervisord_config()
     exists = False
     try:
@@ -290,7 +279,7 @@ def _graceful_start(
 
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
-        port = get_config("user_interface.port")
+        port = get_config("legacy_ui.port")
         click.echo(f"Covalent server is already running at http://0.0.0.0:{port}.")
         return port
 
@@ -361,7 +350,7 @@ def _graceful_shutdown(pidfile: str) -> None:
 @click.option(
     "-p",
     "--port",
-    default=get_config("user_interface.port"),
+    default=get_config("legacy_ui.port"),
     show_default=True,
     type=int,
     help="Server port number.",
@@ -374,10 +363,10 @@ def start(refactor, port: int, develop: bool) -> None:
         port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
         set_config(
             {
-                "user_interface.address": "0.0.0.0",
-                "user_interface.port": port,
-                "dispatcher.address": "0.0.0.0",
-                "dispatcher.port": port,
+                "legacy_ui.host": "0.0.0.0",
+                "legacy_ui.port": port,
+                "legacy_dispatcher.host": "0.0.0.0",
+                "legacy_dispatcher.port": port,
             }
         )
 
@@ -401,7 +390,7 @@ def status(refactor) -> None:
         _sd_status()
     else:
         if _read_pid(UI_PIDFILE) != -1:
-            ui_port = get_config("user_interface.port")
+            ui_port = get_config("legacy_ui.port")
             click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
         else:
             _rm_pid_file(UI_PIDFILE)
@@ -418,9 +407,17 @@ def stop(refactor) -> None:
 
 
 @click.command()
-def config() -> None:
-    config_file_content = _create_config_if_not_exists()
-    click.echo(config_file_content)
+@click.argument("args", nargs=-1)
+def config(args):
+    args = dict([arg.split("=") for arg in args])
+    if len(args.items()) == 0:
+        # display config values
+        for var_key, var_value in cm.config_data.items():
+            click.echo(f"{var_key}={var_value}")
+    else:
+        # set config values
+        for var_key, var_value in args.items():
+            cm.set(var_key, var_value)
 
 
 @click.command()
@@ -441,7 +438,7 @@ def restart(ctx, port: int, develop: bool, refactor: bool) -> None:
     if refactor:
         _sd_restart_services()
     else:
-        port = port or get_config("user_interface.port")
+        port = port or get_config("legacy_ui.port")
         ctx.invoke(stop)
         ctx.invoke(start, port=port, develop=develop)
 
@@ -450,7 +447,7 @@ def restart(ctx, port: int, develop: bool, refactor: bool) -> None:
 @click.option(
     "-p",
     "--port",
-    default=get_config("user_interface.port"),
+    default=get_config("legacy_ui.port"),
     show_default=True,
     type=int,
     help="Check server status on a specific port.",

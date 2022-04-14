@@ -189,7 +189,9 @@ def sync(
 
 def cancel(
     dispatch_id: str,
-    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
+    dispatcher: str = get_config("legacy_dispatcher.host")
+    + ":"
+    + str(get_config("legacy_dispatcher.port")),
 ) -> str:
     """
     Cancel a running dispatch.

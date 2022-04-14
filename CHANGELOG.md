@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Covalent `config` cli command to alter config values or display covalent configuration
+
+### Changed
+
+- Removed environment section from Supervisord config in order to read from root `.env` file instead
+- Refactored config manager to use project root `.env` file for configuration
+
 ## [0.78.0] - 2022-04-13
 
 ### Changed

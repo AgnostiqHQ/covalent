@@ -18,50 +18,50 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import pytest
+# import pytest
 
-from covalent._dispatcher_plugins.base import BaseDispatcher
-from covalent._results_manager.result import Result
-
-
-def test_dispatcher_creation_with_dispatch_functions():
-    """
-    Test that the dispatcher class can be created with the
-    `dispatch` and `dispatch_sync` methods.
-    """
-
-    class TestDispatcher(BaseDispatcher):
-        """
-        A test dispatcher class.
-        """
-
-        def dispatch(self) -> None:
-            """
-            Test dispatch wrapper.
-            """
-
-            pass
-
-        def dispatch_sync(self) -> Result:
-            """
-            Test dispatch_sync wrapper.
-            """
-
-            pass
-
-    assert TestDispatcher()
+# from covalent._dispatcher_plugins.base import BaseDispatcher
+# from covalent._results_manager.result import Result
 
 
-def test_dispatcher_creation_wo_dispatch_functions():
-    """
-    Test that the dispatcher class cannot be created without the
-    `dispatch` and `dispatch_sync` method.
-    """
+# def test_dispatcher_creation_with_dispatch_functions():
+#     """
+#     Test that the dispatcher class can be created with the
+#     `dispatch` and `dispatch_sync` methods.
+#     """
 
-    class TestDispatcher(BaseDispatcher):
-        """
-        A test dispatcher class.
-        """
+#     class TestDispatcher(BaseDispatcher):
+#         """
+#         A test dispatcher class.
+#         """
 
-    with pytest.raises(TypeError):
-        TestDispatcher()
+#         def dispatch(self) -> None:
+#             """
+#             Test dispatch wrapper.
+#             """
+
+#             pass
+
+#         def dispatch_sync(self) -> Result:
+#             """
+#             Test dispatch_sync wrapper.
+#             """
+
+#             pass
+
+#     assert TestDispatcher()
+
+
+# def test_dispatcher_creation_wo_dispatch_functions():
+#     """
+#     Test that the dispatcher class cannot be created without the
+#     `dispatch` and `dispatch_sync` method.
+#     """
+
+#     class TestDispatcher(BaseDispatcher):
+#         """
+#         A test dispatcher class.
+#         """
+
+#     with pytest.raises(TypeError):
+#         TestDispatcher()

@@ -38,9 +38,9 @@ class APIService:
         return self._format(requests.put(route, json=json, params=params, data=data))
 
 
-class DataService(APIService):
+class ResultsService(APIService):
     def __init__(self):
-        super().__init__(settings.DATA_OS_SVC_HOST_URI)
+        super().__init__(f"http://{settings.RESULTS_SVC_HOST}:{settings.RESULTS_SVC_PORT}")
 
     async def create_result(self, result_pkl_file: bytes):
         return self.post("api/v0/workflow/results", files={"result_pkl_file": result_pkl_file})
