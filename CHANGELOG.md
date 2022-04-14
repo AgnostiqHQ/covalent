@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.80.2] - 2022-04-14
+
 ### Fixed
 
 - Some legacy config variables are removed.
