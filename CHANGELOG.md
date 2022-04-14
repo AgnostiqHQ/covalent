@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.79.1] - 2022-04-14
+
 ### Fixed
 
 - Installation using `pip install -e .` is fixed with regards to the nats installation.
