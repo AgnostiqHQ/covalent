@@ -101,13 +101,16 @@ jobs:
           tar xzf cova-${VERSION}.tar.gz
           diff -x tests -r cova-${VERSION}/covalent ../covalent
           diff -x tests -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
-          diff -x README.md cova-${VERSION}/covalent_ui ../covalent_ui 
+          diff -x tests -r cova-${VERSION}/covalent_data ../covalent_data
+          diff -x tests -r cova-${VERSION}/covalent_queuer ../covalent_queuer
+          diff -x tests -r cova-${VERSION}/covalent_results ../covalent_results
+          diff -x README.md -x tests -x webapp cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
       - name: Install Covalent
         run: pip install -e .
       - name: Start Covalent dispatcher server
-        run: covalent start -d
+        run: covalent start
       - name: Run tests and measure coverage
         run: pytest tests covalent/tests covalent_dispatcher/tests -vv --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
       - name: Generate coverage report
