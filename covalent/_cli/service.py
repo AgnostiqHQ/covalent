@@ -38,8 +38,10 @@ from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
 
 SUPERVISORD_PORT = 9001
-UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
-UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
+# UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
+# UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
+UI_PIDFILE = "/tmp/ui.pid"
+UI_LOGFILE = "/tmp/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui_legacy"
 SD_CONFIG_FILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.conf"
 
@@ -534,10 +536,10 @@ def purge(legacy) -> None:
     if legacy:
         _graceful_shutdown(UI_PIDFILE)
 
-    shutil.rmtree(get_config("sdk.log_dir"), ignore_errors=True)
-    shutil.rmtree(get_config("dispatcher.cache_dir"), ignore_errors=True)
-    shutil.rmtree(get_config("dispatcher.log_dir"), ignore_errors=True)
-    shutil.rmtree(get_config("user_interface.log_dir"), ignore_errors=True)
+    # shutil.rmtree(get_config("sdk.log_dir"), ignore_errors=True)
+    # shutil.rmtree(get_config("dispatcher.cache_dir"), ignore_errors=True)
+    # shutil.rmtree(get_config("dispatcher.log_dir"), ignore_errors=True)
+    # shutil.rmtree(get_config("user_interface.log_dir"), ignore_errors=True)
 
     cm.purge_config()
 
