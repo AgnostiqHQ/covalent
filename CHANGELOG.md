@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Using config manager to resolve UI backend URL
+
+## [0.79.0] - 2022-04-14
+
 ### Added
 
 - Covalent `config` cli command to alter config values or display covalent configuration
