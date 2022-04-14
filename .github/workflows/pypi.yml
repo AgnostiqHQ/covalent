@@ -57,7 +57,10 @@ jobs:
           tar xzf cova-${VERSION}rc0.tar.gz
           diff -x tests -r cova-${VERSION}rc0/covalent ../covalent
           diff -x tests -r cova-${VERSION}rc0/covalent_dispatcher ../covalent_dispatcher
-          diff -x README.md cova-${VERSION}rc0/covalent_ui ../covalent_ui 
+          diff -x tests -r cova-${VERSION}rc0/covalent_data ../covalent_data
+          diff -x tests -r cova-${VERSION}rc0/covalent_queuer ../covalent_queuer
+          diff -x tests -r cova-${VERSION}rc0/covalent_results ../covalent_results
+          diff -x README.md -x tests -x webapp cova-${VERSION}rc0/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}rc0/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}rc0/
       - name: Upload Distribution
