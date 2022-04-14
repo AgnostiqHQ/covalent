@@ -33,8 +33,6 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import requests
 
-import covalent_ui_legacy.result_webhook as result_webhook
-
 from .._shared_files import logger
 from .._shared_files.config import _config_manager, get_config
 from .._shared_files.context_managers import active_lattice_manager
@@ -49,6 +47,9 @@ from .._shared_files.utils import (
 )
 from ..notify.notify import NotifyEndpoint
 from .transport import _TransportGraph
+
+# import covalent_ui_legacy.result_webhook as result_webhook
+
 
 if TYPE_CHECKING:  # pragma: no cover
     from .._results_manager.result import Result
@@ -217,21 +218,21 @@ class Lattice:
         plt.tight_layout()
         return ax
 
-    def draw_legacy(self, *args, **kwargs) -> None:
-        """
-        Generate lattice graph and display in UI taking into account passed in
-        arguments.
-
-        Args:
-            *args: Positional arguments to be passed to build the graph.
-            **kwargs: Keyword arguments to be passed to build the graph.
-
-        Returns:
-            None
-        """
-
-        self.build_graph(*args, **kwargs)
-        result_webhook.send_draw_request(self)
+    #    def draw_legacy(self, *args, **kwargs) -> None:
+    #        """
+    #        Generate lattice graph and display in UI taking into account passed in
+    #        arguments.
+    #
+    #        Args:
+    #            *args: Positional arguments to be passed to build the graph.
+    #            **kwargs: Keyword arguments to be passed to build the graph.
+    #
+    #        Returns:
+    #            None
+    #        """
+    #
+    #        self.build_graph(*args, **kwargs)
+    #        result_webhook.send_draw_request(self)
 
     def draw(self, *args, **kwargs) -> None:
         """

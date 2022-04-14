@@ -21,8 +21,6 @@
 import asyncio
 import io
 import json
-import logging
-import logging.config
 import os
 import random
 import sqlite3
@@ -53,11 +51,6 @@ from fastapi.responses import FileResponse, StreamingResponse
 
 from covalent._shared_files.utils import encode_result
 
-logconf = os.path.realpath(os.path.dirname(__file__) + "/../../../../logging.conf")
-logging.config.fileConfig(logconf, disable_existing_loggers=False)
-
-logger = logging.getLogger(__name__)
-
 router = APIRouter()
 
 data_svc = DataService()
@@ -66,20 +59,20 @@ db = Database()
 
 # @router.middleware("http")
 # TODO: figure out why the middleware doesn't work
-async def log_requests(request: Request, call_next):
-    idem = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    logger.info(f"rid={idem} start request path={request.url.path}")
-    start_time = time.time()
-
-    response = await call_next(request)
-
-    process_time = (time.time() - start_time) * 1000
-    formatted_process_time = "{0:.2f}".format(process_time)
-    logger.info(
-        f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}"
-    )
-
-    return response
+# async def log_requests(request: Request, call_next):
+#    idem = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+#    logger.info(f"rid={idem} start request path={request.url.path}")
+#    start_time = time.time()
+#
+#    response = await call_next(request)
+#
+#    process_time = (time.time() - start_time) * 1000
+#    formatted_process_time = "{0:.2f}".format(process_time)
+#    logger.info(
+#        f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}"
+#    )
+#
+#    return response
 
 
 async def _get_result_file(dispatch_id: str) -> bytes:
@@ -117,7 +110,7 @@ async def _upload_file(result_pkl_file: BinaryIO):
 
 async def _concurrent_download_and_serialize(semaphore, file_name, session):
     async with semaphore:
-        logger.debug(f"Downloading & serializing: {file_name}...")
+        # logger.debug(f"Downloading & serializing: {file_name}...")
         async with session.get(
             DataURI().get_route("/fs/download"), params={"file_location": file_name}
         ) as resp:

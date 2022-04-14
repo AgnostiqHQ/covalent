@@ -17,14 +17,3 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
-"""Results management service."""
-
-import logging
-import logging.config
-import os
-
-# setup loggers
-logconf = os.path.realpath(os.path.dirname(__file__) + "/../../../../logging.conf")
-logging.config.fileConfig(logconf, disable_existing_loggers=False)
-logger = logging.getLogger(__name__)
