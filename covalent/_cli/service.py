@@ -110,7 +110,7 @@ def _ensure_supervisord_running():
         pid = _read_pid(SD_PIDFILE)
         click.echo(f"Supervisord already running in process {pid}.")
     else:
-        Popen(["supervisord"], stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
+        Popen(["supervisord", "-c", f"{SD_CONFIG_FILE}"], stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
         count = 0
         wait_interval_in_secs = 0.1
         while not _is_port_in_use(SUPERVISORD_PORT):
