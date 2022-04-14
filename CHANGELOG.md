@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Re-enabling test actions
 
+## [0.80.2] - 2022-04-14
+
+### Fixed
+
+- Some legacy config variables are removed.
+- The config references `ENV_DEST_DIR` everywhere now
+
+## Fixed
+
 ## [0.80.1] - 2022-04-14
 
 ### Fixed
