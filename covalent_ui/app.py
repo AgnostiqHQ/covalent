@@ -156,7 +156,7 @@ if __name__ == "__main__":
     if args.port:
         port = int(args.port)
     else:
-        port = int(get_config("dispatcher.port"))
+        port = int(get_config("legacy_dispatcher.port"))
 
     debug = True if args.develop is True else False
     # reload = True if args.develop is True else False

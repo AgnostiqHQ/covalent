@@ -18,10 +18,11 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import os
+
 from furl import furl
 
-from refactor.queuer.app.core.config import settings as queuer_settings
-from refactor.results.app.core.config import settings as results_settings
+from .config import _config_manager as cm
 
 
 class ServiceURI:
@@ -49,15 +50,22 @@ class ServiceURI:
         return base_url.url
 
 
-class QueuerURI(ServiceURI):
+class DispatcherURI(ServiceURI):
     def __init__(self) -> None:
         super().__init__(
-            port=queuer_settings.QUEUER_SVC_PORT, host=queuer_settings.QUEUER_SVC_HOST
+            port=cm.get("DISPATCHER_SVC_PORT"),
+            host=cm.get("DISPATCHER_SVC_HOST"),
         )
+
+
+class QueuerURI(ServiceURI):
+    def __init__(self) -> None:
+        super().__init__(port=cm.get("QUEUER_SVC_PORT"), host=cm.get("QUEUER_SVC_HOST"))
 
 
 class ResultsURI(ServiceURI):
     def __init__(self) -> None:
         super().__init__(
-            port=results_settings.RESULTS_SVC_PORT, host=results_settings.RESULTS_SVC_HOST
+            port=cm.get("RESULTS_SVC_PORT"),
+            host=cm.get("RESULTS_SVC_HOST"),
         )

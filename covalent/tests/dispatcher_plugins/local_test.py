@@ -19,9 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import covalent as ct
-from covalent._dispatcher_plugins.local import LocalDispatcher
-
-dispatcher = LocalDispatcher()
+from covalent._shared_files.interface_with_covalent import dispatch, dispatch_sync
 
 
 @ct.electron
@@ -38,7 +36,7 @@ def workflow(x, y):
 def test_local_dispatcher_dispatch():
     """Tests whether the local dispatcher can dispatch a workflow successfully."""
 
-    dispatch_id = dispatcher.dispatch(workflow)(1, 2)
+    dispatch_id = dispatch(workflow)(1, 2)
 
     assert isinstance(dispatch_id, str)
 
@@ -46,5 +44,5 @@ def test_local_dispatcher_dispatch():
 def test_local_dispatcher_dispatch_sync():
     """Tests whether the local dispatcher can synchronously dispatch a workflow successfully."""
 
-    result = dispatcher.dispatch_sync(workflow)(1, 2)
+    result = dispatch_sync(workflow)(1, 2)
     assert result.result == 5

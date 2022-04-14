@@ -20,7 +20,7 @@
 
 from typing import List, Union
 
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 from pydantic import AnyHttpUrl, BaseSettings, validator
 
 load_dotenv()
@@ -49,6 +49,10 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = True
+        env_file = ".env"
 
 
 settings = Settings()
+
+print("Configuration:")
+print(settings)

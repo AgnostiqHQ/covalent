@@ -36,22 +36,22 @@ import cloudpickle as pickle
 import requests
 from aiohttp import ClientSession
 from app.core.api import DataService
+from app.core.config import settings
 from app.core.db import Database
+from app.core.get_svc_uri import DataURI
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import (
     DeleteResultResponse,
     InsertResultResponse,
     Node,
     Result,
+    ResultFormats,
     UpdateResultResponse,
 )
 from fastapi import APIRouter, File, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
 from covalent_dispatcher._db.dispatchdb import encode_result
-from refactor.results.app.core.config import settings
-from refactor.results.app.core.get_svc_uri import DataURI
-from refactor.results.app.schemas.workflow import ResultFormats
 
 logconf = os.path.realpath(os.path.dirname(__file__) + "/../../../../logging.conf")
 logging.config.fileConfig(logconf, disable_existing_loggers=False)
@@ -117,6 +117,7 @@ async def _upload_file(result_pkl_file: BinaryIO):
 
 async def _concurrent_download_and_serialize(semaphore, file_name, session):
     async with semaphore:
+        logger.debug(f"Downloading & serializing: {file_name}...")
         async with session.get(
             DataURI().get_route("/fs/download"), params={"file_location": file_name}
         ) as resp:

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
@@ -18,8 +20,19 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .base import BaseDispatcher
-from .local import LocalDispatcher
+"""This file is a wrapper for the NATS binary when installed via setuptools."""
 
-local_dispatch = LocalDispatcher.dispatch
-local_dispatch_sync = LocalDispatcher.dispatch_sync
+import subprocess
+
+import refactor
+
+
+def main():
+    command = refactor.__path__[0] + "/queuer/nats-server"
+
+    subprocess.run([command])
+
+
+if __name__ == "__main__":
+    # For debugging only
+    main()

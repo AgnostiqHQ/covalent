@@ -21,6 +21,7 @@
 
 """Workflow dispatch functionality."""
 
+import sys
 from datetime import datetime, timezone
 from multiprocessing import Queue as MPQ
 from queue import Empty
@@ -107,9 +108,16 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
 
     if unrun_tasks:
         if final_task_order is not None:
-            final_task_order[0][result_obj.dispatch_id] = [unrun_tasks] + final_task_order[0][
-                result_obj.dispatch_id
-            ]
+            print(f"unrun tasks: {unrun_tasks}")
+            print(f"final task order: {final_task_order}")
+
+            if final_task_order[0].get(result_obj.dispatch_id):
+                final_task_order[0][result_obj.dispatch_id] = [unrun_tasks] + final_task_order[0][
+                    result_obj.dispatch_id
+                ]
+            else:
+                new_dict = {result_obj.dispatch_id: [unrun_tasks]}
+                final_task_order = [new_dict] + final_task_order
         else:
             final_task_order = [{result_obj.dispatch_id: [unrun_tasks]}]
 
@@ -200,6 +208,8 @@ def get_runnable_tasks(
         # Check whether the node is a sublattice
         if is_sublattice(task_name):
 
+            print("INSIDE SUBLATTICE", file=sys.stderr)
+
             # Get the sublattice
             sublattice = serialized_function.get_deserialized()
 
@@ -211,6 +221,11 @@ def get_runnable_tasks(
                 lattice=sublattice,
                 results_dir=result_obj.lattice.metadata["results_dir"],
                 dispatch_id=f"{result_obj.dispatch_id}:{task_id}",
+            )
+
+            print(
+                f"TASKS ORDER IN SUBLATTICE CONDITION: {get_task_order(sublattice_result_obj)}",
+                file=sys.stderr,
             )
 
             # Serialize its transport graph
