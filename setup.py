@@ -180,11 +180,28 @@ def install_nats():
         sys.exit(1)
 
 
+def supervisor_customization():
+    import shutil
+
+    import supervisor
+
+    supervisor_path = supervisor.__path__[0]
+    shutil.copy(
+        "doc/source/_templates/supervisor_status.html",
+        os.path.join(supervisor_path, "ui/status.html"),
+    )
+    shutil.copy(
+        "doc/source/_static/covalent-logo-horizontal-blue.png",
+        os.path.join(supervisor_path, "ui/images/covalent-logo-horizontal-blue.png"),
+    )
+
+
 class BuildCovalent(build_py):
     """Build Covalent with NATS server"""
 
     def run(self):
         install_nats()
+        supervisor_customization()
         build_py.run(self)
 
 
@@ -193,6 +210,7 @@ class DevelopCovalent(develop):
 
     def run(self):
         install_nats()
+        supervisor_customization()
         develop.run(self)
 
 
