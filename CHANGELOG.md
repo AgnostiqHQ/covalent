@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Nats server shuts down properly when using `covalent stop` or `covalent restart`
+
 ## [0.81.1] - 2022-04-14
 
 ### Fixed
