@@ -1,15 +1,15 @@
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
-# 
-# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
 # A copy of the License may be obtained with this software package or at
 #
 #      https://www.gnu.org/licenses/agpl-3.0.en.html
 #
-# Use of this file is prohibited except in compliance with the License. Any 
-# modifications or derivative works of this file must retain this copyright 
-# notice, and modified files must contain a notice indicating that they have 
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
 # been altered from the originals.
 #
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
@@ -21,16 +21,36 @@
 name: release
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+      stable_version:
+        description: "Stable version number, e.g. 0.32.3"
+        type: string
+      test_release:
+        description: "true: Test the workflow but don't create the release. false: Create a release"
+        required: true
+        type: boolean
+        default: true
+      prerelease:
+        description: "true: Create a prerelease. false: Create a stable release"
+        required: true
+        type: boolean
+        default: true
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out release tag
+        uses: actions/checkout@v2
+        if: github.event.inputs.prerelease == 'false' && github.event.inputs.stable_version
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: "v${{ github.event.inputs.stable_version }}"
       - name: Check out master
         uses: actions/checkout@v2
+        if: github.event.inputs.prerelease == 'true'
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -63,14 +83,14 @@ jobs:
           body: ${{ env.MESSAGE }}
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
           tag: ${{ env.RELEASE }}
-          prerelease: true
+          prerelease: ${{ github.event.inputs.prerelease }}
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent"
           SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "The release.yml workflow is failing in master!"
+          SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
