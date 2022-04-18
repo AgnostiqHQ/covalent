@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Lattice in the result object is now pickled separately and a different instance of transport graph is used for modifications than the one in lattice in order to prevent unpickling the lattice everytime result object is read/written to.
 
+## [0.86.1] - 2022-04-18
+
+### Fixed
+
+- Updated the README banner url
+
 ## [0.86.0] - 2022-04-18
 
 ### Changed
