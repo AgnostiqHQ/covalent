@@ -46,8 +46,6 @@ ENV QUEUER_SVC_HOST="0.0.0.0"
 ENV QUEUER_SVC_PORT="8001"
 
 # Placeholders/defaults
-# Results service
-ENV DATA_OS_SVC_HOST_URI="http://localhost:8006"
 # NATS service
 ENV MQ_CONNECTION_URI="nats://localhost:4222"
 # Dispatch topic
