@@ -2,10 +2,7 @@
 
 <div align="center">
 
-![covalent logo](https://github.com/AgnostiqHQ/covalent/blob/master/doc/source/_static/dark.png#gh-dark-mode-only)
-![covalent logo](https://github.com/AgnostiqHQ/covalent/blob/master/doc/source/_static/light.png#gh-light-mode-only)
-
-&nbsp;
+<img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/brand-switchover/doc/source/_static/covalent_readme_banner.svg" width=150%>
 
 [![version](https://github-covalent-badges.s3.amazonaws.com/badges/version.svg?maxAge=3600)](https://github.com/AgnostiqHQ/covalent)
 [![python](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380)

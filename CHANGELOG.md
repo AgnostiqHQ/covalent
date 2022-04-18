@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.85.0] - 2022-04-18
+
+### Changed
+
+- Covalent branding updated using new guidelines
+
+## [0.84.1] - 2022-04-18
+
+### Fixed
+
+- Nats server shuts down properly when using `covalent stop` or `covalent restart`
+
 ## [0.84.0] - 2022-04-18
 
 ### Changed
