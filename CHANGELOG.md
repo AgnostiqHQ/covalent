@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated tests to match above change
 
+## [0.87.0] - 2022-04-18
+
+### Changed
+
+- Removed unused `DATA_OS_SVC_HOST_URI` env var from docker compose file & Dockerfile placeholders
+
 ## [0.86.1] - 2022-04-18
 
 ### Fixed
