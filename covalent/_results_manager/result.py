@@ -80,6 +80,10 @@ class Result:
         self._results_dir = results_dir
 
         self._lattice = pickle.dumps(lattice)
+        self.workflow_function_string = lattice.workflow_function_string
+        self.lattice_doc = lattice.__doc__
+        self.lattice_name = lattice.__name__
+
         self._dispatch_id = dispatch_id
 
         self._transport_graph = lattice.transport_graph.serialize()
