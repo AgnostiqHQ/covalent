@@ -163,7 +163,7 @@ def test_init_result_pre_dispatch(mocker, mock_result_uninitialized):
     )
 
     post_init_result_obj = init_result_pre_dispatch(mock_result_uninitialized)
-    assert post_init_result_obj._num_nodes
+    assert post_init_result_obj._get_node_status(0) == Result.NEW_OBJ
 
     mock_initialize_nodes.assert_called_once_with()
 
