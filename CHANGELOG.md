@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.82.0] - 2022-04-18
+
 ### Added
 
 - Add a pre-commit hook for `detect-secrets`.
