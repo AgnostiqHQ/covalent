@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Update container networking for the covalent stack in `docker-compose.yaml`
+- Fix container networking for the local covalent stack in `docker-compose.yml`
+
+## [0.84.1] - 2022-04-18
+
+### Fixed
+
+- Nats server shuts down properly when using `covalent stop` or `covalent restart`
 
 ## [0.84.0] - 2022-04-18
 
