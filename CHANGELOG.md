@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.84.0] - 2022-04-18
+
 ### Changed
 
 - Updated the "How to create a custom executor" how-to Jupyter notebook.
