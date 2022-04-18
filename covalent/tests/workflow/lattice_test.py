@@ -28,7 +28,6 @@ from typing import Callable, List
 import networkx as nx
 import pytest
 
-from covalent._dispatcher_plugins.local import LocalDispatcher
 from covalent._results_manager.result import Result
 from covalent._shared_files.config import get_config
 from covalent._shared_files.defaults import (
@@ -40,8 +39,6 @@ from covalent._workflow.electron import electron
 from covalent._workflow.lattice import Lattice, lattice
 from covalent._workflow.transport import _TransportGraph
 from covalent.executor import LocalExecutor
-
-dispatcher = LocalDispatcher()
 
 
 @electron

@@ -26,7 +26,7 @@ import sys
 
 from setuptools import Command, find_packages, setup
 from setuptools.command.build_py import build_py
-from setuptools.command.install import install
+from setuptools.command.develop import develop
 
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
@@ -152,45 +152,53 @@ class BuildUI(Command):
             )
 
 
+def install_nats():
+    import subprocess
+
+    if platform.system() == "Darwin":
+        subprocess.run(["brew", "install", "nats-server"], check=True)
+    elif platform.system() == "Linux":
+        import requests
+
+        r = requests.get(
+            "https://github.com/nats-io/nats-server/releases/download/v2.7.4/nats-server-v2.7.4-linux-amd64.zip",
+            allow_redirects=True,
+        )
+        r.raise_for_status()
+
+        open("nats-server-v2.7.4-linux-amd64.zip", "wb").write(r.content)
+        subprocess.run(["unzip", "nats-server-v2.7.4-linux-amd64.zip"], check=True)
+        shutil.move("nats-server-v2.7.4-linux-amd64/nats-server", "covalent_queuer/nats-server")
+
+        shutil.rmtree("nats-server-v2.7.4-linux-amd64")
+        os.remove("nats-server-v2.7.4-linux-amd64.zip")
+    else:
+        print(
+            "Platform is not natively supported. Please manually install nats-server.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
 class BuildCovalent(build_py):
     """Build Covalent with NATS server"""
 
     def run(self):
-        if not shutil.which("nats-server"):
-            import subprocess
-
-            if platform.system() == "Darwin":
-                subprocess.run(["brew", "install", "nats-server"], check=True)
-            elif platform.system() == "Linux":
-                import requests
-
-                r = requests.get(
-                    "https://github.com/nats-io/nats-server/releases/download/v2.7.4/nats-server-v2.7.4-linux-amd64.zip",
-                    allow_redirects=True,
-                )
-                r.raise_for_status()
-
-                open("nats-server-v2.7.4-linux-amd64.zip", "wb").write(r.content)
-                subprocess.run(["unzip", "nats-server-v2.7.4-linux-amd64.zip"], check=True)
-                shutil.move(
-                    "nats-server-v2.7.4-linux-amd64/nats-server", "refactor/queuer/nats-server"
-                )
-
-                shutil.rmtree("nats-server-v2.7.4-linux-amd64")
-                os.remove("nats-server-v2.7.4-linux-amd64.zip")
-            else:
-                print(
-                    "Platform is not natively supported. Please manually install nats-server.",
-                    file=sys.stderr,
-                )
-                sys.exit(1)
-
+        install_nats()
         build_py.run(self)
+
+
+class DevelopCovalent(develop):
+    """Install Covalent in develop mode with NATS server"""
+
+    def run(self):
+        install_nats()
+        develop.run(self)
 
 
 setup_info = {
     "name": "cova",
-    "packages": find_packages(exclude=["*tests*"]),
+    "packages": find_packages(exclude=["*tests*", "*_legacy"]),
     "version": version,
     "maintainer": "Agnostiq",
     "url": "https://github.com/AgnostiqHQ/covalent",
@@ -208,9 +216,8 @@ setup_info = {
             "executor/executor_plugins/local.py",
             "notify/notification_plugins/webhook.py",
         ],
-        "covalent_dispatcher": ["_service/app.py"],
         "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
-        "refactor": ["queuer/nats-server"],
+        "covalent_queuer": ["nats-server"],
     },
     "install_requires": required,
     "classifiers": [
@@ -226,6 +233,7 @@ setup_info = {
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Adaptive Technologies",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
@@ -234,16 +242,19 @@ setup_info = {
     ],
     "cmdclass": {
         "build_py": BuildCovalent,
+        "develop": DevelopCovalent,
         "docs": Docs,
         "webapp": BuildUI,
     },
     "entry_points": {
         "console_scripts": [
-            "covalent = covalent_dispatcher._cli.cli:cli",
-            "nats-server = refactor.queuer.nats_server:main",
+            "covalent = covalent._cli.cli:cli",
+            "nats-server = covalent_queuer.nats_server:main",
         ],
     },
 }
 
 if __name__ == "__main__":
+    if os.getenv("COVA_SDK"):
+        setup_info["packages"] = find_packages(exclude=["*tests*", "*_legacy"])
     setup(**setup_info)

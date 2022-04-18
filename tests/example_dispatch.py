@@ -18,50 +18,39 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""
-An example script containing a simple workflow that can be dispatched to Covalent.
-
-"""
-import os
-import sys
-
-sys.path.append(os.path.abspath(os.path.join(os.path.pardir, "../covalent/covalent")))
-import time
-
-from requests import request
 
 import covalent as ct
-import covalent_dispatcher._cli.service as service
-
-port = 48008
 
 
 @ct.electron
-def join_words(a, b):
-    return ", ".join([a, b])
+def task_1(x):
+    return x**2
 
 
 @ct.electron
-def excitement(a):
-    return f"{a}!"
+def subtask(a, b):
+    return a**b
+
+
+@ct.electron
+@ct.lattice
+def task_2(y, z):
+    return subtask(y, z)
 
 
 @ct.lattice
-def simple_workflow(a, b):
-    phrase = join_words(a, b)
-    return excitement(phrase)
+def workflow(a):
+
+    for _ in range(5):
+        task_2(a, 10)
+
+    return task_1(a)
 
 
-if service._is_server_running(port):
-    print("Dispatcher service has started")
-else:
-    print("Dispatcher service is starting...")
-    time.sleep(15)
+dispatch_id = ct.dispatch(workflow)(3)
 
-dispatch_id = ct.dispatch(simple_workflow)("Hello", "Covalent")
-results_url = f"http://localhost:{port}/api/results"
-results = request("GET", results_url, headers={}, data={}).json()
-dispatch_result = results[0]["result"] if results else None
-dispatch_status = results[0]["status"] if results else None
-print(f"Dispatch {dispatch_id} was executed successfully with status: {dispatch_status}")
-print(f"The result of the dispatch is: {dispatch_result}")
+print(dispatch_id)
+
+result = ct.get_result(dispatch_id=dispatch_id, wait=True)
+
+print(result)

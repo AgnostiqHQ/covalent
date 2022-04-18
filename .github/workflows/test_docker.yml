@@ -29,15 +29,14 @@ jobs:
     steps:
       - name: Check out head
         uses: actions/checkout@v2
-      - name: Build and run image
-        run: |
-          docker build -t cova .
-          docker run -d -p 48008:8080 cova
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          echo 'Running an example dispatch...'
-          for idx in {0..1..1}; do
-            echo 'Dispatch number: '$idx
-            python tests/example_dispatch.py
-          done
-          
+#      - name: Build and run image
+#        run: |
+#          docker build -t cova .
+#          docker run -d -p 48008:8080 cova
+#          python -m pip install --upgrade pip
+#          pip install -r requirements.txt
+#          echo 'Running an example dispatch...'
+#          for idx in {0..1..1}; do
+#            echo 'Dispatch number: '$idx
+#            python tests/example_dispatch.py
+#          done

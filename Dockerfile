@@ -30,7 +30,7 @@ RUN apt-get update \
 RUN mkdir -p /opt/covalent
 COPY . /opt/covalent
 RUN pip install --no-cache-dir --use-feature=in-tree-build /opt/covalent
-RUN cd /opt/covalent/covalent_ui/webapp \
+RUN cd /opt/covalent/covalent_ui_legacy/webapp \
   && yarn install --network-timeout 100000 \
   && yarn build --network-timeout 100000
 
@@ -40,4 +40,4 @@ ENV PLATFORM Docker
 
 EXPOSE 8080
 ENTRYPOINT [ "python" ]
-CMD ["/opt/covalent/covalent_ui/app.py", "--port", "8080"]
+CMD ["/opt/covalent/covalent_ui_legacy/app.py", "--port", "8080"]

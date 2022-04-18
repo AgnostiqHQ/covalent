@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""All of these are legacy methods."""
 
 import os
 import pickle as _pickle
@@ -171,7 +172,7 @@ def sync(
 
 def cancel(
     dispatch_id: str,
-    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
+    dispatcher: str = "" + ":" + str(get_config("legacy_dispatcher.port")),
 ) -> str:
     """
     Cancel a running dispatch.

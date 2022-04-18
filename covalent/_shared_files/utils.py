@@ -21,10 +21,16 @@
 """General utils for Covalent."""
 
 import inspect
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Callable, Dict, Set, Tuple
 
+import networkx as nx
+import simplejson
+
+import covalent.executor as covalent_executor
+
 from . import logger
+from .util_classes import Status
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -185,3 +191,98 @@ def get_named_params(func, args, kwargs):
                     named_kwargs[key] = value
 
     return (named_args, named_kwargs)
+
+
+def extract_graph_node(node):
+    # avoid mutating original node
+    node = node.copy()
+
+    # doc string
+    f = node.get("function")
+    if f is not None:
+        node["doc"] = f.get_deserialized().__doc__
+
+    # metadata
+    node["metadata"] = extract_metadata(node["metadata"])
+
+    # prevent JSON encoding
+    node["kwargs"] = encode_dict(node.get("kwargs"))
+
+    # remove unused fields
+    node.pop("function", None)
+    node.pop("node_name", None)
+
+    return node
+
+
+def extract_metadata(metadata: dict):
+    try:
+        # avoid mutating original metadata
+        metadata = metadata.copy()
+
+        name = metadata["executor"]
+        executor = covalent_executor._executor_manager.get_executor(name=name)
+
+        if executor is not None:
+            # extract attributes
+            metadata["executor"] = encode_dict(executor.__dict__)
+            if isinstance(name, str):
+                metadata["executor_name"] = name
+            else:
+                metadata["executor_name"] = f"<{executor.__class__.__name__}>"
+    except (KeyError, AttributeError):
+        pass
+
+    return metadata
+
+
+def encode_dict(d):
+    """Avoid JSON encoding when python str() suffices"""
+    if not isinstance(d, dict):
+        return d
+    return {k: str(v) for (k, v) in d.items()}
+
+
+def extract_graph(graph):
+    graph = nx.json_graph.node_link_data(graph)
+    nodes = list(map(extract_graph_node, graph["nodes"]))
+    return {
+        "nodes": nodes,
+        "links": graph["links"],
+    }
+
+
+def result_encoder(obj):
+    if isinstance(obj, Status):
+        return obj.STATUS
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    return str(obj)
+
+
+def encode_result(result_obj):
+    lattice = result_obj.lattice
+    ((named_args, named_kwargs),) = (
+        get_named_params(lattice.workflow_function, lattice.args, lattice.kwargs),
+    )
+    result_dict = {
+        "dispatch_id": result_obj.dispatch_id,
+        "status": result_obj.status,
+        "result": result_obj.result,
+        "start_time": result_obj.start_time,
+        "end_time": result_obj.end_time,
+        "results_dir": result_obj.results_dir,
+        "error": result_obj.error,
+        "lattice": {
+            "function_string": lattice.workflow_function_string,
+            "doc": lattice.__doc__,
+            "name": lattice.__name__,
+            "inputs": encode_dict({**named_args, **named_kwargs}),
+            "metadata": extract_metadata(lattice.metadata),
+        },
+        "graph": extract_graph(result_obj.lattice.transport_graph._graph),
+    }
+
+    jsonified_result = simplejson.dumps(result_dict, default=result_encoder, ignore_nan=True)
+
+    return jsonified_result
