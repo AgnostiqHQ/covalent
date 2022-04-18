@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Fix container networking for the local covalent stack in `docker-compose.yml`
+
 ## Changed
 
 - UI refresh: updated covalent logo, new font, nav icons, status colors
