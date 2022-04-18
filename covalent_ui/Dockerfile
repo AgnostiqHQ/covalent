@@ -49,10 +49,7 @@ RUN cd /app && \
 FROM python:3.8-slim-buster as prod
 
 ENV UI_SVC_HOST="0.0.0.0"
-ENV UI_SVC_PORT="8005"
-
-## Placeholders/defaults
-ENV PROJECT_DIR=/covalent_ui
+ENV UI_SVC_PORT="8000"
 
 COPY --from=venv /app/.venv/ /app/.venv
 COPY --from=venv /app/covalent_ui/ /app/covalent_ui

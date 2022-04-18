@@ -25,11 +25,8 @@ import contextlib
 import os
 
 from . import executor
-
-# TODO: Migrate sync function
-# from ._results_manager.results_manager import sync
 from ._shared_files.config import get_config, set_config
-from ._shared_files.interface import cancel_workflow, dispatch, dispatch_sync, get_result
+from ._shared_files.interface import cancel_workflow, dispatch, dispatch_sync, get_result, sync
 from ._shared_files.util_classes import RESULT_STATUS as status
 from ._workflow import Lepton
 from ._workflow import electron_func as electron
