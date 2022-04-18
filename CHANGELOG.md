@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.86.0] - 2022-04-18
+
 ### Changed
 
 - `sync` method now uses `requests` to query the results service
