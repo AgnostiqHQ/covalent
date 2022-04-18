@@ -251,6 +251,8 @@ const StyledTable = styled(Table)(({ theme }) => ({
   // customize border
   [`& .${tableCellClasses.root}`]: {
     borderColor: theme.palette.background.default,
+    paddingTop: 2,
+    paddingBottom: 2,
   },
   [`& .${tableCellClasses.root}:first-of-type`]: {
     borderTopLeftRadius: 8,
