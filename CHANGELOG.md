@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.86.0] - 2022-04-18
+
+### Changed
+
+- `sync` method now uses `requests` to query the results service
+
+## [0.85.1] - 2022-04-18
+
+### Fixed
+
+- Fix container networking for the local covalent stack in `docker-compose.yml`
+
 ## Changed
 
 - UI refresh: updated covalent logo, new font, nav icons, status colors
