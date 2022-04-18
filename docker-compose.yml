@@ -50,7 +50,6 @@ services:
     environment:
       MQ_CONNECTION_URI: nats://covalent_nats:4222
       MQ_DISPATCH_TOPIC: workflow.dispatch
-      DATA_OS_SVC_HOST_URI: http://covalent_results:8006
       QUEUER_SVC_PORT: 8001
       QUEUER_SVC_HOST: 0.0.0.0
       RESULTS_SVC_PORT: 8006
