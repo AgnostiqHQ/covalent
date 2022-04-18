@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nats server shuts down properly when using `covalent stop` or `covalent restart`
 
+## [0.83.0] - 2022-04-18
+
+### Changed
+
+- Increased `connect_timeout` on Dispatcher Queue Consumer NATS connection
+
+## [0.82.0] - 2022-04-18
+
+### Added
+
+- Add a pre-commit hook for `detect-secrets`.
+
 ## [0.81.2] - 2022-04-18
 
 ### Fixed
