@@ -107,6 +107,7 @@ Contributing to the Covalent codebase should be an easy process, but there are a
 -   Assume the user does not have access to any source files.
 -   Variables must be restricted to the scope in which they are used; avoid use of global variables except when absolutely necessary.
 -   Limit all lines to 99 characters.  Use a four-character indent for Python files; bash files use a two-character indent, and C uses a tab indent. These will be adjusted as needed by the pre-commit hooks.
+-   A pre-commit hook, `detect-secrets` would run for detecting secrets based on `.secrets.baseline` file. To create a new `.secrets.baseline` file run `detect-secrets scan` command.  Refer to file `.pre-commit-config.yaml` file for the additional filters used and [detect-secrets repo](https://github.com/Yelp/detect-secrets#quickstart) for detailed documentation.
 -   Input parameters to scripts should be passed using flags, rather than positional arguments. This may be implemented using the `getopt` libraries.  Bash scripts may accept parameters passed with or without flags.
 -   Functions should perform a single task.  Generally functions should not contain more than 30 lines of code, not including line breaks, comments, and whitespace.
 -   Use the `pylint` tool to improve the quality of your code. Contributions which decrease the codebase's code quality will be rejected.
