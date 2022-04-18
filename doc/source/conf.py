@@ -88,7 +88,7 @@ html_theme_options = {
         "color-brand-content": "#6D7CFF",
     },
     "dark_css_variables": {
-        "color-brand-primary": "#E5E7F3",
+        "color-brand-primary": "#5552FF",
         "color-brand-secondary": "#AEB6FF",
         "color-brand-ternary": "#6E33ED",
         "color-brand-content": "#E5E7F3",
