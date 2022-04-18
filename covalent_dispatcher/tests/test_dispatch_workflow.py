@@ -162,8 +162,8 @@ def test_init_result_pre_dispatch(mocker, mock_result_uninitialized):
         "covalent._results_manager.result.Result._initialize_nodes"
     )
 
-    post_init_result_obj = init_result_pre_dispatch(mock_result_uninitialized)
-    assert post_init_result_obj._get_node_status(0) == Result.NEW_OBJ
+    init_result_pre_dispatch(mock_result_uninitialized)
+    assert mock_result_uninitialized._num_nodes
 
     mock_initialize_nodes.assert_called_once_with()
 
