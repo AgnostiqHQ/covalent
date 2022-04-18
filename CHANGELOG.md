@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Port mappings in `.env.example` and queuer config
+
+### Removed
+
+- Root Dockerfile
+
 ## [0.81.1] - 2022-04-14
 
 ### Fixed
