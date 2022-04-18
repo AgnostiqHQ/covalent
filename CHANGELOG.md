@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.86.0] - 2022-04-18
+
+### Changed
+
+- `sync` method now uses `requests` to query the results service
+
+## [0.85.1] - 2022-04-18
+
+### Fixed
+
+- Fix container networking for the local covalent stack in `docker-compose.yml`
+
+## Changed
+
+- UI refresh: updated covalent logo, new font, nav icons, status colors
+
+## [0.85.0] - 2022-04-18
+
+### Changed
+
+- Covalent branding updated using new guidelines
+
+## [0.84.1] - 2022-04-18
+
+### Fixed
+
+- Nats server shuts down properly when using `covalent stop` or `covalent restart`
+
+## [0.84.0] - 2022-04-18
+
+### Changed
+
+- Updated the "How to create a custom executor" how-to Jupyter notebook.
+
+## [0.83.1] - 2022-04-18
+
+### Fixed
+
+- Revert exclude in setup.py
+
+## [0.83.0] - 2022-04-18
+
+### Changed
+
+- Increased `connect_timeout` on Dispatcher Queue Consumer NATS connection
+
 ## [0.82.0] - 2022-04-18
 
 ### Added

@@ -21,12 +21,19 @@
  */
 
 import React from 'react'
-import { Drawer, Link, List, ListItemButton, Tooltip } from '@mui/material'
-
-import ViewListIcon from '@mui/icons-material/ViewList'
-import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline'
-import { ReactComponent as Logo } from '../../assets/covalent-logo.svg'
+import {
+  Drawer,
+  Link,
+  List,
+  ListItemButton,
+  SvgIcon,
+  Tooltip,
+} from '@mui/material'
 import { useMatch } from 'react-router-dom'
+
+import { ReactComponent as Logo } from '../../assets/covalent-logo.svg'
+import { ReactComponent as DispatchList } from '../../assets/chart-network.svg'
+import { ReactComponent as DispatchPreview } from '../../assets/license-draft.svg'
 
 export const navDrawerWidth = 60
 
@@ -47,15 +54,15 @@ const NavDrawer = () => {
     >
       <List>
         <ListItemButton sx={{ my: 6 }} component={Link} to="/">
-          <Logo style={{ margin: 'auto' }} />
+          <Logo style={{ height: 'fit-content', width: 'fit-content' }} />
         </ListItemButton>
 
-        <LinkButton title="Dispatch list" path="/" icon={ViewListIcon} />
+        <LinkButton title="Dispatch list" path="/" icon={DispatchList} />
 
         <LinkButton
           title="Lattice draw preview"
           path="/preview"
-          icon={DriveFileRenameOutlineIcon}
+          icon={DispatchPreview}
         />
       </List>
     </Drawer>
@@ -74,7 +81,7 @@ const LinkButton = ({ title, icon, path }) => {
       enterNextDelay={750}
     >
       <ListItemButton component={Link} to={path} selected={!!selected}>
-        {React.createElement(icon, { sx: { mx: 'auto' } })}
+        <SvgIcon sx={{ mx: 'auto' }} component={icon} />
       </ListItemButton>
     </Tooltip>
   )
