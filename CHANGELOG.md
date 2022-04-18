@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## Changed
+
+- UI refresh: updated covalent logo, new font, nav icons, status colors
+
 ## [0.85.0] - 2022-04-18
 
 ### Changed
