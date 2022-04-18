@@ -277,7 +277,7 @@ def encode_result(result_obj: "Result"):
             "function_string": result_obj.workflow_function_string,
             "doc": result_obj.lattice_doc,
             "name": result_obj.lattice_name,
-            "inputs": result_obj.inputs,
+            "inputs": str(result_obj.inputs),
             "metadata": extract_metadata(transport_graph.lattice_metadata),
         },
         "graph": extract_graph(transport_graph._graph),
