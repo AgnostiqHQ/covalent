@@ -23,7 +23,6 @@
 from copy import deepcopy
 from datetime import datetime
 from multiprocessing import Queue as MPQ
-from turtle import update
 
 import pytest
 from app.core.dispatch_workflow import init_result_pre_dispatch
