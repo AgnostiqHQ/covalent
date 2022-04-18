@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Update networking info for the covalent container stack in `docker-compose.yaml`
+- Update container networking for the covalent stack in `docker-compose.yaml`
+
+## [0.84.0] - 2022-04-18
+
+### Changed
+
+- Updated the "How to create a custom executor" how-to Jupyter notebook.
 
 ## [0.83.1] - 2022-04-18
 
