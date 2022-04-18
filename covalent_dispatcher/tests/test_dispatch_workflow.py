@@ -162,10 +162,8 @@ def test_init_result_pre_dispatch(mocker, mock_result_uninitialized):
         "covalent._results_manager.result.Result._initialize_nodes"
     )
 
-    assert isinstance(mock_result_uninitialized.lattice.transport_graph, bytes)
-
     post_init_result_obj = init_result_pre_dispatch(mock_result_uninitialized)
-    assert isinstance(post_init_result_obj.lattice.transport_graph, _TransportGraph)
+    assert post_init_result_obj._num_nodes
 
     mock_initialize_nodes.assert_called_once_with()
 
@@ -231,9 +229,10 @@ def test_is_runnable_task(
 ):
     """Test function that returns status of whether a task is runnable."""
 
-    result_obj = mock_result_initialized
-    result_obj.transport_graph.set_node_value(0, "status", node_0_status)
-    result_obj.transport_graph.set_node_value(3, "status", node_3_status)
+    result_obj: Result = mock_result_initialized
+
+    result_obj._update_node(node_id=0, status=node_0_status)
+    result_obj._update_node(node_id=3, status=node_3_status)
 
     assert is_runnable_task(task_id=5, result_obj=result_obj) == expected_runnable_status
 
