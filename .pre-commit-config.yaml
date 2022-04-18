@@ -63,3 +63,18 @@ repos:
           (?x)^(
               meta.yaml|
           )$
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.2.0
+    hooks:
+      - id: detect-secrets
+        args:
+          [
+            "--baseline",
+            ".secrets.baseline",
+            "--filter",
+            "./.detect_secrets_filters/ipynb_hash_filter.py::is_pynb_hash",
+            "--filter",
+            "./.detect_secrets_filters/ipynb_hash_filter.py::is_pynb_image",
+          ]
+        verbose: true
