@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.81.2] - 2022-04-18
+
+### Fixed
+
+- Dispatcher unit test fixed by removing `turtle` import
+
 ## [0.81.1] - 2022-04-14
 
 ### Fixed
