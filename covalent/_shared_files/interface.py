@@ -21,7 +21,7 @@
 from copy import deepcopy
 from functools import wraps
 from io import BytesIO
-from typing import Callable
+from typing import Callable, List, Union
 
 import cloudpickle as pickle
 import requests
@@ -123,27 +123,38 @@ def dispatch_sync(
     return wrapper
 
 
-def get_result(dispatch_id: str, download=False, wait=False):
+def _retrieve_result_response(session: requests.Session, dispatch_id: str) -> requests.Response:
 
-    session = requests.Session()
+    response = session.get(
+        get_svc_uri.ResultsURI().get_route(f"workflow/results/{dispatch_id}"), stream=True
+    )
 
-    def retrieve_result_response():
-        response = session.get(
-            get_svc_uri.ResultsURI().get_route(f"workflow/results/{dispatch_id}"), stream=True
-        )
+    response.raise_for_status()
 
-        response.raise_for_status()
+    return response
 
-        return response
 
-    response = retrieve_result_response()
+def _poll_result(
+    session: requests.Session, dispatch_id: str, wait: bool = False
+) -> requests.Response:
+
+    response = _retrieve_result_response(session, dispatch_id)
 
     if wait:
         result_object: Result = pickle.loads(response.content)
 
         while result_object.status not in [Result.COMPLETED, Result.FAILED, Result.CANCELLED]:
-            response = retrieve_result_response()
+            response = _retrieve_result_response(session, dispatch_id)
             result_object: Result = pickle.loads(response.content)
+
+    return response
+
+
+def get_result(dispatch_id: str, download=False, wait=False):
+
+    session = requests.Session()
+
+    response = _poll_result(session, dispatch_id, wait)
 
     if not download:
         return pickle.loads(response.content)
@@ -161,3 +172,13 @@ def cancel_workflow(dispatch_id: str):
     response.raise_for_status()
 
     return response.json()
+
+
+def sync(dispatch_id: Union[List[str], str]) -> None:
+
+    session = requests.Session()
+
+    workflow_list = dispatch_id if isinstance(dispatch_id, list) else [dispatch_id]
+
+    for workflow in workflow_list:
+        _poll_result(session, workflow, True)
