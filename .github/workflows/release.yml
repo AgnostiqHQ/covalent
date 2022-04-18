@@ -168,7 +168,7 @@ jobs:
         env:
           SLACK_CHANNEL: "covalent"
           SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "The pypi.yml workflow is failing in master!"
+          SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}

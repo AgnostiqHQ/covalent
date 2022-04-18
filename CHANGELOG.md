@@ -39,6 +39,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated the README banner url
 
+### Changed
+
+- Made release.yml callable and moved the pypi job into that workflow
+
+
 ## [0.86.0] - 2022-04-18
 
 ### Changed
