@@ -29,7 +29,7 @@ import {
   Typography,
 } from '@mui/material'
 
-import { ReactComponent as Logo } from '../assets/covalent-full-logo.svg'
+import { ReactComponent as Logo } from '../assets/covalent-logo.svg'
 
 const NotFound = ({ text = 'Page not found.', children }) => {
   return (
@@ -37,7 +37,7 @@ const NotFound = ({ text = 'Page not found.', children }) => {
       <AppBar position="static" color="transparent">
         <Toolbar disableGutters sx={{ my: 2 }}>
           <Link href="/">
-            <Logo />
+            <Logo style={{ height: 36 }} />
           </Link>
         </Toolbar>
       </AppBar>
