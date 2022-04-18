@@ -164,6 +164,12 @@ jobs:
           SLACK_USERNAME: "CovalentOpsBot"
           SLACK_MESSAGE: ${{ env.SLACK_MSG }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      - name: Release
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && env.RELEASE == 'true'
+        uses: AgnostiqHQ/covalent/.github/workflows/release.yml@master
+        with:
+          test_release: false
+          prerelease: true
       - name: Alert Slack
         if: github.ref == 'ref/heads/develop' && failure()
         uses: rtCamp/action-slack-notify@v2
