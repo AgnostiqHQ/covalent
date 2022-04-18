@@ -86,13 +86,8 @@ def test_load_plugin(mocker, monkeypatch, well_defined, class_defined):
     cm = _ConfigManager()
     init_config_mock.assert_called_once_with()
     cm.config_file = _config_manager.config_file
-    cm.config_data = {}
     # Work with an empty config dict
     monkeypatch.setattr("covalent._shared_files.config._config_manager", cm)
-    # Ensure this dict doesn't overwrite the user config
-    write_mock = mocker.patch(
-        "covalent._shared_files.config._ConfigManager.write_config", return_value=None
-    )
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".py") as plugin_file:
         if well_defined:
@@ -142,7 +137,6 @@ class DummyClass(NotifyEndpoint):
         nm._load_plugin_from_module(the_module)
 
         if well_defined and class_defined:
-            write_mock.assert_called_once_with()
             assert module_name in nm.notification_plugins_map
             assert nm.notification_plugins_map[module_name].__name__ == "TestNotifyPlugin"
             assert "notify" in cm.config_data
@@ -150,5 +144,4 @@ class DummyClass(NotifyEndpoint):
             assert "test_var" in cm.config_data["notify"][module_name]
             assert cm.config_data["notify"][module_name]["test_var"] == "test_value"
         else:
-            write_mock.assert_not_called()
             assert not nm.notification_plugins_map

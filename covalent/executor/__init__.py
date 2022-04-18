@@ -81,8 +81,8 @@ class _ExecutorManager:
         self._load_executors(pkg_plugins_path)
 
         # Look for executor plugins in a user-defined path:
-        user_plugins_path = get_config("sdk.executor_dir")
-        self._load_executors(user_plugins_path)
+        # user_plugins_path = get_config("sdk.executor_dir")
+        # self._load_executors(user_plugins_path)
 
         # Look for pip-installed plugins:
         self._load_installed_plugins()

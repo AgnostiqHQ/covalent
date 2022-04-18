@@ -24,11 +24,11 @@ Integration test for the dispatcher.
 
 import pytest
 
-import covalent_dispatcher as dispatcher
+import covalent_dispatcher_legacy as dispatcher
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.defaults import parameter_prefix
-from covalent_dispatcher._db.dispatchdb import DispatchDB
-from covalent_dispatcher.tests.data import (
+from covalent_dispatcher_legacy._db.dispatchdb import DispatchDB
+from covalent_dispatcher_legacy.tests.data import (
     TEST_RESULTS_DIR,
     get_mock_result,
     get_mock_result_2,
@@ -36,6 +36,7 @@ from covalent_dispatcher.tests.data import (
 )
 
 
+@pytest.mark.skip(reason="Testing legacy code")
 @pytest.mark.parametrize(
     "mock_result,expected_res, expected_node_outputs",
     [

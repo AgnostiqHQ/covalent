@@ -11,6 +11,125 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Covalent branding updated using new guidelines
 
+## [0.84.1] - 2022-04-18
+
+### Fixed
+
+- Nats server shuts down properly when using `covalent stop` or `covalent restart`
+
+## [0.84.0] - 2022-04-18
+
+### Changed
+
+- Updated the "How to create a custom executor" how-to Jupyter notebook.
+
+## [0.83.1] - 2022-04-18
+
+### Fixed
+
+- Revert exclude in setup.py
+
+## [0.83.0] - 2022-04-18
+
+### Changed
+
+- Increased `connect_timeout` on Dispatcher Queue Consumer NATS connection
+
+## [0.82.0] - 2022-04-18
+
+### Added
+
+- Add a pre-commit hook for `detect-secrets`.
+
+## [0.81.2] - 2022-04-18
+
+### Fixed
+
+- Dispatcher unit test fixed by removing `turtle` import
+
+## [0.81.1] - 2022-04-14
+
+### Fixed
+
+- Fixed bug where `covalent stop` and `covalent start` would not bring the services back up
+
+## [0.81.0] - 2022-04-14
+
+### Changed
+
+- Made `supervisord` use a specific configuration file instead of looking at root directory.
+
+### Fixed
+
+- Fixed string comparison to determine whether `COVA_SDK` env variable exists or not.
+
+## [0.80.3] - 2022-04-14
+
+### Fixed
+
+- Re-enabling test actions
+- Resolving ui backend endpoint in draw function using config manager
+
+## [0.80.2] - 2022-04-14
+
+### Fixed
+
+- Some legacy config variables are removed.
+- The config references `ENV_DEST_DIR` everywhere now
+
+## [0.80.1] - 2022-04-14
+
+### Fixed
+
+- Accessing `ENV_DEST_DIR` env var using `os.environ.get`
+- Missing requirements `pyyaml`, `jinja`, and `psutil` added to reqs file
+
+## [0.80.0] - 2022-04-14
+
+### Changed
+
+- Repository is restructured to accomodate the microservices
+
+## [0.79.1] - 2022-04-14
+
+### Fixed
+
+- Installation using `pip install -e .` is fixed with regards to the nats installation.
+- Several missing `__init__.py` files are now included.
+
+## [0.79.0] - 2022-04-14
+
+### Added
+
+- Covalent `config` cli command to alter config values or display covalent configuration
+
+### Changed
+
+- Removed environment section from Supervisord config in order to read from root `.env` file instead
+- Refactored config manager to use project root `.env` file for configuration
+
+## [0.78.0] - 2022-04-13
+
+### Changed
+
+- `ct.get_result` will return result object if no wait is used.
+
+- Using initial resource as 1 until there is better resource management in runner.
+
+### Fixed
+
+- Fix errors in Dockerfiles
+
+- Update Dockerfiles to use `multi-stage` container builds to reduce final image size
+
+- Install all necessary Python modules in all containers
+
+## [0.77.0] - 2022-04-13
+
+### Added
+
+- nats is installed in the wheel build if not otherwise installed.
+
 ## [0.76.0] - 2022-04-13
 
 ### Added
