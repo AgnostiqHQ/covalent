@@ -27,9 +27,9 @@ services:
     container_name: covalent_dispatcher
     environment:
       RUNNER_SVC_PORT: 8003
-      RESULTS_SVC_PORT: 8006
+      RESULTS_SVC_PORT: 8005
       DISPATCHER_SVC_PORT: 8002
-      UI_SVC_PORT: 8005
+      UI_SVC_PORT: 8000
       DISPATCHER_SVC_HOST: 0.0.0.0
       RUNNER_SVC_HOST: covalent_runner
       RESULTS_SVC_HOST: covalent_results
@@ -50,9 +50,11 @@ services:
     environment:
       MQ_CONNECTION_URI: nats://covalent_nats:4222
       MQ_DISPATCH_TOPIC: workflow.dispatch
-      DATA_OS_SVC_HOST_URI: http://covalent_results:8006
+      DATA_OS_SVC_HOST_URI: http://covalent_results:8005
       QUEUER_SVC_PORT: 8001
       QUEUER_SVC_HOST: 0.0.0.0
+      RESULTS_SVC_HOST: covalent_results
+      RESULTS_SVC_PORT: 8005
     depends_on:
       - covalent_nats
     networks:
@@ -81,10 +83,10 @@ services:
       dockerfile: covalent_results/Dockerfile
     image: covalent_results
     ports:
-      - 8006:8006
+      - 8005:8005
     container_name: covalent_results
     environment:
-      RESULTS_SVC_PORT: 8006
+      RESULTS_SVC_PORT: 8005
       RESULTS_SVC_HOST: 0.0.0.0
       DATA_SVC_PORT: 8004
       DATA_SVC_HOST: covalent_data
@@ -103,7 +105,7 @@ services:
     environment:
       RUNNER_SVC_PORT: 8003
       RUNNER_SVC_HOST: 0.0.0.0
-      RESULTS_SVC_PORT: 8006
+      RESULTS_SVC_PORT: 8005
       RESULTS_SVC_HOST: covalent_results
       DISPATCHER_SVC_PORT: 8002
       DISPATCHER_SVC_HOST: covalent_dispatcher
@@ -117,11 +119,10 @@ services:
     image: covalent_ui
     container_name: covalent_ui
     ports:
-      - 8005:8005
+      - 8000:8000
     environment:
-      UI_SVC_PORT: 8005
+      UI_SVC_PORT: 8000
       UI_SVC_HOST: 0.0.0.0
-      DATA_OS_SVC_HOST_URI: http://covalent_results:8006
     networks:
       covalent:
 
