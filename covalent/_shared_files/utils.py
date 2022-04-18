@@ -203,7 +203,7 @@ def extract_graph_node(node):
     # doc string
     f = node.get("function")
     if f is not None:
-        node["doc"] = f.get_deserialized().__doc__
+        node["doc"] = f.func_doc
 
     # metadata
     node["metadata"] = extract_metadata(node["metadata"])
