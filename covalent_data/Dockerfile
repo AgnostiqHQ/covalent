@@ -22,9 +22,9 @@
 FROM python:3.8-slim-buster as venv
 
 RUN apt-get update && \
-  apt-get install -y --no-install-recommends build-essential unzip && \
-  pip install --upgrade pip && \
-  rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends build-essential unzip && \
+    pip install --upgrade pip && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY . /app/
 RUN cd /app && \
