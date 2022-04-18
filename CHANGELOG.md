@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Added missing results service discovery env vars on Queuer
+
 ## [0.83.0] - 2022-04-18
 
 ### Changed

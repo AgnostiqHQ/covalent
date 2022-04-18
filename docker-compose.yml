@@ -53,6 +53,8 @@ services:
       DATA_OS_SVC_HOST_URI: http://covalent_results:8006
       QUEUER_SVC_PORT: 8001
       QUEUER_SVC_HOST: 0.0.0.0
+      RESULTS_SVC_PORT: 8006
+      RESULTS_SVC_HOST: covalent_results
     depends_on:
       - covalent_nats
     networks:
