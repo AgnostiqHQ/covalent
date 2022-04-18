@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.85.1] - 2022-04-18
+
 ### Fixed
 
 - Fix container networking for the local covalent stack in `docker-compose.yml`
