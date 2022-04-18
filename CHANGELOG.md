@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.83.0] - 2022-04-18
+
 ### Changed
 
 - Increased `connect_timeout` on Dispatcher Queue Consumer NATS connection
