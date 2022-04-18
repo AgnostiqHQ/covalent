@@ -59,8 +59,8 @@ const DispatchDrawerContents = () => {
 
       <AccountTreeOutlined fontSize="inherit" />
       <Tooltip title={dispatchId} placement="top">
-        <Typography component="span" sx={{ mx: 1 }}>
-          {truncateMiddle(dispatchId, 14, 13)}
+        <Typography component="span" fontSize="body2.fontSize" sx={{ mx: 1 }}>
+          {truncateMiddle(dispatchId, 8, 12)}
         </Typography>
       </Tooltip>
 
