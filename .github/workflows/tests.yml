@@ -47,6 +47,8 @@ jobs:
             experimental: false
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
+    outputs:
+      release: ${{ steps.push.outputs.release }}
     steps:
       - name: Check out head
         uses: actions/checkout@v3
@@ -133,6 +135,7 @@ jobs:
         with:
           semver_only: true
       - name: Push to master
+        id: push
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
           MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
@@ -150,6 +153,7 @@ jobs:
             echo "We cannot release versions less than 0.71.0."
           fi
           echo "RELEASE=$release" >> $GITHUB_ENV
+          echo "::set-output name=release::$release"
       - name: Format Slack message
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
@@ -164,12 +168,6 @@ jobs:
           SLACK_USERNAME: "CovalentOpsBot"
           SLACK_MESSAGE: ${{ env.SLACK_MSG }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-      - name: Release
-        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && env.RELEASE == 'true'
-        uses: AgnostiqHQ/covalent/.github/workflows/release.yml@master
-        with:
-          test_release: false
-          prerelease: true
       - name: Alert Slack
         if: github.ref == 'ref/heads/develop' && failure()
         uses: rtCamp/action-slack-notify@v2
@@ -180,3 +178,11 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+  release:
+    runs-on: ubunut-latest
+    needs: tests
+    if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
+    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
+    with:
+      test_release: false
+      prerelease: true
