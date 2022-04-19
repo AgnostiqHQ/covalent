@@ -155,23 +155,31 @@ class BuildUI(Command):
 def install_nats():
     import subprocess
 
-    if platform.system() == "Darwin":
-        subprocess.run(["brew", "install", "nats-server"], check=True)
-    elif platform.system() == "Linux":
+    nats_version = "2.7.4"
+    nats_download_prefix = (
+        f"https://github.com/nats-io/nats-server/releases/download/v{nats_version}/"
+    )
+    nats_dist_mapping = {
+        "Linux": f"nats-server-v{nats_version}-linux-amd64.zip",
+        "Darwin": f"nats-server-v{nats_version}-darwin-amd64.zip",
+    }
+
+    if platform.system() == "Darwin" or platform.system() == "Linux":
         import requests
 
+        nats_dist = nats_dist_mapping[platform.system()]
         r = requests.get(
-            "https://github.com/nats-io/nats-server/releases/download/v2.7.4/nats-server-v2.7.4-linux-amd64.zip",
+            nats_download_prefix + nats_dist,
             allow_redirects=True,
         )
         r.raise_for_status()
 
-        open("nats-server-v2.7.4-linux-amd64.zip", "wb").write(r.content)
-        subprocess.run(["unzip", "nats-server-v2.7.4-linux-amd64.zip"], check=True)
-        shutil.move("nats-server-v2.7.4-linux-amd64/nats-server", "covalent_queuer/nats-server")
+        open(nats_dist, "wb").write(r.content)
+        subprocess.run(["unzip", nats_dist], check=True)
+        shutil.move(nats_dist[:-4] + "/nats-server", "covalent_queuer/nats-server")
 
-        shutil.rmtree("nats-server-v2.7.4-linux-amd64")
-        os.remove("nats-server-v2.7.4-linux-amd64.zip")
+        shutil.rmtree(nats_dist[:-4])
+        os.remove(nats_dist)
     else:
         print(
             "Platform is not natively supported. Please manually install nats-server.",
