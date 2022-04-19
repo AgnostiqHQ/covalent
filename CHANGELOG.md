@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Made release.yml callable and moved the pypi job into that workflow
+
 ### Docs
 
 - Updated the astronomy tutorial with cosmetic changes
