@@ -25,9 +25,6 @@ on:
     branches:
       - docker_tests
 
-env:
-  COMMIT_HASH=$GITHUB_SHA
-
 jobs:
   test_docker:
     runs-on: ubuntu-latest
@@ -51,12 +48,12 @@ jobs:
           context: .
           file: covalent_data/Dockerfile
           push: false
-          tags: covalent_data:${{ env.COMMIT_HASH }}
+          tags: "covalent_data:${GITHUB_SHA}"
 
       - name: Test data service container and measure coverage
         run: |
           pip install --no-cache-dir -r ./tests/requirements.txt
           pip install --no-cache-dir -r ./covalent_data/requirements/dist.txt
           pip install --no-cache-dir -r ./covalent_data/requirements/dev.txt
-          docker run --rm covalent_data:${{ env.COMMIT_HASH }}
+          docker run --rm "covalent_data:${GITHUB_SHA}"
           PYTHONPATH=$PWD/covalent_data pytest covalent_data -vv --cov=covalent_data --cov-config=.coveragerc
