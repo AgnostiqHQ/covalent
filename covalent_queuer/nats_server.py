@@ -30,10 +30,7 @@ import covalent_queuer
 
 def main():
 
-    if platform.system() == "Darwin":
-        command = "nats-server"
-    else:
-        command = f"{covalent_queuer.__path__[0]}/nats-server"
+    command = f"{covalent_queuer.__path__[0]}/nats-server"
 
     subprocess.run([command])
 
