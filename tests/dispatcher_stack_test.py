@@ -22,11 +22,8 @@
 Integration test for the dispatcher.
 """
 
-import pytest
-
 import covalent_dispatcher_legacy as dispatcher
-from covalent._results_manager import results_manager as rm
-from covalent._shared_files.defaults import parameter_prefix
+import pytest
 from covalent_dispatcher_legacy._db.dispatchdb import DispatchDB
 from covalent_dispatcher_legacy.tests.data import (
     TEST_RESULTS_DIR,
@@ -34,6 +31,9 @@ from covalent_dispatcher_legacy.tests.data import (
     get_mock_result_2,
     get_mock_result_3,
 )
+
+from covalent._results_manager import results_manager as rm
+from covalent._shared_files.defaults import parameter_prefix
 
 
 @pytest.mark.skip(reason="Testing legacy code")

@@ -21,12 +21,12 @@
 """Tests for verifying electron operability inside lattice"""
 
 import pytest
+from covalent_dispatcher_legacy._db.dispatchdb import DispatchDB
 
 import covalent as ct
 
 # TODO: LEGACY these functions in results_manager are legacy code
 from covalent._results_manager.results_manager import _delete_result, get_result
-from covalent_dispatcher_legacy._db.dispatchdb import DispatchDB
 
 
 @ct.electron
