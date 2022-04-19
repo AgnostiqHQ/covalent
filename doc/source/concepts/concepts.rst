@@ -436,7 +436,7 @@ The Covalent result manager is responsible for storing, updating, and retrieving
 .. code-block:: python
 
     dispatch_id = ct.dispatch(workflow)(**params)
-    result = ct.get_result(dispatch_id=dispatch_id, wait=False, results_dir='./results')
+    result = ct.get_result(dispatch_id=dispatch_id, wait=False)
 
 The result manager allows us to retrieve the result object even if the computations have not completed by setting the :code:`wait` parameter to :code:`False` as shown above.
 

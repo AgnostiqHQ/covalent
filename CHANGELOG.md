@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Updated the astronomy tutorial with cosmetic changes
+- Updated Getting Started, How-To Configuration Guide, CLI API documentation
 
 ## [0.88.1] - 2022-04-19
 
