@@ -28,3 +28,4 @@ MANIFEST.in		@AgnostiqHQ/aq-managers
 meta.yaml		@AgnostiqHQ/aq-managers
 **/requirements.txt	@AgnostiqHQ/aq-managers
 setup.py		@AgnostiqHQ/aq-managers
+docker-compose.yml		@AgnostiqHQ/aq-managers
