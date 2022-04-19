@@ -140,22 +140,25 @@ jobs:
         run: python setup.py sdist
       - name: Validate Distribution
         run: |
+          VERSION="$(cat ./VERSION)"
           if [ ${{ github.event.inputs.prerelease }} = 'false' ] && \
              [ -z ${{ github.event.inputs.stable_version }} ] ; then
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
           fi
-          VERSION="$(cat ./VERSION)"
+          if [ ${{ github.event.inputs.prerelease }} = 'true' ] ; then
+            VERSION="${VERSION}rc0"
+          fi
           cd dist
-          tar xzf cova-${VERSION}rc0.tar.gz
-          diff -x tests -r cova-${VERSION}rc0/covalent ../covalent
-          diff -x tests -r cova-${VERSION}rc0/covalent_dispatcher ../covalent_dispatcher
-          diff -x tests -r cova-${VERSION}rc0/covalent_data ../covalent_data
-          diff -x tests -r cova-${VERSION}rc0/covalent_queuer ../covalent_queuer
-          diff -x tests -r cova-${VERSION}rc0/covalent_results ../covalent_results
-          diff -x README.md -x tests -x webapp cova-${VERSION}rc0/covalent_ui ../covalent_ui 
-          diff -r cova-${VERSION}rc0/covalent_ui/webapp/build ../covalent_ui/webapp/build
-          rm -rf cova-${VERSION}rc0/
+          tar xzf cova-${VERSION}.tar.gz
+          diff -x tests -r cova-${VERSION}/covalent ../covalent
+          diff -x tests -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x tests -r cova-${VERSION}/covalent_data ../covalent_data
+          diff -x tests -r cova-${VERSION}/covalent_queuer ../covalent_queuer
+          diff -x tests -r cova-${VERSION}/covalent_results ../covalent_results
+          diff -x README.md -x tests -x webapp cova-${VERSION}/covalent_ui ../covalent_ui 
+          diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
+          rm -rf cova-${VERSION}/
       - name: Upload Distribution
         if: github.event.inputs.test_release == 'false'
         env:
