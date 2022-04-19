@@ -61,5 +61,5 @@ jobs:
           pip install --no-cache-dir -r ./tests/requirements.txt
           pip install --no-cache-dir -r ./covalent_data/requirements/dist.txt
           pip install --no-cache-dir -r ./covalent_data/requirements/dev.txt
-          docker run --rm ${{ env.COVALENT_DATA_SERVICE_IMG }}
+          docker run -d --rm ${{ env.COVALENT_DATA_SERVICE_IMG }}
           PYTHONPATH=$PWD/covalent_data pytest covalent_data -vv --cov=covalent_data --cov-config=.coveragerc
