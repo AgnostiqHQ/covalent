@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Don't create a new result object when updating task status.
+- Don't send the whole result object when only one node needs to be updated.
 
 ### Docs
 
