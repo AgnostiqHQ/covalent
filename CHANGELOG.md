@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Don't create a new result object when updating task status.
 
+### Docs
+
+- Updated the astronomy tutorial with cosmetic changes
+
 ## [0.88.1] - 2022-04-19
 
 ### Fixed
