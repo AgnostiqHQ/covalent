@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Removed
+
+- Legacy dispatcher and UI directories
+
+### Changed
+
+- Manifest did not need to explicitly include the service directories
+
 ## [0.87.1] - 2022-04-19
 
 ### Fixed
