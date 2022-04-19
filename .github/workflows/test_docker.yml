@@ -21,14 +21,31 @@
 name: test-docker
 
 on:
-  pull_request
+  push:
+    branches:
+      - docker_tests
 
 jobs:
   test_docker:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up QEMU
+        users: docker/setup-qemu-action@v1
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
       - name: Check out head
         uses: actions/checkout@v2
+
+      - name: Build covalent_data service image
+        uses: docker/build-push-action@v2
+        with:
+          push: false
+          context: .
+          platforms: linux/amd64
+          file: covalent_data/Dockerfile
+          tags: covalent_data:latest
 #      - name: Build and run image
 #        run: |
 #          docker build -t cova .
