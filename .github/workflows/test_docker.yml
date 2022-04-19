@@ -38,14 +38,18 @@ jobs:
       - name: Check out head
         uses: actions/checkout@v2
 
-      - name: Build covalent_data service image
-        uses: docker/build-push-action@v2
-        with:
-          push: false
-          context: .
-          platforms: linux/amd64, linux/arm64
-          file: covalent_data/Dockerfile
-          tags: covalent_data:latest
+      - name: Build imags
+        run: |
+          docker-compose build
+
+      #- name: Build covalent_data service image
+      #  uses: docker/build-push-action@v2
+      #  with:
+      #    push: false
+      #    context: .
+      #    platforms: linux/amd64, linux/arm64
+      #    file: covalent_data/Dockerfile
+      #    tags: covalent_data:latest
       
 #      - name: Build and run image
 #        run: |
