@@ -1,15 +1,15 @@
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
-# 
-# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
 # A copy of the License may be obtained with this software package or at
 #
 #      https://www.gnu.org/licenses/agpl-3.0.en.html
 #
-# Use of this file is prohibited except in compliance with the License. Any 
-# modifications or derivative works of this file must retain this copyright 
-# notice, and modified files must contain a notice indicating that they have 
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
 # been altered from the originals.
 #
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
@@ -20,7 +20,7 @@
 
 name: tests
 
-on: 
+on:
   pull_request:
   workflow_run:
     workflows: [changelog]
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['ubuntu-latest']
+        os: ["ubuntu-latest"]
         container:
           - python:3.8-buster
           - python:3.8-bullseye
@@ -43,7 +43,7 @@ jobs:
         experimental: [false]
         include:
           - os: macos-latest
-            python-version: '3.8'
+            python-version: "3.8"
             experimental: false
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
@@ -179,7 +179,6 @@ jobs:
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
   release:
-    runs-on: ubunut-latest
     needs: tests
     if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
     uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
