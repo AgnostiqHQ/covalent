@@ -25,13 +25,12 @@ from unittest import mock
 
 import pytest
 
-# remember to remove refactor.dispatcher in the import prefixes
-from refactor.dispatcher.app.core.cancel_workflow import (
+from app.core.cancel_workflow import (
     cancel_task,
     cancel_workflow_execution,
     get_all_task_ids,
 )
-from refactor.dispatcher.app.core.utils import send_cancel_task_to_runner
+from app.core.utils import send_cancel_task_to_runner
 
 import covalent as ct
 from covalent._results_manager.result import Result
