@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Updated `.env` location to `$HOME/.cache/covalent`
+
 ### Fixed
 
 - Don't specify runs-on for reusable call

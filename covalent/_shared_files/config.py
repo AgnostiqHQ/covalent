@@ -34,6 +34,7 @@ from dotenv import dotenv_values, find_dotenv, load_dotenv, set_key
 CONFIG_FILE_NAME = ".env"
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__)) + "/../.."
 HOME_PATH = os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")
+COVALENT_CACHE_DIR = f"{HOME_PATH}/covalent"
 
 # TODO: add tests for below functions
 
@@ -81,20 +82,19 @@ class _ConfigManager:
     def __init__(self) -> None:
 
         # ensure .env exists, if not copy from .env.example
-        self.env_path = os.environ.get("ENV_DEST_DIR") or PROJECT_ROOT
+        self.env_path = os.environ.get("ENV_DEST_DIR") or COVALENT_CACHE_DIR
+        self.config_file = os.path.join(self.env_path, CONFIG_FILE_NAME)
+
         self.ensure_config_file_exists()
-        env_file_path = os.path.join(self.env_path, CONFIG_FILE_NAME)
 
         # load .env values into os.environ or use explicitly set environment vars
-        load_dotenv(CONFIG_FILE_NAME)
+        load_dotenv(self.config_file)
 
         # Deprecated
         # self.config_dir = (
         #    os.environ.get("COVALENT_CONFIG_DIR")
         #    or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
         # ) + "/covalent"
-
-        self.config_file = env_file_path
 
         # Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
         # Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
@@ -108,7 +108,7 @@ class _ConfigManager:
         # should yield the same result as doing load_env()
         # environment vars take precedence, then config values
         config = {}
-        config_file_values = dotenv_values()
+        config_file_values = dotenv_values(self.config_file)
 
         environment_vars = {**config_file_values, **os.environ}
 
@@ -117,7 +117,6 @@ class _ConfigManager:
         return config
 
     def ensure_config_file_exists(self):
-        # if find_dotenv(CONFIG_FILE_NAME) == "":
         if not find_dotenv(os.path.join(self.env_path, CONFIG_FILE_NAME)):
             shutil.copyfile(
                 f"{PROJECT_ROOT}/covalent/.env.example",
