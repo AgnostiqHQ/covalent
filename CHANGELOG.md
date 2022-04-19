@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Update the concepts page according to the new web UI.
+
+### Docs
+
 - Updated the astronomy tutorial with cosmetic changes
 
 ## [0.88.1] - 2022-04-19
