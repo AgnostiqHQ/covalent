@@ -412,7 +412,7 @@ The progress of the electron execution can be tracked using the Covalent UI.
 
 .. image:: ./images/status_check.png
     :align: center
-    :scale: 45 %
+    :scale: 40 %
 
 
 The user can view the dependencies among the various electrons in addition to the execution status (running, completed, not started, failed, or cancelled). Additional information on how long each task has been running for, or the total execution time is also shown in the Covalent UI.
