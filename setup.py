@@ -156,7 +156,9 @@ def install_nats():
     import subprocess
 
     nats_version = "2.7.4"
-    nats_download_prefix = f"https://github.com/nats-io/nats-server/releases/download/v{nats_version}/"
+    nats_download_prefix = (
+        f"https://github.com/nats-io/nats-server/releases/download/v{nats_version}/"
+    )
     nats_dist_mapping = {
         "Linux": f"nats-server-v{nats_version}-linux-amd64.zip",
         "Darwin": f"nats-server-v{nats_version}-darwin-amd64.zip",
