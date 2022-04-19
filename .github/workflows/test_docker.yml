@@ -32,7 +32,7 @@ jobs:
       - name: Check out head
         uses: actions/checkout@v2
 
-      - name: Build images
+      - name: Build and run the covalent container stack
         run: |
           docker-compose build
           docker-compose up -d
@@ -41,15 +41,3 @@ jobs:
         run: |
           pip install -e .
           python tests/basic_end_to_end_test.py
-      
-#      - name: Build and run image
-#        run: |
-#          docker build -t cova .
-#          docker run -d -p 48008:8080 cova
-#          python -m pip install --upgrade pip
-#          pip install -r requirements.txt
-#          echo 'Running an example dispatch...'
-#          for idx in {0..1..1}; do
-#            echo 'Dispatch number: '$idx
-#            python tests/example_dispatch.py
-#          done
