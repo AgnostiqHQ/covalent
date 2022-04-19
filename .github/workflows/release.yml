@@ -80,6 +80,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=v$VERSION" >> $GITHUB_ENV
       - name: Tag commit
+        if: github.event.inputs.prerelease == 'true'
         id: push
         run: |
           git config user.name "CovalentOpsBot"
