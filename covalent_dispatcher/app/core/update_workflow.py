@@ -65,7 +65,7 @@ def update_workflow_results(
         update_completed_workflow(latest_result_obj)
 
     elif task_execution_results["status"] == Result.COMPLETED and not is_empty(tasks_queue):
-        update_completed_tasks(dispatch_id, tasks_queue, latest_result_obj)
+        update_completed_tasks(dispatch_id, tasks_queue, latest_result_obj, task_execution_results)
 
     else:
         print(
@@ -92,7 +92,9 @@ def update_workflow_endtime(result_obj: Result) -> Result:
     return result_obj
 
 
-def update_completed_tasks(dispatch_id: str, tasks_queue: MPQ, result_obj: Result) -> Result:
+def update_completed_tasks(
+    dispatch_id: str, tasks_queue: MPQ, result_obj: Result, task_execution_results: dict
+) -> Result:
     """Update completed tasks while the parent workflow is still not completed."""
 
     tasks_order_lod = tasks_queue.get()
@@ -116,16 +118,16 @@ def update_completed_tasks(dispatch_id: str, tasks_queue: MPQ, result_obj: Resul
     if new_dispatch_id != dispatch_id:
 
         next_result_obj = get_result_object_from_result_service(dispatch_id=new_dispatch_id)
+        send_task_update_to_result_service(new_dispatch_id, task_execution_results)
         dispatch_runnable_tasks(
             result_obj=next_result_obj, tasks_queue=tasks_queue, task_order=new_tasks_order
         )
-        send_task_update_to_result_service(new_dispatch_id, next_result_obj)
     else:
 
+        send_task_update_to_result_service(dispatch_id, task_execution_results)
         dispatch_runnable_tasks(
             result_obj=result_obj, tasks_queue=tasks_queue, task_order=new_tasks_order
         )
-        send_task_update_to_result_service(new_dispatch_id, result_obj)
 
     return result_obj
 
