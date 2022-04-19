@@ -35,8 +35,8 @@ from .utils import (
     get_result_object_from_result_service,
     is_empty,
     is_sublattice_dispatch_id,
-    send_result_object_to_result_service,
     send_task_update_to_dispatcher,
+    send_task_update_to_result_service,
 )
 
 
@@ -119,12 +119,13 @@ def update_completed_tasks(dispatch_id: str, tasks_queue: MPQ, result_obj: Resul
         dispatch_runnable_tasks(
             result_obj=next_result_obj, tasks_queue=tasks_queue, task_order=new_tasks_order
         )
-        send_result_object_to_result_service(result_object=next_result_obj)
+        send_task_update_to_result_service(new_dispatch_id, next_result_obj)
     else:
 
         dispatch_runnable_tasks(
             result_obj=result_obj, tasks_queue=tasks_queue, task_order=new_tasks_order
         )
+        send_task_update_to_result_service(new_dispatch_id, result_obj)
 
     return result_obj
 
