@@ -56,8 +56,8 @@ Covalent can also be downloaded and installed from source:
    git clone git@github.com:AgnostiqHQ/covalent.git
    cd covalent
 
-   # Install using setuptools, or...
-   python setup.py
+   # Build dashboard
+   python setup.py webapp
 
    # Install using pip (-e for developer mode), or...
    pip install -e .
