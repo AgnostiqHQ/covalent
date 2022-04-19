@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.89.0] - 2022-04-19
+
+### Changed
+
+- Made release.yml callable and moved the pypi job into that workflow
+
 ### Docs
 
 - Update the concepts page according to the new web UI.

@@ -140,14 +140,14 @@ jobs:
           release=false
           if [ "$MASTER_VERSION" = "$VERSION" ] ; then
             echo "$VERSION has been previously released."
-          elif [ $VERSION = '0.71.0' ] ; then
+          elif dpkg --compare-versions $VERSION 'gt' '0.71.0' ; then
             git config user.name "CovalentOpsBot"
             git config user.email "covalentopsbot@users.noreply.github.com"
             git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
             git push origin HEAD:master
             release=true
           else
-            echo "Master is frozen on 0.71.0"
+            echo "We cannot release versions less than 0.71.0."
           fi
           echo "RELEASE=$release" >> $GITHUB_ENV
       - name: Format Slack message
@@ -164,6 +164,12 @@ jobs:
           SLACK_USERNAME: "CovalentOpsBot"
           SLACK_MESSAGE: ${{ env.SLACK_MSG }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      - name: Release
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && env.RELEASE == 'true'
+        uses: AgnostiqHQ/covalent/.github/workflows/release.yml@master
+        with:
+          test_release: false
+          prerelease: true
       - name: Alert Slack
         if: github.ref == 'ref/heads/develop' && failure()
         uses: rtCamp/action-slack-notify@v2
