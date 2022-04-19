@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Detect secrets syntax in Dockerfile
+
 ## [0.87.0] - 2022-04-18
 
 ### Changed

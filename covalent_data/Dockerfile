@@ -50,7 +50,7 @@ ENV FS_LOCAL_STORAGE_ROOT="data"
 ENV FS_STORAGE_BUCKET="default"
 ENV MINIO_ENDPOINT="localhost:9000"
 ENV MINIO_ACCESS_KEY="minioadmin"
-ENV MINIO_SECRET_KEY="minioadmin" # pragma: allowlist secret
+ENV MINIO_SECRET_KEY="minioadmin"
 ENV MINIO_DISABLE_TLS=""
 
 COPY --from=venv /app/.venv/ /app/.venv
