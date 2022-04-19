@@ -43,7 +43,7 @@ jobs:
         with:
           push: false
           context: .
-          platforms: linux/amd64, linux/arm64,darwin
+          platforms: linux/amd64, linux/arm64
           file: covalent_data/Dockerfile
           tags: covalent_data:latest
       
