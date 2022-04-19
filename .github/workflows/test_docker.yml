@@ -40,7 +40,7 @@ jobs:
           pip install --no-cache-dir -r ./requirements.txt
 
       - name: Install Covalent
-        run: pip insatl -e .
+        run: pip install -e .
 
       - name: Build covalent_data service
         uses: docker/build-push-action@v2
@@ -50,20 +50,10 @@ jobs:
           push: false
           tags: covalent_data:$GITHUB_SHA
 
-      - name: Test data service container
+      - name: Test data service container and measure coverage
         run: |
           pip install --no-cache-dir -r ./tests/requirements.txt
           pip install --no-cache-dir -r ./covalent_data/requirements/dist.txt
           pip install --no-cache-dir -r ./covalent_data/requirements/dev.txt
           docker run --rm covalent_data:$GITHUB_SHA
-
-
-      - name: Build and run the covalent container stack
-        run: |
-          docker-compose build
-          docker-compose up -d
-
-      - name: Run a simple end to end dispatch
-        run: |
-          pip install -e .
-          python tests/basic_end_to_end_test.py
+          PYTHONPATH=$PWD/covalent_data pytest covalent_data -vv --cov=covalent_data --cov-config=.coveragerc
