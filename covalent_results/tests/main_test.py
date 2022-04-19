@@ -23,6 +23,7 @@ import tempfile
 from io import BytesIO
 from unittest.mock import patch
 
+import pytest
 from app.core import db
 
 DIRNAME = os.path.dirname(__file__)
@@ -77,6 +78,9 @@ def test_post(test_app, monkeypatch):
         assert len(d["dispatch_id"]) > 0
 
 
+@pytest.mark.skip(
+    reason="Needs updating. See issue #407 here: https://github.com/AgnostiqHQ/covalent/issues/407"
+)
 def test_put(test_app, monkeypatch):
     async def mock_download(_, filename):
         return b"".join(file_reader())
