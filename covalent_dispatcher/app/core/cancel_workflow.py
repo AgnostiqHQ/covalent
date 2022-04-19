@@ -71,7 +71,7 @@ def get_all_task_ids(result_obj: Result) -> List[Tuple[str, int]]:
 
     task_ids = []
     for task_id in range(result_obj._num_nodes):
-        task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
+        task_name = result_obj._get_node_name(task_id)
         if not is_sublattice(task_name):
             task_ids.append((result_obj.dispatch_id, task_id))
         else:
