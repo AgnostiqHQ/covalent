@@ -25,9 +25,6 @@ on:
     branches:
       - docker_tests
 
-env:
-  COVALENT_DATA_IMAGE: covalent_data:${GITHUB_SHA}
-
 jobs:
   test_docker:
     runs-on: ubuntu-latest
@@ -45,13 +42,18 @@ jobs:
       - name: Install Covalent
         run: pip install -e .
 
+      - name: build covalent_data service image tag
+        run: echo "COVALENT_DATA_SERVICE_IMG=covalent_data:${GITHUB_SHA}" >> $GITHUB_ENV
+
       - name: Build covalent_data service
         uses: docker/build-push-action@v2
         with:
           context: .
           file: covalent_data/Dockerfile
           push: false
-          tags: ${{ env.COVALENT_DATA_IMAGE }}
+          tags: ${{ env.COVALENT_DATA_SERVICE_IMG }}
+          build-args: |
+            COVALENT_DATA_SERVICE_IMG=${{ env.COVALENT_DATA_SERVICE_IMG }}
 
       - name: Test data service container and measure coverage
         run: |
