@@ -157,7 +157,9 @@ def install_nats():
 
     if platform.system() == "Darwin":
         if not shutil.which("nats-server"):
-            print("I see you're using Covalent on MacOS! Please run 'brew install nats-server' before proceeding with the Covalent installation.")
+            print(
+                "I see you're using Covalent on MacOS! Please run 'brew install nats-server' before proceeding with the Covalent installation."
+            )
             sys.exit(1)
     elif platform.system() == "Linux":
         import requests
@@ -259,5 +261,7 @@ if __name__ == "__main__":
     if os.getenv("COVA_SDK"):
         setup_info["packages"] = find_packages(exclude=["*tests*", "*_legacy", "covalent_*"])
     if platform.system() == "Linux":
-        setup_info["entry_points"]["console_scripts"].append("nats-server = covalent_queuer.nats_server:main")
+        setup_info["entry_points"]["console_scripts"].append(
+            "nats-server = covalent_queuer.nats_server:main"
+        )
     setup(**setup_info)
