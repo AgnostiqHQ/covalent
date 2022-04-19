@@ -36,6 +36,21 @@ on:
         required: true
         type: boolean
         default: true
+  workflow_call:
+    inputs:
+      stable_version:
+        description: "Stable version number, e.g. 0.32.3"
+        type: string
+      test_release:
+        description: "true: Test the workflow but don't create the release. false: Create a release"
+        required: true
+        type: boolean
+        default: true
+      prerelease:
+        description: "true: Create a prerelease. false: Create a stable release"
+        required: true
+        type: boolean
+        default: true
 
 jobs:
   github:

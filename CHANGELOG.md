@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Use workflow_call to automatically call reusable workflow
+
 ## [0.89.1] - 2022-04-19
 
 ### Fixed
