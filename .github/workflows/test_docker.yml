@@ -43,9 +43,10 @@ jobs:
         with:
           push: false
           context: .
-          platforms: linux/amd64
+          platforms: linux/amd64, linux/arm64,darwin
           file: covalent_data/Dockerfile
           tags: covalent_data:latest
+      
 #      - name: Build and run image
 #        run: |
 #          docker build -t cova .
