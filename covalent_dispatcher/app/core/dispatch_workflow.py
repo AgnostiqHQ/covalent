@@ -182,7 +182,7 @@ def get_runnable_tasks(
 
     for task_id in task_ids:
 
-        task_name = result_obj.lattice.transport_graph.get_node_value(task_id, "name")
+        task_name = result_obj._get_node_name(task_id)
 
         # Check whether task is of non-executable type
         result_obj, is_executable = preprocess_transport_graph(task_id, task_name, result_obj)
@@ -194,16 +194,12 @@ def get_runnable_tasks(
                 )
             continue
 
-        serialized_function = result_obj.lattice.transport_graph.get_node_value(
-            task_id, "function"
-        )
+        serialized_function = result_obj.transport_graph.get_node_value(task_id, "function")
 
         # Get the task inputs from parents and edge names of this node
         task_inputs = get_task_inputs(task_id=task_id, node_name=task_name, result_obj=result_obj)
 
-        executor = result_obj.lattice.transport_graph.get_node_value(task_id, "metadata")[
-            "executor"
-        ]
+        executor = result_obj.transport_graph.get_node_value(task_id, "metadata")["executor"]
 
         # Check whether the node is a sublattice
         if is_sublattice(task_name):
@@ -226,11 +222,6 @@ def get_runnable_tasks(
             print(
                 f"TASKS ORDER IN SUBLATTICE CONDITION: {get_task_order(sublattice_result_obj)}",
                 file=sys.stderr,
-            )
-
-            # Serialize its transport graph
-            sublattice_result_obj._lattice.transport_graph = (
-                sublattice_result_obj._lattice.transport_graph.serialize()
             )
 
             # Update the status of this node in result object
@@ -267,10 +258,6 @@ def get_runnable_tasks(
 
 def init_result_pre_dispatch(result_obj: Result):
     """Initialize the result object transport graph before it is dispatched for execution."""
-
-    transport_graph = _TransportGraph()
-    transport_graph.deserialize(result_obj.lattice.transport_graph)
-    result_obj._lattice.transport_graph = transport_graph
     result_obj._initialize_nodes()
     return result_obj
 
@@ -311,7 +298,7 @@ def is_runnable_task(task_id: int, result_obj: Result) -> bool:
     """Return status whether the task can be run based on whether the parent tasks have finished
     executing."""
 
-    parent_node_ids: List[int] = result_obj.lattice.transport_graph.get_dependencies(task_id)
+    parent_node_ids: List[int] = result_obj.transport_graph.get_dependencies(task_id)
 
     return all(
         result_obj._get_node_status(node_id) == Result.COMPLETED for node_id in parent_node_ids

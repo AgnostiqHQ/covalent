@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Setup on MacOS installs nats similar to how it's done on Linux.
 
+## [0.88.0] - 2022-04-19
+
+### Changed
+
+- Lattice in the result object is now pickled separately and a different instance of transport graph is used for modifications than the one in lattice in order to prevent unpickling the lattice everytime result object is read/written to.
+
+- Updated tests to match above change.
+
 ## [0.87.1] - 2022-04-19
 
 ### Fixed

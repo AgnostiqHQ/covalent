@@ -141,24 +141,6 @@ def _delete_result(
         shutil.rmtree(results_dir, ignore_errors=True)
 
 
-def redispatch_result(result_object: Result, dispatcher: str = None) -> str:
-    """
-    Function to redispatch the result as a new dispatch.
-
-    Args:
-        result_object: The result object to be redispatched.
-        dispatcher: The address to the dispatcher in the form of hostname:port, e.g. "localhost:8080".
-    Returns:
-        dispatch_id: The dispatch id of the new dispatch.
-    """
-
-    result_object._lattice.metadata["dispatcher"] = (
-        dispatcher or result_object.lattice.metadata["dispatcher"]
-    )
-
-    return result_object.lattice._server_dispatch(result_object)
-
-
 def sync(
     dispatch_id: Optional[Union[List[str], str]] = None,
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
