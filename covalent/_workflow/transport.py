@@ -43,6 +43,7 @@ class TransportableObject:
 
     def __init__(self, obj: Any) -> None:
         self._object = base64.b64encode(cloudpickle.dumps(obj)).decode("utf-8")
+        self.func_doc = obj.__doc__
         self.python_version = platform.python_version()
 
     def get_deserialized(self) -> Callable:

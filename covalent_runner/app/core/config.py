@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     RUNNER_SVC_PORT: int = 8003
     RUNNER_SVC_HOST: str = "localhost"
-    RESULTS_SVC_PORT: int = 8006
+    RESULTS_SVC_PORT: int = 8005
     RESULTS_SVC_HOST: str = "localhost"
     DISPATCHER_SVC_PORT: int = 8002
     DISPATCHER_SVC_HOST: str = "localhost"

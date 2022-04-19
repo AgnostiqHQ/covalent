@@ -22,7 +22,7 @@
 
 import inspect
 from datetime import datetime, timedelta
-from typing import Callable, Dict, Set, Tuple
+from typing import TYPE_CHECKING, Callable, Dict, Set, Tuple
 
 import networkx as nx
 import simplejson
@@ -34,6 +34,9 @@ from .util_classes import Status
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+if TYPE_CHECKING:
+    from .._results_manager.result import Result
 
 
 def get_timedelta(time_limit: str) -> timedelta:
@@ -200,7 +203,7 @@ def extract_graph_node(node):
     # doc string
     f = node.get("function")
     if f is not None:
-        node["doc"] = f.get_deserialized().__doc__
+        node["doc"] = f.func_doc
 
     # metadata
     node["metadata"] = extract_metadata(node["metadata"])
@@ -238,9 +241,7 @@ def extract_metadata(metadata: dict):
 
 def encode_dict(d):
     """Avoid JSON encoding when python str() suffices"""
-    if not isinstance(d, dict):
-        return d
-    return {k: str(v) for (k, v) in d.items()}
+    return {k: str(v) for (k, v) in d.items()} if isinstance(d, dict) else d
 
 
 def extract_graph(graph):
@@ -260,11 +261,10 @@ def result_encoder(obj):
     return str(obj)
 
 
-def encode_result(result_obj):
-    lattice = result_obj.lattice
-    ((named_args, named_kwargs),) = (
-        get_named_params(lattice.workflow_function, lattice.args, lattice.kwargs),
-    )
+def encode_result(result_obj: "Result"):
+
+    transport_graph = result_obj.transport_graph
+
     result_dict = {
         "dispatch_id": result_obj.dispatch_id,
         "status": result_obj.status,
@@ -274,13 +274,13 @@ def encode_result(result_obj):
         "results_dir": result_obj.results_dir,
         "error": result_obj.error,
         "lattice": {
-            "function_string": lattice.workflow_function_string,
-            "doc": lattice.__doc__,
-            "name": lattice.__name__,
-            "inputs": encode_dict({**named_args, **named_kwargs}),
-            "metadata": extract_metadata(lattice.metadata),
+            "function_string": result_obj.workflow_function_string,
+            "doc": result_obj.lattice_doc,
+            "name": result_obj.lattice_name,
+            "inputs": str(result_obj.inputs),
+            "metadata": extract_metadata(transport_graph.lattice_metadata),
         },
-        "graph": extract_graph(result_obj.lattice.transport_graph._graph),
+        "graph": extract_graph(transport_graph._graph),
     }
 
     jsonified_result = simplejson.dumps(result_dict, default=result_encoder, ignore_nan=True)

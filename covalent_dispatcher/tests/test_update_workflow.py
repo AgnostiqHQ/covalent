@@ -63,7 +63,6 @@ def mock_result_uninitialized():
 
     lattice = deepcopy(workflow)
     lattice.build_graph(x=1, y=2, z=3)
-    lattice.transport_graph = lattice.transport_graph.serialize()
 
     return Result(lattice=lattice, results_dir="", dispatch_id="mock_dispatch_id")
 

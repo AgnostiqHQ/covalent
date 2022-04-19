@@ -20,8 +20,10 @@
 import os
 import pickle
 import tempfile
+from io import BytesIO
 from unittest.mock import patch
 
+import pytest
 from app.core import db
 
 DIRNAME = os.path.dirname(__file__)
@@ -76,6 +78,9 @@ def test_post(test_app, monkeypatch):
         assert len(d["dispatch_id"]) > 0
 
 
+@pytest.mark.skip(
+    reason="Needs updating. See issue #407 here: https://github.com/AgnostiqHQ/covalent/issues/407"
+)
 def test_put(test_app, monkeypatch):
     async def mock_download(_, filename):
         return b"".join(file_reader())
@@ -91,10 +96,10 @@ def test_put(test_app, monkeypatch):
     monkeypatch.setattr("app.core.api.DataService.download", mock_download)
     monkeypatch.setattr("app.core.api.DataService.upload", mock_upload)
     monkeypatch.setattr("app.core.db.Database.value", mock_value)
-    task = {"node_id": 0, "node_name": "join_words", "output": "HELLO!"}
+    task = {"node_id": 0, "node_name": "subtask", "output": 27}
 
     response = test_app.put(
-        f"/api/v0/workflow/results/{MOCK_DISPATCH_ID}", files={"task": pickle.dumps(task)}
+        f"/api/v0/workflow/results/{MOCK_DISPATCH_ID}", files={"task": BytesIO(pickle.dumps(task))}
     )
 
     d = response.json()

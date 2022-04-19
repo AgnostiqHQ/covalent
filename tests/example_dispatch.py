@@ -19,6 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import numpy as np
+from sklearn.preprocessing import SplineTransformer
+
 import covalent as ct
 
 
@@ -38,8 +41,17 @@ def task_2(y, z):
     return subtask(y, z)
 
 
+@ct.electron
+def task_3():
+    X = np.arange(5).reshape(5, 1)
+    spline = SplineTransformer(degree=2, n_knots=3)
+    spline.fit_transform(X)
+
+
 @ct.lattice
 def workflow(a):
+
+    task_3()
 
     for _ in range(5):
         task_2(a, 10)
