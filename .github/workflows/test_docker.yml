@@ -25,6 +25,9 @@ on:
     branches:
       - docker_tests
 
+env:
+  COVALENT_DATA_IMAGE: covalent_data:${GITHUB_SHA}
+
 jobs:
   test_docker:
     runs-on: ubuntu-latest
@@ -48,7 +51,7 @@ jobs:
           context: .
           file: covalent_data/Dockerfile
           push: false
-          tags: covalent_data:${{ github.GITHUB_SHA }}
+          tags: ${{ env.COVALENT_DATA_IMAGE }}
 
       - name: Test data service container and measure coverage
         run: |
