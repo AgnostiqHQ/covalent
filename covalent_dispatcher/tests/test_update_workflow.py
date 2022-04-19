@@ -97,6 +97,9 @@ def test_update_workflow_results_pattern_1(mocker, mock_result_initialized, mock
         "app.core.update_workflow.get_result_object_from_result_service",
         return_value=mock_result_initialized,
     )
+
+    mock_task_update = mocker.patch("app.core.update_workflow.send_task_update_to_result_service")
+
     mock_update_endtime = mocker.patch("app.core.update_workflow.update_workflow_endtime")
     mock_update_complete_workflow = mocker.patch(
         "app.core.update_workflow.update_completed_workflow"
@@ -110,6 +113,7 @@ def test_update_workflow_results_pattern_1(mocker, mock_result_initialized, mock
     )
 
     mock_get_result.assert_called_once()
+
     assert mock_update_endtime.mock_calls == []
     assert mock_update_complete_workflow.mock_calls == []
     assert mock_update_completed_tasks.mock_calls == []
@@ -134,6 +138,9 @@ def test_update_workflow_results_pattern_2(
         "app.core.update_workflow.get_result_object_from_result_service",
         return_value=mock_result_initialized,
     )
+
+    mock_task_update = mocker.patch("app.core.update_workflow.send_task_update_to_result_service")
+
     mock_update_endtime = mocker.patch(
         "app.core.update_workflow.update_workflow_endtime", return_value=mock_result_initialized
     )
@@ -149,6 +156,7 @@ def test_update_workflow_results_pattern_2(
     )
 
     mock_get_result.assert_called_once()
+    mock_task_update.assert_called_once()
     mock_update_endtime.assert_called_once()
     assert mock_update_complete_workflow.mock_calls == []
     assert mock_update_completed_tasks.mock_calls == []
@@ -167,6 +175,9 @@ def test_update_workflow_results_pattern_3(mocker, mock_result_initialized, mock
         "app.core.update_workflow.get_result_object_from_result_service",
         return_value=mock_result_initialized,
     )
+
+    mock_task_update = mocker.patch("app.core.update_workflow.send_task_update_to_result_service")
+
     mock_update_endtime = mocker.patch(
         "app.core.update_workflow.update_workflow_endtime", return_value=mock_result_initialized
     )
@@ -182,6 +193,7 @@ def test_update_workflow_results_pattern_3(mocker, mock_result_initialized, mock
     )
 
     mock_are_tasks_running.assert_called_once()
+    mock_task_update.assert_called_once()
     mock_get_result.assert_called_once()
     mock_update_endtime.assert_called_once()
     mock_update_complete_workflow.assert_called_once_with(mock_result_initialized)
@@ -200,6 +212,9 @@ def test_update_workflow_results_pattern_4(mocker, mock_result_initialized, mock
         "app.core.update_workflow.get_result_object_from_result_service",
         return_value=mock_result_initialized,
     )
+
+    mock_task_update = mocker.patch("app.core.update_workflow.send_task_update_to_result_service")
+
     mock_update_endtime = mocker.patch(
         "app.core.update_workflow.update_workflow_endtime", return_value=mock_result_initialized
     )
@@ -217,6 +232,7 @@ def test_update_workflow_results_pattern_4(mocker, mock_result_initialized, mock
 
     mock_are_tasks_running.assert_called_once()
     mock_get_result.assert_called_once()
+    mock_task_update.assert_called_once()
     mock_update_endtime.assert_called_once()
     mock_update_completed_tasks.assert_called_once_with(
         "mock_dispatch_id", mock_tasks_queue, mock_result_initialized
@@ -236,6 +252,9 @@ def test_update_workflow_results_pattern_5(mocker, mock_result_initialized, mock
         "app.core.update_workflow.get_result_object_from_result_service",
         return_value=mock_result_initialized,
     )
+
+    mock_task_update = mocker.patch("app.core.update_workflow.send_task_update_to_result_service")
+
     mock_update_endtime = mocker.patch(
         "app.core.update_workflow.update_workflow_endtime", return_value=mock_result_initialized
     )
@@ -252,6 +271,7 @@ def test_update_workflow_results_pattern_5(mocker, mock_result_initialized, mock
     )
 
     mock_are_tasks_running.assert_called_once()
+    mock_task_update.assert_called_once()
     mock_get_result.assert_called_once()
     mock_update_endtime.assert_called_once()
     assert mock_update_complete_workflow.mock_calls == []
@@ -343,15 +363,12 @@ def test_update_completed_electron_task(mocker, mock_result_initialized, mock_ta
         "app.core.update_workflow.get_result_object_from_result_service"
     )
     mock_dispatch_runnable_tasks = mocker.patch("app.core.update_workflow.dispatch_runnable_tasks")
-    mock_send_result = mocker.patch(
-        "app.core.update_workflow.send_result_object_to_result_service"
-    )
 
     mock_tasks_queue.put([{"dispatch_id": [[0], [1, 2, 3], [4, 5], [6]]}])
     update_completed_tasks("dispatch_id", mock_tasks_queue, mock_result_initialized)
 
     assert mock_get_result.mock_calls == []
-    assert mock_send_result.mock_calls == []
+
     mock_dispatch_runnable_tasks.assert_called_once_with(
         result_obj=mock_result_initialized,
         tasks_queue=mock_tasks_queue,
@@ -367,9 +384,6 @@ def test_update_completed_sublattice_task(mocker, mock_result_initialized, mock_
         return_value="mock_sublattice_result",
     )
     mock_dispatch_runnable_tasks = mocker.patch("app.core.update_workflow.dispatch_runnable_tasks")
-    mock_send_result = mocker.patch(
-        "app.core.update_workflow.send_result_object_to_result_service"
-    )
 
     mock_tasks_queue.put(
         [{"sublattice_dispatch_id": [[0], [1, 2]]}, {"dispatch_id": [[0], [1, 2, 3], [4, 5], [6]]}]
@@ -377,8 +391,7 @@ def test_update_completed_sublattice_task(mocker, mock_result_initialized, mock_
     update_completed_tasks("dispatch_id", mock_tasks_queue, mock_result_initialized)
 
     mock_get_result.assert_called_once()
-    mock_send_result.assert_called_once()
-    print(mock_dispatch_runnable_tasks.mock_calls)
+
     mock_dispatch_runnable_tasks.assert_called_once_with(
         result_obj="mock_sublattice_result", tasks_queue=mock_tasks_queue, task_order=[[0], [1, 2]]
     )
