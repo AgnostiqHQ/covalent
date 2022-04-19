@@ -20,6 +20,7 @@
 import os
 import pickle
 import tempfile
+from io import BytesIO
 from unittest.mock import patch
 
 from app.core import db
@@ -91,10 +92,10 @@ def test_put(test_app, monkeypatch):
     monkeypatch.setattr("app.core.api.DataService.download", mock_download)
     monkeypatch.setattr("app.core.api.DataService.upload", mock_upload)
     monkeypatch.setattr("app.core.db.Database.value", mock_value)
-    task = {"node_id": 0, "node_name": "subtask", "output": 27}
+    task = {"node_id": 0, "output": 27}
 
     response = test_app.put(
-        f"/api/v0/workflow/results/{MOCK_DISPATCH_ID}", files={"task": pickle.dumps(task)}
+        f"/api/v0/workflow/results/{MOCK_DISPATCH_ID}", files={"task": BytesIO(pickle.dumps(task))}
     )
 
     d = response.json()
