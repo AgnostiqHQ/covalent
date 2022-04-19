@@ -24,12 +24,7 @@ from copy import deepcopy
 from unittest import mock
 
 import pytest
-
-from app.core.cancel_workflow import (
-    cancel_task,
-    cancel_workflow_execution,
-    get_all_task_ids,
-)
+from app.core.cancel_workflow import cancel_task, cancel_workflow_execution, get_all_task_ids
 from app.core.utils import send_cancel_task_to_runner
 
 import covalent as ct
