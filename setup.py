@@ -198,7 +198,7 @@ class DevelopCovalent(develop):
 
 setup_info = {
     "name": "cova",
-    "packages": find_packages(exclude=["*tests*", "*_legacy"]),
+    "packages": find_packages(exclude=["*tests*"]),
     "version": version,
     "maintainer": "Agnostiq",
     "url": "https://github.com/AgnostiqHQ/covalent",
@@ -256,5 +256,5 @@ setup_info = {
 
 if __name__ == "__main__":
     if os.getenv("COVA_SDK"):
-        setup_info["packages"] = find_packages(exclude=["*tests*", "*_legacy", "covalent_*"])
+        setup_info["packages"] = find_packages(exclude=["*tests*", "covalent_*"])
     setup(**setup_info)
