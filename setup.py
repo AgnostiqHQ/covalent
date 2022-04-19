@@ -168,7 +168,7 @@ def install_nats():
 
         open("nats-server-v2.7.4-linux-amd64.zip", "wb").write(r.content)
         subprocess.run(["unzip", "nats-server-v2.7.4-linux-amd64.zip"], check=True)
-        shutil.move("nats-server-v2.7.4-linux-amd64/nats-server", "refactor/queuer/nats-server")
+        shutil.move("nats-server-v2.7.4-linux-amd64/nats-server", "covalent_queuer/nats-server")
 
         shutil.rmtree("nats-server-v2.7.4-linux-amd64")
         os.remove("nats-server-v2.7.4-linux-amd64.zip")
@@ -198,7 +198,7 @@ class DevelopCovalent(develop):
 
 setup_info = {
     "name": "cova",
-    "packages": find_packages(exclude=["*tests*"]),
+    "packages": find_packages(exclude=["*tests*", "*_legacy"]),
     "version": version,
     "maintainer": "Agnostiq",
     "url": "https://github.com/AgnostiqHQ/covalent",
@@ -216,9 +216,8 @@ setup_info = {
             "executor/executor_plugins/local.py",
             "notify/notification_plugins/webhook.py",
         ],
-        "covalent_dispatcher": ["_service/app.py"],
         "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
-        "refactor": ["queuer/nats-server"],
+        "covalent_queuer": ["nats-server"],
     },
     "install_requires": required,
     "classifiers": [
@@ -234,6 +233,7 @@ setup_info = {
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Adaptive Technologies",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
@@ -248,11 +248,13 @@ setup_info = {
     },
     "entry_points": {
         "console_scripts": [
-            "covalent = covalent_dispatcher._cli.cli:cli",
-            "nats-server = refactor.queuer.nats_server:main",
+            "covalent = covalent._cli.cli:cli",
+            "nats-server = covalent_queuer.nats_server:main",
         ],
     },
 }
 
 if __name__ == "__main__":
+    if os.getenv("COVA_SDK"):
+        setup_info["packages"] = find_packages(exclude=["*tests*", "*_legacy", "covalent_*"])
     setup(**setup_info)

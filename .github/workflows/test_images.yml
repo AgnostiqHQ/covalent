@@ -36,6 +36,3 @@ jobs:
       - name: Test Containers
           run: |
             echo 'Commands for testing container networking will go here...'
-          
-
-          
