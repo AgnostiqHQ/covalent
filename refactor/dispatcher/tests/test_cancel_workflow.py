@@ -25,10 +25,6 @@ from unittest import mock
 
 import pytest
 
-import covalent as ct
-from covalent._results_manager.result import Result
-from covalent._workflow.transport import TransportableObject, _TransportGraph
-
 # remember to remove refactor.dispatcher in the import prefixes
 from refactor.dispatcher.app.core.cancel_workflow import (
     cancel_task,
@@ -36,6 +32,10 @@ from refactor.dispatcher.app.core.cancel_workflow import (
     get_all_task_ids,
 )
 from refactor.dispatcher.app.core.utils import send_cancel_task_to_runner
+
+import covalent as ct
+from covalent._results_manager.result import Result
+from covalent._workflow.transport import TransportableObject, _TransportGraph
 
 
 @pytest.fixture
