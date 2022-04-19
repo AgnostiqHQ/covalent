@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated the quantum chemistry tutorial.
 
+## [0.89.1] - 2022-04-19
+
+### Fixed
+
+- Reusable workflow called at job level
+
 ## [0.89.0] - 2022-04-19
 
 ### Changed
