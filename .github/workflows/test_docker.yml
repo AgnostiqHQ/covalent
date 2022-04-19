@@ -38,11 +38,12 @@ jobs:
       - name: Install root level dependencies
         run: |
           pip install --no-cache-dir -r ./requirements.txt
+          pip install --no-cache-dir -r ./tests/requirements.txt
 
       - name: Install Covalent
         run: pip install -e .
 
-      - name: build covalent_data service image tag
+      - name: Build data service image tag
         run: echo "COVALENT_DATA_SERVICE_IMG=covalent_data:${GITHUB_SHA}" >> $GITHUB_ENV
 
       - name: Build covalent_data service
@@ -58,8 +59,28 @@ jobs:
 
       - name: Test data service container and measure coverage
         run: |
-          pip install --no-cache-dir -r ./tests/requirements.txt
           pip install --no-cache-dir -r ./covalent_data/requirements/dist.txt
           pip install --no-cache-dir -r ./covalent_data/requirements/dev.txt
           docker run -d --rm ${{ env.COVALENT_DATA_SERVICE_IMG }}
           PYTHONPATH=$PWD/covalent_data pytest covalent_data -vv --cov=covalent_data --cov-config=.coveragerc
+
+      - name: Build dispatcher service image tag
+        run: echo "DISPATCHER_SERVICE_IMG=covalent_dispatcher:${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Build dispatcher image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: covalent_dispatcher/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.DISPATCHER_SERVICE_IMG }}
+          build-args: |
+            DISPATCHER_SERVICE_IMG=${{ env.DISPATCHER_SERVICE_IMG }}
+
+      - name: Test dispatcher service container and measure coverage
+        run: |
+          pip install --no-cache-dir -r ./covalent_dispatcher/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_dispatcher/requirements/dev.txt
+          docker run -d --rm ${{ env.DISPATCHER_SERVICE_IMG }}
+          PYTHONPATH=$PWD/covalent_dispatcher pytest covalent_dispatcher -vv --cov=covalent_dispatcher --cov-config=.coveragerc
