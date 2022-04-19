@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Setup asks MacOS users to install nats separately
+- Setup on MacOS installs nats similar to how it's done on Linux.
 
 ## [0.87.1] - 2022-04-19
 

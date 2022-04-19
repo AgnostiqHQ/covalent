@@ -92,9 +92,6 @@ jobs:
           cd ./covalent_ui/webapp
           yarn install
           yarn build
-      - name: Install NATS on MacOS
-        if: matrix.os == 'macos-latest'
-        run: brew install nats-server
       - name: Build distribution
         run: python setup.py sdist
       - name: Validate distribution
