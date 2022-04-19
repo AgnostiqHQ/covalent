@@ -43,7 +43,7 @@ jobs:
         run: pip install -e .
 
       - name: build covalent_data service image tag
-        run: echo "COVALENT_DATA_SERVICE_IMG=covalent_data:${GITHUB_SHA}" >> $GITHUB_ENV
+        run: echo "COVALENT_DATA_SERVICE_IMG=localhost/covalent_data:${GITHUB_SHA}" >> $GITHUB_ENV
 
       - name: Build covalent_data service
         uses: docker/build-push-action@v2
