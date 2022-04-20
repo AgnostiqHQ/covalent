@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated Getting Started, How-To Configuration Guide, CLI API documentation
 
+## [0.89.5] - 2022-04-20
+
+### Fixed
+
+- Don't duplicate tags
+- Release conditions
+- Pypi version syntax
+
 ## [0.89.4] - 2022-04-20
 
 ### Docs

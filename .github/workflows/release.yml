@@ -52,6 +52,15 @@ on:
         type: boolean
         default: true
 
+env:
+  PAUL_BLART: >
+    '['
+    '"scottwn",'
+    '"FyzHsn",'
+    '"wjcunningham7",'
+    '"santoshkumarradha"]'
+
+
 jobs:
   github:
     runs-on: ubuntu-latest
@@ -80,6 +89,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=v$VERSION" >> $GITHUB_ENV
       - name: Tag commit
+        if: github.event.inputs.prerelease == 'true'
         id: push
         run: |
           git config user.name "CovalentOpsBot"
@@ -87,6 +97,13 @@ jobs:
           git tag -a $RELEASE -m "Release $RELEASE"
           git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
           git push origin $RELEASE
+      - name: Check conditions for stable release
+        if: >
+          github.event.inputs.prerelease == 'false'
+          && github.event.inputs.stable_version
+          && contains(env.PAUL_BLART, github.actor)
+        id: no-push
+        run: echo "Stable release for version ${{ github.event.inputs.stable_version }}"
       - name: Generate release message
         id: message
         run: |
@@ -97,7 +114,11 @@ jobs:
           tail +$begin ./CHANGELOG.md | head -$end >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
       - name: Create release
-        if: steps.push.outcome == 'success' && steps.message.outcome == 'success' && github.event.inputs.test_release == 'false'
+        if: >
+          steps.push.outcome == 'success'
+          || steps.no-push.outcome == 'success'
+          && steps.message.outcome == 'success'
+          && github.event.inputs.test_release == 'false'
         uses: ncipollo/release-action@v1
         with:
           body: ${{ env.MESSAGE }}
@@ -149,11 +170,17 @@ jobs:
           yarn build
       - name: Build Prerelease Distribution
         if: github.event.inputs.prerelease == 'true'
+        id: pre-build
         run: python setup.py egg_info --tag-build=pre sdist
       - name: Build Stable Distribution
-        if: github.event.inputs.prerelease == 'false' && github.event.inputs.stable_version
+        if: >
+          github.event.inputs.prerelease == 'false'
+          && github.event.inputs.stable_version
+          && contains(env.PAUL_BLART, github.actor)
+        id: stable-build
         run: python setup.py sdist
       - name: Validate Distribution
+        id: validate
         run: |
           VERSION="$(cat ./VERSION)"
           if [ ${{ github.event.inputs.prerelease }} = 'false' ] && \
@@ -164,6 +191,7 @@ jobs:
           if [ ${{ github.event.inputs.prerelease }} = 'true' ] ; then
             VERSION="${VERSION}rc0"
           fi
+          VERSION="$(echo $VERSION | sed 's/-/.post/')"
           cd dist
           tar xzf cova-${VERSION}.tar.gz
           diff -x tests -r cova-${VERSION}/covalent ../covalent
@@ -175,7 +203,11 @@ jobs:
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
       - name: Upload Distribution
-        if: github.event.inputs.test_release == 'false'
+        if: >
+          steps.pre-build.outcome == 'success'
+          || steps.stable-build.outcome == 'success'
+          && steps.validate.outcome == 'success'
+          && github.event.inputs.test_release == 'false'
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
