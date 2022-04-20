@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Updated the how-to notebooks for compatibility with the micro-services refactor.
+
 ### Fixed
 
 - Don't specify runs-on for reusable call
