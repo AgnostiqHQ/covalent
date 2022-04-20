@@ -86,7 +86,8 @@ jobs:
 
   test_containers:
     runs-on: ubuntu-latest
-    - name: Start all containers
+    steps:
+      - name: Start all containers
         run: |
           docker network create covalent
           docker pull nats
