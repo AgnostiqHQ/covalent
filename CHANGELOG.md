@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Updated Getting Started, How-To Configuration Guide, CLI API documentation
+
 ## [0.89.4] - 2022-04-20
 
 ### Docs
@@ -15,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated machine learning and quantum gravity tutorials to point to the correct web UI address.
 - Updated the quantum chemistry tutorial.
 - Update the concepts page according to the new web UI.
-- Updated Getting Started, How-To Configuration Guide, CLI API documentation
 
 
 ### Fixed
