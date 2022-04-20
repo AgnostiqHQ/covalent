@@ -40,6 +40,7 @@ Covalent can also run in Docker containers instead of :code:`covalent start`:
 .. code:: bash
 
    git clone git@github.com:AgnostiqHQ/covalent.git
+   cd covalent
    docker compose up -d
 
 .. note::
