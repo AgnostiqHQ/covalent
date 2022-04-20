@@ -1,7 +1,6 @@
 # This file is used for local development with docker-compose and for building microservice images in the CD pipeline.
 # Example Usage: Run "docker-compose -f docker-compose.yml up --build" from the root of the project
 # to build the images using this file and start the containers.
-
 version: "3.9"
 
 services:
@@ -16,6 +15,12 @@ services:
     environment:
       DATA_SVC_HOST: 0.0.0.0
       DATA_SVC_PORT: 8004
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/readyz"]
+      interval: 10s
+      timeout: 30s
+      retries: 3
+      start_period: 3s
     networks:
       covalent:
 
@@ -36,6 +41,12 @@ services:
       UI_SVC_HOST: covalent_ui
     ports:
       - 8002:8002
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/readyz"]
+      interval: 10s
+      timeout: 30s
+      retries: 3
+      start_period: 3s
     networks:
       covalent:
 
@@ -54,8 +65,15 @@ services:
       QUEUER_SVC_HOST: 0.0.0.0
       RESULTS_SVC_HOST: covalent_results
       RESULTS_SVC_PORT: 8005
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/readyz"]
+      interval: 10s
+      timeout: 30s
+      retries: 3
+      start_period: 5s
     depends_on:
-      - covalent_nats
+      covalent_nats:
+        condition: service_healthy
     networks:
       covalent:
 
@@ -72,7 +90,8 @@ services:
       DISPATCHER_SVC_HOST: covalent_dispatcher
       DISPATCHER_SVC_PORT: 8002
     depends_on:
-      - covalent_nats
+      covalent_nats:
+        condition: service_healthy
     networks:
       covalent:
 
@@ -90,6 +109,12 @@ services:
       DATA_SVC_PORT: 8004
       DATA_SVC_HOST: covalent_data
       RESULTS_DB: results.db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/readyz"]
+      interval: 10s
+      timeout: 30s
+      retries: 3
+      start_period: 3s
     networks:
       covalent:
 
@@ -108,6 +133,12 @@ services:
       RESULTS_SVC_HOST: covalent_results
       DISPATCHER_SVC_PORT: 8002
       DISPATCHER_SVC_HOST: covalent_dispatcher
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/readyz"]
+      interval: 10s
+      timeout: 30s
+      retries: 3
+      start_period: 3s
     networks:
       covalent:
 
@@ -122,14 +153,30 @@ services:
     environment:
       UI_SVC_PORT: 8000
       UI_SVC_HOST: 0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/readyz"]
+      interval: 10s
+      timeout: 30s
+      retries: 3
+      start_period: 3s
     networks:
       covalent:
 
   covalent_nats:
+    build:
+      context: .
+      dockerfile: covalent_queuer/Dockerfile.nats
     image: nats
     ports:
       - 4222:4222
+      - 8222:8222
     container_name: covalent_nats
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8222/healthz"]
+      interval: 1s
+      timeout: 30s
+      retries: 30
+      start_period: 0s
     networks:
       covalent:
 

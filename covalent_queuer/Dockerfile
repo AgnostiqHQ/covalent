@@ -42,6 +42,9 @@ RUN cd /app && \
 
 FROM python:3.8-slim-buster as prod
 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl
+
 ENV QUEUER_SVC_HOST="0.0.0.0"
 ENV QUEUER_SVC_PORT="8001"
 
