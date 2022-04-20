@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Make TransportGraph into a MultiDigraph to allow passing the same input to multiple arguments of an Electron.
+
 ### Docs
 
 - Update the concepts page according to the new web UI.
