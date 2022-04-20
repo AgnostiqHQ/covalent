@@ -58,7 +58,7 @@ jobs:
 
       - name: Build service image
         uses: docker/build-push-action@v2
-        if: ${{ matrix.service }} != 'covalent_dispatcher'
+        if: ${{ matrix.service }} != 'covalent_queue_consumer'
         with:
           context: .
           file: ${{ matrix.service }}/Dockerfile
