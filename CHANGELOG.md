@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Update the concepts page according to the new web UI.
+
+## [0.89.3] - 2022-04-20
+
+### Fixed
+
+- Push-to-ECR steps for `master` and `develop` workflows.
+- Don't specify runs-on for reusable call
+
+## [0.89.2] - 2022-04-19
+
+### Fixed
+
+- Use workflow_call to automatically call reusable workflow
+
+## [0.89.1] - 2022-04-19
+
+### Fixed
+
+- Reusable workflow called at job level
+
+## [0.89.0] - 2022-04-19
+
+### Changed
+
+- Made release.yml callable and moved the pypi job into that workflow
+
+### Docs
+
 - Updated the astronomy tutorial with cosmetic changes
 - Updated Getting Started, How-To Configuration Guide, CLI API documentation
 

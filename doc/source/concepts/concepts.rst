@@ -326,7 +326,7 @@ After the workflow has been defined, and before it can be executed, one of the f
 
 .. image:: ./images/transport_graph.png
     :align: center
-    :scale: 60 %
+    :scale: 45 %
 
 .. _Workflow execution:
 
@@ -412,7 +412,7 @@ The progress of the electron execution can be tracked using the Covalent UI.
 
 .. image:: ./images/status_check.png
     :align: center
-    :scale: 65 %
+    :scale: 40 %
 
 
 The user can view the dependencies among the various electrons in addition to the execution status (running, completed, not started, failed, or cancelled). Additional information on how long each task has been running for, or the total execution time is also shown in the Covalent UI.
