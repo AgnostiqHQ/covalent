@@ -85,6 +85,9 @@ jobs:
             IMAGE_TAG=${{ env.IMAGE_TAG }}
 
   test_containers:
+    needs:
+      - build_service_containers
+      - build_queue_consumer
     runs-on: ubuntu-latest
     steps:
       - name: Start all containers
