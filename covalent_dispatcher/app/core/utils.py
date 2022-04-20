@@ -162,26 +162,31 @@ def get_task_inputs(task_id: int, node_name: str, result_obj: Result) -> Dict:
     elif node_name.startswith(electron_dict_prefix):
         values = {}
         for parent in result_obj.transport_graph.get_dependencies(task_id):
-            key = result_obj.transport_graph.get_edge_value(parent, task_id, "edge_name")
+
+            edge_data = result_obj.transport_graph.get_edge_data(parent, task_id)
             value = result_obj._get_node_output(parent)
-            values[key] = value
+            for e_key, d in edge_data.items():
+                key = d["edge_name"]
+                values[key] = value
+
         task_inputs = {"args": [], "kwargs": {"x": values}}
     else:
         task_inputs = {"args": [], "kwargs": {}}
 
         for parent in result_obj.transport_graph.get_dependencies(task_id):
 
-            param_type = result_obj.transport_graph.get_edge_value(parent, task_id, "param_type")
+            edge_data = result_obj.transport_graph.get_edge_data(parent, task_id)
 
             value = result_obj._get_node_output(parent)
 
-            if param_type == "arg":
-                task_inputs["args"].append(value)
+            for e_key, d in edge_data.items():
+                if d["param_type"] == "arg":
+                    task_inputs["args"].append(value)
 
-            elif param_type == "kwarg":
-                key = result_obj.transport_graph.get_edge_value(parent, task_id, "edge_name")
+                elif d["param_type"] == "kwarg":
+                    key = d["edge_name"]
 
-                task_inputs["kwargs"][key] = value
+                    task_inputs["kwargs"][key] = value
     return task_inputs
 
 
