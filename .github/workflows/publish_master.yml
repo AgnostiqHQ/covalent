@@ -101,12 +101,12 @@ jobs:
           docker-compose -f docker-compose.yml up --build -d
           echo 'Displaying containers...'
           docker ps
-          docker tag covalent-data:latest ${{ secrets.DATA_REPO }}
-          docker tag covalent-dispatcher:latest ${{ secrets.DISPATCHER_REPO }}
-          docker tag covalent-queuer:latest ${{ secrets.QUEUER_REPO }}
-          docker tag covalent-results:latest ${{ secrets.RESULTS_REPO }}
-          docker tag covalent-runner:latest ${{ secrets.RUNNER_REPO }}
-          docker tag covalent-ui:latest ${{ secrets.UI_REPO }}
+          docker tag covalent_data:latest ${{ secrets.DATA_REPO }}
+          docker tag covalent_dispatcher:latest ${{ secrets.DISPATCHER_REPO }}
+          docker tag covalent_queuer:latest ${{ secrets.QUEUER_REPO }}
+          docker tag covalent_results:latest ${{ secrets.RESULTS_REPO }}
+          docker tag covalent_runner:latest ${{ secrets.RUNNER_REPO }}
+          docker tag covalent_ui:latest ${{ secrets.UI_REPO }}
           docker push ${{ secrets.DATA_REPO }}
           docker push ${{ secrets.DISPATCHER_REPO }}
           docker push ${{ secrets.QUEUER_REPO }}
