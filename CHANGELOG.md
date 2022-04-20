@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Fixed
+### Added
 
-- Don't specify runs-on for reusable call
+- Release Notes in `docs/source/release_notes/*.rst`
 
 ## [0.89.2] - 2022-04-19
 
