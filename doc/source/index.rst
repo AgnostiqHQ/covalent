@@ -19,7 +19,15 @@ COVALENT DOCUMENTATION
 
 |
 
-:link-badge:`release_notes/latest,Current Version,ref,cls=badge-dark text-white` |release|
+.. panels::
+   :column: col-lg-12 p-3
+   :card: shadow text-center
+
+      .. link-button:: release_notes/latest
+         :type: ref
+         :text: Current Version |release|
+         :classes: btn-link stretched-link font-weight-bold
+
 
 Covalent is a Pythonic workflow tool used to execute tasks on advanced computing hardware.
 
@@ -121,8 +129,8 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    Concepts <concepts/concepts>
    Tutorials <tutorials/tutorials>
    How-To Guides <how_to/index>
+   Latest Feature Addition <release_notes/latest>
    API Documentation <api/api>
-   Whats New in |release| <release_notes/latest>
 
 .. toctree::
    :maxdepth: 1
