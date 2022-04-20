@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Push-to-ECR steps for `master` and `develop` workflows.
 - Don't specify runs-on for reusable call
 
 ## [0.89.2] - 2022-04-19
