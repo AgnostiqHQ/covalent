@@ -64,20 +64,26 @@ jobs:
           file: ${{ matrix.service }}/Dockerfile
           push: false
           load: true
-          tags: ${{ env.IMAGE_TAG }}
+          tags: ${{ env.IMAGE_TAG }}, ${{ matrix.service }}:latest
+          build-args: |
+            IMAGE_TAG=${{ env.IMAGE_TAG }}
+      
+      - name: Setup queue consumer image tag
+        run: echo "IMAGE_TAG=covalent_queue_consumer:${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Build covalent queue consumer
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: covalent_dispatcher/Dockerfile.queue_consumer
+          load: true
+          tags: ${{ env.IMAGE_TAG }}, covalent_queue_consumer:latest
           build-args: |
             IMAGE_TAG=${{ env.IMAGE_TAG }}
 
-      #- name: Build covalent queue consumer
-      #  uses: docker/build-push-action@v2
-      #  if: ${{ matrix.service }} == "covalent_queue_consumer"
-      #  with:
-      #    context: .
-      #    file: covalent_dispatcher/Dockerfile.queue_consumer
-      #    load: true
-      #    tags: ${{ env.IMAGE_TAG }}
-      #    build-args: |
-      #      IMAGE_TAG=${{ env.IMAGE_TAG }}
+      - name: Start all containers
+        run: |
+          docker-compose up -d
 
       #- name: Test data service container and measure coverage
       #  run: |
