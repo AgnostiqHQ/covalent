@@ -23,8 +23,6 @@
 import os
 import sys
 
-import covalent
-
 # Project information
 project = ""
 copyright = "2021 Agnostiq Inc."
@@ -32,12 +30,11 @@ author = "Agnostiq"
 
 html_static_path = ["_static"]
 
-
-release = covalent.__version__
+with open("../../VERSION", "r") as file:
+    release = file.read().replace("\n", "")
 
 # Sphinx Extensions
 sys.path.append(os.path.abspath("./extensions"))
-sys.path.insert(0, os.path.abspath("../.."))
 
 extensions = [
     "sphinx.ext.autodoc",
