@@ -119,12 +119,13 @@ jobs:
           || steps.no-push.outcome == 'success'
           && steps.message.outcome == 'success'
           && github.event.inputs.test_release == 'false'
-        uses: ncipollo/release-action@v1
-        with:
-          body: ${{ env.MESSAGE }}
-          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
-          tag: ${{ env.RELEASE }}
-          prerelease: ${{ github.event.inputs.prerelease }}
+        run: echo 'create release'
+#       uses: ncipollo/release-action@v1
+#        with:
+#          body: ${{ env.MESSAGE }}
+#          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+#          tag: ${{ env.RELEASE }}
+#          prerelease: ${{ github.event.inputs.prerelease }}
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
@@ -202,16 +203,12 @@ jobs:
           diff -x README.md -x tests -x webapp cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
-      - name: Upload Distribution
-        if: >
-          steps.pre-build.outcome == 'success'
-          || steps.stable-build.outcome == 'success'
-          && steps.validate.outcome == 'success'
-          && github.event.inputs.test_release == 'false'
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: twine upload dist/*
+          #      - name: Upload Distribution
+          #        if: github.event.inputs.test_release == 'false'
+          #        env:
+          #          TWINE_USERNAME: __token__
+          #          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+          #        run: twine upload dist/*
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
