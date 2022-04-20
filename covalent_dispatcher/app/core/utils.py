@@ -21,6 +21,7 @@
 """Utility functions for the Dispatcher microservice."""
 
 import os
+import sys
 from datetime import datetime, timezone
 from io import BytesIO
 from multiprocessing import Queue as MPQ
@@ -76,6 +77,7 @@ def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result)
     if task_name.startswith((subscript_prefix, generator_prefix, parameter_prefix, attr_prefix)):
         if task_name.startswith(parameter_prefix):
             output = result_obj.transport_graph.get_node_value(task_id, "value")
+
         else:
             parent = result_obj.transport_graph.get_dependencies(task_id)[0]
             output = result_obj._get_node_output(parent)
@@ -85,6 +87,9 @@ def preprocess_transport_graph(task_id: int, task_name: str, result_obj: Result)
                 output = getattr(output, attr)
             else:
                 key = result_obj.transport_graph.get_node_value(task_id, "key")
+
+                if output is None:
+                    print(f"Failed task name: {task_name}", file=sys.stderr)
                 output = output[key]
 
         result_obj._update_node(

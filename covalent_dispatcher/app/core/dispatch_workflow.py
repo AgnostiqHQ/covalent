@@ -70,6 +70,11 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
     """Get runnable tasks and dispatch them to the Runner API. Put the tasks that weren't picked
     up by the Runner API back in the queue."""
 
+    print(
+        f"Dispatch id: {result_obj.dispatch_id}, tasks queue initial: {task_order}",
+        file=sys.stderr,
+    )
+
     # To get the runnable tasks from first task order list
     # Sending the tasks_queue as well to handle the case of sublattices
     tasks, functions, input_args, input_kwargs, executors, next_tasks_order = get_runnable_tasks(
@@ -103,8 +108,15 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
         executors=executors,
     )
 
+    print(f"Dispatch id: {result_obj.dispatch_id}, unrun_tasks: {unrun_tasks}", file=sys.stderr)
+
     # Add unrun tasks back to the tasks_queue
     final_task_order = tasks_queue.get()
+
+    print(
+        f"Dispatch id: {result_obj.dispatch_id}, intermediate_task_order: {final_task_order}",
+        file=sys.stderr,
+    )
 
     if unrun_tasks:
         if final_task_order is not None:
@@ -131,6 +143,11 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
 
     # Put the task order back into the queue
     tasks_queue.put(final_task_order)
+
+    print(
+        f"Dispatch id: {result_obj.dispatch_id}, tasks queue final: {final_task_order}",
+        file=sys.stderr,
+    )
 
 
 def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
@@ -171,7 +188,17 @@ def get_runnable_tasks(
 
     # logger.warning(f"In get_runnable_tasks task_order after get: {tasks_order}")
 
+    print(
+        f"GET_RUNNABLE_TASKS - dispatch_id: {result_obj.dispatch_id}, tasks_order: {tasks_order}",
+        file=sys.stderr,
+    )
+
     task_ids = tasks_order.pop(0)
+
+    print(
+        f"GET_RUNNABLE_TASKS -  dispatch_id: {result_obj.dispatch_id}, task_ids: {task_ids}",
+        file=sys.stderr,
+    )
 
     input_args = []
     input_kwargs = []
