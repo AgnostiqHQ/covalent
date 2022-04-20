@@ -1,3 +1,7 @@
+******************************
+Release Version |release|
+******************************
+
 The latest release of Covalent is now out and available for every amazing sole out there to use ! It comes with huge improvements and changes in the way Covalent is designed right from being even more modular to handling large scale tasks.
 
 <h3>Major changes</h3>
