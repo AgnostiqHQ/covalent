@@ -84,9 +84,8 @@ jobs:
           build-args: |
             IMAGE_TAG=${{ env.IMAGE_TAG }}
 
-      
   test_containers:
-    runs_on: ubuntu-latest
+    runs-on: ubuntu-latest
     - name: Start all containers
         run: |
           docker network create covalent
