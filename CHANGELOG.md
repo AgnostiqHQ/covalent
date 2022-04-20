@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Don't specify runs-on for reusable call
+- Fixed how environment variables are loaded on startup
 
 ## [0.89.2] - 2022-04-19
 
