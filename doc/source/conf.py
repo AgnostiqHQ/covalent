@@ -23,6 +23,8 @@
 import os
 import sys
 
+import covalent
+
 # Project information
 project = ""
 copyright = "2021 Agnostiq Inc."
@@ -30,6 +32,8 @@ author = "Agnostiq"
 
 html_static_path = ["_static"]
 
+
+release = covalent.__version__
 
 # Sphinx Extensions
 sys.path.append(os.path.abspath("./extensions"))
@@ -93,6 +97,7 @@ html_theme_options = {
         "color-brand-ternary": "#6E33ED",
         "color-brand-content": "#E5E7F3",
     },
+    "announcement": f"<em>Version {release} Released</em> Check out the new features !",
 }
 
 # Options for Markdown files

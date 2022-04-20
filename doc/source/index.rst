@@ -19,7 +19,13 @@ COVALENT DOCUMENTATION
 
 |
 
-Covalent is a Pythonic workflow tool used to execute tasks on advanced computing hardware. Users can decorate their existing Python functions as electrons (tasks) or lattices (workflows) and then run these functions locally or dispatch them to various classical and quantum backends according to the hardware requirements. After submitting a workflow, users can navigate to the Covalent UI to view a variety of information about it, such as the status, errors, the workflow's dependency graph, and metadata, among other things. Covalent is designed to make it easy for users to keep track of their computationally heavy experiments by providing a simple and intuitive framework to store, modify, and re-analyze computational experiments. Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers as well as emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent.
+```{card} {bdg-primary-line}Release Version: {bdg-primary}|release|
+```
+
+Covalent is a Pythonic workflow tool used to execute tasks on advanced computing hardware.
+- Users can decorate their existing Python functions as electrons (tasks) or lattices (workflows) and then run these functions locally or dispatch them to various classical and quantum backends according to the hardware requirements.
+- After submitting a workflow, users can navigate to the Covalent UI to view a variety of information about it, such as the status, errors, the workflow's dependency graph, and metadata, among other things.
+Covalent is designed to make it easy for users to keep track of their computationally heavy experiments by providing a simple and intuitive framework to store, modify, and re-analyze computational experiments. Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers as well as emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent.
 
 |
 
@@ -115,7 +121,7 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    Tutorials <tutorials/tutorials>
    How-To Guides <how_to/index>
    API Documentation <api/api>
-
+   Whats New in |release| <release_notes/latest>
 
 .. toctree::
    :maxdepth: 1
