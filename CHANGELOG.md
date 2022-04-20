@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.89.4] - 2022-04-20
+
 ### Docs
 
 - Updated the how-to notebooks for compatibility with the micro-services refactor.
