@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Updated the how-to notebooks for compatibility with the micro-services refactor.
+- Updated machine learning and quantum gravity tutorials to point to the correct web UI address.
+- Updated the quantum chemistry tutorial.
 - Update the concepts page according to the new web UI.
 
 ## [0.89.3] - 2022-04-20
