@@ -28,6 +28,16 @@ on:
 jobs:
   test_docker:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - covalent_data
+          - covalent_dispatcher
+          - covalent_queuer
+          - covalent_results
+          - covalent_ui
+          - covalent_runner
+          - covalent_queue_consumer
     steps:
       - name: Check out head
         uses: actions/checkout@v2
@@ -43,44 +53,35 @@ jobs:
       - name: Install Covalent
         run: pip install -e .
 
-      - name: Build data service image tag
-        run: echo "COVALENT_DATA_SERVICE_IMG=covalent_data:${GITHUB_SHA}" >> $GITHUB_ENV
+      - name: Build image tag
+        run: echo "IMAGE_TAG=${{ matrix.service }}:${GITHUB_SHA}" >> $GITHUB_ENV
 
-      - name: Build covalent_data service
+      - name: Build service image
         uses: docker/build-push-action@v2
+        if: ${{ matrix.service }} != 'covalent_dispatcher'
         with:
           context: .
-          file: covalent_data/Dockerfile
+          file: ${{ matrix.service }}/Dockerfile
           push: false
           load: true
-          tags: ${{ env.COVALENT_DATA_SERVICE_IMG }}
+          tags: ${{ env.IMAGE_TAG }}
           build-args: |
-            COVALENT_DATA_SERVICE_IMG=${{ env.COVALENT_DATA_SERVICE_IMG }}
+            IMAGE_TAG=${{ env.IMAGE_TAG }}
 
-      - name: Test data service container and measure coverage
-        run: |
-          pip install --no-cache-dir -r ./covalent_data/requirements/dist.txt
-          pip install --no-cache-dir -r ./covalent_data/requirements/dev.txt
-          docker run -d --rm ${{ env.COVALENT_DATA_SERVICE_IMG }}
-          PYTHONPATH=$PWD/covalent_data pytest covalent_data -vv --cov=covalent_data --cov-config=.coveragerc
-
-      - name: Build dispatcher service image tag
-        run: echo "DISPATCHER_SERVICE_IMG=covalent_dispatcher:${GITHUB_SHA}" >> $GITHUB_ENV
-
-      - name: Build dispatcher image
-        uses: docker/build-push-action@v2
+      - name: Build covalent queue consumer
+        users: docker/build-push-action@v2
+        if: ${{ matrix.service }} == 'covalent_queue_consumer'
         with:
           context: .
-          file: covalent_dispatcher/Dockerfile
-          push: false
+          file: covalent_dispatcher/Dockerfile.queue_consumer
           load: true
-          tags: ${{ env.DISPATCHER_SERVICE_IMG }}
+          tags: ${{ env.IMAGE_TAG }}
           build-args: |
-            DISPATCHER_SERVICE_IMG=${{ env.DISPATCHER_SERVICE_IMG }}
+            IMAGE_TAG=${{ env.IMAGE_TAG }}
 
-      - name: Test dispatcher service container and measure coverage
-        run: |
-          pip install --no-cache-dir -r ./covalent_dispatcher/requirements/dist.txt
-          pip install --no-cache-dir -r ./covalent_dispatcher/requirements/dev.txt
-          docker run -d --rm ${{ env.DISPATCHER_SERVICE_IMG }}
-          PYTHONPATH=$PWD/covalent_dispatcher pytest covalent_dispatcher -vv --cov=covalent_dispatcher --cov-config=.coveragerc
+      #- name: Test data service container and measure coverage
+      #  run: |
+      #    pip install --no-cache-dir -r ./covalent_data/requirements/dist.txt
+      #    pip install --no-cache-dir -r ./covalent_data/requirements/dev.txt
+      #    docker run -d --rm ${{ env.COVALENT_DATA_SERVICE_IMG }}
+      #    PYTHONPATH=$PWD/covalent_data pytest covalent_data -vv --cov=covalent_data --cov-config=.coveragerc
