@@ -23,6 +23,7 @@ import os
 from pathlib import Path
 
 from app.api.api_v0.api import api_router
+from app.api.health import health_router
 from app.core.config import settings
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -59,6 +60,7 @@ sio = SocketManager(app=app)
 logging.basicConfig(level=logging.DEBUG)
 
 app.include_router(api_router, prefix=settings.API_V0_STR)
+app.include_router(health_router)
 
 app.mount("/", SinglePageApp(directory=f"{BASE_PATH}{FRONTEND_PATH}", html=True), name="static")
 
