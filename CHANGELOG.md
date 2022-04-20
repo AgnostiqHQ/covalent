@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Don't duplicate tags
+- Release conditions
+- Pypi version syntax
+
+## [0.89.4] - 2022-04-20
+
 ### Docs
 
 - Updated the how-to notebooks for compatibility with the micro-services refactor.
@@ -16,9 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Don't duplicate tags
-- Release conditions
-- Pypi version syntax
+- Fixed how environment variables are loaded on startup
 
 ## [0.89.3] - 2022-04-20
 
