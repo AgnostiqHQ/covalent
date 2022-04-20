@@ -5,7 +5,7 @@ Covalent API
 
 The following API documentation describes how to use Covalent.
 
-- :ref:`electrons_api` and :ref:`lattices_api` are used for constructing workflows
+- :ref:`electrons_api`, :ref:`leptons_api`  and :ref:`lattices_api` are used for constructing workflows
 - :ref:`local_executor` is used to execute electrons locally
 - :ref:`results_api` is used for collecting and manipulating results
 - :ref:`dispatcher_api` is used for dispatching workflows
@@ -20,6 +20,17 @@ Electron
 
 
 .. autoclass:: covalent._workflow.electron.Electron
+    :members:
+
+
+----------------------------------------------------------------
+
+.. _leptons_api:
+
+Leptons
+"""""""""""""""""""""""""""
+
+.. autoclass:: covalent._workflow.lepton.Lepton
     :members:
 
 

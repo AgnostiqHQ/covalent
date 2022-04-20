@@ -42,10 +42,17 @@ As a result, we now have better control over resource allocation, scalable workf
 Going beyond python
 ********************
 
-**New language support** Being true to our goal of democratizing advanced hardware, we understand that users might have native codes/scripts written in languages other than python that needs to be maintained/sent off to be computed. With this in mind, we extend the notion og `electrons` to `leptons`, a flavour of particle that is more general and can accept tasks from various languages. Currently, we have extended support for C/C++ and bash with `julia` coming soon. `Leptons` are meant as an easy addition to translate your existing non-pythonic tasks into covalent workflow. Thereby covalent does not only let you **mix advanced hardware** in your experiments, but also **intertwine programing languages!**.
+**New language support** Being true to our goal of democratizing advanced hardware, we understand that users might have native codes/scripts written in languages other than python that needs to be maintained/sent off to be computed. With this in mind, we extend the notion of :code:`electrons` to :code:`leptons`, a flavour of particle that is more general and can accept tasks from various languages. Currently, we have extended support for C/C++ and bash with :code:`julia` coming soon. :code:`Leptons` are meant as an easy addition to translate your existing non-pythonic tasks into covalent workflow. Thereby covalent does not only let you **mix advanced hardware** in your experiments, but also **intertwine programing languages!**.
 
-For example
-```Example of lepton code snippet```
+.. code-block:: python
+
+    task = ct.Lepton(language="C",
+                     library_name="libtest.so",
+                     function_name="test_entry",
+                     argtypes=[ (c_int32, ct.Lepton.INPUT),
+                                (POINTER(c_int32), ct.Lepton.INPUT_OUTPUT),
+                                (POINTER(c_int32), ct.Lepton.OUTPUT)]
+                    )
 
 .. Note:: Leptons are meant to translate existing scripts from other languages easily into covalent workflows. When it comes to language support, we are working on two main fronts
 
@@ -55,12 +62,12 @@ For example
 New Executers
 *************
 
-As a basic principle of Covalent, we want things to be as modular as it can be. This made us design executers - modular blocks of plugins which dictates and controls the choice of hardware resource your task is being run on. Being an open-source focused team, we made it extremely easy for users to construct custom executers based on the template we have released. Using the same, we are releasing two new executers - `SSHExecuter`, `SLURMExecuter`.
+As a basic principle of Covalent, we want things to be as modular as it can be. This made us design executers - modular blocks of plugins which dictates and controls the choice of hardware resource your task is being run on. Being an open-source focused team, we made it extremely easy for users to construct custom executers based on the template we have released. Using the same, we are releasing two new executers - :code:`SSHExecuter`, :code:`SLURMExecuter`.
 
-- `SSHExecuter` - Ever wondered if you can do a join hybrid experiment between a RasberryPi and Quantum computer ? After a quick `pip install covalent-ssh-plugin`, one gets the ability to interfaces Covalent with any machines accessible via SSH. This plugin can be used to distribute tasks to one or more compute backends which are not controlled by a cluster management system, such as computers on a LAN, or even a collection of small-form-factor Linux-based devices such as Raspberry Pis, NVIDIA Jetsons, or Xeon Phi co-processors.
+- :code:`SSHExecuter` - Ever wondered if you can do a join hybrid experiment between a RasberryPi and Quantum computer ? After a quick :code:`pip install covalent-ssh-plugin`, one gets the ability to interfaces Covalent with any machines accessible via SSH. This plugin can be used to distribute tasks to one or more compute backends which are not controlled by a cluster management system, such as computers on a LAN, or even a collection of small-form-factor Linux-based devices such as Raspberry Pis, NVIDIA Jetsons, or Xeon Phi co-processors.
 It is as simple as adding
 
-.. code-block::
+.. code-block:: python
 
     executor = ct.executor.SSHExecutor(
                                         username="user",
@@ -73,9 +80,9 @@ It is as simple as adding
         return x + y
 
 
-- `SLURMExecuter` - One of the most used Open Source High performance cluster job management system - SLURM, is supported by covalent now ! This executor plugin interfaces Covalent with HPC systems managed by `Slurm <https://slurm.schedmd.com/documentation.html>`_. In order for workflows to be deployable, users must have SSH access to the Slurm login node, writable storage space on the remote filesystem, and permissions to submit jobs to Slurm.
+- :code:`SLURMExecuter` - One of the most used Open Source High performance cluster job management system - SLURM, is supported by covalent now ! This executor plugin interfaces Covalent with HPC systems managed by `Slurm <https://slurm.schedmd.com/documentation.html>`_. In order for workflows to be deployable, users must have SSH access to the Slurm login node, writable storage space on the remote filesystem, and permissions to submit jobs to Slurm.
 
-.. code-block::
+.. code-block:: python
 
     executor = ct.executor.SlurmExecutor(remote_workdir="/scratch/user/experiment1",
                                         conda_env="covalent",
