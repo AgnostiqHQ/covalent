@@ -88,6 +88,19 @@ jobs:
           git tag -a $RELEASE -m "Release $RELEASE"
           git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
           git push origin $RELEASE
+      - name: Mall cops
+        run: |
+          echo 'PAUL_BLART<<EOF' >> $GITHUB_ENV
+          echo '[' \
+            '"scottwn",' \
+            '"FyzHsn",' \
+            '"wjcunningham7",' \
+            '"santoshkumarradha"]' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+      - name: Check conditions for stable release
+        if: github.event.inputs.prerelease == 'false' && contains(env.PAUL_BLART, github.actor)
+        id: no-push
+        run: echo "Stable release for version ${{ github.event.inputs.stable_version }}"
       - name: Generate release message
         id: message
         run: |
@@ -98,13 +111,18 @@ jobs:
           tail +$begin ./CHANGELOG.md | head -$end >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
       - name: Create release
-        if: steps.push.outcome == 'success' && steps.message.outcome == 'success' && github.event.inputs.test_release == 'false'
-        uses: ncipollo/release-action@v1
-        with:
-          body: ${{ env.MESSAGE }}
-          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
-          tag: ${{ env.RELEASE }}
-          prerelease: ${{ github.event.inputs.prerelease }}
+        if: >
+          steps.push.outcome == 'success'
+          || steps.no-push.outcome == 'success'
+          && steps.message.outcome == 'success'
+          && github.event.inputs.test_release == 'false'
+        run: echo 'create release'
+#       uses: ncipollo/release-action@v1
+#        with:
+#          body: ${{ env.MESSAGE }}
+#          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+#          tag: ${{ env.RELEASE }}
+#          prerelease: ${{ github.event.inputs.prerelease }}
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
@@ -165,6 +183,7 @@ jobs:
           if [ ${{ github.event.inputs.prerelease }} = 'true' ] ; then
             VERSION="${VERSION}rc0"
           fi
+          VERSION="$(echo $VERSION | sed 's/-/.post/')"
           cd dist
           tar xzf cova-${VERSION}.tar.gz
           diff -x tests -r cova-${VERSION}/covalent ../covalent
@@ -175,12 +194,12 @@ jobs:
           diff -x README.md -x tests -x webapp cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
-      - name: Upload Distribution
-        if: github.event.inputs.test_release == 'false'
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: twine upload dist/*
+          #      - name: Upload Distribution
+          #        if: github.event.inputs.test_release == 'false'
+          #        env:
+          #          TWINE_USERNAME: __token__
+          #          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+          #        run: twine upload dist/*
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
