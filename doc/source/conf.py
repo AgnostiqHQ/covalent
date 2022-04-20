@@ -37,6 +37,7 @@ release = covalent.__version__
 
 # Sphinx Extensions
 sys.path.append(os.path.abspath("./extensions"))
+sys.path.insert(0, os.path.abspath("../.."))
 
 extensions = [
     "sphinx.ext.autodoc",
