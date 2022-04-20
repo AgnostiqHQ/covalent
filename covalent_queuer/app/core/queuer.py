@@ -16,7 +16,9 @@ class Queuer:
     topics: QueueTopics = QueueTopics
 
     def get_client(self) -> Any:
-        return nats.connect(settings.MQ_CONNECTION_URI)
+        return nats.connect(
+            settings.MQ_CONNECTION_URI, reconnect_time_wait=1, max_reconnect_attempts=15
+        )
 
     async def publish(self, topic: str, msg: Any) -> Any:
         # get enum value
