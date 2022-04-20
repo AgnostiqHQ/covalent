@@ -249,7 +249,7 @@ class _TransportGraph:
             node_key: The node id for second node.
 
         Returns:
-            values: A dict {edge_key : value}
+            values: A dict {edge_key : metadata_dict}
 
         Raises:
             KeyError: If the edge is not found.
