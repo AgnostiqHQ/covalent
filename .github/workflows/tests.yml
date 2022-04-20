@@ -122,6 +122,7 @@ jobs:
           PYTHONPATH=$PWD/covalent_results pytest covalent_results -vv --cov=covalent_results --cov-config=.coveragerc
           PYTHONPATH=$PWD/covalent_ui pytest covalent_ui -vv --cov=covalent_ui --cov-config=.coveragerc
           PYTHONPATH=$PWD/ pytest tests/dispatcher_stack_test.py
+          PYTHONPATH=$PWD/ pytest tests/electron_return__value_test.py
       - name: Generate coverage report
         run: coverage xml
       - name: Upload report to Codecov
