@@ -83,13 +83,13 @@ class _ConfigManager:
 
         self.env_path = os.environ.get("ENV_DEST_DIR") or PROJECT_ROOT
         self.config_file = os.path.join(self.env_path, CONFIG_FILE_NAME)
-    
+
         if not os.path.exists(self.env_path):
             Path(self.env_path).mkdir(parents=True, exist_ok=True)
-          
+
         # ensure .env exists, if not copy from .env.example
         self.ensure_config_file_exists()
-        
+
         # load .env values into os.environ or use explicitly set environment vars
         load_dotenv(self.config_file)
 
