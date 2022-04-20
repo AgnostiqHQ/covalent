@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - develop
-      - fix-publish-actions
     paths-ignore:
       - "CHANGELOG.md"
       - "VERSION"
