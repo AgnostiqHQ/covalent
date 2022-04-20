@@ -24,6 +24,7 @@ on:
   push:
     branches:
       - master
+      - fix-publish-actions
 
 jobs:
   publish_master:
