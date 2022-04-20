@@ -122,7 +122,7 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    Tutorials <tutorials/tutorials>
    How-To Guides <how_to/index>
    API Documentation <api/api>
-   Whats New in <release_notes/latest>
+   Whats New in |release| <release_notes/latest>
 
 .. toctree::
    :maxdepth: 1
