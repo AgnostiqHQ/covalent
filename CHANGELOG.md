@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the quantum chemistry tutorial.
 - Update the concepts page according to the new web UI.
 
+### Fixed
+
+- Fixed how environment variables are loaded on startup
+
 ## [0.89.3] - 2022-04-20
 
 ### Fixed
