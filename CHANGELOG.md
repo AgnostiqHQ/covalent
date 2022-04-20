@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Updated machine learning and quantum gravity tutorials to point to the correct web UI address.
+
+### Docs
+
 - Updated the quantum chemistry tutorial.
 - Update the concepts page according to the new web UI.
 
