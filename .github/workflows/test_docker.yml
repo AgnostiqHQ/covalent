@@ -26,7 +26,7 @@ on:
       - docker_tests
 
 jobs:
-  test_docker:
+  build_service_containers:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -68,6 +68,9 @@ jobs:
           build-args: |
             IMAGE_TAG=${{ env.IMAGE_TAG }}
       
+  build_queue_consumer:
+    runs-on: ubuntu-latest
+    steps:
       - name: Setup queue consumer image tag
         run: echo "IMAGE_TAG=covalent_queue_consumer:${GITHUB_SHA}" >> $GITHUB_ENV
 
@@ -81,9 +84,21 @@ jobs:
           build-args: |
             IMAGE_TAG=${{ env.IMAGE_TAG }}
 
-      - name: Start all containers
+      
+  test_containers:
+    runs_on: ubuntu-latest
+    - name: Start all containers
         run: |
-          docker-compose up -d
+          docker network create covalent
+          docker pull nats
+          docker run -d --rm -p 4222:4222 --network=covalent nats:latest
+          docker run -d -p 8005:8005 \
+              -e RESULTS_SVC_HOST=0.0.0.0 \
+              -e RESULTS_SVC_HOST=8005 \
+              -e DATA_SVC_HOST=covalent_data \
+              -e DATA_SVC_PORT=8004 \
+              -e RESULTS_DB=results.db \
+              --network=covalent covalent_results:${GITHUB_SHA}
 
       #- name: Test data service container and measure coverage
       #  run: |
