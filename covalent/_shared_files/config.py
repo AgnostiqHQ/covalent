@@ -85,6 +85,9 @@ class _ConfigManager:
         self.env_path = os.environ.get("ENV_DEST_DIR") or COVALENT_CACHE_DIR
         self.config_file = os.path.join(self.env_path, CONFIG_FILE_NAME)
 
+        if not os.path.exists(self.env_path):
+            Path(self.env_path).mkdir(parents=True, exist_ok=True)
+
         self.ensure_config_file_exists()
 
         # load .env values into os.environ or use explicitly set environment vars
@@ -182,9 +185,14 @@ class _ConfigManager:
             None
         """
 
-        # shutil.rmtree(self.config_dir, ignore_errors=True)
         try:
             os.remove(self.config_file)
+        except FileNotFoundError:
+            pass
+
+        # attempt to remove legacy .env file
+        try:
+            os.remove(os.path.join(PROJECT_ROOT, CONFIG_FILE_NAME))
         except FileNotFoundError:
             pass
 
