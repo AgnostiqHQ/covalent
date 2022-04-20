@@ -25,7 +25,7 @@ from dotenv import find_dotenv, load_dotenv
 from pydantic import AnyHttpUrl, BaseSettings, validator
 
 HOME_PATH = os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")
-load_dotenv(f"{HOME_PATH}/covalent/.env")
+load_dotenv(os.path.join(HOME_PATH, "covalent", ".env"))
 
 
 class Settings(BaseSettings):

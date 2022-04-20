@@ -34,7 +34,7 @@ from dotenv import dotenv_values, find_dotenv, load_dotenv, set_key
 CONFIG_FILE_NAME = ".env"
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__)) + "/../.."
 HOME_PATH = os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")
-COVALENT_CACHE_DIR = f"{HOME_PATH}/covalent"
+COVALENT_CACHE_DIR = os.path.join(HOME_PATH, "covalent")
 
 # TODO: add tests for below functions
 
