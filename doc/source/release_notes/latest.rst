@@ -60,30 +60,31 @@ As a basic principle of Covalent, we want things to be as modular as it can be. 
 - `SSHExecuter` - Ever wondered if you can do a join hybrid experiment between a RasberryPi and Quantum computer ? After a quick `pip install covalent-ssh-plugin`, one gets the ability to interfaces Covalent with any machines accessible via SSH. This plugin can be used to distribute tasks to one or more compute backends which are not controlled by a cluster management system, such as computers on a LAN, or even a collection of small-form-factor Linux-based devices such as Raspberry Pis, NVIDIA Jetsons, or Xeon Phi co-processors.
 It is as simple as adding
 
-```python
-executor = ct.executor.SSHExecutor(
-    username="user",
-    hostname="host2.hostname.org",
-    remote_dir="/tmp/covalent",
-    ssh_key_file="/home/user/.ssh/host2/id_rsa",
-)
+.. code-block::
 
-@ct.electron(executor=executor)
-def my_custom_task(x, y):
-    return x + y
-```
+    executor = ct.executor.SSHExecutor(
+                                        username="user",
+                                        hostname="host2.hostname.org",
+                                        remote_dir="/tmp/covalent",
+                                        ssh_key_file="/home/user/.ssh/host2/id_rsa",)
+
+    @ct.electron(executor=executor)
+    def my_custom_task(x, y):
+        return x + y
+
 
 - `SLURMExecuter` - One of the most used Open Source High performance cluster job management system - SLURM, is supported by covalent now ! This executor plugin interfaces Covalent with HPC systems managed by `Slurm <https://slurm.schedmd.com/documentation.html>`_. In order for workflows to be deployable, users must have SSH access to the Slurm login node, writable storage space on the remote filesystem, and permissions to submit jobs to Slurm.
 
-```python
-executor = ct.executor.SlurmExecutor(remote_workdir="/scratch/user/experiment1",
-                                     conda_env="covalent",
-                                     options={"partition": "compute","cpus-per-task": 8})
+.. code-block::
 
-@ct.electron(executor=executor)
-def my_custom_task(x, y):
-    return x + y
-```
+    executor = ct.executor.SlurmExecutor(remote_workdir="/scratch/user/experiment1",
+                                        conda_env="covalent",
+                                        options={"partition": "compute","cpus-per-task": 8})
+
+    @ct.electron(executor=executor)
+    def my_custom_task(x, y):
+        return x + y
+
 
 Covalent theme/UI gets a makeover
 ***************************************
