@@ -203,7 +203,7 @@ def are_tasks_running(result_obj: Result) -> bool:
 
     return any(
         result_obj._get_node_status(task_id) in [Result.RUNNING, Result.NEW_OBJ]
-        for task_id in range(result_obj._num_nodes)
+        for task_id in range(result_obj._num_nodes) if not result_obj._get_node_name(task_id).startswith(parameter_prefix)
     )
 
 
@@ -365,3 +365,13 @@ def generate_task_result(
         "stderr": stderr,
         "info": info,
     }
+
+
+def get_parent_id_and_task_id(dispatch_id: str):
+    
+    if not is_sublattice_dispatch_id(dispatch_id):
+        return False, False
+    
+    splits = dispatch_id.split(":")
+    parent_dispatch_id, task_id = ":".join(splits[:-1]), splits[-1]
+    return parent_dispatch_id, int(task_id)

@@ -28,7 +28,7 @@ from queue import Empty
 from typing import Dict, List, Tuple, Union
 
 from app.core.dispatcher_logger import logger
-from app.core.utils import is_empty, send_result_object_to_result_service, send_task_list_to_runner
+from app.core.utils import is_empty, send_result_object_to_result_service, send_task_list_to_runner, get_parent_id_and_task_id
 
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
@@ -66,14 +66,51 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     return result_obj
 
 
+def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
+    """Responsible for preprocessing the tasks, and sending the tasks for execution to the
+    Runner API in batches. One of the underlying principles is that the Runner API doesn't
+    interact with the Data API."""
+
+    # logger.warning(f"Inside start_dispatch with dispatch_id {result_obj.dispatch_id}")
+
+    # Change result status to running and set workflow execution start time.
+    result_obj._status = Result.RUNNING
+    result_obj._start_time = datetime.now(timezone.utc)
+
+    # Initialize the result object
+    result_obj = init_result_pre_dispatch(result_obj)
+
+    # Send the initialized result to the result service
+    send_result_object_to_result_service(result_obj)
+
+    # Get the order of tasks to be run
+    task_order: List[List] = get_task_order(result_obj)
+
+    logger.warning(f"task_order: {task_order}")
+    dispatch_runnable_tasks(result_obj, tasks_queue, task_order)
+
+    send_result_object_to_result_service(result_obj)
+
+    return result_obj
+
+
 def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: List[List]) -> None:
     """Get runnable tasks and dispatch them to the Runner API. Put the tasks that weren't picked
     up by the Runner API back in the queue."""
 
     print(
-        f"Dispatch id: {result_obj.dispatch_id}, tasks queue initial: {task_order}",
+        f"Dispatch id: {result_obj.dispatch_id}, tasks order: {task_order}",
         file=sys.stderr,
     )
+
+    val = tasks_queue.get()
+
+    print(
+        f"Dispatch id: {result_obj.dispatch_id}, tasks queue initial: {val}",
+        file=sys.stderr,
+    )
+
+    tasks_queue.put(val)
 
     # To get the runnable tasks from first task order list
     # Sending the tasks_queue as well to handle the case of sublattices
@@ -87,6 +124,11 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
 
     logger.warning(f"Set of next tasks to be run {next_tasks_order}")
 
+    print(
+        f"Dispatch id: {result_obj.dispatch_id}, will try to run these nodes: {tasks}",
+        file=sys.stderr,
+    )
+
     # The next set of tasks that can be run afterwards
     # This is the case of a new dispatch id in the list of dictionaries
     if next_tasks_order:
@@ -95,7 +137,20 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
             logger.warning(f"LETS SEE IF TASKS QUEUE IS EMPTY ITS VAL IS: {v}")
             tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}])
         else:
-            tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}] + tasks_queue.get())
+
+            all_tasks_lod = tasks_queue.get()
+
+            # Checking if current dispatch id is a parent of last
+            # dispatch id in the tasks queue 
+            last_dispatch_id = str(list(all_tasks_lod[0])[0])
+            parent_id, _ = get_parent_id_and_task_id(last_dispatch_id)
+
+            if parent_id == result_obj.dispatch_id:
+                all_tasks_lod = all_tasks_lod + [{result_obj.dispatch_id: next_tasks_order}]
+            else:
+                all_tasks_lod = [{result_obj.dispatch_id: next_tasks_order}] + all_tasks_lod
+            
+            tasks_queue.put(all_tasks_lod)
 
     # Tasks which were not able to run
     unrun_tasks = run_tasks(
@@ -150,34 +205,6 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
     )
 
 
-def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
-    """Responsible for preprocessing the tasks, and sending the tasks for execution to the
-    Runner API in batches. One of the underlying principles is that the Runner API doesn't
-    interact with the Data API."""
-
-    # logger.warning(f"Inside start_dispatch with dispatch_id {result_obj.dispatch_id}")
-
-    # Change result status to running and set workflow execution start time.
-    result_obj._status = Result.RUNNING
-    result_obj._start_time = datetime.now(timezone.utc)
-
-    # Initialize the result object
-    result_obj = init_result_pre_dispatch(result_obj)
-
-    # Send the initialized result to the result service
-    send_result_object_to_result_service(result_obj)
-
-    # Get the order of tasks to be run
-    task_order: List[List] = get_task_order(result_obj)
-
-    logger.warning(f"task_order: {task_order}")
-    dispatch_runnable_tasks(result_obj, tasks_queue, task_order)
-
-    send_result_object_to_result_service(result_obj)
-
-    return result_obj
-
-
 def get_runnable_tasks(
     result_obj: Result,
     tasks_order: List[List],
@@ -188,17 +215,17 @@ def get_runnable_tasks(
 
     # logger.warning(f"In get_runnable_tasks task_order after get: {tasks_order}")
 
-    print(
-        f"GET_RUNNABLE_TASKS - dispatch_id: {result_obj.dispatch_id}, tasks_order: {tasks_order}",
-        file=sys.stderr,
-    )
+    # print(
+    #     f"GET_RUNNABLE_TASKS - dispatch_id: {result_obj.dispatch_id}, tasks_order: {tasks_order}",
+    #     file=sys.stderr,
+    # )
 
     task_ids = tasks_order.pop(0)
 
-    print(
-        f"GET_RUNNABLE_TASKS -  dispatch_id: {result_obj.dispatch_id}, task_ids: {task_ids}",
-        file=sys.stderr,
-    )
+    # print(
+    #     f"GET_RUNNABLE_TASKS -  dispatch_id: {result_obj.dispatch_id}, task_ids: {task_ids}",
+    #     file=sys.stderr,
+    # )
 
     input_args = []
     input_kwargs = []
@@ -215,7 +242,7 @@ def get_runnable_tasks(
         result_obj, is_executable = preprocess_transport_graph(task_id, task_name, result_obj)
 
         if not is_executable:
-            if task_id == task_ids[-1] and not runnable_tasks:
+            if task_id == task_ids[-1] and not runnable_tasks and tasks_order:
                 return get_runnable_tasks(
                     result_obj=result_obj, tasks_order=tasks_order, tasks_queue=tasks_queue
                 )

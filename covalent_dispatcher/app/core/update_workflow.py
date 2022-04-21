@@ -37,7 +37,9 @@ from .utils import (
     is_sublattice_dispatch_id,
     send_task_update_to_dispatcher,
     send_task_update_to_result_service,
+    get_parent_id_and_task_id,
 )
+import sys
 
 
 def update_workflow_results(
@@ -60,17 +62,29 @@ def update_workflow_results(
 
     elif task_execution_results["status"] == Result.CANCELLED:
         latest_result_obj._status = Result.CANCELLED
+    
+    elif task_execution_results["status"] == Result.COMPLETED:
+        
+        val = tasks_queue.get()
+        
+        print(f"Dispatch id: {dispatch_id}, tasks queue ALL CAPS: {val}", file=sys.stderr)
 
-    # If workflow is completed, post-process result
-    elif not are_tasks_running(result_obj=latest_result_obj):
-        update_completed_workflow(latest_result_obj)
+        tasks_queue.put(val)
 
-    elif task_execution_results["status"] == Result.COMPLETED and not is_empty(tasks_queue):
-        update_completed_tasks(dispatch_id, tasks_queue, latest_result_obj)
+        
+        # If workflow is completed, post-process result
+        if not are_tasks_running(result_obj=latest_result_obj):
+            update_completed_workflow(latest_result_obj)
 
+        elif not is_empty(tasks_queue):
+            update_completed_tasks(dispatch_id, tasks_queue, latest_result_obj)
+        
+        if is_empty(tasks_queue):
+            update_completed_workflow(latest_result_obj)
+            
     else:
         print(
-            f"None of the above with status {task_execution_results['status']} and {is_empty(tasks_queue)}"
+            f"None o the above with status {task_execution_results['status']} and {is_empty(tasks_queue)}"
         )
 
     print(
@@ -87,7 +101,7 @@ def update_workflow_results(
 def update_workflow_endtime(result_obj: Result) -> Result:
     """Update workflow end time if it has stopped running."""
 
-    if (result_obj.status != Result.RUNNING) and (result_obj._status != Result.NEW_OBJ):
+    if result_obj.status not in [Result.RUNNING, Result.NEW_OBJ]:
         result_obj._end_time = datetime.now(timezone.utc)
 
     return result_obj
@@ -102,6 +116,7 @@ def update_completed_tasks(dispatch_id: str, tasks_queue: MPQ, result_obj: Resul
         f"In update_completed_tasks with dispatch_id: {dispatch_id} and tasks_queue: {tasks_order_lod}"
     )
 
+
     tasks_dict = tasks_order_lod.pop(0)
     new_dispatch_id, new_tasks_order = zip(*tasks_dict.items())
 
@@ -112,6 +127,15 @@ def update_completed_tasks(dispatch_id: str, tasks_queue: MPQ, result_obj: Resul
         tasks_queue.put(tasks_order_lod)
     else:
         # Mark queue as empty
+        # Removing tasks_dict from the queue so that the
+        # new tasks order which will be sent in the case of
+        # same dispatch_ids is an updated one and is
+        # not confused with what's in the tasks queue
+
+        # This will also mean that at this moment, tasks_queue
+        # does not contain the order in which this last lattice's
+        # tasks are going to be executed, which is to maintain uniformity
+        # in the conditions in which dispatch_runnable_tasks is called.
         tasks_queue.put(None)
 
     if new_dispatch_id != dispatch_id:
@@ -140,13 +164,23 @@ def update_completed_workflow(result_obj: Result) -> Result:
 
     result_obj._status = Result.COMPLETED
 
+    print(
+        f"Dispatch id: {result_obj.dispatch_id}, REACHED UPDATE COMPLETED WORKFLOW",
+        file=sys.stderr,
+    )
+
     if is_sublattice_dispatch_id(result_obj.dispatch_id):
-        print(f"sublattice dispatch id in update_completed_workflow: {result_obj.dispatch_id}")
-        splits = result_obj.dispatch_id.split(":")
-        parent_dispatch_id, task_id = ":".join(splits[:-1]), splits[-1]
+        print(
+            f"Dispatch id: {result_obj.dispatch_id}, IS SUBLATTICE",
+            file=sys.stderr,
+        )
+
+        
+        parent_dispatch_id, task_id = get_parent_id_and_task_id(result_obj.dispatch_id)
+
 
         task_result = generate_task_result(
-            task_id=int(task_id),
+            task_id=task_id,
             end_time=datetime.now(timezone.utc),
             status=Result.COMPLETED,
             output=result_obj.result,
