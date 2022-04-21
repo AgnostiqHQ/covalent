@@ -32,7 +32,7 @@ Covalent uses a containerized microservice architecture consisting of eight core
 
 </div>
 
-Services may be deployed locally or as containers in a hybrid configuration. Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers and emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent. 
+Services may be deployed locally or as containers in a hybrid configuration. Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers and emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent.
 
 Read more in the official [documentation](https://covalent.readthedocs.io/en/latest/).
 
