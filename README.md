@@ -24,7 +24,13 @@ Covalent is a Pythonic workflow tool used to execute HPC and quantum tasks in he
 - run code in heterogenous compute environments, including in hybrid-cloud and hybrid-quantum configurations
 - understand where time and money is spent across a project
 
-Covalent uses a containerized microservice architecture consisting of eight core services which consume and process workflows. Workflows are submitted to a queue service, which forwards them to a NATS message queue. A consumer service processes workflows one-by-one (or in parallel, on some systems) by forwarding them to a dispatcher service. The dispatcher analyzes task and data dependencies and submits execution requests to a runner service, which runs tasks in parallel, either locally or on a remote device, according to hardware capabilities and task requirements. Results are managed by a the results and data services, and a user interface service provides an interactive dashboard where users can monitor and organize experiments.
+Covalent uses a containerized microservice architecture consisting of eight core services which consume and process workflows. Workflows are submitted to a queue service, which forwards them to a NATS message queue. A consumer service processes workflows one-by-one (or in parallel, on some systems) by forwarding them to a dispatcher service. The dispatcher analyzes task and data dependencies and submits execution requests to a runner service, which runs tasks in parallel, either locally or on a remote device, according to hardware capabilities and task requirements. Results are managed by the results and data services, and a user interface service provides an interactive dashboard where users can monitor and organize experiments.
+
+<div align="center">
+
+![covalent architecture](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/Covalent_Local_Microservices.png)
+
+</div>
 
 Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers and emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent. 
 
