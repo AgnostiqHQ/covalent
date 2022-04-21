@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.90.0] - 2022-04-21
+
 ### Added
 
 - Enabled inactive unit tests in Actions.
