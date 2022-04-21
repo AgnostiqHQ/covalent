@@ -204,7 +204,7 @@ result = ct.get_result(dispatch_id)
 ... """)
 status     = Status(STATUS='COMPLETED')
 input      = {'C': 1.0, 'gamma': 0.7}
-result     = 0.9666666666666667
+result     = 0.988888888
 ```
 </td>
 </tr>
@@ -227,7 +227,8 @@ Release notes are available in the [Changelog](https://github.com/AgnostiqHQ/cov
 
 ## 💥 Known Issues
 
-- Tensorflow isn't stable with M1 Macs right now due to which the [Classifying discrete spacetimes by dimension](https://github.com/AgnostiqHQ/covalent/blob/master/doc/source/tutorials/quantum_gravity/spacetime_classification.ipynb) tutorial does not work with M1 Macs.
+- Some users experience instabilities with the [quantum spacetime classification workflow](https://github.com/AgnostiqHQ/covalent/blob/master/doc/source/tutorials/quantum_gravity/spacetime_classification.ipynb) tutorial.
+- Workflow cancellation can sometimes return an incorrect 500 response.
 
 ## ⚓ Citation
 
