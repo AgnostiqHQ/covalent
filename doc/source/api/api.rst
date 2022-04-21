@@ -91,7 +91,7 @@ Covalent CLI Tool
 
 This Command Line Interface (CLI) tool is used to manage Covalent server.
 
-.. click:: covalent_dispatcher._cli.cli:cli
+.. click:: covalent._cli.cli:cli
     :prog: covalent
-    :commands: start,stop,restart,status,purge
+    :commands: start,stop,restart,status,purge,config,logs
     :nested: full

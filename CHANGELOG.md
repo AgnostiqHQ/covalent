@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.91.0] - 2022-04-21
+
+### Fixed
+
+- Don't send the whole result object when only one node needs to be updated.
+
+- The input arguments are being shown correctly in the UI.
+
+### Changed
+
+- Ensured that the lattice / sublattices tasks order are stored in the tasks queue correctly.
+
+- Accomodated the conditions in tasks queue where remaining tasks are non-executable, in order to correctly update the workflow status.
+
+### Docs
+
+- Update microservice documentation
+
+## [0.90.0] - 2022-04-21
+
+### Added
+
+- Enabled inactive unit tests in Actions.
+
+### Docs
+
+- Updated the Python badge
+- Changed a relative URL in the README to an absolute URL
+- Added link to SwaggerHub in README
+
+## [0.89.6] - 2022-04-21
+
+### Fixed
+
+- Correctly pass inputs when calling workflows
+
+### Docs
+
+- Restructured the README
+- Updated the README
+- Updated Getting Started, How-To Configuration Guide, CLI API documentation
+
 ## [0.89.5] - 2022-04-20
 
 ### Fixed
