@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Update microservice documentation
+
 ## [0.90.0] - 2022-04-21
 
 ### Added
@@ -18,7 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the Python badge
 - Changed a relative URL in the README to an absolute URL
 - Added link to SwaggerHub in README
-- Update microservice documentation
 
 ## [0.89.6] - 2022-04-21
 
