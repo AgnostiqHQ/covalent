@@ -27,25 +27,12 @@ on:
         description: "Stable version number, e.g. 0.32.3"
         type: string
       test_release:
-        description: "true: Test the workflow but don't create the release. false: Create a release"
-        required: true
-        type: boolean
-        default: true
-      prerelease:
-        description: "true: Create a prerelease. false: Create a stable release"
+        description: "Test the workflow but don't create the release. Uncheck this box to create a release."
         required: true
         type: boolean
         default: true
   workflow_call:
     inputs:
-      stable_version:
-        description: "Stable version number, e.g. 0.32.3"
-        type: string
-      test_release:
-        description: "true: Test the workflow but don't create the release. false: Create a release"
-        required: true
-        type: boolean
-        default: true
       prerelease:
         description: "true: Create a prerelease. false: Create a stable release"
         required: true
@@ -67,20 +54,20 @@ jobs:
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
-        if: github.event.inputs.prerelease == 'false' && github.event.inputs.stable_version
+        if: github.event.inputs.stable_version
         with:
           persist-credentials: false
           fetch-depth: 0
           ref: "v${{ github.event.inputs.stable_version }}"
       - name: Check out master
         uses: actions/checkout@v2
-        if: github.event.inputs.prerelease == 'true'
+        if: inputs.prerelease == 'true'
         with:
           persist-credentials: false
           fetch-depth: 0
       - name: Read version
         run: |
-          if [ ${{ github.event.inputs.prerelease }} = 'false' ] && \
+          if [ -z ${{ inputs.prerelease }} ] && \
              [ -z ${{ github.event.inputs.stable_version }} ] ; then
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
@@ -89,7 +76,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=v$VERSION" >> $GITHUB_ENV
       - name: Tag commit
-        if: github.event.inputs.prerelease == 'true'
+        if: inputs.prerelease == 'true'
         id: push
         run: |
           git config user.name "CovalentOpsBot"
@@ -99,8 +86,7 @@ jobs:
           git push origin $RELEASE
       - name: Check conditions for stable release
         if: >
-          github.event.inputs.prerelease == 'false'
-          && github.event.inputs.stable_version
+          github.event.inputs.stable_version
           && contains(env.PAUL_BLART, github.actor)
         id: no-push
         run: echo "Stable release for version ${{ github.event.inputs.stable_version }}"
@@ -118,13 +104,13 @@ jobs:
           steps.push.outcome == 'success'
           || steps.no-push.outcome == 'success'
           && steps.message.outcome == 'success'
-          && github.event.inputs.test_release == 'false'
+          && ${{ !github.event.inputs.test_release }}
         uses: ncipollo/release-action@v1
         with:
           body: ${{ env.MESSAGE }}
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
           tag: ${{ env.RELEASE }}
-          prerelease: ${{ github.event.inputs.prerelease }}
+          prerelease: ${{ inputs.prerelease }}
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
@@ -140,14 +126,14 @@ jobs:
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
-        if: github.event.inputs.prerelease == 'false' && github.event.inputs.stable_version
+        if: github.event.inputs.stable_version
         with:
           persist-credentials: false
           fetch-depth: 0
           ref: "v${{ github.event.inputs.stable_version }}"
       - name: Check out master
         uses: actions/checkout@v2
-        if: github.event.inputs.prerelease == 'true'
+        if: inputs.prerelease == 'true'
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -169,13 +155,12 @@ jobs:
           yarn install
           yarn build
       - name: Build Prerelease Distribution
-        if: github.event.inputs.prerelease == 'true'
+        if: inputs.prerelease == 'true'
         id: pre-build
         run: python setup.py egg_info --tag-build=pre sdist
       - name: Build Stable Distribution
         if: >
-          github.event.inputs.prerelease == 'false'
-          && github.event.inputs.stable_version
+          github.event.inputs.stable_version
           && contains(env.PAUL_BLART, github.actor)
         id: stable-build
         run: python setup.py sdist
@@ -183,12 +168,12 @@ jobs:
         id: validate
         run: |
           VERSION="$(cat ./VERSION)"
-          if [ ${{ github.event.inputs.prerelease }} = 'false' ] && \
+          if [ -z ${{ inputs.prerelease }} ] && \
              [ -z ${{ github.event.inputs.stable_version }} ] ; then
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
           fi
-          if [ ${{ github.event.inputs.prerelease }} = 'true' ] ; then
+          if [ ${{ inputs.prerelease }} = 'true' ] ; then
             VERSION="${VERSION}rc0"
           fi
           VERSION="$(echo $VERSION | sed 's/-/.post/')"
@@ -207,7 +192,7 @@ jobs:
           steps.pre-build.outcome == 'success'
           || steps.stable-build.outcome == 'success'
           && steps.validate.outcome == 'success'
-          && github.event.inputs.test_release == 'false'
+          && ${{ !github.event.inputs.test_release }}
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
