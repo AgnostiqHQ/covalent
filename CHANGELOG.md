@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Added migration guide from `0.3x` to Read The Docs & README.md
+
+### Docs
+
 - Updated the Python badge
 - Changed a relative URL in the README to an absolute URL
 - Added link to SwaggerHub in README
