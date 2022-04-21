@@ -84,7 +84,7 @@ def update_workflow_results(
 
     else:
         print(
-            f"None o the above with status {task_execution_results['status']} and {is_empty(tasks_queue)}"
+            f"None of the above with status {task_execution_results['status']} and {is_empty(tasks_queue)}"
         )
 
     print(

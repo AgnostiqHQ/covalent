@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Don't send the whole result object when only one node needs to be updated.
 
+- The input arguments are being shown correctly in the UI.
+
+### Changed
+
+- Ensured that the lattice / sublattices tasks order are stored in the tasks queue correctly.
+
+- Accomodated the conditions in tasks queue where remaining tasks are non-executable, in order to correctly update the workflow status.
+
 ## [0.89.6] - 2022-04-21
 
 ### Fixed
