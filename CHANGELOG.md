@@ -7,6 +7,287 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.90.0] - 2022-04-21
+
+### Added
+
+- Enabled inactive unit tests in Actions.
+
+### Docs
+
+- Updated the Python badge
+- Changed a relative URL in the README to an absolute URL
+- Added link to SwaggerHub in README
+
+## [0.89.6] - 2022-04-21
+
+### Fixed
+
+- Correctly pass inputs when calling workflows
+
+### Docs
+
+- Restructured the README
+- Updated the README
+- Updated Getting Started, How-To Configuration Guide, CLI API documentation
+
+## [0.89.5] - 2022-04-20
+
+### Fixed
+
+- Don't duplicate tags
+- Release conditions
+- Pypi version syntax
+
+## [0.89.4] - 2022-04-20
+
+### Docs
+
+- Updated the how-to notebooks for compatibility with the micro-services refactor.
+- Updated machine learning and quantum gravity tutorials to point to the correct web UI address.
+- Updated the quantum chemistry tutorial.
+- Update the concepts page according to the new web UI.
+
+### Fixed
+
+- Fixed how environment variables are loaded on startup
+
+## [0.89.3] - 2022-04-20
+
+### Fixed
+
+- Push-to-ECR steps for `master` and `develop` workflows.
+- Don't specify runs-on for reusable call
+
+## [0.89.2] - 2022-04-19
+
+### Fixed
+
+- Use workflow_call to automatically call reusable workflow
+
+## [0.89.1] - 2022-04-19
+
+### Fixed
+
+- Reusable workflow called at job level
+
+## [0.89.0] - 2022-04-19
+
+### Changed
+
+- Made release.yml callable and moved the pypi job into that workflow
+
+### Docs
+
+- Updated the astronomy tutorial with cosmetic changes
+
+## [0.88.1] - 2022-04-19
+
+### Fixed
+
+- Setup on MacOS installs nats similar to how it's done on Linux.
+
+## [0.88.0] - 2022-04-19
+
+### Changed
+
+- Lattice in the result object is now pickled separately and a different instance of transport graph is used for modifications than the one in lattice in order to prevent unpickling the lattice everytime result object is read/written to.
+
+- Updated tests to match above change.
+
+## [0.87.1] - 2022-04-19
+
+### Fixed
+
+- Detect secrets syntax in Dockerfile
+
+## [0.87.0] - 2022-04-18
+
+### Changed
+
+- Removed unused `DATA_OS_SVC_HOST_URI` env var from docker compose file & Dockerfile placeholders
+
+## [0.86.1] - 2022-04-18
+
+### Fixed
+
+- Updated the README banner url
+
+## [0.86.0] - 2022-04-18
+
+### Changed
+
+- `sync` method now uses `requests` to query the results service
+
+## [0.85.1] - 2022-04-18
+
+### Fixed
+
+- Fix container networking for the local covalent stack in `docker-compose.yml`
+
+## Changed
+
+- UI refresh: updated covalent logo, new font, nav icons, status colors
+
+## [0.85.0] - 2022-04-18
+
+### Changed
+
+- Covalent branding updated using new guidelines
+
+## [0.84.1] - 2022-04-18
+
+### Fixed
+
+- Nats server shuts down properly when using `covalent stop` or `covalent restart`
+
+## [0.84.0] - 2022-04-18
+
+### Changed
+
+- Updated the "How to create a custom executor" how-to Jupyter notebook.
+
+## [0.83.1] - 2022-04-18
+
+### Fixed
+
+- Revert exclude in setup.py
+
+## [0.83.0] - 2022-04-18
+
+### Changed
+
+- Increased `connect_timeout` on Dispatcher Queue Consumer NATS connection
+
+## [0.82.0] - 2022-04-18
+
+### Added
+
+- Add a pre-commit hook for `detect-secrets`.
+
+## [0.81.2] - 2022-04-18
+
+### Fixed
+
+- Dispatcher unit test fixed by removing `turtle` import
+
+## [0.81.1] - 2022-04-14
+
+### Fixed
+
+- Fixed bug where `covalent stop` and `covalent start` would not bring the services back up
+
+## [0.81.0] - 2022-04-14
+
+### Changed
+
+- Made `supervisord` use a specific configuration file instead of looking at root directory.
+
+### Fixed
+
+- Fixed string comparison to determine whether `COVA_SDK` env variable exists or not.
+
+## [0.80.3] - 2022-04-14
+
+### Fixed
+
+- Re-enabling test actions
+- Resolving ui backend endpoint in draw function using config manager
+
+## [0.80.2] - 2022-04-14
+
+### Fixed
+
+- Some legacy config variables are removed.
+- The config references `ENV_DEST_DIR` everywhere now
+
+## [0.80.1] - 2022-04-14
+
+### Fixed
+
+- Accessing `ENV_DEST_DIR` env var using `os.environ.get`
+- Missing requirements `pyyaml`, `jinja`, and `psutil` added to reqs file
+
+## [0.80.0] - 2022-04-14
+
+### Changed
+
+- Repository is restructured to accomodate the microservices
+
+## [0.79.1] - 2022-04-14
+
+### Fixed
+
+- Installation using `pip install -e .` is fixed with regards to the nats installation.
+- Several missing `__init__.py` files are now included.
+
+## [0.79.0] - 2022-04-14
+
+### Added
+
+- Covalent `config` cli command to alter config values or display covalent configuration
+
+### Changed
+
+- Removed environment section from Supervisord config in order to read from root `.env` file instead
+- Refactored config manager to use project root `.env` file for configuration
+
+## [0.78.0] - 2022-04-13
+
+### Changed
+
+- `ct.get_result` will return result object if no wait is used.
+
+- Using initial resource as 1 until there is better resource management in runner.
+
+### Fixed
+
+- Fix errors in Dockerfiles
+
+- Update Dockerfiles to use `multi-stage` container builds to reduce final image size
+
+- Install all necessary Python modules in all containers
+
+## [0.77.0] - 2022-04-13
+
+### Added
+
+- nats is installed in the wheel build if not otherwise installed.
+
+## [0.76.0] - 2022-04-13
+
+### Added
+
+- `wait` argument to `ct.get_result`.
+
+### Changed
+
+- Switched to the local executor which is compatible with covalent microservices and removed the old executor.
+
+## [0.75.0] - 2022-04-13
+
+### Tests
+
+- Tests for update workflow in Dispatcher service update_workflow.py module.
+
+### Changed
+
+- Implementation of update_workflow_results in update_workflow.py module in Dispatcher service.
+
+## [0.74.0] - 2022-04-12
+
+### Changed
+
+- Removed misnamed dispatcher plugin stuff and now using the interface functions directly (dispatch, dispatch_sync, get_result).
+
+- `ct.dispatch`, `ct.dispatch_sync`, `ct.get_result`, etc. are going to use the covalent services instead.
+
+## [0.73.0] - 2022-04-12
+
+### Changed
+
+- Arguments and keyword arguments to the function are pickled with cloudpickle, allowing objects that are not pickleable with "normal" pickle to be sent to different processes with the multiprocessing module.
+
 ## [0.72.0] - 2022-04-12
 
 ### Changed

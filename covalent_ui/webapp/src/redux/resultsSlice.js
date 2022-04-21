@@ -40,19 +40,34 @@ const initialState = {
 export const fetchResult = createAsyncThunk(
   'results/fetchResult',
   ({ dispatchId }, thunkAPI) =>
-    api.get(`/api/results/${dispatchId}`).catch(thunkAPI.rejectWithValue)
+    api
+      .get(`/api/v0/workflow/results/${dispatchId}`, {
+        params: { format: 'json' },
+      })
+      .catch(thunkAPI.rejectWithValue)
 )
 
 export const fetchResults = createAsyncThunk(
   'results/fetchResults',
-  (values, thunkAPI) => api.get('/api/results').catch(thunkAPI.rejectWithValue)
+  (values, thunkAPI) =>
+    api
+      .get(`/api/v0/workflow/results`, { params: { format: 'json' } })
+      .catch(thunkAPI.rejectWithValue)
 )
 
 export const deleteResults = createAsyncThunk(
   'results/deleteResults',
   ({ dispatchIds }, thunkAPI) =>
     api
-      .delete('/api/results', { data: { dispatchIds } })
+      .delete('/api/v0/workflow/results', {
+        params: { dispatchIds },
+        paramsSerializer(params) {
+          return _.join(
+            _.map(dispatchIds, (id) => `dispatch_ids=${id}`),
+            '&'
+          )
+        },
+      })
       .catch(thunkAPI.rejectWithValue)
 )
 

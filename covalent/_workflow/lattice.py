@@ -33,20 +33,24 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import requests
 
-import covalent_ui.result_webhook as result_webhook
-from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
-
 from .._shared_files import logger
 from .._shared_files.config import _config_manager, get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
+from .._shared_files.get_svc_uri import UIBackendURI
 from .._shared_files.utils import (
+    encode_dict,
+    extract_graph,
+    extract_metadata,
     get_named_params,
     get_serialized_function_str,
     required_params_passed,
 )
 from ..notify.notify import NotifyEndpoint
 from .transport import _TransportGraph
+
+# import covalent_ui_legacy.result_webhook as result_webhook
+
 
 if TYPE_CHECKING:  # pragma: no cover
     from .._results_manager.result import Result
@@ -164,9 +168,10 @@ class Lattice:
                     )
                     raise
 
+    # Deprecated
     def draw_inline(self, ax: plt.Axes = None, *args, **kwargs) -> None:  # pragma: no cover
         """
-        Rebuilds the graph according to the kwargs passed and draws it on the given axis.
+        DEPRECATED: Rebuilds the graph according to the kwargs passed and draws it on the given axis.
         If no axis is given then a new figure is created.
 
         Note: This function does `plt.show()` at the end.
@@ -214,23 +219,23 @@ class Lattice:
         plt.tight_layout()
         return ax
 
+    #    def draw_legacy(self, *args, **kwargs) -> None:
+    #        """
+    #        Generate lattice graph and display in UI taking into account passed in
+    #        arguments.
+    #
+    #        Args:
+    #            *args: Positional arguments to be passed to build the graph.
+    #            **kwargs: Keyword arguments to be passed to build the graph.
+    #
+    #        Returns:
+    #            None
+    #        """
+    #
+    #        self.build_graph(*args, **kwargs)
+    #        result_webhook.send_draw_request(self)
+
     def draw(self, *args, **kwargs) -> None:
-        """
-        Generate lattice graph and display in UI taking into account passed in
-        arguments.
-
-        Args:
-            *args: Positional arguments to be passed to build the graph.
-            **kwargs: Keyword arguments to be passed to build the graph.
-
-        Returns:
-            None
-        """
-
-        self.build_graph(*args, **kwargs)
-        result_webhook.send_draw_request(self)
-
-    def draw_refactor(self, *args, **kwargs) -> None:
         """
         Generate lattice graph and display in UI taking into account passed in
         arguments.
@@ -268,7 +273,7 @@ class Lattice:
 
         try:
             response = requests.post(
-                "http://localhost:8005/api/v0/ui/workflow/draft", data=draw_request
+                UIBackendURI().get_route("/ui/workflow/draft"), data=draw_request
             )
             response.raise_for_status()
         except requests.exceptions.HTTPError as ex:
@@ -352,48 +357,6 @@ class Lattice:
                         constraint, constraint
                     )
                 )
-
-    def dispatch(self, *args, **kwargs) -> str:  # pragma: no cover
-        """
-        DEPRECATED: Function to dispatch workflows.
-
-        Args:
-            *args: Positional arguments for the workflow
-            **kwargs: Keyword arguments for the workflow
-
-        Returns:
-            Dispatch id assigned to job
-        """
-
-        app_log.warning(
-            "workflow.dispatch(your_arguments_here) is deprecated and may get removed without notice in future releases. Please use covalent.dispatch(workflow)(your_arguments_here) instead.",
-            exc_info=DeprecationWarning,
-        )
-
-        from .._dispatcher_plugins import local_dispatch
-
-        return local_dispatch(self)(*args, **kwargs)
-
-    def dispatch_sync(self, *args, **kwargs) -> "Result":  # pragma: no cover
-        """
-        DEPRECATED: Function to dispatch workflows synchronously by waiting for the result too.
-
-        Args:
-            *args: Positional arguments for the workflow
-            **kwargs: Keyword arguments for the workflow
-
-        Returns:
-            Result of workflow execution
-        """
-
-        app_log.warning(
-            "workflow.dispatch_sync(your_arguments_here) is deprecated and may get removed without notice in future releases. Please use covalent.dispatch_sync(workflow)(your_arguments_here) instead.",
-            exc_info=DeprecationWarning,
-        )
-
-        from .._dispatcher_plugins import local_dispatch_sync
-
-        return local_dispatch_sync(self)(*args, **kwargs)
 
 
 def lattice(

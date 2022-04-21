@@ -1,15 +1,15 @@
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
-# 
-# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
 # A copy of the License may be obtained with this software package or at
 #
 #      https://www.gnu.org/licenses/agpl-3.0.en.html
 #
-# Use of this file is prohibited except in compliance with the License. Any 
-# modifications or derivative works of this file must retain this copyright 
-# notice, and modified files must contain a notice indicating that they have 
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
 # been altered from the originals.
 #
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
@@ -20,7 +20,7 @@
 
 name: tests
 
-on: 
+on:
   pull_request:
   workflow_run:
     workflows: [changelog]
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['ubuntu-latest']
+        os: ["ubuntu-latest"]
         container:
           - python:3.8-buster
           - python:3.8-bullseye
@@ -43,10 +43,12 @@ jobs:
         experimental: [false]
         include:
           - os: macos-latest
-            python-version: '3.8'
+            python-version: "3.8"
             experimental: false
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
+    outputs:
+      release: ${{ steps.push.outputs.release }}
     steps:
       - name: Check out head
         uses: actions/checkout@v3
@@ -61,6 +63,18 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
+          pip install --no-cache-dir -r ./covalent_data/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_data/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_dispatcher/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_dispatcher/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_queuer/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_queuer/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_results/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_results/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_runner/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_runner/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_ui/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_ui/requirements/dev.txt
       - name: Install NPM and Yarn on Ubuntu
         if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye'
         run: |
@@ -89,15 +103,25 @@ jobs:
           tar xzf cova-${VERSION}.tar.gz
           diff -x tests -r cova-${VERSION}/covalent ../covalent
           diff -x tests -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
-          diff -x README.md cova-${VERSION}/covalent_ui ../covalent_ui 
+          diff -x tests -r cova-${VERSION}/covalent_data ../covalent_data
+          diff -x tests -r cova-${VERSION}/covalent_queuer ../covalent_queuer
+          diff -x tests -r cova-${VERSION}/covalent_results ../covalent_results
+          diff -x tests -r cova-${VERSION}/covalent_runner ../covalent_runner
+          diff -x README.md -x tests -x webapp cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
       - name: Install Covalent
         run: pip install -e .
       - name: Start Covalent dispatcher server
-        run: covalent start -d
+        run: covalent start
       - name: Run tests and measure coverage
-        run: pytest tests covalent/tests covalent_dispatcher/tests -vv --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+        run: |
+          PYTHONPATH=$PWD/covalent_data pytest covalent_data -vv --cov=covalent_data --cov-config=.coveragerc
+          PYTHONPATH=$PWD/covalent_dispatcher pytest covalent_dispatcher -vv --cov=covalent_dispatcher --cov-config=.coveragerc
+          PYTHONPATH=$PWD/covalent_queuer pytest covalent_queuer -vv --cov=covalent_queuer --cov-config=.coveragerc
+          PYTHONPATH=$PWD/covalent_results pytest covalent_results -vv --cov=covalent_results --cov-config=.coveragerc
+          PYTHONPATH=$PWD/covalent_ui pytest covalent_ui -vv --cov=covalent_ui --cov-config=.coveragerc
+          PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/functional_tests  --cov=tests --cov-config=.coveragerc
       - name: Generate coverage report
         run: coverage xml
       - name: Upload report to Codecov
@@ -112,6 +136,7 @@ jobs:
         with:
           semver_only: true
       - name: Push to master
+        id: push
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
           MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
@@ -119,16 +144,17 @@ jobs:
           release=false
           if [ "$MASTER_VERSION" = "$VERSION" ] ; then
             echo "$VERSION has been previously released."
-          elif [ $VERSION = '0.71.0' ] ; then
+          elif dpkg --compare-versions $VERSION 'gt' '0.71.0' ; then
             git config user.name "CovalentOpsBot"
             git config user.email "covalentopsbot@users.noreply.github.com"
             git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
             git push origin HEAD:master
             release=true
           else
-            echo "Master is frozen on 0.71.0"
+            echo "We cannot release versions less than 0.71.0."
           fi
           echo "RELEASE=$release" >> $GITHUB_ENV
+          echo "::set-output name=release::$release"
       - name: Format Slack message
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
@@ -153,3 +179,9 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+  release:
+    needs: tests
+    if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
+    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
+    with:
+      prerelease: true

@@ -55,31 +55,17 @@ jobs:
             TAG=$TAG-$SHORT_SHA
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
-      - name: Build and push covalent image
-        run: |
-          docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
-          docker run -d -p 48008:8080 ${{ secrets.AWS_ECR_DEV_REPO }}
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          echo 'Running an example dispatch...'
-          for idx in {0..1..1}; do
-            echo 'Dispatch number: '$idx
-            python tests/example_dispatch.py
-          done
-          docker push ${{ secrets.AWS_ECR_DEV_REPO }}
-          docker tag ${{ secrets.AWS_ECR_DEV_REPO }} ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
-          docker push ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
       - name: Push to ECR
         run: |
           docker-compose -f docker-compose.yml up --build -d
           echo 'Displaying containers...'
           docker ps
-          docker tag covalent-data:latest ${{ secrets.DATA_DEV_REPO }}
-          docker tag covalent-dispatcher:latest ${{ secrets.DISPATCHER_DEV_REPO }}
-          docker tag covalent-queuer:latest ${{ secrets.QUEUER_DEV_REPO }}
-          docker tag covalent-results:latest ${{ secrets.RESULTS_DEV_REPO }}
-          docker tag covalent-runner:latest ${{ secrets.RUNNER_DEV_REPO }}
-          docker tag covalent-ui:latest ${{ secrets.UI_DEV_REPO }}
+          docker tag covalent_data:latest ${{ secrets.DATA_DEV_REPO }}
+          docker tag covalent_dispatcher:latest ${{ secrets.DISPATCHER_DEV_REPO }}
+          docker tag covalent_queuer:latest ${{ secrets.QUEUER_DEV_REPO }}
+          docker tag covalent_results:latest ${{ secrets.RESULTS_DEV_REPO }}
+          docker tag covalent_runner:latest ${{ secrets.RUNNER_DEV_REPO }}
+          docker tag covalent_ui:latest ${{ secrets.UI_DEV_REPO }}
           docker push ${{ secrets.DATA_DEV_REPO }}
           docker push ${{ secrets.DISPATCHER_DEV_REPO }}
           docker push ${{ secrets.QUEUER_DEV_REPO }}
