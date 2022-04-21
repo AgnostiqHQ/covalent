@@ -27,6 +27,7 @@ import sys
 from setuptools import Command, find_packages, setup
 from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop
+from setuptools.command.install import install
 
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
@@ -152,6 +153,25 @@ class BuildUI(Command):
             )
 
 
+def purge_config():
+    import os
+
+    # remove legacy config
+    try:
+        os.remove(".env")
+    except OSError:
+        pass
+    try:
+        os.remove("supervisord.conf")
+    except OSError:
+        pass
+
+    # remove latest config
+    HOME_PATH = os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")
+    COVALENT_CACHE_DIR = os.path.join(HOME_PATH, "covalent")
+    shutil.rmtree(COVALENT_CACHE_DIR, ignore_errors=True)
+
+
 def install_nats():
     import subprocess
 
@@ -196,8 +216,16 @@ class BuildCovalent(build_py):
         build_py.run(self)
 
 
+class InstallCovalent(install):
+    """Post-Installation for Covalent in install mode"""
+
+    def run(self):
+        purge_config()
+        install.run(self)
+
+
 class DevelopCovalent(develop):
-    """Install Covalent in develop mode with NATS server"""
+    """Post-Installation for Covalent in develop mode with NATS server"""
 
     def run(self):
         install_nats()
@@ -251,6 +279,7 @@ setup_info = {
     "cmdclass": {
         "build_py": BuildCovalent,
         "develop": DevelopCovalent,
+        "install": InstallCovalent,
         "docs": Docs,
         "webapp": BuildUI,
     },
