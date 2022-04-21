@@ -9,6 +9,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Updated the Python badge
+- Changed a relative URL in the README to an absolute URL
+- Added link to SwaggerHub in README
+
+## [0.89.6] - 2022-04-21
+
+### Fixed
+
+- Correctly pass inputs when calling workflows
+
+### Docs
+
+- Restructured the README
+- Updated the README
+- Updated Getting Started, How-To Configuration Guide, CLI API documentation
+
+## [0.89.5] - 2022-04-20
+
+### Fixed
+
+- Don't duplicate tags
+- Release conditions
+- Pypi version syntax
+
+## [0.89.4] - 2022-04-20
+
+### Docs
+
+- Updated the how-to notebooks for compatibility with the micro-services refactor.
+- Updated machine learning and quantum gravity tutorials to point to the correct web UI address.
+- Updated the quantum chemistry tutorial.
+- Update the concepts page according to the new web UI.
+
+### Fixed
+
+- Fixed how environment variables are loaded on startup
+
+## [0.89.3] - 2022-04-20
+
+### Fixed
+
+- Push-to-ECR steps for `master` and `develop` workflows.
+- Don't specify runs-on for reusable call
+
+## [0.89.2] - 2022-04-19
+
+### Fixed
+
+- Use workflow_call to automatically call reusable workflow
+
+## [0.89.1] - 2022-04-19
+
+### Fixed
+
+- Reusable workflow called at job level
+
+## [0.89.0] - 2022-04-19
+
+### Changed
+
+- Made release.yml callable and moved the pypi job into that workflow
+
+### Docs
+
 - Updated the astronomy tutorial with cosmetic changes
 - Update microservice documentation
 
