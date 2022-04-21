@@ -78,7 +78,8 @@ def update_workflow_results(
         elif not is_empty(tasks_queue):
             update_completed_tasks(dispatch_id, tasks_queue, latest_result_obj)
 
-        if is_empty(tasks_queue):
+        # Finally if above two functions modified the tasks_queue or the result object
+        if is_empty(tasks_queue) and not are_tasks_running(result_obj=latest_result_obj):
             update_completed_workflow(latest_result_obj)
 
     else:
