@@ -7,4 +7,3 @@ omit =
     covalent_results/tests/*
     covalent_runner/tests/*
     covalent_ui/tests/*
-    tests/*
