@@ -77,7 +77,7 @@ As an alternative, Covalent can be run using Docker:
 
 ```console
 # Run the containers locally using docker after cloning this repository
-docker compose -f docker-compose.yml -d up
+docker-compose -f docker-compose.yml up -d
 ```
 
 Navigate to the user interface at `http://localhost:8000` to monitor workflow execution progress.
