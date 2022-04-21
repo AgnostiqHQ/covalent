@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.89.6] - 2022-04-21
+
 ### Fixed
 
 - Correctly pass inputs when calling workflows
