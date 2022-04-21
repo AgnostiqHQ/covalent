@@ -211,7 +211,8 @@ Covalent uses a containerized microservice architecture consisting of eight core
 
 <div align="center">
 
-![covalent architecture](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/Covalent_Local_Microservices.png)
+<!--![covalent architecture](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/Covalent_Local_Microservices.png)-->
+![covalent architecture](doc/source/_static/Covalent_Local_Microservices.png)
 
 </div>
 
