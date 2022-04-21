@@ -23,7 +23,7 @@
 from unittest import mock
 
 import pytest
-from app.core.utils import is_empty, generate_task_result
+from app.core.utils import generate_task_result, is_empty
 
 
 @pytest.fixture
