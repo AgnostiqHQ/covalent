@@ -13,10 +13,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Restructured the README
+- Updated the README
+- Updated Getting Started, How-To Configuration Guide, CLI API documentation
+
+## [0.89.5] - 2022-04-20
+
+### Fixed
+
+- Don't duplicate tags
+- Release conditions
+- Pypi version syntax
+
+## [0.89.4] - 2022-04-20
+
+### Docs
+
 - Updated the how-to notebooks for compatibility with the micro-services refactor.
 - Updated machine learning and quantum gravity tutorials to point to the correct web UI address.
 - Updated the quantum chemistry tutorial.
 - Update the concepts page according to the new web UI.
+
+### Fixed
+
+- Fixed how environment variables are loaded on startup
 
 ## [0.89.3] - 2022-04-20
 
