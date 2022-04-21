@@ -81,7 +81,7 @@ class _ConfigManager:
 
     def __init__(self) -> None:
 
-        self.env_path = os.environ.get("ENV_DEST_DIR") or PROJECT_ROOT
+        self.env_path = os.environ.get("ENV_DEST_DIR") or COVALENT_CACHE_DIR
         self.config_file = os.path.join(self.env_path, CONFIG_FILE_NAME)
 
         if not os.path.exists(self.env_path):
@@ -146,10 +146,14 @@ class _ConfigManager:
             None
         """
 
+        # remove .env config file which may live in an arbitrary folder
         try:
             os.remove(self.config_file)
         except FileNotFoundError:
             pass
+
+        # remove covalent cache directory with log files, and supervisord.conf
+        shutil.rmtree(COVALENT_CACHE_DIR, ignore_errors=True)
 
         # attempt to remove legacy .env file
         try:
