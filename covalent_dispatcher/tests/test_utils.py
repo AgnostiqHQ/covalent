@@ -20,8 +20,10 @@
 
 """Unit tests for utils module"""
 
+from unittest import mock
+
 import pytest
-from app.core.utils import is_empty
+from app.core.utils import is_empty, generate_task_result
 
 
 @pytest.fixture
@@ -31,6 +33,14 @@ def mock_tasks_queue():
     from multiprocessing import Queue as MPQ
 
     return MPQ()
+
+
+@pytest.fixture
+def mock_task():
+    """Construct a mock task object"""
+    task_object = {"task_id": 'mock_task_id', 'start_time': '0.00', 'end_time': '0.01', 'status': 'NEW'}
+
+    return task_object
 
 
 def test_is_empty(mock_tasks_queue):
@@ -127,6 +137,29 @@ def test_send_task_update_to_dispatcher():
     pass
 
 
-def test_generate_task_result():
-    """Test for generating task result"""
-    pass
+def test_generate_task_result(mock_task):
+    """Test for generating the result of a task"""
+
+    mock_task_object = mock_task
+    mock_return_value = {
+        "task_id": mock_task_object["task_id"],
+        "start_time": mock_task_object["start_time"],
+        "end_time": mock_task_object["end_time"],
+        "status": mock_task_object["status"],
+        "output": None,
+        "error": None,
+        "stdout": None,
+        "stderr": None,
+        "info": None,
+    }
+    mock_task_result = mock.Mock('task result', return_value=mock_return_value)
+    assert generate_task_result(mock_task_object["task_id"],
+                                mock_task_object["start_time"],
+                                mock_task_object["end_time"],
+                                mock_task_object["status"],
+                                None,
+                                None,
+                                None,
+                                None,
+                                None,
+                                ) == mock_task_result.return_value
