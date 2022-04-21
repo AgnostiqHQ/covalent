@@ -75,7 +75,8 @@ jobs:
           git checkout -b "hotfix-$version"
           echo $version > VERSION
           echo "VERSION=$version" >> $GITHUB_ENV
-          echo 'MESSAGE="Hotfix ' $version ' created.' >> $GITHUB_ENV
+          echo 'MESSAGE="Hotfix ' $version ' has been created. ' \
+            'You may contact mall security to create a stable release using this tag.' >> $GITHUB_ENV
       - name: Commit
         uses: EndBug/add-and-commit@v9
         with:
