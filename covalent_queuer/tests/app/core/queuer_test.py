@@ -3,16 +3,19 @@ import os
 import mock
 import nats
 import requests
+from app.core.config import settings
 from app.core.queuer import Queuer
 
 
 class TestQueuer:
 
-    MOCK_MQ_CONNECTION_URI = "localhost:4222"
+    MOCK_MQ_CONNECTION_URI = "nats_mock:4222"
 
     @mock.patch.object(nats, "connect", autospec=True)
-    @mock.patch.dict(os.environ, {"MQ_CONNECTION_URI": MOCK_MQ_CONNECTION_URI})
-    def test_get_client(self, mocked_nats):
+    def test_get_client(self, mocked_nats, monkeypatch):
+        monkeypatch.setattr(settings, "MQ_CONNECTION_URI", self.MOCK_MQ_CONNECTION_URI)
         queuer = Queuer()
         queuer.get_client()
-        mocked_nats.assert_called_once_with(self.MOCK_MQ_CONNECTION_URI)
+        args, kwargs = mocked_nats.call_args
+        (connection_str,) = args
+        assert connection_str == self.MOCK_MQ_CONNECTION_URI

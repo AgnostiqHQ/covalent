@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     RESULTS_SVC_PORT: str = "8005"
     RESULTS_SVC_HOST: str = "localhost"
-    MQ_CONNECTION_URI: str = "locahost:4222"
+    MQ_CONNECTION_URI: str = "localhost:4222"
     MQ_DISPATCH_TOPIC: str = "workflow.dispatch"
     QUEUER_SVC_PORT: int = 8001
     QUEUER_SVC_HOST: str = "localhost"
