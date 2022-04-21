@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.91.0] - 2022-04-21
+
 ### Fixed
 
 - Don't send the whole result object when only one node needs to be updated.
