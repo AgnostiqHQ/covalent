@@ -19,6 +19,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Accomodated the conditions in tasks queue where remaining tasks are non-executable, in order to correctly update the workflow status.
 
+### Docs
+
+- Update microservice documentation
+
+## [0.90.0] - 2022-04-21
+
+### Added
+
+- Enabled inactive unit tests in Actions.
+
+### Docs
+
+- Updated the Python badge
+- Changed a relative URL in the README to an absolute URL
+- Added link to SwaggerHub in README
+
 ## [0.89.6] - 2022-04-21
 
 ### Fixed
