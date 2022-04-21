@@ -38,7 +38,12 @@ def mock_tasks_queue():
 @pytest.fixture
 def mock_task():
     """Construct a mock task object"""
-    task_object = {"task_id": 'mock_task_id', 'start_time': '0.00', 'end_time': '0.01', 'status': 'NEW'}
+    task_object = {
+        "task_id": "mock_task_id",
+        "start_time": "0.00",
+        "end_time": "0.01",
+        "status": "NEW",
+    }
 
     return task_object
 
@@ -152,14 +157,18 @@ def test_generate_task_result(mock_task):
         "stderr": None,
         "info": None,
     }
-    mock_task_result = mock.Mock('task result', return_value=mock_return_value)
-    assert generate_task_result(mock_task_object["task_id"],
-                                mock_task_object["start_time"],
-                                mock_task_object["end_time"],
-                                mock_task_object["status"],
-                                None,
-                                None,
-                                None,
-                                None,
-                                None,
-                                ) == mock_task_result.return_value
+    mock_task_result = mock.Mock("task result", return_value=mock_return_value)
+    assert (
+        generate_task_result(
+            mock_task_object["task_id"],
+            mock_task_object["start_time"],
+            mock_task_object["end_time"],
+            mock_task_object["status"],
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
+        == mock_task_result.return_value
+    )
