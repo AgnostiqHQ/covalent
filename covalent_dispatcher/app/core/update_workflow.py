@@ -71,7 +71,6 @@ def update_workflow_results(
 
         tasks_queue.put(val)
 
-
         # If workflow is completed, post-process result
         if not are_tasks_running(result_obj=latest_result_obj):
             update_completed_workflow(latest_result_obj)
@@ -115,7 +114,6 @@ def update_completed_tasks(dispatch_id: str, tasks_queue: MPQ, result_obj: Resul
     print(
         f"In update_completed_tasks with dispatch_id: {dispatch_id} and tasks_queue: {tasks_order_lod}"
     )
-
 
     tasks_dict = tasks_order_lod.pop(0)
     new_dispatch_id, new_tasks_order = zip(*tasks_dict.items())
@@ -175,9 +173,7 @@ def update_completed_workflow(result_obj: Result) -> Result:
             file=sys.stderr,
         )
 
-
         parent_dispatch_id, task_id = get_parent_id_and_task_id(result_obj.dispatch_id)
-
 
         task_result = generate_task_result(
             task_id=task_id,

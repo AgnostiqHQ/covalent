@@ -203,7 +203,8 @@ def are_tasks_running(result_obj: Result) -> bool:
 
     return any(
         result_obj._get_node_status(task_id) in [Result.RUNNING, Result.NEW_OBJ]
-        for task_id in range(result_obj._num_nodes) if not result_obj._get_node_name(task_id).startswith(parameter_prefix)
+        for task_id in range(result_obj._num_nodes)
+        if not result_obj._get_node_name(task_id).startswith(parameter_prefix)
     )
 
 
