@@ -20,6 +20,7 @@
 
 """Workflow result update functionality."""
 
+import sys
 from datetime import datetime, timezone
 from multiprocessing import Queue as MPQ
 from typing import Dict
@@ -32,14 +33,13 @@ from .utils import (
     _post_process,
     are_tasks_running,
     generate_task_result,
+    get_parent_id_and_task_id,
     get_result_object_from_result_service,
     is_empty,
     is_sublattice_dispatch_id,
     send_task_update_to_dispatcher,
     send_task_update_to_result_service,
-    get_parent_id_and_task_id,
 )
-import sys
 
 
 def update_workflow_results(
