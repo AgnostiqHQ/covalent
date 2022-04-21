@@ -2,8 +2,7 @@
 
 <div align="center">
 
-<!--<img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/covalent_readme_banner.svg" width=150%>-->
-<img src="doc/source/_static/covalent_readme_banner.svg" width=150%>
+<img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/covalent_readme_banner.svg" width=150%>
 
 [![version](https://github-covalent-badges.s3.amazonaws.com/badges/version.svg?maxAge=3600)](https://github.com/AgnostiqHQ/covalent)
 [![python](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380)
@@ -17,7 +16,19 @@
 
 ## 🤔 What is Covalent?
 
-Covalent is a Pythonic workflow tool used to execute tasks on advanced computing hardware. Users can decorate their existing Python functions as electrons (tasks) or lattices (workflows) and then run these functions locally or dispatch them to various classical and quantum backends according to the hardware requirements. After submitting workflows, users can use the browser-based Covalent viewer to visualize dependencies and the workflow execution progress. User can view a variety of information about the workflow such as the status, errors, the workflow's dependency graph, and metadata, among other things. Covalent is designed to make it easy for users to keep track of their computationally heavy experiments by providing a simple and intuitive framework to store, modify, and re-analyze computational experiments. Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers and emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent. Read more in the official [documentation](https://covalent.readthedocs.io/en/latest/).
+Covalent is a Pythonic workflow tool used to execute HPC and quantum tasks in heterogenous environments. Computational scientists and engineers use Covalent to...
+
+- rapidly iterate prototypes and exploratory research models
+- automate, manage, and share reproducible experiments
+- visualize data and task dependencies in an interactive user interface
+- run code in heterogenous compute environments, including in hybrid-cloud and hybrid-quantum configurations
+- understand where time and money is spent across a project
+
+Covalent uses a containerized microservice architecture consisting of eight core services which consume and process workflows. Workflows are submitted to a queue service, which forwards them to a NATS message queue. A consumer service processes workflows one-by-one (or in parallel, on some systems) by forwarding them to a dispatcher service. The dispatcher analyzes task and data dependencies and submits execution requests to a runner service, which runs tasks in parallel, either locally or on a remote device, according to hardware capabilities and task requirements. Results are managed by a the results and data services, and a user interface service provides an interactive dashboard where users can monitor and organize experiments.
+
+Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers and emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent. 
+
+Read more in the official [documentation](https://covalent.readthedocs.io/en/latest/).
 
 ## ✨ Features
 
