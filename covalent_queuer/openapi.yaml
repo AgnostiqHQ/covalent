@@ -1,0 +1,86 @@
+openapi: 3.0.2
+info:
+  title: Covalent Queuer Service API
+  version: 0.1.0
+paths:
+  /api/v0/submit/dispatch:
+    post:
+      tags:
+        - Submit
+      summary: Submit Workflow
+      description: |-
+        Note: The object that contains the workflow function, interface to
+        update attributes in the transport graph, inputs of the workflow,
+        metadata, etc. is the result object that's why its type is ResultPickle
+        which contains the pickled result object. Its use however varies in
+        different components. We call it the result object because it is supposed
+        to be the ultimate thing the user will get and will contain everything in the workflow.
+      operationId: submit_workflow_api_v0_submit_dispatch_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Body_submit_workflow_api_v0_submit_dispatch_post"
+        required: true
+      responses:
+        "202":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmitResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+components:
+  schemas:
+    Body_submit_workflow_api_v0_submit_dispatch_post:
+      title: Body_submit_workflow_api_v0_submit_dispatch_post
+      required:
+        - result_pkl_file
+      type: object
+      properties:
+        result_pkl_file:
+          title: Result Pkl File
+          type: string
+          format: binary
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+    SubmitResponse:
+      title: SubmitResponse
+      required:
+        - dispatch_id
+      type: object
+      properties:
+        dispatch_id:
+          title: Dispatch Id
+          type: string
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string

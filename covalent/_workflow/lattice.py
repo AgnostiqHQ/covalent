@@ -21,6 +21,7 @@
 """Class corresponding to computation workflow."""
 
 import inspect
+import json
 import os
 import warnings
 from contextlib import redirect_stdout
@@ -30,21 +31,28 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 import matplotlib.pyplot as plt
 import networkx as nx
-
-import covalent_ui.result_webhook as result_webhook
+import requests
 
 from .._shared_files import logger
-from .._shared_files.config import get_config
+from .._shared_files.config import _config_manager, get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
+from .._shared_files.get_svc_uri import UIBackendURI
 from .._shared_files.utils import (
+    encode_dict,
+    extract_graph,
+    extract_metadata,
     get_named_params,
     get_serialized_function_str,
     required_params_passed,
 )
+from ..notify.notify import NotifyEndpoint
 from .transport import _TransportGraph
 
-if TYPE_CHECKING:
+# import covalent_ui_legacy.result_webhook as result_webhook
+
+
+if TYPE_CHECKING:  # pragma: no cover
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
 
@@ -160,9 +168,10 @@ class Lattice:
                     )
                     raise
 
-    def draw_inline(self, ax: plt.Axes = None, *args, **kwargs) -> None:
+    # Deprecated
+    def draw_inline(self, ax: plt.Axes = None, *args, **kwargs) -> None:  # pragma: no cover
         """
-        Rebuilds the graph according to the kwargs passed and draws it on the given axis.
+        DEPRECATED: Rebuilds the graph according to the kwargs passed and draws it on the given axis.
         If no axis is given then a new figure is created.
 
         Note: This function does `plt.show()` at the end.
@@ -210,6 +219,22 @@ class Lattice:
         plt.tight_layout()
         return ax
 
+    #    def draw_legacy(self, *args, **kwargs) -> None:
+    #        """
+    #        Generate lattice graph and display in UI taking into account passed in
+    #        arguments.
+    #
+    #        Args:
+    #            *args: Positional arguments to be passed to build the graph.
+    #            **kwargs: Keyword arguments to be passed to build the graph.
+    #
+    #        Returns:
+    #            None
+    #        """
+    #
+    #        self.build_graph(*args, **kwargs)
+    #        result_webhook.send_draw_request(self)
+
     def draw(self, *args, **kwargs) -> None:
         """
         Generate lattice graph and display in UI taking into account passed in
@@ -224,14 +249,46 @@ class Lattice:
         """
 
         self.build_graph(*args, **kwargs)
-        result_webhook.send_draw_request(self)
+
+        graph = self.transport_graph.get_internal_graph_copy()
+
+        ((named_args, named_kwargs),) = (
+            get_named_params(self.workflow_function, self.args, self.kwargs),
+        )
+
+        draw_request = json.dumps(
+            {
+                "payload": {
+                    "lattice": {
+                        "function_string": self.workflow_function_string,
+                        "doc": self.__doc__,
+                        "name": self.__name__,
+                        "inputs": encode_dict({**named_args, **named_kwargs}),
+                        "metadata": extract_metadata(self.metadata),
+                    },
+                    "graph": extract_graph(graph),
+                },
+            }
+        )
+
+        try:
+            response = requests.post(
+                UIBackendURI().get_route("/ui/workflow/draft"), data=draw_request
+            )
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as ex:
+            app_log.error(ex)
+        except requests.exceptions.RequestException:
+            app_log.error("Connection failure. Please check ui_backend service is running.")
 
     def __call__(self, *args, **kwargs):
         """Execute lattice as an ordinary function for testing purposes."""
 
         return self.workflow_function(*args, **kwargs)
 
-    def check_constraint_specific_sum(self, constraint_name: str, node_list: List[dict]) -> bool:
+    def check_constraint_specific_sum(
+        self, constraint_name: str, node_list: List[dict]
+    ) -> bool:  # pragma: no cover
         """
         Function to check whether the sum of the given constraint in each electron
         are within the constraint specified for the lattice.
@@ -276,7 +333,7 @@ class Lattice:
                 self.get_metadata(constraint_name)
             )
 
-    def check_consumable(self) -> None:
+    def check_consumable(self) -> None:  # pragma: no cover
         """
         Function to check whether all consumable constraints in all the nodes are
         within the limits of what is specified for the lattice.
@@ -301,57 +358,14 @@ class Lattice:
                     )
                 )
 
-    def dispatch(self, *args, **kwargs) -> str:
-        """
-        DEPRECATED: Function to dispatch workflows.
-
-        Args:
-            *args: Positional arguments for the workflow
-            **kwargs: Keyword arguments for the workflow
-
-        Returns:
-            Dispatch id assigned to job
-        """
-
-        app_log.warning(
-            "workflow.dispatch(your_arguments_here) is deprecated and may get removed without notice in future releases. Please use covalent.dispatch(workflow)(your_arguments_here) instead.",
-            exc_info=DeprecationWarning,
-        )
-
-        from .._dispatcher_plugins import local_dispatch
-
-        return local_dispatch(self)(*args, **kwargs)
-
-    def dispatch_sync(self, *args, **kwargs) -> "Result":
-        """
-        DEPRECATED: Function to dispatch workflows synchronously by waiting for the result too.
-
-        Args:
-            *args: Positional arguments for the workflow
-            **kwargs: Keyword arguments for the workflow
-
-        Returns:
-            Result of workflow execution
-        """
-
-        app_log.warning(
-            "workflow.dispatch_sync(your_arguments_here) is deprecated and may get removed without notice in future releases. Please use covalent.dispatch_sync(workflow)(your_arguments_here) instead.",
-            exc_info=DeprecationWarning,
-        )
-
-        from .._dispatcher_plugins import local_dispatch_sync
-
-        return local_dispatch_sync(self)(*args, **kwargs)
-
 
 def lattice(
     _func: Optional[Callable] = None,
     *,
     backend: Optional[str] = None,
-    executor: Optional[
-        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+    executor: Optional[Union[str, "BaseExecutor"]] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
+    notify: Optional[List[NotifyEndpoint]] = [],
     # Add custom metadata fields here
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
@@ -380,9 +394,14 @@ def lattice(
 
     results_dir = str(Path(results_dir).expanduser().resolve())
 
+    from ..executor import _executor_manager
+
+    executor = _executor_manager.get_executor(executor)
+
     constraints = {
         "executor": executor,
         "results_dir": results_dir,
+        "notify": notify,
     }
 
     def decorator_lattice(func=None):

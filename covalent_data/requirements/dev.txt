@@ -1,0 +1,4 @@
+-r dist.txt
+ipdb==0.13.9
+mock==4.0.3
+pytest==7.1.1

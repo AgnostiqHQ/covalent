@@ -5,12 +5,813 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.32.5] - 2022-03-21
+## [UNRELEASED]
 
 ### Added
 
 - Support for Bash tasks
 - How-to guide demonstrating usage
+
+### Docs
+
+- Restructured the README
+- Updated the README
+- Updated Getting Started, How-To Configuration Guide, CLI API documentation
+
+## [0.89.5] - 2022-04-20
+
+### Fixed
+
+- Don't duplicate tags
+- Release conditions
+- Pypi version syntax
+
+## [0.89.4] - 2022-04-20
+
+### Docs
+
+- Updated the how-to notebooks for compatibility with the micro-services refactor.
+- Updated machine learning and quantum gravity tutorials to point to the correct web UI address.
+- Updated the quantum chemistry tutorial.
+- Update the concepts page according to the new web UI.
+
+### Fixed
+
+- Fixed how environment variables are loaded on startup
+
+## [0.89.3] - 2022-04-20
+
+### Fixed
+
+- Push-to-ECR steps for `master` and `develop` workflows.
+- Don't specify runs-on for reusable call
+
+## [0.89.2] - 2022-04-19
+
+### Fixed
+
+- Use workflow_call to automatically call reusable workflow
+
+## [0.89.1] - 2022-04-19
+
+### Fixed
+
+- Reusable workflow called at job level
+
+## [0.89.0] - 2022-04-19
+
+### Changed
+
+- Made release.yml callable and moved the pypi job into that workflow
+
+### Docs
+
+- Updated the astronomy tutorial with cosmetic changes
+
+## [0.88.1] - 2022-04-19
+
+### Fixed
+
+- Setup on MacOS installs nats similar to how it's done on Linux.
+
+## [0.88.0] - 2022-04-19
+
+### Changed
+
+- Lattice in the result object is now pickled separately and a different instance of transport graph is used for modifications than the one in lattice in order to prevent unpickling the lattice everytime result object is read/written to.
+
+- Updated tests to match above change.
+
+## [0.87.1] - 2022-04-19
+
+### Fixed
+
+- Detect secrets syntax in Dockerfile
+
+## [0.87.0] - 2022-04-18
+
+### Changed
+
+- Removed unused `DATA_OS_SVC_HOST_URI` env var from docker compose file & Dockerfile placeholders
+
+## [0.86.1] - 2022-04-18
+
+### Fixed
+
+- Updated the README banner url
+
+## [0.86.0] - 2022-04-18
+
+### Changed
+
+- `sync` method now uses `requests` to query the results service
+
+## [0.85.1] - 2022-04-18
+
+### Fixed
+
+- Fix container networking for the local covalent stack in `docker-compose.yml`
+
+## Changed
+
+- UI refresh: updated covalent logo, new font, nav icons, status colors
+
+## [0.85.0] - 2022-04-18
+
+### Changed
+
+- Covalent branding updated using new guidelines
+
+## [0.84.1] - 2022-04-18
+
+### Fixed
+
+- Nats server shuts down properly when using `covalent stop` or `covalent restart`
+
+## [0.84.0] - 2022-04-18
+
+### Changed
+
+- Updated the "How to create a custom executor" how-to Jupyter notebook.
+
+## [0.83.1] - 2022-04-18
+
+### Fixed
+
+- Revert exclude in setup.py
+
+## [0.83.0] - 2022-04-18
+
+### Changed
+
+- Increased `connect_timeout` on Dispatcher Queue Consumer NATS connection
+
+## [0.82.0] - 2022-04-18
+
+### Added
+
+- Add a pre-commit hook for `detect-secrets`.
+
+## [0.81.2] - 2022-04-18
+
+### Fixed
+
+- Dispatcher unit test fixed by removing `turtle` import
+
+## [0.81.1] - 2022-04-14
+
+### Fixed
+
+- Fixed bug where `covalent stop` and `covalent start` would not bring the services back up
+
+## [0.81.0] - 2022-04-14
+
+### Changed
+
+- Made `supervisord` use a specific configuration file instead of looking at root directory.
+
+### Fixed
+
+- Fixed string comparison to determine whether `COVA_SDK` env variable exists or not.
+
+## [0.80.3] - 2022-04-14
+
+### Fixed
+
+- Re-enabling test actions
+- Resolving ui backend endpoint in draw function using config manager
+
+## [0.80.2] - 2022-04-14
+
+### Fixed
+
+- Some legacy config variables are removed.
+- The config references `ENV_DEST_DIR` everywhere now
+
+## [0.80.1] - 2022-04-14
+
+### Fixed
+
+- Accessing `ENV_DEST_DIR` env var using `os.environ.get`
+- Missing requirements `pyyaml`, `jinja`, and `psutil` added to reqs file
+
+## [0.80.0] - 2022-04-14
+
+### Changed
+
+- Repository is restructured to accomodate the microservices
+
+## [0.79.1] - 2022-04-14
+
+### Fixed
+
+- Installation using `pip install -e .` is fixed with regards to the nats installation.
+- Several missing `__init__.py` files are now included.
+
+## [0.79.0] - 2022-04-14
+
+### Added
+
+- Covalent `config` cli command to alter config values or display covalent configuration
+
+### Changed
+
+- Removed environment section from Supervisord config in order to read from root `.env` file instead
+- Refactored config manager to use project root `.env` file for configuration
+
+## [0.78.0] - 2022-04-13
+
+### Changed
+
+- `ct.get_result` will return result object if no wait is used.
+
+- Using initial resource as 1 until there is better resource management in runner.
+
+### Fixed
+
+- Fix errors in Dockerfiles
+
+- Update Dockerfiles to use `multi-stage` container builds to reduce final image size
+
+- Install all necessary Python modules in all containers
+
+## [0.77.0] - 2022-04-13
+
+### Added
+
+- nats is installed in the wheel build if not otherwise installed.
+
+## [0.76.0] - 2022-04-13
+
+### Added
+
+- `wait` argument to `ct.get_result`.
+
+### Changed
+
+- Switched to the local executor which is compatible with covalent microservices and removed the old executor.
+
+## [0.75.0] - 2022-04-13
+
+### Tests
+
+- Tests for update workflow in Dispatcher service update_workflow.py module.
+
+### Changed
+
+- Implementation of update_workflow_results in update_workflow.py module in Dispatcher service.
+
+## [0.74.0] - 2022-04-12
+
+### Changed
+
+- Removed misnamed dispatcher plugin stuff and now using the interface functions directly (dispatch, dispatch_sync, get_result).
+
+- `ct.dispatch`, `ct.dispatch_sync`, `ct.get_result`, etc. are going to use the covalent services instead.
+
+## [0.73.0] - 2022-04-12
+
+### Changed
+
+- Arguments and keyword arguments to the function are pickled with cloudpickle, allowing objects that are not pickleable with "normal" pickle to be sent to different processes with the multiprocessing module.
+
+## [0.72.0] - 2022-04-12
+
+### Changed
+
+- Updated the example to use a sublattice.
+
+### Fixed
+
+- Fixed updation of result objects for sublattice and parent lattice.
+- Fixed the regular expression to show sublattice results in the UI.
+
+## [0.71.0] - 2022-04-11
+
+### Changed
+
+- Updated Supervisord template configuration to bring up NATS server with high priority before all other services
+
+## [0.70.0] - 2022-04-11
+
+### Tests
+
+- Dispatcher service tests for the `dispatch_workflow.py` module.
+
+### Changed
+
+- Minor refactor of `dispatch_workflow.py` module in Dispatcher service.
+
+## [0.69.0] - 2022-04-08
+
+### Added
+
+- Added Microservices section with links to Swagger hub for individual API docs
+
+## [0.68.0] - 2022-04-07
+
+### Added
+
+- Tests for data and results services
+
+## [0.67.4] - 2022-04-07
+
+### Fixed
+
+- Fix handling of webapp url paths by ui_backend.
+
+## [0.67.3] - 2022-04-07
+
+### Fixed
+
+- The `package-lock.json` file is no longer committed to the codebase
+
+## [0.67.2] - 2022-04-07
+
+### Fixed
+
+- PyPI uploads use a token instead of a username/password pair
+
+## [0.67.1] - 2022-04-07
+
+### Fixed
+
+- Switched UI to results service delete API
+
+## [0.67.0] - 2022-04-07
+
+### Added
+- Added environment variables to service declarations in ``docker-compose``.
+- Added the Dockerfile and docker-compose configurations for the ``queue-consumer``.
+
+## [0.66.0] - 2022-04-07
+
+### Added
+
+- Batch cancellation endpoint to dispatcher, e.g., `DELETE /api/v0/workflow/cancel?dispatch_id1,dispatch_id2`
+
+### Tests
+
+- Added tests for UI backend endpoints
+
+## [0.65.3] - 2022-04-07
+
+### Fixed
+
+- Syntax error in the `tests.yml` workflow
+
+## [0.65.2] - 2022-04-07
+
+### Fixed
+
+- pypi validation using pre-release tag
+
+## [0.65.1] - 2022-04-07
+
+### Fixed
+
+- Don't fail the CI workflow just because we aren't doing a release
+
+## [0.65.0] - 2022-04-06
+
+### Changed
+
+- Only one docker-compose
+
+## [0.64.2] - 2022-04-06
+
+### Fixed
+
+- The `.dockerignore` file now ignores any unnecessary front-end build files
+
+## [0.64.1] - 2022-04-06
+
+### Fixed
+
+- egg_info invocation
+
+## [0.64.0] - 2022-04-06
+
+### Fixed
+
+- Style fixes via `pre-commit run --all-files`
+
+### Changed
+
+- Pushing microservice images to public ECR
+
+## [0.63.1] - 2022-04-06
+
+### Fixed
+
+- Fixed the version validation in pypi workflow
+
+## [0.63.0] - 2022-04-06
+
+### Changed
+
+- Mark pypi releases as pre
+
+## [0.62.1] - 2022-04-06
+
+### Fixed
+
+- Workflows which run on `develop` or `master` will send Slack alerts to the dev team if they fail.
+
+## [0.62.0] - 2022-04-06
+
+### Changed
+
+- Update `covalent-ui` service in `docker-compose.yaml` to ensure that the uvicorn server listens on `0.0.0.0` for all incoming requests
+- Using `ENTRYPOINT` in dockerfiles instead of `CMD`
+- Remove `command` option from all services in `docker-compose.yml`
+
+## [0.61.1] - 2022-04-06
+
+### Fixed
+
+- Fixed failures in pushing images to ECR.
+
+## [0.61.0] - 2022-04-06
+
+### Changed
+
+- The results and data service now support batch deleting via query strings
+
+## [0.60.0] - 2022-04-06
+
+### Changed
+
+- List type removed from type annotation for the executor argument in electron/lattice/lepton definitions.
+- Input executor argument is converted to an executor class object (if it were a string) in electron/lattice/lepton definitions instead of just before execution in execution.py. As a result, calls to _executor_manager.get_executor are removed from execution.py.
+- Rewritten tests to take into account the type change of executor identifiers from strings to executor class objects.
+
+### Fixed
+
+- In covalent/executor/__init__.py, `from importlib import metadata` is used instead of `importlib.metadata`.
+- Electron.get_op_function.rename now uses the correct separator string when renaming a function.
+
+## [0.59.0] - 2022-04-06
+
+### Changed
+
+- Fixes for making the whole pipeline work in tandem.
+
+## [0.58.0] - 2022-04-06
+
+### Added
+
+- `nats` service in `docker-compose` files
+
+## [0.57.0] - 2022-04-05
+
+### Added
+
+- Variables to assign service hosts
+
+## [0.56.1] - 2022-04-05
+
+### Fixed
+
+- Fixed various module import errors in the containers for the microservices.
+
+### Tests
+
+- Added tests for post-refactor covalent cli commands: start, stop, restart, status, and logs
+
+## [0.56.0] - 2022-04-05
+
+### Changed
+
+- Changed global variable executor_plugin_name to EXECUTOR_PLUGIN_NAME in executors to conform with PEP8.
+
+## [0.55.0] - 2022-04-04
+
+### Changed
+
+- Changed supervisord http server's default to listen on all interfaces, so that covalent can run on any computer in a trusted LAN (without firewalls/auth).
+
+## [0.54.0] - 2022-04-04
+
+### Added
+
+- Draw workflow draft API to ui_backend service
+
+
+## [0.53.0] - 2022-04-04
+
+### Added
+
+- Added docker-compose file to run covalent microservices.
+
+## [0.52.0] - 2022-04-04
+
+### Added
+
+- Added delete endpoint to data and results services.
+
+## [0.51.0] - 2022-04-04
+
+### Added
+
+- Folders for tests.
+
+### Changed
+
+- Organization of covalent tests.
+
+## [0.50.0] - 2022-04-03
+
+### Added
+
+- Added GET all results endpoint in Results service
+- Optional formatting of GET result endpoint that supports: `binary` or `json`
+
+### Changed
+
+- Changed frontend to support updated result service endpoints with json format
+
+### Removed
+
+- Removed redundant local storage cache on frontend
+
+## [0.49.1] - 2022-04-01
+
+### Fixed
+
+- Using `io.BytesIO` in `update_result` in the results service to prevent creation of a new file in the file system.
+
+## [0.49.0] - 2022-04-01
+
+### Added
+
+- Implement an `overwrite` query param in the `upload` method so that we don't create a new object for every result update
+
+## [0.48.0] - 2022-04-01
+
+### Added
+
+- Added updated dispatching and getting result functions with the option to download result as a file.
+
+### Changed
+
+- Hardcoded filepaths to standardized ServiceURL.`get_route(...)` method when making API requests.
+
+## [0.47.2] - 2022-04-01
+
+### Fixed
+
+- Queue consumer import paths fixed
+- Syntax errors in the supervisord template fixed
+
+## [0.47.1] - 2022-04-01
+
+### Fixed
+
+- Supervisord now brings up dispatcher queue consumer worker
+
+## [0.47.0] - 2022-04-01
+
+### Changed
+
+- Updated API calls accross services to use standarized env vars from Settings class
+- Normalized env vars accross services and updated Supervisord template
+
+## [0.46.0] - 2022-03-31
+
+### Changed
+
+- Consumers of results service now specify `stream=True` in their get requests.
+
+## [0.45.0] - 2022-03-31
+
+### Changed
+
+- Using `Result.RUNNING` instead of str "RUNNING"
+- Using process safe `is_empty` method rather than `empty()` method for multiprocessing queue.
+- Multprocessing `is_queue` method.
+
+### Added
+
+- Workflow status as running in the `workflow_status_queue`.
+
+### Tests
+
+- Added a test for the `_check_version` method in `covalent/executor/__init__.py`.
+
+## [0.44.0] - 2022-03-31
+
+### Added
+
+- A version check is done at Covalent startup to ensure that executor plugins are compatible.
+
+## [0.43.0] - 2022-03-31
+
+### Added
+
+- Function to call UI update method in the UI microservice for use in the Dispatcher micro-service.
+- Refactor updating results and ui into one function.
+
+## [0.42.2] - 2022-03-31
+
+### Fixed
+
+- Using functions for getting result object in cancel endpoint and sending cancel task signal to runner in the dispatcher.
+
+## [0.42.1] - 2022-03-31
+
+### Fixed
+
+- `update_workflow_results` in `update_workflow.py` now also takes care of sending the next set of tasks to the runner.
+
+- Also handling the cases of sublattices in `update_workflow_results`.
+
+## [0.42.0] - 2022-03-31
+
+### Changed
+
+- Moved some unused for-the-future files to the refactor directory and out of the main codebase.
+
+## [0.41.3] - 2022-03-31
+
+### Fixed
+
+- Dispatch DB is now created upon server start.
+
+## [0.41.2] - 2022-03-30
+
+### Fixed
+
+- Oneline bugfix to remove `fetch --unshallow`
+
+## [0.41.1] - 2022-03-30
+
+### Fixed
+
+- Get master version from release tags rather than master branch
+
+## [0.41.0] - 2022-03-30
+
+### Added
+
+- Dockerized the Dispatcher and Runner Services.
+- Added required packages for running containerized instances of the Dispatcher and Runner.
+
+## [0.40.0] - 2022-03-30
+
+### Added
+
+- Dockerized the Data and UI-backend services.
+- Required packages to run containerized instances of the Data and UI-backend.
+
+## [0.39.1] - 2022-03-30
+
+### Fixed
+
+- Supervisord & Results service integration by making results service port configurable by an env var
+
+## [0.39.0] - 2022-03-29
+
+### Changed
+
+- Runner and dispatcher implementation in order to integrate the microservices partially complete.
+
+## [0.38.0] - 2022-03-29
+
+### Added
+
+- Added UI backend component to serve post-refactor frontend and dispatch websocket messages to UI using Socket.io
+- Updated UI socket.io configuration to use different ws path, and using localstorage for fetching all results (temporary)
+- Added post-refactor cli commands to use Supervisord to manage local service processes
+- Added `covalent logs` and `covalent config` cli commands
+
+## [0.37.1] - 2022-03-29
+
+### Fixed
+
+- Oneline bugfix in tests.yml
+
+## [0.37.0] - 2022-03-29
+
+### Added
+
+- Results management endpoints; GET, PUT, POST for results object
+- Checks in setup.py to confirm node version compatibility.
+- Instructions in CONTRIBUTING to address some common Debian setup issues.
+
+## [0.36.1] - 2022-03-29
+
+### Fixed
+
+- Filesystem service now reads config from environment variables.
+
+## [0.36.0] - 2022-03-29
+
+### Added
+
+- Picking up dispatch jobs from the queue and ensuring that only one workflow is processed (locally) at any given time.
+
+### Changed
+
+- Dispatcher implementation in order to integrate with Queuer microservice.
+
+## [0.35.0] - 2022-03-29
+
+### Added
+
+- Automated changelog and version management
+- Added a Dockerfile to build an image for OS Queuer.
+- Added the required packages to run a container instance of the Queuer.
+
+### Fixed
+
+- Single quotes in github env
+- Don't use for loops to iterate over a variable in bash
+- Issue with checkout actions
+- Run tests on changelog workflow completion instead of push to develop to avoid race condition
+- Use covalent ops bot token for automated pushes to develop
+- sed command syntax in changelog.yml
+
+## [0.34.5] - 2022-03-28
+
+### Fixed
+
+- Moved `example_dispatch.py` into `tests/` directory.
+
+## [0.34.4] - 2022-03-28
+
+### Added
+
+- Unit tests for utils, leptons, and base executor
+
+## [0.34.3] - 2022-03-27
+
+### Added
+
+- Tests for lattice.py
+
+## [0.34.2] - 2022-03-27
+
+### Added
+
+- Unit tests for the base executor, the results manager, the logger, and leptons
+
+## [0.34.1] - 2022-03-24
+
+### Fixed
+
+- Pinned jinja2 to less than 3.1.0 so that nbconvert remains stable in the docs build.
+
+## [0.34.0] - 2022-03-24
+
+### Added
+
+- API endpoints to upload and download files
+
+## [0.33.1] - 2022-03-24
+
+### Fixed
+
+- Retrieving results from running container via HTTP
+- Adding tests for Docker image in workflows
+
+## [0.33.0] - 2022-03-24
+
+### Added
+
+- Slack and webhook notifications
+
+## [0.32.9] - 2022-03-23
+
+### Fixed
+
+- Updated OS Queuer imports to remove top level modules `refactor.queuer`
+
+## [0.32.8] - 2022-03-22
+
+### Added
+
+- Websocket notify endpoint with leaky bucket algo implementation to rate limit messages to frontend
+
+## [0.32.7] - 2022-03-22
+
+### Added
+
+- Queuer API submit endpoint to publish dispatch message to MQ & send result file to Data Service
+- API Service class for interfacing with local services
+- Tests covering submit endpoint and API Service
+
+## [0.32.6] - 2022-03-22
+
+### Fixed
+
+- Input path for external libraries in the Lepton wrapper can (and should) now be a full path to the file.
+
+## [0.32.5] - 2022-03-21
+
+### Fixed
+
+- Fix HTTP status code for blank POST requests.
 
 ## [0.32.4] - 2022-03-17
 

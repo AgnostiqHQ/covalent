@@ -21,13 +21,22 @@
 """General utils for Covalent."""
 
 import inspect
-from datetime import timedelta
-from typing import Callable, Dict, Set, Tuple
+from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, Callable, Dict, Set, Tuple
+
+import networkx as nx
+import simplejson
+
+import covalent.executor as covalent_executor
 
 from . import logger
+from .util_classes import Status
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+if TYPE_CHECKING:
+    from .._results_manager.result import Result
 
 
 def get_timedelta(time_limit: str) -> timedelta:
@@ -73,7 +82,7 @@ def get_time(time_delta: timedelta) -> str:
         time_string: The compatible reformatted time string.
     """
 
-    days = reformat(time_delta.days)
+    days = time_delta.days
     hours = reformat(time_delta.seconds // 3600)
     minutes = reformat((time_delta.seconds // 60) % 60)
     seconds = reformat(time_delta.seconds % 60)
@@ -140,7 +149,7 @@ def get_imports(func: Callable) -> Tuple[str, Set[str]]:
     return imports_str, cova_imports
 
 
-def required_params_passed(func: Callable, kwargs: Dict) -> bool:
+def required_params_passed(func: Callable, kwargs: Dict) -> bool:  # pragma: no cover
     """
     DEPRECATED: Check to see that values for all parameters without default values have been passed.
 
@@ -185,3 +194,95 @@ def get_named_params(func, args, kwargs):
                     named_kwargs[key] = value
 
     return (named_args, named_kwargs)
+
+
+def extract_graph_node(node):
+    # avoid mutating original node
+    node = node.copy()
+
+    # doc string
+    f = node.get("function")
+    if f is not None:
+        node["doc"] = f.func_doc
+
+    # metadata
+    node["metadata"] = extract_metadata(node["metadata"])
+
+    # prevent JSON encoding
+    node["kwargs"] = encode_dict(node.get("kwargs"))
+
+    # remove unused fields
+    node.pop("function", None)
+    node.pop("node_name", None)
+
+    return node
+
+
+def extract_metadata(metadata: dict):
+    try:
+        # avoid mutating original metadata
+        metadata = metadata.copy()
+
+        name = metadata["executor"]
+        executor = covalent_executor._executor_manager.get_executor(name=name)
+
+        if executor is not None:
+            # extract attributes
+            metadata["executor"] = encode_dict(executor.__dict__)
+            if isinstance(name, str):
+                metadata["executor_name"] = name
+            else:
+                metadata["executor_name"] = f"<{executor.__class__.__name__}>"
+    except (KeyError, AttributeError):
+        pass
+
+    return metadata
+
+
+def encode_dict(d):
+    """Avoid JSON encoding when python str() suffices"""
+    return {k: str(v) for (k, v) in d.items()} if isinstance(d, dict) else d
+
+
+def extract_graph(graph):
+    graph = nx.json_graph.node_link_data(graph)
+    nodes = list(map(extract_graph_node, graph["nodes"]))
+    return {
+        "nodes": nodes,
+        "links": graph["links"],
+    }
+
+
+def result_encoder(obj):
+    if isinstance(obj, Status):
+        return obj.STATUS
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    return str(obj)
+
+
+def encode_result(result_obj: "Result"):
+
+    transport_graph = result_obj.transport_graph
+
+    result_dict = {
+        "dispatch_id": result_obj.dispatch_id,
+        "status": result_obj.status,
+        "result": result_obj.result,
+        "start_time": result_obj.start_time,
+        "end_time": result_obj.end_time,
+        "results_dir": result_obj.results_dir,
+        "error": result_obj.error,
+        "lattice": {
+            "function_string": result_obj.workflow_function_string,
+            "doc": result_obj.lattice_doc,
+            "name": result_obj.lattice_name,
+            "inputs": str(result_obj.inputs),
+            "metadata": extract_metadata(transport_graph.lattice_metadata),
+        },
+        "graph": extract_graph(transport_graph._graph),
+    }
+
+    jsonified_result = simplejson.dumps(result_dict, default=result_encoder, ignore_nan=True)
+
+    return jsonified_result

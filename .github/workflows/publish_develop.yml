@@ -1,15 +1,15 @@
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
-# 
-# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
 # A copy of the License may be obtained with this software package or at
 #
 #      https://www.gnu.org/licenses/agpl-3.0.en.html
 #
-# Use of this file is prohibited except in compliance with the License. Any 
-# modifications or derivative works of this file must retain this copyright 
-# notice, and modified files must contain a notice indicating that they have 
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
 # been altered from the originals.
 #
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
@@ -24,6 +24,9 @@ on:
   push:
     branches:
       - develop
+    paths-ignore:
+      - "CHANGELOG.md"
+      - "VERSION"
 
 jobs:
   publish_develop:
@@ -52,9 +55,30 @@ jobs:
             TAG=$TAG-$SHORT_SHA
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
-      - name: Build and push image
+      - name: Push to ECR
         run: |
-          docker build -t ${{ secrets.AWS_ECR_DEV_REPO }} .
-          docker push ${{ secrets.AWS_ECR_DEV_REPO }}
-          docker tag ${{ secrets.AWS_ECR_DEV_REPO }} ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
-          docker push ${{ secrets.AWS_ECR_DEV_REPO }}:$TAG
+          docker-compose -f docker-compose.yml up --build -d
+          echo 'Displaying containers...'
+          docker ps
+          docker tag covalent_data:latest ${{ secrets.DATA_DEV_REPO }}
+          docker tag covalent_dispatcher:latest ${{ secrets.DISPATCHER_DEV_REPO }}
+          docker tag covalent_queuer:latest ${{ secrets.QUEUER_DEV_REPO }}
+          docker tag covalent_results:latest ${{ secrets.RESULTS_DEV_REPO }}
+          docker tag covalent_runner:latest ${{ secrets.RUNNER_DEV_REPO }}
+          docker tag covalent_ui:latest ${{ secrets.UI_DEV_REPO }}
+          docker push ${{ secrets.DATA_DEV_REPO }}
+          docker push ${{ secrets.DISPATCHER_DEV_REPO }}
+          docker push ${{ secrets.QUEUER_DEV_REPO }}
+          docker push ${{ secrets.RESULTS_DEV_REPO }}
+          docker push ${{ secrets.RUNNER_DEV_REPO }}
+          docker push ${{ secrets.UI_DEV_REPO }}
+      - name: Alert Slack
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "covalent"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: "The publish-dev.yml workflow is failing in develop!"
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ":warning:  Attention Required  :warning:"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}

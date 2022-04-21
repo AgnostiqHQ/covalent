@@ -19,10 +19,14 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import os
+import platform
+import shutil
 import site
 import sys
 
 from setuptools import Command, find_packages, setup
+from setuptools.command.build_py import build_py
+from setuptools.command.develop import develop
 
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
@@ -83,6 +87,41 @@ class BuildUI(Command):
         ("clean", "c", "clean directory"),
     ]
 
+    @staticmethod
+    def _run(command, stdout=None, cwd=None, check=False, capture_output=False):
+        import subprocess
+
+        proc = subprocess.run(
+            command, stdout=stdout, cwd=cwd, check=check, capture_output=capture_output
+        )
+        if proc.returncode != 0:
+            raise Exception(proc.stderr.decode("utf-8").strip())
+        return proc
+
+    @staticmethod
+    def _node_versions():
+        import requests
+
+        r = requests.get("https://nodejs.org/download/release/index.json")
+        return r.json()
+
+    @staticmethod
+    def _latest_lts(node_versions):
+        for version in node_versions:
+            if version["lts"]:
+                return version["version"]
+
+    @staticmethod
+    def _node_lts(node_versions):
+        import subprocess
+
+        proc = BuildUI._run(["node", "-v"], stdout=subprocess.PIPE)
+        installed_version = proc.stdout.decode("utf-8")[:-1]
+        print(f"The installed Node.js version is {installed_version}.")
+        for version in node_versions:
+            if version["version"] == installed_version:
+                return version["lts"]
+
     def initialize_options(self):
         self.clean = False
 
@@ -90,25 +129,84 @@ class BuildUI(Command):
         pass
 
     def run(self):
+        node_versions = self._node_versions()
         if self.clean:
             import shutil
 
             shutil.rmtree("covalent_ui/webapp/build", ignore_errors=True)
-
-        else:
+        elif self._node_lts(node_versions):
             import subprocess
 
-            subprocess.run(
+            self._run(
                 ["yarn", "install"], cwd="covalent_ui/webapp", check=True, capture_output=True
             )
-            subprocess.run(
-                ["yarn", "build"], cwd="covalent_ui/webapp", check=True, capture_output=True
+            self._run(["yarn", "build"], cwd="covalent_ui/webapp", check=True, capture_output=True)
+        else:
+            lts = self._latest_lts(node_versions)[1:]
+            print(
+                "The installed Node.js version is incompatible with the yarn build.\n",
+                "You must use a Node.js LTS version to install the Covalent webapp. ",
+                f"The latest LTS version is {lts}.\n",
+                "See https://stackoverflow.com/a/69778087/5513030 for more information ",
+                f"or simply run `nvm use {lts}`.",
             )
+
+
+def install_nats():
+    import subprocess
+
+    nats_version = "2.7.4"
+    nats_download_prefix = (
+        f"https://github.com/nats-io/nats-server/releases/download/v{nats_version}/"
+    )
+    nats_dist_mapping = {
+        "Linux": f"nats-server-v{nats_version}-linux-amd64.zip",
+        "Darwin": f"nats-server-v{nats_version}-darwin-amd64.zip",
+    }
+
+    if platform.system() == "Darwin" or platform.system() == "Linux":
+        import requests
+
+        nats_dist = nats_dist_mapping[platform.system()]
+        r = requests.get(
+            nats_download_prefix + nats_dist,
+            allow_redirects=True,
+        )
+        r.raise_for_status()
+
+        open(nats_dist, "wb").write(r.content)
+        subprocess.run(["unzip", nats_dist], check=True)
+        shutil.move(nats_dist[:-4] + "/nats-server", "covalent_queuer/nats-server")
+
+        shutil.rmtree(nats_dist[:-4])
+        os.remove(nats_dist)
+    else:
+        print(
+            "Platform is not natively supported. Please manually install nats-server.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+class BuildCovalent(build_py):
+    """Build Covalent with NATS server"""
+
+    def run(self):
+        install_nats()
+        build_py.run(self)
+
+
+class DevelopCovalent(develop):
+    """Install Covalent in develop mode with NATS server"""
+
+    def run(self):
+        install_nats()
+        develop.run(self)
 
 
 setup_info = {
     "name": "cova",
-    "packages": find_packages(exclude=["tests"]),
+    "packages": find_packages(exclude=["*tests*", "*_legacy"]),
     "version": version,
     "maintainer": "Agnostiq",
     "url": "https://github.com/AgnostiqHQ/covalent",
@@ -122,9 +220,12 @@ setup_info = {
     "include_package_data": True,
     "zip_safe": False,
     "package_data": {
-        "covalent": ["executor/executor_plugins/local.py"],
-        "covalent_dispatcher": ["_service/app.py"],
+        "covalent": [
+            "executor/executor_plugins/local.py",
+            "notify/notification_plugins/webhook.py",
+        ],
         "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
+        "covalent_queuer": ["nats-server"],
     },
     "install_requires": required,
     "classifiers": [
@@ -140,6 +241,7 @@ setup_info = {
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Adaptive Technologies",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
@@ -147,15 +249,20 @@ setup_info = {
         "Topic :: System :: Distributed Computing",
     ],
     "cmdclass": {
+        "build_py": BuildCovalent,
+        "develop": DevelopCovalent,
         "docs": Docs,
         "webapp": BuildUI,
     },
     "entry_points": {
         "console_scripts": [
-            "covalent = covalent_dispatcher._cli.cli:cli",
+            "covalent = covalent._cli.cli:cli",
+            "nats-server = covalent_queuer.nats_server:main",
         ],
     },
 }
 
 if __name__ == "__main__":
+    if os.getenv("COVA_SDK"):
+        setup_info["packages"] = find_packages(exclude=["*tests*", "*_legacy", "covalent_*"])
     setup(**setup_info)

@@ -1,0 +1,9 @@
+[run]
+omit =
+    covalent/tests/*
+    covalent_data/tests/*
+    covalent_dispatcher/tests/*
+    covalent_queuer/tests/*
+    covalent_results/tests/*
+    covalent_runner/tests/*
+    covalent_ui/tests/*

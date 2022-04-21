@@ -23,10 +23,11 @@
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._shared_files import logger
+from .._shared_files.config import _config_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .electron import Electron
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from ..executor import BaseExecutor
 
 app_log = logger.app_log
@@ -66,12 +67,11 @@ class Lepton(Electron):
         function_name: str = "",
         argtypes: Optional[List] = [],
         *,
-        executor: Union[
-            List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
-        ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+        executor: Union[str, "BaseExecutor"] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     ) -> None:
         self.language = language
         self.library_name = library_name
+
         self.function_name = function_name
         # Types must be stored as strings, since not all type objects can be pickled
         self.argtypes = (
@@ -84,9 +84,12 @@ class Lepton(Electron):
         super().__init__(self.wrap_task())
 
         # Assign metadata defaults
+        from ..executor import _executor_manager
+
+        executor = _executor_manager.get_executor(executor)
         super().set_metadata("executor", executor)
 
-    def wrap_task(self) -> Callable:
+    def wrap_task(self) -> Callable:  # noqa: max-complexity: 30
         """Return a lepton wrapper function."""
 
         def python_wrapper(*args, **kwargs) -> Any:
@@ -94,16 +97,25 @@ class Lepton(Electron):
 
             import importlib
 
+            if self.library_name.endswith(".py"):
+                lib_name = self.library_name[:-3]
+                lib_path = self.library_name
+            else:
+                lib_name = self.library_name
+                lib_path = self.library_name + ".py"
+
             try:
-                module = importlib.import_module(self.library_name)
-            except ModuleNotFoundError:
-                app_log.warning(f"Could not import the module '{self.library_name}'.")
+                module_spec = importlib.util.spec_from_file_location(lib_name, lib_path)
+                module = importlib.util.module_from_spec(module_spec)
+                module_spec.loader.exec_module(module)
+            except (ModuleNotFoundError, FileNotFoundError, AttributeError):
+                app_log.error(f"Could not import the module '{self.library_name}'.")
                 raise
 
             try:
                 func = getattr(module, self.function_name)
             except AttributeError:
-                app_log.warning(
+                app_log.error(
                     f"Could not find the function '{self.function_name}' in '{self.library_name}'."
                 )
                 raise
@@ -118,7 +130,7 @@ class Lepton(Electron):
 
             if kwargs:
                 raise ValueError(
-                    f"Keyword arguments {kwargs} are not supported when calling {self.function}."
+                    f"Keyword arguments {kwargs} are not supported when calling {self.function_name}."
                 )
 
             try:

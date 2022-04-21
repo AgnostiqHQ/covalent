@@ -1,0 +1,7 @@
+fastapi==0.74.0
+fastapi-socketio==0.0.9
+minio==7.1.5
+pydantic==1.9.0
+python-dotenv==0.19.2
+python-multipart==0.0.5
+uvicorn==0.15.0

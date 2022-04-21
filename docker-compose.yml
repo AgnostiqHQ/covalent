@@ -1,0 +1,137 @@
+# This file is used for local development with docker-compose and for building microservice images in the CD pipeline.
+# Example Usage: Run "docker-compose -f docker-compose.yml up --build" from the root of the project
+# to build the images using this file and start the containers.
+
+version: "3.9"
+
+services:
+  covalent_data:
+    build:
+      context: .
+      dockerfile: covalent_data/Dockerfile
+    image: covalent_data
+    container_name: covalent_data
+    ports:
+      - 8004:8004
+    environment:
+      DATA_SVC_HOST: 0.0.0.0
+      DATA_SVC_PORT: 8004
+    networks:
+      covalent:
+
+  covalent_dispatcher:
+    build:
+      context: .
+      dockerfile: covalent_dispatcher/Dockerfile
+    image: covalent_dispatcher
+    container_name: covalent_dispatcher
+    environment:
+      RUNNER_SVC_PORT: 8003
+      RESULTS_SVC_PORT: 8005
+      DISPATCHER_SVC_PORT: 8002
+      UI_SVC_PORT: 8000
+      DISPATCHER_SVC_HOST: 0.0.0.0
+      RUNNER_SVC_HOST: covalent_runner
+      RESULTS_SVC_HOST: covalent_results
+      UI_SVC_HOST: covalent_ui
+    ports:
+      - 8002:8002
+    networks:
+      covalent:
+
+  covalent_queuer:
+    build:
+      context: .
+      dockerfile: covalent_queuer/Dockerfile
+    image: covalent_queuer
+    container_name: covalent_queuer
+    ports:
+      - 8001:8001
+    environment:
+      MQ_CONNECTION_URI: nats://covalent_nats:4222
+      MQ_DISPATCH_TOPIC: workflow.dispatch
+      QUEUER_SVC_PORT: 8001
+      QUEUER_SVC_HOST: 0.0.0.0
+      RESULTS_SVC_HOST: covalent_results
+      RESULTS_SVC_PORT: 8005
+    depends_on:
+      - covalent_nats
+    networks:
+      covalent:
+
+  # Queue-consumer uses the same Dockerfile configurations as the Queuer
+  covalent_queue_consumer:
+    build:
+      context: .
+      dockerfile: covalent_dispatcher/Dockerfile.queue_consumer
+    image: covalent_queue_consumer
+    container_name: covalent_queue_consumer
+    environment:
+      MQ_CONNECTION_URI: nats://covalent_nats:4222
+      MQ_DISPATCH_TOPIC: workflow.dispatch
+      DISPATCHER_SVC_HOST: covalent_dispatcher
+      DISPATCHER_SVC_PORT: 8002
+    depends_on:
+      - covalent_nats
+    networks:
+      covalent:
+
+  covalent_results:
+    build:
+      context: .
+      dockerfile: covalent_results/Dockerfile
+    image: covalent_results
+    ports:
+      - 8005:8005
+    container_name: covalent_results
+    environment:
+      RESULTS_SVC_PORT: 8005
+      RESULTS_SVC_HOST: 0.0.0.0
+      DATA_SVC_PORT: 8004
+      DATA_SVC_HOST: covalent_data
+      RESULTS_DB: results.db
+    networks:
+      covalent:
+
+  covalent_runner:
+    build:
+      context: .
+      dockerfile: covalent_runner/Dockerfile
+    image: covalent_runner
+    container_name: covalent_runner
+    ports:
+      - 8003:8003
+    environment:
+      RUNNER_SVC_PORT: 8003
+      RUNNER_SVC_HOST: 0.0.0.0
+      RESULTS_SVC_PORT: 8005
+      RESULTS_SVC_HOST: covalent_results
+      DISPATCHER_SVC_PORT: 8002
+      DISPATCHER_SVC_HOST: covalent_dispatcher
+    networks:
+      covalent:
+
+  covalent_ui:
+    build:
+      context: .
+      dockerfile: covalent_ui/Dockerfile
+    image: covalent_ui
+    container_name: covalent_ui
+    ports:
+      - 8000:8000
+    environment:
+      UI_SVC_PORT: 8000
+      UI_SVC_HOST: 0.0.0.0
+    networks:
+      covalent:
+
+  covalent_nats:
+    image: nats
+    ports:
+      - 4222:4222
+    container_name: covalent_nats
+    networks:
+      covalent:
+
+networks:
+  covalent:

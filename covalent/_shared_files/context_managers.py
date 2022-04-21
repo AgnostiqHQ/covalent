@@ -24,7 +24,7 @@ import threading
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Generator
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .._shared_files.util_classes import DispatchInfo
     from .._workflow.lattice import Lattice
 

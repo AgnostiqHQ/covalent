@@ -28,11 +28,13 @@ from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 import cloudpickle as pickle
 import yaml
 
+from covalent._workflow.transport import _TransportGraph
+
 from .._shared_files import logger
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .utils import convert_to_lattice_function_call
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .._shared_files.util_classes import Status
     from .._workflow.lattice import Lattice
 
@@ -77,8 +79,14 @@ class Result:
 
         self._results_dir = results_dir
 
-        self._lattice = lattice
+        self._lattice = pickle.dumps(lattice)
+        self.workflow_function_string = lattice.workflow_function_string
+        self.lattice_doc = lattice.__doc__
+        self.lattice_name = lattice.__name__
+
         self._dispatch_id = dispatch_id
+
+        self._transport_graph = lattice.transport_graph.serialize()
 
         self._status = Result.NEW_OBJ
 
@@ -89,6 +97,8 @@ class Result:
             self._inputs["args"] = lattice.args
         if lattice.kwargs:
             self._inputs["kwargs"] = lattice.kwargs
+
+        self._inputs = pickle.dumps(self._inputs)
 
         self._error = None
 
@@ -147,7 +157,7 @@ Node Outputs
         "Lattice" object which was dispatched.
         """
 
-        return self._lattice
+        return pickle.loads(self._lattice)
 
     @property
     def dispatch_id(self) -> str:
@@ -179,7 +189,7 @@ Node Outputs
         Inputs sent to the "Lattice" function for dispatching.
         """
 
-        return self._inputs
+        return pickle.loads(self._inputs)
 
     @property
     def error(self) -> str:
@@ -189,10 +199,18 @@ Node Outputs
 
         return self._error
 
+    @property
+    def transport_graph(self) -> "_TransportGraph":
+
+        tg = _TransportGraph()
+        tg.deserialize(self._transport_graph)
+
+        return tg
+
     def _initialize_nodes(self) -> None:
         """
         Initialize the nodes of the transport graph with a blank result.
-        This is called after `self.lattice.transport_graph` has been deserialized.
+        This is called after `self._transport_graph` has been deserialized.
 
         Args:
             None
@@ -201,19 +219,35 @@ Node Outputs
             None
         """
 
-        self._num_nodes = self.lattice.transport_graph.get_internal_graph_copy().number_of_nodes()
+        transport_graph = _TransportGraph()
+        transport_graph.deserialize(self._transport_graph)
+
+        self._num_nodes = transport_graph.get_internal_graph_copy().number_of_nodes()
         for node_id in range(self._num_nodes):
-            self._update_node(
-                node_id,
-                "",
-                None,
-                None,
-                Result.NEW_OBJ,
-                None,
-                None,
-                None,
-                None,
-            )
+
+            node_name = transport_graph.get_node_value(node_id, "name") + f"({node_id})"
+
+            transport_graph.set_node_value(node_id, "node_name", node_name)
+
+            transport_graph.set_node_value(node_id, "start_time", None)
+
+            transport_graph.set_node_value(node_id, "end_time", None)
+
+            transport_graph.set_node_value(node_id, "status", Result.NEW_OBJ)
+
+            transport_graph.set_node_value(node_id, "output", None)
+
+            transport_graph.set_node_value(node_id, "error", None)
+
+            transport_graph.set_node_value(node_id, "sublattice_result", None)
+
+            transport_graph.set_node_value(node_id, "stdout", None)
+
+            transport_graph.set_node_value(node_id, "stderr", None)
+
+            transport_graph.set_node_value(node_id, "info", None)
+
+        self._transport_graph = transport_graph.serialize()
 
     def get_node_result(self, node_id: int) -> dict:
         """Return the result of a particular node.
@@ -233,21 +267,24 @@ Node Outputs
                             - sublattice_result: The result of the sublattice if any.
                             - stdout: The stdout of the node execution.
                             - stderr: The stderr of the node execution.
+                            - info: Any execution related information found during runtime.
         """
+
+        transport_graph = _TransportGraph()
+        transport_graph.deserialize(self._transport_graph)
 
         return {
             "node_id": node_id,
-            "node_name": self.lattice.transport_graph.get_node_value(node_id, "node_name"),
-            "start_time": self.lattice.transport_graph.get_node_value(node_id, "start_time"),
-            "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
-            "status": self.lattice.transport_graph.get_node_value(node_id, "status"),
-            "output": self.lattice.transport_graph.get_node_value(node_id, "output"),
-            "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
-            "sublattice_result": self.lattice.transport_graph.get_node_value(
-                node_id, "sublattice_result"
-            ),
-            "stdout": self.lattice.transport_graph.get_node_value(node_id, "stdout"),
-            "stderr": self.lattice.transport_graph.get_node_value(node_id, "stderr"),
+            "node_name": transport_graph.get_node_value(node_id, "node_name"),
+            "start_time": transport_graph.get_node_value(node_id, "start_time"),
+            "end_time": transport_graph.get_node_value(node_id, "end_time"),
+            "status": transport_graph.get_node_value(node_id, "status"),
+            "output": transport_graph.get_node_value(node_id, "output"),
+            "error": transport_graph.get_node_value(node_id, "error"),
+            "sublattice_result": transport_graph.get_node_value(node_id, "sublattice_result"),
+            "stdout": transport_graph.get_node_value(node_id, "stdout"),
+            "stderr": transport_graph.get_node_value(node_id, "stderr"),
+            "info": transport_graph.get_node_value(node_id, "info"),
         }
 
     def get_all_node_outputs(self) -> dict:
@@ -290,7 +327,10 @@ Node Outputs
             node_name: The name of said node.
         """
 
-        return self.lattice.transport_graph.get_node_value(node_id, "node_name")
+        tg = _TransportGraph()
+        tg.deserialize(self._transport_graph)
+
+        return tg.get_node_value(node_id, "node_name")
 
     def _get_node_status(self, node_id: int) -> "Status":
         """
@@ -303,7 +343,10 @@ Node Outputs
             status: The status of said node.
         """
 
-        return self.lattice.transport_graph.get_node_value(node_id, "status")
+        tg = _TransportGraph()
+        tg.deserialize(self._transport_graph)
+
+        return tg.get_node_value(node_id, "status")
 
     def _get_node_output(self, node_id: int) -> Any:
         """
@@ -317,7 +360,10 @@ Node Outputs
                     Will return None if error occured in execution.
         """
 
-        return self.lattice.transport_graph.get_node_value(node_id, "output")
+        tg = _TransportGraph()
+        tg.deserialize(self._transport_graph)
+
+        return tg.get_node_value(node_id, "output")
 
     def _get_node_error(self, node_id: int) -> Any:
         """
@@ -331,20 +377,24 @@ Node Outputs
                    Will return None if no error occured in execution.
         """
 
-        return self.lattice.transport_graph.get_node_value(node_id, "error")
+        tg = _TransportGraph()
+        tg.deserialize(self._transport_graph)
+
+        return tg.get_node_value(node_id, "error")
 
     def _update_node(
         self,
         node_id: int,
-        node_name: str,
-        start_time: "datetime",
-        end_time: "datetime",
-        status: "Status",
-        output: Any,
-        error: Exception,
+        node_name: str = None,
+        start_time: "datetime" = None,
+        end_time: "datetime" = None,
+        status: "Status" = None,
+        output: Any = None,
+        error: Exception = None,
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
+        info: str = None,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -361,22 +411,46 @@ Node Outputs
             sublattice_result: The result of the sublattice if any.
             stdout: The stdout of the node execution.
             stderr: The stderr of the node execution.
+            info: Any execution related information found during runtime.
 
         Returns:
             None
         """
 
-        self._lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
-        self._lattice.transport_graph.set_node_value(node_id, "start_time", start_time)
-        self._lattice.transport_graph.set_node_value(node_id, "end_time", end_time)
-        self._lattice.transport_graph.set_node_value(node_id, "status", status)
-        self._lattice.transport_graph.set_node_value(node_id, "output", output)
-        self._lattice.transport_graph.set_node_value(node_id, "error", error)
-        self._lattice.transport_graph.set_node_value(
-            node_id, "sublattice_result", sublattice_result
-        )
-        self._lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
-        self._lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
+        transport_graph = _TransportGraph()
+        transport_graph.deserialize(self._transport_graph)
+
+        if node_name is not None:
+            transport_graph.set_node_value(node_id, "node_name", node_name)
+
+        if start_time is not None:
+            transport_graph.set_node_value(node_id, "start_time", start_time)
+
+        if end_time is not None:
+            transport_graph.set_node_value(node_id, "end_time", end_time)
+
+        if status is not None:
+            transport_graph.set_node_value(node_id, "status", status)
+
+        if output is not None:
+            transport_graph.set_node_value(node_id, "output", output)
+
+        if error is not None:
+            transport_graph.set_node_value(node_id, "error", error)
+
+        if sublattice_result is not None:
+            transport_graph.set_node_value(node_id, "sublattice_result", sublattice_result)
+
+        if stdout is not None:
+            transport_graph.set_node_value(node_id, "stdout", stdout)
+
+        if stderr is not None:
+            transport_graph.set_node_value(node_id, "stderr", stderr)
+
+        if info is not None:
+            transport_graph.set_node_value(node_id, "info", info)
+
+        self._transport_graph = transport_graph.serialize()
 
     def save(self, directory: str = None, write_source: bool = False) -> None:
         """
@@ -440,6 +514,9 @@ Node Outputs
             None
         """
 
+        transport_graph = _TransportGraph()
+        transport_graph.deserialize(self._transport_graph)
+
         directory = directory or self.results_dir
 
         import pkg_resources
@@ -468,16 +545,16 @@ Node Outputs
         Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
         # Accumulate the tasks and workflow in a string
-        topo_sorted_graph = self.lattice.transport_graph.get_topologically_sorted_graph()
+        topo_sorted_graph = transport_graph.get_topologically_sorted_graph()
         functions_added = []
         for level in topo_sorted_graph:
             for nodes in level:
-                function = self.lattice.transport_graph.get_node_value(
+                function = transport_graph.get_node_value(
                     nodes, value_key="function"
                 ).get_deserialized()
                 if function is not None and function.__name__ not in functions_added:
 
-                    function_str = self.lattice.transport_graph.get_node_value(
+                    function_str = transport_graph.get_node_value(
                         nodes, value_key="function_string"
                     )
                     function_str = _filter_cova_decorators(

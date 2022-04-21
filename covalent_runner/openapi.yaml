@@ -1,0 +1,212 @@
+openapi: 3.0.2
+info:
+  title: Covalent Runner Service API
+  version: 0.1.0
+paths:
+  /api/v0/workflow/{dispatch_id}/tasks:
+    post:
+      tags:
+        - Task
+      summary: Run Tasks
+      description: |-
+        Run a list of tasks
+
+        Note: The request body contains a list of "string"s which are pickled objects (bytes) containing
+        the following info about the Task:
+
+        `id`: Task ID
+
+        `func`: Callable function which will be run
+
+        `args`: Positional arguments for `func`
+
+        `kwargs`: Keyword arguments for `func`
+
+        `executor`: Executor object (https://covalent.readthedocs.io/en/latest/api/api.html#local-executor)
+
+
+        Example:
+
+
+        ```
+        def task_func_1(x, y):
+            return x * y
+
+        def task_func_2(a):
+            return a ** 2
+
+        executor_1 = LocalExecutor()
+
+        executor_2 = LocalExecutor()
+
+        task_1 = pickle.dumps({"id": 0, "func": task_func_1, "args": (1, 2), "kwargs": {}, "executor": executor_1})
+
+        task_2 = pickle.dumps({"id": 1, "func": task_func_2, "args": (3,), "kwargs": {}, "executor": executor_2})
+
+        requests.post(f'localhost:48008/api/workflow/{dispatch_id}/tasks', body=pickle.dumps([task_1, task_2]))
+        ```
+      operationId: run_tasks_api_v0_workflow__dispatch_id__tasks_post
+      parameters:
+        - required: true
+          schema:
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskPickleList"
+        required: true
+      responses:
+        "202":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RunTaskResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v0/workflow/{dispatch_id}/task/{task_id}:
+    get:
+      tags:
+        - Task
+      summary: Check Status
+      description: Check status of a task
+      operationId: check_status_api_v0_workflow__dispatch_id__task__task_id__get
+      parameters:
+        - required: true
+          schema:
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
+          in: path
+        - required: true
+          schema:
+            title: Task Id
+            type: integer
+          name: task_id
+          in: path
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskStatus"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+    delete:
+      tags:
+        - Task
+      summary: Cancel Task
+      description: Cancel a task
+      operationId: cancel_task_api_v0_workflow__dispatch_id__task__task_id__delete
+      parameters:
+        - required: true
+          schema:
+            title: Dispatch Id
+            type: string
+          name: dispatch_id
+          in: path
+        - required: true
+          schema:
+            title: Task Id
+            type: integer
+          name: task_id
+          in: path
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancelResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+components:
+  schemas:
+    CancelResponse:
+      title: CancelResponse
+      required:
+        - cancelled_dispatch_id
+        - cancelled_task_id
+      type: object
+      properties:
+        cancelled_dispatch_id:
+          title: Cancelled Dispatch Id
+          type: string
+        cancelled_task_id:
+          title: Cancelled Task Id
+          type: string
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+    RunTaskResponse:
+      title: RunTaskResponse
+      required:
+        - response
+      type: object
+      properties:
+        response:
+          title: Response
+          type: string
+    TaskPickleList:
+      title: TaskPickleList
+      required:
+        - tasks
+      type: object
+      properties:
+        tasks:
+          title: Tasks
+          type: array
+          items:
+            type: string
+            format: binary
+    TaskStatus:
+      title: TaskStatus
+      required:
+        - status
+      type: object
+      properties:
+        status:
+          title: Status
+          type: string
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string

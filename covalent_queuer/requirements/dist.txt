@@ -1,0 +1,11 @@
+aiolimiter==1.0.0
+cloudpickle==2.0.0
+fastapi==0.74.0
+fastapi-socketio==0.0.9
+nats-py==2.0.0
+pydantic==1.9.0
+python-dotenv==0.19.2
+python-multipart==0.0.5
+requests==2.24.0
+uvicorn==0.15.0
+websockets==10.2
