@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Enabled inactive unit tests in Actions.
 
+### Docs
+
+- Updated the Python badge
+- Changed a relative URL in the README to an absolute URL
+- Added link to SwaggerHub in README
+
 ## [0.89.6] - 2022-04-21
 
 ### Fixed
