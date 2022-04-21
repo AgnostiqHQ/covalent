@@ -24,15 +24,7 @@ Covalent is a Pythonic workflow tool used to execute HPC and quantum tasks in he
 - run code in heterogenous compute environments, including in hybrid-cloud and hybrid-quantum configurations
 - understand where time and money is spent across a project
 
-Covalent uses a containerized microservice architecture consisting of eight core services which consume and process workflows. Workflows are submitted to a queue service, which forwards them to a [NATS](https://nats.io/) message queue. A consumer service processes workflows one-by-one (or in parallel, on some systems) by forwarding them to a dispatcher service. The dispatcher analyzes task and data dependencies and submits execution requests to a runner service, which runs tasks in parallel, either locally or on a remote device, according to hardware capabilities and task requirements. Results are managed by the results and data services, and a user interface service provides an interactive dashboard where users can monitor and organize experiments.
-
-<div align="center">
-
-![covalent architecture](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/Covalent_Local_Microservices.png)
-
-</div>
-
-Services may be deployed locally or as containers in a hybrid configuration. Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers and emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent.
+Covalent may be deployed locally or as a set of containers. Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers and emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent.
 
 Read more in the official [documentation](https://covalent.readthedocs.io/en/latest/).
 
@@ -54,16 +46,6 @@ Read more in the official [documentation](https://covalent.readthedocs.io/en/lat
 </div>
 
 For a more in-depth description of Covalent's features and how they work, refer to the [Concepts](https://covalent.readthedocs.io/en/latest/concepts/concepts.html) page in the documentation.
-
-## 📦 Installation
-
-Covalent is developed using Python versions 3.8 and 3.9 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager:
-
-```console
-pip install cova
-```
-
-Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for more details on setting up.
 
 ## 📖 Example
 
@@ -212,6 +194,26 @@ result     = 0.988888888
 
 
 For more examples, please refer to the [Covalent tutorials](https://covalent.readthedocs.io/en/latest/tutorials/tutorials.html).
+
+## 📦 Installation
+
+Covalent is developed using Python versions 3.8 and 3.9 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager:
+
+```console
+pip install cova
+```
+
+Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for more details on setting up.
+
+## 🔧 How it Works
+
+Covalent uses a containerized microservice architecture consisting of eight core services which consume and process workflows. Workflows are submitted to a queue service, which forwards them to a [NATS](https://nats.io/) message queue. A consumer service processes workflows one-by-one (or in parallel, on some systems) by forwarding them to a dispatcher service. The dispatcher analyzes task and data dependencies and submits execution requests to a runner service, which runs tasks in parallel, either locally or on a remote device, according to hardware capabilities and task requirements. Results are managed by the results and data services, and a user interface service provides an interactive dashboard where users can monitor and organize experiments.
+
+<div align="center">
+
+![covalent architecture](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/Covalent_Local_Microservices.png)
+
+</div>
 
 ## 📚 Documentation
 
