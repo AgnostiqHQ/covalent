@@ -62,7 +62,11 @@ logging.basicConfig(level=logging.DEBUG)
 app.include_router(api_router, prefix=settings.API_V0_STR)
 app.include_router(health_router)
 
-app.mount("/", SinglePageApp(directory=f"{BASE_PATH}{FRONTEND_PATH}", html=True), name="static")
+app.mount(
+    "/",
+    SinglePageApp(directory=f"{BASE_PATH}{FRONTEND_PATH}", html=True, check_dir=False),
+    name="static",
+)
 
 app.add_middleware(
     CORSMiddleware,

@@ -37,7 +37,6 @@ class ReadyResponse(BaseModel):
     is_dashboard_available: bool = True
 
 
-@health_router.get("/", status_code=200, response_model=HealthResponse)
 @health_router.get("/healthz", status_code=200, response_model=HealthResponse)
 def is_service_healthy():
     """
