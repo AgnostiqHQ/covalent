@@ -203,7 +203,7 @@ Covalent is developed using Python versions 3.8 and 3.9 on Linux and macOS. The 
 pip install cova
 ```
 
-Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for more details on setting up.
+Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for more details on setting up. For a full list of supported platforms, consult the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html).
 
 ## 🔧 How it Works
 
@@ -214,6 +214,8 @@ Covalent uses a containerized microservice architecture consisting of eight core
 ![covalent architecture](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/Covalent_Local_Microservices.png)
 
 </div>
+
+To learn more about how Covalent's microservices communicate with each other, check out the Covalent API spec on [SwaggerHub](https://app.swaggerhub.com/search?owner=agnostiq).
 
 ## 📚 Documentation
 
