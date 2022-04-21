@@ -184,5 +184,4 @@ jobs:
     if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
     uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
     with:
-      test_release: true
       prerelease: true
