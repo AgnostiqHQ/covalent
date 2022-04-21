@@ -20,13 +20,28 @@
 
 """Unit tests for utils module"""
 
+import pytest
+from app.core.utils import is_empty
 
-def test_is_empty():
+
+@pytest.fixture
+def mock_tasks_queue():
+    """Construct mock tasks queue."""
+
+    from multiprocessing import Queue as MPQ
+
+    return MPQ()
+
+
+def test_is_empty(mock_tasks_queue):
     """Test that the MPQ contains only one element at any time."""
-    pass
+
+    with pytest.raises(Exception):
+        mock_tasks_queue.get(timeout=1)
+    assert is_empty(mock_tasks_queue) is True
 
 
-def preprocess_transport_graph():
+def test_preprocess_transport_graph():
     """Test that the execution status of the task nodes in the transport graph are initialized
     properly."""
 
