@@ -5,7 +5,7 @@
 <img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/covalent_readme_banner.svg" width=150%>
 
 [![version](https://github-covalent-badges.s3.amazonaws.com/badges/version.svg?maxAge=3600)](https://github.com/AgnostiqHQ/covalent)
-[![python](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380)
+[![python](https://img.shields.io/pypi/pyversions/cova)](https://github.com/AgnostiqHQ/covalent)
 [![tests](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml/badge.svg)](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml)
 [![publish](https://github.com/AgnostiqHQ/covalent/actions/workflows/publish_master.yml/badge.svg)](https://github.com/AgnostiqHQ/covalent/actions/workflows/publish_master.yml)
 [![docs](https://readthedocs.org/projects/covalent/badge/?version=latest)](https://covalent.readthedocs.io/en/latest/?badge=latest)
@@ -41,7 +41,7 @@ Read more in the official [documentation](https://covalent.readthedocs.io/en/lat
 
 <div align="center">
 
-![covalent user interface](doc/source/_static/covalent_ui.png)
+![covalent user interface](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/covalent_ui.png)
 
 </div>
 
