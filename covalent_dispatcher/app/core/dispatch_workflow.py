@@ -141,7 +141,7 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
             all_tasks_lod = tasks_queue.get()
 
             # Checking if current dispatch id is a parent of last
-            # dispatch id in the tasks queue 
+            # dispatch id in the tasks queue
             last_dispatch_id = str(list(all_tasks_lod[0])[0])
             parent_id, _ = get_parent_id_and_task_id(last_dispatch_id)
 
@@ -149,7 +149,7 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
                 all_tasks_lod = all_tasks_lod + [{result_obj.dispatch_id: next_tasks_order}]
             else:
                 all_tasks_lod = [{result_obj.dispatch_id: next_tasks_order}] + all_tasks_lod
-            
+
             tasks_queue.put(all_tasks_lod)
 
     # Tasks which were not able to run

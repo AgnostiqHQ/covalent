@@ -368,10 +368,10 @@ def generate_task_result(
 
 
 def get_parent_id_and_task_id(dispatch_id: str):
-    
+
     if not is_sublattice_dispatch_id(dispatch_id):
         return False, False
-    
+
     splits = dispatch_id.split(":")
     parent_dispatch_id, task_id = ":".join(splits[:-1]), splits[-1]
     return parent_dispatch_id, int(task_id)
