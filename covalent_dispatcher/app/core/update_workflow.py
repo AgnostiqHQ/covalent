@@ -62,26 +62,26 @@ def update_workflow_results(
 
     elif task_execution_results["status"] == Result.CANCELLED:
         latest_result_obj._status = Result.CANCELLED
-    
+
     elif task_execution_results["status"] == Result.COMPLETED:
-        
+
         val = tasks_queue.get()
-        
+
         print(f"Dispatch id: {dispatch_id}, tasks queue ALL CAPS: {val}", file=sys.stderr)
 
         tasks_queue.put(val)
 
-        
+
         # If workflow is completed, post-process result
         if not are_tasks_running(result_obj=latest_result_obj):
             update_completed_workflow(latest_result_obj)
 
         elif not is_empty(tasks_queue):
             update_completed_tasks(dispatch_id, tasks_queue, latest_result_obj)
-        
+
         if is_empty(tasks_queue):
             update_completed_workflow(latest_result_obj)
-            
+
     else:
         print(
             f"None o the above with status {task_execution_results['status']} and {is_empty(tasks_queue)}"
@@ -175,7 +175,7 @@ def update_completed_workflow(result_obj: Result) -> Result:
             file=sys.stderr,
         )
 
-        
+
         parent_dispatch_id, task_id = get_parent_id_and_task_id(result_obj.dispatch_id)
 
 
