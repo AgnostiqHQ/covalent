@@ -48,7 +48,9 @@ Read more in the official [documentation](https://covalent.readthedocs.io/en/lat
 - **Interactive**: Unlike other workflow tools, Covalent is interactive. You can view, modify, and re-submit workflows directly within a Jupyter notebook.
 
 <div align="center">
-![covalent user interface](./doc/source/_static/covalent_ui.png)
+
+![covalent user interface](doc/source/_static/covalent_ui.png)
+
 </div>
 
 For a more in-depth description of Covalent's features and how they work, refer to the [Concepts](https://covalent.readthedocs.io/en/latest/concepts/concepts.html) page in the documentation.
