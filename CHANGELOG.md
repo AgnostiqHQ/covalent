@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Test action.
 
+## [0.93.0] - 2022-04-22
+
+### Added
+
+- Automatic hotfix action
+
 ## [0.92.0] - 2022-04-22
 
 
