@@ -26,7 +26,10 @@ import glob
 import importlib
 import inspect
 import os
-from importlib import metadata
+try:
+    from importlib import metadata
+except ImportError:
+    import importlib_metadata as metadata
 from typing import Any, Dict, List, Union
 
 import pkg_resources
