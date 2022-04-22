@@ -37,6 +37,7 @@ from app.core.api import DataService
 from app.core.config import settings
 from app.core.db import Database
 from app.core.get_svc_uri import DataURI
+from app.core.results_logger import logger
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.workflow import (
     DeleteResultResponse,
@@ -168,6 +169,7 @@ async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
     """
     Return JSON serialized result objects from the database
     """
+    logger.warning("Requesting all results")
     results = _get_results_from_db()
     tasks = []
     # Set 10 concurrent requests at a time
@@ -182,7 +184,9 @@ async def get_results(format: ResultFormats = ResultFormats.JSON) -> Any:
             tasks.append(task)
         # Wait until parallel tasks return and gather results
         responses = await asyncio.gather(*tasks, return_exceptions=False)
+        logger.warning("Result responses gathered.")
         return responses
+    logger.warning("No results found")
 
 
 @router.get(
@@ -238,6 +242,7 @@ async def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
     """
     Update a result object's task
     """
+    logger.warning("Updating result")
     result = await _get_result_file(dispatch_id)
     results_object = pickle.loads(result)
     task = pickle.loads(task)
@@ -245,6 +250,7 @@ async def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
 
     pickled_result = io.BytesIO(pickle.dumps(results_object))
     uploaded = await _upload_file(pickled_result)
+    logger.warning("Finished updating result")
 
     if uploaded:
         return {"response": "Task updated successfully"}
