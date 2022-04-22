@@ -219,7 +219,9 @@ class Electron:
             return
 
         for i in range(expected_unpack_values):
-            if active_lattice := active_lattice_manager.get_active_lattice():
+            active_lattice = active_lattice_manager.get_active_lattice()
+            if active_lattice:
+            #if active_lattice := active_lattice_manager.get_active_lattice():
                 try:
                     node_name = generator_prefix + self.function.__name__ + "()" + f"[{i}]"
 
@@ -257,7 +259,9 @@ class Electron:
                 "Please change the name of the attribute you want to use.",
             )
 
-        if active_lattice := active_lattice_manager.get_active_lattice():
+        active_lattice = active_lattice_manager.get_active_lattice()
+        if active_lattice:
+        #if active_lattice := active_lattice_manager.get_active_lattice():
             try:
                 node_name = attr_prefix + self.function.__name__ + "." + attr
             except AttributeError:
@@ -283,7 +287,9 @@ class Electron:
 
     def __getitem__(self, key: Union[int, str]) -> "Electron":
 
-        if active_lattice := active_lattice_manager.get_active_lattice():
+        active_lattice = active_lattice_manager.get_active_lattice()
+        if active_lattice:
+        #if active_lattice := active_lattice_manager.get_active_lattice():
             try:
                 node_name = subscript_prefix + self.function.__name__ + "()" + f"[{key}]"
             except AttributeError:
