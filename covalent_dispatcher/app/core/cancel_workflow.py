@@ -53,7 +53,6 @@ def cancel_workflow_execution(
     print(f"Cancelled workflow: {workflow_cancelled}", file=sys.stderr)
 
     if workflow_cancelled:
-        print("I'm insane", file=sys.stderr)
         result_obj._status = Result.CANCELLED
         send_result_object_to_result_service(result_obj)
 
