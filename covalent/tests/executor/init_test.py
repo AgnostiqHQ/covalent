@@ -45,6 +45,7 @@ def test_executor_manager_init(mocker):
     generate_plugins_list_mock.assert_called_once_with()
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 def test_executor_manager_generate_plugins_list(mocker):
     """Test the generate plugins list method of the executor manager object."""
 
@@ -75,6 +76,7 @@ def test_executor_manager_generate_plugins_list(mocker):
     load_installed_plugins_mock.called_once_with()
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 def test_get_executor(mocker):
     """Test get executor method in executor manager."""
 
