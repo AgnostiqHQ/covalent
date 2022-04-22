@@ -115,7 +115,7 @@ jobs:
         if: ${{ !github.event.inputs.unset }}
         run: echo 'unset var' ${{ github.event.inputs.unset }}
       - name: Create release
-        if: >
+        if: >-
           (steps.push.outcome == 'success' || steps.no-push.outcome == 'success')
           && steps.message.outcome == 'success'
           && ${{ !github.event.inputs.test_release }}
