@@ -239,6 +239,14 @@ class Lepton(Electron):
                     for output in named_outputs:
                         output_string += f" && echo COVALENT-LEPTON-OUTPUT-{output}: ${output}"
 
+                    # Check that each output has a corresponding type specifier
+                    if len(named_outputs) != len(self.argtypes):
+                        raise ValueError(
+                            "Expected {} outputs but given {} type specifiers.".format(
+                                len(named_outputs), len(self.argtypes)
+                            )
+                        )
+
                 self.function_name = self.function_name.format(**kwargs)
 
             mutated_args = ""
