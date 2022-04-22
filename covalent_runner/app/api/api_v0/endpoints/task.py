@@ -143,10 +143,10 @@ async def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
 
     print(f"DELETE on /{dispatch_id}/task/{task_id} called to cancel task", file=sys.stderr)
 
-    print(
-        f"ultimate dict in cancel before cancelling {[(k, list(v)[0]) for k, v in ultimate_dict.items()]}",
-        file=sys.stderr,
-    )
+    # print(
+    #     f"ultimate dict in cancel before cancelling {[(k, list(v)[0]) for k, v in ultimate_dict.items()]}",
+    #     file=sys.stderr,
+    # )
 
     # Cancel a task by calling its executor's cancel method and closing the info_queue
     cancel_running_task(
@@ -171,10 +171,10 @@ async def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     #     "dispatch_id": {"task_id": {"sdasf":12, "sfsdf": fdsf}}
     # }
 
-    print(
-        f"ultimate dict in cancel after cancelling {[(k, list(v)[0]) for k, v in ultimate_dict.items()]}",
-        file=sys.stderr,
-    )
+    # print(
+    #     f"ultimate dict in cancel after cancelling {[(k, list(v)[0]) for k, v in ultimate_dict.items()]}",
+    #     file=sys.stderr,
+    # )
 
     send_task_update_to_dispatcher(dispatch_id=dispatch_id, task_result=task_result)
 

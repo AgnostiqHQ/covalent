@@ -283,13 +283,6 @@ def get_runnable_tasks(
                 file=sys.stderr,
             )
 
-            # Update the status of this node in result object
-            result_obj._update_node(
-                node_id=task_id,
-                start_time=datetime.now(timezone.utc),
-                status=Result.RUNNING,
-            )
-
             # Dispatch the sublattice recursively
             dispatch_workflow(result_obj=sublattice_result_obj, tasks_queue=tasks_queue)
 

@@ -27,8 +27,10 @@ from typing import List, Tuple
 from app.core.get_svc_uri import RunnerURI
 from app.core.utils import (
     generate_task_result,
+    get_parent_id_and_task_id,
     get_result_object_from_result_service,
     is_sublattice,
+    is_sublattice_dispatch_id,
     send_cancel_task_to_runner,
     send_result_object_to_result_service,
     send_task_update_to_dispatcher,
@@ -53,7 +55,20 @@ def cancel_workflow_execution(
     # Using the cancellation_status variable because we still want to continue
     # attempting cancellation of further tasks even if one of them has failed
     for dispatch_id, task_id in dispatch_and_task_id_lot:
-        if not cancel_task(dispatch_id, task_id):
+        task_cancelled = cancel_task(dispatch_id, task_id)
+
+        if is_sublattice_dispatch_id(dispatch_id) and task_cancelled:
+            parent_dispatch_id, task_id = get_parent_id_and_task_id(dispatch_id)
+
+            task_result = generate_task_result(
+                task_id=task_id,
+                end_time=datetime.now(timezone.utc),
+                status=Result.CANCELLED,
+            )
+
+            send_task_update_to_dispatcher(parent_dispatch_id, task_result)
+
+        if not task_cancelled:
             workflow_cancelled = False
 
     if workflow_cancelled and not task_id_batch:
@@ -122,6 +137,11 @@ def get_cancellable_dispatch_and_task_ids(result_obj: Result) -> List[Tuple[str,
         if not is_sublattice(task_name):
             lot_to_update.append((result_obj.dispatch_id, task_id))
         else:
+
+            # Super lattice's sublattice task needs to get cancelled
+            # too right here
+            unrun_tasks_lot.append((result_obj.dispatch_id, task_id))
+
             sublattice_result_obj = get_result_object_from_result_service(
                 f"{result_obj.dispatch_id}:{task_id}"
             )
