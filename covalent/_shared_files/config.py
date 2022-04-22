@@ -79,36 +79,17 @@ class _ConfigManager:
     """
 
     def __init__(self) -> None:
-
-        # ensure .env exists, if not copy from .env.example
         self.env_path = os.environ.get("ENV_DEST_DIR") or PROJECT_ROOT
+        self.config_file = os.path.join(self.env_path, CONFIG_FILE_NAME)
+        # ensure .env exists, if not copy from .env.example
         self.ensure_config_file_exists()
-        env_file_path = os.path.join(self.env_path, CONFIG_FILE_NAME)
-
-        # load .env values into os.environ or use explicitly set environment vars
-        load_dotenv(CONFIG_FILE_NAME)
-
-        # Deprecated
-        # self.config_dir = (
-        #    os.environ.get("COVALENT_CONFIG_DIR")
-        #    or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
-        # ) + "/covalent"
-
-        self.config_file = env_file_path
-
-        # Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
-        # Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
-        # Path(self.get("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
-        # Path(self.get("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
-        # Path(self.get("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
-        # Path(self.get("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
 
     @property
     def config_data(self):
         # should yield the same result as doing load_env()
         # environment vars take precedence, then config values
         config = {}
-        config_file_values = dotenv_values()
+        config_file_values = dotenv_values(self.config_file)
 
         environment_vars = {**config_file_values, **os.environ}
 
@@ -117,38 +98,11 @@ class _ConfigManager:
         return config
 
     def ensure_config_file_exists(self):
-        # if find_dotenv(CONFIG_FILE_NAME) == "":
-        if not find_dotenv(os.path.join(self.env_path, CONFIG_FILE_NAME)):
+        if not find_dotenv(self.config_file):
             shutil.copyfile(
                 f"{PROJECT_ROOT}/covalent/.env.example",
-                os.path.join(self.env_path, CONFIG_FILE_NAME),
+                self.config_file,
             )
-
-            # if os.environ.get("ENV_DEST_DIR"):
-            #    print("HERE")
-            #    shutil.copyfile(
-            #        f"{PROJECT_ROOT}/covalent/.env.example",
-            #        f"{os.environ.get('ENV_DEST_DIR')}/{CONFIG_FILE_NAME}",
-            #    )
-            # else:
-            #    shutil.copyfile(
-            #        f"{PROJECT_ROOT}/covalent/.env.example", f"{PROJECT_ROOT}/{CONFIG_FILE_NAME}"
-            #    )
-
-            # self.set("sdk.log_dir", f'{os.environ.get("COVALENT_LOGDIR") or HOME_PATH}')
-            # self.set("sdk.log_level", os.environ.get("LOGLEVEL", "WARNING").lower())
-            # self.set("sdk.enable_logging", os.environ.get("COVALENT_LOG_TO_FILE", "false").lower())
-            # self.set(
-            #    "sdk.executor_dir",
-            #    os.environ.get("COVALENT_EXECUTOR_DIR")
-            #    or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
-            #    + "/covalent/executor_plugins",
-            # )
-            # self.set("dispatcher.cache_dir", f"{HOME_PATH}/covalent")
-            # self.set("dispatcher.results_dir", os.environ.get("COVALENT_RESULTS_DIR", "results"))
-            # self.set("dispatcher.log_dir", f"{HOME_PATH}/covalent")
-            # self.set("user_interface.log_dir", f"{HOME_PATH}/covalent")
-            # self.set("user_interface.dispatch_db", f"{HOME_PATH}/covalent/dispatch_db.sqlite")
 
     def update_config(
         self, new_entries: Optional[Dict] = None, override_existing: bool = True
@@ -183,7 +137,6 @@ class _ConfigManager:
             None
         """
 
-        # shutil.rmtree(self.config_dir, ignore_errors=True)
         try:
             os.remove(self.config_file)
         except FileNotFoundError:
