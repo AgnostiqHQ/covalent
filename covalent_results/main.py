@@ -24,12 +24,15 @@ from app.api.api_v0.api import api_router
 from app.core.config import settings
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_utils.timing import add_timing_middleware
+from covalent._shared_files.logger import timing_logger
 
 BASE_PATH = Path(__file__).resolve().parent
 
 app = FastAPI(title="Covalent Results Service API")
 
 app.include_router(api_router, prefix=settings.API_V0_STR)
+add_timing_middleware(app, record=timing_logger.info, prefix="RESULTS")
 
 app.add_middleware(
     CORSMiddleware,
