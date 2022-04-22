@@ -34,16 +34,26 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         container:
+          - python:3.7-buster
+          - python:3.7-bullseye
           - python:3.8-buster
           - python:3.8-bullseye
           - python:3.9-buster
           - python:3.9-bullseye
+          - python:3.10-buster
+          - python:3.10-bullseye
           - image: "centos/python-38-centos7"
             options: "--user root"
         experimental: [false]
         include:
           - os: macos-latest
+            python-version: "3.7"
+            experimental: false
+          - os: macos-latest
             python-version: "3.8"
+            experimental: false
+          - os: macos-latest
+            python-version: "3.9"
             experimental: false
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
@@ -121,7 +131,7 @@ jobs:
           PYTHONPATH=$PWD/covalent_queuer pytest covalent_queuer -vv --cov=covalent_queuer --cov-config=.coveragerc
           PYTHONPATH=$PWD/covalent_results pytest covalent_results -vv --cov=covalent_results --cov-config=.coveragerc
           PYTHONPATH=$PWD/covalent_ui pytest covalent_ui -vv --cov=covalent_ui --cov-config=.coveragerc
-          PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/functional_tests  --cov=tests --cov-config=.coveragerc
+          PYTHONPATH=$PWD pytest tests -vv --ignore=tests/functional_tests  --cov=covalent --cov-config=.coveragerc
       - name: Generate coverage report
         run: coverage xml
       - name: Upload report to Codecov
