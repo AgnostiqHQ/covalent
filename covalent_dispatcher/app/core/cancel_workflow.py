@@ -21,14 +21,17 @@
 """Workflow cancel functionality."""
 
 import sys
+from datetime import datetime, timezone
 from typing import List, Tuple
 
 from app.core.get_svc_uri import RunnerURI
 from app.core.utils import (
+    generate_task_result,
     get_result_object_from_result_service,
     is_sublattice,
     send_cancel_task_to_runner,
     send_result_object_to_result_service,
+    send_task_update_to_dispatcher,
 )
 
 from covalent._results_manager import Result
@@ -42,21 +45,35 @@ def cancel_workflow_execution(
 
     workflow_cancelled = True
 
-    tasks = task_id_batch or get_all_task_ids(result_obj)
+    (
+        dispatch_and_task_id_lot,
+        unrun_tasks_lot,
+    ) = task_id_batch or get_cancellable_dispatch_and_task_ids(result_obj)
 
     # Using the cancellation_status variable because we still want to continue
     # attempting cancellation of further tasks even if one of them has failed
-    for dispatch_id, task_id in tasks:
+    for dispatch_id, task_id in dispatch_and_task_id_lot:
         if not cancel_task(dispatch_id, task_id):
             workflow_cancelled = False
 
+    if workflow_cancelled and not task_id_batch:
+        for dispatch_id, task_id in unrun_tasks_lot:
+            cancel_unrun_tasks(dispatch_id, task_id)
+
     print(f"Cancelled workflow: {workflow_cancelled}", file=sys.stderr)
 
-    if workflow_cancelled:
-        result_obj._status = Result.CANCELLED
-        send_result_object_to_result_service(result_obj)
-
     return workflow_cancelled
+
+
+def cancel_unrun_tasks(dispatch_id: str, task_id: int) -> None:
+
+    task_result = generate_task_result(
+        task_id=task_id,
+        end_time=datetime.now(timezone.utc),
+        status=Result.CANCELLED,
+    )
+
+    send_task_update_to_dispatcher(dispatch_id, task_result)
 
 
 def cancel_task(dispatch_id: str, task_id: int) -> bool:
@@ -80,19 +97,37 @@ def cancel_task(dispatch_id: str, task_id: int) -> bool:
     return False
 
 
-def get_all_task_ids(result_obj: Result) -> List[Tuple[str, int]]:
+def get_cancellable_dispatch_and_task_ids(result_obj: Result) -> List[Tuple[str, int]]:
     """Get all the task ids and the corresponding dispatch ids for a given lattice. When a sublattice is encountered,
-    the dispatch iud corresponding to the sublattice `dispatch_id:task_id` is used."""
+    the dispatch id corresponding to the sublattice `dispatch_id:task_id` is used."""
 
-    task_ids = []
-    for task_id in range(result_obj._num_nodes):
+    dispatch_and_task_id_lot = []
+    unrun_tasks_lot = []
+
+    task_order = result_obj.transport_graph.get_topologically_sorted_graph()
+    task_ids = [id for sublist in task_order for id in sublist]
+
+    for task_id in task_ids:
+
+        if result_obj._get_node_status(task_id) == Result.RUNNING:
+            lot_to_update = dispatch_and_task_id_lot
+
+        elif result_obj._get_node_status(task_id) == Result.NEW_OBJ:
+            lot_to_update = unrun_tasks_lot
+
+        else:
+            continue
+
         task_name = result_obj._get_node_name(task_id)
         if not is_sublattice(task_name):
-            task_ids.append((result_obj.dispatch_id, task_id))
+            lot_to_update.append((result_obj.dispatch_id, task_id))
         else:
             sublattice_result_obj = get_result_object_from_result_service(
                 f"{result_obj.dispatch_id}:{task_id}"
             )
-            task_ids += get_all_task_ids(sublattice_result_obj)
+            lot_1, lot_2 = get_cancellable_dispatch_and_task_ids(sublattice_result_obj)
 
-    return task_ids
+            dispatch_and_task_id_lot = lot_1 + dispatch_and_task_id_lot
+            unrun_tasks_lot = lot_2 + unrun_tasks_lot
+
+    return dispatch_and_task_id_lot, unrun_tasks_lot
