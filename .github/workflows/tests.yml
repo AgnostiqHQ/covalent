@@ -122,13 +122,15 @@ jobs:
           PYTHONPATH=$PWD/covalent_results pytest covalent_results -vv --cov=covalent_results --cov-config=.coveragerc
           PYTHONPATH=$PWD/covalent_ui pytest covalent_ui -vv --cov=covalent_ui --cov-config=.coveragerc
           PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov=covalent_dispatcher_legacy --cov-config=.coveragerc
-          PYTHONPATH=$PWD/covalent pytest covalent/tests/dispatcher_plugins --cov=covalent --cov-config=.coveragerc
-          PYTHONPATH=$PWD/covalent pytest covalent/tests/executor --cov=covalent --cov-config=.coveragerc
-          PYTHONPATH=$PWD/covalent pytest covalent/tests/notify --cov=covalent --cov-config=.coveragerc
-          PYTHONPATH=$PWD/covalent pytest covalent/tests/results_manager --cov=covalent --cov-config=.coveragerc
-          PYTHONPATH=$PWD/covalent pytest covalent/tests/shared_files --cov=covalent --cov-config=.coveragerc
-          PYTHONPATH=$PWD/covalent pytest covalent/tests/workflow --cov=covalent --cov-config=.coveragerc
-          PYTHONPATH=$PWD/covalent pytest covalent/tests/test_choose_executor.py --cov=covalent --cov-config=.coveragerc
+          PYTHONPATH=$PWD/covalent pytest covalent/tests --cov=covalent --cov-config=.coveragerc
+
+          # PYTHONPATH=$PWD/covalent pytest covalent/tests/dispatcher_plugins --cov=covalent --cov-config=.coveragerc
+          # PYTHONPATH=$PWD/covalent pytest covalent/tests/executor --cov=covalent --cov-config=.coveragerc
+          # PYTHONPATH=$PWD/covalent pytest covalent/tests/notify --cov=covalent --cov-config=.coveragerc
+          # PYTHONPATH=$PWD/covalent pytest covalent/tests/results_manager --cov=covalent --cov-config=.coveragerc
+          # PYTHONPATH=$PWD/covalent pytest covalent/tests/shared_files --cov=covalent --cov-config=.coveragerc
+          # PYTHONPATH=$PWD/covalent pytest covalent/tests/workflow --cov=covalent --cov-config=.coveragerc
+          # PYTHONPATH=$PWD/covalent pytest covalent/tests/test_choose_executor.py --cov=covalent --cov-config=.coveragerc
 
       - name: Generate coverage report
         run: coverage xml
