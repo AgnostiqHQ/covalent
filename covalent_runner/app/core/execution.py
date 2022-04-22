@@ -154,7 +154,7 @@ def run_tasks_with_resources(
     #    "results_dir": "/path/to/results/"
     # }
 
-    if not ultimate_dict.get(dispatch_id, False):
+    if not ultimate_dict.get(dispatch_id):
         ultimate_dict[dispatch_id] = {}
 
     # Get number of available resources

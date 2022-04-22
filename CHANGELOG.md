@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated all config & log file paths to reside in `$HOME/.cache/covalent` including `.env`, `supervisord.conf`, and all logs
 
+## [0.92.0] - 2022-04-22
+
+
+### Changed
+
+- Moved sublattice's node update in parent lattice from `get_runnable_tasks` to `update_workflow` to accurately represent when a sublattice actually starts executing.
+
+### Fixed
+
+- Fixed the cancel url endpoint.
+
+- Cancelling a workflow for lattices and sublattices works even if they are partially run.
+
 ## [0.91.0] - 2022-04-21
 
 ### Fixed
