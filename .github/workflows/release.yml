@@ -102,22 +102,21 @@ jobs:
       - name: not test release
         if: ${{ !github.event.inputs.test_release }}
         run: echo 'not test release' ${{ github.event.inputs.test_release }}
-      - name: test release is false
-        if: github.event.inputs.test_release == false
+      - name: test release is false string
+        if: github.event.inputs.test_release == 'false'
         run: echo 'test release is false' ${{ github.event.inputs.test_release }}
-      - name: test release is true
-        if: github.event.inputs.test_release == true
+      - name: test release is true string
+        if: github.event.inputs.test_release == 'true'
         run: echo 'test release is true' ${{ github.event.inputs.test_release }}
       - name: unset var
         if: github.event.inputs.unset
         run: echo 'unset var' ${{ github.event.inputs.unset }}
-      - name: unset var in context
-        if: ${{ github.event.inputs.unset }}
+      - name: not unset var in context
+        if: ${{ !github.event.inputs.unset }}
         run: echo 'unset var' ${{ github.event.inputs.unset }}
       - name: Create release
         if: >
-          steps.push.outcome == 'success'
-          || steps.no-push.outcome == 'success'
+          (steps.push.outcome == 'success' || steps.no-push.outcome == 'success')
           && steps.message.outcome == 'success'
           && ${{ !github.event.inputs.test_release }}
         run: echo 'create release'
