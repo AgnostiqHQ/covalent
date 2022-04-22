@@ -41,7 +41,7 @@ def test_local_dispatcher_dispatch():
     assert isinstance(dispatch_id, str)
 
 
-@pytest.mark.skip(reason='synchronous dispatch freezes the shell and needs to be updated')
+@pytest.mark.skip(reason="synchronous dispatch freezes the shell and needs to be updated")
 def test_local_dispatcher_dispatch_sync():
     """Tests whether the local dispatcher can synchronously dispatch a workflow successfully."""
 
