@@ -55,6 +55,18 @@ def update_workflow_results(
     send_task_update_to_result_service(dispatch_id, task_execution_results)
 
     if task_execution_results["status"] == Result.RUNNING:
+
+        if is_sublattice_dispatch_id(latest_result_obj.dispatch_id):
+
+            parent_dispatch_id, task_id = get_parent_id_and_task_id(latest_result_obj.dispatch_id)
+
+            task_result = generate_task_result(
+                task_id=task_id,
+                status=Result.RUNNING,
+            )
+
+            send_task_update_to_dispatcher(parent_dispatch_id, task_result)
+
         return latest_result_obj
 
     elif task_execution_results["status"] == Result.FAILED:
@@ -72,14 +84,21 @@ def update_workflow_results(
         tasks_queue.put(val)
 
         # If workflow is completed, post-process result
-        if not are_tasks_running(result_obj=latest_result_obj):
+        if (
+            not are_tasks_running(result_obj=latest_result_obj)
+            and latest_result_obj.status is not Result.CANCELLED
+        ):
             update_completed_workflow(latest_result_obj)
 
-        elif not is_empty(tasks_queue):
+        elif not is_empty(tasks_queue) and latest_result_obj.status is not Result.CANCELLED:
             update_completed_tasks(dispatch_id, tasks_queue, latest_result_obj)
 
         # Finally if above two functions modified the tasks_queue or the result object
-        if is_empty(tasks_queue) and not are_tasks_running(result_obj=latest_result_obj):
+        if (
+            is_empty(tasks_queue)
+            and not are_tasks_running(result_obj=latest_result_obj)
+            and latest_result_obj.status is not Result.CANCELLED
+        ):
             update_completed_workflow(latest_result_obj)
 
     else:
