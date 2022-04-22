@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from io import BytesIO
 from multiprocessing import Queue as MPQ
 from queue import Empty
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 import cloudpickle as pickle
 import requests
@@ -314,9 +314,9 @@ def update_result_and_ui(result_obj: Result, task_id: int) -> Dict[str, str]:
     return {"update_result_response": resp_1, "update_ui_response": resp_2}
 
 
-def send_cancel_task_to_runner(dispatch_id: str, task_id: int):
+def send_cancel_task_to_runner(dispatch_id: str, task_id: int) -> Tuple(str, str):
 
-    url_endpoint = RunnerURI().get_route(f"workflow/{dispatch_id}/task/{task_id}/cancel")
+    url_endpoint = RunnerURI().get_route(f"workflow/{dispatch_id}/task/{task_id}")
     response = requests.delete(url=url_endpoint)
     response.raise_for_status()
 

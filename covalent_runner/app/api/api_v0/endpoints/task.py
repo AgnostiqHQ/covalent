@@ -146,7 +146,7 @@ async def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
 
     # Cancel a task by calling its executor's cancel method and closing the info_queue
     cancel_running_task(
-        pickle.loads(executor=ultimate_dict[dispatch_id][task_id]["executor"]),
+        executor=pickle.loads(ultimate_dict[dispatch_id][task_id]["executor"]),
         info_queue=ultimate_dict[dispatch_id][task_id]["info_queue"],
     )
 
@@ -163,7 +163,7 @@ async def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
         status=Result.CANCELLED,
     )
 
-    # send_task_update_to_dispatcher(dispatch_id=dispatch_id, task_result=task_result)
+    send_task_update_to_dispatcher(dispatch_id=dispatch_id, task_result=task_result)
 
     return {"cancelled_dispatch_id": f"{dispatch_id}", "cancelled_task_id": f"{task_id}"}
 

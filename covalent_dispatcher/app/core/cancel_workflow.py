@@ -20,13 +20,18 @@
 
 """Workflow cancel functionality."""
 
+import sys
 from typing import List, Tuple
 
 from app.core.get_svc_uri import RunnerURI
+from app.core.utils import (
+    get_result_object_from_result_service,
+    is_sublattice,
+    send_cancel_task_to_runner,
+    send_result_object_to_result_service,
+)
 
 from covalent._results_manager import Result
-
-from .utils import get_result_object_from_result_service, is_sublattice, send_cancel_task_to_runner
 
 
 def cancel_workflow_execution(
@@ -35,7 +40,7 @@ def cancel_workflow_execution(
     """Main cancel function. Called by the user via ct.cancel(dispatch_id). The task_id_batch is composed of both
     dispatch id and task ids in the form of a tuple."""
 
-    cancellation_status = True
+    workflow_cancelled = True
 
     tasks = task_id_batch or get_all_task_ids(result_obj)
 
@@ -43,9 +48,16 @@ def cancel_workflow_execution(
     # attempting cancellation of further tasks even if one of them has failed
     for dispatch_id, task_id in tasks:
         if not cancel_task(dispatch_id, task_id):
-            cancellation_status = False
+            workflow_cancelled = False
 
-    return cancellation_status
+    print(f"Cancelled workflow: {workflow_cancelled}", file=sys.stderr)
+
+    if workflow_cancelled:
+        print("I'm insane", file=sys.stderr)
+        result_obj._status = Result.CANCELLED
+        send_result_object_to_result_service(result_obj)
+
+    return workflow_cancelled
 
 
 def cancel_task(dispatch_id: str, task_id: int) -> bool:
@@ -55,10 +67,14 @@ def cancel_task(dispatch_id: str, task_id: int) -> bool:
     cancelled_dispatch_id, cancelled_task_id = send_cancel_task_to_runner(
         dispatch_id=dispatch_id, task_id=task_id
     )
+    print(
+        f"Cancel dispatch id: {type(cancelled_dispatch_id)}, cancel task id: {type(cancelled_task_id)}",
+        file=sys.stderr,
+    )
     if (
         (cancelled_dispatch_id and cancelled_task_id)
         and (cancelled_dispatch_id == dispatch_id)
-        and (cancelled_task_id == task_id)
+        and (cancelled_task_id == str(task_id))
     ):
         return True
 
