@@ -86,7 +86,7 @@ jobs:
           pip install --no-cache-dir -r ./covalent_ui/requirements/dist.txt
           pip install --no-cache-dir -r ./covalent_ui/requirements/dev.txt
       - name: Install NPM and Yarn on Ubuntu
-        if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye'
+        if: matrix.container == 'python:3.7-buster' || matrix.container == 'python:3.7-bullseye' || matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye' || matrix.container == 'python:3.10-buster' || matrix.container == 'python:3.10-bullseye'
         run: |
           apt-get update && apt-get install -y curl
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
