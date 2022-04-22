@@ -22,8 +22,9 @@
 Integration test for choosing executors.
 """
 
-import covalent as ct
 import pytest
+
+import covalent as ct
 
 
 @pytest.mark.skip(reason='executor tests need to be updated')
