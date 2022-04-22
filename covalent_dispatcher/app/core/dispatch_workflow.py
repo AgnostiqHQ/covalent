@@ -28,7 +28,12 @@ from queue import Empty
 from typing import Dict, List, Tuple, Union
 
 from app.core.dispatcher_logger import logger
-from app.core.utils import is_empty, send_result_object_to_result_service, send_task_list_to_runner
+from app.core.utils import (
+    get_parent_id_and_task_id,
+    is_empty,
+    send_result_object_to_result_service,
+    send_task_list_to_runner,
+)
 
 from covalent._results_manager import Result
 from covalent._workflow.transport import _TransportGraph
@@ -66,73 +71,6 @@ def dispatch_workflow(result_obj: Result, tasks_queue: MPQ) -> Result:
     return result_obj
 
 
-def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: List[List]) -> None:
-    """Get runnable tasks and dispatch them to the Runner API. Put the tasks that weren't picked
-    up by the Runner API back in the queue."""
-
-    # To get the runnable tasks from first task order list
-    # Sending the tasks_queue as well to handle the case of sublattices
-    tasks, functions, input_args, input_kwargs, executors, next_tasks_order = get_runnable_tasks(
-        result_obj=result_obj,
-        tasks_order=task_order,
-        tasks_queue=tasks_queue,
-    )
-
-    logger.warning(f"In dispatch_runnable_tasks with tasks: {tasks}")
-
-    logger.warning(f"Set of next tasks to be run {next_tasks_order}")
-
-    # The next set of tasks that can be run afterwards
-    # This is the case of a new dispatch id in the list of dictionaries
-    if next_tasks_order:
-        if is_empty(tasks_queue):
-            v = tasks_queue.get()
-            logger.warning(f"LETS SEE IF TASKS QUEUE IS EMPTY ITS VAL IS: {v}")
-            tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}])
-        else:
-            tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}] + tasks_queue.get())
-
-    # Tasks which were not able to run
-    unrun_tasks = run_tasks(
-        results_dir=result_obj.results_dir,
-        dispatch_id=result_obj.dispatch_id,
-        task_id_batch=tasks,
-        functions=functions,
-        input_args=input_args,
-        input_kwargs=input_kwargs,
-        executors=executors,
-    )
-
-    # Add unrun tasks back to the tasks_queue
-    final_task_order = tasks_queue.get()
-
-    if unrun_tasks:
-        if final_task_order is not None:
-            print(f"unrun tasks: {unrun_tasks}")
-            print(f"final task order: {final_task_order}")
-
-            if final_task_order[0].get(result_obj.dispatch_id):
-                final_task_order[0][result_obj.dispatch_id] = [unrun_tasks] + final_task_order[0][
-                    result_obj.dispatch_id
-                ]
-            else:
-                new_dict = {result_obj.dispatch_id: [unrun_tasks]}
-                final_task_order = [new_dict] + final_task_order
-        else:
-            final_task_order = [{result_obj.dispatch_id: [unrun_tasks]}]
-
-    logger.warning(f"Tasks which are yet to execute {final_task_order}")
-
-    try:
-        logger.warning(f"Before we put in final_task_order {tasks_queue.get_nowait()}")
-
-    except Empty:
-        logger.warning("Before we put in final_task_order, its empty")
-
-    # Put the task order back into the queue
-    tasks_queue.put(final_task_order)
-
-
 def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     """Responsible for preprocessing the tasks, and sending the tasks for execution to the
     Runner API in batches. One of the underlying principles is that the Runner API doesn't
@@ -161,6 +99,117 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     return result_obj
 
 
+def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: List[List]) -> None:
+    """Get runnable tasks and dispatch them to the Runner API. Put the tasks that weren't picked
+    up by the Runner API back in the queue."""
+
+    print(
+        f"Dispatch id: {result_obj.dispatch_id}, tasks order: {task_order}",
+        file=sys.stderr,
+    )
+
+    val = tasks_queue.get()
+
+    print(
+        f"Dispatch id: {result_obj.dispatch_id}, tasks queue initial: {val}",
+        file=sys.stderr,
+    )
+
+    tasks_queue.put(val)
+
+    # To get the runnable tasks from first task order list
+    # Sending the tasks_queue as well to handle the case of sublattices
+    tasks, functions, input_args, input_kwargs, executors, next_tasks_order = get_runnable_tasks(
+        result_obj=result_obj,
+        tasks_order=task_order,
+        tasks_queue=tasks_queue,
+    )
+
+    logger.warning(f"In dispatch_runnable_tasks with tasks: {tasks}")
+
+    logger.warning(f"Set of next tasks to be run {next_tasks_order}")
+
+    print(
+        f"Dispatch id: {result_obj.dispatch_id}, will try to run these nodes: {tasks}",
+        file=sys.stderr,
+    )
+
+    # The next set of tasks that can be run afterwards
+    # This is the case of a new dispatch id in the list of dictionaries
+    if next_tasks_order:
+        if is_empty(tasks_queue):
+            v = tasks_queue.get()
+            logger.warning(f"LETS SEE IF TASKS QUEUE IS EMPTY ITS VAL IS: {v}")
+            tasks_queue.put([{result_obj.dispatch_id: next_tasks_order}])
+        else:
+
+            all_tasks_lod = tasks_queue.get()
+
+            # Checking if current dispatch id is a parent of last
+            # dispatch id in the tasks queue
+            last_dispatch_id = str(list(all_tasks_lod[0])[0])
+            parent_id, _ = get_parent_id_and_task_id(last_dispatch_id)
+
+            if parent_id == result_obj.dispatch_id:
+                all_tasks_lod = all_tasks_lod + [{result_obj.dispatch_id: next_tasks_order}]
+            else:
+                all_tasks_lod = [{result_obj.dispatch_id: next_tasks_order}] + all_tasks_lod
+
+            tasks_queue.put(all_tasks_lod)
+
+    # Tasks which were not able to run
+    unrun_tasks = run_tasks(
+        results_dir=result_obj.results_dir,
+        dispatch_id=result_obj.dispatch_id,
+        task_id_batch=tasks,
+        functions=functions,
+        input_args=input_args,
+        input_kwargs=input_kwargs,
+        executors=executors,
+    )
+
+    print(f"Dispatch id: {result_obj.dispatch_id}, unrun_tasks: {unrun_tasks}", file=sys.stderr)
+
+    # Add unrun tasks back to the tasks_queue
+    final_task_order = tasks_queue.get()
+
+    print(
+        f"Dispatch id: {result_obj.dispatch_id}, intermediate_task_order: {final_task_order}",
+        file=sys.stderr,
+    )
+
+    if unrun_tasks:
+        if final_task_order is not None:
+            print(f"unrun tasks: {unrun_tasks}")
+            print(f"final task order: {final_task_order}")
+
+            if final_task_order[0].get(result_obj.dispatch_id):
+                final_task_order[0][result_obj.dispatch_id] = [unrun_tasks] + final_task_order[0][
+                    result_obj.dispatch_id
+                ]
+            else:
+                new_dict = {result_obj.dispatch_id: [unrun_tasks]}
+                final_task_order = [new_dict] + final_task_order
+        else:
+            final_task_order = [{result_obj.dispatch_id: [unrun_tasks]}]
+
+    logger.warning(f"Tasks which are yet to execute {final_task_order}")
+
+    try:
+        logger.warning(f"Before we put in final_task_order {tasks_queue.get_nowait()}")
+
+    except Empty:
+        logger.warning("Before we put in final_task_order, its empty")
+
+    # Put the task order back into the queue
+    tasks_queue.put(final_task_order)
+
+    print(
+        f"Dispatch id: {result_obj.dispatch_id}, tasks queue final: {final_task_order}",
+        file=sys.stderr,
+    )
+
+
 def get_runnable_tasks(
     result_obj: Result,
     tasks_order: List[List],
@@ -171,7 +220,17 @@ def get_runnable_tasks(
 
     # logger.warning(f"In get_runnable_tasks task_order after get: {tasks_order}")
 
+    # print(
+    #     f"GET_RUNNABLE_TASKS - dispatch_id: {result_obj.dispatch_id}, tasks_order: {tasks_order}",
+    #     file=sys.stderr,
+    # )
+
     task_ids = tasks_order.pop(0)
+
+    # print(
+    #     f"GET_RUNNABLE_TASKS -  dispatch_id: {result_obj.dispatch_id}, task_ids: {task_ids}",
+    #     file=sys.stderr,
+    # )
 
     input_args = []
     input_kwargs = []
@@ -188,7 +247,7 @@ def get_runnable_tasks(
         result_obj, is_executable = preprocess_transport_graph(task_id, task_name, result_obj)
 
         if not is_executable:
-            if task_id == task_ids[-1] and not runnable_tasks:
+            if task_id == task_ids[-1] and not runnable_tasks and tasks_order:
                 return get_runnable_tasks(
                     result_obj=result_obj, tasks_order=tasks_order, tasks_queue=tasks_queue
                 )
