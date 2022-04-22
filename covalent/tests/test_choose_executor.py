@@ -23,15 +23,17 @@ Integration test for choosing executors.
 """
 
 import covalent as ct
+import pytest
 
 
+@pytest.mark.skip(reason='executor tests need to be updated')
 def test_executors_exist():
     """Test that there is at least one executor loaded."""
 
     executor_list = ct.executor._executor_manager.list_executors(print_names=False)
     assert len(executor_list) > 0
 
-
+@pytest.mark.skip(reason='executor tests need to be updated')
 def test_using_executor_names():
     """Test that all loaded executors can be used in a simple electron."""
 
@@ -52,6 +54,7 @@ def test_using_executor_names():
         assert output.result == "input"
 
 
+@pytest.mark.skip(reason='executor tests need to be updated')
 def test_using_executor_classes():
     """Test creating executor objects and using them in a simple electron."""
 
