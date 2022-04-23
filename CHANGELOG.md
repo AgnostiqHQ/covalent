@@ -9,7 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Added migration guide from `0.3x` to Read The Docs & README.md
+- Added migration guide from `0.3x` to Read The Docs and `README.md`
+
+## [0.93.0] - 2022-04-22
+
+### Added
+
+- Automatic hotfix action
+
+## [0.92.0] - 2022-04-22
+
+
+### Changed
+
+- Moved sublattice's node update in parent lattice from `get_runnable_tasks` to `update_workflow` to accurately represent when a sublattice actually starts executing.
+
+### Fixed
+
+- Fixed the cancel url endpoint.
+
+- Cancelling a workflow for lattices and sublattices works even if they are partially run.
 
 ## [0.91.0] - 2022-04-21
 
