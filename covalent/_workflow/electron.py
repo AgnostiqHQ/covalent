@@ -221,7 +221,7 @@ class Electron:
         for i in range(expected_unpack_values):
             active_lattice = active_lattice_manager.get_active_lattice()
             if active_lattice:
-            #if active_lattice := active_lattice_manager.get_active_lattice():
+                # if active_lattice := active_lattice_manager.get_active_lattice():
                 try:
                     node_name = generator_prefix + self.function.__name__ + "()" + f"[{i}]"
 
@@ -261,7 +261,7 @@ class Electron:
 
         active_lattice = active_lattice_manager.get_active_lattice()
         if active_lattice:
-        #if active_lattice := active_lattice_manager.get_active_lattice():
+            # if active_lattice := active_lattice_manager.get_active_lattice():
             try:
                 node_name = attr_prefix + self.function.__name__ + "." + attr
             except AttributeError:
@@ -289,7 +289,7 @@ class Electron:
 
         active_lattice = active_lattice_manager.get_active_lattice()
         if active_lattice:
-        #if active_lattice := active_lattice_manager.get_active_lattice():
+            # if active_lattice := active_lattice_manager.get_active_lattice():
             try:
                 node_name = subscript_prefix + self.function.__name__ + "()" + f"[{key}]"
             except AttributeError:
