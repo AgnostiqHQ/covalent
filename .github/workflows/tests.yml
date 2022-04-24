@@ -137,13 +137,48 @@ jobs:
           files: ./sdk_coverage.xml
           flags: SDK
           name: "SDK Unit Tests"
-      - name: Upload SDK report to Codecov
+      - name: Upload Data Service report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v2
         with:
           files: ./data_coverage.xml
           flags: Data
           name: "Data Service Unit Tests"
+      - name: Upload Dispatcher Service report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./dispatcher_coverage.xml
+          flags: Dispatcher
+          name: "Dispatcher Unit Tests"
+      - name: Upload Queuer report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./queuer_coverage.xml
+          flags: Queuer
+          name: "Queuer Unit Tests"
+      - name: Upload Results Service report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./results_coverage.xml
+          flags: Results
+          name: "Results Unit Tests"
+      - name: Upload UI Backend report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./ui_backend_coverage.xml
+          flags: UI_Backend
+          name: "UI Backend Unit Tests"
+      - name: Upload Functional report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./functional_coverage.xml
+          flags: Functional_Tests
+          name: "Functional Tests"
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
         id: get-latest-tag
