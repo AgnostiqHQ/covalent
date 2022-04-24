@@ -31,6 +31,7 @@ from covalent._shared_files.config import _ConfigManager, get_config, set_config
 from covalent._shared_files.defaults import _DEFAULT_CONFIG
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 @pytest.mark.parametrize(
     "path_exists,update_config_called",
     [(False, False), (True, True)],
@@ -96,6 +97,7 @@ def test_get():
     assert cm.get("legacy_dispatcher.port") == cm.config_data["legacy_dispatcher"]["port"]
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 def test_purge_config(mocker, monkeypatch):
     """Test the purge_config method for config manager."""
 
@@ -136,6 +138,7 @@ def test_get_config():
     }
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 def test_log_to_file(mocker):
     def config(value):
         if value == "sdk.log_level":

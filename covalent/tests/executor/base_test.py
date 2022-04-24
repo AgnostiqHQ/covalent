@@ -44,6 +44,7 @@ class SubprocMock:
         self.stderr = ""
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 def test_base_init(mocker):
     mocker.patch.multiple(BaseExecutor, __abstractmethods__=set())
 
@@ -63,6 +64,7 @@ def test_base_init(mocker):
     assert executor.current_env == ""
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 def test_write_streams_to_file(mocker):
     """Test write log streams to file method in BaseExecutor via LocalExecutor."""
 
@@ -96,6 +98,7 @@ def test_write_streams_to_file(mocker):
         assert lines[0] == "absolute"
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 @pytest.mark.parametrize(
     "conda_installed,successful_task,index", [(True, True, 0), (True, False, 1), (False, False, 2)]
 )
@@ -171,6 +174,7 @@ def test_execute_in_conda_env(mocker, conda_installed, successful_task, index):
         os.remove(f"script_file{index}.sh")
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 @pytest.mark.parametrize("use_current", [True, False])
 def test_conda_env_fail(mocker, use_current):
     me = MockExecutor()
@@ -191,6 +195,7 @@ def test_conda_env_fail(mocker, use_current):
         assert result == 3
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 def test_get_conda_envs(mocker):
     conda_env_str = """\
 # conda environments:

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Test action.
+
 ### Docs
 
 - Added migration guide from `0.3x` to Read The Docs and `README.md`
