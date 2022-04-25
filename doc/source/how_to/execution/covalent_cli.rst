@@ -20,7 +20,7 @@ In order to dispatch lattices for execution, the user needs to start Covalent's 
     covalent:runner                   RUNNING   pid 27547, uptime 0:00:03
     covalent:ui                       RUNNING   pid 27549, uptime 0:00:03
 
-.. note:: By default, the user interface uses port 8000. Navigate to `<http://0.0.0.0:8000>`_ to view the user interface. The other service defaults are as follows: the queue service uses port 8001, the dispatcher service uses port 8002, the runner service uses port 8003, the data service uses port 8004, and the results service uses port 8005.
+.. note:: By default, the user interface uses port 8000. Navigate to `<http://localhost:8000>`_ to view the user interface. The other service defaults are as follows: the queue service uses port 8001, the dispatcher service uses port 8002, the runner service uses port 8003, the data service uses port 8004, and the results service uses port 8005.
 
 The user can check the status of services using the :code:`status` command.
 
@@ -37,7 +37,7 @@ The user can check the status of services using the :code:`status` command.
     covalent:runner                   RUNNING   pid 27547, uptime 0:11:08
     covalent:ui                       RUNNING   pid 27549, uptime 0:11:08
 
-or by navigating to the Covalent service dashboard at `<http://0.0.0.0:9001>`_. In order to stop the services, use the :code:`stop` command.
+or by navigating to the Covalent service dashboard at `<http://localhost:9001>`_. In order to stop the services, use the :code:`stop` command.
 
 .. code-block:: sh
 

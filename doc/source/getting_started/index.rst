@@ -198,7 +198,7 @@ Let's look at a simple example to get started with Covalent. Before starting, en
    # Dispatch the workflow
    dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
 
-Navigate to the Covalent UI at `<http://0.0.0.0:8000>`_ to see your workflow in the queue:
+Navigate to the Covalent UI at `<http://localhost:8000>`_ to see your workflow in the queue:
 
 |
 
