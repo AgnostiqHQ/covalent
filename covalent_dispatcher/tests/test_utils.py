@@ -21,9 +21,9 @@
 """Unit tests for utils module"""
 
 from copy import deepcopy
-from typing import Tuple
 from unittest import mock
 
+import cloudpickle as pickle
 import pytest
 import requests
 import requests_mock
@@ -37,6 +37,7 @@ from app.core.utils import (
     is_sublattice,
     is_sublattice_dispatch_id,
     send_cancel_task_to_runner,
+    send_task_update_to_dispatcher,
 )
 
 import covalent as ct
@@ -92,6 +93,16 @@ def mock_result_uninitialized():
     lattice.build_graph(x=1, y=2, z=3)
 
     return Result(lattice=lattice, results_dir="", dispatch_id="mock_dispatch_id")
+
+
+@pytest.fixture
+def mock_result_initialized(mock_result_uninitialized):
+    """Construct mock result object."""
+
+    result_obj = deepcopy(mock_result_uninitialized)
+
+    init_result_pre_dispatch(result_obj)
+    return result_obj
 
 
 def test_is_empty(mock_tasks_queue):
@@ -180,7 +191,7 @@ def test_update_result_and_ui():
     pass
 
 
-def test_send_cancel_task_to_runner(mock_result_uninitialized, mock_task):
+def test_send_cancel_task_to_runner(mock_result_uninitialized):
     """Test that the task to be cancelled by the runner returns a non-empty tuple containing the cancelled dispatch
     id and task id."""
 
@@ -189,6 +200,7 @@ def test_send_cancel_task_to_runner(mock_result_uninitialized, mock_task):
     mock_cancel_url_endpoint = (
         f"http://localhost:8003/api/v0/workflow/{mock_dispatch_id}/task/{mock_task_id}/cancel"
     )
+
     session = requests.Session()
     adapter = requests_mock.Adapter()
     session.mount("http://localhost", adapter)
@@ -205,9 +217,20 @@ def test_is_sublattice_dispatch_id(mock_result_uninitialized):
     assert is_sublattice_dispatch_id(mock_dispatch_id)
 
 
-def test_send_task_update_to_dispatcher():
+def test_send_task_update_to_dispatcher(mock_result_initialized):
     """Test for sending task update to dispatcher"""
-    pass
+    mock_dispatch_id = mock_result_initialized.dispatch_id
+    mock_dispatch_url_endpoint = f"http://localhost:8002/api/v0/workflow/{mock_dispatch_id}"
+    session = requests.Session()
+    adapter = requests_mock.Adapter()
+    session.mount("http://localhost", adapter)
+    adapter.register_uri("PUT", mock_dispatch_url_endpoint)
+    response = session.put(
+        mock_dispatch_url_endpoint,
+        files={"task_execution_results": pickle.dumps(mock_result_initialized.result)},
+    )
+    response.raise_for_status()
+    assert response.status_code == 200
 
 
 def test_generate_task_result(mock_task):
