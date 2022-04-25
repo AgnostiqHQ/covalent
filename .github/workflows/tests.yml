@@ -121,6 +121,8 @@ jobs:
           PYTHONPATH=$PWD/covalent_queuer pytest covalent_queuer -vv --cov=covalent_queuer --cov-config=.coveragerc
           PYTHONPATH=$PWD/covalent_results pytest covalent_results -vv --cov=covalent_results --cov-config=.coveragerc
           PYTHONPATH=$PWD/covalent_ui pytest covalent_ui -vv --cov=covalent_ui --cov-config=.coveragerc
+          PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+          PYTHONPATH=$PWD/covalent pytest covalent/tests --cov=covalent --cov-config=.coveragerc
       - name: Generate coverage report
         run: coverage xml
       - name: Upload report to Codecov
@@ -183,5 +185,4 @@ jobs:
     if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
     uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
     with:
-      test_release: false
       prerelease: true
