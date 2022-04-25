@@ -1,0 +1,93 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: hotfix
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  hotfix:
+    if: github.event.issue.pull_request && github.event.comment.body == 'hotfix-now'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract PR route
+        run: |
+          echo "PR_ROUTE=$(echo ${{ github.event.issue.pull_request.url }} " \
+            "| sed s-https://api.github.com--)" >> $GITHUB_ENV
+      - name: Get PR data
+        id: pr-data
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET ${{ env.PR_ROUTE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout PR branch
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{ fromJson(steps.pr_data.outputs.data).head.ref }}
+      - name: Get latest release
+        id: get-latest-release
+        uses: cardinalby/git-get-release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          latest: true
+          prerelease: false
+      - name: Hotfix version
+        run: |
+          stable_version=${{ steps.get-latest-release.outputs.tag_name }}
+          latest_tag=$(git describe)
+          IFS='-' read -ra describe_commits <<< "$latest_tag"
+          if [ "${#describe_commits[-1]}" -eq 8 ] && [ "${describe_commits[-2]}" -gt 2 ] ; then
+            echo 'MESSAGE="Please squash your commits before applying a hotfix."' >> $GITHUB_ENV
+            exit 2
+          fi
+          IFS='-' read -ra hotfix_version <<< "$stable_version"
+          if [[ $latest_tag = *"$stable_version"* ]] && [ ${#hotfix_version[1]} -gt 0 ] ; then
+            version="${hotfix_version[0]}-$(( ${hotfix_version[1]} + 1 ))"
+          elif [[ $latest_tag = *"$stable_version"* ]] ; then
+            version="${hotfix_version[0]}-1"
+          else
+            echo 'MESSAGE="Hotfix branches must be created from the most recent stable release."' >> $GITHUB_ENV
+            exit 1
+          fi
+          git checkout -b "hotfix-$version"
+          echo $version > VERSION
+          echo "VERSION=$version" >> $GITHUB_ENV
+          echo 'MESSAGE="Hotfix ' $version ' has been created. ' \
+            'You may contact mall security to create a stable release using this tag.' >> $GITHUB_ENV
+      - name: Commit
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: CovalentOpsBot
+          author_email: covalentopsbot@users.noreply.github.com
+          message: "${{ github.event.issue.title }} (#${{ github.event.issue.number }})"
+          tag: env.VERSION
+      - name: Comment
+        if: always()
+        uses: thollander/actions-comment-pull-request@v1
+        with:
+          message: env.MESSAGE
+          pr_number: github.event.issue.number
+          GITHUB_TOKEN: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
