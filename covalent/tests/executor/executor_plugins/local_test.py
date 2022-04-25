@@ -22,11 +22,14 @@
 
 import tempfile
 
+import pytest
+
 import covalent as ct
 from covalent._workflow.transport import TransportableObject
 from covalent.executor.executor_plugins.local import LocalExecutor
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 def test_local_executor_passes_results_dir(mocker):
     """Test that the local executor calls the stream writing function with the results directory specified."""
 
