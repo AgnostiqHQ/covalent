@@ -20,10 +20,27 @@
 
 """Unit tests for utils module"""
 
+from copy import deepcopy
+from typing import Tuple
 from unittest import mock
 
 import pytest
-from app.core.utils import generate_task_result, is_empty
+import requests
+import requests_mock
+from app.core.dispatch_workflow import init_result_pre_dispatch
+from app.core.utils import (
+    are_tasks_running,
+    generate_task_result,
+    get_parent_id_and_task_id,
+    get_task_order,
+    is_empty,
+    is_sublattice,
+    is_sublattice_dispatch_id,
+    send_cancel_task_to_runner,
+)
+
+import covalent as ct
+from covalent._results_manager.result import Result
 
 
 @pytest.fixture
@@ -48,6 +65,35 @@ def mock_task():
     return task_object
 
 
+@pytest.fixture
+def mock_result_uninitialized():
+    """Construct mock result object."""
+
+    @ct.electron
+    def add(x, y):
+        return x + y
+
+    @ct.electron
+    def multiply(x, y):
+        return x * y
+
+    @ct.electron
+    def square(x):
+        return x**2
+
+    @ct.lattice
+    def workflow(x, y, z):
+        a = add(x, y)
+        b = square(z)
+        final = multiply(a, b)
+        return final
+
+    lattice = deepcopy(workflow)
+    lattice.build_graph(x=1, y=2, z=3)
+
+    return Result(lattice=lattice, results_dir="", dispatch_id="mock_dispatch_id")
+
+
 def test_is_empty(mock_tasks_queue):
     """Test that the MPQ contains only one element at any time."""
 
@@ -63,13 +109,13 @@ def test_preprocess_transport_graph():
     pass
 
 
-def _post_process():
+def test_post_process():
     """Test that lattice is post-processed correctly after execution of the nodes in the transport graph"""
 
     pass
 
 
-def get_task_inputs():
+def test_get_task_inputs():
     """
     Test that inputs for a given task execution are properly returned and parent nodes are passed
     as inputs to child nodes
@@ -79,22 +125,32 @@ def get_task_inputs():
 
 def test_is_sublattice():
     """Test sublattice check on a transport graph node"""
+    mock_node_names = mock.Mock("mock_node_names", return_value=["task1", "task2", "task3"])
+    sublattice_prefix = ":sublattice:"
+    for node_name in mock_node_names.return_value:
+        assert not is_sublattice(node_name)
+        sublattice_node_name = sublattice_prefix + node_name
+        assert is_sublattice(sublattice_node_name)
 
-    pass
+
+def test_are_tasks_running(mock_result_uninitialized):
+    """Test to check if node tasks are running. Asserts true if the status of any task is running or if the task is a
+    new object."""
+    mock_result_initialized = init_result_pre_dispatch(mock_result_uninitialized)
+    assert are_tasks_running(mock_result_initialized) and are_tasks_running(
+        mock_result_uninitialized
+    )
 
 
-def test_are_tasks_running():
-    """Test for status checks on running tasks"""
-    pass
-
-
-def test_get_task_order():
-    """Test to check that task_order returns a non-empty list"""
-    pass
+def test_get_task_order(mock_result_uninitialized):
+    """Test to check the correct order for executing the task nodes in a transport graph"""
+    sorted_nodes = [[1, 2, 4], [0, 3], [5]]
+    mock_result_initialized = init_result_pre_dispatch(mock_result_uninitialized)
+    assert get_task_order(mock_result_initialized) == sorted_nodes
 
 
 def test_send_task_list_to_runner():
-    """Test for sending task list to runner"""
+    """Test for sending task list to runner."""
     pass
 
 
@@ -104,7 +160,7 @@ def test_send_result_object_to_result_service():
 
 
 def test_send_task_update_to_result_service():
-    """Test for sending task update to result service"""
+    """Test for sending task update to result service."""
     pass
 
 
@@ -114,27 +170,39 @@ def test_send_task_update_to_ui():
 
 
 def test_get_result_object_from_result_service():
-    """Test result object pickling from the result microservice"""
+    """Test result object pickling from the result microservice."""
     pass
 
 
 def test_update_result_and_ui():
-    """Test that the UI is updated and the result is written to the database"""
+    """Test that the UI is updated and the result is written to the database."""
 
     pass
 
 
-def test_send_cancel_task_to_runner():
-    """
-    Test that the task to be cancelled by the runner returns a non-empty tuple containing the cancelled dispatch
-    id and task id
-    """
+def test_send_cancel_task_to_runner(mock_result_uninitialized, mock_task):
+    """Test that the task to be cancelled by the runner returns a non-empty tuple containing the cancelled dispatch
+    id and task id."""
 
-    pass
+    mock_dispatch_id = mock_result_uninitialized.dispatch_id
+    mock_task_id = 1
+    mock_cancel_url_endpoint = (
+        f"http://localhost:8003/api/v0/workflow/{mock_dispatch_id}/task/{mock_task_id}/cancel"
+    )
+    session = requests.Session()
+    adapter = requests_mock.Adapter()
+    session.mount("http://localhost", adapter)
+    adapter.register_uri("DELETE", mock_cancel_url_endpoint)
+    response = session.delete(mock_cancel_url_endpoint)
+    assert response.status_code == 200
 
 
-def test_is_sublattice_dispatch_id():
+def test_is_sublattice_dispatch_id(mock_result_uninitialized):
     """Test for sublattice dispatch id"""
+    mock_dispatch_id = mock_result_uninitialized.dispatch_id
+    assert not is_sublattice_dispatch_id(mock_dispatch_id)
+    mock_dispatch_id += ":"
+    assert is_sublattice_dispatch_id(mock_dispatch_id)
 
 
 def test_send_task_update_to_dispatcher():
@@ -172,3 +240,8 @@ def test_generate_task_result(mock_task):
         )
         == mock_task_result.return_value
     )
+
+
+def test_get_parent_id_and_task_id(mock_result_uninitialized):
+    mock_dispatch_id = mock_result_uninitialized.dispatch_id
+    assert get_parent_id_and_task_id(mock_dispatch_id) == (False, False)
