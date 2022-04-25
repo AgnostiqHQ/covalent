@@ -10,6 +10,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated all config & log file paths to reside in `$HOME/.cache/covalent` including `.env`, `supervisord.conf`, and all logs
+- Removing previous `cova` package config files on install
+
+## [0.95.0] - 2022-04-25
+
+### Added
+
+- Support for Bash tasks
+- How-to guide demonstrating usage
+- Unit test for bash lepton
+
+### Docs
+
+- Updated server management how-to guide
+
+## [0.94.0] - 2022-04-25
+
+### Added
+
+- Coverage reports now granular per service plus SDK.
+
+## [0.93.1] - 2022-04-24
+
+### Fixed
+
+- Test action.
+
+### Docs
+
+- Added migration guide from `0.3x` to Read The Docs and `README.md`
+
+## [0.93.0] - 2022-04-22
+
+### Added
+
+- Automatic hotfix action
 
 ## [0.92.0] - 2022-04-22
 

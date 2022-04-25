@@ -86,6 +86,32 @@ You can validate Covalent has been properly installed if the following returns w
 
    python -c "import covalent"
 
+
+Migration Guide from 0.3x
+~~~~~~~~~~~~~~~~~~~~
+
+If you are running covalent version 0.3x you can upgrade to covalent version 0.8x as follows.
+
+By running the following commands you can verify your covalent python as well as stop covalent and purge any config files present.
+
+.. code:: bash
+
+   $ pip show cova | grep Version
+   Version: 0.32.3
+   $ covalent purge
+   Covalent server has stopped.
+   Covalent server files have been purged.
+
+You can install the an 0.8x version of covalent by using pip.
+
+.. code:: bash
+
+   $ pip install cova==0.89.2 --upgrade
+   $ pip show cova | grep Version
+   Version: 0.89.2
+
+You should now be able to start the updated covalent server using :code:`covalent start` as specified in the guide below.
+
 Start the Server
 #################
 
@@ -172,7 +198,7 @@ Let's look at a simple example to get started with Covalent. Before starting, en
    # Dispatch the workflow
    dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
 
-Navigate to the Covalent UI at `<http://0.0.0.0:8000>`_ to see your workflow in the queue:
+Navigate to the Covalent UI at `<http://localhost:8000>`_ to see your workflow in the queue:
 
 |
 

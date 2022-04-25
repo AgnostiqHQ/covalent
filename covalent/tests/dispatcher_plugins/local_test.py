@@ -17,10 +17,9 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+import pytest
 
 import covalent as ct
-
-# from covalent._shared_files.interface import dispatch, dispatch_sync
 
 
 @ct.electron
@@ -42,6 +41,7 @@ def test_local_dispatcher_dispatch():
     assert isinstance(dispatch_id, str)
 
 
+@pytest.mark.skip(reason="synchronous dispatch freezes the shell and needs to be updated")
 def test_local_dispatcher_dispatch_sync():
     """Tests whether the local dispatcher can synchronously dispatch a workflow successfully."""
 
