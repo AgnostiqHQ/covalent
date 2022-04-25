@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Support for Bash tasks
+- How-to guide demonstrating usage
+- Unit test for bash lepton
+
 ### Docs
 
 - Updated server management how-to guide
