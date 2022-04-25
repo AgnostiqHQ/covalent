@@ -90,6 +90,7 @@ def test_lepton_attributes():
         ("INPUT_OUTPUT", 2),
         ("_LANG_PY", ["Python", "python"]),
         ("_LANG_C", ["C", "c"]),
+        ("_LANG_SHELL", ["bash", "shell"]),
         ("wrap_task", Lepton.wrap_task),
     ]
 
@@ -168,6 +169,53 @@ def test_func(x, y):
         return
 
     assert result == 3
+
+
+@pytest.mark.parametrize(
+    "library_name,function_name,argtypes,named_outputs",
+    [
+        ("test_library.sh", "add", [(int, Lepton.OUTPUT)], ["result"]),
+        ("test_library.sh", "add", [], ["result"]),
+    ],
+)
+def test_shell_wrapper(mocker, init_mock, library_name, function_name, argtypes, named_outputs):
+    sh_script_src = """#! /bin/bash
+
+export result=""
+
+add() {
+    result=`expr $1 + $2`
+}
+"""
+
+    with open("test_library.sh", "w") as f:
+        f.write(sh_script_src)
+        f.flush()
+
+    lepton = Lepton()
+    lepton.language = "bash"
+    lepton.library_name = library_name
+    lepton.function_name = function_name
+    lepton.argtypes = argtypes
+
+    task = lepton.wrap_task()
+
+    init_mock.assert_called_once_with()
+
+    if len(argtypes) == 0:
+        context = pytest.raises(ValueError)
+    else:
+        context = nullcontext()
+
+    with context:
+        result = task(5, 7, named_outputs=named_outputs)
+
+    os.remove("test_library.sh")
+
+    if not argtypes:
+        return
+
+    assert result == (12,)
 
 
 class MockType:
