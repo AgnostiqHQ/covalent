@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.94.0] - 2022-04-25
+
 ### Added
 
 - Coverage reports now granular per service plus SDK.
