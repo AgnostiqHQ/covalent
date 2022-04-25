@@ -15,7 +15,7 @@ python-dotenv==0.19.2
 python-multipart==0.0.5
 PyYAML==6.0
 requests==2.24.0
-requests-mock=1.9.3
+requests-mock==1.9.3
 simplejson==3.17.6
 supervisor==4.2.4
 tailer==0.4.1
