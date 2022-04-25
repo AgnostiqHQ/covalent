@@ -227,6 +227,7 @@ def test_lattice_build_graph(task_arg_name: str, sample_values: List):
     assert nx.graph_edit_distance(graph_to_test, sample_graph, node_match=are_matching_nodes) == 0
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 def test_draw(mocker, init_mock):
     test_lattice = Lattice(sample_workflow)
 
@@ -283,6 +284,7 @@ def test_lattice_check_consumable():
     pass
 
 
+@pytest.mark.skip(reason="Needs to be refactored")
 def test_lattice_decorator(mocker, monkeypatch):
     mock_config_call = mocker.patch(
         "covalent._workflow.lattice.get_config", return_value="results"
