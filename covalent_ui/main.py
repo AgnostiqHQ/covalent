@@ -50,6 +50,8 @@ class SinglePageApp(StaticFiles):
             if e.status_code == 404:
                 # return /index.html
                 response = await super().get_response(".", scope)
+            else:
+                raise e
         return response
 
 
