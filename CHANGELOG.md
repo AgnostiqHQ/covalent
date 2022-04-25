@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated server management how-to guide
 
+### Added
+
+- Coverage reports now granular per service plus SDK.
+
 ## [0.93.1] - 2022-04-24
 
 ### Fixed
