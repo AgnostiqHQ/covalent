@@ -24,6 +24,7 @@ import logging
 import os
 import sys
 import time
+from pathlib import Path
 
 from .config import get_config
 
@@ -52,6 +53,13 @@ app_log.propagate = False
 log_stack_info = os.environ.get("LOGSTACK", "TRUE").upper() == "TRUE"
 # Show debug statements
 log_debug_info = os.environ.get("LOGDEBUG", "FALSE").upper() == "TRUE"
+
+
+# Show timing statements
+timing_logger = logging.getLogger(__name__)
+timing_logger.setLevel("INFO")
+timing_logger.addHandler(logging.FileHandler(f"{Path.home()}/.cache/covalent/timing.logs"))
+
 
 # Also log to file
 # log_to_file = get_config("sdk.enable_logging").upper() == "TRUE"

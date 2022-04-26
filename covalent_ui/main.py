@@ -29,7 +29,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
+from fastapi_utils.timing import add_timing_middleware
 from starlette.exceptions import HTTPException
+
+from covalent._shared_files.logger import timing_logger
 
 BASE_PATH = Path(__file__).resolve().parent
 FRONTEND_PATH = "/webapp/build"
@@ -53,6 +56,7 @@ class SinglePageApp(StaticFiles):
 
 
 app = FastAPI(title="Covalent UI Backend Service API")
+add_timing_middleware(app, record=timing_logger.info, prefix="UI")
 
 sio = SocketManager(app=app)
 
