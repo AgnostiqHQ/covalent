@@ -47,7 +47,6 @@ env:
     '"wjcunningham7",'
     '"santoshkumarradha"]'
 
-
 jobs:
   github:
     runs-on: ubuntu-latest
@@ -116,9 +115,9 @@ jobs:
         run: echo 'unset var' ${{ github.event.inputs.unset }}
       - name: Create release
         if: >-
-          (steps.push.outcome == 'success' || steps.no-push.outcome == 'success')
+          ${{ (steps.push.outcome == 'success' || steps.no-push.outcome == 'success')
           && steps.message.outcome == 'success'
-          && ${{ !github.event.inputs.test_release }}
+          && !github.event.inputs.test_release }}
         run: echo 'create release'
       - name: Alert Slack
         if: failure()
@@ -206,7 +205,8 @@ jobs:
           && ${{ !github.event.inputs.test_release }}
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+          TWINE_PASSWORD:
+            ${{ secrets.PYPI_TOKEN }}
             #run: twine upload dist/*
         run: echo 'upload distribution'
       - name: Alert Slack
