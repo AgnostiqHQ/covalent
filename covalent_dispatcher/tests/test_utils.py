@@ -21,6 +21,7 @@
 """Unit tests for utils module"""
 
 from copy import deepcopy
+from io import BytesIO
 from unittest import mock
 
 import cloudpickle as pickle
@@ -32,11 +33,13 @@ from app.core.utils import (
     are_tasks_running,
     generate_task_result,
     get_parent_id_and_task_id,
+    get_task_inputs,
     get_task_order,
     is_empty,
     is_sublattice,
     is_sublattice_dispatch_id,
     send_cancel_task_to_runner,
+    send_task_list_to_runner,
     send_task_update_to_dispatcher,
 )
 
@@ -64,6 +67,31 @@ def mock_task():
     }
 
     return task_object
+
+
+@pytest.fixture
+def mock_task_list(mock_result_uninitialized):
+    result_obj = deepcopy(mock_result_uninitialized)
+
+    init_result_pre_dispatch(result_obj)
+
+    tasks_list = [
+        {
+            "task_id": 0,
+            "func": "add",
+            "args": [2, 3],
+            "kwargs": {},
+            "results_dir": result_obj.results_dir,
+        },
+        {
+            "task_id": 2,
+            "func": "square",
+            "args": [2],
+            "kwargs": {},
+            "results_dir": result_obj.results_dir,
+        },
+    ]
+    return tasks_list
 
 
 @pytest.fixture
@@ -97,7 +125,7 @@ def mock_result_uninitialized():
 
 @pytest.fixture
 def mock_result_initialized(mock_result_uninitialized):
-    """Construct mock result object."""
+    """Initialize mock result object."""
 
     result_obj = deepcopy(mock_result_uninitialized)
 
@@ -114,8 +142,7 @@ def test_is_empty(mock_tasks_queue):
 
 
 def test_preprocess_transport_graph():
-    """Test that the execution status of the task nodes in the transport graph are initialized
-    properly."""
+    """Test that the execution status of the task nodes in the transport graph are properly initialized."""
 
     pass
 
@@ -126,12 +153,58 @@ def test_post_process():
     pass
 
 
-def test_get_task_inputs():
+def test_get_task_inputs(mock_result_initialized):
     """
-    Test that inputs for a given task execution are properly returned and parent nodes are passed
-    as inputs to child nodes
-    """
-    pass
+    Test that inputs for a given task execution are returned as dictionaries containing args, kwargs,
+    and any parent node execution results if present."""
+
+    node_names = mock.Mock(
+        "node_names",
+        return_value=[
+            ":electron_list:add",
+            "1",
+            "2",
+            ":electron_dict_prefix:square",
+            "3",
+            "multiply",
+        ],
+    )
+    node_keys = [0, 1]
+    result_obj = mock_result_initialized
+
+    for node_key in node_keys:
+        for node_name in node_names.return_value:
+            if node_name.startswith(":electron_list:") and node_key == 0:
+                assert get_task_inputs(node_key, node_name, result_obj) == {
+                    "args": [],
+                    "kwargs": {"x": [None, None]},
+                }
+            elif node_name.startswith(":electron_list:") and node_key == 1:
+                assert get_task_inputs(node_key, node_name, result_obj) == {
+                    "args": [],
+                    "kwargs": {"x": []},
+                }
+            elif node_name.startswith(":electron_dict_prefix:") and node_key == 0:
+                assert get_task_inputs(node_key, node_name, result_obj) == {
+                    "args": [None, None],
+                    "kwargs": {},
+                }
+            elif node_name.startswith(":electron_dict_prefix:") and node_key == 1:
+                assert get_task_inputs(node_key, node_name, result_obj) == {
+                    "args": [],
+                    "kwargs": {},
+                }
+            else:
+                if node_key == 0:
+                    assert get_task_inputs(node_key, node_name, result_obj) == {
+                        "args": [None, None],
+                        "kwargs": {},
+                    }
+                elif node_key == 1:
+                    assert get_task_inputs(node_key, node_name, result_obj) == {
+                        "args": [],
+                        "kwargs": {},
+                    }
 
 
 def test_is_sublattice():
@@ -160,9 +233,22 @@ def test_get_task_order(mock_result_uninitialized):
     assert get_task_order(mock_result_initialized) == sorted_nodes
 
 
-def test_send_task_list_to_runner():
+def test_send_task_list_to_runner(mocker, mock_result_uninitialized, mock_task_list):
     """Test for sending task list to runner."""
-    pass
+    dispatch_id = mock_result_uninitialized.dispatch_id
+    task_list = mock_task_list
+    mock_url_endpoint = f"http://localhost:8003/api/v0/workflow/{dispatch_id}/tasks"
+    session = requests.Session()
+    adapter = requests_mock.Adapter()
+    session.mount("http://localhost", adapter)
+    adapter.register_uri("POST", mock_url_endpoint)
+    response = session.post(mock_url_endpoint, files={"tasks": BytesIO(pickle.dumps(task_list))})
+    assert response.status_code == 200
+    mock_send_list_to_runner = mocker.patch(
+        "app.core.utils.send_task_list_to_runner", return_value=[]
+    )
+    assert mock_send_list_to_runner(dispatch_id, task_list) == []
+    mock_send_list_to_runner.assert_called_with(dispatch_id, task_list)
 
 
 def test_send_result_object_to_result_service():
