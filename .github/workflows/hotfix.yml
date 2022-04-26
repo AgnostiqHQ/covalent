@@ -78,6 +78,7 @@ jobs:
           echo 'MESSAGE="Hotfix ' $version ' has been created. ' \
             'You may contact mall security to create a stable release using this tag.' >> $GITHUB_ENV
       - name: Commit
+        if: false
         uses: EndBug/add-and-commit@v9
         with:
           author_name: CovalentOpsBot
