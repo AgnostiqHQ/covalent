@@ -31,8 +31,9 @@ jobs:
     steps:
       - name: Extract PR route
         run: |
-          echo "PR_ROUTE=$(echo ${{ github.event.issue.pull_request.url }} " \
-            "| sed s-https://api.github.com--)" >> $GITHUB_ENV
+          pr_route=$(echo ${{ github.event.issue.pull_request.url }} \
+            | sed s-https://api.github.com--)
+          echo "PR_ROUTE=$pr_route" >> $GITHUB_ENV
       - name: Get PR data
         id: pr-data
         uses: octokit/request-action@v2.x
