@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Disabled ops bot in workflows
 
+### Fixed
+
+- Sytnax fix in hotfix workflow
+
 ## [0.95.0] - 2022-04-25
 
 ### Added
