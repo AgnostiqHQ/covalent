@@ -47,6 +47,7 @@ env:
     '"wjcunningham7",'
     '"santoshkumarradha"]'
 
+
 jobs:
   github:
     runs-on: ubuntu-latest
@@ -98,27 +99,17 @@ jobs:
           echo 'MESSAGE<<EOF' >> $GITHUB_ENV
           tail +$begin ./CHANGELOG.md | head -$end >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
-      - name: not test release
-        if: ${{ !github.event.inputs.test_release }}
-        run: echo 'not test release' ${{ github.event.inputs.test_release }}
-      - name: test release is false string
-        if: github.event.inputs.test_release == 'false'
-        run: echo 'test release is false' ${{ github.event.inputs.test_release }}
-      - name: test release is true string
-        if: github.event.inputs.test_release == 'true'
-        run: echo 'test release is true' ${{ github.event.inputs.test_release }}
-      - name: unset var
-        if: github.event.inputs.unset
-        run: echo 'unset var' ${{ github.event.inputs.unset }}
-      - name: not unset var in context
-        if: ${{ !github.event.inputs.unset }}
-        run: echo 'unset var' ${{ github.event.inputs.unset }}
       - name: Create release
         if: >-
           ${{ (steps.push.outcome == 'success' || steps.no-push.outcome == 'success')
           && steps.message.outcome == 'success'
-          && !github.event.inputs.test_release }}
-        run: echo 'create release'
+          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false') }}
+        uses: ncipollo/release-action@v1
+        with:
+          body: ${{ env.MESSAGE }}
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          tag: ${{ env.RELEASE }}
+          prerelease: ${{ inputs.prerelease }}
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
@@ -181,12 +172,10 @@ jobs:
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
           fi
-          if ${{ inputs.prerelease }} ; then
+          if ${{ inputs.prerelease == true }} ; then
             VERSION="${VERSION}rc0"
           fi
           VERSION="$(echo $VERSION | sed 's/-/.post/')"
-          echo 'version is'
-          echo $VERSION
           cd dist
           tar xzf cova-${VERSION}.tar.gz
           diff -x tests -r cova-${VERSION}/covalent ../covalent
@@ -205,10 +194,8 @@ jobs:
           && ${{ !github.event.inputs.test_release }}
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD:
-            ${{ secrets.PYPI_TOKEN }}
-            #run: twine upload dist/*
-        run: echo 'upload distribution'
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: twine upload dist/*
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
