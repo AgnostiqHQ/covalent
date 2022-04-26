@@ -67,7 +67,8 @@ jobs:
             --cache-control no-cache \
             --acl public-read
       - name: Alert Slack
-        if: failure()
+        #if: failure()
+        if: false
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent"
