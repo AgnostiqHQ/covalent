@@ -80,26 +80,21 @@ class Timer:
 
     def __init__(self):
         self._start_time = None
-        self._service_name = None
-        self._descriptor = None
 
-    def start(self, endpoint: str, descriptor: str, service: str):
+    def start(self, endpoint: str, descriptor: str, service: str, dispatch_id=None):
         """Start a new timer"""
         if self._start_time is not None:
-            raise TimerError(f"Timer is running. Use .stop() to stop it")
+            self._start_time = None
 
         self._start_time = time.perf_counter()
         return f"{descriptor}  was initiated by {service} at {datetime.now()}"
 
-    def stop_and_report(self, endpoint: str, descriptor: str, service: str):
+    def stop(self, endpoint: str, descriptor: str, service: str, dispatch_id=None):
         """Stop the timer, and report the elapsed time"""
         if self._start_time is None:
-            raise TimerError(f"Timer is not running. Use .start() to start it")
+            self.start(endpoint, descriptor, service, dispatch_id)
 
-        elapsed_time = (time.perf_counter() - self._start_time) * 1000  # convert to milliseconds
+        elapsed_time = time.perf_counter() - self._start_time
         self._start_time = None
         return f"{descriptor} function in the {service} ran in {elapsed_time:0.4f} ms"
-
-
-
 

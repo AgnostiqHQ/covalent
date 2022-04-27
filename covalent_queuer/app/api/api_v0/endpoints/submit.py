@@ -44,7 +44,6 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
     to be the ultimate thing the user will get and will contain everything in the workflow.
     """
     timer = Timer()
-    timer.start('submit workflow', timer.QUEUER)
     queue = Queuer()
     results_svc = ResultsService()
 
@@ -53,17 +52,24 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
         dispatch_id = str(uuid.uuid4())
 
         # start (queuer_pickle_loads_adds_uuid) dispatch_id=dispatch_id
+        print(timer.start(endpoint="queuer_pickle_loads_adds_uuid",
+                          descriptor="Submit workflow containing pickled file",
+                          service=timer.QUEUER,
+                          dispatch_id=dispatch_id),
+              )
         result_obj = pickle.loads(result_pkl_file)
-
         result_obj._dispatch_id = dispatch_id
 
         result_pkl_file = BytesIO(pickle.dumps(result_obj))
         # end...
-
+        print(timer.stop(endpoint="queuer_pickle_loads_adds_uuid",
+                         descriptor="Submit workflow containing pickled file",
+                         service=timer.QUEUER,
+                         dispatch_id=dispatch_id),
+              )
         await results_svc.create_result(result_pkl_file)
 
         await queue.publish(queue.topics.DISPATCH, {"dispatch_id": dispatch_id})
-        print(timer.stop_and_report('submit workflow', timer.QUEUER))
 
         return {"dispatch_id": dispatch_id}
 

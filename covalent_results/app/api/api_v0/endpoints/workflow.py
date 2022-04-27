@@ -77,20 +77,15 @@ db = Database()
 
 
 async def _get_result_file(dispatch_id: str) -> bytes:
-    timer = Timer()
-    print(timer.start(f"Getting the result from a file", timer.RESULTS))
     filename = _get_result_from_db(dispatch_id, "filename")
     path = _get_result_from_db(dispatch_id, "path")
     if not dispatch_id or not filename or not path:
         raise HTTPException(status_code=404, detail="Result was not found")
     file = await data_svc.download(filename)
-    print(timer.stop_and_report(f"Get result file", timer.RESULTS))
     return file
 
 
 async def _upload_file(result_pkl_file: BinaryIO):
-    timer = Timer()
-    print(timer.start(f"File upload to database", timer.RESULTS))
     results_object = {}
     dispatch_id = ""
     length = result_pkl_file.seek(0, 2)
@@ -108,7 +103,6 @@ async def _upload_file(result_pkl_file: BinaryIO):
     error_detail = "Error in response from data service. " + str(response)
     if filename and path:
         if _add_record_to_db(dispatch_id, filename, path):
-            print(timer.stop_and_report('File upload to database', timer.RESULTS))
             return {"dispatch_id": dispatch_id}
         else:
             error_detail = "Error adding record to database."
@@ -209,8 +203,21 @@ async def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.
     Get a result object as pickle file
     """
     # start(get_result) dispatch_id=dispatch_id
+    timer = Timer()
+    timer.start(
+        endpoint="workflow_get_result",
+        descriptor="Get result object as pickle file",
+        service=timer.RESULTS,
+        dispatch_id=dispatch_id
+    )
     result_binary: bytes = await _get_result_file(dispatch_id)
     # end
+    timer.stop(
+        endpoint="workflow_get_result",
+        descriptor="Get result object as pickle file",
+        service=timer.RESULTS,
+        dispatch_id=dispatch_id)
+
     if format == ResultFormats.JSON:
         result = pickle.loads(result_binary)
         result_json_stringified = encode_result(result)
