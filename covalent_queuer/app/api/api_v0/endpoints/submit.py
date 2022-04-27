@@ -48,11 +48,14 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
     try:
 
         dispatch_id = str(uuid.uuid4())
+
+        # start (queuer_pickle_loads_adds_uuid) dispatch_id=dispatch_id
         result_obj = pickle.loads(result_pkl_file)
 
         result_obj._dispatch_id = dispatch_id
 
         result_pkl_file = BytesIO(pickle.dumps(result_obj))
+        # end...
 
         await results_svc.create_result(result_pkl_file)
 

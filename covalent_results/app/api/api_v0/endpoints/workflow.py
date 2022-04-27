@@ -201,7 +201,9 @@ async def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.
     """
     Get a result object as pickle file
     """
+    # start(get_result) dispatch_id=dispatch_id
     result_binary: bytes = await _get_result_file(dispatch_id)
+    # end
     if format == ResultFormats.JSON:
         result = pickle.loads(result_binary)
         result_json_stringified = encode_result(result)
