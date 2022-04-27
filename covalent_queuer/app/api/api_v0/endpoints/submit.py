@@ -23,10 +23,12 @@ import uuid
 from io import BytesIO
 
 import cloudpickle as pickle
+import ipdb
 from app.core.api import ResultsService
 from app.core.queuer import Queuer
 from app.schemas.submit import ResultPickle, SubmitResponse
 from fastapi import APIRouter, File, HTTPException
+from covalent._shared_files.util_classes import Timer
 
 router = APIRouter()
 
@@ -41,7 +43,8 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
     different components. We call it the result object because it is supposed
     to be the ultimate thing the user will get and will contain everything in the workflow.
     """
-
+    timer = Timer()
+    timer.start('submit workflow', timer.QUEUER)
     queue = Queuer()
     results_svc = ResultsService()
 
@@ -60,6 +63,7 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
         await results_svc.create_result(result_pkl_file)
 
         await queue.publish(queue.topics.DISPATCH, {"dispatch_id": dispatch_id})
+        print(timer.stop_and_report('submit workflow', timer.QUEUER))
 
         return {"dispatch_id": dispatch_id}
 
