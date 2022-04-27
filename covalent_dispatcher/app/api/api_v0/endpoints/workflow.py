@@ -42,6 +42,7 @@ from app.schemas.workflow import (
 from fastapi import APIRouter, File, Query
 
 from covalent._results_manager import Result
+from covalent._shared_files.util_classes import Timer
 
 workflow_tasks_queue = MPQ()
 workflow_status_queue = MPQ()
@@ -49,7 +50,6 @@ workflow_status_queue = MPQ()
 # Using sentinel to indicate that the queue is empty since MPQ.empty() is an unreliable method
 workflow_tasks_queue.put(None)
 workflow_status_queue.put(None)
-
 
 router = APIRouter()
 
@@ -84,8 +84,8 @@ mock_result = {
     },
 }
 
-
 logger.warning("Dispatcher Service Started")
+timer = Timer()
 
 
 @router.post("/{dispatch_id}", status_code=202, response_model=DispatchWorkflowResponse)
@@ -103,13 +103,35 @@ def submit_workflow(*, dispatch_id: str) -> Any:
 
     # Get the result object
     # start(submit_workflow_get_result_and_unpickle) dispatch_id=dispatch_id
+    print(timer.start('submit_workflow_get_result_and_unpickle',
+                      descriptor="Get result and unpickle file",
+                      service=timer.DISPATCHER,
+                      dispatch_id=dispatch_id)
+          )
+
     result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
     # end
+    print(timer.stop('submit_workflow_get_result_and_unpickle',
+                     descriptor="Get result and unpickle action",
+                     service=timer.DISPATCHER,
+                     dispatch_id=dispatch_id)
+          )
     # Dispatch the workflow
 
     # start(submit_workflow_dispatch_workflow) dispatch_id=dispatch_id
+    print(timer.start(endpoint='submit_workflow_dispatch_workflow', descriptor="Dispatch the workflow",
+                      service=timer.DISPATCHER,
+                      dispatch_id=dispatch_id
+                      )
+          )
+
     dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
     # end
+    print(timer.stop(endpoint='submit_workflow_dispatch_workflow', descriptor="Dispatch the workflow",
+                     service=timer.DISPATCHER,
+                     dispatch_id=dispatch_id
+                     )
+          )
     vv = workflow_tasks_queue.get()
 
     logger.warning(f"IT SHOULD NOT BE EMPTY HERE {vv}")
@@ -163,7 +185,7 @@ def cancel_workflows(*, dispatch_ids: List[str] = Query([])) -> BatchCancelWorkf
 
 @router.put("/{dispatch_id}", status_code=200, response_model=UpdateWorkflowResponse)
 def update_workflow(
-    *, dispatch_id: str, task_execution_results: bytes = File(...)
+        *, dispatch_id: str, task_execution_results: bytes = File(...)
 ) -> UpdateWorkflowResponse:
     """
     Update a workflow
@@ -177,18 +199,27 @@ def update_workflow(
     task_execution_results["node_id"] = task_id
 
     # start(update_workflow_results) dispatch_id=dispatch_id
+    print(timer.start('update_workflow_results',
+                      descriptor="Update result obj in workflow",
+                      service=timer.DISPATCHER,
+                      dispatch_id=dispatch_id)
+          )
     updated_result_obj = update_workflow_results(
         task_execution_results=task_execution_results,
         dispatch_id=dispatch_id,
         tasks_queue=workflow_tasks_queue,
     )
     # end
+    print(timer.stop('update_workflow_results',
+                     descriptor="Update result obj in workflow",
+                     service=timer.DISPATCHER,
+                     dispatch_id=dispatch_id)
+          )
 
     # Empty queue when workflow is no longer running (completed # or failed)
     if updated_result_obj.status != Result.RUNNING and not is_sublattice_dispatch_id(
-        updated_result_obj.dispatch_id
+            updated_result_obj.dispatch_id
     ):
-
         logger.warning("updated_result_obj status is not RUNNING")
 
         workflow_status_queue.get()
@@ -203,7 +234,6 @@ def update_workflow(
 
 @router.get("/status", status_code=200)
 def get_status():
-
     if is_empty(workflow_status_queue):
         return {"status": "EMPTY"}
 
