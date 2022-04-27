@@ -240,6 +240,7 @@ async def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
     """
     Update a result object's task
     """
+    # start(update_result) dispatch_id=dispatch_id
     result = await _get_result_file(dispatch_id)
     results_object = pickle.loads(result)
     task = pickle.loads(task)
@@ -247,7 +248,7 @@ async def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
 
     pickled_result = io.BytesIO(pickle.dumps(results_object))
     uploaded = await _upload_file(pickled_result)
-
+    # end
     if uploaded:
         return {"response": "Task updated successfully"}
 
