@@ -87,7 +87,8 @@ class Timer:
             self._start_time = None
 
         self._start_time = time.perf_counter()
-        return f"{descriptor}  was initiated by {service} at {datetime.now()}"
+        return f" Dispatch id: {dispatch_id} \n Metadata: {descriptor}  was initiated by the {endpoint} in {service} at " \
+               f"{datetime.now()} "
 
     def stop(self, endpoint: str, descriptor: str, service: str, dispatch_id=None):
         """Stop the timer, and report the elapsed time"""
@@ -96,5 +97,5 @@ class Timer:
 
         elapsed_time = time.perf_counter() - self._start_time
         self._start_time = None
-        return f"{descriptor} function in the {service} ran in {elapsed_time:0.4f} ms"
-
+        return f" Dispatch id: {dispatch_id} \n Stats: {descriptor} in the {service} was initiated by {endpoint} " \
+               f" in {service} and ran in {elapsed_time:0.4f} ms "
