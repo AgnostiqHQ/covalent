@@ -83,17 +83,21 @@ def start_dispatch(result_obj: Result, tasks_queue: MPQ) -> Result:
     result_obj._start_time = datetime.now(timezone.utc)
 
     # Initialize the result object
+    # start(submit_workflow_init_transport_graph) dispatch_id=result_obj._dispatch_id
     result_obj = init_result_pre_dispatch(result_obj)
-
+    # end
     # Send the initialized result to the result service
     send_result_object_to_result_service(result_obj)
 
     # Get the order of tasks to be run
+    # start(submit_workflow_get_task_order) dispatch_id=result_obj._dispatch_id
     task_order: List[List] = get_task_order(result_obj)
-
+    # end
     logger.warning(f"task_order: {task_order}")
-    dispatch_runnable_tasks(result_obj, tasks_queue, task_order)
 
+    # start(submit_workflow_dispatch_runnable_tasks) dispatch_id=result_obj._dispatch_id
+    dispatch_runnable_tasks(result_obj, tasks_queue, task_order)
+    # end
     send_result_object_to_result_service(result_obj)
 
     return result_obj
@@ -119,12 +123,13 @@ def dispatch_runnable_tasks(result_obj: Result, tasks_queue: MPQ, task_order: Li
 
     # To get the runnable tasks from first task order list
     # Sending the tasks_queue as well to handle the case of sublattices
+    # start(dispatch_runnable_tasks_get_runnable_tasks) dispatch_id=result_obj._dispatch_id
     tasks, functions, input_args, input_kwargs, executors, next_tasks_order = get_runnable_tasks(
         result_obj=result_obj,
         tasks_order=task_order,
         tasks_queue=tasks_queue,
     )
-
+    # end
     logger.warning(f"In dispatch_runnable_tasks with tasks: {tasks}")
 
     logger.warning(f"Set of next tasks to be run {next_tasks_order}")
