@@ -131,7 +131,11 @@ def test_transport_graph_get_and_set_edges(workflow_transport_graph):
 
     wtg = workflow_transport_graph
     wtg.add_edge(x=0, y=1, edge_name="apples")
-    assert wtg._graph.get_edge_data(0, 1) == {0: {"edge_name": "apples"}}
+    wtg.add_edge(x=0, y=1, edge_name="oranges")
+    assert wtg._graph.get_edge_data(0, 1) == {
+        0: {"edge_name": "apples"},
+        1: {"edge_name": "oranges"},
+    }
 
 
 def test_transport_graph_transport_graph_reset(workflow_transport_graph):
