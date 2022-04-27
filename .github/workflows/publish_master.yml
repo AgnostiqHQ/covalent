@@ -83,7 +83,8 @@ jobs:
           docker push ${{ secrets.RUNNER_REPO }}
           docker push ${{ secrets.UI_REPO }}
       - name: Alert Slack
-        if: failure()
+        #if: failure()
+        if: false
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent"

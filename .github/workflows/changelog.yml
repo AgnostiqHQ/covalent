@@ -92,7 +92,8 @@ jobs:
           fi
           echo "MESSAGE=$message" >> $GITHUB_ENV
       - name: Commit
-        if: ${{ env.MESSAGE != 'noop' }}
+        #if: ${{ env.MESSAGE != 'noop' }}
+        if: false
         uses: EndBug/add-and-commit@v9
         with:
           author_name: CovalentOpsBot

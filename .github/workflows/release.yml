@@ -76,7 +76,8 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=v$VERSION" >> $GITHUB_ENV
       - name: Tag commit
-        if: inputs.prerelease
+        #if: inputs.prerelease
+        if: false
         id: push
         run: |
           git config user.name "CovalentOpsBot"
@@ -111,7 +112,8 @@ jobs:
           tag: ${{ env.RELEASE }}
           prerelease: ${{ inputs.prerelease }}
       - name: Alert Slack
-        if: failure()
+        #if: failure()
+        if: false
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent"
@@ -197,7 +199,8 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: twine upload dist/*
       - name: Alert Slack
-        if: failure()
+        #if: failure()
+        if: false
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent"
