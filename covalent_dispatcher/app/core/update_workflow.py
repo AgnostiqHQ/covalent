@@ -52,8 +52,9 @@ def update_workflow_results(
 
     # Update the task results
     latest_result_obj._update_node(**task_execution_results)
+    # start(update_workflow_results_update_workflow_result) dispatch_id=dispatch_id
     send_task_update_to_result_service(dispatch_id, task_execution_results)
-
+    # end
     if task_execution_results["status"] == Result.RUNNING:
 
         if is_sublattice_dispatch_id(latest_result_obj.dispatch_id):
@@ -112,8 +113,9 @@ def update_workflow_results(
 
     print(f"Result Object as :\n {latest_result_obj}")
 
+    # start(update_workflow_results_update_workflow_endtime)
     latest_result_obj = update_workflow_endtime(latest_result_obj)
-
+    # end
     return latest_result_obj
 
 
@@ -159,27 +161,29 @@ def update_completed_tasks(dispatch_id: str, tasks_queue: MPQ, result_obj: Resul
     if new_dispatch_id != dispatch_id:
 
         next_result_obj = get_result_object_from_result_service(dispatch_id=new_dispatch_id)
-
+        # start(update_runnable_tasks_dispatch_runnable_tasks) dispatch_id=new_dispatch_id
         dispatch_runnable_tasks(
             result_obj=next_result_obj, tasks_queue=tasks_queue, task_order=new_tasks_order
         )
+        # end
     else:
-
+        # start(update_runnable_tasks_dispatch_runnable_tasks) dispatch_id=result_obj._dispatch_id
         dispatch_runnable_tasks(
             result_obj=result_obj, tasks_queue=tasks_queue, task_order=new_tasks_order
         )
+        # end
 
     return result_obj
 
 
 def update_completed_workflow(result_obj: Result) -> Result:
     """Update the result for a completed lattice / sublattice workflow."""
-
+    # start(update_completed_workflow_post_process)
     result_obj._result = _post_process(
         lattice=result_obj.lattice,
         task_outputs=result_obj.get_all_node_outputs(),
     )
-
+    # end
     result_obj._status = Result.COMPLETED
 
     print(

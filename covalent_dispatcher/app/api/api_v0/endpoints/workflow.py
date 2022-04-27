@@ -102,11 +102,14 @@ def submit_workflow(*, dispatch_id: str) -> Any:
     workflow_status_queue.put(Result.RUNNING)
 
     # Get the result object
+    # start(submit_workflow_get_result_and_unpickle) dispatch_id=dispatch_id
     result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
-
+    # end
     # Dispatch the workflow
-    dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
 
+    # start(submit_workflow_dispatch_workflow) dispatch_id=dispatch_id
+    dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
+    # end
     vv = workflow_tasks_queue.get()
 
     logger.warning(f"IT SHOULD NOT BE EMPTY HERE {vv}")
@@ -173,11 +176,13 @@ def update_workflow(
     del task_execution_results["task_id"]
     task_execution_results["node_id"] = task_id
 
+    # start(update_workflow_results) dispatch_id=dispatch_id
     updated_result_obj = update_workflow_results(
         task_execution_results=task_execution_results,
         dispatch_id=dispatch_id,
         tasks_queue=workflow_tasks_queue,
     )
+    # end
 
     # Empty queue when workflow is no longer running (completed # or failed)
     if updated_result_obj.status != Result.RUNNING and not is_sublattice_dispatch_id(
