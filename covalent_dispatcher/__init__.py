@@ -24,17 +24,20 @@ Self-contained entry point for the dispatcher
 
 import uuid
 
-from dask.distributed import Client, fire_and_forget
+from dask.distributed import Client, fire_and_forget, get_client, LocalCluster
 
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._workflow.transport import _TransportGraph
+import gc
+
+g0, g1, g2 = gc.get_threshold()
+gc.set_threshold(g0*5, g1*5, g2*5)
 
 try:
     dask_client = Client(address="127.0.0.1:8786", timeout="1s")
 except OSError:
     dask_client = Client(processes=False, dashboard_address=":0")
-
 
 def get_unique_id() -> str:
     """

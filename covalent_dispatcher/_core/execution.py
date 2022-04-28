@@ -49,12 +49,12 @@ from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
 
 from .._db.dispatchdb import DispatchDB
+from .. import dask_client
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
-dask_client = Client(processes=False, dashboard_address=":0")
-
+#dask_client = Client(processes=False, dashboard_address=":0")
 
 def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
     """
@@ -150,7 +150,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
 def _run_task(
     inputs: Dict,
     result_object: Result,
-    node_id: int,
+    node_id: int
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -339,7 +339,7 @@ def _run_planned_workflow(result_object: Result) -> Result:
             tasks.append(dask.delayed(_run_task)(task_input, result_object, node_id))
 
         # run the tasks for the current iteration in parallel
-        dask.compute(*tasks)
+        dask.compute(*tasks, scheduler='threads')
 
         # When one or more nodes failed in the last iteration, don't iterate further
         for node_id in nodes:
@@ -428,8 +428,7 @@ def run_workflow(dispatch_id: str, results_dir: str) -> None:
         result_object.save()
         raise
 
-
-def cancel_workflow(dispatch_id: str) -> None:
+def cancel_workflow(dispatch_id: str, dask_client: Client) -> None:
     """
     Cancels a dispatched workflow using publish subscribe mechanism
     provided by Dask.
@@ -440,6 +439,7 @@ def cancel_workflow(dispatch_id: str) -> None:
     Returns:
         None
     """
-
+    #dask_client = Client(address='tcp://localhost:8786')
+    #dask_client = get_client(address='tcp://localhost:8786')
     shared_var = Variable(dispatch_id, client=dask_client)
     shared_var.set(str(Result.CANCELLED))

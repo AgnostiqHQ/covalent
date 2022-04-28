@@ -19,11 +19,13 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import argparse
+from asyncio.staggered import staggered_race
 import os
 from datetime import datetime
 from distutils.log import debug
 from logging.handlers import DEFAULT_TCP_LOGGING_PORT
 from pathlib import Path
+from enum import Enum
 
 import networkx as nx
 import simplejson
@@ -38,6 +40,7 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
+from multiprocessing import Process, Queue
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
@@ -48,6 +51,21 @@ app.register_blueprint(bp)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+#class Signal(Enum):
+#    TERMINATE = 1
+
+#def start_dask_cluster(signal_queue: Queue):
+#    """
+#        Start the dask cluster in a background process
+#    """
+#    from dask.distributed import LocalCluster
+#    cluster = LocalCluster(scheduler_port=8786, processes=False)
+#    while True:
+#        signal = signal_queue.get()
+#        if signal == Signal.TERMINATE:
+#            break
+#        else:
+#            continue
 
 @app.route(WEBHOOK_PATH, methods=["POST"])
 def handle_result_update():
@@ -158,4 +176,17 @@ if __name__ == "__main__":
     # reload = True if args.develop is True else False
     reload = False
 
+    # Create signal queue
+    #signal_q = Queue()
+
+    # Start dask cluster
+    #dask_proc = Process(target=start_dask_cluster, args=(signal_q, ))
+    #dask_proc.start()
+
     socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
+
+    # When process is killed, execution should reach here (so terminate the dask cluster)
+    #signal_q.put(Signal.TERMINATE)
+    #dask_proc.join()
+    #dask_proc.close()
+    #signal_q.close()
