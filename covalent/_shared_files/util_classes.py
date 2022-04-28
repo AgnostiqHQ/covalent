@@ -63,12 +63,12 @@ class TimerError(Exception):
 
 class Timer:
     """
-    Information on execution times of the API calls when a workflow is dispatched
+    Information on execution times of the API function calls when a workflow is dispatched
 
     Attributes:
-        endpoint: Name of endpoint or function call
-        descriptor : Description of action e.g., Updating a workflow
-        service: Name of service e.g. DISPATCHER,
+        endpoint: The name of an endpoint or function call
+        descriptor : A brief description of an action e.g., Updating a workflow
+        service: The name of the service e.g. DISPATCHER,
         dispatch_id: The uuid of a dispatch
     """
     DATA = 'Data Service'
@@ -89,7 +89,7 @@ class Timer:
             self._start_time = None
 
         self._start_time = time.perf_counter()
-        return f" Dispatch id: {dispatch_id} \n Metadata: {descriptor}  was initiated by the {endpoint} in {service} at " \
+        return f" Dispatch id: {dispatch_id} \nMetadata: {descriptor}  was initiated by {endpoint} in {service} at " \
                f"{datetime.now()} "
 
     def stop(self, endpoint: str, descriptor: str, service: str, dispatch_id=None):
@@ -99,5 +99,5 @@ class Timer:
 
         elapsed_time = time.perf_counter() - self._start_time
         self._start_time = None
-        return f" Dispatch id: {dispatch_id} \n Metadata: {descriptor} was initiated by {endpoint} " \
+        return f" Dispatch id: {dispatch_id} \nMetadata: {descriptor} was initiated by {endpoint} " \
                f" in {service} and ran in {elapsed_time:0.4f} ms "
