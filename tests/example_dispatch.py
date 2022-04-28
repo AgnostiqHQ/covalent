@@ -66,3 +66,9 @@ print(dispatch_id)
 result = ct.get_result(dispatch_id=dispatch_id, wait=True)
 
 print(result)
+
+with open('timer_output.csv', 'w') as f:
+    f.write(f'Dispatch ID, {dispatch_id}\nFilename, example_dispatch.py\n')
+
+
+
