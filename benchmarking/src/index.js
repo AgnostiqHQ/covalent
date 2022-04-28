@@ -1,5 +1,5 @@
 const $ = require('jquery');
-const workflowDict = require('./test.json');
+const workflowDict = require('./experiment_results.json');
 
 $(function(){
     const workflows = Object.entries(workflowDict).forEach(([dispatch_id,dict])=>{
@@ -9,21 +9,24 @@ $(function(){
         const table = $('<table></table>');
 
         const columns = $('<tr></tr>');
-        Object.keys(dict).forEach(col_label => {
-            columns.append($('<th></th>').text(col_label));
-        })
-
         const rows = $('<tr></tr>');
 
-        Object.values(dict).forEach(row_val => {
-            rows.append($('<td></td>').text(row_val));
+        columns.append('<th>Task</th>');
+        columns.append('<th>Time</th>')
+
+
+        Object.entries(dict).forEach(([label,value]) => {
+            rows.append($('<th></th>').text(label));
+            rows.append($('<th></th>').text(value));
         })
+
+
 
         table.append(columns);
         table.append(rows);
 
 
-        wrapper.append('<h3></h3>').text(`Workflow #${dispatch_id}`)
+        wrapper.append(`<h2>Workflow #${dispatch_id}</h2>`)
         wrapper.append(table);
         $('#reports').append(wrapper);
     })
