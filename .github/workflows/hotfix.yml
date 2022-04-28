@@ -26,7 +26,10 @@ on:
 
 jobs:
   hotfix:
-    if: github.event.issue.pull_request && github.event.comment.body == 'hotfix-now'
+    if: >
+      github.event.issue.pull_request
+      && github.event.comment.body == 'hotfix-now'
+      && contains(github.event.issue.labels.*.name, 'hotfix')
     runs-on: ubuntu-latest
     steps:
       - name: Extract PR route
