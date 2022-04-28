@@ -1,0 +1,37 @@
+{
+  "name": "covalent-benchmarking",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "env NODE_ENV=development webpack-dev-server --mode development --open",
+    "build": "rm -rf ./dist; env NODE_ENV=production webpack --mode production"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.7.4",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "@babel/plugin-transform-classes": "^7.7.4",
+    "@babel/preset-env": "^7.7.4",
+    "babel-loader": "^8.0.6",
+    "babel-polyfill": "^6.26.0",
+    "copy-webpack-plugin": "^5.0.5",
+    "css-loader": "^3.2.0",
+    "file-loader": "^4.3.0",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "style-loader": "^1.0.0",
+    "url-loader": "^2.3.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.9.0"
+  },
+  "dependencies": {
+    "jquery": "^3.4.1"
+  },
+  "keywords": [
+    "benchmarking"
+  ],
+  "author": "Alejandro Esquivel",
+  "license": "ISC"
+}

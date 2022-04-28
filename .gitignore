@@ -144,3 +144,6 @@ supervisord.conf
 
 # NATS Server
 covalent_queuer/nats-server
+
+# Benchmarking
+Benchmarking/node_modules
