@@ -17,9 +17,9 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-from datetime import datetime
 import time
 from dataclasses import dataclass
+from datetime import datetime
 from typing import NamedTuple
 
 
@@ -71,33 +71,46 @@ class Timer:
         service: The name of the service e.g. DISPATCHER,
         dispatch_id: The uuid of a dispatch
     """
-    DATA = 'Data Service'
-    DISPATCHER = 'Dispatcher Service'
-    QUEUER = 'Queuer Service'
-    QUEUE_CONSUMER = 'Queue Consumer Service'
-    RESULTS = 'Results Service'
-    RUNNER = 'Runner Service'
-    UI = 'UI Service'
-    NATS_SERVER = 'Nats Service'
 
-    def __init__(self):
+    DATA = "Data Service"
+    DISPATCHER = "Dispatcher Service"
+    QUEUER = "Queuer Service"
+    QUEUE_CONSUMER = "Queue Consumer Service"
+    RESULTS = "Results Service"
+    RUNNER = "Runner Service"
+    UI = "UI Service"
+    NATS_SERVER = "Nats Service"
+
+    def __init__(self, endpoint: str, descriptor: str, service: str, dispatch_id=None):
         self._start_time = None
+        self.endpoint = endpoint
+        self.descriptor = descriptor
+        self.service = service
+        self.dispatch_id = dispatch_id
 
-    def start(self, endpoint: str, descriptor: str, service: str, dispatch_id=None):
+    def start(self):
         """Start a new timer"""
         if self._start_time is not None:
             self._start_time = None
 
         self._start_time = time.perf_counter()
-        return f" Dispatch id: {dispatch_id} \nMetadata: {descriptor}  was initiated by {endpoint} in {service} at " \
-               f"{datetime.now()} "
+        debug_message = (
+            f" Dispatch id: {self.dispatch_id} \nMetadata: {self.descriptor}  was initiated by {self.endpoint} in {self.service} at "
+            f"{datetime.now()} "
+        )
+        print(debug_message)
 
-    def stop(self, endpoint: str, descriptor: str, service: str, dispatch_id=None):
+    def stop(self):
         """Stop the timer, and report the elapsed time"""
         if self._start_time is None:
-            self.start(endpoint, descriptor, service, dispatch_id)
-
-        elapsed_time = time.perf_counter() - self._start_time
-        self._start_time = None
-        return f" Dispatch id: {dispatch_id} \nMetadata: {descriptor} was initiated by {endpoint} " \
-               f" in {service} and ran in {elapsed_time:0.4f} ms "
+            print(
+                f"Timer for service {self.service}, endpoint: {self.endpoint}, and descriptor {self.descriptor} was never started."
+            )
+        else:
+            elapsed_time = time.perf_counter() - self._start_time
+            self._start_time = None
+            debug_message = (
+                f" Dispatch id: {self.dispatch_id} \nMetadata: {self.descriptor} was initiated by {self.endpoint} "
+                f" in {self.service} and ran in {elapsed_time:0.4f} ms "
+            )
+            print(debug_message)

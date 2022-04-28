@@ -65,7 +65,6 @@ router = APIRouter()
 ultimate_dict = {}
 
 logger.warning("Runner Service Started")
-timer = Timer()
 
 
 @router.post("/{dispatch_id}/tasks", status_code=202, response_model=RunTaskResponse)
@@ -102,13 +101,13 @@ async def run_tasks(*, dispatch_id: str, tasks: bytes = File(...)) -> RunTaskRes
     """
 
     logger.warning(f"POST on /{dispatch_id}/tasks called to submit a list of tasks")
-    print(timer.start(
-        endpoint='run_tasks',
-        descriptor='Run a list of tasks',
-        service=timer.RUNNER,
-        dispatch_id=dispatch_id
+    timer = Timer(
+        endpoint="run_tasks",
+        descriptor="Run a list of tasks",
+        service=Timer.RUNNER,
+        dispatch_id=dispatch_id,
     )
-    )
+    timer.start()
     runnable_tasks = pickle.loads(tasks)
 
     logger.warning(f"ultimate dict before {ultimate_dict}")
@@ -122,13 +121,7 @@ async def run_tasks(*, dispatch_id: str, tasks: bytes = File(...)) -> RunTaskRes
     # Returning the task ids which were not run due to insufficient resources
     left_out_task_ids = [task["task_id"] for task in tasks_left_to_run]
 
-    print(timer.stop(
-        endpoint='run_tasks',
-        descriptor='Run a list of tasks',
-        service=timer.RUNNER,
-        dispatch_id=dispatch_id
-    )
-    )
+    timer.stop()
 
     return {"left_out_task_ids": left_out_task_ids}
 
@@ -141,13 +134,13 @@ async def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
 
     logger.warning(f"GET on /{dispatch_id}/task/{task_id} called to check status")
 
-    print(timer.start(
-        endpoint='check_status_task',
-        descriptor='Check status of a task',
-        service=timer.RUNNER,
-        dispatch_id=dispatch_id
-        )
+    timer = Timer(
+        endpoint="check_status_task",
+        descriptor="Check status of a task",
+        service=Timer.RUNNER,
+        dispatch_id=dispatch_id,
     )
+    timer.start()
 
     # Pass in the executor and info_queue to get status from the executor
     task_status = get_task_status(
@@ -155,13 +148,7 @@ async def check_status(*, dispatch_id: str, task_id: int) -> TaskStatus:
         ultimate_dict[dispatch_id][task_id]["info_queue"],
     )
 
-    print(timer.start(
-        endpoint='check_status_task',
-        descriptor='Check status of a task',
-        service=timer.RUNNER,
-        dispatch_id=dispatch_id
-        )
-    )
+    timer.stop()
     return {"status": f"{task_status}"}
 
 
@@ -179,13 +166,13 @@ async def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     # )
 
     # Cancel a task by calling its executor's cancel method and closing the info_queue
-    print(timer.start(
-        endpoint='cancel_task',
-        descriptor='Cancel a running task',
-        service=timer.RUNNER,
-        dispatch_id=dispatch_id
-        )
+    timer = Timer(
+        endpoint="cancel_task",
+        descriptor="Cancel a running task",
+        service=Timer.RUNNER,
+        dispatch_id=dispatch_id,
     )
+    timer.start()
     cancel_running_task(
         executor=pickle.loads(ultimate_dict[dispatch_id][task_id]["executor"]),
         info_queue=ultimate_dict[dispatch_id][task_id]["info_queue"],
@@ -212,13 +199,7 @@ async def cancel_task(*, dispatch_id: str, task_id: int) -> CancelResponse:
     #     f"ultimate dict in cancel after cancelling {[(k, list(v)[0]) for k, v in ultimate_dict.items()]}",
     #     file=sys.stderr,
     # )
-    print(timer.stop(
-        endpoint='cancel_task',
-        descriptor='Cancel a running task',
-        service=timer.RUNNER,
-        dispatch_id=dispatch_id
-        )
-    )
+    timer.stop()
     send_task_update_to_dispatcher(dispatch_id=dispatch_id, task_result=task_result)
 
     return {"cancelled_dispatch_id": f"{dispatch_id}", "cancelled_task_id": f"{task_id}"}

@@ -23,11 +23,11 @@ import uuid
 from io import BytesIO
 
 import cloudpickle as pickle
-import ipdb
 from app.core.api import ResultsService
 from app.core.queuer import Queuer
 from app.schemas.submit import ResultPickle, SubmitResponse
 from fastapi import APIRouter, File, HTTPException
+
 from covalent._shared_files.util_classes import Timer
 
 router = APIRouter()
@@ -43,7 +43,6 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
     different components. We call it the result object because it is supposed
     to be the ultimate thing the user will get and will contain everything in the workflow.
     """
-    timer = Timer()
     queue = Queuer()
     results_svc = ResultsService()
 
@@ -52,21 +51,19 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
         dispatch_id = str(uuid.uuid4())
 
         # start (queuer_pickle_loads_adds_uuid) dispatch_id=dispatch_id
-        print(timer.start(endpoint="queuer_pickle_loads_adds_uuid",
-                          descriptor="Submit workflow containing pickled file",
-                          service=timer.QUEUER,
-                          dispatch_id=dispatch_id),
-              )
+        timer = Timer(
+            endpoint="queuer_pickle_loads_adds_uuid",
+            descriptor="Submit workflow containing pickled file",
+            service=Timer.QUEUER,
+            dispatch_id=dispatch_id,
+        )
+        timer.start()
         result_obj = pickle.loads(result_pkl_file)
         result_obj._dispatch_id = dispatch_id
 
         result_pkl_file = BytesIO(pickle.dumps(result_obj))
         # end...
-        print(timer.stop(endpoint="queuer_pickle_loads_adds_uuid",
-                         descriptor="Submit workflow containing pickled file",
-                         service=timer.QUEUER,
-                         dispatch_id=dispatch_id),
-              )
+        timer.stop()
         await results_svc.create_result(result_pkl_file)
 
         await queue.publish(queue.topics.DISPATCH, {"dispatch_id": dispatch_id})

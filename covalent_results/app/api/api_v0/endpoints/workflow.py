@@ -49,14 +49,13 @@ from app.schemas.workflow import (
 from fastapi import APIRouter, File, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
-from covalent._shared_files.utils import encode_result
 from covalent._shared_files.util_classes import Timer
+from covalent._shared_files.utils import encode_result
 
 router = APIRouter()
 
 data_svc = DataService()
 db = Database()
-timer = Timer()
 
 
 # @router.middleware("http")
@@ -114,7 +113,7 @@ async def _concurrent_download_and_serialize(semaphore, file_name, session):
     async with semaphore:
         # logger.debug(f"Downloading & serializing: {file_name}...")
         async with session.get(
-                DataURI().get_route("/fs/download"), params={"file_location": file_name}
+            DataURI().get_route("/fs/download"), params={"file_location": file_name}
         ) as resp:
             result_binary = await resp.read()
             result = pickle.loads(result_binary)
@@ -204,22 +203,16 @@ async def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.
     Get a result object as pickle file
     """
     # start(get_result) dispatch_id=dispatch_id
-    print(timer.start(
+    timer = Timer(
         endpoint="get_result",
         descriptor="Get result object as pickle file",
-        service=timer.RESULTS,
-        dispatch_id=dispatch_id
+        service=Timer.RESULTS,
+        dispatch_id=dispatch_id,
     )
-    )
+    timer.start()
     result_binary: bytes = await _get_result_file(dispatch_id)
     # end
-    print(timer.stop(
-        endpoint="get_result",
-        descriptor="Get result object as pickle file",
-        service=timer.RESULTS,
-        dispatch_id=dispatch_id
-    )
-    )
+    timer.stop()
 
     if format == ResultFormats.JSON:
         result = pickle.loads(result_binary)
@@ -231,8 +224,8 @@ async def get_result(*, dispatch_id: str, format: ResultFormats = ResultFormats.
 
 @router.post("/results", status_code=200, response_model=InsertResultResponse)
 async def insert_result(
-        *,
-        result_pkl_file: UploadFile,
+    *,
+    result_pkl_file: UploadFile,
 ) -> Any:
     """
     Submit pickled result file
@@ -258,13 +251,13 @@ async def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
     Update a result object's task
     """
     # start(update_result) dispatch_id=dispatch_id
-    print(timer.start(
+    timer = Timer(
         endpoint="workflow_update_result",
         descriptor="Update a result object's task",
-        service=timer.RESULTS,
-        dispatch_id=dispatch_id
+        service=Timer.RESULTS,
+        dispatch_id=dispatch_id,
     )
-    )
+    timer.start()
     result = await _get_result_file(dispatch_id)
     results_object = pickle.loads(result)
     task = pickle.loads(task)
@@ -273,14 +266,7 @@ async def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
     pickled_result = io.BytesIO(pickle.dumps(results_object))
     uploaded = await _upload_file(pickled_result)
     # end
-    print(
-        timer.stop(
-            endpoint="workflow_update_result",
-            descriptor="Update a result object's task",
-            service=timer.RESULTS,
-            dispatch_id=dispatch_id
-        )
-    )
+    timer.stop()
     if uploaded:
         return {"response": "Task updated successfully"}
 

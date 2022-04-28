@@ -31,13 +31,13 @@ from fastapi.responses import StreamingResponse
 from minio import Minio
 
 from covalent._shared_files.util_classes import Timer
+
 from ....core.localstoragebackend import LocalStorageBackend
 from ....core.miniostoragebackend import MinioStorageBackend
 
 router = APIRouter()
 
 MINIO_USE_TLS = settings.MINIO_DISABLE_TLS.lower() not in ("true", "1")
-timer = Timer()
 
 # TODO: support additional minio config options
 if settings.FS_STORAGE_BACKEND == "minio":
@@ -57,12 +57,12 @@ def upload_file(*, file: UploadFile, overwrite: bool = False) -> Any:
     """
     Upload a file
     """
-    print(timer.start(
-        endpoint='upload_file',
-        descriptor='Upload a file',
-        service=timer.DATA,
-        )
+    timer = Timer(
+        endpoint="upload_file",
+        descriptor="Upload a file",
+        service=Timer.DATA,
     )
+    timer.start()
     file.file.seek(0, 2)
     length = file.file.tell()
     file.file.seek(0)
@@ -71,12 +71,7 @@ def upload_file(*, file: UploadFile, overwrite: bool = False) -> Any:
         file.file, backend.bucket_name, file.filename, length, overwrite=overwrite
     )
 
-    print(timer.stop(
-        endpoint='upload_file',
-        descriptor='Upload a file',
-        service=timer.DATA,
-        )
-    )
+    timer.stop()
     return {
         "filename": filename,
         "path": path,
@@ -99,34 +94,30 @@ def download_file(*, file_location: str) -> Any:
     """
     Download a file
     """
-    print(timer.start(
-        endpoint='download_file',
-        descriptor='Download a file',
-        service=timer.DATA,
-        )
+    timer = Timer(
+        endpoint="download_file",
+        descriptor="Download a file",
+        service=Timer.DATA,
     )
+    timer.start()
     g = backend.get(backend.bucket_name, file_location)
     if not g:
         raise HTTPException(status_code=404, detail="File not found")
 
-    print(timer.stop(
-        endpoint='download_file',
-        descriptor='Download a file',
-        service=timer.DATA,
-        )
-    )
+    timer.stop()
     return StreamingResponse(g, media_type="application/octet-stream")
 
 
 @router.delete("/delete", status_code=200, response_model=DeleteResponse)
 def delete_file(*, obj_names: List[str] = Query([])) -> DeleteResponse:
-    print(timer.start(
-        endpoint='delete_file',
-        descriptor='Delete a file',
-        service=timer.DATA,
-        )
+    timer = Timer(
+        endpoint="delete_file",
+        descriptor="Delete a file",
+        service=Timer.DATA,
     )
+    timer.start()
     deleted, failed = backend.delete(backend.bucket_name, obj_names)
+    timer.stop()
     return {
         "deleted": deleted,
         "failed": failed,
