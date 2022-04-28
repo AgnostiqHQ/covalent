@@ -407,11 +407,16 @@ Node Outputs
             else self.end_time,
         }
 
+        status_short = {"completed": self.status == Result.COMPLETED}
+
         with open(os.path.join(result_folder_path, "result.pkl"), "wb") as f:
             f.write(pickle.dumps(self))
 
         with open(os.path.join(result_folder_path, "result_info.yaml"), "w") as f:
             yaml.dump(result_info, f)
+
+        with open(os.path.join(result_folder_path, "status.yaml"), "w") as f:
+            yaml.dump(status_short, f)
 
         if write_source:
             self._write_dispatch_to_python_file()
