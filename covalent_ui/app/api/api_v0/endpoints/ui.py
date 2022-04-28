@@ -24,8 +24,11 @@ from app.schemas.ui import DrawRequest, UpdateUIResponse
 from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.encoders import jsonable_encoder
 
+from covalent._shared_files.util_classes import Timer
+
 dispatch_set = set()
 limiter = AsyncLimiter(1, 2)
+timer = Timer()
 
 router = APIRouter()
 
@@ -58,10 +61,22 @@ async def update_ui(
     """
     API Endpoint (/api/workflow/task) to update ui frontend
     """
-
+    print(timer.start(
+        endpoint='update_ui',
+        descriptor='Update ui frontend',
+        service=timer.UI,
+        dispatch_id=dispatch_id
+        )
+    )
     # throttle notify frontend calls in background
     background_tasks.add_task(throttle_request_update_notify, request.app, dispatch_id, task_id)
-
+    print(timer.stop(
+        endpoint='update_ui',
+        descriptor='Update ui frontend',
+        service=timer.UI,
+        dispatch_id=dispatch_id
+        )
+    )
     return {"response": "UI Updated"}
 
 
@@ -70,7 +85,12 @@ async def draw_draft(*, payload: DrawRequest, request: Request) -> UpdateUIRespo
     """
     API Endpoint (/api/workflow/draft) to draw workflow draft
     """
-
+    print(timer.start(
+        endpoint='draw_draft',
+        descriptor='Draw workflow draft',
+        service=timer.UI,
+        )
+    )
     await notify_frontend(request.app, "draw-request", jsonable_encoder(payload))
 
     return {"response": "UI Workflow Draft Sent"}

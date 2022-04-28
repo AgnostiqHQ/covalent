@@ -103,27 +103,31 @@ def submit_workflow(*, dispatch_id: str) -> Any:
 
     # Get the result object
     # start(submit_workflow_get_result_and_unpickle) dispatch_id=dispatch_id
-    print(timer.start('submit_workflow_get_result_and_unpickle',
-                      descriptor="Get result and unpickle file",
-                      service=timer.DISPATCHER,
-                      dispatch_id=dispatch_id)
-          )
+    print(timer.start(
+        endpoint='submit_workflow_get_result_and_unpickle',
+        descriptor="Get result and unpickle file",
+        service=timer.DISPATCHER,
+        dispatch_id=dispatch_id)
+    )
 
     result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
     # end
-    print(timer.stop('submit_workflow_get_result_and_unpickle',
-                     descriptor="Get result and unpickle action",
-                     service=timer.DISPATCHER,
-                     dispatch_id=dispatch_id)
-          )
+    print(timer.stop(
+        endpoint='submit_workflow_get_result_and_unpickle',
+        descriptor="Get result and unpickle action",
+        service=timer.DISPATCHER,
+        dispatch_id=dispatch_id)
+    )
     # Dispatch the workflow
 
     # start(submit_workflow_dispatch_workflow) dispatch_id=dispatch_id
-    print(timer.start(endpoint='submit_workflow_dispatch_workflow', descriptor="Dispatch the workflow",
-                      service=timer.DISPATCHER,
-                      dispatch_id=dispatch_id
-                      )
-          )
+    print(timer.start(
+        endpoint='submit_workflow_dispatch_workflow',
+        descriptor="Dispatch the workflow",
+        service=timer.DISPATCHER,
+        dispatch_id=dispatch_id
+    )
+    )
 
     dispatch_workflow(result_obj=result_obj, tasks_queue=workflow_tasks_queue)
     # end
@@ -149,9 +153,22 @@ def cancel_workflow(*, dispatch_id: str) -> CancelWorkflowResponse:
     Cancel a workflow
     """
 
+    print(timer.start(
+        endpoint='cancel_workflow',
+        descriptor='Cancel execution of a workflow',
+        service=timer.DISPATCHER,
+        dispatch_id=dispatch_id)
+    )
     result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
     success = cancel_workflow_execution(result_obj)
+
+    print(timer.stop(
+        endpoint='cancel_workflow',
+        descriptor='Cancel execution of a workflow',
+        service=timer.DISPATCHER,
+        dispatch_id=dispatch_id)
+    )
 
     # Note - The queue should be populated in theory.
     if not is_empty(workflow_tasks_queue):

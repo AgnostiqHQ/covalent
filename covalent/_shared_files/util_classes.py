@@ -58,16 +58,18 @@ class DispatchInfo(NamedTuple):
 
 
 class TimerError(Exception):
-    """A custom exception used to report errors in use of ExecutionTimer class"""
+    """A custom exception used to report errors in usage of the Timer class"""
 
 
 class Timer:
     """
-    Information on execution times of the various function calls during a dispatch session
+    Information on execution times of the API calls when a workflow is dispatched
 
     Attributes:
-        descriptor : Description of job e.g., pickling/unpickling a file
-        service_name: Name of service e.g. covalent_dispatcher
+        endpoint: Name of endpoint or function call
+        descriptor : Description of action e.g., Updating a workflow
+        service: Name of service e.g. DISPATCHER,
+        dispatch_id: The uuid of a dispatch
     """
     DATA = 'Data Service'
     DISPATCHER = 'Dispatcher Service'
@@ -97,5 +99,5 @@ class Timer:
 
         elapsed_time = time.perf_counter() - self._start_time
         self._start_time = None
-        return f" Dispatch id: {dispatch_id} \n Stats: {descriptor} in the {service} was initiated by {endpoint} " \
+        return f" Dispatch id: {dispatch_id} \n Metadata: {descriptor} was initiated by {endpoint} " \
                f" in {service} and ran in {elapsed_time:0.4f} ms "
