@@ -70,7 +70,7 @@ const NodeDrawer = ({ node, graph }) => {
           boxSizing: 'border-box',
           border: 'none',
           p: 3,
-          bgcolor: alpha(theme.palette.background.default, 0.3),
+          bgcolor: alpha('#1c1c46', 0.9),
           backdropFilter: 'blur(16px)',
         },
       })}
@@ -89,7 +89,9 @@ const NodeDrawer = ({ node, graph }) => {
               mb: 2,
             }}
           >
-            <Typography sx={{ color: '#A5A6F6', overflowWrap: 'anywhere' }}>
+            <Typography
+              sx={{ color: 'secondary.light', overflowWrap: 'anywhere' }}
+            >
               {node.name}
             </Typography>
             <Box>
@@ -152,26 +154,29 @@ const NodeDrawer = ({ node, graph }) => {
           )}
 
           {/* Input */}
-          <InputSection node={node} graph={graph} />
+          <InputSection node={node} graph={graph} sx={{ bgcolor: '#101820' }} />
 
           {/* Result */}
           {node.status === 'COMPLETED' && (
             <>
               <Heading>Result</Heading>
-              <Paper elevation={0}>
+              <Paper elevation={0} sx={{ bgcolor: '#101820' }}>
                 <SyntaxHighlighter language="python" src={node.output} />
               </Paper>
             </>
           )}
 
           {/* Executor */}
-          <ExecutorSection metadata={_.get(node, 'metadata')} />
+          <ExecutorSection
+            metadata={_.get(node, 'metadata')}
+            sx={{ bgcolor: '#101820' }}
+          />
 
           <Divider sx={{ my: 2 }} />
 
           {/* Source */}
           <Heading />
-          <Paper elevation={0}>
+          <Paper elevation={0} sx={{ bgcolor: '#101820' }}>
             <SyntaxHighlighter src={src} />
           </Paper>
         </>

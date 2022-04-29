@@ -32,7 +32,7 @@ import { Handle } from 'react-flow-renderer'
 
 import { ReactComponent as AtomSvg } from '../../assets/atom.svg'
 import { statusColor } from '../../utils/misc'
-import { Check, WarningAmber } from '@mui/icons-material'
+import { CheckCircle, WarningAmber } from '@mui/icons-material'
 
 export const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
 
@@ -59,19 +59,21 @@ const ElectronNode = ({
   return (
     <ElectronTooltip title={data.fullName} arrow placement="bottom-end">
       <Paper
-        elevation={!selected ? 1 : 5}
-        sx={{
+        elevation={!selected ? 0 : 5}
+        sx={(theme) => ({
           display: 'flex',
           alignItems: 'center',
           px: 1,
           py: 0.5,
           borderRadius: 1,
-          // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-          color: !selected ? NODE_TEXT_COLOR : '#FAFAFA',
-          borderColor: color,
+          bgcolor: theme.palette.background.coveBlack02,
+          color: !selected
+            ? theme.palette.text.gray01
+            : theme.palette.text.gray02,
+          borderColor: theme.palette.primary.blue04,
           borderStyle: 'solid',
           borderWidth: hasBorder ? 1 : 0,
-        }}
+        })}
       >
         <Handle
           type="target"
@@ -96,7 +98,7 @@ const ElectronNode = ({
                 </SvgIcon>
               )
             case 'COMPLETED':
-              return <Check sx={{ mr: 1, fontSize: 12, fill: color }} />
+              return <CheckCircle sx={{ mr: 1, fontSize: 12, fill: color }} />
             case 'FAILED':
               return <WarningAmber sx={{ mr: 1, fontSize: 12, color: color }} />
             default:
@@ -104,7 +106,9 @@ const ElectronNode = ({
           }
         })()}
 
-        <Typography sx={{ fontSize: 12 }}>{data.label}</Typography>
+        <Typography sx={{ fontSize: 12, color: 'secondary.light' }}>
+          {data.label}
+        </Typography>
         <Handle
           type="source"
           position={sourcePosition}

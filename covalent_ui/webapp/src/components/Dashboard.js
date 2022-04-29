@@ -119,9 +119,11 @@ const Dashboard = () => {
       <NavDrawer />
 
       <Container maxWidth="xl" sx={{ mb: 4, mt: 7 }}>
-        <Paper elevation={0} sx={{ p: 3, mb: 2 }}>
+        <Paper elevation={0} sx={{ p: 3, mb: 2, borderRadius: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography fontSize="h5.fontSize">Dispatch list</Typography>
+            <Typography fontSize="h5.fontSize" color="white">
+              Dispatch list
+            </Typography>
             {isFetching && <CircularProgress size="1rem" sx={{ mx: 2 }} />}
 
             {dispatcherAddress && (

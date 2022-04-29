@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Disabled ops bot in workflows
+- UI redesign phase 2: updates to color theme and typography
 
 ## [0.95.0] - 2022-04-25
 

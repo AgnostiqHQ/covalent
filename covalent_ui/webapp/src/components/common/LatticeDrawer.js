@@ -33,8 +33,9 @@ const drawerPaperStyles = (theme) => ({
   width: latticeDrawerWidth,
   boxSizing: 'border-box',
   border: 'none',
-  bgcolor: alpha(theme.palette.background.default, 0.3),
-  backdropFilter: 'blur(16px)',
+  bgcolor: alpha('#080819', 0.8),
+  boxShadow: '0px 16px 50px rgba(0, 0, 0, 0.9)',
+  backdropFilter: 'blur(8px)',
   '&:not(:hover)::-webkit-scrollbar-thumb': {
     backgroundColor: 'inherit',
   },

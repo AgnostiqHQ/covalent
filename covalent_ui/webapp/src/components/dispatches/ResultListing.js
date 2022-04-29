@@ -26,13 +26,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { parseISO } from 'date-fns'
 import {
   Table,
-  Link,
   TableRow,
   TableHead,
   TableCell,
   TableBody,
   Typography,
-  Paper,
   IconButton,
   Input,
   InputAdornment,
@@ -56,6 +54,7 @@ import {
 } from '@mui/icons-material'
 import Fuse from 'fuse.js'
 import { createSelector } from '@reduxjs/toolkit'
+import { useNavigate } from 'react-router-dom'
 
 import { fetchResults, deleteResults } from '../../redux/resultsSlice'
 import CopyButton from '../common/CopyButton'
@@ -154,6 +153,7 @@ const ResultsTableHead = ({
             indeterminate={numSelected > 0 && numSelected < total}
             checked={numSelected > 0 && numSelected === total}
             onClick={onSelectAllClick}
+            sx={{ color: 'text.tertiary' }}
           />
         </TableCell>
 
@@ -198,48 +198,51 @@ const ResultsTableToolbar = ({
         </Typography>
       )}
 
-      <Paper sx={{ ml: 'auto', px: 1, py: 0.5, maxWidth: 240 }}>
-        <Input
-          disableUnderline
-          placeholder="Search"
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value)
-          }}
-          startAdornment={
-            <InputAdornment position="start">
-              <SearchIcon sx={{ color: 'text.secondary', fontSize: 16 }} />
-            </InputAdornment>
-          }
-          endAdornment={
-            <InputAdornment
-              position="end"
-              sx={{ visibility: !!query ? 'visible' : 'hidden' }}
-            >
-              <IconButton size="small" onClick={() => setQuery('')}>
-                <ClearIcon
-                  fontSize="inherit"
-                  sx={{ color: 'text.secondary' }}
-                />
-              </IconButton>
-            </InputAdornment>
-          }
-        />
-      </Paper>
+      <Input
+        sx={{
+          ml: 'auto',
+          px: 1,
+          py: 0.5,
+          maxWidth: 240,
+          border: '1px solid #303067',
+          borderRadius: '60px',
+        }}
+        disableUnderline
+        placeholder="Search"
+        value={query}
+        onChange={(event) => {
+          setQuery(event.target.value)
+        }}
+        startAdornment={
+          <InputAdornment position="start">
+            <SearchIcon sx={{ color: 'text.secondary', fontSize: 16 }} />
+          </InputAdornment>
+        }
+        endAdornment={
+          <InputAdornment
+            position="end"
+            sx={{ visibility: !!query ? 'visible' : 'hidden' }}
+          >
+            <IconButton size="small" onClick={() => setQuery('')}>
+              <ClearIcon fontSize="inherit" sx={{ color: 'text.secondary' }} />
+            </IconButton>
+          </InputAdornment>
+        }
+      />
     </Toolbar>
   )
 }
 
 const StyledTable = styled(Table)(({ theme }) => ({
   // stripe every odd body row except on select and hover
-  [`& .MuiTableBody-root .MuiTableRow-root:nth-of-type(odd):not(.Mui-selected):not(:hover)`]:
-    {
-      backgroundColor: theme.palette.background.paper,
-    },
+  // [`& .MuiTableBody-root .MuiTableRow-root:nth-of-type(odd):not(.Mui-selected):not(:hover)`]:
+  //   {
+  //     backgroundColor: theme.palette.background.paper,
+  //   },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
-    color: theme.palette.text.secondary,
+    color: theme.palette.text.tertiary,
   },
 
   // copy btn on hover
@@ -248,11 +251,32 @@ const StyledTable = styled(Table)(({ theme }) => ({
     '&:hover .copy-btn': { visibility: 'visible' },
   },
 
+  [`& .${tableBodyClasses.root} .${tableRowClasses.root}`]: {
+    cursor: 'pointer',
+  },
+
+  // customize text
+  [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
+    {
+      fontSize: '1rem',
+    },
+
+  // customize hover
+  [`& .${tableBodyClasses.root} .${tableRowClasses.root}:hover`]: {
+    backgroundColor: theme.palette.background.paper,
+  },
+
+  // customize selected
+  [`& .${tableBodyClasses.root} .${tableRowClasses.root}.Mui-selected`]: {
+    backgroundColor: theme.palette.background.coveBlack02,
+  },
+  [`& .${tableBodyClasses.root} .${tableRowClasses.root}.Mui-selected:hover`]: {
+    backgroundColor: theme.palette.background.coveBlack01,
+  },
+
   // customize border
   [`& .${tableCellClasses.root}`]: {
     borderColor: theme.palette.background.default,
-    paddingTop: 2,
-    paddingBottom: 2,
   },
   [`& .${tableCellClasses.root}:first-of-type`]: {
     borderTopLeftRadius: 8,
@@ -266,6 +290,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
 const ResultListing = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const [query, setQuery] = useState('')
   const [order, setOrder] = useState('desc')
@@ -341,7 +366,7 @@ const ResultListing = () => {
         />
 
         <TableContainer>
-          <StyledTable>
+          <StyledTable size="small">
             <ResultsTableHead
               order={order}
               orderBy={orderBy}
@@ -359,20 +384,29 @@ const ResultListing = () => {
                 const endTime = parseISO(result.end_time)
 
                 return (
-                  <TableRow hover key={dispatchId} selected={isSelected}>
-                    <TableCell padding="checkbox">
+                  <TableRow
+                    hover
+                    key={dispatchId}
+                    selected={isSelected}
+                    onClick={() => navigate(`/${dispatchId}`)}
+                  >
+                    <TableCell
+                      padding="checkbox"
+                      onClick={(e) => {
+                        handleChangeSelection(dispatchId)
+                        e.stopPropagation()
+                      }}
+                    >
                       <Checkbox
                         checked={isSelected}
-                        onClick={() => handleChangeSelection(dispatchId)}
+                        sx={{ color: 'text.tertiary' }}
                       />
                     </TableCell>
 
                     <TableCell>
-                      <Link underline="none" href={`/${dispatchId}`}>
-                        {dispatchId}
-                      </Link>
-
+                      {dispatchId}
                       <CopyButton
+                        sx={{ ml: 1, color: 'text.tertiary' }}
                         content={dispatchId}
                         size="small"
                         className="copy-btn"

@@ -20,34 +20,21 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import _ from 'lodash'
-import { Paper } from '@mui/material'
+import { render, screen } from './test-utils'
 
-import Heading from './Heading'
-import SyntaxHighlighter from './SyntaxHighlighter'
+import resultA from '../utils/demo/result-a'
 
-const ExecutorSection = ({ metadata, ...props }) => {
-  const executorType = _.get(metadata, 'executor_name')
-  const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
-  const src = _.join(
-    _.map(executorParams, (value, key) => `${key}: ${value}`),
-    '\n'
-  )
+import App from '../App'
 
-  return (
-    <>
-      {!_.isEmpty(executorType)}
-      <Heading>
-        Executor: <strong>{executorType}</strong>
-      </Heading>
+test('render lattice view', async () => {
+  window.history.pushState({}, 'lattice view', `/${resultA.dispatch_id}`)
 
-      {!_.isEmpty(executorParams) && (
-        <Paper elevation={0} {...props}>
-          <SyntaxHighlighter language="yaml" src={src} />
-        </Paper>
-      )}
-    </>
-  )
-}
+  render(<App />)
 
-export default ExecutorSection
+  const nodeName = resultA.graph.nodes[0].name
+
+  await screen.findByText('Completed')
+
+  expect(screen.getByText('Completed')).toBeInTheDocument()
+  expect(screen.getByText(nodeName)).toBeInTheDocument()
+})
