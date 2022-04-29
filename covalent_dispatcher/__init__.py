@@ -82,6 +82,7 @@ def run_dispatcher(result_object: Result) -> str:
             run_workflow,
             result_object.dispatch_id,
             result_object.results_dir,
+            pure=False,
         )
     )
 
