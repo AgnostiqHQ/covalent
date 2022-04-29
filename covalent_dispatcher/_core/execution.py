@@ -338,6 +338,7 @@ def _run_planned_workflow(result_object: Result) -> Result:
 
         # run the tasks for the current iteration in parallel
         dask.compute(*tasks)
+        del tasks
 
         # When one or more nodes failed in the last iteration, don't iterate further
         for node_id in nodes:
