@@ -120,7 +120,7 @@ class _TransportGraph:
     """
 
     def __init__(self) -> None:
-        self._graph = nx.DiGraph()
+        self._graph = nx.MultiDiGraph()
         self.lattice_metadata = None
 
     def add_node(self, name: str, function: Callable, metadata: Dict, **attr) -> int:
@@ -177,7 +177,7 @@ class _TransportGraph:
             None
         """
 
-        self._graph = nx.DiGraph()
+        self._graph = nx.MultiDiGraph()
 
     def get_topologically_sorted_graph(self) -> List[List[int]]:
         """
@@ -239,23 +239,22 @@ class _TransportGraph:
 
         self._graph.nodes[node_key][value_key] = value
 
-    def get_edge_value(self, dep_key: int, node_key: int, value_key: str) -> Any:
+    def get_edge_data(self, dep_key: int, node_key: int) -> Any:
         """
-        Get the value of an edge.
+        Get the metadata for all edges between two nodes.
 
         Args:
             dep_key: The node id for first node.
             node_key: The node id for second node.
-            value_key: The value key.
 
         Returns:
-            value: The value of specified edge.
+            values: A dict {edge_key : value}
 
         Raises:
             KeyError: If the edge is not found.
         """
 
-        return self._graph.get_edge_data(dep_key, node_key)[value_key]
+        return self._graph.get_edge_data(dep_key, node_key)
 
     def get_dependencies(self, node_key: int) -> list:
         """
@@ -270,7 +269,7 @@ class _TransportGraph:
 
         return list(self._graph.predecessors(node_key))
 
-    def get_internal_graph_copy(self) -> nx.DiGraph:
+    def get_internal_graph_copy(self) -> nx.MultiDiGraph:
         """
         Get a copy of the internal directed graph
         to avoid modifying the original graph.

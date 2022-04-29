@@ -33,7 +33,7 @@ from covalent._workflow.transport import TransportableObject, _TransportGraph
 def subtask(x):
     """Workflow subtask."""
 
-    return x ** 2
+    return x**2
 
 
 def subtask_2(x):
@@ -131,8 +131,11 @@ def test_transport_graph_get_and_set_edges(workflow_transport_graph):
 
     wtg = workflow_transport_graph
     wtg.add_edge(x=0, y=1, edge_name="apples")
-    assert wtg._graph.get_edge_data(0, 1) == {"edge_name": "apples"}
-    assert wtg.get_edge_value(dep_key=0, node_key=1, value_key="edge_name") == "apples"
+    wtg.add_edge(x=0, y=1, edge_name="oranges")
+    assert wtg._graph.get_edge_data(0, 1) == {
+        0: {"edge_name": "apples"},
+        1: {"edge_name": "oranges"},
+    }
 
 
 def test_transport_graph_transport_graph_reset(workflow_transport_graph):
@@ -141,7 +144,7 @@ def test_transport_graph_transport_graph_reset(workflow_transport_graph):
     wtg = workflow_transport_graph
     wtg.add_edge(x=0, y=1, edge_name="apples")
     assert list(wtg._graph.nodes) == [0, 1]
-    assert list(wtg._graph.edges) == [(0, 1)]
+    assert list(wtg._graph.edges) == [(0, 1, 0)]
     wtg.reset()
     assert list(wtg._graph.nodes) == []
     assert list(wtg._graph.edges) == []
