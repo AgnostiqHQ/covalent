@@ -190,8 +190,11 @@ def _terminate_child_processes(pid: int) -> None:
     """
 
     for child_proc in psutil.Process(pid).children(recursive=True):
-        child_proc.kill()
-        child_proc.wait()
+        try:
+            child_proc.kill()
+            child_proc.wait()
+        except psutil.NoSuchProcess:
+            pass
 
 
 def _graceful_shutdown(pidfile: str) -> None:

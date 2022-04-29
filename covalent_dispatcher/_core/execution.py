@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
 import dask
-from dask.distributed import Client, Variable
+from dask.distributed import Variable, Client, LocalCluster
 
 from covalent import dispatch_sync
 from covalent._results_manager import Result
@@ -47,13 +47,12 @@ from covalent._shared_files.defaults import (
 from covalent._workflow.lattice import Lattice
 from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
+from covalent._shared_files.config import get_config
 
 from .._db.dispatchdb import DispatchDB
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-# dask_client = Client(processes=False, dashboard_address=":0")
 
 
 def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
@@ -285,6 +284,10 @@ def _run_planned_workflow(result_object: Result) -> Result:
         None
     """
 
+    cluster = LocalCluster(processes=False, protocol="inproc://")
+    app_log.warning(f"Dashboard link for node's cluster: {cluster.dashboard_link}")
+    dask_client = Client(cluster)
+
     shared_var = Variable(result_object.dispatch_id)
     shared_var.set(str(Result.RUNNING))
 
@@ -337,7 +340,7 @@ def _run_planned_workflow(result_object: Result) -> Result:
             tasks.append(dask.delayed(_run_task)(task_input, result_object, node_id))
 
         # run the tasks for the current iteration in parallel
-        dask.compute(*tasks)
+        dask_client.compute(tasks, sync=True)
         del tasks
 
         # When one or more nodes failed in the last iteration, don't iterate further
@@ -372,6 +375,9 @@ def _run_planned_workflow(result_object: Result) -> Result:
         db.upsert(result_object.dispatch_id, result_object)
     result_object.save(write_source=True)
     result_webhook.send_update(result_object)
+
+    cluster.close()
+    dask_client.shutdown()
 
 
 def _plan_workflow(result_object: Result) -> None:

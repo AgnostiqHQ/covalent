@@ -139,11 +139,8 @@ def serve(path):
 
 if __name__ == "__main__":
 
-    cluster = LocalCluster(processes=False, protocol="inproc://")
-
+    cluster = LocalCluster()
     set_config("dask_scheduler_address", cluster.scheduler_address)
-
-    print(cluster, file=sys.stderr)
     dask_client = Client(cluster)
 
 
