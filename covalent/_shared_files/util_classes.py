@@ -133,6 +133,8 @@ class Timer:
         )
         print(debug_message)
 
+        return self
+
     def stop(self):
         """Stop the timer, and report the elapsed time"""
         if self._start_time is None:

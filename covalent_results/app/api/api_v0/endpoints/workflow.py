@@ -77,11 +77,25 @@ db = Database()
 
 
 async def _get_result_file(dispatch_id: str) -> bytes:
+    timer = Timer(
+        endpoint="workflow_update_result",
+        descriptor="workflow_update_result: Get result file : Download from Data Service",
+        service=Timer.RESULTS,
+        dispatch_id=dispatch_id,
+    ).start()
     filename = _get_result_from_db(dispatch_id, "filename")
     path = _get_result_from_db(dispatch_id, "path")
+    timer.stop()
     if not dispatch_id or not filename or not path:
         raise HTTPException(status_code=404, detail="Result was not found")
+    timer = Timer(
+        endpoint="workflow_update_result",
+        descriptor="workflow_update_result: Get result file : Download from Data Service",
+        service=Timer.RESULTS,
+        dispatch_id=dispatch_id,
+    ).start()
     file = await data_svc.download(filename)
+    timer.stop()
     return file
 
 
@@ -258,13 +272,44 @@ async def update_result(*, dispatch_id: str, task: bytes = File(...)) -> Any:
         dispatch_id=dispatch_id,
     )
     timer.start()
+
+    timer_get_result = Timer(
+        endpoint="workflow_update_result",
+        descriptor="workflow_update_result: Get result file",
+        service=Timer.RESULTS,
+        dispatch_id=dispatch_id,
+    ).start()
     result = await _get_result_file(dispatch_id)
+    timer_get_result.stop()
+
+    timer_unpickling = Timer(
+        endpoint="workflow_update_result",
+        descriptor="workflow_update_result: Unpickle result and task and update node",
+        service=Timer.RESULTS,
+        dispatch_id=dispatch_id,
+    ).start()
     results_object = pickle.loads(result)
     task = pickle.loads(task)
     results_object._update_node(**task)
+    timer_unpickling.stop()
 
+    timer_pickling = Timer(
+        endpoint="workflow_update_result",
+        descriptor="workflow_update_result: Pickle result to send to Data",
+        service=Timer.RESULTS,
+        dispatch_id=dispatch_id,
+    ).start()
     pickled_result = io.BytesIO(pickle.dumps(results_object))
+    timer_pickling.stop()
+
+    timer_send_data = Timer(
+        endpoint="workflow_update_result",
+        descriptor="workflow_update_result: Pickle result to send to Data",
+        service=Timer.RESULTS,
+        dispatch_id=dispatch_id,
+    ).start()
     uploaded = await _upload_file(pickled_result)
+    timer_send_data.stop()
     # end
     timer.stop()
     if uploaded:

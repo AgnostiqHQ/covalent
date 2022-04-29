@@ -46,6 +46,7 @@ from covalent._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
+from covalent._shared_files.util_classes import Timer
 from covalent._workflow.lattice import Lattice
 
 load_dotenv()
@@ -296,6 +297,7 @@ def send_task_update_to_ui(dispatch_id: str, task_id: int):
 
 
 def get_result_object_from_result_service(dispatch_id: str):
+
     logger.warning(f"getting result object with id {dispatch_id}")
 
     url_endpoint = ResultsURI().get_route(f"workflow/results/{dispatch_id}")
@@ -303,7 +305,15 @@ def get_result_object_from_result_service(dispatch_id: str):
     response = requests.get(url=url_endpoint, stream=True)
     response.raise_for_status()
 
-    return pickle.loads(response.content)
+    timer = Timer(
+        "update_workflow_results",
+        descriptor="update_workflow_results: Unpickle result file",
+        service=Timer.DISPATCHER,
+        dispatch_id=dispatch_id,
+    ).start()
+    result_obj = pickle.loads(response.content)
+    timer.stop()
+    return result_obj
 
 
 def update_result_and_ui(result_obj: Result, task_id: int) -> Dict[str, str]:

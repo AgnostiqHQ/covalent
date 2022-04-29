@@ -26,6 +26,7 @@ from multiprocessing import Queue as MPQ
 from typing import Dict
 
 from covalent._results_manager import Result
+from covalent._shared_files.util_classes import Timer
 
 from .dispatch_workflow import dispatch_runnable_tasks
 from .dispatcher_logger import logger
@@ -48,11 +49,18 @@ def update_workflow_results(
     """Main update function. Called by the Runner API when there is an update for task
     execution status."""
 
-    latest_result_obj: Result = get_result_object_from_result_service(dispatch_id=dispatch_id)
+    latest_result_obj = get_result_object_from_result_service(dispatch_id=dispatch_id)
 
+    timer = Timer(
+        "update_workflow_results",
+        descriptor="update_workflow_results: Updated upickled result file node",
+        service=Timer.DISPATCHER,
+        dispatch_id=dispatch_id,
+    ).start()
     # Update the task results
     latest_result_obj._update_node(**task_execution_results)
     # start(update_workflow_results_update_workflow_result) dispatch_id=dispatch_id
+    timer.stop()
     send_task_update_to_result_service(dispatch_id, task_execution_results)
     # end
     if task_execution_results["status"] == Result.RUNNING:

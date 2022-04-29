@@ -195,15 +195,22 @@ def update_workflow(
 
     logger.warning(f"Received to update task for id: {dispatch_id}")
 
+    timer = Timer(
+        "update_workflow_results",
+        descriptor="Pickle load task execution results",
+        service=Timer.DISPATCHER,
+        dispatch_id=dispatch_id,
+    ).start()
     task_execution_results = pickle.loads(task_execution_results)
     task_id = task_execution_results["task_id"]
     del task_execution_results["task_id"]
     task_execution_results["node_id"] = task_id
+    timer.stop()
 
     # start(update_workflow_results) dispatch_id=dispatch_id
     timer = Timer(
         "update_workflow_results",
-        descriptor="Update result obj in workflow",
+        descriptor="Update worklow results call",
         service=Timer.DISPATCHER,
         dispatch_id=dispatch_id,
     )
