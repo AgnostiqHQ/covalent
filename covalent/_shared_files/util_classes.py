@@ -17,10 +17,16 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+import json
+import math
+import os
+import pathlib
 import time
 from dataclasses import dataclass
 from datetime import datetime
 from typing import NamedTuple
+
+import pydash
 
 
 @dataclass
@@ -81,6 +87,33 @@ class Timer:
     UI = "UI Service"
     NATS_SERVER = "Nats Service"
 
+    def write_to_file(self):
+        # json_file_location = '/Users/alejandro/Documents/agnostiq/covalent/benchmarking/src/experiment_results.json'
+        json_file_location = (
+            os.path.dirname(os.path.abspath(__file__))
+            + "/../../benchmarking/src/experiment_results.json"
+        )
+        report_json = {}
+
+        if not os.path.exists(json_file_location):
+            with open(json_file_location, "w+") as outfile:
+                json.dump(report_json, outfile)
+
+        with open(json_file_location, "r") as outfile:
+            report_json = json.loads(outfile.read())
+
+        with open(json_file_location, "w") as outfile:
+            normalized_desc = self.descriptor.lower().replace(" ", "_")
+            value_dict = {
+                "label": self.descriptor,
+                "value": self.elapsed_time,
+                "endpoint": self.endpoint,
+                "service": self.service,
+            }
+            nested_dict_path = f"{self.dispatch_id}.{str(math.trunc(self.end_timestamp))}__{self.endpoint}__{normalized_desc}"
+            pydash.set_(report_json, nested_dict_path, value_dict)
+            json.dump(report_json, outfile, indent=4)
+
     def __init__(self, endpoint: str, descriptor: str, service: str, dispatch_id=None):
         self._start_time = None
         self.endpoint = endpoint
@@ -107,10 +140,12 @@ class Timer:
                 f"Timer for service {self.service}, endpoint: {self.endpoint}, and descriptor {self.descriptor} was never started."
             )
         else:
-            elapsed_time = time.perf_counter() - self._start_time
+            self.end_timestamp = time.time()
+            self.elapsed_time = time.perf_counter() - self._start_time
             self._start_time = None
             debug_message = (
                 f" Dispatch id: {self.dispatch_id} \nMetadata: {self.descriptor} was initiated by {self.endpoint} "
-                f" in {self.service} and ran in {elapsed_time:0.4f} ms "
+                f" in {self.service} and ran in {self.elapsed_time:0.4f} ms "
             )
             print(debug_message)
+        self.write_to_file()
