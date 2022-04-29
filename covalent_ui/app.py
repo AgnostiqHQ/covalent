@@ -38,6 +38,9 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
+from covalent._shared_files.config import set_config, get_config
+from dask.distributed import Client, LocalCluster
+import sys
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
@@ -135,6 +138,15 @@ def serve(path):
 
 
 if __name__ == "__main__":
+
+    cluster = LocalCluster(processes=False, protocol="inproc://")
+
+    set_config("dask_scheduler_address", cluster.scheduler_address)
+
+    print(cluster, file=sys.stderr)
+    dask_client = Client(cluster)
+
+
     ap = argparse.ArgumentParser()
 
     ap.add_argument("-p", "--port", required=False, help="Server port number.")

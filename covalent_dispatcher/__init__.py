@@ -23,18 +23,14 @@ Self-contained entry point for the dispatcher
 """
 
 import uuid
+import sys
 
-from dask.distributed import Client, fire_and_forget
+from dask.distributed import Client, fire_and_forget, LocalCluster, get_client
 
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._workflow.transport import _TransportGraph
-
-try:
-    dask_client = Client(address="127.0.0.1:8786", timeout="1s")
-except OSError:
-    dask_client = Client(processes=False, dashboard_address=":0")
-
+from covalent._shared_files.config import get_config
 
 def get_unique_id() -> str:
     """
@@ -77,6 +73,9 @@ def run_dispatcher(result_object: Result) -> str:
     result_object.save()
 
     from ._core import run_workflow
+
+    scheduler_address = get_config("dask_scheduler_address")
+    dask_client = get_client(address=scheduler_address, timeout=1)
 
     fire_and_forget(
         dask_client.submit(

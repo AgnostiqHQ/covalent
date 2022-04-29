@@ -53,7 +53,7 @@ from .._db.dispatchdb import DispatchDB
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
-dask_client = Client(processes=False, dashboard_address=":0")
+# dask_client = Client(processes=False, dashboard_address=":0")
 
 
 def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
@@ -175,7 +175,7 @@ def _run_task(
         result_object.lattice.transport_graph.get_node_value(node_id, "name") + f"({node_id})"
     )
 
-    shared_var = Variable(result_object.dispatch_id, client=dask_client)
+    shared_var = Variable(result_object.dispatch_id)
     if shared_var.get() == str(Result.CANCELLED):
         app_log.info("Cancellation requested for dispatch %s", result_object.dispatch_id)
 
@@ -285,7 +285,7 @@ def _run_planned_workflow(result_object: Result) -> Result:
         None
     """
 
-    shared_var = Variable(result_object.dispatch_id, client=dask_client)
+    shared_var = Variable(result_object.dispatch_id)
     shared_var.set(str(Result.RUNNING))
 
     result_object._status = Result.RUNNING
@@ -439,5 +439,5 @@ def cancel_workflow(dispatch_id: str) -> None:
         None
     """
 
-    shared_var = Variable(dispatch_id, client=dask_client)
+    shared_var = Variable(dispatch_id)
     shared_var.set(str(Result.CANCELLED))
