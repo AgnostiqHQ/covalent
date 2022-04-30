@@ -47,7 +47,6 @@ from covalent._shared_files.defaults import (
 from covalent._workflow.lattice import Lattice
 from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
-from covalent._shared_files.config import get_config
 
 from .._db.dispatchdb import DispatchDB
 
@@ -286,7 +285,7 @@ def _run_planned_workflow(result_object: Result) -> Result:
 
     cluster = LocalCluster(processes=False, protocol="inproc://")
     app_log.warning(f"Dashboard link for node's cluster: {cluster.dashboard_link}")
-    dask_client = Client(cluster)
+    dask_client = Client(cluster, set_as_default=False)
 
     shared_var = Variable(result_object.dispatch_id)
     shared_var.set(str(Result.RUNNING))
