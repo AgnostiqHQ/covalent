@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
 import dask
-from dask.distributed import Variable, Client, LocalCluster
+from dask.distributed import Client, LocalCluster, Variable
 
 from covalent import dispatch_sync
 from covalent._results_manager import Result
