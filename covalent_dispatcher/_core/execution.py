@@ -283,7 +283,8 @@ def _run_planned_workflow(result_object: Result) -> Result:
         None
     """
 
-    cluster = LocalCluster(processes=False, protocol="inproc://")
+    # Creating thread based cluster and limiting each worker's memory to 512 MiB
+    cluster = LocalCluster(processes=False, protocol="inproc://", memory_limit="512MiB")
     app_log.warning(f"Dashboard link for node's cluster: {cluster.dashboard_link}")
     dask_client = Client(cluster, set_as_default=False)
 

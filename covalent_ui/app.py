@@ -138,7 +138,8 @@ def serve(path):
 
 if __name__ == "__main__":
 
-    cluster = LocalCluster()
+    # Creating process based cluster and limiting each worker's memory to 1 GiB
+    cluster = LocalCluster(memory_limit="1GiB")
     set_config("dask_scheduler_address", cluster.scheduler_address)
     dask_client = Client(cluster)
 
