@@ -89,8 +89,6 @@ class LocalExecutor(BaseExecutor):
             io.StringIO()
         ) as stdout, redirect_stderr(io.StringIO()) as stderr:
 
-            app_log.warning(self.conda_env)
-
             if self.conda_env != "":
                 result = None
 

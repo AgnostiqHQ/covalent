@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
 import dask
-from dask.distributed import Client, Variable
+from dask.distributed import Client, LocalCluster, Variable
 
 from covalent import dispatch_sync
 from covalent._results_manager import Result
@@ -52,8 +52,6 @@ from .._db.dispatchdb import DispatchDB
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-dask_client = Client(processes=False, dashboard_address=":0")
 
 
 def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
@@ -175,7 +173,7 @@ def _run_task(
         result_object.lattice.transport_graph.get_node_value(node_id, "name") + f"({node_id})"
     )
 
-    shared_var = Variable(result_object.dispatch_id, client=dask_client)
+    shared_var = Variable(result_object.dispatch_id)
     if shared_var.get() == str(Result.CANCELLED):
         app_log.info("Cancellation requested for dispatch %s", result_object.dispatch_id)
 
@@ -285,7 +283,12 @@ def _run_planned_workflow(result_object: Result) -> Result:
         None
     """
 
-    shared_var = Variable(result_object.dispatch_id, client=dask_client)
+    # Creating thread based cluster and limiting each worker's memory to 512 MiB
+    cluster = LocalCluster(processes=False, protocol="inproc://", memory_limit="512MiB")
+    app_log.warning(f"Dashboard link for node's cluster: {cluster.dashboard_link}")
+    dask_client = Client(cluster, set_as_default=False)
+
+    shared_var = Variable(result_object.dispatch_id)
     shared_var.set(str(Result.RUNNING))
 
     result_object._status = Result.RUNNING
@@ -334,10 +337,11 @@ def _run_planned_workflow(result_object: Result) -> Result:
             task_input = _get_task_inputs(node_id, node_name, result_object)
 
             # Add the task generated for the node to the list of tasks
-            tasks.append(dask.delayed(_run_task)(task_input, result_object, node_id))
+            tasks.append(dask.delayed(_run_task, pure=False)(task_input, result_object, node_id))
 
         # run the tasks for the current iteration in parallel
-        dask.compute(*tasks)
+        dask_client.compute(tasks, sync=True)
+        del tasks
 
         # When one or more nodes failed in the last iteration, don't iterate further
         for node_id in nodes:
@@ -371,6 +375,9 @@ def _run_planned_workflow(result_object: Result) -> Result:
         db.upsert(result_object.dispatch_id, result_object)
     result_object.save(write_source=True)
     result_webhook.send_update(result_object)
+
+    cluster.close()
+    dask_client.shutdown()
 
 
 def _plan_workflow(result_object: Result) -> None:
@@ -439,5 +446,5 @@ def cancel_workflow(dispatch_id: str) -> None:
         None
     """
 
-    shared_var = Variable(dispatch_id, client=dask_client)
+    shared_var = Variable(dispatch_id)
     shared_var.set(str(Result.CANCELLED))

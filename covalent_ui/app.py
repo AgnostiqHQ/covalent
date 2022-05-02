@@ -20,6 +20,7 @@
 
 import argparse
 import os
+import sys
 from datetime import datetime
 from distutils.log import debug
 from logging.handlers import DEFAULT_TCP_LOGGING_PORT
@@ -28,13 +29,14 @@ from pathlib import Path
 import networkx as nx
 import simplejson
 import tailer
+from dask.distributed import Client, LocalCluster
 from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
-from covalent._shared_files.config import get_config
+from covalent._shared_files.config import get_config, set_config
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
@@ -135,6 +137,13 @@ def serve(path):
 
 
 if __name__ == "__main__":
+
+    # Creating process based cluster and limiting each worker's memory to 1 GiB
+    cluster = LocalCluster(memory_limit="1GiB")
+    set_config("dask_scheduler_address", cluster.scheduler_address)
+    dask_client = Client(cluster)
+
+
     ap = argparse.ArgumentParser()
 
     ap.add_argument("-p", "--port", required=False, help="Server port number.")
