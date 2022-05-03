@@ -1,10 +1,7 @@
 import covalent as ct
 
-SMALL_UNIDIRECTIONAL_N = 5
-SMALL_HAGRID_N = 3
-
-LARGE_UNIDIRECTIONAL_N = 25
-LARGE_HAGRID_N = 10
+UNIDIRECTIONAL_N = 100
+HAGRID_N = 9
 
 
 @ct.electron
@@ -15,11 +12,6 @@ def identity(x):
 @ct.electron
 def combine(x):
     return sum(x)
-
-
-@ct.electron
-def strategy_func(func, a):
-    return func(a)
 
 
 @ct.lattice
@@ -51,10 +43,11 @@ def workflow(n, parallel=False, serial=False):
 
 dispatcher = ct.dispatch(workflow)
 
-small_horizontal_id = dispatcher(n=SMALL_UNIDIRECTIONAL_N, parallel=True)
-small_vertical_id = dispatcher(n=SMALL_UNIDIRECTIONAL_N, serial=True)
-small_hagrid_id = dispatcher(n=SMALL_HAGRID_N, serial=True, parallel=True)
+# horizontal_id = dispatcher(n=UNIDIRECTIONAL_N, parallel=True)
+# print(f"Horizontal [n={UNIDIRECTIONAL_N}] Dispatch ID: {horizontal_id}")
 
-large_horizontal_id = dispatcher(n=LARGE_UNIDIRECTIONAL_N, parallel=True)
-large_vertical_id = dispatcher(n=LARGE_UNIDIRECTIONAL_N, serial=True)
-large_hagrid_id = dispatcher(n=LARGE_HAGRID_N, serial=True, parallel=True)
+# vertical_id = dispatcher(n=UNIDIRECTIONAL_N, serial=True)
+# print(f"Vertical [n={UNIDIRECTIONAL_N}] Dispatch ID: {vertical_id}")
+
+hagrid_id = dispatcher(n=HAGRID_N, serial=True, parallel=True)
+print(f"Hagrid [n={HAGRID_N}] Dispatch ID: {hagrid_id}")
