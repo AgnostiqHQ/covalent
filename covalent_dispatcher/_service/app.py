@@ -29,7 +29,7 @@ api_router = APIRouter()
 
 # @bp.route("/submit", methods=["POST"])
 @api_router.post("/submit")
-def submit(pickled_res: bytes = File(...)):
+async def submit(pickled_res: bytes = File(...)):
     """
     Function to accept the submit request of
     new dispatch and return the dispatch id
@@ -51,7 +51,7 @@ def submit(pickled_res: bytes = File(...)):
 
 # @bp.route("/cancel", methods=["POST"])
 @api_router.delete("/cancel/{dispatch_id}")
-def cancel(dispatch_id: str):
+async def cancel(dispatch_id: str):
     """
     Function to accept the cancel request of
     a dispatch.

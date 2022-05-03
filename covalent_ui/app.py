@@ -97,7 +97,7 @@ sio = SocketManager(app=app)
 app.include_router(api_router, prefix="/api")
 
 @app.post(WEBHOOK_PATH)
-def handle_result_update(request: Request):
+async def handle_result_update(request: Request):
     result_update = request.json()
     sio.emit("result-update", result_update)
     return {"ok": True}
@@ -105,7 +105,7 @@ def handle_result_update(request: Request):
 
 
 @app.post("/api/draw")
-def handle_draw_request(request: Request):
+async def handle_draw_request(request: Request):
     draw_request = request.json()
 
     sio.emit("draw-request", draw_request)
@@ -114,7 +114,7 @@ def handle_draw_request(request: Request):
 
 
 @app.get("/api/results")
-def list_results():
+async def list_results():
     with DispatchDB() as db:
         res = db.get()
     return jsonable_encoder([simplejson.loads(r[1]) for r in res]) if res else jsonable_encoder([])
@@ -122,7 +122,7 @@ def list_results():
 
 # @app.route("/api/dev/results/<dispatch_id>")
 @app.get("/api/dev/results/{dispatch_id}")
-def fetch_result_dev(dispatch_id: str, request: Request):
+async def fetch_result_dev(dispatch_id: str, request: Request):
     results_dir = request.args["resultsDir"]
     result = rm.get_result(dispatch_id, results_dir=results_dir)
 
@@ -133,7 +133,7 @@ def fetch_result_dev(dispatch_id: str, request: Request):
 
 # @app.route("/api/results/<dispatch_id>")
 @app.get("/api/results/{dispatch_id}")
-def fetch_result(dispatch_id: str):
+async def fetch_result(dispatch_id: str):
     with DispatchDB() as db:
         res = db.get([dispatch_id])
     if len(res) > 0:
@@ -148,7 +148,7 @@ def fetch_result(dispatch_id: str):
 
 
 @app.delete("/api/results")
-def delete_results(request: Request):
+async def delete_results(request: Request):
     dispatch_ids = request.json.get("dispatchIds", [])
     with DispatchDB() as db:
         db.delete(dispatch_ids)
@@ -157,7 +157,7 @@ def delete_results(request: Request):
 
 
 @app.get("/api/logoutput/{dispatch_id}")
-def fetch_file(dispatch_id: str, request: Request):
+async def fetch_file(dispatch_id: str, request: Request):
     path = request.query_params["path"]
     n = int(request.query_params("n") or 10)
 
