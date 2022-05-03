@@ -19,15 +19,17 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import cloudpickle as pickle
-from flask import Blueprint, Flask, Response, jsonify, request
+# from flask import Blueprint, Flask, Response, jsonify, request
+from fastapi import APIRouter, Request
 
 import covalent_dispatcher as dispatcher
 
-bp = Blueprint("dispatcher", __name__, url_prefix="/api")
+api_router = APIRouter()
 
 
-@bp.route("/submit", methods=["POST"])
-def submit() -> Response:
+# @bp.route("/submit", methods=["POST"])
+@api_router.post("/submit")
+def submit(request: Request):
     """
     Function to accept the submit request of
     new dispatch and return the dispatch id
@@ -45,11 +47,12 @@ def submit() -> Response:
     result_object = pickle.loads(data)
     dispatch_id = dispatcher.run_dispatcher(result_object)
 
-    return jsonify(dispatch_id)
+    return {"dispatch_id": dispatch_id}
 
 
-@bp.route("/cancel", methods=["POST"])
-def cancel() -> Response:
+# @bp.route("/cancel", methods=["POST"])
+@api_router.post("/cancel")
+def cancel(request: Request):
     """
     Function to accept the cancel request of
     a dispatch.
@@ -65,4 +68,4 @@ def cancel() -> Response:
 
     dispatcher.cancel_running_dispatch(dispatch_id)
 
-    return jsonify(f"Dispatch {dispatch_id} cancelled.")
+    return {"response": f"Dispatch {dispatch_id} cancelled."}

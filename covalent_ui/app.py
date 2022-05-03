@@ -30,54 +30,100 @@ import networkx as nx
 import simplejson
 import tailer
 from dask.distributed import Client, LocalCluster
-from flask import Flask, jsonify, make_response, request, send_from_directory
-from flask_cors import CORS
-from flask_socketio import SocketIO
+# from flask import Flask, jsonify, make_response, request, send_from_directory
+# from flask_cors import CORS
+# from flask_socketio import SocketIO
 
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.config import get_config, set_config
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
-from covalent_dispatcher._service.app import bp
+# from covalent_dispatcher._service.app import bp
+import asyncio
+import uvloop
+
+
+from covalent_dispatcher._service.app import api_router
+from fastapi import APIRouter
+
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi_socketio import SocketManager
+from starlette.exceptions import HTTPException
+
+BASE_PATH = Path(__file__).resolve().parent
+FRONTEND_PATH = "/webapp/build"
+
+
+class SinglePageApp(StaticFiles):
+    """
+    Allow URL paths (e.g. /preview or /[dispatch_id]) to be handled by the web
+    app by overriding the handling of 404 exceptions and passing control to the
+    app instead (/index.html)
+    """
+
+    async def get_response(self, path: str, scope):
+        try:
+            response = await super().get_response(path, scope)
+        except HTTPException as e:
+            # if e.status_code == 404:
+            #     # return /index.html
+            #     response = await super().get_response(".", scope)
+            response = await super().get_response(".", scope)
+        return response
+
 
 WEBHOOK_PATH = "/api/webhook"
-WEBAPP_PATH = "webapp/build"
-
-app = Flask(__name__, static_folder=WEBAPP_PATH)
-app.register_blueprint(bp)
-# allow cross-origin requests when API and static files are served separately
-CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
 
 
-@app.route(WEBHOOK_PATH, methods=["POST"])
-def handle_result_update():
+app = FastAPI(title="Covalent UI API")
+
+sio = SocketManager(app=app)
+
+app.mount("/", SinglePageApp(directory=f"{BASE_PATH}{FRONTEND_PATH}", html=True), name="static")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(api_router, prefix="/api")
+
+
+@app.post(WEBHOOK_PATH)
+def handle_result_update(request: Request):
     result_update = request.get_json(force=True)
-    socketio.emit("result-update", result_update)
-    return jsonify({"ok": True})
+    sio.emit("result-update", result_update)
+    return {"ok": True}
 
 
-@app.route("/api/draw", methods=["POST"])
-def handle_draw_request():
+
+@app.post("/api/draw")
+def handle_draw_request(request: Request):
     draw_request = request.get_json(force=True)
 
-    socketio.emit("draw-request", draw_request)
-    return jsonify({"ok": True})
+    sio.emit("draw-request", draw_request)
+    return {"ok": True}
 
 
-@app.route("/api/results")
+
+@app.get("/api/results")
 def list_results():
     with DispatchDB() as db:
         res = db.get()
-    if not res:
-        return jsonify([])
-    else:
-        return jsonify([simplejson.loads(r[1]) for r in res])
+    return jsonable_encoder([simplejson.loads(r[1]) for r in res]) if res else jsonable_encoder([])
 
 
-@app.route("/api/dev/results/<dispatch_id>")
-def fetch_result_dev(dispatch_id):
+# @app.route("/api/dev/results/<dispatch_id>")
+@app.get("/api/dev/results/{dispatch_id}")
+def fetch_result_dev(dispatch_id: str, request: Request):
     results_dir = request.args["resultsDir"]
     result = rm.get_result(dispatch_id, results_dir=results_dir)
 
@@ -86,8 +132,9 @@ def fetch_result_dev(dispatch_id):
     return app.response_class(jsonified_result, status=200, mimetype="application/json")
 
 
-@app.route("/api/results/<dispatch_id>")
-def fetch_result(dispatch_id):
+# @app.route("/api/results/<dispatch_id>")
+@app.get("/api/results/{dispatch_id}")
+def fetch_result(dispatch_id: str):
     with DispatchDB() as db:
         res = db.get([dispatch_id])
     if len(res) > 0:
@@ -97,21 +144,23 @@ def fetch_result(dispatch_id):
         response = ""
         status = 400
 
-    return app.response_class(response, status=status, mimetype="application/json")
+    return JSONResponse(content=jsonable_encoder(response), status_code=status)
 
 
-@app.route("/api/results", methods=["DELETE"])
-def delete_results():
+
+@app.delete("/api/results")
+def delete_results(request: Request):
     dispatch_ids = request.json.get("dispatchIds", [])
     with DispatchDB() as db:
         db.delete(dispatch_ids)
-    return jsonify({"ok": True})
+    return {"ok": True}
 
 
-@app.route("/api/logoutput/<dispatch_id>")
-def fetch_file(dispatch_id):
-    path = request.args.get("path")
-    n = int(request.args.get("n", 10))
+
+@app.get("/api/logoutput/{dispatch_id}")
+def fetch_file(dispatch_id: str, request: Request):
+    path = request.query_params["path"]
+    n = int(request.query_params("n") or 10)
 
     if not Path(path).expanduser().is_absolute():
         path = os.path.join(get_config("dispatcher.results_dir"), dispatch_id, path)
@@ -119,21 +168,21 @@ def fetch_file(dispatch_id):
     try:
         lines = tailer.tail(open(path), n)
     except Exception as ex:
-        return make_response(jsonify({"message": str(ex)}), 404)
+        return JSONResponse(content=jsonable_encoder({"message": str(ex)}), status_code=404)
 
-    return jsonify({"lines": lines})
+    return {"lines": lines}
 
 
-# catch-all: serve web app static files
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
-def serve(path):
-    if path != "" and os.path.exists(app.static_folder + "/" + path):
-        # static file
-        return send_from_directory(app.static_folder, path)
-    else:
-        # handle all other routes inside web app
-        return send_from_directory(app.static_folder, "index.html")
+# # catch-all: serve web app static files
+# @app.route("/", defaults={"path": ""})
+# @app.route("/<path:path>")
+# def serve(path):
+#     if path != "" and os.path.exists(f"{app.static_folder}/{path}"):
+#         # static file
+#         return send_from_directory(app.static_folder, path)
+#     else:
+#         # handle all other routes inside web app
+#         return send_from_directory(app.static_folder, "index.html")
 
 
 if __name__ == "__main__":
@@ -158,13 +207,22 @@ if __name__ == "__main__":
     args, unknown = ap.parse_known_args()
 
     # port to be specified by cli
-    if args.port:
-        port = int(args.port)
-    else:
-        port = int(get_config("dispatcher.port"))
-
-    debug = True if args.develop is True else False
+    port = int(args.port) if args.port else int(get_config("dispatcher.port"))
+    
+    debug = args.develop is True
+    
     # reload = True if args.develop is True else False
     reload = False
 
-    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
+    # socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
+
+    import uvicorn
+
+    uvicorn.run(
+        "app:app",
+        host="0.0.0.0",
+        port=port,
+        log_level="debug",
+        reload=reload,
+        debug=debug,
+    )
