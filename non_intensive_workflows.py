@@ -1,7 +1,7 @@
 import covalent as ct
 
 UNIDIRECTIONAL_N = 100
-HAGRID_N = 9
+HAGRID_N = 10
 
 
 @ct.electron
