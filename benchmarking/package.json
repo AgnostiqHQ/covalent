@@ -27,7 +27,10 @@
     "webpack-dev-server": "^3.9.0"
   },
   "dependencies": {
-    "jquery": "^3.4.1"
+    "chart.js": "^3.7.1",
+    "jquery": "^3.4.1",
+    "lodash.get": "^4.4.2",
+    "lodash.set": "^4.3.2"
   },
   "keywords": [
     "benchmarking"
