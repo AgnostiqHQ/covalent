@@ -84,7 +84,7 @@ class LocalDispatcher(BaseDispatcher):
             pickled_res = pickle.dumps(Result(lattice, lattice.metadata["results_dir"]))
             test_url = f"http://{dispatcher_addr}/api/submit"
 
-            r = requests.post(test_url, data=pickled_res)
+            r = requests.post(test_url, files={"pickled_res": pickled_res})
             r.raise_for_status()
             return r.content.decode("utf-8").strip().replace('"', "")
 

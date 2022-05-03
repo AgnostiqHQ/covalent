@@ -204,8 +204,8 @@ def cancel(
 
     import requests
 
-    url = "http://" + dispatcher + "/api/cancel"
+    url = f"http://{dispatcher}/api/cancel"
 
-    r = requests.post(url, data=dispatch_id.encode("utf-8"))
+    r = requests.delete(url)
     r.raise_for_status()
     return r.content.decode("utf-8").strip().replace('"', "")

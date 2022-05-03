@@ -98,7 +98,7 @@ app.include_router(api_router, prefix="/api")
 
 @app.post(WEBHOOK_PATH)
 def handle_result_update(request: Request):
-    result_update = request.get_json(force=True)
+    result_update = request.json()
     sio.emit("result-update", result_update)
     return {"ok": True}
 
@@ -106,7 +106,7 @@ def handle_result_update(request: Request):
 
 @app.post("/api/draw")
 def handle_draw_request(request: Request):
-    draw_request = request.get_json(force=True)
+    draw_request = request.json()
 
     sio.emit("draw-request", draw_request)
     return {"ok": True}
@@ -128,7 +128,7 @@ def fetch_result_dev(dispatch_id: str, request: Request):
 
     jsonified_result = encode_result(result)
 
-    return app.response_class(jsonified_result, status=200, mimetype="application/json")
+    return JSONResponse(content=jsonified_result, status_code=200)
 
 
 # @app.route("/api/results/<dispatch_id>")

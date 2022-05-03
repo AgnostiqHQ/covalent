@@ -20,7 +20,7 @@
 
 import cloudpickle as pickle
 # from flask import Blueprint, Flask, Response, jsonify, request
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, File
 
 import covalent_dispatcher as dispatcher
 
@@ -29,7 +29,7 @@ api_router = APIRouter()
 
 # @bp.route("/submit", methods=["POST"])
 @api_router.post("/submit")
-def submit(request: Request):
+def submit(pickled_res: bytes = File(...)):
     """
     Function to accept the submit request of
     new dispatch and return the dispatch id
@@ -43,16 +43,15 @@ def submit(request: Request):
                      returned as a Flask Response object.
     """
 
-    data = request.get_data()
-    result_object = pickle.loads(data)
+    result_object = pickle.loads(pickled_res)
     dispatch_id = dispatcher.run_dispatcher(result_object)
 
     return {"dispatch_id": dispatch_id}
 
 
 # @bp.route("/cancel", methods=["POST"])
-@api_router.post("/cancel")
-def cancel(request: Request):
+@api_router.delete("/cancel/{dispatch_id}")
+def cancel(dispatch_id: str):
     """
     Function to accept the cancel request of
     a dispatch.
@@ -64,7 +63,6 @@ def cancel(request: Request):
         Flask Response object confirming that the dispatch
         has been cancelled.
     """
-    dispatch_id = request.get_data().decode("utf-8")
 
     dispatcher.cancel_running_dispatch(dispatch_id)
 
