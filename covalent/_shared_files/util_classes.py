@@ -20,7 +20,6 @@
 import json
 import math
 import os
-import pathlib
 import time
 from dataclasses import dataclass
 from datetime import datetime
@@ -88,38 +87,59 @@ class Timer:
     NATS_SERVER = "Nats Service"
 
     def write_to_file(self):
-        # json_file_location = '/Users/alejandro/Documents/agnostiq/covalent/benchmarking/src/experiment_results.json'
-        json_file_location = (
-            os.path.dirname(os.path.abspath(__file__))
-            + "/../../benchmarking/src/experiment_results.json"
-        )
-        report_json = {}
+        try:
+            json_file_location = (
+                os.path.dirname(os.path.abspath(__file__))
+                + "/../../benchmarking/src/experiment_results.json"
+            )
+            report_json = {}
 
-        if not os.path.exists(json_file_location):
-            with open(json_file_location, "w+") as outfile:
-                json.dump(report_json, outfile)
+            if not os.path.exists(json_file_location):
+                with open(json_file_location, "w+") as outfile:
+                    json.dump(report_json, outfile)
 
-        with open(json_file_location, "r") as outfile:
-            report_json = json.loads(outfile.read())
+            with open(json_file_location, "r") as outfile:
+                report_json = json.loads(outfile.read())
 
-        with open(json_file_location, "w") as outfile:
-            normalized_desc = self.descriptor.lower().replace(" ", "_")
-            value_dict = {
-                "label": self.descriptor,
-                "value": self.elapsed_time,
-                "endpoint": self.endpoint,
-                "service": self.service,
-            }
-            nested_dict_path = f"{self.dispatch_id}.{str(math.trunc(self.end_timestamp))}__{self.endpoint}__{normalized_desc}"
-            pydash.set_(report_json, nested_dict_path, value_dict)
-            json.dump(report_json, outfile, indent=4)
+            with open(json_file_location, "w") as outfile:
+                normalized_desc = self.descriptor.lower().replace(" ", "_")
+                value_dict = {
+                    "is_initial_task": self.is_initial_task,
+                    "is_final_task": self.is_final_task,
+                    "is_excluded_task": self._is_excluded_task,
+                    "label": self.descriptor,
+                    "value": self.elapsed_time,
+                    "endpoint": self.endpoint,
+                    "service": self.service,
+                    "start_time_unix": self._start_timestamp_unix,
+                    "end_time_unix": self._end_timestamp_unix,
+                }
+                nested_dict_path = f"{self.dispatch_id}.{str(math.trunc(self._end_timestamp_unix))}__{self.endpoint}__{normalized_desc}"
+                pydash.set_(report_json, nested_dict_path, value_dict)
+                json.dump(report_json, outfile, indent=4)
+        except:
+            print(
+                f"Timer write to file failed for {self.endpoint} , description: {self.descriptor}"
+            )
 
-    def __init__(self, endpoint: str, descriptor: str, service: str, dispatch_id=None):
+    def __init__(
+        self,
+        endpoint: str,
+        descriptor: str,
+        service: str,
+        dispatch_id=None,
+        is_initial_task=False,
+        is_final_task=False,
+        is_excluded_task=False,
+    ):
         self._start_time = None
         self.endpoint = endpoint
         self.descriptor = descriptor
         self.service = service
         self.dispatch_id = dispatch_id
+        self.is_initial_task = is_initial_task
+        self.is_final_task = is_final_task
+        self._is_excluded_task = is_excluded_task
 
     def start(self):
         """Start a new timer"""
@@ -127,6 +147,7 @@ class Timer:
             self._start_time = None
 
         self._start_time = time.perf_counter()
+        self._start_timestamp_unix = time.time()
         debug_message = (
             f" Dispatch id: {self.dispatch_id} \nMetadata: {self.descriptor}  was initiated by {self.endpoint} in {self.service} at "
             f"{datetime.now()} "
@@ -142,7 +163,7 @@ class Timer:
                 f"Timer for service {self.service}, endpoint: {self.endpoint}, and descriptor {self.descriptor} was never started."
             )
         else:
-            self.end_timestamp = time.time()
+            self._end_timestamp_unix = time.time()
             self.elapsed_time = time.perf_counter() - self._start_time
             self._start_time = None
             debug_message = (
