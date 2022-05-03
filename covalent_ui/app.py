@@ -19,6 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import argparse
+
+# from covalent_dispatcher._service.app import bp
+import asyncio
 import os
 import sys
 from datetime import datetime
@@ -30,30 +33,28 @@ import networkx as nx
 import simplejson
 import tailer
 from dask.distributed import Client, LocalCluster
-# from flask import Flask, jsonify, make_response, request, send_from_directory
-# from flask_cors import CORS
-# from flask_socketio import SocketIO
+from fastapi import APIRouter, FastAPI, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi_socketio import SocketManager
+from starlette.exceptions import HTTPException
 
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.config import get_config, set_config
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
-# from covalent_dispatcher._service.app import bp
-import asyncio
-import uvloop
-
-
 from covalent_dispatcher._service.app import api_router
-from fastapi import APIRouter
 
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi_socketio import SocketManager
-from starlette.exceptions import HTTPException
+# from flask import Flask, jsonify, make_response, request, send_from_directory
+# from flask_cors import CORS
+# from flask_socketio import SocketIO
+
+
+
+
 
 BASE_PATH = Path(__file__).resolve().parent
 FRONTEND_PATH = "/webapp/build"
@@ -82,10 +83,6 @@ WEBHOOK_PATH = "/api/webhook"
 
 app = FastAPI(title="Covalent UI API")
 
-sio = SocketManager(app=app)
-
-app.mount("/", SinglePageApp(directory=f"{BASE_PATH}{FRONTEND_PATH}", html=True), name="static")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -94,8 +91,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(api_router, prefix="/api")
 
+sio = SocketManager(app=app)
+
+app.include_router(api_router, prefix="/api")
 
 @app.post(WEBHOOK_PATH)
 def handle_result_update(request: Request):
@@ -173,6 +172,9 @@ def fetch_file(dispatch_id: str, request: Request):
     return {"lines": lines}
 
 
+app.mount("/", SinglePageApp(directory=f"{BASE_PATH}{FRONTEND_PATH}", html=True), name="static")
+
+
 # # catch-all: serve web app static files
 # @app.route("/", defaults={"path": ""})
 # @app.route("/<path:path>")
@@ -208,9 +210,9 @@ if __name__ == "__main__":
 
     # port to be specified by cli
     port = int(args.port) if args.port else int(get_config("dispatcher.port"))
-    
+
     debug = args.develop is True
-    
+
     # reload = True if args.develop is True else False
     reload = False
 
