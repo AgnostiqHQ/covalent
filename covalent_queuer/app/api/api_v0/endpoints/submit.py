@@ -56,6 +56,7 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
             descriptor="Submit workflow containing pickled file",
             service=Timer.QUEUER,
             dispatch_id=dispatch_id,
+            is_initial_task=True,
         )
         timer.start()
         result_obj = pickle.loads(result_pkl_file)
