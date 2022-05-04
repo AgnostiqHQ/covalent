@@ -219,12 +219,12 @@ async def _run_task(
 
         else:
             output, stdout, stderr = executor.execute(
-                serialized_callable,
-                inputs["args"],
-                inputs["kwargs"],
-                dispatch_id,
-                results_dir,
-                node_id,
+                function=serialized_callable,
+                args=inputs["args"],
+                kwargs=inputs["kwargs"],
+                dispatch_id=dispatch_id,
+                results_dir=results_dir,
+                node_id=node_id,
             )
 
             end_time = datetime.now(timezone.utc)
