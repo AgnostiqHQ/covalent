@@ -387,9 +387,9 @@ async def _run_planned_workflow(result_object: Result) -> Result:
                 return
 
     # post process the lattice
-    # result_object._result = _post_process(
-    #     result_object.lattice, result_object.get_all_node_outputs(), order
-    # )
+    result_object._result = _post_process(
+        result_object.lattice, result_object.get_all_node_outputs(), order
+    )
 
     result_object._status = Result.COMPLETED
     result_object._end_time = datetime.now(timezone.utc)
