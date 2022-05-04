@@ -33,6 +33,7 @@ from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._workflow.transport import _TransportGraph
+import threading
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -53,7 +54,7 @@ def get_unique_id() -> str:
 
 
 def get_number_of_tasks(dask_scheduler=None):
-        return len(dask_scheduler.tasks), len(dask_scheduler.workers)
+    return len(dask_scheduler.tasks), len(dask_scheduler.workers)
 
 
 def run_dispatcher(result_object: Result) -> str:
@@ -84,21 +85,8 @@ def run_dispatcher(result_object: Result) -> str:
 
     from ._core import run_workflow
 
-    scheduler_address = get_config("dask_scheduler_address")
-    dask_client = get_client(address=scheduler_address, timeout=1)
-
-    app_log.warning(f"Before: {dask_client.run_on_scheduler(get_number_of_tasks)}")
-
-    fire_and_forget(
-        dask_client.submit(
-            run_workflow,
-            result_object.dispatch_id,
-            result_object.results_dir,
-            pure=False,
-        )
-    )
-
-    app_log.warning(f"After: {dask_client.run_on_scheduler(get_number_of_tasks)}")
+    thread = threading.Thread(target=run_workflow, args=(result_object.dispatch_id, result_object.results_dir))
+    thread.start()
 
 
     return dispatch_id
