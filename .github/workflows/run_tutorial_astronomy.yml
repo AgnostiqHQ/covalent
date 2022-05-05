@@ -62,32 +62,17 @@ jobs:
           pip install -e .
       - name: Install tutorial dependencies
         run: |
-          pip install pytz jupyterlab
+          pip install pytz jupyterlab uvloop
       - name: Covalent purge
         run: |
           covalent purge
       - name: Start covalent server
         run: |
           covalent start
-      - name: Test connection with dispatcher service
-        run: |
-          curl http://0.0.0.0:48008
-          curl http://localhost:48008
-          curl http://127.0.0.1:48008
-      - name: log covalent configuration
-        run: |
-          cat ~/.config/covalent/covalent.conf
-      - name: Check covalent ui log
-        run: |
-          cat ~/.cache/covalent/covalent_ui.log
       - name: Run tutorial
         run: |
           cd ./doc/source/tutorials/astronomy
           jupyter-nbconvert --to notebook --execute star_tracker.ipynb
-      - name: Check ui logs
-        if: always()
-        run: |
-          cat ~/.cache/covalent/covalent_ui.log
       - name: Stop covalent
         run: |
           covalent stop
