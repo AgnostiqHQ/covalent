@@ -30,12 +30,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['ubuntu-20.04', 'ubuntu-18.04']
+        os: ['ubuntu-20.04', 'ubuntu-18.04', 'macos-latest']
         node: [16]
-        include:
-          - os: macos-latest
-            python-version: '3.8.13'
-            experimental: false
+        python-version: '3.8'
     steps:
       - name: Check out head
         uses: actions/checkout@v2
@@ -43,6 +40,5 @@ jobs:
           persist-credentials: false
       - name: Set up Python
         uses: actions/setup-python@v2
-        if: matrix.os == 'macos-latest'
         with:
-          python-version: '3.8'
+          python-version: ${{ matrix.python-version }}
