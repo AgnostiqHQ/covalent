@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Release action issues with inconsistent GitHub context typing
 
+### Docs
+
+- Updated the video URL
+
 ### Changed
 
 - Disabled ops bot in workflows
