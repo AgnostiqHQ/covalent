@@ -74,10 +74,16 @@ jobs:
           curl http://0.0.0.0:48008
           curl http://localhost:48008
           curl http://127.0.0.1:48008
-      - name: Run tutorial
+      - name: log covalent configuration
         run: |
-          cd ./doc/source/tutorials/astronomy
-          jupyter-nbconvert --to notebook --execute star_tracker.ipynb
+          cat ~/.config/covalent/covalent.conf
+      - name: Check covalent ui log
+        run: |
+          cat ~/.cache/covalent/covalent_ui.log
+      #- name: Run tutorial
+      #  run: |
+      #    cd ./doc/source/tutorials/astronomy
+      #    jupyter-nbconvert --to notebook --execute star_tracker.ipynb
       - name: Stop covalent
         run: |
           covalent stop
