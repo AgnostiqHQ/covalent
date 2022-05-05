@@ -62,10 +62,14 @@ jobs:
           pip install -e .
       - name: Install tutorial dependencies
         run: |
-          pip install pytz
+          pip install pytz jupyterlab
       - name: Covalent purge
         run: |
           covalent purge
       - name: Start covalent server
         run: |
           covalent start
+      - name: Run tutorial
+        run: |
+          cd ./doc/source/tutorials/astronomy
+          jupyter-nbconvert --to notebook --execute star_tracker.ipynb
