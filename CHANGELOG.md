@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed high CPU consumption on UI backend by disabling uvicorn reload.
 
+### Docs
+
+- Updated the video URL
+
 ### Changed
 
 - Disabled ops bot in workflows
