@@ -31,7 +31,6 @@ jobs:
     strategy:
       matrix:
         os: ['ubuntu-20.04', 'ubuntu-18.04', 'macos-latest']
-        node: [16]
         python-version: ['3.8']
     steps:
       - name: Check out head
@@ -42,9 +41,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install covalent
-        run: |
-          pip install -e .
       - name: Install homebrew
         if: matrix.os == 'macos-latest'
         run: |
@@ -61,3 +57,15 @@ jobs:
           cd ./covalent_ui/webapp
           yarn install
           yarn build
+      - name: Install covalent
+        run: |
+          pip install -e .
+      - name: Install tutorial dependencies
+        run: |
+          pip install pytz
+      - name: Covalent purge
+        run: |
+          covalent purge
+      - name: Start covalent server
+        run: |
+          covalent start
