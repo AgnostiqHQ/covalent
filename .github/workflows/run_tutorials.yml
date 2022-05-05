@@ -30,7 +30,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['ubuntu-20.04', 'ubuntu-18.04', 'macos-latest']
+        os: ['ubuntu-20.04', 'ubuntu-18.04']
         python-version: ['3.8']
     steps:
       - name: Check out head
@@ -41,12 +41,12 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install homebrew
-        if: matrix.os == 'macos-latest'
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      #- name: Install homebrew
+      #  if: matrix.os == 'macos-latest'
+      #  run: |
+      #    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
       - name: Install NPM and Yarn on Ubuntu
-        if: matrix.os != 'macos-latest'
+      #  if: matrix.os != 'macos-latest'
         run: |
           sudo apt-get update && sudo apt-get install -y curl
           sudo curl -fsSL https://deb.nodesource.com/setup_16.x | sudo /bin/bash -
