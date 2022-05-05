@@ -79,5 +79,5 @@ if __name__ == "__main__":
         host=settings.UI_SVC_HOST,
         port=settings.UI_SVC_PORT,
         log_level="debug",
-        reload=True,
+        reload=False,
     )
