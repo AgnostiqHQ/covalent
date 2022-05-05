@@ -69,6 +69,11 @@ jobs:
       - name: Start covalent server
         run: |
           covalent start
+      - name: Test connection with dispatcher service
+        run: |
+          curl http://0.0.0.0:48008
+          curl http://localhost:48008
+          curl http://127.0.0.1:48008
       - name: Run tutorial
         run: |
           cd ./doc/source/tutorials/astronomy
