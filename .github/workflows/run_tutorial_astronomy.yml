@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - decouple-dask-w-flask
-  pull_request:
 
 jobs:
   run_tutorial:
