@@ -32,7 +32,7 @@ jobs:
       matrix:
         os: ['ubuntu-20.04', 'ubuntu-18.04']
         node: [16]
-      include:
+        include:
           - os: macos-latest
             python-version: '3.8.13'
             experimental: false
