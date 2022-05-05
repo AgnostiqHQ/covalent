@@ -73,3 +73,6 @@ jobs:
         run: |
           cd ./doc/source/tutorials/astronomy
           jupyter-nbconvert --to notebook --execute star_tracker.ipynb
+      - name: Stop covalent
+        run: |
+          covalent stop
