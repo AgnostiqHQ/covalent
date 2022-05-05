@@ -45,3 +45,14 @@ jobs:
       - name: Install covalent
         run: |
           pip install -e .
+      - name: Install homebrew
+        if: ${{ matrix.os }} == 'macos-latest'
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      - name: Install NPM and Yarn on Ubuntu
+        if: ${{ matrix.os }} != 'macos-latest'
+        run: |
+          apt-get update && apt-get install -y curl
+          curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+          apt-get install -y nodejs
+          npm install -g yarn
