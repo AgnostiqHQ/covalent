@@ -23,11 +23,11 @@ name: tutorial_astronomy
 on:
   push:
     branches:
-      - decouple-dask-w-flask
+      - qa-pipelines
 
 jobs:
   run_tutorial:
-    runs_on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: ['ubuntu-20.04', 'ubuntu-18.04']
