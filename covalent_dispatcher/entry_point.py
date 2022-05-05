@@ -23,6 +23,7 @@ Self-contained entry point for the dispatcher
 """
 
 import sys
+import threading
 import uuid
 from typing import List
 
@@ -33,7 +34,6 @@ from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._workflow.transport import _TransportGraph
-import threading
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
