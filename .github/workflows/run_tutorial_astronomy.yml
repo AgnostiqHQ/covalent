@@ -32,7 +32,7 @@ jobs:
       matrix:
         os: ['ubuntu-20.04', 'ubuntu-18.04', 'macos-latest']
         node: [16]
-        python-version: '3.8'
+        python-version: ['3.8']
     steps:
       - name: Check out head
         uses: actions/checkout@v2
