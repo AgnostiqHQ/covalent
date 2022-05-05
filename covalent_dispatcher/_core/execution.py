@@ -248,7 +248,7 @@ async def _run_task(
             status=Result.FAILED,
             error="".join(traceback.TracebackException.from_exception(ex).format()),
         )
-    
+
     result_object._update_node(
             **node_result
         )
@@ -328,7 +328,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
                                     "executor"
                                 ]
 
-            
+
             result_object._update_node(
                     **generate_node_result(
                         node_id=node_id,
@@ -361,7 +361,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
         # run the tasks for the current iteration concurrently
         # results are not used right now, but can be in the case of multiprocessing
         results = await asyncio.gather(*tasks)
-                
+
         del tasks
 
 

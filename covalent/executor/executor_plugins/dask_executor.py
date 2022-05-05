@@ -71,7 +71,7 @@ class DaskExecutor(BaseExecutor):
             cache_dir = os.path.join(
                 os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
             )
-        
+
         super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
 
         self.scheduler_address = scheduler_address
