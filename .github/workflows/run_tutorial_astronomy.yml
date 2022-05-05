@@ -43,5 +43,6 @@ jobs:
           persist-credentials: false
       - name: Set up Python
         uses: actions/setup-python@v2
+        if: matrix.os == 'macos-latest'
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.8'
