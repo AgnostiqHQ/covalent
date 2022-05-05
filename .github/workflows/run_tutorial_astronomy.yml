@@ -80,10 +80,14 @@ jobs:
       - name: Check covalent ui log
         run: |
           cat ~/.cache/covalent/covalent_ui.log
-      #- name: Run tutorial
-      #  run: |
-      #    cd ./doc/source/tutorials/astronomy
-      #    jupyter-nbconvert --to notebook --execute star_tracker.ipynb
+      - name: Run tutorial
+        run: |
+          cd ./doc/source/tutorials/astronomy
+          jupyter-nbconvert --to notebook --execute star_tracker.ipynb
+      - name: Check ui logs
+        if: always()
+        run: |
+          cat ~/.cache/covalent/covalent_ui.log
       - name: Stop covalent
         run: |
           covalent stop
