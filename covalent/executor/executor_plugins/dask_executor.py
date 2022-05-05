@@ -30,13 +30,13 @@ import os
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Dict, List
 
+from dask.distributed import get_client
+
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import logger
 from covalent._shared_files.util_classes import DispatchInfo
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import BaseExecutor
-
-from dask.distributed import get_client
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 executor_plugin_name = "DaskExecutor"

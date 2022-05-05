@@ -22,9 +22,13 @@
 Defines the core functionality of the dispatcher
 """
 
+import asyncio
 import traceback
+from asyncio import Task
 from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
+
+import uvloop
 
 from covalent import dispatch_sync
 from covalent._results_manager import Result
@@ -44,10 +48,6 @@ from covalent._shared_files.defaults import (
 from covalent._workflow.lattice import Lattice
 from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
-
-import asyncio
-import uvloop
-from asyncio import Task
 
 from .._db.dispatchdb import DispatchDB
 
