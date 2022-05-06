@@ -11,3 +11,4 @@ requests==2.24.0
 simplejson==3.17.6
 tailer==0.4.1
 toml==0.10.2
+uvloop==0.16.0
