@@ -203,7 +203,9 @@ Node Outputs
 
         self._num_nodes = self.lattice.transport_graph.get_internal_graph_copy().number_of_nodes()
         for node_id in range(self._num_nodes):
-            node_name = self.lattice.transport_graph.get_node_value(node_id, "name") + f"({node_id})"
+            node_name = (
+                self.lattice.transport_graph.get_node_value(node_id, "name") + f"({node_id})"
+            )
 
             self.lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
 
@@ -222,7 +224,6 @@ Node Outputs
             self.lattice.transport_graph.set_node_value(node_id, "stdout", None)
 
             self.lattice.transport_graph.set_node_value(node_id, "stderr", None)
-
 
     def get_node_result(self, node_id: int) -> dict:
         """Return the result of a particular node.
@@ -394,7 +395,9 @@ Node Outputs
             self.lattice.transport_graph.set_node_value(node_id, "error", error)
 
         if sublattice_result is not None:
-            self.lattice.transport_graph.set_node_value(node_id, "sublattice_result", sublattice_result)
+            self.lattice.transport_graph.set_node_value(
+                node_id, "sublattice_result", sublattice_result
+            )
 
         if stdout is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stdout", stdout)

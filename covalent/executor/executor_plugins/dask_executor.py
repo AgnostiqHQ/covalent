@@ -66,17 +66,16 @@ class DaskExecutor(BaseExecutor):
         cache_dir: str = "",
         current_env_on_conda_fail: bool = False,
         scheduler_address: str = "",
-        ) -> None:
+    ) -> None:
         if not cache_dir:
             cache_dir = os.path.join(
-                os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
+                os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+                "covalent",
             )
 
         super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
 
         self.scheduler_address = scheduler_address
-
-
 
     def execute(
         self,
@@ -103,7 +102,6 @@ class DaskExecutor(BaseExecutor):
         Returns:
             output: The result of the executed function.
         """
-
 
         dask_client = get_client(address=self.scheduler_address, timeout=1)
 

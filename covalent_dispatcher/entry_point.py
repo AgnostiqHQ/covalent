@@ -85,9 +85,10 @@ def run_dispatcher(result_object: Result) -> str:
 
     from ._core import run_workflow
 
-    thread = threading.Thread(target=run_workflow, args=(result_object.dispatch_id, result_object.results_dir))
+    thread = threading.Thread(
+        target=run_workflow, args=(result_object.dispatch_id, result_object.results_dir)
+    )
     thread.start()
-
 
     return dispatch_id
 

@@ -54,6 +54,7 @@ from .._db.dispatchdb import DispatchDB
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
+
 def generate_node_result(
     node_id,
     start_time=None,
@@ -216,7 +217,6 @@ async def _run_task(
                 sublattice_result=sublattice_result,
             )
 
-
         else:
             output, stdout, stderr = executor.execute(
                 function=serialized_callable,
@@ -238,7 +238,6 @@ async def _run_task(
                 stderr=stderr,
             )
 
-
     except Exception as ex:
         end_time = datetime.now(timezone.utc)
 
@@ -249,9 +248,7 @@ async def _run_task(
             error="".join(traceback.TracebackException.from_exception(ex).format()),
         )
 
-    result_object._update_node(
-            **node_result
-        )
+    result_object._update_node(**node_result)
 
     with DispatchDB() as db:
         db.upsert(result_object.dispatch_id, result_object)
@@ -323,17 +320,18 @@ async def _run_planned_workflow(result_object: Result) -> Result:
             task_input = _get_task_inputs(node_id, node_name, result_object)
 
             start_time = datetime.now(timezone.utc)
-            serialized_callable = result_object.lattice.transport_graph.get_node_value(node_id, "function")
-            selected_executor = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
-                                    "executor"
-                                ]
-
+            serialized_callable = result_object.lattice.transport_graph.get_node_value(
+                node_id, "function"
+            )
+            selected_executor = result_object.lattice.transport_graph.get_node_value(
+                node_id, "metadata"
+            )["executor"]
 
             result_object._update_node(
-                    **generate_node_result(
-                        node_id=node_id,
-                        start_time=start_time,
-                        status=Result.RUNNING,
+                **generate_node_result(
+                    node_id=node_id,
+                    start_time=start_time,
+                    status=Result.RUNNING,
                 )
             )
 
@@ -354,16 +352,15 @@ async def _run_planned_workflow(result_object: Result) -> Result:
                         node_name=node_name,
                         inputs=task_input,
                         result_object=result_object,
-                        )
                     )
                 )
+            )
 
         # run the tasks for the current iteration concurrently
         # results are not used right now, but can be in the case of multiprocessing
         results = await asyncio.gather(*tasks)
 
         del tasks
-
 
         # When one or more nodes failed in the last iteration, don't iterate further
         for node_id in nodes:
