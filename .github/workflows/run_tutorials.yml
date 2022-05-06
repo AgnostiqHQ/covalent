@@ -274,7 +274,7 @@ jobs:
           covalent start
       - name: Run Quantum Gravity tutorial
         run: |
-          pip install tensorflow
+          pip install tensorflow pandas
           cd ./doc/source/tutorials/quantum_gravity
           jupyter-nbconvert --to notebook --execute spacetime_classification.ipynb
       - name: Stop covalent
