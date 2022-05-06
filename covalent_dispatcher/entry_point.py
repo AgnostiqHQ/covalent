@@ -23,6 +23,7 @@ Self-contained entry point for the dispatcher
 """
 
 import sys
+import threading
 import uuid
 from typing import List
 
@@ -53,7 +54,7 @@ def get_unique_id() -> str:
 
 
 def get_number_of_tasks(dask_scheduler=None):
-        return len(dask_scheduler.tasks), len(dask_scheduler.workers)
+    return len(dask_scheduler.tasks), len(dask_scheduler.workers)
 
 
 def run_dispatcher(result_object: Result) -> str:
@@ -84,22 +85,10 @@ def run_dispatcher(result_object: Result) -> str:
 
     from ._core import run_workflow
 
-    scheduler_address = get_config("dask_scheduler_address")
-    dask_client = get_client(address=scheduler_address, timeout=1)
-
-    app_log.warning(f"Before: {dask_client.run_on_scheduler(get_number_of_tasks)}")
-
-    fire_and_forget(
-        dask_client.submit(
-            run_workflow,
-            result_object.dispatch_id,
-            result_object.results_dir,
-            pure=False,
-        )
+    thread = threading.Thread(
+        target=run_workflow, args=(result_object.dispatch_id, result_object.results_dir)
     )
-
-    app_log.warning(f"After: {dask_client.run_on_scheduler(get_number_of_tasks)}")
-
+    thread.start()
 
     return dispatch_id
 

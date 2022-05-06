@@ -22,12 +22,13 @@
 Defines the core functionality of the dispatcher
 """
 
+import asyncio
 import traceback
+from asyncio import Task
 from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
-import dask
-from dask.distributed import Client, LocalCluster, Variable
+import uvloop
 
 from covalent import dispatch_sync
 from covalent._results_manager import Result
@@ -52,6 +53,31 @@ from .._db.dispatchdb import DispatchDB
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+
+def generate_node_result(
+    node_id,
+    start_time=None,
+    end_time=None,
+    status=None,
+    output=None,
+    error=None,
+    stdout=None,
+    stderr=None,
+    sublattice_result=None,
+):
+
+    return {
+        "node_id": node_id,
+        "start_time": start_time,
+        "end_time": end_time,
+        "status": status,
+        "output": output,
+        "error": error,
+        "stdout": stdout,
+        "stderr": stderr,
+        "sublattice_result": sublattice_result,
+    }
 
 
 def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
@@ -143,10 +169,15 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         return result
 
 
-def _run_task(
-    inputs: Dict,
-    result_object: Result,
+async def _run_task(
     node_id: int,
+    dispatch_id: str,
+    results_dir: str,
+    inputs: Dict,
+    serialized_callable: Any,
+    selected_executor: Any,
+    node_name: str,
+    result_object: Result,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -165,50 +196,11 @@ def _run_task(
         None
     """
 
-    serialized_callable = result_object.lattice.transport_graph.get_node_value(node_id, "function")
-    selected_executor = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
-        "executor"
-    ]
-    node_name = (
-        result_object.lattice.transport_graph.get_node_value(node_id, "name") + f"({node_id})"
-    )
-
-    shared_var = Variable(result_object.dispatch_id)
-    if shared_var.get() == str(Result.CANCELLED):
-        app_log.info("Cancellation requested for dispatch %s", result_object.dispatch_id)
-
-        result_object._update_node(
-            node_id,
-            node_name,
-            None,
-            None,
-            Result.CANCELLED,
-            None,
-            None,
-        )
-        with DispatchDB() as db:
-            db.upsert(result_object.dispatch_id, result_object)
-        result_object.save()
-        result_webhook.send_update(result_object)
-
-        return
-
-    if result_object._get_node_status(node_id) == Result.COMPLETED:
-        return
-
     # the executor is determined during scheduling and provided in the execution metadata
     executor = _executor_manager.get_executor(selected_executor)
 
     # run the task on the executor and register any failures
     try:
-        start_time = datetime.now(timezone.utc)
-        result_object._update_node(
-            node_id, node_name, start_time, None, Result.RUNNING, None, None
-        )
-        with DispatchDB() as db:
-            db.upsert(result_object.dispatch_id, result_object)
-        result_object.save()
-        result_webhook.send_update(result_object)
 
         if node_name.startswith(sublattice_prefix):
             func = serialized_callable.get_deserialized()
@@ -217,59 +209,56 @@ def _run_task(
 
             end_time = datetime.now(timezone.utc)
 
-            result_object._update_node(
-                node_id,
-                node_name,
-                start_time,
-                end_time,
-                Result.COMPLETED,
-                output,
-                None,
-                sublattice_result,
+            node_result = generate_node_result(
+                node_id=node_id,
+                end_time=end_time,
+                status=Result.COMPLETED,
+                output=output,
+                sublattice_result=sublattice_result,
             )
 
         else:
             output, stdout, stderr = executor.execute(
-                serialized_callable,
-                inputs["args"],
-                inputs["kwargs"],
-                result_object.dispatch_id,
-                result_object.results_dir,
-                node_id,
+                function=serialized_callable,
+                args=inputs["args"],
+                kwargs=inputs["kwargs"],
+                dispatch_id=dispatch_id,
+                results_dir=results_dir,
+                node_id=node_id,
             )
 
             end_time = datetime.now(timezone.utc)
 
-            result_object._update_node(
-                node_id,
-                node_name,
-                start_time,
-                end_time,
-                Result.COMPLETED,
-                output,
-                None,
+            node_result = generate_node_result(
+                node_id=node_id,
+                end_time=end_time,
+                status=Result.COMPLETED,
+                output=output,
                 stdout=stdout,
                 stderr=stderr,
             )
 
     except Exception as ex:
         end_time = datetime.now(timezone.utc)
-        result_object._update_node(
-            node_id,
-            node_name,
-            start_time,
-            end_time,
-            Result.FAILED,
-            None,
-            "".join(traceback.TracebackException.from_exception(ex).format()),
+
+        node_result = generate_node_result(
+            node_id=node_id,
+            end_time=end_time,
+            status=Result.FAILED,
+            error="".join(traceback.TracebackException.from_exception(ex).format()),
         )
+
+    result_object._update_node(**node_result)
+
     with DispatchDB() as db:
         db.upsert(result_object.dispatch_id, result_object)
     result_object.save()
     result_webhook.send_update(result_object)
 
+    return node_result
 
-def _run_planned_workflow(result_object: Result) -> Result:
+
+async def _run_planned_workflow(result_object: Result) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -283,13 +272,10 @@ def _run_planned_workflow(result_object: Result) -> Result:
         None
     """
 
-    # Creating thread based cluster and limiting each worker's memory to 512 MiB
-    cluster = LocalCluster(processes=False, protocol="inproc://", memory_limit="512MiB")
-    app_log.warning(f"Dashboard link for node's cluster: {cluster.dashboard_link}")
-    dask_client = Client(cluster, set_as_default=False)
+    # shared_var = Variable(result_object.dispatch_id)
+    # shared_var.set(str(Result.RUNNING))
 
-    shared_var = Variable(result_object.dispatch_id)
-    shared_var.set(str(Result.RUNNING))
+    event_loop = asyncio.get_event_loop()
 
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
@@ -297,7 +283,7 @@ def _run_planned_workflow(result_object: Result) -> Result:
     order = result_object.lattice.transport_graph.get_topologically_sorted_graph()
 
     for nodes in order:
-        tasks: List[Coroutine] = []
+        tasks: List[Task] = []
 
         for node_id in nodes:
             # Get name of the node for the current task
@@ -308,7 +294,6 @@ def _run_planned_workflow(result_object: Result) -> Result:
             ):
                 if node_name.startswith(parameter_prefix):
                     output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
-                    print(node_id, node_name, output)
                 else:
                     parent = result_object.lattice.transport_graph.get_dependencies(node_id)[0]
                     output = result_object.lattice.transport_graph.get_node_value(parent, "output")
@@ -323,24 +308,58 @@ def _run_planned_workflow(result_object: Result) -> Result:
                         output = output[key]
 
                 result_object._update_node(
-                    node_id,
-                    f"{node_name}({node_id})",
-                    datetime.now(timezone.utc),
-                    datetime.now(timezone.utc),
-                    Result.COMPLETED,
-                    output,
-                    None,
+                    node_id=node_id,
+                    start_time=datetime.now(timezone.utc),
+                    end_time=datetime.now(timezone.utc),
+                    status=Result.COMPLETED,
+                    output=output,
                 )
 
                 continue
 
             task_input = _get_task_inputs(node_id, node_name, result_object)
 
-            # Add the task generated for the node to the list of tasks
-            tasks.append(dask.delayed(_run_task, pure=False)(task_input, result_object, node_id))
+            start_time = datetime.now(timezone.utc)
+            serialized_callable = result_object.lattice.transport_graph.get_node_value(
+                node_id, "function"
+            )
+            selected_executor = result_object.lattice.transport_graph.get_node_value(
+                node_id, "metadata"
+            )["executor"]
 
-        # run the tasks for the current iteration in parallel
-        dask_client.compute(tasks, sync=True)
+            result_object._update_node(
+                **generate_node_result(
+                    node_id=node_id,
+                    start_time=start_time,
+                    status=Result.RUNNING,
+                )
+            )
+
+            with DispatchDB() as db:
+                db.upsert(result_object.dispatch_id, result_object)
+            result_object.save()
+            result_webhook.send_update(result_object)
+
+            # Add the task generated for the node to the list of tasks
+            tasks.append(
+                event_loop.create_task(
+                    _run_task(
+                        node_id=node_id,
+                        dispatch_id=result_object.dispatch_id,
+                        results_dir=result_object.results_dir,
+                        serialized_callable=serialized_callable,
+                        selected_executor=selected_executor,
+                        node_name=node_name,
+                        inputs=task_input,
+                        result_object=result_object,
+                    )
+                )
+            )
+
+        # run the tasks for the current iteration concurrently
+        # results are not used right now, but can be in the case of multiprocessing
+        results = await asyncio.gather(*tasks)
+
         del tasks
 
         # When one or more nodes failed in the last iteration, don't iterate further
@@ -375,9 +394,6 @@ def _run_planned_workflow(result_object: Result) -> Result:
         db.upsert(result_object.dispatch_id, result_object)
     result_object.save(write_source=True)
     result_webhook.send_update(result_object)
-
-    cluster.close()
-    dask_client.shutdown()
 
 
 def _plan_workflow(result_object: Result) -> None:
@@ -419,12 +435,18 @@ def run_workflow(dispatch_id: str, results_dir: str) -> None:
 
     result_object = rm._get_result_from_file(dispatch_id, results_dir)
 
+    try:
+        event_loop = asyncio.get_event_loop()
+    except RuntimeError:
+        event_loop = uvloop.new_event_loop()
+        asyncio.set_event_loop(event_loop)
+
     if result_object.status == Result.COMPLETED:
         return
 
     try:
         _plan_workflow(result_object)
-        _run_planned_workflow(result_object)
+        event_loop.run_until_complete(_run_planned_workflow(result_object))
 
     except Exception as ex:
         result_object._status = Result.FAILED
@@ -446,5 +468,6 @@ def cancel_workflow(dispatch_id: str) -> None:
         None
     """
 
-    shared_var = Variable(dispatch_id)
-    shared_var.set(str(Result.CANCELLED))
+    # shared_var = Variable(dispatch_id)
+    # shared_var.set(str(Result.CANCELLED))
+    pass
