@@ -26,7 +26,7 @@ on:
       - qa-pipelines
 
 jobs:
-  run_tutorial:
+  run_astronomy_tutorial:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -61,15 +61,7 @@ jobs:
         run: |
           pip install -e .
           pip install uvloop
-      - name: Install tutorial dependencies
-        run: |
-          pip install pytz jupyterlab
-          pip install torch torchvision
-          pip install sklearn
-          pip install qiskit
-          pip install qiskit_machine_learning
-          pip install ase ase_notebook
-          pip install tensorflow
+          pip install jupyterlab
       - name: Covalent purge
         run: |
           covalent purge
@@ -78,19 +70,211 @@ jobs:
           covalent start
       - name: Run astronomy tutorial
         run: |
+          pip install pytz
           cd ./doc/source/tutorials/astronomy
           jupyter-nbconvert --to notebook --execute star_tracker.ipynb
-      - name: Run machine learning tutorials
+      - name: Stop covalent
         run: |
+          covalent stop
+
+  run_mnist_classifier:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['ubuntu-20.04', 'ubuntu-18.04']
+        python-version: ['3.8']
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      #- name: Install homebrew
+      #  if: matrix.os == 'macos-latest'
+      #  run: |
+      #    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      - name: Install NPM and Yarn on Ubuntu
+      #  if: matrix.os != 'macos-latest'
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl
+          sudo curl -fsSL https://deb.nodesource.com/setup_16.x | sudo /bin/bash -
+          sudo apt-get install -y nodejs
+          sudo npm install -g yarn
+      - name: Build webapp
+        run: |
+          cd ./covalent_ui/webapp
+          yarn install
+          yarn build
+      - name: Install covalent
+        run: |
+          pip install -e .
+          pip install uvloop
+          pip install jupyterlab
+      - name: Covalent purge
+        run: |
+          covalent purge
+      - name: Start covalent server
+        run: |
+          covalent start
+      - name: Run MNIST classifier tutorial
+        run: |
+          pip install torch torchvision
           cd ./doc/source/tutorials/machine_learning
           jupyter-nbconvert --to notebook --execute mnist_classifier.ipynb
+      - name: Stop covalent
+        run: |
+          covalent stop
+
+  run_classical_quantum_svm:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['ubuntu-20.04', 'ubuntu-18.04']
+        python-version: ['3.8']
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      #- name: Install homebrew
+      #  if: matrix.os == 'macos-latest'
+      #  run: |
+      #    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      - name: Install NPM and Yarn on Ubuntu
+      #  if: matrix.os != 'macos-latest'
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl
+          sudo curl -fsSL https://deb.nodesource.com/setup_16.x | sudo /bin/bash -
+          sudo apt-get install -y nodejs
+          sudo npm install -g yarn
+      - name: Build webapp
+        run: |
+          cd ./covalent_ui/webapp
+          yarn install
+          yarn build
+      - name: Install covalent
+        run: |
+          pip install -e .
+          pip install uvloop
+          pip install jupyterlab
+      - name: Covalent purge
+        run: |
+          covalent purge
+      - name: Start covalent server
+        run: |
+          covalent start
+      - name: Run classical quantum svm tutorial
+        run: |
+          pip install sklearn qiskit qiskit_machine_learning
+          cd ./doc/source/tutorials/machine_learning
           jupyter-nbconvert --to notebook --execute classical_quantum_svm.ipynb
+      - name: Stop covalent
+        run: |
+          covalent stop
+
+  run_quantum_chemistry_tutorial:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['ubuntu-20.04', 'ubuntu-18.04']
+        python-version: ['3.8']
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      #- name: Install homebrew
+      #  if: matrix.os == 'macos-latest'
+      #  run: |
+      #    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      - name: Install NPM and Yarn on Ubuntu
+       # if: matrix.os != 'macos-latest'
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl
+          sudo curl -fsSL https://deb.nodesource.com/setup_16.x | sudo /bin/bash -
+          sudo apt-get install -y nodejs
+          sudo npm install -g yarn
+      - name: Build webapp
+        run: |
+          cd ./covalent_ui/webapp
+          yarn install
+          yarn build
+      - name: Install covalent
+        run: |
+          pip install -e .
+          pip install uvloop
+          pip install jupyterlab
+      - name: Covalent purge
+        run: |
+          covalent purge
+      - name: Start covalent server
+        run: |
+          covalent start
       - name: Run quantum chemistry tutorial
         run: |
+          pip install ase ase-notebook
           cd ./doc/source/tutorials/quantum_chemistry
           jupyter-nbconvert --to notebook --execute nitrogen_copper_interaction.ipynb
-      - name: Run quantum gravity tutorial
+      - name: Stop covalent
         run: |
+          covalent stop
+
+  run_quantum_gravity_tutorial:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['ubuntu-20.04', 'ubuntu-18.04']
+        python-version: ['3.8']
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      #- name: Install homebrew
+      #  if: matrix.os == 'macos-latest'
+      #  run: |
+      #    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      - name: Install NPM and Yarn on Ubuntu
+       # if: matrix.os != 'macos-latest'
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl
+          sudo curl -fsSL https://deb.nodesource.com/setup_16.x | sudo /bin/bash -
+          sudo apt-get install -y nodejs
+          sudo npm install -g yarn
+      - name: Build webapp
+        run: |
+          cd ./covalent_ui/webapp
+          yarn install
+          yarn build
+      - name: Install covalent
+        run: |
+          pip install -e .
+          pip install uvloop
+          pip install jupyterlab
+      - name: Covalent purge
+        run: |
+          covalent purge
+      - name: Start covalent server
+        run: |
+          covalent start
+      - name: Run Quantum Gravity tutorial
+        run: |
+          pip install tensorflow
           cd ./doc/source/tutorials/quantum_gravity
           jupyter-nbconvert --to notebook --execute spacetime_classification.ipynb
       - name: Stop covalent
