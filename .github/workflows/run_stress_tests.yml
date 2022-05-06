@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-name: qa_tutorials
+name: run_stress_tests
 
 on:
   push:
@@ -26,7 +26,7 @@ on:
       - qa-pipelines
 
 jobs:
-  run_astronomy_tutorial:
+  run_stress_tests:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
