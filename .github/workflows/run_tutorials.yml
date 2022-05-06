@@ -24,6 +24,10 @@ on:
   push:
     branches:
       - qa-pipelines
+    paths-ignore:
+      - '*.md'
+      - 'VERSION'
+      - 'LICENSE'
 
 jobs:
   run_astronomy_tutorial:
