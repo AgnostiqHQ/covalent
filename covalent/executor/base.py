@@ -341,3 +341,12 @@ class BaseExecutor(ABC):
             return False
         self.conda_path = which_conda
         return True
+
+    def __repr__(self):
+        """
+        Base executor string representation
+        """
+        class_str = f"BaseExecutor("
+        for key, value in self.__dict__.items():
+            class_str += f"{key}={value},"
+        return class_str.rstrip(',') + ")"
