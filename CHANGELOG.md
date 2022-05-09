@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Disabled ops bot in workflows
+- Re-enabled ops bot in workflows
 
 ## [0.95.0] - 2022-04-25
 
