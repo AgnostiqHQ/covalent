@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Fixes
+### Fixed
 
+- Fixed high CPU consumption on UI backend by disabling uvicorn reload.
 - Release action issues with inconsistent GitHub context typing
 
 ### Docs
