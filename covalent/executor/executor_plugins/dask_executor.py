@@ -25,6 +25,7 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
+import asyncio
 import io
 import os
 from contextlib import redirect_stderr, redirect_stdout
@@ -77,7 +78,7 @@ class DaskExecutor(BaseExecutor):
 
         self.scheduler_address = scheduler_address
 
-    def execute(
+    async def execute(
         self,
         function: TransportableObject,
         args: List,
@@ -128,6 +129,7 @@ class DaskExecutor(BaseExecutor):
 
             else:
                 future = dask_client.submit(fn, *args, **kwargs)
+                await asyncio.sleep(0)
                 result = future.result()
 
         self.write_streams_to_file(

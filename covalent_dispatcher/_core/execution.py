@@ -218,7 +218,7 @@ async def _run_task(
             )
 
         else:
-            output, stdout, stderr = executor.execute(
+            output, stdout, stderr = await executor.execute(
                 function=serialized_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],

@@ -55,7 +55,7 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
-    def execute(
+    async def execute(
         self,
         function: TransportableObject,
         args: List,
