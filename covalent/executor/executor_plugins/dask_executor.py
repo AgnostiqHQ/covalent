@@ -30,7 +30,7 @@ import os
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Dict, List
 
-from dask.distributed import get_client
+from dask.distributed import Client
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import logger
@@ -77,7 +77,7 @@ class DaskExecutor(BaseExecutor):
 
         self.scheduler_address = scheduler_address
 
-    def execute(
+    async def execute(
         self,
         function: TransportableObject,
         args: List,
@@ -103,7 +103,7 @@ class DaskExecutor(BaseExecutor):
             output: The result of the executed function.
         """
 
-        dask_client = get_client(address=self.scheduler_address, timeout=1)
+        dask_client = Client(address=self.scheduler_address, timeout=1, asynchronous=True)
 
         dispatch_info = DispatchInfo(dispatch_id)
         fn = function.get_deserialized()
@@ -128,7 +128,8 @@ class DaskExecutor(BaseExecutor):
 
             else:
                 future = dask_client.submit(fn, *args, **kwargs)
-                result = future.result()
+                # result = future.result()
+                result = await future
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),

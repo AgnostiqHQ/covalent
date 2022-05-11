@@ -122,7 +122,7 @@ class BaseExecutor(ABC):
                 print(ss)
 
     @abstractmethod
-    def execute(
+    async def execute(
         self,
         function: TransportableObject,
         args: List,
