@@ -24,6 +24,8 @@ Module for defining a local executor that directly invokes the input python func
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
+import asyncio
+import functools
 import io
 import os
 from contextlib import redirect_stderr, redirect_stdout
@@ -55,7 +57,26 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
-    def execute(
+    def __init__(
+        self,
+        log_stdout: str = "stdout.log",
+        log_stderr: str = "stderr.log",
+        conda_env: str = "",
+        cache_dir: str = "",
+        current_env_on_conda_fail: bool = False,
+        pool=None,
+    ) -> None:
+        if not cache_dir:
+            cache_dir = os.path.join(
+                os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+                "covalent",
+            )
+
+        self.pool = pool
+
+        super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
+
+    async def execute(
         self,
         function: TransportableObject,
         args: List,
@@ -103,7 +124,12 @@ class LocalExecutor(BaseExecutor):
                 )
 
             else:
-                result = fn(*args, **kwargs)
+                loop = asyncio.get_running_loop()
+                # For kwargs
+                partial = functools.partial(fn, *args, **kwargs)
+
+                # Event loop defaults to a ThreadPoolExecutor if pool=None
+                result = await loop.run_in_executor(self.pool, partial)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
