@@ -29,7 +29,6 @@ from pathlib import Path
 import networkx as nx
 import simplejson
 import tailer
-from dask.distributed import Client, LocalCluster
 from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -39,12 +38,14 @@ from covalent._results_manager import results_manager as rm
 from covalent._shared_files.config import get_config, set_config
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
-from covalent_dispatcher._service.app import bp
+from covalent_dispatcher._service.app import bp, dispatch_limiter
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
 
 app = Flask(__name__, static_folder=WEBAPP_PATH)
+dispatch_limiter.init_app(app)
+
 app.register_blueprint(bp)
 # allow cross-origin requests when API and static files are served separately
 CORS(app)
@@ -161,4 +162,8 @@ if __name__ == "__main__":
     # reload = True if args.develop is True else False
     reload = False
 
-    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
+    try:
+        socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
+    except Exception as e:
+        print(f"Exception: {e}")
+

@@ -23,13 +23,11 @@ Defines the core functionality of the dispatcher
 """
 
 import asyncio
+from concurrent.futures import Future, ThreadPoolExecutor, thread, wait, ALL_COMPLETED
 import traceback
-from asyncio import Task
 from datetime import datetime, timezone
-from typing import Any, Coroutine, Dict, List
-
-import uvloop
-
+from typing import Any, Dict, List
+from numpy import single
 from covalent import dispatch_sync
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
@@ -48,12 +46,10 @@ from covalent._shared_files.defaults import (
 from covalent._workflow.lattice import Lattice
 from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
-
 from .._db.dispatchdb import DispatchDB
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
 
 def generate_node_result(
     node_id,
@@ -169,7 +165,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         return result
 
 
-async def _run_task(
+def _run_task(
     node_id: int,
     dispatch_id: str,
     results_dir: str,
@@ -201,34 +197,29 @@ async def _run_task(
 
     # run the task on the executor and register any failures
     try:
-
         if node_name.startswith(sublattice_prefix):
             func = serialized_callable.get_deserialized()
             sublattice_result = dispatch_sync(func)(*inputs["args"], **inputs["kwargs"])
             output = sublattice_result.result
-
             end_time = datetime.now(timezone.utc)
-
             node_result = generate_node_result(
-                node_id=node_id,
-                end_time=end_time,
-                status=Result.COMPLETED,
-                output=output,
-                sublattice_result=sublattice_result,
-            )
+                    node_id=node_id,
+                    end_time=end_time,
+                    status=Result.COMPLETED,
+                    output=output,
+                    sublattice_result=sublattice_result,
+                )
 
         else:
             output, stdout, stderr = executor.execute(
                 function=serialized_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
+                node_id=node_id,
                 dispatch_id=dispatch_id,
                 results_dir=results_dir,
-                node_id=node_id,
             )
-
             end_time = datetime.now(timezone.utc)
-
             node_result = generate_node_result(
                 node_id=node_id,
                 end_time=end_time,
@@ -237,10 +228,8 @@ async def _run_task(
                 stdout=stdout,
                 stderr=stderr,
             )
-
     except Exception as ex:
         end_time = datetime.now(timezone.utc)
-
         node_result = generate_node_result(
             node_id=node_id,
             end_time=end_time,
@@ -249,7 +238,6 @@ async def _run_task(
         )
 
     result_object._update_node(**node_result)
-
     with DispatchDB() as db:
         db.upsert(result_object.dispatch_id, result_object)
     result_object.save()
@@ -257,8 +245,7 @@ async def _run_task(
 
     return node_result
 
-
-async def _run_planned_workflow(result_object: Result) -> Result:
+def _run_planned_workflow(result_object: Result, threadpool: ThreadPoolExecutor) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -272,18 +259,13 @@ async def _run_planned_workflow(result_object: Result) -> Result:
         None
     """
 
-    # shared_var = Variable(result_object.dispatch_id)
-    # shared_var.set(str(Result.RUNNING))
-
-    event_loop = asyncio.get_event_loop()
-
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
     order = result_object.lattice.transport_graph.get_topologically_sorted_graph()
 
     for nodes in order:
-        tasks: List[Task] = []
+        futures: List[Future] = []
 
         for node_id in nodes:
             # Get name of the node for the current task
@@ -314,7 +296,6 @@ async def _run_planned_workflow(result_object: Result) -> Result:
                     status=Result.COMPLETED,
                     output=output,
                 )
-
                 continue
 
             task_input = _get_task_inputs(node_id, node_name, result_object)
@@ -341,26 +322,18 @@ async def _run_planned_workflow(result_object: Result) -> Result:
             result_webhook.send_update(result_object)
 
             # Add the task generated for the node to the list of tasks
-            tasks.append(
-                event_loop.create_task(
-                    _run_task(
-                        node_id=node_id,
+            futures.append(threadpool.submit(_run_task, node_id=node_id,
                         dispatch_id=result_object.dispatch_id,
                         results_dir=result_object.results_dir,
                         serialized_callable=serialized_callable,
                         selected_executor=selected_executor,
                         node_name=node_name,
                         inputs=task_input,
-                        result_object=result_object,
-                    )
-                )
-            )
+                        result_object=result_object))
 
-        # run the tasks for the current iteration concurrently
-        # results are not used right now, but can be in the case of multiprocessing
-        results = await asyncio.gather(*tasks)
-
-        del tasks
+        # Wait on the set of tasks to fininsh
+        results = wait(futures, return_when=ALL_COMPLETED)
+        del futures
 
         # When one or more nodes failed in the last iteration, don't iterate further
         for node_id in nodes:
@@ -434,20 +407,18 @@ def run_workflow(dispatch_id: str, results_dir: str) -> None:
     """
 
     result_object = rm._get_result_from_file(dispatch_id, results_dir)
-
-    try:
-        event_loop = asyncio.get_event_loop()
-    except RuntimeError:
-        event_loop = uvloop.new_event_loop()
-        asyncio.set_event_loop(event_loop)
-
     if result_object.status == Result.COMPLETED:
         return
 
     try:
-        _plan_workflow(result_object)
-        event_loop.run_until_complete(_run_planned_workflow(result_object))
+        # Create thread pool here
+        threadpool = ThreadPoolExecutor(4)
 
+        _plan_workflow(result_object)
+        _run_planned_workflow(result_object, threadpool)
+
+        # Shutdown here
+        threadpool.shutdown()
     except Exception as ex:
         result_object._status = Result.FAILED
         result_object._end_time = datetime.now(timezone.utc)

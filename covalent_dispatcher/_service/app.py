@@ -19,14 +19,30 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import cloudpickle as pickle
-from flask import Blueprint, Flask, Response, jsonify, request
-
+from flask import Blueprint, Response, jsonify, request
 import covalent_dispatcher as dispatcher
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from multiprocessing import Process, Queue
 
+workflow_queue = Queue()
 bp = Blueprint("dispatcher", __name__, url_prefix="/api")
+dispatch_limiter = Limiter(key_func=get_remote_address)
 
+def execute_workflow(q):
+    while True:
+        workflow = q.get()
+        workflow()
+
+# Make it a process pool
+@bp.before_app_first_request
+def start_process_pool():
+    procs = [Process(target=execute_workflow, args=(workflow_queue, )) for i in range(4)]
+    for i, proc in enumerate(procs):
+        proc.start()
 
 @bp.route("/submit", methods=["POST"])
+@dispatch_limiter.limit("1000 per minute")
 def submit() -> Response:
     """
     Function to accept the submit request of
@@ -40,7 +56,6 @@ def submit() -> Response:
         dispatch_id: The dispatch id in a json format
                      returned as a Flask Response object.
     """
-
     data = request.get_data()
     result_object = pickle.loads(data)
     dispatch_id = dispatcher.run_dispatcher(result_object)

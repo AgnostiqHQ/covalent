@@ -22,18 +22,14 @@
 Self-contained entry point for the dispatcher
 """
 
-import sys
-import threading
 import uuid
-from typing import List
-
-from dask.distributed import fire_and_forget, get_client
-
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._workflow.transport import _TransportGraph
+from functools import partial
+from covalent_dispatcher._service import workflow_queue
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -85,10 +81,10 @@ def run_dispatcher(result_object: Result) -> str:
 
     from ._core import run_workflow
 
-    thread = threading.Thread(
-        target=run_workflow, args=(result_object.dispatch_id, result_object.results_dir)
-    )
-    thread.start()
+    # Put the workflow to be executed into the queue to be picked up process workers started earlier
+    workflow = partial(run_workflow, dispatch_id=dispatch_id, results_dir=result_object.results_dir)
+    workflow_queue.put(workflow)
+    app_log.warning(f"Workflow {dispatch_id} added to the workflow queue")
 
     return dispatch_id
 
