@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace Nats message queue (MQ) in Queuer with AWS Simple Queue Service (SQS).
 - Replace reading from Nats MQ to SQS in `queue_consumer.py`.
 
+### Added
+
+- `boto3` to the requirements.txt file in the root folder.
+
 ## [0.96.0] - 2022-05-12
 
 ### Fixed
