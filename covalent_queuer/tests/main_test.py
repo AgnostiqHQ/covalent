@@ -2,7 +2,7 @@ import base64
 import os
 
 import pytest
-from app.core.queuer import Queuer
+from app.core.queuer import Queue
 
 dirname = os.path.dirname(__file__)
 filename = os.path.join(dirname, "./_test_assets/result")

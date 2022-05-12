@@ -24,7 +24,7 @@ from io import BytesIO
 
 import cloudpickle as pickle
 from app.core.api import ResultsService
-from app.core.queuer import Queuer
+from app.core.queuer import Queue
 from app.schemas.submit import ResultPickle, SubmitResponse
 from fastapi import APIRouter, File, HTTPException
 
@@ -42,7 +42,7 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
     to be the ultimate thing the user will get and will contain everything in the workflow.
     """
 
-    queue = Queuer()
+    queue = Queue()
     results_svc = ResultsService()
 
     try:
