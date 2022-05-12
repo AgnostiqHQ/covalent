@@ -61,7 +61,7 @@ def get_number_of_tasks(dask_scheduler=None):
 
 
 def run_dispatcher(
-    result_object: Result, thread_pool: ThreadPoolExecutor, process_pool: ProcessPoolExecutor
+    result_object: Result, workflow_pool: ThreadPoolExecutor, tasks_pool: ThreadPoolExecutor
 ) -> str:
     """
     Run the dispatcher from the lattice asynchronously using Dask.
@@ -90,8 +90,8 @@ def run_dispatcher(
 
     from ._core import run_workflow
 
-    futures[dispatch_id] = thread_pool.submit(
-        run_workflow, result_object.dispatch_id, result_object.results_dir, process_pool
+    futures[dispatch_id] = workflow_pool.submit(
+        run_workflow, result_object.dispatch_id, result_object.results_dir, tasks_pool
     )
 
     return dispatch_id

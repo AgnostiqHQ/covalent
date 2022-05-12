@@ -26,20 +26,16 @@ from flask import Blueprint, Flask, Response, jsonify, request
 
 import covalent_dispatcher as dispatcher
 
-workflow_queue = MPQ()
-tasks_queue = MPQ()
-
-
 bp = Blueprint("dispatcher", __name__, url_prefix="/api")
 
 
 @bp.before_app_first_request
 def start_pools():
-    global thread_pool
-    global process_pool
+    global workflow_pool
+    global tasks_pool
 
-    thread_pool = ThreadPoolExecutor()
-    process_pool = ProcessPoolExecutor()
+    workflow_pool = ThreadPoolExecutor()
+    tasks_pool = ThreadPoolExecutor()
 
 
 @bp.route("/submit", methods=["POST"])
@@ -59,7 +55,7 @@ def submit() -> Response:
 
     data = request.get_data()
     result_object = pickle.loads(data)
-    dispatch_id = dispatcher.run_dispatcher(result_object, thread_pool, process_pool)
+    dispatch_id = dispatcher.run_dispatcher(result_object, workflow_pool, tasks_pool)
 
     return jsonify(dispatch_id)
 

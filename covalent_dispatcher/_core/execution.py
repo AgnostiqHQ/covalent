@@ -23,7 +23,7 @@ Defines the core functionality of the dispatcher
 """
 
 import traceback
-from concurrent.futures import Future, ProcessPoolExecutor, wait
+from concurrent.futures import Future, ThreadPoolExecutor, wait
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
@@ -252,7 +252,7 @@ def _run_task(
     return node_result
 
 
-def _run_planned_workflow(result_object: Result, process_pool: ProcessPoolExecutor) -> Result:
+def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -337,7 +337,7 @@ def _run_planned_workflow(result_object: Result, process_pool: ProcessPoolExecut
             )
 
             # Add the task generated for the node to the list of tasks
-            future = process_pool.submit(
+            future = thread_pool.submit(
                 _run_task,
                 node_id=node_id,
                 dispatch_id=result_object.dispatch_id,
@@ -413,7 +413,7 @@ def _plan_workflow(result_object: Result) -> None:
         pass
 
 
-def run_workflow(dispatch_id: str, results_dir: str, process_pool: ProcessPoolExecutor) -> None:
+def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecutor) -> None:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -435,7 +435,7 @@ def run_workflow(dispatch_id: str, results_dir: str, process_pool: ProcessPoolEx
 
     try:
         _plan_workflow(result_object)
-        _run_planned_workflow(result_object, process_pool)
+        _run_planned_workflow(result_object, tasks_pool)
 
     except Exception as ex:
         result_object._status = Result.FAILED
