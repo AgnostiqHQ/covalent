@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Sytnax fix in hotfix workflow
+- Syntax fix in hotfix workflow
+
+## [0.96.1] - 2022-05-12
+
+### Fixed
+
+- Release action issues with inconsistent GitHub context typing
 
 ## [0.96.0] - 2022-05-12
 
