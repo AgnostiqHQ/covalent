@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added S3 Compatibility to Data Service by adding `S3 Storage Backend` strategy.
+
 ### Fixed
 
 - Fixed high CPU consumption on UI backend by disabling uvicorn reload.
