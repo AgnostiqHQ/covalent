@@ -218,7 +218,7 @@ async def _run_task(
             )
 
         else:
-            output, stdout, stderr = await executor.execute(
+            output, stdout, stderr = executor.execute(
                 function=serialized_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
@@ -271,6 +271,14 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     Returns:
         None
     """
+
+    def update_node_result(node_result: dict):
+
+        result_object._update_node(**node_result)
+        with DispatchDB() as db:
+            db.upsert(result_object.dispatch_id, result_object)
+        result_object.save()
+        result_webhook.send_update(result_object)
 
     # shared_var = Variable(result_object.dispatch_id)
     # shared_var.set(str(Result.RUNNING))
@@ -327,18 +335,13 @@ async def _run_planned_workflow(result_object: Result) -> Result:
                 node_id, "metadata"
             )["executor"]
 
-            result_object._update_node(
-                **generate_node_result(
+            update_node_result(
+                generate_node_result(
                     node_id=node_id,
                     start_time=start_time,
                     status=Result.RUNNING,
                 )
             )
-
-            with DispatchDB() as db:
-                db.upsert(result_object.dispatch_id, result_object)
-            result_object.save()
-            result_webhook.send_update(result_object)
 
             # Add the task generated for the node to the list of tasks
             tasks.append(
