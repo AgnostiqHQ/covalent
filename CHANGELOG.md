@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Replace Nats message queue (MQ) in Queuer with AWS Simple Queue Service (SQS).
+- Replace reading from Nats MQ to SQS in `queue_consumer.py`.
+
 ### Fixed
 
 - Fixed high CPU consumption on UI backend by disabling uvicorn reload.
