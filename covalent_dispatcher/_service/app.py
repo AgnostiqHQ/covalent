@@ -18,12 +18,28 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from multiprocessing import Queue as MPQ
+
 import cloudpickle as pickle
 from flask import Blueprint, Flask, Response, jsonify, request
 
 import covalent_dispatcher as dispatcher
 
+workflow_queue = MPQ()
+tasks_queue = MPQ()
+
+
 bp = Blueprint("dispatcher", __name__, url_prefix="/api")
+
+
+@bp.before_app_first_request
+def start_pools():
+    global thread_pool
+    global process_pool
+
+    thread_pool = ThreadPoolExecutor()
+    process_pool = ProcessPoolExecutor()
 
 
 @bp.route("/submit", methods=["POST"])
@@ -43,7 +59,7 @@ def submit() -> Response:
 
     data = request.get_data()
     result_object = pickle.loads(data)
-    dispatch_id = dispatcher.run_dispatcher(result_object)
+    dispatch_id = dispatcher.run_dispatcher(result_object, thread_pool, process_pool)
 
     return jsonify(dispatch_id)
 

@@ -25,6 +25,7 @@ Self-contained entry point for the dispatcher
 import sys
 import threading
 import uuid
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from typing import List
 
 from dask.distributed import fire_and_forget, get_client
@@ -37,6 +38,8 @@ from covalent._workflow.transport import _TransportGraph
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+futures = {}
 
 
 def get_unique_id() -> str:
@@ -57,7 +60,9 @@ def get_number_of_tasks(dask_scheduler=None):
     return len(dask_scheduler.tasks), len(dask_scheduler.workers)
 
 
-def run_dispatcher(result_object: Result) -> str:
+def run_dispatcher(
+    result_object: Result, thread_pool: ThreadPoolExecutor, process_pool: ProcessPoolExecutor
+) -> str:
     """
     Run the dispatcher from the lattice asynchronously using Dask.
     Assign a new dispatch id to the result object and return it.
@@ -85,10 +90,9 @@ def run_dispatcher(result_object: Result) -> str:
 
     from ._core import run_workflow
 
-    thread = threading.Thread(
-        target=run_workflow, args=(result_object.dispatch_id, result_object.results_dir)
+    futures[dispatch_id] = thread_pool.submit(
+        run_workflow, result_object.dispatch_id, result_object.results_dir, process_pool
     )
-    thread.start()
 
     return dispatch_id
 

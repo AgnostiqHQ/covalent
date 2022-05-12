@@ -22,13 +22,12 @@
 Defines the core functionality of the dispatcher
 """
 
-import asyncio
 import traceback
-from asyncio import Task
+from concurrent.futures import Future, ProcessPoolExecutor, wait
 from datetime import datetime, timezone
-from typing import Any, Coroutine, Dict, List
+from typing import Any, Dict, List
 
-import uvloop
+import cloudpickle as pickle
 
 from covalent import dispatch_sync
 from covalent._results_manager import Result
@@ -169,7 +168,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         return result
 
 
-async def _run_task(
+def _run_task(
     node_id: int,
     dispatch_id: str,
     results_dir: str,
@@ -177,7 +176,6 @@ async def _run_task(
     serialized_callable: Any,
     selected_executor: Any,
     node_name: str,
-    result_object: Result,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -195,6 +193,9 @@ async def _run_task(
     Returns:
         None
     """
+
+    inputs = pickle.loads(inputs)
+    selected_executor = pickle.loads(selected_executor)
 
     # the executor is determined during scheduling and provided in the execution metadata
     executor = _executor_manager.get_executor(selected_executor)
@@ -248,17 +249,10 @@ async def _run_task(
             error="".join(traceback.TracebackException.from_exception(ex).format()),
         )
 
-    result_object._update_node(**node_result)
-
-    with DispatchDB() as db:
-        db.upsert(result_object.dispatch_id, result_object)
-    result_object.save()
-    result_webhook.send_update(result_object)
-
     return node_result
 
 
-async def _run_planned_workflow(result_object: Result) -> Result:
+def _run_planned_workflow(result_object: Result, process_pool: ProcessPoolExecutor) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -280,10 +274,9 @@ async def _run_planned_workflow(result_object: Result) -> Result:
         result_object.save()
         result_webhook.send_update(result_object)
 
-    # shared_var = Variable(result_object.dispatch_id)
-    # shared_var.set(str(Result.RUNNING))
-
-    event_loop = asyncio.get_event_loop()
+    def task_callback(future: Future):
+        node_result = future.result()
+        update_node_result(node_result)
 
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
@@ -291,7 +284,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     order = result_object.lattice.transport_graph.get_topologically_sorted_graph()
 
     for nodes in order:
-        tasks: List[Task] = []
+        futures: list = []
 
         for node_id in nodes:
             # Get name of the node for the current task
@@ -344,26 +337,25 @@ async def _run_planned_workflow(result_object: Result) -> Result:
             )
 
             # Add the task generated for the node to the list of tasks
-            tasks.append(
-                event_loop.create_task(
-                    _run_task(
-                        node_id=node_id,
-                        dispatch_id=result_object.dispatch_id,
-                        results_dir=result_object.results_dir,
-                        serialized_callable=serialized_callable,
-                        selected_executor=selected_executor,
-                        node_name=node_name,
-                        inputs=task_input,
-                        result_object=result_object,
-                    )
-                )
+            future = process_pool.submit(
+                _run_task,
+                node_id=node_id,
+                dispatch_id=result_object.dispatch_id,
+                results_dir=result_object.results_dir,
+                serialized_callable=serialized_callable,
+                selected_executor=pickle.dumps(selected_executor),
+                node_name=node_name,
+                inputs=pickle.dumps(task_input),
             )
+
+            future.add_done_callback(task_callback)
+
+            futures.append(future)
 
         # run the tasks for the current iteration concurrently
         # results are not used right now, but can be in the case of multiprocessing
-        results = await asyncio.gather(*tasks)
-
-        del tasks
+        wait(futures)
+        # del futures
 
         # When one or more nodes failed in the last iteration, don't iterate further
         for node_id in nodes:
@@ -421,7 +413,7 @@ def _plan_workflow(result_object: Result) -> None:
         pass
 
 
-def run_workflow(dispatch_id: str, results_dir: str) -> None:
+def run_workflow(dispatch_id: str, results_dir: str, process_pool: ProcessPoolExecutor) -> None:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -438,18 +430,12 @@ def run_workflow(dispatch_id: str, results_dir: str) -> None:
 
     result_object = rm._get_result_from_file(dispatch_id, results_dir)
 
-    try:
-        event_loop = asyncio.get_event_loop()
-    except RuntimeError:
-        event_loop = uvloop.new_event_loop()
-        asyncio.set_event_loop(event_loop)
-
     if result_object.status == Result.COMPLETED:
         return
 
     try:
         _plan_workflow(result_object)
-        event_loop.run_until_complete(_run_planned_workflow(result_object))
+        _run_planned_workflow(result_object, process_pool)
 
     except Exception as ex:
         result_object._status = Result.FAILED
