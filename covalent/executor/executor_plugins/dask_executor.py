@@ -128,7 +128,6 @@ class DaskExecutor(BaseExecutor):
 
             else:
                 future = dask_client.submit(fn, *args, **kwargs)
-                # result = future.result()
                 result = await future
 
         self.write_streams_to_file(

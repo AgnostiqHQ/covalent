@@ -64,7 +64,6 @@ class LocalExecutor(BaseExecutor):
         conda_env: str = "",
         cache_dir: str = "",
         current_env_on_conda_fail: bool = False,
-        pool=None,
     ) -> None:
         if not cache_dir:
             cache_dir = os.path.join(
@@ -72,11 +71,9 @@ class LocalExecutor(BaseExecutor):
                 "covalent",
             )
 
-        self.pool = pool
-
         super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
 
-    async def execute(
+    def execute(
         self,
         function: TransportableObject,
         args: List,
@@ -124,12 +121,7 @@ class LocalExecutor(BaseExecutor):
                 )
 
             else:
-                loop = asyncio.get_running_loop()
-                # For kwargs
-                partial = functools.partial(fn, *args, **kwargs)
-
-                # Event loop defaults to a ThreadPoolExecutor if pool=None
-                result = await loop.run_in_executor(self.pool, partial)
+                result = fn(*args, **kwargs)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
