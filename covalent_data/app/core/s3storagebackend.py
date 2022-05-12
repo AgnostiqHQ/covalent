@@ -119,18 +119,19 @@ class S3StorageBackend(ABC):
                     "Quiet": False,
                 },
             )
+
+            try:
+                deleted_objects = res["Deleted"]
+            except KeyError:
+                deleted_objects = []
+
+            try:
+                failed = res["Errors"]
+            except KeyError:
+                failed = []
+
         except (botocore.exceptions.ClientError) as e:
             failed = object_names
-
-        try:
-            deleted_objects = res["Deleted"]
-        except KeyError:
-            deleted_objects = []
-
-        try:
-            failed = res["Errors"]
-        except KeyError:
-            failed = []
 
         deleted_objects = list(map(lambda obj_metadata: obj_metadata["Key"], deleted_objects))
         failed = list(map(lambda obj_metadata: obj_metadata["Key"], failed))
