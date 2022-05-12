@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace Nats message queue (MQ) in Queuer with AWS Simple Queue Service (SQS).
 - Replace reading from Nats MQ to SQS in `queue_consumer.py`.
 
+## [0.96.0] - 2022-05-12
+
 ### Fixed
 
 - Fixed high CPU consumption on UI backend by disabling uvicorn reload.
@@ -23,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Disabled ops bot in workflows
+- Re-enabled ops bot in workflows
 
 ## [0.95.0] - 2022-04-25
 
