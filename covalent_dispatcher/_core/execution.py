@@ -180,7 +180,7 @@ async def _run_task(
     selected_executor: Any,
     node_name: str,
     result_object: Result,
-    pool: ThreadPoolExecutor,
+    tasks_pool: ThreadPoolExecutor,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -222,28 +222,22 @@ async def _run_task(
 
         else:
 
-            if asyncio.iscoroutinefunction(executor.execute):
-                output, stdout, stderr = await executor.execute(
-                    function=serialized_callable,
-                    args=inputs["args"],
-                    kwargs=inputs["kwargs"],
-                    dispatch_id=dispatch_id,
-                    results_dir=results_dir,
-                    node_id=node_id,
-                )
-            else:
+            execute_method = functools.partial(
+                executor.execute,
+                function=serialized_callable,
+                args=inputs["args"],
+                kwargs=inputs["kwargs"],
+                dispatch_id=dispatch_id,
+                results_dir=results_dir,
+                node_id=node_id,
+            )
+
+            if not asyncio.iscoroutinefunction(executor.execute):
                 loop = asyncio.get_running_loop()
-                partial = functools.partial(
-                    executor.execute,
-                    function=serialized_callable,
-                    args=inputs["args"],
-                    kwargs=inputs["kwargs"],
-                    dispatch_id=dispatch_id,
-                    results_dir=results_dir,
-                    node_id=node_id,
-                )
                 # FIX: pass in a pre-existing ThreadPool/ProcessPool executor
-                output, stdout, stderr = await loop.run_in_executor(pool, partial)
+                execute_method = loop.run_in_executor(tasks_pool, execute_method)
+
+            output, stdout, stderr = await execute_method()
 
             end_time = datetime.now(timezone.utc)
 
@@ -276,7 +270,7 @@ async def _run_task(
     return node_result
 
 
-async def _run_planned_workflow(result_object: Result, pool: ThreadPoolExecutor) -> Result:
+async def _run_planned_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -370,7 +364,7 @@ async def _run_planned_workflow(result_object: Result, pool: ThreadPoolExecutor)
                         node_name=node_name,
                         inputs=task_input,
                         result_object=result_object,
-                        pool=pool,
+                        tasks_pool=tasks_pool,
                     )
                 )
             )
@@ -437,7 +431,7 @@ def _plan_workflow(result_object: Result) -> None:
         pass
 
 
-def run_workflow(dispatch_id: str, results_dir: str, pool: ThreadPoolExecutor) -> None:
+def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecutor) -> None:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -454,18 +448,14 @@ def run_workflow(dispatch_id: str, results_dir: str, pool: ThreadPoolExecutor) -
 
     result_object = rm._get_result_from_file(dispatch_id, results_dir)
 
-    try:
-        event_loop = asyncio.get_event_loop()
-    except RuntimeError:
-        event_loop = uvloop.new_event_loop()
-        asyncio.set_event_loop(event_loop)
+    uvloop.install()
 
     if result_object.status == Result.COMPLETED:
         return
 
     try:
         _plan_workflow(result_object)
-        event_loop.run_until_complete(_run_planned_workflow(result_object, pool))
+        asyncio.run(_run_planned_workflow(result_object, tasks_pool))
 
     except Exception as ex:
         result_object._status = Result.FAILED
