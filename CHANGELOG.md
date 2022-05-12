@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Sytnax fix in hotfix workflow
+
 ## [0.96.0] - 2022-05-12
 
 ### Fixed
@@ -21,10 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Disabled ops bot in workflows
 - Re-enabled ops bot in workflows
-
-### Fixed
-
-- Sytnax fix in hotfix workflow
 
 ## [0.95.0] - 2022-04-25
 
