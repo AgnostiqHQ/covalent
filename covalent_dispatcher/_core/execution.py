@@ -235,7 +235,9 @@ async def _run_task(
             if not asyncio.iscoroutinefunction(executor.execute):
                 loop = asyncio.get_running_loop()
                 # FIX: pass in a pre-existing ThreadPool/ProcessPool executor
-                execute_method = loop.run_in_executor(tasks_pool, execute_method)
+                execute_method = functools.partial(
+                    loop.run_in_executor, tasks_pool, execute_method
+                )
 
             output, stdout, stderr = await execute_method()
 
