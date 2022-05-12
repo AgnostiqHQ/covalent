@@ -53,8 +53,7 @@ jobs:
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
     - name: Alert Slack
-      #if: failure()
-      if: false
+      if: failure()
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_CHANNEL: "covalent"
