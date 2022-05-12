@@ -23,6 +23,7 @@ Defines the core functionality of the dispatcher
 """
 
 import asyncio
+import functools
 import traceback
 from asyncio import Task
 from datetime import datetime, timezone
@@ -218,14 +219,29 @@ async def _run_task(
             )
 
         else:
-            output, stdout, stderr = await executor.execute(
-                function=serialized_callable,
-                args=inputs["args"],
-                kwargs=inputs["kwargs"],
-                dispatch_id=dispatch_id,
-                results_dir=results_dir,
-                node_id=node_id,
-            )
+
+            if asyncio.iscoroutinefunction(executor.execute):
+                output, stdout, stderr = await executor.execute(
+                    function=serialized_callable,
+                    args=inputs["args"],
+                    kwargs=inputs["kwargs"],
+                    dispatch_id=dispatch_id,
+                    results_dir=results_dir,
+                    node_id=node_id,
+                )
+            else:
+                loop = asyncio.get_running_loop()
+                partial = functools.partial(
+                    executor.execute,
+                    function=serialized_callable,
+                    args=inputs["args"],
+                    kwargs=inputs["kwargs"],
+                    dispatch_id=dispatch_id,
+                    results_dir=results_dir,
+                    node_id=node_id,
+                )
+                # FIX: pass in a global ThreadPool/ProcessPool executor
+                output, stdout, stderr = await loop.run_in_executor(None, partial)
 
             end_time = datetime.now(timezone.utc)
 
