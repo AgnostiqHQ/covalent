@@ -26,6 +26,7 @@ import asyncio
 import functools
 import traceback
 from asyncio import Task
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
@@ -179,6 +180,7 @@ async def _run_task(
     selected_executor: Any,
     node_name: str,
     result_object: Result,
+    pool: ThreadPoolExecutor,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -240,8 +242,8 @@ async def _run_task(
                     results_dir=results_dir,
                     node_id=node_id,
                 )
-                # FIX: pass in a global ThreadPool/ProcessPool executor
-                output, stdout, stderr = await loop.run_in_executor(None, partial)
+                # FIX: pass in a pre-existing ThreadPool/ProcessPool executor
+                output, stdout, stderr = await loop.run_in_executor(pool, partial)
 
             end_time = datetime.now(timezone.utc)
 
@@ -274,7 +276,7 @@ async def _run_task(
     return node_result
 
 
-async def _run_planned_workflow(result_object: Result) -> Result:
+async def _run_planned_workflow(result_object: Result, pool: ThreadPoolExecutor) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -368,6 +370,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
                         node_name=node_name,
                         inputs=task_input,
                         result_object=result_object,
+                        pool=pool,
                     )
                 )
             )
@@ -434,7 +437,7 @@ def _plan_workflow(result_object: Result) -> None:
         pass
 
 
-def run_workflow(dispatch_id: str, results_dir: str) -> None:
+def run_workflow(dispatch_id: str, results_dir: str, pool: ThreadPoolExecutor) -> None:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -462,7 +465,7 @@ def run_workflow(dispatch_id: str, results_dir: str) -> None:
 
     try:
         _plan_workflow(result_object)
-        event_loop.run_until_complete(_run_planned_workflow(result_object))
+        event_loop.run_until_complete(_run_planned_workflow(result_object, pool))
 
     except Exception as ex:
         result_object._status = Result.FAILED
