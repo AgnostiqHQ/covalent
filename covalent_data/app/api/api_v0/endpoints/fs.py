@@ -95,7 +95,11 @@ def download_file(*, file_location: str) -> Any:
     if not stream:
         raise HTTPException(status_code=404, detail="File not found")
 
-    return StreamingResponse(stream, media_type="application/octet-stream")
+    return StreamingResponse(
+        stream,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{file_location}"'},
+    )
 
 
 @router.delete("/delete", status_code=200, response_model=DeleteResponse)
