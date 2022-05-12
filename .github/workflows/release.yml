@@ -76,7 +76,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=v$VERSION" >> $GITHUB_ENV
       - name: Tag commit
-        if: inputs.prerelease == 'true'
+        if: inputs.prerelease
         id: push
         run: |
           git config user.name "CovalentOpsBot"
