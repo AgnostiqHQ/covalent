@@ -77,6 +77,8 @@ class S3StorageBackend(ABC):
         bucket_name: str,
         object_name: str,
         length: int,
+        metadata: dict = None,
+        overwrite: bool = False,
     ) -> (str, str):
 
         """Upload object to storage.
