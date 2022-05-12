@@ -46,7 +46,7 @@ if settings.FS_STORAGE_BACKEND == "minio":
         secret_key=settings.MINIO_SECRET_KEY,
         secure=MINIO_USE_TLS,
     )
-    backend = S3StorageBackend(minio_client, settings.FS_STORAGE_BUCKET)
+    backend = MinioStorageBackend(minio_client, settings.FS_STORAGE_BUCKET)
 elif settings.FS_STORAGE_BACKEND == "s3":
     # Reads AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_DEFAULT_REGION from environment vars
     s3_client = client = boto3.client("s3")
@@ -91,11 +91,11 @@ def download_file(*, file_location: str) -> Any:
     """
     Download a file
     """
-    g = backend.get(backend.bucket_name, file_location)
-    if not g:
+    stream = backend.get(backend.bucket_name, file_location)
+    if not stream:
         raise HTTPException(status_code=404, detail="File not found")
 
-    return StreamingResponse(g, media_type="application/octet-stream")
+    return StreamingResponse(stream, media_type="application/octet-stream")
 
 
 @router.delete("/delete", status_code=200, response_model=DeleteResponse)

@@ -19,13 +19,17 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import logging
+import os
 import shutil
 import uuid
 from abc import ABC
+from http import client
 from pathlib import Path
 from typing import BinaryIO, Generator, List, Union
 
 import boto3
+import botocore.exceptions
+from sqlalchemy import MetaData
 
 from .storagebackend import StorageBackend
 
@@ -58,17 +62,14 @@ class S3StorageBackend(ABC):
         """
 
         try:
-            resp = self.client.get_object(bucket_name, object_name)
-        except Exception as e:
+            resp = self.client.get_object(Bucket=bucket_name, Key=object_name)
+        except (botocore.exceptions.ClientError) as e:
             # TODO: better logging
-            logger.debug("Exception in MinioStorageBackend:")
+            logger.debug(f"Exception in S3 client when fetching object: {object_name}")
             logger.debug(e)
             return None
 
-        if resp.status == 200:
-            return resp.stream()
-        else:
-            return None
+        return resp["Body"]
 
     def put(
         self,
@@ -76,8 +77,6 @@ class S3StorageBackend(ABC):
         bucket_name: str,
         object_name: str,
         length: int,
-        metadata: dict = None,
-        overwrite: bool = False,
     ) -> (str, str):
 
         """Upload object to storage.
@@ -87,34 +86,52 @@ class S3StorageBackend(ABC):
             bucket_name: name of the bucket
             object_name: name of the destination object
             length: number of bytes to upload
-            metadata: an optional dict of metadata to upload
-
         Returns:
             (bucket_name, object_name) if write succeeds and ("", "") otherwise
 
         """
 
-        if not overwrite:
-            try:
-                res = self.client.stat_object(bucket_name, object_name)
-                object_name = f"{uuid.uuid4()}.pkl"
-            except Exception as e:
-                print(e)
-                pass
-
         try:
-            res = self.client.put_object(bucket_name, object_name, data, length, metadata=metadata)
-        except Exception as e:
+            res = self.client.put_object(
+                Bucket=bucket_name, Key=object_name, ContentLength=length, Body=data
+            )
+        except (botocore.exceptions.ClientError) as e:
             # TODO: better logging
-            logger.debug("Exception in MinioStorageBackend:")
+            logger.debug(f"Exception in S3 client when uploading object: {object_name}")
             logger.debug(e)
-            print(e)
             res = None
 
         if res:
-            return (bucket_name, object_name)
+            return (f"s3://{bucket_name}/{object_name}", object_name)
         else:
             return ("", "")
 
     def delete(self, bucket_name: str, object_names: List[str]):
-        raise NotImplementedError
+        deleted_objects = []
+        failed = []
+        try:
+            res = self.client.delete_objects(
+                Bucket=bucket_name,
+                Delete={
+                    "Objects": list(map(lambda obj_name: {"Key": obj_name}, object_names)),
+                    "Quiet": False,
+                },
+            )
+            print(res)
+        except (botocore.exceptions.ClientError) as e:
+            failed = object_names
+
+        try:
+            deleted_objects = res["Deleted"]
+        except KeyError:
+            deleted_objects = []
+
+        try:
+            failed = res["Errors"]
+        except KeyError:
+            failed = []
+
+        deleted_objects = list(map(lambda obj_metadata: obj_metadata["Key"], deleted_objects))
+        failed = list(map(lambda obj_metadata: obj_metadata["Key"], failed))
+
+        return deleted_objects, failed
