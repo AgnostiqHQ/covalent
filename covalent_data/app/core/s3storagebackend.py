@@ -117,7 +117,6 @@ class S3StorageBackend(ABC):
                     "Quiet": False,
                 },
             )
-            print(res)
         except (botocore.exceptions.ClientError) as e:
             failed = object_names
 
