@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Improved Error reporting on S3 Storage Backend for Data Service
+
 ### Added
 
 - Added S3 Compatibility to Data Service by adding `S3 Storage Backend` strategy.
