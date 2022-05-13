@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Improved Error reporting on S3 Storage Backend for Data Service
+## [0.97.0] - 2022-05-13
 
 ### Added
 
