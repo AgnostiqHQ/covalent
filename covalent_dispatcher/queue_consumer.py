@@ -33,6 +33,7 @@ load_dotenv()
 
 TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
 MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
+MQ_QUEUE_NAME = os.environ.get("MQ_QUEUE_NAME")
 
 
 def send_dispatch_id(dispatch_id: str):
