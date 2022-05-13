@@ -33,7 +33,6 @@ def workflow(x, y):
     return add(res, y)
 
 
-@pytest.mark.skip(reason="cannot be run in ci")
 def test_local_dispatcher_dispatch():
     """Tests whether the local dispatcher can dispatch a workflow successfully."""
 
