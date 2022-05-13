@@ -19,9 +19,6 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import logging
-import os
-import shutil
-import uuid
 from abc import ABC
 from http import client
 from pathlib import Path
@@ -29,7 +26,7 @@ from typing import BinaryIO, Generator, List, Union
 
 import boto3
 import botocore.exceptions
-from sqlalchemy import MetaData
+from fastapi import HTTPException
 
 from .storagebackend import StorageBackend
 
@@ -44,9 +41,15 @@ class S3StorageBackend(ABC):
         bucket_name: current working bucket name (default: "default")
     """
 
-    def __init__(self, client, bucket_name="default"):
+    def __init__(self, bucket_name="default"):
         self.bucket_name = bucket_name
-        self.client = client
+        self.client = boto3.client("s3")
+
+    def handle_client_error(self, e):
+        err_code = e.response["Error"]["Code"]
+        logger.warn(f"S3 Client Error: {err_code}")
+        if err_code == "AccessDenied":
+            raise HTTPException(401, detail="AccessDenied: Likely incorrect AWS credentials.")
 
     def get(self, bucket_name: str, object_name: str) -> Union[Generator[bytes, None, None], None]:
         """Get object from storage.
@@ -65,8 +68,8 @@ class S3StorageBackend(ABC):
             resp = self.client.get_object(Bucket=bucket_name, Key=object_name)
         except (botocore.exceptions.ClientError) as e:
             # TODO: better logging
-            logger.debug(f"Exception in S3 client when fetching object: {object_name}")
-            logger.debug(e)
+            logger.warn(f"Exception in S3 client when fetching object: {object_name}")
+            self.handle_client_error(e)
             return None
 
         return resp["Body"]
@@ -99,8 +102,8 @@ class S3StorageBackend(ABC):
             )
         except (botocore.exceptions.ClientError) as e:
             # TODO: better logging
-            logger.debug(f"Exception in S3 client when uploading object: {object_name}")
-            logger.debug(e)
+            logger.warn(f"Exception in S3 client when uploading object: {object_name}")
+            self.handle_client_error(e)
             res = None
 
         if res:
@@ -132,6 +135,7 @@ class S3StorageBackend(ABC):
 
         except (botocore.exceptions.ClientError) as e:
             failed = object_names
+            self.handle_client_error(e)
 
         deleted_objects = list(map(lambda obj_metadata: obj_metadata["Key"], deleted_objects))
         failed = list(map(lambda obj_metadata: obj_metadata["Key"], failed))

@@ -49,8 +49,7 @@ if settings.FS_STORAGE_BACKEND == "minio":
     backend = MinioStorageBackend(minio_client, settings.FS_STORAGE_BUCKET)
 elif settings.FS_STORAGE_BACKEND == "s3":
     # Reads AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_DEFAULT_REGION from environment vars
-    s3_client = boto3.client("s3")
-    backend = S3StorageBackend(s3_client, settings.FS_STORAGE_BUCKET)
+    backend = S3StorageBackend(settings.FS_STORAGE_BUCKET)
 else:
     backend = LocalStorageBackend(Path(settings.FS_LOCAL_STORAGE_ROOT), settings.FS_STORAGE_BUCKET)
 
