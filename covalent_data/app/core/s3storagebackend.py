@@ -54,7 +54,7 @@ class S3StorageBackend(ABC):
                 detail="S3 client error: AccessDenied (Likely incorrect AWS credentials or configuration).",
             )
         else:
-            raise HTTPException(400, defail="S3 client error: {err_code}")
+            raise HTTPException(400, detail=f"S3 client error: {err_code}")
 
     def get(self, bucket_name: str, object_name: str) -> Union[Generator[bytes, None, None], None]:
         """Get object from storage.
