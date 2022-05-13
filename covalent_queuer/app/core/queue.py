@@ -1,11 +1,12 @@
 import json
 import logging
 from enum import Enum
-from typing import Any
+from typing import Any, Optional
 
 import boto3
 from botocore.exceptions import ClientError
 
+QUEUE_NAME = "workflow_queue.fifo"
 logger = logging.getLogger(__name__)
 
 
@@ -15,31 +16,22 @@ class Queue:
 
         sqs_resource = boto3.resource("sqs")
         try:
-            queue = sqs_resource.get_queue_by_name(QueueName="workflow_queue.fifo")
+            queue = sqs_resource.get_queue_by_name(QueueName=QUEUE_NAME)
         except Exception:
             logger.exception("Queue not found.")
         return queue
 
-    async def send_message(self, queue, message_body, message_attributes=None):
-        """
-        Send a message to an Amazon SQS queue.
+    async def send_message(self, message_body: str):
+        """Send message to an AWS SQS queue.
 
-        :param queue: The queue that receives the message.
-        :param message_body: The body text of the message.
-        :param message_attributes: Custom attributes of the message. These are key-value
-                                pairs that can be whatever you want.
-        :return: The response from SQS that contains the assigned message ID.
+        message_body: The body of the messsage, in this case a dispatch id for a workflow.
         """
 
-        if not message_attributes:
-            message_attributes = {}
-
+        queue = self.get_queue()
         try:
-            response = queue.send_message(
-                MessageBody=message_body, MessageAttributes=message_attributes
-            )
+            response = queue.send_message(MessageBody=message_body)
         except ClientError as error:
-            logger.exception("Send message failed: %s", message_body)
+            logger.exception(f"Send message failed: {message_body}")
             raise error
         else:
             return response
