@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added S3 Compatibility to Data Service by adding `S3 Storage Backend` strategy.
+
 ## [0.96.2] - 2022-05-12
 
 ### Fixed
@@ -20,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Release action issues with inconsistent GitHub context typing
 
 ## [0.96.0] - 2022-05-12
+
 
 ### Fixed
 
