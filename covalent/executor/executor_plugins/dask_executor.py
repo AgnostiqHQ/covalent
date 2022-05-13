@@ -25,6 +25,7 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
+import asyncio
 import io
 import os
 from contextlib import redirect_stderr, redirect_stdout

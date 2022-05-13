@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.33.0] - 2022-05-12
+
+### Changed
+
+- Using 2 thread pools to manage multiple workflows better and the other one for executing electrons in parallel.
+
+### Removed
+
+- Asyncio usage for electron level concurrency.
+
 ## [0.32.7] - 2022-05-11
 
 ### Added
@@ -20,7 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Scalability tests for different workflows and workflow sizes under `tests/stress_tests/scripts`
-
 
 ## [0.32.5] - 2022-05-05
 
