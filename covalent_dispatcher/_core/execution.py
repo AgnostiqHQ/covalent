@@ -24,8 +24,10 @@ Defines the core functionality of the dispatcher
 
 import traceback
 from concurrent.futures import Future, ThreadPoolExecutor, wait
+from copy import deepcopy
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from functools import wraps
+from typing import Any, Callable, Dict, List
 
 import cloudpickle as pickle
 
@@ -49,9 +51,46 @@ from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
 
 from .._db.dispatchdb import DispatchDB
+from ..entry_point import futures, run_dispatcher
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+
+def _dispatch_sync(
+    orig_lattice: Lattice, workflow_pool: ThreadPoolExecutor, tasks_pool: ThreadPoolExecutor
+) -> Callable:
+    """Internal version of of ct.dispatch_sync that doesn't involve an
+    HTTP call to the dispatcher.
+    """
+
+    @wraps(orig_lattice)
+    def wrapper(*args, **kwargs) -> Result:
+        """
+        Send the lattice to the dispatcher server and return
+        the assigned dispatch id.
+
+        Args:
+            *args: The inputs of the workflow.
+            **kwargs: The keyword arguments of the workflow.
+
+        Returns:
+            The dispatch id of the workflow.
+        """
+
+        # Copied from ct.dispatch
+        lattice = deepcopy(orig_lattice)
+
+        lattice.build_graph(*args, **kwargs)
+
+        # Serializing the transport graph and then passing it to the Result object
+        lattice.transport_graph = lattice.transport_graph.serialize()
+        result_object = Result(lattice, lattice.metadata["results_dir"])
+        dispatch_id = run_dispatcher(result_object, workflow_pool, tasks_pool)
+
+        return futures[dispatch_id].result()
+
+    return wrapper
 
 
 def generate_node_result(
@@ -176,6 +215,8 @@ def _run_task(
     serialized_callable: Any,
     selected_executor: Any,
     node_name: str,
+    workflow_pool: ThreadPoolExecutor,
+    tasks_pool: ThreadPoolExecutor,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -205,7 +246,9 @@ def _run_task(
 
         if node_name.startswith(sublattice_prefix):
             func = serialized_callable.get_deserialized()
-            sublattice_result = dispatch_sync(func)(*inputs["args"], **inputs["kwargs"])
+            sublattice_result = _dispatch_sync(func, workflow_pool, tasks_pool)(
+                *inputs["args"], **inputs["kwargs"]
+            )
             output = sublattice_result.result
 
             end_time = datetime.now(timezone.utc)
@@ -252,7 +295,9 @@ def _run_task(
     return node_result
 
 
-def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
+def _run_planned_workflow(
+    result_object: Result, workflow_pool: ThreadPoolExecutor, thread_pool: ThreadPoolExecutor
+) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -346,6 +391,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 selected_executor=pickle.dumps(selected_executor),
                 node_name=node_name,
                 inputs=pickle.dumps(task_input),
+                workflow_pool=workflow_pool,
+                tasks_pool=thread_pool,
             )
 
             future.add_done_callback(task_callback)
@@ -367,7 +414,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                     db.upsert(result_object.dispatch_id, result_object)
                 result_object.save()
                 result_webhook.send_update(result_object)
-                return
+                return result_object
 
             elif result_object._get_node_status(node_id) == Result.CANCELLED:
                 result_object._status = Result.CANCELLED
@@ -376,7 +423,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                     db.upsert(result_object.dispatch_id, result_object)
                 result_object.save()
                 result_webhook.send_update(result_object)
-                return
+                return result_object
 
     # post process the lattice
     result_object._result = _post_process(
@@ -389,6 +436,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         db.upsert(result_object.dispatch_id, result_object)
     result_object.save(write_source=True)
     result_webhook.send_update(result_object)
+
+    return result_object
 
 
 def _plan_workflow(result_object: Result) -> None:
@@ -413,7 +462,12 @@ def _plan_workflow(result_object: Result) -> None:
         pass
 
 
-def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecutor) -> None:
+def run_workflow(
+    dispatch_id: str,
+    results_dir: str,
+    tasks_pool: ThreadPoolExecutor,
+    workflow_pool: ThreadPoolExecutor,
+) -> Result:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -431,11 +485,11 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
     result_object = rm._get_result_from_file(dispatch_id, results_dir)
 
     if result_object.status == Result.COMPLETED:
-        return
+        return result_object
 
     try:
         _plan_workflow(result_object)
-        _run_planned_workflow(result_object, tasks_pool)
+        new_result_obj = _run_planned_workflow(result_object, workflow_pool, tasks_pool)
 
     except Exception as ex:
         result_object._status = Result.FAILED
@@ -443,6 +497,8 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
         result_object._error = "".join(traceback.TracebackException.from_exception(ex).format())
         result_object.save()
         raise
+
+    return new_result_obj
 
 
 def cancel_workflow(dispatch_id: str) -> None:

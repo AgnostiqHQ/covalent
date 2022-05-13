@@ -85,7 +85,11 @@ def run_dispatcher(
     from ._core import run_workflow
 
     futures[dispatch_id] = workflow_pool.submit(
-        run_workflow, result_object.dispatch_id, result_object.results_dir, tasks_pool
+        run_workflow,
+        result_object.dispatch_id,
+        result_object.results_dir,
+        workflow_pool,
+        tasks_pool,
     )
 
     return dispatch_id
