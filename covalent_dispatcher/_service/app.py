@@ -18,11 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-from multiprocessing import Queue as MPQ
+from concurrent.futures import ThreadPoolExecutor
 
 import cloudpickle as pickle
-from flask import Blueprint, Flask, Response, jsonify, request
+from flask import Blueprint, Response, jsonify, request
 
 import covalent_dispatcher as dispatcher
 
