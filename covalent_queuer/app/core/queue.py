@@ -4,24 +4,21 @@ from enum import Enum
 from typing import Any
 
 import boto3
-import nats
-from app.core.config import settings
 from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
-sqs = boto3.resource("sqs")
-
-
-class QueueTopics(Enum):
-    DISPATCH = settings.MQ_DISPATCH_TOPIC
 
 
 class Queue:
+    def get_queue(self) -> Any:
+        """Get AWS Simple Queue Service queue."""
 
-    topics: QueueTopics = QueueTopics
-
-    def get_client(self) -> Any:
-        return nats.connect(settings.MQ_CONNECTION_URI)
+        sqs_resource = boto3.resource("sqs")
+        try:
+            queue = sqs_resource.get_queue_by_name(QueueName="workflow_queue.fifo")
+        except Exception:
+            logger.exception("Queue not found.")
+        return queue
 
     async def send_message(self, queue, message_body, message_attributes=None):
         """
@@ -33,6 +30,7 @@ class Queue:
                                 pairs that can be whatever you want.
         :return: The response from SQS that contains the assigned message ID.
         """
+
         if not message_attributes:
             message_attributes = {}
 
@@ -45,19 +43,3 @@ class Queue:
             raise error
         else:
             return response
-
-    async def publish(self, topic: str, msg: Any) -> Any:
-        # get enum value
-        topic = topic.value
-        client = await self.get_client()
-        msg_json = json.dumps(msg)
-        logging.info(f"Publishing message to topic {topic}:")
-        logging.info(msg_json)
-        res = await client.publish(topic, msg_json.encode())
-        return res
-
-    # TODO - Are topics necessary? How to add topics to SQS
-
-    # TODO - Add method to connect to Amazon SQS
-
-    # TODO - Add method to publish to SQS
