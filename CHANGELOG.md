@@ -16,6 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `boto3` to the requirements.txt file in the root folder.
 
+## [0.96.2] - 2022-05-12
+
+### Fixed
+
+- Syntax fix in hotfix workflow
+
+## [0.96.1] - 2022-05-12
+
+### Fixed
+
+- Release action issues with inconsistent GitHub context typing
+
 ## [0.96.0] - 2022-05-12
 
 ### Fixed

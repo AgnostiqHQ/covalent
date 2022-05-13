@@ -61,7 +61,7 @@ jobs:
           ref: "v${{ github.event.inputs.stable_version }}"
       - name: Check out master
         uses: actions/checkout@v2
-        if: inputs.prerelease == 'true'
+        if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -76,7 +76,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=v$VERSION" >> $GITHUB_ENV
       - name: Tag commit
-        if: inputs.prerelease == 'true'
+        if: inputs.prerelease
         id: push
         run: |
           git config user.name "CovalentOpsBot"
@@ -100,11 +100,10 @@ jobs:
           tail +$begin ./CHANGELOG.md | head -$end >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
       - name: Create release
-        if: >
-          steps.push.outcome == 'success'
-          || steps.no-push.outcome == 'success'
+        if: >-
+          ${{ (steps.push.outcome == 'success' || steps.no-push.outcome == 'success')
           && steps.message.outcome == 'success'
-          && ${{ !github.event.inputs.test_release }}
+          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false') }}
         uses: ncipollo/release-action@v1
         with:
           body: ${{ env.MESSAGE }}
@@ -133,7 +132,7 @@ jobs:
           ref: "v${{ github.event.inputs.stable_version }}"
       - name: Check out master
         uses: actions/checkout@v2
-        if: inputs.prerelease == 'true'
+        if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -155,7 +154,7 @@ jobs:
           yarn install
           yarn build
       - name: Build Prerelease Distribution
-        if: inputs.prerelease == 'true'
+        if: inputs.prerelease
         id: pre-build
         run: python setup.py egg_info --tag-build=pre sdist
       - name: Build Stable Distribution
@@ -173,7 +172,7 @@ jobs:
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
           fi
-          if [ ${{ inputs.prerelease }} = 'true' ] ; then
+          if ${{ inputs.prerelease == true }} ; then
             VERSION="${VERSION}rc0"
           fi
           VERSION="$(echo $VERSION | sed 's/-/.post/')"
