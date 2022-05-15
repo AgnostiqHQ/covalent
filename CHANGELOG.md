@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated all config & log file paths to reside in `$HOME/.cache/covalent` including `.env`, `supervisord.conf`, and all logs
 - Removing previous `cova` package config files on install
 
+## [0.97.1] - 2022-05-13
+
+### Fixed
+
+- Improved Error reporting on S3 Storage Backend for Data Service
+## [0.97.0] - 2022-05-13
+
+### Added
+
+- Added S3 Compatibility to Data Service by adding `S3 Storage Backend` strategy.
+
 ## [0.96.2] - 2022-05-12
 
 ### Fixed
@@ -25,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Release action issues with inconsistent GitHub context typing
 
 ## [0.96.0] - 2022-05-12
+
 
 ### Fixed
 
