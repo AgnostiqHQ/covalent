@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Updated all config & log file paths to reside in `$HOME/.cache/covalent` including `.env`, `supervisord.conf`, and all logs
+- Removing previous `cova` package config files on install
+
 ## [0.97.1] - 2022-05-13
 
 ### Fixed
