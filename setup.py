@@ -27,7 +27,6 @@ import sys
 from setuptools import Command, find_packages, setup
 from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop
-from setuptools.command.install import install
 
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
@@ -212,22 +211,16 @@ class BuildCovalent(build_py):
     """Build Covalent with NATS server"""
 
     def run(self):
+        purge_config()
         install_nats()
         build_py.run(self)
-
-
-class InstallCovalent(install):
-    """Post-Installation for Covalent in install mode"""
-
-    def run(self):
-        purge_config()
-        install.run(self)
 
 
 class DevelopCovalent(develop):
     """Post-Installation for Covalent in develop mode with NATS server"""
 
     def run(self):
+        purge_config()
         install_nats()
         develop.run(self)
 
@@ -279,7 +272,6 @@ setup_info = {
     "cmdclass": {
         "build_py": BuildCovalent,
         "develop": DevelopCovalent,
-        "install": InstallCovalent,
         "docs": Docs,
         "webapp": BuildUI,
     },

@@ -48,7 +48,7 @@ SD_PID_FILE = os.path.join(COVALENT_CACHE_DIR, "supervisord.pid")  # auto-create
 # Legacy config files
 UI_PIDFILE = "/tmp/ui.pid"
 UI_LOGFILE = "/tmp/covalent_ui.log"
-UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui_legacy"
+UI_SRVDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../covalent_ui_legacy")
 
 
 def _read_process_stdout(proc):
@@ -67,11 +67,11 @@ def _is_port_in_use(port: int, host: str = "localhost") -> bool:
 
 
 def _get_project_root_cwd() -> str:
-    return os.path.dirname(os.path.abspath(__file__)) + "/../../"
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 
 
 def _generate_supervisord_config():
-    project_root_path = os.path.dirname(os.path.abspath(__file__)) + "/../.."
+    project_root_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
     # TODO consider using an external .env file for configuring defaults
     # print({
     #     **dotenv_values(f"{project_root_path}/.env")
