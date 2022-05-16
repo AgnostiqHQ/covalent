@@ -152,6 +152,25 @@ class BuildUI(Command):
             )
 
 
+def purge_config():
+    import os
+
+    # remove legacy config
+    try:
+        os.remove(".env")
+    except OSError:
+        pass
+    try:
+        os.remove("supervisord.conf")
+    except OSError:
+        pass
+
+    # remove latest config
+    HOME_PATH = os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")
+    COVALENT_CACHE_DIR = os.path.join(HOME_PATH, "covalent")
+    shutil.rmtree(COVALENT_CACHE_DIR, ignore_errors=True)
+
+
 def install_nats():
     import subprocess
 
@@ -192,14 +211,16 @@ class BuildCovalent(build_py):
     """Build Covalent with NATS server"""
 
     def run(self):
+        purge_config()
         install_nats()
         build_py.run(self)
 
 
 class DevelopCovalent(develop):
-    """Install Covalent in develop mode with NATS server"""
+    """Post-Installation for Covalent in develop mode with NATS server"""
 
     def run(self):
+        purge_config()
         install_nats()
         develop.run(self)
 

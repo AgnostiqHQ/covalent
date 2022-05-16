@@ -34,6 +34,7 @@ from dotenv import dotenv_values, find_dotenv, load_dotenv, set_key
 CONFIG_FILE_NAME = ".env"
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__)) + "/../.."
 HOME_PATH = os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")
+COVALENT_CACHE_DIR = os.path.join(HOME_PATH, "covalent")
 
 # TODO: add tests for below functions
 
@@ -79,10 +80,18 @@ class _ConfigManager:
     """
 
     def __init__(self) -> None:
-        self.env_path = os.environ.get("ENV_DEST_DIR") or PROJECT_ROOT
+
+        self.env_path = os.environ.get("ENV_DEST_DIR") or COVALENT_CACHE_DIR
         self.config_file = os.path.join(self.env_path, CONFIG_FILE_NAME)
+
+        if not os.path.exists(self.env_path):
+            Path(self.env_path).mkdir(parents=True, exist_ok=True)
+
         # ensure .env exists, if not copy from .env.example
         self.ensure_config_file_exists()
+
+        # load .env values into os.environ or use explicitly set environment vars
+        load_dotenv(self.config_file)
 
     @property
     def config_data(self):
@@ -137,8 +146,18 @@ class _ConfigManager:
             None
         """
 
+        # remove .env config file which may live in an arbitrary folder
         try:
             os.remove(self.config_file)
+        except FileNotFoundError:
+            pass
+
+        # remove covalent cache directory with log files, and supervisord.conf
+        shutil.rmtree(COVALENT_CACHE_DIR, ignore_errors=True)
+
+        # attempt to remove legacy .env file
+        try:
+            os.remove(os.path.join(PROJECT_ROOT, CONFIG_FILE_NAME))
         except FileNotFoundError:
             pass
 
