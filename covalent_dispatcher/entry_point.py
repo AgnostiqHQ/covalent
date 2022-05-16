@@ -28,8 +28,6 @@ import uuid
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from typing import List
 
-from dask.distributed import fire_and_forget, get_client
-
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
@@ -54,10 +52,6 @@ def get_unique_id() -> str:
     """
 
     return str(uuid.uuid4())
-
-
-def get_number_of_tasks(dask_scheduler=None):
-    return len(dask_scheduler.tasks), len(dask_scheduler.workers)
 
 
 def run_dispatcher(
