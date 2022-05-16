@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.99.0] - 2022-05-16
+
 ### Changed
 
 - UI redesign phase 2: updates to color theme and typography
