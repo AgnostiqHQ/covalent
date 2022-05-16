@@ -49,7 +49,11 @@ ENV RESULTS_SVC_PORT="8006"
 # Placeholders/defaults
 ENV DATA_SVC_PORT="8004"
 ENV DATA_SVC_HOST="localhost"
-ENV RESULTS_DB="results.db"
+ENV DATABASE_BACKEND="mysql"
+ENV SQLITE_DB_NAME="results.db"
+ENV WORKFLOW_DB_ENDPOINT=""
+ENV WORKFLOW_DB_PORT=3306
+ENV WORKFLOW_DB_PASSWORD=""
 
 COPY --from=venv /app/.venv/ /app/.venv
 COPY --from=venv /app/covalent/ /app/covalent

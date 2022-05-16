@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Support for mysql via sqlalchemy
+- SQL server interface
+
 ## [0.98.0] - 2022-05-15
 
 ### Changed

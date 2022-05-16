@@ -121,7 +121,7 @@ async def _concurrent_download_and_serialize(semaphore, file_name, session):
 
 
 def _get_results_from_db() -> List[Tuple[str, str]]:
-    con = sqlite3.connect(settings.RESULTS_DB)
+    con = sqlite3.connect(settings.WORKFLOW_DB_NAME)
     cur = con.cursor()
     cur.execute("SELECT dispatch_id, filename FROM results")
     rows = cur.fetchall()
