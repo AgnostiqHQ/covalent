@@ -89,7 +89,10 @@ services:
       RESULTS_SVC_HOST: 0.0.0.0
       DATA_SVC_PORT: 8004
       DATA_SVC_HOST: covalent_data
-      SQLITE_DB_NAME: results.db
+      WORKFLOW_DB_NAME: workflow
+      WORKFLOW_DB_ENDPOINT: localhost
+      WORKFLOW_DB_PORT: 3306
+      WORKFLOW_DB_PASSWORD:
     networks:
       covalent:
 
