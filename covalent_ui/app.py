@@ -29,7 +29,6 @@ from pathlib import Path
 import networkx as nx
 import simplejson
 import tailer
-from dask.distributed import Client, LocalCluster
 from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
