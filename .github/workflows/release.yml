@@ -38,6 +38,7 @@ on:
         required: true
         type: boolean
         default: true
+    secrets: inherit
 
 env:
   PAUL_BLART: >
