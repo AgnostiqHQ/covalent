@@ -34,21 +34,21 @@ import requests
 from dotenv import dotenv_values
 from jinja2 import Template
 
+from covalent._shared_files.config import COVALENT_CACHE_DIR, PROJECT_ROOT
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
 
 SUPERVISORD_PORT = 9001
-# UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
-# UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
+SD_START_TIMEOUT_IN_SECS = 15
+
+# Supervisord config files (also see supevisord.template.conf for the rest of files)
+SD_CONFIG_FILE = os.path.join(COVALENT_CACHE_DIR, "supervisord.conf")
+SD_PID_FILE = os.path.join(COVALENT_CACHE_DIR, "supervisord.pid")  # auto-created by supervisord
+
+# Legacy config files
 UI_PIDFILE = "/tmp/ui.pid"
 UI_LOGFILE = "/tmp/covalent_ui.log"
-UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui_legacy"
-SD_CONFIG_FILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.conf"
-
-# Auto-created by Supervisord in CWD of conf file
-SD_PIDFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../supervisord.pid"
-
-SD_START_TIMEOUT_IN_SECS = 15
+UI_SRVDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../covalent_ui_legacy")
 
 
 def _read_process_stdout(proc):
@@ -67,11 +67,11 @@ def _is_port_in_use(port: int, host: str = "localhost") -> bool:
 
 
 def _get_project_root_cwd() -> str:
-    return os.path.dirname(os.path.abspath(__file__)) + "/../../"
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 
 
 def _generate_supervisord_config():
-    project_root_path = os.path.dirname(os.path.abspath(__file__)) + "/../.."
+    project_root_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
     # TODO consider using an external .env file for configuring defaults
     # print({
     #     **dotenv_values(f"{project_root_path}/.env")
@@ -79,7 +79,14 @@ def _generate_supervisord_config():
     with open(f"{project_root_path}/covalent/_cli/supervisord.template.conf", "r") as file:
         template = file.read()
         j2_template = Template(template)
-        config = j2_template.render({"sd_dashboard_port": str(SUPERVISORD_PORT)})
+        config = j2_template.render(
+            {
+                "sd_dashboard_port": str(SUPERVISORD_PORT),
+                "sd_pid_path": SD_PID_FILE,
+                "cache_dir_path": COVALENT_CACHE_DIR,
+                "project_root_path": PROJECT_ROOT,
+            }
+        )
         return config
 
 
@@ -99,7 +106,7 @@ def _create_config_if_not_exists() -> str:
 
 
 def _is_supervisord_running() -> bool:
-    pid = _read_pid(SD_PIDFILE)
+    pid = _read_pid(SD_PID_FILE)
     return psutil.pid_exists(pid)
 
 
@@ -107,10 +114,10 @@ def _ensure_supervisord_running():
     _create_config_if_not_exists()
     cwd = _get_project_root_cwd()
     if _is_supervisord_running():
-        pid = _read_pid(SD_PIDFILE)
+        pid = _read_pid(SD_PID_FILE)
         click.echo(f"Supervisord already running in process {pid}.")
     else:
-        Popen(["supervisord", "-c", f"{SD_CONFIG_FILE}"], stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
+        Popen(["supervisord", "-c", SD_CONFIG_FILE], stdout=DEVNULL, stderr=DEVNULL, cwd=cwd)
         count = 0
         wait_interval_in_secs = 0.1
         while not _is_port_in_use(SUPERVISORD_PORT):
@@ -122,14 +129,14 @@ def _ensure_supervisord_running():
             count += 1
             time.sleep(wait_interval_in_secs)
         # get new pid as a result of starting supervisord
-        pid = _read_pid(SD_PIDFILE)
+        pid = _read_pid(SD_PID_FILE)
         click.echo(f"Started Supervisord process {pid}.")
 
 
 def _sd_status() -> None:
 
     if _is_supervisord_running():
-        pid = _read_pid(SD_PIDFILE)
+        pid = _read_pid(SD_PID_FILE)
         click.echo(f"Supervisord is running in process {pid}.")
         cwd = _get_project_root_cwd()
         proc = Popen(["supervisorctl", "status"], stdout=PIPE, cwd=cwd)
@@ -157,7 +164,7 @@ def _sd_start_services() -> None:
 
 def _sd_stop_services() -> None:
     if _is_supervisord_running():
-        pid = _read_pid(SD_PIDFILE)
+        pid = _read_pid(SD_PID_FILE)
         click.echo(f"Supervisord is running in process {pid}.")
         cwd = _get_project_root_cwd()
         proc = Popen(["supervisorctl", "stop", "covalent:"], stdout=PIPE, cwd=cwd)
@@ -524,7 +531,7 @@ def purge(legacy) -> None:
     # Shutdown servers and supervisord
     if not legacy and _is_supervisord_running():
         _sd_stop_services()
-        _graceful_shutdown(SD_PIDFILE)
+        _graceful_shutdown(SD_PID_FILE)
 
     if os.path.exists(SD_CONFIG_FILE):
         os.remove(SD_CONFIG_FILE)
