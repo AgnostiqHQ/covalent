@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.33.0] - 2022-05-12
 
+### Fixed
+
+- Add psutil and PyYAML to requirements.txt
+
 ### Changed
 
 - Using 2 thread pools to manage multiple workflows better and the other one for executing electrons in parallel.
@@ -15,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Asyncio usage for electron level concurrency.
+- References to dask
 
 ## [0.32.7] - 2022-05-11
 
