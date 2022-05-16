@@ -94,13 +94,14 @@ const LatticeGraph = ({
         edgeTypes={{ directed: DirectedEdge }}
         nodesDraggable={nodesDraggable}
         nodesConnectable={false}
+        arrowHeadColor={theme.palette.background.coveBlack02}
         elements={elements}
         // prevent selection when nothing is selected to prevent fitView
         selectNodesOnDrag={hasSelectedNode}
       >
         <Background
           variant="dots"
-          color={lighten(theme.palette.background.paper, 0.05)}
+          color={lighten(theme.palette.background.default, 0.1)}
           gap={12}
           size={1}
         />

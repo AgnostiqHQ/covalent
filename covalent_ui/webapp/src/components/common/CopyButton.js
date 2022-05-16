@@ -31,10 +31,11 @@ const CopyButton = ({ content, title = 'Copy', ...props }) => {
   return (
     <Tooltip title={copied ? 'Copied!' : title} placement="right">
       <IconButton
-        onClick={() => {
+        onClick={(e) => {
           copy(content)
           setCopied(true)
           setTimeout(() => setCopied(false), 1200)
+          e.stopPropagation()
         }}
         sx={{ color: 'text.secondary' }}
         {...props}
