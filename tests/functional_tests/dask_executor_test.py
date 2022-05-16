@@ -20,13 +20,25 @@
 
 import time
 
+import pytest
+
 import covalent as ct
 from covalent._results_manager import Result
 from covalent.executor import DaskExecutor
 
 
-def test_dask_executor(scheduler_address):
+def start_dask_cluster():
 
+    from dask.distributed import LocalCluster
+
+    cluster = LocalCluster()
+
+    return cluster.scheduler_address
+
+
+@pytest.mark.skip(reason="No way of installing Dask executor plugin yet")
+def test_dask_executor():
+    scheduler_address = start_dask_cluster()
     dask_executor = DaskExecutor(scheduler_address=scheduler_address)
 
     @ct.electron(executor=dask_executor)
@@ -67,21 +79,3 @@ def test_dask_executor(scheduler_address):
     print(f"Time taken: {time_taken}")
 
     assert result.status == Result.COMPLETED
-
-
-def start_dask_cluster():
-
-    from dask.distributed import LocalCluster
-
-    cluster = LocalCluster()
-
-    return cluster.scheduler_address
-
-
-if __name__ == "__main__":
-
-    scheduler_address = start_dask_cluster()
-
-    print(f"LocalCluster started at scheduler address: {scheduler_address}")
-
-    test_dask_executor(scheduler_address)
