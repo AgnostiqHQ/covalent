@@ -22,10 +22,13 @@
 Tests for self-contained entry point for the dispatcher
 """
 
+from concurrent.futures import ThreadPoolExecutor
+
 import covalent
 import covalent_dispatcher as dispatcher
 from covalent._results_manager import results_manager as rm
 from covalent_dispatcher._db.dispatchdb import DispatchDB
+from tests.functional_tests.basic_dispatcher_test import workflow
 
 from .data import TEST_RESULTS_DIR, get_mock_result
 
@@ -35,8 +38,13 @@ def test_run_dispatcher():
     Test run_dispatcher by passing a result object for a lattice and check if no exception is raised.
     """
 
+    workflow_pool = ThreadPoolExecutor()
+    task_pool = ThreadPoolExecutor()
+
     try:
-        dispatch_id = dispatcher.run_dispatcher(result_object=get_mock_result())
+        dispatch_id = dispatcher.run_dispatcher(
+            result_object=get_mock_result(), workflow_pool=workflow_pool, tasks_pool=task_pool
+        )
     except Exception as e:
         assert False, f"Exception raised: {e}"
 
@@ -44,14 +52,21 @@ def test_run_dispatcher():
     with DispatchDB() as db:
         db.delete([dispatch_id])
 
+    workflow_pool.shutdown()
+    task_pool.shutdown()
+
 
 def test_get_result():
     """
     Integration test combining run_dispatcher and get_result to ensure that a results object is
     returned once the workflow has executed.
     """
+    workflow_pool = ThreadPoolExecutor()
+    task_pool = ThreadPoolExecutor()
 
-    dispatch_id = dispatcher.run_dispatcher(result_object=get_mock_result())
+    dispatch_id = dispatcher.run_dispatcher(
+        result_object=get_mock_result(), workflow_pool=workflow_pool, tasks_pool=task_pool
+    )
     result = dispatcher.get_result(
         results_dir=TEST_RESULTS_DIR, wait=True, dispatch_id=dispatch_id
     )
@@ -62,3 +77,6 @@ def test_get_result():
     )
     with DispatchDB() as db:
         db.delete([dispatch_id])
+
+    workflow_pool.shutdown()
+    task_pool.shutdown()

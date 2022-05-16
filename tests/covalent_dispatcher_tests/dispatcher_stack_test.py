@@ -22,6 +22,8 @@
 Integration test for the dispatcher.
 """
 
+from concurrent.futures import ThreadPoolExecutor
+
 import pytest
 
 import covalent_dispatcher as dispatcher
@@ -58,7 +60,12 @@ def test_dispatcher_flow(mock_result, expected_res, expected_node_outputs):
     default local executor.
     """
 
-    dispatch_id = dispatcher.run_dispatcher(result_object=mock_result())
+    workflow_pool = ThreadPoolExecutor()
+    task_pool = ThreadPoolExecutor()
+
+    dispatch_id = dispatcher.run_dispatcher(
+        result_object=mock_result(), workflow_pool=workflow_pool, tasks_pool=task_pool
+    )
     result = dispatcher.get_result(
         results_dir=TEST_RESULTS_DIR, wait=True, dispatch_id=dispatch_id
     )
@@ -72,3 +79,6 @@ def test_dispatcher_flow(mock_result, expected_res, expected_node_outputs):
 
     with DispatchDB() as db:
         db.delete([dispatch_id])
+
+    workflow_pool.shutdown()
+    task_pool.shutdown()
