@@ -19,7 +19,6 @@
 # Relief from the License may be granted by purchasing a commercial license.
 import asyncio
 
-from app.core.queuer import Queuer
 from fastapi import APIRouter, Response, status
 from nats.errors import NoServersError
 from pydantic import BaseModel
@@ -54,12 +53,6 @@ async def is_service_ready(response: Response):
     """
     is_ready = True
     is_mq_ready = True
-
-    try:
-        q = Queuer()
-        await asyncio.wait_for(q.get_client(), timeout=2)
-    except (asyncio.TimeoutError, NoServersError):
-        is_mq_ready = False
 
     if not is_mq_ready:
         is_ready = False
