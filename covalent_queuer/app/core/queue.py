@@ -31,6 +31,7 @@ from app.core.config import settings
 
 MQ_QUEUE_MESSAGE_GROUP_ID = os.environ.get("MQ_QUEUE_MESSAGE_GROUP_ID")
 MQ_QUEUE_REGION_NAME = os.environ.get("MQ_QUEUE_REGION_NAME")
+MQ_QUEUE_MSG_WAIT_TIME = int(os.environ.get("MQ_QUEUE_MSG_WAIT_TIME"))
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,6 @@ class Queue:
             message_body_str = json.dumps(message_body_dict)
             response = await client.send_message(
                 QueueUrl=queue_url,
-                DelaySeconds=10,
                 MessageBody=message_body_str,
                 MessageGroupId=MQ_QUEUE_MESSAGE_GROUP_ID,
             )
@@ -85,9 +85,7 @@ class Queue:
             while True:
                 try:
                     response = await client.receive_message(
-                        QueueUrl=queue_url,
-                        WaitTimeSeconds=1,
-                        MaxNumberOfMessages=10,
+                        QueueUrl=queue_url, WaitTimeSeconds=MQ_QUEUE_MSG_WAIT_TIME
                     )
 
                     if "Messages" in response:

@@ -20,22 +20,27 @@
 
 import asyncio
 import json
+import logging
 import os
 
-import nats
 import requests
 from app.core.dispatcher_logger import logger
 from app.core.get_svc_uri import DispatcherURI
 from app.core.queue import Queue
 from dotenv import load_dotenv
 
+logger = logging.getLogger(__name__)
 load_dotenv()
 
-MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
 MQ_QUEUE_NAME = os.environ.get("MQ_QUEUE_NAME")
 
 
-def send_dispatch_id(dispatch_id: str):
+def send_dispatch_id(dispatch_id: str) -> None:
+    """Submit workflow by sending dispatch id to Dispatcher service.
+
+    Args:
+        dispatch_id: identifier of the workflow to be submitted.
+    """
 
     resp = requests.post(DispatcherURI().get_route(f"workflow/{dispatch_id}"))
     resp.raise_for_status()
@@ -43,7 +48,9 @@ def send_dispatch_id(dispatch_id: str):
     logger.warning(f"Dispatch id {dispatch_id} sent successfully.")
 
 
-def get_status():
+def get_status() -> str:
+    """Get execution status of the workflow queue."""
+
     resp = requests.get(DispatcherURI().get_route("workflow/status"))
     resp.raise_for_status()
 
@@ -57,16 +64,19 @@ async def main():
 
     async def msg_handler(msg):
         dispatch_id = json.loads(msg.data.decode())["dispatch_id"]
-        logger.warning(f"Got dispatch_id: {dispatch_id} with type {type(dispatch_id)}")
+        logger.info(f"Got dispatch_id: {dispatch_id} with type {type(dispatch_id)}")
         while True:
-            await asyncio.sleep(0.1)
+            # await asyncio.sleep(0.1)  # TODO - Double check that I can take this line out bcs of the wait time when receiving messages.
             # logger.warning("Checking empty queue")
             if get_status() == "EMPTY":
                 break
 
         send_dispatch_id(dispatch_id=dispatch_id)
 
-    msgs = queue.poll_queue(msg_handler=msg_handler)
+    try:
+        await queue.poll_queue(msg_handler=msg_handler)
+    except Exception as err:
+        logging.error(err)
 
     # try:
     #     await sub.next_msg()
@@ -82,4 +92,3 @@ if __name__ == "__main__":
         loop.run_forever()
     except KeyboardInterrupt:
         loop.close()
-        pass
