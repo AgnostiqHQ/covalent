@@ -36,11 +36,11 @@ class Settings(BaseSettings):
     DATA_SVC_PORT: int = 8004
     DATA_SVC_HOST: str = "localhost"
     DATABASE_BACKEND: str = "sqlite"
-    WORKFLOW_DB_NAME: str = "results.db"
-    WORKFLOW_DB_ENDPOINT: str = ""
-    WORKFLOW_DB_PORT: int = 3306
-    WORKFLOW_DB_USER: str = "admin"
-    WORKFLOW_DB_PASSWORD: str = ""
+    DISPATCH_DB_NAME: str = "dispatch.db"
+    DISPATCH_DB_ENDPOINT: str = "localhost"
+    DISPATCH_DB_PORT: int = 3306
+    DISPATCH_DB_USER: str = "admin"
+    DISPATCH_DB_PASSWORD: str = "covalent"
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

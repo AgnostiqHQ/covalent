@@ -20,19 +20,13 @@
 
 import logging
 import os
+import re
 from typing import Optional, Tuple, Union
 
 import sqlalchemy
-from app.core.config import settings
-from sqlalchemy_utils import (
-    Column,
-    Integer,
-    MetaData,
-    String,
-    Table,
-    create_database,
-    database_exists,
-)
+from app.core.config import HOME_PATH, settings
+from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table
+from sqlalchemy_utils import create_database, database_exists
 
 
 class Database:
@@ -47,66 +41,114 @@ class Database:
     ):
 
         self.database_backend = database_backend
-        self.db_name = db_name if db_name else settings.WORKFLOW_DB_NAME
+        self.db_name = db_name if db_name else settings.DISPATCH_DB_NAME
+        self.logger = logging.getLogger(__name__)
 
-        if self.database_backend == "sqlite":
-            engine = sqlalchemy.create_engine(f"sqlite:///{self.db_name}")
-        elif self.database_backend == "mysql":
+        if self.database_backend == "mysql":
             self.db_endpoint = db_endpoint
             self.db_port = db_port
             self.db_user = db_user
-            self.db_password = db_password
 
-            engine = sqlalchemy.create_engine(
-                f"mysql+pymysql://{self.db_user}:{self.db_password}@{self.db_endpoint}:{self.db_port}/{self.db_name}"
+        self.connect(db_password)
+
+        if not database_exists(self.engine.url):
+            create_database(self.engine.url)
+
+        if not sqlalchemy.inspect(self.engine).has_table("workflow"):
+            self.create_workflow_table()
+
+    def connect(self, db_password: str = None):
+        if self.database_backend == "sqlite":
+            abs_db_path = os.path.join(HOME_PATH, "covalent", self.db_name)
+            self.engine = sqlalchemy.create_engine(f"sqlite+pysqlite:///{abs_db_path}")
+            self.logger.info("Connected to local SQLite database")
+        elif self.database_backend == "mysql":
+            self.engine = sqlalchemy.create_engine(
+                f"mysql+pymysql://{self.db_user}:{db_password}@{self.db_endpoint}:{self.db_port}/{self.db_name}",
+                pool_recycle=3600,
             )
+            self.logger.info(f"Connected to MySQL database at {self.db_endpoint}")
+        else:
+            error_str = "Database backend not supported."
+            self.logger.error(error_str)
+            raise ValueError(error_str)
 
-        if not database_exists(engine.url):
-            create_database(engine.url)
+    def create_workflow_table(self):
+        # TODO: Can metadata also be stored as a class variable?
+        metadata = MetaData(self.engine)
+        workflow_table = Table(
+            "workflow",
+            metadata,
+            # TODO: What is the appropriate length for strings?
+            Column("id", String(256), primary_key=True),
+            Column("name", String(256)),
+            Column("status", String(64), default="NEW_OBJECT"),
+            Column("total_tasks", Integer),
+            Column("completed_tasks", Integer, default=0),
+            Column("time_created", DateTime),
+            Column("time_started", DateTime),
+            Column("time_completed", DateTime),
+            Column("inputs_filename", String(256)),
+            Column("inputs_path", String(256)),
+            Column("function_filename", String(256)),
+            Column("function_path", String(256)),
+            Column("results_filename", String(256)),
+            Column("results_path", String(256)),
+            Column("error_msg", String(256)),
+        )
 
-        if not engine.pymysql.has_table(engine, "dispatch"):
-            metadata = MetaData(engine)
-            dispatch_table = Table(
-                "dispatch",
-                metadata,
-                Column("id", String, primary_key=True),
-                Column("parent_id", String),
-                Column("name", String),
-                Column("status", String),
-                # TODO: Continue here
-            )
+        metadata.create_all(self.engine)
 
-        # sql = (
-        #    "CREATE TABLE IF NOT EXISTS results ("
-        #    "dispatch_id text NOT NULL, "
-        #    "filename text NOT NULL, "
-        #    "path text NOT NULL, "
-        #    "PRIMARY KEY (dispatch_id))"
-        # )
+        self.logger.info("Created workflow table")
 
-        # self.logger = logging.getLogger(__name__)
-        # self.logger.info("Executing SQL command.")
-        # self.logger.info(sql)
+    def create_task_table(self, table_name: str):
+        name_pattern = re.compile("^[a-zA-Z0-9_]+$")
+        if not re.match(name_pattern, table_name):
+            raise ValueError("Invalid table name.")
 
-        # cur.execute(sql)
-        # con.commit()
-        # con.close()
+        metadata = MetaData(self.engine)
+        task_table = Table(
+            table_name,
+            metadata,
+            Column("id", Integer, primary_key=True),
+            Column("name", String(256)),
+            Column("status", String(64), default="NEW_OBJECT"),
+            Column("time_created", DateTime),
+            Column("time_started", DateTime),
+            Column("time_completed", DateTime),
+            Column("inputs_filename", String(256)),
+            Column("inputs_path", String(256)),
+            Column("function_filename", String(256)),
+            Column("function_path", String(256)),
+            Column("executor_filename", String(256)),
+            Column("executor_path", String(256)),
+            Column("results_filename", String(256)),
+            Column("results_path", String(256)),
+            # TODO: Maybe not a good idea to have a fixed-length string here
+            Column("stdout", String(1024)),
+            Column("stderr", String(1024)),
+            Column("info", String(256)),
+            Column("error", String(256)),
+        )
 
-    def value(self, sql: str, key: str = None) -> Optional[Tuple[Union[bool, str]]]:
-        import sqlite3
+        metadata.create_all(self.engine)
 
-        con = sqlite3.connect(self.sqlite_db_name)
-        cur = con.cursor()
+        self.logger.info(f"Created task table {table_name}")
+
+    def value(self, sql: str) -> str:
         self.logger.info("Executing SQL command.")
         self.logger.info(sql)
-        value = (False,)
-        if key:
-            self.logger.info("Searching for key " + key)
-            cur.execute(sql, (key,))
-            value = cur.fetchone()
-        else:
-            cur.execute(sql)
-            value = (True,)
-        con.commit()
-        con.close()
-        return value
+
+        # with self.engine.connect() as connection:
+        connection = self.engine.connect()
+        trans = connection.begin()
+        response = connection.execute(sql)
+        trans.commit()
+
+        try:
+            res = [r for r, in response]
+        except sqlalchemy.exc.ResourceClosedError:
+            # Occurs when the query does not return anything
+            res = None
+
+        return res

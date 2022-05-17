@@ -76,11 +76,18 @@ db = Database()
 
 
 async def _get_result_file(dispatch_id: str) -> bytes:
-    filename = _get_result_from_db(dispatch_id, "filename")
-    path = _get_result_from_db(dispatch_id, "path")
+    print("BEFORE")
+    filename = _get_result_from_db(dispatch_id, "results_filename")
+    print(filename)
+    print("MID")
+    path = _get_result_from_db(dispatch_id, "results_path")
+    print(path)
+    print("AFTER")
     if not dispatch_id or not filename or not path:
+        print("ERR")
         raise HTTPException(status_code=404, detail="Result was not found")
     file = await data_svc.download(filename)
+    print(f"File: {file}")
     return file
 
 
@@ -121,37 +128,35 @@ async def _concurrent_download_and_serialize(semaphore, file_name, session):
 
 
 def _get_results_from_db() -> List[Tuple[str, str]]:
-    con = sqlite3.connect(settings.WORKFLOW_DB_NAME)
-    cur = con.cursor()
-    cur.execute("SELECT dispatch_id, filename FROM results")
-    rows = cur.fetchall()
+    rows = db.value("SELECT id, results_filename FROM workflow")
+
     return rows
 
 
 def _get_result_from_db(dispatch_id: str, field: str) -> Optional[str]:
-    sql = f"SELECT {field} FROM results WHERE dispatch_id=?"
-    value = db.value(sql, key=dispatch_id)
-    if value:
-        (value,) = value
+    print("B4")
+    sql = f"SELECT {field} FROM workflow WHERE id = '{dispatch_id}'"
+    value = db.value(sql)
+    print("VALUE")
+    print(value)
     return value
 
 
 def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
-    sql = ""
-    if _get_result_from_db(dispatch_id, "filename"):
+    if _get_result_from_db(dispatch_id, "results_filename"):
         sql = (
-            "UPDATE results "
-            f"SET filename = '{filename}', path = '{path}' "
-            f"WHERE dispatch_id = '{dispatch_id}' "
-            # f"ORDER BY dispatch_id "
-            # "LIMIT 1"
+            "UPDATE workflow "
+            f"SET results_filename = '{filename}', results_path = '{path}' "
+            f"WHERE id = '{dispatch_id}' "
         )
     else:
-        sql = f"INSERT INTO results VALUES('{dispatch_id}','{filename}','{path}')"
-    insert = db.value(sql)
-    if insert:
-        (insert,) = insert
-    return insert
+        sql = f"INSERT INTO workflow (id, results_filename, results_path) VALUES('{dispatch_id}','{filename}','{path}')"
+
+    print("NOW HERE")
+    response = db.value(sql)
+    print("RESPONSE")
+    print(response)
+    return response
 
 
 @router.get(
@@ -266,16 +271,11 @@ def delete_result(*, dispatch_ids: List[str] = Query([])) -> DeleteResultRespons
 
     deleted_ids = []
     failed_ids = []
-    sql = "DELETE FROM results WHERE dispatch_id = ?"
-    # TODO: perform this in a single SQL command
-    for idx, dispatch_id in enumerate(dispatch_ids):
-        if filenames[idx] in deleted_results:
-            deleted_ids.append(dispatch_id)
-            db.value(sql, dispatch_id)
-        else:
-            failed_ids.append(dispatch_id)
+    sql = f"DELETE FROM workflow WHERE id IN {tuple(dispatch_ids)}"
+    response = db.value(f"{sql} {dispatch_id}")
+    rows_affected = response.split()[0]
 
     return {
-        "deleted": deleted_ids,
-        "failed": failed_ids,
+        "deleted": rows_affected,
+        "failed": len(dispatch_ids) - rows_affected,
     }

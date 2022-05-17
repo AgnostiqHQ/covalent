@@ -78,5 +78,5 @@ class ResultFormats(str, Enum):
 
 
 class DeleteResultResponse(BaseModel):
-    deleted: List[str]
-    failed: List[str]
+    deleted: int
+    failed: int
