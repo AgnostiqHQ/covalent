@@ -24,7 +24,7 @@ import { Typography } from '@mui/material'
 
 const Heading = (props) => (
   <Typography
-    color="text.secondary"
+    color="text.tertiary"
     fontSize="caption.fontSize"
     sx={{ mt: 3, mb: 0.5 }}
     {...props}
