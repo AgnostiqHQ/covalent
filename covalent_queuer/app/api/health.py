@@ -54,6 +54,8 @@ async def is_service_ready(response: Response):
     is_ready = True
     is_mq_ready = True
 
+    # logic to determine if queuer is not ready to recieve traffic should go here
+
     if not is_mq_ready:
         is_ready = False
 
