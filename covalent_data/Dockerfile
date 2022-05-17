@@ -42,9 +42,6 @@ RUN cd /app && \
 # Final image
 FROM python:3.8-slim-buster as prod
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl
-
 # Placeholders/default environment variables
 ENV DATA_SVC_HOST="0.0.0.0"
 ENV DATA_SVC_PORT="8004"

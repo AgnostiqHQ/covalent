@@ -1,6 +1,0 @@
-FROM nats:2.8.0-alpine3.15
-
-RUN apk add --update curl && \
-    rm -rf /var/cache/apk/*
-
-CMD ["nats-server", "-m", "8222"]
