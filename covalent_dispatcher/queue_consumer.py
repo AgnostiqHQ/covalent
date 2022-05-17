@@ -19,7 +19,6 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import asyncio
-import json
 import logging
 import os
 
@@ -48,40 +47,21 @@ def send_dispatch_id(dispatch_id: str) -> None:
     logger.warning(f"Dispatch id {dispatch_id} sent successfully.")
 
 
-def get_status() -> str:
-    """Get execution status of the workflow queue."""
-
-    resp = requests.get(DispatcherURI().get_route("workflow/status"))
-    resp.raise_for_status()
-
-    return resp.json()["status"]
-
-
 async def main():
     """Pick up workflows from the message queue and dispatch them one by one."""
 
     queue = Queue(queue_name=MQ_QUEUE_NAME)
 
-    async def msg_handler(msg):
-        dispatch_id = json.loads(msg.data.decode())["dispatch_id"]
+    async def msg_handler(msg: dict):
+        dispatch_id = msg["dispatch_id"]
         logger.info(f"Got dispatch_id: {dispatch_id} with type {type(dispatch_id)}")
-        while True:
-            # await asyncio.sleep(0.1)  # TODO - Double check that I can take this line out bcs of the wait time when receiving messages.
-            # logger.warning("Checking empty queue")
-            if get_status() == "EMPTY":
-                break
-
         send_dispatch_id(dispatch_id=dispatch_id)
 
     try:
-        await queue.poll_queue(msg_handler=msg_handler)
+        await queue.poll_queue(message_handler=msg_handler)
     except Exception as err:
-        logging.error(err)
-
-    # try:
-    #     await sub.next_msg()
-    # except nats.errors.TimeoutError:
-    #     pass
+        logging.error(f"Queue consumer could not poll queue for messages: {err}.")
+        raise
 
 
 if __name__ == "__main__":

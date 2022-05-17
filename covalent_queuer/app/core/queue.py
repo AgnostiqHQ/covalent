@@ -24,9 +24,10 @@ import json
 import logging
 import os
 from enum import Enum
+from typing import Callable
 
 import botocore.exceptions
-from aiobotocore.session import get_session
+from aiobotocore.session import ClientCreatorContext, get_session
 from app.core.config import settings
 
 MQ_QUEUE_MESSAGE_GROUP_ID = os.environ.get("MQ_QUEUE_MESSAGE_GROUP_ID")
@@ -41,25 +42,34 @@ class AwsErrorCodes(Enum):
 
 
 class Queue:
-    def __init__(self, queue_name: str = None, queue_url: str = None):
+    def __init__(
+        self,
+        queue_name: str = None,
+        queue_url: str = None,
+    ):
         self.queue_name = queue_name
         self.queue_url = queue_url
 
-    def client_factory(self):
-        session = get_session()
-        return session.create_client("sqs", region_name=MQ_QUEUE_REGION_NAME)
+    def client_factory(self) -> ClientCreatorContext:
+        """SQS client factory."""
 
-    async def get_queue_url(self):
+        session = get_session()
+        return session.create_client("sqs")
+
+    async def get_queue_url(self) -> str:
+        """Get the URL of the queue."""
+
         if self.queue_url:
             return self.queue_url
 
         async with self.client_factory() as client:
             # TODO - clarify why there was a queue_name = self.queue_name before
+            queue_name = self.queue_name
             try:
-                response = await client.get_queue_url(QueueName=self.queue_name)
+                response = await client.get_queue_url(QueueName=queue_name)
             except botocore.exceptions.ClientError as err:
                 if err.response["Error"]["Code"] == AwsErrorCodes.NON_EXISTENT_QUEUE:
-                    logging.error(f"Queue {self.queue_name} does not exist.")
+                    logging.error(f"Queue {queue_name} does not exist.")
                 else:
                     raise
 
@@ -67,80 +77,60 @@ class Queue:
             self.queue_url = queue_url
             return queue_url
 
-    async def publish(self, message_body_dict):
+    async def publish(
+        self, message_body_dict: dict, message_group_id: str = MQ_QUEUE_MESSAGE_GROUP_ID
+    ) -> dict:
+        """Publish message to the queue.
+
+        Args:
+            message_body_dict: Message body takes the form {'dispatch_id': 'alpha_numeric_dispatch_id'}.
+            message_group_id: Defaults to MQ_QUEUE_MESSAGE_GROUP_ID.
+
+        Returns:
+            Response from client when message is published.
+        """
+
         async with self.client_factory() as client:
             queue_url = await self.get_queue_url()
             message_body_str = json.dumps(message_body_dict)
             response = await client.send_message(
                 QueueUrl=queue_url,
                 MessageBody=message_body_str,
-                MessageGroupId=MQ_QUEUE_MESSAGE_GROUP_ID,
+                MessageGroupId=message_group_id,
             )
             return response
 
-    async def poll_queue(self, message_handler):
+    async def poll_queue(self, message_handler: Callable) -> None:
+        """Poll for messages published to the queue and apply the message handler.
+
+        Args:
+            message_handler:
+                Function to apply to the message. The function takes a single input of a message body in json format.
+        """
+
         async with self.client_factory() as client:
-            queue_name = self.queue_name
             queue_url = await self.get_queue_url()
+
             while True:
-                try:
-                    response = await client.receive_message(
-                        QueueUrl=queue_url, WaitTimeSeconds=MQ_QUEUE_MSG_WAIT_TIME
-                    )
+                response = await client.receive_message(
+                    QueueUrl=queue_url, WaitTimeSeconds=MQ_QUEUE_MSG_WAIT_TIME
+                )
+                if "Messages" in response:
+                    for msg in response["Messages"]:
+                        try:
+                            msg_body = json.loads(msg["Body"])
+                        except (TypeError, json.JSONDecodeError):
+                            await client.delete_message(
+                                QueueUrl=queue_url, ReceiptHandle=msg["ReceiptHandle"]
+                            )
 
-                    if "Messages" in response:
-                        for msg in response["Messages"]:
-                            try:
-                                await message_handler(client, msg)
-                                await client.delete_message(
-                                    QueueUrl=self.queue_url, ReceiptHandle=msg["ReceiptHandle"]
-                                )
-                            except Exception as err:
-                                logging.error(err)
-                                logging.exception(
-                                    f"Message {msg['ReceiptHandle']} was not able to be processed."
-                                )
-
-                except KeyboardInterrupt:
-                    break
-            logging.info(f"Shutting down message handlers for queue {queue_name}")
-            await client.close()
-
-
-class DispatchQueue(Queue):
-    def __init__(self):
-        super().__init__(settings.DISPATCH_QUEUE)
-
-    async def run(self):
-        logging.info(f"Registering polling message handler for queue {self.queue_name}...")
-        await self.poll_queue(self.message_handler)
-        return self
-
-    async def message_handler(self, client, msg):
-        logging.info(f'Got msg: {msg["Body"]}')
-
-
-class UpdateWorkflowQueue(Queue):
-    def __init__(self):
-        super().__init__(settings.DISPATCH_QUEUE)
-
-    async def run(self):
-        logging.info(f"Registering polling message handler for queue {self.queue_name}...")
-        await self.poll_queue(self.message_handler)
-        return self
-
-    async def message_handler(self, client, msg):
-        logging.info(f'Got msg: {msg["Body"]}')
-
-
-class CreateScheduleQueue(Queue):
-    def __init__(self):
-        super().__init__(settings.WORKFLOW_CREATE_SCHEDULE_QUEUE)
-
-    async def run(self):
-        logging.info(f"Registering polling message handler for queue {self.queue_name}...")
-        await self.poll_queue(self.message_handler)
-        return self
-
-    async def message_handler(self, client, msg):
-        logging.info(f'Got msg: {msg["Body"]}')
+                        try:
+                            await message_handler(msg_body)
+                            await client.delete_message(
+                                QueueUrl=queue_url, ReceiptHandle=msg["ReceiptHandle"]
+                            )
+                        except Exception as err:
+                            logging.error(err)
+                            logging.exception(
+                                f"Message {msg['ReceiptHandle']} was not able to be processed."
+                            )
