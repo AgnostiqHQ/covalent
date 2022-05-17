@@ -55,5 +55,18 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "^d3-(.*)$": "d3-$1/dist/d3-$1"
+    },
+    "collectCoverageFrom": [
+      "**/*.{js,jsx}",
+      "!**/node_modules/**"
+    ]
+  },
+  "devDependencies": {
+    "msw": "^0.39.2",
+    "resize-observer-polyfill": "^1.5.1"
   }
 }
