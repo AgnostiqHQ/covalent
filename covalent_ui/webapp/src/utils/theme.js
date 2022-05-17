@@ -21,7 +21,7 @@
  */
 
 import React from 'react'
-import { createTheme, emphasize, darken } from '@mui/material/styles'
+import { createTheme, emphasize } from '@mui/material/styles'
 import { Link as RouterLink } from 'react-router-dom'
 
 const LinkBehavior = React.forwardRef(({ href, ...props }, ref) => {
@@ -36,29 +36,40 @@ const defaultTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#99DAFF',
+      light: '#AEB6FF', // Blue 01
+      main: '#6D7CFF', // Blue 02
+      dark: '#5552FF', // Blue 03
+      blue04: '#6473FF', // Blue 04
     },
     secondary: {
-      main: '#998AFF',
+      light: '#DAC3FF', // Violet 01
+      main: '#AD7BFF', // Violet 02
+      dark: '#8B31FF', // Violet 03
     },
     background: {
-      default: '#040406',
-      paper: '#101820',
+      default: '#08081A', // Black
+      paper: '#1C1C46', // Cove Black 03
+      coveBlack01: '#464660',
+      coveBlack02: '#303067',
+      coveBlack03: '#1C1C46',
+      graphCanvas: '#464646',
     },
     error: {
-      main: '#FF6464',
+      main: '#FF6464', // Error
     },
     success: {
-      main: '#55D899',
+      main: '#55D899', // Success
     },
     warning: {
       main: '#E39F50',
     },
+    running: {
+      main: '#dac3ff', // Running
+    },
     text: {
-      // primary: '#FAFAFA',
-      // secondary: '#BEBEBE',
-      primary: '#D6D7D8',
-      secondary: '#9A9C9E',
+      primary: '#F1F1F6', // Gray 01
+      secondary: '#CBCBD7', // Gray 02
+      tertiary: '#86869A', // Gray 03
     },
   },
 })
@@ -141,6 +152,6 @@ const theme = createTheme(defaultTheme, {
   },
 })
 
-export const graphBgColor = darken(theme.palette.background.paper, 0.3)
+export const graphBgColor = theme.palette.background.default
 
 export default theme

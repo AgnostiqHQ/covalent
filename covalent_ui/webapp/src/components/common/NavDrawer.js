@@ -49,6 +49,7 @@ const NavDrawer = () => {
           width: navDrawerWidth,
           boxSizing: 'border-box',
           border: 'none',
+          backgroundColor: 'background.default',
         },
       }}
     >

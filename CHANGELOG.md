@@ -18,6 +18,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Workflow database has been renamed from `results` to `workflow`
 - Default database filename is changed from `results.db` to `dispatch.db`
 
+### Tests
+
+- Updated precommit config
+
+## [0.99.0] - 2022-05-16
+
+### Changed
+
+- UI redesign phase 2: updates to color theme and typography
+
 ## [0.98.0] - 2022-05-15
 
 ### Changed
