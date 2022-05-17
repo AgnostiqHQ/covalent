@@ -52,7 +52,7 @@ def get_status():
 
 async def main():
     """Pick up workflows from the message queue and dispatch them one by one."""
-    nc = await nats.connect(MQ_CONNECTION_URI, reconnect_time_wait=1, max_reconnect_attempts=15)
+    nc = await nats.connect(MQ_CONNECTION_URI, connect_timeout=30)
 
     async def msg_handler(msg):
         dispatch_id = json.loads(msg.data.decode())["dispatch_id"]
