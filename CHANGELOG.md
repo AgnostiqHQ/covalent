@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Secrets in called GitHub actions workflow
 
+### Tests
+
+- Updated precommit config
+
 ## [0.99.0] - 2022-05-16
 
 ### Changed
