@@ -1,5 +1,6 @@
 aiohttp==3.8.1
 aiolimiter==1.0.0
+boto3==1.22.12
 cloudpickle==2.0.0
 fastapi==0.74.0
 fastapi-socketio==0.0.9

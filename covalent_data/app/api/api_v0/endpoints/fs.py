@@ -19,10 +19,10 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-import os
 from pathlib import Path
 from typing import Any, List
 
+import boto3
 from app.core.config import settings
 from app.schemas.common import HTTPExceptionSchema
 from app.schemas.fs import DeleteResponse, UploadResponse
@@ -32,6 +32,7 @@ from minio import Minio
 
 from ....core.localstoragebackend import LocalStorageBackend
 from ....core.miniostoragebackend import MinioStorageBackend
+from ....core.s3storagebackend import S3StorageBackend
 
 router = APIRouter()
 
@@ -46,6 +47,9 @@ if settings.FS_STORAGE_BACKEND == "minio":
         secure=MINIO_USE_TLS,
     )
     backend = MinioStorageBackend(minio_client, settings.FS_STORAGE_BUCKET)
+elif settings.FS_STORAGE_BACKEND == "s3":
+    # Reads AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_DEFAULT_REGION from environment vars
+    backend = S3StorageBackend(settings.FS_STORAGE_BUCKET)
 else:
     backend = LocalStorageBackend(Path(settings.FS_LOCAL_STORAGE_ROOT), settings.FS_STORAGE_BUCKET)
 
@@ -86,11 +90,15 @@ def download_file(*, file_location: str) -> Any:
     """
     Download a file
     """
-    g = backend.get(backend.bucket_name, file_location)
-    if not g:
+    stream = backend.get(backend.bucket_name, file_location)
+    if not stream:
         raise HTTPException(status_code=404, detail="File not found")
 
-    return StreamingResponse(g, media_type="application/octet-stream")
+    return StreamingResponse(
+        stream,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{file_location}"'},
+    )
 
 
 @router.delete("/delete", status_code=200, response_model=DeleteResponse)
