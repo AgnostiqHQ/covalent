@@ -32,24 +32,24 @@ from sqlalchemy_utils import create_database, database_exists
 class Database:
     def __init__(
         self,
-        database_backend: str = "sqlite",
+        database_backend: str = None,
         db_name: str = None,
         db_endpoint: str = None,
-        db_port: int = 3306,
-        db_user: str = "admin",
+        db_port: int = None,
+        db_user: str = None,
         db_password: str = None,
     ):
 
-        self.database_backend = database_backend
-        self.db_name = db_name if db_name else settings.DISPATCH_DB_NAME
+        self.database_backend = database_backend or settings.DATABASE_BACKEND
+        self.db_name = db_name or settings.DISPATCH_DB_NAME
         self.logger = logging.getLogger(__name__)
 
         if self.database_backend == "mysql":
-            self.db_endpoint = db_endpoint
-            self.db_port = db_port
-            self.db_user = db_user
+            self.db_endpoint = db_endpoint or settings.DISPATCH_DB_ENDPOINT
+            self.db_port = db_port or settings.DISPATCH_DB_PORT
+            self.db_user = db_user or settings.DISPATCH_DB_USER
 
-        self.connect(db_password)
+        self.connect(db_password or settings.DISPATCH_DB_PASSWORD)
 
         if not database_exists(self.engine.url):
             create_database(self.engine.url)
@@ -118,7 +118,6 @@ class Database:
         try:
             res = [r for r in response]
         except sqlalchemy.exc.ResourceClosedError:
-            # Occurs when the query does not return anything
-            res = True
+            res = response.rowcount
 
         return res

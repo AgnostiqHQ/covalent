@@ -249,7 +249,7 @@ def delete_result(*, dispatch_ids: List[str] = Query([])) -> DeleteResultRespons
 
     # TODO: add batch method to request set of results
     for dispatch_id in dispatch_ids:
-        filenames += [_get_result_from_db(dispatch_id, "filename")]
+        filenames += [_get_result_from_db(dispatch_id, "results_filename")]
 
     # Request deletion from the data service
     r = requests.delete(DataURI().get_route("/fs/delete"), params={"obj_names": filenames})
@@ -258,9 +258,11 @@ def delete_result(*, dispatch_ids: List[str] = Query([])) -> DeleteResultRespons
 
     deleted_ids = []
     failed_ids = []
-    sql = f"DELETE FROM workflow WHERE id IN {tuple(dispatch_ids)}"
-    response = db.value(f"{sql} {dispatch_id}")
-    rows_affected = response.split()[0]
+    if len(dispatch_ids) > 1:
+        sql = f"DELETE FROM workflow WHERE id IN {tuple(dispatch_ids)}"
+    else:
+        sql = f"DELETE FROM workflow WHERE id = '{dispatch_ids[0]}'"
+    rows_affected = db.value(sql)
 
     return {
         "deleted": rows_affected,
