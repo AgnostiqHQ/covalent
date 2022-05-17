@@ -54,10 +54,7 @@ def is_service_ready(response: Response):
     is_ready = True
     is_db_ready = True
 
-    try:
-        Database()
-    except (OperationalError, DatabaseError):
-        is_db_ready = False
+    # logic to determine if results service is ready to serve traffic
 
     if not is_db_ready:
         is_ready = False
