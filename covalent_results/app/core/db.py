@@ -79,22 +79,10 @@ class Database:
         workflow_table = Table(
             "workflow",
             metadata,
-            # TODO: What is the appropriate length for strings?
             Column("id", String(256), primary_key=True),
-            Column("name", String(256)),
-            Column("status", String(64), default="NEW_OBJECT"),
-            Column("total_tasks", Integer),
-            Column("completed_tasks", Integer, default=0),
-            Column("time_created", DateTime),
-            Column("time_started", DateTime),
-            Column("time_completed", DateTime),
-            Column("inputs_filename", String(256)),
-            Column("inputs_path", String(256)),
-            Column("function_filename", String(256)),
-            Column("function_path", String(256)),
             Column("results_filename", String(256)),
             Column("results_path", String(256)),
-            Column("error_msg", String(256)),
+            # TODO: Modify the schema
         )
 
         metadata.create_all(self.engine)
@@ -111,24 +99,7 @@ class Database:
             table_name,
             metadata,
             Column("id", Integer, primary_key=True),
-            Column("name", String(256)),
-            Column("status", String(64), default="NEW_OBJECT"),
-            Column("time_created", DateTime),
-            Column("time_started", DateTime),
-            Column("time_completed", DateTime),
-            Column("inputs_filename", String(256)),
-            Column("inputs_path", String(256)),
-            Column("function_filename", String(256)),
-            Column("function_path", String(256)),
-            Column("executor_filename", String(256)),
-            Column("executor_path", String(256)),
-            Column("results_filename", String(256)),
-            Column("results_path", String(256)),
-            # TODO: Maybe not a good idea to have a fixed-length string here
-            Column("stdout", String(1024)),
-            Column("stderr", String(1024)),
-            Column("info", String(256)),
-            Column("error", String(256)),
+            # TODO: Decide on the schema later
         )
 
         metadata.create_all(self.engine)
@@ -139,16 +110,15 @@ class Database:
         self.logger.info("Executing SQL command.")
         self.logger.info(sql)
 
-        # with self.engine.connect() as connection:
         connection = self.engine.connect()
         trans = connection.begin()
         response = connection.execute(sql)
         trans.commit()
 
         try:
-            res = [r for r, in response]
+            res = [r for r in response]
         except sqlalchemy.exc.ResourceClosedError:
             # Occurs when the query does not return anything
-            res = None
+            res = True
 
         return res

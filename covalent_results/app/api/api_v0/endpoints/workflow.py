@@ -76,18 +76,11 @@ db = Database()
 
 
 async def _get_result_file(dispatch_id: str) -> bytes:
-    print("BEFORE")
     filename = _get_result_from_db(dispatch_id, "results_filename")
-    print(filename)
-    print("MID")
     path = _get_result_from_db(dispatch_id, "results_path")
-    print(path)
-    print("AFTER")
     if not dispatch_id or not filename or not path:
-        print("ERR")
         raise HTTPException(status_code=404, detail="Result was not found")
     file = await data_svc.download(filename)
-    print(f"File: {file}")
     return file
 
 
@@ -134,11 +127,8 @@ def _get_results_from_db() -> List[Tuple[str, str]]:
 
 
 def _get_result_from_db(dispatch_id: str, field: str) -> Optional[str]:
-    print("B4")
     sql = f"SELECT {field} FROM workflow WHERE id = '{dispatch_id}'"
     value = db.value(sql)
-    print("VALUE")
-    print(value)
     return value
 
 
@@ -152,10 +142,7 @@ def _add_record_to_db(dispatch_id: str, filename: str, path: str) -> None:
     else:
         sql = f"INSERT INTO workflow (id, results_filename, results_path) VALUES('{dispatch_id}','{filename}','{path}')"
 
-    print("NOW HERE")
     response = db.value(sql)
-    print("RESPONSE")
-    print(response)
     return response
 
 
