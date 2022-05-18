@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Secrets in called GitHub actions workflow
+
 ### Tests
 
 - Updated precommit config
