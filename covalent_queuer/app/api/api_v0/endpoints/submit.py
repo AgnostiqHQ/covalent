@@ -25,7 +25,7 @@ from io import BytesIO
 
 import cloudpickle as pickle
 from app.core.api import ResultsService
-from app.core.queuer import Queue
+from app.core.queue import Queue
 from app.schemas.submit import SubmitResponse
 from fastapi import APIRouter, File, HTTPException
 

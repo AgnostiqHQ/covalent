@@ -67,8 +67,7 @@ class Queue:
             except botocore.exceptions.ClientError as err:
                 if err.response["Error"]["Code"] == AwsErrorCodes.NON_EXISTENT_QUEUE:
                     logging.error(f"Queue {self.queue_name} does not exist.")
-                else:
-                    raise
+                raise
 
             self.queue_url = response["QueueUrl"]
             return self.queue_url

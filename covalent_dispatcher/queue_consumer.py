@@ -52,9 +52,7 @@ async def main():
 
     queue = Queue(queue_name=MQ_QUEUE_NAME)
 
-    async def msg_handler(msg: dict):
-        if not isinstance(msg, dict):
-            print(f"Message is not a dict: {type(msg)}")
+    async def msg_handler(msg: dict) -> None:
         dispatch_id = msg["dispatch_id"]
         logger.info(f"Got dispatch_id: {dispatch_id} with type {type(dispatch_id)}")
         send_dispatch_id(dispatch_id=dispatch_id)
