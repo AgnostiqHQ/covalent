@@ -24,7 +24,6 @@ import json
 import logging
 import os
 from enum import Enum
-from json.decoder import JSONDecodeError
 from typing import Callable
 
 import botocore.exceptions
@@ -63,18 +62,16 @@ class Queue:
             return self.queue_url
 
         async with self.client_factory() as client:
-            queue_name = self.queue_name
             try:
-                response = await client.get_queue_url(QueueName=queue_name)
+                response = await client.get_queue_url(QueueName=self.queue_name)
             except botocore.exceptions.ClientError as err:
                 if err.response["Error"]["Code"] == AwsErrorCodes.NON_EXISTENT_QUEUE:
-                    logging.error(f"Queue {queue_name} does not exist.")
+                    logging.error(f"Queue {self.queue_name} does not exist.")
                 else:
                     raise
 
-            queue_url = response["QueueUrl"]
-            self.queue_url = queue_url
-            return queue_url
+            self.queue_url = response["QueueUrl"]
+            return self.queue_url
 
     async def publish(
         self, message_body_dict: dict, message_group_id: str = MQ_QUEUE_MESSAGE_GROUP_ID

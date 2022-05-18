@@ -28,7 +28,6 @@ from typing import Callable
 
 import botocore.exceptions
 from aiobotocore.session import ClientCreatorContext, get_session
-from app.core.config import settings
 
 MQ_QUEUE_MESSAGE_GROUP_ID = os.environ.get("MQ_QUEUE_MESSAGE_GROUP_ID")
 MQ_QUEUE_REGION_NAME = os.environ.get("MQ_QUEUE_REGION_NAME")
@@ -63,18 +62,16 @@ class Queue:
             return self.queue_url
 
         async with self.client_factory() as client:
-            queue_name = self.queue_name
             try:
-                response = await client.get_queue_url(QueueName=queue_name)
+                response = await client.get_queue_url(QueueName=self.queue_name)
             except botocore.exceptions.ClientError as err:
                 if err.response["Error"]["Code"] == AwsErrorCodes.NON_EXISTENT_QUEUE:
-                    logging.error(f"Queue {queue_name} does not exist.")
+                    logging.error(f"Queue {self.queue_name} does not exist.")
                 else:
                     raise
 
-            queue_url = response["QueueUrl"]
-            self.queue_url = queue_url
-            return queue_url
+            self.queue_url = response["QueueUrl"]
+            return self.queue_url
 
     async def publish(
         self, message_body_dict: dict, message_group_id: str = MQ_QUEUE_MESSAGE_GROUP_ID
@@ -116,15 +113,7 @@ class Queue:
                 )
                 if "Messages" in response:
                     for msg in response["Messages"]:
-                        try:
-                            msg_body = json.loads(msg["Body"])
-                        # except (TypeError, json.JSONDecodeError):
-                        except Exception as e:
-                            print(f"Error: {e}")
-                            await client.delete_message(
-                                QueueUrl=queue_url, ReceiptHandle=msg["ReceiptHandle"]
-                            )
-
+                        msg_body = json.loads(msg["Body"])
                         try:
                             await message_handler(msg_body)
                             await client.delete_message(
