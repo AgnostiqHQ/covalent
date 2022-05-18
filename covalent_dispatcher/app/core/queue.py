@@ -24,11 +24,11 @@ import json
 import logging
 import os
 from enum import Enum
+from json.decoder import JSONDecodeError
 from typing import Callable
 
 import botocore.exceptions
 from aiobotocore.session import ClientCreatorContext, get_session
-from app.core.config import settings
 
 MQ_QUEUE_MESSAGE_GROUP_ID = os.environ.get("MQ_QUEUE_MESSAGE_GROUP_ID")
 MQ_QUEUE_REGION_NAME = os.environ.get("MQ_QUEUE_REGION_NAME")
@@ -63,7 +63,6 @@ class Queue:
             return self.queue_url
 
         async with self.client_factory() as client:
-            # TODO - clarify why there was a queue_name = self.queue_name before
             queue_name = self.queue_name
             try:
                 response = await client.get_queue_url(QueueName=queue_name)
@@ -117,13 +116,7 @@ class Queue:
                 )
                 if "Messages" in response:
                     for msg in response["Messages"]:
-                        try:
-                            msg_body = json.loads(msg["Body"])
-                        except (TypeError, json.JSONDecodeError):
-                            await client.delete_message(
-                                QueueUrl=queue_url, ReceiptHandle=msg["ReceiptHandle"]
-                            )
-
+                        msg_body = json.loads(msg["Body"])
                         try:
                             await message_handler(msg_body)
                             await client.delete_message(

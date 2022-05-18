@@ -63,7 +63,6 @@ class Queue:
             return self.queue_url
 
         async with self.client_factory() as client:
-            # TODO - clarify why there was a queue_name = self.queue_name before
             queue_name = self.queue_name
             try:
                 response = await client.get_queue_url(QueueName=queue_name)
@@ -119,7 +118,9 @@ class Queue:
                     for msg in response["Messages"]:
                         try:
                             msg_body = json.loads(msg["Body"])
-                        except (TypeError, json.JSONDecodeError):
+                        # except (TypeError, json.JSONDecodeError):
+                        except Exception as e:
+                            print(f"Error: {e}")
                             await client.delete_message(
                                 QueueUrl=queue_url, ReceiptHandle=msg["ReceiptHandle"]
                             )
