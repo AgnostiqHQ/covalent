@@ -233,6 +233,7 @@ Release notes are available in the [Changelog](https://github.com/AgnostiqHQ/cov
 
 - Some users experience instabilities with the [quantum spacetime classification workflow](https://github.com/AgnostiqHQ/covalent/blob/master/doc/source/tutorials/quantum_gravity/spacetime_classification.ipynb) tutorial.
 - Workflow cancellation can sometimes return an incorrect 500 response.
+- When a task's output is passed to multiple arguments in a downstream task, the UI may only show a single connection in the graphical representation of the workflow.
 
 ## ⚓ Citation
 
