@@ -20,11 +20,28 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { render, screen } from '@testing-library/react'
-import App from './App'
+import { render } from '@testing-library/react'
+import { Provider } from 'react-redux'
+import { BrowserRouter } from 'react-router-dom'
 
-test('renders title home link', () => {
-  render(<App />)
-  const linkElement = screen.getByText(/covalent dashboard/i)
-  expect(linkElement).toBeInTheDocument()
-})
+import configureAppStore from '../redux/store'
+
+const store = configureAppStore()
+
+// add all providers necessary for testing components
+const Providers = ({ children }) => {
+  return (
+    <BrowserRouter>
+      <Provider store={store}>{children}</Provider>
+    </BrowserRouter>
+  )
+}
+
+const customRender = (ui, options) =>
+  render(ui, { wrapper: Providers, ...options })
+
+// re-export everything
+export * from '@testing-library/react'
+
+// override render method
+export { customRender as render }

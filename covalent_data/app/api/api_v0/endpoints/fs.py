@@ -38,6 +38,7 @@ router = APIRouter()
 
 MINIO_USE_TLS = settings.MINIO_DISABLE_TLS.lower() not in ("true", "1")
 
+minio_client = None
 # TODO: support additional minio config options
 if settings.FS_STORAGE_BACKEND == "minio":
     minio_client = Minio(

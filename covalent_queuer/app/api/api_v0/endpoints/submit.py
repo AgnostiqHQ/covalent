@@ -19,14 +19,17 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import logging
+import os
 import uuid
 from io import BytesIO
 
 import cloudpickle as pickle
 from app.core.api import ResultsService
 from app.core.queuer import Queue
-from app.schemas.submit import ResultPickle, SubmitResponse
+from app.schemas.submit import SubmitResponse
 from fastapi import APIRouter, File, HTTPException
+
+MQ_QUEUE_NAME = os.environ.get("MQ_QUEUE_NAME")
 
 router = APIRouter()
 
@@ -42,7 +45,7 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
     to be the ultimate thing the user will get and will contain everything in the workflow.
     """
 
-    queue = Queue()
+    queue = Queue(queue_name=MQ_QUEUE_NAME)
     results_svc = ResultsService()
 
     try:
@@ -56,7 +59,7 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
 
         await results_svc.create_result(result_pkl_file)
 
-        await queue.publish(queue.topics.DISPATCH, {"dispatch_id": dispatch_id})
+        await queue.publish(message_body_dict={"dispatch_id": dispatch_id})
 
         return {"dispatch_id": dispatch_id}
 

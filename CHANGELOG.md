@@ -16,6 +16,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `boto3` to the requirements.txt file in the root folder.
 
+## [0.100.0] - 2022-05-18
+### Added
+
+- Added ready & health/live endpoint for UI Service, Runner Service, Results Service, Queuer, Dispatcher, Data Service
+
+### Added
+
+- Added ready & health/live endpoint for UI Service
+- Added ready & health/live endpoint for Runner Service
+- Added ready & health/live endpoint for Results Service
+- Added ready & health/live endpoint for Queuer
+- Added ready & health/live endpoint for Dispatcher
+- Added ready & health/live endpoint for Data Service
+
+### Changed
+
+- Updated Dispatcher Queue consumer & Queuer NATS connection timeout to 15s
+
+## [0.99.2] - 2022-05-18
+
+### Fixed
+
+- Move secrets: inherit to caller workflow
+
+## [0.99.1] - 2022-05-18
+
+### Fixed
+
+- Secrets in called GitHub actions workflow
+
+### Tests
+
+- Updated precommit config
+
+## [0.99.0] - 2022-05-16
+
+### Changed
+
+- UI redesign phase 2: updates to color theme and typography
+
 ## [0.98.0] - 2022-05-15
 
 ### Changed

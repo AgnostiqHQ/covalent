@@ -21,6 +21,7 @@
 from pathlib import Path
 
 from app.api.api_v0.api import api_router
+from app.api.health import health_router
 from app.core.config import settings
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,6 +31,7 @@ BASE_PATH = Path(__file__).resolve().parent
 app = FastAPI(title="Covalent Results Service API")
 
 app.include_router(api_router, prefix=settings.API_V0_STR)
+app.include_router(health_router)
 
 app.add_middleware(
     CORSMiddleware,

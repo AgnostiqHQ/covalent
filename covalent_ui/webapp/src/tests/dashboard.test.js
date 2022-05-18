@@ -20,34 +20,26 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import _ from 'lodash'
-import { Paper } from '@mui/material'
+import { render, screen, fireEvent } from './test-utils'
+import resultA from '../utils/demo/result-a'
+import resultB from '../utils/demo/result-b'
 
-import Heading from './Heading'
-import SyntaxHighlighter from './SyntaxHighlighter'
+import App from '../App'
 
-const ExecutorSection = ({ metadata, ...props }) => {
-  const executorType = _.get(metadata, 'executor_name')
-  const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
-  const src = _.join(
-    _.map(executorParams, (value, key) => `${key}: ${value}`),
-    '\n'
-  )
+test('fetches results', async () => {
+  render(<App />)
+  await screen.findByText(resultA.dispatch_id)
+  expect(screen.getByText(resultB.dispatch_id)).toBeInTheDocument()
+})
 
-  return (
-    <>
-      {!_.isEmpty(executorType)}
-      <Heading>
-        Executor: <strong>{executorType}</strong>
-      </Heading>
+test('click on result', async () => {
+  render(<App />)
 
-      {!_.isEmpty(executorParams) && (
-        <Paper elevation={0} {...props}>
-          <SyntaxHighlighter language="yaml" src={src} />
-        </Paper>
-      )}
-    </>
-  )
-}
+  await fireEvent.click(screen.getByText(resultA.dispatch_id))
 
-export default ExecutorSection
+  await screen.findByText('Overview')
+  expect(screen.getByText('Overview')).toBeInTheDocument()
+
+  const nodeName = resultA.graph.nodes[0].name
+  expect(screen.getByText(nodeName)).toBeInTheDocument()
+})
