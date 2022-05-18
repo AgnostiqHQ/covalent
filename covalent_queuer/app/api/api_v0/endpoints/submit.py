@@ -61,6 +61,6 @@ async def submit_workflow(*, result_pkl_file: bytes = File(...)) -> SubmitRespon
         return {"dispatch_id": dispatch_id}
 
     except Exception as err:
-        error_message = "Error dispatching workflow."
-        logging.exception(error_message)
+        error_message = f"Error dispatching workflow due to error: {type(err)} {err}"
+        logging.error(error_message)
         raise HTTPException(status_code=400, detail=error_message) from err
