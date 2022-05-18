@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Move secrets: inherit to caller workflow
+
 ## [0.99.1] - 2022-05-18
 
 ### Fixed
