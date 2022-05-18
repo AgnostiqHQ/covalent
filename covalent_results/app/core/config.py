@@ -18,13 +18,14 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-
+import os
 from typing import List, Union
 
 from dotenv import find_dotenv, load_dotenv
 from pydantic import AnyHttpUrl, BaseSettings, validator
 
-load_dotenv()
+HOME_PATH = os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")
+load_dotenv(os.path.join(HOME_PATH, "covalent", ".env"))
 
 
 class Settings(BaseSettings):
@@ -46,7 +47,6 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = True
-        env_file = ".env"
 
 
 settings = Settings()

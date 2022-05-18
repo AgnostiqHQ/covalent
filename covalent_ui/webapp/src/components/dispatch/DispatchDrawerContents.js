@@ -27,7 +27,6 @@ import {
   Box,
   CircularProgress,
   IconButton,
-  Paper,
   styled,
   SvgIcon,
   Tab,
@@ -59,7 +58,7 @@ const DispatchDrawerContents = () => {
 
       <AccountTreeOutlined fontSize="inherit" />
       <Tooltip title={dispatchId} placement="top">
-        <Typography component="span" fontSize="body2.fontSize" sx={{ mx: 1 }}>
+        <Typography component="span" sx={{ mx: 1 }}>
           {truncateMiddle(dispatchId, 8, 12)}
         </Typography>
       </Tooltip>
@@ -110,86 +109,84 @@ const LatticeStatusCard = ({ dispatchId }) => {
   )
 
   return (
-    <Box sx={{ my: 2 }}>
-      <Paper sx={{ px: 3, py: 2 }} elevation={0}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-          }}
-        >
-          {/* left column */}
-          <Box sx={{ borderRight: '1px solid #29425B' }}>
-            <Typography color="text.secondary" fontSize="body2.fontSize">
-              Status
-            </Typography>
+    <Box sx={{ my: 2, px: 3, py: 2 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+        }}
+      >
+        {/* left column */}
+        <Box sx={{ borderRight: '1px solid #29425B' }}>
+          <Typography color="text.tertiary" fontSize="body2.fontSize">
+            Status
+          </Typography>
 
-            <Box
-              sx={{
-                color: `${color}.main`,
-                display: 'flex',
-                fontSize: '1.125rem',
-                alignItems: 'center',
-                py: 1,
-              }}
-            >
-              {statusIcon(status)}
-              &nbsp;
-              {label}
-            </Box>
+          <Box
+            sx={{
+              color: `${color}.main`,
+              display: 'flex',
+              fontSize: '1.125rem',
+              alignItems: 'center',
+              py: 1,
+            }}
+          >
+            {statusIcon(status)}
+            &nbsp;
+            {label}
           </Box>
+        </Box>
 
-          {/* right column */}
-          <Box sx={{ justifySelf: 'end' }}>
-            <Typography color="text.secondary" fontSize="body2.fontSize">
-              Progress
+        {/* right column */}
+        <Box sx={{ justifySelf: 'end' }}>
+          <Typography color="text.tertiary" fontSize="body2.fontSize">
+            Progress
+          </Typography>
+
+          {/* electron progress */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              py: 1,
+            }}
+          >
+            <SvgIcon fontSize="inherit" sx={{ mr: 1.5 }}>
+              <AtomSvg />
+            </SvgIcon>
+
+            <Typography fontSize="body2.fontSize">
+              <Box
+                component="span"
+                sx={{
+                  color: status === 'COMPLETED' ? 'inherit' : `${color}.main`,
+                }}
+              >
+                {completed}
+              </Box>
+              &nbsp;/ {total}
             </Typography>
 
-            {/* electron progress */}
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                py: 1,
-              }}
-            >
-              <SvgIcon fontSize="inherit" sx={{ mr: 1.5 }}>
-                <AtomSvg />
-              </SvgIcon>
-
-              <Typography fontSize="body2.fontSize">
-                <Box
-                  component="span"
-                  sx={{
-                    color: status === 'COMPLETED' ? 'inherit' : `${color}.main`,
-                  }}
-                >
-                  {completed}
-                </Box>
-                &nbsp;/ {total}
-              </Typography>
-
-              <Box sx={{ ml: 2, position: 'relative' }}>
-                <CircularProgress
-                  variant="determinate"
-                  sx={(theme) => ({
-                    color: alpha(theme.palette[color].main, 0.2),
-                  })}
-                  size="2rem"
-                  value={100}
-                />
-                <CircularProgress
-                  sx={{ position: 'absolute', left: 0 }}
-                  variant="determinate"
-                  color={color}
-                  size="2rem"
-                  value={(completed * 100) / total}
-                />
-              </Box>
+            <Box sx={{ ml: 2, position: 'relative' }}>
+              <CircularProgress
+                variant="determinate"
+                sx={(theme) => ({
+                  color: alpha(theme.palette[color].main, 0.2),
+                })}
+                size="2rem"
+                value={100}
+              />
+              <CircularProgress
+                sx={{ position: 'absolute', left: 0 }}
+                variant="determinate"
+                color={color}
+                size="2rem"
+                value={(completed * 100) / total}
+              />
             </Box>
           </Box>
         </Box>
-      </Paper>
+      </Box>
 
       <ErrorCard showElectron error={error} />
     </Box>

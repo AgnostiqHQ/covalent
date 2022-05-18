@@ -26,7 +26,7 @@ import { Paper } from '@mui/material'
 import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'
 
-const InputSection = ({ inputs, node, graph }) => {
+const InputSection = ({ inputs, node, graph, ...props }) => {
   // check kwargs (legacy format)
   if (!inputs) {
     inputs = _.get(node, 'kwargs')
@@ -54,7 +54,7 @@ const InputSection = ({ inputs, node, graph }) => {
   return (
     <>
       <Heading>Input</Heading>
-      <Paper elevation={0}>
+      <Paper elevation={0} {...props}>
         <SyntaxHighlighter language="python" src={inputSrc} />
       </Paper>
     </>

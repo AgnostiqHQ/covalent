@@ -57,8 +57,8 @@ const LatticeControls = ({
       size="small"
       sx={{
         position: 'absolute',
-        bottom: 12,
-        left: 12 + marginLeft,
+        bottom: 16,
+        left: 16 + marginLeft,
         zIndex: 5,
         bgcolor: 'background.paper',
         opacity: 0.7,
