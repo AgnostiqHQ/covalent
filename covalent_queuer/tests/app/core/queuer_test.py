@@ -7,13 +7,13 @@ import requests
 from app.core.queue import Queue
 
 
-@pytest.mark.parametrize(
-    reason="No longer supporting the NATS message queue. This test needs to be updated."
-)
 class TestQueue:
 
     MOCK_MQ_CONNECTION_URI = "localhost:4222"
 
+    @pytest.mark.parametrize(
+        reason="No longer supporting the NATS message queue. This test needs to be updated."
+    )
     @mock.patch.object(nats, "connect", autospec=True)
     @mock.patch.dict(os.environ, {"MQ_CONNECTION_URI": MOCK_MQ_CONNECTION_URI})
     def test_get_client(self, mocked_nats):
