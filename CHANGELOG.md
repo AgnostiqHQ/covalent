@@ -16,6 +16,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `boto3` to the requirements.txt file in the root folder.
 
+## [0.100.0] - 2022-05-18
+### Added
+
+- Added ready & health/live endpoint for UI Service, Runner Service, Results Service, Queuer, Dispatcher, Data Service
+
+### Added
+
+- Added ready & health/live endpoint for UI Service
+- Added ready & health/live endpoint for Runner Service
+- Added ready & health/live endpoint for Results Service
+- Added ready & health/live endpoint for Queuer
+- Added ready & health/live endpoint for Dispatcher
+- Added ready & health/live endpoint for Data Service
+
+### Changed
+
+- Updated Dispatcher Queue consumer & Queuer NATS connection timeout to 15s
+
 ## [0.99.2] - 2022-05-18
 
 ### Fixed

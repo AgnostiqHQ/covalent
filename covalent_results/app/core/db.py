@@ -26,7 +26,7 @@ from app.core.config import settings
 
 
 class Database:
-    def __init__(self, results_db: str = "results.db"):
+    def __init__(self, results_db: str = settings.RESULTS_DB):
         self.results_db = results_db if results_db else settings.RESULTS_DB
         con = sqlite3.connect(self.results_db)
         cur = con.cursor()
