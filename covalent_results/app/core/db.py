@@ -42,6 +42,7 @@ class Database:
 
         self.database_backend = database_backend or settings.DATABASE_BACKEND
         self.db_name = db_name or settings.DISPATCH_DB_NAME
+
         self.logger = logging.getLogger(__name__)
 
         if self.database_backend == "mysql":
