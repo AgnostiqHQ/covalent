@@ -108,6 +108,9 @@ def test_put(test_app, monkeypatch):
     assert d["response"] == "Task updated successfully"
 
 
+@pytest.mark.skip(
+    reason="Needs updating. See issue #497 here: https://github.com/AgnostiqHQ/covalent/issues/497"
+)
 def test_db_value():
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         resultsdb = f.name
