@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Support for mysql via sqlalchemy
+- SQL server parameters added to config, env, and Dockerfiles
+
+### Changed
+
+- The `DELETE` endpoint's response has been modified since a batch deletion is used
+- Workflow database has been renamed from `results` to `workflow`
+- Default database filename is changed from `results.db` to `dispatch.db`
+
 ## [0.101.1] - 2022-05-19
 
 ### Fixed
