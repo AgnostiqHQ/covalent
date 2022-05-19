@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.101.0] - 2022-05-19
+
 ### Changed
 
 - Replace Nats message queue (MQ) in Queuer with AWS Simple Queue Service (SQS).
