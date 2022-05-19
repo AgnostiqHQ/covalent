@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.101.1] - 2022-05-19
+
 ### Fixed
 
 - Fix the error output in the RTD tutorial for mnist_classifier
