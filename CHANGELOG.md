@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed botocore dependency conflict in requirements.txt
+- Fixed botocore / aiobotocore dependency conflict
 
 ## [0.102.0] - 2022-05-19
 
