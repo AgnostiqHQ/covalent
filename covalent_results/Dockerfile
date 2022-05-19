@@ -49,7 +49,12 @@ ENV RESULTS_SVC_PORT="8006"
 # Placeholders/defaults
 ENV DATA_SVC_PORT="8004"
 ENV DATA_SVC_HOST="localhost"
-ENV RESULTS_DB="results.db"
+ENV DATABASE_BACKEND="mysql"
+ENV DISPATCH_DB_NAME="dispatch"
+ENV DISPATCH_DB_ENDPOINT=""
+ENV DISPATCH_DB_PORT=3306
+ENV DISPATCH_DB_USER=admin
+ENV DISPATCH_DB_PASSWORD=""
 
 COPY --from=venv /app/.venv/ /app/.venv
 COPY --from=venv /app/covalent/ /app/covalent

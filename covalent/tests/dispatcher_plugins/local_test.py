@@ -33,6 +33,9 @@ def workflow(x, y):
     return add(res, y)
 
 
+@pytest.mark.skip(
+    reason="NATS replaced with Amazon SQS as a result microservices is not functional locally."
+)
 def test_local_dispatcher_dispatch():
     """Tests whether the local dispatcher can dispatch a workflow successfully."""
 

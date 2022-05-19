@@ -19,23 +19,27 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import asyncio
-import json
+import logging
 import os
 
-import nats
 import requests
-from app.core.config import settings
 from app.core.dispatcher_logger import logger
 from app.core.get_svc_uri import DispatcherURI
+from app.core.queue import Queue
 from dotenv import load_dotenv
 
+logger = logging.getLogger(__name__)
 load_dotenv()
 
-TOPIC = os.environ.get("MQ_DISPATCH_TOPIC")
-MQ_CONNECTION_URI = os.environ.get("MQ_CONNECTION_URI")
+MQ_QUEUE_NAME = os.environ.get("MQ_QUEUE_NAME")
 
 
-def send_dispatch_id(dispatch_id: str):
+def send_dispatch_id(dispatch_id: str) -> None:
+    """Submit workflow by sending dispatch id to Dispatcher service.
+
+    Args:
+        dispatch_id: identifier of the workflow to be submitted.
+    """
 
     resp = requests.post(DispatcherURI().get_route(f"workflow/{dispatch_id}"))
     resp.raise_for_status()
@@ -43,35 +47,21 @@ def send_dispatch_id(dispatch_id: str):
     logger.warning(f"Dispatch id {dispatch_id} sent successfully.")
 
 
-def get_status():
-    resp = requests.get(DispatcherURI().get_route("workflow/status"))
-    resp.raise_for_status()
-
-    return resp.json()["status"]
-
-
 async def main():
     """Pick up workflows from the message queue and dispatch them one by one."""
-    nc = await nats.connect(MQ_CONNECTION_URI, connect_timeout=30)
 
-    async def msg_handler(msg):
-        dispatch_id = json.loads(msg.data.decode())["dispatch_id"]
-        logger.warning(f"Got dispatch_id: {dispatch_id} with type {type(dispatch_id)}")
-        while True:
-            await asyncio.sleep(0.1)
-            # logger.warning("Checking empty queue")
-            if get_status() == "EMPTY":
-                break
+    queue = Queue(queue_name=MQ_QUEUE_NAME)
 
+    async def msg_handler(msg: dict) -> None:
+        dispatch_id = msg["dispatch_id"]
+        logger.info(f"Got dispatch_id: {dispatch_id} with type {type(dispatch_id)}")
         send_dispatch_id(dispatch_id=dispatch_id)
 
-    sub = await nc.subscribe(TOPIC, cb=msg_handler)
-
-    print(f"Subscribed to topic: {TOPIC}")
     try:
-        await sub.next_msg()
-    except nats.errors.TimeoutError:
-        pass
+        await queue.poll_queue(message_handler=msg_handler)
+    except Exception as err:
+        logging.error(f"Queue consumer could not poll queue for messages: {err}.")
+        raise
 
 
 if __name__ == "__main__":
@@ -82,4 +72,3 @@ if __name__ == "__main__":
         loop.run_forever()
     except KeyboardInterrupt:
         loop.close()
-        pass

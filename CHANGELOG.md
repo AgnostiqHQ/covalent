@@ -11,6 +11,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Make TransportGraph into a MultiDigraph to allow passing the same input to multiple arguments of an Electron.
 
+## [0.102.0] - 2022-05-19
+
+### Added
+
+- Support for mysql via sqlalchemy
+- SQL server parameters added to config, env, and Dockerfiles
+
+### Changed
+
+- The `DELETE` endpoint's response has been modified since a batch deletion is used
+- Workflow database has been renamed from `results` to `workflow`
+- Default database filename is changed from `results.db` to `dispatch.db`
+
+## [0.101.1] - 2022-05-19
+
+### Fixed
+
+- Fix the error output in the RTD tutorial for mnist_classifier
+
+
+## [0.101.0] - 2022-05-19
+
+### Changed
+
+- Replace Nats message queue (MQ) in Queuer with AWS Simple Queue Service (SQS).
+- Replace reading from Nats MQ to SQS in `queue_consumer.py`.
+
+### Added
+
+- `boto3` to the requirements.txt file in the root folder.
+
+## [0.100.0] - 2022-05-18
+### Added
+
+- Added ready & health/live endpoint for UI Service, Runner Service, Results Service, Queuer, Dispatcher, Data Service
+
+### Added
+
+- Added ready & health/live endpoint for UI Service
+- Added ready & health/live endpoint for Runner Service
+- Added ready & health/live endpoint for Results Service
+- Added ready & health/live endpoint for Queuer
+- Added ready & health/live endpoint for Dispatcher
+- Added ready & health/live endpoint for Data Service
+
+### Changed
+
+- Updated Dispatcher Queue consumer & Queuer NATS connection timeout to 15s
+
+## [0.99.2] - 2022-05-18
+
+### Fixed
+
+- Move secrets: inherit to caller workflow
+
+
 ## [0.99.1] - 2022-05-18
 
 ### Fixed

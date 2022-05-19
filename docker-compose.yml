@@ -89,7 +89,12 @@ services:
       RESULTS_SVC_HOST: 0.0.0.0
       DATA_SVC_PORT: 8004
       DATA_SVC_HOST: covalent_data
-      RESULTS_DB: results.db
+      DATABASE_BACKEND: mysql
+      WORKFLOW_DB_NAME: dispatch
+      WORKFLOW_DB_ENDPOINT:
+      WORKFLOW_DB_PORT: 3306
+      WORKFLOW_DB_USER: admin
+      WORKFLOW_DB_PASSWORD:
     networks:
       covalent:
 
