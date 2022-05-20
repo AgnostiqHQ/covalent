@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     DISPATCHER_SVC_HOST: str = "localhost"
     UI_SVC_PORT: int = 8000
     UI_SVC_HOST: str = "localhost"
+    MQ_QUEUE_NAME: str = ""
+    MQ_QUEUE_MESSAGE_GROUP_ID: str = ""
+    MQ_QUEUE_MSG_WAIT_TIME: int = 1
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

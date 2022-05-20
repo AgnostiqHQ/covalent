@@ -33,10 +33,11 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     RESULTS_SVC_PORT: str = "8005"
     RESULTS_SVC_HOST: str = "localhost"
-    MQ_CONNECTION_URI: str = "localhost:4222"
-    MQ_DISPATCH_TOPIC: str = "workflow.dispatch"
     QUEUER_SVC_PORT: int = 8001
     QUEUER_SVC_HOST: str = "localhost"
+    MQ_QUEUE_NAME: str = ""
+    MQ_QUEUE_MESSAGE_GROUP_ID: str = ""
+    MQ_QUEUE_MSG_WAIT_TIME: int = 1
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

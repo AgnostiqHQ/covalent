@@ -48,14 +48,13 @@ services:
     ports:
       - 8001:8001
     environment:
-      MQ_CONNECTION_URI: nats://covalent_nats:4222
-      MQ_DISPATCH_TOPIC: workflow.dispatch
+      MQ_QUEUE_NAME: "workflow_queue.fifo"
+      MQ_QUEUE_MESSAGE_GROUP_ID: "workflows"
+      MQ_QUEUE_MSG_WAIT_TIME: 1
       QUEUER_SVC_PORT: 8001
       QUEUER_SVC_HOST: 0.0.0.0
       RESULTS_SVC_HOST: covalent_results
       RESULTS_SVC_PORT: 8005
-    depends_on:
-      - covalent_nats
     networks:
       covalent:
 
@@ -67,12 +66,11 @@ services:
     image: covalent_queue_consumer
     container_name: covalent_queue_consumer
     environment:
-      MQ_CONNECTION_URI: nats://covalent_nats:4222
-      MQ_DISPATCH_TOPIC: workflow.dispatch
+      MQ_QUEUE_NAME: "workflow_queue.fifo"
+      MQ_QUEUE_MESSAGE_GROUP_ID: "workflows"
+      MQ_QUEUE_MSG_WAIT_TIME: 1
       DISPATCHER_SVC_HOST: covalent_dispatcher
       DISPATCHER_SVC_PORT: 8002
-    depends_on:
-      - covalent_nats
     networks:
       covalent:
 
@@ -127,14 +125,6 @@ services:
     environment:
       UI_SVC_PORT: 8000
       UI_SVC_HOST: 0.0.0.0
-    networks:
-      covalent:
-
-  covalent_nats:
-    image: nats
-    ports:
-      - 4222:4222
-    container_name: covalent_nats
     networks:
       covalent:
 
