@@ -25,11 +25,12 @@ from io import BytesIO
 
 import cloudpickle as pickle
 from app.core.api import ResultsService
+from app.core.config import settings
 from app.core.queue import Queue
 from app.schemas.submit import SubmitResponse
 from fastapi import APIRouter, File, HTTPException
 
-MQ_QUEUE_NAME = os.environ.get("MQ_QUEUE_NAME")
+MQ_QUEUE_NAME = settings.MQ_QUEUE_NAME
 
 router = APIRouter()
 

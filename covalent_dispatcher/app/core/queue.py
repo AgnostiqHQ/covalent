@@ -28,10 +28,10 @@ from typing import Callable
 
 import botocore.exceptions
 from aiobotocore.session import ClientCreatorContext, get_session
+from app.core.config import settings
 
-MQ_QUEUE_MESSAGE_GROUP_ID = os.environ.get("MQ_QUEUE_MESSAGE_GROUP_ID")
-MQ_QUEUE_REGION_NAME = os.environ.get("MQ_QUEUE_REGION_NAME")
-MQ_QUEUE_MSG_WAIT_TIME = int(os.environ.get("MQ_QUEUE_MSG_WAIT_TIME"))
+MQ_QUEUE_MESSAGE_GROUP_ID = settings.MQ_QUEUE_MESSAGE_GROUP_ID
+MQ_QUEUE_MSG_WAIT_TIME = settings.MQ_QUEUE_MSG_WAIT_TIME
 
 logger = logging.getLogger(__name__)
 

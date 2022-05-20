@@ -23,6 +23,7 @@ import logging
 import os
 
 import requests
+from app.core.config import settings
 from app.core.dispatcher_logger import logger
 from app.core.get_svc_uri import DispatcherURI
 from app.core.queue import Queue
@@ -31,7 +32,7 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 load_dotenv()
 
-MQ_QUEUE_NAME = os.environ.get("MQ_QUEUE_NAME")
+MQ_QUEUE_NAME = settings.MQ_QUEUE_NAME
 
 
 def send_dispatch_id(dispatch_id: str) -> None:
