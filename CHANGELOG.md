@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Using settings class to access SQS environment variables
 - Updated Queuer & Queue Consumer Dockerfiles to contain default SQS environment variables
 
+## [0.102.1] - 2022-05-20
+
+### Fixed
+
+- Fixed botocore / aiobotocore dependency conflict
+
 ## [0.102.0] - 2022-05-19
 
 ### Added
