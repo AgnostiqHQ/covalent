@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Removed
+
+- NATS environment vars and references on Dockerfile & Docker compose file
+
+### Changed
+
+- Using settings class to access SQS environment variables
+- Updated Queuer & Queue Consumer Dockerfiles to contain default SQS environment variables
+
 ## [0.102.0] - 2022-05-19
 
 ### Added
