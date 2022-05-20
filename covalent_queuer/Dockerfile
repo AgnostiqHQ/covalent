@@ -44,12 +44,9 @@ FROM python:3.8-slim-buster as prod
 
 ENV QUEUER_SVC_HOST="0.0.0.0"
 ENV QUEUER_SVC_PORT="8001"
-
-# Placeholders/defaults
-# NATS service
-ENV MQ_CONNECTION_URI="nats://localhost:4222"
-# Dispatch topic
-ENV MQ_DISPATCH_TOPIC="workflow.dispatch"
+ENV MQ_QUEUE_NAME="workflow_queue.fifo"
+ENV MQ_QUEUE_MESSAGE_GROUP_ID="workflows"
+ENV MQ_QUEUE_MSG_WAIT_TIME=1
 
 COPY --from=venv /app/.venv/ /app/.venv
 COPY --from=venv /app/covalent_queuer/ /app/covalent_queuer

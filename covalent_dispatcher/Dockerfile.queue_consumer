@@ -43,8 +43,9 @@ RUN cd /app && \
 FROM python:3.8-slim-buster as prod
 
 # Placeholders/defaults
-ENV MQ_CONNECTION_URI="nats://localhost:4222"
-ENV MQ_DISPATCH_TOPIC="workflow.dispatch"
+ENV MQ_QUEUE_NAME="workflow_queue.fifo"
+ENV MQ_QUEUE_MESSAGE_GROUP_ID="workflowS"
+ENV MQ_QUEUE_MSG_WAIT_TIME=1
 ENV DISPATCHER_SVC_HOST="localhost"
 ENV DISPATCHER_SVC_PORT="8002"
 
