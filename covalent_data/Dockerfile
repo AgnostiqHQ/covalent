@@ -43,7 +43,7 @@ RUN cd /app && \
 FROM python:3.8-slim-buster as prod
 
 # Placeholders/default environment variables
-ENV DATA_SVC_HOST="0.0.0.0"
+ENV DATA_SVC_HOST="localhost"
 ENV DATA_SVC_PORT="8004"
 ENV FS_STORAGE_BACKEND="local"
 ENV FS_LOCAL_STORAGE_ROOT="data"

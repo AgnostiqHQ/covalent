@@ -42,7 +42,7 @@ RUN cd /app && \
 
 FROM python:3.8-slim-buster as prod
 
-ENV RUNNER_SVC_HOST="0.0.0.0"
+ENV RUNNER_SVC_HOST="localhost"
 ENV RUNNER_SVC_PORT="8003"
 
 # Placeholders/defaults

@@ -42,7 +42,7 @@ RUN cd /app && \
 FROM python:3.8-slim-buster as prod
 
 ENV DISPATCHER_SVC_PORT="8002"
-ENV DISPATCHER_SVC_HOST="0.0.0.0"
+ENV DISPATCHER_SVC_HOST="localhost"
 
 ## These are placeholders/default values and
 ## must be overridden with appropriate values

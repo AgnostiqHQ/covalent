@@ -14,7 +14,7 @@ services:
     ports:
       - 8004:8004
     environment:
-      DATA_SVC_HOST: 0.0.0.0
+      DATA_SVC_HOST: localhost
       DATA_SVC_PORT: 8004
     networks:
       covalent:
@@ -30,7 +30,7 @@ services:
       RESULTS_SVC_PORT: 8005
       DISPATCHER_SVC_PORT: 8002
       UI_SVC_PORT: 8000
-      DISPATCHER_SVC_HOST: 0.0.0.0
+      DISPATCHER_SVC_HOST: localhost
       RUNNER_SVC_HOST: covalent_runner
       RESULTS_SVC_HOST: covalent_results
       UI_SVC_HOST: covalent_ui
@@ -52,7 +52,7 @@ services:
       MQ_QUEUE_MESSAGE_GROUP_ID: "workflows"
       MQ_QUEUE_MSG_WAIT_TIME: 1
       QUEUER_SVC_PORT: 8001
-      QUEUER_SVC_HOST: 0.0.0.0
+      QUEUER_SVC_HOST: localhost
       RESULTS_SVC_HOST: covalent_results
       RESULTS_SVC_PORT: 8005
     networks:
@@ -84,7 +84,7 @@ services:
     container_name: covalent_results
     environment:
       RESULTS_SVC_PORT: 8005
-      RESULTS_SVC_HOST: 0.0.0.0
+      RESULTS_SVC_HOST: localhost
       DATA_SVC_PORT: 8004
       DATA_SVC_HOST: covalent_data
       DATABASE_BACKEND: mysql
@@ -106,7 +106,7 @@ services:
       - 8003:8003
     environment:
       RUNNER_SVC_PORT: 8003
-      RUNNER_SVC_HOST: 0.0.0.0
+      RUNNER_SVC_HOST: localhost
       RESULTS_SVC_PORT: 8005
       RESULTS_SVC_HOST: covalent_results
       DISPATCHER_SVC_PORT: 8002
@@ -124,7 +124,7 @@ services:
       - 8000:8000
     environment:
       UI_SVC_PORT: 8000
-      UI_SVC_HOST: 0.0.0.0
+      UI_SVC_HOST: localhost
     networks:
       covalent:
 

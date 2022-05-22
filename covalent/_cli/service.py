@@ -243,7 +243,7 @@ def _next_available_port(requested_port: int) -> int:
 
     while not avail_port_found:
         try:
-            sock.bind(("0.0.0.0", try_port))
+            sock.bind(("localhost", try_port))
             avail_port_found = True
         except:
             try_port += 1
@@ -269,7 +269,7 @@ def _is_server_running(port: int) -> bool:
     if _read_pid(UI_PIDFILE) == -1:
         return False
     try:
-        r = requests.get(f"http://0.0.0.0:{port}")
+        r = requests.get(f"http://localhost:{port}")
     except:
         click.echo("Unable to connect to server.")
         return False
@@ -300,7 +300,7 @@ def _graceful_start(
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         port = get_config("legacy_ui.port")
-        click.echo(f"Covalent server is already running at http://0.0.0.0:{port}.")
+        click.echo(f"Covalent server is already running at http://localhost:{port}.")
         return port
 
     _rm_pid_file(pidfile)
@@ -316,7 +316,7 @@ def _graceful_start(
     with open(pidfile, "w") as PIDFILE:
         PIDFILE.write(str(pid))
 
-    click.echo(f"Covalent server has started at http://0.0.0.0:{port}")
+    click.echo(f"Covalent server has started at http://localhost:{port}")
     return port
 
 
@@ -385,9 +385,9 @@ def start(legacy, port: int, develop: bool) -> None:
         port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
         set_config(
             {
-                "legacy_ui.host": "0.0.0.0",
+                "legacy_ui.host": "localhost",
                 "legacy_ui.port": port,
-                "legacy_dispatcher.host": "0.0.0.0",
+                "legacy_dispatcher.host": "localhost",
                 "legacy_dispatcher.port": port,
             }
         )
@@ -397,7 +397,7 @@ def start(legacy, port: int, develop: bool) -> None:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         while not server_listening:
             try:
-                sock.bind(("0.0.0.0", port))
+                sock.bind(("localhost", port))
                 sock.close()
             except OSError:
                 server_listening = True
@@ -415,7 +415,7 @@ def status(legacy) -> None:
     else:
         if _read_pid(UI_PIDFILE) != -1:
             ui_port = get_config("legacy_ui.port")
-            click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
+            click.echo(f"Covalent server is running at http://localhost:{ui_port}.")
         else:
             _rm_pid_file(UI_PIDFILE)
             click.echo("Covalent server is stopped.")
