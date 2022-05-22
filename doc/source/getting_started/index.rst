@@ -32,25 +32,6 @@ Users can also install Covalent as a package in a Conda environment:
 
    Installation via Conda is currently only supported for Linux. Sometimes Conda can have trouble resolving packages. Use the flag :code:`--override-channels` to speed things up.
 
-Docker Install
---------------
-
-Covalent is also provided as a Docker image. This image can be used as a developer environment or simply to run the Covalent server in a container:
-
-.. code:: bash
-
-   docker pull public.ecr.aws/covalent/covalent
-
-   # Run the container as a developer environment
-   docker run -it --rm covalent bash
-
-   # Run the container as a server
-   docker run -d -p 48008:8080 covalent
-
-.. note::
-
-   The Docker image for Covalent is still being tested. Please open an issue on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_ if you encounter unexpected behavior.
-
 Install From Source
 --------------------
 
@@ -77,9 +58,6 @@ The documentation can also easily be built locally:
 
    python setup.py docs
 
-.. note::
-
-   Users who wish to use the :code:`draw` functionality outside of the UI may also wish to install :code:`graphviz` and :code:`pygraphviz`, either using Conda or Linux package managers. This is not required to use Covalent.
 
 Validate the Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,18 +78,18 @@ Use the Covalent CLI tool to manage the Covalent server. The following commands 
    $ covalent --help
    Usage: covalent [OPTIONS] COMMAND [ARGS]...
 
-     Covalent CLI tool used to manage the server.
+   Covalent CLI tool used to manage the servers.
 
    Options:
-     -v, --version  Display version information.
-     --help         Show this message and exit.
+   -v, --version  Display version information.
+   --help         Show this message and exit.
 
    Commands:
-     purge    Delete the cache and config settings.
-     restart  Restart the server.
-     start    Start the server.
-     status   Query the status of the server.
-     stop     Stop the server.
+   purge    Shutdown server and delete the cache and config settings.
+   restart  Restart the server.
+   start    Start the Covalent server.
+   status   Query the status of the Covalent server.
+   stop     Stop the Covalent server.
 
 Start the Covalent server:
 
