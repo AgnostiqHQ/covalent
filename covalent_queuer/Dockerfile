@@ -42,7 +42,7 @@ RUN cd /app && \
 
 FROM python:3.8-slim-buster as prod
 
-ENV QUEUER_SVC_HOST="0.0.0.0"
+ENV QUEUER_SVC_HOST="localhost"
 ENV QUEUER_SVC_PORT="8001"
 ENV MQ_QUEUE_NAME="workflow_queue.fifo"
 ENV MQ_QUEUE_MESSAGE_GROUP_ID="workflows"
