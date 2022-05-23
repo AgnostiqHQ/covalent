@@ -18,8 +18,21 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-[flake8]
-max-line-length = 99
-max-complexity = 40
-select = B,C,E,F,W,T4,B9
-ignore = E501, E722, W503, F401, F403, F811, F841, E203
+name: test-images
+
+on:
+  pull_request
+
+jobs:
+  test_images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v2
+      - name: Build and run images
+        run: |
+          docker-compose -f docker-compose.yml up --build -d
+          echo 'Displaying containers...'
+      - name: Test Containers
+          run: |
+            echo 'Commands for testing container networking will go here...'

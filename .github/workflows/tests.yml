@@ -1,15 +1,15 @@
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
-# 
-# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
 # A copy of the License may be obtained with this software package or at
 #
 #      https://www.gnu.org/licenses/agpl-3.0.en.html
 #
-# Use of this file is prohibited except in compliance with the License. Any 
-# modifications or derivative works of this file must retain this copyright 
-# notice, and modified files must contain a notice indicating that they have 
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
 # been altered from the originals.
 #
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
@@ -20,11 +20,11 @@
 
 name: tests
 
-on: 
+on:
   pull_request:
-  push:
-    branches:
-      - develop
+  workflow_run:
+    workflows: [changelog]
+    types: [completed]
 
 jobs:
   tests:
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['ubuntu-latest']
+        os: ["ubuntu-latest"]
         container:
           - python:3.8-buster
           - python:3.8-bullseye
@@ -43,13 +43,15 @@ jobs:
         experimental: [false]
         include:
           - os: macos-latest
-            python-version: '3.8'
+            python-version: "3.8"
             experimental: false
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
+    outputs:
+      release: ${{ steps.push.outputs.release }}
     steps:
       - name: Check out head
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           persist-credentials: false
       - name: Set up Python
@@ -61,6 +63,18 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
+          pip install --no-cache-dir -r ./covalent_data/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_data/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_dispatcher/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_dispatcher/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_queuer/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_queuer/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_results/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_results/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_runner/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_runner/requirements/dev.txt
+          pip install --no-cache-dir -r ./covalent_ui/requirements/dist.txt
+          pip install --no-cache-dir -r ./covalent_ui/requirements/dev.txt
       - name: Install NPM and Yarn on Ubuntu
         if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye'
         run: |
@@ -87,32 +101,110 @@ jobs:
           VERSION="$(cat ./VERSION)"
           cd dist
           tar xzf cova-${VERSION}.tar.gz
-          diff -r cova-${VERSION}/covalent ../covalent
-          diff -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
-          diff -x README.md cova-${VERSION}/covalent_ui ../covalent_ui 
+          diff -x tests -r cova-${VERSION}/covalent ../covalent
+          diff -x tests -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x tests -r cova-${VERSION}/covalent_data ../covalent_data
+          diff -x tests -r cova-${VERSION}/covalent_queuer ../covalent_queuer
+          diff -x tests -r cova-${VERSION}/covalent_results ../covalent_results
+          diff -x tests -r cova-${VERSION}/covalent_runner ../covalent_runner
+          diff -x README.md -x tests -x webapp cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
       - name: Install Covalent
         run: pip install -e .
       - name: Start Covalent dispatcher server
-        run: covalent start -d
+        run: covalent start
       - name: Run tests and measure coverage
-        run: pytest -v --ignore=tests/functional_tests/dask_executor_test.py --cov=covalent --cov=covalent_dispatcher
-      - name: Generate coverage report
-        run: coverage xml
-      - name: Upload report to Codecov
+        run: |
+          PYTHONPATH=$PWD/covalent pytest covalent/tests --cov=covalent --cov-config=.coveragerc
+          coverage xml -o sdk_coverage.xml
+          PYTHONPATH=$PWD/covalent_data pytest covalent_data -vv --cov=covalent_data --cov-config=.coveragerc
+          coverage xml -o data_coverage.xml
+          PYTHONPATH=$PWD/covalent_dispatcher pytest covalent_dispatcher -vv --cov=covalent_dispatcher --cov-config=.coveragerc
+          coverage xml -o dispatcher_coverage.xml
+          PYTHONPATH=$PWD/covalent_queuer pytest covalent_queuer -vv --cov=covalent_queuer --cov-config=.coveragerc
+          coverage xml -o queuer_coverage.xml
+          PYTHONPATH=$PWD/covalent_results pytest covalent_results -vv --cov=covalent_results --cov-config=.coveragerc
+          coverage xml -o results_coverage.xml
+          PYTHONPATH=$PWD/covalent_ui pytest covalent_ui -vv --cov=covalent_ui --cov-config=.coveragerc
+          coverage xml -o ui_backend_coverage.xml
+          PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+          coverage xml -o functional_coverage.xml
+      - name: Upload SDK report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v2
         with:
-          files: ./coverage.xml
+          files: ./sdk_coverage.xml
+          flags: SDK
+          name: "SDK Unit Tests"
+      - name: Upload Data Service report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./data_coverage.xml
+          flags: Data
+          name: "Data Service Unit Tests"
+      - name: Upload Dispatcher Service report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./dispatcher_coverage.xml
+          flags: Dispatcher
+          name: "Dispatcher Unit Tests"
+      - name: Upload Queuer report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./queuer_coverage.xml
+          flags: Queuer
+          name: "Queuer Unit Tests"
+      - name: Upload Results Service report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./results_coverage.xml
+          flags: Results
+          name: "Results Unit Tests"
+      - name: Upload UI Backend report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./ui_backend_coverage.xml
+          flags: UI_Backend
+          name: "UI Backend Unit Tests"
+      - name: Upload Functional report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./functional_coverage.xml
+          flags: Functional_Tests
+          name: "Functional Tests"
+      - name: Get latest release
+        uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        with:
+          semver_only: true
       - name: Push to master
+        id: push
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
-          git config user.name "CovalentOpsBot"
-          git config user.email "covalentopsbot@users.noreply.github.com"
-          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
-          git fetch --unshallow
-          git push origin HEAD:master
+          MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
+          VERSION="$(cat ./VERSION)"
+          release=false
+          if [ "$MASTER_VERSION" = "$VERSION" ] ; then
+            echo "$VERSION has been previously released."
+          elif dpkg --compare-versions $VERSION 'gt' '0.71.0' ; then
+            git config user.name "CovalentOpsBot"
+            git config user.email "covalentopsbot@users.noreply.github.com"
+            git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
+            git push origin HEAD:master
+            release=true
+          else
+            echo "We cannot release versions less than 0.71.0."
+          fi
+          echo "RELEASE=$release" >> $GITHUB_ENV
+          echo "::set-output name=release::$release"
       - name: Format Slack message
         if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         run: |
@@ -120,10 +212,27 @@ jobs:
           SLACK_MSG=":rocket: Version $VERSION is now available."
           echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
       - name: Notify Slack
-        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && env.RELEASE == 'true'
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent-ci"
           SLACK_USERNAME: "CovalentOpsBot"
           SLACK_MESSAGE: ${{ env.SLACK_MSG }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      - name: Alert Slack
+        if: github.ref == 'ref/heads/develop' && failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "covalent"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: "The tests.yml workflow is failing in develop!"
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ":warning:  Attention Required  :warning:"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+  release:
+    needs: tests
+    if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
+    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
+    secrets: inherit
+    with:
+      prerelease: true
