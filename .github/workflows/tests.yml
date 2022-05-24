@@ -63,18 +63,6 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
-          pip install --no-cache-dir -r ./covalent_data/requirements/dist.txt
-          pip install --no-cache-dir -r ./covalent_data/requirements/dev.txt
-          pip install --no-cache-dir -r ./covalent_dispatcher/requirements/dist.txt
-          pip install --no-cache-dir -r ./covalent_dispatcher/requirements/dev.txt
-          pip install --no-cache-dir -r ./covalent_queuer/requirements/dist.txt
-          pip install --no-cache-dir -r ./covalent_queuer/requirements/dev.txt
-          pip install --no-cache-dir -r ./covalent_results/requirements/dist.txt
-          pip install --no-cache-dir -r ./covalent_results/requirements/dev.txt
-          pip install --no-cache-dir -r ./covalent_runner/requirements/dist.txt
-          pip install --no-cache-dir -r ./covalent_runner/requirements/dev.txt
-          pip install --no-cache-dir -r ./covalent_ui/requirements/dist.txt
-          pip install --no-cache-dir -r ./covalent_ui/requirements/dev.txt
       - name: Install NPM and Yarn on Ubuntu
         if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye'
         run: |
@@ -102,11 +90,6 @@ jobs:
           cd dist
           tar xzf cova-${VERSION}.tar.gz
           diff -x tests -r cova-${VERSION}/covalent ../covalent
-          diff -x tests -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
-          diff -x tests -r cova-${VERSION}/covalent_data ../covalent_data
-          diff -x tests -r cova-${VERSION}/covalent_queuer ../covalent_queuer
-          diff -x tests -r cova-${VERSION}/covalent_results ../covalent_results
-          diff -x tests -r cova-${VERSION}/covalent_runner ../covalent_runner
           diff -x README.md -x tests -x webapp cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
@@ -118,16 +101,6 @@ jobs:
         run: |
           PYTHONPATH=$PWD/covalent pytest covalent/tests --cov=covalent --cov-config=.coveragerc
           coverage xml -o sdk_coverage.xml
-          PYTHONPATH=$PWD/covalent_data pytest covalent_data -vv --cov=covalent_data --cov-config=.coveragerc
-          coverage xml -o data_coverage.xml
-          PYTHONPATH=$PWD/covalent_dispatcher pytest covalent_dispatcher -vv --cov=covalent_dispatcher --cov-config=.coveragerc
-          coverage xml -o dispatcher_coverage.xml
-          PYTHONPATH=$PWD/covalent_queuer pytest covalent_queuer -vv --cov=covalent_queuer --cov-config=.coveragerc
-          coverage xml -o queuer_coverage.xml
-          PYTHONPATH=$PWD/covalent_results pytest covalent_results -vv --cov=covalent_results --cov-config=.coveragerc
-          coverage xml -o results_coverage.xml
-          PYTHONPATH=$PWD/covalent_ui pytest covalent_ui -vv --cov=covalent_ui --cov-config=.coveragerc
-          coverage xml -o ui_backend_coverage.xml
           PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
           coverage xml -o functional_coverage.xml
       - name: Upload SDK report to Codecov
