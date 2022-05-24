@@ -30,7 +30,8 @@ Users interact with Covalent in four main ways:
 
 * :ref:`Results collection<Workflow result collection>`
 
-Under the hood Covalent brings up a set of :doc:`microservices <../api/microservices>` to orchestrate workflows.
+..
+  Under the hood Covalent brings up a set of :doc:`microservices <../api/microservices>` to orchestrate workflows.
 
 .. _Workflow construction:
 
