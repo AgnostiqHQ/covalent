@@ -35,13 +35,17 @@ Users can also install Covalent as a package in a Conda environment:
 Docker Install
 --------------
 
-Covalent can also run in Docker containers instead of :code:`covalent start`:
+Covalent is also provided as a Docker image. This image can be used as a developer environment or simply to run the Covalent server in a container:
 
 .. code:: bash
 
-   git clone git@github.com:AgnostiqHQ/covalent.git
-   cd covalent
-   docker compose up -d
+   docker pull public.ecr.aws/covalent/covalent
+
+   # Run the container as a developer environment
+   docker run -it --rm covalent bash
+
+   # Run the container as a server
+   docker run -d -p 48008:8080 covalent
 
 .. note::
 
@@ -57,8 +61,8 @@ Covalent can also be downloaded and installed from source:
    git clone git@github.com:AgnostiqHQ/covalent.git
    cd covalent
 
-   # Build dashboard
-   python setup.py webapp
+   # Install using setuptools, or...
+   python setup.py
 
    # Install using pip (-e for developer mode), or...
    pip install -e .
@@ -86,32 +90,6 @@ You can validate Covalent has been properly installed if the following returns w
 
    python -c "import covalent"
 
-
-Migration Guide from 0.3x
-~~~~~~~~~~~~~~~~~~~~
-
-If you are running covalent version 0.3x you can upgrade to covalent version 0.8x as follows.
-
-By running the following commands you can verify your covalent python as well as stop covalent and purge any config files present.
-
-.. code:: bash
-
-   $ pip show cova | grep Version
-   Version: 0.32.3
-   $ covalent purge
-   Covalent server has stopped.
-   Covalent server files have been purged.
-
-You can install the an 0.8x version of covalent by using pip.
-
-.. code:: bash
-
-   $ pip install cova==0.89.2 --upgrade
-   $ pip show cova | grep Version
-   Version: 0.89.2
-
-You should now be able to start the updated covalent server using :code:`covalent start` as specified in the guide below.
-
 Start the Server
 #################
 
@@ -122,52 +100,32 @@ Use the Covalent CLI tool to manage the Covalent server. The following commands 
    $ covalent --help
    Usage: covalent [OPTIONS] COMMAND [ARGS]...
 
-      Covalent CLI tool used to manage the servers.
+     Covalent CLI tool used to manage the server.
 
    Options:
-      -v, --version  Display version information.
-      --help         Show this message and exit.
+     -v, --version  Display version information.
+     --help         Show this message and exit.
 
    Commands:
-      config   Get and set the configuration of services.
-      logs
-      purge    Shutdown server and delete the cache and config settings.
-      restart  Restart the server(s).
-      start
-      status   Return the statuses of the server(s).
-      stop     Stop the server(s).
+     purge    Delete the cache and config settings.
+     restart  Restart the server.
+     start    Start the server.
+     status   Query the status of the server.
+     stop     Stop the server.
 
 Start the Covalent server:
 
 .. code:: console
 
    $ covalent start
-   Started Supervisord process 25109.
-
-   Supervisord is running in process 25109.
-   covalent:data                     STARTING
-   covalent:dispatcher               STARTING
-   covalent:dispatcher_mq_consumer   STARTING
-   covalent:nats                     STARTING
-   covalent:queuer                   STARTING
-   covalent:results                  STARTING
-   covalent:runner                   STARTING
-   covalent:ui                       STARTING
+   Covalent server has started at http://0.0.0.0:48008
 
 Optionally, confirm the server is running:
 
 .. code:: console
 
    $ covalent status
-   Supervisord is running in process 25109.
-   covalent:data                     RUNNING   pid 25660, uptime 0:16:03
-   covalent:dispatcher               RUNNING   pid 25658, uptime 0:16:03
-   covalent:dispatcher_mq_consumer   RUNNING   pid 25663, uptime 0:16:03
-   covalent:nats                     RUNNING   pid 25656, uptime 0:16:03
-   covalent:queuer                   RUNNING   pid 25657, uptime 0:16:03
-   covalent:results                  RUNNING   pid 25662, uptime 0:16:03
-   covalent:runner                   RUNNING   pid 25659, uptime 0:16:03
-   covalent:ui                       RUNNING   pid 25661, uptime 0:16:03
+   Covalent server is running at http://0.0.0.0:48008.
 
 Now, navigate to the Covalent UI by entering the address into your web browser.  This is where dispatched jobs will appear.
 
@@ -198,7 +156,7 @@ Let's look at a simple example to get started with Covalent. Before starting, en
    # Dispatch the workflow
    dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
 
-Navigate to the Covalent UI at `<http://localhost:8000>`_ to see your workflow in the queue:
+Navigate to the Covalent UI at `<http://0.0.0.0:48008>`_ to see your workflow in the queue:
 
 |
 
@@ -208,7 +166,7 @@ Navigate to the Covalent UI at `<http://localhost:8000>`_ to see your workflow i
 |
 
 .. warning::
-   In some browsers and operating systems, the address `0.0.0.0` does not resolve to localhost. If you experience issues, try instead navigating to `<http://localhost:8000>`_.
+   In some browsers and operating systems, the address `0.0.0.0` does not resolve to localhost. If you experience issues, try instead navigating to `<http://localhost:48008>`_.
 
 Click on the dispatch ID to view the workflow graph:
 
@@ -234,14 +192,18 @@ When you are done using Covalent, stop the server:
 .. code:: console
 
    $ covalent stop
-   Supervisord is running in process 25109.
-   covalent:dispatcher_mq_consumer: stopped
-   covalent:data: stopped
-   covalent:nats: stopped
-   covalent:ui: stopped
-   covalent:results: stopped
-   covalent:queuer: stopped
-   covalent:dispatcher: stopped
-   covalent:runner: stopped
+   Covalent server has stopped.
+
+Even if you forget to query or save your workflow results, Covalent saves them after each task's execution. The full results, including metadata, are stored on disk in the format shown below:
+
+.. code:: text
+
+    📂 my_project/
+    ├─ 📙 my_experiment.ipynb
+    ├─ 📂 results/
+    │  ├─ 📂 8a7bfe54-d3c7-4ca1-861b-f55af6d5964a/
+    │  │  ├─ 📄 result.pkl
+    │  │  ├─ 🗒️ dispatch_script.py
+    │  │  ├─ 🧾 result_info.yaml
 
 Read more about how Covalent works on the Covalent :doc:`concepts <../concepts/concepts>` page.

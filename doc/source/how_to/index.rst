@@ -15,7 +15,6 @@ Orchestration
 - :doc:`How to visualize the lattice <./orchestration/visualize_lattice>`
 - :doc:`How to add constraints to lattices <./orchestration/add_constraints_to_lattice>`
 - :doc:`How to construct leptons using C code <./orchestration/construct_c_task>`
-- :doc:`How to construct leptons using Bash code or commands <./orchestration/construct_bash_task>`
 
 
 Execution

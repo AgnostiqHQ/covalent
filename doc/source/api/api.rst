@@ -10,7 +10,6 @@ The following API documentation describes how to use Covalent.
 - :ref:`results_api` is used for collecting and manipulating results
 - :ref:`dispatcher_api` is used for dispatching workflows
 - The :ref:`dispatcher_server_api` is used for interfacing with the Covalent server
-- (Advanced) A set of :doc:`microservices <./microservices>` are spun up to orchestrate workflows
 
 .. _electrons_api:
 
@@ -91,7 +90,7 @@ Covalent CLI Tool
 
 This Command Line Interface (CLI) tool is used to manage Covalent server.
 
-.. click:: covalent._cli.cli:cli
+.. click:: covalent_dispatcher._cli.cli:cli
     :prog: covalent
-    :commands: start,stop,restart,status,purge,config,logs
+    :commands: start,stop,restart,status,purge
     :nested: full

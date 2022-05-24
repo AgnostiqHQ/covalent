@@ -79,19 +79,19 @@ templates_path = ["_templates"]
 html_theme = "furo"
 
 html_title = ""
-html_favicon = "_static/covalent-logo-blue-favicon.png"
+html_favicon = "_static/favcon.png"
 html_theme_options = {
-    "light_logo": "covalent-logo-horizontal-blue.png",
-    "dark_logo": "covalent-logo-horizontal-light.png",
+    "light_logo": "light.png",
+    "dark_logo": "dark.png",
     "light_css_variables": {
-        "color-brand-primary": "#5552FF",
-        "color-brand-content": "#6D7CFF",
+        "color-brand-primary": "#E35050",
+        "color-brand-content": "#2386FA",
     },
     "dark_css_variables": {
-        "color-brand-primary": "#5552FF",
-        "color-brand-secondary": "#AEB6FF",
+        "color-brand-primary": "#E35050",
+        "color-brand-secondary": "#2386FA",
         "color-brand-ternary": "#6E33ED",
-        "color-brand-content": "#E5E7F3",
+        "color-brand-content": "#2386FA",
     },
 }
 
