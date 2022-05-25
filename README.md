@@ -199,7 +199,7 @@ Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting
 
 ## 🔧 How it Works
 
-Users compose workflows using the Covalent SDK and submits them to the Covalent server. Upon receiving a workflow, the server analyzes the inter-task dependencies and dispatches the tasks to the appropriate execution backends. Independent tasks may be executed concurrently. The Covalent UI displays the execution progress of each workflow at the level of individual tasks.
+Users compose workflows using the Covalent SDK and submit them to the Covalent server. Upon receiving a workflow, the server analyzes the dependencies between tasks and dispatches each task to its specified execution backend. Independent tasks may be executed concurrently. The Covalent UI displays the execution progress of each workflow at the level of individual tasks.
 
 <div align="center">
 
