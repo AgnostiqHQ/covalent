@@ -221,8 +221,10 @@ Release notes are available in the [Changelog](https://github.com/AgnostiqHQ/cov
 
 ## 💥 Known Issues
 
-- Some users experience instabilities with the [quantum spacetime classification workflow](https://github.com/AgnostiqHQ/covalent/blob/master/doc/source/tutorials/quantum_gravity/spacetime_classification.ipynb) tutorial.
-- Workflow cancellation is not yet supported.
+- Performance currently scales poorly with the number of electrons. We recommend keeping the number of electrons under 50 for now. The underlying inefficiencies will be addressed in a future release.
+- The Covalent server sporadically returns HTTP 500 Internal Server Error when submitting a workflow, even while other workflows can be submitted. The underlying causes are being investigated. A temporary workaround is to restart the server (but wait until ongoing workflows are completed).
+- `covalent status` sometimes incorrectly reports that the Covalent server is running. The underlying bug has been identified and will be patched in a future release.
+
 
 ## ⚓ Citation
 
