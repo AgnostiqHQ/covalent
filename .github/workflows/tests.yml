@@ -96,8 +96,9 @@ jobs:
           VERSION="$(cat ./VERSION)"
           cd dist
           tar xzf cova-${VERSION}.tar.gz
-          diff -x tests -r cova-${VERSION}/covalent ../covalent
-          diff -x README.md -x tests -x webapp cova-${VERSION}/covalent_ui ../covalent_ui 
+          diff -r cova-${VERSION}/covalent ../covalent
+          diff -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x README.md -x webapp cova-${VERSION}/covalent_ui ../covalent_ui 
           diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf cova-${VERSION}/
 
@@ -109,26 +110,14 @@ jobs:
 
       - name: Run tests and measure coverage
         run: |
-          PYTHONPATH=$PWD/covalent pytest tests --cov=covalent --cov-config=.coveragerc
-          coverage xml -o sdk_coverage.xml
-          PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
-          coverage xml -o functional_coverage.xml
+          PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher
+          coverage xml -o coverage.xml
 
-      - name: Upload SDK report to Codecov
+      - name: Upload report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v2
         with:
-          files: ./sdk_coverage.xml
-          flags: SDK
-          name: "SDK Unit Tests"
-
-      - name: Upload Functional report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-        uses: codecov/codecov-action@v2
-        with:
-          files: ./functional_coverage.xml
-          flags: Functional_Tests
-          name: "Functional Tests"
+          files: ./coverage.xml
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
