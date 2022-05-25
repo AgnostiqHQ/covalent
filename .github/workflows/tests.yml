@@ -109,11 +109,11 @@ jobs:
 
       - name: Run tests and measure coverage
         run: |
-          PYTHONPATH=$PWD/covalent pytest covalent/tests --cov=covalent --cov-config=.coveragerc
+          PYTHONPATH=$PWD/covalent pytest tests --cov=covalent --cov-config=.coveragerc
           coverage xml -o sdk_coverage.xml
           PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
           coverage xml -o functional_coverage.xml
-          
+
       - name: Upload SDK report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v2
