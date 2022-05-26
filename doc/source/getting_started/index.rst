@@ -44,7 +44,7 @@ Covalent can also be downloaded and installed from source:
 
    # Build dashboard
    python setup.py webapp
-   
+
    # Install using setuptools, or...
    python setup.py
 
