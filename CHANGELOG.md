@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Removed `dask_executor_tests.py` to the dask plugin repo
+
 ## [0.106.0] - 2022-05-26
 
 ### Changed
