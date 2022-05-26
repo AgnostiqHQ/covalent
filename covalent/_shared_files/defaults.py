@@ -48,7 +48,7 @@ _DEFAULT_CONFIG = {
         + "/covalent/executor_plugins",
     },
     "dispatcher": {
-        "address": "0.0.0.0",
+        "address": "localhost",
         "port": 48008,
         "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
@@ -57,7 +57,7 @@ _DEFAULT_CONFIG = {
         + "/covalent",
     },
     "user_interface": {
-        "address": "0.0.0.0",
+        "address": "localhost",
         "port": 48008,
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",

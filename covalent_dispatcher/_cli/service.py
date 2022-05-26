@@ -107,7 +107,7 @@ def _next_available_port(requested_port: int) -> int:
 
     while not avail_port_found:
         try:
-            sock.bind(("0.0.0.0", try_port))
+            sock.bind(("localhost", try_port))
             avail_port_found = True
         except:
             try_port += 1
@@ -159,7 +159,7 @@ def _graceful_start(
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         port = get_config("user_interface.port")
-        click.echo(f"Covalent server is already running at http://0.0.0.0:{port}.")
+        click.echo(f"Covalent server is already running at http://localhost:{port}.")
         return port
 
     _rm_pid_file(pidfile)
@@ -175,7 +175,7 @@ def _graceful_start(
     with open(pidfile, "w") as PIDFILE:
         PIDFILE.write(str(pid))
 
-    click.echo(f"Covalent server has started at http://0.0.0.0:{port}")
+    click.echo(f"Covalent server has started at http://localhost:{port}")
     return port
 
 
@@ -245,9 +245,9 @@ def start(ctx, port: int, develop: bool) -> None:
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
     set_config(
         {
-            "user_interface.address": "0.0.0.0",
+            "user_interface.address": "localhost",
             "user_interface.port": port,
-            "dispatcher.address": "0.0.0.0",
+            "dispatcher.address": "localhost",
             "dispatcher.port": port,
         }
     )
@@ -257,7 +257,7 @@ def start(ctx, port: int, develop: bool) -> None:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while not server_listening:
         try:
-            sock.bind(("0.0.0.0", port))
+            sock.bind(("localhost", port))
             sock.close()
         except OSError:
             server_listening = True
@@ -303,7 +303,7 @@ def status() -> None:
 
     if _read_pid(UI_PIDFILE) != -1:
         ui_port = get_config("user_interface.port")
-        click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
+        click.echo(f"Covalent server is running at http://localhost:{ui_port}.")
     else:
         _rm_pid_file(UI_PIDFILE)
         click.echo("Covalent server is stopped.")
