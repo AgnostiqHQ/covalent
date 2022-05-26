@@ -81,7 +81,7 @@ const LinkButton = ({ title, icon, path }) => {
          width: "30px",height: "30px",
          padding: "5px 0px 0px 3px",
          borderRadius: "6px" ,my:2}} component={icon} />
-         : 
+         :
          <SvgIcon sx={{ mx: 'auto',my:2 }} component={icon} />
         }
        </ListItemButton>

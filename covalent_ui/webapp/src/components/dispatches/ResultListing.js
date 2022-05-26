@@ -148,7 +148,7 @@ const ResultsTableHead = ({
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox" sx={(theme) =>({ 
+        <TableCell padding="checkbox" sx={(theme) =>({
            borderColor: theme.palette.background.coveBlack03 + '!important'
           })}>
           <Checkbox
@@ -160,7 +160,7 @@ const ResultsTableHead = ({
 
         {_.map(headers, (header) => {
           return (
-            <TableCell key={header.id} sx={(theme) =>({ 
+            <TableCell key={header.id} sx={(theme) =>({
               borderColor: theme.palette.background.coveBlack03 + '!important'
              })}>
               {header.sortable ? (
@@ -246,7 +246,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
    //   {
    //     backgroundColor: theme.palette.background.paper,
    //   },
- 
+
       // customize text
       [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
       {
