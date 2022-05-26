@@ -23,7 +23,8 @@
 import { useState } from 'react'
 import copy from 'copy-to-clipboard'
 import { IconButton, Tooltip } from '@mui/material'
-import { ContentCopyRounded, CheckRounded } from '@mui/icons-material'
+import { CheckRounded } from '@mui/icons-material'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 
 const CopyButton = ({ content, title = 'Copy', ...props }) => {
   const [copied, setCopied] = useState(false)
@@ -36,13 +37,13 @@ const CopyButton = ({ content, title = 'Copy', ...props }) => {
           setCopied(true)
           setTimeout(() => setCopied(false), 1200)
         }}
-        sx={{ color: 'text.secondary' }}
+        sx={{ color: 'text.tertiary' }}
         {...props}
       >
         {copied ? (
           <CheckRounded fontSize="inherit" />
         ) : (
-          <ContentCopyRounded fontSize="inherit" />
+          <ContentCopyIcon fontSize="inherit" />
         )}
       </IconButton>
     </Tooltip>

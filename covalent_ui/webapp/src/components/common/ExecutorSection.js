@@ -26,7 +26,7 @@ import { Paper } from '@mui/material'
 import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'
 
-const ExecutorSection = ({ metadata }) => {
+const ExecutorSection = ({ metadata , ...props}) => {
   const executorType = _.get(metadata, 'executor_name')
   const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
   const src = _.join(
@@ -42,7 +42,7 @@ const ExecutorSection = ({ metadata }) => {
       </Heading>
 
       {!_.isEmpty(executorParams) && (
-        <Paper elevation={0}>
+        <Paper elevation={0} {...props}>
           <SyntaxHighlighter language="yaml" src={src} />
         </Paper>
       )}

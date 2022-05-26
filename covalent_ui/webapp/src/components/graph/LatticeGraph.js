@@ -22,9 +22,7 @@
 
 import _ from 'lodash'
 import { useEffect, useRef, useState } from 'react'
-import ReactFlow, { Background, MiniMap } from 'react-flow-renderer'
-import { lighten } from '@mui/material'
-
+import ReactFlow, { MiniMap } from 'react-flow-renderer'
 import ElectronNode from './ElectronNode'
 import ParameterNode from './ParameterNode'
 import DirectedEdge from './DirectedEdge'
@@ -98,12 +96,12 @@ const LatticeGraph = ({
         // prevent selection when nothing is selected to prevent fitView
         selectNodesOnDrag={hasSelectedNode}
       >
-        <Background
+        {/* <Background
           variant="dots"
           color={lighten(theme.palette.background.paper, 0.05)}
           gap={12}
           size={1}
-        />
+        /> */}
 
         <LatticeControls
           marginLeft={marginLeft}
