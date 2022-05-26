@@ -28,7 +28,7 @@ import { useSelector } from 'react-redux'
 import { isParameter } from '../../utils/misc'
 
 const STATUS_COLORS = {
-  RUNNING: 'primary',
+  RUNNING: 'running',
   COMPLETED: 'success',
   FAILED: 'error',
   CANCELLED: 'error',
