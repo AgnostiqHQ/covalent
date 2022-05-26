@@ -422,7 +422,7 @@ Covalent’s UI has been revamped with more awesome themes and elements that dis
 
 #### 🩹 Known issues
 
-Apart from the long documented issues in github, some of the critical known issues in this release are - 
+Apart from the long documented issues in github, some of the critical known issues in this release are -
 
 - Performance currently scales poorly with the number of electrons. We recommend keeping the number of electrons under 50 for now. The underlying inefficiencies will be addressed in a future release.
 - The Covalent server sporadically returns HTTP 500 Internal Server Error when submitting a workflow, even while other workflows can be submitted. The underlying causes are being investigated. A temporary workaround is to restart the server (please wait until ongoing workflows are completed).
