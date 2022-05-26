@@ -27,24 +27,21 @@ import {
   Box,
   CircularProgress,
   IconButton,
-  Paper,
   styled,
-  SvgIcon,
   Tab,
   Tooltip,
   Typography,
+  SvgIcon
 } from '@mui/material'
-import { AccountTreeOutlined, ChevronLeft } from '@mui/icons-material'
+import { ChevronLeft } from '@mui/icons-material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
-import { alpha } from '@mui/material/styles'
-
 import CopyButton from '../common/CopyButton'
-import { ReactComponent as AtomSvg } from '../../assets/atom.svg'
 import { selectResultProgress } from '../dispatches/ResultProgress'
 import LatticeDispatchOverview from './LatticeDispatchOverview'
 import { statusIcon, truncateMiddle } from '../../utils/misc'
 import { LatticeOutput } from '../common/LogOutput'
 import ErrorCard from '../common/ErrorCard'
+import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
 
 const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
@@ -57,10 +54,11 @@ const DispatchDrawerContents = () => {
         <ChevronLeft />
       </IconButton>
 
-      <AccountTreeOutlined fontSize="inherit" />
+      <SvgIcon component={TreeSvg} sx={{verticalAlign:"middle",marginTop:1}}/>
+
       <Tooltip title={dispatchId} placement="top">
-        <Typography component="span" sx={{ mx: 1 }}>
-          {truncateMiddle(dispatchId, 14, 13)}
+        <Typography component="span" sx={{ mx: 1 ,verticalAlign:"middle"}}>
+          {truncateMiddle(dispatchId, 8, 13)}
         </Typography>
       </Tooltip>
 
@@ -95,7 +93,7 @@ const CustomTabList = styled(TabList)(({ theme }) => ({
   '& .MuiTab-root': {
     textTransform: 'none',
     '&.Mui-selected': {
-      color: theme.palette.text.primary,
+      color: theme.palette.primary.white,
     },
   },
   '& .MuiTabs-indicator': {
@@ -111,7 +109,6 @@ const LatticeStatusCard = ({ dispatchId }) => {
 
   return (
     <Box sx={{ my: 2 }}>
-      <Paper sx={{ px: 3, py: 2 }} elevation={0}>
         <Box
           sx={{
             display: 'grid',
@@ -119,7 +116,7 @@ const LatticeStatusCard = ({ dispatchId }) => {
           }}
         >
           {/* left column */}
-          <Box sx={{ borderRight: '1px solid #29425B' }}>
+          <Box sx={{ borderRight: '1px solid #303067' }}>
             <Typography color="text.secondary" fontSize="body2.fontSize">
               Status
             </Typography>
@@ -153,10 +150,6 @@ const LatticeStatusCard = ({ dispatchId }) => {
                 py: 1,
               }}
             >
-              <SvgIcon fontSize="inherit" sx={{ mr: 1.5 }}>
-                <AtomSvg />
-              </SvgIcon>
-
               <Typography fontSize="body2.fontSize">
                 <Box
                   component="span"
@@ -173,7 +166,7 @@ const LatticeStatusCard = ({ dispatchId }) => {
                 <CircularProgress
                   variant="determinate"
                   sx={(theme) => ({
-                    color: alpha(theme.palette[color].main, 0.2),
+                    color: theme.palette.secondary.main,
                   })}
                   size="2rem"
                   value={100}
@@ -189,8 +182,6 @@ const LatticeStatusCard = ({ dispatchId }) => {
             </Box>
           </Box>
         </Box>
-      </Paper>
-
       <ErrorCard showElectron error={error} />
     </Box>
   )
