@@ -34,5 +34,5 @@ jobs:
           docker-compose -f docker-compose.yml up --build -d
           echo 'Displaying containers...'
       - name: Test Containers
-          run: |
-            echo 'Commands for testing container networking will go here...'
+        run: |
+          echo 'Commands for testing container networking will go here...'
