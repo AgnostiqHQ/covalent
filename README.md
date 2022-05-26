@@ -282,7 +282,7 @@ After executing the electron, the results of the workflow can be retrieved as us
 result = ct.get_result(dispatch_id=dispatch_id)
 ```
 
-*Note: Instead of having independent executers for each electrons, if you are using the same executer for the entire workflow, executers can be defined at the lattice level with electrons simply having `@ct.electron` decorator. For example,*
+*Note: Instead of having independent executors for each electrons, if you are using the same executor for the entire workflow, executors can be defined at the lattice level with electrons simply having `@ct.electron` decorator. For example,*
 
 ```python
 *@ct.lattice(executor=dask_executor)
@@ -290,7 +290,7 @@ def workflow(y,z):
 	....*
 ```
 
- *will cascade make `dask_executer` the default for all electrons inside `workflow`*
+ *will cascade make `dask_executor` the default for all electrons inside `workflow`*
 
 #### 🔌 [Execution on a remote machine via SSH](https://github.com/AgnostiqHQ/covalent-ssh-plugin)
 
@@ -422,18 +422,11 @@ Covalent’s UI has been revamped with more awesome themes and elements that dis
 
 #### 🩹 Known issues
 
-Apart from the long documented issues in github, some of the critical known issues in this release are -
-
-- Performance currently scales poorly with the number of electrons. We recommend keeping the number of electrons under 50 for now. The underlying inefficiencies will be addressed in a future release.
+- Performance can degrade when running workflows with large numbers of electrons. We recommend keeping the number of electrons under 50 for now. The underlying inefficiencies will be addressed in a future release.
 - The Covalent server sporadically returns HTTP 500 Internal Server Error when submitting a workflow, even while other workflows can be submitted. The underlying causes are being investigated. A temporary workaround is to restart the server (please wait until ongoing workflows are completed).
-- [SSH plugin does not return workflow failures at the electron level](https://github.com/AgnostiqHQ/covalent-ssh-plugin/issues/11).
-- [Slurm plugin does not return workflow failures at the electron level](https://github.com/AgnostiqHQ/covalent-slurm-plugin/issues/20).
 - `covalent status` [sometimes incorrectly reports that the Covalent server is running](https://github.com/AgnostiqHQ/covalent/issues/547). The underlying bug has been identified and will be patched in a future release.
-- [Errors in undetected modules arise with constructing leptons](https://github.com/AgnostiqHQ/covalent/issues/551)
-- [Path errors in required libraries (e.g. gcc) when constructing leptons](https://github.com/AgnostiqHQ/covalent/issues/554)
-- [Sublattice’s function strings show unredacted code](https://github.com/agnostiqhq/covalent/issues/550)
-- [SSH plugin is not robust for sublattices and large workflows](https://github.com/AgnostiqHQ/covalent-ssh-plugin/issues/13)
-- UI Graph spreads out the layout poorly after a critical number of electrons.
+
+See the Issues page for others.
 
 ## 🫶 **Contributors**
 
