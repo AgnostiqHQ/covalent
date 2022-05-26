@@ -7,7 +7,6 @@
 [![version](https://github-covalent-badges.s3.amazonaws.com/badges/version.svg?maxAge=3600)](https://github.com/AgnostiqHQ/covalent)
 [![python](https://img.shields.io/pypi/pyversions/cova)](https://github.com/AgnostiqHQ/covalent)
 [![tests](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml/badge.svg)](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml)
-[![publish](https://github.com/AgnostiqHQ/covalent/actions/workflows/publish_master.yml/badge.svg)](https://github.com/AgnostiqHQ/covalent/actions/workflows/publish_master.yml)
 [![docs](https://readthedocs.org/projects/covalent/badge/?version=latest)](https://covalent.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/AgnostiqHQ/covalent/branch/master/graph/badge.svg?token=YGHCB3DE4P)](https://codecov.io/gh/AgnostiqHQ/covalent)
 [![agpl](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.en.html)
@@ -216,6 +215,232 @@ The official documentation includes tips on getting started, some high level con
 To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
 
 ## 📝 Release Notes
+
+### Release 0.106.0 (current release)
+
+The latest release of Covalent OS is now out and available for community use. It comes with new additions, including support for local execution of workflows with a [Dask](https://docs.dask.org/en/latest/) plugin, remote execution of workflows with Simple Linux Utility for Resource Management ([Slurm](https://slurm.schedmd.com/documentation.html)) and SSH plugins, and new updates to the user interface. A summary of the feature releases is provided below:
+
+- Support for workflow execution on a local Dask cluster is now available in Covalent
+- Support for workflow execution on remote machines with SSH access and Slurm
+- The UI now includes a revamp in the color, theme, workflow graph and other visual elements
+
+Check out the summary table for the list of added features and read the subsections to find out more:
+
+| Feature | Summary |
+| --- | --- |
+| Dask plugin | plugin that interfaces Covalent with a Dask Cluster |
+| SSH plugin | plugin that interfaces Covalent with other machines accessible to the user over SSH |
+| Slurm plugin | plugin that interfaces Covalent with HPC systems managed by Slurm |
+
+#### 💻 Execution on a Local Dask Cluster
+
+In previous releases, Covalent workflows could be dispatched for execution on the host machine. Starting with release v104.0, a Dask executor plugin interfaces with a running [Dask Cluster](https://docs.dask.org/en/latest/deploying.html) allowing users to deploy tasks to the cluster by providing the scheduler address to the executor object. A user can customize the execution of electrons within a workflow by specifying the scheduler address of the local Dask cluster as the electron’s executor
+
+In order to dispatch workflows to a Dask cluster, the user has to install the Dask plugin using pip:
+
+```bash
+pip install covalent-dask-plugin
+```
+
+After installing the Dask plugin, the following command should be run to start a Dask cluster with Python and retrieve the scheduler address:
+
+```python
+from dask.distributed import LocalCluster
+
+cluster = LocalCluster()
+print(cluster.scheduler_address)
+```
+
+The local Dask cluster’s scheduler address looks like `tcp://127.0.0.1:59183`. Note that the Dask cluster does not persist when the process terminates.
+
+This cluster can be used with Covalent by providing the scheduler address:
+
+```python
+from covalent.executor import DaskExecutor
+
+dask_executor = DaskExecutor(scheduler_address=cluster.scheduler_address)
+
+@ct.electron(executor=dask_executor)
+def my_custom_task(x, y):
+    return x + y
+```
+
+A workflow containing the electron can be constructed and dispatched as usual. This will execute the workflow’s electron on the local Dask cluster:
+
+```python
+@ct.lattice
+def workflow(y,z):
+	value = my_custom_task(y, z)
+	return value
+
+dispatch_id = ct.dispatch(workflow)(1, 2)
+```
+
+After executing the electron, the results of the workflow can be retrieved as usual:
+
+```python
+result = ct.get_result(dispatch_id=dispatch_id)
+```
+
+*Note: Instead of having independent executers for each electrons, if you are using the same executer for the entire workflow, executers can be defined at the lattice level with electrons simply having `@ct.electron` decorator. For example,*
+
+```python
+*@ct.lattice(executor=dask_executor)
+def workflow(y,z):
+	....*
+```
+
+ *will cascade make `dask_executer` the default for all electrons inside `workflow`*
+
+#### 🔌 [Execution on a remote machine via SSH](https://github.com/AgnostiqHQ/covalent-ssh-plugin)
+
+In this release, Covalent provides support for dispatching workflows to remote machines. The SSH executor plugin interfaces Covalent with other machines accessible to the user over SSH. Some common use cases for this plugin are to distribute tasks to one or more compute backends which are not controlled by a cluster management system, such as computers on a LAN, or even a collection of small-form-factor Linux-based devices such as Raspberry Pis, NVIDIA Jetsons, or Xeon Phi co-processors.
+
+In order to use the SSH executor plugin, the user has to install the plugin with pip:
+
+```bash
+pip install covalent-ssh-plugin
+```
+
+The following shows an example of how a user might modify their Covalent configuration to support this plugin:
+
+```bash
+[executors.ssh]
+username = "user"
+hostname = "host.hostname.org"
+remote_dir = "/home/user/.cache/covalent"
+ssh_key_file = "/home/user/.ssh/id_rsa"
+```
+
+This setup assumes the user has the ability to connect to the remote machine using `ssh -i /home/user/.ssh/id_rsa user@host.hostname.org` and has write-permissions on the remote directory `/home/user/.cache/covalent` (if it exists) or the closest parent directory (if it does not).
+
+The user can decorate an electron within a workflow by passing “ssh” as the electron’s executor argument
+
+```python
+import covalent as ct
+
+@ct.electron(executor="ssh")
+def my_task():
+    import socket
+    return socket.gethostname()
+```
+
+Alternatively, the user can declare a class object to customize behavior within particular tasks::
+
+```python
+from covalent.executor import SSHExecutor
+
+executor = SSHExecutor(
+    username="user",
+    hostname="host2.hostname.org",
+    remote_dir="/tmp/covalent",
+    ssh_key_file="/home/user/.ssh/host2/id_rsa",
+)
+
+@ct.electron(executor=executor)
+def my_custom_task(x, y):
+    return x + y
+
+```
+
+The user may now execute the electron on the remote machine.
+
+#### 🖥️ [Execution on a Slurm machine](https://github.com/AgnostiqHQ/covalent-slurm-plugin)
+
+This release also includes a plugin that interfaces Covalent with HPC systems managed by [Slurm](https://slurm.schedmd.com/documentation.html). In order for workflows to be deployable, users must have SSH access to the Slurm login node, writable storage space on the remote filesystem, and permissions to submit jobs to Slurm.
+
+In order to use the Slurm plugin, simply the plugin install with pip:
+
+```bash
+pip install covalent-slurm-plugin
+```
+
+The following snippet illustrates how a user might modify their Covalent configuration to support Slurm:
+
+```bash
+[executors.slurm]
+username = "user"
+address = "login.cluster.org"
+ssh_key_file = "/home/user/.ssh/id_rsa"
+remote_workdir = "/scratch/user"
+cache_dir = "/tmp/covalent"
+conda_env = ""
+
+[executors.slurm.options]
+partition = "general"
+cpus-per-task = 4
+gres = "gpu:v100:4"
+exclusive = ""
+parsable = ""
+```
+
+The first block describes default connection parameters for a user who is able to successfully connect to the Slurm login node using `ssh -i /home/user/.ssh/id_rsa user@login.cluster.org`. The second block describes default parameters which are used to construct a Slurm submit script. In this example, the submit script would contain the following preamble:
+
+```bash
+#!/bin/bash
+#SBATCH --partition=general
+#SBATCH --cpus-per-task=4
+#SBATCH --gres=gpu:v100:4
+#SBATCH --exclusive
+#SBATCH --parsable
+```
+
+The user can decorate an electron in a workflow using the above settings:
+
+```python
+import covalent as ct
+
+@ct.electron(executor="slurm")
+def my_task(x, y):
+    return x + y
+```
+
+Alternatively, by using a class object to customize behavior scoped to specific tasks:
+
+```python
+from covalent.executor import SlurmExecutor
+
+executor = SlurmExecutor(
+    remote_workdir="/scratch/user/experiment1",
+    conda_env="covalent",
+    options={
+        "partition": "compute",
+	"cpus-per-task": 8
+    }
+)
+
+@ct.electron(executor=executor)
+def my_custom_task(x, y):
+    return x + y
+```
+
+#### ✨ A New User Interface
+
+Covalent’s UI has been revamped with more awesome themes and elements that displays a more elegant transport graph for running/completed workflows. The transport graph for a sample workflow looks like the image below:
+
+![workflow_demo_image.png](doc/images/workflow_demo_image.png)
+
+#### 🩹 Known issues
+
+Apart from the long documented issues in github, some of the critical known issues in this release are - 
+
+- Performance currently scales poorly with the number of electrons. We recommend keeping the number of electrons under 50 for now. The underlying inefficiencies will be addressed in a future release.
+- The Covalent server sporadically returns HTTP 500 Internal Server Error when submitting a workflow, even while other workflows can be submitted. The underlying causes are being investigated. A temporary workaround is to restart the server (please wait until ongoing workflows are completed).
+- [SSH plugin does not return workflow failures at the electron level](https://github.com/AgnostiqHQ/covalent-ssh-plugin/issues/11).
+- [Slurm plugin does not return workflow failures at the electron level](https://github.com/AgnostiqHQ/covalent-slurm-plugin/issues/20).
+- `covalent status` [sometimes incorrectly reports that the Covalent server is running](https://github.com/AgnostiqHQ/covalent/issues/547). The underlying bug has been identified and will be patched in a future release.
+- [Errors in undetected modules arise with constructing leptons](https://github.com/AgnostiqHQ/covalent/issues/551)
+- [Path errors in required libraries (e.g. gcc) when constructing leptons](https://github.com/AgnostiqHQ/covalent/issues/554)
+- [Sublattice’s function strings show unredacted code](https://github.com/agnostiqhq/covalent/issues/550)
+- [SSH plugin is not robust for sublattices and large workflows](https://github.com/AgnostiqHQ/covalent-ssh-plugin/issues/13)
+- UI Graph spreads out the layout poorly after a critical number of electrons.
+
+## 🫶 **Contributors**
+
+This release would not have been possible without the hard work of the team at Agnostiq and our contributors:
+
+Casey Jao, Okechukwu Ochia, Oktay Goktas, Sankalp Sanand, Santosh Radha, Venkat Bala
+
 
 Release notes are available in the [Changelog](https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md).
 
