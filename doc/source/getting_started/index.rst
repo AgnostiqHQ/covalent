@@ -42,6 +42,9 @@ Covalent can also be downloaded and installed from source:
    git clone git@github.com:AgnostiqHQ/covalent.git
    cd covalent
 
+   # Build dashboard
+   python setup.py webapp
+   
    # Install using setuptools, or...
    python setup.py
 
