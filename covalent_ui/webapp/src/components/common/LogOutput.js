@@ -162,7 +162,6 @@ const TailFile = ({ dispatchId, path, isRunning, isStdErr }) => {
   // tail file
   useEffect(() => {
     const fetchLog = () => {
-      // TODO use demo mock api instead
       if (isDemo) {
         setLines(
           isStdErr

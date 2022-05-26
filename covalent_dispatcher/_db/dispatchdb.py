@@ -18,8 +18,6 @@ from covalent._shared_files.utils import get_named_params
 # * dispatch_id text primary key
 # * result_dict text ; json-serialied dictionary representation of Result
 
-# TODO: Move these to a common utils module
-
 
 def extract_graph_node(node):
     # avoid mutating original node

@@ -71,9 +71,7 @@ def test_electron_components():
 
 
 def test_check_nodes():
-    """Check if nodes are unique and you have the correct graph
-    TODO:ultimately we might want to check if the graph's certain attributes are equal to each
-    other"""
+    """Check if nodes are unique and you have the correct graph"""
 
     check.build_graph(a=1, b=2)
     assert [0, 1, 2, 3] == list(check.transport_graph._graph.nodes)
@@ -127,8 +125,6 @@ def test_parallelization():
     Test parallelization of multiple electrons and check if calling the lattice
     normally vs using covalent improves the performance at all.
     """
-
-    # TODO: Maybe a more efficient test can be added to check parallelization
 
     import timeit
 
