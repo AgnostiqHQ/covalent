@@ -29,36 +29,50 @@ const LinkBehavior = React.forwardRef(({ href, ...props }, ref) => {
   return <RouterLink ref={ref} to={href} {...props} />
 })
 
+
 const defaultTheme = createTheme({
   typography: {
-    fontFamily: '"Roboto Slab", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"DM Sans", "Helvetica", "Arial", sans-serif',
   },
   palette: {
     mode: 'dark',
     primary: {
-      main: '#99DAFF',
+      light: '#AEB6FF',
+      main: '#6D7CFF',
+      dark: '#5552FF',
+      blue04: '#6473FF',
+      white:'#ffff',
     },
     secondary: {
-      main: '#998AFF',
+      light: '#DAC3FF',
+      main: '#AD7BFF',
+      dark: '#8B31FF',
     },
     background: {
-      default: '#040406',
-      paper: '#101820',
+      default: '#08081A',
+      paper: '#1C1C46',
+      coveBlack01: '#464660',
+      coveBlack02: '#303067',
+      coveBlack03: '#1C1C46',
+      graphCanvas: '#464646',
+      darkblackbg:'#101820'
     },
     error: {
-      main: '#E35050',
+      main: '#FF6464',
     },
     success: {
-      main: '#64F4D2',
+      main: '#55D899',
     },
     warning: {
       main: '#E39F50',
     },
+    running: {
+      main: '#dac3ff',
+    },
     text: {
-      // primary: '#FAFAFA',
-      // secondary: '#BEBEBE',
-      primary: '#D6D7D8',
-      secondary: '#9A9C9E',
+      primary: '#F1F1F6',
+      secondary: '#CBCBD7',
+      tertiary: '#86869A',
     },
   },
 })

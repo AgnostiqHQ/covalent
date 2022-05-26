@@ -34,6 +34,9 @@
 }
 
 /* don't show handles */
+.react-flow {
+  background: #08081A;
+}
 .react-flow__handle {
   visibility: hidden;
 }
@@ -49,4 +52,7 @@
 }
 .react-flow__handle-right {
   right: 0px !important;
+}
+.side-drawernav .Mui-selected{
+  background-color: transparent !important;
 }
