@@ -290,7 +290,7 @@ def workflow(y,z):
 	....*
 ```
 
- *will cascade make `dask_executor` the default for all electrons inside `workflow`*
+will make `dask_executor` the default for all electrons inside `workflow`.
 
 #### 🔌 [Execution on a remote machine via SSH](https://github.com/AgnostiqHQ/covalent-ssh-plugin)
 
