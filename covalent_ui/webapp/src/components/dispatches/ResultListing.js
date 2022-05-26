@@ -32,7 +32,6 @@ import {
   TableCell,
   TableBody,
   Typography,
-  Paper,
   IconButton,
   Input,
   InputAdornment,
@@ -149,7 +148,9 @@ const ResultsTableHead = ({
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
+        <TableCell padding="checkbox" sx={(theme) =>({ 
+           borderColor: theme.palette.background.coveBlack03 + '!important'
+          })}>
           <Checkbox
             indeterminate={numSelected > 0 && numSelected < total}
             checked={numSelected > 0 && numSelected === total}
@@ -159,7 +160,9 @@ const ResultsTableHead = ({
 
         {_.map(headers, (header) => {
           return (
-            <TableCell key={header.id}>
+            <TableCell key={header.id} sx={(theme) =>({ 
+              borderColor: theme.palette.background.coveBlack03 + '!important'
+             })}>
               {header.sortable ? (
                 <TableSortLabel
                   active={orderBy === header.id}
@@ -198,8 +201,15 @@ const ResultsTableToolbar = ({
         </Typography>
       )}
 
-      <Paper sx={{ ml: 'auto', px: 1, py: 0.5, maxWidth: 240 }}>
         <Input
+        sx={{
+          ml: 'auto',
+          px: 1,
+          py: 0.5,
+          maxWidth: 240,
+          border: '1px solid #303067',
+          borderRadius: '60px',
+        }}
           disableUnderline
           placeholder="Search"
           value={query}
@@ -225,27 +235,45 @@ const ResultsTableToolbar = ({
             </InputAdornment>
           }
         />
-      </Paper>
     </Toolbar>
   )
 }
 
 const StyledTable = styled(Table)(({ theme }) => ({
   // stripe every odd body row except on select and hover
-  [`& .MuiTableBody-root .MuiTableRow-root:nth-of-type(odd):not(.Mui-selected):not(:hover)`]:
-    {
-      backgroundColor: theme.palette.background.paper,
-    },
+   // stripe every odd body row except on select and hover
+   // [`& .MuiTableBody-root .MuiTableRow-root:nth-of-type(odd):not(.Mui-selected):not(:hover)`]:
+   //   {
+   //     backgroundColor: theme.palette.background.paper,
+   //   },
+ 
+      // customize text
+      [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
+      {
+        fontSize: '1rem',
+      },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
-    color: theme.palette.text.secondary,
+    color: theme.palette.text.tertiary,
   },
 
   // copy btn on hover
   [`& .${tableBodyClasses.root} .${tableRowClasses.root}`]: {
     '& .copy-btn': { visibility: 'hidden' },
     '&:hover .copy-btn': { visibility: 'visible' },
+  },
+
+  // customize hover
+  [`& .${tableBodyClasses.root} .${tableRowClasses.root}:hover`]: {
+    backgroundColor: theme.palette.background.paper,
+  },
+  // customize selected
+  [`& .${tableBodyClasses.root} .${tableRowClasses.root}.Mui-selected`]: {
+    backgroundColor: theme.palette.background.coveBlack02,
+  },
+  [`& .${tableBodyClasses.root} .${tableRowClasses.root}.Mui-selected:hover`]: {
+    backgroundColor: theme.palette.background.coveBlack01,
   },
 
   // customize border
@@ -358,61 +386,65 @@ const ResultListing = () => {
 
                 return (
                   <TableRow hover key={dispatchId} selected={isSelected}>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={isSelected}
-                        onClick={() => handleChangeSelection(dispatchId)}
-                      />
-                    </TableCell>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={isSelected}
+                      onClick={() => handleChangeSelection(dispatchId)}
+                    />
+                  </TableCell>
 
-                    <TableCell>
-                      <Link underline="none" href={`/${dispatchId}`}>
-                        {dispatchId}
-                      </Link>
+                  <TableCell>
+                    <Link
+                      underline="none"
+                      href={`/${dispatchId}`}
+                      sx={{ color: 'white' }}
+                    >
+                      {dispatchId}
+                    </Link>
+                    <CopyButton
+                      sx={{ ml: 1, color: 'text.tertiary' }}
+                      content={dispatchId}
+                      size="small"
+                      className="copy-btn"
+                      title="Copy ID"
+                    />
+                  </TableCell>
 
-                      <CopyButton
-                        content={dispatchId}
-                        size="small"
-                        className="copy-btn"
-                        title="Copy ID"
-                      />
-                    </TableCell>
+                  <TableCell>{_.get(result, 'lattice.name')}</TableCell>
 
-                    <TableCell>{_.get(result, 'lattice.name')}</TableCell>
+                  {/* <TableCell>
+                    <Tooltip title={result.results_dir}>
+                      <Box
+                        component="span"
+                        sx={{
+                          color: 'text.secondary',
+                          fontSize: 12,
+                          fontFamily: 'monospace',
+                        }}
+                      >
+                        {truncateMiddle(result.results_dir, 10, 16)}
+                      </Box>
+                    </Tooltip>
+                    <CopyButton
+                      content={result.results_dir}
+                      size="small"
+                      className="copy-btn"
+                      title="Copy results directory"
+                    />
+                  </TableCell> */}
 
-                    {/* <TableCell>
-                      <Tooltip title={result.results_dir}>
-                        <Box
-                          component="span"
-                          sx={{
-                            color: 'text.secondary',
-                            fontSize: 12,
-                            fontFamily: 'monospace',
-                          }}
-                        >
-                          {truncateMiddle(result.results_dir, 10, 16)}
-                        </Box>
-                      </Tooltip>
-                      <CopyButton
-                        content={result.results_dir}
-                        size="small"
-                        className="copy-btn"
-                        title="Copy results directory"
-                      />
-                    </TableCell> */}
+                  <TableCell>
+                    <Runtime startTime={startTime} endTime={endTime} />
+                  </TableCell>
 
-                    <TableCell>
-                      <Runtime startTime={startTime} endTime={endTime} />
-                    </TableCell>
+                  <TableCell>{formatDate(startTime)}</TableCell>
 
-                    <TableCell>{formatDate(startTime)}</TableCell>
+                  <TableCell>{formatDate(endTime)}</TableCell>
 
-                    <TableCell>{formatDate(endTime)}</TableCell>
-
-                    <TableCell>
-                      <ResultProgress dispatchId={dispatchId} />
-                    </TableCell>
-                  </TableRow>
+                  <TableCell>
+                    <ResultProgress dispatchId={dispatchId} />
+                  </TableCell>
+                </TableRow>
                 )
               })}
             </TableBody>

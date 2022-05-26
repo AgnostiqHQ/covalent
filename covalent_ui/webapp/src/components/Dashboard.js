@@ -119,7 +119,7 @@ const Dashboard = () => {
       <NavDrawer />
 
       <Container maxWidth="xl" sx={{ mb: 4, mt: 7 }}>
-        <Paper elevation={0} sx={{ p: 3, mb: 2 }}>
+        <Paper elevation={0} sx={{ p: 3, mb: 2 ,borderRadius:'8px'}}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography fontSize="h5.fontSize">Dispatch list</Typography>
             {isFetching && <CircularProgress size="1rem" sx={{ mx: 2 }} />}
@@ -174,7 +174,7 @@ const DashboardCard = ({ desc, content }) => (
 )
 
 const DashboardDivider = () => (
-  <Divider flexItem orientation="vertical" sx={{ borderColor: '#29425B' }} />
+  <Divider flexItem orientation="vertical" sx={(theme) => ({ borderColor: theme.palette.background.coveBlack02 })} />
 )
 
 export default Dashboard
