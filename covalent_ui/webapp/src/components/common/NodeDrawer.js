@@ -70,7 +70,7 @@ const NodeDrawer = ({ node, graph }) => {
           boxSizing: 'border-box',
           border: 'none',
           p: 3,
-          bgcolor: alpha(theme.palette.background.default, 0.3),
+          bgcolor: alpha(theme.palette.background.default),
           backdropFilter: 'blur(16px)',
         },
       })}
@@ -124,7 +124,7 @@ const NodeDrawer = ({ node, graph }) => {
           {node.doc && (
             <>
               <Heading>Description</Heading>
-              <Typography fontSize="body2.fontSize">{node.doc}</Typography>
+              <Typography fontSize="body2.fontSize" color ='text.tertiary'>{node.doc}</Typography>
             </>
           )}
 
@@ -132,7 +132,7 @@ const NodeDrawer = ({ node, graph }) => {
           {hasStarted && (
             <>
               <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-              <Typography fontSize="body2.fontSize">
+              <Typography fontSize="body2.fontSize" color = 'text.tertiary'>
                 {formatDate(node.start_time)}
                 {hasEnded && ` - ${formatDate(node.end_time)}`}
               </Typography>
@@ -144,7 +144,10 @@ const NodeDrawer = ({ node, graph }) => {
             <>
               <Heading>Runtime</Heading>
               <Runtime
-                sx={{ fontSize: 'body2.fontSize' }}
+                sx={(theme) =>({
+                  color:theme.palette.text.tertiary,
+                  fontSize: 'body2.fontSize'
+                })}
                 startTime={node.start_time}
                 endTime={node.end_time}
               />
@@ -152,26 +155,26 @@ const NodeDrawer = ({ node, graph }) => {
           )}
 
           {/* Input */}
-          <InputSection node={node} graph={graph} />
+          <InputSection node={node} graph={graph} sx={(theme) =>({ bgcolor: theme.palette.background.darkblackbg })}/>
 
           {/* Result */}
           {node.status === 'COMPLETED' && (
             <>
               <Heading>Result</Heading>
-              <Paper elevation={0}>
+              <Paper elevation={0} sx={(theme) =>({ bgcolor: theme.palette.background.darkblackbg })}>
                 <SyntaxHighlighter language="python" src={node.output} />
               </Paper>
             </>
           )}
 
           {/* Executor */}
-          <ExecutorSection metadata={_.get(node, 'metadata')} />
+          <ExecutorSection metadata={_.get(node, 'metadata')}  sx={(theme) =>({ bgcolor: theme.palette.background.darkblackbg })}/>
 
           <Divider sx={{ my: 2 }} />
 
           {/* Source */}
           <Heading />
-          <Paper elevation={0}>
+          <Paper elevation={0} sx={(theme) =>({ bgcolor: theme.palette.background.darkblackbg })}>
             <SyntaxHighlighter src={src} />
           </Paper>
         </>

@@ -23,12 +23,11 @@
 import _ from 'lodash'
 import { isValid, format, parseISO } from 'date-fns'
 import theme from './theme'
-import { CircularProgress } from '@mui/material'
-import {
-  CancelOutlined,
-  CheckCircleOutline,
-  WarningAmber,
-} from '@mui/icons-material'
+import { SvgIcon} from '@mui/material'
+import { ReactComponent as ActivitySvg } from '../assets/status/activity.svg'
+import { ReactComponent as CheckSvg } from '../assets/status/checkmark.svg'
+import { ReactComponent as ErrorSvg } from '../assets/status/error.svg'
+import { ReactComponent as CancelSvg } from '../assets/status/stop.svg'
 
 export const formatDate = (date) => {
   if (_.isString(date)) {
@@ -57,7 +56,8 @@ export const displayStatus = (status) => _.startCase(_.lowerCase(status))
 
 export const statusColor = (status) => {
   return {
-    RUNNING: theme.palette.primary.main,
+    RUNNING: theme.palette.running.main,
+    NEW_OBJECT: theme.palette.running.main,
     COMPLETED: theme.palette.success.main,
     FAILED: theme.palette.error.main,
   }[status]
@@ -67,9 +67,9 @@ export const statusLabel = (status) => {
   return (
     {
       RUNNING: 'Running',
+      NEW_OBJECT: 'Running',
       COMPLETED: 'Completed',
       FAILED: 'Failed',
-      NEW_OBJECT: 'Pending',
     }[status] || status
   )
 }
@@ -77,13 +77,29 @@ export const statusLabel = (status) => {
 export const statusIcon = (status) => {
   switch (status) {
     case 'RUNNING':
-      return <CircularProgress size="1rem" />
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <ActivitySvg />
+        </SvgIcon>
+      )
     case 'COMPLETED':
-      return <CheckCircleOutline />
+      return (
+        <SvgIcon sx={{ fontSize: '16', mr: 0.5 }}>
+          <CheckSvg />
+        </SvgIcon>
+      )
     case 'FAILED':
-      return <WarningAmber />
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <ErrorSvg />
+        </SvgIcon>
+      )
     case 'CANCELLED':
-      return <CancelOutlined />
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <CancelSvg />
+        </SvgIcon>
+      )
     default:
       return null
   }

@@ -21,7 +21,6 @@
  */
 
 import { Drawer } from '@mui/material'
-import { alpha } from '@mui/material/styles'
 // import { useDispatch, useSelector } from 'react-redux'
 
 // import { toggleLatticeDrawer } from '../../redux/commonSlice'
@@ -33,8 +32,9 @@ const drawerPaperStyles = (theme) => ({
   width: latticeDrawerWidth,
   boxSizing: 'border-box',
   border: 'none',
-  bgcolor: alpha(theme.palette.background.default, 0.3),
-  backdropFilter: 'blur(16px)',
+  backgroundColor: theme.palette.background.default,
+  boxShadow: '0px 16px 50px rgba(0, 0, 0, 0.9)',
+  backdropFilter: 'blur(8px)',
   '&:not(:hover)::-webkit-scrollbar-thumb': {
     backgroundColor: 'inherit',
   },

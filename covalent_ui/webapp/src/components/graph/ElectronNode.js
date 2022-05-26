@@ -30,15 +30,16 @@ import {
 import { styled } from '@mui/material/styles'
 import { Handle } from 'react-flow-renderer'
 
-import { ReactComponent as AtomSvg } from '../../assets/atom.svg'
+import { ReactComponent as AtomSvg } from '../../assets/status/activity.svg'
+import { ReactComponent as CheckSvg } from '../../assets/status/checkmark.svg'
+import { ReactComponent as ErrorSvg } from '../../assets/status/error.svg'
 import { statusColor } from '../../utils/misc'
-import { Check, WarningAmber } from '@mui/icons-material'
 
 export const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
 
 const ElectronTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
-))(({ theme }) => ({
+))(() => ({
   [`& .${tooltipClasses.tooltip}`]: {
     // customize tooltip
   },
@@ -82,23 +83,31 @@ const ElectronNode = ({
           switch (data.status) {
             case 'NEW_OBJECT':
               return (
-                <SvgIcon sx={{ mr: 1, fontSize: 12, fill: color }}>
+                <SvgIcon sx={{ mt: 1,mr: 0.5,fontSize: 14, fill: color }}>
                   <AtomSvg />
                 </SvgIcon>
               )
             case 'RUNNING':
               return (
                 <SvgIcon
-                  sx={{ mr: 1, fontSize: 12, fill: color }}
+                  sx={{ mt: 1,mr: 0.5,fontSize: 14, fill: color }}
                   className="spin-electron"
                 >
                   <AtomSvg />
                 </SvgIcon>
               )
             case 'COMPLETED':
-              return <Check sx={{ mr: 1, fontSize: 12, fill: color }} />
+              return (
+                <SvgIcon sx={{ mr: 0.5, fontSize: 12, fill: color }}>
+                  <CheckSvg />
+                </SvgIcon>
+              )
             case 'FAILED':
-              return <WarningAmber sx={{ mr: 1, fontSize: 12, color: color }} />
+              return (
+                <SvgIcon sx={{ mr: 0.5, fontSize: 12, fill: color }}>
+                  <ErrorSvg />
+                </SvgIcon>
+              )
             default:
               return null
           }
