@@ -7,9 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Tests
+## Tests
 
-- Moved the `dask_executor_test.py` functional test to the dask executor plugin repo.
+- Moved the `dask_executor_test.py` functional test to the dask executor plugin repo
+
+## [0.106.0] - 2022-05-26
+
+### Changed
+- Visual theme for Webapp GUI changed in accordance to new theme
+- Fonts, colors, icons have been updated
+
+## [0.105.0] - 2022-05-25
+
+### Added
+
+- Add a pre-commit hook for `detect-secrets`.
+- Updated the actions in accordance with the migration done in the previous version.
 
 ## [0.104.0] - 2022-05-23
 
