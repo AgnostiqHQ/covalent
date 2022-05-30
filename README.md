@@ -39,7 +39,7 @@ Read more in the official [documentation](https://covalent.readthedocs.io/en/lat
 
 <div align="center">
 
-![covalent user interface](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/covalent_ui.png)
+![covalent user interface](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/workflow_demo_image.png)
 
 </div>
 
