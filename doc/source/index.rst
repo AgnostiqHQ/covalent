@@ -14,7 +14,7 @@ COVALENT DOCUMENTATION
 
 |
 
-.. image:: _static/covalent_ui.png
+.. image:: _static/covalent_ui_rtd.png
    :align: center
    :scale: 30
 |
