@@ -9,14 +9,14 @@ These are practical step-by-step guides to help you achieve a specific goal. The
 Orchestration
 *******************
 - :doc:`How to construct an electron <./orchestration/construct_electron>`
-- :doc:`How to construct a lepton <./orchestration/construct_lepton>`
 - :doc:`How to construct a lattice <./orchestration/construct_lattice>`
 - :doc:`How to add an electron to lattice <./orchestration/add_electron_to_lattice>`
 - :doc:`How to visualize the lattice <./orchestration/visualize_lattice>`
 - :doc:`How to add constraints to lattices <./orchestration/add_constraints_to_lattice>`
 - :doc:`How to construct leptons using C code <./orchestration/construct_c_task>`
-- :doc:`How to construct leptons using Bash code or commands <./orchestration/construct_bash_task>`
-
+..
+  - :doc:`How to construct a lepton <./orchestration/construct_lepton>`
+  - :doc:`How to construct leptons using Bash code or commands <./orchestration/construct_bash_task>`
 
 Execution
 *******************
@@ -30,7 +30,8 @@ Execution
 - :doc:`How to synchronize lattices <./execution/synchronize_lattice>`
 - :doc:`How to choose an executor for a subtask <./execution/choosing_executors>`
 - :doc:`How to customize the executor <./execution/creating_custom_executors>`
-- :doc:`How to cancel a running workflow <./execution/cancel_dispatch>`
+..
+  - :doc:`How to cancel a running workflow <./execution/cancel_dispatch>`
 
 Status
 *******************

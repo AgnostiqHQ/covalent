@@ -30,7 +30,8 @@ Users interact with Covalent in four main ways:
 
 * :ref:`Results collection<Workflow result collection>`
 
-Under the hood Covalent brings up a set of :doc:`microservices <../api/microservices>` to orchestrate workflows.
+..
+  Under the hood Covalent brings up a set of :doc:`microservices <../api/microservices>` to orchestrate workflows.
 
 .. _Workflow construction:
 
@@ -296,25 +297,6 @@ Conceptually, as shown in the figure below, executing a sublattice adds the cons
    :align: center
 
 .. note:: :code:`ct.electron(lattice)`, which creates a sublattice, should not be confused with :code:`ct.lattice(electron)`, which is a single task workflow.
-
-Note that the user should not construct a sublattice using the following pattern:
-
-.. code-block:: python
-
-    @ct.electron
-    @ct.lattice
-    def workflow(**params):
-        ...
-
-The following pattern is how a sublattice should be constructed:
-
-.. code-block:: python
-
-    @ct.lattice
-    def workflow(**params):
-        ...
-
-    workflow_sublattice = ct.electron(workflow)
 
 .. _Transport graph:
 
