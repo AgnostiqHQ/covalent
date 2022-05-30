@@ -19,6 +19,10 @@ The easiest way to install Covalent is using the PyPI package manager:
 
    pip install cova
 
+.. tip::
+
+   Also install :code:`covalent-dask-plugin` to use dask executors when running workflows since that is the recommended executor.
+
 Conda Install
 -------------
 
@@ -114,6 +118,28 @@ Hello, Covalent!
 ################
 
 Let's look at a simple example to get started with Covalent. Before starting, ensure you have installed Covalent, verified the installation, and started the Covalent server. Next, open a Jupyter notebook or Python console and create a simple workflow:
+
+.. tip::
+   You can start a dask cluster and use it with covalent, given you have the `covalent-dask-plugin` installed, as follows:
+
+   .. code:: python
+      from covalent.executor import DaskExecutor
+      from dask.distributed import LocalCluster
+
+      cluster = LocalCluster(processes=True)
+
+      dask_executor = DaskExecutor(scheduler_address=cluster.scheduler_address)
+
+   and then assign this executor to an electron or a lattice (which each electron inside it will inherit),
+
+   .. code:: python
+      @ct.electron(executor=dask_executor)
+      def task():
+         ...
+
+      @ct.lattice(executor=dask_executor)
+      def workflow():
+         ...
 
 .. code:: python
 
