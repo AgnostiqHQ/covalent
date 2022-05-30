@@ -7,7 +7,6 @@
 [![version](https://github-covalent-badges.s3.amazonaws.com/badges/version.svg?maxAge=3600)](https://github.com/AgnostiqHQ/covalent)
 [![python](https://img.shields.io/pypi/pyversions/cova)](https://github.com/AgnostiqHQ/covalent)
 [![tests](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml/badge.svg)](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml)
-[![publish](https://github.com/AgnostiqHQ/covalent/actions/workflows/publish_master.yml/badge.svg)](https://github.com/AgnostiqHQ/covalent/actions/workflows/publish_master.yml)
 [![docs](https://readthedocs.org/projects/covalent/badge/?version=latest)](https://covalent.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/AgnostiqHQ/covalent/branch/master/graph/badge.svg?token=YGHCB3DE4P)](https://codecov.io/gh/AgnostiqHQ/covalent)
 [![agpl](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.en.html)
@@ -24,7 +23,7 @@ Covalent is a Pythonic workflow tool used to execute HPC and quantum tasks in he
 - run code in heterogenous compute environments, including in hybrid-cloud and hybrid-quantum configurations
 - understand where time and money is spent across a project
 
-Covalent may be deployed locally or as a set of containers. Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers and emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent.
+Covalent may be deployed locally or on a remote server. Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers and emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent.
 
 Read more in the official [documentation](https://covalent.readthedocs.io/en/latest/).
 
@@ -35,13 +34,12 @@ Read more in the official [documentation](https://covalent.readthedocs.io/en/lat
 - **Monitor with UI**: Covalent provides an intuitive and aesthetically beautiful browser-based user interface to monitor and manage your workflows.
 - **Abstracted dataflow**: No need to worry about the details of the underlying data structures. Covalent takes care of data dependencies in the background while you concentrate on understanding the big picture.
 - **Result management**: Covalent manages the results of your workflows. Whenever you need to modify parts of your workflow, from inputs to components, Covalent stores and saves the run of every experiment in a reproducible format.
-- **Containerized services**: Covalent's microservices can be run as containers locally, on the cloud, on a supercomputer, or any hybrid combination of these.
 - **Little-to-no overhead**: Covalent is designed to be as lightweight as possible and is optimized for the most common use cases. Covalent's overhead is less than 0.1% of the total runtime for typical high compute applications and often has a constant overhead of ~ 10-100μs -- and this is constantly being optimized.
 - **Interactive**: Unlike other workflow tools, Covalent is interactive. You can view, modify, and re-submit workflows directly within a Jupyter notebook.
 
 <div align="center">
 
-![covalent user interface](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/covalent_ui.png)
+![covalent user interface](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/workflow_demo_image.png)
 
 </div>
 
@@ -55,14 +53,7 @@ Begin by starting the Covalent servers:
 covalent start
 ```
 
-As an alternative, Covalent can be run using Docker:
-
-```console
-# Run the containers locally using docker after cloning this repository
-docker-compose -f docker-compose.yml up -d
-```
-
-Navigate to the user interface at `http://localhost:8000` to monitor workflow execution progress.
+Navigate to the user interface at `http://localhost:48008` to monitor workflow execution progress.
 
 In your Python code, it's as simple as adding a few decorators!  Consider the following example which uses a support vector machine (SVM) to classify types of iris flowers.
 
@@ -197,7 +188,7 @@ For more examples, please refer to the [Covalent tutorials](https://covalent.rea
 
 ## 📦 Installation
 
-Covalent is developed using Python versions 3.8 and 3.9 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager:
+Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager:
 
 ```console
 pip install cova
@@ -207,15 +198,13 @@ Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting
 
 ## 🔧 How it Works
 
-Covalent uses a containerized microservice architecture consisting of eight core services which consume and process workflows. Workflows are submitted to a queue service, which forwards them to a [NATS](https://nats.io/) message queue. A consumer service processes workflows one-by-one (or in parallel, on some systems) by forwarding them to a dispatcher service. The dispatcher analyzes task and data dependencies and submits execution requests to a runner service, which runs tasks in parallel, either locally or on a remote device, according to hardware capabilities and task requirements. Results are managed by the results and data services, and a user interface service provides an interactive dashboard where users can monitor and organize experiments.
+Users compose workflows using the Covalent SDK and submit them to the Covalent server. Upon receiving a workflow, the server analyzes the dependencies between tasks and dispatches each task to its specified execution backend. Independent tasks may be executed concurrently. The Covalent UI displays the execution progress of each workflow at the level of individual tasks.
 
 <div align="center">
 
-![covalent architecture](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/Covalent_Local_Microservices.png)
+![covalent architecture](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/cova_archi.png)
 
 </div>
-
-To learn more about how Covalent's microservices communicate with each other, check out the Covalent API spec on [SwaggerHub](https://app.swaggerhub.com/search?owner=agnostiq).
 
 ## 📚 Documentation
 
@@ -227,12 +216,16 @@ To contribute to Covalent, refer to the [Contribution Guidelines](https://github
 
 ## 📝 Release Notes
 
+### Release 0.106.0 (latest)
+
+The latest release of Covalent OS is now out and available for community use. It comes with new additions, including support for local execution of workflows with a [Dask](https://github.com/AgnostiqHQ/covalent-dask-plugin) plugin, remote execution of workflows with [Slurm](https://github.com/AgnostiqHQ/covalent-slurm-plugin) and [SSH](https://github.com/AgnostiqHQ/covalent-ssh-plugin) plugins, and new updates to the user interface. A summary of the feature releases is provided below:
+
+- Support for workflow execution on a local Dask cluster is now available in Covalent
+- Support for workflow execution on remote machines with SSH access and Slurm
+- The UI now includes a revamp in the color, theme, workflow graph and other visual elements
+
 Release notes are available in the [Changelog](https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md).
 
-## 💥 Known Issues
-
-- Some users experience instabilities with the [quantum spacetime classification workflow](https://github.com/AgnostiqHQ/covalent/blob/master/doc/source/tutorials/quantum_gravity/spacetime_classification.ipynb) tutorial.
-- Workflow cancellation can sometimes return an incorrect 500 response.
 
 ## ⚓ Citation
 
