@@ -56,6 +56,14 @@ _DEFAULT_CONFIG = {
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
     },
+    "dask": {
+        "scheduler_address": os.environ.get("scheduler.address"),
+        "scheduler_port": os.environ.get("scheduler.port"),
+        "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
+                     + "/covalent",
+        "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
+                   + "/covalent",
+    },
     "user_interface": {
         "address": "0.0.0.0",
         "port": 48008,
