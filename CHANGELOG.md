@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated README.md.
 
+## [0.106.0] - 2022-05-26
+
+### Changed
+- Visual theme for Webapp GUI changed in accordance to new theme
+- Fonts, colors, icons have been updated
+
 ## [0.105.0] - 2022-05-25
 
 ### Added
