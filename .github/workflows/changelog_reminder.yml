@@ -35,6 +35,6 @@ jobs:
         changelog_regex: 'CHANGELOG.md'
         customPrMessage: |
           Hello. You may have forgotten to update the changelog!
-          Please edit [`CHANGELOG.md`](/AgnostiqHQ/covalent/blob/master/CHANGELOG.md) with a one-to-two sentence description of the change. You may include a small working example for new features.
+          Please edit [`CHANGELOG.md`](/AgnostiqHQ/covalent/blob/master/CHANGELOG.md) with a one-to-two sentence description of the change in the UNRELEASED section. You may include a small working example for new features.
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
