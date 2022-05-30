@@ -5,63 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.33.2] - 2022-05-20
+## [UNRELEASED]
+
+### Docs
+
+- Updated README.md.
+- Updated RTDs for tutorials and how-to guides.
+
+## [0.106.0] - 2022-05-26
 
 ### Changed
 
-- Updated RTDs for tutorials and how-to guides
+- Visual theme for Webapp GUI changed in accordance to new theme
+- Fonts, colors, icons have been updated
 
-## [0.33.1] - 2022-05-16
+## [0.105.0] - 2022-05-25
+
+### Added
+
+- Add a pre-commit hook for `detect-secrets`.
+- Updated the actions in accordance with the migration done in the previous version.
+
+## [0.104.0] - 2022-05-23
 
 ### Changed
 
+- Services have been moved to a different codebase. This repo is now hosting the Covalent SDK, local dispatcher backend, Covalent web GUI, and documentation. Version is bumped to `0.104.0` in order to avoid conflicts.
 - Update tests to match the current dispatcher api
 - Skip testing dask executor until dask executor plugin is made public
-
-## [0.33.0] - 2022-05-12
+- Using 2 thread pools to manage multiple workflows better and the other one for executing electrons in parallel.
 
 ### Fixed
 
 - Add psutil and PyYAML to requirements.txt
-
-### Changed
-
-- Using 2 thread pools to manage multiple workflows better and the other one for executing electrons in parallel.
+- Passing the same Electron to multiple inputs of an Electron now works. UI fix pending.
+- Dask from `requirements.txt`.
 
 ### Removed
 
 - Asyncio usage for electron level concurrency.
 - References to dask
 
-## [0.32.7] - 2022-05-11
-
 ### Added
 
 - Functional test added for dask executor with the cluster running locally.
-
-### Removed
-
-- Dask from `requirements.txt`.
-
-## [0.32.6] -- 2022-05-06
-
-### Added
-
 - Scalability tests for different workflows and workflow sizes under `tests/stress_tests/scripts`
-
-## [0.32.5] - 2022-05-05
-
-### Added
-
 - Add sample performance testing workflows under `tests/stress_tests`
 - Add pipelines to continuously run the tutorial notebooks
 - Create notebook with tasks from RTD
-
-## [0.32.4] - 2022-04-27
-
-### Fixed
-
-- Passing the same Electron to multiple inputs of an Electron now works. UI fix pending.
 
 ## [0.32.3] - 2022-03-16
 

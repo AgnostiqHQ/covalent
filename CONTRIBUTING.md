@@ -20,7 +20,9 @@ conda activate covalent-dev
 
 Install Covalent's core requirements as well as the developer requirements:
 ```shell
-conda install setuptools pip nodejs yarn
+conda config --add channels conda-forge
+conda config --set channel_priority strict
+conda install setuptools pip nodejs yarn requests
 python setup.py webapp
 pip install -e .
 pip install -r tests/requirements.txt
@@ -31,6 +33,13 @@ Start the Covalent servers in developer mode:
 ```shell
 covalent start -d
 ```
+
+:bulb:*Note*
+We have seen `OSError: protocol not found` when running Covalent in development mode for the first time on some Debian based systems. Running this command may fix the problem.
+```
+apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
+```
+See more information on [Stackoverflow](https://stackoverflow.com/questions/65745342/oserror-protocol-not-found).
 
 Check the [writing tests](#writing-tests) section for more details on installing test specific packages. Finally, run the tests to verify your installation:
 ```shell
@@ -98,10 +107,11 @@ Contributing to the Covalent codebase should be an easy process, but there are a
 -   Assume the user does not have access to any source files.
 -   Variables must be restricted to the scope in which they are used; avoid use of global variables except when absolutely necessary.
 -   Limit all lines to 99 characters.  Use a four-character indent for Python files; bash files use a two-character indent, and C uses a tab indent. These will be adjusted as needed by the pre-commit hooks.
+-   A pre-commit hook, `detect-secrets` would run for detecting secrets based on `.secrets.baseline` file. To create a new `.secrets.baseline` file run `detect-secrets scan` command.  Refer to file `.pre-commit-config.yaml` file for the additional filters used and [detect-secrets repo](https://github.com/Yelp/detect-secrets#quickstart) for detailed documentation.
 -   Input parameters to scripts should be passed using flags, rather than positional arguments. This may be implemented using the `getopt` libraries.  Bash scripts may accept parameters passed with or without flags.
 -   Functions should perform a single task.  Generally functions should not contain more than 30 lines of code, not including line breaks, comments, and whitespace.
 -   Use the `pylint` tool to improve the quality of your code. Contributions which decrease the codebase's code quality will be rejected.
--   All changes must be documented in the [changelog](./CHANGELOG.md) as a new version.
+-   All changes must be documented in the [changelog](./CHANGELOG.md).
 -   New features or changes to UX must include a usage description in the form of a [how-to guide](https://covalent.readthedocs.io/en/latest/how_to/index.html).
 -   All software source files should contain the copyright boilerplate displayed below, which includes a docstring describing the purpose of the file.
 

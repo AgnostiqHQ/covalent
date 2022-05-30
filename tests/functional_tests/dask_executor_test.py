@@ -24,7 +24,6 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager import Result
-from covalent.executor import DaskExecutor
 
 
 def start_dask_cluster():
@@ -38,6 +37,8 @@ def start_dask_cluster():
 
 @pytest.mark.skip(reason="No way of installing Dask executor plugin yet")
 def test_dask_executor():
+    from covalent.executor import DaskExecutor
+
     scheduler_address = start_dask_cluster()
     dask_executor = DaskExecutor(scheduler_address=scheduler_address)
 

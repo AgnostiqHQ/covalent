@@ -30,6 +30,7 @@ Users interact with Covalent in four main ways:
 
 * :ref:`Results collection<Workflow result collection>`
 
+Under the hood Covalent brings up a set of :doc:`microservices <../api/microservices>` to orchestrate workflows.
 
 .. _Workflow construction:
 
@@ -307,7 +308,7 @@ After the workflow has been defined, and before it can be executed, one of the f
 
 .. image:: ./images/transport_graph.png
     :align: center
-    :scale: 60 %
+    :scale: 45 %
 
 .. _Workflow execution:
 
@@ -393,7 +394,7 @@ The progress of the electron execution can be tracked using the Covalent UI.
 
 .. image:: ./images/status_check.png
     :align: center
-    :scale: 65 %
+    :scale: 40 %
 
 
 The user can view the dependencies among the various electrons in addition to the execution status (running, completed, not started, failed, or cancelled). Additional information on how long each task has been running for, or the total execution time is also shown in the Covalent UI.
@@ -417,7 +418,7 @@ The Covalent result manager is responsible for storing, updating, and retrieving
 .. code-block:: python
 
     dispatch_id = ct.dispatch(workflow)(**params)
-    result = ct.get_result(dispatch_id=dispatch_id, wait=False, results_dir='./results')
+    result = ct.get_result(dispatch_id=dispatch_id, wait=False)
 
 The result manager allows us to retrieve the result object even if the computations have not completed by setting the :code:`wait` parameter to :code:`False` as shown above.
 
