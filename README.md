@@ -216,20 +216,15 @@ To contribute to Covalent, refer to the [Contribution Guidelines](https://github
 
 ## 📝 Release Notes
 
-### Release 0.106.0 (current release)
+### Release 0.106.0 (latest)
 
-The latest release of Covalent OS is now out and available for community use. It comes with new additions, including support for local execution of workflows with a [Dask](https://docs.dask.org/en/latest/) plugin, remote execution of workflows with Simple Linux Utility for Resource Management ([Slurm](https://slurm.schedmd.com/documentation.html)) and SSH plugins, and new updates to the user interface. A summary of the feature releases is provided below:
+The latest release of Covalent OS is now out and available for community use. It comes with new additions, including support for local execution of workflows with a [Dask](https://github.com/AgnostiqHQ/covalent-dask-plugin) plugin, remote execution of workflows with [Slurm](https://github.com/AgnostiqHQ/covalent-slurm-plugin) and [SSH](https://github.com/AgnostiqHQ/covalent-ssh-plugin) plugins, and new updates to the user interface. A summary of the feature releases is provided below:
 
 - Support for workflow execution on a local Dask cluster is now available in Covalent
 - Support for workflow execution on remote machines with SSH access and Slurm
 - The UI now includes a revamp in the color, theme, workflow graph and other visual elements
 
 Release notes are available in the [Changelog](https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md).
-
-## 💥 Known Issues
-- Performance can degrade when running workflows with large numbers of electrons. We recommend keeping the number of electrons under 50 for now. The underlying inefficiencies will be addressed in a future release.
-- In rare cases, the Covalent server can return HTTP 500 Internal Server Error when submitting a workflow, even while other workflows can be submitted. The underlying causes are being investigated. A temporary workaround is to restart the server (but wait until ongoing workflows are completed).
-- `covalent status` sometimes incorrectly reports that the Covalent server is running. The underlying bug has been identified and will be patched in a future release.
 
 
 ## ⚓ Citation
