@@ -135,17 +135,30 @@ Let's look at a simple example to get started with Covalent. Before starting, en
 
       dask_executor = DaskExecutor(scheduler_address=cluster.scheduler_address)
 
-   and then assign this executor to an electron or a lattice (which each electron inside it will inherit),
+   and then assign this executor to the lattice (which each electron inside it will inherit),
 
    .. code:: python
 
-      @ct.electron(executor=dask_executor)
-      def task():
-         ...
+      import covalent as ct
 
+      # Construct tasks as "electrons"
+      @ct.electron
+      def join_words(a, b):
+         return ", ".join([a, b])
+
+      @ct.electron
+      def excitement(a):
+         return f"{a}!"
+
+      # Construct a workflow of tasks
       @ct.lattice(executor=dask_executor)
-      def workflow():
-         ...
+      def simple_workflow(a, b):
+         phrase = join_words(a, b)
+         return excitement(phrase)
+
+      # Dispatch the workflow
+      dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
+
 
 .. code:: python
 
