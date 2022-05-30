@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Removed references to microservices in RTD
+- Updated README.md.
 
 ## [0.106.0] - 2022-05-26
 
