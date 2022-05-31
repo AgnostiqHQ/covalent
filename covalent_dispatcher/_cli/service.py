@@ -224,7 +224,7 @@ def _graceful_start_dask(
 
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
-        addr = get_config("scheduler.address.address")
+        addr = get_config("scheduler.address")
         port = get_config("scheduler.port")
         click.echo(f"Dask scheduler is already running at {addr}.")
         return addr, port
@@ -411,7 +411,7 @@ def status() -> None:
         click.echo("Covalent server is stopped.")
 
     if _read_pid(DASK_PIDFILE) != -1:
-        sch_addr = get_config("scheduler.address.address")
+        sch_addr = get_config("scheduler.address")
         click.echo(f"Dask scheduler is running at {sch_addr}.")
     else:
         _rm_pid_file(DASK_PIDFILE)
