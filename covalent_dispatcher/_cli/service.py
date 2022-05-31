@@ -29,10 +29,10 @@ from typing import Optional, Tuple
 
 import click
 import psutil
+from dask.distributed import LocalCluster
 
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
-from dask.distributed import LocalCluster
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
@@ -129,7 +129,7 @@ def _next_available_port(requested_port: int) -> int:
 def _create_dask_cluster():
     cluster = LocalCluster()
     addr = cluster.scheduler_address
-    port = int(addr.split(':')[-1])
+    port = int(addr.split(":")[-1])
     return addr, port
 
 
@@ -325,7 +325,6 @@ def _graceful_shutdown_dask(dask_pidfile: str) -> None:
     _rm_pid_file(dask_pidfile)
 
 
-
 @click.command()
 @click.option(
     "-p",
@@ -350,7 +349,7 @@ def start(ctx, port: int, develop: bool) -> None:
             "dispatcher.address": "0.0.0.0",
             "dispatcher.port": port,
             "scheduler.address": sched_addr,
-            "scheduler.port": sched_port
+            "scheduler.port": sched_port,
         }
     )
 
