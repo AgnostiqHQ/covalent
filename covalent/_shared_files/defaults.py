@@ -60,9 +60,9 @@ _DEFAULT_CONFIG = {
         "scheduler_address": os.environ.get("scheduler.address"),
         "scheduler_port": os.environ.get("scheduler.port"),
         "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
-                     + "/covalent",
+        + "/covalent",
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
-                   + "/covalent",
+        + "/covalent",
     },
     "user_interface": {
         "address": "0.0.0.0",
