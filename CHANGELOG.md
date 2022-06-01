@@ -5,10 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.106.0] - 2022-06-01
-
-### Changed
-- Changed `ct.eletron` to `ct.lattice(executor=dask_executor)` in MNIST classifier tutorial
 
 ## [UNRELEASED]
 
@@ -16,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed references to microservices in RTD
 - Updated README.md.
+
+## [0.106.0] - 2022-06-01
+
+### Changed
+- Changed `ct.eletron` to `ct.lattice(executor=dask_executor)` in MNIST classifier tutorial
+
 
 ## [0.106.0] - 2022-05-26
 
