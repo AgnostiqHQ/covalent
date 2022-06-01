@@ -57,8 +57,6 @@ _DEFAULT_CONFIG = {
         + "/covalent",
     },
     "dask": {
-        "scheduler_address": os.environ.get("scheduler.address"),
-        "scheduler_port": os.environ.get("scheduler.port"),
         "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
@@ -75,7 +73,6 @@ _DEFAULT_CONFIG = {
 }
 
 # Metadata which may influence execution behavior
-# _DEFAULT_CONSTRAINT_VALUES = {"executor": "local"}
 _DEFAULT_CONSTRAINT_VALUES = {"executor": "dask"}
 # Going forward we may only want to return the executor field of DEFAULT_CONSTRAINT_VALUES
 # The rest of those parameters will now be in this dictionary
