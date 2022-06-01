@@ -126,13 +126,6 @@ def _next_available_port(requested_port: int) -> int:
     return assigned_port
 
 
-def _create_dask_cluster():
-    cluster = LocalCluster()
-    addr = cluster.scheduler_address
-    port = int(addr.split(":")[-1])
-    return addr, port
-
-
 def _is_server_running() -> bool:
     """Check status of the Covalent server.
 
@@ -211,7 +204,7 @@ def _graceful_start_dask(
     Gracefully start a Dask Cluster.
 
     Args:
-        server_root: Directory where app.py is located.
+        server_root: Directory where app_dask.py is located.
         pidfile: Process ID file for the dask scheduler.
         logfile: Log file for the dask scheduler.
         port: Port requested to be used by the scheduler.
@@ -224,27 +217,21 @@ def _graceful_start_dask(
 
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
-        addr = get_config("scheduler.address")
-        port = get_config("scheduler.port")
+        addr = get_config("dask.scheduler_address")
+        port = get_config("dask.scheduler_port")
         click.echo(f"Dask scheduler is already running at {addr}.")
         return addr, port
 
     _rm_pid_file(pidfile)
-
     pypath = f"PYTHONPATH={UI_SRVDIR}/../tests:$PYTHONPATH" if develop else ""
-    dev_mode_flag = "--develop" if develop else ""
-    addr = _create_dask_cluster()[0]
-    port = _create_dask_cluster()[1]
-    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
-
+    launch_str = f"{pypath} python app_dask.py >> {logfile} 2>&1"
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
 
     with open(pidfile, "w") as PIDFILE:
         PIDFILE.write(str(pid))
 
-    click.echo(f"Dask scheduler has started at {addr}")
-    return addr, port
+    click.echo(f"Dask scheduler has started at {get_config('dask.scheduler_address')}")
 
 
 def _terminate_child_processes(pid: int) -> None:
@@ -341,15 +328,15 @@ def start(ctx, port: int, develop: bool) -> None:
     """
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
-    sched_addr, sched_port = _graceful_start_dask(UI_SRVDIR, DASK_PIDFILE, DASK_LOGFILE, develop)
+    _graceful_start_dask(UI_SRVDIR, DASK_PIDFILE, DASK_LOGFILE, develop)
     set_config(
         {
             "user_interface.address": "0.0.0.0",
             "user_interface.port": port,
             "dispatcher.address": "0.0.0.0",
             "dispatcher.port": port,
-            "scheduler.address": sched_addr,
-            "scheduler.port": sched_port,
+            "dask.scheduler_address": get_config("dask.scheduler_address"),
+            "dask.schedule_port": get_config("dask.scheduler_port"),
         }
     )
 
@@ -411,7 +398,7 @@ def status() -> None:
         click.echo("Covalent server is stopped.")
 
     if _read_pid(DASK_PIDFILE) != -1:
-        sch_addr = get_config("scheduler.address")
+        sch_addr = get_config("dask.scheduler_address")
         click.echo(f"Dask scheduler is running at {sch_addr}.")
     else:
         _rm_pid_file(DASK_PIDFILE)
