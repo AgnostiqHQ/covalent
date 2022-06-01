@@ -22,9 +22,11 @@
 Defines the core functionality of the dispatcher
 """
 
+import asyncio
 import traceback
 from concurrent.futures import Future, ThreadPoolExecutor, wait
 from datetime import datetime, timezone
+from functools import partial
 from typing import Any, Dict, List
 
 import cloudpickle as pickle
@@ -168,7 +170,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         return result
 
 
-def _run_task(
+async def _run_task(
     node_id: int,
     dispatch_id: str,
     results_dir: str,
@@ -176,6 +178,7 @@ def _run_task(
     serialized_callable: Any,
     selected_executor: Any,
     node_name: str,
+    thread_pool: ThreadPoolExecutor = None,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -219,14 +222,31 @@ def _run_task(
             )
 
         else:
-            output, stdout, stderr = executor.execute(
-                function=serialized_callable,
-                args=inputs["args"],
-                kwargs=inputs["kwargs"],
-                dispatch_id=dispatch_id,
-                results_dir=results_dir,
-                node_id=node_id,
-            )
+            if asyncio.iscoroutinefunction(executor.execute):
+                output, stdout, stderr = await executor.execute(
+                    function=serialized_callable,
+                    args=inputs["args"],
+                    kwargs=inputs["kwargs"],
+                    dispatch_id=dispatch_id,
+                    results_dir=results_dir,
+                    node_id=node_id,
+                )
+
+            else:
+                loop = asyncio.get_running_loop()
+                result = loop.run_in_executor(
+                    thread_pool,
+                    partial(
+                        executor.execute,
+                        function=serialized_callable,
+                        args=inputs["args"],
+                        kwargs=inputs["kwargs"],
+                        dispatch_id=dispatch_id,
+                        results_dir=results_dir,
+                        node_id=node_id,
+                    ),
+                )
+                output, stdout, stderr = await result
 
             end_time = datetime.now(timezone.utc)
 
@@ -252,7 +272,7 @@ def _run_task(
     return node_result
 
 
-def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
+async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -337,24 +357,36 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             )
 
             # Add the task generated for the node to the list of tasks
-            future = thread_pool.submit(
-                _run_task,
-                node_id=node_id,
-                dispatch_id=result_object.dispatch_id,
-                results_dir=result_object.results_dir,
-                serialized_callable=serialized_callable,
-                selected_executor=pickle.dumps(selected_executor),
-                node_name=node_name,
-                inputs=pickle.dumps(task_input),
+            # future = thread_pool.submit(
+            #     _run_task,
+            #     node_id=node_id,
+            #     dispatch_id=result_object.dispatch_id,
+            #     results_dir=result_object.results_dir,
+            #     serialized_callable=serialized_callable,
+            #     selected_executor=pickle.dumps(selected_executor),
+            #     node_name=node_name,
+            #     inputs=pickle.dumps(task_input),
+            # )
+            future = asyncio.create_task(
+                _run_task(
+                    node_id=node_id,
+                    dispatch_id=result_object.dispatch_id,
+                    results_dir=result_object.results_dir,
+                    serialized_callable=serialized_callable,
+                    selected_executor=pickle.dumps(selected_executor),
+                    node_name=node_name,
+                    inputs=pickle.dumps(task_input),
+                    thread_pool=thread_pool,
+                )
             )
 
             future.add_done_callback(task_callback)
-
             futures.append(future)
 
         # run the tasks for the current iteration concurrently
         # results are not used right now, but can be in the case of multiprocessing
-        wait(futures)
+        await asyncio.gather(*futures)
+        # wait(futures)
         # del futures
 
         # When one or more nodes failed in the last iteration, don't iterate further
@@ -435,7 +467,7 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
 
     try:
         _plan_workflow(result_object)
-        _run_planned_workflow(result_object, tasks_pool)
+        asyncio.run(_run_planned_workflow(result_object, tasks_pool))
 
     except Exception as ex:
         result_object._status = Result.FAILED
