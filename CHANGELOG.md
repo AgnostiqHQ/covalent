@@ -111,13 +111,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.108.0] - 2022-06-08
 
-### Added
-
-- WCI yaml file
-
 ### Docs
 
 - Add pandoc installation updates to contributing guide
+
+### Added
+
+- Reusable JavaScript action to parse changelog and update version
+- WCI yaml file
 
 ## [0.107.0] - 2022-06-07
 
