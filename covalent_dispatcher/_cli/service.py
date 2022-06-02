@@ -145,9 +145,10 @@ def _is_dask_running() -> bool:
         status: Status of whether the scheduler is running
 
     """
-    if _read_pid(DASK_PIDFILE) == -1:
-        return False
-    return True
+    pid = _read_pid(DASK_PIDFILE)
+    if pid != -1 and psutil.pid_exists(pid):
+        return True
+    return False
 
 
 def _graceful_start(
