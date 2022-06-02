@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.106.1] - 2022-06-01
+
+### Fixed
+
+- Changelog-reminder action now works for PRs from forks
+
 ### Docs
 
 - Removed references to microservices in RTD
 - Updated README.md.
+- Changed `ct.electron` to `ct.lattice(executor=dask_executor)` in MNIST classifier tutorial
 
 ## [0.106.0] - 2022-05-26
 
