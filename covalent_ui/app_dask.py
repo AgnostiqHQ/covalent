@@ -6,7 +6,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import set_config
 
 app_log = logger.app_log
-log_stack_info = logger.log_debug_info
+log_stack_info = logger.log_stack_info
 
 
 async def start_cluster():
