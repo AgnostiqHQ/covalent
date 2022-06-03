@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## [0.106.1] - 2022-06-03
+- Added new tutorial: Using Covalent with PennyLane for hybrid computation.
+
+## [0.106.1] - 2022-06-01
 
 ### Fixed
 
@@ -18,7 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed references to microservices in RTD
 - Updated README.md.
 - Changed `ct.electron` to `ct.lattice(executor=dask_executor)` in MNIST classifier tutorial
-- Added new tutorial: Using Covalent with PennyLane for hybrid computation.
 
 ## [0.106.0] - 2022-05-26
 
