@@ -1,16 +1,16 @@
 const core = require("@actions/core");
-const github = require("@actions/github");
 const fs = require("fs");
 const readline = require("readline");
 
 try {
   const head_version = fs.readFileSync(core.getInput("version-path"), "utf8");
   const changelog = fs.readFileSync(core.getInput("changelog-path"), "utf8");
-  const changelog_stream = fs.createReadStream(core.getInput("changelog-path"));
   let curline = 0;
   const begin = 8;
   let end = Number.MAX_SAFE_INTEGER;
-  const rl = readline.createInterface({ input: changelog });
+  const rl = readline.createInterface({
+    input: fs.createReadStream(core.getInput("changelog-path")),
+  });
   let patch = false;
   let minor = false;
   let noupdate = false;
@@ -19,7 +19,7 @@ try {
       curline++;
       return;
     }
-    if (text.match("\\b" + head_version + "\\b))")) {
+    if (text.match("\\b" + head_version + "\\b")) {
       end = curline++;
       rl.close();
       return;
@@ -34,7 +34,11 @@ try {
     if (text.includes("### Fixed")) {
       patch = true;
     }
-    if (text.includes("### Tests") || text.includes("### Docs")) {
+    if (
+      text.includes("### Tests") ||
+      text.includes("### Docs") ||
+      text.includes("### Operations")
+    ) {
       noupdate = true;
     }
     curline++;
