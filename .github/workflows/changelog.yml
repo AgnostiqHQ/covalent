@@ -24,6 +24,7 @@ on:
   push:
     branches:
       - develop
+      - i-34
     paths-ignore:
       - 'CHANGELOG.md'
       - 'VERSION'
@@ -37,72 +38,19 @@ jobs:
         with:
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
       - name: Update version number
-        run: |
-          HEAD_VERSION="$(cat ./VERSION)"
-          begin=8
-          end=$(tail -n +$((begin+1)) ./CHANGELOG.md |
-            grep -n -m 1 "\b${HEAD_VERSION}\b" | 
-            cut -d ':' -f 1)
-          patch=false
-          minor=false
-          noupdate=false
-          while IFS= read -r line ; do
-            if [[ $line = *"### Added"* ]] ||
-               [[ $line = *"### Changed"* ]] ||
-               [[ $line = *"### Removed"* ]] ; then
-              minor=true
-            fi
-            if [[ $line = *"### Fixed"* ]] ; then
-              patch=true
-            fi
-            if [[ $line = *"### Tests"* ]] ||
-               [[ $line = *"### Operations"* ]] ||
-               [[ $line = *"### Docs"* ]] ; then
-              noupdate=true
-            fi
-          done <<< "$(tail +$begin ./CHANGELOG.md | head -$end)"
-          IFS='.' read -ra semver <<< "$HEAD_VERSION"
-          vmajor="${semver[0]}"
-          vminor="${semver[1]}"
-          vpatch="${semver[2]}"
-          if $minor; then
-            #increment minor version
-            vminor="$(( vminor + 1 ))"
-            vpatch=0
-          elif $patch; then
-            #increment patch version
-            vpatch="$(( vpatch + 1 ))"
-          elif $noupdate; then
-            #do nothing
-            :
-          else
-            echo 'Changelog does not contain enough information to update the version.'
-            exit 1
-          fi
-          version="${vmajor}.${vminor}.${vpatch}"
-          changelog_header="## [${version}] - $(date -I)"
-          message="noop"
-          if $minor || $patch ; then
-            message="The new version will be $version"
-            nl=$'\n'
-            sed -i '/UNRELEASED/a\'$'\n''\'$'\n'"$changelog_header" CHANGELOG.md
-            echo $version > VERSION
-
-            # Ensure the contents of VERSION file within covalent is
-            # the same as root level VERSION file
-            echo $version > covalent/VERSION
-
-            echo $message
-          else
-            echo "This PR only contains updates to tests and docs. No release will be created."
-          fi
-          echo "MESSAGE=$message" >> $GITHUB_ENV
-      - name: Commit
-        if: ${{ env.MESSAGE != 'noop' }}
-        uses: EndBug/add-and-commit@v9
+        id: changelog
+        uses: ./.github/actions/changelog
         with:
-          author_name: CovalentOpsBot
-          author_email: covalentopsbot@users.noreply.github.com
-          message: ${{ env.MESSAGE }}
-          push: origin develop --force
-
+          changelog-path: CHANGELOG.md
+          version-path: VERSION
+            #      - name: Commit
+            #        if: ${{ steps.changelog.outputs.message != 'noop' }}
+            #        uses: EndBug/add-and-commit@v9
+            #        with:
+            #          author_name: CovalentOpsBot
+            #          author_email: covalentopsbot@users.noreply.github.com
+            #          message: ${{ steps.changelog.outputs.message }}
+            #          push: origin develop --force
+      - name: Commit-test
+        if: ${{ steps.changelog.outputs.message != 'noop' }}
+        run: echo ${{ steps.changelog.outputs.message }}
