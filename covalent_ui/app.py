@@ -35,6 +35,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from multiprocessing import Process
 from dask.distributed import LocalCluster
+from covalent._shared_files.signals import TERMINATE
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
