@@ -60,29 +60,27 @@ class DaskCluster(Process):
     def run(self):
         cluster = LocalCluster()
         scheduler_address = cluster.scheduler_address
-        # Works only for process based dask clusters (scheduler address is inproc:// ... for
-        # thread based clusters)
-        scheduler_port = int(scheduler_address.split(":")[-1])
         self.logger.info(f"The Dask scheduler is running on {scheduler_address}")
         self.logger.info(f"Dask cluster dashboard is at: {cluster.dashboard_link}")
         set_config(
             {
                 "dask": {
                     "scheduler_address": scheduler_address,
-                    "scheduler_port": scheduler_port,
                 }
             }
         )
 
         # Halt the process here until its terminated
         signal.pause()
-    
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
+
 app = Flask(__name__, static_folder=WEBAPP_PATH)
 app.register_blueprint(bp)
 # allow cross-origin requests when API and static files are served separately
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
-
 
 @app.route(WEBHOOK_PATH, methods=["POST"])
 def handle_result_update():
