@@ -35,7 +35,6 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from multiprocessing import Process
 from dask.distributed import LocalCluster
-from covalent._shared_files.signals import TERMINATE
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
@@ -61,6 +60,8 @@ class DaskCluster(Process):
     def run(self):
         cluster = LocalCluster()
         scheduler_address = cluster.scheduler_address
+        # Works only for process based dask clusters (scheduler address is inproc:// ... for
+        # thread based clusters)
         self.logger.info(f"The Dask scheduler is running on {scheduler_address}")
         self.logger.info(f"Dask cluster dashboard is at: {cluster.dashboard_link}")
         set_config(
@@ -73,9 +74,6 @@ class DaskCluster(Process):
 
         # Halt the process here until its terminated
         signal.pause()
-
-app_log = logger.app_log
-log_stack_info = logger.log_stack_info
 
 app = Flask(__name__, static_folder=WEBAPP_PATH)
 app.register_blueprint(bp)
