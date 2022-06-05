@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import argparse
+from logging import Logger
 import os
 import sys
 from datetime import datetime
@@ -32,8 +33,11 @@ import tailer
 from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
+from multiprocessing import Process, Queue
+from dask.distributed import LocalCluster
 
 from covalent._results_manager import Result
+from covalent._shared_files import logger
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.config import get_config, set_config
 from covalent._shared_files.util_classes import Status
@@ -42,6 +46,34 @@ from covalent_dispatcher._service.app import bp
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
+
+
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
+
+def start_cluster(signal_queue: Queue, app_log: Logger):
+    cluster = LocalCluster()
+    scheduler_address = cluster.scheduler_address
+    scheduler_port = int(scheduler_address.split(":")[-1])
+    app_log.warning(f"The Dask scheduler is running on {scheduler_address}")
+    app_log.warning(f"Dask cluster dashboard is at: {cluster.dashboard_link}")
+    set_config(
+        {
+            "dask": {
+                "scheduler_address": scheduler_address,
+                "scheduler_port": scheduler_port,
+            }
+        }
+    )
+
+    while True:
+        signal = signal_queue.get()
+        if signal == "TERMINATE":
+            break
+
+    app_log.warning(f"Dask cluster terminated")
+
 
 app = Flask(__name__, static_folder=WEBAPP_PATH)
 app.register_blueprint(bp)
@@ -160,4 +192,15 @@ if __name__ == "__main__":
     # reload = True if args.develop is True else False
     reload = False
 
+    # Start dask
+    signal_queue = Queue()
+    dask_proc = Process(target=start_cluster, args=(signal_queue, app_log,), daemon=False)
+    dask_proc.start()
+
+    # Start covalent main app
     socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
+
+    # When covalent terminates, cleanup (stop dask)
+    signal_queue.put("TERMINATE")
+    dask_proc.join()
+    dask_proc.close()
