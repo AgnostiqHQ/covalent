@@ -35,6 +35,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from multiprocessing import Process, Queue
 from dask.distributed import LocalCluster
+from covalent._shared_files.signals import TERMINATE
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
@@ -68,8 +69,9 @@ def start_cluster(signal_queue: Queue, app_log: Logger):
     )
 
     while True:
+        # Halt this process here until further notice (dask runs in the background)
         signal = signal_queue.get()
-        if signal == "TERMINATE":
+        if signal == TERMINATE:
             break
 
     app_log.warning(f"Dask cluster terminated")
@@ -201,6 +203,6 @@ if __name__ == "__main__":
     socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
 
     # When covalent terminates, cleanup (stop dask)
-    signal_queue.put("TERMINATE")
+    signal_queue.put(TERMINATE)
     dask_proc.join()
     dask_proc.close()
