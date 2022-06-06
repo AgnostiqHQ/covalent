@@ -1,0 +1,189 @@
+openapi: "3.0.3"
+info:
+  description: "Monolithic server"
+  version: "0.106.0"
+  title: "Covalent"
+  license:
+    name: "AGPL 3"
+    url: "https://www.gnu.org/licenses/agpl-3.0.en.html"
+tags:
+  - name: "dispatcher"
+    description: "Covalent dispatcher"
+    externalDocs:
+      description: "Find out more"
+      url: "https://www.covalent.xyz"
+  - name: "UI"
+    description: "UI"
+
+paths:
+  /api/submit:
+    post:
+      tags:
+        - "dispatcher"
+      summary: "Submit a workflow"
+      description: ""
+      operationId: "addPet"
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              # a pickled Result object
+              description: a pickled Result object
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: Success
+          content:
+            application-json:
+              schema:
+                description: the dispatch id
+                type: string
+                example: "456ac523-25d6-4b57-9479-d7ff5f1600ba"
+        "500":
+          description: Internal server error
+  /api/cancel:
+    post:
+      tags:
+        - "dispatcher"
+      summary: "Cancel a workflow (unimplemented)"
+      responses:
+        "200":
+          description: Nothing happened.
+  /api/webhook:
+    post:
+      tags:
+        - "UI"
+      summary: "Notify UI of a result update"
+      requestBody:
+        content:
+          application-json:
+            schema:
+              type: object
+              description: "Result fragment"
+              properties:
+                event:
+                  type: string
+                result:
+                  $ref: "#/components/schemas/ResultFragment"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application-json:
+              schema:
+                $ref: "#/components/schemas/Ok"
+  /api/draw:
+    post:
+      tags:
+        - "UI"
+      summary: "Request a workflow to be displayed"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application-json:
+              schema:
+                $ref: "#/components/schemas/Ok"
+  /api/results:
+    get:
+      tags:
+        - "UI"
+      summary: "Get all workflow result objects"
+      description: "Returns a json list [result_obj1, result_obj2, ...]"
+      responses:
+        "200":
+          description: "Success"
+    delete:
+      tags:
+        - "UI"
+      summary: "Delete workflows from database"
+      parameters:
+        - name: "dispatchIds"
+          in: "query"
+          required: true
+          description: "A list of dispatch IDs"
+          schema:
+            type: string
+          style: "form"
+      responses:
+        "200":
+          description: Success
+          content:
+            application-json:
+              schema:
+                $ref: "#/components/schemas/Ok"
+  /api/results/{dispatchID}:
+    parameters:
+      - name: "dispatchID"
+        in: "path"
+        required: true
+        description: "Dispatch ID"
+        schema:
+          type: string
+    get:
+      tags:
+        - "UI"
+      summary: "Fetch the result object for a dispatch"
+      description: "Returns json representation of a Result object"
+      responses:
+        "200":
+          description: Success
+  /api/logoutput/{dispatchID}:
+    parameters:
+      - name: "dispatchID"
+        in: "path"
+        required: true
+        description: "Dispatch ID"
+        schema:
+          type: string
+    get:
+      tags:
+        - "UI"
+      summary: "Fetch the logs for a dispatch"
+      parameters:
+        - name: "path"
+          in: "query"
+          required: true
+          description: "Log file path relative to results_dir"
+          schema:
+            type: string
+        - name: "n"
+          in: "query"
+          required: false
+          description: "Number of lines to fetch"
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: Success
+          content:
+            application-json:
+              schema:
+                $ref: "#/components/schemas/LogLines"
+
+components:
+  schemas:
+    Ok:
+      type: object
+      properties:
+        ok:
+          type: boolean
+    LogLines:
+      type: object
+      properties:
+        lines:
+          type: string
+    ResultFragment:
+      type: object
+      properties:
+        dispatch_id:
+          type: string
+        results_dir:
+          type: string
+        status:
+          type: string
+externalDocs:
+  description: "Find out more about Covalent"
+  url: "https://www.covalent.xyz"
