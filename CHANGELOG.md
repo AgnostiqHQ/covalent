@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simplifed starting the dask cluster using `multiprocessing`
 - Added `bokeh==2.4.3` to requirements.txt to enable view Dask dashboard
 
+## [0.106.2] - 2022-06-06
+
 ### Fixed
 
 - Specifying the version for package `furo` to `2022.4.7` to prevent breaking doc builds
@@ -35,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.106.0] - 2022-05-26
 
 ### Changed
+
 - Visual theme for Webapp GUI changed in accordance to new theme
 - Fonts, colors, icons have been updated
 
