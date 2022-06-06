@@ -135,6 +135,7 @@ def _is_server_running() -> bool:
         return False
     return True
 
+
 def _graceful_start(
     server_root: str,
     pidfile: str,
@@ -271,6 +272,7 @@ def stop() -> None:
     Stop the Covalent server.
     """
     _graceful_shutdown(UI_PIDFILE)
+
 
 @click.command()
 @click.option(

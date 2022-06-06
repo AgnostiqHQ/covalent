@@ -1,3 +1,4 @@
+bokeh==2.4.3
 cloudpickle==2.0.0
 dask[distributed]==2022.1.0
 eventlet==0.31.0
@@ -14,4 +15,3 @@ simplejson==3.17.6
 tailer==0.4.1
 toml==0.10.2
 uvloop==0.16.0
-bokeh==2.4.3

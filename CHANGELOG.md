@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Simplifed starting the dask cluster using `multiprocessing`
+- Added `bokeh==2.4.3` to requirements.txt to enable view Dask dashboard
 - Added new tutorial: Using Covalent with PennyLane for hybrid computation.
 
 ## [0.106.1] - 2022-06-01
