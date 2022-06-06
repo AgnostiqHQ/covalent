@@ -59,6 +59,13 @@ export const deleteResults = createAsyncThunk(
 export const resultsSlice = createSlice({
   name: 'results',
   initialState,
+  reducers: {
+    removeResult(state, { payload: dispatchIds }) {
+      for (const dispatchId of dispatchIds) {
+        delete state.cache[dispatchId]
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       // fetchResult
@@ -108,3 +115,5 @@ export const resultsSlice = createSlice({
       })
   },
 })
+
+export const { removeResult } = resultsSlice.actions

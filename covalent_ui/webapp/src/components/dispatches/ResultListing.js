@@ -56,7 +56,7 @@ import {
 import Fuse from 'fuse.js'
 import { createSelector } from '@reduxjs/toolkit'
 
-import { fetchResults, deleteResults } from '../../redux/resultsSlice'
+import { fetchResults, deleteResults,removeResult } from '../../redux/resultsSlice'
 import CopyButton from '../common/CopyButton'
 import { formatDate } from '../../utils/misc'
 import Runtime from './Runtime'
@@ -341,14 +341,22 @@ const ResultListing = () => {
     }
   }
   const handleDeleteSelected = () => {
-    dispatch(deleteResults({ dispatchIds: selected })).then((action) => {
-      if (action.type === deleteResults.fulfilled.type) {
-        // last page may not exist anymore
-        const lastPossible = Math.ceil(_.size(results) / rowsPerPage) - 1
-        setPage(Math.min(page, lastPossible))
-        setSelected([])
-      }
-    })
+    if (isDemo) {
+      dispatch(removeResult(selected))
+      const lastPossible = Math.ceil(_.size(results) / rowsPerPage) - 1
+      setPage(Math.min(page, lastPossible))
+      setSelected([])
+    } else {
+      dispatch(deleteResults({ dispatchIds: selected })).then((action) => {
+        if (action.type === deleteResults.fulfilled.type) {
+          // last page may not exist anymore
+          const lastPossible = Math.ceil(_.size(results) / rowsPerPage) - 1
+          setPage(Math.min(page, lastPossible))
+          setSelected([])
+        }
+      })
+    }
+
   }
 
   const handleSelectAllClick = () => {
