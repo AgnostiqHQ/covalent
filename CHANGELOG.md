@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.106.2] - 2022-06-06
+
 ### Fixed
 
 - Specifying the version for package `furo` to `2022.4.7` to prevent breaking doc builds
