@@ -61,6 +61,7 @@ import CopyButton from '../common/CopyButton'
 import { formatDate } from '../../utils/misc'
 import Runtime from './Runtime'
 import ResultProgress from './ResultProgress'
+import { isDemo } from '../../utils/demo/setup'
 
 const selectResultsCache = (state) => state.results.cache
 const selectQuery = (state, query) => query
@@ -148,9 +149,9 @@ const ResultsTableHead = ({
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox" sx={(theme) =>({
-           borderColor: theme.palette.background.coveBlack03 + '!important'
-          })}>
+        <TableCell padding="checkbox" sx={(theme) => ({
+          borderColor: theme.palette.background.coveBlack03 + '!important'
+        })}>
           <Checkbox
             indeterminate={numSelected > 0 && numSelected < total}
             checked={numSelected > 0 && numSelected === total}
@@ -160,9 +161,9 @@ const ResultsTableHead = ({
 
         {_.map(headers, (header) => {
           return (
-            <TableCell key={header.id} sx={(theme) =>({
+            <TableCell key={header.id} sx={(theme) => ({
               borderColor: theme.palette.background.coveBlack03 + '!important'
-             })}>
+            })}>
               {header.sortable ? (
                 <TableSortLabel
                   active={orderBy === header.id}
@@ -201,7 +202,7 @@ const ResultsTableToolbar = ({
         </Typography>
       )}
 
-        <Input
+      <Input
         sx={{
           ml: 'auto',
           px: 1,
@@ -210,48 +211,48 @@ const ResultsTableToolbar = ({
           border: '1px solid #303067',
           borderRadius: '60px',
         }}
-          disableUnderline
-          placeholder="Search"
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value)
-          }}
-          startAdornment={
-            <InputAdornment position="start">
-              <SearchIcon sx={{ color: 'text.secondary', fontSize: 16 }} />
-            </InputAdornment>
-          }
-          endAdornment={
-            <InputAdornment
-              position="end"
-              sx={{ visibility: !!query ? 'visible' : 'hidden' }}
-            >
-              <IconButton size="small" onClick={() => setQuery('')}>
-                <ClearIcon
-                  fontSize="inherit"
-                  sx={{ color: 'text.secondary' }}
-                />
-              </IconButton>
-            </InputAdornment>
-          }
-        />
+        disableUnderline
+        placeholder="Search"
+        value={query}
+        onChange={(event) => {
+          setQuery(event.target.value)
+        }}
+        startAdornment={
+          <InputAdornment position="start">
+            <SearchIcon sx={{ color: 'text.secondary', fontSize: 16 }} />
+          </InputAdornment>
+        }
+        endAdornment={
+          <InputAdornment
+            position="end"
+            sx={{ visibility: !!query ? 'visible' : 'hidden' }}
+          >
+            <IconButton size="small" onClick={() => setQuery('')}>
+              <ClearIcon
+                fontSize="inherit"
+                sx={{ color: 'text.secondary' }}
+              />
+            </IconButton>
+          </InputAdornment>
+        }
+      />
     </Toolbar>
   )
 }
 
 const StyledTable = styled(Table)(({ theme }) => ({
   // stripe every odd body row except on select and hover
-   // stripe every odd body row except on select and hover
-   // [`& .MuiTableBody-root .MuiTableRow-root:nth-of-type(odd):not(.Mui-selected):not(:hover)`]:
-   //   {
-   //     backgroundColor: theme.palette.background.paper,
-   //   },
+  // stripe every odd body row except on select and hover
+  // [`& .MuiTableBody-root .MuiTableRow-root:nth-of-type(odd):not(.Mui-selected):not(:hover)`]:
+  //   {
+  //     backgroundColor: theme.palette.background.paper,
+  //   },
 
-      // customize text
-      [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-      {
-        fontSize: '1rem',
-      },
+  // customize text
+  [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
+  {
+    fontSize: '1rem',
+  },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -308,8 +309,10 @@ const ResultListing = () => {
 
   // refresh still-running results on first render
   useEffect(() => {
-    dispatch(fetchResults())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!isDemo) {
+      dispatch(fetchResults())
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
   }, [dispatch])
 
   const getter = _.get(_.find(headers, { id: orderBy }), 'getter')
@@ -386,65 +389,65 @@ const ResultListing = () => {
 
                 return (
                   <TableRow hover key={dispatchId} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onClick={() => handleChangeSelection(dispatchId)}
-                    />
-                  </TableCell>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={isSelected}
+                        onClick={() => handleChangeSelection(dispatchId)}
+                      />
+                    </TableCell>
 
-                  <TableCell>
-                    <Link
-                      underline="none"
-                      href={`/${dispatchId}`}
-                      sx={{ color: 'white' }}
-                    >
-                      {dispatchId}
-                    </Link>
-                    <CopyButton
-                      sx={{ ml: 1, color: 'text.tertiary' }}
-                      content={dispatchId}
-                      size="small"
-                      className="copy-btn"
-                      title="Copy ID"
-                    />
-                  </TableCell>
-
-                  <TableCell>{_.get(result, 'lattice.name')}</TableCell>
-
-                  {/* <TableCell>
-                    <Tooltip title={result.results_dir}>
-                      <Box
-                        component="span"
-                        sx={{
-                          color: 'text.secondary',
-                          fontSize: 12,
-                          fontFamily: 'monospace',
-                        }}
+                    <TableCell>
+                      <Link
+                        underline="none"
+                        href={`/${dispatchId}`}
+                        sx={{ color: 'white' }}
                       >
-                        {truncateMiddle(result.results_dir, 10, 16)}
-                      </Box>
-                    </Tooltip>
-                    <CopyButton
-                      content={result.results_dir}
-                      size="small"
-                      className="copy-btn"
-                      title="Copy results directory"
-                    />
-                  </TableCell> */}
+                        {dispatchId}
+                      </Link>
+                      <CopyButton
+                        sx={{ ml: 1, color: 'text.tertiary' }}
+                        content={dispatchId}
+                        size="small"
+                        className="copy-btn"
+                        title="Copy ID"
+                      />
+                    </TableCell>
 
-                  <TableCell>
-                    <Runtime startTime={startTime} endTime={endTime} />
-                  </TableCell>
+                    <TableCell>{_.get(result, 'lattice.name')}</TableCell>
 
-                  <TableCell>{formatDate(startTime)}</TableCell>
+                    {/* <TableCell>
+                     <Tooltip title={result.results_dir}>
+                       <Box
+                         component="span"
+                         sx={{
+                           color: 'text.secondary',
+                           fontSize: 12,
+                           fontFamily: 'monospace',
+                         }}
+                       >
+                         {truncateMiddle(result.results_dir, 10, 16)}
+                       </Box>
+                     </Tooltip>
+                     <CopyButton
+                       content={result.results_dir}
+                       size="small"
+                       className="copy-btn"
+                       title="Copy results directory"
+                     />
+                   </TableCell> */}
 
-                  <TableCell>{formatDate(endTime)}</TableCell>
+                    <TableCell>
+                      <Runtime startTime={startTime} endTime={endTime} />
+                    </TableCell>
 
-                  <TableCell>
-                    <ResultProgress dispatchId={dispatchId} />
-                  </TableCell>
-                </TableRow>
+                    <TableCell>{formatDate(startTime)}</TableCell>
+
+                    <TableCell>{formatDate(endTime)}</TableCell>
+
+                    <TableCell>
+                      <ResultProgress dispatchId={dispatchId} />
+                    </TableCell>
+                  </TableRow>
                 )
               })}
             </TableBody>

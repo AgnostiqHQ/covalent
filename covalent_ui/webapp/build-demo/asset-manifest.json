@@ -1,0 +1,30 @@
+{
+  "files": {
+    "main.css": "/static/css/main.4b97fbca.chunk.css",
+    "main.js": "/static/js/main.95b47a94.chunk.js",
+    "main.js.map": "/static/js/main.95b47a94.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.a8c0d800.js",
+    "runtime-main.js.map": "/static/js/runtime-main.a8c0d800.js.map",
+    "static/js/2.3168d551.chunk.js": "/static/js/2.3168d551.chunk.js",
+    "static/js/2.3168d551.chunk.js.map": "/static/js/2.3168d551.chunk.js.map",
+    "index.html": "/index.html",
+    "static/css/main.4b97fbca.chunk.css.map": "/static/css/main.4b97fbca.chunk.css.map",
+    "static/js/2.3168d551.chunk.js.LICENSE.txt": "/static/js/2.3168d551.chunk.js.LICENSE.txt",
+    "static/media/activity.916c9c75.svg": "/static/media/activity.916c9c75.svg",
+    "static/media/atom.30f2f6b6.svg": "/static/media/atom.30f2f6b6.svg",
+    "static/media/checkmark.9f356265.svg": "/static/media/checkmark.9f356265.svg",
+    "static/media/covalent-full-logo.5accf57f.svg": "/static/media/covalent-full-logo.5accf57f.svg",
+    "static/media/covalent-logo.5accf57f.svg": "/static/media/covalent-logo.5accf57f.svg",
+    "static/media/dashboard.cd0c8aa0.svg": "/static/media/dashboard.cd0c8aa0.svg",
+    "static/media/error.633afdd0.svg": "/static/media/error.633afdd0.svg",
+    "static/media/license.6c5659c4.svg": "/static/media/license.6c5659c4.svg",
+    "static/media/stop.321136be.svg": "/static/media/stop.321136be.svg",
+    "static/media/tree.fb5f23a6.svg": "/static/media/tree.fb5f23a6.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.a8c0d800.js",
+    "static/js/2.3168d551.chunk.js",
+    "static/css/main.4b97fbca.chunk.css",
+    "static/js/main.95b47a94.chunk.js"
+  ]
+}
