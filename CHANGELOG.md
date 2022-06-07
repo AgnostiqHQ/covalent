@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simplifed starting the dask cluster using `multiprocessing`
 - Added `bokeh==2.4.3` to requirements.txt to enable view Dask dashboard
 
-## Fixed
+### Fixed
 
 - Changelog-reminder action now works for PRs from forks.
 
