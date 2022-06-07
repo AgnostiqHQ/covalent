@@ -130,6 +130,10 @@ covalent_dispatcher_legacy/_service/tmp*
 
 # Logs
 **/logs/*.log
+covalent_ui/webapp/node_modules/**
+covalent_ui/webapp/package-lock.json
+covalent_ui_legacy/webapp/node_modules/**
+covalent_ui_legacy/webapp/package-lock.json
 legacy_config/*.log
 
 # Supervisord Files
@@ -140,7 +144,3 @@ supervisord.conf
 
 # NATS Server
 covalent_queuer/nats-server
-
-# Node modules and lockfiles
-**/package-lock.json
-**/node_modules/**
