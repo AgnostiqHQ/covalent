@@ -68,11 +68,13 @@ class DaskCluster(Process):
         # Halt the process here until its terminated
         signal.pause()
 
+
 app = Flask(__name__, static_folder=WEBAPP_PATH)
 app.register_blueprint(bp)
 # allow cross-origin requests when API and static files are served separately
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
+
 
 @app.route(WEBHOOK_PATH, methods=["POST"])
 def handle_result_update():
