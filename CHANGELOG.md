@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## Fixed
+### Added
+
+- OpenAPI spec for monolithic Covalent server
+
+### Fixed
 
 - Changelog-reminder action now works for PRs from forks.
 
