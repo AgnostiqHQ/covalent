@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- `covalent status` checks if the server process is still alive.
+
 ### Docs
 
 - Added new tutorial: Covalentified version of the Pennylane Variational Classifier tutorial.
@@ -62,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+<<<<<<< variant A
 - `covalent --version` now works for PyPI releases
 
 ## [0.109.0] - 2022-06-10
@@ -92,6 +97,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Add pandoc installation updates to contributing guide
+>>>>>>> variant B
+- `covalent status` checks if the server process is still alive.
+======= end
 
 ## [0.107.0] - 2022-06-07
 
