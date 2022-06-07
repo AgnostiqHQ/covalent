@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## Fixed
+
+- Changelog-reminder action now works for PRs from forks.
+
+## [0.106.2] - 2022-06-06
+
+### Fixed
+
+- Specifying the version for package `furo` to `2022.4.7` to prevent breaking doc builds
+
+### Docs
+
+- Added new tutorial: Using Covalent with PennyLane for hybrid computation.
+
 ## [0.106.1] - 2022-06-01
 
 ### Fixed

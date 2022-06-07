@@ -18,6 +18,8 @@ Beginner
      - Title
    * - Machine learning
      - :doc:`MNIST classifier<./machine_learning/mnist_classifier>`
+   * - Machine learning
+     - :doc:`Using Covalent with PennyLane for hybrid computation<./machine_learning/pennylane_hybrid>`
 
 ~~~~~~~~
 Advanced
