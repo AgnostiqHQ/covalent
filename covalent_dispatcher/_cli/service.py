@@ -240,6 +240,11 @@ def _graceful_shutdown(pidfile: str) -> None:
     show_default=True,
     help="Server port number.",
 )
+@click.option(
+    "--no-cluster",
+    is_flag=True,
+    help="Start the Covalent server without Dask. This will default to the local executor.",
+)
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
 <<<<<<< HEAD
 @click.option(
