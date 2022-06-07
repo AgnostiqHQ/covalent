@@ -72,6 +72,7 @@ class DaskCluster(Process):
                 }
             }
         )
+        set_config({"dask": {"scheduler_address": scheduler_address}})
 
         # Halt the process here until its terminated
         signal.pause()
