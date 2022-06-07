@@ -240,6 +240,16 @@ def _graceful_shutdown(pidfile: str) -> None:
     is_flag=True,
     help="Start the Covalent server without Dask executor. This will default to the local executor.",
 )
+@click.option(
+    "--memory-limit",
+    "--cpu",
+    "--cluster-port",
+    "--method",
+    default={"--memory-limit": "2 GB", "-cpu": 5, "--method": "process"},
+    show_default=True,
+    is_flag=True,
+    help="Start the Dask cluster with the specified parameters. --method can be either be process or thread",
+)
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
 @click.pass_context
 def start(ctx, port: int, develop: bool) -> None:
@@ -345,6 +355,6 @@ def purge() -> None:
 )
 def cluster() -> None:
     """
-    Manage the Dask cluster configuration.
+    Inspect and manage the Dask cluster's configuration.
     """
     pass
