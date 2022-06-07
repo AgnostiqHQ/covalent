@@ -65,13 +65,6 @@ class DaskCluster(Process):
         # thread based clusters)
         self.logger.warning(f"The Dask scheduler is running on {scheduler_address}")
         self.logger.warning(f"Dask cluster dashboard is at: {cluster.dashboard_link}")
-        set_config(
-            {
-                "dask": {
-                    "scheduler_address": scheduler_address,
-                }
-            }
-        )
         set_config({"dask": {"scheduler_address": scheduler_address}})
 
         # Halt the process here until its terminated
