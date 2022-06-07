@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.107.0] - 2022-06-07
+
 ### Changed
 
 - Skipping stdout/stderr redirection tests until implemented in Dask parent process
