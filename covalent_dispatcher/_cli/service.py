@@ -238,7 +238,7 @@ def _graceful_shutdown(pidfile: str) -> None:
 @click.option(
     "--no-cluster",
     is_flag=True,
-    help="Start the Covalent server without Dask. This will default to the local executor.",
+    help="Start the Covalent server without Dask executor. This will default to the local executor.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
 @click.pass_context
@@ -330,3 +330,21 @@ def purge() -> None:
     cm.purge_config()
 
     click.echo("Covalent server files have been purged.")
+
+
+@click.command()
+@click.option(
+    "--scale",
+    default=4,
+    type=int,
+    is_flag=True,
+    help="Autoscale up/down the number of workers in the Dask cluster.",
+)
+@click.option(
+    "--adapt", nargs=2, type=int, help="Vary the number of workers from minsize to maxsize."
+)
+def cluster() -> None:
+    """
+    Manage the Dask cluster configuration.
+    """
+    pass
