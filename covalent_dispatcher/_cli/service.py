@@ -29,7 +29,6 @@ from typing import Optional, Tuple
 
 import click
 import psutil
-from dask.distributed import LocalCluster
 
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
