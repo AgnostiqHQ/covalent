@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Skipping stdout/stderr redirection tests until implemented in Dask parent process
+
 ### Added
 
 - Simplifed starting the dask cluster using `multiprocessing`
