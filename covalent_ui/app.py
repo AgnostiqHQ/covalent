@@ -61,8 +61,6 @@ class DaskCluster(Process):
     def run(self):
         cluster = LocalCluster()
         scheduler_address = cluster.scheduler_address
-        # Works only for process based dask clusters (scheduler address is inproc:// ... for
-        # thread based clusters)
         self.logger.warning(f"The Dask scheduler is running on {scheduler_address}")
         self.logger.warning(f"Dask cluster dashboard is at: {cluster.dashboard_link}")
         set_config({"dask": {"scheduler_address": scheduler_address}})
