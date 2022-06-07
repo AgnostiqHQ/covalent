@@ -233,6 +233,7 @@ def test_positional_args_integration():
 
     assert workflow_result.result == 15
 
+
 @pytest.mark.skip(reason="Need to implement stdout/stderr redirection from dask workers")
 def test_stdout_stderr_redirection():
     """
