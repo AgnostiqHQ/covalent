@@ -20,7 +20,13 @@
 
 # CODEOWNERS
 
-# Modifying these requires additional approval
+# By default code is owned by the Agnostiq engineering team.
+*		@AgnostiqHQ/aq-engineers
+
+# Covalent UI is owned by collaborators from Psiog.
+/covalent_ui/ @mshkanth @Prasy12
+
+# Modifying these requires additional approval.
 Dockerfile		@AgnostiqHQ/aq-managers
 .github/**		@AgnostiqHQ/aq-managers
 LICENSE			@AgnostiqHQ/aq-managers
@@ -28,5 +34,4 @@ MANIFEST.in		@AgnostiqHQ/aq-managers
 meta.yaml		@AgnostiqHQ/aq-managers
 **/requirements.txt	@AgnostiqHQ/aq-managers
 setup.py		@AgnostiqHQ/aq-managers
-docker-compose.yml	@AgnostiqHQ/aq-managers
-covalent_ui/app.py	@AgnostiqHQ/aq-managers
+docker-compose.yml		@AgnostiqHQ/aq-managers
