@@ -25,7 +25,7 @@ import shutil
 import socket
 import time
 from subprocess import DEVNULL, Popen
-from typing import Optional
+from typing import Optional, Tuple
 
 import click
 import psutil
@@ -270,7 +270,6 @@ def stop() -> None:
     """
     Stop the Covalent server.
     """
-
     _graceful_shutdown(UI_PIDFILE)
 
 
