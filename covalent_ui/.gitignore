@@ -24,9 +24,6 @@
 # pickle files
 *.pkl
 
-# egg info
-**.egg-info/**
-
 # mac
 .DS_Store
 .idea

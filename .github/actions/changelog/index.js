@@ -15,6 +15,7 @@ try {
   let minor = false;
   let noupdate = false;
   rl.on("line", (text) => {
+    console.log('parsing line ' + curline)
     if (curline < begin || curline > end) {
       curline++;
       return;
@@ -24,15 +25,18 @@ try {
       rl.close();
       return;
     }
+    console.log(text)
     if (
       text.includes("### Added") ||
       text.includes("### Changed") ||
       text.includes("### Removed")
     ) {
       minor = true;
+      console.log('found minor version update')
     }
     if (text.includes("### Fixed")) {
       patch = true;
+      console.log('found patch version update')
     }
     if (
       text.includes("### Tests") ||
@@ -40,6 +44,7 @@ try {
       text.includes("### Operations")
     ) {
       noupdate = true;
+      console.log('found noop header')
     }
     curline++;
   });
