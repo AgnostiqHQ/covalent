@@ -9,8 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Added new tutorial: Using Covalent with PennyLane for hybrid computation.
+- Add pandoc installation updates to contributing guide
 - Added new tutorial: Training quantum embedding kernels for classification.
+
+## [0.107.0] - 2022-06-07
+
+### Changed
+
+- Skipping stdout/stderr redirection tests until implemented in Dask parent process
+
+### Added
+
+- Simplifed starting the dask cluster using `multiprocessing`
+- Added `bokeh==2.4.3` to requirements.txt to enable view Dask dashboard
+
+### Fixed
+
+- Changelog-reminder action now works for PRs from forks.
+
+## [0.106.2] - 2022-06-06
+
+### Fixed
+
+- Specifying the version for package `furo` to `2022.4.7` to prevent breaking doc builds
+
+### Docs
+
+- Added new tutorial: Using Covalent with PennyLane for hybrid computation.
 
 ## [0.106.1] - 2022-06-01
 
@@ -27,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.106.0] - 2022-05-26
 
 ### Changed
+
 - Visual theme for Webapp GUI changed in accordance to new theme
 - Fonts, colors, icons have been updated
 

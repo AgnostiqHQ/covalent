@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 on:
-  pull_request
+  pull_request_target
 
 name: Changelog Reminder
 
@@ -29,6 +29,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+
     - name: Changelog Reminder
       uses: peterjgrainger/action-changelog-reminder@v1.3.0
       with:
@@ -37,4 +40,4 @@ jobs:
           Hello. You may have forgotten to update the changelog!
           Please edit [`CHANGELOG.md`](/AgnostiqHQ/covalent/blob/master/CHANGELOG.md) with a one-to-two sentence description of the change in the UNRELEASED section. You may include a small working example for new features.
       env:
-        GITHUB_TOKEN: "${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

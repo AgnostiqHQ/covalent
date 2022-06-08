@@ -20,21 +20,25 @@
 
 import argparse
 import os
-import sys
+import signal
 from datetime import datetime
 from distutils.log import debug
+from logging import Logger
 from logging.handlers import DEFAULT_TCP_LOGGING_PORT
+from multiprocessing import Process
 from pathlib import Path
 
 import networkx as nx
 import simplejson
 import tailer
+from dask.distributed import LocalCluster
 from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
+from covalent._shared_files import logger
 from covalent._shared_files.config import get_config, set_config
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
@@ -42,6 +46,28 @@ from covalent_dispatcher._service.app import bp
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
+
+
+class DaskCluster(Process):
+    def __init__(self, logger: Logger):
+        super(DaskCluster, self).__init__()
+        self.logger = logger
+        self.daemon = False
+        self.name = "DaskClusterProcess"
+
+    def run(self):
+        cluster = LocalCluster()
+        scheduler_address = cluster.scheduler_address
+        self.logger.warning(f"The Dask scheduler is running on {scheduler_address}")
+        self.logger.warning(f"Dask cluster dashboard is at: {cluster.dashboard_link}")
+        set_config({"dask": {"scheduler_address": scheduler_address}})
+
+        # Halt the process here until its terminated
+        signal.pause()
+
 
 app = Flask(__name__, static_folder=WEBAPP_PATH)
 app.register_blueprint(bp)
@@ -136,7 +162,6 @@ def serve(path):
 
 
 if __name__ == "__main__":
-
     ap = argparse.ArgumentParser()
 
     ap.add_argument("-p", "--port", required=False, help="Server port number.")
@@ -160,4 +185,9 @@ if __name__ == "__main__":
     # reload = True if args.develop is True else False
     reload = False
 
+    # Start dask (covalent stop auto terminates all child processes of this)
+    dask_cluster = DaskCluster(app_log)
+    dask_cluster.start()
+
+    # Start covalent main app
     socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)

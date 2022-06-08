@@ -1,6 +1,6 @@
 autodocsumm==0.2.6
 docutils
-furo
+furo==2022.4.7
 ipython
 ipython_genutils==0.2.0
 ipython_genutils==0.2.0
