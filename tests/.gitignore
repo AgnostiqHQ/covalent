@@ -19,29 +19,22 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 # Ignore results folders
-**/results/**
-**/result_*
-!covalent_ui_legacy/result_webhook.py
+results/**
+result_*
 
 # XML files
 *.xml
 
-# Allow packages for github actions
-!/.github/actions/**
-
 # pickle files
 *.pkl
-
-# egg info
-**.egg-info/**
 
 # sqlite
 data_cache.sqlite
 legacy_config/*.sqlite
 
 # mac
-**/.DS_Store
-**/.idea
+.DS_Store
+.idea
 
 # Visual Studio
 *.vscode
@@ -51,14 +44,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 **.pytest_cache/**
-
-# Jupyter Notebook
-*.ipynb_checkpoints
-covalent/**/*.ipynb
-covalent/*.ipynb
-covalent_dispatcher_legacy/**/*.ipynb
-covalent_dispatcher_legacy/*.ipynb
-covalent_runner/*.ipynb
 
 # IPython
 profile_default/
@@ -78,7 +63,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/*.
-ipython_config.py
 .env
 
 # Shared libraries
@@ -114,12 +98,8 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-# IPython
-profile_default/
-ipython_config.py
-
 # Dask
-**/dask-worker-space/**
+dask-worker-space/**
 *.lock
 
 # Databases
@@ -129,22 +109,7 @@ ipython_config.py
 .coverage
 
 # Temporary files
-covalent_dispatcher_legacy/_service/tmp*
 *_scratch.py
 
 # Logs
-**/logs/*.log
-covalent_ui/webapp/node_modules/**
-covalent_ui/webapp/package-lock.json
-covalent_ui_legacy/webapp/node_modules/**
-covalent_ui_legacy/webapp/package-lock.json
-legacy_config/*.log
-
-# Supervisord Files
-*err.log
-*out.log
-supervisord.pid
-supervisord.conf
-
-# NATS Server
-covalent_queuer/nats-server
+*.log

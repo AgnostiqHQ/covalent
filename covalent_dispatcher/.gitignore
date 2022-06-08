@@ -28,9 +28,6 @@ result_*
 # pickle files
 *.pkl
 
-# egg info
-**.egg-info/**
-
 # sqlite
 data_cache.sqlite
 legacy_config/*.sqlite
