@@ -21,6 +21,7 @@
 import argparse
 import os
 import signal
+import sys
 from datetime import datetime
 from distutils.log import debug
 from logging import Logger
@@ -39,7 +40,8 @@ from flask_socketio import SocketIO
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
-from covalent._shared_files.config import get_config, set_config
+from covalent._shared_files.config import get_config, set_config, update_config
+from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
@@ -186,8 +188,9 @@ if __name__ == "__main__":
     reload = False
 
     # Start dask (covalent stop auto terminates all child processes of this)
-    dask_cluster = DaskCluster(app_log)
-    dask_cluster.start()
+    # if "--no_cluster" not in sys.argv:
+    #     dask_cluster = DaskCluster(app_log, no_cluster='')
+    #     dask_cluster.start()
 
     # Start covalent main app
     socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
