@@ -37,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added new tutorial: Covalentified version of the Pennylane Variational Classifier tutorial.
 
+### Operations
+
+- Reusable JavaScript action to parse changelog and update version
+
 ## [0.110.3] - 2022-06-17
 
 ### Fixed
@@ -108,10 +112,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Added new tutorial: Training quantum embedding kernels for classification.
-
-### Added
-
-- Reusable JavaScript action to parse changelog and update version
 
 ## [0.108.0] - 2022-06-08
 
