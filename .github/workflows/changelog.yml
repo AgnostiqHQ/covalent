@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - develop
-      - i-34
     paths-ignore:
       - 'CHANGELOG.md'
       - 'VERSION'
@@ -50,5 +49,5 @@ jobs:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
           message: ${{ steps.changelog.outputs.message }}
-            #          push: origin develop --force
-          push: origin i-34 --force
+          push: origin develop --force
+
