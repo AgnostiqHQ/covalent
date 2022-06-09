@@ -50,9 +50,6 @@ try {
     curline++;
   });
   rl.on("close", () => {
-    console.log("minor is " + minor);
-    console.log("patch is " + patch);
-    console.log("noupdate is " + noupdate);
     const semver = head_version.split(".");
     let vmajor = semver[0];
     let vminor = semver[1];
@@ -83,8 +80,8 @@ try {
           changelog_header,
           changelog.slice(changelog.indexOf(unreleased) + unreleased.length + 1)
         );
-      fs.writeFileSync(core.getInput("changelog-path", new_changelog, "utf8"));
-      fs.writeFileSync(core.getInput("version-path", version, "utf8"));
+      fs.writeFileSync(core.getInput("changelog-path"), new_changelog, "utf8");
+      fs.writeFileSync(core.getInput("version-path"), version, "utf8");
     } else if (noupdate) {
       console.log(
         "This PR only contains updates to tests and docs. No release will be created."
