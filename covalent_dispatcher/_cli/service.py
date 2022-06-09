@@ -244,7 +244,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     help="Server port number.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
-@click.option("--no-cluster", is_flag=True, help="Start the server without Dask")
+@click.option("--no-cluster", is_flag=True, help="Start the server without Dask and use the LocalExecutor instead")
 @click.argument("no-cluster", required=False)
 @click.pass_context
 def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
@@ -341,7 +341,7 @@ def purge() -> None:
 @click.command()
 def logs() -> None:
     """
-    Retrive Covalent logs from file
+    Show Covalent server logs
     """
     if os.path.exists(UI_LOGFILE):
         with open(UI_LOGFILE, "r") as f:
