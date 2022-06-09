@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Updating codeowners to establish engineering & psiog ownership
+
 ### Docs
 
 - Added new tutorial: Training quantum embedding kernels for classification.
