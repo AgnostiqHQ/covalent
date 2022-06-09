@@ -336,3 +336,20 @@ def purge() -> None:
     cm.purge_config()
 
     click.echo("Covalent server files have been purged.")
+
+
+@click.command()
+def logs() -> None:
+    """
+    Retrive Covalent logs from file
+    """
+    if os.path.exists(UI_LOGFILE):
+        with open(UI_LOGFILE, "r") as f:
+            logs = f.readlines()
+        if logs:
+            for line in logs:
+                print(line.rstrip("\n"))
+        else:
+            print("Log file empty!")
+    else:
+        print(f"{UI_LOGFILE} not found!. Server possibly purged!")
