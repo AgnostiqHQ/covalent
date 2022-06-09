@@ -188,9 +188,9 @@ if __name__ == "__main__":
     reload = False
 
     # Start dask (covalent stop auto terminates all child processes of this)
-    # if "--no_cluster" not in sys.argv:
-    #     dask_cluster = DaskCluster(app_log, no_cluster='')
-    #     dask_cluster.start()
+    if "--no_cluster" not in sys.argv:
+        dask_cluster = DaskCluster(app_log)
+        dask_cluster.start()
 
     # Start covalent main app
     socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
