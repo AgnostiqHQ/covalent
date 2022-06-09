@@ -177,7 +177,7 @@ if __name__ == "__main__":
         action="store_true",
         help="Start the server in developer mode.",
     )
-    ap.add_argument("--no_cluster", required=False, help="Start Covalent server without Dask")
+    ap.add_argument("--no-cluster", required=False, help="Start Covalent server without Dask")
 
     args, unknown = ap.parse_known_args()
 
