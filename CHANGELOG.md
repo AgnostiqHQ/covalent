@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- CLI option for starting Covalent server without Dask.
+
 ### Docs
 
 - Remove hardcoding version info in README.md
