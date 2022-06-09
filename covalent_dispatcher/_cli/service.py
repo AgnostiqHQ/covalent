@@ -244,7 +244,11 @@ def _graceful_shutdown(pidfile: str) -> None:
     help="Server port number.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
-@click.option("--no-cluster", is_flag=True, help="Start the server without Dask and use the LocalExecutor instead")
+@click.option(
+    "--no-cluster",
+    is_flag=True,
+    help="Start the server without Dask and use the LocalExecutor instead",
+)
 @click.argument("no-cluster", required=False)
 @click.pass_context
 def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
