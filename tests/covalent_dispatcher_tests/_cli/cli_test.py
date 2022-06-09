@@ -48,10 +48,10 @@ def test_cli_commands():
 
     ctx = click.Context
     assert cli.list_commands(ctx) == [
+        "logs",
         "purge",
         "restart",
         "start",
         "status",
-        "stop",
-        "logs",
+        "stop"
     ]
