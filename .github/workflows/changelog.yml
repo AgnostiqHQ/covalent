@@ -43,14 +43,12 @@ jobs:
         with:
           changelog-path: CHANGELOG.md
           version-path: VERSION
-            #      - name: Commit
-            #        if: ${{ steps.changelog.outputs.message != 'noop' }}
-            #        uses: EndBug/add-and-commit@v9
-            #        with:
-            #          author_name: CovalentOpsBot
-            #          author_email: covalentopsbot@users.noreply.github.com
-            #          message: ${{ steps.changelog.outputs.message }}
-            #          push: origin develop --force
-      - name: Commit-test
+      - name: Commit
         if: ${{ steps.changelog.outputs.message != 'noop' }}
-        run: echo ${{ steps.changelog.outputs.message }}
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: CovalentOpsBot
+          author_email: covalentopsbot@users.noreply.github.com
+          message: ${{ steps.changelog.outputs.message }}
+            #          push: origin develop --force
+          push: origin i-34 --force
