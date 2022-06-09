@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Add CLI functionality to start covalent with/without Dask
+- Add CLI support to parse `covalent_ui.log` file
+
 ### Docs
 
 - Added new tutorial: Training quantum embedding kernels for classification.
