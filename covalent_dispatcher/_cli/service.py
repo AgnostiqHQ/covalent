@@ -23,6 +23,7 @@
 import os
 import shutil
 import socket
+import sys
 import time
 from subprocess import DEVNULL, Popen
 from typing import Optional, Tuple
@@ -168,9 +169,13 @@ def _graceful_start(
 
     pypath = f"PYTHONPATH={UI_SRVDIR}/../tests:$PYTHONPATH" if develop else ""
     dev_mode_flag = "--develop" if develop else ""
-    no_cluster = "--no_cluster" if no_cluster else ""
+    no_cluster_flag = "--no_cluster"
     port = _next_available_port(port)
-    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} no_cluster {no_cluster} >> {logfile} 2>&1"
+    if no_cluster_flag in sys.argv:
+        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no_cluster {no_cluster} >> {logfile} 2>&1"
+        click.echo("Covalent server is starting without Dask.")
+    else:
+        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
@@ -248,6 +253,7 @@ def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
+    no_cluster_flag = "--no_cluster"
     set_config(
         {
             "user_interface.address": "0.0.0.0",
@@ -337,18 +343,31 @@ def purge() -> None:
     "--address", is_flag=True, help="Get the scheduler address of a running Dask cluster."
 )
 @click.option("--info", is_flag=True, help="Get the status of a running Dask cluster.")
-@click.argument("info", required=False)
+@click.option("--restart", is_flag=True, help="Restart the Dask service.")
 @click.argument("address", required=False)
+@click.argument("info", required=False)
+@click.argument("restart", required=False)
 @click.pass_context
-def cluster(ctx, address: str, info: str) -> None:
+def cluster(ctx, address: str, info: str, restart) -> None:
     """
-    Provides an entry point to inspect Dask.
+    Provides CLI options for managing Dask.
     """
+    address_flag = "--address"
+    info_flag = "--info"
+    restart_flag = "--restart"
+    stop_flag = "--stop"
 
     if _is_server_running():
-        address = get_config("dask.scheduler_address")
-        info = get_config("dask.dashboard_link")
-        click.echo(f"The scheduler's address is {address}.")
-        click.echo(f"Information about the Dask service is available at {info}.")
+        if address_flag in sys.argv:
+            address = get_config("dask.scheduler_address")
+            click.echo(f"The scheduler's address is {address}.")
+        if info_flag in sys.argv:
+            info = get_config("dask.dashboard_link")
+            click.echo(f"Information about the Dask service is available at {info}.")
     else:
-        click.echo("Dask service is not running. Please run 'covalent start' to start Dask.")
+        click.echo("Dask service is not running.")
+
+    if restart_flag in sys.argv:
+        ctx.invoke(stop)
+        ctx.invoke(start)
+        click.echo("Dask service has restarted.")

@@ -177,7 +177,7 @@ if __name__ == "__main__":
         action="store_true",
         help="Start the server in developer mode.",
     )
-    ap.add_argument("--no_cluster", required=False, help="Start the server without Dask")
+    ap.add_argument("--no_cluster", required=False, help="Start Covalent server without Dask")
 
     args, unknown = ap.parse_known_args()
 
@@ -191,9 +191,10 @@ if __name__ == "__main__":
     # reload = True if args.develop is True else False
     reload = False
 
-    # Start dask if no-cluster option is not specified (covalent stop auto terminates all child processes of this)
-    dask_cluster = DaskCluster(app_log)
-    dask_cluster.start()
+    # Start dask if no-cluster flag is not specified (covalent stop auto terminates all child processes of this)
+    if not args.no_cluster:
+        dask_cluster = DaskCluster(app_log)
+        dask_cluster.start()
 
     # Start covalent main app
     socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
