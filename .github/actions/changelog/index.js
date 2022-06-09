@@ -14,13 +14,19 @@ try {
   let patch = false;
   let minor = false;
   let noupdate = false;
+  console.log('head_version is ' + head_version)
+  console.log('Node version is: ' + process.version);
   rl.on("line", (text) => {
+    console.log('begin ' + begin)
+    console.log('end ' + end)
     console.log('parsing line ' + curline)
+    console.log(text.match(head_version))
     if (curline < begin || curline > end) {
       curline++;
       return;
     }
-    if (text.match("\\b" + head_version + "\\b")) {
+   if (text.match(head_version)) {
+      console.log('updating end line')
       end = curline++;
       rl.close();
       return;
@@ -45,6 +51,7 @@ try {
     ) {
       noupdate = true;
       console.log('found noop header')
+      // comment to trigger workflow run
     }
     curline++;
   });
