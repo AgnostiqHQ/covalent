@@ -169,10 +169,10 @@ def _graceful_start(
 
     pypath = f"PYTHONPATH={UI_SRVDIR}/../tests:$PYTHONPATH" if develop else ""
     dev_mode_flag = "--develop" if develop else ""
-    no_cluster_flag = "--no_cluster"
+    no_cluster_flag = "--no-cluster"
     port = _next_available_port(port)
     if no_cluster_flag in sys.argv:
-        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no_cluster {no_cluster} >> {logfile} 2>&1"
+        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
         click.echo("Covalent server is starting without Dask.")
     else:
         launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
@@ -244,8 +244,8 @@ def _graceful_shutdown(pidfile: str) -> None:
     help="Server port number.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
-@click.option("--no_cluster", is_flag=True, help="Start the server without Dask")
-@click.argument("no_cluster", required=False)
+@click.option("--no-cluster", is_flag=True, help="Start the server without Dask")
+@click.argument("no-cluster", required=False)
 @click.pass_context
 def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
@@ -253,7 +253,7 @@ def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
-    no_cluster_flag = "--no_cluster"
+    no_cluster_flag = "--no-cluster"
     set_config(
         {
             "user_interface.address": "0.0.0.0",
