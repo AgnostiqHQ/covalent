@@ -1,0 +1,23 @@
+name: Covalent
+icon: https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/covalent-logo-blue-favicon.png
+headline: Distributed workflows for quantum and HPC
+description: |
+  Covalent is a Pythonic workflow tool used to execute HPC and quantum tasks
+  in heterogenous environments. Users functionalize existing code, apply
+  Python decorators, and then dispatch workflows to the Covalent server. Users
+  can monitor job statuses and view metadata in the Covalent user interface,
+  or query information programmatically via REST API endpoints. Covalent is
+  designed for rapid prototyping and pre-production R&D workflows, so that
+  users can quickly identify optimal software parameters and hardware backends
+  for any particular application.
+language: Python
+documentation:
+  general: https://covalent.readthedocs.io/en/stable/
+  installation: https://covalent.readthedocs.io/en/stable/getting_started/index.html
+social:
+  twitter: covalentxyz
+execution_environment:
+  interfaces:
+    - Python API
+  resource_managers:
+    - Slurm
