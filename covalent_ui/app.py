@@ -26,12 +26,13 @@ from distutils.log import debug
 from logging import Logger
 from multiprocessing import Process
 from threading import Thread
-from multiprocessing.connection import Listener
+from multiprocessing.connection import Listener, Client
 from pathlib import Path
 
 import simplejson
+from sklearn.datasets import make_s_curve
 import tailer
-from dask.distributed import LocalCluster
+from dask.distributed import LocalCluster, Status
 from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -63,10 +64,10 @@ class DaskAdminWorker(Thread):
     Create a thread to monitor the Dask cluster process in a non intrusive way.
     If the thread hangs, cluster still remains intact.
     """
-    def __init__(self, parent: DaskCluster, port: int, host: str = 'localhost', authkey=b'covalent'):
+    def __init__(self, parent: DaskCluster, host: str = 'localhost', authkey=b'covalent'):
         super(DaskAdminWorker, self).__init__()
         self.parent = parent
-        self.listener = Listener((host, port), authkey=authkey)
+        self.listener = Listener((host, self.parent.admin_port), authkey=authkey)
 
     def run(self):
         self.parent.logger.warning(f"Admin worker started")
@@ -76,16 +77,23 @@ class DaskAdminWorker(Thread):
             msg = conn.recv()
             if msg == "address":
                 conn.send(self.parent.cluster.scheduler_address)
-            elif msg == "info":
+            elif msg == "cluster_status":
+                status = 'running' if self.parent.cluster.status == Status.running else ''
+                conn.send(status)
+            elif msg == "get_cluster_info":
                 cluster_info = {
                     "name": self.parent.cluster.name,
-                    "status": self.parent.cluster.status,
+                    "status": 'running' if self.parent.cluster.status == Status.running else '',
                     "type": self.parent.cluster._cluster_info['type'],
                     "workers": len(self.parent.cluster.workers),
                     "thread_per_worker": self.parent.cluster._threads_per_worker(),
                     "mem_per_worker": self.parent.cluster._memory_per_worker()
                 }
                 conn.send(cluster_info)
+            elif msg == "restart":
+                # Restart the dask cluster via a client since it provides a convenient interface
+                from dask.distributed import Client
+                Client(address=self.parent.cluster.scheduler_address).restart()
 
 class DaskCluster(Process):
     def __init__(self, logger: Logger):
@@ -98,7 +106,7 @@ class DaskCluster(Process):
 
     def run(self):
         # Start the admin worker thread before
-        self.admin_worker = DaskAdminWorker(self, self.admin_port)
+        self.admin_worker = DaskAdminWorker(self)
         self.admin_worker.start()
 
         self.cluster = LocalCluster()
@@ -174,7 +182,6 @@ def delete_results():
         db.delete(dispatch_ids)
     return jsonify({"ok": True})
 
-
 @app.route("/api/logoutput/<dispatch_id>")
 def fetch_file(dispatch_id):
     path = request.args.get("path")
@@ -190,7 +197,6 @@ def fetch_file(dispatch_id):
 
     return jsonify({"lines": lines})
 
-
 # catch-all: serve web app static files
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
@@ -201,6 +207,32 @@ def serve(path):
     else:
         # handle all other routes inside web app
         return send_from_directory(app.static_folder, "index.html")
+
+# Dask cluster CLI related endpoints
+@app.route("/dask/address", methods=["GET"])
+def fetch_cluster_address():
+    app_log.warning(f"Fetching Dask cluster address")
+    admin_port = request.args.get('admin_port')
+    conn = Client(('localhost', int(admin_port)), authkey=b'covalent')
+    conn.send("address")
+    scheduler_address = conn.recv()
+    return make_response(jsonify({"scheduler_address": scheduler_address }), 200)
+
+@app.route("/dask/info", methods=["GET"])
+def fetch_cluster_info():
+    app_log.warning(f"Fetch Dask cluster info")
+    admin_port = request.args.get('admin_port')
+    conn = Client(('localhost', int(admin_port)), authkey=b'covalent')
+    conn.send("get_cluster_info")
+    cluster_info = conn.recv()
+    return make_response(jsonify({"cluster_info": cluster_info}), 200)
+
+@app.route("/dask/restart",  methods=["POST"])
+def restart_cluster(admin_port):
+    app_log.warning(f"Restart Dask cluster")
+    conn = Client(('localhost', int(admin_port)), authkey=b'covalent')
+    conn.send("restart")
+    
 
 
 if __name__ == "__main__":
@@ -214,6 +246,7 @@ if __name__ == "__main__":
         action="store_true",
         help="Start the server in developer mode.",
     )
+    ap.add_argument("--no_cluster", required=False, help="Start Covalent server without Dask")
 
     args, unknown = ap.parse_known_args()
 
@@ -227,8 +260,8 @@ if __name__ == "__main__":
     # reload = True if args.develop is True else False
     reload = False
 
-    # Start dask (covalent stop auto terminates all child processes of this)
-    if "--no_cluster" not in sys.argv:
+    # Start dask if no-cluster flag is not specified (covalent stop auto terminates all child processes of this)
+    if not args.no_cluster:
         dask_cluster = DaskCluster(app_log)
         dask_cluster.start()
 

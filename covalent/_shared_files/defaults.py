@@ -89,8 +89,11 @@ def set_executor() -> dict:
     config_parser.read(config_file)
 
     try:
-        if config_parser["dask"]["scheduler_address"]:
-            executor = {"executor": "dask"}
+        executor = (
+            {"executor": "dask"}
+            if config_parser["dask"]["scheduler_address"]
+            else {"executor": "local"}
+        )
     except KeyError:
         executor = {"executor": "local"}
     return executor

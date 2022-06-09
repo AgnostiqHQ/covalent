@@ -23,13 +23,14 @@
 import os
 import shutil
 import socket
+import sys
 import time
 from subprocess import DEVNULL, Popen
 from typing import Optional
-from multiprocessing.connection import Client
 
 import click
 import psutil
+import requests
 
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
@@ -141,6 +142,7 @@ def _graceful_start(
     pidfile: str,
     logfile: str,
     port: int,
+    no_cluster: str,
     develop: bool = False,
 ) -> int:
     """
@@ -167,8 +169,13 @@ def _graceful_start(
 
     pypath = f"PYTHONPATH={UI_SRVDIR}/../tests:$PYTHONPATH" if develop else ""
     dev_mode_flag = "--develop" if develop else ""
+    no_cluster_flag = "--no_cluster"
     port = _next_available_port(port)
-    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
+    if no_cluster_flag in sys.argv:
+        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no_cluster {no_cluster} >> {logfile} 2>&1"
+        click.echo("Covalent server is starting without Dask.")
+    else:
+        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
@@ -237,13 +244,16 @@ def _graceful_shutdown(pidfile: str) -> None:
     help="Server port number.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
+@click.option("--no_cluster", is_flag=True, help="Start the server without Dask")
+@click.argument("no_cluster", required=False)
 @click.pass_context
-def start(ctx, port: int, develop: bool) -> None:
+def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
     Start the Covalent server.
     """
 
-    port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
+    port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
+    no_cluster_flag = "--no_cluster"
     set_config(
         {
             "user_interface.address": "0.0.0.0",
@@ -339,22 +349,48 @@ def purge() -> None:
 #@click.option(
 #    "--adapt", nargs=2, type=int, help="Vary the number of workers from minsize to maxsize."
 #)
-@click.argument('action')
-def cluster(action) -> None:
+@click.option("--info", is_flag=True, help="Get the status of a running Dask cluster.")
+@click.option("--restart", is_flag=True, help="Restart the Dask service.")
+@click.option("--address", is_flag=True, help="Get Dask cluster address")
+def cluster(info, restart, address) -> None:
     """
-    Inspect and manage the Dask cluster's configuration.
+    Provides CLI options for managing Dask.
     """
-    address = ('localhost', get_config("dask.admin_port"))
-    if action == "address":
-        conn = Client(address, authkey=b'covalent')
-        conn.send(action)
-        scheduler_address = conn.recv()
-        print(f"Dask scheduler is running at {scheduler_address}")
-    elif action == "info":
-        conn = Client(address, authkey=b'covalent')
-        conn.send(action)
-        cluster_info = conn.recv()
-        print(f"Dask cluster info: {cluster_info}")
-    else:
-        print("Invalid query")
+    # Get covalent server address
+    if _is_server_running():
+        server_url = f"http://0.0.0.0:{get_config('dispatcher.port')}"
+        if address:
+            endpoint = server_url+"/dask/address"
+            response = requests.get(endpoint, params={"admin_port": get_config("dask.admin_port")})
+            if response.ok:
+                print(response.json())
 
+        if info:
+            endpoint = server_url+"/dask/info"
+            response = requests.get(endpoint, params={"admin_port": get_config("dask.admin_port")})
+            if response.ok:
+                print(response.json())
+
+
+    #if address:
+    #    conn = Client(dask_proc_admin_thread_address, authkey=b'covalent')
+    #    conn.send("address")
+    #    scheduler_address = conn.recv()
+    #    print(f"Dask scheduler is running at {scheduler_address}")
+#
+    #if info:
+    #    conn = Client(dask_proc_admin_thread_address, authkey=b'covalent')
+    #    conn.send("info")
+    #    cluster_info = conn.recv()
+    #    print(f"Dask cluster info: {cluster_info}")
+#
+    #if _is_server_running():
+    #    if address_flag in sys.argv:
+    #        address = get_config("dask.scheduler_address")
+    #        click.echo(f"The scheduler's address is {address}.")
+    #    if info_flag in sys.argv:
+    #        info = get_config("dask.dashboard_link")
+    #        click.echo(f"Information about the Dask service is available at {info}.")
+    #else:
+    #    click.echo("Dask service is not running.")
+#
