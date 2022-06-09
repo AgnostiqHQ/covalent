@@ -17,19 +17,18 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
+from __future__ import annotations
 import argparse
 import os
 import signal
 import sys
-from datetime import datetime
 from distutils.log import debug
 from logging import Logger
-from logging.handlers import DEFAULT_TCP_LOGGING_PORT
 from multiprocessing import Process
+from threading import Thread
+from multiprocessing.connection import Listener
 from pathlib import Path
 
-import networkx as nx
 import simplejson
 import tailer
 from dask.distributed import LocalCluster
@@ -37,12 +36,9 @@ from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
-from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
-from covalent._shared_files.config import get_config, set_config, update_config
-from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
-from covalent._shared_files.util_classes import Status
+from covalent._shared_files.config import get_config, set_config
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
 
@@ -52,6 +48,44 @@ WEBAPP_PATH = "webapp/build"
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
+def get_random_available_port():
+    """
+    Select a port at random that is available for connections
+    """
+    import socket
+    sock = socket.socket()
+    sock.bind(('', 0))
+    return int(sock.getsockname()[1])
+
+
+class DaskAdminWorker(Thread):
+    """
+    Create a thread to monitor the Dask cluster process in a non intrusive way.
+    If the thread hangs, cluster still remains intact.
+    """
+    def __init__(self, parent: DaskCluster, port: int, host: str = 'localhost', authkey=b'covalent'):
+        super(DaskAdminWorker, self).__init__()
+        self.parent = parent
+        self.listener = Listener((host, port), authkey=authkey)
+
+    def run(self):
+        self.parent.logger.warning(f"Admin worker started")
+        while True:
+            # Wait for a new connection
+            conn = self.listener.accept()
+            msg = conn.recv()
+            if msg == "address":
+                conn.send(self.parent.cluster.scheduler_address)
+            elif msg == "info":
+                cluster_info = {
+                    "name": self.parent.cluster.name,
+                    "status": self.parent.cluster.status,
+                    "type": self.parent.cluster._cluster_info['type'],
+                    "workers": len(self.parent.cluster.workers),
+                    "thread_per_worker": self.parent.cluster._threads_per_worker(),
+                    "mem_per_worker": self.parent.cluster._memory_per_worker()
+                }
+                conn.send(cluster_info)
 
 class DaskCluster(Process):
     def __init__(self, logger: Logger):
@@ -59,18 +93,24 @@ class DaskCluster(Process):
         self.logger = logger
         self.daemon = False
         self.name = "DaskClusterProcess"
+        self.cluster = None
+        self.admin_port = get_random_available_port()
 
     def run(self):
-        cluster = LocalCluster()
-        scheduler_address = cluster.scheduler_address
-        self.logger.warning(f"The Dask scheduler is running on {scheduler_address}")
-        self.logger.warning(f"Dask cluster dashboard is at: {cluster.dashboard_link}")
-        set_config({"dask": {"scheduler_address": scheduler_address}})
+        # Start the admin worker thread before
+        self.admin_worker = DaskAdminWorker(self, self.admin_port)
+        self.admin_worker.start()
 
-        # Halt the process here until its terminated
+        self.cluster = LocalCluster()
+        scheduler_address = self.cluster.scheduler_address
+        self.logger.warning(f"The Dask scheduler is running on {scheduler_address}")
+        self.logger.warning(f"Dask cluster dashboard is at: {self.cluster.dashboard_link}")
+        set_config({"dask": { "scheduler_address": scheduler_address, "admin_port": self.admin_port }})
+
+        # Halt the process here until termination
         signal.pause()
 
-
+            
 app = Flask(__name__, static_folder=WEBAPP_PATH)
 app.register_blueprint(bp)
 # allow cross-origin requests when API and static files are served separately

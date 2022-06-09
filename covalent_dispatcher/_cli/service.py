@@ -25,7 +25,8 @@ import shutil
 import socket
 import time
 from subprocess import DEVNULL, Popen
-from typing import Optional, Tuple
+from typing import Optional
+from multiprocessing.connection import Client
 
 import click
 import psutil
@@ -328,18 +329,32 @@ def purge() -> None:
 
 
 @click.command()
-@click.option(
-    "--scale",
-    default=4,
-    type=int,
-    is_flag=True,
-    help="Autoscale up/down the number of workers in the Dask cluster.",
-)
-@click.option(
-    "--adapt", nargs=2, type=int, help="Vary the number of workers from minsize to maxsize."
-)
-def cluster() -> None:
+#@click.option(
+#    "--scale",
+#    default=4,
+#    type=int,
+#    is_flag=True,
+#    help="Autoscale up/down the number of workers in the Dask cluster.",
+#)
+#@click.option(
+#    "--adapt", nargs=2, type=int, help="Vary the number of workers from minsize to maxsize."
+#)
+@click.argument('action')
+def cluster(action) -> None:
     """
     Inspect and manage the Dask cluster's configuration.
     """
-    pass
+    address = ('localhost', get_config("dask.admin_port"))
+    if action == "address":
+        conn = Client(address, authkey=b'covalent')
+        conn.send(action)
+        scheduler_address = conn.recv()
+        print(f"Dask scheduler is running at {scheduler_address}")
+    elif action == "info":
+        conn = Client(address, authkey=b'covalent')
+        conn.send(action)
+        cluster_info = conn.recv()
+        print(f"Dask cluster info: {cluster_info}")
+    else:
+        print("Invalid query")
+
