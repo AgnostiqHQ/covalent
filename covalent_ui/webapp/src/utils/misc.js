@@ -28,6 +28,7 @@ import { ReactComponent as ActivitySvg } from '../assets/status/activity.svg'
 import { ReactComponent as CheckSvg } from '../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../assets/status/error.svg'
 import { ReactComponent as CancelSvg } from '../assets/status/stop.svg'
+import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
 
 export const formatDate = (date) => {
   if (_.isString(date)) {
@@ -67,7 +68,7 @@ export const statusLabel = (status) => {
   return (
     {
       RUNNING: 'Running',
-      NEW_OBJECT: 'Running',
+      NEW_OBJECT: 'Pending',
       COMPLETED: 'Completed',
       FAILED: 'Failed',
     }[status] || status
@@ -77,6 +78,12 @@ export const statusLabel = (status) => {
 export const statusIcon = (status) => {
   switch (status) {
     case 'RUNNING':
+      return (
+        <SvgIcon sx={{ fontSize: '16', mr: 0.5 }}>
+          <LoaderSvg />
+        </SvgIcon>
+      )
+    case 'NEW_OBJECT':
       return (
         <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
           <ActivitySvg />
