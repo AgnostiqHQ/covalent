@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- `covalent --version` now works for PyPI releases
+
 ## [0.109.0] - 2022-06-10
 
 ### Docs
