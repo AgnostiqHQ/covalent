@@ -56,6 +56,7 @@ jobs:
               patch=true
             fi
             if [[ $line = *"### Tests"* ]] ||
+               [[ $line = *"### Operations"* ]] ||
                [[ $line = *"### Docs"* ]] ; then
               noupdate=true
             fi
