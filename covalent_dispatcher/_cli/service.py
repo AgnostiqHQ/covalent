@@ -29,6 +29,7 @@ from typing import Optional, Tuple
 
 import click
 import psutil
+import requests
 
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
@@ -140,6 +141,7 @@ def _graceful_start(
     pidfile: str,
     logfile: str,
     port: int,
+    no_cluster: str,
     develop: bool = False,
 ) -> int:
     """
@@ -166,8 +168,9 @@ def _graceful_start(
 
     pypath = f"PYTHONPATH={UI_SRVDIR}/../tests:$PYTHONPATH" if develop else ""
     dev_mode_flag = "--develop" if develop else ""
+    no_cluster = "--no_cluster" if no_cluster else ""
     port = _next_available_port(port)
-    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
+    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} no_cluster {no_cluster} >> {logfile} 2>&1"
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
@@ -236,13 +239,15 @@ def _graceful_shutdown(pidfile: str) -> None:
     help="Server port number.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
+@click.option("--no_cluster", is_flag=True, help="Start the server without Dask")
+@click.argument("no_cluster", required=False)
 @click.pass_context
-def start(ctx, port: int, develop: bool) -> None:
+def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
     Start the Covalent server.
     """
 
-    port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
+    port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     set_config(
         {
             "user_interface.address": "0.0.0.0",
@@ -329,17 +334,21 @@ def purge() -> None:
 
 @click.command()
 @click.option(
-    "--scale",
-    default=4,
-    type=int,
-    is_flag=True,
-    help="Autoscale up/down the number of workers in the Dask cluster.",
+    "--address", is_flag=True, help="Get the scheduler address of a running Dask cluster."
 )
-@click.option(
-    "--adapt", nargs=2, type=int, help="Vary the number of workers from minsize to maxsize."
-)
-def cluster() -> None:
+@click.option("--info", is_flag=True, help="Get the status of a running Dask cluster.")
+@click.argument("info", required=False)
+@click.argument("address", required=False)
+@click.pass_context
+def cluster(ctx, address: str, info: str) -> None:
     """
-    Inspect and manage the Dask cluster's configuration.
+    Provides an entry point to inspect Dask.
     """
-    pass
+
+    if _is_server_running():
+        address = get_config("dask.scheduler_address")
+        info = get_config("dask.dashboard_link")
+        click.echo(f"The scheduler's address is {address}.")
+        click.echo(f"Information about the Dask service is available at {info}.")
+    else:
+        click.echo("Dask service is not running. Please run 'covalent start' to start Dask.")
