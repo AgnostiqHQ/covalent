@@ -336,38 +336,3 @@ def purge() -> None:
     cm.purge_config()
 
     click.echo("Covalent server files have been purged.")
-
-
-@click.command()
-@click.option(
-    "--address", is_flag=True, help="Get the scheduler address of a running Dask cluster."
-)
-@click.option("--info", is_flag=True, help="Get the status of a running Dask cluster.")
-@click.option("--restart", is_flag=True, help="Restart the Dask service.")
-@click.argument("address", required=False)
-@click.argument("info", required=False)
-@click.argument("restart", required=False)
-@click.pass_context
-def cluster(ctx, address: str, info: str, restart) -> None:
-    """
-    Provides CLI options for managing Dask.
-    """
-    address_flag = "--address"
-    info_flag = "--info"
-    restart_flag = "--restart"
-    stop_flag = "--stop"
-
-    if _is_server_running():
-        if address_flag in sys.argv:
-            address = get_config("dask.scheduler_address")
-            click.echo(f"The scheduler's address is {address}.")
-        if info_flag in sys.argv:
-            info = get_config("dask.dashboard_link")
-            click.echo(f"Information about the Dask service is available at {info}.")
-    else:
-        click.echo("Dask service is not running.")
-
-    if restart_flag in sys.argv:
-        ctx.invoke(stop)
-        ctx.invoke(start)
-        click.echo("Dask service has restarted.")
