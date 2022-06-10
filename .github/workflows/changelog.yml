@@ -87,6 +87,11 @@ jobs:
             nl=$'\n'
             sed -i '/UNRELEASED/a\'$'\n''\'$'\n'"$changelog_header" CHANGELOG.md
             echo $version > VERSION
+
+            # Ensure the contents of VERSION file within covalent is
+            # the same as root level VERSION file
+            echo $version > covalent/VERSION
+
             echo $message
           else
             echo "This PR only contains updates to tests and docs. No release will be created."

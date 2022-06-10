@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added new tutorial: Training quantum embedding kernels for classification
 - Fixed display issues with figure (in dark mode) and bullet points in tutorials
 
+## [0.110.1] - 2022-06-10
+
+### Fixed
+
+- Configure dask to not use daemonic processes when creating a cluster
+
+### Operations
+
+- Sync the VERSION file within `covalent` directory to match the root level VERSION
+- Manually patch `covalent/VERSION`
+
 ## [0.110.0] - 2022-06-10
 
 ### Changed
