@@ -340,12 +340,11 @@ def logs() -> None:
     Show Covalent server logs
     """
     if os.path.exists(UI_LOGFILE):
-        with open(UI_LOGFILE, "r") as f:
-            logs = f.readlines()
-        if logs:
-            for line in logs:
-                print(line.rstrip("\n"))
-        else:
-            print("Log file empty!")
+        f = open(UI_LOGFILE, "r")
+        line = f.readline()
+        while line:
+            click.echo(line.rstrip("\n"))
+            line = f.readline()
+        f.close()
     else:
-        print(f"{UI_LOGFILE} not found!. Server possibly purged!")
+        click.echo(f"{UI_LOGFILE} not found!. Server possibly purged!")
