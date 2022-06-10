@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Configure dask to not use daemonic processes when creating a cluster
+
 ### Operations
 
 - Sync the VERSION file within `covalent` directory to match the root level VERSION
