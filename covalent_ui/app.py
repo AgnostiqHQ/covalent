@@ -33,14 +33,10 @@ import dask.config
 import networkx as nx
 import simplejson
 import tailer
+from dask.distributed import LocalCluster
 from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
-
-# Configure dask to not allow daemon workers
-dask.config.set({"distributed.worker.daemon": False})
-
-from dask.distributed import LocalCluster
 
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
@@ -50,6 +46,9 @@ from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
+
+# Configure dask to not allow daemon workers
+dask.config.set({"distributed.worker.daemon": False})
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
