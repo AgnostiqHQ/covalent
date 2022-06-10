@@ -249,22 +249,20 @@ def _graceful_shutdown(pidfile: str) -> None:
     is_flag=True,
     help="Start the server without Dask and use the LocalExecutor instead",
 )
-@click.argument("no-cluster", required=False)
+#@click.argument("no-cluster", required=False)
 @click.pass_context
 def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
     Start the Covalent server.
     """
-
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
-    no_cluster_flag = "--no-cluster"
     set_config(
-        {
-            "user_interface.address": "0.0.0.0",
-            "user_interface.port": port,
-            "dispatcher.address": "0.0.0.0",
-            "dispatcher.port": port,
-        }
+            {
+                "user_interface.address": "0.0.0.0",
+                "user_interface.port": port,
+                "dispatcher.address": "0.0.0.0",
+                "dispatcher.port": port,
+            }
     )
 
     # Wait until the server actually starts listening on the port
@@ -302,7 +300,6 @@ def restart(ctx, port: bool, develop: bool) -> None:
     """
     Restart the server.
     """
-
     port = port or get_config("user_interface.port")
 
     ctx.invoke(stop)
@@ -314,14 +311,12 @@ def status() -> None:
     """
     Query the status of the Covalent server.
     """
-
     if _read_pid(UI_PIDFILE) != -1:
         ui_port = get_config("user_interface.port")
         click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
     else:
         _rm_pid_file(UI_PIDFILE)
         click.echo("Covalent server is stopped.")
-
 
 @click.command()
 def purge() -> None:
