@@ -31,7 +31,7 @@ from ._shared_files.util_classes import RESULT_STATUS as status
 from ._workflow import Lepton, electron, lattice
 
 try:
-    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../VERSION")) as f:
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "./VERSION")) as f:
         __version__ = f.read().strip()
 except FileNotFoundError:
     pass
