@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Sync the VERSION file within `covalent` directory to match the root level VERSION
+- Manually patch `covalent/VERSION`
+
 ## [0.110.0] - 2022-06-10
 
 ### Changed
