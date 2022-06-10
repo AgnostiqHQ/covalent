@@ -39,6 +39,7 @@ UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
 
+
 def _read_pid(filename: str) -> int:
     """
     Read the process ID from file.
@@ -57,6 +58,7 @@ def _read_pid(filename: str) -> int:
 
     return pid
 
+
 def _rm_pid_file(filename: str) -> None:
     """
     Remove a process ID file safely.
@@ -70,6 +72,7 @@ def _rm_pid_file(filename: str) -> None:
 
     if os.path.isfile(filename):
         os.remove(filename)
+
 
 def _port_from_pid(pid: int) -> Optional[int]:
     """
@@ -85,6 +88,7 @@ def _port_from_pid(pid: int) -> Optional[int]:
     if psutil.pid_exists(pid):
         return psutil.Process(pid).connections()[0].laddr.port
     return None
+
 
 def _next_available_port(requested_port: int) -> int:
     """
@@ -120,6 +124,7 @@ def _next_available_port(requested_port: int) -> int:
 
     return assigned_port
 
+
 def _is_server_running() -> bool:
     """Check status of the Covalent server.
 
@@ -129,6 +134,7 @@ def _is_server_running() -> bool:
     if _read_pid(UI_PIDFILE) == -1:
         return False
     return True
+
 
 def _graceful_start(
     server_root: str,
@@ -178,6 +184,7 @@ def _graceful_start(
     click.echo(f"Covalent server has started at http://0.0.0.0:{port}")
     return port
 
+
 def _terminate_child_processes(pid: int) -> None:
     """For a given process, find all the child processes and terminate them.
 
@@ -193,6 +200,7 @@ def _terminate_child_processes(pid: int) -> None:
             child_proc.wait()
         except psutil.NoSuchProcess:
             pass
+
 
 def _graceful_shutdown(pidfile: str) -> None:
     """
@@ -223,6 +231,7 @@ def _graceful_shutdown(pidfile: str) -> None:
 
     _rm_pid_file(pidfile)
 
+
 @click.command()
 @click.option(
     "-p",
@@ -244,12 +253,12 @@ def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     set_config(
-            {
-                "user_interface.address": "0.0.0.0",
-                "user_interface.port": port,
-                "dispatcher.address": "0.0.0.0",
-                "dispatcher.port": port,
-            }
+        {
+            "user_interface.address": "0.0.0.0",
+            "user_interface.port": port,
+            "dispatcher.address": "0.0.0.0",
+            "dispatcher.port": port,
+        }
     )
 
     # Wait until the server actually starts listening on the port
@@ -264,12 +273,14 @@ def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
 
         time.sleep(1)
 
+
 @click.command()
 def stop() -> None:
     """
     Stop the Covalent server.
     """
     _graceful_shutdown(UI_PIDFILE)
+
 
 @click.command()
 @click.option(
@@ -290,6 +301,7 @@ def restart(ctx, port: bool, develop: bool) -> None:
     ctx.invoke(stop)
     ctx.invoke(start, port=port, develop=develop)
 
+
 @click.command()
 def status() -> None:
     """
@@ -301,6 +313,7 @@ def status() -> None:
     else:
         _rm_pid_file(UI_PIDFILE)
         click.echo("Covalent server is stopped.")
+
 
 @click.command()
 def purge() -> None:
@@ -319,6 +332,7 @@ def purge() -> None:
     cm.purge_config()
 
     click.echo("Covalent server files have been purged.")
+
 
 @click.command()
 def logs() -> None:
