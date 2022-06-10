@@ -39,7 +39,6 @@ UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
 
-
 def _read_pid(filename: str) -> int:
     """
     Read the process ID from file.
@@ -58,7 +57,6 @@ def _read_pid(filename: str) -> int:
 
     return pid
 
-
 def _rm_pid_file(filename: str) -> None:
     """
     Remove a process ID file safely.
@@ -72,7 +70,6 @@ def _rm_pid_file(filename: str) -> None:
 
     if os.path.isfile(filename):
         os.remove(filename)
-
 
 def _port_from_pid(pid: int) -> Optional[int]:
     """
@@ -88,7 +85,6 @@ def _port_from_pid(pid: int) -> Optional[int]:
     if psutil.pid_exists(pid):
         return psutil.Process(pid).connections()[0].laddr.port
     return None
-
 
 def _next_available_port(requested_port: int) -> int:
     """
@@ -124,18 +120,15 @@ def _next_available_port(requested_port: int) -> int:
 
     return assigned_port
 
-
 def _is_server_running() -> bool:
     """Check status of the Covalent server.
 
     Returns:
         status: Status of whether the server is running.
     """
-
     if _read_pid(UI_PIDFILE) == -1:
         return False
     return True
-
 
 def _graceful_start(
     server_root: str,
@@ -158,7 +151,6 @@ def _graceful_start(
     Returns:
         port: Port assigned to the server.
     """
-
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         port = get_config("user_interface.port")
@@ -186,7 +178,6 @@ def _graceful_start(
     click.echo(f"Covalent server has started at http://0.0.0.0:{port}")
     return port
 
-
 def _terminate_child_processes(pid: int) -> None:
     """For a given process, find all the child processes and terminate them.
 
@@ -196,14 +187,12 @@ def _terminate_child_processes(pid: int) -> None:
     Returns:
         None
     """
-
     for child_proc in psutil.Process(pid).children(recursive=True):
         try:
             child_proc.kill()
             child_proc.wait()
         except psutil.NoSuchProcess:
             pass
-
 
 def _graceful_shutdown(pidfile: str) -> None:
     """
@@ -234,7 +223,6 @@ def _graceful_shutdown(pidfile: str) -> None:
 
     _rm_pid_file(pidfile)
 
-
 @click.command()
 @click.option(
     "-p",
@@ -249,7 +237,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     is_flag=True,
     help="Start the server without Dask and use the LocalExecutor instead",
 )
-#@click.argument("no-cluster", required=False)
 @click.pass_context
 def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
@@ -277,14 +264,12 @@ def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
 
         time.sleep(1)
 
-
 @click.command()
 def stop() -> None:
     """
     Stop the Covalent server.
     """
     _graceful_shutdown(UI_PIDFILE)
-
 
 @click.command()
 @click.option(
@@ -304,7 +289,6 @@ def restart(ctx, port: bool, develop: bool) -> None:
 
     ctx.invoke(stop)
     ctx.invoke(start, port=port, develop=develop)
-
 
 @click.command()
 def status() -> None:
@@ -335,7 +319,6 @@ def purge() -> None:
     cm.purge_config()
 
     click.echo("Covalent server files have been purged.")
-
 
 @click.command()
 def logs() -> None:
