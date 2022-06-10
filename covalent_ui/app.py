@@ -29,6 +29,7 @@ from logging.handlers import DEFAULT_TCP_LOGGING_PORT
 from multiprocessing import Process
 from pathlib import Path
 
+import dask.config
 import networkx as nx
 import simplejson
 import tailer
@@ -45,6 +46,9 @@ from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
+
+# Configure dask to not allow daemon workers
+dask.config.set({"distributed.worker.daemon": False})
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
