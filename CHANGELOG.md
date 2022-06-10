@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a retry block to the webapp build step in `tests.yml`
 
+### Docs
+
+- Fixed display issues with figure (in dark mode) and bullet points in tutorials
+
 ## [0.110.1] - 2022-06-10
 
 ### Fixed
