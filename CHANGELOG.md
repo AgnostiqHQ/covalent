@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Removed references to the Dask executor in RTD as they are no longer needed.
+
 ## [0.109.1] - 2022-06-10
 
 ### Fixed
