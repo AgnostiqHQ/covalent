@@ -80,8 +80,28 @@ const ResultProgress = ({ dispatchId }) => {
 
         <Box sx={{ minWidth: 35 }}>
           <Typography variant="body2" color={color}>
-            {completed}/{total}
+            {completed === total ?
+          <Box
+              sx={{
+                color: `${color}.main`,
+                display: 'flex',
+                fontSize: '1rem',
+                alignItems: 'center',
+                py: 1,
+              }}
+            >
+              {completed}/{total}
+            </Box>
+            :
+            <Typography variant="body2">
+              <Box component="div" display="inline"
+              sx={{color: `${color}.main`,fontSize: '1rem'}}>{completed}</Box>
+              <Box component="div" display="inline"
+              sx={{fontSize: '1rem'}}>/{total}</Box>
+            </Typography>
+            }
           </Typography>
+
         </Box>
       </Box>
     </Tooltip>

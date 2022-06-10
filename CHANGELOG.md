@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Web GUI list size and status label colors changed.
+- Web GUI graph running icon changed to non-static icon.
+
 ### Docs
 
 - Removed references to the Dask executor in RTD as they are no longer needed.
