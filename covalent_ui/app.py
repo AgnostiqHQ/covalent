@@ -32,10 +32,16 @@ from pathlib import Path
 import networkx as nx
 import simplejson
 import tailer
-from dask.distributed import LocalCluster
 from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
+
+import dask.config
+
+# Configure dask to not allow daemon workers
+dask.config.set({'distributed.worker.daemon': False})
+
+from dask.distributed import LocalCluster
 
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
