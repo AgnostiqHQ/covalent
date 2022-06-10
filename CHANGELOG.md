@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Added new tutorial: Training quantum embedding kernels for classification
 - Fixed display issues with figure (in dark mode) and bullet points in tutorials
 
 ## [0.110.1] - 2022-06-10
@@ -54,6 +53,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Updating codeowners to establish engineering & psiog ownership
+
+### Docs
+
+- Added new tutorial: Training quantum embedding kernels for classification.
 
 ## [0.108.0] - 2022-06-08
 
