@@ -38,7 +38,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 
 # Configure dask to not allow daemon workers
-dask.config.set({'distributed.worker.daemon': False})
+dask.config.set({"distributed.worker.daemon": False})
 
 from dask.distributed import LocalCluster
 
