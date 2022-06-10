@@ -21,6 +21,7 @@
 import argparse
 import os
 import signal
+import sys
 from datetime import datetime
 from distutils.log import debug
 from logging import Logger
@@ -28,6 +29,7 @@ from logging.handlers import DEFAULT_TCP_LOGGING_PORT
 from multiprocessing import Process
 from pathlib import Path
 
+import dask.config
 import networkx as nx
 import simplejson
 import tailer
@@ -39,10 +41,14 @@ from flask_socketio import SocketIO
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
-from covalent._shared_files.config import get_config, set_config
+from covalent._shared_files.config import get_config, set_config, update_config
+from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
+
+# Configure dask to not allow daemon workers
+dask.config.set({"distributed.worker.daemon": False})
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
@@ -61,9 +67,12 @@ class DaskCluster(Process):
     def run(self):
         cluster = LocalCluster()
         scheduler_address = cluster.scheduler_address
+        dashboard_link = cluster.dashboard_link
         self.logger.warning(f"The Dask scheduler is running on {scheduler_address}")
-        self.logger.warning(f"Dask cluster dashboard is at: {cluster.dashboard_link}")
-        set_config({"dask": {"scheduler_address": scheduler_address}})
+        self.logger.warning(f"Dask cluster dashboard is at: {dashboard_link}")
+        set_config(
+            {"dask": {"scheduler_address": scheduler_address, "dashboard_link": dashboard_link}}
+        )
 
         # Halt the process here until its terminated
         signal.pause()
@@ -172,6 +181,7 @@ if __name__ == "__main__":
         action="store_true",
         help="Start the server in developer mode.",
     )
+    ap.add_argument("--no-cluster", required=False, help="Start Covalent server without Dask")
 
     args, unknown = ap.parse_known_args()
 
@@ -185,9 +195,10 @@ if __name__ == "__main__":
     # reload = True if args.develop is True else False
     reload = False
 
-    # Start dask (covalent stop auto terminates all child processes of this)
-    dask_cluster = DaskCluster(app_log)
-    dask_cluster.start()
+    # Start dask if no-cluster flag is not specified (covalent stop auto terminates all child processes of this)
+    if not args.no_cluster:
+        dask_cluster = DaskCluster(app_log)
+        dask_cluster.start()
 
     # Start covalent main app
     socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
