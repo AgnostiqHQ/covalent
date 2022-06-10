@@ -23,7 +23,9 @@
 """Covalent CLI Tool."""
 
 import click
+
 from .service import logs, purge, restart, start, status, stop
+
 
 # Main entrypoint
 @click.group(invoke_without_command=True)
