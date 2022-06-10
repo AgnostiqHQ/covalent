@@ -307,7 +307,9 @@ def status() -> None:
     """
     Query the status of the Covalent server.
     """
-    if _read_pid(UI_PIDFILE) != -1:
+
+    pid = _read_pid(UI_PIDFILE)
+    if _read_pid(UI_PIDFILE) != -1 and psutil.pid_exists(pid):
         ui_port = get_config("user_interface.port")
         click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
     else:
