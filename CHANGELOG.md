@@ -12,20 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Web GUI list size and status label colors changed.
 - Web GUI graph running icon changed to non-static icon.
 
-
-## [0.109.1] - 2022-06-10
-
 ### Docs
 
 - Removed references to the Dask executor in RTD as they are no longer needed.
+
+## [0.109.1] - 2022-06-10
 
 ### Fixed
 
 - `covalent --version` now works for PyPI releases
-
-### Docs
-
-- Removed references to the Dask executor in RTD as they are no longer needed.
 
 ## [0.109.0] - 2022-06-10
 
