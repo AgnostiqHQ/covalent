@@ -29,14 +29,13 @@ from logging.handlers import DEFAULT_TCP_LOGGING_PORT
 from multiprocessing import Process
 from pathlib import Path
 
+import dask.config
 import networkx as nx
 import simplejson
 import tailer
 from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
-
-import dask.config
 
 # Configure dask to not allow daemon workers
 dask.config.set({'distributed.worker.daemon': False})
