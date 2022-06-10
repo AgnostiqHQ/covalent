@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Removed references to the Dask executor in RTD as they are no longer needed.
+
 ## [0.109.1] - 2022-06-10
 
 ### Fixed
@@ -31,7 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Added new tutorial: Training quantum embedding kernels for classification.
-- Removed references to the Dask executor in RTD as they are no longer needed.
 
 ## [0.108.0] - 2022-06-08
 
