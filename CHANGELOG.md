@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.110.0] - 2022-06-10
+
 ### Changed
 
 - Web GUI list size and status label colors changed.
