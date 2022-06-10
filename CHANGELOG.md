@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Added a retry block to the webapp build step in `tests.yml`
+
 ## [0.110.1] - 2022-06-10
 
 ### Fixed
