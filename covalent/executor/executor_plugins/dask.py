@@ -30,7 +30,7 @@ import os
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Dict, List
 
-from dask.distributed import get_client
+from dask.distributed import Client
 
 from covalent._shared_files import logger
 
@@ -108,7 +108,7 @@ class DaskExecutor(BaseExecutor):
             output: The result of the executed function.
         """
 
-        dask_client = get_client(address=self.scheduler_address, timeout=1)
+        dask_client = Client(address=self.scheduler_address, timeout=1, serializers=["pickle"])
 
         dispatch_info = DispatchInfo(dispatch_id)
         fn = function.get_deserialized()
