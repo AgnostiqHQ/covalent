@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.110.1] - 2022-06-10
+
+### Fixed
+
+- Configure dask to not use daemonic processes when creating a cluster
+
+### Operations
+
+- Sync the VERSION file within `covalent` directory to match the root level VERSION
+- Manually patch `covalent/VERSION`
+
+## [0.110.0] - 2022-06-10
+
+### Changed
+
+- Web GUI list size and status label colors changed.
+- Web GUI graph running icon changed to non-static icon.
+
+### Docs
+
+- Removed references to the Dask executor in RTD as they are no longer needed.
+
+## [0.109.1] - 2022-06-10
+
+### Fixed
+
+- `covalent --version` now works for PyPI releases
+
+## [0.109.0] - 2022-06-10
+
+### Docs
+
+- Update CLI help statements
+
+### Added
+
+- Add CLI functionality to start covalent with/without Dask
+- Add CLI support to parse `covalent_ui.log` file
+
+### Operations
+
+- Updating codeowners to establish engineering & psiog ownership
+
+### Docs
+
+- Added new tutorial: Training quantum embedding kernels for classification.
+
+## [0.108.0] - 2022-06-08
+
+### Added
+
+- WCI yaml file
+
 ### Docs
 
 - Add pandoc installation updates to contributing guide

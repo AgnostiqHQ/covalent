@@ -155,6 +155,10 @@ const ResultsTableHead = ({
             indeterminate={numSelected > 0 && numSelected < total}
             checked={numSelected > 0 && numSelected === total}
             onClick={onSelectAllClick}
+            size='small'
+            sx={(theme) =>({
+              color: theme.palette.text.tertiary
+            })}
           />
         </TableCell>
 
@@ -279,6 +283,8 @@ const StyledTable = styled(Table)(({ theme }) => ({
   // customize border
   [`& .${tableCellClasses.root}`]: {
     borderColor: theme.palette.background.default,
+    paddingTop:2,
+    paddingBottom:2
   },
   [`& .${tableCellClasses.root}:first-of-type`]: {
     borderTopLeftRadius: 8,
@@ -390,14 +396,18 @@ const ResultListing = () => {
                     <Checkbox
                       checked={isSelected}
                       onClick={() => handleChangeSelection(dispatchId)}
+                      size='small'
+                      sx={(theme) =>({
+                        color: theme.palette.text.tertiary
+                      })}
                     />
                   </TableCell>
 
-                  <TableCell>
+                  <TableCell sx={{paddingTop:'6px !important'}}>
                     <Link
                       underline="none"
                       href={`/${dispatchId}`}
-                      sx={{ color: 'white' }}
+                      sx={{ color: 'white'}}
                     >
                       {dispatchId}
                     </Link>

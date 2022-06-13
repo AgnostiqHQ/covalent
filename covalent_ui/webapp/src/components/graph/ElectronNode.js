@@ -34,6 +34,7 @@ import { ReactComponent as AtomSvg } from '../../assets/status/activity.svg'
 import { ReactComponent as CheckSvg } from '../../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../../assets/status/error.svg'
 import { statusColor } from '../../utils/misc'
+import { ReactComponent as LoaderSvg } from '../../assets/loader.svg'
 
 export const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
 
@@ -83,17 +84,15 @@ const ElectronNode = ({
           switch (data.status) {
             case 'NEW_OBJECT':
               return (
-                <SvgIcon sx={{ mt: 1,mr: 0.5,fontSize: 14, fill: color }}>
+                <SvgIcon sx={{ mt: 0.5,mr: 0.5,fontSize: 14, fill: color }}>
                   <AtomSvg />
                 </SvgIcon>
               )
             case 'RUNNING':
               return (
                 <SvgIcon
-                  sx={{ mt: 1,mr: 0.5,fontSize: 14, fill: color }}
-                  className="spin-electron"
-                >
-                  <AtomSvg />
+                  sx={{ mt: 0.5,mr: 0.5,fontSize: 14, fill: color }}>
+                  <LoaderSvg />
                 </SvgIcon>
               )
             case 'COMPLETED':
