@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Fixed display issues with figure (in dark mode) and bullet points in tutorials
+- Added new tutorial: Linear and convolutional autoencoders
 
 ## [0.110.1] - 2022-06-10
 
