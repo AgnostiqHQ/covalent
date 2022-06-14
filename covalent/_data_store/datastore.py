@@ -24,7 +24,7 @@ from typing import BinaryIO, Generator, List, Union
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from ..shared_files.config import get_config
+from .._shared_files.config import get_config
 from . import models
 from .storage_backends import LocalStorageBackend, StorageBackend
 
