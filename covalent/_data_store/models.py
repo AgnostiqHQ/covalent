@@ -30,11 +30,16 @@ from sqlalchemy.orm import declarative_base
 Base = declarative_base()
 
 
+# See electron.py's import list and
+# execution.py's _run_planned_workflow
 class ElectronTypeEnum(enum.Enum):
     electron = 1
     parameter = 2
     sublattice = 3
     collection = 4
+    attribute = 5
+    generated = 6
+    subscript = 7
 
 
 class ParameterTypeEnum(enum.Enum):
@@ -77,9 +82,17 @@ class Electron(Base):
     function_string_filename = Column(Text)
     executor_filename = Column(Text)
     error_filename = Column(Text)
-    inputs_filename = Column(Text)
     results_filename = Column(Text)
+
+    # For parameter nodes
     value_filename = Column(Text)
+
+    # For attribute nodes
+    attribute_name = Column(Text)
+
+    # For generated and subscript nodes
+    key = Column(Integer)
+
     stdout_filename = Column(Text)
     stderr_filename = Column(Text)
     info_filename = Column(Text)
