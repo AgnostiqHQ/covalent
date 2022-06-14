@@ -18,6 +18,8 @@ Beginner
      - Title
    * - Machine learning
      - :doc:`MNIST classifier<./machine_learning/mnist_classifier>`
+   * - Machine learning
+     - :doc:`Using Covalent with PennyLane for hybrid computation<./machine_learning/pennylane_hybrid>`
 
 ~~~~~~~~
 Advanced
@@ -33,6 +35,8 @@ Advanced
      - :doc:`Simulating the Nitrogen-Copper interaction<./quantum_chemistry/nitrogen_copper_interaction>`
    * - Machine Learning
      - :doc:`Classical and quantum support vector machines<./machine_learning/classical_quantum_svm>`
+   * - Machine learning
+     - :doc:`Training quantum embedding kernels for classification<./machine_learning/quantum_embedding_kernel>`
    * - Astronomy
      - :doc:`Tracking stars in the night sky<./astronomy/star_tracker>`
    * - Quantum Gravity

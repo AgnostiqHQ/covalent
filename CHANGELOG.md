@@ -7,9 +7,112 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Added a retry block to the webapp build step in `tests.yml`
+
+### Docs
+
+- Fixed display issues with figure (in dark mode) and bullet points in tutorials
+
+## [0.110.1] - 2022-06-10
+
+### Fixed
+
+- Configure dask to not use daemonic processes when creating a cluster
+
+### Operations
+
+- Sync the VERSION file within `covalent` directory to match the root level VERSION
+- Manually patch `covalent/VERSION`
+
+## [0.110.0] - 2022-06-10
+
+### Changed
+
+- Web GUI list size and status label colors changed.
+- Web GUI graph running icon changed to non-static icon.
+
+### Docs
+
+- Removed references to the Dask executor in RTD as they are no longer needed.
+
+## [0.109.1] - 2022-06-10
+
+### Fixed
+
+- `covalent --version` now works for PyPI releases
+
+## [0.109.0] - 2022-06-10
+
+### Docs
+
+- Update CLI help statements
+
+### Added
+
+- Add CLI functionality to start covalent with/without Dask
+- Add CLI support to parse `covalent_ui.log` file
+
+### Operations
+
+- Updating codeowners to establish engineering & psiog ownership
+
+### Docs
+
+- Added new tutorial: Training quantum embedding kernels for classification.
+
+## [0.108.0] - 2022-06-08
+
+### Added
+
+- WCI yaml file
+
+### Docs
+
+- Add pandoc installation updates to contributing guide
+
+## [0.107.0] - 2022-06-07
+
+### Changed
+
+- Skipping stdout/stderr redirection tests until implemented in Dask parent process
+
+### Added
+
+- Simplifed starting the dask cluster using `multiprocessing`
+- Added `bokeh==2.4.3` to requirements.txt to enable view Dask dashboard
+
+### Fixed
+
+- Changelog-reminder action now works for PRs from forks.
+
+## [0.106.2] - 2022-06-06
+
+### Fixed
+
+- Specifying the version for package `furo` to `2022.4.7` to prevent breaking doc builds
+
+### Docs
+
+- Added new tutorial: Using Covalent with PennyLane for hybrid computation.
+
+## [0.106.1] - 2022-06-01
+
+### Fixed
+
+- Changelog-reminder action now works for PRs from forks
+
+### Docs
+
+- Removed references to microservices in RTD
+- Updated README.md.
+- Changed `ct.electron` to `ct.lattice(executor=dask_executor)` in MNIST classifier tutorial
+
 ## [0.106.0] - 2022-05-26
 
 ### Changed
+
 - Visual theme for Webapp GUI changed in accordance to new theme
 - Fonts, colors, icons have been updated
 

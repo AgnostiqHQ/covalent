@@ -30,7 +30,8 @@ Users interact with Covalent in four main ways:
 
 * :ref:`Results collection<Workflow result collection>`
 
-Under the hood Covalent brings up a set of :doc:`microservices <../api/microservices>` to orchestrate workflows.
+..
+  Under the hood Covalent brings up a set of :doc:`microservices <../api/microservices>` to orchestrate workflows.
 
 .. _Workflow construction:
 
@@ -297,25 +298,6 @@ Conceptually, as shown in the figure below, executing a sublattice adds the cons
 
 .. note:: :code:`ct.electron(lattice)`, which creates a sublattice, should not be confused with :code:`ct.lattice(electron)`, which is a single task workflow.
 
-Note that the user should not construct a sublattice using the following pattern:
-
-.. code-block:: python
-
-    @ct.electron
-    @ct.lattice
-    def workflow(**params):
-        ...
-
-The following pattern is how a sublattice should be constructed:
-
-.. code-block:: python
-
-    @ct.lattice
-    def workflow(**params):
-        ...
-
-    workflow_sublattice = ct.electron(workflow)
-
 .. _Transport graph:
 
 ~~~~~~~~~~~~~~~~
@@ -361,7 +343,7 @@ Executors
 
 An executor is responsible for taking a task and executing it in a certain place in a certain way. For example, the local executor invokes the task on the user's local computer. Users can define custom executors to make Covalent compatible with any remote backend system.
 
-The workflow defined in the :ref:`lattice<Lattice>` subsection uses the electron decorator without passing any custom parameters. By default, a local executor is chosen. However, Covalent allows users to...
+The workflow defined in the :ref:`lattice<Lattice>` subsection uses the electron decorator without passing any custom parameters. By default, a Dask executor is chosen. However, Covalent allows users to...
 
 * use different executors for each electron.
 

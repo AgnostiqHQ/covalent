@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 on:
-  pull_request
+  pull_request_target
 
 name: Changelog Reminder
 
@@ -29,6 +29,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+
     - name: Changelog Reminder
       uses: peterjgrainger/action-changelog-reminder@v1.3.0
       with:

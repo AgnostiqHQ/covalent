@@ -542,6 +542,8 @@ When running this command for the first time some users might get a `pandoc miss
 pip install pandoc
 ```
 
+In case `pandoc` is not installed via above, follow the installation instructions provided [here](https://pandoc.org/installing.html).
+
 #### Viewing the locally built RTD
 
 In order to view the local RTD build, navigate to the `/covalent/doc/build/html` folder. Left click on `index.html` file and copy the path. Paste the path into the browser to access the RTD that was built locally.

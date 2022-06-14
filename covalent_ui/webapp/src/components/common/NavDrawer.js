@@ -82,7 +82,7 @@ const LinkButton = ({ title, icon, path }) => {
          padding: "5px 0px 0px 3px",
          borderRadius: "6px" ,my:2}} component={icon} />
          :
-         <SvgIcon sx={{ mx: 'auto',my:2 }} component={icon} />
+         <SvgIcon sx={{ mx: 'auto',my:2,marginLeft:'4px'}} component={icon} />
         }
        </ListItemButton>
      </Tooltip>
