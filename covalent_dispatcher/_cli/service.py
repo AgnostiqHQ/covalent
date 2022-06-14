@@ -171,7 +171,7 @@ def _graceful_start(
     port = _next_available_port(port)
     if no_cluster_flag in sys.argv:
         launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
-        click.echo("Covalent server is starting without Dask.")
+        #click.echo("Covalent server is starting without Dask.")
     else:
         launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
 
