@@ -39,6 +39,7 @@ Advanced
      - :doc:`Training quantum embedding kernels for classification<./machine_learning/quantum_embedding_kernel>`
    * - Astronomy
      - :doc:`Tracking stars in the night sky<./astronomy/star_tracker>`
+..
    * - Quantum Gravity
      - :doc:`Classifying discrete spacetimes by dimension<./quantum_gravity/spacetime_classification>`
 

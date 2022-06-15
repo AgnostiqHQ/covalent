@@ -19,6 +19,10 @@ The easiest way to install Covalent is using the PyPI package manager:
 
    pip install cova
 
+.. note::
+
+   If you have used Covalent previously, make sure to uninstall the Covalent Dask plugin by running :code:`pip uninstall covalent-dask-plugin`. That plugin has been folded into Covalent and will no longer be maintained separately.
+
 
 Conda Install
 -------------
