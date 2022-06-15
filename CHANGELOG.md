@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.110.2] - 2022-06-10
+
 ### Docs
 
 - Fix MNIST tutorial
@@ -14,14 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update RTD with migration guide compatible with latest release
 - Convert all references to `covalent start` from Jupyter notebooks to markdown statements
 - Update release notes summary in README.md
+- Fixed display issues with figure (in dark mode) and bullet points in tutorials
 
 ### Operations
 
 - Added a retry block to the webapp build step in `tests.yml`
-
-### Docs
-
-- Fixed display issues with figure (in dark mode) and bullet points in tutorials
 
 ## [0.110.1] - 2022-06-10
 
