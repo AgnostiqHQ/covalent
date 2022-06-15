@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix MNIST tutorial
 - Update RTD with migration guide compatible with latest release
 - Convert all references to `covalent start` from Jupyter notebooks to markdown statements
+- Update release notes summary in README.md 
 
 ### Operations
 
