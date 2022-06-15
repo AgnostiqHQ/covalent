@@ -120,7 +120,8 @@ class _TransportGraph:
     """
 
     def __init__(self) -> None:
-        self._graph = nx.MultiDiGraph()
+        # Edge insertion order is not preserved in networkx. So manually persist it.
+        self._graph = nx.MultiDiGraph(edge_insertion_order=[])
         self.lattice_metadata = None
 
     def add_node(self, name: str, function: Callable, metadata: Dict, **attr) -> int:
@@ -149,7 +150,10 @@ class _TransportGraph:
 
     def add_edge(self, x: int, y: int, edge_name: Any, **attr) -> None:
         """
-        Adds an edge to the graph and assigns a name to it.
+        Adds an edge to the graph and assigns a name to it. Edge insertion
+        order is not preserved in networkx. So in case of positional arguments
+        passed into the electron, we need to preserve the order when we
+        deserialize the request in the lattice.
 
         Args:
             x: The node id for first node.
@@ -163,7 +167,8 @@ class _TransportGraph:
         Raises:
             ValueError: If the edge already exists.
         """
-
+        #
+        self._graph["edge_insertion_order"].append(x)
         self._graph.add_edge(x, y, edge_name=edge_name, **attr)
 
     def reset(self) -> None:
@@ -177,7 +182,7 @@ class _TransportGraph:
             None
         """
 
-        self._graph = nx.MultiDiGraph()
+        self._graph = nx.MultiDiGraph(edge_insertion_order=[])
 
     def get_topologically_sorted_graph(self) -> List[List[int]]:
         """
