@@ -337,7 +337,7 @@ def purge() -> None:
 @click.command()
 def logs() -> None:
     """
-    Show Covalent server logs
+    Show Covalent server logs.
     """
     if os.path.exists(UI_LOGFILE):
         f = open(UI_LOGFILE, "r")

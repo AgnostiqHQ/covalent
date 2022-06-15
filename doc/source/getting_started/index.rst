@@ -90,6 +90,7 @@ Use the Covalent CLI tool to manage the Covalent server. The following commands 
    --help         Show this message and exit.
 
    Commands:
+   logs     Show Covalent server logs.
    purge    Shutdown server and delete the cache and config settings.
    restart  Restart the server.
    start    Start the Covalent server.
