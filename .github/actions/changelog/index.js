@@ -6,6 +6,7 @@ try {
   const head_version = fs
     .readFileSync(core.getInput("version-path"), "utf8")
     .trim();
+  const commits = JSON.parse(core.getInput("commits-json"))
   const changelog = fs.readFileSync(core.getInput("changelog-path"), "utf8");
   let curline = 0;
   const begin = 8;
@@ -72,12 +73,22 @@ try {
     if (minor || patch) {
       message = "The new version will be " + version;
       unreleased = "UNRELEASED";
+      let commit_authors = ""
+      for (i=0; i < commits.length; i++){
+        commit_authors +=  `@${commits[i].author.username} `  
+      }
+
       const new_changelog = changelog
         .slice(0, changelog.indexOf(unreleased) + unreleased.length + 1)
         .concat(
           "\n",
           "\n",
           changelog_header,
+          "\n", 
+          "### Authors", 
+          "\n", 
+          `${commit_authors}`,
+          "\n",
           changelog.slice(changelog.indexOf(unreleased) + unreleased.length + 1)
         );
       fs.writeFileSync(core.getInput("changelog-path"), new_changelog, "utf8");
