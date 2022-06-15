@@ -14,4 +14,4 @@ outputs:
     description: 'A commit message if there is a change to be committed, or "noop" if there is no change.'
 runs:
   using: "node16"
-  main: "index.js"
+  main: "dist/index.js"
