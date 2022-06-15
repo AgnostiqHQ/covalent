@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Added
+### Operations
 
 - Reusable JavaScript action to parse changelog and update version
+
+### Docs
+
+- Remove hardcoding version info in README.md
 
 ## [0.110.2] - 2022-06-10
 
