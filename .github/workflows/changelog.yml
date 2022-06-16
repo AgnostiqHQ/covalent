@@ -20,28 +20,44 @@
 
 name: changelog
 
-on: 
+on:
   push:
     branches:
       - develop
     paths-ignore:
-      - 'CHANGELOG.md'
-      - 'VERSION'
+      - "CHANGELOG.md"
+      - "VERSION"
+      - '/.github/actions/changelog/package.json'
+      - '/.github/actions/changelog/package-lock.json'
+      - '/.github/actions/changelog/dist/**'
+
 
 jobs:
   changelog:
     runs-on: ubuntu-latest
+    outputs:
+      index: ${{ steps.filter.outputs.index }}
+      action: ${{ steps.filter.outputs.action }}
     steps:
       - name: Check out head
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            index:
+              - '/.github/actions/changelog/index.js'
+            action:
+              - '/.github/actions/changelog/action.yml'
       - name: Update version number
         id: changelog
         uses: ./.github/actions/changelog
         with:
           changelog-path: CHANGELOG.md
           version-path: VERSION
+          commits-json: ${{toJSON(github.event.commits) }}
       - name: Commit
         if: ${{ steps.changelog.outputs.message != 'noop' }}
         uses: EndBug/add-and-commit@v9
@@ -51,3 +67,8 @@ jobs:
           message: ${{ steps.changelog.outputs.message }}
           push: origin develop --force
 
+  action-build:
+    needs: changelog
+    if: needs.changelog.outputs.action == 'true' || needs.changelog.outputs.index == 'true'
+    uses: AgnosiqHQ/covalent/.github/workflows/action_build.yml@develop
+    secrets: inherit

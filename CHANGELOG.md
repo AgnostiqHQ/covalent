@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added new tutorial: Covalentified version of the Pennylane Variational Classifier tutorial.
 
 ### Operations
-
+- Added Github push changelog workflow to append commiters username
 - Reusable JavaScript action to parse changelog and update version
 
 ## [0.110.3] - 2022-06-17
