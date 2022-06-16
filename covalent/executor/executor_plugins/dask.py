@@ -75,9 +75,6 @@ class DaskExecutor(BaseExecutor):
                 "covalent",
             )
 
-        if scheduler_address == "":
-            scheduler_address = get_config("dask.scheduler_address")
-
         super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
 
         self.scheduler_address = scheduler_address

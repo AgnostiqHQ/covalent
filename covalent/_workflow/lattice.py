@@ -348,9 +348,7 @@ def lattice(
     _func: Optional[Callable] = None,
     *,
     backend: Optional[str] = None,
-    executor: Optional[
-        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+    executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = None,
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
     # e.g. schedule: True, whether to use a custom scheduling logic or not
@@ -370,6 +368,15 @@ def lattice(
     Returns:
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.
     """
+
+    from ..executor.executor_plugins.dask import DaskExecutor
+
+    dask_addr = get_config("dask.scheduler_address")
+    executor = (
+        executor or DaskExecutor(dask_addr)
+        if dask_addr
+        else _DEFAULT_CONSTRAINT_VALUES["executor"]
+    )
 
     if backend:
         app_log.warning(

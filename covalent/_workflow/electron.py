@@ -26,6 +26,7 @@ from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Union
 
 from .._shared_files import logger
+from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     _DEFAULT_CONSTRAINT_VALUES,
@@ -232,7 +233,7 @@ class Electron:
                 node_id = active_lattice.transport_graph.add_node(
                     name=node_name,
                     function=None,
-                    metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                    metadata=None,
                     key=i,
                 )
 
@@ -266,7 +267,7 @@ class Electron:
             node_id = active_lattice.transport_graph.add_node(
                 name=node_name,
                 function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                metadata=None,
                 attribute_name=attr,
             )
 
@@ -291,7 +292,7 @@ class Electron:
             node_id = active_lattice.transport_graph.add_node(
                 name=node_name,
                 function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                metadata=None,
                 key=key,
             )
 
@@ -416,7 +417,7 @@ class Electron:
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                metadata=None,
                 value=param_value,
             )
             transport_graph.add_edge(
@@ -444,7 +445,7 @@ class Electron:
         node_id = graph.add_node(
             name=prefix,
             function=to_electron_collection,
-            metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+            metadata=None,
             function_string=get_serialized_function_str(to_electron_collection),
         )
 
@@ -455,9 +456,7 @@ def electron(
     _func: Optional[Callable] = None,
     *,
     backend: Optional[str] = None,
-    executor: Optional[
-        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+    executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = None,
     # Add custom metadata fields here
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns a new :obj:`Electron <covalent._workflow.electron.Electron>` object.
@@ -473,6 +472,15 @@ def electron(
     Returns:
         :obj:`Electron <covalent._workflow.electron.Electron>` : Electron object inside which the decorated function exists.
     """
+
+    from ..executor.executor_plugins.dask import DaskExecutor
+
+    dask_addr = get_config("dask.scheduler_address")
+    executor = (
+        executor or DaskExecutor(dask_addr)
+        if dask_addr
+        else _DEFAULT_CONSTRAINT_VALUES["executor"]
+    )
 
     if backend:
         app_log.warning(

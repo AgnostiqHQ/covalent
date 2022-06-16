@@ -62,6 +62,8 @@ _DEFAULT_CONFIG = {
         + "/covalent",
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
+        "scheduler_address": None,
+        "dashboard_link": None,
     },
     "user_interface": {
         "address": "0.0.0.0",
@@ -74,34 +76,9 @@ _DEFAULT_CONFIG = {
 }
 
 
-def set_executor() -> dict:
-    """Sets the executor based on whether Dask service is running.
-
-    Returns:
-        "dask" as the executor if Dask is running and "local" if Dask is not running.
-    """
-    config_dir = (
-        os.environ.get("COVALENT_CONFIG_DIR")
-        or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
-    ) + "/covalent"
-    config_parser = ConfigParser()
-    config_file = f"{config_dir}/covalent.conf"
-    config_parser.read(config_file)
-
-    try:
-        executor = (
-            {"executor": "dask"}
-            if config_parser["dask"]["scheduler_address"]
-            else {"executor": "local"}
-        )
-    except KeyError:
-        executor = {"executor": "local"}
-    return executor
-
-
 # Going forward we may only want to return the executor field of DEFAULT_CONSTRAINT_VALUES
 # The rest of those parameters will now be in this dictionary
-_DEFAULT_CONSTRAINT_VALUES = set_executor()
+_DEFAULT_CONSTRAINT_VALUES = {"executor": "local"}
 _DEFAULT_CONSTRAINTS_DEPRECATED = {
     "schedule": False,
     "num_cpu": 1,

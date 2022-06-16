@@ -42,7 +42,6 @@ from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config, set_config, update_config
-from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
@@ -68,9 +67,9 @@ class DaskCluster(Process):
         cluster = LocalCluster()
         scheduler_address = cluster.scheduler_address
         dashboard_link = cluster.dashboard_link
-        set_config(
-            {"dask": {"scheduler_address": scheduler_address, "dashboard_link": dashboard_link}}
-        )
+
+        set_config("dask.scheduler_address", scheduler_address)
+        set_config("dask.dashboard_link", dashboard_link)
 
         # Halt the process here until its terminated
         signal.pause()

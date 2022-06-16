@@ -23,6 +23,7 @@
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._shared_files import logger
+from .._shared_files.config import get_config
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .electron import Electron
 
@@ -65,10 +66,18 @@ class Lepton(Electron):
         function_name: str = "",
         argtypes: Optional[List] = [],
         *,
-        executor: Union[
-            List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
-        ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+        executor: Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]] = None,
     ) -> None:
+
+        from ..executor.executor_plugins.dask import DaskExecutor
+
+        dask_addr = get_config("dask.scheduler_address")
+        executor = (
+            executor or DaskExecutor(dask_addr)
+            if dask_addr
+            else _DEFAULT_CONSTRAINT_VALUES["executor"]
+        )
+
         self.language = language
         self.library_name = library_name
         self.function_name = function_name
