@@ -177,6 +177,7 @@ class Lattice:
         """
 
         self.build_graph(**kwargs)
+        self.transport_graph.sort_edges_based_on_insertion_order()
 
         main_graph = self.transport_graph.get_internal_graph_copy()
 

@@ -120,7 +120,8 @@ class _TransportGraph:
     """
 
     def __init__(self) -> None:
-        # Edge insertion order is not preserved in networkx. So manually persist it.
+        # Edge insertion order is not preserved in networkx. So manually persist it
+        # using 'edge_insertion_order' attribute.
         self._graph = nx.MultiDiGraph(edge_insertion_order=[])
         self.lattice_metadata = None
 
@@ -168,7 +169,7 @@ class _TransportGraph:
             ValueError: If the edge already exists.
         """
         #
-        self._graph["edge_insertion_order"].append(x)
+        self._graph.graph["edge_insertion_order"].append(x)
         self._graph.add_edge(x, y, edge_name=edge_name, **attr)
 
     def reset(self) -> None:
@@ -360,3 +361,14 @@ class _TransportGraph:
                 function_ser
             )
         self._graph = nx.readwrite.node_link_graph(node_link_data)
+
+    def sort_edges_based_on_insertion_order(self):
+        unsorted_edges = list(self._graph.edges())
+        insertion_order = self._graph.graph["edge_insertion_order"]
+        unsorted_edges_position_index = [insertion_order.index(i[0]) for i in unsorted_edges]
+        unsorted_index_map = zip(unsorted_edges_position_index, unsorted_edges)
+        sorted_edge_list_with_index = sorted(unsorted_index_map, key=lambda x: x[0])
+        sorted_edge_list = [i[1] for i in sorted_edge_list_with_index]
+
+        self._graph = nx.create_empty_copy(self._graph)
+        self._graph = self._graph.update(edges=sorted_edge_list)
