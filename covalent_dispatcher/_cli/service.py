@@ -241,15 +241,15 @@ def _graceful_shutdown(pidfile: str) -> None:
     help="Server port number.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
-@click.option("--no_cluster", is_flag=True, help="Start the server without Dask")
-@click.argument("no_cluster", required=False)
+@click.option("--no-cluster", is_flag=True, help="Start the server without Dask")
+@click.argument("no-cluster", required=False)
 @click.pass_context
 def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
     Start the Covalent server.
     """
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
-    no_cluster_flag = "--no_cluster"
+    no_cluster_flag = "--no-cluster"
     set_config(
         {
             "user_interface.address": "0.0.0.0",
