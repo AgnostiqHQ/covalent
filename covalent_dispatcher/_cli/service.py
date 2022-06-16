@@ -241,13 +241,20 @@ def _graceful_shutdown(pidfile: str) -> None:
     help="Server port number.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
+@click.option("--no_cluster", is_flag=True, help="Start the server without Dask")
+@click.argument("no_cluster", required=False)
 @click.pass_context
 def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
     Start the Covalent server.
     """
+<<<<<<< HEAD
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     no_cluster_flag = "--no-cluster"
+=======
+
+    port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
+>>>>>>> 4901ccc... cli options for inspecting cluster.
     set_config(
         {
             "user_interface.address": "0.0.0.0",
@@ -331,6 +338,7 @@ def purge() -> None:
 
 
 @click.command()
+<<<<<<< HEAD
 def logs() -> None:
     """
     Show Covalent server logs.
@@ -344,3 +352,24 @@ def logs() -> None:
         f.close()
     else:
         click.echo(f"{UI_LOGFILE} not found!. Server possibly purged!")
+=======
+@click.option(
+    "--address", is_flag=True, help="Get the scheduler address of a running Dask cluster."
+)
+@click.option("--info", is_flag=True, help="Get the status of a running Dask cluster.")
+@click.argument("info", required=False)
+@click.argument("address", required=False)
+@click.pass_context
+def cluster(ctx, address: str, info: str) -> None:
+    """
+    Provides an entry point to inspect Dask.
+    """
+
+    if _is_server_running():
+        address = get_config("dask.scheduler_address")
+        info = get_config("dask.dashboard_link")
+        click.echo(f"The scheduler's address is {address}.")
+        click.echo(f"Information about the Dask service is available at {info}.")
+    else:
+        click.echo("Dask service is not running. Please run 'covalent start' to start Dask.")
+>>>>>>> 4901ccc... cli options for inspecting cluster.
