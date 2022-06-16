@@ -252,6 +252,7 @@ def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     Start the Covalent server.
     """
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
+    no_cluster_flag = "--no_cluster"
     set_config(
         {
             "user_interface.address": "0.0.0.0",
