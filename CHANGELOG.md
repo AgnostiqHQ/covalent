@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Fix error when parsing electron positional arguments in workflows
+
 ### Docs
 
 - Remove hardcoding version info in README.md
