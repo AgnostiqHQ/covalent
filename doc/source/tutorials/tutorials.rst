@@ -35,7 +35,7 @@ Advanced
      - :doc:`Simulating the Nitrogen-Copper interaction<./quantum_chemistry/nitrogen_copper_interaction>`
    * - Machine Learning
      - :doc:`Classical and quantum support vector machines<./machine_learning/classical_quantum_svm>`
-   * - Machine learning
+   * - Machine Learning
      - :doc:`Training quantum embedding kernels for classification<./machine_learning/quantum_embedding_kernel>`
    * - Astronomy
      - :doc:`Tracking stars in the night sky<./astronomy/star_tracker>`
