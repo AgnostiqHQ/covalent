@@ -243,19 +243,9 @@ def _graceful_shutdown(pidfile: str) -> None:
 @click.option(
     "--no-cluster",
     is_flag=True,
-    help="Start the Covalent server without Dask. This will default to the local executor.",
+    help="Start the Covalent server without Dask executor. This will default to the local executor.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
-<<<<<<< HEAD
-@click.option(
-    "--no-cluster",
-    is_flag=True,
-    help="Start the server without Dask and use the LocalExecutor instead",
-)
-=======
-@click.option("--no-cluster", is_flag=True, help="Start the server without Dask")
-@click.argument("no-cluster", required=False)
->>>>>>> 5a530c8... Changing --no_cluster to --no-cluster
 @click.pass_context
 def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
