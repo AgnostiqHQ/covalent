@@ -361,14 +361,17 @@ class _TransportGraph:
                 function_ser
             )
         self._graph = nx.readwrite.node_link_graph(node_link_data)
+        self.sort_edges_based_on_insertion_order()
 
     def sort_edges_based_on_insertion_order(self):
-        unsorted_edges = list(self._graph.edges())
+        unsorted_edges = list(self._graph.edges(data=True))
         insertion_order = self._graph.graph["edge_insertion_order"]
         unsorted_edges_position_index = [insertion_order.index(i[0]) for i in unsorted_edges]
         unsorted_index_map = zip(unsorted_edges_position_index, unsorted_edges)
         sorted_edge_list_with_index = sorted(unsorted_index_map, key=lambda x: x[0])
         sorted_edge_list = [i[1] for i in sorted_edge_list_with_index]
 
+        # Creates graph without any edges.
         self._graph = nx.create_empty_copy(self._graph)
-        self._graph = self._graph.update(edges=sorted_edge_list)
+        # Updates the graph with the edges.
+        self._graph.update(edges=sorted_edge_list)
