@@ -348,6 +348,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         if d == 0:
             tasks_queue.put(node_id)
 
+    # order = result_object.lattice.transport_graph.get_topologically_sorted_graph()
+
     while tasks_left > 0:
         app_log.debug(f"{tasks_left} tasks left")
 
@@ -402,14 +404,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             node_id, "metadata"
         )["executor"]
 
-        update_node_result(
-            generate_node_result(
-                node_id=node_id,
-                start_time=start_time,
-                status=Result.RUNNING,
-            )
-        )
-
         deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")["deps"]
 
         # Assemble call_before and call_after from all the deps
@@ -432,6 +426,14 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             call_before.append(dep.apply())
 
         call_after = [dep.apply() for dep in call_after_objs]
+
+        update_node_result(
+            generate_node_result(
+                node_id=node_id,
+                start_time=start_time,
+                status=Result.RUNNING,
+            )
+        )
 
         # Add the task generated for the node to the list of tasks
         app_log.debug(f"Submitting node {node_id} to executor")
@@ -456,6 +458,9 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     wait(futures)
 
     # post process the lattice
+
+    app_log.debug("Waiting on futures")
+    wait(futures)
     result_object._result = _post_process(
         result_object.lattice, result_object.get_all_node_outputs()
     )
