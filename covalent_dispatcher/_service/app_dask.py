@@ -2,7 +2,7 @@ from __future__ import annotations
 import dask.config
 import asyncio
 from logging import Logger
-from dask.distributed import LocalCluster
+from dask.distributed import LocalCluster, Client
 from multiprocessing import Process
 from covalent._shared_files import logger
 from covalent._shared_files.config import set_config
@@ -38,8 +38,14 @@ class DaskCluster(Process):
         are added to the server either as python lambda functions or as instance
         methods
         """
-        s = Server({'status': lambda comm: self.cluster.status,
-                    'address': lambda comm: {'scheduler':
+        s = Server({'cluster_status': lambda comm: self.cluster.status,
+                    'cluster_info': lambda comm: self.cluster.scheduler_info,
+                    'cluster_restart': lambda comm: None,
+                    'cluster_scale': lambda comm, nworkers:
+                    self.cluster.scale(n=nworkers),
+                    'cluster_adapt': lambda comm, min_workers, max_workers:
+                    None,
+                    'cluster_addresses': lambda comm: {'scheduler':
                                              self.cluster.scheduler_address,
                                              'workers': [{f"Worker {id}":
                                                           f"{worker.address}"}
