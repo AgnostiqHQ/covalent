@@ -168,7 +168,7 @@ class _TransportGraph:
         Raises:
             ValueError: If the edge already exists.
         """
-        #
+
         self._graph.graph["edge_insertion_order"].append(x)
         self._graph.add_edge(x, y, edge_name=edge_name, **attr)
 
