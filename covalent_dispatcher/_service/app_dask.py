@@ -1,12 +1,15 @@
 from __future__ import annotations
-import dask.config
+
 import asyncio
 from logging import Logger
-from dask.distributed import LocalCluster, Client
 from multiprocessing import Process
+
+import dask.config
+from dask.distributed import Client, LocalCluster
+from distributed.core import Server
+
 from covalent._shared_files import logger
 from covalent._shared_files.config import set_config
-from distributed.core import Server
 
 app_log = logger.app_log
 
