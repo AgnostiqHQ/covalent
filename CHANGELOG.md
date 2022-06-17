@@ -7,11 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## [0.110.3] - 2022-06-17
-
 ### Docs
 
 - Added new tutorial: Covalentified version of the Pennylane Variational Classifier tutorial.
+
+## [0.110.3] - 2022-06-17
 
 ### Fixed
 
