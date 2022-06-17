@@ -31,6 +31,8 @@ from typing import Optional, Tuple
 import click
 import psutil
 import requests
+import asyncio
+from distributed.core import rpc, connect
 
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
@@ -346,30 +348,42 @@ def logs() -> None:
         f.close()
     else:
         click.echo(f"{UI_LOGFILE} not found!. Server possibly purged!")
-@click.option(
-    "--address", is_flag=True, help="Get the scheduler address of a running Dask cluster."
-)
-@click.option("--info", is_flag=True, help="Get the status of a running Dask cluster.")
-@click.option("--restart", is_flag=True, help="Restart the Dask service.")
+
+
+
+
+# Cluster CLI handlers
+async def cluster_status(admin_host: str, admin_port: int):
+    """
+    Invoke the status RPC on the Dask admin server and return the cluster status
+    """
+    uri = f"tcp://{admin_host}:{admin_port}"
+    comm = await connect(uri)
+    await comm.write({'op': 'status'})
+    result = await comm.read()
+    await comm.close()
+    return result
+
+#@click.option("--info", is_flag=True, help="Get the status of a running Dask cluster.")
+#@click.option("--restart", is_flag=True, help="Restart the Dask service.")
+@click.option("--status", is_flag=True, help="Query the status of the Dask\
+              cluster.")
 @click.argument("address", required=False)
 @click.argument("info", required=False)
 @click.argument("restart", required=False)
-@click.pass_context
-def cluster(ctx, address: str, info: str, restart) -> None:
+@click.command()
+def cluster(status: bool, address: str, info: str, restart) -> None:
     """
     Provides CLI options for managing Dask.
     """
-    address_flag = "--address"
-    info_flag = "--info"
-    restart_flag = "--restart"
-    stop_flag = "--stop"
+    admin_host = get_config("dask.admin_host")
+    admin_port = int(get_config("dask.admin_port"))
 
-    if _is_server_running():
-        if address_flag in sys.argv:
-            address = get_config("dask.scheduler_address")
-            click.echo(f"The scheduler's address is {address}.")
-        if info_flag in sys.argv:
-            info = get_config("dask.dashboard_link")
-            click.echo(f"Information about the Dask service is available at {info}.")
-    else:
-        click.echo("Dask service is not running. Please run 'covalent start' to start Dask.")
+    loop = asyncio.get_event_loop()
+
+    if status:
+        click.echo(loop.run_until_complete(cluster_status(admin_host, admin_port)))
+
+    # Return Dask's scheduler and worker addresses
+    if address:
+        click
