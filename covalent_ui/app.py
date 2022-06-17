@@ -68,8 +68,6 @@ class DaskCluster(Process):
         cluster = LocalCluster()
         scheduler_address = cluster.scheduler_address
         dashboard_link = cluster.dashboard_link
-        self.logger.warning(f"The Dask scheduler is running on {scheduler_address}")
-        self.logger.warning(f"Dask cluster dashboard is at: {dashboard_link}")
         set_config(
             {"dask": {"scheduler_address": scheduler_address, "dashboard_link": dashboard_link}}
         )

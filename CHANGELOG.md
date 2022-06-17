@@ -7,9 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.110.3] - 2022-06-17
+
+### Fixed
+
+- Fix error when parsing electron positional arguments in workflows
+
 ### Docs
 
+- Remove hardcoding version info in README.md
+
+## [0.110.2] - 2022-06-10
+
+### Docs
+
+- Fix MNIST tutorial
+- Fix Quantum Gravity tutorial
+- Update RTD with migration guide compatible with latest release
+- Convert all references to `covalent start` from Jupyter notebooks to markdown statements
+- Update release notes summary in README.md
 - Fixed display issues with figure (in dark mode) and bullet points in tutorials
+
+### Operations
+
+- Added a retry block to the webapp build step in `tests.yml`
 
 ## [0.110.1] - 2022-06-10
 

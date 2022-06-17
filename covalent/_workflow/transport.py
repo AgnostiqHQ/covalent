@@ -120,7 +120,9 @@ class _TransportGraph:
     """
 
     def __init__(self) -> None:
-        self._graph = nx.MultiDiGraph()
+        # Edge insertion order is not preserved in networkx. So manually persist it
+        # using 'edge_insertion_order' attribute.
+        self._graph = nx.MultiDiGraph(edge_insertion_order=[])
         self.lattice_metadata = None
 
     def add_node(self, name: str, function: Callable, metadata: Dict, **attr) -> int:
@@ -149,7 +151,10 @@ class _TransportGraph:
 
     def add_edge(self, x: int, y: int, edge_name: Any, **attr) -> None:
         """
-        Adds an edge to the graph and assigns a name to it.
+        Adds an edge to the graph and assigns a name to it. Edge insertion
+        order is not preserved in networkx. So in case of positional arguments
+        passed into the electron, we need to preserve the order when we
+        deserialize the request in the lattice.
 
         Args:
             x: The node id for first node.
@@ -164,6 +169,7 @@ class _TransportGraph:
             ValueError: If the edge already exists.
         """
 
+        self._graph.graph["edge_insertion_order"].append(x)
         self._graph.add_edge(x, y, edge_name=edge_name, **attr)
 
     def reset(self) -> None:
@@ -177,7 +183,7 @@ class _TransportGraph:
             None
         """
 
-        self._graph = nx.MultiDiGraph()
+        self._graph = nx.MultiDiGraph(edge_insertion_order=[])
 
     def get_topologically_sorted_graph(self) -> List[List[int]]:
         """
@@ -355,3 +361,17 @@ class _TransportGraph:
                 function_ser
             )
         self._graph = nx.readwrite.node_link_graph(node_link_data)
+        self.sort_edges_based_on_insertion_order()
+
+    def sort_edges_based_on_insertion_order(self):
+        unsorted_edges = list(self._graph.edges(data=True))
+        insertion_order = self._graph.graph["edge_insertion_order"]
+        unsorted_edges_position_index = [insertion_order.index(i[0]) for i in unsorted_edges]
+        unsorted_index_map = zip(unsorted_edges_position_index, unsorted_edges)
+        sorted_edge_list_with_index = sorted(unsorted_index_map, key=lambda x: x[0])
+        sorted_edge_list = [i[1] for i in sorted_edge_list_with_index]
+
+        # Creates graph without any edges.
+        self._graph = nx.create_empty_copy(self._graph)
+        # Updates the graph with the edges.
+        self._graph.update(edges=sorted_edge_list)
