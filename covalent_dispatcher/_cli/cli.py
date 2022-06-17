@@ -24,7 +24,7 @@
 
 import click
 
-from .service import logs, purge, restart, start, status, stop, cluster
+from .service import cluster, logs, purge, restart, start, status, stop
 
 
 # Main entrypoint
