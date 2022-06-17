@@ -260,7 +260,6 @@ def test_transport_graph_deserialize(workflow_transport_graph):
 def test_transport_graph_sort_edges_based_on_insertion_order(transport_graph):
     """Test the transport graph sorting edges based on insertion order"""
     tg = transport_graph
-    assert len(tg._graph.nodes) == 0
     tg.add_node(
         name="triangle",
         kwargs={"x": 2},
