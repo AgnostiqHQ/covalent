@@ -351,7 +351,6 @@ def logs() -> None:
 
 
 
-
 # Cluster CLI handlers
 async def cluster_status(admin_host: str, admin_port: int):
     """
@@ -364,11 +363,24 @@ async def cluster_status(admin_host: str, admin_port: int):
     await comm.close()
     return result
 
+async def cluster_addresses(admin_host: str, admin_port: int):
+    """
+    Invoke the address RPC on the Dask admin server and return the
+    scheduler/worker addresses
+    """
+    uri = f"tcp://{admin_host}:{admin_port}"
+    comm = await connect(uri)
+    await comm.write({'op': 'address'})
+    result = await comm.read()
+    await comm.close()
+    return result
+
 #@click.option("--info", is_flag=True, help="Get the status of a running Dask cluster.")
 #@click.option("--restart", is_flag=True, help="Restart the Dask service.")
 @click.option("--status", is_flag=True, help="Query the status of the Dask\
               cluster.")
-@click.argument("address", required=False)
+@click.option("--address", is_flag=True, help="Fetch the Dask scheduler/worker\
+              addresses")
 @click.argument("info", required=False)
 @click.argument("restart", required=False)
 @click.command()
@@ -382,8 +394,10 @@ def cluster(status: bool, address: str, info: str, restart) -> None:
     loop = asyncio.get_event_loop()
 
     if status:
-        click.echo(loop.run_until_complete(cluster_status(admin_host, admin_port)))
+        click.echo(loop.run_until_complete(cluster_status(admin_host,
+                                                          admin_port)))
 
     # Return Dask's scheduler and worker addresses
     if address:
-        click
+        click.echo(loop.run_until_complete(cluster_addresses(admin_host,
+                                                             admin_port)))
