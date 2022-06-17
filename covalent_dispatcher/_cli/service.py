@@ -351,7 +351,6 @@ def logs() -> None:
         click.echo(f"{UI_LOGFILE} not found!. Server possibly purged!")
 
 
-
 # Cluster CLI handlers
 async def cluster_status(admin_host: str, admin_port: int):
     """
@@ -360,12 +359,15 @@ async def cluster_status(admin_host: str, admin_port: int):
     async with rpc(f"tcp://{admin_host}:{admin_port}") as r:
         status = await r.cluster_status()
     return status
+
+
 #    uri = f"tcp://{admin_host}:{admin_port}"
 #    comm = await connect(uri)
 #    await comm.write({'op': 'status'})
 #    result = await comm.read()
 #    await comm.close()
 #    return result
+
 
 async def cluster_addresses(admin_host: str, admin_port: int):
     """
@@ -376,6 +378,7 @@ async def cluster_addresses(admin_host: str, admin_port: int):
         addresses = await r.cluster_addresses()
     return addresses
 
+
 async def cluster_info(admin_host: str, admin_port: int):
     """
     Invoke the cluster_info RPC on the Dask admin server and retrive the cluster info
@@ -383,6 +386,7 @@ async def cluster_info(admin_host: str, admin_port: int):
     async with rpc(f"tcp://{admin_host}:{admin_port}") as r:
         cluster_info = await r.cluster_info()
     return cluster_info
+
 
 async def cluster_restart(admin_host: str, admin_port: int):
     """
@@ -393,6 +397,7 @@ async def cluster_restart(admin_host: str, admin_port: int):
         result = await r.cluster_restart()
     return result
 
+
 async def cluster_scale(admin_host: str, admin_port: int, nworkers: int):
     """
     Invoke the cluster_restart RPC on the Dask admin server
@@ -402,29 +407,43 @@ async def cluster_scale(admin_host: str, admin_port: int, nworkers: int):
         result = await r.cluster_scale(nworkers=nworkers)
     return result
 
-async def cluster_adapt(admin_host: str, admin_port: int, min_workers: int,
-                        max_workers: int):
+
+async def cluster_adapt(admin_host: str, admin_port: int, min_workers: int, max_workers: int):
     """
     Invoke the cluster_restart RPC on the Dask admin server
     """
     uri = unparse_address("tcp", f"{admin_host}:{admin_port}")
     async with rpc(uri) as r:
-        result = await r.cluster_adapt(min_workers=min_workers,
-                                       max_workers=max_workers)
+        result = await r.cluster_adapt(min_workers=min_workers, max_workers=max_workers)
     return result
 
-@click.option("--status", is_flag=True, help="""Query the status of the Dask
-              cluster""")
-@click.option("--address", is_flag=True, help="""Fetch the Dask scheduler/worker
-              addresses""")
+
+@click.option(
+    "--status",
+    is_flag=True,
+    help="""Query the status of the Dask
+              cluster""",
+)
+@click.option(
+    "--address",
+    is_flag=True,
+    help="""Fetch the Dask scheduler/worker
+              addresses""",
+)
 @click.option("--info", is_flag=True, help="Query cluster info")
 @click.option("--restart", is_flag=True, help="Restart cluster workers")
 @click.option("--scale", is_flag=False, type=int, help="Scale the dask cluster up/down")
-@click.option("--adapt", is_flag=False, type=(int, int), help="""Set the
-              minimum/maximum number of workers in the cluster""")
+@click.option(
+    "--adapt",
+    is_flag=False,
+    type=(int, int),
+    help="""Set the
+              minimum/maximum number of workers in the cluster""",
+)
 @click.command()
-def cluster(status: bool, address: str, info: str, restart: bool, scale: int,
-            adapt: Tuple[int, int]) -> None:
+def cluster(
+    status: bool, address: str, info: str, restart: bool, scale: int, adapt: Tuple[int, int]
+) -> None:
     """
     Provides CLI options for managing Dask.
     """
@@ -434,21 +453,17 @@ def cluster(status: bool, address: str, info: str, restart: bool, scale: int,
     loop = asyncio.get_event_loop()
 
     if status:
-        click.echo(loop.run_until_complete(cluster_status(admin_host,
-                                                          admin_port)))
+        click.echo(loop.run_until_complete(cluster_status(admin_host, admin_port)))
     if address:
-        click.echo(loop.run_until_complete(cluster_addresses(admin_host,
-                                                             admin_port)))
+        click.echo(loop.run_until_complete(cluster_addresses(admin_host, admin_port)))
     if info:
-        click.echo(loop.run_until_complete(cluster_info(admin_host,
-                                                        admin_port)))
+        click.echo(loop.run_until_complete(cluster_info(admin_host, admin_port)))
     if restart:
         # Need to implement. Issues with asyncio event loops
         pass
 
     if scale:
-        click.echo(loop.run_until_complete(cluster_scale(admin_host,
-                                                         admin_port, scale)))
+        click.echo(loop.run_until_complete(cluster_scale(admin_host, admin_port, scale)))
     if adapt:
         # To be implemented, serialization issues with objects of type Adaptive
         pass

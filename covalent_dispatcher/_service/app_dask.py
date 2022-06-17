@@ -16,9 +16,9 @@ app_log = logger.app_log
 # Configure dask to not allow daemon workers
 dask.config.set({"distributed.worker.daemon": False})
 
+
 class DaskCluster(Process):
-    def __init__(self, logger: Logger, admin_host: str = '127.0.0.1',
-                 admin_port: int = 8000):
+    def __init__(self, logger: Logger, admin_host: str = "127.0.0.1", admin_port: int = 8000):
         """
         Start a local Dask cluster in a separate multiprocessing process whose
         lifetime is tied to Covalent. The cluster also starts and
@@ -41,19 +41,22 @@ class DaskCluster(Process):
         are added to the server either as python lambda functions or as instance
         methods
         """
-        s = Server({'cluster_status': lambda comm: self.cluster.status,
-                    'cluster_info': lambda comm: self.cluster.scheduler_info,
-                    'cluster_restart': lambda comm: None,
-                    'cluster_scale': lambda comm, nworkers:
-                    self.cluster.scale(n=nworkers),
-                    'cluster_adapt': lambda comm, min_workers, max_workers:
-                    None,
-                    'cluster_addresses': lambda comm: {'scheduler':
-                                             self.cluster.scheduler_address,
-                                             'workers': [{f"Worker {id}":
-                                                          f"{worker.address}"}
-                                                          for id, worker in
-                                                          self.cluster.workers.items()]}})
+        s = Server(
+            {
+                "cluster_status": lambda comm: self.cluster.status,
+                "cluster_info": lambda comm: self.cluster.scheduler_info,
+                "cluster_restart": lambda comm: None,
+                "cluster_scale": lambda comm, nworkers: self.cluster.scale(n=nworkers),
+                "cluster_adapt": lambda comm, min_workers, max_workers: None,
+                "cluster_addresses": lambda comm: {
+                    "scheduler": self.cluster.scheduler_address,
+                    "workers": [
+                        {f"Worker {id}": f"{worker.address}"}
+                        for id, worker in self.cluster.workers.items()
+                    ],
+                },
+            }
+        )
 
         await s.listen(f"tcp://{self.admin_host}:{self.admin_port}")
 
@@ -64,10 +67,16 @@ class DaskCluster(Process):
         self.cluster = LocalCluster()
         scheduler_address = self.cluster.scheduler_address
         dashboard_link = self.cluster.dashboard_link
-        set_config({"dask": {"scheduler_address": scheduler_address,
-                             "dashboard_link": dashboard_link,
-                             "admin_host": self.admin_host,
-                             "admin_port": self.admin_port}})
+        set_config(
+            {
+                "dask": {
+                    "scheduler_address": scheduler_address,
+                    "dashboard_link": dashboard_link,
+                    "admin_host": self.admin_host,
+                    "admin_port": self.admin_port,
+                }
+            }
+        )
 
         # Start monitoring server on an event loop
         loop = asyncio.get_event_loop()
