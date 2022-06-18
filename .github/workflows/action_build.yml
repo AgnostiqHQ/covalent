@@ -45,5 +45,12 @@ jobs:
           jq --arg v "$VERSION" '.version = $v' .github/actions/changelog/package.json \
             > "$tmp" && mv "$tmp" package.json
       - name: NCC Build
-        run: |
+        run: ncc build index.js --license licenses.txt
 
+      - name: Commit
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: CovalentOpsBot
+          author_email: covalentopsbot@users.noreply.github.com
+          message: "NCC build for GitHub action"
+          push: origin develop --force

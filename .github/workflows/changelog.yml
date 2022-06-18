@@ -20,17 +20,16 @@
 
 name: changelog
 
-on:
+on: 
   push:
     branches:
       - develop
     paths-ignore:
       - "CHANGELOG.md"
       - "VERSION"
-      - '/.github/actions/changelog/package.json'
-      - '/.github/actions/changelog/package-lock.json'
-      - '/.github/actions/changelog/dist/**'
-
+      - "/.github/actions/changelog/package.json"
+      - "/.github/actions/changelog/package-lock.json"
+      - "/.github/actions/changelog/dist/**"
 
 jobs:
   changelog:
