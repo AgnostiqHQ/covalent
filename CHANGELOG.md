@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Added new tutorial: Linear and convolutional autoencoders
+
 ## [0.110.3] - 2022-06-17
 
 ### Fixed
@@ -16,7 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Remove hardcoding version info in README.md
-- Added new tutorial: Linear and convolutional autoencoders
 
 ## [0.110.2] - 2022-06-10
 
