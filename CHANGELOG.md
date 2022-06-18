@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Remove hardcoding version info in README.md
+- Added new tutorial: Linear and convolutional autoencoders
 
 ## [0.110.2] - 2022-06-10
 
@@ -27,7 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Convert all references to `covalent start` from Jupyter notebooks to markdown statements
 - Update release notes summary in README.md
 - Fixed display issues with figure (in dark mode) and bullet points in tutorials
-- Added new tutorial: Linear and convolutional autoencoders
 
 ### Operations
 
