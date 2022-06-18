@@ -69,5 +69,5 @@ jobs:
   action-build:
     needs: changelog
     if: needs.changelog.outputs.action == 'true' || needs.changelog.outputs.index == 'true'
-    uses: AgnosiqHQ/covalent/.github/workflows/action_build.yml@develop
+    uses: ./.github/workflows/action_build.yml
     secrets: inherit
