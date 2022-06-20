@@ -380,17 +380,24 @@ class _TransportGraph:
         self._graph = nx.create_empty_copy(self._graph)
         # Updates the graph with the edges.
         self._graph.update(edges=sorted_edge_list)
-        
-    def persist(self, ds: DataStoreSession, modified_only=True):
-        if modified_only:
-            for key in self.dirty_nodes:
-                self.persist_node(ds, key)
+
+    def persist(self, ds: DataStoreSession, update: bool):
+        if update:
+            for node_id in self.dirty_nodes:
+                self.persist_node(ds, node_id)
             self.dirty_nodes.clear()
         else:
             # Save all nodes and edges
-            raise NotImplementedError
+            for node_id in self._graph.nodes:
+                self.persist_node(ds, node_id)
+            for edge in self._graph.edges:
+                self.persist_edge(ds, edge[0], edge[1])
+            self.dirty_nodes.clear()
 
+    def persist_node(self, ds: DataStoreSession, node_id: int):
+        dispatch_id = ds.metadata["dispatch_id"]
         raise NotImplementedError
 
-    def persist_node(self, ds: DataStoreSession, node_key: int):
+    def persist_edge(self, ds: DataStoreSession, parent_id: int, node_id: int):
+        dispatch_id = ds.metadata["dispatch_id"]
         raise NotImplementedError

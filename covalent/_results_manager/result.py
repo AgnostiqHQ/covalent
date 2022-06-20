@@ -21,12 +21,13 @@
 """Result object."""
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 import cloudpickle as pickle
 import yaml
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .._data_store import DataStoreSession, models
@@ -445,7 +446,7 @@ Node Outputs
         if write_source:
             self._write_dispatch_to_python_file()
 
-    def persist(self, ds: DataStoreSession):
+    def persist(self, ds: DataStoreSession, update: bool):
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 
