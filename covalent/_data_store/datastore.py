@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from contextlib import contextmanager
-from typing import BinaryIO, Generator, List, Union
+from typing import BinaryIO, Dict, Generator, List, Union
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -35,7 +35,7 @@ class DataStore:
     def __init__(
         self,
         db_URL,
-        storage_backend_map: dict[str, StorageBackend] = default_backend_map,
+        storage_backend_map: Dict[str, StorageBackend] = default_backend_map,
         initialize_db: bool = False,
         **kwargs,
     ):
