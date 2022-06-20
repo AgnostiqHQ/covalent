@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Introduce new db models and object store backends
+
 ### Docs
 
 - Added new tutorial: Covalentified version of the Pennylane Variational Classifier tutorial.

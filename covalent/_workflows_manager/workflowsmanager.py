@@ -25,7 +25,7 @@ from .._results_manager.result import Result
 from .._shared_files.config import get_config
 
 
-def save_result(result_object: Result, data_store: DataStore):
+def save_result(data_store: DataStore, result_object: Result):
     dispatch_id = result_object.dispatch_id
 
     update = False
@@ -38,3 +38,7 @@ def save_result(result_object: Result, data_store: DataStore):
     metadata = {"dispatch_id": dispatch_id}
     with data_store.begin_session(metadata) as session:
         result_object.persist(session, update)
+
+
+def load_result(data_store: DataStore, dispatch_id: str) -> Result:
+    raise NotImplementedError
