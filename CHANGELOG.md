@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Syntax fix in hotfix.yml
+
 ## [0.112.0] - 2022-06-20
 
 ### Changed
@@ -22,10 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Added new tutorial: Covalentified version of the Pennylane Variational Classifier tutorial.
-
-### Operations
-
-- Syntax fix in hotfix.yml
 
 ## [0.110.3] - 2022-06-17
 
