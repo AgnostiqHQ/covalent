@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Changed eventsource version on webapp package-lock file.
+
 ### Docs
 
 - Added new tutorial: Covalentified version of the Pennylane Variational Classifier tutorial.
