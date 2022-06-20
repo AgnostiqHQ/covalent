@@ -357,7 +357,7 @@ class Electron:
             # For keyword arguments
             for key, value in named_kwargs.items():
                 self.connect_node_with_others(
-                    self.node_id, key, value, "kwarg", arg_index, active_lattice.transport_graph
+                    self.node_id, key, value, "kwarg", None, active_lattice.transport_graph
                 )
 
         return Electron(
