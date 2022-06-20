@@ -52,8 +52,8 @@ class DataStore:
             models.Base.metadata.create_all(self.engine)
 
     @contextmanager
-    def begin_session(self):
-        with Session(self.engine) as session:
+    def begin_session(self, metadata={}):
+        with Session(self.engine, metadata) as session:
             session.begin()
             ds_session = DataStoreSession(session)
             try:
@@ -86,8 +86,9 @@ class DataStore:
 
 
 class DataStoreSession:
-    def __init__(self, session: Session):
+    def __init__(self, session: Session, metadata={}):
         self.db_session = session
+        self.metadata = metadata
         self.pending_uploads = []
         self.pending_deletes = []
 
