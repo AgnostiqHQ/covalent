@@ -403,7 +403,7 @@ class Electron:
 
             for v in param_value:
                 self.connect_node_with_others(
-                    list_node, param_name, v, "kwarg", -1, transport_graph
+                    list_node, param_name, v, "kwarg", None, transport_graph
                 )
 
             transport_graph.add_edge(
@@ -418,7 +418,7 @@ class Electron:
             dict_node = self.add_collection_node_to_graph(transport_graph, electron_dict_prefix)
 
             for k, v in param_value.items():
-                self.connect_node_with_others(dict_node, k, v, "kwarg", -1, transport_graph)
+                self.connect_node_with_others(dict_node, k, v, "kwarg", None, transport_graph)
 
             transport_graph.add_edge(
                 dict_node,
