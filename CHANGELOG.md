@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Syntax fix in hotfix.yml
+
 ### Docs
 
 - Added new tutorial: Linear and convolutional autoencoders
