@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """
-Models for the workflows db
+Models for the workflows db. Based on schema v9
 """
 
 import enum
@@ -173,5 +173,8 @@ class ElectronDependency(Base):
 
     # "args, kwarg, null"
     parameter_type = Column(Enum(ParameterTypeEnum), nullable=False)
+
+    # Argument position
+    arg_index = Column(Integer, nullable=False)
 
     created_at = Column(DateTime, nullable=False)
