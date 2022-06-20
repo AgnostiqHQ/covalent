@@ -45,8 +45,10 @@ jobs:
           jq --arg v "$VERSION" '.version = $v' .github/actions/changelog/package.json \
             > "$tmp" && mv "$tmp" package.json
       - name: NCC Build
-        run: ncc build index.js --license licenses.txt
-
+        run: |
+          ncc build .github/actions/changelog/index.js \
+            --license licenses.txt \
+            --out .github/actions/changelog/dist
       - name: Commit
         uses: EndBug/add-and-commit@v9
         with:
