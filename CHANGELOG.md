@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.112.0] - 2022-06-20
+
+### Changed
+
+- Changed async version on webapp package-lock file.
+
+## [0.111.0] - 2022-06-20
+
+### Changed
+
+- Changed eventsource version on webapp package-lock file.
+
 ### Docs
 
 - Added new tutorial: Covalentified version of the Pennylane Variational Classifier tutorial.
