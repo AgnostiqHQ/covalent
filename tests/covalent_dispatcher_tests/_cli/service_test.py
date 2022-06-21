@@ -240,7 +240,7 @@ def test_restart(mocker, port_tag, port, pid, server, restart_called, start_call
     [
         (None, -1, STOPPED_SERVER_STATUS_ECHO, True, False),
         (42, 42, RUNNING_SERVER_STATUS_ECHO, False, True),
-        (42, 42, STOPPED_SERVER_STATUS_ECHO, False, False),
+        (42, 42, STOPPED_SERVER_STATUS_ECHO, True, False),
     ],
 )
 def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists):
