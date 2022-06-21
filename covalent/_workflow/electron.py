@@ -347,15 +347,17 @@ class Electron:
             named_args, named_kwargs = get_named_params(self.function, args, kwargs)
 
             # For positional arguments
-            for key, value in named_args.items():
+            # We use the fact that as of Python 3.6, dict order == insertion order
+            for arg_index, item in enumerate(named_args.items()):
+                key, value = item
                 self.connect_node_with_others(
-                    self.node_id, key, value, "arg", active_lattice.transport_graph
+                    self.node_id, key, value, "arg", arg_index, active_lattice.transport_graph
                 )
 
             # For keyword arguments
             for key, value in named_kwargs.items():
                 self.connect_node_with_others(
-                    self.node_id, key, value, "kwarg", active_lattice.transport_graph
+                    self.node_id, key, value, "kwarg", None, active_lattice.transport_graph
                 )
 
         return Electron(
@@ -370,6 +372,7 @@ class Electron:
         param_name: str,
         param_value: Union[Any, "Electron"],
         param_type: str,
+        arg_index: int,
         transport_graph: "_TransportGraph",
     ):
         """
@@ -388,27 +391,41 @@ class Electron:
 
         if isinstance(param_value, Electron):
             transport_graph.add_edge(
-                param_value.node_id, node_id, edge_name=param_name, param_type=param_type
+                param_value.node_id,
+                node_id,
+                edge_name=param_name,
+                param_type=param_type,
+                arg_index=arg_index,
             )
 
         elif isinstance(param_value, list):
             list_node = self.add_collection_node_to_graph(transport_graph, electron_list_prefix)
 
             for v in param_value:
-                self.connect_node_with_others(list_node, param_name, v, "kwarg", transport_graph)
+                self.connect_node_with_others(
+                    list_node, param_name, v, "kwarg", None, transport_graph
+                )
 
             transport_graph.add_edge(
-                list_node, node_id, edge_name=param_name, param_type=param_type
+                list_node,
+                node_id,
+                edge_name=param_name,
+                param_type=param_type,
+                arg_index=arg_index,
             )
 
         elif isinstance(param_value, dict):
             dict_node = self.add_collection_node_to_graph(transport_graph, electron_dict_prefix)
 
             for k, v in param_value.items():
-                self.connect_node_with_others(dict_node, k, v, "kwarg", transport_graph)
+                self.connect_node_with_others(dict_node, k, v, "kwarg", None, transport_graph)
 
             transport_graph.add_edge(
-                dict_node, node_id, edge_name=param_name, param_type=param_type
+                dict_node,
+                node_id,
+                edge_name=param_name,
+                param_type=param_type,
+                arg_index=arg_index,
             )
 
         else:
@@ -420,7 +437,11 @@ class Electron:
                 value=param_value,
             )
             transport_graph.add_edge(
-                parameter_node, node_id, edge_name=param_name, param_type=param_type
+                parameter_node,
+                node_id,
+                edge_name=param_name,
+                param_type=param_type,
+                arg_index=arg_index,
             )
 
     def add_collection_node_to_graph(self, graph: "_TransportGraph", prefix: str) -> int:
