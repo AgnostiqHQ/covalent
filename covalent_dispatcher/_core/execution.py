@@ -348,8 +348,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         if d == 0:
             tasks_queue.put(node_id)
 
-    # order = result_object.lattice.transport_graph.get_topologically_sorted_graph()
-
     while tasks_left > 0:
         app_log.debug(f"{tasks_left} tasks left")
 
@@ -459,8 +457,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
     # post process the lattice
 
-    app_log.debug("Waiting on futures")
-    wait(futures)
     result_object._result = _post_process(
         result_object.lattice, result_object.get_all_node_outputs()
     )
