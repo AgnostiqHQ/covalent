@@ -136,10 +136,6 @@ def test_post_process():
 
     compute_energy.build_graph()
 
-    order = [
-        i for i in range(len(compute_energy.transport_graph.get_internal_graph_copy().nodes()))
-    ]
-
     node_outputs = {
         "construct_n_molecule(0)": 1,
         ":parameter:1(1)": 1,
@@ -152,7 +148,7 @@ def test_post_process():
         "compute_system_energy(8)": 3,
     }
 
-    execution_result = _post_process(compute_energy, node_outputs, order)
+    execution_result = _post_process(compute_energy, node_outputs)
 
     assert execution_result == compute_energy()
 
