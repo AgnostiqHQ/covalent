@@ -20,17 +20,20 @@
 
 """Covalent CLI Tool - Service Management."""
 
+import asyncio
 import os
 import shutil
 import socket
 import sys
 import time
 from subprocess import DEVNULL, Popen
-from typing import Optional
+from typing import Optional, Tuple
 
 import click
 import psutil
 import requests
+from distributed.comm import unparse_address
+from distributed.core import connect, rpc
 
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
@@ -131,7 +134,6 @@ def _is_server_running() -> bool:
     Returns:
         status: Status of whether the server is running.
     """
-
     if _read_pid(UI_PIDFILE) == -1:
         return False
     return True
@@ -158,7 +160,6 @@ def _graceful_start(
     Returns:
         port: Port assigned to the server.
     """
-
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         port = get_config("user_interface.port")
@@ -173,7 +174,7 @@ def _graceful_start(
     port = _next_available_port(port)
     if no_cluster_flag in sys.argv:
         launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
-        click.echo("Covalent server is starting without Dask.")
+        # click.echo("Covalent server is starting without Dask.")
     else:
         launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
 
@@ -196,7 +197,6 @@ def _terminate_child_processes(pid: int) -> None:
     Returns:
         None
     """
-
     for child_proc in psutil.Process(pid).children(recursive=True):
         try:
             child_proc.kill()
@@ -251,7 +251,6 @@ def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
     Start the Covalent server.
     """
-
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     no_cluster_flag = "--no-cluster"
     set_config(
@@ -298,7 +297,6 @@ def restart(ctx, port: bool, develop: bool) -> None:
     """
     Restart the server.
     """
-
     port = port or get_config("user_interface.port")
 
     ctx.invoke(stop)
@@ -310,7 +308,6 @@ def status() -> None:
     """
     Query the status of the Covalent server.
     """
-
     if _read_pid(UI_PIDFILE) != -1:
         ui_port = get_config("user_interface.port")
         click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
@@ -339,58 +336,132 @@ def purge() -> None:
 
 
 @click.command()
-#@click.option(
-#    "--scale",
-#    default=4,
-#    type=int,
-#    is_flag=True,
-#    help="Autoscale up/down the number of workers in the Dask cluster.",
-#)
-#@click.option(
-#    "--adapt", nargs=2, type=int, help="Vary the number of workers from minsize to maxsize."
-#)
-@click.option("--info", is_flag=True, help="Get the status of a running Dask cluster.")
-@click.option("--restart", is_flag=True, help="Restart the Dask service.")
-@click.option("--address", is_flag=True, help="Get Dask cluster address")
-def cluster(info, restart, address) -> None:
+def logs() -> None:
+    """
+    Show Covalent server logs.
+    """
+    if os.path.exists(UI_LOGFILE):
+        f = open(UI_LOGFILE, "r")
+        line = f.readline()
+        while line:
+            click.echo(line.rstrip("\n"))
+            line = f.readline()
+        f.close()
+    else:
+        click.echo(f"{UI_LOGFILE} not found!. Server possibly purged!")
+
+
+# Cluster CLI handlers
+async def cluster_status(admin_host: str, admin_port: int):
+    """
+    Invoke the cluster_status RPC on the Dask admin server and return the cluster status
+    """
+    async with rpc(f"tcp://{admin_host}:{admin_port}") as r:
+        status = await r.cluster_status()
+    return status
+
+
+async def cluster_addresses(admin_host: str, admin_port: int):
+    """
+    Invoke the cluster_addresses RPC on the Dask admin server and return the
+    scheduler/worker addresses
+    """
+    async with rpc(f"tcp://{admin_host}:{admin_port}") as r:
+        addresses = await r.cluster_addresses()
+    return addresses
+
+
+async def cluster_info(admin_host: str, admin_port: int):
+    """
+    Invoke the cluster_info RPC on the Dask admin server and retrive the cluster info
+    """
+    async with rpc(f"tcp://{admin_host}:{admin_port}") as r:
+        cluster_info = await r.cluster_info()
+    return cluster_info
+
+
+async def cluster_restart(admin_host: str, admin_port: int):
+    """
+    Invoke the cluster_restart RPC on the Dask admin server
+    """
+    uri = unparse_address("tcp", f"{admin_host}:{admin_port}")
+    async with rpc(uri) as r:
+        result = await r.cluster_restart()
+    return result
+
+
+async def cluster_scale(admin_host: str, admin_port: int, nworkers: int):
+    """
+    Invoke the cluster_restart RPC on the Dask admin server
+    """
+    uri = unparse_address("tcp", f"{admin_host}:{admin_port}")
+    async with rpc(uri) as r:
+        result = await r.cluster_scale(nworkers=nworkers)
+    return result
+
+
+async def cluster_adapt(admin_host: str, admin_port: int, min_workers: int, max_workers: int):
+    """
+    Invoke the cluster_restart RPC on the Dask admin server
+    """
+    uri = unparse_address("tcp", f"{admin_host}:{admin_port}")
+    async with rpc(uri) as r:
+        result = await r.cluster_adapt(min_workers=min_workers, max_workers=max_workers)
+    return result
+
+
+@click.option(
+    "--status",
+    is_flag=True,
+    help="""Query the status of the Dask
+              cluster""",
+)
+@click.option(
+    "--address",
+    is_flag=True,
+    help="""Fetch the Dask scheduler/worker
+              addresses""",
+)
+@click.option("--info", is_flag=True, help="Query cluster info")
+@click.option("--restart", is_flag=True, help="Restart cluster workers")
+@click.option("--scale", is_flag=False, type=int, help="Scale the dask cluster up/down")
+@click.option(
+    "--adapt",
+    is_flag=False,
+    type=(int, int),
+    help="""Set the
+              minimum/maximum number of workers in the cluster""",
+)
+@click.command()
+def cluster(
+    status: bool, address: str, info: str, restart: bool,
+        scale: int, adapt: Tuple[int, int]) -> None:
     """
     Provides CLI options for managing Dask.
     """
-    # Get covalent server address
-    if _is_server_running():
-        server_url = f"http://0.0.0.0:{get_config('dispatcher.port')}"
-        if address:
-            endpoint = server_url+"/dask/address"
-            response = requests.get(endpoint, params={"admin_port": get_config("dask.admin_port")})
-            if response.ok:
-                print(response.json())
 
-        if info:
-            endpoint = server_url+"/dask/info"
-            response = requests.get(endpoint, params={"admin_port": get_config("dask.admin_port")})
-            if response.ok:
-                print(response.json())
+    admin_host = get_config("dask.admin_host")
+    admin_port = get_config("dask.admin_port")
 
+    loop = asyncio.get_event_loop()
+    if status:
+        click.echo(loop.run_until_complete(cluster_status(admin_host,
+                                                          admin_port)))
 
-    #if address:
-    #    conn = Client(dask_proc_admin_thread_address, authkey=b'covalent')
-    #    conn.send("address")
-    #    scheduler_address = conn.recv()
-    #    print(f"Dask scheduler is running at {scheduler_address}")
-#
-    #if info:
-    #    conn = Client(dask_proc_admin_thread_address, authkey=b'covalent')
-    #    conn.send("info")
-    #    cluster_info = conn.recv()
-    #    print(f"Dask cluster info: {cluster_info}")
-#
-    #if _is_server_running():
-    #    if address_flag in sys.argv:
-    #        address = get_config("dask.scheduler_address")
-    #        click.echo(f"The scheduler's address is {address}.")
-    #    if info_flag in sys.argv:
-    #        info = get_config("dask.dashboard_link")
-    #        click.echo(f"Information about the Dask service is available at {info}.")
-    #else:
-    #    click.echo("Dask service is not running.")
-#
+    if address:
+        click.echo(loop.run_until_complete(cluster_addresses(admin_host,
+                                                             admin_port)))
+
+    if scale:
+        click.echo(loop.run_until_complete(cluster_scale(admin_host, admin_port,
+                                                         nworkers=scale)))
+
+    if restart:
+        click.echo("Not implemented")
+
+    if adapt:
+        click.echo("Not implemented")
+
+    if info:
+        click.echo(loop.run_until_complete(cluster_info(admin_host,
+                                                        admin_port)))
