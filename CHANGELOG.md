@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Added Github push changelog workflow to append commiters username
+- Reusable JavaScript action to parse changelog and update version
+
 ## [0.113.0] - 2022-06-21
 
 ### Added
@@ -16,8 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Syntax fix in hotfix.yml
-- Added Github push changelog workflow to append commiters username
-- Reusable JavaScript action to parse changelog and update version
 
 ### Docs
 
