@@ -11,6 +11,7 @@ psutil==5.9.0
 PyYAML==6.0
 requests==2.24.0
 simplejson==3.17.6
+sqlalchemy==1.4.37
 tailer==0.4.1
 toml==0.10.2
 uvloop==0.16.0

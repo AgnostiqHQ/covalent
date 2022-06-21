@@ -49,7 +49,7 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: ${{ fromJson(steps.pr_data.outputs.data).head.ref }}
+          ref: ${{ fromJson(steps.pr-data.outputs.data).head.ref }}
       - name: Validate tree
         run: |
           sha_length=20

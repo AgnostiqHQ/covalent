@@ -27,6 +27,7 @@ from typing import Any, Callable, Dict, List
 import cloudpickle
 import networkx as nx
 
+from .._data_store import DataStoreSession, models
 from .._shared_files.defaults import parameter_prefix
 
 
@@ -124,6 +125,9 @@ class _TransportGraph:
         # using 'edge_insertion_order' attribute.
         self._graph = nx.MultiDiGraph(edge_insertion_order=[])
         self.lattice_metadata = None
+
+        # IDs of nodes modified during the workflow run
+        self.dirty_nodes = []
 
     def add_node(self, name: str, function: Callable, metadata: Dict, **attr) -> int:
         """
@@ -243,6 +247,7 @@ class _TransportGraph:
             KeyError: If the node key is not found.
         """
 
+        self.dirty_nodes.append(node_key)
         self._graph.nodes[node_key][value_key] = value
 
     def get_edge_data(self, dep_key: int, node_key: int) -> Any:
@@ -375,3 +380,24 @@ class _TransportGraph:
         self._graph = nx.create_empty_copy(self._graph)
         # Updates the graph with the edges.
         self._graph.update(edges=sorted_edge_list)
+
+    def persist(self, ds: DataStoreSession, update: bool):
+        if update:
+            for node_id in self.dirty_nodes:
+                self.persist_node(ds, node_id)
+            self.dirty_nodes.clear()
+        else:
+            # Save all nodes and edges
+            for node_id in self._graph.nodes:
+                self.persist_node(ds, node_id)
+            for edge in self._graph.edges:
+                self.persist_edge(ds, edge[0], edge[1])
+            self.dirty_nodes.clear()
+
+    def persist_node(self, ds: DataStoreSession, node_id: int):
+        dispatch_id = ds.metadata["dispatch_id"]
+        raise NotImplementedError
+
+    def persist_edge(self, ds: DataStoreSession, parent_id: int, node_id: int):
+        dispatch_id = ds.metadata["dispatch_id"]
+        raise NotImplementedError

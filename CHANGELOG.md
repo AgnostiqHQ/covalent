@@ -11,6 +11,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `covalent status` checks if the server process is still alive.
 
+## [0.113.0] - 2022-06-21
+
+### Added
+
+- Introduce new db models and object store backends
+
+### Operations
+
+- Syntax fix in hotfix.yml
+
+### Docs
+
+- Added new tutorial: Linear and convolutional autoencoders
+
+## [0.112.0] - 2022-06-20
+
+### Changed
+
+- Changed async version on webapp package-lock file.
+
+## [0.111.0] - 2022-06-20
+
+### Changed
+
+- Changed eventsource version on webapp package-lock file.
+
 ### Docs
 
 - Added new tutorial: Covalentified version of the Pennylane Variational Classifier tutorial.
@@ -66,7 +92,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-<<<<<<< variant A
 - `covalent --version` now works for PyPI releases
 
 ## [0.109.0] - 2022-06-10
@@ -97,9 +122,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Add pandoc installation updates to contributing guide
->>>>>>> variant B
-- `covalent status` checks if the server process is still alive.
-======= end
 
 ## [0.107.0] - 2022-06-07
 
