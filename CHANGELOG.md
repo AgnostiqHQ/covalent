@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.113.0] - 2022-06-21
+
 ### Added
 
 - Introduce new db models and object store backends
