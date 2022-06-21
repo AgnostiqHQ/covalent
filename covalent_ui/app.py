@@ -22,7 +22,6 @@ import argparse
 import os
 import signal
 import sys
-from datetime import datetime
 from distutils.log import debug
 from logging import Logger
 from logging.handlers import DEFAULT_TCP_LOGGING_PORT

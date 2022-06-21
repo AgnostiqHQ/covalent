@@ -28,6 +28,7 @@ import sys
 import time
 from subprocess import DEVNULL, Popen
 from typing import Optional, Tuple
+from multiprocessing.connection import Client
 
 import click
 import psutil
