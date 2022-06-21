@@ -247,7 +247,7 @@ class _TransportGraph:
             KeyError: If the node key is not found.
         """
 
-        self.modified_nodes.append(node_key)
+        self.dirty_nodes.append(node_key)
         self._graph.nodes[node_key][value_key] = value
 
     def get_edge_data(self, dep_key: int, node_key: int) -> Any:
