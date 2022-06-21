@@ -348,8 +348,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         if d == 0:
             tasks_queue.put(node_id)
 
-    # order = result_object.lattice.transport_graph.get_topologically_sorted_graph()
-
     while tasks_left > 0:
         app_log.debug(f"{tasks_left} tasks left")
 
@@ -478,105 +476,11 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         future.add_done_callback(task_callback)
         futures.append(future)
 
-    # for nodes in order:
-    #     futures: list = []
-
-    #     for node_id in nodes:
-    #         # Get name of the node for the current task
-    #         node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
-
-    #         if node_name.startswith(
-    #             (subscript_prefix, generator_prefix, parameter_prefix, attr_prefix)
-    #         ):
-    #             if node_name.startswith(parameter_prefix):
-    #                 output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
-    #             else:
-    #                 parent = result_object.lattice.transport_graph.get_dependencies(node_id)[0]
-    #                 output = result_object.lattice.transport_graph.get_node_value(parent, "output")
-
-    #                 if node_name.startswith(attr_prefix):
-    #                     attr = result_object.lattice.transport_graph.get_node_value(
-    #                         node_id, "attribute_name"
-    #                     )
-    #                     output = getattr(output, attr)
-    #                 else:
-    #                     key = result_object.lattice.transport_graph.get_node_value(node_id, "key")
-    #                     output = output[key]
-
-    #             result_object._update_node(
-    #                 node_id=node_id,
-    #                 start_time=datetime.now(timezone.utc),
-    #                 end_time=datetime.now(timezone.utc),
-    #                 status=Result.COMPLETED,
-    #                 output=output,
-    #             )
-
-    #             continue
-
-    #         task_input = _get_task_inputs(node_id, node_name, result_object)
-
-    #         start_time = datetime.now(timezone.utc)
-    #         serialized_callable = result_object.lattice.transport_graph.get_node_value(
-    #             node_id, "function"
-    #         )
-    #         selected_executor = result_object.lattice.transport_graph.get_node_value(
-    #             node_id, "metadata"
-    #         )["executor"]
-
-    #         update_node_result(
-    #             generate_node_result(
-    #                 node_id=node_id,
-    #                 start_time=start_time,
-    #                 status=Result.RUNNING,
-    #             )
-    #         )
-
-    #         # Add the task generated for the node to the list of tasks
-    #         future = thread_pool.submit(
-    #             _run_task,
-    #             node_id=node_id,
-    #             dispatch_id=result_object.dispatch_id,
-    #             results_dir=result_object.results_dir,
-    #             serialized_callable=serialized_callable,
-    #             selected_executor=pickle.dumps(selected_executor),
-    #             node_name=node_name,
-    #             inputs=pickle.dumps(task_input),
-    #         )
-
-    #         future.add_done_callback(task_callback)
-
-    #         futures.append(future)
-
-    #     # run the tasks for the current iteration concurrently
-    #     # results are not used right now, but can be in the case of multiprocessing
-    #     wait(futures)
-    #     # del futures
-
-    #     # When one or more nodes failed in the last iteration, don't iterate further
-    #     for node_id in nodes:
-    #         if result_object._get_node_status(node_id) == Result.FAILED:
-    #             result_object._status = Result.FAILED
-    #             result_object._end_time = datetime.now(timezone.utc)
-    #             result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
-    #             with DispatchDB() as db:
-    #                 db.upsert(result_object.dispatch_id, result_object)
-    #             result_object.save()
-    #             result_webhook.send_update(result_object)
-    #             return
-
-    #         elif result_object._get_node_status(node_id) == Result.CANCELLED:
-    #             result_object._status = Result.CANCELLED
-    #             result_object._end_time = datetime.now(timezone.utc)
-    #             with DispatchDB() as db:
-    #                 db.upsert(result_object.dispatch_id, result_object)
-    #             result_object.save()
-    #             result_webhook.send_update(result_object)
-    #             return
+    app_log.debug("Waiting on futures")
+    wait(futures)
 
     # post process the lattice
 
-    app_log.debug("Waiting on futures")
-    wait(futures)
     result_object._result = _post_process(
         result_object.lattice, result_object.get_all_node_outputs()
     )
