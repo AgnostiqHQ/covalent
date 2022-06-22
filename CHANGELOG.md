@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added Github push changelog workflow to append commiters username
 - Reusable JavaScript action to parse changelog and update version
+- Updates to changelog logic to handle multiple authors
 
 ## [0.113.0] - 2022-06-21
 
