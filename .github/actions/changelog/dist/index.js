@@ -1,7 +1,7 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 908:
+/***/ 875:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -28,7 +28,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.issue = exports.issueCommand = void 0;
 const os = __importStar(__nccwpck_require__(37));
-const utils_1 = __nccwpck_require__(456);
+const utils_1 = __nccwpck_require__(914);
 /**
  * Commands
  *
@@ -100,7 +100,7 @@ function escapeProperty(s) {
 
 /***/ }),
 
-/***/ 279:
+/***/ 3:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -135,12 +135,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getIDToken = exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.notice = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
-const command_1 = __nccwpck_require__(908);
-const file_command_1 = __nccwpck_require__(594);
-const utils_1 = __nccwpck_require__(456);
+const command_1 = __nccwpck_require__(875);
+const file_command_1 = __nccwpck_require__(492);
+const utils_1 = __nccwpck_require__(914);
 const os = __importStar(__nccwpck_require__(37));
 const path = __importStar(__nccwpck_require__(17));
-const oidc_utils_1 = __nccwpck_require__(142);
+const oidc_utils_1 = __nccwpck_require__(215);
 /**
  * The code to exit an action
  */
@@ -418,17 +418,17 @@ exports.getIDToken = getIDToken;
 /**
  * Summary exports
  */
-var summary_1 = __nccwpck_require__(364);
+var summary_1 = __nccwpck_require__(379);
 Object.defineProperty(exports, "summary", ({ enumerable: true, get: function () { return summary_1.summary; } }));
 /**
  * @deprecated use core.summary
  */
-var summary_2 = __nccwpck_require__(364);
+var summary_2 = __nccwpck_require__(379);
 Object.defineProperty(exports, "markdownSummary", ({ enumerable: true, get: function () { return summary_2.markdownSummary; } }));
 /**
  * Path exports
  */
-var path_utils_1 = __nccwpck_require__(11);
+var path_utils_1 = __nccwpck_require__(94);
 Object.defineProperty(exports, "toPosixPath", ({ enumerable: true, get: function () { return path_utils_1.toPosixPath; } }));
 Object.defineProperty(exports, "toWin32Path", ({ enumerable: true, get: function () { return path_utils_1.toWin32Path; } }));
 Object.defineProperty(exports, "toPlatformPath", ({ enumerable: true, get: function () { return path_utils_1.toPlatformPath; } }));
@@ -436,7 +436,7 @@ Object.defineProperty(exports, "toPlatformPath", ({ enumerable: true, get: funct
 
 /***/ }),
 
-/***/ 594:
+/***/ 492:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -467,7 +467,7 @@ exports.issueCommand = void 0;
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const fs = __importStar(__nccwpck_require__(147));
 const os = __importStar(__nccwpck_require__(37));
-const utils_1 = __nccwpck_require__(456);
+const utils_1 = __nccwpck_require__(914);
 function issueCommand(command, message) {
     const filePath = process.env[`GITHUB_${command}`];
     if (!filePath) {
@@ -485,7 +485,7 @@ exports.issueCommand = issueCommand;
 
 /***/ }),
 
-/***/ 142:
+/***/ 215:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -501,9 +501,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OidcClient = void 0;
-const http_client_1 = __nccwpck_require__(13);
-const auth_1 = __nccwpck_require__(261);
-const core_1 = __nccwpck_require__(279);
+const http_client_1 = __nccwpck_require__(997);
+const auth_1 = __nccwpck_require__(360);
+const core_1 = __nccwpck_require__(3);
 class OidcClient {
     static createHttpClient(allowRetry = true, maxRetry = 10) {
         const requestOptions = {
@@ -569,7 +569,7 @@ exports.OidcClient = OidcClient;
 
 /***/ }),
 
-/***/ 11:
+/***/ 94:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -634,7 +634,7 @@ exports.toPlatformPath = toPlatformPath;
 
 /***/ }),
 
-/***/ 364:
+/***/ 379:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -924,7 +924,7 @@ exports.summary = _summary;
 
 /***/ }),
 
-/***/ 456:
+/***/ 914:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -971,7 +971,7 @@ exports.toCommandProperties = toCommandProperties;
 
 /***/ }),
 
-/***/ 261:
+/***/ 360:
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -1059,7 +1059,7 @@ exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHand
 
 /***/ }),
 
-/***/ 13:
+/***/ 997:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -1097,8 +1097,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.HttpClient = exports.isHttps = exports.HttpClientResponse = exports.HttpClientError = exports.getProxyUrl = exports.MediaTypes = exports.Headers = exports.HttpCodes = void 0;
 const http = __importStar(__nccwpck_require__(685));
 const https = __importStar(__nccwpck_require__(687));
-const pm = __importStar(__nccwpck_require__(291));
-const tunnel = __importStar(__nccwpck_require__(213));
+const pm = __importStar(__nccwpck_require__(295));
+const tunnel = __importStar(__nccwpck_require__(194));
 var HttpCodes;
 (function (HttpCodes) {
     HttpCodes[HttpCodes["OK"] = 200] = "OK";
@@ -1671,7 +1671,7 @@ const lowercaseKeys = (obj) => Object.keys(obj).reduce((c, k) => ((c[k.toLowerCa
 
 /***/ }),
 
-/***/ 291:
+/***/ 295:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -1739,15 +1739,15 @@ exports.checkBypass = checkBypass;
 
 /***/ }),
 
-/***/ 213:
+/***/ 194:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-module.exports = __nccwpck_require__(402);
+module.exports = __nccwpck_require__(440);
 
 
 /***/ }),
 
-/***/ 402:
+/***/ 440:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
@@ -2148,15 +2148,54 @@ module.exports = require("util");
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
-const core = __nccwpck_require__(279);
+const core = __nccwpck_require__(3);
 const fs = __nccwpck_require__(147);
 const readline = __nccwpck_require__(521);
+
+const check_author = (author, authors) => {
+  console.log("check_author");
+  console.log(author);
+  if (
+    typeof author === "object" &&
+    "email" in author &&
+    !authors.includes(author.email)
+  ) {
+    console.log("returning " + author.name);
+    return author.name + " <" + author.email + ">\n";
+  } else if (
+    typeof author === "string" &&
+    !authors.includes(author.split(/[<>]/)[1])
+  ) {
+    console.log("returning " + author);
+    return author + "\n";
+  } else {
+    return "";
+  }
+};
+
+const get_author = (commit, authors) => {
+  console.log("get_author");
+  console.log(commit);
+  let output = "";
+  if (commit.author.type === "User") {
+    output += check_author(commit.commit.author, authors);
+    const coauthors = commit.commit.message.match(/Co-authored-by:.+<.+@.+>/g);
+    for (author in coauthors) {
+      output += check_author(coauthors[author], authors + output);
+    }
+  }
+  console.log("get_author returns ");
+  console.log(output);
+  return output;
+};
 
 try {
   const head_version = fs
     .readFileSync(core.getInput("version-path"), "utf8")
     .trim();
   const commits = JSON.parse(core.getInput("commits-json"));
+  console.log("commits");
+  console.log(commits);
   const changelog = fs.readFileSync(core.getInput("changelog-path"), "utf8");
   let curline = 0;
   const begin = 8;
@@ -2226,8 +2265,10 @@ try {
       unreleased = "UNRELEASED";
       let commit_authors = "";
       for (i = 0; i < commits.length; i++) {
-        commit_authors += `@${commits[i].author.username} `;
+        commit_authors += get_author(commits[i], commit_authors);
       }
+      console.log("commit authors");
+      console.log(commit_authors);
 
       const new_changelog = changelog
         .slice(0, changelog.indexOf(unreleased) + unreleased.length + 1)
