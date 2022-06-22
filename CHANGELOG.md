@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Added
-
-- Dummy commit to test changelog workflow
-
 ### Operations
 
 - Added Github push changelog workflow to append commiters username
