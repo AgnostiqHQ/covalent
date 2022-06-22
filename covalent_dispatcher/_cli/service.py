@@ -23,12 +23,14 @@
 import os
 import shutil
 import socket
+import sys
 import time
 from subprocess import DEVNULL, Popen
-from typing import Optional
+from typing import Optional, Tuple
 
 import click
 import psutil
+import requests
 
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
@@ -129,7 +131,6 @@ def _is_server_running() -> bool:
     Returns:
         status: Status of whether the server is running.
     """
-
     if _read_pid(UI_PIDFILE) == -1:
         return False
     return True
@@ -140,6 +141,7 @@ def _graceful_start(
     pidfile: str,
     logfile: str,
     port: int,
+    no_cluster: str,
     develop: bool = False,
 ) -> int:
     """
@@ -155,7 +157,6 @@ def _graceful_start(
     Returns:
         port: Port assigned to the server.
     """
-
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         port = get_config("user_interface.port")
@@ -166,8 +167,13 @@ def _graceful_start(
 
     pypath = f"PYTHONPATH={UI_SRVDIR}/../tests:$PYTHONPATH" if develop else ""
     dev_mode_flag = "--develop" if develop else ""
+    no_cluster_flag = "--no-cluster"
     port = _next_available_port(port)
-    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
+    if no_cluster_flag in sys.argv:
+        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
+        # click.echo("Covalent server is starting without Dask.")
+    else:
+        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
@@ -188,7 +194,6 @@ def _terminate_child_processes(pid: int) -> None:
     Returns:
         None
     """
-
     for child_proc in psutil.Process(pid).children(recursive=True):
         try:
             child_proc.kill()
@@ -236,13 +241,17 @@ def _graceful_shutdown(pidfile: str) -> None:
     help="Server port number.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
+@click.option(
+    "--no-cluster",
+    is_flag=True,
+    help="Start the server without Dask and use the LocalExecutor instead",
+)
 @click.pass_context
-def start(ctx, port: int, develop: bool) -> None:
+def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     """
     Start the Covalent server.
     """
-
-    port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, develop)
+    port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     set_config(
         {
             "user_interface.address": "0.0.0.0",
@@ -270,7 +279,6 @@ def stop() -> None:
     """
     Stop the Covalent server.
     """
-
     _graceful_shutdown(UI_PIDFILE)
 
 
@@ -288,7 +296,6 @@ def restart(ctx, port: bool, develop: bool) -> None:
     """
     Restart the server.
     """
-
     port = port or get_config("user_interface.port")
 
     ctx.invoke(stop)
@@ -300,7 +307,6 @@ def status() -> None:
     """
     Query the status of the Covalent server.
     """
-
     if _read_pid(UI_PIDFILE) != -1:
         ui_port = get_config("user_interface.port")
         click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
@@ -326,3 +332,19 @@ def purge() -> None:
     cm.purge_config()
 
     click.echo("Covalent server files have been purged.")
+
+
+@click.command()
+def logs() -> None:
+    """
+    Show Covalent server logs.
+    """
+    if os.path.exists(UI_LOGFILE):
+        f = open(UI_LOGFILE, "r")
+        line = f.readline()
+        while line:
+            click.echo(line.rstrip("\n"))
+            line = f.readline()
+        f.close()
+    else:
+        click.echo(f"{UI_LOGFILE} not found!. Server possibly purged!")

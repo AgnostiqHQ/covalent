@@ -19,13 +19,10 @@ The easiest way to install Covalent is using the PyPI package manager:
 
    pip install cova
 
-.. tip::
+.. note::
 
-   Also install :code:`covalent-dask-plugin` to use dask executors when running workflows since that is the recommended executor.
+   If you have used Covalent previously, make sure to uninstall the Covalent Dask plugin by running :code:`pip uninstall covalent-dask-plugin`. That plugin has been folded into Covalent and will no longer be maintained separately.
 
-   .. code:: bash
-
-      pip install covalent-dask-plugin
 
 Conda Install
 -------------
@@ -93,6 +90,7 @@ Use the Covalent CLI tool to manage the Covalent server. The following commands 
    --help         Show this message and exit.
 
    Commands:
+   logs     Show Covalent server logs.
    purge    Shutdown server and delete the cache and config settings.
    restart  Restart the server.
    start    Start the Covalent server.
@@ -119,42 +117,6 @@ Hello, Covalent!
 ################
 
 Let's look at a simple example to get started with Covalent. Before starting, ensure you have installed Covalent, verified the installation, and started the Covalent server. Next, open a Jupyter notebook or Python console and create a simple workflow:
-
-.. tip::
-   You can start a dask cluster and use it with covalent, given you have the `covalent-dask-plugin` installed, as follows:
-
-   .. code:: python
-
-      from covalent.executor import DaskExecutor
-      from dask.distributed import LocalCluster
-
-      cluster = LocalCluster(processes=True)
-
-      dask_executor = DaskExecutor(scheduler_address=cluster.scheduler_address)
-
-   and then assign this executor to the lattice (which each electron inside it will inherit),
-
-   .. code:: python
-
-      import covalent as ct
-
-      # Construct tasks as "electrons"
-      @ct.electron
-      def join_words(a, b):
-         return ", ".join([a, b])
-
-      @ct.electron
-      def excitement(a):
-         return f"{a}!"
-
-      # Construct a workflow of tasks
-      @ct.lattice(executor=dask_executor)
-      def simple_workflow(a, b):
-         phrase = join_words(a, b)
-         return excitement(phrase)
-
-      # Dispatch the workflow
-      dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
 
 
 .. code:: python
