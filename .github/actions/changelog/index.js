@@ -115,10 +115,11 @@ try {
           "\n",
           changelog_header,
           "\n",
+          "\n",
           "### Authors",
           "\n",
-          `${commit_authors}`,
           "\n",
+          `${commit_authors}`,
           changelog.slice(changelog.indexOf(unreleased) + unreleased.length + 1)
         );
       fs.writeFileSync(core.getInput("changelog-path"), new_changelog, "utf8");
