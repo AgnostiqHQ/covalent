@@ -30,12 +30,6 @@ from ._shared_files.config import get_config, reload_config, set_config
 from ._shared_files.util_classes import RESULT_STATUS as status
 from ._workflow import Lepton, electron, lattice
 
-try:
-    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "./VERSION")) as f:
-        __version__ = f.read().strip()
-except FileNotFoundError:
-    pass
-
 __all__ = [s for s in dir() if not s.startswith("_")]
 
 for _s in dir():

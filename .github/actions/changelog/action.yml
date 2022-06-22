@@ -1,0 +1,19 @@
+name: "Changelog Update"
+description: "Parse the new information in the CHANGELOG and update the CHANGELOG and VERSION files accordingly."
+inputs:
+  changelog-path:
+    description: "Path to the CHANGELOG file"
+    required: true
+    default: "CHANGELOG.md"
+  version-path:
+    description: "Path to the VERSION file"
+    required: true
+    default: "VERSION"
+  commits-json:
+    description: "JSON formatted commit log"
+outputs:
+  message:
+    description: 'A commit message if there is a change to be committed, or "noop" if there is no change.'
+runs:
+  using: "node16"
+  main: "dist/index.js"
