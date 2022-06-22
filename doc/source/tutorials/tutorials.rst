@@ -20,6 +20,8 @@ Beginner
      - :doc:`MNIST classifier<./machine_learning/mnist_classifier>`
    * - Machine learning
      - :doc:`Using Covalent with PennyLane for hybrid computation<./machine_learning/pennylane_hybrid>`
+   * - Machine learning
+     - :doc:`Linear and convolutional autoencoders<./machine_learning/autoencoders>`
 
 ~~~~~~~~
 Advanced

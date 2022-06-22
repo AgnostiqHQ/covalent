@@ -7,6 +7,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.113.0] - 2022-06-21
+
+### Added
+
+- Introduce new db models and object store backends
+
+### Operations
+
+- Syntax fix in hotfix.yml
+
+### Docs
+
+- Added new tutorial: Linear and convolutional autoencoders
+
+## [0.112.0] - 2022-06-20
+
+### Changed
+
+- Changed async version on webapp package-lock file.
+
+## [0.111.0] - 2022-06-20
+
+### Changed
+
+- Changed eventsource version on webapp package-lock file.
+
+### Docs
+
+- Added new tutorial: Covalentified version of the Pennylane Variational Classifier tutorial.
+
+## [0.110.3] - 2022-06-17
+
+### Fixed
+
+- Fix error when parsing electron positional arguments in workflows
+
+### Docs
+
+- Remove hardcoding version info in README.md
+
+## [0.110.2] - 2022-06-10
+
+### Docs
+
+- Fix MNIST tutorial
+- Fix Quantum Gravity tutorial
+- Update RTD with migration guide compatible with latest release
+- Convert all references to `covalent start` from Jupyter notebooks to markdown statements
+- Update release notes summary in README.md
+- Fixed display issues with figure (in dark mode) and bullet points in tutorials
+
+### Operations
+
+- Added a retry block to the webapp build step in `tests.yml`
+
+## [0.110.1] - 2022-06-10
+
+### Fixed
+
+- Configure dask to not use daemonic processes when creating a cluster
+
+### Operations
+
+- Sync the VERSION file within `covalent` directory to match the root level VERSION
+- Manually patch `covalent/VERSION`
+
+## [0.110.0] - 2022-06-10
+
+### Changed
+
+- Web GUI list size and status label colors changed.
+- Web GUI graph running icon changed to non-static icon.
+
+### Docs
+
+- Removed references to the Dask executor in RTD as they are no longer needed.
+
+## [0.109.1] - 2022-06-10
+
+### Fixed
+
+- `covalent --version` now works for PyPI releases
+
+## [0.109.0] - 2022-06-10
+
+### Docs
+
+- Update CLI help statements
+
 ### Added
 
 - CLI option for starting Covalent server without Dask.
