@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from logging import Logger
-from multiprocessing import Process
+from multiprocessing import Process, current_process
 
 import dask.config
 from dask.distributed import Client, LocalCluster
@@ -38,8 +39,9 @@ class DaskCluster(Process):
     async def admin_server(self):
         """
         Dask core server to administer the Dask cluster. The different handlers
-        are added to the server either as python lambda functions or as instance
-        methods
+        (RPCs) are added to the server either as python lambda functions or as instance
+        methods that perform very specific operations on the cluster upon the
+        user's request
         """
         s = Server(
             {
@@ -48,7 +50,7 @@ class DaskCluster(Process):
                 "cluster_restart": lambda comm: None,
                 "cluster_scale": lambda comm, nworkers: self.cluster.scale(n=nworkers),
                 "cluster_adapt": lambda comm, min_workers, max_workers: None,
-                "cluster_addresses": lambda comm: {
+                "cluster_address": lambda comm: {
                     "scheduler": self.cluster.scheduler_address,
                     "workers": [
                         {f"Worker {id}": f"{worker.address}"}
@@ -74,6 +76,8 @@ class DaskCluster(Process):
                     "dashboard_link": dashboard_link,
                     "admin_host": self.admin_host,
                     "admin_port": self.admin_port,
+                    "process_info": current_process(),
+                    "pid": os.getpid(),
                 }
             }
         )

@@ -28,13 +28,12 @@ import sys
 import time
 from subprocess import DEVNULL, Popen
 from typing import Optional, Tuple
-from multiprocessing.connection import Client
 
 import click
 import psutil
 import requests
 from distributed.comm import unparse_address
-from distributed.core import connect, rpc
+from distributed.core import rpc
 
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
@@ -362,13 +361,13 @@ async def cluster_status(admin_host: str, admin_port: int):
     return status
 
 
-async def cluster_addresses(admin_host: str, admin_port: int):
+async def cluster_address(admin_host: str, admin_port: int):
     """
     Invoke the cluster_addresses RPC on the Dask admin server and return the
     scheduler/worker addresses
     """
     async with rpc(f"tcp://{admin_host}:{admin_port}") as r:
-        addresses = await r.cluster_addresses()
+        addresses = await r.cluster_address()
     return addresses
 
 
@@ -377,8 +376,8 @@ async def cluster_info(admin_host: str, admin_port: int):
     Invoke the cluster_info RPC on the Dask admin server and retrive the cluster info
     """
     async with rpc(f"tcp://{admin_host}:{admin_port}") as r:
-        cluster_info = await r.cluster_info()
-    return cluster_info
+        cinfo = await r.cluster_info()
+    return cinfo
 
 
 async def cluster_restart(admin_host: str, admin_port: int):
@@ -391,7 +390,7 @@ async def cluster_restart(admin_host: str, admin_port: int):
     return result
 
 
-async def cluster_scale(admin_host: str, admin_port: int, nworkers: int):
+async def cluster_scale(admin_host: str, admin_port: int, nworkers: int = 1):
     """
     Invoke the cluster_restart RPC on the Dask admin server
     """
@@ -425,18 +424,19 @@ async def cluster_adapt(admin_host: str, admin_port: int, min_workers: int, max_
 )
 @click.option("--info", is_flag=True, help="Query cluster info")
 @click.option("--restart", is_flag=True, help="Restart cluster workers")
-@click.option("--scale", is_flag=False, type=int, help="Scale the dask cluster up/down")
+@click.option("--scale", default=1, is_flag=False, type=int, help="Scale the dask cluster up/down")
 @click.option(
     "--adapt",
     is_flag=False,
+    default=(1, 2),
     type=(int, int),
     help="""Set the
               minimum/maximum number of workers in the cluster""",
 )
 @click.command()
 def cluster(
-    status: bool, address: str, info: str, restart: bool,
-        scale: int, adapt: Tuple[int, int]) -> None:
+    status: bool, address: bool, info: bool, restart: bool, scale: int, adapt: Tuple[int, int]
+) -> None:
     """
     Inspect and manage the Dask cluster's configuration.
     """
@@ -446,23 +446,22 @@ def cluster(
 
     loop = asyncio.get_event_loop()
     if status:
-        click.echo(loop.run_until_complete(cluster_status(admin_host,
-                                                          admin_port)))
+        click.echo(loop.run_until_complete(cluster_status(admin_host, admin_port)))
 
     if address:
-        click.echo(loop.run_until_complete(cluster_addresses(admin_host,
-                                                             admin_port)))
+        click.echo(loop.run_until_complete(cluster_address(admin_host, admin_port)))
 
     if scale:
-        click.echo(loop.run_until_complete(cluster_scale(admin_host, admin_port,
-                                                         nworkers=scale)))
+        click.echo(loop.run_until_complete(cluster_scale(admin_host, admin_port, nworkers=scale)))
 
     if restart:
-        click.echo("Not implemented")
+        click.echo(loop.run_until_complete(cluster_restart(admin_host, admin_port)))
 
     if adapt:
-        click.echo("Not implemented")
-
+        click.echo(
+            loop.run_until_complete(
+                cluster_adapt(admin_host, admin_port, min_workers=adapt[0], max_workers=adapt[1])
+            )
+        )
     if info:
-        click.echo(loop.run_until_complete(cluster_info(admin_host,
-                                                        admin_port)))
+        click.echo(loop.run_until_complete(cluster_info(admin_host, admin_port)))

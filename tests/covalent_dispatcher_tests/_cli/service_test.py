@@ -35,6 +35,7 @@ from covalent_dispatcher._cli.service import (
     _port_from_pid,
     _read_pid,
     _rm_pid_file,
+    cluster,
     purge,
     restart,
     start,
@@ -284,3 +285,51 @@ def test_purge(mocker):
     )
     purge_config_mock.assert_called_once()
     assert result.output == "Covalent server files have been purged.\n"
+
+
+@pytest.mark.parametrize("cli_option", [("status"), ("info"), ("address"), ("restart")])
+def test_cluster_cli_invocation(mocker, cli_option):
+    """
+    Test whether passing in the right cluster cli options results in the
+    corresponding method being invoked
+    """
+    runner = CliRunner()
+    get_config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
+    get_event_loop_mock = mocker.patch("covalent_dispatcher._cli.service.asyncio.get_event_loop")
+    cluster_cli_mock = mocker.patch(f"covalent_dispatcher._cli.service.cluster_{cli_option}")
+
+    runner.invoke(cluster, [f"--{cli_option}"])
+
+    assert get_config_mock.call_count == 2
+    get_event_loop_mock.assert_called_once()
+    cluster_cli_mock.assert_called_once()
+
+
+def test_cluster_scale_cli_invocation(mocker):
+    """
+    Test cluster scale CLI with the right input
+    """
+    runner = CliRunner()
+    get_config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
+    get_event_loop_mock = mocker.patch("covalent_dispatcher._cli.service.asyncio.get_event_loop")
+    cluster_cli_mock = mocker.patch("covalent_dispatcher._cli.service.cluster_scale")
+    runner.invoke(cluster, ["--scale", 1])
+
+    assert get_config_mock.call_count == 2
+    get_event_loop_mock.assert_called_once()
+    cluster_cli_mock.assert_called_once()
+
+
+def test_cluster_adapt_cli_invocation(mocker):
+    """
+    Test cluster adapt CLI with the right inputs
+    """
+    runner = CliRunner()
+    get_config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
+    get_event_loop_mock = mocker.patch("covalent_dispatcher._cli.service.asyncio.get_event_loop")
+    cluster_cli_mock = mocker.patch("covalent_dispatcher._cli.service.cluster_adapt")
+    runner.invoke(cluster, ["--adapt", 1, 2])
+
+    assert get_config_mock.call_count == 2
+    get_event_loop_mock.assert_called_once()
+    cluster_cli_mock.assert_called_once()
