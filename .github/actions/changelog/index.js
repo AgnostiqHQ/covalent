@@ -3,20 +3,16 @@ const fs = require("fs");
 const readline = require("readline");
 
 const check_author = (author, authors) => {
-  console.log("check_author");
-  console.log(author);
   if (
     typeof author === "object" &&
     "email" in author &&
     !authors.includes(author.email)
   ) {
-    console.log("returning " + author.name);
     return author.name + " <" + author.email + ">\n";
   } else if (
     typeof author === "string" &&
     !authors.includes(author.split(/[<>]/)[1])
   ) {
-    console.log("returning " + author);
     return author + "\n";
   } else {
     return "";
@@ -24,8 +20,6 @@ const check_author = (author, authors) => {
 };
 
 const get_author = (commit, authors) => {
-  console.log("get_author");
-  console.log(commit);
   let output = "";
   if (commit.author.type === "User") {
     output += check_author(commit.commit.author, authors);
@@ -34,8 +28,6 @@ const get_author = (commit, authors) => {
       output += check_author(coauthors[author], authors + output);
     }
   }
-  console.log("get_author returns ");
-  console.log(output);
   return output;
 };
 
@@ -44,8 +36,6 @@ try {
     .readFileSync(core.getInput("version-path"), "utf8")
     .trim();
   const commits = JSON.parse(core.getInput("commits-json"));
-  console.log("commits");
-  console.log(commits);
   const changelog = fs.readFileSync(core.getInput("changelog-path"), "utf8");
   let curline = 0;
   const begin = 8;
@@ -117,8 +107,6 @@ try {
       for (i = 0; i < commits.length; i++) {
         commit_authors += get_author(commits[i], commit_authors);
       }
-      console.log("commit authors");
-      console.log(commit_authors);
 
       const new_changelog = changelog
         .slice(0, changelog.indexOf(unreleased) + unreleased.length + 1)
