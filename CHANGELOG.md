@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Updated codeowners so that AQ Engineers doesn't own this CHANGELOG
+
 ## [0.114.0] - 2022-06-23
 ### Authors
 @dependabot[bot] 
