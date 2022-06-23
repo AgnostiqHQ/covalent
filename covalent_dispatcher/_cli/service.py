@@ -32,7 +32,7 @@ from typing import Optional, Tuple
 import click
 import psutil
 import requests
-from distributed.comm import unparse_address
+from distributed.comm import unparse_address, parse_address
 from distributed.core import rpc
 
 from covalent._shared_files.config import _config_manager as cm
@@ -352,62 +352,90 @@ def logs() -> None:
 
 
 # Cluster CLI handlers
-async def cluster_status(admin_host: str, admin_port: int):
+async def cluster_status(uri):
     """
-    Invoke the cluster_status RPC on the Dask admin server and return the cluster status
+    Return true if the scheduler is available and all the cluster workers are
+    running
     """
-    async with rpc(f"tcp://{admin_host}:{admin_port}") as r:
-        status = await r.cluster_status()
-    return status
+    async with rpc(uri) as r:
+        cluster_status = await r.identity()
+        if all([worker['status'] == 'running'
+                for _, worker in cluster_status['workers'].items()]):
+            return 'RUNNING'
 
-
-async def cluster_address(admin_host: str, admin_port: int):
+async def cluster_address(uri):
     """
-    Invoke the cluster_addresses RPC on the Dask admin server and return the
-    scheduler/worker addresses
+    Returns the TCP addresses of the scheduler and workers
     """
-    async with rpc(f"tcp://{admin_host}:{admin_port}") as r:
-        addresses = await r.cluster_address()
+    async with rpc(uri) as r:
+        cluster_identity = await r.identity()
+        addresses = {}
+        addresses["scheduler"] = cluster_identity["address"]
+        addresses["workers"] = {}
+        for addr, worker_info in cluster_identity["workers"].items():
+            worker_id = worker_info["id"]
+            addresses["workers"][f"{worker_id}"] = addr
     return addresses
 
 
-async def cluster_info(admin_host: str, admin_port: int):
+async def cluster_info(uri):
     """
-    Invoke the cluster_info RPC on the Dask admin server and retrive the cluster info
+    Return summary of cluster info
     """
-    async with rpc(f"tcp://{admin_host}:{admin_port}") as r:
-        cinfo = await r.cluster_info()
+    async with rpc(uri) as r:
+        cinfo = await r.identity()
     return cinfo
 
 
-async def cluster_restart(admin_host: str, admin_port: int):
+async def restart_worker_using_nanny_service(worker_id, uri):
+    async with rpc(uri) as r:
+        await r.restart()
+    click.echo(f"Worker {worker_id} restarted")
+
+async def cluster_restart(uri):
+    """
+    Restart the workers using their respective nanny services
+    """
+    worker_service_addrs = {}
+    async with rpc(uri) as r:
+        cinfo = await r.identity()
+        for _, worker_info in cinfo['workers'].items():
+            worker_id = worker_info['id']
+            worker_service_addrs[f"{worker_id}"] = worker_info['nanny']
+
+    await asyncio.gather(*[restart_worker_using_nanny_service(worker_id, nanny_addr)
+                           for worker_id, nanny_addr in worker_service_addrs.items()])
+
+    return
+
+
+async def cluster_scale(uri: str, nworkers: int):
     """
     Invoke the cluster_restart RPC on the Dask admin server
     """
-    uri = unparse_address("tcp", f"{admin_host}:{admin_port}")
     async with rpc(uri) as r:
-        result = await r.cluster_restart()
+        result = await r.scale(nworkers=nworkers)
     return result
 
 
-async def cluster_scale(admin_host: str, admin_port: int, nworkers: int = 1):
+async def cluster_worker_count(uri) -> int:
     """
-    Invoke the cluster_restart RPC on the Dask admin server
+    Retrive the active worker count from the dask cluster
     """
-    uri = unparse_address("tcp", f"{admin_host}:{admin_port}")
     async with rpc(uri) as r:
-        result = await r.cluster_scale(nworkers=nworkers)
-    return result
+        cinfo = await r.identity()
+    return len(cinfo['workers'])
 
 
-async def cluster_adapt(admin_host: str, admin_port: int, min_workers: int, max_workers: int):
+async def cluster_logs(uri):
     """
-    Invoke the cluster_restart RPC on the Dask admin server
+    Retrive the cluster logs from the scheduler directly
     """
-    uri = unparse_address("tcp", f"{admin_host}:{admin_port}")
+    cluster_logs = []
     async with rpc(uri) as r:
-        result = await r.cluster_adapt(min_workers=min_workers, max_workers=max_workers)
-    return result
+        cluster_logs.append(await r.get_logs())
+        cluster_logs.append(await r.worker_logs())
+    return cluster_logs
 
 
 @click.option(
@@ -424,44 +452,42 @@ async def cluster_adapt(admin_host: str, admin_port: int, min_workers: int, max_
 )
 @click.option("--info", is_flag=True, help="Query cluster info")
 @click.option("--restart", is_flag=True, help="Restart cluster workers")
-@click.option("--scale", default=1, is_flag=False, type=int, help="Scale the dask cluster up/down")
-@click.option(
-    "--adapt",
-    is_flag=False,
-    default=(1, 2),
-    type=(int, int),
-    help="""Set the
-              minimum/maximum number of workers in the cluster""",
-)
+@click.option("--scale", is_flag=False, type=int, help="Scale the dask cluster up/down")
+@click.option("--nworkers", is_flag=True, help="Query the number of active workers")
+@click.option("--logs", is_flag=True, help="Show Dask cluster logs")
 @click.command()
-def cluster(
-    status: bool, address: bool, info: bool, restart: bool, scale: int, adapt: Tuple[int, int]
-) -> None:
+def cluster(status: bool, address: bool, info: bool, restart: bool,
+            scale: int, nworkers: bool, logs: bool) -> None:
     """
     Inspect and manage the Dask cluster's configuration.
     """
-
+    # addr of the admin server for the Dask cluster process
+    # started with covalent
     admin_host = get_config("dask.admin_host")
     admin_port = get_config("dask.admin_port")
+    admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
+
+    # Dask cluster scheduler address
+    _, scheduler_addr = parse_address(get_config("dask.scheduler_address"))
 
     loop = asyncio.get_event_loop()
     if status:
-        click.echo(loop.run_until_complete(cluster_status(admin_host, admin_port)))
+        click.echo(loop.run_until_complete(cluster_status(scheduler_addr)))
 
     if address:
-        click.echo(loop.run_until_complete(cluster_address(admin_host, admin_port)))
+        click.echo(loop.run_until_complete(cluster_address(scheduler_addr)))
 
-    if scale:
-        click.echo(loop.run_until_complete(cluster_scale(admin_host, admin_port, nworkers=scale)))
+    if info:
+        click.echo(loop.run_until_complete(cluster_info(scheduler_addr)))
+
+    if nworkers:
+        click.echo(loop.run_until_complete(cluster_worker_count(scheduler_addr)))
 
     if restart:
-        click.echo(loop.run_until_complete(cluster_restart(admin_host, admin_port)))
+        click.echo(loop.run_until_complete(cluster_restart(scheduler_addr)))
 
-    if adapt:
-        click.echo(
-            loop.run_until_complete(
-                cluster_adapt(admin_host, admin_port, min_workers=adapt[0], max_workers=adapt[1])
-            )
-        )
-    if info:
-        click.echo(loop.run_until_complete(cluster_info(admin_host, admin_port)))
+    if scale:
+        click.echo(loop.run_until_complete(cluster_scale(admin_server_addr,
+                                                         nworkers=scale)))
+    if logs:
+        click.echo(loop.run_until_complete(cluster_logs(scheduler_addr)))

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import signal
 import asyncio
 import os
 from logging import Logger
+from threading import Thread
 from multiprocessing import Process, current_process
 
 import dask.config
@@ -35,32 +37,17 @@ class DaskCluster(Process):
         self.name = "DaskClusterProcess"
         self.admin_host = admin_host
         self.admin_port = admin_port
+        self.loop = asyncio.get_event_loop()
 
     async def admin_server(self):
-        """
-        Dask core server to administer the Dask cluster. The different handlers
-        (RPCs) are added to the server either as python lambda functions or as instance
-        methods that perform very specific operations on the cluster upon the
-        user's request
-        """
         s = Server(
             {
-                "cluster_status": lambda comm: self.cluster.status,
-                "cluster_info": lambda comm: self.cluster.scheduler_info,
-                "cluster_restart": lambda comm: None,
-                "cluster_scale": lambda comm, nworkers: self.cluster.scale(n=nworkers),
-                "cluster_adapt": lambda comm, min_workers, max_workers: None,
-                "cluster_address": lambda comm: {
-                    "scheduler": self.cluster.scheduler_address,
-                    "workers": [
-                        {f"Worker {id}": f"{worker.address}"}
-                        for id, worker in self.cluster.workers.items()
-                    ],
-                },
+                "scale": lambda comm, nworkers: self.cluster.scale(n=nworkers),
             }
         )
 
         await s.listen(f"tcp://{self.admin_host}:{self.admin_port}")
+
 
     def run(self):
         """
@@ -69,20 +56,21 @@ class DaskCluster(Process):
         self.cluster = LocalCluster()
         scheduler_address = self.cluster.scheduler_address
         dashboard_link = self.cluster.dashboard_link
-        set_config(
-            {
-                "dask": {
-                    "scheduler_address": scheduler_address,
-                    "dashboard_link": dashboard_link,
-                    "admin_host": self.admin_host,
-                    "admin_port": self.admin_port,
-                    "process_info": current_process(),
-                    "pid": os.getpid(),
+        try:
+            set_config(
+                {
+                    "dask": {
+                        "scheduler_address": scheduler_address,
+                        "dashboard_link": dashboard_link,
+                        "process_info": current_process(),
+                        "pid": os.getpid(),
+                        "admin_host": self.admin_host,
+                        "admin_port": self.admin_port
+                    }
                 }
-            }
-        )
+            )
+        except Exception as e:
+            self.logger.exception(e)
 
-        # Start monitoring server on an event loop
-        loop = asyncio.get_event_loop()
-        loop.create_task(self.admin_server())
-        loop.run_forever()
+        self.loop.create_task(self.admin_server())
+        self.loop.run_forever()
