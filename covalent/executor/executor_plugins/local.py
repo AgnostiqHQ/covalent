@@ -33,7 +33,7 @@ from typing import Any, Dict, List
 from covalent._shared_files import logger
 from covalent._shared_files.util_classes import DispatchInfo
 from covalent._workflow.transport import TransportableObject
-from covalent.executor import BaseExecutor
+from covalent.executor import BaseExecutor, wrapper_fn
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 executor_plugin_name = "LocalExecutor"
@@ -82,8 +82,10 @@ class LocalExecutor(BaseExecutor):
         """
 
         dispatch_info = DispatchInfo(dispatch_id)
-        fn = function.get_deserialized()
         fn_version = function.python_version
+        new_args = [function, []]
+        for arg in args:
+            new_args.append(arg)
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()
@@ -93,9 +95,9 @@ class LocalExecutor(BaseExecutor):
                 result = None
 
                 result = self.execute_in_conda_env(
-                    fn,
+                    wrapper_fn,
                     fn_version,
-                    args,
+                    new_args,
                     kwargs,
                     self.conda_env,
                     self.cache_dir,
@@ -103,7 +105,7 @@ class LocalExecutor(BaseExecutor):
                 )
 
             else:
-                result = fn(*args, **kwargs)
+                result = wrapper_fn(*new_args, **kwargs)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
