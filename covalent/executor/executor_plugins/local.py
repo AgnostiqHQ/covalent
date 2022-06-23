@@ -26,6 +26,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import io
 import os
+import subprocess
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Dict, List
 
@@ -33,7 +34,7 @@ from typing import Any, Dict, List
 from covalent._shared_files import logger
 from covalent._shared_files.util_classes import DispatchInfo
 from covalent._workflow.transport import TransportableObject
-from covalent.executor import BaseExecutor, wrapper_fn
+from covalent.executor import BaseExecutor
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 executor_plugin_name = "LocalExecutor"
@@ -50,6 +51,26 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 }
 
 
+def wrapper_fn(function: TransportableObject, pre_cmds: [], *args, **kwargs):
+    """Wrapper for serialized callable.
+
+    Execute preparatory shell commands before deserializing and
+    running the callable. This is the actual function to be sent to
+    the various executors.
+
+    """
+    for cmd in pre_cmds:
+        app_log.debug(f"PreCommand {cmd}:")
+        proc = subprocess.run(
+            cmd, stdin=subprocess.DEVNULL, shell=True, capture_output=True, check=True, text=True
+        )
+        app_log.debug(proc.stdout)
+
+    fn = function.get_deserialized()
+    output = fn(*args, **kwargs)
+    return output
+
+
 class LocalExecutor(BaseExecutor):
     """
     Local executor class that directly invokes the input function.
@@ -60,6 +81,7 @@ class LocalExecutor(BaseExecutor):
         function: TransportableObject,
         args: List,
         kwargs: Dict,
+        deps: Dict,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
@@ -83,7 +105,13 @@ class LocalExecutor(BaseExecutor):
 
         dispatch_info = DispatchInfo(dispatch_id)
         fn_version = function.python_version
-        new_args = [function, []]
+        pre_cmds = []
+
+        if "bash" in deps:
+            bash_deps = deps["bash"]
+            pre_cmds.extend(bash_deps.apply())
+
+        new_args = [function, pre_cmds]
         for arg in args:
             new_args.append(arg)
 

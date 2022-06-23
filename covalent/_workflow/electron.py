@@ -23,7 +23,7 @@
 import inspect
 import operator
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
@@ -481,7 +481,7 @@ def electron(
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     # Add custom metadata fields here
-    bash_deps: Deps = _DEFAULT_CONSTRAINT_VALUES["bash_deps"],
+    deps: Dict = _DEFAULT_CONSTRAINT_VALUES["deps"],
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns a new :obj:`Electron <covalent._workflow.electron.Electron>` object.
 
@@ -506,7 +506,7 @@ def electron(
 
     constraints = {
         "executor": executor,
-        "bash_deps": bash_deps,
+        "deps": deps,
     }
 
     def decorator_electron(func=None):

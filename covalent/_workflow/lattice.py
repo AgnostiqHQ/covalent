@@ -358,7 +358,7 @@ def lattice(
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
-    bash_deps: Deps = _DEFAULT_CONSTRAINT_VALUES["bash_deps"]
+    deps: Deps = _DEFAULT_CONSTRAINT_VALUES["deps"]
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -389,7 +389,7 @@ def lattice(
     constraints = {
         "executor": executor,
         "results_dir": results_dir,
-        "bash_deps": bash_deps,
+        "deps": deps,
     }
 
     def decorator_lattice(func=None):

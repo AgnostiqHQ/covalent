@@ -26,4 +26,4 @@ class BashDeps(Deps):
         self.commands = commands
 
     def apply(self):
-        return [cmd.split() for cmd in self.commands]
+        return [cmd for cmd in self.commands]
