@@ -18,21 +18,27 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Main Covalent public functionality."""
+from pathlib import Path
 
-import os
+from .deps import Deps
 
-from . import executor
-from ._dispatcher_plugins import local_dispatch as dispatch
-from ._dispatcher_plugins import local_dispatch_sync as dispatch_sync
-from ._results_manager.results_manager import cancel, get_result, sync
-from ._shared_files.config import get_config, reload_config, set_config
-from ._shared_files.util_classes import RESULT_STATUS as status
-from ._workflow import DepsBash, DepsCall, DepsPip, Lepton, electron, lattice
 
-__all__ = [s for s in dir() if not s.startswith("_")]
+class DepsPip(Deps):
+    def __init__(self, packages: [] = [], reqs_path: str = ""):
+        self.packages = packages
 
-for _s in dir():
-    if not _s.startswith("_"):
-        _obj = globals()[_s]
-        _obj.__module__ = __name__
+        if reqs_path:
+            reqs_pkgs = []
+            try:
+                with open(reqs_path, "r") as f:
+                    for line in f:
+                        reqs_pkgs.append(line.strip())
+
+                self.packages.extend(reqs_pkgs)
+            except:
+                pass
+
+    def apply(self) -> []:
+        pkgs = " ".join(self.packages)
+        cmd = "pip install --no-input " + pkgs
+        return [cmd]
