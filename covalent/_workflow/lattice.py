@@ -372,6 +372,7 @@ def lattice(
         executor: Alternative executor object to be used in the execution of each node. If not passed, the local
             executor is used by default.
         results_dir: Directory to store the results
+        deps: A dictionary of Deps objects keyed by type. For example, {"bash": BashDeps(...)}
 
     Returns:
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.

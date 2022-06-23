@@ -492,6 +492,7 @@ def electron(
         backend: DEPRECATED: Same as `executor`.
         executor: Alternative executor object to be used by the electron execution. If not passed, the local
             executor is used by default.
+        deps: A dictionary of Deps objects keyed by type. For example, {"bash": BashDeps(...)}
 
     Returns:
         :obj:`Electron <covalent._workflow.electron.Electron>` : Electron object inside which the decorated function exists.
