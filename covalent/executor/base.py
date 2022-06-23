@@ -40,6 +40,24 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
+def wrapper_fn(function: TransportableObject, pre_cmds: [], *args, **kwargs):
+    """Wrapper for serialized callable.
+
+    Execute preparatory shell commands before deserializing and
+    running the callable. This is the actual function to be sent to
+    the various executors.
+
+    """
+    for cmd in pre_cmds:
+        proc = subprocess.run(
+            cmd, stdin=subprocess.DEVNULL, shell=True, capture_output=True, check=True, text=True
+        )
+
+    fn = function.get_deserialized()
+    output = fn(*args, **kwargs)
+    return output
+
+
 class BaseExecutor(ABC):
     """
     Base executor class to be used for defining any executor

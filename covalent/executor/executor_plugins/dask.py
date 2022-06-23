@@ -27,7 +27,6 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import io
 import os
-import subprocess
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Dict, List
 
@@ -39,7 +38,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import DispatchInfo
 from covalent._workflow.transport import TransportableObject
-from covalent.executor import BaseExecutor
+from covalent.executor import BaseExecutor, wrapper_fn
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 executor_plugin_name = "DaskExecutor"
@@ -54,24 +53,6 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
         os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
     ),
 }
-
-
-def wrapper_fn(function: TransportableObject, pre_cmds: [], *args, **kwargs):
-    """Wrapper for serialized callable.
-
-    Execute preparatory shell commands before deserializing and
-    running the callable. This is the actual function to be sent to
-    the various executors.
-
-    """
-    for cmd in pre_cmds:
-        proc = subprocess.run(
-            cmd, stdin=subprocess.DEVNULL, shell=True, capture_output=True, check=True, text=True
-        )
-
-    fn = function.get_deserialized()
-    output = fn(*args, **kwargs)
-    return output
 
 
 class DaskExecutor(BaseExecutor):
