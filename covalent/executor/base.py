@@ -145,7 +145,7 @@ class BaseExecutor(ABC):
         function: TransportableObject,
         args: List,
         kwargs: Dict,
-        deps: Dict,
+        pre_cmds: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
