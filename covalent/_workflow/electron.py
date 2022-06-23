@@ -39,7 +39,7 @@ from .._shared_files.defaults import (
     subscript_prefix,
 )
 from .._shared_files.utils import get_named_params, get_serialized_function_str
-from .deps import Deps
+from .bashdeps import BashDeps
 from .lattice import Lattice
 
 consumable_constraints = ["budget", "time_limit"]
@@ -330,6 +330,7 @@ class Electron:
         for k in self.metadata:
             if (
                 k not in consumable_constraints
+                and k in _DEFAULT_CONSTRAINT_VALUES
                 and self.get_metadata(k) is _DEFAULT_CONSTRAINT_VALUES[k]
             ):
                 self.set_metadata(k, active_lattice.get_metadata(k))
@@ -481,7 +482,7 @@ def electron(
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     # Add custom metadata fields here
-    deps: Dict = _DEFAULT_CONSTRAINT_VALUES["deps"],
+    bash_deps: BashDeps = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None),
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns a new :obj:`Electron <covalent._workflow.electron.Electron>` object.
 
@@ -504,6 +505,10 @@ def electron(
             exc_info=DeprecationWarning,
         )
         executor = backend
+
+    deps = {}
+    if bash_deps:
+        deps["bash"] = bash_deps
 
     constraints = {
         "executor": executor,
