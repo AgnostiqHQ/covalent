@@ -176,7 +176,7 @@ def _run_task(
     inputs: Dict,
     serialized_callable: Any,
     selected_executor: Any,
-    deps: Dict[str, Deps],
+    pre_cmds: List,
     node_name: str,
 ) -> None:
     """
@@ -225,7 +225,7 @@ def _run_task(
                 function=serialized_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
-                deps=deps,
+                pre_cmds=pre_cmds,
                 dispatch_id=dispatch_id,
                 results_dir=results_dir,
                 node_id=node_id,
@@ -334,6 +334,11 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
                 "deps"
             ]
+            dep_cmds = []
+            for dep_type in ["bash", "pip"]:
+                if dep_type in deps:
+                    deps_object = deps[dep_type]
+                    dep_cmds.extend(deps_object.apply())
 
             update_node_result(
                 generate_node_result(
@@ -352,7 +357,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 serialized_callable=serialized_callable,
                 selected_executor=pickle.dumps(selected_executor),
                 node_name=node_name,
-                deps=deps,
+                pre_cmds=dep_cmds,
                 inputs=pickle.dumps(task_input),
             )
 

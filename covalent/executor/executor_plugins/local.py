@@ -81,7 +81,7 @@ class LocalExecutor(BaseExecutor):
         function: TransportableObject,
         args: List,
         kwargs: Dict,
-        deps: Dict,
+        pre_cmds: Dict,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
@@ -105,11 +105,6 @@ class LocalExecutor(BaseExecutor):
 
         dispatch_info = DispatchInfo(dispatch_id)
         fn_version = function.python_version
-        pre_cmds = []
-
-        if "bash" in deps:
-            bash_deps = deps["bash"]
-            pre_cmds.extend(bash_deps.apply())
 
         new_args = [function, pre_cmds]
         for arg in args:
