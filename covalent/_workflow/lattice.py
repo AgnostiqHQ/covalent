@@ -358,7 +358,7 @@ def lattice(
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
-    deps: Deps = _DEFAULT_CONSTRAINT_VALUES["deps"]
+    bash_deps: Deps = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None)
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -372,7 +372,7 @@ def lattice(
         executor: Alternative executor object to be used in the execution of each node. If not passed, the local
             executor is used by default.
         results_dir: Directory to store the results
-        deps: A dictionary of Deps objects keyed by type. For example, {"bash": BashDeps(...)}
+        bash_deps: A dictionary of Deps objects keyed by type. For example, {"bash": BashDeps(...)}
 
     Returns:
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.
@@ -386,6 +386,10 @@ def lattice(
         executor = backend
 
     results_dir = str(Path(results_dir).expanduser().resolve())
+
+    deps = {}
+    if bash_deps:
+        deps["bash"] = bash_deps
 
     constraints = {
         "executor": executor,
