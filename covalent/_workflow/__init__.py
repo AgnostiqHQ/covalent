@@ -20,6 +20,7 @@
 
 """Import workflow utilities."""
 
+from .bashdeps import BashDeps
 from .electron import electron
 from .lattice import lattice
 from .lepton import Lepton

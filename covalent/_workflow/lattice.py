@@ -43,6 +43,7 @@ from .._shared_files.utils import (
     get_serialized_function_str,
     required_params_passed,
 )
+from .deps import Deps
 from .transport import _TransportGraph
 
 if TYPE_CHECKING:
@@ -357,6 +358,7 @@ def lattice(
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
+    bash_deps: Deps = _DEFAULT_CONSTRAINT_VALUES["bash_deps"]
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -387,6 +389,7 @@ def lattice(
     constraints = {
         "executor": executor,
         "results_dir": results_dir,
+        "bash_deps": bash_deps,
     }
 
     def decorator_lattice(func=None):
