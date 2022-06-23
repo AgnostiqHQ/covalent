@@ -354,14 +354,21 @@ def logs() -> None:
 # Cluster CLI handlers
 async def cluster_status(uri):
     """
-    Return true if the scheduler is available and all the cluster workers are
-    running
+    Returns status of all workers and scheduler in the cluster
     """
+    proc_status = {}
     async with rpc(uri) as r:
-        cluster_status = await r.identity()
-        if all([worker['status'] == 'running'
-                for _, worker in cluster_status['workers'].items()]):
-            return 'RUNNING'
+        cluster_identity = await r.identity()
+
+        if cluster_identity:
+            proc_status['scheduler'] = 'running'
+
+        for worker_addr, worker_info in cluster_identity['workers'].items():
+            worker_id = worker_info['id']
+            proc_status[f"worker-{worker_id}"] = worker_info['status']
+
+        return proc_status
+
 
 async def cluster_address(uri):
     """
@@ -383,14 +390,14 @@ async def cluster_info(uri):
     Return summary of cluster info
     """
     async with rpc(uri) as r:
-        cinfo = await r.identity()
-    return cinfo
+        return await r.identity()
 
 
 async def restart_worker_using_nanny_service(worker_id, uri):
     async with rpc(uri) as r:
         await r.restart()
     click.echo(f"Worker {worker_id} restarted")
+
 
 async def cluster_restart(uri):
     """
@@ -471,6 +478,7 @@ def cluster(status: bool, address: bool, info: bool, restart: bool,
     _, scheduler_addr = parse_address(get_config("dask.scheduler_address"))
 
     loop = asyncio.get_event_loop()
+
     if status:
         click.echo(loop.run_until_complete(cluster_status(scheduler_addr)))
 
