@@ -32,7 +32,7 @@ import pkg_resources
 
 from .._shared_files import logger
 from .._shared_files.config import get_config, update_config
-from .base import BaseExecutor
+from .base import BaseAsyncExecutor, BaseExecutor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -84,7 +84,9 @@ class _ExecutorManager:
         # Look for pip-installed plugins:
         self._load_installed_plugins()
 
-    def get_executor(self, name: Union[str, BaseExecutor]) -> BaseExecutor:
+    def get_executor(
+        self, name: Union[str, BaseExecutor, BaseAsyncExecutor]
+    ) -> Union[BaseExecutor, BaseAsyncExecutor]:
         """
         Get an executor by name.
         This accepts a string like "local" or a BaseExecutor instance.
@@ -100,7 +102,7 @@ class _ExecutorManager:
             TypeError: If name is not a string or a BaseExecutor instance.
         """
 
-        if isinstance(name, BaseExecutor):
+        if isinstance(name, BaseExecutor) or isinstance(name, BaseAsyncExecutor):
             return name
 
         elif isinstance(name, str):

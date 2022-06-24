@@ -47,7 +47,7 @@ from covalent._shared_files.defaults import (
     subscript_prefix,
 )
 from covalent._workflow.lattice import Lattice
-from covalent.executor import _executor_manager
+from covalent.executor import BaseAsyncExecutor, BaseExecutor, _executor_manager
 from covalent_ui import result_webhook
 
 from .._db.dispatchdb import DispatchDB
@@ -222,7 +222,7 @@ async def _run_task(
             )
 
         else:
-            if asyncio.iscoroutinefunction(executor.execute):
+            if isinstance(executor, BaseAsyncExecutor):
                 output, stdout, stderr = await executor.execute(
                     function=serialized_callable,
                     args=inputs["args"],
