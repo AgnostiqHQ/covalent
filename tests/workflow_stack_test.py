@@ -191,6 +191,7 @@ def test_electron_deps_bash():
     assert res.result == 5
     assert Path(tmp_path).is_file()
 
+    rm._delete_result(dispatch_id)
     Path(tmp_path).unlink()
 
 
@@ -218,6 +219,7 @@ def test_electron_deps_bash_implicit():
     assert res.result == 5
     assert Path(tmp_path).is_file()
 
+    rm._delete_result(dispatch_id)
     Path(tmp_path).unlink()
 
 
