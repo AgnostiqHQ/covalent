@@ -39,7 +39,7 @@ from .._shared_files.defaults import (
     subscript_prefix,
 )
 from .._shared_files.utils import get_named_params, get_serialized_function_str
-from .bashdeps import BashDeps
+from .depsbash import DepsBash
 from .lattice import Lattice
 
 consumable_constraints = ["budget", "time_limit"]
@@ -482,7 +482,7 @@ def electron(
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     # Add custom metadata fields here
-    bash_deps: BashDeps = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None),
+    deps_bash: DepsBash = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None),
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns a new :obj:`Electron <covalent._workflow.electron.Electron>` object.
 
@@ -493,7 +493,7 @@ def electron(
         backend: DEPRECATED: Same as `executor`.
         executor: Alternative executor object to be used by the electron execution. If not passed, the local
             executor is used by default.
-        bash_deps: An optional BashDeps object specifying a list of shell commands to run before `_func`
+        deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
 
     Returns:
         :obj:`Electron <covalent._workflow.electron.Electron>` : Electron object inside which the decorated function exists.
@@ -507,8 +507,8 @@ def electron(
         executor = backend
 
     deps = {}
-    if bash_deps:
-        deps["bash"] = bash_deps
+    if deps_bash:
+        deps["bash"] = deps_bash
 
     constraints = {
         "executor": executor,

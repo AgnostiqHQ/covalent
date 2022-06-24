@@ -43,7 +43,7 @@ from .._shared_files.utils import (
     get_serialized_function_str,
     required_params_passed,
 )
-from .deps import Deps
+from .depsbash import DepsBash
 from .transport import _TransportGraph
 
 if TYPE_CHECKING:
@@ -358,7 +358,7 @@ def lattice(
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
-    bash_deps: Deps = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None)
+    deps_bash: DepsBash = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None)
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -372,7 +372,7 @@ def lattice(
         executor: Alternative executor object to be used in the execution of each node. If not passed, the local
             executor is used by default.
         results_dir: Directory to store the results
-        bash_deps: A dictionary of Deps objects keyed by type. For example, {"bash": BashDeps(...)}
+        deps_bash: A dictionary of Deps objects keyed by type. For example, {"bash": DepsBash(...)}
 
     Returns:
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.
@@ -388,8 +388,8 @@ def lattice(
     results_dir = str(Path(results_dir).expanduser().resolve())
 
     deps = {}
-    if bash_deps:
-        deps["bash"] = bash_deps
+    if deps_bash:
+        deps["bash"] = deps_bash
 
     constraints = {
         "executor": executor,

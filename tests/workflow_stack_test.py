@@ -167,7 +167,7 @@ def workflow(x=10):
     assert time_for_normal > time_for_covalent
 
 
-def test_electron_bash_deps():
+def test_electron_deps_bash():
     import tempfile
     from pathlib import Path
 
@@ -177,7 +177,7 @@ def test_electron_bash_deps():
 
     cmd = f"touch {tmp_path}"
 
-    @ct.electron(bash_deps=ct.BashDeps([cmd]))
+    @ct.electron(deps_bash=ct.DepsBash([cmd]))
     def func(x):
         return x
 

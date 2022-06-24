@@ -21,7 +21,7 @@
 from .deps import Deps
 
 
-class BashDeps(Deps):
+class DepsBash(Deps):
     """Deps class to encapsulate Bash dependencies for an electron.
 
     The specified commands will be executed as subprocesses in the
