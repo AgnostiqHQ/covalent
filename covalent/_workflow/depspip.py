@@ -27,17 +27,6 @@ class DepsPip(Deps):
     def __init__(self, packages: [] = [], reqs_path: str = ""):
         self.packages = packages
 
-        if reqs_path:
-            reqs_pkgs = []
-            try:
-                with open(reqs_path, "r") as f:
-                    for line in f:
-                        reqs_pkgs.append(line.strip())
-
-                self.packages.extend(reqs_pkgs)
-            except:
-                pass
-
     def apply(self) -> []:
         pkgs = " ".join(self.packages)
         cmd = "pip install --no-input " + pkgs
