@@ -167,6 +167,33 @@ def workflow(x=10):
     assert time_for_normal > time_for_covalent
 
 
+def test_electron_bash_deps():
+    import tempfile
+    from pathlib import Path
+
+    f = tempfile.NamedTemporaryFile(delete=True)
+    tmp_path = f.name
+    f.close()
+
+    cmd = f"touch {tmp_path}"
+
+    @ct.electron(bash_deps=ct.BashDeps([cmd]))
+    def func(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return func(x)
+
+    dispatch_id = ct.dispatch(workflow)(x=5)
+    res = ct.get_result(dispatch_id, wait=True)
+
+    assert res.result == 5
+    assert Path(tmp_path).is_file()
+
+    Path(tmp_path).unlink()
+
+
 def test_electrons_with_positional_args():
     """
     Test to check whether an electron can be called with positional arguments
