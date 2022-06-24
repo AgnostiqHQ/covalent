@@ -28,7 +28,7 @@ import io
 import os
 import subprocess
 from contextlib import redirect_stderr, redirect_stdout
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import logger
@@ -54,8 +54,8 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 def wrapper_fn(
     function: TransportableObject,
     pre_cmds: List,
-    call_before: List,
-    call_after: List,
+    call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
+    call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
     *args,
     **kwargs,
 ):
@@ -73,8 +73,23 @@ def wrapper_fn(
         )
         app_log.debug(proc.stdout)
 
+    for tup in call_before:
+        serialized_fn, serialized_args, serialized_kwargs = tup
+        cb_fn = serialized_fn.get_deserialized()
+        cb_args = serialized_args.get_deserialized()
+        cb_kwargs = serialized_kwargs.get_deserialized()
+        cb_fn(*cb_args, **cb_kwargs)
+
     fn = function.get_deserialized()
     output = fn(*args, **kwargs)
+
+    for tup in call_after:
+        serialized_fn, serialized_args, serialized_kwargs = tup
+        ca_fn = serialized_fn.get_deserialized()
+        ca_args = serialized_args.get_deserialized()
+        ca_kwargs = serialized_kwargs.get_deserialized()
+        ca_fn(*ca_args, **ca_kwargs)
+
     return output
 
 

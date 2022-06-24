@@ -43,8 +43,8 @@ log_stack_info = logger.log_stack_info
 def wrapper_fn(
     function: TransportableObject,
     pre_cmds: List,
-    call_before: List,
-    call_after: List,
+    call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
+    call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
     *args,
     **kwargs,
 ):
@@ -60,8 +60,24 @@ def wrapper_fn(
             cmd, stdin=subprocess.DEVNULL, shell=True, capture_output=True, check=True, text=True
         )
 
+    for tup in call_before:
+        serialized_fn, serialized_args, serialized_kwargs = tup
+        cb_fn = serialized_fn.get_deserialized()
+        cb_args = serialized_args.get_deserialized()
+        cb_kwargs = serialized_kwargs.get_deserialized()
+        cb_fn(*cb_args, **cb_kwargs)
+
     fn = function.get_deserialized()
+
     output = fn(*args, **kwargs)
+
+    for tup in call_after:
+        serialized_fn, serialized_args, serialized_kwargs = tup
+        ca_fn = serialized_fn.get_deserialized()
+        ca_args = serialized_args.get_deserialized()
+        ca_kwargs = serialized_kwargs.get_deserialized()
+        ca_fn(*ca_args, **ca_kwargs)
+
     return output
 
 
