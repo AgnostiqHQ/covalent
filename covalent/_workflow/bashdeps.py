@@ -22,6 +22,16 @@ from .deps import Deps
 
 
 class BashDeps(Deps):
+    """Deps class to encapsulate Bash dependencies for an electron.
+
+    The specified commands will be executed as subprocesses in the
+    same environment as the electron.
+
+    Attributes:
+        commands: A list of bash commands to execute before the electron runs.
+
+    """
+
     def __init__(self, commands: []):
         self.commands = commands
 
