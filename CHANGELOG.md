@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Introduce support for bash dependencies
+
 ### Operations
 
 - Updated codeowners so that AQ Engineers doesn't own this CHANGELOG
