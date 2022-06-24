@@ -226,6 +226,8 @@ def _run_task(
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
                 pre_cmds=pre_cmds,
+                call_before=[],
+                call_after=[],
                 dispatch_id=dispatch_id,
                 results_dir=results_dir,
                 node_id=node_id,

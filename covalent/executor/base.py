@@ -40,7 +40,14 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def wrapper_fn(function: TransportableObject, pre_cmds: [], *args, **kwargs):
+def wrapper_fn(
+    function: TransportableObject,
+    pre_cmds: List,
+    call_before: List,
+    call_after: List,
+    *args,
+    **kwargs,
+):
     """Wrapper for serialized callable.
 
     Execute preparatory shell commands before deserializing and
@@ -146,6 +153,8 @@ class BaseExecutor(ABC):
         args: List,
         kwargs: Dict,
         pre_cmds: List,
+        call_before: List,
+        call_after: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,

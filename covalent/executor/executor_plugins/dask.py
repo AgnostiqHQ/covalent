@@ -88,6 +88,8 @@ class DaskExecutor(BaseExecutor):
         args: List,
         kwargs: Dict,
         pre_cmds: List,
+        call_before: List,
+        call_after: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
@@ -115,7 +117,7 @@ class DaskExecutor(BaseExecutor):
 
         fn_version = function.python_version
 
-        new_args = [function, pre_cmds]
+        new_args = [function, pre_cmds, call_before, call_after]
         for arg in args:
             new_args.append(arg)
 
