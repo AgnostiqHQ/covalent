@@ -194,6 +194,33 @@ def test_electron_deps_bash():
     Path(tmp_path).unlink()
 
 
+def test_electron_deps_bash_implicit():
+    import tempfile
+    from pathlib import Path
+
+    f = tempfile.NamedTemporaryFile(delete=True)
+    tmp_path = f.name
+    f.close()
+
+    cmd = f"touch {tmp_path}"
+
+    @ct.electron(deps_bash=[cmd])
+    def func(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return func(x)
+
+    dispatch_id = ct.dispatch(workflow)(x=5)
+    res = ct.get_result(dispatch_id, wait=True)
+
+    assert res.result == 5
+    assert Path(tmp_path).is_file()
+
+    Path(tmp_path).unlink()
+
+
 def test_electrons_with_positional_args():
     """
     Test to check whether an electron can be called with positional arguments

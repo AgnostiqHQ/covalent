@@ -388,8 +388,11 @@ def lattice(
     results_dir = str(Path(results_dir).expanduser().resolve())
 
     deps = {}
-    if deps_bash:
+
+    if isinstance(deps_bash, DepsBash):
         deps["bash"] = deps_bash
+    if isinstance(deps_bash, list):
+        deps["bash"] = DepsBash(commands=deps_bash)
 
     constraints = {
         "executor": executor,
