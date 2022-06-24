@@ -45,6 +45,7 @@ def test_local_executor_passes_results_dir(mocker):
             function=TransportableObject(simple_task),
             args={"x": 1},
             kwargs={"y": 2},
+            pre_cmds=[],
             dispatch_id=-1,
             results_dir=tmp_dir,
             node_id=0,
