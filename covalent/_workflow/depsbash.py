@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from typing import List, Union
+
 from .deps import Deps
 
 
@@ -32,8 +34,11 @@ class DepsBash(Deps):
 
     """
 
-    def __init__(self, commands: []):
-        self.commands = commands
+    def __init__(self, commands: Union[List, str]):
+        if isinstance(commands, str):
+            self.commands = [commands]
+        else:
+            self.commands = commands
 
     def apply(self):
         return [cmd for cmd in self.commands]
