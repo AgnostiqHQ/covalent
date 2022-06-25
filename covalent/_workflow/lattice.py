@@ -376,6 +376,8 @@ def lattice(
             executor is used by default.
         results_dir: Directory to store the results
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
+        call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
+        call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
 
     Returns:
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.
@@ -401,6 +403,8 @@ def lattice(
         "executor": executor,
         "results_dir": results_dir,
         "deps": deps,
+        "call_before": call_before,
+        "call_after": call_after,
     }
 
     def decorator_lattice(func=None):

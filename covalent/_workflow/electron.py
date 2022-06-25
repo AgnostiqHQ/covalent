@@ -497,6 +497,8 @@ def electron(
         executor: Alternative executor object to be used by the electron execution. If not passed, the local
             executor is used by default.
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
+        call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
+        call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
 
     Returns:
         :obj:`Electron <covalent._workflow.electron.Electron>` : Electron object inside which the decorated function exists.
