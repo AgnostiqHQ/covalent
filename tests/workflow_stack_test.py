@@ -195,43 +195,40 @@ def test_electron_deps_bash():
     Path(tmp_path).unlink()
 
 
-@pytest.mark.parametrize("contents", ["Hallo", "Bye"])
-def test_electron_deps_call_before(contents):
+def test_electron_deps_call_before():
     import tempfile
     from pathlib import Path
 
     def create_tmp_file(file_path, **kwargs):
-
-        file_contents = kwargs.get("contents", "hello\n")
         with open(file_path, "w") as f:
-            f.write(file_contents)
+            f.write("Hello")
 
     f = tempfile.NamedTemporaryFile(delete=True)
     tmp_path = f.name
     f.close()
 
+    def delete_tmp_file(file_path):
+        Path(file_path).unlink()
+
     @ct.electron(
-        executor="local",
-        call_before=[ct.DepsCall(create_tmp_file, args=[tmp_path], kwargs={"contents": contents})],
+        call_before=[ct.DepsCall(create_tmp_file, args=[tmp_path])],
+        call_after=[ct.DepsCall(delete_tmp_file, args=[tmp_path])],
     )
-    def func(x):
-        return x
+    def func(file_path):
+        with open(file_path, "r") as f:
+            contents = f.read()
+        return Path(file_path).is_file(), contents
 
     @ct.lattice
-    def workflow(x):
-        return func(x)
+    def workflow(file_path):
+        return func(file_path)
 
-    dispatch_id = ct.dispatch(workflow)(x=5)
+    dispatch_id = ct.dispatch(workflow)(file_path=tmp_path)
     res = ct.get_result(dispatch_id, wait=True)
 
-    assert res.result == 5
-    assert Path(tmp_path).is_file()
+    assert res.result == (True, "Hello")
 
-    with open(tmp_path, "r") as f:
-        file_contents = f.read()
-
-    Path(tmp_path).unlink()
-    assert contents == file_contents
+    assert not Path(tmp_path).is_file()
 
 
 def test_electron_deps_bash_implicit():
