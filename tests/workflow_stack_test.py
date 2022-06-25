@@ -195,6 +195,45 @@ def test_electron_deps_bash():
     Path(tmp_path).unlink()
 
 
+@pytest.mark.parametrize("contents", ["Hallo", "Bye"])
+def test_electron_deps_call_before(contents):
+    import tempfile
+    from pathlib import Path
+
+    def create_tmp_file(file_path, **kwargs):
+
+        file_contents = kwargs.get("contents", "hello\n")
+        with open(file_path, "w") as f:
+            f.write(file_contents)
+
+    f = tempfile.NamedTemporaryFile(delete=True)
+    tmp_path = f.name
+    f.close()
+
+    @ct.electron(
+        executor="local",
+        call_before=[ct.DepsCall(create_tmp_file, args=[tmp_path], kwargs={"contents": contents})],
+    )
+    def func(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return func(x)
+
+    dispatch_id = ct.dispatch(workflow)(x=5)
+    res = ct.get_result(dispatch_id, wait=True)
+
+    assert res.result == 5
+    assert Path(tmp_path).is_file()
+
+    with open(tmp_path, "r") as f:
+        file_contents = f.read()
+
+    Path(tmp_path).unlink()
+    assert contents == file_contents
+
+
 def test_electron_deps_bash_implicit():
     import tempfile
     from pathlib import Path

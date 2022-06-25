@@ -73,21 +73,25 @@ def wrapper_fn(
         )
         app_log.debug(proc.stdout)
 
+    app_log.debug("Invoking call_before")
     for tup in call_before:
         serialized_fn, serialized_args, serialized_kwargs = tup
         cb_fn = serialized_fn.get_deserialized()
         cb_args = serialized_args.get_deserialized()
         cb_kwargs = serialized_kwargs.get_deserialized()
+        app_log.debug(f"Invoking ({cb_fn}, args={cb_args}, kwargs={cb_kwargs}")
         cb_fn(*cb_args, **cb_kwargs)
 
     fn = function.get_deserialized()
     output = fn(*args, **kwargs)
 
+    app_log.debug("Invoking call_after")
     for tup in call_after:
         serialized_fn, serialized_args, serialized_kwargs = tup
         ca_fn = serialized_fn.get_deserialized()
         ca_args = serialized_args.get_deserialized()
         ca_kwargs = serialized_kwargs.get_deserialized()
+        app_log.debug(f"Invoking ({ca_fn}, args={ca_args}, kwargs={ca_kwargs}")
         ca_fn(*ca_args, **ca_kwargs)
 
     return output

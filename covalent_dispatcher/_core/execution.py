@@ -177,6 +177,8 @@ def _run_task(
     serialized_callable: Any,
     selected_executor: Any,
     pre_cmds: List,
+    call_before: List,
+    call_after: List,
     node_name: str,
 ) -> None:
     """
@@ -226,8 +228,8 @@ def _run_task(
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
                 pre_cmds=pre_cmds,
-                call_before=[],
-                call_after=[],
+                call_before=call_before,
+                call_after=call_after,
                 dispatch_id=dispatch_id,
                 results_dir=results_dir,
                 node_id=node_id,
@@ -336,7 +338,18 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
                 "deps"
             ]
+
             dep_cmds = []
+            call_before_objs = result_object.lattice.transport_graph.get_node_value(
+                node_id, "metadata"
+            )["call_before"]
+            call_after_objs = result_object.lattice.transport_graph.get_node_value(
+                node_id, "metadata"
+            )["call_after"]
+
+            call_before = [dep.apply() for dep in call_before_objs]
+            call_after = [dep.apply() for dep in call_after_objs]
+
             for dep_type in ["bash", "pip"]:
                 if dep_type in deps:
                     deps_object = deps[dep_type]
@@ -360,6 +373,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 selected_executor=pickle.dumps(selected_executor),
                 node_name=node_name,
                 pre_cmds=dep_cmds,
+                call_before=call_before,
+                call_after=call_after,
                 inputs=pickle.dumps(task_input),
             )
 
