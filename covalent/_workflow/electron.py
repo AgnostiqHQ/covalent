@@ -482,7 +482,7 @@ def electron(
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     # Add custom metadata fields here
-    deps_bash: Union[DepsBash, List] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None),
+    deps_bash: Union[DepsBash, List, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None),
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns a new :obj:`Electron <covalent._workflow.electron.Electron>` object.
 
@@ -510,7 +510,7 @@ def electron(
 
     if isinstance(deps_bash, DepsBash):
         deps["bash"] = deps_bash
-    if isinstance(deps_bash, list):
+    if isinstance(deps_bash, list) or isinstance(deps_bash, str):
         deps["bash"] = DepsBash(commands=deps_bash)
 
     constraints = {
