@@ -42,7 +42,6 @@ log_stack_info = logger.log_stack_info
 
 def wrapper_fn(
     function: TransportableObject,
-    pre_cmds: List,
     call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
     call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
     *args,
@@ -55,10 +54,6 @@ def wrapper_fn(
     the various executors.
 
     """
-    for cmd in pre_cmds:
-        proc = subprocess.run(
-            cmd, stdin=subprocess.DEVNULL, shell=True, capture_output=True, check=True, text=True
-        )
 
     for tup in call_before:
         serialized_fn, serialized_args, serialized_kwargs = tup
@@ -168,7 +163,6 @@ class BaseExecutor(ABC):
         function: TransportableObject,
         args: List,
         kwargs: Dict,
-        pre_cmds: List,
         call_before: List,
         call_after: List,
         dispatch_id: str,

@@ -176,7 +176,6 @@ def _run_task(
     inputs: Dict,
     serialized_callable: Any,
     selected_executor: Any,
-    pre_cmds: List,
     call_before: List,
     call_after: List,
     node_name: str,
@@ -227,7 +226,6 @@ def _run_task(
                 function=serialized_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
-                pre_cmds=pre_cmds,
                 call_before=call_before,
                 call_after=call_after,
                 dispatch_id=dispatch_id,
@@ -339,7 +337,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 "deps"
             ]
 
-            dep_cmds = []
+            # Assemble call_before and call_after from all the deps
+
             call_before_objs = result_object.lattice.transport_graph.get_node_value(
                 node_id, "metadata"
             )["call_before"]
@@ -347,13 +346,17 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 node_id, "metadata"
             )["call_after"]
 
-            call_before = [dep.apply() for dep in call_before_objs]
-            call_after = [dep.apply() for dep in call_after_objs]
+            call_before = []
 
             for dep_type in ["bash", "pip"]:
                 if dep_type in deps:
-                    deps_object = deps[dep_type]
-                    dep_cmds.extend(deps_object.apply())
+                    dep = deps[dep_type]
+                    call_before.append(dep.apply())
+
+            for dep in call_before_objs:
+                call_before.append(dep.apply())
+
+            call_after = [dep.apply() for dep in call_after_objs]
 
             update_node_result(
                 generate_node_result(
@@ -372,7 +375,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 serialized_callable=serialized_callable,
                 selected_executor=pickle.dumps(selected_executor),
                 node_name=node_name,
-                pre_cmds=dep_cmds,
                 call_before=call_before,
                 call_after=call_after,
                 inputs=pickle.dumps(task_input),

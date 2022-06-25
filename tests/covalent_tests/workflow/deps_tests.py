@@ -1,3 +1,5 @@
+import subprocess
+
 import covalent as ct
 
 
@@ -11,9 +13,29 @@ def test_deps_bash_init():
 
 
 def test_bash_deps_apply():
-    cmds = ["pip list", "yum install gcc"]
+    import tempfile
+    from pathlib import Path
+
+    f = tempfile.NamedTemporaryFile(delete=True)
+    tmp_path = f.name
+    f.close()
+
+    cmds = [f"touch {tmp_path}"]
     deps = ct.DepsBash(cmds)
-    assert deps.apply() == cmds
+
+    serialized_fn, serialized_args, serialized_kwargs = deps.apply()
+
+    fn = serialized_fn.get_deserialized()
+    args = serialized_args.get_deserialized()
+    kwargs = serialized_kwargs.get_deserialized()
+    assert args == [cmds]
+    assert kwargs == {}
+
+    fn(*args, **kwargs)
+
+    assert Path(tmp_path).is_file()
+
+    Path(tmp_path).unlink()
 
 
 def test_call_deps_init():

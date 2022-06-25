@@ -18,9 +18,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import subprocess
 from typing import List, Union
 
 from .deps import Deps
+from .depscall import DepsCall
+
+
+def apply_bash_commands(commands):
+    for cmd in commands:
+        proc = subprocess.run(
+            cmd, stdin=subprocess.DEVNULL, shell=True, capture_output=True, check=True, text=True
+        )
 
 
 class DepsBash(Deps):
@@ -41,4 +50,5 @@ class DepsBash(Deps):
             self.commands = commands
 
     def apply(self):
-        return [cmd for cmd in self.commands]
+        calldep = DepsCall(apply_bash_commands, args=[self.commands])
+        return calldep.apply()

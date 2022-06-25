@@ -53,7 +53,6 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 
 def wrapper_fn(
     function: TransportableObject,
-    pre_cmds: List,
     call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
     call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
     *args,
@@ -66,12 +65,6 @@ def wrapper_fn(
     the various executors.
 
     """
-    for cmd in pre_cmds:
-        app_log.debug(f"PreCommand {cmd}:")
-        proc = subprocess.run(
-            cmd, stdin=subprocess.DEVNULL, shell=True, capture_output=True, check=True, text=True
-        )
-        app_log.debug(proc.stdout)
 
     app_log.debug("Invoking call_before")
     for tup in call_before:
@@ -107,7 +100,6 @@ class LocalExecutor(BaseExecutor):
         function: TransportableObject,
         args: List,
         kwargs: Dict,
-        pre_cmds: Dict,
         call_before: List,
         call_after: List,
         dispatch_id: str,
@@ -134,7 +126,7 @@ class LocalExecutor(BaseExecutor):
         dispatch_info = DispatchInfo(dispatch_id)
         fn_version = function.python_version
 
-        new_args = [function, pre_cmds, call_before, call_after]
+        new_args = [function, call_before, call_after]
         for arg in args:
             new_args.append(arg)
 
