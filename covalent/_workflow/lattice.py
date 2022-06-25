@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -44,6 +44,7 @@ from .._shared_files.utils import (
     required_params_passed,
 )
 from .depsbash import DepsBash
+from .depscall import DepsCall
 from .transport import _TransportGraph
 
 if TYPE_CHECKING:
@@ -358,7 +359,9 @@ def lattice(
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
-    deps_bash: Union[DepsBash, list, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None)
+    deps_bash: Union[DepsBash, list, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None),
+    call_before: List[DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
+    call_after: List[DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
