@@ -360,8 +360,8 @@ def lattice(
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
     deps_bash: Union[DepsBash, list, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None),
-    call_before: List[DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
-    call_after: List[DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
+    call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
+    call_after: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -398,6 +398,12 @@ def lattice(
         deps["bash"] = deps_bash
     if isinstance(deps_bash, list) or isinstance(deps_bash, str):
         deps["bash"] = DepsBash(commands=deps_bash)
+
+    if isinstance(call_before, DepsCall):
+        call_before = [call_before]
+
+    if isinstance(call_after, DepsCall):
+        call_after = [call_after]
 
     constraints = {
         "executor": executor,

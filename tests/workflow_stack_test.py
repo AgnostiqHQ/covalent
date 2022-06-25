@@ -212,7 +212,7 @@ def test_electron_deps_call_before():
 
     @ct.electron(
         call_before=[ct.DepsCall(create_tmp_file, args=[tmp_path])],
-        call_after=[ct.DepsCall(delete_tmp_file, args=[tmp_path])],
+        call_after=ct.DepsCall(delete_tmp_file, args=[tmp_path]),
     )
     def func(file_path):
         with open(file_path, "r") as f:
