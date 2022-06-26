@@ -18,16 +18,38 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import subprocess
+import tempfile
 from pathlib import Path
 
 from .deps import Deps
 
 
+def apply_pip_deps(pkgs: [] = [], requirements_content: str = ""):
+    if requirements_content:
+        reqs_filename = ""
+        with tempfile.NamedTemporaryFile("w", delete=False) as f:
+            f.write(requirements_content)
+            reqs_filename = f.name
+        cmd = f"pip install --no-input -r {reqs_filename}".split()
+
+    else:
+        pkg_list = " ".join(pkgs)
+        cmd = f"pip install --no-input {pkg_list}".split()
+
+    subprocess.run(cmd, stdin=subprocess.DEVNULL, check=True, capture_output=True)
+
+
 class DepsPip(Deps):
     def __init__(self, packages: [] = [], reqs_path: str = ""):
         self.packages = packages
+        self.reqs_path = reqs_path
+        self.requirements_content = ""
 
-    def apply(self) -> []:
-        pkgs = " ".join(self.packages)
-        cmd = "pip install --no-input " + pkgs
-        return [cmd]
+        if self.reqs_path:
+            with open(self.reqs_path, "r") as f:
+                self.requirements_content = f.read()
+
+        apply_args = [self.packages, self.requirements_content]
+
+        super().__init__(apply_fn=apply_pip_deps, apply_args=apply_args)
