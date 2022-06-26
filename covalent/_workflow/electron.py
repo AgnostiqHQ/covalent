@@ -485,7 +485,7 @@ def electron(
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     # Add custom metadata fields here
     deps_bash: Union[DepsBash, List, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", []),
-    deps_pip: DepsPip = _DEFAULT_CONSTRAINT_VALUES["deps"].get("pip", None),
+    deps_pip: Union[DepsPip, list] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("pip", None),
     call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
     call_after: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
 ) -> Callable:
@@ -521,8 +521,10 @@ def electron(
     if isinstance(deps_bash, list) or isinstance(deps_bash, str):
         deps["bash"] = DepsBash(commands=deps_bash)
 
-    if deps_pip:
+    if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
+    if isinstance(deps_pip, list):
+        deps["pip"] = DepsPip(packages=deps_pip)
 
     if isinstance(call_before, DepsCall):
         call_before = [call_before]

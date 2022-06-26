@@ -21,6 +21,7 @@
 import subprocess
 import tempfile
 from pathlib import Path
+from typing import List, Union
 
 from .deps import Deps
 
@@ -41,7 +42,7 @@ def apply_pip_deps(pkgs: [] = [], requirements_content: str = ""):
 
 
 class DepsPip(Deps):
-    def __init__(self, packages: [] = [], reqs_path: str = ""):
+    def __init__(self, packages: Union[List, str] = [], reqs_path: str = ""):
         """A specification of Pip packages to be installed
 
         Attributes:
@@ -53,7 +54,11 @@ class DepsPip(Deps):
 
         """
 
-        self.packages = packages
+        if isinstance(packages, str):
+            self.packages = [packages]
+        else:
+            self.packages = packages
+
         self.reqs_path = reqs_path
         self.requirements_content = ""
 
