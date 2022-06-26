@@ -45,8 +45,8 @@ def test_call_deps_init():
         return x * x
 
     dep = ct.DepsCall(f, args=[5])
-    g = dep.func.get_deserialized()
-    args = dep.args.get_deserialized()
+    g = dep.apply_fn.get_deserialized()
+    args = dep.apply_args.get_deserialized()
     assert args == [5]
     assert g(*args) == f(*args)
 

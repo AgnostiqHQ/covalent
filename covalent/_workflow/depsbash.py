@@ -49,6 +49,4 @@ class DepsBash(Deps):
         else:
             self.commands = commands
 
-    def apply(self):
-        calldep = DepsCall(apply_bash_commands, args=[self.commands])
-        return calldep.apply()
+        super().__init__(apply_fn=apply_bash_commands, apply_args=[self.commands])

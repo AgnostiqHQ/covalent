@@ -34,9 +34,4 @@ class DepsCall(Deps):
     """
 
     def __init__(self, func, args=[], kwargs={}):
-        self.func = TransportableObject(func)
-        self.args = TransportableObject(args)
-        self.kwargs = TransportableObject(kwargs)
-
-    def apply(self):
-        return (self.func, self.args, self.kwargs)
+        super().__init__(apply_fn=func, apply_args=args, apply_kwargs=kwargs)

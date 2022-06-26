@@ -19,12 +19,16 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from abc import ABC, abstractmethod
+from typing import Tuple
+
+from .transport import TransportableObject
 
 
 class Deps(ABC):
-    def __init__(self):
-        raise NotImplementedError
+    def __init__(self, apply_fn=None, apply_args=[], apply_kwargs={}):
+        self.apply_fn = TransportableObject(apply_fn)
+        self.apply_args = TransportableObject(apply_args)
+        self.apply_kwargs = TransportableObject(apply_kwargs)
 
-    @abstractmethod
-    def apply(self):
-        raise NotImplementedError
+    def apply(self) -> Tuple[TransportableObject, TransportableObject, TransportableObject]:
+        return (self.apply_fn, self.apply_args, self.apply_kwargs)
