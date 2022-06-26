@@ -42,6 +42,17 @@ def apply_pip_deps(pkgs: [] = [], requirements_content: str = ""):
 
 class DepsPip(Deps):
     def __init__(self, packages: [] = [], reqs_path: str = ""):
+        """A specification of Pip packages to be installed
+
+        Attributes:
+            packages: A list of PyPI packages to install
+            reqs_path: Path to requirements.txt (overrides `packages`)
+
+        These packages are installed in an electron's execution
+        environment just before the electron is run.
+
+        """
+
         self.packages = packages
         self.reqs_path = reqs_path
         self.requirements_content = ""
