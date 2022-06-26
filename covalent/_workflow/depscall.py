@@ -26,6 +26,11 @@ class DepsCall(Deps):
     """Deps class to encapsulate python functions to be
     called in the same execution environment as the electron.
 
+    Attributes:
+        func: A callable
+        args: args list
+        kwargs: kwargs dict
+
     """
 
     def __init__(self, func, args=[], kwargs={}):
