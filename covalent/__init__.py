@@ -22,6 +22,7 @@
 
 import os
 
+from . import _file_transfer as files
 from . import executor
 from ._dispatcher_plugins import local_dispatch as dispatch
 from ._dispatcher_plugins import local_dispatch_sync as dispatch_sync
