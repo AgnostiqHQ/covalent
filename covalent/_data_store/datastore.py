@@ -84,6 +84,9 @@ class DataStore:
 
         raise NotImplementedError
 
+    def _get_engine(self):
+        return self.engine
+
 
 class DataStoreSession:
     def __init__(self, session: Session, metadata={}):

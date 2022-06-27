@@ -18,43 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-# Ignore everything
-*
 
-# Descend into subdirectories
-!*/
-
-# Allow tests, docs, core source, github actions, and detect-secrets filters
-!/.detect_secrets_filters/**
-!/.github/**
-!/covalent/**
-!/covalent_ui/**
-!/covalent_dispatcher/**
-!/doc/**
-!/tests/**
-!/examples/**
-
-# Allow config files
-!.flake8
-!.gitignore
-!.pre-commit-config.yaml
-!.prettierrc
-!.pylintrc
-!.readthedocs.yaml
-!.secrets.baseline
-!Dockerfile
-!MANIFEST.in
-!Makefile
-!README.md
-!meta.yaml
-!pyproject.toml
-!requirements.txt
-!setup.py
-
-# Allow markdown etc
-!CHANGELOG.md
-!CODE_OF_CONDUCT.md
-!CONTRIBUTING.md
-!LICENSE
-!README.md
-!VERSION
+# Databases
+*.db
+*.sqlite
