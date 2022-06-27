@@ -21,6 +21,7 @@
 """Class implementation of the transport graph in the workflow graph."""
 
 import base64
+import json
 import platform
 from typing import Any, Callable, Dict, List
 
@@ -46,6 +47,12 @@ class TransportableObject:
         self._object = base64.b64encode(cloudpickle.dumps(obj)).decode("utf-8")
         self.python_version = platform.python_version()
 
+        try:
+            self._json = json.dumps(obj)
+
+        except TypeError as ex:
+            self._json = ""
+
     def get_deserialized(self) -> Callable:
         """
         Get the deserialized transportable object.
@@ -59,6 +66,12 @@ class TransportableObject:
         """
 
         return cloudpickle.loads(base64.b64decode(self._object.encode("utf-8")))
+
+    def deserialize_if_builtin_type(self):
+        if len(self._json) > 0:
+            return json.loads(self._json)
+        else:
+            return self
 
     def get_serialized(self) -> str:
         """
@@ -85,7 +98,11 @@ class TransportableObject:
         """
 
         return cloudpickle.dumps(
-            {"object": self.get_serialized(), "py_version": self.python_version}
+            {
+                "object": self.get_serialized(),
+                "json": self._json,
+                "py_version": self.python_version,
+            }
         )
 
     @staticmethod
@@ -103,6 +120,7 @@ class TransportableObject:
         obj = cloudpickle.loads(data)
         sc = TransportableObject(None)
         sc._object = obj["object"]
+        sc._json = json.loads(obj["json"])
         sc.python_version = obj["py_version"]
         return sc
 
