@@ -1,4 +1,5 @@
 from os.path import exists
+from subprocess import PIPE, Popen
 
 from transfer_strategy_base import FileTransferStrategy
 
@@ -16,7 +17,7 @@ class Rsync(FileTransferStrategy):
                 f"Provided private key ({self.private_key_path}) does not exist. Could not instantiate Rsync File Transfer Strategy. "
             )
 
-    def get_rsync_cmd(self, file: File, transfer_from_remote: bool = False):
+    def get_rsync_cmd(self, file: File, transfer_from_remote: bool = False) -> str:
         filepath = file.filepath
         args = ["rsync"]
         if self.private_key_path:
@@ -38,6 +39,22 @@ class Rsync(FileTransferStrategy):
 
     def download(self, file: File):
         cmd = self.get_rsync_cmd(file, transfer_from_remote=True)
+        print(f"Running: {cmd}")
+        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        output, error = p.communicate()
+        if p.returncode != 0:
+            print(f"There was an error downloading file {file.filepath}")
+            print(f"Return code: {p.returncode}")
+            print(f"Output: {output}")
+            print(f"Error: {error}")
 
     def upload(self, file: File):
         cmd = self.get_rsync_cmd(file)
+        print(f"Running: {cmd}")
+        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        output, error = p.communicate()
+        if p.returncode != 0:
+            print(f"There was an error uploading file {file.filepath}")
+            print(f"Return code: {p.returncode}")
+            print(f"Output: {output}")
+            print(f"Error: {str(error)}")
