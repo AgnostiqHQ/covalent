@@ -163,6 +163,36 @@ class Lattice:
                     )
                     raise
 
+    def build_graph_encoded(self, *args, **kwargs) -> None:
+        """args and kwargs are assumed to comprise entirely of TransportableObjects"""
+
+        self.transport_graph.reset()
+
+        named_args, named_kwargs = get_named_params(self.workflow_function, args, kwargs)
+
+        args = [v for _, v in named_args.items()]
+        kwargs = named_kwargs
+
+        # Decode any inputs of built-in types
+        new_args = [t.deserialize_if_builtin_type() for t in args]
+        new_kwargs = {}
+
+        for k, v in kwargs.items():
+            new_kwargs[k] = v.deserialize_if_builtin_type()
+
+        self.args = new_args
+        self.kwargs = new_kwargs
+
+        with redirect_stdout(open(os.devnull, "w")):
+            with active_lattice_manager.claim(self):
+                try:
+                    self.workflow_function(*new_args, **new_kwargs)
+                except Exception:
+                    warnings.warn(
+                        "Please make sure you are not manipulating an object inside the lattice."
+                    )
+                    raise
+
     def draw_inline(self, ax: plt.Axes = None, *args, **kwargs) -> None:
         """
         Rebuilds the graph according to the kwargs passed and draws it on the given axis.
@@ -230,6 +260,14 @@ class Lattice:
         """
 
         self.build_graph(*args, **kwargs)
+        result_webhook.send_draw_request(self)
+
+    def draw_encoded(self, *args, **kwargs) -> None:
+        """
+        Variant of draw() assuming args and kwargs are TransportableObjects
+        """
+
+        self.build_graph_encoded(*args, **kwargs)
         result_webhook.send_draw_request(self)
 
     def __call__(self, *args, **kwargs):
