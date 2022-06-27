@@ -4,7 +4,8 @@ Compatibility
 
 While Covalent is primarily developed using Python 3.8 on MacOS and Linux, it has been tested in a variety of environments. The following table summarizes the compatibility of Covalent with various versions of Python and operating systems.
 
-### v0.110.2 and Newer
+v0.110.2 and Newer
+******************
 
 .. raw:: html
 
@@ -22,28 +23,52 @@ While Covalent is primarily developed using Python 3.8 on MacOS and Linux, it ha
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Officially supported.</td>
           </tr>
         <tr style="background-color: white;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.9</td>
+            <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 223 122);">SEMI-STABLE</td>
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Beta testing.</td>
+          </tr>
+        <tr style="background-color: #f2f2f2;">
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.10</td>
+            <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 223 122);">SEMI-STABLE</td>
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Beta testing.</td>
+          </tr>
+        <tr style="background-color: white;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Debian Buster / Ubuntu 18.04</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Officially supported.</td>
         </tr>
-        <tr style="background-color: white;">
+        <tr style="background-color: #f2f2f2;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.9</td>
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Officially supported.</td>
         </tr>
         <tr style="background-color: white;">
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.10</td>
+          <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 223 122);">SEMI-STABLE</td>
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Beta testing.</td>
+        </tr>
+        <tr style="background-color: #f2f2f2;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Debian Bullseye / Ubuntu 20.04</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
-          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Recommended platform.</td>
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"><b>Recommended platform.</b></td>
         </tr>
         <tr style="background-color: white;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.9</td>
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Officially supported.</td>
+        </tr>
+        <tr style="background-color: #f2f2f2;">
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.10</td>
+          <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 223 122);">SEMI-STABLE</td>
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Beta testing.</td>
         </tr>
         <tr style="background-color: white;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">CentOS 7</td>
@@ -51,7 +76,7 @@ While Covalent is primarily developed using Python 3.8 on MacOS and Linux, it ha
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Officially supported.</td>
         </tr>
-        <tr style="background-color: white;">
+        <tr style="background-color: #f2f2f2;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">SUSE Enterprise 15</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
           <td class="semi-stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 223 122);">SEMI-STABLE</td>
@@ -63,7 +88,7 @@ While Covalent is primarily developed using Python 3.8 on MacOS and Linux, it ha
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Officially supported.</td>
         </tr>
-        <tr style="background-color: white;">
+        <tr style="background-color: #f2f2f2;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.9</td>
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
@@ -72,13 +97,14 @@ While Covalent is primarily developed using Python 3.8 on MacOS and Linux, it ha
         <tr style="background-color: white;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.10</td>
-          <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 223 122);">STABLE</td>
+          <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 223 122);">SEMI-STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Beta testing.</td>
         </tr>
       </table>
 
 
-### Initial Release
+Initial Release
+***************
 
 .. raw:: html
 
