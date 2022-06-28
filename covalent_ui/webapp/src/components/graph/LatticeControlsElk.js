@@ -111,6 +111,7 @@ const LatticeControls = ({
         </ToggleButton>
       </Hint>
       <LayoutOptions
+      algorithm={algorithm}
         open={open}
         anchorEl={anchorEl}
         handleClick={handleClick}

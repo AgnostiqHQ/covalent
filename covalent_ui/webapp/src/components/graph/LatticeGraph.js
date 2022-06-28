@@ -55,7 +55,7 @@ const LatticeGraph = ({
   const [showMinimap, setShowMinimap] = useState(false)
   const [showParams, setShowParams] = useState(false)
   const [nodesDraggable, setNodesDraggable] = useState(false)
-  const [algorithm, setAlgorithm] = useState('box')
+  const [algorithm, setAlgorithm] = useState('layered')
 
   // set Margin
   const prevMarginRight = usePrevious(marginRight)

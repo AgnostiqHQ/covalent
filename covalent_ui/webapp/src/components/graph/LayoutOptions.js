@@ -5,6 +5,7 @@ import MenuItem from '@mui/material/MenuItem';
 export function LayoutOptions(props) {
 	// const { anchorEl, handleClick, handleClose, handleArchive, handleDelete, handleEdit, handleMove, handleRestart, open } = props;
 	const {
+		algorithm,
 		handleChangeAlgorithm,
 		open,
 		anchorEl,
@@ -12,28 +13,24 @@ export function LayoutOptions(props) {
 	} = props;
 	// const options=['box','mrtree','rectpacking','stress','disco']
 	const options = [{
-		optionName: 'Box',
-		optionValue: 'box'
-	},
-	{
-		optionName: 'Rectangular',
-		optionValue: 'rectpacking'
+		optionName: 'Layered',
+		optionValue: 'layered'
 	},
 	{
 		optionName: 'Tree',
 		optionValue: 'mrtree'
 	},
 	{
-		optionName: 'Stress',
-		optionValue: 'stress'
-	},
-	{
 		optionName: 'Force',
 		optionValue: 'force'
 	},
 	{
-		optionName: 'Layered',
-		optionValue: 'layered'
+		optionName: 'Rectangular',
+		optionValue: 'rectpacking'
+	},
+	{
+		optionName: 'Box',
+		optionValue: 'box'
 	},
 	{
 		optionName: 'Old Layout',
@@ -51,14 +48,19 @@ export function LayoutOptions(props) {
 			transformOrigin={{ vertical: 'top', horizontal: 'left' }}
 			PaperProps={{
 				style: {
-					maxHeight: '300px',
-					width: '170px',
 					transform: 'translateX(-5px) translateY(5px)'
 				}
 			}}
 		>
 			{options.map((option) => (
-				<MenuItem key={option.optionName} onClick={() => handleChangeAlgorithm(option.optionValue)}>
+				<MenuItem
+				sx={{
+					fontSize:'0.875rem',
+					'&.Mui-selected': {
+                        backgroundColor: '#1C1C46'
+                    }
+				}}
+				selected={algorithm===option.optionValue} key={option.optionName} onClick={() => handleChangeAlgorithm(option.optionValue)}>
 					{option.optionName}
 				</MenuItem>
 			))}
