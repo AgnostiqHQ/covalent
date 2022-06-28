@@ -24,8 +24,8 @@
 
 import click
 
-from .service import logs, purge, restart, start, status, stop
 from .dask import cluster
+from .service import logs, purge, restart, start, status, stop
 
 
 # Main entrypoint
