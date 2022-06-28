@@ -96,10 +96,15 @@ const edgeWidth = (name) => _.size(name) * fontSize
 const edgeHeight = lineHeight
 
 const assignNodePositions = (elements, direction) => {
+  let handleDirection=''
+    if(direction==='DOWN') handleDirection='TB'
+    else if(direction==='RIGHT') handleDirection='LR'
+    else if(direction==='LEFT') handleDirection='RL'
+    else handleDirection='BT'
   const dagreGraph = new dagre.graphlib.Graph()
   dagreGraph.setDefaultEdgeLabel(() => ({}))
   dagreGraph.setGraph({
-    rankdir: direction,
+    rankdir: handleDirection,
     nodesep: 50,
     ranksep: 75,
     edgesep: 10,
