@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated codeowners so that AQ Engineers doesn't own this CHANGELOG
 - Updates to changelog logic to handle multiple authors
+- pre-commit autoupdate
 
 ## [0.114.0] - 2022-06-23
 ### Authors
