@@ -4,32 +4,38 @@ from typing import TYPE_CHECKING, Any
 
 from furl import furl
 
-from .enums import FileSchemes
+from covalent._file_transfer.enums import FileSchemes
 
 if TYPE_CHECKING:
     from covalent._file_transfer.strategies.rsync_strategy import Rsync
 
 
 class File:
-    def __init__(self, uri: str) -> None:
-        if isinstance(uri, str):
-            pass
-        else:
+    def __init__(self, local_path: str = "", remote_path: str = "") -> None:
+        if not isinstance(local_path, str) or not isinstance(remote_path, str):
             raise AttributeError(
-                "Only strings are valid filepaths for a covalent.File constructor."
+                "Only strings are valid filepaths for a covalent File constructor."
             )
 
-        self.uri_components = furl(uri)
-        self.scheme = File.resolve_scheme(uri)
-        self.filepath = File.get_file_path(uri)
         self.id = str(uuid.uuid4())
+        self.scheme = File.resolve_scheme(local_path)
+        self.local_filepath = File.get_filepath(local_path)
+        self.remote_filepath = File.get_filepath(remote_path)
 
-    @property
-    def is_directory(self):
-        return self.filepath.isdir
+        if not self.remote_filepath:
+            self.remote_filepath = self.get_temp_filepath()
+        if not self.local_filepath:
+            self.local_filepath = self.get_temp_filepath()
+
+    def get_temp_filepath(self):
+        return f"/tmp/{self.id}"
 
     @staticmethod
-    def get_file_path(path: str) -> Path:
+    def is_directory(path):
+        return File.get_filepath(path).isdir
+
+    @staticmethod
+    def get_filepath(path: str) -> str:
         path_components = furl(path)
         path_components.scheme = None
         return path_components.path

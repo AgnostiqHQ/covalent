@@ -42,7 +42,7 @@ class TestFile:
         ],
     )
     def test_get_filepath(self, filepath, expected_filepath):
-        assert File.get_file_path(filepath) == expected_filepath
+        assert File.get_filepath(filepath) == expected_filepath
 
     @pytest.mark.parametrize(
         "filepath, is_directory",
@@ -53,4 +53,4 @@ class TestFile:
         ],
     )
     def test_is_directory(self, filepath, is_directory):
-        assert File(filepath).is_directory == is_directory
+        assert File.is_directory(filepath) == is_directory

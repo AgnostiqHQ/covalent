@@ -18,4 +18,4 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from rsync_strategy import Rsync
+from covalent._file_transfer.strategies.rsync_strategy import Rsync

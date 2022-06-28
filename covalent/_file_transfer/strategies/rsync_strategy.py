@@ -1,9 +1,9 @@
 from os.path import exists
 from subprocess import PIPE, Popen
 
-from transfer_strategy_base import FileTransferStrategy
-
 from covalent._file_transfer import File
+from covalent._file_transfer.enums import FileSchemes
+from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
 
 
 class Rsync(FileTransferStrategy):
@@ -11,6 +11,7 @@ class Rsync(FileTransferStrategy):
         self.user = user
         self.private_key_path = private_key_path
         self.host = host
+        self.supported_scheme = FileSchemes.File
 
         if self.private_key_path and not exists(self.private_key_path):
             raise FileNotFoundError(
@@ -18,22 +19,22 @@ class Rsync(FileTransferStrategy):
             )
 
     def get_rsync_cmd(self, file: File, transfer_from_remote: bool = False) -> str:
-        filepath = file.filepath
+        local_filepath = str(file.local_filepath)
+        remote_filepath = str(file.remote_filepath)
         args = ["rsync"]
         if self.private_key_path:
             args.append(f'-e "ssh -i {self.private_key_path}"')
         else:
             args.append("-e ssh")
 
-        remote_path = f"{self.user}@{self.host}:/home/ubuntu"
-        local_path = str(filepath)
+        remote_source = f"{self.user}@{self.host}:{remote_filepath}"
 
         if transfer_from_remote:
-            args.append(remote_path)
-            args.append(local_path)
+            args.append(remote_source)
+            args.append(local_filepath)
         else:
-            args.append(local_path)
-            args.append(remote_path)
+            args.append(local_filepath)
+            args.append(remote_source)
 
         return " ".join(args)
 
@@ -43,7 +44,7 @@ class Rsync(FileTransferStrategy):
         p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         output, error = p.communicate()
         if p.returncode != 0:
-            print(f"There was an error downloading file {file.filepath}")
+            print(f"There was an error downloading file {file.local_filepath}")
             print(f"Return code: {p.returncode}")
             print(f"Output: {output}")
             print(f"Error: {error}")
@@ -54,7 +55,7 @@ class Rsync(FileTransferStrategy):
         p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         output, error = p.communicate()
         if p.returncode != 0:
-            print(f"There was an error uploading file {file.filepath}")
+            print(f"There was an error uploading file {file.local_filepath}")
             print(f"Return code: {p.returncode}")
             print(f"Output: {output}")
             print(f"Error: {str(error)}")
