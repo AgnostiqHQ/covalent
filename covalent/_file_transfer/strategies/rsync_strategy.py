@@ -1,5 +1,5 @@
-from os.path import exists
-from subprocess import PIPE, Popen
+import os
+from subprocess import PIPE, CalledProcessError, Popen
 
 from covalent._file_transfer import File
 from covalent._file_transfer.enums import FileSchemes
@@ -13,7 +13,7 @@ class Rsync(FileTransferStrategy):
         self.host = host
         self.supported_scheme = FileSchemes.File
 
-        if self.private_key_path and not exists(self.private_key_path):
+        if self.private_key_path and not os.path.exists(self.private_key_path):
             raise FileNotFoundError(
                 f"Provided private key ({self.private_key_path}) does not exist. Could not instantiate Rsync File Transfer Strategy. "
             )
@@ -44,10 +44,7 @@ class Rsync(FileTransferStrategy):
         p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         output, error = p.communicate()
         if p.returncode != 0:
-            print(f"There was an error downloading file {file.local_filepath}")
-            print(f"Return code: {p.returncode}")
-            print(f"Output: {output}")
-            print(f"Error: {error}")
+            raise CalledProcessError(p.returncode, f'"{cmd}" with error: {str(error)}')
 
     def upload(self, file: File):
         cmd = self.get_rsync_cmd(file)
@@ -55,7 +52,4 @@ class Rsync(FileTransferStrategy):
         p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         output, error = p.communicate()
         if p.returncode != 0:
-            print(f"There was an error uploading file {file.local_filepath}")
-            print(f"Return code: {p.returncode}")
-            print(f"Output: {output}")
-            print(f"Error: {str(error)}")
+            raise CalledProcessError(p.returncode, f'"{cmd}" with error: {str(error)}')
