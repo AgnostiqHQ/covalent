@@ -21,16 +21,12 @@
  */
 
 import _ from 'lodash'
-import dagre from 'dagre'
+import ELK from 'elkjs/lib/elk.bundled.js'
 import { isNode } from 'react-flow-renderer'
-
 import { isParameter } from '../../utils/misc'
-import theme from '../../utils/theme'
 
-const layout = (graph, direction, showParams = true) => {
+const layoutElk = (graph, direction, showParams = true) => {
   const elements = mapGraphToElements(graph, direction, showParams)
-  assignNodePositions(elements, direction)
-
   return elements
 }
 
@@ -85,50 +81,52 @@ const mapGraphToElements = (graph, direction, showParams) => {
   return [...nodes, ...edges]
 }
 
-// node width is used by the layout engine to avoid node overlap
-const fontSize = theme.typography.fontSize
-const lineHeight = theme.typography.body1.lineHeight * fontSize
-
-const nodeWidth = (name) => _.size(name) * fontSize
-const nodeHeight = lineHeight
-
-const edgeWidth = (name) => _.size(name) * fontSize
-const edgeHeight = lineHeight
-
-const assignNodePositions = (elements, direction) => {
-  const dagreGraph = new dagre.graphlib.Graph()
-  dagreGraph.setDefaultEdgeLabel(() => ({}))
-  dagreGraph.setGraph({
-    rankdir: direction,
-    nodesep: 50,
-    ranksep: 75,
-    edgesep: 10,
+const assignNodePositions = async (graph, direction,showParams,algorithm) => {
+  const elements=layoutElk(graph,direction,showParams);
+  const DEFAULT_WIDTH = 75
+const DEFAULT_HEIGHT = 75
+  const nodes= [];
+  const edges= [];
+  const elk = new ELK({
+    defaultLayoutOptions: {
+      'elk.algorithm': algorithm,
+      'elk.direction': direction,
+      'elk.spacing.nodeNode': '40',
+      'elk.layered.spacing.nodeNodeBetweenLayers': '40'
+    }
   })
-
   _.each(elements, (el) => {
     if (isNode(el)) {
-      dagreGraph.setNode(el.id, {
-        width: nodeWidth(el.data.label),
-        height: nodeHeight,
+      nodes.push({
+        id: el.id,
+        width: el.__rf?.width ?? DEFAULT_WIDTH,
+        height: el.__rf?.height ?? DEFAULT_HEIGHT
       })
     } else {
-      dagreGraph.setEdge(el.source, el.target, {
-        width: edgeWidth(el.label),
-        height: edgeHeight,
+      edges.push({
+        id: el.id,
+        target: el.target,
+        source: el.source
       })
     }
   })
 
-  dagre.layout(dagreGraph)
-
-  _.each(elements, (e) => {
-    if (isNode(e)) {
-      const node = dagreGraph.node(e.id)
-      e.position = {
-        x: node.x - node.width / 2,
-        y: node.y - node.height / 2,
+  const newGraph = await elk.layout({
+    id: 'root',
+    children: nodes,
+    edges: edges
+  })
+  return elements.map((el) => {
+    if (isNode(el)) {
+      const node = newGraph?.children?.find((n) => n.id === el.id)
+      if (node?.x && node?.y && node?.width && node?.height) {
+        el.position = {
+          x: node.x ,
+          y: node.y
+        }
       }
     }
+    return el
   })
 }
 
@@ -171,4 +169,4 @@ export const countEdges = (nodeId, edges) => {
   )
 }
 
-export default layout
+export default assignNodePositions
