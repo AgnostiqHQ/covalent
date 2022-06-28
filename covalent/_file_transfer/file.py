@@ -57,6 +57,13 @@ class File:
     def download(self):
         if not self.file_transfer_strategy:
             # TODO raise more accurate error
-            raise ValueError("No file transfer strategy attached to file")
+            raise ValueError("No file transfer strategy attached to file to perform download.")
         else:
             return self.file_transfer_strategy.download(self)
+
+    def upload(self):
+        if not self.file_transfer_strategy:
+            # TODO raise more accurate error
+            raise ValueError("No file transfer strategy attached to file to perform upload")
+        else:
+            return self.file_transfer_strategy.upload(self)
