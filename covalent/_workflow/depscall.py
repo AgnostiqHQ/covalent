@@ -18,21 +18,20 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Main Covalent public functionality."""
+from .deps import Deps
+from .transport import TransportableObject
 
-import os
 
-from . import executor
-from ._dispatcher_plugins import local_dispatch as dispatch
-from ._dispatcher_plugins import local_dispatch_sync as dispatch_sync
-from ._results_manager.results_manager import cancel, get_result, sync
-from ._shared_files.config import get_config, reload_config, set_config
-from ._shared_files.util_classes import RESULT_STATUS as status
-from ._workflow import DepsBash, DepsCall, Lepton, electron, lattice
+class DepsCall(Deps):
+    """Deps class to encapsulate python functions to be
+    called in the same execution environment as the electron.
 
-__all__ = [s for s in dir() if not s.startswith("_")]
+    Attributes:
+        func: A callable
+        args: args list
+        kwargs: kwargs dict
 
-for _s in dir():
-    if not _s.startswith("_"):
-        _obj = globals()[_s]
-        _obj.__module__ = __name__
+    """
+
+    def __init__(self, func, args=[], kwargs={}):
+        super().__init__(apply_fn=func, apply_args=args, apply_kwargs=kwargs)

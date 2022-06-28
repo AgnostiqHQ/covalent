@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+#### Authors
+
+@venkatBala
+
+### Added
+
+- Adding `cluster` CLI options to facilitate interacting the backend Dask
+  cluster
+
+- Adding options to `covalent start` to allow specifying number of workers,
+  memory limit per worker and threads per worker with which to launch the
+  cluster with
+
+
+
+## [0.115.0] - 2022-06-28
+### Authors
+@cjao 
+
+
+### Added
+
+- Introduce support for `call_before`, `call_after`, and bash dependencies
+
+### Operations
+
+- Updated codeowners so that AQ Engineers doesn't own this CHANGELOG
+- pre-commit autoupdate
+
+## [0.114.0] - 2022-06-23
+### Authors
+@dependabot[bot] 
+
+
+### Changed
+
+- Changed eventsource version on webapp yarn-lock file.
+
+### Operations
+
+- Added Github push changelog workflow to append commiters username
+- Reusable JavaScript action to parse changelog and update version
+
 ## [0.113.0] - 2022-06-21
 
 ### Added
