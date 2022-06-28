@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Example script to populate a dummy result DB
+
 ### Operations
 
 - Package pre-releases go to `covalent` instead of `cova` on PyPI.
