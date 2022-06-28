@@ -139,9 +139,50 @@ class TransportableObject:
         obj = cloudpickle.loads(data)
         sc = TransportableObject(None)
         sc._object = obj["object"]
-        sc._json = json.loads(obj["json"])
+        sc._json = obj["json"]
         sc.python_version = obj["py_version"]
         return sc
+
+    @staticmethod
+    def deserialize_list(collection: list) -> list:
+        """
+        Recursively deserializes a list of TransportableObjects. More
+        precisely, `collection` is a list, each of whose entries is
+        assumed to be either a `TransportableObject`, a list, or dict`
+        """
+
+        new_list = []
+        for item in collection:
+            if isinstance(item, TransportableObject):
+                new_list.append(item.get_deserialized())
+            elif isinstance(item, list):
+                new_list.append(TransportableObject.deserialize_list(item))
+            elif isinstance(item, dict):
+                new_list.append(TransportableObject.deserialize_dict(item))
+            else:
+                raise TypeError("Couldn't deserialize collection")
+        return new_list
+
+    @staticmethod
+    def deserialize_dict(collection: dict) -> dict:
+        """
+        Recursively deserializes a dict of TransportableObjects. More
+        precisely, `collection` is a dict, each of whose entries is
+        assumed to be either a `TransportableObject`, a list, or dict`
+
+        """
+
+        new_dict = {}
+        for k, item in collection.items():
+            if isinstance(item, TransportableObject):
+                new_dict[k] = item.get_deserialized()
+            elif isinstance(item, list):
+                new_dict[k] = TransportableObject.deserialize_list(item)
+            elif isinstance(item, dict):
+                new_dict[k] = TransportableObject.deserialize_dict(item)
+            else:
+                raise TypeError("Couldn't deserialize collection")
+        return new_dict
 
 
 class _TransportGraph:
