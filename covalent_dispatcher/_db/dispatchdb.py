@@ -30,9 +30,9 @@ def extract_graph_node(node):
     if f is not None:
         node["doc"] = f.get_deserialized().__doc__
 
-    if "value" in node:
+    if "value" in node and node["value"] is not None:
         node["value"] = node["value"].object_string
-    if "output" in node:
+    if "output" in node and node["output"] is not None:
         node["output"] = node["output"].object_string
 
     # metadata
