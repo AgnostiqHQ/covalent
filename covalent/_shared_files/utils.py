@@ -36,7 +36,7 @@ def get_random_available_port() -> int:
     Return a random port that is available on the machine
     """
     sock = socket.socket()
-    sock.bind(("", 0))
+    sock.bind(("127.0.0.1", 0))
     port = sock.getsockname()[1]
     sock.close()
     return port
