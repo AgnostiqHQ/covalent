@@ -131,6 +131,9 @@ const LatticeGraph = ({
           nodesDraggable={nodesDraggable}
           nodesConnectable={false}
           elements={elements}
+          defaultZoom={1}
+          minZoom={0.1}
+          maxZoom={0.5}
           // prevent selection when nothing is selected to prevent fitView
           selectNodesOnDrag={hasSelectedNode}
         >
