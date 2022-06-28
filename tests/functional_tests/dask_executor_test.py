@@ -26,13 +26,27 @@ import covalent as ct
 from covalent._results_manager import Result
 
 
-@pytest.mark.skip(reason="Pending completion")
+def start_dask_cluster():
+
+    from dask.distributed import LocalCluster
+
+    cluster = LocalCluster()
+
+    return cluster.scheduler_address
+
+
+@pytest.mark.skip(reason="No way of installing Dask executor plugin yet")
 def test_dask_executor():
-    @ct.electron
+    from covalent.executor import DaskExecutor
+
+    scheduler_address = start_dask_cluster()
+    dask_executor = DaskExecutor(scheduler_address=scheduler_address)
+
+    @ct.electron(executor=dask_executor)
     def identity(x):
         return x
 
-    @ct.electron
+    @ct.electron(executor=dask_executor)
     def combine(x):
         return sum(x)
 
