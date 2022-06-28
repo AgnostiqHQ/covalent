@@ -18,10 +18,35 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Import workflow utilities."""
+import subprocess
+from typing import List, Union
 
-from .depsbash import DepsBash
+from .deps import Deps
 from .depscall import DepsCall
-from .electron import electron
-from .lattice import lattice
-from .lepton import Lepton
+
+
+def apply_bash_commands(commands):
+    for cmd in commands:
+        proc = subprocess.run(
+            cmd, stdin=subprocess.DEVNULL, shell=True, capture_output=True, check=True, text=True
+        )
+
+
+class DepsBash(Deps):
+    """Deps class to encapsulate Bash dependencies for an electron.
+
+    The specified commands will be executed as subprocesses in the
+    same environment as the electron.
+
+    Attributes:
+        commands: A list of bash commands to execute before the electron runs.
+
+    """
+
+    def __init__(self, commands: Union[List, str]):
+        if isinstance(commands, str):
+            self.commands = [commands]
+        else:
+            self.commands = commands
+
+        super().__init__(apply_fn=apply_bash_commands, apply_args=[self.commands])

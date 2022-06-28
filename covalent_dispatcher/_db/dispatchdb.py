@@ -58,6 +58,19 @@ def extract_metadata(metadata: dict):
                 metadata["executor_name"] = name
             else:
                 metadata["executor_name"] = f"<{executor.__class__.__name__}>"
+
+        metadata["deps"] = encode_dict(metadata["deps"])
+        call_before = metadata["call_before"]
+        call_after = metadata["call_after"]
+        for i, dep in enumerate(call_before):
+            call_before[i] = str(dep)
+
+        for i, dep in enumerate(call_after):
+            call_after[i] = str(dep)
+
+        metadata["call_before"] = call_before
+        metadata["call_after"] = call_after
+
     except (KeyError, AttributeError):
         pass
 
