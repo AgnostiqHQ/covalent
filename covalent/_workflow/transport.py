@@ -112,6 +112,13 @@ class TransportableObject:
         )
 
     @staticmethod
+    def make_transportable(obj) -> "TransportableObject":
+        if isinstance(obj, TransportableObject):
+            return obj
+        else:
+            return TransportableObject(obj)
+
+    @staticmethod
     def deserialize_from_json(data: str) -> "TransportableObject":
         sc = TransportableObject(None)
         sc.__dict__ = json.loads(data)
