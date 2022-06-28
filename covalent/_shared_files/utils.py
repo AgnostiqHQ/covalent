@@ -21,6 +21,7 @@
 """General utils for Covalent."""
 
 import inspect
+import socket
 from datetime import timedelta
 from typing import Callable, Dict, Set, Tuple
 
@@ -28,6 +29,17 @@ from . import logger
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+
+def get_random_available_port() -> int:
+    """
+    Return a random port that is available on the machine
+    """
+    sock = socket.socket()
+    sock.bind(('', 0))
+    port = sock.getsockname()[1]
+    sock.close()
+    return port
 
 
 def get_timedelta(time_limit: str) -> timedelta:

@@ -169,7 +169,7 @@ if __name__ == "__main__":
 
     # Start dask if no-cluster flag is not specified (covalent stop auto terminates all child processes of this)
     if not args.no_cluster:
-        dask_cluster = DaskCluster(app_log)
+        dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log)
         dask_cluster.start()
 
     # Start covalent main app

@@ -32,6 +32,7 @@ from typing import Optional, Tuple
 import click
 import psutil
 import requests
+import dask.system
 from distributed.comm import unparse_address, parse_address
 from distributed.core import rpc
 
@@ -174,7 +175,6 @@ def _graceful_start(
     port = _next_available_port(port)
     if no_cluster_flag in sys.argv:
         launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
-        # click.echo("Covalent server is starting without Dask.")
     else:
         launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
 
@@ -236,18 +236,46 @@ def _graceful_shutdown(pidfile: str) -> None:
 
 
 @click.command()
-@click.option(
-    "-p",
-    "--port",
-    default=get_config("user_interface.port"),
-    show_default=True,
-    help="Server port number.",
-)
-@click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
-@click.option("--no-cluster", is_flag=True, help="Start the server without Dask")
+@click.option("-d",
+              "--develop",
+              is_flag=True,
+              help="Start the server in developer mode.")
+@click.option("-p", "--port",
+              default=get_config("user_interface.port"),
+              show_default=True,
+              help="Server port number.")
+@click.option("-m", "--mem-per-worker",
+              required=False,
+              is_flag=False,
+              type=str,
+              default="auto",
+              show_default=True,
+              help="""Memory limit per worker in (GB).
+              Provide strings like 1gb/1GB or 0 for no limits""".replace('\n', ''))
+@click.option("-n", "--workers",
+              required=False,
+              is_flag=False,
+              default=dask.system.CPU_COUNT,
+              show_default=True,
+              type=int,
+              help="Number of workers to start covalent with.")
+@click.option("-t", "--threads-per-worker",
+              required=False,
+              is_flag=False,
+              default=1,
+              show_default=True,
+              type=int,
+              help="Number of CPU threads per worker.")
+@click.option("--no-cluster",
+              is_flag=True,
+              required=False,
+              show_default=True,
+              default=False,
+              help="Start the server without Dask")
 @click.argument("no-cluster", required=False)
 @click.pass_context
-def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
+def start(ctx, port: int, develop: bool, no_cluster: str,
+          mem_per_worker: int, threads_per_worker: int, workers: int) -> None:
     """
     Start the Covalent server.
     """
@@ -259,6 +287,11 @@ def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
             "user_interface.port": port,
             "dispatcher.address": "0.0.0.0",
             "dispatcher.port": port,
+            "dask": {
+                "mem_per_worker": mem_per_worker or "auto",
+                "threads_per_worker": threads_per_worker or 1,
+                "num_workers": workers or dask.system.CPU_COUNT
+            }
         }
     )
 
@@ -351,151 +384,152 @@ def logs() -> None:
         click.echo(f"{UI_LOGFILE} not found!. Server possibly purged!")
 
 
-# Cluster CLI handlers
-async def cluster_status(uri):
+# Cluster CLI handlers (client side wrappers for the async handlers exposed
+# in the dask cluster process)
+async def _get_cluster_status(uri: str):
     """
     Returns status of all workers and scheduler in the cluster
     """
-    proc_status = {}
     async with rpc(uri) as r:
-        cluster_identity = await r.identity()
-
-        if cluster_identity:
-            proc_status['scheduler'] = 'running'
-
-        for worker_addr, worker_info in cluster_identity['workers'].items():
-            worker_id = worker_info['id']
-            proc_status[f"worker-{worker_id}"] = worker_info['status']
-
-        return proc_status
+        cluster_status = await r.cluster_status()
+    return cluster_status
 
 
-async def cluster_address(uri):
+async def _get_cluster_address(uri):
     """
     Returns the TCP addresses of the scheduler and workers
     """
     async with rpc(uri) as r:
-        cluster_identity = await r.identity()
-        addresses = {}
-        addresses["scheduler"] = cluster_identity["address"]
-        addresses["workers"] = {}
-        for addr, worker_info in cluster_identity["workers"].items():
-            worker_id = worker_info["id"]
-            addresses["workers"][f"{worker_id}"] = addr
+        addresses = await r.cluster_address()
     return addresses
 
 
-async def cluster_info(uri):
+async def _get_cluster_info(uri):
     """
     Return summary of cluster info
     """
     async with rpc(uri) as r:
-        return await r.identity()
+        return await r.cluster_info()
 
 
-async def restart_worker_using_nanny_service(worker_id, uri):
-    async with rpc(uri) as r:
-        await r.restart()
-    click.echo(f"Worker {worker_id} restarted")
-
-
-async def cluster_restart(uri):
+async def _cluster_restart(uri):
     """
-    Restart the workers using their respective nanny services
-    """
-    worker_service_addrs = {}
-    async with rpc(uri) as r:
-        cinfo = await r.identity()
-        for _, worker_info in cinfo['workers'].items():
-            worker_id = worker_info['id']
-            worker_service_addrs[f"{worker_id}"] = worker_info['nanny']
-
-    await asyncio.gather(*[restart_worker_using_nanny_service(worker_id, nanny_addr)
-                           for worker_id, nanny_addr in worker_service_addrs.items()])
-
-    return
-
-
-async def cluster_scale(uri: str, nworkers: int):
-    """
-    Invoke the cluster_restart RPC on the Dask admin server
+    Restart the cluster by individually restarting the cluster workers
     """
     async with rpc(uri) as r:
-        result = await r.scale(nworkers=nworkers)
+        await r.cluster_restart()
+
+
+async def _cluster_scale(uri: str, nworkers: int):
+    """
+    Scale the cluster up/down depending on `nworkers`
+    """
+    async with rpc(uri) as r:
+        result = await r.cluster_scale(size=nworkers)
     return result
 
 
-async def cluster_worker_count(uri) -> int:
-    """
-    Retrive the active worker count from the dask cluster
-    """
+async def _get_cluster_size(uri) -> int:
     async with rpc(uri) as r:
-        cinfo = await r.identity()
-    return len(cinfo['workers'])
+        size = await r.cluster_size()
+    return size
 
 
-async def cluster_logs(uri):
+async def _get_cluster_logs(uri):
     """
     Retrive the cluster logs from the scheduler directly
     """
-    cluster_logs = []
     async with rpc(uri) as r:
-        cluster_logs.append(await r.get_logs())
-        cluster_logs.append(await r.worker_logs())
+        cluster_logs = await r.cluster_logs()
     return cluster_logs
 
 
-@click.option(
-    "--status",
-    is_flag=True,
-    help="""Query the status of the Dask
-              cluster""",
-)
-@click.option(
-    "--address",
-    is_flag=True,
-    help="""Fetch the Dask scheduler/worker
-              addresses""",
-)
-@click.option("--info", is_flag=True, help="Query cluster info")
-@click.option("--restart", is_flag=True, help="Restart cluster workers")
-@click.option("--scale", is_flag=False, type=int, help="Scale the dask cluster up/down")
-@click.option("--nworkers", is_flag=True, help="Query the number of active workers")
-@click.option("--logs", is_flag=True, help="Show Dask cluster logs")
-@click.command()
-def cluster(status: bool, address: bool, info: bool, restart: bool,
-            scale: int, nworkers: bool, logs: bool) -> None:
+@click.group()
+@click.pass_context
+def cluster(ctx):
     """
     Inspect and manage the Dask cluster's configuration.
     """
     # addr of the admin server for the Dask cluster process
     # started with covalent
-    admin_host = get_config("dask.admin_host")
-    admin_port = get_config("dask.admin_port")
-    admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
+    try:
+        admin_host = get_config("dask.admin_host")
+        admin_port = get_config("dask.admin_port")
+        admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
+        ctx.obj = {'event_loop': asyncio.get_event_loop(),
+                   'addr': admin_server_addr}
+    except KeyError:
+        pass
 
-    # Dask cluster scheduler address
-    _, scheduler_addr = parse_address(get_config("dask.scheduler_address"))
 
-    loop = asyncio.get_event_loop()
+@cluster.command()
+@click.pass_obj
+def info(obj):
+    """
+    Return cluster information
+    """
+    if obj:
+        click.echo(obj['event_loop'].run_until_complete(_get_cluster_info(obj['addr'])))
 
-    if status:
-        click.echo(loop.run_until_complete(cluster_status(scheduler_addr)))
 
-    if address:
-        click.echo(loop.run_until_complete(cluster_address(scheduler_addr)))
+@cluster.command()
+@click.pass_obj
+def status(obj):
+    """
+    Return cluster status
+    """
+    if obj:
+        click.echo(obj['event_loop'].run_until_complete(_get_cluster_status(obj['addr'])))
 
-    if info:
-        click.echo(loop.run_until_complete(cluster_info(scheduler_addr)))
 
-    if nworkers:
-        click.echo(loop.run_until_complete(cluster_worker_count(scheduler_addr)))
+@cluster.command()
+@click.pass_obj
+def address(obj):
+    """
+    Fetch connection information of the cluster scheduler/workers
+    """
+    if obj:
+        click.echo(obj['event_loop'].run_until_complete(_get_cluster_address(obj['addr'])))
 
-    if restart:
-        click.echo(loop.run_until_complete(cluster_restart(scheduler_addr)))
 
-    if scale:
-        click.echo(loop.run_until_complete(cluster_scale(admin_server_addr,
-                                                         nworkers=scale)))
-    if logs:
-        click.echo(loop.run_until_complete(cluster_logs(scheduler_addr)))
+@cluster.command()
+@click.pass_obj
+def size(obj):
+    """
+    Return number of active workers in the cluster
+    """
+    if obj:
+        click.echo(obj['event_loop'].run_until_complete(_get_cluster_size(obj['addr'])))
+
+
+@cluster.command()
+@click.pass_obj
+def restart(obj):
+    """
+    Restart all workers in the cluster
+    """
+    if obj:
+        obj['event_loop'].run_until_complete(_cluster_restart(obj['addr']))
+        click.echo("Cluster restarted")
+
+
+@cluster.command()
+@click.argument('nworkers')
+@click.pass_obj
+def scale(obj, nworkers: int):
+    """
+    Scale cluster by adding/removing workers to match `nworkers`
+    """
+    if obj:
+        click.echo(obj['event_loop'].run_until_complete(
+            _cluster_scale(obj['addr'], nworkers=nworkers)))
+
+
+@cluster.command()
+@click.pass_obj
+def logs(obj):
+    """
+    Show Dask cluster logs
+    """
+    if obj:
+        click.echo(obj['event_loop'].run_until_complete(_get_cluster_logs(obj['addr'])))
