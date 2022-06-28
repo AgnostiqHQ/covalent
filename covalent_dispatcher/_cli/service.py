@@ -38,6 +38,7 @@ from distributed.core import rpc
 
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
+from .dask import cluster
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
