@@ -33,6 +33,7 @@ from sqlalchemy.orm import Session
 from .._data_store import DataStoreSession, models
 from .._shared_files import logger
 from .._shared_files.util_classes import RESULT_STATUS, Status
+from .._workflow.transport import TransportableObject
 from .utils import convert_to_lattice_function_call
 
 if TYPE_CHECKING:
@@ -85,7 +86,7 @@ class Result:
 
         self._status = Result.NEW_OBJ
 
-        self._result = None
+        self._result = TransportableObject(None)
 
         self._inputs = {"args": [], "kwargs": {}}
         if lattice.args:

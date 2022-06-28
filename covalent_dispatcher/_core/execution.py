@@ -46,6 +46,7 @@ from covalent._shared_files.defaults import (
 )
 from covalent._workflow.deps import Deps
 from covalent._workflow.lattice import Lattice
+from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
 
@@ -102,7 +103,7 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
             result_object.lattice.transport_graph.get_node_value(parent, "output")
             for parent in result_object.lattice.transport_graph.get_dependencies(node_id)
         ]
-        task_input = {"args": [], "kwargs": {"x": values}}
+        task_input = {"args": [], "kwargs": {"x": TransportableObject.make_transportable(values)}}
     elif node_name.startswith(electron_dict_prefix):
         values = {}
         for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
@@ -114,7 +115,7 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
                 key = d["edge_name"]
                 values[key] = value
 
-        task_input = {"args": [], "kwargs": {"x": values}}
+        task_input = {"args": [], "kwargs": {"x": TransportableObject.make_transportable(values)}}
     else:
         task_input = {"args": [], "kwargs": {}}
 
@@ -166,7 +167,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         lattice.electron_outputs = ordered_node_outputs
         result = lattice.workflow_function(*lattice.args, **lattice.kwargs)
         lattice.post_processing = False
-        return result
+        return TransportableObject.make_transportable(result)
 
 
 def _run_task(
@@ -197,7 +198,6 @@ def _run_task(
         None
     """
 
-    inputs = pickle.loads(inputs)
     selected_executor = pickle.loads(selected_executor)
 
     # the executor is determined during scheduling and provided in the execution metadata
@@ -208,6 +208,8 @@ def _run_task(
 
         if node_name.startswith(sublattice_prefix):
             func = serialized_callable.get_deserialized()
+
+            # This now uses build_graph_encoded
             sublattice_result = dispatch_sync(func)(*inputs["args"], **inputs["kwargs"])
             output = sublattice_result.result
 
@@ -377,7 +379,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 node_name=node_name,
                 call_before=call_before,
                 call_after=call_after,
-                inputs=pickle.dumps(task_input),
+                inputs=task_input,
             )
 
             future.add_done_callback(task_callback)

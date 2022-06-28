@@ -64,7 +64,11 @@ def wrapper_fn(
 
     fn = function.get_deserialized()
 
-    output = fn(*args, **kwargs)
+    new_args = [arg.get_deserialized() for arg in args]
+
+    new_kwargs = {k: v.get_deserialized() for k, v in kwargs.items()}
+
+    output = fn(*new_args, **new_kwargs)
 
     for tup in call_after:
         serialized_fn, serialized_args, serialized_kwargs = tup
@@ -73,7 +77,7 @@ def wrapper_fn(
         ca_kwargs = serialized_kwargs.get_deserialized()
         ca_fn(*ca_args, **ca_kwargs)
 
-    return output
+    return TransportableObject(output)
 
 
 class BaseExecutor(ABC):

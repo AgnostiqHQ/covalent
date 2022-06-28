@@ -29,6 +29,7 @@ from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
+from .._workflow.transport import TransportableObject
 from .base import BaseDispatcher
 
 
@@ -76,7 +77,10 @@ class LocalDispatcher(BaseDispatcher):
 
             lattice = deepcopy(orig_lattice)
 
-            lattice.build_graph(*args, **kwargs)
+            new_args = [TransportableObject.make_transportable(arg) for arg in args]
+            new_kwargs = {k: TransportableObject.make_transportable(v) for k, v in kwargs.items()}
+            # lattice.build_graph(*args, **kwargs)
+            lattice.build_graph_encoded(*new_args, **new_kwargs)
 
             # Serializing the transport graph and then passing it to the Result object
             lattice.transport_graph = lattice.transport_graph.serialize()

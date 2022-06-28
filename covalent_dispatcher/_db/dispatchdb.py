@@ -30,6 +30,11 @@ def extract_graph_node(node):
     if f is not None:
         node["doc"] = f.get_deserialized().__doc__
 
+    if "value" in node:
+        node["value"] = node["value"].object_string
+    if "output" in node:
+        node["output"] = node["output"].object_string
+
     # metadata
     node["metadata"] = extract_metadata(node["metadata"])
 
@@ -109,7 +114,7 @@ def encode_result(result_obj):
     result_dict = {
         "dispatch_id": result_obj.dispatch_id,
         "status": result_obj.status,
-        "result": result_obj.result,
+        "result": result_obj.result.object_string,
         "start_time": result_obj.start_time,
         "end_time": result_obj.end_time,
         "results_dir": result_obj.results_dir,

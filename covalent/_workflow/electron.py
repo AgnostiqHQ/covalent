@@ -42,6 +42,7 @@ from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .lattice import Lattice
+from .transport import TransportableObject
 
 consumable_constraints = ["budget", "time_limit"]
 
@@ -404,9 +405,9 @@ class Electron:
         elif isinstance(param_value, list):
             list_node = self.add_collection_node_to_graph(transport_graph, electron_list_prefix)
 
-            for v in param_value:
+            for index, v in enumerate(param_value):
                 self.connect_node_with_others(
-                    list_node, param_name, v, "kwarg", None, transport_graph
+                    list_node, param_name, v, "kwarg", index, transport_graph
                 )
 
             transport_graph.add_edge(
@@ -433,11 +434,12 @@ class Electron:
 
         else:
 
+            encoded_param_value = TransportableObject.make_transportable(param_value)
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
                 metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                value=param_value,
+                value=encoded_param_value,
             )
             transport_graph.add_edge(
                 parameter_node,
@@ -465,11 +467,19 @@ class Electron:
         def to_electron_collection(**x):
             return list(x.values())[0]
 
+        @electron
+        def to_decoded_electron_collection(**x):
+            collection = list(x.values())[0]
+            if isinstance(collection, list):
+                return TransportableObject.deserialize_list(collection)
+            elif isinstance(collection, dict):
+                return TransportableObject.deserialize_dict(collection)
+
         node_id = graph.add_node(
             name=prefix,
-            function=to_electron_collection,
-            metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-            function_string=get_serialized_function_str(to_electron_collection),
+            function=to_decoded_electron_collection,
+            metadata=self.metadata.copy(),
+            function_string=get_serialized_function_str(to_decoded_electron_collection),
         )
 
         return node_id
