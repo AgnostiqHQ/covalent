@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-import signal
 import asyncio
 import os
+import signal
 from logging import Logger
-from threading import Thread
 from multiprocessing import Process, current_process
+from threading import Thread
 
 import dask.config
 from dask.distributed import Client, LocalCluster
 from distributed.core import Server, rpc
 
 from covalent._shared_files import logger
-from covalent._shared_files.config import set_config, get_config, update_config
+from covalent._shared_files.config import get_config, set_config, update_config
 from covalent._shared_files.utils import get_random_available_port
 
 app_log = logger.app_log
@@ -30,6 +30,7 @@ class DaskCluster(Process):
     default the admin server listens for TCP connections at
     tcp://127.0.0.1:8000
     """
+
     def __init__(self, name: str, logger: Logger):
         super(DaskCluster, self).__init__()
         self.name = name
@@ -66,13 +67,15 @@ class DaskCluster(Process):
             self.logger.warning("Threads per worker not provided, using default = 1")
 
         # Register handlers
-        self.handlers = {'cluster_size': self.__len__,
-                         'cluster_info': self._get_cluster_info,
-                         'cluster_status': self._get_cluster_status,
-                         'cluster_address': self._get_cluster_addresses,
-                         'cluster_restart': self._cluster_restart,
-                         'cluster_scale': lambda comm, size: self.cluster.scale(int(size)),
-                         'cluster_logs': self._get_cluster_logs}
+        self.handlers = {
+            "cluster_size": self.__len__,
+            "cluster_info": self._get_cluster_info,
+            "cluster_status": self._get_cluster_status,
+            "cluster_address": self._get_cluster_addresses,
+            "cluster_restart": self._cluster_restart,
+            "cluster_scale": lambda comm, size: self.cluster.scale(int(size)),
+            "cluster_logs": self._get_cluster_logs,
+        }
 
         self.admin_server = Server(handlers=self.handlers)
 
@@ -99,12 +102,16 @@ class DaskCluster(Process):
         worker_service_addrs = {}
         async with rpc(self.cluster.scheduler_address) as r:
             cinfo = await r.identity()
-            for _, worker_info in cinfo['workers'].items():
-                worker_id = worker_info['id']
-                worker_service_addrs[f"{worker_id}"] = worker_info['nanny']
+            for _, worker_info in cinfo["workers"].items():
+                worker_id = worker_info["id"]
+                worker_service_addrs[f"{worker_id}"] = worker_info["nanny"]
 
-        await asyncio.gather(*[self._restart_worker(worker_id, nanny_addr)
-                               for worker_id, nanny_addr in worker_service_addrs.items()])
+        await asyncio.gather(
+            *[
+                self._restart_worker(worker_id, nanny_addr)
+                for worker_id, nanny_addr in worker_service_addrs.items()
+            ]
+        )
 
     async def _get_cluster_info(self):
         """
@@ -122,11 +129,11 @@ class DaskCluster(Process):
             cinfo = await r.identity()
 
         if cinfo:
-            proc_status['scheduler'] = 'running'
+            proc_status["scheduler"] = "running"
 
-        for worker_addr, worker_info in cinfo['workers'].items():
-            worker_id = worker_info['id']
-            proc_status[f"worker-{worker_id}"] = worker_info['status']
+        for worker_addr, worker_info in cinfo["workers"].items():
+            worker_id = worker_info["id"]
+            proc_status[f"worker-{worker_id}"] = worker_info["status"]
 
         return proc_status
 
@@ -159,12 +166,13 @@ class DaskCluster(Process):
         Runs a local dask cluster along with its monitoring thread
         """
         # listen for connections
-        self.loop.create_task(self.admin_server.listen((self.admin_host,
-                                                        self.admin_port)))
+        self.loop.create_task(self.admin_server.listen((self.admin_host, self.admin_port)))
         try:
-            self.cluster = LocalCluster(n_workers=self.num_workers,
-                                        threads_per_worker=self.threads_per_worker,
-                                        **{"memory_limit": self.mem_per_worker})
+            self.cluster = LocalCluster(
+                n_workers=self.num_workers,
+                threads_per_worker=self.threads_per_worker,
+                **{"memory_limit": self.mem_per_worker},
+            )
         except Exception as e:
             self.logger.exception(e)
 
@@ -180,7 +188,7 @@ class DaskCluster(Process):
                         "process_info": current_process(),
                         "pid": os.getpid(),
                         "admin_host": self.admin_host,
-                        "admin_port": self.admin_port
+                        "admin_port": self.admin_port,
                     }
                 }
             )

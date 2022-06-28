@@ -30,10 +30,10 @@ from subprocess import DEVNULL, Popen
 from typing import Optional, Tuple
 
 import click
+import dask.system
 import psutil
 import requests
-import dask.system
-from distributed.comm import unparse_address, parse_address
+from distributed.comm import parse_address, unparse_address
 from distributed.core import rpc
 
 from covalent._shared_files.config import _config_manager as cm
@@ -236,46 +236,66 @@ def _graceful_shutdown(pidfile: str) -> None:
 
 
 @click.command()
-@click.option("-d",
-              "--develop",
-              is_flag=True,
-              help="Start the server in developer mode.")
-@click.option("-p", "--port",
-              default=get_config("user_interface.port"),
-              show_default=True,
-              help="Server port number.")
-@click.option("-m", "--mem-per-worker",
-              required=False,
-              is_flag=False,
-              type=str,
-              default="auto",
-              show_default=True,
-              help="""Memory limit per worker in (GB).
-              Provide strings like 1gb/1GB or 0 for no limits""".replace('\n', ''))
-@click.option("-n", "--workers",
-              required=False,
-              is_flag=False,
-              default=dask.system.CPU_COUNT,
-              show_default=True,
-              type=int,
-              help="Number of workers to start covalent with.")
-@click.option("-t", "--threads-per-worker",
-              required=False,
-              is_flag=False,
-              default=1,
-              show_default=True,
-              type=int,
-              help="Number of CPU threads per worker.")
-@click.option("--no-cluster",
-              is_flag=True,
-              required=False,
-              show_default=True,
-              default=False,
-              help="Start the server without Dask")
+@click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
+@click.option(
+    "-p",
+    "--port",
+    default=get_config("user_interface.port"),
+    show_default=True,
+    help="Server port number.",
+)
+@click.option(
+    "-m",
+    "--mem-per-worker",
+    required=False,
+    is_flag=False,
+    type=str,
+    default="auto",
+    show_default=True,
+    help="""Memory limit per worker in (GB).
+              Provide strings like 1gb/1GB or 0 for no limits""".replace(
+        "\n", ""
+    ),
+)
+@click.option(
+    "-n",
+    "--workers",
+    required=False,
+    is_flag=False,
+    default=dask.system.CPU_COUNT,
+    show_default=True,
+    type=int,
+    help="Number of workers to start covalent with.",
+)
+@click.option(
+    "-t",
+    "--threads-per-worker",
+    required=False,
+    is_flag=False,
+    default=1,
+    show_default=True,
+    type=int,
+    help="Number of CPU threads per worker.",
+)
+@click.option(
+    "--no-cluster",
+    is_flag=True,
+    required=False,
+    show_default=True,
+    default=False,
+    help="Start the server without Dask",
+)
 @click.argument("no-cluster", required=False)
 @click.pass_context
-def start(ctx, port: int, develop: bool, no_cluster: str,
-          mem_per_worker: int, threads_per_worker: int, workers: int) -> None:
+def start(
+    ctx,
+    port: int,
+    develop: bool,
+    no_cluster: str,
+    mem_per_worker: int,
+    threads_per_worker: int,
+    workers: int,
+) -> None:
     """
     Start the Covalent server.
     """
@@ -290,8 +310,8 @@ def start(ctx, port: int, develop: bool, no_cluster: str,
             "dask": {
                 "mem_per_worker": mem_per_worker or "auto",
                 "threads_per_worker": threads_per_worker or 1,
-                "num_workers": workers or dask.system.CPU_COUNT
-            }
+                "num_workers": workers or dask.system.CPU_COUNT,
+            },
         }
     )
 
@@ -456,8 +476,7 @@ def cluster(ctx):
         admin_host = get_config("dask.admin_host")
         admin_port = get_config("dask.admin_port")
         admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
-        ctx.obj = {'event_loop': asyncio.get_event_loop(),
-                   'addr': admin_server_addr}
+        ctx.obj = {"event_loop": asyncio.get_event_loop(), "addr": admin_server_addr}
     except KeyError:
         pass
 
@@ -469,7 +488,7 @@ def info(obj):
     Return cluster information
     """
     if obj:
-        click.echo(obj['event_loop'].run_until_complete(_get_cluster_info(obj['addr'])))
+        click.echo(obj["event_loop"].run_until_complete(_get_cluster_info(obj["addr"])))
 
 
 @cluster.command()
@@ -479,7 +498,7 @@ def status(obj):
     Return cluster status
     """
     if obj:
-        click.echo(obj['event_loop'].run_until_complete(_get_cluster_status(obj['addr'])))
+        click.echo(obj["event_loop"].run_until_complete(_get_cluster_status(obj["addr"])))
 
 
 @cluster.command()
@@ -489,7 +508,7 @@ def address(obj):
     Fetch connection information of the cluster scheduler/workers
     """
     if obj:
-        click.echo(obj['event_loop'].run_until_complete(_get_cluster_address(obj['addr'])))
+        click.echo(obj["event_loop"].run_until_complete(_get_cluster_address(obj["addr"])))
 
 
 @cluster.command()
@@ -499,7 +518,7 @@ def size(obj):
     Return number of active workers in the cluster
     """
     if obj:
-        click.echo(obj['event_loop'].run_until_complete(_get_cluster_size(obj['addr'])))
+        click.echo(obj["event_loop"].run_until_complete(_get_cluster_size(obj["addr"])))
 
 
 @cluster.command()
@@ -509,20 +528,21 @@ def restart(obj):
     Restart all workers in the cluster
     """
     if obj:
-        obj['event_loop'].run_until_complete(_cluster_restart(obj['addr']))
+        obj["event_loop"].run_until_complete(_cluster_restart(obj["addr"]))
         click.echo("Cluster restarted")
 
 
 @cluster.command()
-@click.argument('nworkers')
+@click.argument("nworkers")
 @click.pass_obj
 def scale(obj, nworkers: int):
     """
     Scale cluster by adding/removing workers to match `nworkers`
     """
     if obj:
-        click.echo(obj['event_loop'].run_until_complete(
-            _cluster_scale(obj['addr'], nworkers=nworkers)))
+        click.echo(
+            obj["event_loop"].run_until_complete(_cluster_scale(obj["addr"], nworkers=nworkers))
+        )
 
 
 @cluster.command()
@@ -532,4 +552,4 @@ def logs(obj):
     Show Dask cluster logs
     """
     if obj:
-        click.echo(obj['event_loop'].run_until_complete(_get_cluster_logs(obj['addr'])))
+        click.echo(obj["event_loop"].run_until_complete(_get_cluster_logs(obj["addr"])))
