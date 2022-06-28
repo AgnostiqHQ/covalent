@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Introduce support for `call_before`, `call_after`, and bash dependencies
+- Introduce support for pip dependencies
 
 ### Operations
 
