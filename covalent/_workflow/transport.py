@@ -47,6 +47,8 @@ class TransportableObject:
         self._object = base64.b64encode(cloudpickle.dumps(obj)).decode("utf-8")
         self.python_version = platform.python_version()
 
+        self.object_string = str(obj)
+
         try:
             self._json = json.dumps(obj)
 
@@ -86,6 +88,9 @@ class TransportableObject:
 
         return self._object
 
+    def serialize_to_json(self) -> str:
+        return json.dumps(self.__dict__)
+
     def serialize(self) -> bytes:
         """
         Serialize the transportable object.
@@ -100,10 +105,17 @@ class TransportableObject:
         return cloudpickle.dumps(
             {
                 "object": self.get_serialized(),
+                "object_string": self.object_string,
                 "json": self._json,
                 "py_version": self.python_version,
             }
         )
+
+    @staticmethod
+    def deserialize_from_json(data: str) -> "TransportableObject":
+        sc = TransportableObject(None)
+        sc.__dict__ = json.loads(data)
+        return sc
 
     @staticmethod
     def deserialize(data: bytes) -> "TransportableObject":
