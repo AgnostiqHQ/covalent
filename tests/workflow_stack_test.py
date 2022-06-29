@@ -167,6 +167,98 @@ def workflow(x=10):
     assert time_for_normal > time_for_covalent
 
 
+def test_electron_deps_bash():
+    import tempfile
+    from pathlib import Path
+
+    f = tempfile.NamedTemporaryFile(delete=True)
+    tmp_path = f.name
+    f.close()
+
+    cmd = f"touch {tmp_path}"
+
+    @ct.electron(deps_bash=ct.DepsBash([cmd]))
+    def func(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return func(x)
+
+    dispatch_id = ct.dispatch(workflow)(x=5)
+    res = ct.get_result(dispatch_id, wait=True)
+
+    assert res.result == 5
+    assert Path(tmp_path).is_file()
+
+    rm._delete_result(dispatch_id)
+    Path(tmp_path).unlink()
+
+
+def test_electron_deps_call_before():
+    import tempfile
+    from pathlib import Path
+
+    def create_tmp_file(file_path, **kwargs):
+        with open(file_path, "w") as f:
+            f.write("Hello")
+
+    f = tempfile.NamedTemporaryFile(delete=True)
+    tmp_path = f.name
+    f.close()
+
+    def delete_tmp_file(file_path):
+        Path(file_path).unlink()
+
+    @ct.electron(
+        call_before=[ct.DepsCall(create_tmp_file, args=[tmp_path])],
+        call_after=ct.DepsCall(delete_tmp_file, args=[tmp_path]),
+    )
+    def func(file_path):
+        with open(file_path, "r") as f:
+            contents = f.read()
+        return Path(file_path).is_file(), contents
+
+    @ct.lattice
+    def workflow(file_path):
+        return func(file_path)
+
+    dispatch_id = ct.dispatch(workflow)(file_path=tmp_path)
+    res = ct.get_result(dispatch_id, wait=True)
+
+    assert res.result == (True, "Hello")
+
+    assert not Path(tmp_path).is_file()
+
+
+def test_electron_deps_bash_implicit():
+    import tempfile
+    from pathlib import Path
+
+    f = tempfile.NamedTemporaryFile(delete=True)
+    tmp_path = f.name
+    f.close()
+
+    cmd = f"touch {tmp_path}"
+
+    @ct.electron(deps_bash=[cmd])
+    def func(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return func(x)
+
+    dispatch_id = ct.dispatch(workflow)(x=5)
+    res = ct.get_result(dispatch_id, wait=True)
+
+    assert res.result == 5
+    assert Path(tmp_path).is_file()
+
+    rm._delete_result(dispatch_id)
+    Path(tmp_path).unlink()
+
+
 def test_electrons_with_positional_args():
     """
     Test to check whether an electron can be called with positional arguments

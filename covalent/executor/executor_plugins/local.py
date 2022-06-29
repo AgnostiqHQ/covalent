@@ -26,8 +26,9 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import io
 import os
+import subprocess
 from contextlib import redirect_stderr, redirect_stdout
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import logger
@@ -50,6 +51,45 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 }
 
 
+def wrapper_fn(
+    function: TransportableObject,
+    call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
+    call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
+    *args,
+    **kwargs,
+):
+    """Wrapper for serialized callable.
+
+    Execute preparatory shell commands before deserializing and
+    running the callable. This is the actual function to be sent to
+    the various executors.
+
+    """
+
+    app_log.debug("Invoking call_before")
+    for tup in call_before:
+        serialized_fn, serialized_args, serialized_kwargs = tup
+        cb_fn = serialized_fn.get_deserialized()
+        cb_args = serialized_args.get_deserialized()
+        cb_kwargs = serialized_kwargs.get_deserialized()
+        app_log.debug(f"Invoking ({cb_fn}, args={cb_args}, kwargs={cb_kwargs}")
+        cb_fn(*cb_args, **cb_kwargs)
+
+    fn = function.get_deserialized()
+    output = fn(*args, **kwargs)
+
+    app_log.debug("Invoking call_after")
+    for tup in call_after:
+        serialized_fn, serialized_args, serialized_kwargs = tup
+        ca_fn = serialized_fn.get_deserialized()
+        ca_args = serialized_args.get_deserialized()
+        ca_kwargs = serialized_kwargs.get_deserialized()
+        app_log.debug(f"Invoking ({ca_fn}, args={ca_args}, kwargs={ca_kwargs}")
+        ca_fn(*ca_args, **ca_kwargs)
+
+    return output
+
+
 class LocalExecutor(BaseExecutor):
     """
     Local executor class that directly invokes the input function.
@@ -60,6 +100,8 @@ class LocalExecutor(BaseExecutor):
         function: TransportableObject,
         args: List,
         kwargs: Dict,
+        call_before: List,
+        call_after: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
@@ -82,8 +124,11 @@ class LocalExecutor(BaseExecutor):
         """
 
         dispatch_info = DispatchInfo(dispatch_id)
-        fn = function.get_deserialized()
         fn_version = function.python_version
+
+        new_args = [function, call_before, call_after]
+        for arg in args:
+            new_args.append(arg)
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()
@@ -93,9 +138,9 @@ class LocalExecutor(BaseExecutor):
                 result = None
 
                 result = self.execute_in_conda_env(
-                    fn,
+                    wrapper_fn,
                     fn_version,
-                    args,
+                    new_args,
                     kwargs,
                     self.conda_env,
                     self.cache_dir,
@@ -103,7 +148,7 @@ class LocalExecutor(BaseExecutor):
                 )
 
             else:
-                result = fn(*args, **kwargs)
+                result = wrapper_fn(*new_args, **kwargs)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
