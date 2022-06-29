@@ -169,6 +169,8 @@ class Lattice:
         self.transport_graph.reset()
 
         named_args, named_kwargs = get_named_params(self.workflow_function, args, kwargs)
+        self.named_args = named_args
+        self.named_kwargs = named_kwargs
 
         args = [v for _, v in named_args.items()]
         kwargs = named_kwargs

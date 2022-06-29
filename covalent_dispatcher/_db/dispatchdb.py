@@ -108,9 +108,7 @@ def result_encoder(obj):
 
 def encode_result(result_obj):
     lattice = result_obj.lattice
-    ((named_args, named_kwargs),) = (
-        get_named_params(lattice.workflow_function, lattice.args, lattice.kwargs),
-    )
+
     result_dict = {
         "dispatch_id": result_obj.dispatch_id,
         "status": result_obj.status,
@@ -123,7 +121,7 @@ def encode_result(result_obj):
             "function_string": lattice.workflow_function_string,
             "doc": lattice.__doc__,
             "name": lattice.__name__,
-            "inputs": encode_dict({**named_args, **named_kwargs}),
+            "inputs": encode_dict({**lattice.named_args, **lattice.named_kwargs}),
             "metadata": extract_metadata(lattice.metadata),
         },
         "graph": extract_graph(result_obj.lattice.transport_graph._graph),

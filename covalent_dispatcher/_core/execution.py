@@ -165,7 +165,8 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
         lattice.electron_outputs = ordered_node_outputs
-        result = lattice.workflow_function(*lattice.args, **lattice.kwargs)
+        workflow_function = lattice.workflow_function.get_deserialized()
+        result = workflow_function(*lattice.args, **lattice.kwargs)
         lattice.post_processing = False
         return result
 
