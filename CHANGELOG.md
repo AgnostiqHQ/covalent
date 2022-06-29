@@ -14,6 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ability to change to different layouts from the GUI.
 
+## [0.115.0] - 2022-06-28
+### Authors
+@cjao 
+
+
+### Added
+
+- Introduce support for `call_before`, `call_after`, and bash dependencies
+
 ### Operations
 
 - Updated codeowners so that AQ Engineers doesn't own this CHANGELOG
