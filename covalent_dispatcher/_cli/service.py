@@ -464,92 +464,72 @@ async def _get_cluster_logs(uri):
     return cluster_logs
 
 
-@click.group()
-@click.pass_context
-def cluster(ctx):
+@click.command()
+@click.option('--status',
+              is_flag=True,
+              help='Show Dask cluster status')
+@click.option('--info',
+              is_flag=True,
+              help='Retrive Dask cluster info')
+@click.option('--address',
+              is_flag=True,
+              help='Fetch connection information of the cluster scheduler/workers')
+@click.option('--size',
+              is_flag=True,
+              help='Return number of active workers in the cluster')
+@click.option('--restart',
+              is_flag=True,
+              help='Restart the cluster')
+@click.option('--scale',
+              is_flag=False,
+              type=int,
+              default=dask.system.CPU_COUNT,
+              show_default=True,
+              help='Scale cluster by adding/removing workers to match `nworkers`')
+@click.option('--logs',
+              is_flag=True,
+              help='Show Dask cluster logs')
+def cluster(status: bool, info: bool, address: bool, size: bool,
+            restart: bool, scale: int, logs: bool):
     """
     Inspect and manage the Dask cluster's configuration.
     """
     # addr of the admin server for the Dask cluster process
     # started with covalent
+    loop = asyncio.get_event_loop()
     try:
         admin_host = get_config("dask.admin_host")
         admin_port = get_config("dask.admin_port")
         admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
-        ctx.obj = {"event_loop": asyncio.get_event_loop(), "addr": admin_server_addr}
+
+        if status:
+            click.echo(loop.run_until_complete(_get_cluster_status(admin_server_addr)))
+            return
+
+        if info:
+            click.echo(loop.run_until_complete(_get_cluster_info(admin_server_addr)))
+            return
+
+        if address:
+            click.echo(loop.run_until_complete(_get_cluster_address(admin_server_addr)))
+            return
+
+        if size:
+            click.echo(loop.run_until_complete(_get_cluster_size(admin_server_addr)))
+            return
+
+        if restart:
+            loop.run_until_complete(_cluster_restart(admin_server_addr))
+            click.echo("Cluster restarted")
+            return
+
+        if scale:
+            loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
+            click.echo(f"Cluster scaled to have {scale} workers")
+            return
+
+        if logs:
+            click.echo(loop.run_until_complete(_get_cluster_logs(admin_server_addr)))
+            return
     except KeyError:
         pass
-
-
-@cluster.command()
-@click.pass_obj
-def info(obj):
-    """
-    Return cluster information
-    """
-    if obj:
-        click.echo(obj["event_loop"].run_until_complete(_get_cluster_info(obj["addr"])))
-
-
-@cluster.command()
-@click.pass_obj
-def state(obj):
-    """
-    Return the state of the cluster
-    """
-    if obj:
-        click.echo(obj["event_loop"].run_until_complete(_get_cluster_status(obj["addr"])))
-
-
-@cluster.command()
-@click.pass_obj
-def address(obj):
-    """
-    Fetch connection information of the cluster scheduler/workers
-    """
-    if obj:
-        click.echo(obj["event_loop"].run_until_complete(_get_cluster_address(obj["addr"])))
-
-
-@cluster.command()
-@click.pass_obj
-def size(obj):
-    """
-    Return number of active workers in the cluster
-    """
-    if obj:
-        click.echo(obj["event_loop"].run_until_complete(_get_cluster_size(obj["addr"])))
-
-
-@cluster.command()
-@click.pass_obj
-def restart(obj):
-    """
-    Restart all workers in the cluster
-    """
-    if obj:
-        obj["event_loop"].run_until_complete(_cluster_restart(obj["addr"]))
-        click.echo("Cluster restarted")
-
-
-@cluster.command()
-@click.argument("nworkers")
-@click.pass_obj
-def scale(obj, nworkers: int):
-    """
-    Scale cluster by adding/removing workers to match `nworkers`
-    """
-    if obj:
-        click.echo(
-            obj["event_loop"].run_until_complete(_cluster_scale(obj["addr"], nworkers=nworkers))
-        )
-
-
-@cluster.command()
-@click.pass_obj
-def logs(obj):
-    """
-    Show Dask cluster logs
-    """
-    if obj:
-        click.echo(obj["event_loop"].run_until_complete(_get_cluster_logs(obj["addr"])))
