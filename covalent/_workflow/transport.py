@@ -32,6 +32,13 @@ from .._data_store import DataStoreSession, models
 from .._shared_files.defaults import parameter_prefix
 
 
+def encode_transportable_object(obj):
+    if isinstance(obj, TransportableObject):
+        return obj.object_string
+    else:
+        return json.dumps(obj)
+
+
 class TransportableObject:
     """
     A function is converted to a transportable object by serializing it using cloudpickle
@@ -50,7 +57,7 @@ class TransportableObject:
         self.object_string = str(obj)
 
         try:
-            self._json = json.dumps(obj)
+            self._json = json.dumps(obj, default=encode_transportable_object)
 
         except TypeError as ex:
             self._json = ""
@@ -68,6 +75,10 @@ class TransportableObject:
         """
 
         return cloudpickle.loads(base64.b64decode(self._object.encode("utf-8")))
+
+    @property
+    def json(self):
+        return self._json
 
     def deserialize_if_builtin_type(self):
         if len(self._json) > 0:

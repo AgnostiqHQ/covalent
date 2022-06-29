@@ -167,7 +167,15 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         lattice.electron_outputs = ordered_node_outputs
         result = lattice.workflow_function(*lattice.args, **lattice.kwargs)
         lattice.post_processing = False
-        return TransportableObject.make_transportable(result)
+        if isinstance(result, tuple):
+            result = list(result)
+        if isinstance(result, list):
+            encoded_result = TransportableObject.make_transportable_list(result)
+        if isinstance(result, dict):
+            encoded_result = TransportableObject.make_transportable_dict(result)
+        else:
+            encoded_result = TransportableObject.make_transportable(result)
+        return TransportableObject.make_transportable(encoded_result)
 
 
 def _run_task(

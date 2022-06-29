@@ -114,7 +114,7 @@ def encode_result(result_obj):
     result_dict = {
         "dispatch_id": result_obj.dispatch_id,
         "status": result_obj.status,
-        "result": result_obj.result.object_string,
+        "result": result_obj.result.json,
         "start_time": result_obj.start_time,
         "end_time": result_obj.end_time,
         "results_dir": result_obj.results_dir,
