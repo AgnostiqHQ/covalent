@@ -465,32 +465,25 @@ async def _get_cluster_logs(uri):
 
 
 @click.command()
-@click.option('--status',
-              is_flag=True,
-              help='Show Dask cluster status')
-@click.option('--info',
-              is_flag=True,
-              help='Retrive Dask cluster info')
-@click.option('--address',
-              is_flag=True,
-              help='Fetch connection information of the cluster scheduler/workers')
-@click.option('--size',
-              is_flag=True,
-              help='Return number of active workers in the cluster')
-@click.option('--restart',
-              is_flag=True,
-              help='Restart the cluster')
-@click.option('--scale',
-              is_flag=False,
-              type=int,
-              default=dask.system.CPU_COUNT,
-              show_default=True,
-              help='Scale cluster by adding/removing workers to match `nworkers`')
-@click.option('--logs',
-              is_flag=True,
-              help='Show Dask cluster logs')
-def cluster(status: bool, info: bool, address: bool, size: bool,
-            restart: bool, scale: int, logs: bool):
+@click.option("--status", is_flag=True, help="Show Dask cluster status")
+@click.option("--info", is_flag=True, help="Retrive Dask cluster info")
+@click.option(
+    "--address", is_flag=True, help="Fetch connection information of the cluster scheduler/workers"
+)
+@click.option("--size", is_flag=True, help="Return number of active workers in the cluster")
+@click.option("--restart", is_flag=True, help="Restart the cluster")
+@click.option(
+    "--scale",
+    is_flag=False,
+    type=int,
+    default=dask.system.CPU_COUNT,
+    show_default=True,
+    help="Scale cluster by adding/removing workers to match `nworkers`",
+)
+@click.option("--logs", is_flag=True, help="Show Dask cluster logs")
+def cluster(
+    status: bool, info: bool, address: bool, size: bool, restart: bool, scale: int, logs: bool
+):
     """
     Inspect and manage the Dask cluster's configuration.
     """
