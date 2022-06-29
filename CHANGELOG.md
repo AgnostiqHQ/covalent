@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Added `deps` metadata to Lepton
+
 ## [0.115.0] - 2022-06-28
 ### Authors
 @cjao 
