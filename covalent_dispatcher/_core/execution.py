@@ -55,6 +55,8 @@ from .._db.dispatchdb import DispatchDB
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
+default_postprocessing_executor = "local"
+
 
 def generate_node_result(
     node_id,
@@ -167,15 +169,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         lattice.electron_outputs = ordered_node_outputs
         result = lattice.workflow_function(*lattice.args, **lattice.kwargs)
         lattice.post_processing = False
-        if isinstance(result, tuple):
-            result = list(result)
-        if isinstance(result, list):
-            encoded_result = TransportableObject.make_transportable_list(result)
-        if isinstance(result, dict):
-            encoded_result = TransportableObject.make_transportable_dict(result)
-        else:
-            encoded_result = TransportableObject.make_transportable(result)
-        return TransportableObject.make_transportable(encoded_result)
+        return result
 
 
 def _run_task(
@@ -206,6 +200,7 @@ def _run_task(
         None
     """
 
+    app_log.debug(f"Running task {node_name}")
     selected_executor = pickle.loads(selected_executor)
 
     # the executor is determined during scheduling and provided in the execution metadata
@@ -232,6 +227,7 @@ def _run_task(
             )
 
         else:
+            app_log.debug(f"Executing task {node_name}")
             output, stdout, stderr = executor.execute(
                 function=serialized_callable,
                 args=inputs["args"],
@@ -421,9 +417,55 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 return
 
     # post process the lattice
-    result_object._result = _post_process(
-        result_object.lattice, result_object.get_all_node_outputs(), order
-    )
+
+    result_object._status = Result.PENDING_POSTPROCESSING
+
+    app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
+    post_processor = _executor_manager.get_executor(default_postprocessing_executor)
+    post_processing_inputs = {}
+    post_processing_inputs["args"] = [
+        TransportableObject.make_transportable(result_object.lattice),
+        TransportableObject.make_transportable(result_object.get_all_node_outputs()),
+        TransportableObject.make_transportable(order),
+    ]
+    post_processing_inputs["kwargs"] = {}
+
+    try:
+        future = thread_pool.submit(
+            _run_task,
+            node_id=-1,
+            dispatch_id=result_object.dispatch_id,
+            results_dir=result_object.results_dir,
+            serialized_callable=TransportableObject(_post_process),
+            selected_executor=pickle.dumps(post_processor),
+            node_name="post_process",
+            call_before=[],
+            call_after=[],
+            inputs=post_processing_inputs,
+        )
+        app_log.debug(f"Submitted post-processing job to {post_processor}")
+
+        post_process_result = future.result()
+    except Exception as ex:
+        app_log.debug("Error waiting for the result")
+        app_log.debug(str(ex))
+
+    # app_log.debug(f"Post-process result: {post_process_result}")
+
+    if post_process_result["status"] != Result.COMPLETED:
+        result_object._status = Result.FAILED_POSTPROCESSING
+        result_object._error = "Post processing failed"
+        result_object._end_time = datetime.now(timezone.utc)
+        with DispatchDB() as db:
+            db.upsert(result_object.dispatch_id, result_object)
+        result_object.save()
+        result_webhook.send_update(result_object)
+
+        return
+
+    result_object._result = post_process_result["output"]
+
+    # app_log.debug(f"Result: {result_object._result}")
 
     result_object._status = Result.COMPLETED
     result_object._end_time = datetime.now(timezone.utc)

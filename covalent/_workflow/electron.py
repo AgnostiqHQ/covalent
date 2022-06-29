@@ -325,7 +325,7 @@ class Electron:
             return self.function(*args, **kwargs)
 
         if active_lattice.post_processing:
-            return active_lattice.electron_outputs.pop(0)
+            return active_lattice.electron_outputs.pop(0).get_deserialized()
 
         # Setting metadata for default values according to lattice's metadata
         # If metadata is default, then set it to lattice's default

@@ -70,6 +70,8 @@ class Result:
 
     NEW_OBJ = RESULT_STATUS.NEW_OBJECT
     COMPLETED = RESULT_STATUS.COMPLETED
+    PENDING_POSTPROCESSING = RESULT_STATUS.PENDING_POSTPROCESSING
+    FAILED_POSTPROCESSING = RESULT_STATUS.FAILED_POSTPROCESSING
     RUNNING = RESULT_STATUS.RUNNING
     FAILED = RESULT_STATUS.FAILED
     CANCELLED = RESULT_STATUS.CANCELLED
@@ -229,15 +231,8 @@ Node Outputs
 
             self.lattice.transport_graph.set_node_value(node_id, "stderr", None)
 
-    # Temporary method until we start running _post_process outside the dispatcher
     def get_decoded_result(self):
-        res = self._result.get_deserialized()
-        if isinstance(res, list):
-            return TransportableObject.deserialize_list(res)
-        elif isinstance(res, dict):
-            return TransportableObject.deserialize_dict(res)
-        else:
-            return res
+        return self._result.get_deserialized()
 
     def get_node_result(self, node_id: int) -> dict:
         """Return the result of a particular node.
