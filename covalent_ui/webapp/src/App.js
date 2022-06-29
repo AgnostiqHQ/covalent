@@ -20,69 +20,88 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import CssBaseline from '@mui/material/CssBaseline'
-import ThemeProvider from '@mui/system/ThemeProvider'
-import { Helmet, HelmetProvider } from 'react-helmet-async'
-import { Routes, Route } from 'react-router-dom'
+ import { useEffect } from 'react'
+ import { useDispatch } from 'react-redux'
+ import CssBaseline from '@mui/material/CssBaseline'
+ import ThemeProvider from '@mui/system/ThemeProvider'
+ import { Helmet, HelmetProvider } from 'react-helmet-async'
+ import { Routes, Route } from 'react-router-dom'
 
-import './App.css'
-import Dashboard from './components/Dashboard'
-import socket from './utils/socket'
-import { fetchResult } from './redux/resultsSlice'
-import { setLattice } from './redux/latticePreviewSlice'
-import theme from './utils/theme'
-import { ReactFlowProvider } from 'react-flow-renderer'
-import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
-import DispatchLayout from './components/dispatch/DispatchLayout'
-import NotFound from './components/NotFound'
+ import './App.css'
+ import Dashboard from './components/Dashboard'
+ import socket from './utils/socket'
+ import { fetchResult } from './redux/resultsSlice'
+ import { setLattice } from './redux/latticePreviewSlice'
+ import theme from './utils/theme'
+ import { ReactFlowProvider } from 'react-flow-renderer'
+ import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
+ import DispatchLayout from './components/dispatch/DispatchLayout'
+ import NotFound from './components/NotFound'
+ import { differenceInSeconds} from 'date-fns'
 
-const App = () => {
-  const dispatch = useDispatch()
+ const App = () => {
+   const dispatch = useDispatch()
 
-  useEffect(() => {
-    const onUpdate = (update) => {
-      dispatch(
-        fetchResult({
-          dispatchId: update.result.dispatch_id,
-          resultsDir: update.result.results_dir,
-        })
-      )
-    }
+   useEffect(() => {
+       let lastCalledOn = null;
+       var onUpdate = (update) => {
+       let canCallAPI = false;
+       if (lastCalledOn) {
+         let currentTime = new Date()
+         let compareTime = new Date(lastCalledOn)
+         const diffInSec = differenceInSeconds(currentTime,compareTime)
+         if (diffInSec >= 3) {
+           canCallAPI = true;
+         } else {
+           canCallAPI = false;
+         }
+       } else {
+         canCallAPI = true;
+       }
+       if(canCallAPI || update.result.status==='COMPLETED') {
+         lastCalledOn = new Date();
+         dispatch(
+           fetchResult({
+             dispatchId: update.result.dispatch_id,
+             resultsDir: update.result.results_dir,
+           })
+         )
+       }
+     }
 
-    socket.on('result-update', onUpdate)
-    return () => {
-      socket.off('result-update', onUpdate)
-    }
-  }, [dispatch])
 
-  useEffect(() => {
-    const onDrawRequest = (request) => {
-      dispatch(setLattice(request.payload))
-    }
-    socket.on('draw-request', onDrawRequest)
-    return () => {
-      socket.off('draw-request', onDrawRequest)
-    }
-  })
+     socket.on('result-update', onUpdate)
+     return () => {
+       socket.off('result-update', onUpdate)
+     }
+   }, [dispatch])
 
-  return (
-    <HelmetProvider>
-      <ReactFlowProvider>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <Helmet defaultTitle="Covalent" titleTemplate="%s - Covalent" />
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/:dispatchId" element={<DispatchLayout />} />
-            <Route path="/preview" element={<LatticePreviewLayout />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </ThemeProvider>
-      </ReactFlowProvider>
-    </HelmetProvider>
-  )
-}
+   useEffect(() => {
+     const onDrawRequest = (request) => {
+       dispatch(setLattice(request.payload))
+     }
+       socket.on('draw-request', onDrawRequest)
+     return () => {
+       socket.off('draw-request', onDrawRequest)
+     }
+   })
 
-export default App
+   return (
+     <HelmetProvider>
+       <ReactFlowProvider>
+         <ThemeProvider theme={theme}>
+           <CssBaseline />
+           <Helmet defaultTitle="Covalent" titleTemplate="%s - Covalent" />
+           <Routes>
+             <Route path="/" element={<Dashboard />} />
+             <Route path="/:dispatchId" element={<DispatchLayout />} />
+             <Route path="/preview" element={<LatticePreviewLayout />} />
+             <Route path="*" element={<NotFound />} />
+           </Routes>
+         </ThemeProvider>
+       </ReactFlowProvider>
+     </HelmetProvider>
+   )
+ }
+
+ export default App
