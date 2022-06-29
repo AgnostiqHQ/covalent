@@ -4,31 +4,50 @@ from typing import TYPE_CHECKING, Any
 
 from furl import furl
 
-from covalent._file_transfer.enums import FileSchemes
+from covalent._file_transfer.enums import (
+    FileSchemes,
+    FileTransferStrategyTypes,
+    SchemeToStrategyMap,
+)
 
 if TYPE_CHECKING:
     from covalent._file_transfer.strategies.rsync_strategy import Rsync
 
 
 class File:
-    def __init__(self, local_path: str = "", remote_path: str = "") -> None:
-        if not isinstance(local_path, str) or not isinstance(remote_path, str):
+    def __init__(self, filepath: str = None, is_remote=False) -> None:
+        if not isinstance(filepath, str) or filepath is not None:
             raise AttributeError(
                 "Only strings are valid filepaths for a covalent File constructor."
             )
 
-        self.id = str(uuid.uuid4())
-        self.scheme = File.resolve_scheme(local_path)
-        self.local_filepath = File.get_filepath(local_path)
-        self.remote_filepath = File.get_filepath(remote_path)
+        # assign default filepath of form /tmp/{id}
+        if filepath is None:
+            filepath = self.get_temp_filepath()
 
-        if not self.remote_filepath:
-            self.remote_filepath = self.get_temp_filepath()
-        if not self.local_filepath:
-            self.local_filepath = self.get_temp_filepath()
+        # override is_remote boolean
+        if is_remote:
+            self._is_remote = is_remote
+
+        self.id = str(uuid.uuid4())
+        self.scheme = File.resolve_scheme(filepath)
+        self.filepath = File.get_filepath(filepath)
 
     def get_temp_filepath(self):
         return f"/tmp/{self.id}"
+
+    @property
+    def is_remote(self):
+        return self._is_remote or self.scheme in [
+            FileSchemes.S3,
+            FileSchemes.Globus,
+            FileSchemes.HTTP,
+            FileSchemes.HTTPS,
+        ]
+
+    @property
+    def mapped_strategy_type(self) -> FileTransferStrategyTypes:
+        return SchemeToStrategyMap[str(self.scheme)]
 
     @staticmethod
     def is_directory(path):
@@ -50,20 +69,3 @@ class File:
         if scheme is None or scheme == FileSchemes.File:
             return FileSchemes.File
         raise ValueError(f"Provided File scheme ({scheme}) is not supported.")
-
-    def attach_strategy(self, file_transfer_strategy: "Rsync"):
-        self.file_transfer_strategy = file_transfer_strategy
-
-    def download(self):
-        if not self.file_transfer_strategy:
-            # TODO raise more accurate error
-            raise ValueError("No file transfer strategy attached to file to perform download.")
-        else:
-            return self.file_transfer_strategy.download(self)
-
-    def upload(self):
-        if not self.file_transfer_strategy:
-            # TODO raise more accurate error
-            raise ValueError("No file transfer strategy attached to file to perform upload")
-        else:
-            return self.file_transfer_strategy.upload(self)
