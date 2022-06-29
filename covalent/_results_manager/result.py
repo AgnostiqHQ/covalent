@@ -32,6 +32,8 @@ from sqlalchemy.orm import Session
 
 from .._data_store import DataStoreSession, models
 from .._shared_files import logger
+from .._shared_files.context_managers import active_lattice_manager
+from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.transport import TransportableObject
 from .utils import convert_to_lattice_function_call
@@ -231,9 +233,6 @@ Node Outputs
 
             self.lattice.transport_graph.set_node_value(node_id, "stderr", None)
 
-    def get_decoded_result(self):
-        return self._result.get_deserialized()
-
     def get_node_result(self, node_id: int) -> dict:
         """Return the result of a particular node.
 
@@ -297,6 +296,24 @@ Node Outputs
         """
 
         return [self.get_node_result(i) for i in range(self._num_nodes)]
+
+    def post_process(self):
+
+        # Copied from server-side _post_process()
+        node_outputs = self.get_all_node_outputs()
+        ordered_node_outputs = [
+            val
+            for key, val in node_outputs.items()
+            if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix)
+        ]
+        lattice = self._lattice
+
+        with active_lattice_manager.claim(lattice):
+            lattice.post_processing = True
+            lattice.electron_outputs = ordered_node_outputs
+            result = lattice.workflow_function(*lattice.args, **lattice.kwargs)
+            lattice.post_processing = False
+        return result
 
     def _get_node_name(self, node_id: int) -> str:
         """
