@@ -55,8 +55,6 @@ from .._db.dispatchdb import DispatchDB
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
-default_postprocessing_executor = "local"
-
 
 def generate_node_result(
     node_id,
@@ -418,10 +416,23 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
     # post process the lattice
 
-    result_object._status = Result.PENDING_POSTPROCESSING
+    result_object._status = Result.POSTPROCESSING
 
     app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
-    post_processor = _executor_manager.get_executor(default_postprocessing_executor)
+    pp_executor = result_object.lattice.get_metadata("postprocessing_executor")
+    pp_client_side = pp_executor == "client"
+
+    if pp_client_side:
+        app_log.debug("Workflow to be postprocessed client side")
+        result_object._status = Result.PENDING_POSTPROCESSING
+        result_object._end_time = datetime.now(timezone.utc)
+        with DispatchDB() as db:
+            db.upsert(result_object.dispatch_id, result_object)
+        result_object.save()
+        result_webhook.send_update(result_object)
+        return
+
+    post_processor = _executor_manager.get_executor(pp_executor)
     post_processing_inputs = {}
     post_processing_inputs["args"] = [
         TransportableObject.make_transportable(result_object.lattice),

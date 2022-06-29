@@ -94,7 +94,12 @@ def _get_result_from_file(
 
             if not wait:
                 return result
-            elif result.status in [Result.COMPLETED, Result.FAILED, Result.CANCELLED]:
+            elif result.status in [
+                Result.COMPLETED,
+                Result.PENDING_POSTPROCESSING,
+                Result.FAILED,
+                Result.CANCELLED,
+            ]:
                 return result
         except (FileNotFoundError, EOFError, _pickle.UnpicklingError):
             if wait:
