@@ -20,6 +20,7 @@
 
 """Covalent CLI Tool - Service Management."""
 
+import asyncio
 import os
 import shutil
 import socket
@@ -27,14 +28,14 @@ import sys
 import time
 from subprocess import DEVNULL, Popen
 from typing import Optional, Tuple
-import asyncio
+
 import click
 import dask.system
 import psutil
 import requests
-
 from distributed.comm import parse_address, unparse_address
 from distributed.core import rpc
+
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
 
