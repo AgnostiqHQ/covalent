@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Updated `tests` github workflow to retry `Run tests and measure coverage` step
+
 ## [0.116.0] - 2022-06-29
 ### Authors
 @Prasy12 
