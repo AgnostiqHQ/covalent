@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Union
 
 from furl import furl
 
-from covalent._file_transfer.enums import FileSchemes, TransferTypes
+from covalent._file_transfer.enums import FileSchemes, Order
 from covalent._file_transfer.file import File
 from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
 
@@ -17,13 +17,14 @@ class FileTransfer:
         self,
         from_filepath: Union[str, None],
         to_filepath: Union[str, None],
-        transfer_type: TransferTypes = TransferTypes.BEFORE,
+        order: Order = Order.BEFORE,
         strategy: Union[FileTransferStrategy, None] = None,
     ) -> None:
 
         self.from_file = File(from_filepath)
         self.to_file = File(to_filepath)
         self.strategy = strategy
+        self.order = order
 
         # this is currently the case but as we further develop file transfer strategies we may support this
         # for example we may support streaming files between buckets in S3
@@ -50,13 +51,21 @@ class FileTransfer:
 # Factories
 
 
-def TransferFrom(from_filepath: str, to_filepath: Union[str, None] = None):
+def TransferFrom(
+    from_filepath: str,
+    to_filepath: Union[str, None] = None,
+    strategy: Union[FileTransferStrategy, None] = None,
+):
     return FileTransfer(
-        from_filepath=from_filepath, to_filepath=to_filepath, transfer_type=TransferTypes.BEFORE
+        from_filepath=from_filepath, to_filepath=to_filepath, order=Order.BEFORE, strategy=strategy
     )
 
 
-def TransferTo(to_filepath: str, from_filepath: Union[str, None] = None):
+def TransferTo(
+    to_filepath: str,
+    from_filepath: Union[str, None] = None,
+    strategy: Union[FileTransferStrategy, None] = None,
+):
     return FileTransfer(
-        from_filepath=from_filepath, to_filepath=to_filepath, transfer_type=TransferTypes.AFTER
+        from_filepath=from_filepath, to_filepath=to_filepath, order=Order.AFTER, strategy=strategy
     )

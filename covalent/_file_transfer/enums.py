@@ -1,7 +1,7 @@
 import enum
 
 
-class TransferTypes(str, enum.Enum):
+class Order(str, enum.Enum):
     BEFORE = "before"
     AFTER = "after"
 
