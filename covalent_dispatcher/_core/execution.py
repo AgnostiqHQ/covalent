@@ -124,6 +124,8 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
 
             for e_key, d in edge_data.items():
+                if d["edge_name"] == "wait_for":
+                    continue
                 if d["param_type"] == "arg":
                     task_input["args"].append(value)
                 elif d["param_type"] == "kwarg":

@@ -474,6 +474,40 @@ class Electron:
 
         return node_id
 
+    def wait_for(self, electrons: Union["Electron", Iterable["Electron"]]):
+        """
+        Waits for the given electrons to complete before executing this one.
+        Adds the necessary edges between this and those electrons without explicitly
+        connecting their inputs/outputs.
+
+        Useful when execution of this electron relies on a side-effect from the another one.
+
+        Args:
+            electrons: Electron(s) which will be waited for to complete execution
+                       before starting execution for this one
+
+        Returns:
+            Electron
+        """
+
+        active_lattice = active_lattice_manager.get_active_lattice()
+        # if active_lattice.post_processing:
+
+        electrons = list(electrons)
+
+        for el in electrons:
+            active_lattice.transport_graph.add_edge(
+                self.node_id,
+                el.node_id,
+                edge_name="wait_for",
+            )
+
+        return Electron(
+            self.function,
+            metadata=self.metadata,
+            node_id=self.node_id,
+        )
+
 
 def electron(
     _func: Optional[Callable] = None,
