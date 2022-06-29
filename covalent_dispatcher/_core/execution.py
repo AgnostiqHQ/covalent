@@ -443,18 +443,16 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             call_after=[],
             inputs=post_processing_inputs,
         )
-        app_log.debug(f"Submitted post-processing job to {post_processor}")
+        pp_start_time = datetime.now(timezone.utc)
+        app_log.debug(f"Submitted post-processing job to {post_processor} at {pp_start_time}")
 
         post_process_result = future.result()
     except Exception as ex:
         app_log.debug("Error waiting for the result")
         app_log.debug(str(ex))
-
-    # app_log.debug(f"Post-process result: {post_process_result}")
-
-    if post_process_result["status"] != Result.COMPLETED:
+        app_log.debug("Post-processing failed")
         result_object._status = Result.FAILED_POSTPROCESSING
-        result_object._error = "Post processing failed"
+        result_object._error = "Post-processing failed"
         result_object._end_time = datetime.now(timezone.utc)
         with DispatchDB() as db:
             db.upsert(result_object.dispatch_id, result_object)
@@ -462,6 +460,24 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         result_webhook.send_update(result_object)
 
         return
+
+    # app_log.debug(f"Post-process result: {post_process_result}")
+
+    if post_process_result["status"] != Result.COMPLETED:
+        err = post_process_result["stderr"]
+        app_log.debug(f"Post-processing failed: {err}")
+        result_object._status = Result.FAILED_POSTPROCESSING
+        result_object._error = f"Post-processing failed: {err}"
+        result_object._end_time = datetime.now(timezone.utc)
+        with DispatchDB() as db:
+            db.upsert(result_object.dispatch_id, result_object)
+        result_object.save()
+        result_webhook.send_update(result_object)
+
+        return
+
+    pp_end_time = post_process_result["end_time"]
+    app_log.debug(f"Post-processing completed at {pp_end_time}")
 
     result_object._result = post_process_result["output"]
 
