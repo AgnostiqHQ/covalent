@@ -109,7 +109,7 @@ def _next_available_port(requested_port: int) -> int:
 
     while not avail_port_found:
         try:
-            sock.bind(("localhost", try_port))
+            sock.bind(("127.0.0.1", try_port))
             avail_port_found = True
         except:
             try_port += 1
@@ -266,7 +266,7 @@ def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while not server_listening:
         try:
-            sock.bind(("localhost", port))
+            sock.bind(("127.0.0.1", port))
             sock.close()
         except OSError:
             server_listening = True
