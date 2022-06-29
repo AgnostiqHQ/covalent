@@ -85,10 +85,20 @@ electron = Electron(
     completed_at=result._end_time,
 )
 
+electron_deps = ElectronDependency(
+    id=1,
+    electron_id=electron.id,
+    parent_electron_id=2,
+    edge_name="arg[0]",
+    parameter_type=ParameterTypeEnum.NULL,
+    arg_index=0,
+    created_at=datetime.now(),
+)
 
 with Session(engine) as session:
     session.add(lattice)
     session.add(electron)
+    session.add(electron_deps)
     session.commit()
 
 parser = argparse.ArgumentParser()
