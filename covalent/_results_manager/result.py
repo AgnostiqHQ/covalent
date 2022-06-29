@@ -229,6 +229,16 @@ Node Outputs
 
             self.lattice.transport_graph.set_node_value(node_id, "stderr", None)
 
+    # Temporary method until we start running _post_process outside the dispatcher
+    def get_decoded_result(self):
+        res = self._result.get_deserialized()
+        if isinstance(res, list):
+            return TransportableObject.deserialize_list(res)
+        elif isinstance(res, dict):
+            return TransportableObject.deserialize_dict(res)
+        else:
+            return res
+
     def get_node_result(self, node_id: int) -> dict:
         """Return the result of a particular node.
 
