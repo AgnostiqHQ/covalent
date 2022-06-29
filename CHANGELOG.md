@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- 
+- `covalent/_results_manager/write_result_to_db.py` module for saving decomposed result to the database.
+- `tests/covalent_tests/results_manager_tests/write_result_to_db_test.py` containing the unit tests for the module corresponding module.
 
 ## [0.116.0] - 2022-06-29
 ### Authors
