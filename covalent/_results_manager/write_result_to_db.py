@@ -21,6 +21,19 @@
 """This module contains all the functions required to save the decomposed result object in the database."""
 
 
+from .._shared_files.defaults import (
+    arg_prefix,
+    attr_prefix,
+    electron_dict_prefix,
+    electron_list_prefix,
+    generator_prefix,
+    parameter_prefix,
+    prefix_separator,
+    sublattice_prefix,
+    subscript_prefix,
+)
+
+
 def insert_lattices_data():
     pass
 
@@ -57,5 +70,32 @@ def is_lattice_added():
     pass
 
 
-def get_electron_type():
-    pass
+def get_electron_type(node: dict) -> str:
+    """Get the electron type (to be written to DB) given the electron node data."""
+
+    if node["name"].startswith(arg_prefix):
+        return arg_prefix.strip(prefix_separator)
+
+    elif node["name"].startswith(attr_prefix):
+        return attr_prefix.strip(prefix_separator)
+
+    elif node["name"].startswith(electron_dict_prefix):
+        return electron_dict_prefix.strip(prefix_separator)
+
+    elif node["name"].startswith(electron_list_prefix):
+        return electron_list_prefix.strip(prefix_separator)
+
+    elif node["name"].startswith(generator_prefix):
+        return generator_prefix.strip(prefix_separator)
+
+    elif node["name"].startswith(parameter_prefix):
+        return parameter_prefix.strip(prefix_separator)
+
+    elif node["name"].startswith(sublattice_prefix):
+        return sublattice_prefix.strip(prefix_separator)
+
+    elif node["name"].startswith(subscript_prefix):
+        return subscript_prefix.strip(prefix_separator)
+
+    else:
+        return "function"
