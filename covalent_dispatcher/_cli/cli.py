@@ -23,6 +23,7 @@
 """Covalent CLI Tool."""
 
 import click
+
 from .dask import cluster
 from .service import logs, purge, restart, start, status, stop
 
