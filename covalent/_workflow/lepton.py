@@ -24,6 +24,8 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._shared_files import logger
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
+from .depsbash import DepsBash
+from .depscall import DepsCall
 from .electron import Electron
 
 if TYPE_CHECKING:
@@ -68,6 +70,9 @@ class Lepton(Electron):
         executor: Union[
             List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
         ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+        deps_bash: Union[DepsBash, List, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", []),
+        call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
+        call_after: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
     ) -> None:
         self.language = language
         self.library_name = library_name
@@ -75,11 +80,34 @@ class Lepton(Electron):
         # Types must be stored as strings, since not all type objects can be pickled
         self.argtypes = [(arg[0].__name__, arg[1]) for arg in argtypes]
 
+        # Copied from electron.py
+        deps = {}
+
+        if isinstance(deps_bash, DepsBash):
+            deps["bash"] = deps_bash
+        if isinstance(deps_bash, list) or isinstance(deps_bash, str):
+            deps["bash"] = DepsBash(commands=deps_bash)
+
+        if isinstance(call_before, DepsCall):
+            call_before = [call_before]
+
+        if isinstance(call_after, DepsCall):
+            call_after = [call_after]
+
+        # Should be synced with electron
+        constraints = {
+            "executor": executor,
+            "deps": deps,
+            "call_before": call_before,
+            "call_after": call_after,
+        }
+
         # Assign the wrapper below as the task's callable function
         super().__init__(self.wrap_task())
 
-        # Assign metadata defaults
-        super().set_metadata("executor", executor)
+        # Assign metadata
+        for k, v in constraints.items():
+            super().set_metadata(k, v)
 
     def wrap_task(self) -> Callable:
         """Return a lepton wrapper function."""

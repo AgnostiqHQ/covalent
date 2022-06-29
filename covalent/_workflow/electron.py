@@ -524,6 +524,7 @@ def electron(
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
 
+    # Should be synced with Lepton
     constraints = {
         "executor": executor,
         "deps": deps,
