@@ -8,9 +8,6 @@ from covalent._file_transfer.enums import FileSchemes, Order
 from covalent._file_transfer.file import File
 from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
 
-if TYPE_CHECKING:
-    pass
-
 
 class FileTransfer:
     def __init__(
