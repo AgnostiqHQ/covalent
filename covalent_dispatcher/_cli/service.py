@@ -160,7 +160,7 @@ def _graceful_start(
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         port = get_config("user_interface.port")
-        click.echo(f"Covalent server is already running at http://localhost:{port}.")
+        click.echo(f"Covalent server is already running at http://0.0.0.0:{port}.")
         return port
 
     _rm_pid_file(pidfile)
@@ -181,7 +181,7 @@ def _graceful_start(
     with open(pidfile, "w") as PIDFILE:
         PIDFILE.write(str(pid))
 
-    click.echo(f"Covalent server has started at http://localhost:{port}")
+    click.echo(f"Covalent server has started at http://0.0.0.0:{port}")
     return port
 
 
@@ -309,7 +309,7 @@ def status() -> None:
     """
     if _read_pid(UI_PIDFILE) != -1:
         ui_port = get_config("user_interface.port")
-        click.echo(f"Covalent server is running at http://localhost:{ui_port}.")
+        click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
     else:
         _rm_pid_file(UI_PIDFILE)
         click.echo("Covalent server is stopped.")
