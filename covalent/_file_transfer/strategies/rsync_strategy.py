@@ -1,6 +1,5 @@
 import os
 from subprocess import PIPE, CalledProcessError, Popen
-from xmlrpc.client import Boolean
 
 from covalent._file_transfer import File
 from covalent._file_transfer.enums import FileSchemes, FileTransferStrategyTypes
