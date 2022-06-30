@@ -85,7 +85,7 @@ class TestRsyncStrategy:
                     File("/tmp/source.csv"), File("/tmp/dest.csv")
                 )
 
-    def test_get_rsync_cmd(self, mocker):
+    def test_get_rsync_cmd(self):
         from_file = File("/home/ubuntu/from.csv")
         to_file = File("/home/ubuntu/to.csv")
 

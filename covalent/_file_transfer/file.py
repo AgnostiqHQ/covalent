@@ -1,6 +1,6 @@
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from furl import furl
 
@@ -18,7 +18,7 @@ class File:
 
     _is_remote = False
 
-    def __init__(self, filepath: Union[str, None] = None, is_remote=False) -> None:
+    def __init__(self, filepath: Optional[str] = None, is_remote: bool = False):
         if not isinstance(filepath, str) and filepath is not None:
             raise AttributeError(
                 "Only strings are valid filepaths for a covalent File constructor."
@@ -32,7 +32,7 @@ class File:
 
         # override is_remote boolean
         if is_remote:
-            self._is_remote = is_remote
+            self._is_remote = True
 
         self.scheme = File.resolve_scheme(filepath)
         self.filepath = File.get_filepath(filepath)

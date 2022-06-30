@@ -18,6 +18,10 @@ class TestFile:
         with pytest.raises(ValueError):
             File("myownprotocol://file.txt")
 
+        # valid filepaths should not raise errors
+        File("file:///home/one.csv")
+        File(None)
+
     @pytest.mark.parametrize(
         "filepath, expected_scheme",
         [

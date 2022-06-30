@@ -1,6 +1,6 @@
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from furl import furl
 
@@ -15,24 +15,25 @@ if TYPE_CHECKING:
 class FileTransfer:
     def __init__(
         self,
-        from_file: Union[File, str, None],
-        to_file: Union[File, str, None],
+        from_file: Optional[Union[File, str]] = None,
+        to_file: Optional[Union[File, str]] = None,
         order: Order = Order.BEFORE,
-        strategy: Union[FileTransferStrategy, None] = None,
+        strategy: Optional[FileTransferStrategy] = None,
     ) -> None:
 
-        if not isinstance(from_file, (File, str, None)) or not isinstance(
-            from_file, (File, str, None)
-        ):
+        if isinstance(from_file, str) or from_file is None:
+            from_file = File(from_file)
+        elif not isinstance(from_file, File):
             raise AttributeError(
                 "Covalent FileTransfer requires files to be either of type File, string, or None."
             )
 
-        if isinstance(from_file, (str, None)):
-            from_file = File(from_file)
-
-        if isinstance(from_file, (str, None)):
+        if isinstance(to_file, str) or to_file is None:
             to_file = File(to_file)
+        elif not isinstance(to_file, File):
+            raise AttributeError(
+                "Covalent FileTransfer requires files to be either of type File, string, or None."
+            )
 
         self.to_file = to_file
         self.from_file = from_file
@@ -69,6 +70,7 @@ def TransferFromRemote(
     to_filepath: Union[str, None] = None,
     strategy: Union[FileTransferStrategy, None] = None,
 ):
+    # override is_remote for the case where from_filepath is of a file:// scheme where the file is remote (rsync ssh)
     from_file = File(from_filepath, is_remote=True)
     return FileTransfer(
         from_filepath=from_file, to_filepath=to_filepath, order=Order.BEFORE, strategy=strategy
@@ -80,6 +82,7 @@ def TransferToRemote(
     from_filepath: Union[str, None] = None,
     strategy: Union[FileTransferStrategy, None] = None,
 ):
+    # override is_remote for the case where to_filepath is of a file:// scheme where the file is remote (rsync ssh)
     to_file = File(to_filepath, is_remote=True)
     return FileTransfer(
         from_filepath=from_filepath, to_filepath=to_file, order=Order.AFTER, strategy=strategy
