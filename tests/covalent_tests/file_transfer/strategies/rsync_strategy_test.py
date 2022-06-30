@@ -25,6 +25,8 @@ class TestRsyncStrategy:
     )
     def test_upload_download_success(self, operation, mocker):
 
+        # validate subprocess created by instantiating Popen
+
         MOCK_CMD = "rsync ..."
         Popen = Mock()
         Popen.communicate.return_value = ("", "")
@@ -61,6 +63,8 @@ class TestRsyncStrategy:
     )
     def test_upload_download_move_failure(self, operation, mocker):
 
+        # if subprocess returns with return code 1 raise a CalledProcessError exception
+
         MOCK_CMD = "rsync ..."
         Popen = Mock()
         Popen.communicate.return_value = ("", "syntax or usage error (code 1)")
@@ -93,7 +97,7 @@ class TestRsyncStrategy:
             from_file, to_file
         )
 
-        # command takes the form of rsync ... [source] [destination]
+        # command takes the form of rsync [source] [destination]
         assert move_cmd == "rsync /home/ubuntu/from.csv /home/ubuntu/to.csv"
 
     def test_get_ssh_rsync_cmd_with_ssh_key(self, mocker):
@@ -120,7 +124,7 @@ class TestRsyncStrategy:
             user=self.MOCK_USER, host=self.MOCK_HOST
         ).get_rsync_ssh_cmd(local_file, remote_file, transfer_from_remote=True)
 
-        # command takes the form of rsync ... [source] [destination]
+        # commands take the form of rsync -s ssh ... [source] [destination]
         assert (
             upload_cmd_with_key
             == f'rsync -e "ssh -i {private_key_path}" {self.MOCK_LOCAL_FILEPATH} {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH}'

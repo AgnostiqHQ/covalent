@@ -1,5 +1,6 @@
 import os
 from subprocess import PIPE, CalledProcessError, Popen
+from typing import Optional
 
 from covalent._file_transfer import File
 from covalent._file_transfer.enums import FileSchemes, FileTransferStrategyTypes
@@ -7,7 +8,16 @@ from covalent._file_transfer.strategies.transfer_strategy_base import FileTransf
 
 
 class Rsync(FileTransferStrategy):
-    def __init__(self, user, host, private_key_path=None):
+    """
+    Implements Base FileTransferStrategy class to use rsync to move files to and from remote or local filesystems.
+
+    Attributes:
+        user: (optional) Determine user to specify for remote host
+        host: (optional) Determine what host to connect to via ssh
+        private_key_path: (optional) File path for ssh key to use for ssh connection
+    """
+
+    def __init__(self, user: str = "", host: str = "", private_key_path: Optional[str] = None):
 
         self.user = user
         self.private_key_path = private_key_path
@@ -45,10 +55,7 @@ class Rsync(FileTransferStrategy):
     ) -> str:
         from_filepath = str(from_file.filepath)
         to_filepath = str(to_file.filepath)
-        args = ["rsync"]
-        args.append(from_filepath)
-        args.append(to_filepath)
-        return " ".join(args)
+        return f"rsync {from_filepath} {to_filepath}"
 
     # move files in the local file system
     def move(self, from_file: File, to_file: File = File()) -> None:

@@ -15,6 +15,14 @@ if TYPE_CHECKING:
 
 
 class File:
+    """
+    File class to store components of provided URI including scheme (s3://, file://, ect.) determine if the file is remote,
+    and acts a facade to facilitate filesystem operations.
+
+    Attributes:
+        filepath: File path corresponding to the file.
+        is_remote: Flag determining if file is remote (override). Default is resolved automatically from file scheme.
+    """
 
     _is_remote = False
 

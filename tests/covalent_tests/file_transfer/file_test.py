@@ -8,8 +8,6 @@ from covalent._file_transfer.file import File
 
 
 class TestFile:
-    """Test File object methods"""
-
     def test_raise_exception_invalid_args(self):
         # do not accept Path object as local filepath
         with pytest.raises(AttributeError):
@@ -18,6 +16,7 @@ class TestFile:
         with pytest.raises(ValueError):
             File("myownprotocol://file.txt")
 
+    def test_raise_exception_valid_args(self):
         # valid filepaths should not raise errors
         File("file:///home/one.csv")
         File(None)
@@ -25,6 +24,8 @@ class TestFile:
     @pytest.mark.parametrize(
         "filepath, expected_scheme",
         [
+            ("http://example.com/file", FileSchemes.HTTP),
+            ("https://example.com/file", FileSchemes.HTTPS),
             ("/home/ubuntu/observations.csv", FileSchemes.File),
             ("file:/home/ubuntu/observations.csv", FileSchemes.File),
             ("file:///home/ubuntu/observations.csv", FileSchemes.File),
