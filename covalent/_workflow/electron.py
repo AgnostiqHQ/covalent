@@ -35,6 +35,7 @@ from .._shared_files.defaults import (
     electron_list_prefix,
     generator_prefix,
     parameter_prefix,
+    prefix_separator,
     sublattice_prefix,
     subscript_prefix,
 )
@@ -282,25 +283,14 @@ class Electron:
     def __getitem__(self, key: Union[int, str]) -> "Electron":
 
         if active_lattice := active_lattice_manager.get_active_lattice():
-            try:
-                node_name = subscript_prefix + self.function.__name__ + "()" + f"[{key}]"
-            except AttributeError:
-                # Nested subscripting calls are made on the same electron
-                node_name = subscript_prefix + active_lattice.transport_graph.get_node_value(
-                    self.node_id, "name"
-                )
-                node_name += f"[{key}]"
 
-            node_id = active_lattice.transport_graph.add_node(
-                name=node_name,
-                function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                key=key,
-            )
+            def get_item(e, key):
+                return e[key]
 
-            active_lattice.transport_graph.add_edge(self.node_id, node_id, f"[{key}]")
+            get_item.__name__ = prefix_separator + self.function.__name__ + ".__getitem__"
 
-            return Electron(function=None, node_id=node_id, metadata=None)
+            get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
+            return get_item_electron(self, key)
 
         raise StopIteration
 
