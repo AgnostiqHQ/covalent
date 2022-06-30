@@ -127,9 +127,6 @@ class Electron(Base):
     # Name of the file containing the serialized executor
     executor_filename = Column(Text)
 
-    # Name of the file containing an error message for the electron
-    error_filename = Column(Text)
-
     # name of the file containing the serialized output
     results_filename = Column(Text)
 

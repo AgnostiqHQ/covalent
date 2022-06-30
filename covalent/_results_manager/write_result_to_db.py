@@ -40,6 +40,10 @@ from .._shared_files.defaults import (
 )
 
 
+class MissingLatticeRecordError(Exception):
+    pass
+
+
 def insert_lattices_data(
     db: DataStore,
     dispatch_id: str,
