@@ -576,6 +576,8 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
         result_object._status = Result.FAILED
         result_object._end_time = datetime.now(timezone.utc)
         result_object._error = "".join(traceback.TracebackException.from_exception(ex).format())
+        with DispatchDB() as db:
+            db.upsert(result_object.dispatch_id, result_object)
         result_object.save()
         raise
 
