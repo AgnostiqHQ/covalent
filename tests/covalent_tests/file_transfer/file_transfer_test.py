@@ -18,3 +18,28 @@ class TestFileTransfer:
         FileTransfer(File("file:///home/one.csv"), "file:///home/one.csv")
         FileTransfer("file:///home/one.csv", File("file:///home/one.csv"))
         FileTransfer(File("file:///home/one.csv"), File("file:///home/one.csv"))
+
+    @pytest.mark.parametrize(
+        "is_from_file_remote, is_to_file_remote",
+        [
+            (False, False),
+            (True, False),
+            (False, True),
+        ],
+    )
+    def test_upload_download_move(self, is_from_file_remote, is_to_file_remote):
+        from_file = File("file:///home/source.csv", is_remote=is_from_file_remote)
+        to_file = File("file:///home/dest.csv", is_remote=is_to_file_remote)
+
+        mock_strategy = Mock()
+
+        ft = FileTransfer(from_file, to_file, strategy=mock_strategy)
+
+        ft.move()
+
+        if not is_to_file_remote and not is_from_file_remote:
+            mock_strategy.move.assert_called_once()
+        elif is_from_file_remote and not is_to_file_remote:
+            mock_strategy.download.assert_called_once()
+        elif not is_from_file_remote and is_to_file_remote:
+            mock_strategy.upload.assert_called_once()
