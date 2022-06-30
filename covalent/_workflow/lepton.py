@@ -57,6 +57,7 @@ class Lepton(Electron):
 
     _LANG_PY = ["Python", "python"]
     _LANG_C = ["C", "c"]
+    _LANG_SHELL = ["bash", "shell"]
 
     def __init__(
         self,
@@ -64,6 +65,7 @@ class Lepton(Electron):
         library_name: str = "",
         function_name: str = "",
         argtypes: Optional[List] = [],
+        display_name: Optional[str] = "",
         *,
         executor: Union[
             List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
@@ -74,12 +76,16 @@ class Lepton(Electron):
         self.function_name = function_name
         # Types must be stored as strings, since not all type objects can be pickled
         self.argtypes = [(arg[0].__name__, arg[1]) for arg in argtypes]
+        self.display_name = display_name
 
         # Assign the wrapper below as the task's callable function
         super().__init__(self.wrap_task())
 
         # Assign metadata defaults
         super().set_metadata("executor", executor)
+        super().set_metadata("deps", [])
+        super().set_metadata("call_before", [])
+        super().set_metadata("call_after", [])
 
     def wrap_task(self) -> Callable:
         """Return a lepton wrapper function."""
@@ -193,19 +199,107 @@ class Lepton(Electron):
             else:
                 return tuple(return_vals)
 
+        def shell_wrapper(*args, **kwargs) -> Any:
+            """Invoke a shell script."""
+
+            import subprocess
+
+            # Call a bash function in a script using library_name and function_name
+            # or
+            # Invoke a generic bash command using only function_name
+
+            if self.function_name == "":
+                raise ValueError(
+                    "A function name or bash command must be provided for a Lepton.function_name."
+                )
+
+            run_lib = f"source {self.library_name} && " if self.library_name != "" else ""
+
+            output_string = ""
+            named_outputs = None
+            if kwargs:
+                if "named_outputs" in kwargs:
+                    named_outputs = kwargs["named_outputs"]
+                    del kwargs["named_outputs"]
+
+                    if not isinstance(named_outputs, list):
+                        raise ValueError("Expected a list for Lepton.named_outputs.")
+
+                    for output in named_outputs:
+                        output_string += f" && echo COVALENT-LEPTON-OUTPUT-{output}: ${output}"
+
+                    # Check that each output has a corresponding type specifier
+                    if len(named_outputs) != list(zip(*self.argtypes))[1].count(Lepton.OUTPUT):
+                        raise ValueError(
+                            "Expected {} outputs but given {} type specifiers.".format(
+                                len(named_outputs), len(self.argtypes)
+                            )
+                        )
+
+                self.function_name = self.function_name.format(**kwargs)
+
+            mutated_args = ""
+            for arg in args:
+                mutated_args += f'"{arg}" '
+
+            if run_lib:
+                shell_cmd = f"{run_lib} {self.function_name} {mutated_args} {output_string}"
+                proc = subprocess.run(
+                    ["/bin/bash", "-c", shell_cmd],
+                    capture_output=True,
+                )
+            else:
+                shell_cmd = ["/bin/bash", "-c", f"{self.function_name} {output_string}", "_"]
+                shell_cmd += args
+                proc = subprocess.run(
+                    shell_cmd,
+                    capture_output=True,
+                )
+
+            with open("/tmp/debug.txt", "w") as f:
+                f.write(str(proc.returncode))
+                f.write(str(proc.stderr.decode("utf-8").strip()))
+            if proc.returncode != 0:
+                raise Exception(proc.stderr.decode("utf-8").strip())
+
+            return_vals = []
+            if named_outputs:
+                output_lines = proc.stdout.decode("utf-8").strip().split("\n")
+                for idx, output in enumerate(named_outputs):
+                    output_marker = f"COVALENT-LEPTON-OUTPUT-{output}: "
+                    for line in output_lines:
+                        if output_marker in line:
+                            # TODO: For some reason cannot pickle this line
+                            # return_vals += [getattr(__builtins__, self.argtypes[idx][0])(line.split(output_marker)[1])]
+                            return_vals += [str(line.split(output_marker)[1])]
+                            break
+
+            if return_vals:
+                return tuple(return_vals) if len(return_vals) > 1 else return_vals[0]
+            else:
+                return None
+
         if self.language in Lepton._LANG_PY:
             wrapper = python_wrapper
         elif self.language in Lepton._LANG_C:
             wrapper = c_wrapper
+        elif self.language in Lepton._LANG_SHELL:
+            wrapper = shell_wrapper
         else:
             raise ValueError(f"Language '{self.language}' is not supported.")
 
         # Attribute translation
-        wrapper.__name__ = self.function_name
-        wrapper.__qualname__ = f"Lepton.{self.library_name.split('.')[0]}.{self.function_name}"
-        wrapper.__module__ += f".{self.library_name.split('.')[0]}"
-        wrapper.__doc__ = (
-            f"""Lepton interface for {self.language} function '{self.function_name}'."""
-        )
+        if self.language in Lepton._LANG_SHELL and self.library_name == "":
+            wrapper.__name__ = self.display_name or "bash_cmd"
+            wrapper.__qualname__ = "Lepton.bash_cmd"
+            wrapper.__module__ += ".bash_cmd"
+            wrapper.__doc__ = """Lepton interface for Bash command."""
+        else:
+            wrapper.__name__ = self.function_name
+            wrapper.__qualname__ = f"Lepton.{self.library_name.split('.')[0]}.{self.function_name}"
+            wrapper.__module__ += f".{self.library_name.split('.')[0]}"
+            wrapper.__doc__ = (
+                f"""Lepton interface for {self.language} function '{self.function_name}'."""
+            )
 
         return wrapper

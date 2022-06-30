@@ -157,7 +157,7 @@ class Lattice:
             with active_lattice_manager.claim(self):
                 try:
                     self.workflow_function(*args, **kwargs)
-                except Exception:
+                except Exception as e:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
                     )
