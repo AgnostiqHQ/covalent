@@ -43,7 +43,7 @@ const DashboardCard = (props) => {
 
   useEffect(() => {
     dispatch(fetchDashboardOverview())
-  })
+  },[])
 
   return (
     <Paper elevation={0} sx={{ p: 3, mb: 2, borderRadius: '8px' }}>

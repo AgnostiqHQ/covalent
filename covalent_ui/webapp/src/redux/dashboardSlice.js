@@ -35,10 +35,10 @@ const initialState = {
 }
 
 export const fetchDashboardList = createAsyncThunk(
-  'summary/dispatches',
-  ({ dispatchId }, thunkAPI) =>
-    api.get(`/api/results/${dispatchId}`).catch(thunkAPI.rejectWithValue)
-)
+  'dashboard/fetchList',
+  async (bodyParams, thunkAPI) =>
+    await api.post(`/api/v1/summary/dispatches`,bodyParams).catch(thunkAPI.rejectWithValue)
+    )
 
 export const fetchDashboardOverview = createAsyncThunk(
   'summary/overview',
@@ -58,10 +58,11 @@ export const dashboardSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // dashboardList
-      .addCase(fetchDashboardList.fulfilled, (state, { payload }) => {
+      .addCase(fetchDashboardList.fulfilled, (state,{payload} ) => {
         // update dashboardList
         state.fetchDashboardList.isFetching = false
-        state.dashboardList = _.keyBy(payload, 'dispatch_id')
+        state.dashboardListCount = payload.count
+        state.dashboardList = payload.items
       })
       .addCase(fetchDashboardList.pending, (state, { payload }) => {
         state.fetchDashboardList.isFetching = true
