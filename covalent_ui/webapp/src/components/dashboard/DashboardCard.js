@@ -41,8 +41,12 @@ const DashboardCard = (props) => {
     (state) => state.dashboard.fetchDashboardOverview.isFetching
   )
 
-  useEffect(() => {
+  const fetchDashboardOverviewResult =()=>{
     dispatch(fetchDashboardOverview())
+  }
+
+  useEffect(() => {
+    fetchDashboardOverviewResult()
   },[])
 
   return (

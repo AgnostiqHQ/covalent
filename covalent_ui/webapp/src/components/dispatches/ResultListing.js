@@ -55,9 +55,6 @@
    Delete as DeleteIcon,
    Search as SearchIcon,
  } from '@mui/icons-material'
- import Fuse from 'fuse.js'
- import { createSelector } from '@reduxjs/toolkit'
- import { fetchResults, deleteResults } from '../../redux/resultsSlice'
  import { fetchDashboardList } from '../../redux/dashboardSlice'
  import CopyButton from '../common/CopyButton'
  import { formatDate } from '../../utils/misc'
@@ -160,12 +157,8 @@
    onSearch,
    setQuery,
    numSelected,
-   onDeleteSelected,
-   totalRecords
+   onDeleteSelected
  }) => {
-   const runningRecords=10;
-   const failedRecords=5;
-   const inProgressRecords=5;
    return (
      <Toolbar disableGutters sx={{ mb: 1 }}>
        {numSelected > 0 && (
