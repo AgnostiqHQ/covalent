@@ -151,7 +151,7 @@ def test_insert_electrons_data(db):
         "started_at": cur_time,
         "completed_at": None,    
     }
-    insert_lattices_data(lattice_kwargs)
+    insert_lattices_data(**lattice_kwargs)
 
     electron_kwargs = {
         "db": db,
@@ -179,7 +179,7 @@ def test_insert_electrons_data(db):
     }
 
     electron_id = insert_electrons_data(**electron_kwargs)
-    assert electron_id == 0
+    assert electron_id == 1
 
     with Session(db.engine) as session:
         rows = session.query(Electron).all()
@@ -188,7 +188,11 @@ def test_insert_electrons_data(db):
 
     for electron in rows:
         for key, value in electron_kwargs.items():
-            assert getattr(electron, key) == value
+            if key == "parent_dispatch_id":
+                assert electron.parent_lattice_id == 1
+            elif key != "db":
+                assert getattr(electron, key) == value
+            
 
 
 def test_insert_electrons_data_missing_lattice_record(db):

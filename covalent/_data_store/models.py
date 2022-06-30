@@ -30,18 +30,6 @@ from sqlalchemy.orm import declarative_base
 Base = declarative_base()
 
 
-# See electron.py's import list and
-# execution.py's _run_planned_workflow
-class ElectronTypeEnum(enum.Enum):
-    electron = 1
-    parameter = 2
-    sublattice = 3
-    collection = 4
-    attribute = 5
-    generated = 6
-    subscript = 7
-
-
 class ParameterTypeEnum(enum.Enum):
     arg = 1
     kwarg = 2
@@ -104,7 +92,7 @@ class Electron(Base):
     transport_graph_node_id = Column(Integer, nullable=False)
 
     # Node type
-    type = Column(Enum(ElectronTypeEnum), nullable=False)
+    type = Column(String(24), nullable=False)
 
     # Node name
     name = Column(Text, nullable=False)
