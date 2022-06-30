@@ -96,6 +96,7 @@ def _get_result_from_file(
                 return result
             elif result.status in [
                 Result.COMPLETED,
+                Result.FAILED_POSTPROCESSING,
                 Result.PENDING_POSTPROCESSING,
                 Result.FAILED,
                 Result.CANCELLED,
