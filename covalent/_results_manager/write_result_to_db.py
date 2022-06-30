@@ -20,6 +20,12 @@
 
 """This module contains all the functions required to save the decomposed result object in the database."""
 
+from datetime import datetime as dt
+
+from sqlalchemy.orm import Session
+
+from covalent._data_store.datastore import DataStore
+from covalent._data_store.models import Lattice
 
 from .._shared_files.defaults import (
     arg_prefix,
@@ -34,8 +40,50 @@ from .._shared_files.defaults import (
 )
 
 
-def insert_lattices_data():
-    pass
+def insert_lattices_data(
+    db: DataStore,
+    dispatch_id: str,
+    name: str,
+    status: str,
+    storage_type: str,
+    storage_path: str,
+    function_filename: str,
+    function_string_filename: str,
+    executor_filename: str,
+    error_filename: str,
+    inputs_filename: str,
+    results_filename: str,
+    created_at: dt,
+    updated_at: dt,
+    started_at: dt,
+    completed_at: dt,
+) -> int:
+    """This funtion gathers the data corresponding to a lattice and writes it to the Lattices table."""
+
+    lattice_row = Lattice(
+        dispatch_id=dispatch_id,
+        name=name,
+        status=status,
+        storage_type=storage_type,
+        storage_path=storage_path,
+        function_filename=function_filename,
+        function_string_filename=function_string_filename,
+        executor_filename=executor_filename,
+        error_filename=error_filename,
+        inputs_filename=inputs_filename,
+        results_filename=results_filename,
+        created_at=created_at,
+        updated_at=updated_at,
+        started_at=started_at,
+        completed_at=completed_at,
+    )
+
+    with Session(db.engine) as session:
+        session.add(lattice_row)
+        session.commit()
+        lattice_id = lattice_row.id
+
+    return lattice_id
 
 
 def insert_electrons_data():

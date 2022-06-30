@@ -50,7 +50,7 @@ class ParameterTypeEnum(enum.Enum):
 
 class Lattice(Base):
     __tablename__ = "lattices"
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
     dispatch_id = Column(String(64), nullable=False)
 
     # id of node if the lattice is actually a sublattice
@@ -95,7 +95,7 @@ class Lattice(Base):
 
 class Electron(Base):
     __tablename__ = "electrons"
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # id of the lattice containing this electron
     parent_lattice_id = Column(BigInteger, ForeignKey("lattices.id"), nullable=False)
@@ -161,7 +161,7 @@ class Electron(Base):
 
 class ElectronDependency(Base):
     __tablename__ = "electron_dependency"
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Unique ID of electron
     electron_id = Column(Integer, nullable=False)
