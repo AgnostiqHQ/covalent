@@ -62,6 +62,8 @@ class TransportableObject:
         except TypeError as ex:
             self._json = ""
 
+        self.attrs = {"doc": getattr(obj, "doc", "")}
+
     def get_deserialized(self) -> Callable:
         """
         Get the deserialized transportable object.
@@ -118,6 +120,7 @@ class TransportableObject:
                 "object": self.get_serialized(),
                 "object_string": self.object_string,
                 "json": self._json,
+                "attrs": self.attrs,
                 "py_version": self.python_version,
             }
         )
@@ -175,6 +178,7 @@ class TransportableObject:
         sc = TransportableObject(None)
         sc._object = obj["object"]
         sc._json = obj["json"]
+        sc.attrs = obj["attrs"]
         sc.python_version = obj["py_version"]
         return sc
 
