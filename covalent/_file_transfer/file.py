@@ -54,6 +54,9 @@ class File:
     def mapped_strategy_type(self) -> FileTransferStrategyTypes:
         return SchemeToStrategyMap[self.scheme.value]
 
+    def touch(self):
+        Path(str(self.filepath)).touch()
+
     @staticmethod
     def is_directory(path):
         return File.get_filepath(path).isdir
