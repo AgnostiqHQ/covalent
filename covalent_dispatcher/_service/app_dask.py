@@ -24,7 +24,7 @@ dask.config.set({"distributed.worker.daemon": False})
 class DaskAdminWorker(Thread):
     """
     Runs the service handlers for the Dask cluster in a separate thread to circumvent
-    any pickling issues rising from running service handlers in 
+    any pickling issues rising from running service handlers in
     """
     def __init__(self, proc: Process):
         # Admin handler server connection args
@@ -182,7 +182,7 @@ class DaskCluster(Process):
         admin = DaskAdminWorker(self)
         admin.start()
 
-        
+
         try:
             self.cluster = LocalCluster(
                 n_workers=self.num_workers,
