@@ -324,7 +324,14 @@ class Electron:
             return self.function(*args, **kwargs)
 
         if active_lattice.post_processing:
-            return active_lattice.electron_outputs.pop(0)
+            id, output = active_lattice.electron_outputs[0]
+
+            for _, _, attr in active_lattice.transport_graph._graph.in_edges(id, data=True):
+                if attr.get("wait_for"):
+                    return Electron(function=None, metadata=None, node_id=id)
+
+            active_lattice.electron_outputs.pop(0)
+            return output
 
         # Setting metadata for default values according to lattice's metadata
         # If metadata is default, then set it to lattice's default
@@ -491,15 +498,17 @@ class Electron:
         """
 
         active_lattice = active_lattice_manager.get_active_lattice()
-        # if active_lattice.post_processing:
+
+        if active_lattice.post_processing:
+            return active_lattice.electron_outputs.pop(0)[1]
 
         electrons = list(electrons)
 
         for el in electrons:
             active_lattice.transport_graph.add_edge(
-                self.node_id,
                 el.node_id,
-                edge_name="wait_for",
+                self.node_id,
+                wait_for=True,
             )
 
         return Electron(

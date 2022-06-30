@@ -34,6 +34,9 @@
 !/doc/**
 !/tests/**
 
+# Ignore dask-worker-spaces
+**/dask-worker-space
+
 # Allow config files
 !.flake8
 !.gitignore
