@@ -30,6 +30,20 @@ import { ReactComponent as ErrorSvg } from '../assets/status/error.svg'
 import { ReactComponent as CancelSvg } from '../assets/status/stop.svg'
 import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
 
+
+export const secondsToHms=(seconds)=> {
+  seconds = Number(seconds);
+  var d = Math.floor(seconds / (3600*24));
+  var h = Math.floor(seconds % (3600*24) / 3600);
+  var m = Math.floor(seconds % 3600 / 60);
+  var s = Math.floor(seconds % 60);
+  var dDisplay = d > 0 ? d + "d " : "";
+  var hDisplay = h > 0 ? h + 'h ' : "";
+  var mDisplay = m > 0 ? m + 'm ' : "";
+  var sDisplay = s > 0 ? s + 's ' : "";
+  return dDisplay + hDisplay + mDisplay + sDisplay;
+}
+
 export const formatDate = (date) => {
   if (_.isString(date)) {
     date = parseISO(date)

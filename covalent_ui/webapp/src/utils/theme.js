@@ -70,8 +70,8 @@ const defaultTheme = createTheme({
       main: '#dac3ff',
     },
     text: {
-      primary: '#F1F1F6',
-      secondary: '#CBCBD7',
+      primary: '#CBCBD7',
+      secondary: '#F1F1F6',
       tertiary: '#86869A',
     },
   },
