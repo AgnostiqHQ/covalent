@@ -254,9 +254,9 @@ def start(ctx, port: int, develop: bool, no_cluster: str) -> None:
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     set_config(
         {
-            "user_interface.address": "localhost",
+            "user_interface.address": "0.0.0.0",
             "user_interface.port": port,
-            "dispatcher.address": "localhost",
+            "dispatcher.address": "0.0.0.0",
             "dispatcher.port": port,
         }
     )
