@@ -132,26 +132,17 @@ const theme = createTheme(defaultTheme, {
         },
       },
     },
-    // MuiTabs: {
-    //   styleOverrides: {
-    //     root: {
-    //       '& .MuiTabs-indicator': {
-    //         backgroundColor: defaultTheme.palette.text.primary,
-    //         height: 1,
-    //       },
-    //     },
-    //   },
-    // },
-    // MuiTab: {
-    //   styleOverrides: {
-    //     root: {
-    //       textTransform: 'none',
-    //       '&.Mui-selected': {
-    //         color: defaultTheme.palette.text.primary,
-    //       },
-    //     },
-    //   },
-    // },
+    MuiPaginationItem: {
+			styleOverrides: {
+				root: {
+					'&.Mui-selected': {
+						backgroundColor: '#1C1C46',
+						color: '#fafafa',
+						border: '1px solid #AEB6FF'
+					}
+				}
+			}
+		}
   },
 })
 
