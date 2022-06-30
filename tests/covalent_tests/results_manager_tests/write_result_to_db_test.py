@@ -192,7 +192,7 @@ def test_insert_electrons_data(db):
                 assert electron.parent_lattice_id == 1
             elif key != "db":
                 assert getattr(electron, key) == value
-            
+
 
 
 def test_insert_electrons_data_missing_lattice_record(db):

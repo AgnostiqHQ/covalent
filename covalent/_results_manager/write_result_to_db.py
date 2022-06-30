@@ -155,7 +155,7 @@ def insert_electrons_data(
         electron_id = electron_row.id
 
     return electron_id
-    
+
 
 def insert_electron_dependency_data():
     pass
