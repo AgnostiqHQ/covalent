@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Introduced File, FileTransfer, and FileTransferStrategy classes to support various File Transfer use cases prior/post electron execution
+
 ## [0.113.0] - 2022-06-21
 
 ### Added
