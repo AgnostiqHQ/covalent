@@ -502,12 +502,13 @@ class Electron:
         if active_lattice.post_processing:
             return active_lattice.electron_outputs.pop(0)[1]
 
-        electrons = list(electrons)
+        electrons = [electrons] if isinstance(electrons, Electron) else list(electrons)
 
         for el in electrons:
             active_lattice.transport_graph.add_edge(
                 el.node_id,
                 self.node_id,
+                edge_name="waiting_edge",
                 wait_for=True,
             )
 
