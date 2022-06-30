@@ -10,8 +10,9 @@ class FileSchemes(str, enum.Enum):
     File = "file"
     S3 = "s3"
     Globus = "globus"
-    HTTP = ("http",)
+    HTTP = "http"
     HTTPS = "https"
+    FTP = "ftp"
 
 
 class FileTransferStrategyTypes(str, enum.Enum):

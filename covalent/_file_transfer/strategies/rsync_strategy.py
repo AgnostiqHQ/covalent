@@ -53,7 +53,7 @@ class Rsync(FileTransferStrategy):
 
     # move files in the local file system
     def move(self, from_file: File, to_file: File = File()) -> None:
-        cmd = self.get_rsync_cmd(to_file, from_file)
+        cmd = self.get_rsync_cmd(from_file, to_file)
         print(f"Running: {cmd}")
         p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         output, error = p.communicate()

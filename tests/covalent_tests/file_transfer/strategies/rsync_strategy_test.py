@@ -16,13 +16,14 @@ class TestRsyncStrategy:
     MOCK_REMOTE_FILEPATH = "/home/ubuntu/observations.csv"
 
     @pytest.mark.parametrize(
-        "is_upload",
+        "operation",
         [
-            (True),
-            (False),
+            ("download"),
+            ("upload"),
+            ("move"),
         ],
     )
-    def test_upload_download_success(self, is_upload, mocker):
+    def test_upload_download_success(self, operation, mocker):
 
         MOCK_CMD = "rsync ..."
         Popen = Mock()
@@ -32,23 +33,33 @@ class TestRsyncStrategy:
             "covalent._file_transfer.strategies.rsync_strategy.Popen", return_value=Popen
         )
         mocker.patch(
-            "covalent._file_transfer.strategies.rsync_strategy.Rsync.get_rsync_cmd",
+            "covalent._file_transfer.strategies.rsync_strategy.Rsync.get_rsync_ssh_cmd",
             return_value=MOCK_CMD,
         )
-        if is_upload:
-            Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).upload(File("/tmp/data.csv"))
-        else:
-            Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).download(File("/tmp/data.csv"))
+        if operation == "upload":
+            Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).upload(
+                File("/tmp/source.csv"), File("/tmp/dest.csv")
+            )
+        elif operation == "download":
+            Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).download(
+                File("/tmp/source.csv"), File("/tmp/dest.csv")
+            )
+        elif operation == "move":
+            Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).move(
+                File("/tmp/source.csv"), File("/tmp/dest.csv")
+            )
+
         popen_mock.assert_called_once()
 
     @pytest.mark.parametrize(
-        "is_upload",
+        "operation",
         [
-            (True),
-            (False),
+            ("download"),
+            ("upload"),
+            ("move"),
         ],
     )
-    def test_upload_download_failure(self, is_upload, mocker):
+    def test_upload_download_move_failure(self, operation, mocker):
 
         MOCK_CMD = "rsync ..."
         Popen = Mock()
@@ -56,55 +67,74 @@ class TestRsyncStrategy:
         Popen.returncode = 1
         mocker.patch("covalent._file_transfer.strategies.rsync_strategy.Popen", return_value=Popen)
         mocker.patch(
-            "covalent._file_transfer.strategies.rsync_strategy.Rsync.get_rsync_cmd",
+            "covalent._file_transfer.strategies.rsync_strategy.Rsync.get_rsync_ssh_cmd",
             return_value=MOCK_CMD,
         )
 
         with pytest.raises(CalledProcessError):
-            if is_upload:
-                Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).upload(File("/tmp/data.csv"))
-            else:
-                Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).download(File("/tmp/data.csv"))
+            if operation == "upload":
+                Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).upload(
+                    File("/tmp/source.csv"), File("/tmp/dest.csv")
+                )
+            elif operation == "download":
+                Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).download(
+                    File("/tmp/source.csv"), File("/tmp/dest.csv")
+                )
+            elif operation == "move":
+                Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).move(
+                    File("/tmp/source.csv"), File("/tmp/dest.csv")
+                )
 
-    @pytest.mark.parametrize(
-        "is_remote_file, is_private_key_defined",
-        [
-            (True, True),
-            (False, False),
-            (True, False),
-            (False, True),
-        ],
-    )
-    def test_get_rsync_cmd(self, is_remote_file, is_private_key_defined, mocker):
+    def test_get_rsync_cmd(self, mocker):
+        from_file = File("/home/ubuntu/from.csv")
+        to_file = File("/home/ubuntu/to.csv")
+
+        move_cmd = Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).get_rsync_cmd(
+            from_file, to_file
+        )
+
+        # command takes the form of rsync ... [source] [destination]
+        assert move_cmd == "rsync /home/ubuntu/from.csv /home/ubuntu/to.csv"
+
+    def test_get_ssh_rsync_cmd_with_ssh_key(self, mocker):
 
         mocker.patch("os.path.exists", return_value=True)
-        if is_remote_file:
-            file = File(remote_path=self.MOCK_REMOTE_FILEPATH)
-            local_path = f"/tmp/{file.id}"
-            remote_path = self.MOCK_REMOTE_FILEPATH
-        else:
-            file = File(self.MOCK_LOCAL_FILEPATH)
-            local_path = self.MOCK_LOCAL_FILEPATH
-            remote_path = f"/tmp/{file.id}"
 
-        if is_private_key_defined:
-            ssh_setting = f'"ssh -i {self.MOCK_PRIVATE_KEY_PATH}"'
-            private_key_path = self.MOCK_PRIVATE_KEY_PATH
-        else:
-            ssh_setting = "ssh"
-            private_key_path = None
+        local_file = File(self.MOCK_LOCAL_FILEPATH)
+        remote_file = File(self.MOCK_REMOTE_FILEPATH)
+        private_key_path = self.MOCK_PRIVATE_KEY_PATH
 
-        upload_cmd = Rsync(
+        upload_cmd_with_key = Rsync(
             user=self.MOCK_USER, host=self.MOCK_HOST, private_key_path=private_key_path
-        ).get_rsync_cmd(file, transfer_from_remote=False)
-        download_cmd = Rsync(
+        ).get_rsync_ssh_cmd(local_file, remote_file, transfer_from_remote=False)
+
+        upload_cmd_without_key = Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).get_rsync_ssh_cmd(
+            local_file, remote_file, transfer_from_remote=False
+        )
+
+        download_cmd_with_key = Rsync(
             user=self.MOCK_USER, host=self.MOCK_HOST, private_key_path=private_key_path
-        ).get_rsync_cmd(file, transfer_from_remote=True)
+        ).get_rsync_ssh_cmd(local_file, remote_file, transfer_from_remote=True)
+
+        download_cmd_without_key = Rsync(
+            user=self.MOCK_USER, host=self.MOCK_HOST
+        ).get_rsync_ssh_cmd(local_file, remote_file, transfer_from_remote=True)
+
+        # command takes the form of rsync ... [source] [destination]
         assert (
-            upload_cmd
-            == f"rsync -e {ssh_setting} {local_path} {self.MOCK_USER}@{self.MOCK_HOST}:{remote_path}"
+            upload_cmd_with_key
+            == f'rsync -e "ssh -i {private_key_path}" {self.MOCK_LOCAL_FILEPATH} {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH}'
         )
         assert (
-            download_cmd
-            == f"rsync -e {ssh_setting} {self.MOCK_USER}@{self.MOCK_HOST}:{remote_path} {local_path}"
+            download_cmd_with_key
+            == f'rsync -e "ssh -i {private_key_path}" {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH} {self.MOCK_LOCAL_FILEPATH}'
+        )
+
+        assert (
+            upload_cmd_without_key
+            == f"rsync -e ssh {self.MOCK_LOCAL_FILEPATH} {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH}"
+        )
+        assert (
+            download_cmd_without_key
+            == f"rsync -e ssh {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH} {self.MOCK_LOCAL_FILEPATH}"
         )

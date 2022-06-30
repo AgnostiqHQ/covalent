@@ -1,6 +1,6 @@
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 
 from furl import furl
 
@@ -15,11 +15,16 @@ if TYPE_CHECKING:
 
 
 class File:
-    def __init__(self, filepath: str = None, is_remote=False) -> None:
-        if not isinstance(filepath, str) or filepath is not None:
+
+    _is_remote = False
+
+    def __init__(self, filepath: Union[str, None] = None, is_remote=False) -> None:
+        if not isinstance(filepath, str) and filepath is not None:
             raise AttributeError(
                 "Only strings are valid filepaths for a covalent File constructor."
             )
+
+        self.id = str(uuid.uuid4())
 
         # assign default filepath of form /tmp/{id}
         if filepath is None:
@@ -29,7 +34,6 @@ class File:
         if is_remote:
             self._is_remote = is_remote
 
-        self.id = str(uuid.uuid4())
         self.scheme = File.resolve_scheme(filepath)
         self.filepath = File.get_filepath(filepath)
 
@@ -43,11 +47,12 @@ class File:
             FileSchemes.Globus,
             FileSchemes.HTTP,
             FileSchemes.HTTPS,
+            FileSchemes.FTP,
         ]
 
     @property
     def mapped_strategy_type(self) -> FileTransferStrategyTypes:
-        return SchemeToStrategyMap[str(self.scheme)]
+        return SchemeToStrategyMap[self.scheme.value]
 
     @staticmethod
     def is_directory(path):
@@ -60,12 +65,18 @@ class File:
         return path_components.path
 
     @staticmethod
-    def resolve_scheme(path: str) -> str:
+    def resolve_scheme(path: str) -> FileSchemes:
         scheme = furl(path).scheme
         if scheme == FileSchemes.Globus:
             return FileSchemes.Globus
         if scheme == FileSchemes.S3:
             return FileSchemes.S3
+        if scheme == FileSchemes.FTP:
+            return FileSchemes.FTP
+        if scheme == FileSchemes.HTTP:
+            return FileSchemes.HTTP
+        if scheme == FileSchemes.HTTPS:
+            return FileSchemes.HTTPS
         if scheme is None or scheme == FileSchemes.File:
             return FileSchemes.File
         raise ValueError(f"Provided File scheme ({scheme}) is not supported.")

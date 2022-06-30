@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from covalent._file_transfer.enums import FileSchemes
+from covalent._file_transfer.enums import FileSchemes, FileTransferStrategyTypes
 from covalent._file_transfer.file import File
 
 
@@ -11,47 +11,12 @@ class TestFile:
     """Test File object methods"""
 
     def test_raise_exception_invalid_args(self):
-        # do not accept no provided local or remote path
-        with pytest.raises(AttributeError):
-            File(None)
         # do not accept Path object as local filepath
         with pytest.raises(AttributeError):
             File(Path())
         # do not accept invalid scheme
         with pytest.raises(ValueError):
             File("myownprotocol://file.txt")
-
-    def test_attach_strategy(self):
-        file = File("/tmp/file.dat")
-        MOCK_STRATEGY = "MOCK_STRATEGY"
-        file.attach_strategy(MOCK_STRATEGY)
-        assert file.file_transfer_strategy == MOCK_STRATEGY
-
-    @pytest.mark.parametrize(
-        "is_upload",
-        [
-            (False),
-            (True),
-        ],
-    )
-    def test_upload_download(self, is_upload):
-        file = File("/tmp/file.dat")
-
-        strategy_mock = Mock()
-        file.attach_strategy(strategy_mock)
-        if is_upload:
-            file.upload()
-            strategy_mock.upload.assert_called_once()
-        else:
-            file.download()
-            strategy_mock.download.assert_called_once()
-
-        file.attach_strategy(None)
-        with pytest.raises(ValueError):
-            if is_upload:
-                file.upload()
-            else:
-                file.download()
 
     @pytest.mark.parametrize(
         "filepath, expected_scheme",
@@ -65,6 +30,23 @@ class TestFile:
     )
     def test_scheme_resolution(self, filepath, expected_scheme):
         assert File(filepath).scheme == expected_scheme
+
+    def test_scheme_to_strategy_map(self):
+        assert File("s3://file").mapped_strategy_type == FileTransferStrategyTypes.S3
+        assert File("ftp://file").mapped_strategy_type == FileTransferStrategyTypes.FTP
+        assert File("globus://file").mapped_strategy_type == FileTransferStrategyTypes.GLOBUS
+        assert File("file://file").mapped_strategy_type == FileTransferStrategyTypes.Rsync
+        assert File("https://example.com").mapped_strategy_type == FileTransferStrategyTypes.HTTP
+        assert File("http://example.com").mapped_strategy_type == FileTransferStrategyTypes.HTTP
+
+    def test_is_remote_flag(self):
+        assert File("s3://file").is_remote
+        assert File("ftp://file").is_remote
+        assert File("globus://file").is_remote
+        assert File("file://file").is_remote is False
+        assert File("file://file", is_remote=True).is_remote
+        assert File("https://example.com").is_remote
+        assert File("http://example.com").is_remote
 
     @pytest.mark.parametrize(
         "filepath, expected_filepath",

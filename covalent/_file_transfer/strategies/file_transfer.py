@@ -15,14 +15,27 @@ if TYPE_CHECKING:
 class FileTransfer:
     def __init__(
         self,
-        from_filepath: Union[str, None],
-        to_filepath: Union[str, None],
+        from_file: Union[File, str, None],
+        to_file: Union[File, str, None],
         order: Order = Order.BEFORE,
         strategy: Union[FileTransferStrategy, None] = None,
     ) -> None:
 
-        self.from_file = File(from_filepath)
-        self.to_file = File(to_filepath)
+        if not isinstance(from_file, (File, str, None)) or not isinstance(
+            from_file, (File, str, None)
+        ):
+            raise AttributeError(
+                "Covalent FileTransfer requires files to be either of type File, string, or None."
+            )
+
+        if isinstance(from_file, (str, None)):
+            from_file = File(from_file)
+
+        if isinstance(from_file, (str, None)):
+            to_file = File(to_file)
+
+        self.to_file = to_file
+        self.from_file = from_file
         self.strategy = strategy
         self.order = order
 
@@ -51,21 +64,23 @@ class FileTransfer:
 # Factories
 
 
-def TransferFrom(
+def TransferFromRemote(
     from_filepath: str,
     to_filepath: Union[str, None] = None,
     strategy: Union[FileTransferStrategy, None] = None,
 ):
+    from_file = File(from_filepath, is_remote=True)
     return FileTransfer(
-        from_filepath=from_filepath, to_filepath=to_filepath, order=Order.BEFORE, strategy=strategy
+        from_filepath=from_file, to_filepath=to_filepath, order=Order.BEFORE, strategy=strategy
     )
 
 
-def TransferTo(
+def TransferToRemote(
     to_filepath: str,
     from_filepath: Union[str, None] = None,
     strategy: Union[FileTransferStrategy, None] = None,
 ):
+    to_file = File(to_filepath, is_remote=True)
     return FileTransfer(
-        from_filepath=from_filepath, to_filepath=to_filepath, order=Order.AFTER, strategy=strategy
+        from_filepath=from_filepath, to_filepath=to_file, order=Order.AFTER, strategy=strategy
     )
