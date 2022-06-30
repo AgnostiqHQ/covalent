@@ -533,10 +533,11 @@ Node Outputs
         functions_added = []
         for level in topo_sorted_graph:
             for nodes in level:
-                function = self.lattice.transport_graph.get_node_value(
-                    nodes, value_key="function"
-                ).get_deserialized()
-                if function is not None and function.__name__ not in functions_added:
+                function = self.lattice.transport_graph.get_node_value(nodes, value_key="function")
+                if (
+                    function.object_string != "None"
+                    and function.attrs["name"] not in functions_added
+                ):
 
                     function_str = self.lattice.transport_graph.get_node_value(
                         nodes, value_key="function_string"
@@ -546,11 +547,11 @@ Node Outputs
                         self.lattice.cova_imports,
                     )
                     dispatch_function += function_str
-                    functions_added.append(function.__name__)
+                    functions_added.append(function.attrs["name"])
 
         lattice_function_str = convert_to_lattice_function_call(
             self.lattice.workflow_function_string,
-            self.lattice.workflow_function.__name__,
+            self.lattice.workflow_function.attrs["name"],
             self.inputs,
         )
         lattice_function_str = _filter_cova_decorators(
