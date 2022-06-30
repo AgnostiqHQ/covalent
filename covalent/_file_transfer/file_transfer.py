@@ -62,12 +62,12 @@ class FileTransfer:
                 "FileTransfer currently does not support remote->remote file transfers, please update from_filepath or to_filepath to correspond to a local filepath."
             )
 
-    def move(self):
+    def cp(self):
         # local -> local or remote -> remote
         if (not self.from_file.is_remote and not self.to_file.is_remote) or (
             self.from_file.is_remote and self.to_file.is_remote
         ):
-            return self.strategy.move(self.from_file, self.to_file)
+            return self.strategy.cp(self.from_file, self.to_file)
         # local -> remote
         if not self.from_file.is_remote and self.to_file.is_remote:
             return self.strategy.upload(self.from_file, self.to_file)

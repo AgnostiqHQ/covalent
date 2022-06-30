@@ -41,15 +41,15 @@ class TestRsyncStrategy:
         if operation == "upload":
             Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).upload(
                 File("/tmp/source.csv"), File("/tmp/dest.csv")
-            )
+            )()
         elif operation == "download":
             Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).download(
                 File("/tmp/source.csv"), File("/tmp/dest.csv")
-            )
+            )()
         elif operation == "move":
-            Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).move(
+            Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).cp(
                 File("/tmp/source.csv"), File("/tmp/dest.csv")
-            )
+            )()
 
         popen_mock.assert_called_once()
 
@@ -79,15 +79,15 @@ class TestRsyncStrategy:
             if operation == "upload":
                 Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).upload(
                     File("/tmp/source.csv"), File("/tmp/dest.csv")
-                )
+                )()
             elif operation == "download":
                 Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).download(
                     File("/tmp/source.csv"), File("/tmp/dest.csv")
-                )
+                )()
             elif operation == "move":
-                Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).move(
+                Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).cp(
                     File("/tmp/source.csv"), File("/tmp/dest.csv")
-                )
+                )()
 
     def test_get_rsync_cmd(self):
         from_file = File("/home/ubuntu/from.csv")
