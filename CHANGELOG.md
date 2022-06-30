@@ -9,8 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Introduce support for `call_before`, `call_after`, and bash dependencies
 - Introduce support for pip dependencies
+
+## [0.116.0] - 2022-06-29
+### Authors
+@Prasy12 
+
+### Changed
+
+- Changed API socket calls interval for graph optimization.
+
+### Added
+
+- Ability to change to different layouts from the GUI.
+
+## [0.115.0] - 2022-06-28
+### Authors
+@cjao 
+
+
+### Added
+
+- Introduce support for `call_before`, `call_after`, and bash dependencies
 
 ### Operations
 
