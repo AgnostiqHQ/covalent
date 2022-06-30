@@ -259,24 +259,13 @@ class Electron:
             )
 
         if active_lattice := active_lattice_manager.get_active_lattice():
-            try:
-                node_name = attr_prefix + self.function.__name__ + "." + attr
-            except AttributeError:
-                node_name = attr_prefix + active_lattice.transport_graph.get_node_value(
-                    self.node_id, "name"
-                )
-                node_name += f".{attr}"
 
-            node_id = active_lattice.transport_graph.add_node(
-                name=node_name,
-                function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                attribute_name=attr,
-            )
+            def get_attr(e, attr):
+                return getattr(e, attr)
 
-            active_lattice.transport_graph.add_edge(self.node_id, node_id, f".{attr}")
-
-            return Electron(function=None, node_id=node_id, metadata=None)
+            get_attr.__name__ = prefix_separator + self.function.__name__ + ".__getattr__"
+            get_attr_electron = Electron(function=get_attr, metadata=self.metadata.copy())
+            return get_attr_electron(self, attr)
 
         return super().__getattr__(attr)
 
