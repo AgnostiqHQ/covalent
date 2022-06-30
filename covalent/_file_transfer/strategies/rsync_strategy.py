@@ -53,7 +53,6 @@ class Rsync(FileTransferStrategy):
     # move files in the local file system
     def move(self, from_file: File, to_file: File = File()) -> None:
         cmd = self.get_rsync_cmd(from_file, to_file)
-        print(f"Running: {cmd}")
         p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         output, error = p.communicate()
         if p.returncode != 0:
@@ -62,7 +61,6 @@ class Rsync(FileTransferStrategy):
     # download here implies 'from' is a remote source
     def download(self, from_file: File, to_file: File = File()) -> File:
         cmd = self.get_rsync_ssh_cmd(to_file, from_file, transfer_from_remote=True)
-        print(f"Running: {cmd}")
         p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         output, error = p.communicate()
         if p.returncode != 0:
@@ -72,7 +70,6 @@ class Rsync(FileTransferStrategy):
     # upload here implies 'to' is a remote source
     def upload(self, from_file: File, to_file: File) -> None:
         cmd = self.get_rsync_ssh_cmd(from_file, to_file, transfer_from_remote=False)
-        print(f"Running: {cmd}")
         p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         output, error = p.communicate()
         if p.returncode != 0:
