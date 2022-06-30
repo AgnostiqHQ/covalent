@@ -260,6 +260,8 @@ def _run_task(
     except Exception as ex:
         end_time = datetime.now(timezone.utc)
 
+        app_log.error(f"Exception occurred when running task {node_id}: {ex}")
+
         node_result = generate_node_result(
             node_id=node_id,
             end_time=end_time,
@@ -296,6 +298,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         node_result = future.result()
         update_node_result(node_result)
 
+    app_log.debug(f"Running workflow {result_object.dispatch_id}")
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
@@ -336,6 +339,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
                 continue
 
+            app_log.debug(f"Gathering inputs for task {node_id}")
             task_input = _get_task_inputs(node_id, node_name, result_object)
 
             start_time = datetime.now(timezone.utc)
@@ -346,38 +350,49 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 node_id, "metadata"
             )["executor"]
 
-            deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
-                "deps"
-            ]
+            app_log.debug(f"Collecting deps for task {node_id}")
+            try:
+                deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
+                    "deps"
+                ]
 
-            # Assemble call_before and call_after from all the deps
+                # Assemble call_before and call_after from all the deps
 
-            call_before_objs = result_object.lattice.transport_graph.get_node_value(
-                node_id, "metadata"
-            )["call_before"]
-            call_after_objs = result_object.lattice.transport_graph.get_node_value(
-                node_id, "metadata"
-            )["call_after"]
+                call_before_objs = result_object.lattice.transport_graph.get_node_value(
+                    node_id, "metadata"
+                )["call_before"]
+                call_after_objs = result_object.lattice.transport_graph.get_node_value(
+                    node_id, "metadata"
+                )["call_after"]
 
-            call_before = []
+                call_before = []
 
-            for dep_type in ["bash", "pip"]:
-                if dep_type in deps:
-                    dep = deps[dep_type]
+                for dep_type in ["bash", "pip"]:
+                    if dep_type in deps:
+                        dep = deps[dep_type]
+                        call_before.append(dep.apply())
+
+                for dep in call_before_objs:
                     call_before.append(dep.apply())
 
-            for dep in call_before_objs:
-                call_before.append(dep.apply())
+                call_after = [dep.apply() for dep in call_after_objs]
+            except Exception as ex:
+                app_log.error(f"Exception when trying to collect deps: {ex}")
+                raise ex
 
-            call_after = [dep.apply() for dep in call_after_objs]
-
-            update_node_result(
-                generate_node_result(
-                    node_id=node_id,
-                    start_time=start_time,
-                    status=Result.RUNNING,
+            try:
+                update_node_result(
+                    generate_node_result(
+                        node_id=node_id,
+                        start_time=start_time,
+                        status=Result.RUNNING,
+                    )
                 )
-            )
+            except Exception as ex:
+                app_log.error(f"Error updating node {node_id}: {ex}")
+                raise ex
+
+            app_log.debug(f"Submitting task {node_id} to executor")
 
             # Add the task generated for the node to the list of tasks
             future = thread_pool.submit(
