@@ -21,23 +21,15 @@
  */
 
 import _ from 'lodash'
-import {
-  Container,
-  Paper,
-  Typography,
-  Divider,
-  CircularProgress,
-} from '@mui/material'
+import { Container } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { createSelector } from '@reduxjs/toolkit'
 import { differenceInSeconds, isValid, parseISO } from 'date-fns'
 
-import ResultListing from './dispatches/ResultListing'
+import ResultListing from '../dispatches/ResultListing'
 import { Box } from '@mui/system'
-import CopyButton from './common/CopyButton'
-import { humanize } from './dispatches/Runtime'
-import { displayStatus } from '../utils/misc'
-import NavDrawer from './common/NavDrawer'
+import NavDrawer from '../common/NavDrawer'
+import DashboardCard from './DashboardCard'
 
 const selectResultsCache = (state) => state.results.cache
 
@@ -49,6 +41,7 @@ export const selectDispatcherAddress = createSelector(
   selectLatestResult,
   (latestResult) => {
     let address = _.get(latestResult, 'lattice.metadata.dispatcher', null)
+
     if (address) {
       const protocol = _.includes(address, '//') ? '' : 'https://'
       address = protocol + address
@@ -109,72 +102,16 @@ export const selectJobStats = createSelector(selectResultsCache, (cache) => {
 
 const Dashboard = () => {
   const dispatcherAddress = useSelector(selectDispatcherAddress)
-  const stats = useSelector(selectJobStats)
-  const isFetching = useSelector(
-    (state) => state.results.fetchResults.isFetching
-  )
 
   return (
     <Box sx={{ display: 'flex' }}>
       <NavDrawer />
-
-      <Container maxWidth="xl" sx={{ mb: 4, mt: 7 }}>
-        <Paper elevation={0} sx={{ p: 3, mb: 2 ,borderRadius:'8px'}}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography fontSize="h5.fontSize">Dispatch list</Typography>
-            {isFetching && <CircularProgress size="1rem" sx={{ mx: 2 }} />}
-
-            {dispatcherAddress && (
-              <>
-                <Typography sx={{ ml: 'auto' }} color="text.secondary">
-                  {dispatcherAddress}
-                </Typography>
-
-                <CopyButton
-                  sx={{ ml: 1 }}
-                  size="small"
-                  content={dispatcherAddress}
-                  title="Copy dispatcher address"
-                />
-              </>
-            )}
-          </Box>
-
-          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-around' }}>
-            <DashboardCard content={stats.running} desc="Total jobs running" />
-            <DashboardDivider />
-
-            <DashboardCard content={stats.done} desc="Total jobs done" />
-            <DashboardDivider />
-
-            <DashboardCard
-              content={displayStatus(_.get(stats, 'latest.status')) || 'N/A'}
-              desc="Latest running task status"
-            />
-            <DashboardDivider />
-
-            <DashboardCard
-              content={humanize(stats.duration * 1000)}
-              desc="Total dispatcher duration"
-            />
-          </Box>
-        </Paper>
-
+      <Container maxWidth="xl" sx={{ mb: 4, mt: 3 }}>
+        <DashboardCard dispatcherAddress={dispatcherAddress} />
         <ResultListing />
       </Container>
     </Box>
   )
 }
-
-const DashboardCard = ({ desc, content }) => (
-  <Box sx={{ textAlign: 'right' }}>
-    <Typography fontSize="h5.fontSize">{content}</Typography>
-    <Typography color="text.secondary">{desc}</Typography>
-  </Box>
-)
-
-const DashboardDivider = () => (
-  <Divider flexItem orientation="vertical" sx={(theme) => ({ borderColor: theme.palette.background.coveBlack02 })} />
-)
 
 export default Dashboard

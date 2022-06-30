@@ -27,17 +27,17 @@
  import { Helmet, HelmetProvider } from 'react-helmet-async'
  import { Routes, Route } from 'react-router-dom'
 
- import './App.css'
- import Dashboard from './components/Dashboard'
- import socket from './utils/socket'
- import { fetchResult } from './redux/resultsSlice'
- import { setLattice } from './redux/latticePreviewSlice'
- import theme from './utils/theme'
- import { ReactFlowProvider } from 'react-flow-renderer'
- import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
- import DispatchLayout from './components/dispatch/DispatchLayout'
- import NotFound from './components/NotFound'
- import { differenceInSeconds} from 'date-fns'
+import './App.css'
+import Dashboard from './components/dashboard/Dashboard'
+import socket from './utils/socket'
+import { fetchResult } from './redux/resultsSlice'
+import { setLattice } from './redux/latticePreviewSlice'
+import theme from './utils/theme'
+import { ReactFlowProvider } from 'react-flow-renderer'
+import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
+import DispatchLayout from './components/dispatch/DispatchLayout'
+import NotFound from './components/NotFound'
+import { differenceInSeconds} from 'date-fns'
 
  const App = () => {
    const dispatch = useDispatch()

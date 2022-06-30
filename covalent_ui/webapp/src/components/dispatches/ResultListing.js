@@ -46,6 +46,7 @@ import {
   tableRowClasses,
   tableBodyClasses,
   tableSortLabelClasses,
+  linkClasses,
   TablePagination,
 } from '@mui/material'
 import {
@@ -148,25 +149,32 @@ const ResultsTableHead = ({
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox" sx={(theme) =>({
-           borderColor: theme.palette.background.coveBlack03 + '!important'
-          })}>
+        <TableCell
+          padding="checkbox"
+          sx={(theme) => ({
+            borderColor: theme.palette.background.coveBlack03 + '!important',
+          })}
+        >
           <Checkbox
             indeterminate={numSelected > 0 && numSelected < total}
             checked={numSelected > 0 && numSelected === total}
             onClick={onSelectAllClick}
-            size='small'
-            sx={(theme) =>({
-              color: theme.palette.text.tertiary
+            size="small"
+            sx={(theme) => ({
+              color: theme.palette.text.tertiary,
             })}
           />
         </TableCell>
 
         {_.map(headers, (header) => {
           return (
-            <TableCell key={header.id} sx={(theme) =>({
-              borderColor: theme.palette.background.coveBlack03 + '!important'
-             })}>
+            <TableCell
+              key={header.id}
+              sx={(theme) => ({
+                borderColor:
+                  theme.palette.background.coveBlack03 + '!important',
+              })}
+            >
               {header.sortable ? (
                 <TableSortLabel
                   active={orderBy === header.id}
@@ -205,7 +213,7 @@ const ResultsTableToolbar = ({
         </Typography>
       )}
 
-        <Input
+      <Input
         sx={{
           ml: 'auto',
           px: 1,
@@ -214,48 +222,45 @@ const ResultsTableToolbar = ({
           border: '1px solid #303067',
           borderRadius: '60px',
         }}
-          disableUnderline
-          placeholder="Search"
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value)
-          }}
-          startAdornment={
-            <InputAdornment position="start">
-              <SearchIcon sx={{ color: 'text.secondary', fontSize: 16 }} />
-            </InputAdornment>
-          }
-          endAdornment={
-            <InputAdornment
-              position="end"
-              sx={{ visibility: !!query ? 'visible' : 'hidden' }}
-            >
-              <IconButton size="small" onClick={() => setQuery('')}>
-                <ClearIcon
-                  fontSize="inherit"
-                  sx={{ color: 'text.secondary' }}
-                />
-              </IconButton>
-            </InputAdornment>
-          }
-        />
+        disableUnderline
+        placeholder="Search"
+        value={query}
+        onChange={(event) => {
+          setQuery(event.target.value)
+        }}
+        startAdornment={
+          <InputAdornment position="start">
+            <SearchIcon sx={{ color: 'text.secondary', fontSize: 16 }} />
+          </InputAdornment>
+        }
+        endAdornment={
+          <InputAdornment
+            position="end"
+            sx={{ visibility: !!query ? 'visible' : 'hidden' }}
+          >
+            <IconButton size="small" onClick={() => setQuery('')}>
+              <ClearIcon fontSize="inherit" sx={{ color: 'text.secondary' }} />
+            </IconButton>
+          </InputAdornment>
+        }
+      />
     </Toolbar>
   )
 }
 
 const StyledTable = styled(Table)(({ theme }) => ({
   // stripe every odd body row except on select and hover
-   // stripe every odd body row except on select and hover
-   // [`& .MuiTableBody-root .MuiTableRow-root:nth-of-type(odd):not(.Mui-selected):not(:hover)`]:
-   //   {
-   //     backgroundColor: theme.palette.background.paper,
-   //   },
+  // stripe every odd body row except on select and hover
+  // [`& .MuiTableBody-root .MuiTableRow-root:nth-of-type(odd):not(.Mui-selected):not(:hover)`]:
+  //   {
+  //     backgroundColor: theme.palette.background.paper,
+  //   },
 
-      // customize text
-      [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-      {
-        fontSize: '1rem',
-      },
+  // customize text
+  [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
+    {
+      fontSize: '1rem',
+    },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -271,7 +276,19 @@ const StyledTable = styled(Table)(({ theme }) => ({
   // customize hover
   [`& .${tableBodyClasses.root} .${tableRowClasses.root}:hover`]: {
     backgroundColor: theme.palette.background.paper,
+    cursor: 'pointer',
+
+    [`& .${tableCellClasses.root}`]: {
+      borderColor: theme.palette.background.default,
+      paddingTop: 2,
+      paddingBottom: 2,
+      color: theme.palette.primary.white,
+    },
+    [`& .${linkClasses.root}`]: {
+      color: theme.palette.primary.white,
+    },
   },
+
   // customize selected
   [`& .${tableBodyClasses.root} .${tableRowClasses.root}.Mui-selected`]: {
     backgroundColor: theme.palette.background.coveBlack02,
@@ -283,9 +300,10 @@ const StyledTable = styled(Table)(({ theme }) => ({
   // customize border
   [`& .${tableCellClasses.root}`]: {
     borderColor: theme.palette.background.default,
-    paddingTop:2,
-    paddingBottom:2
+    paddingTop: 2,
+    paddingBottom: 2,
   },
+
   [`& .${tableCellClasses.root}:first-of-type`]: {
     borderTopLeftRadius: 8,
     borderBottomLeftRadius: 8,
@@ -392,37 +410,38 @@ const ResultListing = () => {
 
                 return (
                   <TableRow hover key={dispatchId} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onClick={() => handleChangeSelection(dispatchId)}
-                      size='small'
-                      sx={(theme) =>({
-                        color: theme.palette.text.tertiary
-                      })}
-                    />
-                  </TableCell>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={isSelected}
+                        onClick={() => handleChangeSelection(dispatchId)}
+                        size="small"
+                        sx={(theme) => ({
+                          color: theme.palette.text.tertiary,
+                        })}
+                      />
+                    </TableCell>
 
-                  <TableCell sx={{paddingTop:'6px !important'}}>
-                    <Link
-                      underline="none"
-                      href={`/${dispatchId}`}
-                      sx={{ color: 'white'}}
-                    >
-                      {dispatchId}
-                    </Link>
-                    <CopyButton
-                      sx={{ ml: 1, color: 'text.tertiary' }}
-                      content={dispatchId}
-                      size="small"
-                      className="copy-btn"
-                      title="Copy ID"
-                    />
-                  </TableCell>
+                    <TableCell sx={{ paddingTop: '6px !important' }}>
+                      <Link
+                        underline="none"
+                        href={`/${dispatchId}`}
+                        sx={{ color: '#CBCBD7' }}
+                      >
+                        {dispatchId}
+                      </Link>
+                      <CopyButton
+                        sx={{ ml: 1, color: 'text.tertiary' }}
+                        content={dispatchId}
+                        size="small"
+                        className="copy-btn"
+                        title="Copy ID"
+                        isBorderPresent={true}
+                      />
+                    </TableCell>
 
-                  <TableCell>{_.get(result, 'lattice.name')}</TableCell>
+                    <TableCell>{_.get(result, 'lattice.name')}</TableCell>
 
-                  {/* <TableCell>
+                    {/* <TableCell>
                     <Tooltip title={result.results_dir}>
                       <Box
                         component="span"
@@ -443,18 +462,18 @@ const ResultListing = () => {
                     />
                   </TableCell> */}
 
-                  <TableCell>
-                    <Runtime startTime={startTime} endTime={endTime} />
-                  </TableCell>
+                    <TableCell>
+                      <Runtime startTime={startTime} endTime={endTime} />
+                    </TableCell>
 
-                  <TableCell>{formatDate(startTime)}</TableCell>
+                    <TableCell>{formatDate(startTime)}</TableCell>
 
-                  <TableCell>{formatDate(endTime)}</TableCell>
+                    <TableCell>{formatDate(endTime)}</TableCell>
 
-                  <TableCell>
-                    <ResultProgress dispatchId={dispatchId} />
-                  </TableCell>
-                </TableRow>
+                    <TableCell>
+                      <ResultProgress dispatchId={dispatchId} />
+                    </TableCell>
+                  </TableRow>
                 )
               })}
             </TableBody>
