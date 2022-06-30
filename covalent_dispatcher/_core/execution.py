@@ -213,6 +213,9 @@ def _run_task(
 
             # This now uses build_graph_encoded
             sublattice_result = dispatch_sync(func)(*inputs["args"], **inputs["kwargs"])
+            if not sublattice_result:
+                raise RuntimeError("Sublattice execution failed")
+
             output = sublattice_result.result
 
             end_time = datetime.now(timezone.utc)
@@ -224,6 +227,11 @@ def _run_task(
                 output=output,
                 sublattice_result=sublattice_result,
             )
+
+            # Don't continue unless sublattice finishes
+            if sublattice_result.status != Result.COMPLETED:
+                node_result["status"] = Result.FAILED
+                node_result["error"] = "Sublattice workflow failed to complete"
 
         else:
             app_log.debug(f"Executing task {node_name}")
