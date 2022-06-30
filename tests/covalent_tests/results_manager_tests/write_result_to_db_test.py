@@ -27,7 +27,11 @@ from sqlalchemy.orm import Session
 
 from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Lattice
-from covalent._results_manager.write_result_to_db import get_electron_type, insert_lattices_data
+from covalent._results_manager.write_result_to_db import (
+    get_electron_type,
+    insert_electrons_data,
+    insert_lattices_data,
+)
 from covalent._shared_files.defaults import (
     arg_prefix,
     attr_prefix,
@@ -120,8 +124,34 @@ def test_insert_lattices_data(db):
         assert not rows
 
 
-def test_insert_electrons_data():
-    pass
+def test_insert_electrons_data(db):
+    """Test the function that inserts the electron data to the Electrons table."""
+
+    # electron_id = insert_electrons_data(
+    #     db=db,
+    #     parent_lattice_id=,
+    #     transport_graph_node_id=,
+    #     type=,
+    #     name=,
+    #     status=,
+    #     storage_type=,
+    #     storage_path=,
+    #     function_filename=,
+    #     function_string_filename=,
+    #     executor_filename=,
+    #     error_filename=,
+    #     results_filename=,
+    #     value_filename=,
+    #     attribute_name=,
+    #     key=,
+    #     stdout_filename=,
+    #     stderr_filename=,
+    #     info_filename=,
+    #     created_at=,
+    #     updated_at=,
+    #     started_at=,
+    #     completed_at=,
+    # )
 
 
 def test_insert_electron_dependency_data():

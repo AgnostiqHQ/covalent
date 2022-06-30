@@ -58,7 +58,7 @@ def insert_lattices_data(
     started_at: dt,
     completed_at: dt,
 ) -> int:
-    """This funtion gathers the data corresponding to a lattice and writes it to the Lattices table."""
+    """This funtion writes the lattice data / metadata to the Lattices table in the DB."""
 
     lattice_row = Lattice(
         dispatch_id=dispatch_id,
