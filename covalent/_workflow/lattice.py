@@ -451,7 +451,7 @@ def lattice(
         "deps": deps,
         "call_before": call_before,
         "call_after": call_after,
-        "postprocessing_executor": executor,
+        "workflow_executor": executor,
     }
 
     def decorator_lattice(func=None):

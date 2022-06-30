@@ -420,7 +420,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     result_object._status = Result.POSTPROCESSING
 
     app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
-    pp_executor = result_object.lattice.get_metadata("postprocessing_executor")
+    pp_executor = result_object.lattice.get_metadata("workflow_executor")
     pp_client_side = pp_executor == "client"
 
     if pp_client_side:
