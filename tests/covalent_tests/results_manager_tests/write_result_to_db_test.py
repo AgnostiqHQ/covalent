@@ -149,7 +149,7 @@ def test_insert_electrons_data(db):
         "created_at": cur_time,
         "updated_at": cur_time,
         "started_at": cur_time,
-        "completed_at": None,    
+        "completed_at": None,
     }
     insert_lattices_data(lattice_kwargs)
 
