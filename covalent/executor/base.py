@@ -166,7 +166,7 @@ class BaseExecutor(ABC):
 
     def to_dict(self):
         return {
-            "type": self.__class__,
+            "type": str(self.__class__),
             "short_name": self.short_name(),
             "attributes": self.__dict__.copy(),
         }
