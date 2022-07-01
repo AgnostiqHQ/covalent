@@ -440,6 +440,12 @@ Node Outputs
         with open(os.path.join(result_folder_path, "result.pkl"), "wb") as f:
             f.write(pickle.dumps(self))
 
+        with open(os.path.join(result_folder_path, "function.pkl"), "wb") as f:
+            f.write(pickle.dumps(self.lattice.workflow_function))
+
+        with open(os.path.join(result_folder_path, "function_string.txt"), "w") as f:
+            f.write(self.lattice.workflow_function_string)
+
         with open(os.path.join(result_folder_path, "result_info.yaml"), "w") as f:
             yaml.dump(result_info, f)
 

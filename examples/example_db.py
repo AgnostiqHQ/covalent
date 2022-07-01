@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 from datetime import datetime
 
+import cloudpickle as pickle
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
@@ -15,6 +17,7 @@ from covalent._data_store.models import (
     Lattice,
     ParameterTypeEnum,
 )
+from covalent.executor import _executor_manager
 
 
 # Construct tasks as "electrons"
@@ -35,12 +38,23 @@ def simple_workflow(a, b):
     return excitement(phrase)
 
 
-db = DataStore("sqlite+pysqlite:///", initialize_db=True)
+db = DataStore("sqlite+pysqlite:///results.db", initialize_db=True)
 engine = db._get_engine()
 insp = inspect(engine)
 tables = insp.get_table_names()
 dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
 result = ct.get_result(dispatch_id)
+result.save()
+
+print(result.lattice.transport_graph.get_topologically_sorted_graph())
+print(result.lattice.transport_graph.get_node_value(2, "function").get_deserialized())
+print(result.lattice.__name__)
+print(result.lattice.workflow_function)
+print(result.lattice.workflow_function_string)
+print(result.lattice.get_metadata("executor"))
+print(_executor_manager.get_executor(result.lattice.get_metadata("executor")))
+
+print(dispatch_id)
 
 lattice = Lattice(
     id=1,
@@ -48,10 +62,10 @@ lattice = Lattice(
     name=simple_workflow.__name__,
     status=str(result._status),
     storage_type="local",
-    storage_path=dispatch_id,
-    function_filename="dispatch_source.pkl",
-    function_string_filename="dispatch_source.py",
-    executor_filename="executor.pkl",
+    storage_path=f"./results/{dispatch_id}/",
+    function_filename="function.pkl",  # done
+    function_string_filename="function_string.txt",  # done
+    executor_filename="executor.pkl",  # done
     error_filename="error.txt",
     inputs_filename="inputs.pkl",
     results_filename="result.pkl",
@@ -60,6 +74,9 @@ lattice = Lattice(
     started_at=result._start_time,
     completed_at=result._end_time,
 )
+
+with open(os.path.join(f"./results/{dispatch_id}/", "executor.pkl"), "wb") as f:
+    f.write(pickle.dumps(_executor_manager.get_executor(result.lattice.get_metadata("executor"))))
 
 electron = Electron(
     id=1,
