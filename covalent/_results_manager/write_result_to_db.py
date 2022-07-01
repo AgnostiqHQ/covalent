@@ -118,7 +118,7 @@ def insert_electrons_data(
 
     # Check that the foreign key corresponding to this table exists
     with Session(db.engine) as session:
-        row = session.query(Lattice).where(Lattice.dispatch_id==parent_dispatch_id).all()
+        row = session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()
     if len(row) == 0:
         raise MissingLatticeRecordError
 
