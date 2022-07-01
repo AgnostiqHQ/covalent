@@ -36,6 +36,7 @@ const DashboardCard = (props) => {
   const dashboardStats = useSelector(
     (state) => state.dashboard.dashboardOverview
   )
+  const isDeleted = useSelector((state) => (state.dashboard.deleteResults.isDeleted))
 
   const isFetching = useSelector(
     (state) => state.dashboard.fetchDashboardOverview.isFetching
@@ -47,7 +48,7 @@ const DashboardCard = (props) => {
 
   useEffect(() => {
     fetchDashboardOverviewResult()
-  },[])
+  },[isDeleted])
 
   return (
     <Paper elevation={0} sx={{ p: 3, mb: 2, borderRadius: '8px' }}>

@@ -37,6 +37,7 @@ const CopyButton = ({ content, isBorderPresent, title = 'Copy', ...props }) => {
           setCopied(true)
           setTimeout(() => setCopied(false), 1200)
         }}
+        disableRipple
         sx={{ color: 'text.tertiary' }}
         {...props}
       >
