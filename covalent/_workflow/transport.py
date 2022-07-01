@@ -57,7 +57,7 @@ class TransportableObject:
         self.object_string = str(obj)
 
         try:
-            self._json = json.dumps(obj, default=encode_transportable_object)
+            self._json = json.dumps(obj)
 
         except TypeError as ex:
             self._json = ""
