@@ -55,11 +55,12 @@
    Delete as DeleteIcon,
    Search as SearchIcon,
  } from '@mui/icons-material'
- import { fetchDashboardList } from '../../redux/dashboardSlice'
+ import { fetchDashboardList,deleteDispatches } from '../../redux/dashboardSlice'
  import CopyButton from '../common/CopyButton'
  import { formatDate } from '../../utils/misc'
  import Runtime from './Runtime'
  import ResultProgress from './ResultProgress'
+ import PageLoading from '../common/PageLoading'
 
  const headers = [
    {
@@ -118,6 +119,7 @@
            borderColor: theme.palette.background.coveBlack03 + '!important'
          })}>
            <Checkbox
+           disableRipple
              indeterminate={numSelected > 0 && numSelected < total}
              checked={numSelected > 0 && numSelected === total}
              onClick={onSelectAllClick}
@@ -235,6 +237,7 @@
    // customize hover
    [`& .${tableBodyClasses.root} .${tableRowClasses.root}:hover`]: {
      backgroundColor: theme.palette.background.paper,
+     color: theme.palette.text.secondary,
    },
    // customize selected
    [`& .${tableBodyClasses.root} .${tableRowClasses.root}.Mui-selected`]: {
@@ -270,8 +273,12 @@
    const [sortOrder, setSortOrder] = useState('desc');
    const [offset, setOffset] = useState(0);
 
+   const isDeleted = useSelector((state) => (state.dashboard.deleteResults.isDeleted))
    const dashboardList = useSelector((state) => (state.dashboard.dashboardList))
    const totalRecords = useSelector((state) => (state.dashboard.dashboardListCount))
+   const isFetching = useSelector(
+    (state) => state.dashboard.fetchDashboardList.isFetching
+  )
    const dashboardListFinal = dashboardList.map(e => {
      return {
        dispatchId: e.dispatch_id,
@@ -308,7 +315,7 @@
    useEffect(() => {
      dashboardListAPI();
      // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [sortColumn,sortOrder,page,searchValue])
+   }, [sortColumn,sortOrder,page,searchValue,isDeleted])
 
    const handlePageChanges = (event, pageValue) => {
        setPage(pageValue);
@@ -316,8 +323,15 @@
      setOffset(offsetValue);
    }
 
+   const handleChangeSelection = (dispatchId) => {
+    if (_.includes(selected, dispatchId)) {
+      setSelected(_.without(selected, dispatchId))
+    } else {
+      setSelected(_.concat(selected, dispatchId))
+    }
+  }
+
    const handleChangeSort = column => {
-     console.log(column)
      setPage(1);
      setOffset(0);
      const isAsc = sortColumn === column && sortOrder === 'asc';
@@ -325,16 +339,34 @@
      setSortColumn(column);
    };
 
+   const handleSelectAllClick = () => {
+    if (_.size(selected) < _.size(dashboardListFinal)) {
+      setSelected(_.map(dashboardListFinal, 'dispatchId'))
+    } else {
+      setSelected([])
+    }
+  }
+
+  const handleDeleteSelected = () => {
+    dispatch(deleteDispatches({ items: selected })).then((action) => {
+      if (action.type === deleteDispatches.fulfilled.type) {
+        setSelected([])
+      }
+    })
+  }
+
    return (
      <>
-       <Box>
+     {isFetching && <PageLoading />}
+       {!isFetching && (
+        <Box>
          <ResultsTableToolbar
            query={searchKey}
            totalRecords={totalRecords}
            onSearch={onSearch}
            setQuery={setSearchKey}
-           // numSelected={_.size(selected)}
-           // onDeleteSelected={handleDeleteSelected}
+           numSelected={_.size(selected)}
+           onDeleteSelected={handleDeleteSelected}
          />
 
          <TableContainer>
@@ -342,10 +374,10 @@
              <ResultsTableHead
                order={sortOrder}
                orderBy={sortColumn}
-               // numSelected={_.size(selected)}
-               // total={_.size(results)}
+               numSelected={_.size(selected)}
+               total={_.size(dashboardListFinal)}
                onSort={handleChangeSort}
-               // onSelectAllClick={handleSelectAllClick}
+               onSelectAllClick={handleSelectAllClick}
              />
 
              <TableBody>
@@ -353,8 +385,9 @@
                  <TableRow hover key={result.dispatchId} >
                    <TableCell padding="checkbox">
                      <Checkbox
-                       // checked={isSelected}
-                       // onClick={() => handleChangeSelection(result.dispatchId)}
+                     disableRipple
+                       checked={_.includes(selected, result.dispatchId)}
+                       onClick={() => handleChangeSelection(result.dispatchId)}
                        size='small'
                        sx={(theme) => ({
                          color: theme.palette.text.tertiary
@@ -366,7 +399,7 @@
                      <Link
                        underline="none"
                        href={`/${result.dispatchId}`}
-                       sx={{ color: 'white' }}
+                       sx={{ color: 'text.primary' }}
                      >
                        {result.dispatchId}
                      </Link>
@@ -376,6 +409,7 @@
                        size="small"
                        className="copy-btn"
                        title="Copy ID"
+                       isBorderPresent={true}
                      />
                    </TableCell>
 
@@ -432,6 +466,7 @@
          />
          </Grid>
        </Box>
+       )}
      </>
    )
  }

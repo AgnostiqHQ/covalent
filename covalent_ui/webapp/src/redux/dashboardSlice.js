@@ -28,28 +28,29 @@ import api from '../utils/api'
 const initialState = {
   // results cache mapped by dispatch id
   dashboardList: [],
+  dashboardListCount:0,
   dashboardOverview: {},
   fetchDashboardList: { isFetching: false, error: null },
   fetchDashboardOverview: { isFetching: false, error: null },
-  deleteResults: { isFetching: false, error: null },
+  deleteResults: { isFetching: false, error: null,isDeleted:false },
 }
 
 export const fetchDashboardList = createAsyncThunk(
   'dashboard/fetchList',
   async (bodyParams, thunkAPI) =>
-    await api.post(`/api/v1/summary/dispatches`,bodyParams).catch(thunkAPI.rejectWithValue)
+    await api.post('/api/v1/summary/dispatches',bodyParams).catch(thunkAPI.rejectWithValue)
     )
 
 export const fetchDashboardOverview = createAsyncThunk(
-  'summary/overview',
+  'dashboard/overview',
   (values, thunkAPI) =>
-    api.get(`/api/v1/summary/overview/`).catch(thunkAPI.rejectWithValue)
+    api.get('/api/v1/summary/overview/').catch(thunkAPI.rejectWithValue)
 )
 
-export const deleteDispatch = createAsyncThunk(
-  'summary/dispatches/delete',
-  ({ dispatchId }, thunkAPI) =>
-    api.get(`/api/results/${dispatchId}`).catch(thunkAPI.rejectWithValue)
+export const deleteDispatches = createAsyncThunk(
+  'dashbaord/deleteDispatches',
+  async (bodyParams, thunkAPI) =>
+    await api.post('/api/v1/summary/dispatches/delete',bodyParams).catch(thunkAPI.rejectWithValue)
 )
 
 export const dashboardSlice = createSlice({
@@ -89,18 +90,18 @@ export const dashboardSlice = createSlice({
       })
 
       // deleteResults
-      .addCase(deleteDispatch.fulfilled, (state, { meta }) => {
+      .addCase(deleteDispatches.fulfilled, (state, { meta }) => {
         state.deleteResults.isFetching = false
-        // update results cache
-        const dispatchIds = _.get(meta, 'arg.dispatchIds')
-        _.each(dispatchIds, (key) => delete state.dashboardList[key])
+        state.deleteResults.isDeleted = true
       })
-      .addCase(deleteDispatch.pending, (state, { payload }) => {
+      .addCase(deleteDispatches.pending, (state, { payload }) => {
         state.deleteResults.isFetching = true
+        state.deleteResults.isDeleted = false
         state.deleteResults.error = null
       })
-      .addCase(deleteDispatch.rejected, (state, { payload }) => {
+      .addCase(deleteDispatches.rejected, (state, { payload }) => {
         state.deleteResults.isFetching = false
+        state.deleteResults.isDeleted = false
         state.deleteResults.error = payload.message
       })
   },
