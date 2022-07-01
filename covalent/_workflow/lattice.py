@@ -244,7 +244,7 @@ class Lattice:
         server process."""
 
         self.args = [TransportableObject.make_transportable(arg) for arg in args]
-        self.kwargs = {k: TransportableObject.make_transportable(v) for k, v in kwargs}
+        self.kwargs = {k: TransportableObject.make_transportable(v) for k, v in kwargs.items()}
 
         self.transport_graph.reset()
 
@@ -331,14 +331,6 @@ class Lattice:
 
         Returns:
             None
-        """
-
-        self.build_graph(*args, **kwargs)
-        result_webhook.send_draw_request(self)
-
-    def draw_encoded(self, *args, **kwargs) -> None:
-        """
-        Variant of draw() assuming args and kwargs are TransportableObjects
         """
 
         self.build_graph_encoded(*args, **kwargs)
