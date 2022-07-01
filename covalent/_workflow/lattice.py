@@ -21,6 +21,7 @@
 """Class corresponding to computation workflow."""
 
 import inspect
+import json
 import os
 import warnings
 from contextlib import redirect_stdout
@@ -45,7 +46,7 @@ from .._shared_files.utils import (
 )
 from .depsbash import DepsBash
 from .depscall import DepsCall
-from .transport import _TransportGraph
+from .transport import TransportableObject, _TransportGraph, encode_metadata
 
 if TYPE_CHECKING:
     from .._results_manager.result import Result
@@ -164,31 +165,28 @@ class Lattice:
                     raise
 
     def build_graph_encoded(self, *args, **kwargs) -> None:
-        """args and kwargs are assumed to comprise entirely of TransportableObjects"""
+        """args and kwargs are assumed to comprise entirely of
+        TransportableObjects. This should not be executed in the Covalent
+        server process."""
+
+        self.args = [TransportableObject.make_transportable(arg) for arg in args]
+        self.kwargs = {k: TransportableObject.make_transportable(v) for k, v in kwargs}
 
         self.transport_graph.reset()
 
-        named_args, named_kwargs = get_named_params(self.workflow_function, args, kwargs)
+        workflow_function = self.workflow_function.get_deserialized()
+
+        named_args, named_kwargs = get_named_params(workflow_function, self.args, self.kwargs)
         self.named_args = named_args
         self.named_kwargs = named_kwargs
 
-        args = [v for _, v in named_args.items()]
-        kwargs = named_kwargs
-
-        # Decode any inputs of built-in types
-        new_args = [t.deserialize_if_builtin_type() for t in args]
-        new_kwargs = {}
-
-        for k, v in kwargs.items():
-            new_kwargs[k] = v.deserialize_if_builtin_type()
-
-        self.args = new_args
-        self.kwargs = new_kwargs
+        new_args = [v.get_deserialized() for _, v in named_args.items()]
+        new_kwargs = {k: v.get_deserialized() for k, v in named_kwargs.items()}
 
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    self.workflow_function(*new_args, **new_kwargs)
+                    workflow_function(*new_args, **new_kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
