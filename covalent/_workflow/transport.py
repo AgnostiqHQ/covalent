@@ -23,6 +23,7 @@
 import base64
 import json
 import platform
+from copy import deepcopy
 from typing import Any, Callable, Dict, List
 
 import cloudpickle
@@ -222,6 +223,50 @@ class TransportableObject:
             else:
                 raise TypeError("Couldn't deserialize collection")
         return new_dict
+
+
+# Functions for encoding the transport graph
+
+
+def encode_metadata(metadata: dict) -> dict:
+    # Idempotent
+    # Special handling required for: executor, workflow_executor, deps, call_before/after
+
+    encoded_metadata = deepcopy(metadata)
+    if "executor" in metadata:
+        if "executor_data" not in metadata:
+            encoded_metadata["executor_data"] = {}
+        if not isinstance(metadata["executor"], str):
+            encoded_executor = metadata["executor"].to_dict()
+            encoded_metadata["executor"] = encoded_executor["short_name"]
+            encoded_metadata["executor_data"] = encoded_executor
+
+    if "workflow_executor" in metadata:
+        if "workflow_executor_data" not in metadata:
+            encoded_metadata["workflow_executor_data"] = {}
+        if not isinstance(metadata["workflow_executor"], str):
+            encoded_wf_executor = metadata["workflow_executor"].to_dict()
+            encoded_metadata["workflow_executor"] = encoded_wf_executor["short_name"]
+            encoded_metadata["workflow_executor_data"] = encoded_wf_executor
+
+    # Bash Deps, Pip Deps, Env Deps, etc
+    if "deps" in metadata:
+        for dep_type, dep_object in metadata["deps"].items():
+            if not isinstance(dep_object, dict):
+                encoded_metadata["deps"][dep_type] = dep_object.to_dict()
+
+    # call_before/after
+    if "call_before" in metadata:
+        for i, dep in enumerate(metadata["call_before"]):
+            if not isinstance(dep, dict):
+                encoded_metadata["call_before"][i] = dep.to_dict()
+
+    if "call_after" in metadata:
+        for i, dep in enumerate(metadata["call_after"]):
+            if not isinstance(dep, dict):
+                encoded_metadata["call_after"][i] = dep.to_dict()
+
+    return encoded_metadata
 
 
 class _TransportGraph:
@@ -459,6 +504,60 @@ class _TransportGraph:
         data["lattice_metadata"] = self.lattice_metadata
         return cloudpickle.dumps(data)
 
+    def serialize_to_json(self, metadata_only: bool = False) -> str:
+        """
+        Convert transport graph object to JSON to be used in the workflow scheduler.
+
+        Convert transport graph networkx.DiGraph object into JSON format, filter out
+        computation specific attributes and lastly add the lattice metadata. This also
+        serializes the function Callable into by base64 encoding the cloudpickled result.
+
+        Args:
+            metadata_only: If true, only serialize the metadata.
+
+        Returns:
+            str: json string representation of transport graph
+
+        Note: serialize_to_json converts metadata objects into dictionary represetations.
+        """
+
+        # Convert networkx.DiGraph to a format that can be converted to json .
+        data = nx.readwrite.node_link_data(self._graph)
+
+        # process each node
+        for idx, node in enumerate(data["nodes"]):
+            data["nodes"][idx]["function"] = data["nodes"][idx].pop("function").to_dict()
+            if "value" in node:
+                node["value"] = node["value"].to_dict()
+            if "metadata" in node:
+                node["metadata"] = encode_metadata(node["metadata"])
+
+        if metadata_only:
+            parameter_node_id = [
+                i
+                for i, node in enumerate(data["nodes"])
+                if node["name"].startswith(parameter_prefix)
+            ]
+
+            for node in data["nodes"].copy():
+                if node["id"] in parameter_node_id:
+                    data["nodes"].remove(node)
+
+            # Remove the non-metadata fields such as 'function', 'name', etc from the scheduler workflow input data.
+            for idx, node in enumerate(data["nodes"]):
+                for field in data["nodes"][idx].copy():
+                    if field != "metadata":
+                        data["nodes"][idx].pop(field, None)
+
+            # Remove the non-source-target fields from the scheduler workflow input data.
+            for idx, node in enumerate(data["links"]):
+                for name in data["links"][idx].copy():
+                    if name not in ["source", "target"]:
+                        data["links"][idx].pop("edge_name", None)
+
+        data["lattice_metadata"] = encode_metadata(self.lattice_metadata)
+        return json.dumps(data)
+
     def deserialize(self, pickled_data: bytes) -> None:
         """
         Load pickled representation of transport graph into the transport graph instance.
@@ -482,6 +581,35 @@ class _TransportGraph:
             node_link_data["nodes"][idx]["function"] = TransportableObject.deserialize(
                 function_ser
             )
+        self._graph = nx.readwrite.node_link_graph(node_link_data)
+        self.sort_edges_based_on_insertion_order()
+
+    def deserialize_from_json(self, json_data: str) -> None:
+        """Load JSON representation of transport graph into the transport graph instance.
+
+        This overwrites anything currently set in the transport
+        graph. Note that metadata (node and lattice-level) need to be
+        reconstituted from their dictionary representations when
+        needed.
+
+        Args:
+            json_data: JSON representation of the transport graph
+
+        Returns:
+            None
+
+        """
+
+        node_link_data = json.loads(json_data)
+        if "lattice_metadata" in node_link_data:
+            self.lattice_metadata = node_link_data["lattice_metadata"]
+
+        for idx, node in enumerate(node_link_data["nodes"]):
+            function_ser = node_link_data["nodes"][idx].pop("function")
+            node_link_data["nodes"][idx]["function"] = TransportableObject.from_dict(function_ser)
+            if "value" in node:
+                node["value"] = TransportableObject.from_dict(node["value"])
+
         self._graph = nx.readwrite.node_link_graph(node_link_data)
         self.sort_edges_based_on_insertion_order()
 
