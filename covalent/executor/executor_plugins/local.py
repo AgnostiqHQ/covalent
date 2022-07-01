@@ -101,6 +101,9 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
+    def short_name(self):
+        return self.__module__.split("/")[-1]
+
     def execute(
         self,
         function: TransportableObject,

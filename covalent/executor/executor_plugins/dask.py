@@ -82,6 +82,9 @@ class DaskExecutor(BaseExecutor):
 
         self.scheduler_address = scheduler_address
 
+    def short_name(self):
+        return self.__module__.split("/")[-1]
+
     def execute(
         self,
         function: TransportableObject,

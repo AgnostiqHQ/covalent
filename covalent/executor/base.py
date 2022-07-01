@@ -162,6 +162,10 @@ class BaseExecutor(ABC):
                 print(ss)
 
     @abstractmethod
+    def short_name(self):
+        raise NotImplementedError
+
+    @abstractmethod
     async def execute(
         self,
         function: TransportableObject,
