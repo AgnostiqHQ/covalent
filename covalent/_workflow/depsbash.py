@@ -23,6 +23,7 @@ from typing import List, Union
 
 from .deps import Deps
 from .depscall import DepsCall
+from .transport import TransportableObject
 
 
 def apply_bash_commands(commands):
@@ -50,3 +51,25 @@ class DepsBash(Deps):
             self.commands = commands
 
         super().__init__(apply_fn=apply_bash_commands, apply_args=[self.commands])
+
+    def short_name(self):
+        return self.__module__.split("/")[-1]
+
+    def to_dict(self):
+        attributes = self.__dict__.copy()
+        for k, v in attributes.items():
+            if isinstance(v, TransportableObject):
+                attributes[k] = v.to_dict()
+        return {"type": "DepsBash", "short_name": self.short_name(), "attributes": attributes}
+
+    @staticmethod
+    def from_dict(object_dict):
+        dep = DepsBash([])
+        attributes = object_dict.copy()["attributes"]
+        for k, v in attributes.items():
+            if k != "commands":
+                attributes[k] = TransportableObject.from_dict(v)
+
+        dep.__dict__ = attributes
+
+        return dep

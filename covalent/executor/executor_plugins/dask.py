@@ -85,6 +85,19 @@ class DaskExecutor(BaseExecutor):
     def short_name(self):
         return self.__module__.split("/")[-1]
 
+    def to_dict(self):
+        return {
+            "type": "DaskExecutor",
+            "short_name": self.short_name(),
+            "attributes": self.__dict__.copy(),
+        }
+
+    @staticmethod
+    def from_dict(object_dict):
+        executor = DaskExecutor("dummy")
+        executor.__dict__ = object_dict["attributes"]
+        return executor
+
     def execute(
         self,
         function: TransportableObject,

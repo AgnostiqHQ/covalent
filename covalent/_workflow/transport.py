@@ -82,6 +82,15 @@ class TransportableObject:
     def json(self):
         return self._json
 
+    def to_dict(self):
+        return {"type": "TransportableObject", "attributes": self.__dict__.copy()}
+
+    @staticmethod
+    def from_dict(object_dict):
+        sc = TransportableObject(None)
+        sc.__dict__ = object_dict["attributes"]
+        return sc
+
     def deserialize_if_builtin_type(self):
         if len(self._json) > 0:
             return json.loads(self._json)

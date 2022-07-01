@@ -32,3 +32,21 @@ class Deps(ABC):
 
     def apply(self) -> Tuple[TransportableObject, TransportableObject, TransportableObject]:
         return (self.apply_fn, self.apply_args, self.apply_kwargs)
+
+    def short_name(self):
+        return self.__module__.split("/")[-1]
+
+    def to_dict(self):
+        attributes = self.__dict__.copy()
+        for k, v in attributes.items():
+            attributes[k] = v.to_dict()
+        return {"type": "Deps", "short_name": self.short_name(), "attributes": attributes}
+
+    @staticmethod
+    def from_dict(object_dict):
+        dep = Deps()
+        attributes = object_dict.copy()["attributes"]
+        for k, v in attributes.items():
+            attributes[k] = TransportableObject.from_dict(v)
+        dep.__dict__ = attributes
+        return dep

@@ -35,3 +35,21 @@ class DepsCall(Deps):
 
     def __init__(self, func, args=[], kwargs={}):
         super().__init__(apply_fn=func, apply_args=args, apply_kwargs=kwargs)
+
+    def short_name(self):
+        return self.__module__.split("/")[-1]
+
+    def to_dict(self):
+        attributes = self.__dict__.copy()
+        for k, v in attributes.items():
+            attributes[k] = v.to_dict()
+        return {"type": "DepsCall", "short_name": self.short_name(), "attributes": attributes}
+
+    @staticmethod
+    def from_dict(object_dict):
+        dep = DepsCall(None)
+        attributes = object_dict.copy()["attributes"]
+        for k, v in attributes.items():
+            attributes[k] = TransportableObject.from_dict(v)
+        dep.__dict__ = attributes
+        return dep
