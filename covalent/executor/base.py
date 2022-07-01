@@ -161,17 +161,20 @@ class BaseExecutor(ABC):
             else:
                 print(ss)
 
-    @abstractmethod
-    def to_dict(self) -> dict:
-        raise NotImplementedError
-
-    @abstractmethod
-    def from_dict(self, object_dict):
-        raise NotImplementedError
-
-    @abstractmethod
     def short_name(self):
-        raise NotImplementedError
+        return self.__module__.split("/")[-1]
+
+    def to_dict(self):
+        return {
+            "type": self.__class__,
+            "short_name": self.short_name(),
+            "attributes": self.__dict__.copy(),
+        }
+
+    def from_dict(self, object_dict: dict):
+        if object_dict:
+            self.__dict__ = object_dict["attributes"]
+        return self
 
     @abstractmethod
     async def execute(

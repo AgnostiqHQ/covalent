@@ -101,21 +101,6 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
-    def short_name(self):
-        return self.__module__.split("/")[-1]
-
-    def to_dict(self):
-        return {
-            "type": "LocalExecutor",
-            "short_name": self.short_name(),
-            "attributes": self.__dict__.copy(),
-        }
-
-    def from_dict(self, object_dict: dict):
-        if object_dict:
-            self.__dict__ = object_dict["attributes"]
-        return self
-
     def execute(
         self,
         function: TransportableObject,
