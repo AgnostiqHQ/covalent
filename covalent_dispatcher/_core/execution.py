@@ -44,7 +44,7 @@ from covalent._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
-from covalent._workflow.deps import Deps
+from covalent._workflow import DepsBash, DepsCall
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
@@ -205,11 +205,14 @@ def _run_task(
         None
     """
 
-    app_log.debug(f"Running task {node_name}")
-    selected_executor = pickle.loads(selected_executor)
+    # Instantiate the executor from JSON
+    short_name, object_dict = selected_executor
+
+    app_log.debug(f"Running task {node_name} using executor {short_name}, {object_dict}")
 
     # the executor is determined during scheduling and provided in the execution metadata
-    executor = _executor_manager.get_executor(selected_executor)
+    executor = _executor_manager.get_executor(short_name)
+    executor.from_dict(object_dict)
 
     # run the task on the executor and register any failures
     try:
@@ -352,9 +355,18 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             serialized_callable = result_object.lattice.transport_graph.get_node_value(
                 node_id, "function"
             )
-            selected_executor = result_object.lattice.transport_graph.get_node_value(
-                node_id, "metadata"
-            )["executor"]
+
+            try:
+                selected_executor = result_object.lattice.transport_graph.get_node_value(
+                    node_id, "metadata"
+                )["executor"]
+
+                selected_executor_data = result_object.lattice.transport_graph.get_node_value(
+                    node_id, "metadata"
+                )["executor_data"]
+            except Exception as ex:
+                app_log.error(f"Exception when trying to extract executor: {ex}")
+                raise ex
 
             app_log.debug(f"Collecting deps for task {node_id}")
             try:
@@ -364,24 +376,31 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
                 # Assemble call_before and call_after from all the deps
 
-                call_before_objs = result_object.lattice.transport_graph.get_node_value(
+                call_before_objs_json = result_object.lattice.transport_graph.get_node_value(
                     node_id, "metadata"
                 )["call_before"]
-                call_after_objs = result_object.lattice.transport_graph.get_node_value(
+                call_after_objs_json = result_object.lattice.transport_graph.get_node_value(
                     node_id, "metadata"
                 )["call_after"]
 
                 call_before = []
+                call_after = []
 
-                for dep_type in ["bash", "pip"]:
-                    if dep_type in deps:
-                        dep = deps[dep_type]
-                        call_before.append(dep.apply())
-
-                for dep in call_before_objs:
+                if "bash" in deps:
+                    dep = DepsBash()
+                    dep.from_dict(deps["bash"])
                     call_before.append(dep.apply())
 
-                call_after = [dep.apply() for dep in call_after_objs]
+                for dep_json in call_before_objs_json:
+                    dep = DepsCall()
+                    dep.from_dict(dep_json)
+                    call_before.append(dep.apply())
+
+                for dep_json in call_after_objs_json:
+                    dep = DepsCall()
+                    dep.from_dict(dep_json)
+                    call_after.append(dep.apply())
+
             except Exception as ex:
                 app_log.error(f"Exception when trying to collect deps: {ex}")
                 raise ex
@@ -407,7 +426,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 dispatch_id=result_object.dispatch_id,
                 results_dir=result_object.results_dir,
                 serialized_callable=serialized_callable,
-                selected_executor=pickle.dumps(selected_executor),
+                selected_executor=[selected_executor, selected_executor_data],
                 node_name=node_name,
                 call_before=call_before,
                 call_after=call_after,
@@ -450,6 +469,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
     app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
     pp_executor = result_object.lattice.get_metadata("workflow_executor")
+    pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
     pp_client_side = pp_executor == "client"
 
     if pp_client_side:
@@ -462,7 +482,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         result_webhook.send_update(result_object)
         return
 
-    post_processor = _executor_manager.get_executor(pp_executor)
+    post_processor = [pp_executor, pp_executor_data]
+
     post_processing_inputs = {}
     post_processing_inputs["args"] = [
         TransportableObject.make_transportable(result_object.lattice),
@@ -478,14 +499,16 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             dispatch_id=result_object.dispatch_id,
             results_dir=result_object.results_dir,
             serialized_callable=TransportableObject(_post_process),
-            selected_executor=pickle.dumps(post_processor),
+            selected_executor=post_processor,
             node_name="post_process",
             call_before=[],
             call_after=[],
             inputs=post_processing_inputs,
         )
         pp_start_time = datetime.now(timezone.utc)
-        app_log.debug(f"Submitted post-processing job to {post_processor} at {pp_start_time}")
+        app_log.debug(
+            f"Submitted post-processing job to executor {post_processor} at {pp_start_time}"
+        )
 
         post_process_result = future.result()
     except Exception as ex:
@@ -554,7 +577,7 @@ def _plan_workflow(result_object: Result) -> None:
         pass
 
 
-def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecutor) -> None:
+def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExecutor) -> None:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -568,8 +591,18 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
     Returns:
         None
     """
+    lattice = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lattice, lattice.metadata["results_dir"])
 
-    result_object = rm._get_result_from_file(dispatch_id, results_dir)
+    result_object._dispatch_id = dispatch_id
+
+    # transport_graph = _TransportGraph()
+    # transport_graph.deserialize(result_object.lattice.transport_graph)
+    # result_object._lattice.transport_graph = transport_graph
+
+    result_object._initialize_nodes()
+
+    result_object.save()
 
     if result_object.status == Result.COMPLETED:
         return

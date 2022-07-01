@@ -116,11 +116,18 @@ class Lattice:
         for k, v in self.kwargs.items():
             attributes["kwargs"][k] = v.to_dict()
 
+        for k, v in self.named_args.items():
+            attributes["named_args"][k] = v.to_dict()
+        for k, v in self.named_kwargs.items():
+            attributes["named_kwargs"][k] = v.to_dict()
+
         attributes["electron_outputs"] = {}
         for node_name, output in self.electron_outputs.items():
             attributes["electron_outputs"][node_name] = output.to_dict()
 
         attributes["cova_imports"] = list(self.cova_imports)
+        # for k, v in attributes.items():
+        #     print(k, type(v))
 
         return json.dumps(attributes)
 
@@ -132,6 +139,12 @@ class Lattice:
 
         for node_name, object_dict in attributes["electron_outputs"].items():
             attributes["electron_outputs"][node_name] = TransportableObject.from_dict(object_dict)
+
+        for k, v in attributes["named_kwargs"].items():
+            attributes["named_kwargs"][k] = TransportableObject.from_dict(v)
+
+        for k, v in attributes["named_args"].items():
+            attributes["named_args"][k] = TransportableObject.from_dict(v)
 
         for k, v in attributes["kwargs"].items():
             attributes["kwargs"][k] = TransportableObject.from_dict(v)
