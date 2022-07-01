@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Electron `type` column to a string type rather than an `ElectronType`.
+- Electron `type` column to a string type rather than an `ElectronType` in DB models.
+- Primary keys from `BigInteger` to `Integer` in DB models.
 
 ## [0.116.0] - 2022-06-29
 ### Authors

@@ -28,10 +28,10 @@ from sqlalchemy.orm import Session
 from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Electron, Lattice
 from covalent._results_manager.write_result_to_db import (
+    MissingLatticeRecordError,
     get_electron_type,
     insert_electrons_data,
     insert_lattices_data,
-    MissingLatticeRecordError
 )
 from covalent._shared_files.defaults import (
     arg_prefix,
@@ -68,6 +68,94 @@ def db():
     )
 
 
+def get_lattice_kwargs(
+    dispatch_id="dispatch_1",
+    name="workflow_1",
+    status="RUNNING",
+    storage_type=STORAGE_TYPE,
+    storage_path="results/dispatch_1/",
+    function_filename=FUNCTION_FILENAME,
+    function_string_filename=FUNCTION_STRING_FILENAME,
+    executor_filename=EXECUTOR_FILENAME,
+    error_filename=ERROR_FILENAME,
+    inputs_filename=INPUTS_FILENAME,
+    results_filename=RESULTS_FILENAME,
+    created_at=None,
+    updated_at=None,
+    started_at=None,
+    completed_at=None,
+):
+    """Create lattice kwargs."""
+
+    return {
+        "dispatch_id": dispatch_id,
+        "name": name,
+        "status": status,
+        "storage_type": storage_type,
+        "storage_path": storage_path,
+        "function_filename": function_filename,
+        "function_string_filename": function_string_filename,
+        "executor_filename": executor_filename,
+        "error_filename": error_filename,
+        "inputs_filename": inputs_filename,
+        "results_filename": results_filename,
+        "created_at": created_at,
+        "updated_at": updated_at,
+        "started_at": started_at,
+        "completed_at": completed_at,
+    }
+
+
+def get_electron_kwargs(
+    parent_dispatch_id="dispatch_1",
+    transport_graph_node_id=0,
+    type=parameter_prefix.strip(prefix_separator),
+    name=f"{parameter_prefix}0",
+    status="NEW_OBJ",
+    storage_type=STORAGE_TYPE,
+    storage_path="results/dispatch_1/node_0/",
+    function_filename=FUNCTION_STRING_FILENAME,
+    function_string_filename=FUNCTION_STRING_FILENAME,
+    executor_filename=EXECUTOR_FILENAME,
+    results_filename=RESULTS_FILENAME,
+    value_filename=VALUE_FILENAME,
+    attribute_name=None,
+    key=None,
+    stdout_filename=STDOUT_FILENAME,
+    stderr_filename=STDERR_FILENAME,
+    info_filename=INFO_FILENAME,
+    created_at=None,
+    updated_at=None,
+    started_at=None,
+    completed_at=None,
+):
+    """Create electron kwargs."""
+
+    return {
+        "parent_dispatch_id": parent_dispatch_id,
+        "transport_graph_node_id": transport_graph_node_id,
+        "type": type,
+        "name": name,
+        "status": status,
+        "storage_type": storage_type,
+        "storage_path": storage_path,
+        "function_filename": function_filename,
+        "function_string_filename": function_string_filename,
+        "executor_filename": executor_filename,
+        "results_filename": results_filename,
+        "value_filename": value_filename,
+        "attribute_name": attribute_name,
+        "key": key,
+        "stdout_filename": stdout_filename,
+        "stderr_filename": stderr_filename,
+        "info_filename": info_filename,
+        "created_at": created_at,
+        "updated_at": updated_at,
+        "started_at": started_at,
+        "completed_at": completed_at,
+    }
+
+
 def test_insert_lattices_data(db):
     """Test the function that inserts the lattices data in the DB."""
 
@@ -77,24 +165,15 @@ def test_insert_lattices_data(db):
     for i in range(2):
         cur_time = dt.now()
         timestamps.append(cur_time)
-        lattice_id = insert_lattices_data(
-            db=db,
+        lattice_args = get_lattice_kwargs(
             dispatch_id=f"dispatch_{i + 1}",
             name=f"workflow_{i + 1}",
-            status="RUNNING",
-            storage_type=STORAGE_TYPE,
             storage_path=f"results/dispatch_{i+1}/",
-            function_filename=FUNCTION_FILENAME,
-            function_string_filename=FUNCTION_STRING_FILENAME,
-            executor_filename=EXECUTOR_FILENAME,
-            error_filename=ERROR_FILENAME,
-            inputs_filename=INPUTS_FILENAME,
-            results_filename=RESULTS_FILENAME,
             created_at=cur_time,
             updated_at=cur_time,
             started_at=cur_time,
-            completed_at=None,
         )
+        lattice_id = insert_lattices_data(db=db, **lattice_args)
         lattice_ids.append(lattice_id)
 
     assert lattice_ids == [1, 2]
@@ -115,12 +194,7 @@ def test_insert_lattices_data(db):
         assert lattice.error_filename == ERROR_FILENAME
         assert lattice.inputs_filename == INPUTS_FILENAME
         assert lattice.results_filename == RESULTS_FILENAME
-        assert (
-            lattice.created_at
-            == lattice.updated_at
-            == lattice.started_at
-            == timestamps[i]
-        )
+        assert lattice.created_at == lattice.updated_at == lattice.started_at == timestamps[i]
         assert lattice.completed_at is None
 
         with Session(db.engine) as session:
@@ -133,52 +207,18 @@ def test_insert_electrons_data(db):
     """Test the function that inserts the electron data to the Electrons table."""
 
     cur_time = dt.now()
-    lattice_kwargs = {
-        "db": db,
-        "dispatch_id": "dispatch_1",
-        "name": "workflow_1",
-        "status": "RUNNING",
-        "storage_type": STORAGE_TYPE,
-        "storage_path": "results/dispatch_1/",
-        "function_filename": FUNCTION_FILENAME,
-        "function_string_filename": FUNCTION_STRING_FILENAME,
-        "executor_filename": EXECUTOR_FILENAME,
-        "error_filename": ERROR_FILENAME,
-        "inputs_filename": INPUTS_FILENAME,
-        "results_filename": RESULTS_FILENAME,
-        "created_at": cur_time,
-        "updated_at": cur_time,
-        "started_at": cur_time,
-        "completed_at": None,
-    }
-    insert_lattices_data(**lattice_kwargs)
+    insert_lattices_data(
+        db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
 
     electron_kwargs = {
-        "db": db,
-        "parent_dispatch_id": "dispatch_1",  # The function would be responsible for retrieving the corresponding lattice_id which is a foreign key
-        "transport_graph_node_id": 0,
-        "type": parameter_prefix.strip(prefix_separator),
-        "name": f"{parameter_prefix}0",
-        "status": "NEW_OBJ",
-        "storage_type": STORAGE_TYPE,
-        "storage_path": "results/dispatch_1/node_0/",
-        "function_filename": FUNCTION_FILENAME,
-        "function_string_filename": FUNCTION_STRING_FILENAME,
-        "executor_filename": EXECUTOR_FILENAME,
-        "results_filename": RESULTS_FILENAME,
-        "value_filename": VALUE_FILENAME,
-        "attribute_name": None,
-        "key": None,
-        "stdout_filename": STDOUT_FILENAME,
-        "stderr_filename": STDERR_FILENAME,
-        "info_filename": INFO_FILENAME,
-        "created_at": cur_time,
-        "updated_at": cur_time,
-        "started_at": None,
-        "completed_at": None,
+        **get_electron_kwargs(
+            created_at=cur_time,
+            updated_at=cur_time,
+        )
     }
 
-    electron_id = insert_electrons_data(**electron_kwargs)
+    electron_id = insert_electrons_data(db=db, **electron_kwargs)
     assert electron_id == 1
 
     with Session(db.engine) as session:
@@ -190,9 +230,8 @@ def test_insert_electrons_data(db):
         for key, value in electron_kwargs.items():
             if key == "parent_dispatch_id":
                 assert electron.parent_lattice_id == 1
-            elif key != "db":
+            else:
                 assert getattr(electron, key) == value
-            
 
 
 def test_insert_electrons_data_missing_lattice_record(db):
@@ -200,32 +239,13 @@ def test_insert_electrons_data_missing_lattice_record(db):
 
     cur_time = dt.now()
     electron_kwargs = {
-        "db": db,
-        "parent_dispatch_id": "dispatch_1",  # The function would be responsible for retrieving the corresponding lattice_id which is a foreign key
-        "transport_graph_node_id": 0,
-        "type": parameter_prefix.strip(prefix_separator),
-        "name": f"{parameter_prefix}0",
-        "status": "NEW_OBJ",
-        "storage_type": STORAGE_TYPE,
-        "storage_path": "results/dispatch_1/node_0/",
-        "function_filename": FUNCTION_FILENAME,
-        "function_string_filename": FUNCTION_STRING_FILENAME,
-        "executor_filename": EXECUTOR_FILENAME,
-        "results_filename": RESULTS_FILENAME,
-        "value_filename": VALUE_FILENAME,
-        "attribute_name": None,
-        "key": None,
-        "stdout_filename": STDOUT_FILENAME,
-        "stderr_filename": STDERR_FILENAME,
-        "info_filename": INFO_FILENAME,
-        "created_at": cur_time,
-        "updated_at": cur_time,
-        "started_at": None,
-        "completed_at": None,
+        **get_electron_kwargs(
+            created_at=cur_time,
+            updated_at=cur_time,
+        )
     }
-
     with pytest.raises(MissingLatticeRecordError):
-        electron_id = insert_electrons_data(**electron_kwargs)
+        insert_electrons_data(db=db, **electron_kwargs)
 
 
 def test_insert_electron_dependency_data():
