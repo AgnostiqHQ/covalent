@@ -110,9 +110,6 @@ class TransportableObject:
 
         return self._object
 
-    def serialize_to_json(self) -> str:
-        return json.dumps(self.__dict__)
-
     def serialize(self) -> bytes:
         """
         Serialize the transportable object.
@@ -164,12 +161,6 @@ class TransportableObject:
             else:
                 new_dict[k] = TransportableObject.make_transportable(item)
         return new_dict
-
-    @staticmethod
-    def deserialize_from_json(data: str) -> "TransportableObject":
-        sc = TransportableObject(None)
-        sc.__dict__ = json.loads(data)
-        return sc
 
     @staticmethod
     def deserialize(data: bytes) -> "TransportableObject":
