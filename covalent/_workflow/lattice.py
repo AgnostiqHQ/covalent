@@ -25,6 +25,7 @@ import json
 import os
 import warnings
 from contextlib import redirect_stdout
+from copy import deepcopy
 from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
@@ -93,6 +94,66 @@ class Lattice:
         self.electron_outputs = {}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
         self.cova_imports.update({"electron"})
+
+        self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
+
+    # To be called after build_graph_encoded
+    def serialize_to_json(self) -> str:
+
+        attributes = deepcopy(self.__dict__)
+        attributes["workflow_function"] = self.workflow_function.to_dict()
+
+        attributes["metadata"] = encode_metadata(self.metadata)
+        attributes["transport_graph"] = None
+        if self.transport_graph:
+            attributes["transport_graph"] = self.transport_graph.serialize_to_json()
+
+        attributes["args"] = []
+        attributes["kwargs"] = {}
+
+        for arg in self.args:
+            attributes["args"].append(arg.to_dict())
+        for k, v in self.kwargs.items():
+            attributes["kwargs"][k] = v.to_dict()
+
+        attributes["electron_outputs"] = {}
+        for node_name, output in self.electron_outputs.items():
+            attributes["electron_outputs"][node_name] = output.to_dict()
+
+        attributes["cova_imports"] = list(self.cova_imports)
+
+        return json.dumps(attributes)
+
+    @staticmethod
+    def deserialize_from_json(json_data: str) -> None:
+        attributes = json.loads(json_data)
+
+        attributes["cova_imports"] = set(attributes["cova_imports"])
+
+        for node_name, object_dict in attributes["electron_outputs"].items():
+            attributes["electron_outputs"][node_name] = TransportableObject.from_dict(object_dict)
+
+        for k, v in attributes["kwargs"].items():
+            attributes["kwargs"][k] = TransportableObject.from_dict(v)
+
+        for i, arg in enumerate(attributes["args"]):
+            attributes["args"][i] = TransportableObject.from_dict(arg)
+
+        if attributes["transport_graph"]:
+            tg = _TransportGraph()
+            tg.deserialize_from_json(attributes["transport_graph"])
+            attributes["transport_graph"] = tg
+
+        attributes["workflow_function"] = TransportableObject.from_dict(
+            attributes["workflow_function"]
+        )
+
+        def dummy_function(x):
+            return x
+
+        lat = Lattice(dummy_function)
+        lat.__dict__ = attributes
+        return lat
 
     def set_metadata(self, name: str, value: Any) -> None:
         """
@@ -273,7 +334,10 @@ class Lattice:
     def __call__(self, *args, **kwargs):
         """Execute lattice as an ordinary function for testing purposes."""
 
-        return self.workflow_function(*args, **kwargs)
+        workflow_function = self.workflow_function.get_deserialized()
+        new_args = [arg.get_deserialized() for arg in args]
+        new_kwargs = {k: v.get_deserialized() for k, v in kwargs.items()}
+        return workflow_function(*new_args, **new_kwargs)
 
     def check_constraint_specific_sum(self, constraint_name: str, node_list: List[dict]) -> bool:
         """
