@@ -113,10 +113,14 @@ def result_encoder(obj):
 def encode_result(result_obj):
     lattice = result_obj.lattice
 
+    result_string = result_obj.result.json
+    if not result_string:
+        result_string = result_obj.result.object_string
+
     result_dict = {
         "dispatch_id": result_obj.dispatch_id,
         "status": result_obj.status,
-        "result": result_obj.result.json,
+        "result": result_string,
         "start_time": result_obj.start_time,
         "end_time": result_obj.end_time,
         "results_dir": result_obj.results_dir,
