@@ -91,6 +91,8 @@ class Lattice:
         self.post_processing = False
         self.args = []
         self.kwargs = {}
+        self.named_args = {}
+        self.named_kwargs = {}
         self.electron_outputs = {}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
         self.cova_imports.update({"electron"})
