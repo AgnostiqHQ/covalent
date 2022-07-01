@@ -83,9 +83,8 @@ def send_draw_request(lattice) -> None:
 
     graph = lattice.transport_graph.get_internal_graph_copy()
 
-    ((named_args, named_kwargs),) = (
-        get_named_params(lattice.workflow_function, lattice.args, lattice.kwargs),
-    )
+    named_args = lattice.named_args
+    named_kwargs = lattice.named_kwargs
 
     draw_request = json.dumps(
         {

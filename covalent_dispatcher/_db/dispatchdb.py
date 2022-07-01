@@ -79,8 +79,9 @@ def extract_metadata(metadata: dict):
         metadata["call_before"] = call_before
         metadata["call_after"] = call_after
 
-    except (KeyError, AttributeError):
-        pass
+    except (KeyError, AttributeError) as ex:
+        app_log.error(f"Exception when trying to extract metadata: {ex}")
+        raise ex
 
     return metadata
 
