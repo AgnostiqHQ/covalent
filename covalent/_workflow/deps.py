@@ -43,6 +43,9 @@ class Deps(ABC):
         return {"type": "Deps", "short_name": self.short_name(), "attributes": attributes}
 
     def from_dict(self, object_dict):
+        if not object_dict:
+            return self
+
         attributes = object_dict.copy()["attributes"]
         for k, v in attributes.items():
             attributes[k] = TransportableObject.from_dict(v)

@@ -111,8 +111,9 @@ class LocalExecutor(BaseExecutor):
             "attributes": self.__dict__.copy(),
         }
 
-    def from_dict(self, object_dict):
-        self.__dict__ = object_dict["attributes"]
+    def from_dict(self, object_dict: dict):
+        if object_dict:
+            self.__dict__ = object_dict["attributes"]
         return self
 
     def execute(

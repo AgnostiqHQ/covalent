@@ -93,7 +93,8 @@ class DaskExecutor(BaseExecutor):
         }
 
     def from_dict(self, object_dict):
-        self.__dict__ = object_dict["attributes"]
+        if object_dict:
+            self.__dict__ = object_dict["attributes"]
         return self
 
     def execute(
