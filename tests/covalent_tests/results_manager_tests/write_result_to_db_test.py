@@ -32,6 +32,7 @@ from covalent._results_manager.write_result_to_db import (
     get_electron_type,
     insert_electrons_data,
     insert_lattices_data,
+    update_lattices_data,
 )
 from covalent._shared_files.defaults import (
     arg_prefix,
@@ -252,8 +253,37 @@ def test_insert_electron_dependency_data():
     pass
 
 
-def test_update_lattices_data():
-    pass
+def test_update_lattices_data(db):
+    """Test the function that updates the lattice data."""
+
+    cur_time = dt.now()
+    with pytest.raises(MissingLatticeRecordError):
+        update_lattices_data(
+            db=db,
+            dispatch_id="dispatch_1",
+            status="COMPLETED",
+            updated_at=cur_time,
+            completed_at=cur_time,
+        )
+
+    insert_lattices_data(
+        db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
+    update_lattices_data(
+        db=db,
+        dispatch_id="dispatch_1",
+        status="COMPLETED",
+        updated_at=cur_time,
+        completed_at=cur_time,
+    )
+
+    with Session(db.engine) as session:
+        rows = session.query(Lattice).all()
+
+    for lattice in rows:
+        assert lattice.status == "COMPLETED"
+        assert lattice.updated_at == lattice.completed_at == cur_time
+        assert lattice.id == 1
 
 
 def test_update_electrons_data():

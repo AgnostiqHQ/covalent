@@ -22,6 +22,7 @@
 
 from datetime import datetime as dt
 
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from covalent._data_store.datastore import DataStore
@@ -118,7 +119,7 @@ def insert_electrons_data(
 
     # Check that the foreign key corresponding to this table exists
     with Session(db.engine) as session:
-        row = session.query(Lattice).where(Lattice.dispatch_id==parent_dispatch_id).all()
+        row = session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()
     if len(row) == 0:
         raise MissingLatticeRecordError
 
@@ -161,8 +162,29 @@ def insert_electron_dependency_data():
     pass
 
 
-def update_lattices_data():
-    pass
+def update_lattices_data(
+    db: DataStore,
+    dispatch_id: str,
+    status: str,
+    updated_at: dt,
+    completed_at: dt,
+):
+    """This function updates the lattices record."""
+
+    with Session(db.engine) as session:
+        valid_update = (
+            session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first() is not None
+        )
+
+        if not valid_update:
+            raise MissingLatticeRecordError
+
+        session.execute(
+            update(Lattice)
+            .where(Lattice.dispatch_id == dispatch_id)
+            .values(status=status, updated_at=updated_at, completed_at=completed_at)
+        )
+        session.commit()
 
 
 def update_electrons_data():
