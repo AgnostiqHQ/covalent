@@ -162,6 +162,14 @@ class BaseExecutor(ABC):
                 print(ss)
 
     @abstractmethod
+    def to_dict(self) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
+    def from_dict(self, object_dict):
+        raise NotImplementedError
+
+    @abstractmethod
     def short_name(self):
         raise NotImplementedError
 

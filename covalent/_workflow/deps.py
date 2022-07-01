@@ -42,11 +42,9 @@ class Deps(ABC):
             attributes[k] = v.to_dict()
         return {"type": "Deps", "short_name": self.short_name(), "attributes": attributes}
 
-    @staticmethod
-    def from_dict(object_dict):
-        dep = Deps()
+    def from_dict(self, object_dict):
         attributes = object_dict.copy()["attributes"]
         for k, v in attributes.items():
             attributes[k] = TransportableObject.from_dict(v)
-        dep.__dict__ = attributes
-        return dep
+        self.__dict__ = attributes
+        return self

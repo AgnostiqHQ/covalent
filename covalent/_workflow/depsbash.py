@@ -44,7 +44,7 @@ class DepsBash(Deps):
 
     """
 
-    def __init__(self, commands: Union[List, str]):
+    def __init__(self, commands: Union[List, str] = []):
         if isinstance(commands, str):
             self.commands = [commands]
         else:
@@ -62,14 +62,12 @@ class DepsBash(Deps):
                 attributes[k] = v.to_dict()
         return {"type": "DepsBash", "short_name": self.short_name(), "attributes": attributes}
 
-    @staticmethod
-    def from_dict(object_dict):
-        dep = DepsBash([])
+    def from_dict(self, object_dict):
         attributes = object_dict.copy()["attributes"]
         for k, v in attributes.items():
             if k != "commands":
                 attributes[k] = TransportableObject.from_dict(v)
 
-        dep.__dict__ = attributes
+        self.__dict__ = attributes
 
-        return dep
+        return self

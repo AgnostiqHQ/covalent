@@ -111,11 +111,9 @@ class LocalExecutor(BaseExecutor):
             "attributes": self.__dict__.copy(),
         }
 
-    @staticmethod
-    def from_dict(object_dict):
-        executor = LocalExecutor()
-        executor.__dict__ = object_dict["attributes"]
-        return executor
+    def from_dict(self, object_dict):
+        self.__dict__ = object_dict["attributes"]
+        return self
 
     def execute(
         self,

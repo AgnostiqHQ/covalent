@@ -33,7 +33,7 @@ class DepsCall(Deps):
 
     """
 
-    def __init__(self, func, args=[], kwargs={}):
+    def __init__(self, func=None, args=[], kwargs={}):
         super().__init__(apply_fn=func, apply_args=args, apply_kwargs=kwargs)
 
     def short_name(self):
@@ -45,11 +45,9 @@ class DepsCall(Deps):
             attributes[k] = v.to_dict()
         return {"type": "DepsCall", "short_name": self.short_name(), "attributes": attributes}
 
-    @staticmethod
-    def from_dict(object_dict):
-        dep = DepsCall(None)
+    def from_dict(self, object_dict):
         attributes = object_dict.copy()["attributes"]
         for k, v in attributes.items():
             attributes[k] = TransportableObject.from_dict(v)
-        dep.__dict__ = attributes
-        return dep
+        self.__dict__ = attributes
+        return self
