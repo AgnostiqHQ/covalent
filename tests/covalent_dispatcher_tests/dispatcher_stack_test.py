@@ -73,7 +73,7 @@ def test_dispatcher_flow(mock_result, expected_res, expected_node_outputs):
         results_dir=TEST_RESULTS_DIR, wait=True, dispatch_id=dispatch_id
     )
     assert result.dispatch_id == dispatch_id
-    assert result.result.get_deserialized() == expected_res
+    assert result.result == expected_res
     node_outputs = {k: v.get_deserialized() for k, v in result.get_all_node_outputs().items()}
     assert node_outputs == expected_node_outputs
 

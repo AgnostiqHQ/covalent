@@ -70,7 +70,7 @@ def test_dispatcher_functional():
     # Dispatch after starting the dispatcher server.
 
     dispatch_id = ct.dispatch(workflow)(name="q")
-    output = ct.get_result(dispatch_id, wait=True).result.get_deserialized()
+    output = ct.get_result(dispatch_id, wait=True).result
 
     assert output == "aqbq"
 
@@ -104,7 +104,7 @@ def test_results_dir_in_sublattice():
         return ct.electron(lattice_square)(x=y)
 
     dispatch_id = ct.dispatch(outer_lattice)(y=5)
-    output = ct.get_result(dispatch_id, wait=True).result.get_deserialized()
+    output = ct.get_result(dispatch_id, wait=True).result
 
     rm._delete_result(dispatch_id, results_dir="/tmp/results")
 

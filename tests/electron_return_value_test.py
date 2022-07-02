@@ -118,7 +118,7 @@ def test_arithmetic_1(test_operand, expected):
     print(res)
 
     assert len(dbres) == 0
-    assert res.result.get_deserialized() == expected
+    assert res.result == expected
 
 
 @pytest.mark.parametrize("test_operand,expected", [("+", 3), ("-", -1), ("*", 2), ("/", 0.5)])
@@ -132,7 +132,7 @@ def test_arithmetic_1_rev(test_operand, expected):
     with DispatchDB() as db:
         db.delete([dispatch_id])
 
-    assert res.result.get_deserialized() == expected
+    assert res.result == expected
 
 
 @pytest.mark.parametrize(
@@ -149,7 +149,7 @@ def test_arithmetic_2(test_b, test_operand, expected):
     with DispatchDB() as db:
         db.delete([dispatch_id])
 
-    assert res.result.get_deserialized() == expected
+    assert res.result == expected
 
 
 @pytest.mark.parametrize("test_type_to", ["int", "float", "complex"])
@@ -164,7 +164,7 @@ def test_type_conversion_numbers(test_type_to):
     with DispatchDB() as db:
         db.delete([dispatch_id])
 
-    assert res.result.get_deserialized()
+    assert res.result
 
 
 @pytest.mark.parametrize("test_type_to", ["list", "tuple"])
@@ -179,7 +179,7 @@ def test_type_conversion_iterables(test_type_to):
     with DispatchDB() as db:
         db.delete([dispatch_id])
 
-    assert res.result.get_deserialized()
+    assert res.result
 
 
 def test_type_conversion_dict():
@@ -193,4 +193,4 @@ def test_type_conversion_dict():
     with DispatchDB() as db:
         db.delete([dispatch_id])
 
-    assert res.result.get_deserialized()
+    assert res.result

@@ -47,4 +47,4 @@ def test_local_dispatcher_dispatch_sync():
     """Tests whether the local dispatcher can synchronously dispatch a workflow successfully."""
 
     result = dispatcher.dispatch_sync(workflow)(1, 2)
-    assert result.result.get_deserialized() == 5
+    assert result.result == 5

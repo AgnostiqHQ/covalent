@@ -56,4 +56,4 @@ def test_using_current_env() -> None:
     with DispatchDB() as db:
         db.delete([dispatch_id])
 
-    assert result.result.get_deserialized() == "input"
+    assert result.result == "input"
