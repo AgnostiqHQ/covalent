@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 @venkatBala
 
+### Docs
+
+- Synced with develop to ensure no files other than the ones related to CLI updates are modified
+
 ### Added
 
 - Adding `cluster` CLI options to facilitate interacting the backend Dask
