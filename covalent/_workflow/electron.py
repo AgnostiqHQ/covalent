@@ -224,25 +224,22 @@ class Electron:
         for i in range(expected_unpack_values):
             if active_lattice := active_lattice_manager.get_active_lattice():
                 try:
-                    node_name = generator_prefix + self.function.__name__ + "()" + f"[{i}]"
+                    node_name = prefix_separator + self.function.__name__ + "()" + f"[{i}]"
 
                 except AttributeError:
                     # The case when nested iter calls are made on the same electron
-                    node_name = generator_prefix + active_lattice.transport_graph.get_node_value(
+                    node_name = prefix_separator + active_lattice.transport_graph.get_node_value(
                         self.node_id, "name"
                     )
                     node_name += f"[{i}]"
 
-                node_id = active_lattice.transport_graph.add_node(
-                    name=node_name,
-                    function=None,
-                    metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                    key=i,
-                )
+                def get_item(e, key):
+                    return e[key]
 
-                active_lattice.transport_graph.add_edge(self.node_id, node_id, f"[{i}]")
+                get_item.__name__ = node_name
 
-                yield Electron(function=None, node_id=node_id, metadata=None)
+                get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
+                yield get_item_electron(self, i)
 
     def __getattr__(self, attr: str) -> "Electron":
         # This is to handle the cases where magic functions are attempted
