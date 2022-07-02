@@ -20,6 +20,7 @@ app_log = logger.app_log
 # Configure dask to not allow daemon workers
 dask.config.set({"distributed.worker.daemon": False})
 
+
 # Trying to separate out the admin work to a different thread
 # because Dask process was not starting on macos since the process are spawned by default instead
 # of fork

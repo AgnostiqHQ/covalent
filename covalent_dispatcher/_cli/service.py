@@ -530,6 +530,5 @@ def cluster(
             loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
             click.echo(f"Cluster scaled to have {scale} workers")
             return
-
     except KeyError:
         click.echo("Error")
