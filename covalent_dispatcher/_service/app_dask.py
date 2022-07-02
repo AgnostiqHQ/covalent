@@ -21,13 +21,16 @@ app_log = logger.app_log
 dask.config.set({"distributed.worker.daemon": False})
 
 
-# Trying to separate out the admin work to a different thread
-# because Dask process was not starting on macos since the process are spawned by default instead
-# of fork
 class DaskAdminWorker(Thread):
     """
-    Runs the service handlers for the Dask cluster in a separate thread to circumvent
-    any pickling issues rising from running service handlers in
+    Runs the cluster service handlers for the Dask cluster in a separate thread
+    from the main DaskCluster process. Running it in a different thread due to
+    MacOS default method for spinning processes (spawn) was raising pickling
+    issues.
+
+    Separating the service handlers into its own thread gives us the
+    flexibility to add more on demand if custom actions need to be performed on
+    the cluster that are not supported by the Dask scheduler directly
     """
 
     def __init__(
