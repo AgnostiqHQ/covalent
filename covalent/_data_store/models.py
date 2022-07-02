@@ -152,6 +152,6 @@ class ElectronDependency(Base):
     parameter_type = Column(String(24), nullable=False)
 
     # Argument position
-    arg_index = Column(Integer, nullable=False)
+    arg_index = Column(Integer, nullable=True)
 
     created_at = Column(DateTime, nullable=False)

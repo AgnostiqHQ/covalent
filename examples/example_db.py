@@ -141,8 +141,7 @@ def say_all(a):
 def outputs(a, b, c):
     x = say_hello()
     y = say_all([a, b, c, say_hello(), "world"])
-    y.append(x)
-    return y
+    return str(y) + x
 
 
 workflows = [
