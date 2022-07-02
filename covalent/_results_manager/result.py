@@ -189,7 +189,8 @@ Node Outputs
         """
         Error due to which the dispatch failed.
         """
-
+        if not self._error:
+            return ""
         return self._error
 
     def _initialize_nodes(self) -> None:
@@ -443,8 +444,14 @@ Node Outputs
         with open(os.path.join(result_folder_path, "function.pkl"), "wb") as f:
             f.write(pickle.dumps(self.lattice.workflow_function))
 
+        with open(os.path.join(result_folder_path, "inputs.pkl"), "wb") as f:
+            f.write(pickle.dumps(self.inputs))
+
         with open(os.path.join(result_folder_path, "function_string.txt"), "w") as f:
             f.write(self.lattice.workflow_function_string)
+
+        with open(os.path.join(result_folder_path, "error.log"), "w") as f:
+            f.write(self.error)
 
         with open(os.path.join(result_folder_path, "result_info.yaml"), "w") as f:
             yaml.dump(result_info, f)
