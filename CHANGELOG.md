@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-#### Authors
-
-@venkatBala
-
 ### Docs
 
 - Synced with develop to ensure no files other than the ones related to CLI updates are modified
@@ -24,6 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   memory limit per worker and threads per worker with which to launch the
   cluster with
 
+## [0.117.0] - 2022-07-02
+### Authors
+@Emmanuel289 
+
+
+### Added
+
+- Included retry action in 'tests.yaml' workflow.
 
 ## [0.116.0] - 2022-06-29
 ### Authors
