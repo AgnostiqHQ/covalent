@@ -201,7 +201,7 @@ class Lattice:
 
         return self.metadata.get(name, None)
 
-    def build_graph_legacy(self, *args, **kwargs) -> None:
+    def build_graph(self, *args, **kwargs) -> None:
         """
         Builds the transport graph for the lattice by executing the workflow
         function which will trigger the call of all underlying electrons and
@@ -219,31 +219,6 @@ class Lattice:
         Returns:
             None
         """
-
-        self.transport_graph.reset()
-
-        named_args, named_kwargs = get_named_params(self.workflow_function, args, kwargs)
-
-        args = [v for _, v in named_args.items()]
-        kwargs = named_kwargs
-
-        self.args = args
-        self.kwargs = kwargs
-
-        with redirect_stdout(open(os.devnull, "w")):
-            with active_lattice_manager.claim(self):
-                try:
-                    self.workflow_function(*args, **kwargs)
-                except Exception:
-                    warnings.warn(
-                        "Please make sure you are not manipulating an object inside the lattice."
-                    )
-                    raise
-
-    def build_graph(self, *args, **kwargs) -> None:
-        """args and kwargs are assumed to comprise entirely of
-        TransportableObjects. This should not be executed in the Covalent
-        server process."""
 
         self.args = [TransportableObject.make_transportable(arg) for arg in args]
         self.kwargs = {k: TransportableObject.make_transportable(v) for k, v in kwargs.items()}
