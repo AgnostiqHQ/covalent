@@ -277,7 +277,7 @@ def _run_task(
             if not sublattice_result:
                 raise RuntimeError("Sublattice execution failed")
 
-            output = sublattice_result.result
+            output = sublattice_result.encoded_result
 
             end_time = datetime.now(timezone.utc)
 

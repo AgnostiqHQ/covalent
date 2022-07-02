@@ -175,12 +175,19 @@ Node Outputs
         return self._status
 
     @property
+    def encoded_result(self) -> TransportableObject:
+        """
+        Encoded final result of current dispatch
+        """
+        return self._result
+
+    @property
     def result(self) -> Union[int, float, list, dict]:
         """
         Final result of current dispatch.
         """
 
-        return self._result
+        return self._result.get_deserialized()
 
     @property
     def inputs(self) -> dict:

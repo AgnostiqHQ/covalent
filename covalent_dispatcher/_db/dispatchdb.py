@@ -112,9 +112,9 @@ def result_encoder(obj):
 def encode_result(result_obj):
     lattice = result_obj.lattice
 
-    result_string = result_obj.result.json
+    result_string = result_obj.encoded_result.json
     if not result_string:
-        result_string = result_obj.result.object_string
+        result_string = result_obj.encoded_result.object_string
 
     result_dict = {
         "dispatch_id": result_obj.dispatch_id,
