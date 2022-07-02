@@ -142,6 +142,7 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
     return task_input
 
 
+# This is to be run out-of-process
 def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[List]) -> Any:
     """
     Post processing function to be called after the lattice execution.
@@ -177,7 +178,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         kwargs = {}
         for arg in lattice.args:
             args.append(arg.get_deserialized())
-        for k, v in lattice.kwargs:
+        for k, v in lattice.kwargs.items():
             kwargs[k] = v.get_deserialized()
         workflow_function = lattice.workflow_function.get_deserialized()
         result = workflow_function(*args, **kwargs)
