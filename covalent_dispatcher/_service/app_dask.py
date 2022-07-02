@@ -151,8 +151,8 @@ class DaskCluster(Process):
     lifetime is tied to Covalent. The cluster also starts and
     admin/monitoring server along with it so that the cluster can be
     administered and dynamically altered after covalent has started. By
-    default the admin server listens for TCP connections at
-    tcp://127.0.0.1:8000
+    default the admin server listens for TCP connections on localhost with a
+    randomly selected TCP port that is available
     """
 
     def __init__(self, name: str, logger: Logger):
