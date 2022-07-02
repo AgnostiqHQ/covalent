@@ -56,7 +56,7 @@ def test_using_executor_names():
         with DispatchDB() as db:
             db.delete([dispatch_id])
 
-        assert output.result == "input"
+        assert output.result.get_deserialized() == "input"
 
 
 def test_using_executor_classes():
@@ -83,4 +83,4 @@ def test_using_executor_classes():
 
         rm._delete_result(dispatch_id)
 
-        assert output.result == "input"
+        assert output.result.get_deserialized() == "input"

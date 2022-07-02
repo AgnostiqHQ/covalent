@@ -75,7 +75,7 @@ def test_check_nodes():
     TODO:ultimately we might want to check if the graph's certain attributes are equal to each
     other"""
 
-    check.build_graph(a=1, b=2)
+    check.build_graph_encoded(a=1, b=2)
     assert [0, 1, 2, 3] == list(check.transport_graph._graph.nodes)
 
 
@@ -93,7 +93,7 @@ def test_electron_takes_nested_iterables():
 
     dispatch_id = ct.dispatch(workflow)()
 
-    assert rm.get_result(dispatch_id, wait=True).result == [
+    assert rm.get_result(dispatch_id, wait=True).result.get_deserialized() == [
         [0, 1, 2, 3, 4],
         [5, 6, 7, 8, 9],
     ]
@@ -118,8 +118,8 @@ def test_sublatticing():
 
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
-    assert workflow_result.result == 3
-    assert workflow_result.get_node_result(0)["sublattice_result"].result == 3
+    assert workflow_result.result.get_deserialized() == 3
+    assert workflow_result.get_node_result(0)["sublattice_result"].result.get_deserialized() == 3
 
 
 def test_parallelization():
@@ -188,7 +188,7 @@ def test_electron_deps_bash():
     dispatch_id = ct.dispatch(workflow)(x=5)
     res = ct.get_result(dispatch_id, wait=True)
 
-    assert res.result == 5
+    assert res.result.get_deserialized() == 5
     assert Path(tmp_path).is_file()
 
     rm._delete_result(dispatch_id)
@@ -226,7 +226,7 @@ def test_electron_deps_call_before():
     dispatch_id = ct.dispatch(workflow)(file_path=tmp_path)
     res = ct.get_result(dispatch_id, wait=True)
 
-    assert res.result == (True, "Hello")
+    assert res.result.get_deserialized() == (True, "Hello")
 
     assert not Path(tmp_path).is_file()
 
@@ -252,7 +252,7 @@ def test_electron_deps_bash_implicit():
     dispatch_id = ct.dispatch(workflow)(x=5)
     res = ct.get_result(dispatch_id, wait=True)
 
-    assert res.result == 5
+    assert res.result.get_deserialized() == 5
     assert Path(tmp_path).is_file()
 
     rm._delete_result(dispatch_id)
@@ -279,7 +279,7 @@ def test_electrons_with_positional_args():
 
     rm._delete_result(dispatch_id)
 
-    assert workflow_result.result == 3
+    assert workflow_result.result.get_deserialized() == 3
 
 
 def test_lattice_with_positional_args():
@@ -301,7 +301,7 @@ def test_lattice_with_positional_args():
 
     rm._delete_result(dispatch_id)
 
-    assert workflow_result.result == 3
+    assert workflow_result.result.get_deserialized() == 3
 
 
 def test_positional_args_integration():
@@ -323,7 +323,7 @@ def test_positional_args_integration():
 
     rm._delete_result(dispatch_id)
 
-    assert workflow_result.result == 15
+    assert workflow_result.result.get_deserialized() == 15
 
 
 @pytest.mark.skip(reason="Need to implement stdout/stderr redirection from dask workers")
@@ -441,7 +441,7 @@ def test_all_parameter_types_in_electron():
     result = rm.get_result(dispatch_id, wait=True)
     rm._delete_result(dispatch_id)
 
-    assert result.result == (10, (3, 4), {"d": 6, "e": 7})
+    assert result.result.get_deserialized() == (10, (3, 4), {"d": 6, "e": 7})
 
 
 def test_all_parameter_types_in_lattice():
@@ -459,7 +459,11 @@ def test_all_parameter_types_in_lattice():
     result = rm.get_result(dispatch_id, wait=True)
     rm._delete_result(dispatch_id)
 
-    assert result.inputs["args"] == [1, 2, 3, 4]
-    assert result.inputs["kwargs"] == {"c": 5, "d": 6, "e": 7}
+    assert ct.TransportableObject.deserialize_list(result.inputs["args"]) == [1, 2, 3, 4]
+    assert ct.TransportableObject.deserialize_dict(result.inputs["kwargs"]) == {
+        "c": 5,
+        "d": 6,
+        "e": 7,
+    }
 
-    assert result.result == (10, (3, 4), {"d": 6, "e": 7})
+    assert result.result.get_deserialized() == (10, (3, 4), {"d": 6, "e": 7})
