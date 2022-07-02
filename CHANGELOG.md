@@ -12,6 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixes Reverse IP problem. All References to `0.0.0.0` are changed to `localhost` . More details can be found [here](https://github.com/AgnostiqHQ/covalent/issues/202)
 
 
+## [0.117.0] - 2022-07-02
+### Authors
+@Emmanuel289 
+
+
+### Added
+
+- Included retry action in 'tests.yaml' workflow.
+
 ## [0.116.0] - 2022-06-29
 ### Authors
 @Prasy12 
