@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Introduce support for pip dependencies
 
+## [0.117.0] - 2022-07-02
+### Authors
+@Emmanuel289 
+
+
+### Added
+
+- Included retry action in 'tests.yaml' workflow.
+
 ## [0.116.0] - 2022-06-29
 ### Authors
 @Prasy12 
