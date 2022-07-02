@@ -531,6 +531,6 @@ def cluster(
             click.echo(f"Cluster scaled to have {scale} workers")
             return
 
-        
+
     except KeyError:
         click.echo("Error")
