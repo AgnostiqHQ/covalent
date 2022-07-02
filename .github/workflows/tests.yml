@@ -83,10 +83,14 @@ jobs:
           npm install -g yarn
 
       - name: Build webapp
-        run: |
-          cd ./covalent_ui/webapp
-          yarn install
-          yarn build
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 2
+          command: |
+            cd ./covalent_ui/webapp
+            yarn install
+            yarn build
 
       - name: Build distribution
         run: python setup.py sdist
