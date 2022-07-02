@@ -34,7 +34,7 @@ import dask.system
 import psutil
 import requests
 from distributed.comm import parse_address, unparse_address
-from distributed.core import rpc
+from distributed.core import rpc, connect
 
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
@@ -444,8 +444,10 @@ async def _cluster_scale(uri: str, nworkers: int):
     """
     Scale the cluster up/down depending on `nworkers`
     """
-    async with rpc(uri) as r:
-        result = await r.cluster_scale(size=nworkers)
+    comm = await connect(uri)
+    await comm.write({'op': 'cluster_scale', 'size': nworkers})
+    result = await comm.read()
+    comm.close()
     return result
 
 
@@ -459,8 +461,11 @@ async def _get_cluster_logs(uri):
     """
     Retrive the cluster logs from the scheduler directly
     """
-    async with rpc(uri) as r:
-        cluster_logs = await r.cluster_logs()
+    click.echo("Calling logs handler")
+    comm = await connect(uri)
+    await comm.write({'op': 'cluster_logs'})
+    cluster_logs = await comm.read()
+    comm.close()
     return cluster_logs
 
 
@@ -475,12 +480,13 @@ async def _get_cluster_logs(uri):
 @click.option(
     "--scale",
     is_flag=False,
+    nargs=1,
     type=int,
     default=dask.system.CPU_COUNT,
     show_default=True,
     help="Scale cluster by adding/removing workers to match `nworkers`",
 )
-@click.option("--logs", is_flag=True, help="Show Dask cluster logs")
+@click.option("--logs", is_flag=True, default=False, help="Show Dask cluster logs")
 def cluster(
     status: bool, info: bool, address: bool, size: bool, restart: bool, scale: int, logs: bool
 ):
@@ -516,13 +522,15 @@ def cluster(
             click.echo("Cluster restarted")
             return
 
+        if logs:
+            click.echo(loop.run_until_complete(_get_cluster_logs(admin_server_addr)))
+            return
+
         if scale:
             loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
             click.echo(f"Cluster scaled to have {scale} workers")
             return
 
-        if logs:
-            click.echo(loop.run_until_complete(_get_cluster_logs(admin_server_addr)))
-            return
+        
     except KeyError:
-        pass
+        click.echo("Error")

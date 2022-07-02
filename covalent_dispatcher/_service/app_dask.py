@@ -7,6 +7,7 @@ from threading import Thread
 
 import dask.config
 from dask.distributed import Client, LocalCluster
+from distributed.node import ServerNode
 from distributed.core import Server, rpc
 
 from covalent._shared_files import logger
@@ -26,9 +27,13 @@ class DaskAdminWorker(Thread):
     Runs the service handlers for the Dask cluster in a separate thread to circumvent
     any pickling issues rising from running service handlers in
     """
-    def __init__(self, proc: Process):
+    def __init__(self, cluster: LocalCluster, event_loop, admin_host: str, admin_port: int, logger = None):
         # Admin handler server connection args
-        self.proc = proc
+        self.cluster = cluster
+        self.event_loop = event_loop
+        self._admin_host = admin_host
+        self._admin_port = admin_port
+        self.logger = logger
 
         # Register handlers
         self.handlers = {
@@ -37,18 +42,21 @@ class DaskAdminWorker(Thread):
             "cluster_status": self._get_cluster_status,
             "cluster_address": self._get_cluster_addresses,
             "cluster_restart": self._cluster_restart,
-            "cluster_scale": lambda comm, size: self.proc.cluster.scale(int(size)),
+           "cluster_scale": lambda size: self.cluster.scale(size),
             "cluster_logs": self._get_cluster_logs,
         }
-
         super().__init__()
+
+    async def _cluster_scale(self, size: int):
+        self.logger.warning(f"Call reached here, for size {size}")
+        self.cluster.scale(size)
 
     async def _get_cluster_logs(self):
         """
         Retrive cluster logs from the scheduler
         """
         cluster_logs = []
-        async with rpc(self.proc.cluster.scheduler_address) as r:
+        async with rpc(self.cluster.scheduler_address) as r:
             cluster_logs.append(await r.get_logs())
             cluster_logs.append(await r.worker_logs())
         return cluster_logs
@@ -57,14 +65,12 @@ class DaskAdminWorker(Thread):
         async with rpc(worker_nanny_addr) as r:
             await r.restart()
 
-        self.proc.logger.warning(f"Worker-{worker_id} restarted")
-
     async def _cluster_restart(self):
         """
         Restart the workers using their respective nanny services
         """
         worker_service_addrs = {}
-        async with rpc(self.proc.cluster.scheduler_address) as r:
+        async with rpc(self.cluster.scheduler_address) as r:
             cinfo = await r.identity()
             for _, worker_info in cinfo["workers"].items():
                 worker_id = worker_info["id"]
@@ -81,7 +87,7 @@ class DaskAdminWorker(Thread):
         """
         Retrive cluster info from the scheduler
         """
-        async with rpc(self.proc.cluster.scheduler_address) as r:
+        async with rpc(self.cluster.scheduler_address) as r:
             return await r.identity()
 
     async def _get_cluster_status(self):
@@ -89,13 +95,13 @@ class DaskAdminWorker(Thread):
         Retrive status of the scheduler and all workers part of the cluster
         """
         proc_status = {}
-        async with rpc(self.proc.cluster.scheduler_address) as r:
+        async with rpc(self.cluster.scheduler_address) as r:
             cinfo = await r.identity()
 
         if cinfo:
             proc_status["scheduler"] = "running"
 
-        for worker_addr, worker_info in cinfo["workers"].items():
+        for _, worker_info in cinfo["workers"].items():
             worker_id = worker_info["id"]
             proc_status[f"worker-{worker_id}"] = worker_info["status"]
 
@@ -106,7 +112,7 @@ class DaskAdminWorker(Thread):
         Retrive the scheduler and worker addresses that are part of the cluster
         """
         addresses = {}
-        async with rpc(self.proc.cluster.scheduler_address) as r:
+        async with rpc(self.cluster.scheduler_address) as r:
             cinfo = await r.identity()
 
         addresses["scheduler"] = cinfo["address"]
@@ -121,15 +127,14 @@ class DaskAdminWorker(Thread):
         """
         Return the number of active workers in the cluster
         """
-        if self.proc.cluster:
-            return len(self.proc.cluster.workers)
+        if self.cluster:
+            return len(self.cluster.workers)
         return 0
 
     def run(self):
-        asyncio.set_event_loop(self.proc.event_loop)
+        asyncio.set_event_loop(self.event_loop)
         s = Server(handlers=self.handlers)
-        self.proc.event_loop.create_task(s.listen(f"tcp://{self.proc.admin_host}:{self.proc.admin_port}"))
-        self.proc.event_loop.run_forever()
+        self.event_loop.create_task(s.listen(f"tcp://{self._admin_host}:{self._admin_port}"))
 
 
 class DaskCluster(Process):
@@ -179,9 +184,6 @@ class DaskCluster(Process):
         Runs a local dask cluster along with its monitoring thread
         """
         self.event_loop = asyncio.get_event_loop()
-        admin = DaskAdminWorker(self)
-        admin.start()
-
 
         try:
             self.cluster = LocalCluster(
@@ -208,5 +210,10 @@ class DaskCluster(Process):
                     }
                 }
             )
+
+            admin = DaskAdminWorker(self.cluster, self.event_loop,
+                                self.admin_host, self.admin_port, self.logger)
+            admin.start()
+            self.event_loop.run_forever()
         except Exception as e:
             self.logger.exception(e)
