@@ -467,6 +467,9 @@ def lattice(
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
+    workflow_executor: Optional[
+        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
+    ] = _DEFAULT_CONSTRAINT_VALUES["workflow_executor"],
     # Add custom metadata fields here
     deps_bash: Union[DepsBash, list, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None),
     call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
@@ -517,10 +520,10 @@ def lattice(
     constraints = {
         "executor": executor,
         "results_dir": results_dir,
+        "workflow_executor": executor,
         "deps": deps,
         "call_before": call_before,
         "call_after": call_after,
-        "workflow_executor": executor,
     }
 
     def decorator_lattice(func=None):
