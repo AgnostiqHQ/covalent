@@ -20,8 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   memory limit per worker and threads per worker with which to launch the
   cluster with
 
-- Synced changes with develop
-
 
 ## [0.116.0] - 2022-06-29
 ### Authors
