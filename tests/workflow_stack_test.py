@@ -75,7 +75,7 @@ def test_check_nodes():
     TODO:ultimately we might want to check if the graph's certain attributes are equal to each
     other"""
 
-    check.build_graph_encoded(a=1, b=2)
+    check.build_graph(a=1, b=2)
     assert [0, 1, 2, 3] == list(check.transport_graph._graph.nodes)
 
 

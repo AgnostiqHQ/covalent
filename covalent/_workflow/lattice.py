@@ -99,7 +99,7 @@ class Lattice:
 
         self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
 
-    # To be called after build_graph_encoded
+    # To be called after build_graph
     def serialize_to_json(self) -> str:
 
         attributes = deepcopy(self.__dict__)
@@ -201,7 +201,7 @@ class Lattice:
 
         return self.metadata.get(name, None)
 
-    def build_graph(self, *args, **kwargs) -> None:
+    def build_graph_legacy(self, *args, **kwargs) -> None:
         """
         Builds the transport graph for the lattice by executing the workflow
         function which will trigger the call of all underlying electrons and
@@ -240,7 +240,7 @@ class Lattice:
                     )
                     raise
 
-    def build_graph_encoded(self, *args, **kwargs) -> None:
+    def build_graph(self, *args, **kwargs) -> None:
         """args and kwargs are assumed to comprise entirely of
         TransportableObjects. This should not be executed in the Covalent
         server process."""
@@ -335,7 +335,7 @@ class Lattice:
             None
         """
 
-        self.build_graph_encoded(*args, **kwargs)
+        self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
 
     def __call__(self, *args, **kwargs):

@@ -77,7 +77,7 @@ class LocalDispatcher(BaseDispatcher):
 
             lattice = deepcopy(orig_lattice)
 
-            lattice.build_graph_encoded(*args, **kwargs)
+            lattice.build_graph(*args, **kwargs)
 
             # Serialize the transport graph to JSON
             json_lattice = lattice.serialize_to_json()

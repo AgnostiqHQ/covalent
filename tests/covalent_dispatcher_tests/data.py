@@ -39,7 +39,7 @@ def get_mock_result() -> Result:
     def pipeline(y):
         return identity(x=y)
 
-    pipeline.build_graph_encoded(y=1)
+    pipeline.build_graph(y=1)
 
     return Result(
         lattice=pipeline,
@@ -63,7 +63,7 @@ def get_mock_result_2() -> Result:
         res = product(x=x, y=y)
         return identity(x=res)
 
-    pipeline.build_graph_encoded(x=1, y=1)
+    pipeline.build_graph(x=1, y=1)
 
     return Result(
         lattice=pipeline,
@@ -79,7 +79,7 @@ def get_mock_result_3() -> Result:
     def pipeline(x, y):
         return x * y
 
-    pipeline.build_graph_encoded(x=1, y=1)
+    pipeline.build_graph(x=1, y=1)
 
     return Result(
         lattice=pipeline,

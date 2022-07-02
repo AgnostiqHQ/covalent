@@ -60,7 +60,7 @@ def get_mock_result() -> Result:
     def pipeline(x):
         return task(x)
 
-    pipeline.build_graph_encoded(x="absolute")
+    pipeline.build_graph(x="absolute")
 
     return Result(
         lattice=pipeline,
@@ -115,7 +115,7 @@ def test_post_process():
 
         return (N2, e_N2, slab, e_slab, relaxed_slab, e_relaxed_slab)
 
-    compute_energy.build_graph_encoded()
+    compute_energy.build_graph()
 
     order = [
         i for i in range(len(compute_energy.transport_graph.get_internal_graph_copy().nodes()))
