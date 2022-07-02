@@ -512,7 +512,7 @@ class Electron:
             active_lattice.transport_graph.add_edge(
                 el.node_id,
                 self.node_id,
-                edge_name="waiting_edge",
+                edge_name="!waiting_edge",
                 wait_for=True,
             )
 
