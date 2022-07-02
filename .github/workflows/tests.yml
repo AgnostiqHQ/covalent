@@ -116,10 +116,9 @@ jobs:
         uses: nick-fields/retry@v2
         with:
             timeout_minutes: 30
-            max_attempts: 3
-            command: >-
-              PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher
-              coverage xml -o coverage.xml
+            max_attempts: 2
+            command: |
+              PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher coverage xml -o coverage.xml
 
       - name: Upload report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
