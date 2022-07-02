@@ -53,6 +53,8 @@ print(result.lattice.workflow_function)
 print(result.lattice.workflow_function_string)
 print(result.lattice.get_metadata("executor"))
 print(_executor_manager.get_executor(result.lattice.get_metadata("executor")))
+print("error")
+print(result.error)
 
 print(dispatch_id)
 
@@ -66,8 +68,8 @@ lattice = Lattice(
     function_filename="function.pkl",  # done
     function_string_filename="function_string.txt",  # done
     executor_filename="executor.pkl",  # done
-    error_filename="error.txt",
-    inputs_filename="inputs.pkl",
+    error_filename="error.log",  # done, TODO: make a lattice that causes an error
+    inputs_filename="inputs.pkl",  # done
     results_filename="result.pkl",  # done
     created_at=datetime.now(),
     updated_at=datetime.now(),
