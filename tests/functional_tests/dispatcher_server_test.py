@@ -56,7 +56,7 @@ def test_dispatcher_server():
     assert result.end_time is not None
     assert result.end_time > result.start_time
     assert result.status == ct.status.COMPLETED
-    assert result.result == 3
+    assert result.result.get_deserialized() == 3
 
     rm._delete_result(dispatch_id)
     with DispatchDB() as db:

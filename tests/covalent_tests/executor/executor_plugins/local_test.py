@@ -43,8 +43,8 @@ def test_local_executor_passes_results_dir(mocker):
         le = LocalExecutor()
         le.execute(
             function=TransportableObject(simple_task),
-            args={"x": 1},
-            kwargs={"y": 2},
+            args=[],
+            kwargs={"x": TransportableObject(1), "y": TransportableObject(2)},
             call_before=[],
             call_after=[],
             dispatch_id=-1,
