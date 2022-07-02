@@ -81,7 +81,6 @@ def extract_metadata(metadata: dict):
 
     except (KeyError, AttributeError) as ex:
         app_log.error(f"Exception when trying to extract metadata: {ex}")
-        raise ex
 
     return metadata
 
