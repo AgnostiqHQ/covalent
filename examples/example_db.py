@@ -2,9 +2,14 @@
 
 import argparse
 import os
+import random
+import shutil
 from datetime import datetime
+from pathlib import Path
+from pprint import pprint
 
 import cloudpickle as pickle
+import networkx as nx
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
@@ -46,6 +51,12 @@ dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
 result = ct.get_result(dispatch_id)
 result.save()
 
+electron_id = 0
+edge_id = 0
+lattice_id = 0
+electrons = []
+edges = []
+lattices = []
 print(result.lattice.transport_graph.get_topologically_sorted_graph())
 print(result.lattice.transport_graph.get_node_value(2, "function").get_deserialized())
 print(result.lattice.__name__)
@@ -56,10 +67,13 @@ print(_executor_manager.get_executor(result.lattice.get_metadata("executor")))
 print("error")
 print(result.error)
 
+
 print(dispatch_id)
 
+lattice_id = lattice_id + 1
+
 lattice = Lattice(
-    id=1,
+    id=lattice_id,
     dispatch_id=dispatch_id,
     name=simple_workflow.__name__,
     status=str(result._status),
@@ -77,32 +91,56 @@ lattice = Lattice(
     completed_at=result._end_time,
 )
 
+lattices.append(lattice)
+
 with open(os.path.join(f"./results/{dispatch_id}/", "executor.pkl"), "wb") as f:
     f.write(pickle.dumps(_executor_manager.get_executor(result.lattice.get_metadata("executor"))))
 
-electron = Electron(
-    id=1,
-    parent_lattice_id=lattice.id,
-    transport_graph_node_id=result.lattice.transport_graph.get_topologically_sorted_graph()[0][0],
-    type=ElectronTypeEnum.electron,
-    name=join_words.__name__,
-    status=str(result._status),
-    storage_type="local",
-    storage_path=dispatch_id,
-    function_filename="dispatch_source.pkl",
-    function_string_filename="dispatch_source.py",
-    executor_filename="executor.pkl",
-    error_filename="error.txt",
-    results_filename="result.pkl",
-    value_filename="value.pkl",
-    stdout_filename="stdout.log",
-    stderr_filename="stderr.log",
-    info_filename="result_info.yaml",
-    created_at=datetime.now(),
-    updated_at=datetime.now(),
-    started_at=result._start_time,
-    completed_at=result._end_time,
-)
+data = nx.readwrite.node_link_data(result.lattice.transport_graph._graph)
+nodes = data(["nodes"])
+links = data(["links"])
+
+for node in nodes:
+    electron_id = electron_id + 1
+    storage_path = f"./results/{dispatch_id}/node_{node.id}/"
+    with open(os.path.join(storage_path, "function.pkl"), "wb") as f:
+        f.write(pickle.dumps(node.function))
+    with open(os.path.join(storage_path, "function_string.txt"), "w") as f:
+        f.write(str(node.function_string))
+    with open(os.path.join(storage_path, "executor.pkl"), "wb") as f:
+        f.write(pickle.dumps(_executor_manager.get_executor(node.metadata.executor)))
+    with open(os.path.join(storage_path, "result.pkl"), "wb") as f:
+        f.write(pickle.dumps(node.sublattice_result))
+    with open(os.path.join(storage_path, "error.log"), "w") as f:
+        f.write(str(node.error))
+    if "value" in node.keys():
+        value_filename = "value.pkl"
+        with open(os.path.join(storage_path, value_filename), "wb") as f:
+            f.write(pickle.dumps(node.value))
+    electron = Electron(
+        id=electron_id,
+        parent_lattice_id=lattice.id,
+        transport_graph_node_id=node.id,
+        type=ElectronTypeEnum.electron,
+        name=node.name,
+        status=str(node.status),
+        storage_type="local",
+        storage_path=storage_path,
+        function_filename="function.pkl",
+        function_string_filename="function_string.txt",
+        executor_filename="executor.pkl",
+        error_filename="error.log",
+        results_filename="result.pkl",
+        value_filename="value.pkl",
+        stdout_filename="stdout.log",
+        stderr_filename="stderr.log",
+        info_filename="info.log",
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+        started_at=node.start_time,
+        completed_at=node.end_time,
+    )
+
 
 electron_deps = ElectronDependency(
     id=1,
