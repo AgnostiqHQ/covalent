@@ -45,6 +45,10 @@ class MissingLatticeRecordError(Exception):
     pass
 
 
+class MissingElectronRecordError(Exception):
+    pass
+
+
 def insert_lattices_data(
     db: DataStore,
     dispatch_id: str,
@@ -168,7 +172,7 @@ def update_lattices_data(
     status: str,
     updated_at: dt,
     completed_at: dt,
-):
+) -> None:
     """This function updates the lattices record."""
 
     with Session(db.engine) as session:
