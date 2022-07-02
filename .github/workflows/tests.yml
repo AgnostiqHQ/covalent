@@ -114,7 +114,7 @@ jobs:
 
       - name: Run tests and measure coverage
         uses: nick-fields/retry@v2
-          with:
+        with:
             timeout_minutes: 30
             max_attempts: 3
             command: >-
