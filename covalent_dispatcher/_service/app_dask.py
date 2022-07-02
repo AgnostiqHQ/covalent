@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import asyncio
 import os
 from logging import Logger
@@ -7,8 +8,8 @@ from threading import Thread
 
 import dask.config
 from dask.distributed import Client, LocalCluster
-from distributed.node import ServerNode
 from distributed.core import Server, rpc
+from distributed.node import ServerNode
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config, set_config, update_config
@@ -27,7 +28,10 @@ class DaskAdminWorker(Thread):
     Runs the service handlers for the Dask cluster in a separate thread to circumvent
     any pickling issues rising from running service handlers in
     """
-    def __init__(self, cluster: LocalCluster, event_loop, admin_host: str, admin_port: int, logger = None):
+
+    def __init__(
+        self, cluster: LocalCluster, event_loop, admin_host: str, admin_port: int, logger=None
+    ):
         # Admin handler server connection args
         self.cluster = cluster
         self.event_loop = event_loop
@@ -42,7 +46,7 @@ class DaskAdminWorker(Thread):
             "cluster_status": self._get_cluster_status,
             "cluster_address": self._get_cluster_addresses,
             "cluster_restart": self._cluster_restart,
-           "cluster_scale": lambda size: self.cluster.scale(size),
+            "cluster_scale": lambda size: self.cluster.scale(size),
             "cluster_logs": self._get_cluster_logs,
         }
         super().__init__()
@@ -206,13 +210,14 @@ class DaskCluster(Process):
                         "process_info": current_process(),
                         "pid": os.getpid(),
                         "admin_host": self.admin_host,
-                        "admin_port": self.admin_port
+                        "admin_port": self.admin_port,
                     }
                 }
             )
 
-            admin = DaskAdminWorker(self.cluster, self.event_loop,
-                                self.admin_host, self.admin_port, self.logger)
+            admin = DaskAdminWorker(
+                self.cluster, self.event_loop, self.admin_host, self.admin_port, self.logger
+            )
             admin.start()
             self.event_loop.run_forever()
         except Exception as e:

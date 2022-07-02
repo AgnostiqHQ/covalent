@@ -34,7 +34,7 @@ import dask.system
 import psutil
 import requests
 from distributed.comm import parse_address, unparse_address
-from distributed.core import rpc, connect
+from distributed.core import connect, rpc
 
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
@@ -445,7 +445,7 @@ async def _cluster_scale(uri: str, nworkers: int):
     Scale the cluster up/down depending on `nworkers`
     """
     comm = await connect(uri)
-    await comm.write({'op': 'cluster_scale', 'size': nworkers})
+    await comm.write({"op": "cluster_scale", "size": nworkers})
     result = await comm.read()
     comm.close()
     return result
@@ -463,7 +463,7 @@ async def _get_cluster_logs(uri):
     """
     click.echo("Calling logs handler")
     comm = await connect(uri)
-    await comm.write({'op': 'cluster_logs'})
+    await comm.write({"op": "cluster_logs"})
     cluster_logs = await comm.read()
     comm.close()
     return cluster_logs
@@ -531,6 +531,5 @@ def cluster(
             click.echo(f"Cluster scaled to have {scale} workers")
             return
 
-        
     except KeyError:
         click.echo("Error")
