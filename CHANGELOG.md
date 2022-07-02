@@ -9,16 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Adding `cluster` CLI options to facilitate interacting the backend Dask
-  cluster
+- Adding `cluster` CLI options to facilitate interacting the backend Dask cluster
 
-- Adding options to `covalent start` to allow specifying number of workers,
-  memory limit per worker and threads per worker with which to launch the
-  cluster with
+- Adding options to `covalent start` to enable specifying number of workers, memory limit per work and threads per worker at cluster start time
 
-#### Changed
+### Changed
 
 - Updated docstring for the `DaskAdminWorker`
+
+## [0.118.0] - 2022-07-02
+### Authors
+@AlejandroEsquivel 
+
+
+### Added
+
+- Introduced File, FileTransfer, and FileTransferStrategy classes to support various File Transfer use cases prior/post electron execution
 
 ## [0.117.0] - 2022-07-02
 ### Authors
@@ -160,7 +166,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- CLI option for starting Covalent server without Dask.
+- Add CLI functionality to start covalent with/without Dask
+- Add CLI support to parse `covalent_ui.log` file
+
+### Operations
+
+- Updating codeowners to establish engineering & psiog ownership
 
 ### Docs
 
