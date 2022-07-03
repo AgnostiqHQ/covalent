@@ -330,15 +330,7 @@ def test_get_electron_dependencies():
     pass
 
 
-def test_sublattice_electron_id():
-    pass
-
-
 def test_are_electron_dependencies_added():
-    pass
-
-
-def test_is_lattice_added():
     pass
 
 

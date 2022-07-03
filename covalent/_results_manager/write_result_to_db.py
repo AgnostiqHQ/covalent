@@ -239,15 +239,7 @@ def get_electron_dependencies():
     pass
 
 
-def sublattice_electron_id():
-    pass
-
-
 def are_electron_dependencies_added():
-    pass
-
-
-def is_lattice_added():
     pass
 
 
