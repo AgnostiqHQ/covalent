@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Introduce support for pip dependencies
 
+## [0.118.0] - 2022-07-02
+### Authors
+@AlejandroEsquivel 
+
+
+### Added
+
+- Introduced File, FileTransfer, and FileTransferStrategy classes to support various File Transfer use cases prior/post electron execution
+
 ## [0.117.0] - 2022-07-02
 ### Authors
 @Emmanuel289 
