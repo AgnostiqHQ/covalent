@@ -27,6 +27,7 @@ import cloudpickle as pickle
 
 import covalent as ct
 from covalent._results_manager import Result
+from covalent._shared_files.defaults import prefix_separator, sublattice_prefix
 from covalent_dispatcher._core.execution import _plan_workflow, _post_process
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -138,5 +139,69 @@ def test_post_process():
     }
 
     execution_result = _post_process(compute_energy, encoded_node_outputs, order)
+
+    assert execution_result == compute_energy()
+
+
+def test_client_post_process():
+    """Test client-side post-processing of results."""
+
+    import covalent as ct
+
+    @ct.electron
+    def construct_cu_slab(x):
+        return x
+
+    @ct.electron
+    def compute_system_energy(x):
+        return x
+
+    @ct.electron
+    def construct_n_molecule(x):
+        return x
+
+    @ct.electron
+    def get_relaxed_slab(x):
+        return x
+
+    @ct.lattice
+    def compute_energy():
+        N2 = construct_n_molecule(1)
+        e_N2 = compute_system_energy(N2)
+
+        slab = construct_cu_slab(2)
+        e_slab = compute_system_energy(slab)
+
+        relaxed_slab = get_relaxed_slab(3)
+        e_relaxed_slab = compute_system_energy(relaxed_slab)
+
+        return (N2, e_N2, slab, e_slab, relaxed_slab, e_relaxed_slab)
+
+    compute_energy.build_graph()
+
+    node_outputs = {
+        "construct_n_molecule(0)": 1,
+        ":parameter:1(1)": 1,
+        "compute_system_energy(2)": 1,
+        "construct_cu_slab(3)": 2,
+        ":parameter:2(4)": 2,
+        "compute_system_energy(5)": 2,
+        "get_relaxed_slab(6)": 3,
+        ":parameter:3(7)": 3,
+        "compute_system_energy(8)": 3,
+    }
+
+    encoded_node_outputs = {
+        k: ct.TransportableObject.make_transportable(v) for k, v in node_outputs.items()
+    }
+
+    res = Result(compute_energy, compute_energy.metadata["results_dir"])
+    res._initialize_nodes()
+
+    for i, v in enumerate(encoded_node_outputs.values()):
+        compute_energy.transport_graph.set_node_value(i, "output", v)
+
+    res._status = Result.PENDING_POSTPROCESSING
+    execution_result = res.post_process()
 
     assert execution_result == compute_energy()
