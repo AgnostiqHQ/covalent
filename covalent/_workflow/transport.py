@@ -65,6 +65,11 @@ class TransportableObject:
 
         self.attrs = {"doc": getattr(obj, "doc", ""), "name": getattr(obj, "name", "")}
 
+    def __eq__(self, obj) -> bool:
+        if not isinstance(obj, TransportableObject):
+            return False
+        return self.__dict__ == obj.__dict__
+
     def get_deserialized(self) -> Callable:
         """
         Get the deserialized transportable object.
