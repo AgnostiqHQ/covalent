@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Updates to changelog logic to handle multiple authors
+
 ## [0.119.0] - 2022-07-03
 ### Authors
 @cjao 
@@ -58,7 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Updated codeowners so that AQ Engineers doesn't own this CHANGELOG
-- Updates to changelog logic to handle multiple authors
 - pre-commit autoupdate
 
 ## [0.114.0] - 2022-06-23
