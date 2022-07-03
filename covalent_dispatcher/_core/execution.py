@@ -449,7 +449,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                     dep.from_dict(deps["bash"])
                     call_before.append(dep.apply())
 
-                if "bash" in deps:
+                if "pip" in deps:
                     dep = DepsPip()
                     dep.from_dict(deps["pip"])
                     call_before.append(dep.apply())
