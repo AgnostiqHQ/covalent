@@ -574,7 +574,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
         post_process_result = future.result()
     except Exception as ex:
-        app_log.debug("Exception during post-processing: {ex}")
+        app_log.debug(f"Exception during post-processing: {ex}")
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = "Post-processing failed"
         result_object._end_time = datetime.now(timezone.utc)
