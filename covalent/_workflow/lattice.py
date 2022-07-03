@@ -317,9 +317,7 @@ class Lattice:
         """Execute lattice as an ordinary function for testing purposes."""
 
         workflow_function = self.workflow_function.get_deserialized()
-        new_args = [arg.get_deserialized() for arg in args]
-        new_kwargs = {k: v.get_deserialized() for k, v in kwargs.items()}
-        return workflow_function(*new_args, **new_kwargs)
+        return workflow_function(*args, **kwargs)
 
     def check_constraint_specific_sum(self, constraint_name: str, node_list: List[dict]) -> bool:
         """
