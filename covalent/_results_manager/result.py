@@ -519,9 +519,9 @@ Node Outputs
         dispatch_function += f"# Workflow end time: {self.end_time}" + "\n"
 
         dispatch_function += "# Covalent result -"
-        result_string_lines = str(self.result).split("\n")
+        result_string_lines = str(self.encoded_result.object_string).split("\n")
         if len(result_string_lines) == 1:
-            dispatch_function += f" {self.result}\n\n"
+            dispatch_function += f" {self.encoded_result.object_string}\n\n"
         else:
             dispatch_function += "\n"
             for line in result_string_lines:
