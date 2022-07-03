@@ -28,7 +28,7 @@ import pytest
 
 import covalent as ct
 from covalent._shared_files.defaults import parameter_prefix
-from covalent._workflow.transport import TransportableObject, _TransportGraph
+from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 
 
 def subtask(x):
@@ -315,3 +315,40 @@ def test_transport_graph_json_serialization():
 
     # Check that Serialize(Deserialize(Serialize)) == Serialize
     assert json_graph == tg.serialize_to_json()
+
+
+def test_metadata_json_serialization():
+    import json
+
+    @ct.electron(executor="local", deps_bash=ct.DepsBash("yum install gcc"))
+    def f(x):
+        return x * x
+
+    @ct.lattice
+    def workflow(x):
+        return f(x)
+
+    workflow.build_graph(5)
+    workflow_tg = workflow.transport_graph
+    metadata = workflow_tg.get_node_value(0, "metadata")
+
+    json_metadata = json.dumps(encode_metadata(metadata))
+
+    new_metadata = json.loads(json_metadata)
+
+    # Check that each metadata type implements its own JSON-serialization
+    for k in metadata:
+        if k == "executor":
+            continue
+        if k == "deps":
+            for dep_type in metadata[k]:
+                if dep_type == "bash":
+                    continue
+                else:
+                    assert metadata[k][dep_type] == new_metadata[k][dep_type]
+        assert metadata[k] == new_metadata[k]
+
+    new_dep = ct.DepsBash().from_dict(new_metadata["deps"]["bash"])
+
+    assert new_metadata["executor"] == "local"
+    assert new_dep.__dict__ == metadata["deps"]["bash"].__dict__
