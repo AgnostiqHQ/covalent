@@ -38,6 +38,19 @@ def test_bash_deps_apply():
     Path(tmp_path).unlink()
 
 
+def test_bash_deps_serialize():
+    import json
+
+    dep = ct.DepsBash(["yum install gcc"])
+    json_dep = json.dumps(dep.to_dict())
+    new_dep = ct.DepsBash().from_dict(json.loads(json_dep))
+
+    assert new_dep.commands == dep.commands
+    assert new_dep.apply_fn == dep.apply_fn
+    assert new_dep.apply_args == dep.apply_args
+    assert new_dep.apply_kwargs == dep.apply_kwargs
+
+
 def test_call_deps_init():
     from covalent._workflow.transport import TransportableObject
 
@@ -62,3 +75,19 @@ def test_call_deps_apply():
     assert args == [5]
     assert kwargs == {}
     assert g(*args) == f(*args)
+
+
+def call_deps_serialize():
+    import json
+
+    def f(x):
+        return x * x
+
+    dep = ct.DepsCall(f, args=[5])
+
+    json_dep = json.dumps(dep.to_dict())
+
+    new_dep = ct.DepsCall().from_dict(json.loads(json_dep))
+    assert new_dep.apply_fn == dep.apply_fn
+    assert new_dep.apply_args == dep.apply_args
+    assert new_dep.apply_kwargs == dep.apply_kwargs
