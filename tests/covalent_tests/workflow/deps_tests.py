@@ -77,13 +77,15 @@ def test_call_deps_apply():
     assert g(*args) == f(*args)
 
 
-def call_deps_serialize():
+def test_call_deps_serialize():
     import json
 
     def f(x):
         return x * x
 
     dep = ct.DepsCall(f, args=[5])
+
+    assert dep.from_dict(None)
 
     json_dep = json.dumps(dep.to_dict())
 
@@ -197,3 +199,5 @@ def test_deps_pip_json_serialize():
     Path(reqs_path).unlink()
 
     assert dep.__dict__ == new_dep.__dict__
+
+    assert dep == dep.from_dict(None)
