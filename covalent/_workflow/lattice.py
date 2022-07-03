@@ -461,6 +461,8 @@ def lattice(
         backend: DEPRECATED: Same as `executor`.
         executor: Alternative executor object to be used in the execution of each node. If not passed, the local
             executor is used by default.
+        workflow_executor: Executor for postprocessing the workflow. Defaults to the built-in dask executor or
+            the local executor depending on whether Covalent is started with the `--no-cluster` option.
         results_dir: Directory to store the results
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
