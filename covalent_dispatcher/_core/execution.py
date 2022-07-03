@@ -45,7 +45,7 @@ from covalent._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
-from covalent._workflow import DepsBash, DepsCall
+from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
@@ -443,9 +443,15 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 call_before = []
                 call_after = []
 
+                # Rehydrate deps from JSON
                 if "bash" in deps:
                     dep = DepsBash()
                     dep.from_dict(deps["bash"])
+                    call_before.append(dep.apply())
+
+                if "bash" in deps:
+                    dep = DepsPip()
+                    dep.from_dict(deps["pip"])
                     call_before.append(dep.apply())
 
                 for dep_json in call_before_objs_json:

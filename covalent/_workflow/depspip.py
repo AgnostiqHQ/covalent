@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import List, Union
 
 from .deps import Deps
+from .transport import TransportableObject
 
 
 def apply_pip_deps(pkgs: [] = [], requirements_content: str = ""):
@@ -69,3 +70,23 @@ class DepsPip(Deps):
         apply_args = [self.packages, self.requirements_content]
 
         super().__init__(apply_fn=apply_pip_deps, apply_args=apply_args)
+
+    def to_dict(self) -> dict:
+        attributes = self.__dict__.copy()
+        for k, v in attributes.items():
+            if isinstance(v, TransportableObject):
+                attributes[k] = v.to_dict()
+        return {"type": "DepsPip", "short_name": self.short_name(), "attributes": attributes}
+
+    def from_dict(self, object_dict):
+        if not object_dict:
+            return self
+
+        attributes = object_dict.copy()["attributes"]
+        for k, v in attributes.items():
+            if k not in ["packages", "reqs_path", "requirements_content"]:
+                attributes[k] = TransportableObject.from_dict(v)
+
+        self.__dict__ = attributes
+
+        return self

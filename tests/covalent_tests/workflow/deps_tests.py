@@ -174,3 +174,26 @@ def test_deps_pip_apply_requirements_file():
     )
 
     Path(reqs_path).unlink()
+
+
+def test_deps_pip_json_serialize():
+    import json
+    import tempfile
+    from pathlib import Path
+
+    pkgs = ["pydash==5.1.0"]
+    reqs_contents = "numpy\nscipy\n"
+
+    f = tempfile.NamedTemporaryFile("w", delete=False)
+    f.write(reqs_contents)
+    reqs_path = f.name
+
+    f.close()
+
+    dep = ct.DepsPip(packages=pkgs, reqs_path=reqs_path)
+    json_dep = json.dumps(dep.to_dict())
+
+    new_dep = ct.DepsPip().from_dict(json.loads(json_dep))
+    Path(reqs_path).unlink()
+
+    assert dep.__dict__ == new_dep.__dict__
