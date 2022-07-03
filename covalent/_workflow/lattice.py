@@ -501,7 +501,7 @@ def lattice(
     constraints = {
         "executor": executor,
         "results_dir": results_dir,
-        "workflow_executor": executor,
+        "workflow_executor": workflow_executor,
         "deps": deps,
         "call_before": call_before,
         "call_after": call_after,
