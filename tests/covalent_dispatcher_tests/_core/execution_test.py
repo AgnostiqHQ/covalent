@@ -143,7 +143,7 @@ def test_post_process():
     assert execution_result == compute_energy()
 
 
-def test_client_post_process():
+def test_result_post_process():
     """Test client-side post-processing of results."""
 
     import covalent as ct

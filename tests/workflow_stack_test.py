@@ -496,3 +496,28 @@ def test_all_parameter_types_in_lattice():
     }
 
     assert result.result == (10, (3, 4), {"d": 6, "e": 7})
+
+
+def test_client_workflow_executor():
+    """
+    Test setting `workflow_executor="client"`
+    """
+
+    @ct.electron
+    def new_func(a, b, c, d, e):
+        return a + b + c + d + e
+
+    @ct.lattice(workflow_executor="client")
+    def work_func(a, b, c):
+        return new_func(a, b, c, d=4, e=5)
+
+    dispatch_id = ct.dispatch(work_func)(1, 2, c=3)
+
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+
+    rm._delete_result(dispatch_id)
+
+    assert workflow_result.status == Result.PENDING_POSTPROCESSING
+    assert workflow_result.result is None
+
+    assert workflow_result.post_process() == 15
