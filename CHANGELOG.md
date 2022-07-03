@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Authors
-
-@venkatBala
-
 ### Added
 
 - Adding `cluster` CLI options to facilitate interacting with the backend Dask cluster
@@ -19,6 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update `DaskAdminWorker` docstring with better explanation
+
+## [0.119.0] - 2022-07-03
+### Authors
+@cjao 
+
+
+### Added
+
+- Introduce support for pip dependencies
 
 ## [0.118.0] - 2022-07-02
 ### Authors
