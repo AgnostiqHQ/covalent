@@ -346,9 +346,10 @@ def test_metadata_json_serialization():
                     continue
                 else:
                     assert metadata[k][dep_type] == new_metadata[k][dep_type]
-        assert metadata[k] == new_metadata[k]
-
-    new_dep = ct.DepsBash().from_dict(new_metadata["deps"]["bash"])
+        else:
+            metadata[k] == new_metadata[k]
 
     assert new_metadata["executor"] == "local"
-    assert new_dep.__dict__ == metadata["deps"]["bash"].__dict__
+
+    new_bash_dep = ct.DepsBash().from_dict(new_metadata["deps"]["bash"])
+    assert new_bash_dep.__dict__ == metadata["deps"]["bash"].__dict__
