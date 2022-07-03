@@ -36,18 +36,10 @@ class Deps(ABC):
     def short_name(self):
         return self.__module__.split("/")[-1]
 
+    @abstractmethod
     def to_dict(self):
-        attributes = self.__dict__.copy()
-        for k, v in attributes.items():
-            attributes[k] = v.to_dict()
-        return {"type": "Deps", "short_name": self.short_name(), "attributes": attributes}
+        raise NotImplementedError
 
+    @abstractmethod
     def from_dict(self, object_dict):
-        if not object_dict:
-            return self
-
-        attributes = object_dict.copy()["attributes"]
-        for k, v in attributes.items():
-            attributes[k] = TransportableObject.from_dict(v)
-        self.__dict__ = attributes
-        return self
+        raise NotImplementedError
