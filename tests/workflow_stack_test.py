@@ -231,6 +231,35 @@ def test_electron_deps_call_before():
     assert not Path(tmp_path).is_file()
 
 
+def test_electron_deps_pip():
+
+    import subprocess
+
+    @ct.electron(deps_pip=ct.DepsPip(packages=["pydash==5.1.0"]))
+    def func(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return func(x)
+
+    dispatch_id = ct.dispatch(workflow)(x=5)
+    res = ct.get_result(dispatch_id, wait=True)
+
+    assert res.result == 5
+
+    import pydash
+
+    assert pydash.__version__ == "5.1.0"
+
+    subprocess.run(
+        "pip uninstall -y --no-input pydash",
+        shell=True,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+    )
+
+
 def test_electron_deps_bash_implicit():
     import tempfile
     from pathlib import Path
