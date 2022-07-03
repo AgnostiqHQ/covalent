@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Introduce support for pip dependencies
+
 ## [0.118.0] - 2022-07-02
 ### Authors
 @AlejandroEsquivel 
