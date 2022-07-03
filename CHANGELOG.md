@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.119.0] - 2022-07-03
+### Authors
+@cjao 
+
+
+### Added
+
+- Introduce support for pip dependencies
+
+## [0.118.0] - 2022-07-02
+### Authors
+@AlejandroEsquivel 
+
+
+### Added
+
+- Introduced File, FileTransfer, and FileTransferStrategy classes to support various File Transfer use cases prior/post electron execution
+
+## [0.117.0] - 2022-07-02
+### Authors
+@Emmanuel289 
+
+
+### Added
+
+- Included retry action in 'tests.yaml' workflow.
+
+## [0.116.0] - 2022-06-29
+### Authors
+@Prasy12 
+
+### Changed
+
+- Changed API socket calls interval for graph optimization.
+
+### Added
+
+- Ability to change to different layouts from the GUI.
+
 ## [0.115.0] - 2022-06-28
 ### Authors
 @cjao 
