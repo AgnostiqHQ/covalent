@@ -26,6 +26,7 @@ import cloudpickle
 import networkx as nx
 import pytest
 
+import covalent as ct
 from covalent._shared_files.defaults import parameter_prefix
 from covalent._workflow.transport import TransportableObject, _TransportGraph
 
@@ -283,3 +284,34 @@ def test_transport_graph_sort_edges_based_on_insertion_order(transport_graph):
 
     tg.sort_edges_based_on_insertion_order()
     assert list(tg.get_dependencies(node_key=1)) == [2, 0]
+
+
+def test_transport_graph_json_serialization():
+    """Test the transport graph JSON serialization method"""
+
+    @ct.electron(executor="local", deps_bash=ct.DepsBash("yum install gcc"))
+    def f(x):
+        return x * x
+
+    @ct.lattice
+    def workflow(x):
+        return f(x)
+
+    workflow.build_graph(5)
+    workflow_tg = workflow.transport_graph
+
+    json_graph = workflow_tg.serialize_to_json()
+
+    tg = _TransportGraph()
+    tg.deserialize_from_json(json_graph)
+
+    assert list(workflow_tg._graph.nodes) == list(tg._graph.nodes)
+
+    for node in tg._graph.nodes:
+        for k, v in tg._graph.nodes[node].items():
+            if k == "metadata":
+                continue
+            assert v == workflow_tg.get_node_value(node, k)
+
+    # Check that Serialize(Deserialize(Serialize)) == Serialize
+    assert json_graph == tg.serialize_to_json()
