@@ -23,7 +23,8 @@
 import os
 import tempfile
 
-from covalent.executor import BaseExecutor
+from covalent import TransportableObject
+from covalent.executor import BaseExecutor, wrapper_fn
 
 
 class MockExecutor(BaseExecutor):
@@ -81,3 +82,16 @@ def test_execute_in_conda_env(mocker):
         "node_id",
     )
     conda_env_fail_mock.assert_called_once_with("function", "args", "kwargs", "node_id")
+
+
+def test_wrapper_fn():
+    def f(x, y):
+        return x * x, y
+
+    args = [TransportableObject.make_transportable(5)]
+    kwargs = {"y": TransportableObject.make_transportable(2)}
+
+    serialized_fn = TransportableObject.make_transportable(f)
+    serialized_output = wrapper_fn(serialized_fn, [], [], *args, **kwargs)
+
+    assert serialized_output.get_deserialized() == (25, 2)
