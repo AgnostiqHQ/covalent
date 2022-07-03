@@ -28,10 +28,12 @@ from sqlalchemy.orm import Session
 from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Electron, Lattice
 from covalent._results_manager.write_result_to_db import (
+    MissingElectronRecordError,
     MissingLatticeRecordError,
     get_electron_type,
     insert_electrons_data,
     insert_lattices_data,
+    update_electrons_data,
     update_lattices_data,
 )
 from covalent._shared_files.defaults import (
@@ -286,8 +288,42 @@ def test_update_lattices_data(db):
         assert lattice.id == 1
 
 
-def test_update_electrons_data():
-    pass
+def test_update_electrons_data(db):
+    """Test the function that updates the data in the Electrons table."""
+
+    insert_lattices_data(
+        db=db, **get_lattice_kwargs(created_at=dt.now(), updated_at=dt.now(), started_at=dt.now())
+    )
+
+    with pytest.raises(MissingElectronRecordError):
+        update_electrons_data(
+            db=db,
+            parent_dispatch_id="dispatch_1",
+            transport_graph_node_id=0,
+            status="RUNNING",
+            started_at=dt.now(),
+            updated_at=dt.now(),
+            completed_at=None,
+        )
+
+    insert_electrons_data(db=db, **get_electron_kwargs(created_at=dt.now(), updated_at=dt.now()))
+    cur_time = dt.now()
+    update_electrons_data(
+        db=db,
+        parent_dispatch_id="dispatch_1",
+        transport_graph_node_id=0,
+        status="RUNNING",
+        started_at=cur_time,
+        updated_at=cur_time,
+        completed_at=None,
+    )
+
+    with Session(db.engine) as session:
+        rows = session.query(Electron).all()
+
+    for electron in rows:
+        assert electron.status == "RUNNING"
+        assert electron.started_at == electron.updated_at == cur_time
 
 
 def test_get_electron_dependencies():

@@ -21,6 +21,7 @@
 """This module contains all the functions required to save the decomposed result object in the database."""
 
 from datetime import datetime as dt
+from tracemalloc import start
 
 from sqlalchemy import update
 from sqlalchemy.orm import Session
@@ -191,8 +192,47 @@ def update_lattices_data(
         session.commit()
 
 
-def update_electrons_data():
-    pass
+def update_electrons_data(
+    db: DataStore,
+    parent_dispatch_id: str,
+    transport_graph_node_id: int,
+    status: str,
+    started_at: dt,
+    updated_at: dt,
+    completed_at: dt,
+) -> None:
+    """This function updates the electrons record."""
+
+    with Session(db.engine) as session:
+        parent_lattice_id = (
+            session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()[0].id
+        )
+        valid_update = (
+            session.query(Electron)
+            .where(
+                Electron.parent_lattice_id == parent_lattice_id,
+                Electron.transport_graph_node_id == transport_graph_node_id,
+            )
+            .first()
+            is not None
+        )
+        if not valid_update:
+            raise MissingElectronRecordError
+
+        session.execute(
+            update(Electron)
+            .where(
+                Electron.parent_lattice_id == parent_lattice_id,
+                Electron.transport_graph_node_id == transport_graph_node_id,
+            )
+            .values(
+                status=status,
+                started_at=started_at,
+                updated_at=updated_at,
+                completed_at=completed_at,
+            )
+        )
+        session.commit()
 
 
 def get_electron_dependencies():
