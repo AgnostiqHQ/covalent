@@ -236,6 +236,8 @@ def update_electrons_data(
 
 
 def get_electron_dependencies():
+    """Function to extract electron dependency data from the lattice transport graph."""
+
     pass
 
 
