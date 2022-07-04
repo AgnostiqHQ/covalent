@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.122.0] - 2022-07-04
+
+### Authors
+
+Faiyaz Hasan <faiyaz@agnostiq.ai>
+Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
 ### Added
 
 - `covalent/_results_manager/write_result_to_db.py` module and methods to insert / update data in the DB.
