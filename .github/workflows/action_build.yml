@@ -46,6 +46,7 @@ jobs:
             > "$tmp" && mv "$tmp" package.json
       - name: NCC Build
         run: |
+          npm install .github/actions/changelog/
           ncc build .github/actions/changelog/index.js \
             --license licenses.txt \
             --out .github/actions/changelog/dist
