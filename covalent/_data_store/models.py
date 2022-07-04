@@ -22,18 +22,10 @@
 Models for the workflows db. Based on schema v9
 """
 
-import enum
-
-from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
-
-
-class ParameterTypeEnum(enum.Enum):
-    arg = 1
-    kwarg = 2
-    NULL = 3
 
 
 class Lattice(Base):
@@ -86,7 +78,7 @@ class Electron(Base):
     id = Column(Integer, primary_key=True)
 
     # id of the lattice containing this electron
-    parent_lattice_id = Column(BigInteger, ForeignKey("lattices.id"), nullable=False)
+    parent_lattice_id = Column(Integer, ForeignKey("lattices.id"), nullable=False)
 
     # id of the node in the context of a transport graph
     transport_graph_node_id = Column(Integer, nullable=False)
@@ -157,7 +149,7 @@ class ElectronDependency(Base):
     edge_name = Column(Text, nullable=False)
 
     # "args, kwarg, null"
-    parameter_type = Column(Enum(ParameterTypeEnum), nullable=False)
+    parameter_type = Column(String(24), nullable=False)
 
     # Argument position
     arg_index = Column(Integer, nullable=False)

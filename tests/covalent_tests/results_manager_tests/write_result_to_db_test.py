@@ -283,6 +283,9 @@ def test_insert_electron_dependency_data(db):
     insert_lattices_data(
         db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
     )
+    insert_lattices_data(
+        db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
 
     electron_ids = []
     cur_time = dt.now()
@@ -293,14 +296,13 @@ def test_insert_electron_dependency_data(db):
         (":sublattice:task_2", 3),
         (":parameter:2", 4),
     ]:
-        electron_kwargs = {
-            **get_electron_kwargs(
-                name=name,
-                transport_graph_node_id=node_id,
-                created_at=cur_time,
-                updated_at=cur_time,
-            )
-        }
+        electron_kwargs = get_electron_kwargs(
+            name=name,
+            transport_graph_node_id=node_id,
+            created_at=cur_time,
+            updated_at=cur_time,
+        )
+        print(electron_kwargs)
         electron_ids.append(insert_electrons_data(db=db, **electron_kwargs))
 
     dependency_ids = insert_electron_dependency_data(

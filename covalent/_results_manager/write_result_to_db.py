@@ -21,7 +21,6 @@
 """This module contains all the functions required to save the decomposed result object in the database."""
 
 from datetime import datetime as dt
-from tracemalloc import start
 
 from sqlalchemy import update
 from sqlalchemy.orm import Session
@@ -131,7 +130,6 @@ def insert_electrons_data(
     parent_lattice_id = row[0].id
 
     electron_row = Electron(
-        id=1,
         parent_lattice_id=parent_lattice_id,
         transport_graph_node_id=transport_graph_node_id,
         type=type,
