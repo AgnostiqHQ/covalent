@@ -274,10 +274,6 @@ def update_electrons_data(
         session.commit()
 
 
-def are_electron_dependencies_added():
-    pass
-
-
 def get_electron_type(node: dict) -> str:
     """Get the electron type (to be written to DB) given the electron node data."""
 
