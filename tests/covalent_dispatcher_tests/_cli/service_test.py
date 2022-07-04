@@ -35,6 +35,7 @@ from covalent_dispatcher._cli.service import (
     _port_from_pid,
     _read_pid,
     _rm_pid_file,
+    cluster,
     purge,
     restart,
     start,
