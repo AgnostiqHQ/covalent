@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Updated RTD concepts and how-to-guides with electron dependencies.
+
 ### Operations
 
 - Updates to changelog logic to handle multiple authors
