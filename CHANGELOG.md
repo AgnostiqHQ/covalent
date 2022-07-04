@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Package pre-releases go to `covalent` instead of `cova` on PyPI.
+
 ## [0.119.1] - 2022-07-04
 
 ### Authors
@@ -21,7 +25,6 @@ Casey Jao <casey@agnostiq.ai>
 
 ### Operations
 
-- Package pre-releases go to `covalent` instead of `cova` on PyPI.
 - Updates to changelog logic to handle multiple authors
 
 ## [0.119.0] - 2022-07-03
