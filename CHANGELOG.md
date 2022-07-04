@@ -14,6 +14,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Updated the compatibility matrix in the docs.
+## [0.120.0] - 2022-07-04
+
+### Authors
+
+Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Added
+
+- Adding `cluster` CLI options to facilitate interacting with the backend Dask cluster
+- Adding options to `covalent start` to enable specifying number of workers, memory limit and threads per worker at cluster startup
+
+### Changed
+
+- Update `DaskAdminWorker` docstring with better explanation
+
+## [0.119.1] - 2022-07-04
+
+### Authors
+
+Scott Wyman Neagle <scott@agnostiq.ai>
+Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- `covalent status` checks if the server process is still alive.
+
+### Operations
+
+- Updates to changelog logic to handle multiple authors
+
+## [0.119.0] - 2022-07-03
+### Authors
+@cjao 
+
+
+### Added
+
+- Introduce support for pip dependencies
+
+## [0.118.0] - 2022-07-02
+### Authors
+@AlejandroEsquivel 
+
+
+### Added
+
+- Introduced File, FileTransfer, and FileTransferStrategy classes to support various File Transfer use cases prior/post electron execution
+
+## [0.117.0] - 2022-07-02
+### Authors
+@Emmanuel289 
+
+
+### Added
+
+- Included retry action in 'tests.yaml' workflow.
+
+## [0.116.0] - 2022-06-29
+### Authors
+@Prasy12 
+
+### Changed
+
+- Changed API socket calls interval for graph optimization.
+
+### Added
+
+- Ability to change to different layouts from the GUI.
+
+## [0.115.0] - 2022-06-28
+### Authors
+@cjao 
+
+
+### Added
+
+- Introduce support for `call_before`, `call_after`, and bash dependencies
 
 ### Operations
 

@@ -44,6 +44,7 @@ from covalent._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
+from covalent._workflow.deps import Deps
 from covalent._workflow.lattice import Lattice
 from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
@@ -175,6 +176,8 @@ def _run_task(
     inputs: Dict,
     serialized_callable: Any,
     selected_executor: Any,
+    call_before: List,
+    call_after: List,
     node_name: str,
 ) -> None:
     """
@@ -223,6 +226,8 @@ def _run_task(
                 function=serialized_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
+                call_before=call_before,
+                call_after=call_after,
                 dispatch_id=dispatch_id,
                 results_dir=results_dir,
                 node_id=node_id,
@@ -328,6 +333,31 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 node_id, "metadata"
             )["executor"]
 
+            deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
+                "deps"
+            ]
+
+            # Assemble call_before and call_after from all the deps
+
+            call_before_objs = result_object.lattice.transport_graph.get_node_value(
+                node_id, "metadata"
+            )["call_before"]
+            call_after_objs = result_object.lattice.transport_graph.get_node_value(
+                node_id, "metadata"
+            )["call_after"]
+
+            call_before = []
+
+            for dep_type in ["bash", "pip"]:
+                if dep_type in deps:
+                    dep = deps[dep_type]
+                    call_before.append(dep.apply())
+
+            for dep in call_before_objs:
+                call_before.append(dep.apply())
+
+            call_after = [dep.apply() for dep in call_after_objs]
+
             update_node_result(
                 generate_node_result(
                     node_id=node_id,
@@ -345,6 +375,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 serialized_callable=serialized_callable,
                 selected_executor=pickle.dumps(selected_executor),
                 node_name=node_name,
+                call_before=call_before,
+                call_after=call_after,
                 inputs=pickle.dumps(task_input),
             )
 
