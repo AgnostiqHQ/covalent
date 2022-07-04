@@ -446,7 +446,7 @@ Node Outputs
         if write_source:
             self._write_dispatch_to_python_file()
 
-    def persist(self, db: DataStore, _in_memory: bool = False):
+    def persist(self, db: DataStore):  # Add default database from config file
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 
