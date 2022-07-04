@@ -16,6 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update `DaskAdminWorker` docstring with better explanation
 
+## [0.119.1] - 2022-07-04
+
+### Authors
+
+Scott Wyman Neagle <scott@agnostiq.ai>
+Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- `covalent status` checks if the server process is still alive.
+
 ### Operations
 
 - Updates to changelog logic to handle multiple authors
