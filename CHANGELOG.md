@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- `Result.persist` method in `covalent/_results_manager/result.py`.
+
 ## [0.122.0] - 2022-07-04
 
 ### Authors

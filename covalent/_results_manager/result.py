@@ -30,7 +30,7 @@ import yaml
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .._data_store import DataStoreSession, models
+from .._data_store import DataStore
 from .._shared_files import logger
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .utils import convert_to_lattice_function_call
@@ -446,9 +446,23 @@ Node Outputs
         if write_source:
             self._write_dispatch_to_python_file()
 
-    def persist(self, ds: DataStoreSession, update: bool):
+    def persist(self, db: DataStore, _in_memory: bool = False):
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
+
+        # TODO - store all lattice info that belongs in filenames in the results directory
+
+        # TODO - store all electron node info in the appropriate filenames in the results directory
+
+        # TODO - boolean query to check whether lattice /electron records exists / perhaps I can use a try except
+
+        # TODO - insert OR update lattice record
+
+        # TODO - insert OR update electron records
+
+        # TODO - insert OR NOT electron dependency records
+
+        # TODO - ensure that dirty nodes are popped as the records get updated
 
         raise NotImplementedError
 
