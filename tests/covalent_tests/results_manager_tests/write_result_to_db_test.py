@@ -284,17 +284,46 @@ def test_insert_electron_dependency_data(db):
         db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
     )
 
-    dependencies = insert_electron_dependency_data(
+    electron_ids = []
+    cur_time = dt.now()
+    for (name, node_id) in [
+        ("task_1", 0),
+        (":parameter:1", 1),
+        (":parameter:2", 2),
+        (":sublattice:task_2", 3),
+        (":parameter:2", 4),
+    ]:
+        electron_kwargs = {
+            **get_electron_kwargs(
+                name=name,
+                transport_graph_node_id=node_id,
+                created_at=cur_time,
+                updated_at=cur_time,
+            )
+        }
+        electron_ids.append(insert_electrons_data(db=db, **electron_kwargs))
+
+    dependency_ids = insert_electron_dependency_data(
         db=db, dispatch_id="dispatch_1", lattice=workflow_lattice
     )
+
+    assert dependency_ids == [1, 2, 3, 4]
 
     with Session(db.engine) as session:
         rows = session.query(ElectronDependency).all()
 
-    for electron_dependency in rows:
-        pass
+    actual_electron_dependencies = {
+        {
+            "edge_name": electron_dependency.edge_name,
+            "parameter_index": electron_dependency.parameter_index,
+            "parameter_type": electron_dependency.parameter_type,
+            "parent_electron_id": electron_dependency.parent_electron_id,
+            "electron_id": electron_dependency.electron_id,
+        }
+        for electron_dependency in rows
+    }
 
-    assert set(dependencies) == {
+    assert set(actual_electron_dependencies) == {
         {
             "edge_name": "arg[0]",
             "parameter_index": 0,
