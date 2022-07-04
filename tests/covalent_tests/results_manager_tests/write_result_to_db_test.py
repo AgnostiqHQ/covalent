@@ -261,6 +261,9 @@ def test_insert_electrons_data(db):
             else:
                 assert getattr(electron, key) == value
 
+    electron_id = insert_electrons_data(db=db, **electron_kwargs)
+    assert electron_id == 2
+
 
 def test_insert_electrons_data_missing_lattice_record(db):
     """Test the function that inserts the electron data to the Electrons table."""
