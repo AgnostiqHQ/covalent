@@ -7,11 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.120.0] - 2022-07-04
+
+### Authors
+
+Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
 ### Added
 
 - Adding `cluster` CLI options to facilitate interacting with the backend Dask cluster
 - Adding options to `covalent start` to enable specifying number of workers, memory limit and threads per worker at cluster startup
-- Adding unit/functional tests for `cluster` CLI options
 
 ### Changed
 
