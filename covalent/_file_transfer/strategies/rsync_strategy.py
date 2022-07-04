@@ -56,7 +56,7 @@ class Rsync(FileTransferStrategy):
     ) -> str:
         from_filepath = str(from_file.filepath)
         to_filepath = str(to_file.filepath)
-        return f"rsync {from_filepath} {to_filepath}"
+        return f"rsync -a {from_filepath} {to_filepath}"
 
     # return callable to move files in the local file system
     def cp(self, from_file: File, to_file: File = File()) -> None:

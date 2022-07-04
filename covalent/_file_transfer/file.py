@@ -10,9 +10,6 @@ from covalent._file_transfer.enums import (
     SchemeToStrategyMap,
 )
 
-if TYPE_CHECKING:
-    from covalent._file_transfer.strategies.rsync_strategy import Rsync
-
 
 class File:
     """
@@ -22,11 +19,21 @@ class File:
     Attributes:
         filepath: File path corresponding to the file.
         is_remote: Flag determining if file is remote (override). Default is resolved automatically from file scheme.
+        is_dir: Flag determining if file is a directory (override). Default is determined if file uri contains trailing slash.
+        include_folder: Flag that determines if the folder should be included in the file transfer, if False only contents of folder are transfered.
     """
 
     _is_remote = False
+    _is_dir = False
+    _include_folder = False
 
-    def __init__(self, filepath: Optional[str] = None, is_remote: bool = False):
+    def __init__(
+        self,
+        filepath: Optional[str] = None,
+        is_remote: bool = False,
+        is_dir: bool = False,
+        include_folder: bool = False,
+    ):
         if not isinstance(filepath, str) and filepath is not None:
             raise AttributeError(
                 "Only strings are valid filepaths for a covalent File constructor."
@@ -42,8 +49,14 @@ class File:
         if is_remote:
             self._is_remote = True
 
+        if is_dir:
+            self._is_dir = True
+
+        if include_folder:
+            self._include_folder = True
+
         self.scheme = File.resolve_scheme(filepath)
-        self.filepath = File.get_filepath(filepath)
+        self._path_object = File.get_filepath(filepath)
 
     def get_temp_filepath(self):
         return f"/tmp/{self.id}"
@@ -62,17 +75,29 @@ class File:
     def mapped_strategy_type(self) -> FileTransferStrategyTypes:
         return SchemeToStrategyMap[self.scheme.value]
 
-    def touch(self):
-        Path(str(self.filepath)).touch()
+    @property
+    def filepath(self) -> str:
+        path_obj = self._path_object
+        if not self._include_folder and self.is_dir:
+            path_obj = path_obj / "/"
+        path_obj.normalize()
+        filepath = str(path_obj)
+        if self._include_folder:
+            filepath = filepath.rstrip("/")
+        return filepath
 
-    @staticmethod
-    def is_directory(path):
-        return File.get_filepath(path).isdir
+    @property
+    def is_dir(self):
+        return self._is_dir or self._path_object.isdir
+
+    def touch(self):
+        Path(self.filepath).touch()
 
     @staticmethod
     def get_filepath(path: str) -> str:
         path_components = furl(path)
         path_components.scheme = None
+        path_components.path.normalize()
         return path_components.path
 
     @staticmethod

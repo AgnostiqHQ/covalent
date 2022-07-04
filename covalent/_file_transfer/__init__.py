@@ -20,3 +20,4 @@
 
 from .file import File
 from .file_transfer import FileTransfer
+from .folder import Folder

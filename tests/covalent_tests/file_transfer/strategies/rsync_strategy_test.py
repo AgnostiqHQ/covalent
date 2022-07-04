@@ -98,7 +98,7 @@ class TestRsyncStrategy:
         )
 
         # command takes the form of rsync [source] [destination]
-        assert move_cmd == "rsync /home/ubuntu/from.csv /home/ubuntu/to.csv"
+        assert move_cmd == "rsync -a /home/ubuntu/from.csv /home/ubuntu/to.csv"
 
     def test_get_ssh_rsync_cmd_with_ssh_key(self, mocker):
 
