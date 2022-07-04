@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- `covalent status` checks if the server process is still alive.
+
 ### Operations
 
 - Updates to changelog logic to handle multiple authors
