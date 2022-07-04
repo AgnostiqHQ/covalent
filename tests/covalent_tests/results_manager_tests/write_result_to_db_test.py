@@ -27,12 +27,12 @@ from sqlalchemy.orm import Session
 
 import covalent as ct
 from covalent._data_store.datastore import DataStore
-from covalent._data_store.models import Electron, Lattice
+from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.write_result_to_db import (
     MissingElectronRecordError,
     MissingLatticeRecordError,
-    get_electron_dependencies,
     get_electron_type,
+    insert_electron_dependency_data,
     insert_electrons_data,
     insert_lattices_data,
     update_electrons_data,
@@ -89,11 +89,11 @@ def workflow_lattice():
         return sublattice_task(z)
 
     @ct.lattice
-    def workflow(a, b):
+    def workflow_1(a, b):
         res_1 = task_1(a, b)
         return task_2(res_1, b)
 
-    return workflow
+    return workflow_1
 
 
 def get_lattice_kwargs(
@@ -276,8 +276,54 @@ def test_insert_electrons_data_missing_lattice_record(db):
         insert_electrons_data(db=db, **electron_kwargs)
 
 
-def test_insert_electron_dependency_data():
-    pass
+def test_insert_electron_dependency_data(db):
+    """Test the function that adds the electron dependencies of the lattice to the DB."""
+
+    cur_time = dt.now()
+    insert_lattices_data(
+        db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
+
+    dependencies = insert_electron_dependency_data(
+        db=db, dispatch_id="dispatch_1", lattice=workflow_lattice
+    )
+
+    with Session(db.engine) as session:
+        rows = session.query(ElectronDependency).all()
+
+    for electron_dependency in rows:
+        pass
+
+    assert set(dependencies) == {
+        {
+            "edge_name": "arg[0]",
+            "parameter_index": 0,
+            "parameter_type": "arg",
+            "parent_electron_id": 1,  # 'source': 0,
+            "electron_id": 4,  # 'target': 3
+        },
+        {
+            "edge_name": "x",
+            "partameter_index": 0,
+            "parameter_type": "arg",
+            "parent_electron_id": 2,  # 'source': 1,
+            "electron_id": 1,  # 'target': 0
+        },
+        {
+            "edge_name": "y",
+            "parameter_index": 0,
+            "parameter_type": "arg",
+            "parent_electron_id": 3,  # 'source': 2,
+            "electron_id": 1,  # 'target': 0
+        },
+        {
+            "edge_name": "arg[1]",
+            "parameter_index": 0,
+            "parameter_type": "arg",
+            "parent_electron_id": 5,  # 'source': 4,
+            "electron_id": 4,  # 'target': 3
+        },
+    }
 
 
 def test_update_lattices_data(db):
@@ -349,45 +395,6 @@ def test_update_electrons_data(db):
     for electron in rows:
         assert electron.status == "RUNNING"
         assert electron.started_at == electron.updated_at == cur_time
-
-
-def test_get_electron_dependencies(workflow_lattice):
-    """Test the function that extracts the edge dependencies from a lattice."""
-
-    dependencies = get_electron_dependencies(
-        db=db, dispatch_id="dispatch_1", lattice=workflow_lattice
-    )
-
-    assert set(dependencies) == {
-        {
-            "edge_name": "arg[0]",
-            "parameter_index": 0,
-            "parameter_type": "arg",
-            "parent_electron_id": 1,  # 'source': 0,
-            "electron_id": 4,  # 'target': 3
-        },
-        {
-            "edge_name": "x",
-            "partameter_index": 0,
-            "parameter_type": "arg",
-            "parent_electron_id": 2,  # 'source': 1,
-            "electron_id": 1,  # 'target': 0
-        },
-        {
-            "edge_name": "y",
-            "parameter_index": 0,
-            "parameter_type": "arg",
-            "parent_electron_id": 3,  # 'source': 2,
-            "electron_id": 1,  # 'target': 0
-        },
-        {
-            "edge_name": "arg[1]",
-            "parameter_index": 0,
-            "parameter_type": "arg",
-            "parent_electron_id": 5,  # 'source': 4,
-            "electron_id": 4,  # 'target': 3
-        },
-    }
 
 
 def test_are_electron_dependencies_added():

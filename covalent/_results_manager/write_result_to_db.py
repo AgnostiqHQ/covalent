@@ -164,6 +164,8 @@ def insert_electrons_data(
 
 
 def insert_electron_dependency_data():
+    """Extract electron dependencies from the lattice transport graph and add them to the DB."""
+
     pass
 
 
@@ -233,12 +235,6 @@ def update_electrons_data(
             )
         )
         session.commit()
-
-
-def get_electron_dependencies():
-    """Function to extract electron dependency data from the lattice transport graph."""
-
-    pass
 
 
 def are_electron_dependencies_added():
