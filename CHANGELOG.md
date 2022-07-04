@@ -9,13 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `covalent/_results_manager/write_result_to_db.py` module for saving decomposed result to the database.
-- `tests/covalent_tests/results_manager_tests/write_result_to_db_test.py` containing the unit tests for the module corresponding module.
+- `covalent/_results_manager/write_result_to_db.py` module and methods to insert / update data in the DB.
+- `tests/covalent_tests/results_manager_tests/write_result_to_db_test.py` containing the unit tests for corresponding functions.
 
 ### Changed
 
 - Electron `type` column to a string type rather than an `ElectronType` in DB models.
 - Primary keys from `BigInteger` to `Integer` in DB models.
+
+## [0.119.1] - 2022-07-04
+
+### Authors
+
+Scott Wyman Neagle <scott@agnostiq.ai>
+Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- `covalent status` checks if the server process is still alive.
 
 ### Operations
 
