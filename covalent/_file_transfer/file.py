@@ -58,7 +58,6 @@ class File:
         self.scheme = File.resolve_scheme(filepath)
         self._path_object = File.get_filepath(filepath)
 
-
     def get_temp_filepath(self):
         return f"/tmp/{self.id}"
 
