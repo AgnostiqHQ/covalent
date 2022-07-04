@@ -534,7 +534,7 @@ def electron(
             internal_call_after_deps.append(DepsCall(_callback_))
         else:
             internal_call_before_deps.append(DepsCall(_callback_))
-            
+
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
     if isinstance(deps_pip, list):
