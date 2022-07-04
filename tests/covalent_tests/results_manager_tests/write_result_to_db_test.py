@@ -93,6 +93,8 @@ def workflow_lattice():
         res_1 = task_1(a, b)
         return task_2(res_1, b)
 
+    workflow_1.build_graph(a=1, b=2)
+
     return workflow_1
 
 
@@ -279,13 +281,10 @@ def test_insert_electrons_data_missing_lattice_record(db):
         insert_electrons_data(db=db, **electron_kwargs)
 
 
-def test_insert_electron_dependency_data(db):
+def test_insert_electron_dependency_data(db, workflow_lattice):
     """Test the function that adds the electron dependencies of the lattice to the DB."""
 
     cur_time = dt.now()
-    insert_lattices_data(
-        db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
-    )
     insert_lattices_data(
         db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
     )
@@ -305,7 +304,6 @@ def test_insert_electron_dependency_data(db):
             created_at=cur_time,
             updated_at=cur_time,
         )
-        print(electron_kwargs)
         electron_ids.append(insert_electrons_data(db=db, **electron_kwargs))
 
     dependency_ids = insert_electron_dependency_data(
@@ -317,47 +315,26 @@ def test_insert_electron_dependency_data(db):
     with Session(db.engine) as session:
         rows = session.query(ElectronDependency).all()
 
-    actual_electron_dependencies = {
-        {
-            "edge_name": electron_dependency.edge_name,
-            "parameter_index": electron_dependency.parameter_index,
-            "parameter_type": electron_dependency.parameter_type,
-            "parent_electron_id": electron_dependency.parent_electron_id,
-            "electron_id": electron_dependency.electron_id,
-        }
-        for electron_dependency in rows
-    }
+    for electron_dependency in rows:
+        if electron_dependency.electron_id == 4 and electron_dependency.parent_electron_id == 1:
+            assert electron_dependency.edge_name == "arg[0]"
+            assert electron_dependency.arg_index == 0
+            assert electron_dependency.parameter_type == "arg"
 
-    assert set(actual_electron_dependencies) == {
-        {
-            "edge_name": "arg[0]",
-            "parameter_index": 0,
-            "parameter_type": "arg",
-            "parent_electron_id": 1,  # 'source': 0,
-            "electron_id": 4,  # 'target': 3
-        },
-        {
-            "edge_name": "x",
-            "partameter_index": 0,
-            "parameter_type": "arg",
-            "parent_electron_id": 2,  # 'source': 1,
-            "electron_id": 1,  # 'target': 0
-        },
-        {
-            "edge_name": "y",
-            "parameter_index": 0,
-            "parameter_type": "arg",
-            "parent_electron_id": 3,  # 'source': 2,
-            "electron_id": 1,  # 'target': 0
-        },
-        {
-            "edge_name": "arg[1]",
-            "parameter_index": 0,
-            "parameter_type": "arg",
-            "parent_electron_id": 5,  # 'source': 4,
-            "electron_id": 4,  # 'target': 3
-        },
-    }
+        elif electron_dependency.electron_id == 1 and electron_dependency.parent_electron_id == 2:
+            assert electron_dependency.edge_name == "x"
+            assert electron_dependency.arg_index == 0
+            assert electron_dependency.parameter_type == "arg"
+
+        elif electron_dependency.electron_id == 1 and electron_dependency.parent_electron_id == 3:
+            assert electron_dependency.edge_name == "y"
+            assert electron_dependency.arg_index == 1
+            assert electron_dependency.parameter_type == "arg"
+
+        elif electron_dependency.electron_id == 4 and electron_dependency.parent_electron_id == 5:
+            assert electron_dependency.edge_name == "arg[1]"
+            assert electron_dependency.arg_index == 1
+            assert electron_dependency.parameter_type == "arg"
 
 
 def test_update_lattices_data(db):

@@ -22,11 +22,13 @@
 
 from datetime import datetime as dt
 
+import networkx as nx
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from covalent._data_store.datastore import DataStore
-from covalent._data_store.models import Electron, Lattice
+from covalent._data_store.models import Electron, ElectronDependency, Lattice
+from covalent._workflow.lattice import Lattice as Workflow_lattice
 
 from .._shared_files.defaults import (
     arg_prefix,
@@ -161,10 +163,47 @@ def insert_electrons_data(
     return electron_id
 
 
-def insert_electron_dependency_data():
+def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: Workflow_lattice):
     """Extract electron dependencies from the lattice transport graph and add them to the DB."""
 
-    pass
+    node_links = nx.readwrite.node_link_data(lattice.transport_graph._graph)["links"]
+
+    print(node_links)
+
+    electron_dependency_ids = []
+    with Session(db.engine) as session:
+        for edge_data in node_links:
+            electron_id = (
+                session.query(Lattice, Electron)
+                .filter(Lattice.id == Electron.parent_lattice_id)
+                .filter(Lattice.dispatch_id == dispatch_id)
+                .filter(Electron.transport_graph_node_id == edge_data["target"])
+                .first()
+                .Electron.id
+            )
+            parent_electron_id = (
+                session.query(Lattice, Electron)
+                .filter(Lattice.id == Electron.parent_lattice_id)
+                .filter(Lattice.dispatch_id == dispatch_id)
+                .filter(Electron.transport_graph_node_id == edge_data["source"])
+                .first()
+                .Electron.id
+            )
+
+            electron_dependency_row = ElectronDependency(
+                electron_id=electron_id,
+                parent_electron_id=parent_electron_id,
+                edge_name=edge_data["edge_name"],
+                parameter_type=edge_data["param_type"],
+                arg_index=edge_data["arg_index"],
+                created_at=dt.now(),
+            )
+
+            session.add(electron_dependency_row)
+            session.commit()
+            electron_dependency_ids.append(electron_dependency_row.id)
+
+    return electron_dependency_ids
 
 
 def update_lattices_data(
