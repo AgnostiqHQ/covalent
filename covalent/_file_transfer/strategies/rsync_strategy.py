@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 from subprocess import PIPE, CalledProcessError, Popen
 from typing import Optional
 
@@ -105,3 +106,4 @@ class Rsync(FileTransferStrategy):
                 raise CalledProcessError(p.returncode, f'"{cmd}" with error: {str(error)}')
 
         return callable
+

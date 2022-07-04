@@ -51,6 +51,7 @@ class TestRsyncStrategy:
                 File("/tmp/source.csv"), File("/tmp/dest.csv")
             )()
 
+
         popen_mock.assert_called_once()
 
     @pytest.mark.parametrize(
@@ -89,6 +90,7 @@ class TestRsyncStrategy:
                     File("/tmp/source.csv"), File("/tmp/dest.csv")
                 )()
 
+
     def test_get_rsync_cmd(self):
         from_file = File("/home/ubuntu/from.csv")
         to_file = File("/home/ubuntu/to.csv")
@@ -99,6 +101,7 @@ class TestRsyncStrategy:
 
         # command takes the form of rsync [source] [destination]
         assert move_cmd == "rsync -a /home/ubuntu/from.csv /home/ubuntu/to.csv"
+
 
     def test_get_ssh_rsync_cmd_with_ssh_key(self, mocker):
 

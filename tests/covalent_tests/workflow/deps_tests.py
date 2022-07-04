@@ -62,3 +62,86 @@ def test_call_deps_apply():
     assert args == [5]
     assert kwargs == {}
     assert g(*args) == f(*args)
+
+
+def test_deps_pip_init():
+    import tempfile
+    from pathlib import Path
+
+    pkgs = ["pydash==5.1.0"]
+    reqs_contents = "numpy\nscipy\n"
+
+    f = tempfile.NamedTemporaryFile("w", delete=False)
+    f.write(reqs_contents)
+    reqs_path = f.name
+
+    f.close()
+
+    dep = ct.DepsPip(packages=pkgs, reqs_path=reqs_path)
+
+    assert dep.packages == pkgs
+    assert dep.reqs_path == reqs_path
+    assert dep.requirements_content == reqs_contents
+
+    Path(reqs_path).unlink()
+
+
+def test_deps_pip_apply():
+    import subprocess
+    import tempfile
+    from pathlib import Path
+
+    pkgs = ["pydash==5.1.0"]
+
+    dep = ct.DepsPip(packages=pkgs)
+
+    g = dep.apply_fn.get_deserialized()
+    apply_args = dep.apply_args.get_deserialized()
+    apply_kwargs = dep.apply_kwargs.get_deserialized()
+
+    g(*apply_args, **apply_kwargs)
+
+    import pydash
+
+    assert pydash.__version__ == "5.1.0"
+
+    subprocess.run(
+        "pip uninstall -y --no-input pydash",
+        shell=True,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+    )
+
+
+def test_deps_pip_apply_requirements_file():
+    import subprocess
+    import tempfile
+    from pathlib import Path
+
+    reqs_content = "pydash==5.1.0\n"
+    f = tempfile.NamedTemporaryFile("w", delete=False)
+    f.write(reqs_content)
+    reqs_path = f.name
+
+    f.close()
+
+    dep = ct.DepsPip(reqs_path=reqs_path)
+
+    g = dep.apply_fn.get_deserialized()
+    apply_args = dep.apply_args.get_deserialized()
+    apply_kwargs = dep.apply_kwargs.get_deserialized()
+
+    g(*apply_args, **apply_kwargs)
+
+    import pydash
+
+    assert pydash.__version__ == "5.1.0"
+
+    subprocess.run(
+        "pip uninstall -y --no-input pydash",
+        shell=True,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+    )
+
+    Path(reqs_path).unlink()

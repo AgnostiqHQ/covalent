@@ -43,6 +43,7 @@ from .._shared_files.defaults import (
 from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
 from .depscall import DepsCall
+from .depspip import DepsPip
 from .lattice import Lattice
 
 consumable_constraints = ["budget", "time_limit"]
@@ -487,6 +488,7 @@ def electron(
     # Add custom metadata fields here
     files: List[FileTransfer] = [],
     deps_bash: Union[DepsBash, List, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", []),
+    deps_pip: Union[DepsPip, list] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("pip", None),
     call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
     call_after: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
 ) -> Callable:
@@ -500,9 +502,10 @@ def electron(
         executor: Alternative executor object to be used by the electron execution. If not passed, the local
             executor is used by default.
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
-        files: An optional list of FileTransfer objects which copy files to/from remote or local filesystems.
+        deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
         call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
         call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
+        files: An optional list of FileTransfer objects which copy files to/from remote or local filesystems.
 
     Returns:
         :obj:`Electron <covalent._workflow.electron.Electron>` : Electron object inside which the decorated function exists.
@@ -531,6 +534,11 @@ def electron(
             internal_call_after_deps.append(DepsCall(_callback_))
         else:
             internal_call_before_deps.append(DepsCall(_callback_))
+            
+    if isinstance(deps_pip, DepsPip):
+        deps["pip"] = deps_pip
+    if isinstance(deps_pip, list):
+        deps["pip"] = DepsPip(packages=deps_pip)
 
     if isinstance(call_before, DepsCall):
         call_before = [call_before]

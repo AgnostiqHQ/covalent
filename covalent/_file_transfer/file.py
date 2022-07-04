@@ -58,6 +58,7 @@ class File:
         self.scheme = File.resolve_scheme(filepath)
         self._path_object = File.get_filepath(filepath)
 
+
     def get_temp_filepath(self):
         return f"/tmp/{self.id}"
 
@@ -98,6 +99,7 @@ class File:
         path_components = furl(path)
         path_components.scheme = None
         path_components.path.normalize()
+
         return path_components.path
 
     @staticmethod
