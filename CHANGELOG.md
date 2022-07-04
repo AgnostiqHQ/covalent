@@ -65,6 +65,22 @@ Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 
 - Update `DaskAdminWorker` docstring with better explanation
 
+## [0.119.1] - 2022-07-04
+
+### Authors
+
+Scott Wyman Neagle <scott@agnostiq.ai>
+Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- `covalent status` checks if the server process is still alive.
+
+### Operations
+
+- Updates to changelog logic to handle multiple authors
+
 ## [0.119.0] - 2022-07-03
 ### Authors
 @cjao 
