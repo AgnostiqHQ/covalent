@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Unit/functional tests for the Dask cluster CLI options
+
 ## [0.120.0] - 2022-07-04
 
 ### Authors
