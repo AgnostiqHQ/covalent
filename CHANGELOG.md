@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Added license scanner action
+
 ## [0.119.1] - 2022-07-04
 
 ### Authors

@@ -1,0 +1,106 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+# 
+# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any 
+# modifications or derivative works of this file must retain this copyright 
+# notice, and modified files must contain a notice indicating that they have 
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: license
+
+on:
+  pull_request:
+
+jobs:
+  license:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install Python dependencies
+        run: |
+          pip install --no-cache-dir -r ./requirements.txt
+          pip install --no-cache-dir -r ./tests/requirements.txt
+          pip install pip-licenses
+
+      - name: Install NPM dependencies
+        run: |
+          npm i -g license-checker
+          cd ./covalent_ui/webapp 
+          yarn install
+
+      - name: Check front-end licenses
+        run: |
+          cd ./covalent_ui/webapp
+          license-checker --production --csv --onlyAllow '
+            MIT;
+            ISC;
+            Apache-2.0;
+            CC0-1.0;
+            BSD-3-Clause;
+            BSD-2-Clause;
+            MPL-2.0;
+            CC-BY-4.0;
+            EPL-1.0;
+            Unlicense;
+            ODC-By-1.0;
+            WTFPL;
+            CC-BY-3.0;
+            0BSD;
+            UNLICENSED
+          '
+
+      - name: Check back-end licenses
+        run: |
+          pip-licenses --format=csv --allow-only '
+            Apache 2 License;
+            Apache 2.0;
+            Apache-2.0;
+            Apache License 2.0;
+            Apache License, Version 2.0;
+            Apache Software License;
+            BSD;
+            BSD License;
+            3-clause BSD;
+            3-Clause BSD License;
+            new BSD;
+            BSD-derived (http://www.repoze.org/LICENSE.txt);
+            Freely Distributable;
+            Freeware;
+            GNU General Public License (GPL);
+            GNU General Public License v2 (GPLv2);
+            GNU General Public License v2 or later (GPLv2+);
+            GNU Library or Lesser General Public License (LGPL);
+            GNU Lesser General Public License v2 (LGPLv2);
+            GNU Lesser General Public License v2 or later (LGPLv2+);
+            GNU Lesser General Public License v3 (LGPLv3);
+            Historical Permission Notice and Disclaimer (HPND);
+            ISC License (ISCL);
+            MIT;
+            MIT License;
+            Mozilla Public License 2.0 (MPL 2.0);
+            Public Domain;
+            Python Software Foundation License;
+            UNKNOWN;
+            None
+          '
