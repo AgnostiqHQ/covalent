@@ -107,7 +107,7 @@ class BuildUI(Command):
 
 
 setup_info = {
-    "name": "cova",
+    "name": "covalent",
     "packages": find_packages(exclude=["tests"]),
     "version": version,
     "maintainer": "Agnostiq",
