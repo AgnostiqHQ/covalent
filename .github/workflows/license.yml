@@ -53,20 +53,20 @@ jobs:
         run: |
           cd ./covalent_ui/webapp
           license-checker --production --csv --onlyAllow '
-            MIT;
-            ISC;
             Apache-2.0;
-            CC0-1.0;
-            BSD-3-Clause;
+            0BSD;
             BSD-2-Clause;
-            MPL-2.0;
+            BSD-3-Clause;
+            CC0-1.0;
+            CC-BY-3.0;
             CC-BY-4.0;
             EPL-1.0;
-            Unlicense;
+            ISC;
+            MIT;
+            MPL-2.0;
             ODC-By-1.0;
             WTFPL;
-            CC-BY-3.0;
-            0BSD;
+            Unlicense;
             UNLICENSED
           '
 
