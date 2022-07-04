@@ -13,6 +13,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Updates to changelog logic to handle multiple authors
+
+## [0.119.0] - 2022-07-03
+### Authors
+@cjao 
+
+
+### Added
+
+- Introduce support for pip dependencies
+
+## [0.118.0] - 2022-07-02
+### Authors
+@AlejandroEsquivel 
+
+
+### Added
+
+- Introduced File, FileTransfer, and FileTransferStrategy classes to support various File Transfer use cases prior/post electron execution
+
+## [0.117.0] - 2022-07-02
+### Authors
+@Emmanuel289 
+
+
+### Added
+
+- Included retry action in 'tests.yaml' workflow.
+
+## [0.116.0] - 2022-06-29
+### Authors
+@Prasy12 
+
+### Changed
+
+- Changed API socket calls interval for graph optimization.
+
+### Added
+
+- Ability to change to different layouts from the GUI.
+
+## [0.115.0] - 2022-06-28
+### Authors
+@cjao 
+
+
+### Added
+
+- Introduce support for `call_before`, `call_after`, and bash dependencies
+
+### Operations
+
+- Updated codeowners so that AQ Engineers doesn't own this CHANGELOG
+- pre-commit autoupdate
+
+## [0.114.0] - 2022-06-23
+### Authors
+@dependabot[bot] 
+
+
+### Changed
+
+- Changed eventsource version on webapp yarn-lock file.
+
+### Operations
+
 - Added Github push changelog workflow to append commiters username
 - Reusable JavaScript action to parse changelog and update version
 

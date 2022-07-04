@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -43,6 +43,9 @@ from .._shared_files.utils import (
     get_serialized_function_str,
     required_params_passed,
 )
+from .depsbash import DepsBash
+from .depscall import DepsCall
+from .depspip import DepsPip
 from .transport import _TransportGraph
 
 if TYPE_CHECKING:
@@ -357,6 +360,10 @@ def lattice(
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     # Add custom metadata fields here
+    deps_bash: Union[DepsBash, list, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None),
+    deps_pip: Union[DepsPip, list] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("pip", None),
+    call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
+    call_after: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -370,6 +377,10 @@ def lattice(
         executor: Alternative executor object to be used in the execution of each node. If not passed, the local
             executor is used by default.
         results_dir: Directory to store the results
+        deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
+        deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
+        call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
+        call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
 
     Returns:
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.
@@ -384,9 +395,30 @@ def lattice(
 
     results_dir = str(Path(results_dir).expanduser().resolve())
 
+    deps = {}
+
+    if isinstance(deps_bash, DepsBash):
+        deps["bash"] = deps_bash
+    if isinstance(deps_bash, list) or isinstance(deps_bash, str):
+        deps["bash"] = DepsBash(commands=deps_bash)
+
+    if isinstance(deps_pip, DepsPip):
+        deps["pip"] = deps_pip
+    if isinstance(deps_pip, list):
+        deps["pip"] = DepsPip(packages=deps_pip)
+
+    if isinstance(call_before, DepsCall):
+        call_before = [call_before]
+
+    if isinstance(call_after, DepsCall):
+        call_after = [call_after]
+
     constraints = {
         "executor": executor,
         "results_dir": results_dir,
+        "deps": deps,
+        "call_before": call_before,
+        "call_after": call_after,
     }
 
     def decorator_lattice(func=None):

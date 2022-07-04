@@ -18,11 +18,17 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Import workflow utilities."""
+from abc import ABC, abstractmethod
+from typing import Tuple
 
-from .depsbash import DepsBash
-from .depscall import DepsCall
-from .depspip import DepsPip
-from .electron import electron
-from .lattice import lattice
-from .lepton import Lepton
+from .transport import TransportableObject
+
+
+class Deps(ABC):
+    def __init__(self, apply_fn=None, apply_args=[], apply_kwargs={}):
+        self.apply_fn = TransportableObject(apply_fn)
+        self.apply_args = TransportableObject(apply_args)
+        self.apply_kwargs = TransportableObject(apply_kwargs)
+
+    def apply(self) -> Tuple[TransportableObject, TransportableObject, TransportableObject]:
+        return (self.apply_fn, self.apply_args, self.apply_kwargs)

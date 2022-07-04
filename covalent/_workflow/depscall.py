@@ -18,11 +18,20 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Import workflow utilities."""
+from .deps import Deps
+from .transport import TransportableObject
 
-from .depsbash import DepsBash
-from .depscall import DepsCall
-from .depspip import DepsPip
-from .electron import electron
-from .lattice import lattice
-from .lepton import Lepton
+
+class DepsCall(Deps):
+    """Deps class to encapsulate python functions to be
+    called in the same execution environment as the electron.
+
+    Attributes:
+        func: A callable
+        args: args list
+        kwargs: kwargs dict
+
+    """
+
+    def __init__(self, func, args=[], kwargs={}):
+        super().__init__(apply_fn=func, apply_args=args, apply_kwargs=kwargs)

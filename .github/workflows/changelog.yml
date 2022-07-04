@@ -1,15 +1,15 @@
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
-# 
-# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
 # A copy of the License may be obtained with this software package or at
 #
 #      https://www.gnu.org/licenses/agpl-3.0.en.html
 #
-# Use of this file is prohibited except in compliance with the License. Any 
-# modifications or derivative works of this file must retain this copyright 
-# notice, and modified files must contain a notice indicating that they have 
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
 # been altered from the originals.
 #
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
@@ -20,16 +20,16 @@
 
 name: changelog
 
-on: 
+on:
   push:
     branches:
       - develop
     paths-ignore:
       - "CHANGELOG.md"
       - "VERSION"
-      - "/.github/actions/changelog/package.json"
-      - "/.github/actions/changelog/package-lock.json"
-      - "/.github/actions/changelog/dist/**"
+      - ".github/actions/changelog/package.json"
+      - ".github/actions/changelog/package-lock.json"
+      - ".github/actions/changelog/dist/**"
 
 jobs:
   changelog:
@@ -37,6 +37,7 @@ jobs:
     outputs:
       index: ${{ steps.filter.outputs.index }}
       action: ${{ steps.filter.outputs.action }}
+      dist: ${{ steps.filter.outputs.dist }}
     steps:
       - name: Check out head
         uses: actions/checkout@v3
@@ -47,16 +48,35 @@ jobs:
         with:
           filters: |
             index:
-              - '/.github/actions/changelog/index.js'
+              - '.github/actions/changelog/index.js'
             action:
-              - '/.github/actions/changelog/action.yml'
+              - '.github/actions/changelog/action.yml'
+            dist:
+              - '.github/actions/changelog/dist/**'
+
+      - name: Get latest release
+        uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
+        with:
+          semver_only: true
+      - name: Get commits
+        id: commits
+        uses: octokit/request-action@v2.x
+        with:
+          route: "GET
+            /repos\
+            /${{ github.repository }}\
+            /compare\
+            /${{ steps.get-latest-tag.outputs.tag }}...${{ github.sha }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update version number
         id: changelog
         uses: ./.github/actions/changelog
         with:
           changelog-path: CHANGELOG.md
           version-path: VERSION
-          commits-json: ${{toJSON(github.event.commits) }}
+          commits-json: ${{toJSON(fromJSON(steps.commits.outputs.data).commits)}}
       - name: Commit
         if: ${{ steps.changelog.outputs.message != 'noop' }}
         uses: EndBug/add-and-commit@v9
@@ -68,6 +88,8 @@ jobs:
 
   action-build:
     needs: changelog
-    if: needs.changelog.outputs.action == 'true' || needs.changelog.outputs.index == 'true'
+    if: >-
+      ${{ (needs.changelog.outputs.action == 'true' || needs.changelog.outputs.index == 'true')
+      && needs.changelog.outputs.dist == 'false' }}
     uses: ./.github/workflows/action_build.yml
     secrets: inherit
