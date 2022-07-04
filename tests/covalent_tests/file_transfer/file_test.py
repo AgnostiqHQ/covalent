@@ -93,4 +93,3 @@ class TestFile:
         assert File(f"{MOCK_FILEPATH}/", include_folder=True).filepath == MOCK_FILEPATH
         assert File(f"{MOCK_FILEPATH}/", include_folder=False).filepath == f"{MOCK_FILEPATH}/"
         assert File(MOCK_FILEPATH, include_folder=False).filepath == f"{MOCK_FILEPATH}/"
-

@@ -106,4 +106,3 @@ class Rsync(FileTransferStrategy):
                 raise CalledProcessError(p.returncode, f'"{cmd}" with error: {str(error)}')
 
         return callable
-
