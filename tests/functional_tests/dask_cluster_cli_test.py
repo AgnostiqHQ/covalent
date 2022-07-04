@@ -79,8 +79,20 @@ def test_cluster_info_cli():
     response = ast.literal_eval(runner.invoke(cluster, "--info").output)
     expected_keys = ["type", "id", "address", "services", "started", "workers"]
     worker_info_expected_keys = [
-        "type", "id", "host", "resources", "local_directory", "name", "nthreads",
-        "memory_limit", "last_seen", "services", "metrics", "status", "nanny"]
+        "type",
+        "id",
+        "host",
+        "resources",
+        "local_directory",
+        "name",
+        "nthreads",
+        "memory_limit",
+        "last_seen",
+        "services",
+        "metrics",
+        "status",
+        "nanny",
+    ]
     assert list(response.keys()) == expected_keys
     assert len(response["workers"]) == dask.system.CPU_COUNT
 
