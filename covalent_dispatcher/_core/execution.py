@@ -226,8 +226,6 @@ def _run_task(
                 function=serialized_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
-                call_before=call_before,
-                call_after=call_after,
                 dispatch_id=dispatch_id,
                 results_dir=results_dir,
                 node_id=node_id,

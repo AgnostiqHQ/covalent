@@ -87,8 +87,6 @@ class DaskExecutor(BaseExecutor):
         function: TransportableObject,
         args: List,
         kwargs: Dict,
-        call_before: List,
-        call_after: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
@@ -116,7 +114,7 @@ class DaskExecutor(BaseExecutor):
 
         fn_version = function.python_version
 
-        new_args = [function, call_before, call_after]
+        new_args = [function]
         for arg in args:
             new_args.append(arg)
 
