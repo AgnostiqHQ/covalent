@@ -11,6 +11,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Unit/functional tests for the Dask cluster CLI options
 
+## [0.122.0] - 2022-07-04
+
+### Authors
+
+Faiyaz Hasan <faiyaz@agnostiq.ai>
+Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- `covalent/_results_manager/write_result_to_db.py` module and methods to insert / update data in the DB.
+- `tests/covalent_tests/results_manager_tests/write_result_to_db_test.py` containing the unit tests for corresponding functions.
+
+### Changed
+
+- Electron `type` column to a string type rather than an `ElectronType` in DB models.
+- Primary keys from `BigInteger` to `Integer` in DB models.
+
+## [0.121.0] - 2022-07-04
+
+### Authors
+
+Will Cunningham <wjcunningham7@users.noreply.github.com>
+Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Removed
+
+- Unused requirements `gunicorn` and `eventlet` in `requirements.txt` as well as `dask` in `tests/requirements.txt`, since it is already included in the core requirements.
+
+### Docs
+
+- Updated the compatibility matrix in the docs.
+
 ## [0.120.0] - 2022-07-04
 
 ### Authors
@@ -80,6 +115,7 @@ Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 
 ### Operations
 
+- Unit tests performed on Python 3.10 on Ubuntu and MacOS images as well as 3.9 on MacOS
 - Updated codeowners so that AQ Engineers doesn't own this CHANGELOG
 - pre-commit autoupdate
 
