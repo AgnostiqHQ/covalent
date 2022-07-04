@@ -453,7 +453,7 @@ We can, just as conveniently, access the details of the computational output of 
 =====================
 Electron Dependencies
 =====================
-The installation of an electron's dependencies is managed within the electron's execution environment. In essence, one can specify different types of dependencies in an electron which will be installed or executed in the electron's backend execution environment. 
+The installation of an electron's dependencies is managed within the electron's execution environment. In essence, one can specify different types of dependencies in an electron which will be installed or executed in the electron's backend execution environment.
 
 ~~~~~~
 Deps
@@ -468,7 +468,7 @@ When a :code:`Deps` object is initialized, the :code:`apply_fn`, :code:`args`, a
 
 The following kinds of dependencies are supported at the electron level:
 
-* DepsPip - used in managing pip dependencies in an electron. 
+* DepsPip - used in managing pip dependencies in an electron.
 * DepsBash - used in managing bash dependencies in an electron.
 * DepsCall - used in managing functions that are called before or after executing an electron.
 
@@ -481,7 +481,7 @@ DepsPip
 using :code:`apply_pip_deps` which is a callable that installs the required PyPI packages.
 
 Below is an example of using :code:`DepsPip` to specify a list of PyPI packages in an electron::
-    
+
     import covalent as ct
     from covalent import DepsPip
 
@@ -492,7 +492,7 @@ Below is an example of using :code:`DepsPip` to specify a list of PyPI packages 
     ...
 
 Alternatively, one can specify the path to a :code:`requirements.txt` file that contains the list of required packages::
-    
+
     @ct.electron(
         deps_pip=DepsPip(reqs_path="/usr/foo/requirements.txt")
     )
@@ -526,12 +526,12 @@ DepsCall
 
 :code:`DepsCall` is the class that is responsible for managing Python functions that need to be invoked in the same backend environment as the electron.
 
-:code:`__init__()`: :code:`DepsCall` :code:`__init__()` constructor takes in :code:`func` which is a callable 
+:code:`__init__()`: :code:`DepsCall` :code:`__init__()` constructor takes in :code:`func` which is a callable
 that is invoked in the electron's environment. It also takes a list of :code:`args` and :code:`kwargs`
 which are passed as arguments when overriding the parent :code:`Deps` class.
 
 Below is an example of using :code:`DepsCall` to declare functions that are called before and after an electron is executed::
-    
+
     import covalent as ct
     from covalent import DepsCall
 
