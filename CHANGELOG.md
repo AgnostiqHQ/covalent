@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Adding `cluster` CLI options to facilitate interacting with the backend Dask cluster
+- Adding options to `covalent start` to enable specifying number of workers, memory limit and threads per worker at cluster startup
+
+### Changed
+
+- Update `DaskAdminWorker` docstring with better explanation
+
 ## [0.119.1] - 2022-07-04
 
 ### Authors
