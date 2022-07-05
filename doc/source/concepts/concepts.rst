@@ -477,7 +477,7 @@ DepsPip
 ~~~~~~~
 :code:`DepsPip` is the class that is responsible for managing the list of required PyPI packages which have to be installed in the backend environment prior to executing the electron.
 
-:code:`__init__()`: The :code:`__init__()` constructor of :code:`DepsPip` takes a list of required PyPI packages and/or a path to the file that contains the list of requirements. It overrides :code:`Deps`'s :code:`__init_()` by
+:code:`__init__()`: The :code:`__init__()` constructor of :code:`DepsPip` takes a list of required PyPI packages and/or a path to the file that contains the list of required PyPI packages. It overrides :code:`Deps`'s :code:`__init_()` by
 using :code:`apply_pip_deps` which is a callable that installs the required PyPI packages.
 
 Below is an example of using :code:`DepsPip` to specify a list of PyPI packages in an electron::
