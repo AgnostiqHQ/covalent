@@ -4,6 +4,8 @@ import argparse
 import os
 import random
 import shutil
+import time
+import types
 from datetime import datetime
 from pathlib import Path
 from pprint import pprint
@@ -42,6 +44,7 @@ def makeint():
 
 @ct.lattice
 def simple_workflow(a, b):
+    time.sleep(5)
     phrase = join_words(a, b)
     return excitement(phrase)
 
@@ -59,6 +62,7 @@ def another_error(a, b):
 
 @ct.electron
 def add(a, b):
+    time.sleep(10)
     return a + b
 
 
@@ -75,6 +79,7 @@ def check(a, b):
 
 @ct.lattice
 def check_alt(a, b):
+    time.sleep(10)
     result1 = add(a=a, b=b)
     return identity(a=result1)
 
@@ -94,6 +99,7 @@ def workflow():
 
 @ct.electron
 def new_func(a, b, c, d, e):
+    time.sleep(10)
     return a + b + c + d + e
 
 
@@ -126,6 +132,7 @@ def workflow0():
 
 @ct.electron
 def say_hello():
+    time.sleep(10)
     print("hello")
     return "hello"
 
@@ -144,12 +151,29 @@ def outputs(a, b, c):
     return str(y) + x
 
 
+@ct.lattice
+def sublattice0(a):
+    b = workflow0()
+    c = say_hello()
+    return str(b) + c + " " + a
+
+
+@ct.lattice
+def sublattice1(a, b):
+    c = work_func(a, b, 1)
+    d = test_func(a, b)
+    return str(c) + b
+
+
 workflows = [
+    (sublattice0, ("world")),
+    (sublattice1, ("hello", "world")),
     (simple_workflow, ("hello", "world")),
     (error_workflow, ("hello")),
     (another_error, ("another", "error")),
     (check, (1, 2)),
     (check_alt, (3, 4)),
+    (check_alt, (ct.electron(check(0, 0)), 1)),
     (workflow, ()),
     (work_func, (5, 6, 7)),
     (work_a, ("covalent", 0)),
@@ -174,6 +198,7 @@ for workflow in workflows:
     lattice_id = lattice_id + 1
     lattice, args = workflow
     dispatch_id = ct.dispatch(lattice)(*args)
+    time.sleep(5)  # Change this number to see different statuses
     result = ct.get_result(dispatch_id)
     result.save()
 
@@ -209,6 +234,8 @@ for workflow in workflows:
     pprint(nodes)
     pprint(links)
     for node in nodes:
+        print(node["name"])
+        print(type(node["function"].get_deserialized()))
         electron_id = electron_id + 1
         storage_path = f"./results/{dispatch_id}/node_{node['id']}/"
         os.mkdir(storage_path)
@@ -238,12 +265,25 @@ for workflow in workflows:
                 f.write(pickle.dumps(node["value"]))
         else:
             value_filename = None
+        nodename = node["name"]
+        nodetype = None
+        if nodename[0] == ":":
+            typename = nodename.split(nodename[0])[1]
+            for e in ElectronTypeEnum:
+                if typename == e.name:
+                    nodetype = e
+            if not nodetype:
+                print("***UNKNOWN NODE TYPE***")
+                print(nodename)
+                nodetype = ElectronTypeEnum.electron
+        else:
+            nodetype = ElectronTypeEnum.electron
         electron = Electron(
             id=electron_id,
             parent_lattice_id=lattice.id,
             transport_graph_node_id=node["id"],
-            type=ElectronTypeEnum.electron,
-            name=node["name"],
+            type=nodetype,
+            name=nodename,
             status=str(node["status"]),
             storage_type="local",
             storage_path=storage_path,
@@ -253,6 +293,8 @@ for workflow in workflows:
             error_filename="error.log",
             results_filename="result.pkl",
             value_filename=value_filename,
+            #            key=
+            #            attribute_name=
             stdout_filename="stdout.log",
             stderr_filename="stderr.log",
             info_filename="info.log",
