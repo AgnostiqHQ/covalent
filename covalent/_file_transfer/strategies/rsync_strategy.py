@@ -32,8 +32,8 @@ class Rsync(FileTransferStrategy):
     def get_rsync_ssh_cmd(
         self, local_file: File, remote_file: File, transfer_from_remote: bool = False
     ) -> str:
-        local_filepath = str(local_file.filepath)
-        remote_filepath = str(remote_file.filepath)
+        local_filepath = local_file.filepath
+        remote_filepath = remote_file.filepath
         args = ["rsync"]
         if self.private_key_path:
             args.append(f'-e "ssh -i {self.private_key_path}"')
@@ -54,13 +54,13 @@ class Rsync(FileTransferStrategy):
     def get_rsync_cmd(
         self, from_file: File, to_file: File, transfer_from_remote: bool = False
     ) -> str:
-        from_filepath = str(from_file.filepath)
-        to_filepath = str(to_file.filepath)
+        from_filepath = from_file.filepath
+        to_filepath = to_file.filepath
         return f"rsync -a {from_filepath} {to_filepath}"
 
     def return_executable_cmd(self, cmd, from_file: File, to_file: File) -> None:
-        from_filepath = str(from_file.filepath)
-        to_filepath = str(to_file.filepath)
+        from_filepath = from_file.filepath
+        to_filepath = to_file.filepath
         is_from_temp_file = from_file.is_temp_file
         is_to_temp_file = to_file.is_temp_file
 
