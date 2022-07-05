@@ -67,7 +67,20 @@ class TestFile:
         ],
     )
     def test_get_filepath(self, filepath, expected_filepath):
-        assert File.get_filepath(filepath) == expected_filepath
+        assert File.get_path_obj(filepath) == expected_filepath
+
+    @pytest.mark.parametrize(
+        "provided_uri, expected_uri",
+        [
+            ("/home/ubuntu/observations.csv", "file:///home/ubuntu/observations.csv"),
+            ("file:/home/ubuntu/observations.csv", "file:///home/ubuntu/observations.csv"),
+            ("file:///home/ubuntu/observations.csv", "file:///home/ubuntu/observations.csv"),
+            ("https://example.com/my_route", "https://example.com/my_route"),
+            ("http://example.com/my_route", "http://example.com/my_route"),
+        ],
+    )
+    def test_get_uri(self, provided_uri, expected_uri):
+        assert File(provided_uri).uri == expected_uri
 
     @pytest.mark.parametrize(
         "filepath, is_directory",
@@ -92,4 +105,5 @@ class TestFile:
         assert File(MOCK_FILEPATH, include_folder=True).filepath == MOCK_FILEPATH
         assert File(f"{MOCK_FILEPATH}/", include_folder=True).filepath == MOCK_FILEPATH
         assert File(f"{MOCK_FILEPATH}/", include_folder=False).filepath == f"{MOCK_FILEPATH}/"
-        assert File(MOCK_FILEPATH, include_folder=False).filepath == f"{MOCK_FILEPATH}/"
+        # this is not a dir so we do not add traling slash
+        assert File(MOCK_FILEPATH, include_folder=False).filepath == MOCK_FILEPATH

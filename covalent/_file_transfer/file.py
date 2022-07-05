@@ -56,7 +56,12 @@ class File:
             self._include_folder = True
 
         self.scheme = File.resolve_scheme(filepath)
-        self._path_object = File.get_filepath(filepath)
+        self._path_object = File.get_path_obj(filepath)
+        self.uri = File.get_uri(self.scheme, filepath)
+
+    @property
+    def is_temp_file(self):
+        return self.filepath == self.get_temp_filepath()
 
     def get_temp_filepath(self):
         return f"/tmp/{self.id}"
@@ -94,12 +99,18 @@ class File:
         Path(self.filepath).touch()
 
     @staticmethod
-    def get_filepath(path: str) -> str:
+    def get_path_obj(path: str):
         path_components = furl(path)
         path_components.scheme = None
         path_components.path.normalize()
-
         return path_components.path
+
+    @staticmethod
+    def get_uri(scheme: str, path: str) -> str:
+        path_components = furl(path)
+        path_components.scheme = scheme
+        path_components.path.normalize()
+        return path_components.url
 
     @staticmethod
     def resolve_scheme(path: str) -> FileSchemes:

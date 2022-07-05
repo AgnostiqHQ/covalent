@@ -4,8 +4,9 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 from furl import furl
 
-from covalent._file_transfer.enums import FileSchemes, Order
+from covalent._file_transfer.enums import FileSchemes, FileTransferStrategyTypes, Order
 from covalent._file_transfer.file import File
+from covalent._file_transfer.strategies.http_strategy import HTTP
 from covalent._file_transfer.strategies.rsync_strategy import Rsync
 from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
 
@@ -46,8 +47,13 @@ class FileTransfer:
         # assign explicit strategy or default to strategy based on from_file & to_file schemes
         if strategy:
             self.strategy = strategy
-        elif to_file.scheme == FileSchemes.File and from_file.scheme == FileSchemes.File:
+        elif (
+            from_file.mapped_strategy_type == FileTransferStrategyTypes.Rsync
+            and to_file.mapped_strategy_type == FileTransferStrategyTypes.Rsync
+        ):
             self.strategy = Rsync()
+        elif from_file.mapped_strategy_type == FileTransferStrategyTypes.HTTP:
+            self.strategy = HTTP()
         else:
             raise AttributeError("FileTransfer requires a file transfer strategy to be specified")
 
@@ -87,7 +93,7 @@ def TransferFromRemote(
     # override is_remote for the case where from_filepath is of a file:// scheme where the file is remote (rsync ssh)
     from_file = File(from_filepath, is_remote=True)
     return FileTransfer(
-        from_filepath=from_file, to_filepath=to_filepath, order=Order.BEFORE, strategy=strategy
+        from_file=from_file, to_file=to_filepath, order=Order.BEFORE, strategy=strategy
     )
 
 
@@ -99,5 +105,5 @@ def TransferToRemote(
     # override is_remote for the case where to_filepath is of a file:// scheme where the file is remote (rsync ssh)
     to_file = File(to_filepath, is_remote=True)
     return FileTransfer(
-        from_filepath=from_filepath, to_filepath=to_file, order=Order.AFTER, strategy=strategy
+        from_file=from_filepath, to_file=to_file, order=Order.AFTER, strategy=strategy
     )

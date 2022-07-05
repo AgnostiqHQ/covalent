@@ -58,50 +58,35 @@ class Rsync(FileTransferStrategy):
         to_filepath = str(to_file.filepath)
         return f"rsync -a {from_filepath} {to_filepath}"
 
-    # return callable to move files in the local file system
-    def cp(self, from_file: File, to_file: File = File()) -> None:
-        cmd = self.get_rsync_cmd(from_file, to_file)
+    def return_executable_cmd(self, cmd, from_file: File, to_file: File) -> None:
         from_filepath = str(from_file.filepath)
         to_filepath = str(to_file.filepath)
+        is_from_temp_file = from_file.is_temp_file
+        is_to_temp_file = to_file.is_temp_file
 
         def callable():
-            Path(from_filepath).touch()
-            Path(to_filepath).touch()
+            if is_from_temp_file:
+                Path(from_filepath).touch()
+            if is_to_temp_file:
+                Path(to_filepath).touch()
             p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
             output, error = p.communicate()
             if p.returncode != 0:
                 raise CalledProcessError(p.returncode, f'"{cmd}" with error: {str(error)}')
 
         return callable
+
+    # return callable to move files in the local file system
+    def cp(self, from_file: File, to_file: File = File()) -> None:
+        cmd = self.get_rsync_cmd(from_file, to_file)
+        return self.return_executable_cmd(cmd, from_file, to_file)
 
     # return callable to download here implies 'from' is a remote source
     def download(self, from_file: File, to_file: File = File()) -> File:
         cmd = self.get_rsync_ssh_cmd(to_file, from_file, transfer_from_remote=True)
-        from_filepath = str(from_file.filepath)
-        to_filepath = str(to_file.filepath)
-
-        def callable():
-            Path(from_filepath).touch()
-            Path(to_filepath).touch()
-            p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-            output, error = p.communicate()
-            if p.returncode != 0:
-                raise CalledProcessError(p.returncode, f'"{cmd}" with error: {str(error)}')
-
-        return callable
+        return self.return_executable_cmd(cmd, from_file, to_file)
 
     # return callable to upload here implies 'to' is a remote source
     def upload(self, from_file: File, to_file: File) -> None:
         cmd = self.get_rsync_ssh_cmd(from_file, to_file, transfer_from_remote=False)
-        from_filepath = str(from_file.filepath)
-        to_filepath = str(to_file.filepath)
-
-        def callable():
-            Path(from_filepath).touch()
-            Path(to_filepath).touch()
-            p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-            output, error = p.communicate()
-            if p.returncode != 0:
-                raise CalledProcessError(p.returncode, f'"{cmd}" with error: {str(error)}')
-
-        return callable
+        return self.return_executable_cmd(cmd, from_file, to_file)
