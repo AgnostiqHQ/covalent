@@ -324,10 +324,14 @@ class Electron:
             return self.function(*args, **kwargs)
 
         if active_lattice.post_processing:
+
             # This is to resolve `wait_for` calls during post processing time
             id, output = active_lattice.electron_outputs[0]
 
-            for _, _, attr in active_lattice.transport_graph._graph.in_edges(id, data=True):
+            for i, j, attr in active_lattice.transport_graph._graph.in_edges(id, data=True):
+                with open("mafile.txt", "a") as f:
+                    f.write(f"I is {i}, J is {j}, attr is {attr}\n")
+
                 if attr.get("wait_for"):
                     return Electron(function=None, metadata=None, node_id=id)
 
