@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added license scanner action
 - Pre-commit autoupdate
 
+### Tests
+
+- Tests for running workflows with more than one iteration
+
+### Fixed
+
+- Attribute error caused by attempts to retrieve the name from the node function when the node function is set to None
+
 ## [0.122.0] - 2022-07-04
 
 ### Authors
