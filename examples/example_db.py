@@ -17,13 +17,7 @@ from sqlalchemy.orm import Session
 
 import covalent as ct
 from covalent._data_store import DataStore
-from covalent._data_store.models import (
-    Electron,
-    ElectronDependency,
-    ElectronTypeEnum,
-    Lattice,
-    ParameterTypeEnum,
-)
+from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent.executor import _executor_manager
 
 
@@ -304,7 +298,7 @@ for workflow in workflows:
             electron_id=link["target"],
             parent_electron_id=link["source"],
             edge_name=link["edge_name"],
-            parameter_type=ParameterTypeEnum[link["param_type"]],
+            parameter_type=link["param_type"],
             arg_index=link["arg_index"],
             created_at=datetime.now(),
         )
