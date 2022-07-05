@@ -268,16 +268,9 @@ for workflow in workflows:
         nodename = node["name"]
         nodetype = None
         if nodename[0] == ":":
-            typename = nodename.split(nodename[0])[1]
-            for e in ElectronTypeEnum:
-                if typename == e.name:
-                    nodetype = e
-            if not nodetype:
-                print("***UNKNOWN NODE TYPE***")
-                print(nodename)
-                nodetype = ElectronTypeEnum.electron
+            nodetype = nodename.split(nodename[0])[1]
         else:
-            nodetype = ElectronTypeEnum.electron
+            nodetype = "electron"
         electron = Electron(
             id=electron_id,
             parent_lattice_id=lattice.id,
@@ -290,7 +283,6 @@ for workflow in workflows:
             function_filename="function.pkl",
             function_string_filename=function_string_filename,
             executor_filename="executor.pkl",
-            error_filename="error.log",
             results_filename="result.pkl",
             value_filename=value_filename,
             #            key=
