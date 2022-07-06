@@ -491,7 +491,8 @@ Below is an example of using :code:`DepsPip` to specify a list of PyPI packages 
     def task():
     ...
 
-Alternatively, one can specify the path to a :code:`requirements.txt` file that contains the list of required packages::
+Alternatively, one can specify the path to a :code:`requirements.txt` file that contains the list of required packages.
+Assuming the path to the file is :code:`/usr/foo/requirements.txt`::
 
     @ct.electron(
         deps_pip=DepsPip(reqs_path="/usr/foo/requirements.txt")
@@ -524,7 +525,8 @@ Below is an example of using :code:`DepsBash` to specify a list of bash commands
 DepsCall
 ~~~~~~~~
 
-:code:`DepsCall` is the class that is responsible for managing Python functions that need to be invoked in the same backend environment as the electron.
+:code:`DepsCall` is the class that is responsible for managing Python functions and other electron dependencies that need to be invoked in the same backend environment as the electron.
+It also functions as a parent class for :code:`DepsBash`, :code:`DepsPip`, and :code:`Deps` and can apply those dependencies before or after the electron's execution.
 
 :code:`__init__()`: :code:`DepsCall` :code:`__init__()` constructor takes in :code:`func` which is a callable
 that is invoked in the electron's environment. It also takes a list of :code:`args` and :code:`kwargs`
@@ -573,6 +575,21 @@ Alternatively, one can explicitly specify each kind of dependency using the `key
         deps_pip=["numpy==0.23", "qiskit"]
         deps_bash=["echo $PATH", "ssh foo@bar.com"]
         call_before=[execute_before_electron, (1, 2)],
+        call_after =[shutdown_after_electron],
+    )
+    def task():
+    ...
+
+Lastly, one can directly apply other types of :code:`Deps` in the electron's environment by passing them as variables to :code:`call_before` and :code:`call_after`::
+
+    import covalent as ct
+    from covalent import DepsPip, DepsBash, DepsCall 
+
+    deps_pip=DepsPip(packages=["numpy==0.23", "qiskit"]),
+    deps_bash=DepsBash(commands=["echo $PATH", "ssh foo@bar.com"])
+
+    @ct.electron(
+        call_before=[deps_pip, deps_bash],
         call_after =[shutdown_after_electron],
     )
     def task():
