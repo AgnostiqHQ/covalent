@@ -84,15 +84,17 @@ def test_result_persist_workflow_1(db, result_1):
     with Session(db.engine) as session:
         lattice_row = session.query(Lattice).first()
         electron_rows = session.query(Electron).all()
-        electron_dependency = session.query(ElectronDependency).all()
+        electron_dependency_rows = session.query(ElectronDependency).all()
 
-    # TODO - Check via assert statements that the records are what they should be
+    # Check that lattice record is as expected
     assert lattice_row.dispatch_id == "dispatch_id"
     assert isinstance(lattice_row.created_at, dt)
     assert isinstance(lattice_row.started_at, dt)
     assert isinstance(lattice_row.updated_at, dt)
     assert lattice_row.completed_at is None
     assert lattice_row.status == "NEW_OBJ"
+    assert lattice_row.name == "workflow_1"
+    assert lattice_row.electron_id is None
     assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR)
 
     with open(lattice_row.function_filename, "rb") as f:
@@ -111,7 +113,24 @@ def test_result_persist_workflow_1(db, result_1):
         result = pickle.loads(f)
     assert result is None
 
+    # Check that the electron records are as expected
+    for electron in electron_rows:
+        assert electron.status == "NEW_OBJ"
+        assert electron.parent_lattice_id == 1
+        assert electron.started_at is None and electron.completed_at is None
+
+    # Check that there are the appropriate amount of electron dependency records
+    assert len(electron_dependency_rows) == 4
+
     # TODO - update some node / lattice statuses
+    for node_id in range(5):
+        result_1._update_node(
+            node_id=node_id,
+            end_time=dt.now(),
+            status="COMPLETED",
+            output={"test_data": "test_data"},
+            sublattice_result=None,  # TODO - Add a test where this is not None
+        )
 
     # TODO - Query lattice / electron / electron dependency
 
