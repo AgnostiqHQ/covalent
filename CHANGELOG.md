@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Style fixes in changelog
+
 ## [0.122.1] - 2022-07-06
 
 ### Authors
@@ -17,7 +21,6 @@ Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 
 ### Operations
 
-- Style fixes in changelog
 - Added license scanner action
 - Pre-commit autoupdate
 
