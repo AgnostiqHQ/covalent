@@ -1,4 +1,3 @@
-dask[distributed]==2022.1.0
 detect-secrets==1.2.0 # Not available on Conda's channels that we have.
 flake8==3.9.2
 isort==5.7.0

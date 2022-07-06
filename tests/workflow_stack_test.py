@@ -27,6 +27,7 @@ import pytest
 import covalent as ct
 import covalent._results_manager.results_manager as rm
 from covalent._results_manager.result import Result
+from covalent._workflow.electron import Electron
 
 
 @ct.electron
@@ -229,6 +230,35 @@ def test_electron_deps_call_before():
     assert res.result == (True, "Hello")
 
     assert not Path(tmp_path).is_file()
+
+
+def test_electron_deps_pip():
+
+    import subprocess
+
+    @ct.electron(deps_pip=ct.DepsPip(packages=["pydash==5.1.0"]))
+    def func(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return func(x)
+
+    dispatch_id = ct.dispatch(workflow)(x=5)
+    res = ct.get_result(dispatch_id, wait=True)
+
+    assert res.result == 5
+
+    import pydash
+
+    assert pydash.__version__ == "5.1.0"
+
+    subprocess.run(
+        "pip uninstall -y --no-input pydash",
+        shell=True,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+    )
 
 
 def test_electron_deps_bash_implicit():
@@ -463,3 +493,35 @@ def test_all_parameter_types_in_lattice():
     assert result.inputs["kwargs"] == {"c": 5, "d": 6, "e": 7}
 
     assert result.result == (10, (3, 4), {"d": 6, "e": 7})
+
+
+def test_two_iterations():
+    """Confirm we can build the graph with more than one iteration"""
+
+    @ct.electron
+    def split(s, n):
+        return s[:n], s[n:]
+
+    @ct.lattice
+    def midword(a, b, n):
+        first, last = split(a, n)
+        return first + b + last
+
+    midword.build_graph("hello world", "beautiful", 6)
+    assert [0, 1, 2, 3, 4, 5, 6, 7] == list(midword.transport_graph._graph.nodes)
+
+
+def test_two_iterations_float():
+    """Confirm we can build the graph with more than one iteration"""
+
+    @ct.electron
+    def half_quarter(n):
+        return n / 2.0, n / 4.0
+
+    @ct.lattice
+    def add_half_quarter(a):
+        half, quarter = half_quarter(a)
+        return half + quarter
+
+    add_half_quarter.build_graph(0.1)
+    assert [0, 1, 2, 3, 4] == list(add_half_quarter.transport_graph._graph.nodes)

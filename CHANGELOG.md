@@ -11,6 +11,141 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `deps` metadata to Lepton
 
+### Operations
+
+- `codeql.yml` and `condabuild.yml` run nightly instead of on every PR.
+- Style fixes in changelog
+
+## [0.122.1] - 2022-07-06
+
+### Authors
+
+Will Cunningham <wjcunningham7@users.noreply.github.com>
+Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Operations
+
+- Added license scanner action
+- Pre-commit autoupdate
+
+### Tests
+
+- Tests for running workflows with more than one iteration
+
+### Fixed
+
+- Attribute error caused by attempts to retrieve the name from the node function when the node function is set to None
+
+## [0.122.0] - 2022-07-04
+
+### Authors
+
+Faiyaz Hasan <faiyaz@agnostiq.ai>
+Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- `covalent/_results_manager/write_result_to_db.py` module and methods to insert / update data in the DB.
+- `tests/covalent_tests/results_manager_tests/write_result_to_db_test.py` containing the unit tests for corresponding functions.
+
+### Changed
+
+- Electron `type` column to a string type rather than an `ElectronType` in DB models.
+- Primary keys from `BigInteger` to `Integer` in DB models.
+
+## [0.121.0] - 2022-07-04
+
+### Authors
+
+Will Cunningham <wjcunningham7@users.noreply.github.com>
+Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Removed
+
+- Unused requirements `gunicorn` and `eventlet` in `requirements.txt` as well as `dask` in `tests/requirements.txt`, since it is already included in the core requirements.
+
+### Docs
+
+- Updated the compatibility matrix in the docs.
+
+## [0.120.0] - 2022-07-04
+
+### Authors
+
+Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Added
+
+- Adding `cluster` CLI options to facilitate interacting with the backend Dask cluster
+- Adding options to `covalent start` to enable specifying number of workers, memory limit and threads per worker at cluster startup
+
+### Changed
+
+- Update `DaskAdminWorker` docstring with better explanation
+
+## [0.119.1] - 2022-07-04
+
+### Authors
+
+Scott Wyman Neagle <scott@agnostiq.ai>
+Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- `covalent status` checks if the server process is still alive.
+
+### Operations
+
+- Updates to changelog logic to handle multiple authors
+
+## [0.119.0] - 2022-07-03
+### Authors
+@cjao 
+
+
+### Added
+
+- Introduce support for pip dependencies
+
+## [0.118.0] - 2022-07-02
+### Authors
+@AlejandroEsquivel 
+
+
+### Added
+
+- Introduced File, FileTransfer, and FileTransferStrategy classes to support various File Transfer use cases prior/post electron execution
+
+## [0.117.0] - 2022-07-02
+### Authors
+@Emmanuel289 
+
+
+### Added
+
+- Included retry action in 'tests.yaml' workflow.
+
+## [0.116.0] - 2022-06-29
+### Authors
+@Prasy12 
+
+### Changed
+
+- Changed API socket calls interval for graph optimization.
+
+### Added
+
+- Ability to change to different layouts from the GUI.
+
 ## [0.115.0] - 2022-06-28
 ### Authors
 @cjao 
@@ -22,6 +157,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Unit tests performed on Python 3.10 on Ubuntu and MacOS images as well as 3.9 on MacOS
 - Updated codeowners so that AQ Engineers doesn't own this CHANGELOG
 - pre-commit autoupdate
 

@@ -2,6 +2,35 @@ const core = require("@actions/core");
 const fs = require("fs");
 const readline = require("readline");
 
+const check_author = (author, authors) => {
+  if (
+    typeof author === "object" &&
+    "email" in author &&
+    !authors.includes(author.email)
+  ) {
+    return "- " + author.name + " <" + author.email + ">\n";
+  } else if (
+    typeof author === "string" &&
+    !authors.includes(author.split(/[<>]/)[1])
+  ) {
+    return "- " + author + "\n";
+  } else {
+    return "";
+  }
+};
+
+const get_author = (commit, authors) => {
+  let output = "";
+  if (commit.author.type === "User") {
+    output += check_author(commit.commit.author, authors);
+    const coauthors = commit.commit.message.match(/Co-authored-by:.+<.+@.+>/g);
+    for (author in coauthors) {
+      output += check_author(coauthors[author], authors + output);
+    }
+  }
+  return output;
+};
+
 try {
   const head_version = fs
     .readFileSync(core.getInput("version-path"), "utf8")
@@ -76,7 +105,7 @@ try {
       unreleased = "UNRELEASED";
       let commit_authors = "";
       for (i = 0; i < commits.length; i++) {
-        commit_authors += `@${commits[i].author.username} `;
+        commit_authors += get_author(commits[i], commit_authors);
       }
 
       const new_changelog = changelog
@@ -86,10 +115,11 @@ try {
           "\n",
           changelog_header,
           "\n",
+          "\n",
           "### Authors",
           "\n",
-          `${commit_authors}`,
           "\n",
+          `${commit_authors}`,
           changelog.slice(changelog.indexOf(unreleased) + unreleased.length + 1)
         );
       fs.writeFileSync(core.getInput("changelog-path"), new_changelog, "utf8");

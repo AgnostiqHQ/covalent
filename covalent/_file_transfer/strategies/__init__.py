@@ -18,11 +18,4 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Import workflow utilities."""
-
-from .depsbash import DepsBash
-from .depscall import DepsCall
-from .depspip import DepsPip
-from .electron import electron
-from .lattice import lattice
-from .lepton import Lepton
+from covalent._file_transfer.strategies.rsync_strategy import Rsync
