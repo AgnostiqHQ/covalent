@@ -551,7 +551,7 @@ Below is an example of using :code:`DepsCall` to declare functions that are call
     ...
 
 Another example shows hows to pass :code:`DepsBash` objects to :code:`call_before` and :code:`call_after`::
-    
+
     from covalent import DepsBash
 
     @ct.electron(
