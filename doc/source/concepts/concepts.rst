@@ -583,7 +583,7 @@ Alternatively, one can explicitly specify each kind of dependency using the `key
 Lastly, one can directly apply other types of :code:`Deps` in the electron's environment by passing them as variables to :code:`call_before` and :code:`call_after`::
 
     import covalent as ct
-    from covalent import DepsPip, DepsBash, DepsCall 
+    from covalent import DepsPip, DepsBash, DepsCall
 
     deps_pip=DepsPip(packages=["numpy==0.23", "qiskit"]),
     deps_bash=DepsBash(commands=["echo $PATH", "ssh foo@bar.com"])
