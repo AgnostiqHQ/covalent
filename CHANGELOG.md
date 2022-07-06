@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.122.1] - 2022-07-06
+
+### Authors
+
+Will Cunningham <wjcunningham7@users.noreply.github.com>
+Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
 ### Operations
 
 - Added license scanner action
