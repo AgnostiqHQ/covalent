@@ -550,6 +550,16 @@ Below is an example of using :code:`DepsCall` to declare functions that are call
     def task():
     ...
 
+Another example shows hows to pass :code:`DepsBash` objects to :code:`call_before` and :code:`call_after`::
+    
+    from covalent import DepsBash
+
+    @ct.electron(
+    call_before=DepsBash("cp file.txt target_directory/"),
+    call_after=DepsBash("cp target_directory/file.txt  ."),
+    )
+    def task():
+    ...
 
 *Note*: It's also possible to implicitly declare multiple kinds of dependencies in an electron::
 
@@ -569,7 +579,7 @@ Below is an example of using :code:`DepsCall` to declare functions that are call
         call_after=DepsCall(shutdown_after_electron),
     )
 
-Alternatively, one can explicitly specify each kind of dependency using the `key=value` format::
+Alternatively, one can explicitly specify each kind of dependency::
 
     @ct.electron(
         deps_pip=["numpy==0.23", "qiskit"]
