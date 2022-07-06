@@ -20,6 +20,9 @@
 
 """Unit tests for the Result object."""
 
+import os
+import shutil
+
 import pytest
 from sqlalchemy.orm import Session
 
@@ -27,17 +30,15 @@ import covalent as ct
 from covalent._data_store.datastore import DataStore
 from covalent._results_manager.result import Result
 
-
-def build_temp_results_dir() -> str:
-    """Method to build a temporary results storage directory."""
-
-    return None
+TEMP_RESULTS_DIR = "/tmp"
 
 
-def teardown_temp_results_dir():
+def teardown_temp_results_dir(dispatch_id: str) -> None:
     """Method to tear down temporary results storage directory."""
 
-    pass
+    dir_path = f"{TEMP_RESULTS_DIR}/{dispatch_id}"
+    if os.path.exists(dir_path):
+        shutil.rmtree(dir_path)
 
 
 @pytest.fixture
@@ -52,9 +53,6 @@ def db():
 
 @pytest.fixture
 def result_1():
-
-    temp_results_dir = build_temp_results_dir()
-
     @ct.electron
     def task_1(x, y):
         return x * y
@@ -69,14 +67,14 @@ def result_1():
         return task_2(res_1, b)
 
     workflow_1.build_graph(a=1, b=2)
-    return Result(lattice=workflow_1, results_dir=temp_results_dir, dispatch_id="dispatch_1")
+    return Result(lattice=workflow_1, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1")
 
 
 def test_result_persist_workflow_1(db, result_1):
     """Test the persist method for the Result object."""
 
     # TODO - call Result.persist
-    result_1.persist(db=db, _in_memory=True)
+    # result_1.persist(db=db, _in_memory=True)
 
     # TODO - Query lattice / electron / electron dependency
 
@@ -89,4 +87,4 @@ def test_result_persist_workflow_1(db, result_1):
     # TODO - Check via assert statements that the records are what they should be
 
     # Tear down temporary results directory
-    teardown_temp_results_dir()
+    teardown_temp_results_dir(dispatch_id="dispatch_1")
