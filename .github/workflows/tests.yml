@@ -38,12 +38,20 @@ jobs:
           - python:3.8-bullseye
           - python:3.9-buster
           - python:3.9-bullseye
+          - python:3.10-buster
+          - python:3.10-bullseye
           - image: "centos/python-38-centos7"
             options: "--user root"
         experimental: [false]
         include:
           - os: macos-latest
             python-version: "3.8"
+            experimental: false
+          - os: macos-latest
+            python-version: "3.9"
+            experimental: false
+          - os: macos-latest
+            python-version: "3.10"
             experimental: false
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
@@ -67,7 +75,7 @@ jobs:
           pip install --no-cache-dir -r ./tests/requirements.txt
 
       - name: Install NPM and Yarn on Ubuntu
-        if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye'
+        if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye' || matrix.container == 'python:3.10-buster' || matrix.container == 'python:3.10-bullseye'
         run: |
           apt-get update && apt-get install -y curl
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
