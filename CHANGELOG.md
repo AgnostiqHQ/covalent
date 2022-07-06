@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Added license scanner action
 - Pre-commit autoupdate
 
 ## [0.122.0] - 2022-07-04
