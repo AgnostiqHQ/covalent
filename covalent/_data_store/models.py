@@ -149,7 +149,7 @@ class ElectronDependency(Base):
     edge_name = Column(Text, nullable=False)
 
     # "args, kwarg, null"
-    parameter_type = Column(String(24), nullable=False)
+    parameter_type = Column(String(24), nullable=True)
 
     # Argument position
     arg_index = Column(Integer, nullable=True)

@@ -60,6 +60,10 @@ class LocalDispatcher(BaseDispatcher):
             Wrapper function which takes the inputs of the workflow as arguments
         """
 
+        print("***DISPATCH IN LOCAL EXECUTOR***")
+        print(type(orig_lattice))
+        print(orig_lattice.__name__)
+
         @wraps(orig_lattice)
         def wrapper(*args, **kwargs) -> str:
             """
