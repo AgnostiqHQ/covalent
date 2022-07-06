@@ -52,7 +52,7 @@ class DepsPip(Deps):
     environment just before the electron is run.
 
     """
-    
+
     def __init__(self, packages: Union[List, str] = [], reqs_path: str = ""):
         if isinstance(packages, str):
             self.packages = [packages]
