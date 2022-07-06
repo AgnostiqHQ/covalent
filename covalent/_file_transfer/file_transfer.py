@@ -12,13 +12,13 @@ from covalent._file_transfer.strategies.transfer_strategy_base import FileTransf
 
 class FileTransfer:
     """
-    FileTransfer object class that takes two File Objects (from, to) and a File Transfer Strategy to perform remote or local filesystem operations.
+    FileTransfer object class that takes two File objects or filepaths (from, to) and a File Transfer Strategy to perform remote or local file transfer operations.
 
     Attributes:
-        from_file: File path corresponding to the source file.
-        to_file: File path corresponding to the destination file.
-        order: Order to execute the file transfer, BEFORE electron execution or AFTER.
-        strategy: File Transfer Strategy to perform file operations.
+        from_file: Filepath or File object corresponding to the source file.
+        to_file: Filepath or File object corresponding to the destination file.
+        order: Order (enum) to execute the file transfer before (Order.BEFORE) or after (Order.AFTER) electron execution.
+        strategy: Optional File Transfer Strategy to perform file operations - default will be resolved from provided file schemes.
     """
 
     def __init__(
@@ -82,8 +82,19 @@ class FileTransfer:
 def TransferFromRemote(
     from_filepath: str,
     to_filepath: Union[str, None] = None,
-    strategy: Union[FileTransferStrategy, None] = None,
-):
+    strategy: Optional[FileTransferStrategy] = None,
+) -> FileTransfer:
+    """
+    Factory for creating a FileTransfer instance where from_filepath is implicitly created as a remote File Object, and the order (Order.BEFORE) is set so that this file transfer will occur prior to electron execution.
+
+    Args:
+        from_filepath: File path corresponding to remote file (source).
+        to_filepath: File path corresponding to local file (destination)
+        strategy: Optional File Transfer Strategy to perform file operations - default will be resolved from provided file schemes.
+
+    Returns:
+        FileTransfer instance with implicit Order.BEFORE enum set
+    """
     # override is_remote for the case where from_filepath is of a file:// scheme where the file is remote (rsync ssh)
     from_file = File(from_filepath, is_remote=True)
     return FileTransfer(
@@ -94,8 +105,19 @@ def TransferFromRemote(
 def TransferToRemote(
     to_filepath: str,
     from_filepath: Union[str, None] = None,
-    strategy: Union[FileTransferStrategy, None] = None,
-):
+    strategy: Optional[FileTransferStrategy] = None,
+) -> FileTransfer:
+    """
+    Factory for creating a FileTransfer instance where to_filepath is implicitly created as a remote File Object, and the order (Order.AFTER) is set so that this file transfer will occur post electron execution.
+
+    Args:
+        to_filepath: File path corresponding to remote file (destination)
+        from_filepath: File path corresponding to local file (source).
+        strategy: Optional File Transfer Strategy to perform file operations - default will be resolved from provided file schemes.
+
+    Returns:
+        FileTransfer instance with implicit Order.AFTER enum set
+    """
     # override is_remote for the case where to_filepath is of a file:// scheme where the file is remote (rsync ssh)
     to_file = File(to_filepath, is_remote=True)
     return FileTransfer(

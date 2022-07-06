@@ -12,12 +12,17 @@ class Rsync(FileTransferStrategy):
     Implements Base FileTransferStrategy class to use rsync to move files to and from remote or local filesystems.
 
     Attributes:
-        user: (optional) Determine user to specify for remote host
-        host: (optional) Determine what host to connect to via ssh
-        private_key_path: (optional) File path for ssh key to use for ssh connection
+        user: (optional) Determine user to specify for remote host if using rsync with ssh
+        host: (optional) Determine what host to connect to if using rsync with ssh
+        private_key_path: (optional) Filepath for ssh private key to use if using rsync with ssh
     """
 
-    def __init__(self, user: str = "", host: str = "", private_key_path: Optional[str] = None):
+    def __init__(
+        self,
+        user: Optional[str] = "",
+        host: Optional[str] = "",
+        private_key_path: Optional[str] = None,
+    ):
 
         self.user = user
         self.private_key_path = private_key_path

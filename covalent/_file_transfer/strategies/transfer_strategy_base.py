@@ -5,8 +5,7 @@ from covalent._file_transfer.file import File
 
 class FileTransferStrategy(ABC):
     """
-    FileTransferStrategy class that outlines a common set of methods that perform operations
-    such as moving, uploading and downloading files to local or remote filesystems.
+    Base FileTransferStrategy class that defines the interface for file transfer strategies exposing common methods for performing copy, download, and upload operations.
 
     """
 
