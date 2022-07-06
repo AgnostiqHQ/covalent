@@ -36,6 +36,8 @@ import {
 } from '@mui/icons-material'
 import useFitViewHelper from './ReactFlowHooks'
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import LabelOffIcon from '@mui/icons-material/LabelOff';
+import LabelIcon from '@mui/icons-material/Label';
 import * as React from 'react';
 import { LayoutOptions } from './LayoutOptions';
 
@@ -55,7 +57,9 @@ const LatticeControls = ({
   open,
   handleClick,
   anchorEl,
-  handleClose
+  handleClose,
+  handleHideLabels,
+  hideLabels
 }) => {
   const { zoomIn, zoomOut } = useZoomPanHelper()
   const { fitView } = useFitViewHelper()
@@ -72,6 +76,11 @@ const LatticeControls = ({
         opacity: 0.7,
       }}
     >
+      <Hint title={hideLabels?"Show labels":"Hide labels"}>
+        <ToggleButton value="" onClick={() => handleHideLabels()}>
+          {hideLabels?<LabelOffIcon/>:<LabelIcon/>}
+        </ToggleButton>
+      </Hint>
       <Hint title="Zoom in">
         <ToggleButton value="" onClick={() => zoomIn(300)}>
           <PlusIcon />
