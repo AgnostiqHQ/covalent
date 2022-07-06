@@ -20,7 +20,9 @@
 
 name: conda
 
-on: pull_request
+on:
+  schedule:
+    - cron: "02 4 * * *"
 
 jobs:
   conda:
@@ -30,12 +32,7 @@ jobs:
         uses: actions/checkout@v1
         with:
           fetch-depth: 0
-      - name: Check for build change
-        id: buildchange
-        run: git diff --name-only origin/develop | grep -e setup.py -e requirements.txt -e meta.yaml
-        continue-on-error: true
       - name: Build conda package
-        if: steps.buildchange.outcome == 'success'
         run: |
           conda install conda-build conda-verify
           conda config --append channels conda-forge

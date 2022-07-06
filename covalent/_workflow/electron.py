@@ -149,10 +149,10 @@ class Electron:
             def decorator(f):
 
                 op1_name = op1
-                if hasattr(op1, "function"):
+                if hasattr(op1, "function") and op1.function:
                     op1_name = op1.function.__name__
                 op2_name = op2
-                if hasattr(op2, "function"):
+                if hasattr(op2, "function") and op2.function:
                     op2_name = op2.function.__name__
 
                 f.__name__ = f"{op1_name}_{op}_{op2_name}"
@@ -538,7 +538,7 @@ def electron(
     call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
     call_after: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
 ) -> Callable:
-    """Electron decorator to be called upon a function. Returns a new :obj:`Electron <covalent._workflow.electron.Electron>` object.
+    """Electron decorator to be called upon a function. Returns the wrapper function with the same functionality as `_func`.
 
     Args:
         _func: function to be decorated
