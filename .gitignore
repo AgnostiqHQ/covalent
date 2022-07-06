@@ -30,7 +30,6 @@
 !/covalent/**
 !/covalent_ui/**
 !/covalent_dispatcher/**
-!/covalent_ui/**
 !/doc/**
 !/tests/**
 
