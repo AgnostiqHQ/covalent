@@ -8,12 +8,12 @@ const check_author = (author, authors) => {
     "email" in author &&
     !authors.includes(author.email)
   ) {
-    return author.name + " <" + author.email + ">\n";
+    return "- " + author.name + " <" + author.email + ">\n";
   } else if (
     typeof author === "string" &&
     !authors.includes(author.split(/[<>]/)[1])
   ) {
-    return author + "\n";
+    return "- " + author + "\n";
   } else {
     return "";
   }
