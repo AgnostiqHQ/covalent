@@ -26,6 +26,7 @@ from .._shared_files import logger
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .depsbash import DepsBash
 from .depscall import DepsCall
+from .depspip import DepsPip
 from .electron import Electron
 
 if TYPE_CHECKING:
@@ -71,6 +72,7 @@ class Lepton(Electron):
             List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
         ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
         deps_bash: Union[DepsBash, List, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", []),
+        deps_pip: Union[DepsPip, list] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("pip", None),
         call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
         call_after: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
     ) -> None:
@@ -87,6 +89,11 @@ class Lepton(Electron):
             deps["bash"] = deps_bash
         if isinstance(deps_bash, list) or isinstance(deps_bash, str):
             deps["bash"] = DepsBash(commands=deps_bash)
+
+        if isinstance(deps_pip, DepsPip):
+            deps["pip"] = deps_pip
+        if isinstance(deps_pip, list):
+            deps["pip"] = DepsPip(packages=deps_pip)
 
         if isinstance(call_before, DepsCall):
             call_before = [call_before]
