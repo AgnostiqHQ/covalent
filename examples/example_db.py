@@ -22,6 +22,54 @@ from covalent.executor import _executor_manager
 
 
 @ct.electron
+def task_1(x, y):
+    return [x * y, x + y]
+
+
+@ct.electron
+def sublattice_task(z):
+    return z
+
+
+@ct.electron
+@ct.lattice
+def task_2(z):
+    res = sublattice_task(z)
+    return res
+
+
+@ct.lattice
+def attribute_workflow_1(a, b):
+    res_1 = task_1(a, b)
+    res_2 = task_2(res_1[1], b)
+    return res_2
+
+
+@ct.electron
+def task_1(x, y):
+    return {"key_1": x * y, "key_2": x + y}
+
+
+@ct.electron
+def sublattice_task(z):
+    return z
+
+
+@ct.electron
+@ct.lattice
+def task_2(z):
+    res = sublattice_task(z)
+    return res
+
+
+@ct.lattice
+def attribute_workflow_0(a, b):
+    res_1 = task_1(a, b)
+    res_2 = task_2(res_1["key_1"], b)
+    return res_2
+
+
+@ct.electron
 def join_words(a, b):
     return ", ".join([a, b])
 
@@ -97,6 +145,7 @@ def new_func(a, b, c, d, e):
     return a + b + c + d + e
 
 
+@ct.electron
 @ct.lattice
 def work_func(a, b, c):
     return new_func(a, b, c, d=4, e=5)
@@ -119,6 +168,7 @@ def task(a, /, b, *args, c, **kwargs):
     return a * b * c, args, kwargs
 
 
+@ct.electron
 @ct.lattice
 def workflow0():
     return task(1, 2, 3, 4, c=5, d=6, e=7)
@@ -160,6 +210,8 @@ def sublattice1(a, b):
 
 
 workflows = [
+    (attribute_workflow_0, (-1, 1)),
+    (attribute_workflow_1, (-1, 1)),
     (sublattice0, ("world")),
     (sublattice1, ("hello", "world")),
     (simple_workflow, ("hello", "world")),
@@ -192,6 +244,8 @@ for workflow in workflows:
     lattice_id = lattice_id + 1
     lattice, args = workflow
     dispatch_id = ct.dispatch(lattice)(*args)
+    print("***DISPATCH***")
+    print(dispatch_id)
     time.sleep(5)  # Change this number to see different statuses
     result = ct.get_result(dispatch_id)
     result.save()
@@ -228,8 +282,6 @@ for workflow in workflows:
     pprint(nodes)
     pprint(links)
     for node in nodes:
-        print(node["name"])
-        print(type(node["function"].get_deserialized()))
         electron_id = electron_id + 1
         storage_path = f"./results/{dispatch_id}/node_{node['id']}/"
         os.mkdir(storage_path)
@@ -295,11 +347,11 @@ for workflow in workflows:
         edge_id = edge_id + 1
         electron_deps = ElectronDependency(
             id=edge_id,
-            electron_id=link["target"],
-            parent_electron_id=link["source"],
-            edge_name=link["edge_name"],
-            parameter_type=link["param_type"],
-            arg_index=link["arg_index"],
+            electron_id=link.get("target"),
+            parent_electron_id=link.get("source"),
+            edge_name=link.get("edge_name"),
+            parameter_type=link.get("param_type"),
+            arg_index=link.get("arg_index"),
             created_at=datetime.now(),
         )
         edges.append(electron_deps)
