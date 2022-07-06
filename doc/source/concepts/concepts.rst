@@ -575,7 +575,7 @@ Alternatively, one can explicitly specify each kind of dependency using the `key
         deps_pip=["numpy==0.23", "qiskit"]
         deps_bash=["echo $PATH", "ssh foo@bar.com"]
         call_before=[execute_before_electron, (1, 2)],
-        call_after =[shutdown_after_electron],
+        call_after=[shutdown_after_electron],
     )
     def task():
     ...
@@ -590,7 +590,7 @@ Lastly, one can directly apply other types of :code:`Deps` in the electron's env
 
     @ct.electron(
         call_before=[deps_pip, deps_bash],
-        call_after =[shutdown_after_electron],
+        call_after=[shutdown_after_electron],
     )
     def task():
     ...
