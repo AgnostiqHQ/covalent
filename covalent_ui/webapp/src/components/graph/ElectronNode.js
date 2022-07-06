@@ -104,7 +104,7 @@ const ElectronNode = ({
               )
             case 'FAILED':
               return (
-                <SvgIcon sx={{ mt:0.8, fontSize: 17, fill: color }}>
+                <SvgIcon sx={{ mt: 0.8, fontSize: 14, fill: color }}>
                   <ErrorSvg />
                 </SvgIcon>
               )
