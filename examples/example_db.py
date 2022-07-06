@@ -221,9 +221,9 @@ workflows = [
     (check_alt, (3, 4)),
     (check_alt, (ct.electron(check(0, 0)), 1)),
     (workflow, ()),
-    (work_func, (5, 6, 7)),
+    #    (work_func, (5, 6, 7)),
     (work_a, ("covalent", 0)),
-    (workflow0, ()),
+    #    (workflow0, ()),
     (outputs, (8, 9, 10)),
 ]
 
@@ -323,7 +323,7 @@ for workflow in workflows:
             transport_graph_node_id=node["id"],
             type=nodetype,
             name=nodename,
-            status=str(node["status"]),
+            status=str(node.get("status")),
             storage_type="local",
             storage_path=storage_path,
             function_filename="function.pkl",
@@ -331,15 +331,15 @@ for workflow in workflows:
             executor_filename="executor.pkl",
             results_filename="result.pkl",
             value_filename=value_filename,
-            #            key=
+            key=node.get("key"),
             #            attribute_name=
             stdout_filename="stdout.log",
             stderr_filename="stderr.log",
             info_filename="info.log",
             created_at=datetime.now(),
             updated_at=datetime.now(),
-            started_at=node["start_time"],
-            completed_at=node["end_time"],
+            started_at=node.get("start_time"),
+            completed_at=node.get("end_time"),
         )
         electrons.append(electron)
 
