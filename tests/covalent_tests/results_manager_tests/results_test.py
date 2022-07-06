@@ -22,12 +22,16 @@
 
 import os
 import shutil
+from datetime import datetime as dt
+from pathlib import Path
 
+import cloudpickle as pickle
 import pytest
 from sqlalchemy.orm import Session
 
 import covalent as ct
 from covalent._data_store.datastore import DataStore
+from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.result import Result
 
 TEMP_RESULTS_DIR = "/tmp"
@@ -74,11 +78,38 @@ def test_result_persist_workflow_1(db, result_1):
     """Test the persist method for the Result object."""
 
     # TODO - call Result.persist
-    # result_1.persist(db=db, _in_memory=True)
+    result_1.persist(db=db)
 
     # TODO - Query lattice / electron / electron dependency
+    with Session(db.engine) as session:
+        lattice_row = session.query(Lattice).first()
+        electron_rows = session.query(Electron).all()
+        electron_dependency = session.query(ElectronDependency).all()
 
     # TODO - Check via assert statements that the records are what they should be
+    assert lattice_row.dispatch_id == "dispatch_id"
+    assert isinstance(lattice_row.created_at, dt)
+    assert isinstance(lattice_row.started_at, dt)
+    assert isinstance(lattice_row.updated_at, dt)
+    assert lattice_row.completed_at is None
+    assert lattice_row.status == "NEW_OBJ"
+    assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR)
+
+    with open(lattice_row.function_filename, "rb") as f:
+        workflow_function = pickle.loads(f)
+    assert workflow_function(1, 2) == 2
+
+    with open(lattice_row.executor_filename, "rb") as f:
+        executor_function = pickle.loads(f)
+    # TODO - ensure that we loaded the correct executor
+
+    with open(lattice_row.error_filename, "r") as f:
+        error_log = f.read()
+    assert error_log == result_1.error
+
+    with open(lattice_row.results_filename, "rb") as f:
+        result = pickle.loads(f)
+    assert result is None
 
     # TODO - update some node / lattice statuses
 
