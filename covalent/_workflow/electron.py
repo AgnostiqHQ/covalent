@@ -23,13 +23,13 @@
 import inspect
 import operator
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Union
 
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     _DEFAULT_CONSTRAINT_VALUES,
-    arg_prefix,
+    WAIT_EDGE_NAME,
     attr_prefix,
     electron_dict_prefix,
     electron_list_prefix,
@@ -329,10 +329,7 @@ class Electron:
             # This is to resolve `wait_for` calls during post processing time
             id, output = active_lattice.electron_outputs[0]
 
-            for i, j, attr in active_lattice.transport_graph._graph.in_edges(id, data=True):
-                with open("mafile.txt", "a") as f:
-                    f.write(f"I is {i}, J is {j}, attr is {attr}\n")
-
+            for _, _, attr in active_lattice.transport_graph._graph.in_edges(id, data=True):
                 if attr.get("wait_for"):
                     return Electron(function=None, metadata=None, node_id=id)
 
@@ -517,7 +514,7 @@ class Electron:
             active_lattice.transport_graph.add_edge(
                 el.node_id,
                 self.node_id,
-                edge_name="!waiting_edge",
+                edge_name=WAIT_EDGE_NAME,
                 wait_for=True,
             )
 
