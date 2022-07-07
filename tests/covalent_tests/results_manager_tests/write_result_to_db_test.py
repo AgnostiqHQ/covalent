@@ -346,6 +346,7 @@ def test_update_lattices_data(db):
             db=db,
             dispatch_id="dispatch_1",
             status="COMPLETED",
+            started_at=cur_time,
             updated_at=cur_time,
             completed_at=cur_time,
         )
@@ -357,6 +358,7 @@ def test_update_lattices_data(db):
         db=db,
         dispatch_id="dispatch_1",
         status="COMPLETED",
+        started_at=None,
         updated_at=cur_time,
         completed_at=cur_time,
     )
@@ -367,6 +369,7 @@ def test_update_lattices_data(db):
     for lattice in rows:
         assert lattice.status == "COMPLETED"
         assert lattice.updated_at == lattice.completed_at == cur_time
+        assert lattice.started_at is None
         assert lattice.id == 1
 
 

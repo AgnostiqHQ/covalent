@@ -28,7 +28,6 @@ from sqlalchemy.orm import Session
 
 from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
-from covalent._workflow.lattice import Lattice as Workflow_lattice
 
 from .._shared_files.defaults import (
     arg_prefix,
@@ -163,7 +162,7 @@ def insert_electrons_data(
     return electron_id
 
 
-def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: Workflow_lattice):
+def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "Lattice"):
     """Extract electron dependencies from the lattice transport graph and add them to the DB."""
 
     node_links = nx.readwrite.node_link_data(lattice.transport_graph._graph)["links"]
@@ -211,6 +210,7 @@ def update_lattices_data(
     dispatch_id: str,
     status: str,
     updated_at: dt,
+    started_at: dt,
     completed_at: dt,
 ) -> None:
     """This function updates the lattices record."""
@@ -226,7 +226,12 @@ def update_lattices_data(
         session.execute(
             update(Lattice)
             .where(Lattice.dispatch_id == dispatch_id)
-            .values(status=status, updated_at=updated_at, completed_at=completed_at)
+            .values(
+                status=status,
+                updated_at=updated_at,
+                started_at=started_at,
+                completed_at=completed_at,
+            )
         )
         session.commit()
 

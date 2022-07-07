@@ -21,19 +21,27 @@
 """Result object."""
 
 import os
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 import cloudpickle as pickle
 import yaml
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .._data_store import DataStore
+from covalent._workflow import lattice
+
+from .._data_store import DataStore, models
 from .._shared_files import logger
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .utils import convert_to_lattice_function_call
+from .write_result_to_db import (
+    insert_electron_dependency_data,
+    insert_electrons_data,
+    insert_lattices_data,
+    update_electrons_data,
+    update_lattices_data,
+)
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import Status
@@ -450,9 +458,49 @@ Node Outputs
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 
-        # TODO - If self._end_time exists, write that to Lattice.completed_at.
+        LATTICE_FUNCTION_FILENAME = "function.pkl"
+        LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
+        LATTICE_EXECUTOR_FILENAME = "executor.pkl"
+        LATTICE_ERROR_FILENAME = "error.log"
+        LATTICE_INPUTS_FILENAME = "inputs.pkl"
+        LATTICE_RESULTS_FILENAME = "results.pkl"
+        LATTICE_STORAGE_TYPE = "local"
+
+        with Session(db.engine) as session:
+            lattice_exists = session.query(models.Lattice).first() is not None
 
         # TODO - store all lattice info that belongs in filenames in the results directory
+
+        if not lattice_exists:
+            lattice_record_kwarg = {
+                "dispatch_id": self.dispatch_id,
+                "status": str(self.status),
+                "name": self.lattice.__name__,
+                "storage_path": self.results_dir,
+                "storage_type": LATTICE_STORAGE_TYPE,
+                "function_filename": LATTICE_FUNCTION_FILENAME,
+                "function_string_filename": LATTICE_FUNCTION_STRING_FILENAME,
+                "executor_filename": LATTICE_EXECUTOR_FILENAME,
+                "error_filename": LATTICE_ERROR_FILENAME,
+                "inputs_filename": LATTICE_INPUTS_FILENAME,
+                "results_filename": LATTICE_RESULTS_FILENAME,
+                "created_at": datetime.now(),
+                "updated_at": datetime.now(),
+                "started_at": self.start_time,
+                "completed_at": self.end_time,
+            }
+            insert_lattices_data(db=db, **lattice_record_kwarg)
+
+        else:
+            lattice_record_kwarg = {
+                # TODO - Include logic for electron_id in sublattice context
+                "dispatch_id": self.dispatch_id,
+                "status": str(self.status),
+                "updated_at": datetime.now(),
+                "started_at": self.start_time,
+                "completed_at": self.end_time,
+            }
+            update_lattices_data(db=db, **lattice_record_kwarg)
 
         # TODO - store all electron node info in the appropriate filenames in the results directory
 
