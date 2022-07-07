@@ -410,9 +410,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             )
         )
 
-        deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
-            "deps"
-        ]
+        deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")["deps"]
 
         # Assemble call_before and call_after from all the deps
 
