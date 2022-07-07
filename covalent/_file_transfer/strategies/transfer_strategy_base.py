@@ -10,8 +10,9 @@ class FileTransferStrategy(ABC):
 
     """
 
+    # move file (from) source (to) destination
     @abstractmethod
-    def move(self, from_file: File, to_file: File) -> None:
+    def cp(self, from_file: File, to_file: File) -> None:
         raise NotImplementedError
 
     # download here implies 'from' is a remote source
