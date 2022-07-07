@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Package pre-releases go to `covalent` instead of `cova` on PyPI.
+- `codeql.yml` and `condabuild.yml` run nightly instead of on every PR.
 - Style fixes in changelog
 
 ## [0.122.1] - 2022-07-06
