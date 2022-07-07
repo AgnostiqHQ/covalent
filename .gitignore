@@ -39,6 +39,9 @@
 # Ignore __pycache__
 **/__pycache__
 
+# Ignore results
+**/results
+
 # Allow config files
 !.flake8
 !.gitignore
