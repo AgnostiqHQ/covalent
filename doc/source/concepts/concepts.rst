@@ -600,7 +600,7 @@ Which is equivalent to::
     strategy = ct.fs_strategies.Rsync(user='admin', host='44.202.86.215', private_key_path='...')
     from_remote_file = File('/home/admin/my_file', is_remote=True)
     to_local_file = File('/home/ubuntu/my_file')
-    ct.fs.FileTransfer(from_remote_file, to_local_file, strategy=strategy)
+    ct.fs.FileTransfer(from_remote_file, to_local_file, strategy=strategy, order=ct.fs.Order.BEFORE)
 
 .. note::
 
@@ -624,7 +624,7 @@ Which is equivalent to::
     strategy = ct.fs_strategies.Rsync(user='admin', host='44.202.86.215', private_key_path='...')
     from_local_file = File('/home/ubuntu/my_file')
     to_remote_file = File('/home/admin/my_file', is_remote=True)
-    ct.fs.FileTransfer(from_remote_file, to_local_file, strategy=strategy)
+    ct.fs.FileTransfer(from_remote_file, to_local_file, strategy=strategy, order=ct.fs.Order.AFTER)
 
 .. note::
 
