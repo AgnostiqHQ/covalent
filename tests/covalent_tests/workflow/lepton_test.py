@@ -35,13 +35,6 @@ def test_file_transfer_support():
     """
 
 
-
-
-
-
-
-
-
 def test_python_wrapper():
     pass
 
