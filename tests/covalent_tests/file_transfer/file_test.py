@@ -57,12 +57,30 @@ class TestFile:
         "filepath, expected_filepath",
         [
             ("/home/ubuntu/observations.csv", "/home/ubuntu/observations.csv"),
+            ("/home/ubuntu/my_dir", "/home/ubuntu/my_dir"),
+            ("/home/ubuntu/my_dir/", "/home/ubuntu/my_dir/"),
+            ("/home/ubuntu/my_dir//", "/home/ubuntu/my_dir/"),
+            ("/home/ubuntu/my_dir///", "/home/ubuntu/my_dir/"),
+            ("/home/ubuntu/my_dir//../", "/home/ubuntu/"),
             ("file:///home/ubuntu/observations.csv", "/home/ubuntu/observations.csv"),
             ("file:/home/ubuntu/observations.csv", "/home/ubuntu/observations.csv"),
         ],
     )
     def test_get_filepath(self, filepath, expected_filepath):
-        assert File.get_filepath(filepath) == expected_filepath
+        assert File.get_path_obj(filepath) == expected_filepath
+
+    @pytest.mark.parametrize(
+        "provided_uri, expected_uri",
+        [
+            ("/home/ubuntu/observations.csv", "file:///home/ubuntu/observations.csv"),
+            ("file:/home/ubuntu/observations.csv", "file:///home/ubuntu/observations.csv"),
+            ("file:///home/ubuntu/observations.csv", "file:///home/ubuntu/observations.csv"),
+            ("https://example.com/my_route", "https://example.com/my_route"),
+            ("http://example.com/my_route", "http://example.com/my_route"),
+        ],
+    )
+    def test_get_uri(self, provided_uri, expected_uri):
+        assert File(provided_uri).uri == expected_uri
 
     @pytest.mark.parametrize(
         "filepath, is_directory",
@@ -73,4 +91,19 @@ class TestFile:
         ],
     )
     def test_is_directory(self, filepath, is_directory):
-        assert File.is_directory(filepath) == is_directory
+        # check for trailing slash
+        assert File(filepath).is_dir == is_directory
+        # test is_dir override
+        assert File(filepath, is_dir=True).is_dir
+
+    def test_include_folder(self):
+        MOCK_FILEPATH = "/home/ubuntu/my_dir"
+        assert File(MOCK_FILEPATH).filepath == MOCK_FILEPATH
+        # ensure trailing slash is removed when dir is to be included in file transfer
+        # ensure trailing slash is added when dir is not to be included in file transfer (only contents) - default
+        assert File(MOCK_FILEPATH, is_dir=True).filepath == f"{MOCK_FILEPATH}/"
+        assert File(MOCK_FILEPATH, include_folder=True).filepath == MOCK_FILEPATH
+        assert File(f"{MOCK_FILEPATH}/", include_folder=True).filepath == MOCK_FILEPATH
+        assert File(f"{MOCK_FILEPATH}/", include_folder=False).filepath == f"{MOCK_FILEPATH}/"
+        # this is not a dir so we do not add traling slash
+        assert File(MOCK_FILEPATH, include_folder=False).filepath == MOCK_FILEPATH

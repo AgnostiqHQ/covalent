@@ -20,7 +20,7 @@ class TestRsyncStrategy:
         [
             ("download"),
             ("upload"),
-            ("move"),
+            ("cp"),
         ],
     )
     def test_upload_download_success(self, operation, mocker):
@@ -41,15 +41,15 @@ class TestRsyncStrategy:
         if operation == "upload":
             Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).upload(
                 File("/tmp/source.csv"), File("/tmp/dest.csv")
-            )
+            )()
         elif operation == "download":
             Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).download(
                 File("/tmp/source.csv"), File("/tmp/dest.csv")
-            )
-        elif operation == "move":
-            Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).move(
+            )()
+        elif operation == "cp":
+            Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).cp(
                 File("/tmp/source.csv"), File("/tmp/dest.csv")
-            )
+            )()
 
         popen_mock.assert_called_once()
 
@@ -58,10 +58,10 @@ class TestRsyncStrategy:
         [
             ("download"),
             ("upload"),
-            ("move"),
+            ("cp"),
         ],
     )
-    def test_upload_download_move_failure(self, operation, mocker):
+    def test_upload_download_cp_failure(self, operation, mocker):
 
         # if subprocess returns with return code 1 raise a CalledProcessError exception
 
@@ -79,26 +79,24 @@ class TestRsyncStrategy:
             if operation == "upload":
                 Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).upload(
                     File("/tmp/source.csv"), File("/tmp/dest.csv")
-                )
+                )()
             elif operation == "download":
                 Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).download(
                     File("/tmp/source.csv"), File("/tmp/dest.csv")
-                )
-            elif operation == "move":
-                Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).move(
+                )()
+            elif operation == "cp":
+                Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).cp(
                     File("/tmp/source.csv"), File("/tmp/dest.csv")
-                )
+                )()
 
     def test_get_rsync_cmd(self):
         from_file = File("/home/ubuntu/from.csv")
         to_file = File("/home/ubuntu/to.csv")
 
-        move_cmd = Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).get_rsync_cmd(
-            from_file, to_file
-        )
+        cp_cmd = Rsync(user=self.MOCK_USER, host=self.MOCK_HOST).get_rsync_cmd(from_file, to_file)
 
         # command takes the form of rsync [source] [destination]
-        assert move_cmd == "rsync /home/ubuntu/from.csv /home/ubuntu/to.csv"
+        assert cp_cmd == "rsync -a /home/ubuntu/from.csv /home/ubuntu/to.csv"
 
     def test_get_ssh_rsync_cmd_with_ssh_key(self, mocker):
 
