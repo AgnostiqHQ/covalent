@@ -28,7 +28,6 @@ from sqlalchemy.orm import Session
 
 from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
-from covalent._workflow.lattice import Lattice as Workflow_lattice
 
 from .._shared_files.defaults import (
     arg_prefix,
@@ -163,12 +162,11 @@ def insert_electrons_data(
     return electron_id
 
 
-def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: Workflow_lattice):
+def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "Lattice"):
     """Extract electron dependencies from the lattice transport graph and add them to the DB."""
 
+    # TODO - Update how we access the transport graph edges directly in favor of using some interface provied by the TransportGraph class.
     node_links = nx.readwrite.node_link_data(lattice.transport_graph._graph)["links"]
-
-    print(node_links)
 
     electron_dependency_ids = []
     with Session(db.engine) as session:
@@ -211,6 +209,7 @@ def update_lattices_data(
     dispatch_id: str,
     status: str,
     updated_at: dt,
+    started_at: dt,
     completed_at: dt,
 ) -> None:
     """This function updates the lattices record."""
@@ -226,7 +225,12 @@ def update_lattices_data(
         session.execute(
             update(Lattice)
             .where(Lattice.dispatch_id == dispatch_id)
-            .values(status=status, updated_at=updated_at, completed_at=completed_at)
+            .values(
+                status=status,
+                updated_at=updated_at,
+                started_at=started_at,
+                completed_at=completed_at,
+            )
         )
         session.commit()
 
@@ -274,31 +278,31 @@ def update_electrons_data(
         session.commit()
 
 
-def get_electron_type(node: dict) -> str:
+def get_electron_type(node_name: str) -> str:
     """Get the electron type (to be written to DB) given the electron node data."""
 
-    if node["name"].startswith(arg_prefix):
+    if node_name.startswith(arg_prefix):
         return arg_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(attr_prefix):
+    elif node_name.startswith(attr_prefix):
         return attr_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(electron_dict_prefix):
+    elif node_name.startswith(electron_dict_prefix):
         return electron_dict_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(electron_list_prefix):
+    elif node_name.startswith(electron_list_prefix):
         return electron_list_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(generator_prefix):
+    elif node_name.startswith(generator_prefix):
         return generator_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(parameter_prefix):
+    elif node_name.startswith(parameter_prefix):
         return parameter_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(sublattice_prefix):
+    elif node_name.startswith(sublattice_prefix):
         return sublattice_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(subscript_prefix):
+    elif node_name.startswith(subscript_prefix):
         return subscript_prefix.strip(prefix_separator)
 
     else:
