@@ -21,6 +21,28 @@ from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent.executor import _executor_manager
 
 
+class Test:
+    def __init__(self):
+        self.exampling = 210
+
+
+@ct.electron
+def attribute_task():
+    return Test()
+
+
+@ct.electron
+def task_2(x):
+    return x * 2
+
+
+@ct.lattice
+def attribute_workflow_2():
+    res_1 = attribute_task()
+    res_2 = task_2(res_1.exampling)
+    return res_2
+
+
 @ct.electron
 def task_1(x, y):
     return [x * y, x + y]
@@ -212,6 +234,7 @@ def sublattice1(a, b):
 workflows = [
     (attribute_workflow_0, (-1, 1)),
     (attribute_workflow_1, (-1, 1)),
+    (attribute_workflow_2, ()),
     (sublattice0, ("world")),
     (sublattice1, ("hello", "world")),
     (simple_workflow, ("hello", "world")),
@@ -332,7 +355,7 @@ for workflow in workflows:
             results_filename="result.pkl",
             value_filename=value_filename,
             key=node.get("key"),
-            #            attribute_name=
+            attribute_name=node.get("attribute_name"),
             stdout_filename="stdout.log",
             stderr_filename="stderr.log",
             info_filename="info.log",
