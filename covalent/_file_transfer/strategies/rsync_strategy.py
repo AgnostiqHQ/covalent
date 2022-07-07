@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from subprocess import PIPE, CalledProcessError, Popen
 from typing import Optional
 
@@ -31,8 +32,8 @@ class Rsync(FileTransferStrategy):
     def get_rsync_ssh_cmd(
         self, local_file: File, remote_file: File, transfer_from_remote: bool = False
     ) -> str:
-        local_filepath = str(local_file.filepath)
-        remote_filepath = str(remote_file.filepath)
+        local_filepath = local_file.filepath
+        remote_filepath = remote_file.filepath
         args = ["rsync"]
         if self.private_key_path:
             args.append(f'-e "ssh -i {self.private_key_path}"')
@@ -53,31 +54,39 @@ class Rsync(FileTransferStrategy):
     def get_rsync_cmd(
         self, from_file: File, to_file: File, transfer_from_remote: bool = False
     ) -> str:
-        from_filepath = str(from_file.filepath)
-        to_filepath = str(to_file.filepath)
-        return f"rsync {from_filepath} {to_filepath}"
+        from_filepath = from_file.filepath
+        to_filepath = to_file.filepath
+        return f"rsync -a {from_filepath} {to_filepath}"
 
-    # move files in the local file system
-    def move(self, from_file: File, to_file: File = File()) -> None:
+    def return_subprocess_callable(self, cmd, from_file: File, to_file: File) -> None:
+        from_filepath = from_file.filepath
+        to_filepath = to_file.filepath
+        is_from_temp_file = from_file.is_temp_file
+        is_to_temp_file = to_file.is_temp_file
+
+        def callable():
+            if is_from_temp_file:
+                Path(from_filepath).touch()
+            if is_to_temp_file:
+                Path(to_filepath).touch()
+            p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+            output, error = p.communicate()
+            if p.returncode != 0:
+                raise CalledProcessError(p.returncode, f'"{cmd}" with error: {str(error)}')
+
+        return callable
+
+    # return callable to move files in the local file system
+    def cp(self, from_file: File, to_file: File = File()) -> None:
         cmd = self.get_rsync_cmd(from_file, to_file)
-        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-        output, error = p.communicate()
-        if p.returncode != 0:
-            raise CalledProcessError(p.returncode, f'"{cmd}" with error: {str(error)}')
+        return self.return_subprocess_callable(cmd, from_file, to_file)
 
-    # download here implies 'from' is a remote source
+    # return callable to download here implies 'from' is a remote source
     def download(self, from_file: File, to_file: File = File()) -> File:
         cmd = self.get_rsync_ssh_cmd(to_file, from_file, transfer_from_remote=True)
-        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-        output, error = p.communicate()
-        if p.returncode != 0:
-            raise CalledProcessError(p.returncode, f'"{cmd}" with error: {str(error)}')
-        return to_file
+        return self.return_subprocess_callable(cmd, from_file, to_file)
 
-    # upload here implies 'to' is a remote source
+    # return callable to upload here implies 'to' is a remote source
     def upload(self, from_file: File, to_file: File) -> None:
         cmd = self.get_rsync_ssh_cmd(from_file, to_file, transfer_from_remote=False)
-        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-        output, error = p.communicate()
-        if p.returncode != 0:
-            raise CalledProcessError(p.returncode, f'"{cmd}" with error: {str(error)}')
+        return self.return_subprocess_callable(cmd, from_file, to_file)
