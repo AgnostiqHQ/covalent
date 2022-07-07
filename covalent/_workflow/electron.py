@@ -25,6 +25,8 @@ import operator
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
+from .._file_transfer.enums import Order
+from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
@@ -484,6 +486,7 @@ def electron(
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     # Add custom metadata fields here
+    files: List[FileTransfer] = [],
     deps_bash: Union[DepsBash, List, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", []),
     deps_pip: Union[DepsPip, list] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("pip", None),
     call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
@@ -502,6 +505,7 @@ def electron(
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
         call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
         call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
+        files: An optional list of FileTransfer objects which copy files to/from remote or local filesystems.
 
     Returns:
         :obj:`Electron <covalent._workflow.electron.Electron>` : Electron object inside which the decorated function exists.
@@ -521,6 +525,16 @@ def electron(
     if isinstance(deps_bash, list) or isinstance(deps_bash, str):
         deps["bash"] = DepsBash(commands=deps_bash)
 
+    internal_call_before_deps = []
+    internal_call_after_deps = []
+
+    for file_transfer in files:
+        _callback_ = file_transfer.cp()
+        if file_transfer.order == Order.AFTER:
+            internal_call_after_deps.append(DepsCall(_callback_))
+        else:
+            internal_call_before_deps.append(DepsCall(_callback_))
+
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
     if isinstance(deps_pip, list):
@@ -532,7 +546,9 @@ def electron(
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
 
-    # Should be synced with Lepton
+    call_before = internal_call_before_deps + call_before
+    call_after = internal_call_after_deps + call_after
+
     constraints = {
         "executor": executor,
         "deps": deps,
