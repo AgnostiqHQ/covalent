@@ -456,7 +456,7 @@ Node Outputs
             self._write_dispatch_to_python_file()
 
         # TODO - This is only a place holder until result.persist and save implementations are switched.
-        self.persist()
+        # self.persist()
 
     def persist(self, db: DataStore):  # Add default database from config file
         """Save Result object to a DataStoreSession. Changes are queued until
