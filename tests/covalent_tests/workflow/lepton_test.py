@@ -30,9 +30,9 @@ def test_init_lepton():
 
 def test_file_transfer_support():
 
-    pass
-
-
+    """
+    Test file transfer in a lepton
+    """
 
 
 
