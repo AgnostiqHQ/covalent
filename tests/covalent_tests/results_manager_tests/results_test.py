@@ -71,7 +71,9 @@ def result_1():
         return task_2(res_1, b)
 
     workflow_1.build_graph(a=1, b=2)
-    return Result(lattice=workflow_1, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1")
+    result = Result(lattice=workflow_1, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1")
+    result._initialize_nodes()
+    return result
 
 
 def test_result_persist_workflow_1(db, result_1):
@@ -117,7 +119,7 @@ def test_result_persist_workflow_1(db, result_1):
 
     # Check that the electron records are as expected
     for electron in electron_rows:
-        assert electron.status == "NEW_OBJ"
+        assert electron.status == "NEW_OBJECT"
         assert electron.parent_lattice_id == 1
         assert electron.started_at is None and electron.completed_at is None
 
@@ -126,9 +128,9 @@ def test_result_persist_workflow_1(db, result_1):
 
     # Update some node / lattice statuses
     cur_time = dt.now()
-    result_1.end_time = cur_time
-    result_1.status = "COMPLETED"
-    result_1.result = {"helo": 1, "world": 2}
+    result_1._end_time = cur_time
+    result_1._status = "COMPLETED"
+    result_1._result = {"helo": 1, "world": 2}
 
     for node_id in range(5):
         result_1._update_node(
@@ -148,14 +150,15 @@ def test_result_persist_workflow_1(db, result_1):
         lattice_row = session.query(Lattice).first()
         electron_rows = session.query(Electron).all()
         electron_dependency_rows = session.query(ElectronDependency).all()
+        print(f"THERE: {electron_dependency_rows}")
 
     # Check that the lattice records are as expected
     assert lattice_row.completed_at == cur_time
     assert lattice_row.status == "COMPLETED"
 
     with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
-        result = cloudpickle.loads(f)
-    assert result.result == result
+        result = cloudpickle.load(f)
+    assert result_1.result == result
 
     # Check that the electron records are as expected
     for electron in electron_rows:

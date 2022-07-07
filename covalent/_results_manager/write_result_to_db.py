@@ -165,9 +165,8 @@ def insert_electrons_data(
 def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "Lattice"):
     """Extract electron dependencies from the lattice transport graph and add them to the DB."""
 
+    # TODO - Update how we access the transport graph edges directly in favor of using some interface provied by the TransportGraph class.
     node_links = nx.readwrite.node_link_data(lattice.transport_graph._graph)["links"]
-
-    print(node_links)
 
     electron_dependency_ids = []
     with Session(db.engine) as session:

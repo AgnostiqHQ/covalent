@@ -455,6 +455,9 @@ Node Outputs
         if write_source:
             self._write_dispatch_to_python_file()
 
+        # TODO - This is only a place holder until result.persist and save implementations are switched.
+        self.persist()
+
     def persist(self, db: DataStore):  # Add default database from config file
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
@@ -544,26 +547,31 @@ Node Outputs
         with Session(db.engine) as session:
             for node_id in dirty_nodes:
 
-                node_path = f"node_{node_id}"
+                node_path = data_storage_path / f"node_{node_id}"
+
+                if not node_path.exists():
+                    node_path.mkdir()
 
                 # Write all electron data to the appropriate filepaths
-                with open(data_storage_path / node_path / ELECTRON_FUNCTION_FILENAME, "wb") as f:
+                with open(node_path / ELECTRON_FUNCTION_FILENAME, "wb") as f:
                     cloudpickle.dump(tg.get_node_value(node_id, "function"), f)
 
-                with open(
-                    data_storage_path / node_path / ELECTRON_FUNCTION_STRING_FILENAME, "wb"
-                ) as f:
-                    cloudpickle.dump(tg.get_node_value(node_id, "function_string"), f)
+                with open(node_path / ELECTRON_FUNCTION_STRING_FILENAME, "wb") as f:
+                    try:
+                        function_string = tg.get_node_value(node_id, "function_string")
+                    except KeyError:
+                        function_string = None
+                    cloudpickle.dump(function_string, f)
 
-                with open(data_storage_path / node_path / ELECTRON_VALUE_FILENAME, "wb") as f:
+                with open(node_path / ELECTRON_VALUE_FILENAME, "wb") as f:
                     try:
                         node_value = tg.get_node_value(node_id, "value")
                     except KeyError:
                         node_value = None
                     cloudpickle.dump(node_value, f)
 
-                with open(data_storage_path / node_path / ELECTRON_EXECUTOR_FILENAME, "wb") as f:
-                    cloudpickle.dump(tg.get_node_value(node_id, "value")["executor"], f)
+                with open(node_path / ELECTRON_EXECUTOR_FILENAME, "wb") as f:
+                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["executor"], f)
 
                 with open(data_storage_path / node_path / ELECTRON_STDOUT_FILENAME, "wb") as f:
                     try:
@@ -572,7 +580,7 @@ Node Outputs
                         node_stdout = None
                     cloudpickle.dump(node_stdout, f)
 
-                with open(data_storage_path / node_path / ELECTRON_STDERR_FILENAME, "wb") as f:
+                with open(node_path / ELECTRON_STDERR_FILENAME, "wb") as f:
                     try:
                         node_stderr = tg.get_node_value(node_id, "stderr")
                     except KeyError:
@@ -596,7 +604,7 @@ Node Outputs
                 electron_exists = (
                     session.query(models.Electron, models.Lattice)
                     .where(
-                        models.Electron.parent_dispatch_id == models.Lattice.dispatch_id,
+                        models.Electron.parent_lattice_id == models.Lattice.id,
                         models.Lattice.dispatch_id == self.dispatch_id,
                         models.Electron.transport_graph_node_id == node_id,
                     )
@@ -663,7 +671,23 @@ Node Outputs
                     }
                     update_electrons_data(db=db, **electron_record_kwarg)
 
-        # TODO - insert OR NOT electron dependency records
+        # Insert electron dependency records if they don't exist
+        with Session(db.engine) as session:
+            electron_dependencies_exist = (
+                session.query(models.ElectronDependency, models.Electron, models.Lattice)
+                .where(
+                    models.Electron.id == models.ElectronDependency.electron_id,
+                    models.Electron.parent_lattice_id == models.Lattice.id,
+                    models.Lattice.dispatch_id == self.dispatch_id,
+                )
+                .first()
+                is not None
+            )
+
+        if not electron_dependencies_exist:
+            insert_electron_dependency_data(
+                db=db, dispatch_id=self.dispatch_id, lattice=self.lattice
+            )
 
     def _convert_to_electron_result(self) -> Any:
         """
