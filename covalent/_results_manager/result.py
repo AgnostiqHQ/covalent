@@ -479,7 +479,12 @@ Node Outputs
         ELECTRON_INFO_FILENAME = "info.log"
 
         with Session(db.engine) as session:
-            lattice_exists = session.query(models.Lattice).first() is not None
+            lattice_exists = (
+                session.query(models.Lattice)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
+                is not None
+            )
 
         # Store all lattice info that belongs in filenames in the results directory
         data_storage_path = Path(self.results_dir)
@@ -537,47 +542,61 @@ Node Outputs
         dirty_nodes = set(tg.dirty_nodes)
         tg.dirty_nodes.clear()
 
-        for node_id in dirty_nodes:
+        with Session(db.engine) as session:
+            for node_id in dirty_nodes:
 
-            # Write all electron data to the appropriate filepaths
-            with open(data_storage_path / node_id / ELECTRON_FUNCTION_FILENAME, "wb") as f:
-                cloudpickle.dump(tg.get_node_value(node_id, "function"), f)
+                # Write all electron data to the appropriate filepaths
+                with open(data_storage_path / node_id / ELECTRON_FUNCTION_FILENAME, "wb") as f:
+                    cloudpickle.dump(tg.get_node_value(node_id, "function"), f)
 
-            with open(data_storage_path / node_id / ELECTRON_FUNCTION_STRING_FILENAME, "wb") as f:
-                cloudpickle.dump(tg.get_node_value(node_id, "function_string"), f)
+                with open(
+                    data_storage_path / node_id / ELECTRON_FUNCTION_STRING_FILENAME, "wb"
+                ) as f:
+                    cloudpickle.dump(tg.get_node_value(node_id, "function_string"), f)
 
-            with open(data_storage_path / node_id / ELECTRON_VALUE_FILENAME, "wb") as f:
-                try:
-                    node_value = tg.get_node_value(node_id, "value")
-                except KeyError:
-                    node_value = None
-                cloudpickle.dump(node_value, f)
+                with open(data_storage_path / node_id / ELECTRON_VALUE_FILENAME, "wb") as f:
+                    try:
+                        node_value = tg.get_node_value(node_id, "value")
+                    except KeyError:
+                        node_value = None
+                    cloudpickle.dump(node_value, f)
 
-            with open(data_storage_path / node_id / ELECTRON_EXECUTOR_FILENAME, "wb") as f:
-                cloudpickle.dump(tg.get_node_value(node_id, "value")["executor"], f)
+                with open(data_storage_path / node_id / ELECTRON_EXECUTOR_FILENAME, "wb") as f:
+                    cloudpickle.dump(tg.get_node_value(node_id, "value")["executor"], f)
 
-            with open(data_storage_path / node_id / ELECTRON_STDOUT_FILENAME, "wb") as f:
-                try:
-                    node_stdout = tg.get_node_value(node_id, "stdout")
-                except KeyError:
-                    node_stdout = None
-                cloudpickle.dump(node_stdout, f)
+                with open(data_storage_path / node_id / ELECTRON_STDOUT_FILENAME, "wb") as f:
+                    try:
+                        node_stdout = tg.get_node_value(node_id, "stdout")
+                    except KeyError:
+                        node_stdout = None
+                    cloudpickle.dump(node_stdout, f)
 
-            with open(data_storage_path / node_id / ELECTRON_STDERR_FILENAME, "wb") as f:
-                try:
-                    node_stderr = tg.get_node_value(node_id, "stderr")
-                except KeyError:
-                    node_stderr = None
-                cloudpickle.dump(node_stderr, f)
+                with open(data_storage_path / node_id / ELECTRON_STDERR_FILENAME, "wb") as f:
+                    try:
+                        node_stderr = tg.get_node_value(node_id, "stderr")
+                    except KeyError:
+                        node_stderr = None
+                    cloudpickle.dump(node_stderr, f)
 
-            with open(data_storage_path / node_id / ELECTRON_INFO_FILENAME, "wb") as f:
-                try:
-                    node_info = tg.get_node_value(node_id, "info")
-                except KeyError:
-                    node_info = None
-                cloudpickle.dump(node_info, f)
+                with open(data_storage_path / node_id / ELECTRON_INFO_FILENAME, "wb") as f:
+                    try:
+                        node_info = tg.get_node_value(node_id, "info")
+                    except KeyError:
+                        node_info = None
+                    cloudpickle.dump(node_info, f)
 
-            electron_record_kwarg = {}
+                electron_exists = (
+                    session.query(models.Electron, models.Lattice)
+                    .where(
+                        models.Electron.parent_dispatch_id == models.Lattice.dispatch_id,
+                        models.Lattice.dispatch_id == self.dispatch_id,
+                        models.Electron.transport_graph_node_id == node_id,
+                    )
+                    .first()
+                    is not None
+                )
+
+                electron_record_kwarg = {}
 
         # TODO - boolean query to check whether lattice /electron records exists / perhaps I can use a try except
 
