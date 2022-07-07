@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._shared_files import logger
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
-from .._file_transfer.enums import Order 
+from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
 from .electron import Electron
 from .depscall import DepsCall
@@ -81,7 +81,7 @@ class Lepton(Electron):
         self.function_name = function_name
         # Types must be stored as strings, since not all type objects can be pickled
         self.argtypes = [(arg[0].__name__, arg[1]) for arg in argtypes]
-        
+
         # Syncing behavior of file transfer with an electron
         internal_call_before_deps = []
         internal_call_after_deps = []
