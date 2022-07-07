@@ -127,7 +127,9 @@ jobs:
             max_attempts: 2
             command: |
               PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher 
-              coverage xml
+
+      - name: Generate coverage report
+        run: coverage xml
 
       - name: Upload report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
