@@ -87,7 +87,7 @@ def TransferFromRemote(
     # override is_remote for the case where from_filepath is of a file:// scheme where the file is remote (rsync ssh)
     from_file = File(from_filepath, is_remote=True)
     return FileTransfer(
-        from_filepath=from_file, to_filepath=to_filepath, order=Order.BEFORE, strategy=strategy
+        from_file=from_file, to_file=to_filepath, order=Order.BEFORE, strategy=strategy
     )
 
 
@@ -99,5 +99,5 @@ def TransferToRemote(
     # override is_remote for the case where to_filepath is of a file:// scheme where the file is remote (rsync ssh)
     to_file = File(to_filepath, is_remote=True)
     return FileTransfer(
-        from_filepath=from_filepath, to_filepath=to_file, order=Order.AFTER, strategy=strategy
+        from_file=from_filepath, to_file=to_file, order=Order.AFTER, strategy=strategy
     )
