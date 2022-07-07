@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Updated RTD with electron dependencies and dask executor apis.
+- Updated RTD concepts, how-to-guides, and api docs with electron dependencies.
 
 ### Operations
 
