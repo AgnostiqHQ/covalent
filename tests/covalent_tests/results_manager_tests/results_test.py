@@ -25,7 +25,7 @@ import shutil
 from datetime import datetime as dt
 from pathlib import Path
 
-import cloudpickle as pickle
+import cloudpickle
 import pytest
 from sqlalchemy.orm import Session
 
@@ -87,12 +87,12 @@ def test_result_persist_workflow_1(db, result_1):
         electron_dependency_rows = session.query(ElectronDependency).all()
 
     # Check that lattice record is as expected
-    assert lattice_row.dispatch_id == "dispatch_id"
+    assert lattice_row.dispatch_id == "dispatch_1"
     assert isinstance(lattice_row.created_at, dt)
-    assert isinstance(lattice_row.started_at, dt)
-    assert isinstance(lattice_row.updated_at, dt)
+    assert lattice_row.started_at is None
+    assert isinstance(lattice_row.updated_at, dt) and isinstance(lattice_row.created_at, dt)
     assert lattice_row.completed_at is None
-    assert lattice_row.status == "NEW_OBJ"
+    assert lattice_row.status == "NEW_OBJECT"
     assert lattice_row.name == "workflow_1"
     assert lattice_row.electron_id is None
 
@@ -100,20 +100,19 @@ def test_result_persist_workflow_1(db, result_1):
     assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR)
 
     with open(lattice_storage_path / lattice_row.function_filename, "rb") as f:
-        workflow_function = pickle.loads(f)
-    assert workflow_function(1, 2) == 2
+        workflow_function = cloudpickle.load(f)
+    assert workflow_function(1, 2) == 4
 
     with open(lattice_storage_path / lattice_row.executor_filename, "rb") as f:
-        executor_function = pickle.loads(f)
+        executor_function = cloudpickle.load(f)
+    assert executor_function == "dask"
 
-    # TODO - ensure that we loaded the correct executor
-
-    with open(lattice_storage_path / lattice_row.error_filename, "r") as f:
-        error_log = f.read()
+    with open(lattice_storage_path / lattice_row.error_filename, "rb") as f:
+        error_log = cloudpickle.load(f)
     assert error_log == result_1.error
 
     with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
-        result = pickle.loads(f)
+        result = cloudpickle.load(f)
     assert result is None
 
     # Check that the electron records are as expected
@@ -155,7 +154,7 @@ def test_result_persist_workflow_1(db, result_1):
     assert lattice_row.status == "COMPLETED"
 
     with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
-        result = pickle.loads(f)
+        result = cloudpickle.loads(f)
     assert result.result == result
 
     # Check that the electron records are as expected

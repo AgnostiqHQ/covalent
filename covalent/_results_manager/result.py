@@ -25,6 +25,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
+import cloudpickle
 import cloudpickle as pickle
 import yaml
 from sqlalchemy.orm import Session
@@ -469,8 +470,27 @@ Node Outputs
         with Session(db.engine) as session:
             lattice_exists = session.query(models.Lattice).first() is not None
 
-        # TODO - store all lattice info that belongs in filenames in the results directory
+        # Store all lattice info that belongs in filenames in the results directory
+        lattice_storage_path = Path(self.results_dir)
+        with open(lattice_storage_path / LATTICE_FUNCTION_FILENAME, "wb") as f:
+            cloudpickle.dump(self.lattice.workflow_function, f)
 
+        with open(lattice_storage_path / LATTICE_FUNCTION_STRING_FILENAME, "wb") as f:
+            cloudpickle.dump(self.lattice.workflow_function_string, f)
+
+        with open(lattice_storage_path / LATTICE_EXECUTOR_FILENAME, "wb") as f:
+            cloudpickle.dump(self.lattice.metadata["executor"], f)
+
+        with open(lattice_storage_path / LATTICE_ERROR_FILENAME, "wb") as f:
+            cloudpickle.dump(self.error, f)
+
+        with open(lattice_storage_path / LATTICE_INPUTS_FILENAME, "wb") as f:
+            cloudpickle.dump(self.inputs, f)
+
+        with open(lattice_storage_path / LATTICE_RESULTS_FILENAME, "wb") as f:
+            cloudpickle.dump(self.result, f)
+
+        # Write lattice records to Database
         if not lattice_exists:
             lattice_record_kwarg = {
                 "dispatch_id": self.dispatch_id,
@@ -513,8 +533,6 @@ Node Outputs
         # TODO - insert OR NOT electron dependency records
 
         # TODO - ensure that dirty nodes are popped as the records get updated
-
-        raise NotImplementedError
 
     def _convert_to_electron_result(self) -> Any:
         """
