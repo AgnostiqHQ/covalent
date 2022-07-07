@@ -279,31 +279,31 @@ def update_electrons_data(
         session.commit()
 
 
-def get_electron_type(node: dict) -> str:
+def get_electron_type(node_name: str) -> str:
     """Get the electron type (to be written to DB) given the electron node data."""
 
-    if node["name"].startswith(arg_prefix):
+    if node_name.startswith(arg_prefix):
         return arg_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(attr_prefix):
+    elif node_name.startswith(attr_prefix):
         return attr_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(electron_dict_prefix):
+    elif node_name.startswith(electron_dict_prefix):
         return electron_dict_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(electron_list_prefix):
+    elif node_name.startswith(electron_list_prefix):
         return electron_list_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(generator_prefix):
+    elif node_name.startswith(generator_prefix):
         return generator_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(parameter_prefix):
+    elif node_name.startswith(parameter_prefix):
         return parameter_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(sublattice_prefix):
+    elif node_name.startswith(sublattice_prefix):
         return sublattice_prefix.strip(prefix_separator)
 
-    elif node["name"].startswith(subscript_prefix):
+    elif node_name.startswith(subscript_prefix):
         return subscript_prefix.strip(prefix_separator)
 
     else:

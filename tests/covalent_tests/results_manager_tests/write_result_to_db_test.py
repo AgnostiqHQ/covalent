@@ -432,6 +432,4 @@ def test_are_electron_dependencies_added():
 def test_get_electron_type(node_name, electron_type):
     """Test that given an electron node, the correct electron type is returned."""
 
-    node = {"name": node_name}
-
-    assert get_electron_type(node) == electron_type
+    assert get_electron_type(node_name) == electron_type
