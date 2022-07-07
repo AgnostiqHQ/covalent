@@ -1,8 +1,8 @@
 from typing import Union
 
 import pytest
-from covalent._workflow.lepton import Lepton
 
+from covalent._workflow.lepton import Lepton
 
 
 def test_init_lepton():
