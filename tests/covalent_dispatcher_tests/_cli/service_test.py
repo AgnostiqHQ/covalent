@@ -297,6 +297,7 @@ def test_cluster_size(mocker, workers):
     """
     Test to ensure that cluster start with the expected number of workers
     """
+
     loop = mock.Mock()
     loop.run_until_complete.return_value = workers
 
@@ -326,6 +327,7 @@ def test_cluster_info(mocker):
     """
     Test cluster info CLI
     """
+
     loop = mock.Mock()
     loop.run_until_complete.return_value = lambda: ""
 
@@ -338,7 +340,7 @@ def test_cluster_info(mocker):
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
 
     runner = CliRunner()
-    response = runner.invoke(cluster, "--info")
+    _ = runner.invoke(cluster, "--info")
 
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
@@ -351,6 +353,7 @@ def test_cluster_status_cli(mocker):
     """
     Test cluster status cli
     """
+
     loop = mock.Mock()
     loop.run_until_complete.return_value = lambda: ""
 
@@ -363,7 +366,7 @@ def test_cluster_status_cli(mocker):
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
 
     runner = CliRunner()
-    response = runner.invoke(cluster, "--status")
+    _ = runner.invoke(cluster, "--status")
 
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
@@ -376,6 +379,7 @@ def test_cluster_address_cli(mocker):
     """
     Test cluster address cli
     """
+
     loop = mock.Mock()
     loop.run_until_complete.return_value = lambda: ""
 
@@ -388,7 +392,7 @@ def test_cluster_address_cli(mocker):
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
 
     runner = CliRunner()
-    response = runner.invoke(cluster, "--address")
+    _ = runner.invoke(cluster, "--address")
 
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
@@ -401,6 +405,7 @@ def test_cluster_logs_cli(mocker):
     """
     Test cluster logs cli
     """
+
     loop = mock.Mock()
     loop.run_until_complete.return_value = lambda: ""
 
@@ -413,7 +418,7 @@ def test_cluster_logs_cli(mocker):
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
 
     runner = CliRunner()
-    response = runner.invoke(cluster, "--logs")
+    _ = runner.invoke(cluster, "--logs")
 
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
@@ -426,6 +431,7 @@ def test_cluster_restart_cli(mocker):
     """
     Test cluster restart cli
     """
+
     loop = mock.Mock()
     loop.run_until_complete.return_value = lambda: ""
 
@@ -438,7 +444,7 @@ def test_cluster_restart_cli(mocker):
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
 
     runner = CliRunner()
-    response = runner.invoke(cluster, "--restart")
+    _ = runner.invoke(cluster, "--restart")
 
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
@@ -451,6 +457,7 @@ def test_cluster_scale_cli(mocker):
     """
     Test cluster scale cli
     """
+
     loop = mock.Mock()
     loop.run_until_complete.return_value = lambda: ""
 
@@ -463,7 +470,7 @@ def test_cluster_scale_cli(mocker):
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
 
     runner = CliRunner()
-    response = runner.invoke(cluster, "--scale 1")
+    _ = runner.invoke(cluster, "--scale 1")
 
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
