@@ -13,6 +13,7 @@ Orchestration
 - :doc:`How to add an electron to lattice <./orchestration/add_electron_to_lattice>`
 - :doc:`How to visualize the lattice <./orchestration/visualize_lattice>`
 - :doc:`How to add constraints to lattices <./orchestration/add_constraints_to_lattice>`
+- :doc:`How to perform file transfers during workflows <./orchestration/file_transfers_for_workflows>`
 - :doc:`How to construct leptons using C code <./orchestration/construct_c_task>`
 ..
   - :doc:`How to construct a lepton <./orchestration/construct_lepton>`
