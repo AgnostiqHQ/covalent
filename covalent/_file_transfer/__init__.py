@@ -18,5 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from .enums import Order
 from .file import File
-from .file_transfer import TransferFromRemote
+from .file_transfer import FileTransfer, TransferFromRemote, TransferToRemote
+from .folder import Folder
