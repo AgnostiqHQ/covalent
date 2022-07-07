@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Package pre-releases go to `covalent` instead of `cova` on PyPI.
+
 ## [0.123.0] - 2022-07-07
 
 ### Authors
