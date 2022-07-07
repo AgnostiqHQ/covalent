@@ -27,7 +27,7 @@ class TestFileTransfer:
             (False, True),
         ],
     )
-    def test_upload_download_move(self, is_from_file_remote, is_to_file_remote):
+    def test_upload_download_cp(self, is_from_file_remote, is_to_file_remote):
         from_file = File("file:///home/source.csv", is_remote=is_from_file_remote)
         to_file = File("file:///home/dest.csv", is_remote=is_to_file_remote)
 
@@ -35,10 +35,10 @@ class TestFileTransfer:
 
         ft = FileTransfer(from_file, to_file, strategy=mock_strategy)
 
-        ft.move()
+        ft.cp()
 
         if not is_to_file_remote and not is_from_file_remote:
-            mock_strategy.move.assert_called_once()
+            mock_strategy.cp.assert_called_once()
         elif is_from_file_remote and not is_to_file_remote:
             mock_strategy.download.assert_called_once()
         elif not is_from_file_remote and is_to_file_remote:
