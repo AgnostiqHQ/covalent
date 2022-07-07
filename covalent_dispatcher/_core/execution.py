@@ -378,86 +378,62 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                     )
                     output = getattr(output, attr)
                 else:
-                    parent = result_object.lattice.transport_graph.get_dependencies(node_id)[0]
-                    output = result_object.lattice.transport_graph.get_node_value(parent, "output")
+                    key = result_object.lattice_transport_graph.get_node_values(node_id, "key")
+                    output = output[key]
 
-                    if node_name.startswith(attr_prefix):
-                        attr = result_object.lattice.transport_graph.get_node_value(
-                            node_id, "attribute_name"
-                        )
-                        output = getattr(output, attr)
-                    else:
-                        key = result_object.lattice.transport_graph.get_node_value(node_id, "key")
-                        output = output[key]
+            node_result = {
+                "node_id": node_id,
+                "start_time": datetime.now(timezone.utc),
+                "end_time": datetime.now(timezone.utc),
+                "status": Result.COMPLETED,
+                "output": output,
+            }
+            update_node_result(node_result)
 
-                result_object._update_node(
-                    node_id=node_id,
-                    start_time=datetime.now(timezone.utc),
-                    end_time=datetime.now(timezone.utc),
-                    status=Result.COMPLETED,
-                    output=output,
-                )
+            continue
 
-                continue
+        task_input = _get_task_inputs(node_id, node_name, result_object)
 
-            task_input = _get_task_inputs(node_id, node_name, result_object)
-
-            start_time = datetime.now(timezone.utc)
-            serialized_callable = result_object.lattice.transport_graph.get_node_value(
-                node_id, "function"
-            )
-            selected_executor = result_object.lattice.transport_graph.get_node_value(
-                node_id, "metadata"
-            )["executor"]
-
-            deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
-                "deps"
-            ]
-
-            # Assemble call_before and call_after from all the deps
-
-            call_before_objs = result_object.lattice.transport_graph.get_node_value(
-                node_id, "metadata"
-            )["call_before"]
-            call_after_objs = result_object.lattice.transport_graph.get_node_value(
-                node_id, "metadata"
-            )["call_after"]
-
-            call_before = []
-
-            for dep_type in ["bash", "pip"]:
-                if dep_type in deps:
-                    dep = deps[dep_type]
-                    call_before.append(dep.apply())
-
-            for dep in call_before_objs:
-                call_before.append(dep.apply())
-
-            call_after = [dep.apply() for dep in call_after_objs]
-
-            update_node_result(
-                generate_node_result(
-                    node_id=node_id,
-                    start_time=start_time,
-                    status=Result.RUNNING,
-                )
-            )
+        start_time = datetime.now(timezone.utc)
+        serialized_callable = result_object.lattice.transport_graph.get_node_value(
+            node_id, "function"
+        )
+        selected_executor = result_object.lattice.transport_graph.get_node_value(
+            node_id, "metadata"
+        )["executor"]
 
         update_node_result(
             generate_node_result(
                 node_id=node_id,
-                dispatch_id=result_object.dispatch_id,
-                results_dir=result_object.results_dir,
-                serialized_callable=serialized_callable,
-                selected_executor=pickle.dumps(selected_executor),
-                node_name=node_name,
-                call_before=call_before,
-                call_after=call_after,
-                inputs=pickle.dumps(task_input),
                 start_time=start_time,
                 status=Result.RUNNING,
             )
         )
+
+        deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
+            "deps"
+        ]
+
+        # Assemble call_before and call_after from all the deps
+
+        call_before_objs = result_object.lattice.transport_graph.get_node_value(
+            node_id, "metadata"
+        )["call_before"]
+        call_after_objs = result_object.lattice.transport_graph.get_node_value(
+            node_id, "metadata"
+        )["call_after"]
+
+        call_before = []
+
+        for dep_type in ["bash", "pip"]:
+            if dep_type in deps:
+                dep = deps[dep_type]
+                call_before.append(dep.apply())
+
+        for dep in call_before_objs:
+            call_before.append(dep.apply())
+
+        call_after = [dep.apply() for dep in call_after_objs]
 
         # Add the task generated for the node to the list of tasks
         app_log.debug(f"Submitting node {node_id} to executor")
@@ -470,6 +446,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             serialized_callable=serialized_callable,
             selected_executor=pickle.dumps(selected_executor),
             node_name=node_name,
+            call_before=call_before,
+            call_after=call_after,
             inputs=pickle.dumps(task_input),
         )
 
@@ -480,7 +458,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     wait(futures)
 
     # post process the lattice
-
     result_object._result = _post_process(
         result_object.lattice, result_object.get_all_node_outputs()
     )
