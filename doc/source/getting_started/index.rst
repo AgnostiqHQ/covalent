@@ -17,7 +17,7 @@ The easiest way to install Covalent is using the PyPI package manager:
 
 .. code:: bash
 
-   pip install cova
+   pip install covalent
 
 .. note::
 
