@@ -24,7 +24,10 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._shared_files import logger
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
+from .._file_transfer.enums import Order 
+from .._file_transfer.file_transfer import FileTransfer
 from .electron import Electron
+from .depscall import DepsCall
 
 if TYPE_CHECKING:
     from ..executor import BaseExecutor
@@ -49,6 +52,9 @@ class Lepton(Electron):
         library_name: Name of the library or module which specifies the function.
         function_name: Name of the foreign function.
         argtypes: List of tuples specifying data types and input/output properties.
+        executor: Alternative executor object to be used for lepton execution. If not passed, the dask
+        executor is used by default
+        files: An optional list of FileTransfer objects which copy files to/from remote or local filesystems.
     """
 
     INPUT = 0
@@ -68,12 +74,23 @@ class Lepton(Electron):
         executor: Union[
             List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
         ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+        files: List[FileTransfer] = [],
     ) -> None:
         self.language = language
         self.library_name = library_name
         self.function_name = function_name
         # Types must be stored as strings, since not all type objects can be pickled
         self.argtypes = [(arg[0].__name__, arg[1]) for arg in argtypes]
+        
+        # Syncing behavior of file transfer with an electron
+        internal_call_before_deps = []
+        internal_call_after_deps = []
+        for file_transfer in files:
+            _callback_ = file_transfer.cp()
+            if file_transfer.order == Order.AFTER:
+                internal_call_after_deps.append(DepsCall(_callback_))
+            else:
+                internal_call_before_deps.append(DepsCall(_callback_))
 
         # Assign the wrapper below as the task's callable function
         super().__init__(self.wrap_task())
