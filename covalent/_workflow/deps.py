@@ -26,13 +26,14 @@ from .transport import TransportableObject
 
 class Deps(ABC):
     """Generic dependency class used in specifying any kind of dependency for an electron.
-    
+
     Attributes:
         apply_fn: function to be executed in the backend environment
         apply_args: list of arguments to be applied in the backend environment
         apply_kwargs: dictionary of keyword arguments to be applied in the backend environment
-           
+
     """
+
     def __init__(self, apply_fn=None, apply_args=[], apply_kwargs={}):
         self.apply_fn = TransportableObject(apply_fn)
         self.apply_args = TransportableObject(apply_args)
@@ -41,10 +42,10 @@ class Deps(ABC):
     def apply(self) -> Tuple[TransportableObject, TransportableObject, TransportableObject]:
         """
         Encapsulates the exact function and args/kwargs to be executed in the backend environment.
-        
+
         Args:
             None
-        
+
         Returns:
             A tuple of transportable objects containing the function and optional args/kwargs
         """
