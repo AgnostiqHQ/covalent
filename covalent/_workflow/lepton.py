@@ -22,12 +22,12 @@
 
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
-from .._shared_files import logger
-from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
-from .electron import Electron
+from .._shared_files import logger
+from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .depscall import DepsCall
+from .electron import Electron
 
 if TYPE_CHECKING:
     from ..executor import BaseExecutor
