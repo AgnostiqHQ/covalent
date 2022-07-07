@@ -552,10 +552,9 @@ A strategy can be specified in a :code:`FileTransfer` by specifying the :code:`s
 Rsync
 ---------------------
 
-This is the default strategy when transferring files within a local filesystem.
-
 .. warning:: Rsync must be installed on an electron’s backend execution environment. On Debian based distros (ex. Ubuntu ) with :code:`apt-get install rsync` , rpm-based based distros (ex. CentOS, Fedora) with :code:`yum install rsync`, or MacOS with :code:`brew install rsync`
 
+This is the default strategy when transferring files within a local filesystem.
 
 If both the from & to filepaths are of the file scheme (i.e using filepaths of the form :code:`/home/ubuntu/...`, or :code:`file:///home/ubuntu/...`) Rsync is automatically chosen as the default file transfer strategy.
 
@@ -603,6 +602,9 @@ Which is equivalent to::
     to_local_file = File('/home/ubuntu/my_file')
     ct.fs.FileTransfer(from_remote_file, to_local_file, strategy=strategy)
 
+.. note::
+
+   The order of the :code:`TransferFromRemote` operation can be specified in the same manner as :code:`FileTransfer` using the :code:`order` keyword argument with the corresponding :code:`Order` enum.
 
 ~~~~~~
 TransferToRemote
@@ -623,3 +625,7 @@ Which is equivalent to::
     from_local_file = File('/home/ubuntu/my_file')
     to_remote_file = File('/home/admin/my_file', is_remote=True)
     ct.fs.FileTransfer(from_remote_file, to_local_file, strategy=strategy)
+
+.. note::
+
+   The order of the :code:`TransferToRemote` operation can be specified in the same manner as :code:`FileTransfer` using the :code:`order` keyword argument with the corresponding :code:`Order` enum.
