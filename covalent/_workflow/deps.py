@@ -33,6 +33,7 @@ class Deps(ABC):
         apply_kwargs: dictionary of keyword arguments to be applied in the backend environment
 
     """
+
     def __init__(self, apply_fn=None, apply_args=[], apply_kwargs={}):
         self.apply_fn = TransportableObject(apply_fn)
         self.apply_args = TransportableObject(apply_args)
