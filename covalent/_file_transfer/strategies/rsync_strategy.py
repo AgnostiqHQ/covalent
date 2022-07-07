@@ -9,7 +9,7 @@ from covalent._file_transfer.strategies.transfer_strategy_base import FileTransf
 
 class Rsync(FileTransferStrategy):
     """
-    Implements Base FileTransferStrategy class to use rsync to move files to and from remote or local filesystems.
+    Implements Base FileTransferStrategy class to use rsync to move files to and from remote or local filesystems. Rsync via ssh is used if one of the provided files is marked as remote.
 
     Attributes:
         user: (optional) Determine user to specify for remote host if using rsync with ssh

@@ -83,6 +83,7 @@ def TransferFromRemote(
     from_filepath: str,
     to_filepath: Union[str, None] = None,
     strategy: Optional[FileTransferStrategy] = None,
+    order: Order = Order.BEFORE,
 ) -> FileTransfer:
     """
     Factory for creating a FileTransfer instance where from_filepath is implicitly created as a remote File Object, and the order (Order.BEFORE) is set so that this file transfer will occur prior to electron execution.
@@ -91,14 +92,15 @@ def TransferFromRemote(
         from_filepath: File path corresponding to remote file (source).
         to_filepath: File path corresponding to local file (destination)
         strategy: Optional File Transfer Strategy to perform file operations - default will be resolved from provided file schemes.
+        order: Order (enum) to execute the file transfer before (Order.BEFORE) or after (Order.AFTER) electron execution - default is BEFORE
 
     Returns:
-        FileTransfer instance with implicit Order.BEFORE enum set
+        FileTransfer instance with implicit Order.BEFORE enum set and from (source) file marked as remote
     """
     # override is_remote for the case where from_filepath is of a file:// scheme where the file is remote (rsync ssh)
     from_file = File(from_filepath, is_remote=True)
     return FileTransfer(
-        from_filepath=from_file, to_filepath=to_filepath, order=Order.BEFORE, strategy=strategy
+        from_filepath=from_file, to_filepath=to_filepath, order=order, strategy=strategy
     )
 
 
@@ -106,6 +108,7 @@ def TransferToRemote(
     to_filepath: str,
     from_filepath: Union[str, None] = None,
     strategy: Optional[FileTransferStrategy] = None,
+    order: Order = Order.AFTER,
 ) -> FileTransfer:
     """
     Factory for creating a FileTransfer instance where to_filepath is implicitly created as a remote File Object, and the order (Order.AFTER) is set so that this file transfer will occur post electron execution.
@@ -114,12 +117,13 @@ def TransferToRemote(
         to_filepath: File path corresponding to remote file (destination)
         from_filepath: File path corresponding to local file (source).
         strategy: Optional File Transfer Strategy to perform file operations - default will be resolved from provided file schemes.
+        order: Order (enum) to execute the file transfer before (Order.BEFORE) or after (Order.AFTER) electron execution - default is AFTER
 
     Returns:
-        FileTransfer instance with implicit Order.AFTER enum set
+        FileTransfer instance with implicit Order.AFTER enum set and to (destination) file marked as remote
     """
     # override is_remote for the case where to_filepath is of a file:// scheme where the file is remote (rsync ssh)
     to_file = File(to_filepath, is_remote=True)
     return FileTransfer(
-        from_filepath=from_filepath, to_filepath=to_file, order=Order.AFTER, strategy=strategy
+        from_filepath=from_filepath, to_filepath=to_file, order=order, strategy=strategy
     )
