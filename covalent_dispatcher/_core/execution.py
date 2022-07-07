@@ -456,7 +456,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     wait(futures)
 
     # post process the lattice
-
     result_object._result = _post_process(
         result_object.lattice, result_object.get_all_node_outputs()
     )
