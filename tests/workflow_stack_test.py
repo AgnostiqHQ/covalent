@@ -232,6 +232,10 @@ def test_electron_deps_call_before():
     assert not Path(tmp_path).is_file()
 
 
+def test_fail():
+    assert False
+
+
 def test_electron_deps_pip():
 
     import subprocess
