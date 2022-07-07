@@ -77,10 +77,10 @@ def result_1():
 def test_result_persist_workflow_1(db, result_1):
     """Test the persist method for the Result object."""
 
-    # TODO - call Result.persist
+    # Call Result.persist
     result_1.persist(db=db)
 
-    # TODO - Query lattice / electron / electron dependency
+    # Query lattice / electron / electron dependency
     with Session(db.engine) as session:
         lattice_row = session.query(Lattice).first()
         electron_rows = session.query(Electron).all()
@@ -95,21 +95,24 @@ def test_result_persist_workflow_1(db, result_1):
     assert lattice_row.status == "NEW_OBJ"
     assert lattice_row.name == "workflow_1"
     assert lattice_row.electron_id is None
+
+    lattice_storage_path = Path(lattice_row.storage_path)
     assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR)
 
-    with open(lattice_row.function_filename, "rb") as f:
+    with open(lattice_storage_path / lattice_row.function_filename, "rb") as f:
         workflow_function = pickle.loads(f)
     assert workflow_function(1, 2) == 2
 
-    with open(lattice_row.executor_filename, "rb") as f:
+    with open(lattice_storage_path / lattice_row.executor_filename, "rb") as f:
         executor_function = pickle.loads(f)
+
     # TODO - ensure that we loaded the correct executor
 
-    with open(lattice_row.error_filename, "r") as f:
+    with open(lattice_storage_path / lattice_row.error_filename, "r") as f:
         error_log = f.read()
     assert error_log == result_1.error
 
-    with open(lattice_row.results_filename, "rb") as f:
+    with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
         result = pickle.loads(f)
     assert result is None
 
@@ -122,19 +125,47 @@ def test_result_persist_workflow_1(db, result_1):
     # Check that there are the appropriate amount of electron dependency records
     assert len(electron_dependency_rows) == 4
 
-    # TODO - update some node / lattice statuses
+    # Update some node / lattice statuses
+    cur_time = dt.now()
+    result_1.end_time = cur_time
+    result_1.status = "COMPLETED"
+    result_1.result = {"helo": 1, "world": 2}
+
     for node_id in range(5):
         result_1._update_node(
             node_id=node_id,
-            end_time=dt.now(),
+            start_time=cur_time,
+            end_time=cur_time,
             status="COMPLETED",
-            output={"test_data": "test_data"},
-            sublattice_result=None,  # TODO - Add a test where this is not None
+            # output={"test_data": "test_data"},  # TODO - Put back in later
+            # sublattice_result=None,  # TODO - Add a test where this is not None
         )
 
-    # TODO - Query lattice / electron / electron dependency
+    # Call Result.persist
+    result_1.persist(db=db)
 
-    # TODO - Check via assert statements that the records are what they should be
+    # Query lattice / electron / electron dependency
+    with Session(db.engine) as session:
+        lattice_row = session.query(Lattice).first()
+        electron_rows = session.query(Electron).all()
+        electron_dependency_rows = session.query(ElectronDependency).all()
+
+    # Check that the lattice records are as expected
+    assert lattice_row.completed_at == cur_time
+    assert lattice_row.status == "COMPLETED"
+
+    with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
+        result = pickle.loads(f)
+    assert result.result == result
+
+    # Check that the electron records are as expected
+    for electron in electron_rows:
+        assert electron.status == "COMPLETED"
+        assert electron.parent_lattice_id == 1
+        assert electron.started_at == electron.completed_at == cur_time
+        assert Path(electron.storage_path) == Path(
+            f"{TEMP_RESULTS_DIR}/node_{electron.transport_graph_node_id}"
+        )
 
     # Tear down temporary results directory
     teardown_temp_results_dir(dispatch_id="dispatch_1")

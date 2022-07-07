@@ -450,6 +450,8 @@ Node Outputs
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 
+        # TODO - If self._end_time exists, write that to Lattice.completed_at.
+
         # TODO - store all lattice info that belongs in filenames in the results directory
 
         # TODO - store all electron node info in the appropriate filenames in the results directory
