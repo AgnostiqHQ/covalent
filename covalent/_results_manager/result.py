@@ -21,12 +21,15 @@
 """Result object."""
 
 import os
+from concurrent.futures import Executor
 from datetime import datetime
 from pathlib import Path
+from pickle import NONE
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 import cloudpickle
 import cloudpickle as pickle
+import networkx as nx
 import yaml
 from sqlalchemy.orm import Session
 
@@ -467,27 +470,35 @@ Node Outputs
         LATTICE_RESULTS_FILENAME = "results.pkl"
         LATTICE_STORAGE_TYPE = "local"
 
+        ELECTRON_FUNCTION_FILENAME = "function.pkl"
+        ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
+        ELECTRON_VALUE_FILENAME = "value.pkl"
+        ELECTRON_EXECUTOR_FILENAME = "executor.pkl"
+        ELECTRON_STDOUT_FILENAME = "stdout.log"
+        ELECTRON_STDERR_FILENAME = "stderr.log"
+        ELECTRON_INFO_FILENAME = "info.log"
+
         with Session(db.engine) as session:
             lattice_exists = session.query(models.Lattice).first() is not None
 
         # Store all lattice info that belongs in filenames in the results directory
-        lattice_storage_path = Path(self.results_dir)
-        with open(lattice_storage_path / LATTICE_FUNCTION_FILENAME, "wb") as f:
+        data_storage_path = Path(self.results_dir)
+        with open(data_storage_path / LATTICE_FUNCTION_FILENAME, "wb") as f:
             cloudpickle.dump(self.lattice.workflow_function, f)
 
-        with open(lattice_storage_path / LATTICE_FUNCTION_STRING_FILENAME, "wb") as f:
+        with open(data_storage_path / LATTICE_FUNCTION_STRING_FILENAME, "wb") as f:
             cloudpickle.dump(self.lattice.workflow_function_string, f)
 
-        with open(lattice_storage_path / LATTICE_EXECUTOR_FILENAME, "wb") as f:
+        with open(data_storage_path / LATTICE_EXECUTOR_FILENAME, "wb") as f:
             cloudpickle.dump(self.lattice.metadata["executor"], f)
 
-        with open(lattice_storage_path / LATTICE_ERROR_FILENAME, "wb") as f:
+        with open(data_storage_path / LATTICE_ERROR_FILENAME, "wb") as f:
             cloudpickle.dump(self.error, f)
 
-        with open(lattice_storage_path / LATTICE_INPUTS_FILENAME, "wb") as f:
+        with open(data_storage_path / LATTICE_INPUTS_FILENAME, "wb") as f:
             cloudpickle.dump(self.inputs, f)
 
-        with open(lattice_storage_path / LATTICE_RESULTS_FILENAME, "wb") as f:
+        with open(data_storage_path / LATTICE_RESULTS_FILENAME, "wb") as f:
             cloudpickle.dump(self.result, f)
 
         # Write lattice records to Database
@@ -523,6 +534,37 @@ Node Outputs
             update_lattices_data(db=db, **lattice_record_kwarg)
 
         # TODO - store all electron node info in the appropriate filenames in the results directory
+        nodes = nx.readwrite.node_link_data(self.lattice.transport_graph._graph)
+        for node in nodes:
+            node_path = f"node_{node['id']}"
+
+            # Write all electron data to the appropriate filepaths
+            with open(data_storage_path / node_path / ELECTRON_FUNCTION_FILENAME, "wb") as f:
+                cloudpickle.dump(node["function"], f)
+
+            with open(
+                data_storage_path / node_path / ELECTRON_FUNCTION_STRING_FILENAME, "wb"
+            ) as f:
+                cloudpickle.dump(node["function_string"], f)
+
+            with open(data_storage_path / node_path / ELECTRON_VALUE_FILENAME, "wb") as f:
+                cloudpickle.dump(node["value"] if "value" in node else None, f)
+
+            with open(data_storage_path / node_path / ELECTRON_EXECUTOR_FILENAME, "wb") as f:
+                cloudpickle.dump(node["metadata"]["executor"], f)
+
+            with open(data_storage_path / node_path / ELECTRON_STDOUT_FILENAME, "wb") as f:
+                cloudpickle.dump(node["stdout"] if "stdout" in node else None, f)
+
+            with open(data_storage_path / node_path / ELECTRON_STDERR_FILENAME, "wb") as f:
+                cloudpickle.dump(node["stderr"] if "stderr" in node else None, f)
+
+            with open(data_storage_path / node_path / ELECTRON_INFO_FILENAME, "wb") as f:
+                cloudpickle.dump(
+                    node["metadata"]["info"] if "info" in node["metadata"] else None, f
+                )
+
+            electron_record_kwarg = {}
 
         # TODO - boolean query to check whether lattice /electron records exists / perhaps I can use a try except
 
