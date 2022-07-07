@@ -533,36 +533,49 @@ Node Outputs
             }
             update_lattices_data(db=db, **lattice_record_kwarg)
 
-        # TODO - store all electron node info in the appropriate filenames in the results directory
-        nodes = nx.readwrite.node_link_data(self.lattice.transport_graph._graph)
-        for node in nodes:
-            node_path = f"node_{node['id']}"
+        tg = self.lattice.transport_graph
+        dirty_nodes = set(tg.dirty_nodes)
+        tg.dirty_nodes.clear()
+
+        for node_id in dirty_nodes:
 
             # Write all electron data to the appropriate filepaths
-            with open(data_storage_path / node_path / ELECTRON_FUNCTION_FILENAME, "wb") as f:
-                cloudpickle.dump(node["function"], f)
+            with open(data_storage_path / node_id / ELECTRON_FUNCTION_FILENAME, "wb") as f:
+                cloudpickle.dump(tg.get_node_value(node_id, "function"), f)
 
-            with open(
-                data_storage_path / node_path / ELECTRON_FUNCTION_STRING_FILENAME, "wb"
-            ) as f:
-                cloudpickle.dump(node["function_string"], f)
+            with open(data_storage_path / node_id / ELECTRON_FUNCTION_STRING_FILENAME, "wb") as f:
+                cloudpickle.dump(tg.get_node_value(node_id, "function_string"), f)
 
-            with open(data_storage_path / node_path / ELECTRON_VALUE_FILENAME, "wb") as f:
-                cloudpickle.dump(node["value"] if "value" in node else None, f)
+            with open(data_storage_path / node_id / ELECTRON_VALUE_FILENAME, "wb") as f:
+                try:
+                    node_value = tg.get_node_value(node_id, "value")
+                except KeyError:
+                    node_value = None
+                cloudpickle.dump(node_value, f)
 
-            with open(data_storage_path / node_path / ELECTRON_EXECUTOR_FILENAME, "wb") as f:
-                cloudpickle.dump(node["metadata"]["executor"], f)
+            with open(data_storage_path / node_id / ELECTRON_EXECUTOR_FILENAME, "wb") as f:
+                cloudpickle.dump(tg.get_node_value(node_id, "value")["executor"], f)
 
-            with open(data_storage_path / node_path / ELECTRON_STDOUT_FILENAME, "wb") as f:
-                cloudpickle.dump(node["stdout"] if "stdout" in node else None, f)
+            with open(data_storage_path / node_id / ELECTRON_STDOUT_FILENAME, "wb") as f:
+                try:
+                    node_stdout = tg.get_node_value(node_id, "stdout")
+                except KeyError:
+                    node_stdout = None
+                cloudpickle.dump(node_stdout, f)
 
-            with open(data_storage_path / node_path / ELECTRON_STDERR_FILENAME, "wb") as f:
-                cloudpickle.dump(node["stderr"] if "stderr" in node else None, f)
+            with open(data_storage_path / node_id / ELECTRON_STDERR_FILENAME, "wb") as f:
+                try:
+                    node_stderr = tg.get_node_value(node_id, "stderr")
+                except KeyError:
+                    node_stderr = None
+                cloudpickle.dump(node_stderr, f)
 
-            with open(data_storage_path / node_path / ELECTRON_INFO_FILENAME, "wb") as f:
-                cloudpickle.dump(
-                    node["metadata"]["info"] if "info" in node["metadata"] else None, f
-                )
+            with open(data_storage_path / node_id / ELECTRON_INFO_FILENAME, "wb") as f:
+                try:
+                    node_info = tg.get_node_value(node_id, "info")
+                except KeyError:
+                    node_info = None
+                cloudpickle.dump(node_info, f)
 
             electron_record_kwarg = {}
 
