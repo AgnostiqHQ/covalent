@@ -85,10 +85,11 @@ const DispatchLayout = () => {
           display: 'flex',
           width: '100vw',
           height: '100vh',
-          bgcolor: graphBgColor,
+          bgcolor: '#08081A',
         }}
       >
         <LatticeGraph
+        selectedElectron={selectedElectron}
           graph={result.graph}
           hasSelectedNode={!!selectedElectron}
           marginLeft={latticeDrawerWidth + navDrawerWidth}

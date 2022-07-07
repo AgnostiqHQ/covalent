@@ -47,6 +47,7 @@ const LatticeGraph = ({
   hasSelectedNode,
   marginLeft = 0,
   marginRight = 0,
+  selectedElectron
 }) => {
   const { fitView } = useFitViewHelper()
 
@@ -74,7 +75,7 @@ const LatticeGraph = ({
   }
 
   useEffect(() => {
-    marginSet();
+    if(!selectedElectron) marginSet();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fitView, marginLeft, marginRight, graph, direction,elements, showParams])
 
