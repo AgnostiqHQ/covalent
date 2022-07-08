@@ -30,6 +30,7 @@
 !/alembic/**
 !/covalent/**
 !/covalent_ui/**
+/covalent_ui/dask-worker-space/**.*lock
 !/covalent_dispatcher/**
 !/doc/**
 !/tests/**
