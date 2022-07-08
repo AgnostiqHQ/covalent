@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `active_lattice.electron_outputs` now contains the node ids as well for the electron which is being post processed.
 
+### Docs
+
+- Updated RTD concepts, how-to-guides, and api docs with electron dependencies.
+
 ## [0.124.0] - 2022-07-07
 
 ### Authors
