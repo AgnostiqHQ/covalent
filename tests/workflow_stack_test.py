@@ -537,7 +537,7 @@ def test_two_iterations():
         return first + b + last
 
     midword.build_graph("hello world", "beautiful", 6)
-    assert [0, 1, 2, 3, 4, 5, 6, 7] == list(midword.transport_graph._graph.nodes)
+    assert [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] == list(midword.transport_graph._graph.nodes)
 
 
 def test_two_iterations_float():
@@ -553,4 +553,4 @@ def test_two_iterations_float():
         return half + quarter
 
     add_half_quarter.build_graph(0.1)
-    assert [0, 1, 2, 3, 4] == list(add_half_quarter.transport_graph._graph.nodes)
+    assert [0, 1, 2, 3, 4, 5, 6] == list(add_half_quarter.transport_graph._graph.nodes)
