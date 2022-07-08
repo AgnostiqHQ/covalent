@@ -102,7 +102,7 @@ def test_result_persist_workflow_1(db, result_1):
     assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR)
 
     with open(lattice_storage_path / lattice_row.function_filename, "rb") as f:
-        workflow_function = cloudpickle.load(f)
+        workflow_function = cloudpickle.load(f).get_deserialized()
     assert workflow_function(1, 2) == 4
 
     with open(lattice_storage_path / lattice_row.executor_filename, "rb") as f:
@@ -130,7 +130,7 @@ def test_result_persist_workflow_1(db, result_1):
     cur_time = dt.now()
     result_1._end_time = cur_time
     result_1._status = "COMPLETED"
-    result_1._result = {"helo": 1, "world": 2}
+    result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
 
     for node_id in range(5):
         result_1._update_node(
