@@ -35,6 +35,7 @@ from covalent_dispatcher._cli.service import (
     _port_from_pid,
     _read_pid,
     _rm_pid_file,
+    cluster,
     purge,
     restart,
     start,
@@ -236,14 +237,19 @@ def test_restart(mocker, port_tag, port, pid, server, restart_called, start_call
 
 
 @pytest.mark.parametrize(
-    "port_val,pid,echo_output,file_removed",
-    [(None, -1, STOPPED_SERVER_STATUS_ECHO, True), (42, 42, RUNNING_SERVER_STATUS_ECHO, False)],
+    "port_val,pid,echo_output,file_removed,pid_exists",
+    [
+        (None, -1, STOPPED_SERVER_STATUS_ECHO, True, False),
+        (42, 42, RUNNING_SERVER_STATUS_ECHO, False, True),
+        (42, 42, STOPPED_SERVER_STATUS_ECHO, True, False),
+    ],
 )
-def test_status(mocker, port_val, pid, echo_output, file_removed):
+def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists):
     """Test covalent status command."""
 
     mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port_val)
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
+    mocker.patch("psutil.pid_exists", return_value=pid_exists)
     rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
 
     runner = CliRunner()
