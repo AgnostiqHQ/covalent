@@ -27,7 +27,7 @@ import { isNode } from 'react-flow-renderer'
 import { isParameter } from '../../utils/misc'
 import theme from '../../utils/theme'
 
-const layout = (graph, direction = 'TB', showParams = true) => {
+const layout = (graph, direction, showParams = true) => {
   const elements = mapGraphToElements(graph, direction, showParams)
   assignNodePositions(elements, direction)
 
@@ -96,10 +96,15 @@ const edgeWidth = (name) => _.size(name) * fontSize
 const edgeHeight = lineHeight
 
 const assignNodePositions = (elements, direction) => {
+  let handleDirection=''
+    if(direction==='DOWN') handleDirection='TB'
+    else if(direction==='RIGHT') handleDirection='LR'
+    else if(direction==='LEFT') handleDirection='RL'
+    else handleDirection='BT'
   const dagreGraph = new dagre.graphlib.Graph()
   dagreGraph.setDefaultEdgeLabel(() => ({}))
   dagreGraph.setGraph({
-    rankdir: direction,
+    rankdir: handleDirection,
     nodesep: 50,
     ranksep: 75,
     edgesep: 10,
@@ -139,15 +144,15 @@ const assignNodePositions = (elements, direction) => {
  *
  * @returns { source: <position>, target: <position> }
  */
-const getHandlePositions = (direction) => {
+ const getHandlePositions = (direction) => {
   switch (direction) {
-    case 'TB':
+    case 'DOWN':
       return { source: 'bottom', target: 'top' }
-    case 'BT':
+    case 'UP':
       return { source: 'top', target: 'bottom' }
-    case 'RL':
+    case 'LEFT':
       return { source: 'left', target: 'right' }
-    case 'LR':
+    case 'RIGHT':
       return { source: 'right', target: 'left' }
 
     default:

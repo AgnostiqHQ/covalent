@@ -109,6 +109,10 @@ def set_executor() -> dict:
 # Going forward we may only want to return the executor field of DEFAULT_CONSTRAINT_VALUES
 # The rest of those parameters will now be in this dictionary
 _DEFAULT_CONSTRAINT_VALUES = set_executor()
+_DEFAULT_CONSTRAINT_VALUES["deps"] = {}
+_DEFAULT_CONSTRAINT_VALUES["call_before"] = []
+_DEFAULT_CONSTRAINT_VALUES["call_after"] = []
+
 _DEFAULT_CONSTRAINTS_DEPRECATED = {
     "schedule": False,
     "num_cpu": 1,

@@ -48,6 +48,7 @@ from covalent._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
+from covalent._workflow.deps import Deps
 from covalent._workflow.lattice import Lattice
 from covalent.executor import BaseAsyncExecutor, BaseExecutor, _executor_manager
 from covalent_ui import result_webhook
@@ -239,6 +240,8 @@ async def _run_task(
     inputs: Dict,
     serialized_callable: Any,
     selected_executor: Any,
+    call_before: List,
+    call_after: List,
     node_name: str,
     tasks_pool: ThreadPoolExecutor = None,
 ) -> None:
@@ -291,6 +294,8 @@ async def _run_task(
                     function=serialized_callable,
                     args=inputs["args"],
                     kwargs=inputs["kwargs"],
+                    call_before=call_before,
+                    call_after=call_after,
                     dispatch_id=dispatch_id,
                     results_dir=results_dir,
                     node_id=node_id,
@@ -305,6 +310,8 @@ async def _run_task(
                         function=serialized_callable,
                         args=inputs["args"],
                         kwargs=inputs["kwargs"],
+                        call_before=call_before,
+                        call_after=call_after,
                         dispatch_id=dispatch_id,
                         results_dir=results_dir,
                         node_id=node_id,
@@ -412,6 +419,31 @@ async def _run_planned_workflow(result_object: Result, tasks_pool: ThreadPoolExe
                 node_id, "metadata"
             )["executor"]
 
+            deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
+                "deps"
+            ]
+
+            # Assemble call_before and call_after from all the deps
+
+            call_before_objs = result_object.lattice.transport_graph.get_node_value(
+                node_id, "metadata"
+            )["call_before"]
+            call_after_objs = result_object.lattice.transport_graph.get_node_value(
+                node_id, "metadata"
+            )["call_after"]
+
+            call_before = []
+
+            for dep_type in ["bash", "pip"]:
+                if dep_type in deps:
+                    dep = deps[dep_type]
+                    call_before.append(dep.apply())
+
+            for dep in call_before_objs:
+                call_before.append(dep.apply())
+
+            call_after = [dep.apply() for dep in call_after_objs]
+
             update_node_result(
                 generate_node_result(
                     node_id=node_id,
@@ -421,16 +453,6 @@ async def _run_planned_workflow(result_object: Result, tasks_pool: ThreadPoolExe
             )
 
             # Add the task generated for the node to the list of tasks
-            # future = tasks_pool.submit(
-            #     _run_task,
-            #     node_id=node_id,
-            #     dispatch_id=result_object.dispatch_id,
-            #     results_dir=result_object.results_dir,
-            #     serialized_callable=serialized_callable,
-            #     selected_executor=pickle.dumps(selected_executor),
-            #     node_name=node_name,
-            #     inputs=pickle.dumps(task_input),
-            # )
             future = asyncio.create_task(
                 _run_task(
                     node_id=node_id,
@@ -439,6 +461,8 @@ async def _run_planned_workflow(result_object: Result, tasks_pool: ThreadPoolExe
                     serialized_callable=serialized_callable,
                     selected_executor=pickle.dumps(selected_executor),
                     node_name=node_name,
+                    call_before=call_before,
+                    call_after=call_after,
                     inputs=pickle.dumps(task_input),
                     tasks_pool=tasks_pool,
                 )

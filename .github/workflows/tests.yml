@@ -38,12 +38,20 @@ jobs:
           - python:3.8-bullseye
           - python:3.9-buster
           - python:3.9-bullseye
+          - python:3.10-buster
+          - python:3.10-bullseye
           - image: "centos/python-38-centos7"
             options: "--user root"
         experimental: [false]
         include:
           - os: macos-latest
             python-version: "3.8"
+            experimental: false
+          - os: macos-latest
+            python-version: "3.9"
+            experimental: false
+          - os: macos-latest
+            python-version: "3.10"
             experimental: false
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
@@ -67,7 +75,7 @@ jobs:
           pip install --no-cache-dir -r ./tests/requirements.txt
 
       - name: Install NPM and Yarn on Ubuntu
-        if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye'
+        if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye' || matrix.container == 'python:3.10-buster' || matrix.container == 'python:3.10-bullseye'
         run: |
           apt-get update && apt-get install -y curl
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
@@ -99,12 +107,12 @@ jobs:
         run: |
           VERSION="$(cat ./VERSION)"
           cd dist
-          tar xzf cova-${VERSION}.tar.gz
-          diff -x .gitignore -r cova-${VERSION}/covalent ../covalent
-          diff -x .gitignore -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
-          diff -x .gitignore -x README.md -x webapp cova-${VERSION}/covalent_ui ../covalent_ui
-          diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
-          rm -rf cova-${VERSION}/
+          tar xzf covalent-${VERSION}.tar.gz
+          diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
+          diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
+          diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
+          rm -rf covalent-${VERSION}/
 
       - name: Install Covalent
         run: pip install -e .
@@ -113,9 +121,13 @@ jobs:
         run: covalent start
 
       - name: Run tests and measure coverage
-        run: |
-          PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher
-          coverage xml -o coverage.xml
+        uses: nick-fields/retry@v2
+        with:
+            timeout_minutes: 30
+            max_attempts: 2
+            command: |
+              PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher 
+              coverage xml
 
       - name: Upload report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
