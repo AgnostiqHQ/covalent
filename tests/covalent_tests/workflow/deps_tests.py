@@ -85,7 +85,7 @@ def test_call_deps_serialize():
 
     dep = ct.DepsCall(f, args=[5])
 
-    assert dep.from_dict(None)
+    assert dep == dep.from_dict(None)
 
     json_dep = json.dumps(dep.to_dict())
 
@@ -193,6 +193,8 @@ def test_deps_pip_json_serialize():
     f.close()
 
     dep = ct.DepsPip(packages=pkgs, reqs_path=reqs_path)
+    assert dep == dep.from_dict(None)
+
     json_dep = json.dumps(dep.to_dict())
 
     new_dep = ct.DepsPip().from_dict(json.loads(json_dep))
