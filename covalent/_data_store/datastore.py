@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from contextlib import contextmanager
-from typing import BinaryIO, Dict, Generator, List, Union
+from typing import BinaryIO, Dict, Generator, List, Optional, Union
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -34,7 +34,7 @@ default_backend_map = {"local": LocalStorageBackend(base_dir=get_config("workflo
 class DataStore:
     def __init__(
         self,
-        db_URL,
+        db_URL: Optional[str] = None,
         storage_backend_map: Dict[str, StorageBackend] = default_backend_map,
         initialize_db: bool = False,
         **kwargs,
@@ -42,7 +42,7 @@ class DataStore:
         if db_URL:
             self.db_URL = db_URL
         else:
-            self.db_URL = "sqlite+pysqlite://" + get_config("workflow_data.db_path")
+            self.db_URL = "sqlite+pysqlite:///" + get_config("workflow_data.db_path")
 
         self.storage_backend_map = storage_backend_map
 
