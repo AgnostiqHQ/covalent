@@ -554,3 +554,38 @@ def test_two_iterations_float():
 
     add_half_quarter.build_graph(0.1)
     assert [0, 1, 2, 3, 4, 5, 6] == list(add_half_quarter.transport_graph._graph.nodes)
+
+
+def test_electron_getitem():
+    """Test electron __getitem__, both with raw keys and with electron keys"""
+
+    @ct.electron
+    def create_array():
+        return [0, 1, 2, 3, 4, 5]
+
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.lattice
+    def workflow():
+        arr = create_array()
+        third_element = arr[2]
+        return third_element
+
+    @ct.lattice
+    def workflow_using_electron_key():
+        arr = create_array()
+        third_element = arr[identity(2)]
+        return third_element
+
+    dispatch_id = ct.dispatch(workflow)()
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    assert workflow_result.result == 2
+    rm._delete_result(dispatch_id)
+
+    dispatch_id = ct.dispatch(workflow_using_electron_key)()
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    assert workflow_result.result == 2
+
+    rm._delete_result(dispatch_id)
