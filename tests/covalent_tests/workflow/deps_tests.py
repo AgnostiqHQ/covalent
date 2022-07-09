@@ -95,6 +95,24 @@ def test_call_deps_serialize():
     assert new_dep.apply_kwargs == dep.apply_kwargs
 
 
+def test_call_from_dict_makes_a_copy():
+    """Check that `from_dict` doesn't alter the input in-place"""
+    import json
+
+    def f(x):
+        return x * x
+
+    dep = ct.DepsCall(f, args=[5])
+
+    assert dep == dep.from_dict(None)
+
+    object_dict = json.loads(json.dumps(dep.to_dict()))
+
+    print(object_dict)
+    new_dep = ct.DepsCall().from_dict(object_dict)
+    assert object_dict["attributes"]["apply_fn"] != new_dep.apply_fn
+
+
 def test_deps_pip_init():
     import tempfile
     from pathlib import Path
@@ -203,3 +221,31 @@ def test_deps_pip_json_serialize():
     assert dep.__dict__ == new_dep.__dict__
 
     assert dep == dep.from_dict(None)
+
+
+def test_deps_pip_from_dict_makes_a_copy():
+    """Check that `from_dict` doesn't alter the input in-place"""
+    import json
+    import tempfile
+    from pathlib import Path
+
+    pkgs = ["pydash==5.1.0"]
+    reqs_contents = "numpy\nscipy\n"
+
+    f = tempfile.NamedTemporaryFile("w", delete=False)
+    f.write(reqs_contents)
+    reqs_path = f.name
+
+    f.close()
+
+    dep = ct.DepsPip(packages=pkgs, reqs_path=reqs_path)
+
+    object_dict = json.loads(json.dumps(dep.to_dict()))
+
+    new_dep = ct.DepsPip().from_dict(object_dict)
+    Path(reqs_path).unlink()
+
+    assert new_dep.packages == object_dict["attributes"]["packages"]
+    object_dict["attributes"]["packages"] = "asdf"
+    assert new_dep.packages != object_dict["attributes"]["packages"]
+    assert new_dep.apply_fn != object_dict["attributes"]["apply_fn"]

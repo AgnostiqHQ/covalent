@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from copy import deepcopy
+
 from .deps import Deps
 from .transport import TransportableObject
 
@@ -49,7 +51,7 @@ class DepsCall(Deps):
         if not object_dict:
             return self
 
-        attributes = object_dict.copy()["attributes"]
+        attributes = deepcopy(object_dict["attributes"])
         for k, v in attributes.items():
             attributes[k] = TransportableObject.from_dict(v)
         self.__dict__ = attributes

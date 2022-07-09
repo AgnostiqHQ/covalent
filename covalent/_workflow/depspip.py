@@ -20,6 +20,7 @@
 
 import subprocess
 import tempfile
+from copy import deepcopy
 from pathlib import Path
 from typing import List, Union
 
@@ -82,7 +83,7 @@ class DepsPip(Deps):
         if not object_dict:
             return self
 
-        attributes = object_dict.copy()["attributes"]
+        attributes = deepcopy(object_dict)["attributes"]
         for k, v in attributes.items():
             if k not in ["packages", "reqs_path", "requirements_content"]:
                 attributes[k] = TransportableObject.from_dict(v)
