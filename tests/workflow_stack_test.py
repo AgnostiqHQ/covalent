@@ -589,3 +589,30 @@ def test_electron_getitem():
     assert workflow_result.result == 2
 
     rm._delete_result(dispatch_id)
+
+
+def test_electron_getattr():
+    """Test electron __getattr__"""
+
+    class Point:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+
+    @ct.electron
+    def create_point():
+        return Point(3, 4)
+
+    @ct.electron
+    def echo(a):
+        return a
+
+    @ct.lattice
+    def workflow():
+        point = create_point()
+        return point.x * point.x + point.y * point.y
+
+    dispatch_id = ct.dispatch(workflow)()
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    assert workflow_result.result == 25
+    rm._delete_result(dispatch_id)
