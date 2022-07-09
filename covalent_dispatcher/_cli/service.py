@@ -351,7 +351,7 @@ def restart(ctx, port: bool, develop: bool) -> None:
     """
     Restart the server.
     """
-    set_config({"develop": develop})
+    set_config("develop", develop)
     port = port or get_config("user_interface.port")
 
     ctx.invoke(stop)
