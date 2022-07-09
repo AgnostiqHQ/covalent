@@ -11,6 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Dask Cluster CLI functional/unit tests
 
+### Docs
+
+- Updated RTD concepts, how-to-guides, and api docs with electron dependencies.
+
+## [0.124.0] - 2022-07-07
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Added
+
+- `Result.persist` method in `covalent/_results_manager/result.py`.
+
 ### Operations
 
 - Package pre-releases go to `covalent` instead of `cova` on PyPI.
