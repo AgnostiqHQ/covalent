@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import subprocess
+from copy import deepcopy
 from typing import List, Union
 
 from .deps import Deps
@@ -66,7 +67,7 @@ class DepsBash(Deps):
         if not object_dict:
             return self
 
-        attributes = object_dict.copy()["attributes"]
+        attributes = deepcopy(object_dict)["attributes"]
         for k, v in attributes.items():
             if k != "commands":
                 attributes[k] = TransportableObject.from_dict(v)
