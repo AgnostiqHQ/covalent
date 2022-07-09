@@ -117,6 +117,9 @@ class Lepton(Electron):
         if isinstance(call_after, DepsCall):
             call_after = [call_after]
 
+        call_before = internal_call_before_deps + call_before
+        call_after = internal_call_after_deps + call_after
+
         # Should be synced with electron
         constraints = {
             "executor": executor,
