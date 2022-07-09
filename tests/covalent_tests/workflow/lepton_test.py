@@ -157,25 +157,25 @@ def test_http_file_transfer(is_from_file_remote, is_to_file_remote, order):
         )
 
     deps = mock_lepton_with_files.get_metadata("deps")
-    assert isinstance(deps["bash"], DepsBash)
+    assert deps["bash"].commands == []
     assert deps.get("pip") is None
-    call_before_deps = mock_lepton_with_files.get_metadata("call_before")
-    call_after_deps = mock_lepton_with_files.get_metadata("call_after")
+    call_before = mock_lepton_with_files.get_metadata("call_before")
+    call_after = mock_lepton_with_files.get_metadata("call_after")
 
     if mock_file_download.order == "before":
         # No file transfer should be done after executing the lepton
-        assert call_after_deps == []
+        assert call_after == []
 
     if mock_file_download.order == "after":
         # No file transfer should be done before executing the lepton
-        assert call_before_deps == []
+        assert call_before == []
 
     # The defined file transfer strategies should not be mutated by the lepton
-    for call in call_before_deps:
+    for call in call_before:
         assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(
             mock_file_download.cp()
         )
-    for call in call_after_deps:
+    for call in call_after:
         assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(
             mock_file_download.cp()
         )
