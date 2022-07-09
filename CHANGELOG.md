@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Dask Cluster CLI functional/unit tests
+
 ### Docs
 
 - Updated RTD concepts, how-to-guides, and api docs with electron dependencies.
