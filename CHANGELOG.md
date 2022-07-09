@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- When saving to DB, also persist to the new DB if running in develop mode
+
+### Tests
+
+- Flask app route tests
+
 ## [0.125.0] - 2022-07-09
 
 ### Authors
@@ -26,14 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Updated RTD concepts, how-to-guides, and api docs with electron dependencies.
-
-### Added
-
-- When saving to DB, also persist to the new DB if running in develop mode
-
-### Tests
-
-- Flask app route tests
 
 ## [0.124.0] - 2022-07-07
 
