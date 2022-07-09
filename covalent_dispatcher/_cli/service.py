@@ -27,13 +27,12 @@ import socket
 import sys
 import time
 from subprocess import DEVNULL, Popen
-from typing import Optional, Tuple
+from typing import Optional
 
 import click
 import dask.system
 import psutil
-import requests
-from distributed.comm import parse_address, unparse_address
+from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
 from covalent._shared_files.config import _config_manager as cm
