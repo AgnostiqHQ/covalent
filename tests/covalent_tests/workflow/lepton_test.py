@@ -116,7 +116,7 @@ def test_local_file_transfer_support(is_from_file_remote, is_to_file_remote, ord
     mock_lepton_with_files = Lepton(files=[mock_file_transfer])
     call_before_deps = mock_lepton_with_files.get_metadata("call_before")
     call_after_deps = mock_lepton_with_files.get_metadata("call_after")
-    print(mock_file_transfer.strategy)
+
     if mock_file_transfer.order == "before":
         # No file transfer should be done after executing the lepton
         assert call_after_deps == []
@@ -149,7 +149,7 @@ def test_http_file_transfer(is_from_file_remote, is_to_file_remote, order):
     mock_file_download = FileTransfer(from_file=mock_from_file, to_file=mock_to_file, order=order)
     mock_lepton_with_files = Lepton(files=[mock_file_download])
 
-    # Test HTTP Upload strategy is not currently supported
+    # Test that HTTP upload strategy is not currently implemented
     with pytest.raises(NotImplementedError):
         Lepton(
             files=[FileTransfer(from_file=mock_to_file, to_file=mock_from_file, strategy=HTTP())]
@@ -178,8 +178,20 @@ def test_http_file_transfer(is_from_file_remote, is_to_file_remote, order):
 
 
 def test_python_wrapper():
-    pass
+    """
+    Test that the python wrapper can call a foreign python function
+    """
+    mock_lepton = Lepton(library_name=test_py_module)
+    wrapper = mock_lepton.wrap_task()
+    assert callable(wrapper)
 
 
 def test_c_wrapper():
-    pass
+    """
+    Test that the C wrapper can call a C function specified in a shared library
+    """
+    mock_lepton = Lepton(language="C", library_name="libtest.so")
+    wrapper = mock_lepton.wrap_task()
+    with pytest.raises(ValueError):
+        wrapper(a=1, b=2, c=3)  # wrapper should not accept kwargs
+    assert callable(wrapper)
