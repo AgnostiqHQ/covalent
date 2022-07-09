@@ -27,12 +27,13 @@ import socket
 import sys
 import time
 from subprocess import DEVNULL, Popen
-from typing import Optional
+from typing import Optional, Tuple
 
 import click
 import dask.system
 import psutil
-from distributed.comm import unparse_address
+import requests
+from distributed.comm import parse_address, unparse_address
 from distributed.core import connect, rpc
 
 from covalent._shared_files.config import _config_manager as cm
@@ -304,7 +305,6 @@ def start(
         {
             "user_interface.address": "0.0.0.0",
             "user_interface.port": port,
-            "develop": develop,
             "dispatcher.address": "0.0.0.0",
             "dispatcher.port": port,
             "dask": {
@@ -350,7 +350,6 @@ def restart(ctx, port: bool, develop: bool) -> None:
     """
     Restart the server.
     """
-    set_config("develop", develop)
     port = port or get_config("user_interface.port")
 
     ctx.invoke(stop)
