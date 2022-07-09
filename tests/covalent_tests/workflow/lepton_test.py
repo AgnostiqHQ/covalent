@@ -1,12 +1,13 @@
 import inspect
 import os
+from ctypes import POINTER, c_int32
+from subprocess import PIPE, Popen
+from tempfile import NamedTemporaryFile
+
 import pytest
 
-from subprocess import Popen, PIPE
-from ctypes import c_int32, POINTER
-from tempfile import NamedTemporaryFile
+from covalent._file_transfer.file_transfer import HTTP, File, FileTransfer, Order
 from covalent._workflow.lepton import Lepton
-from covalent._file_transfer.file_transfer import File, FileTransfer, Order, HTTP
 
 test_py_module = """
 def entrypoint(x: int, y: int) -> int:
