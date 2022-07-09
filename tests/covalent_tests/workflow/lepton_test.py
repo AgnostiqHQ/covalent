@@ -6,6 +6,7 @@ from tempfile import NamedTemporaryFile
 
 import pytest
 
+from covalent import DepsBash
 from covalent._file_transfer.file_transfer import HTTP, File, FileTransfer, Order
 from covalent._workflow.lepton import Lepton
 
@@ -155,6 +156,9 @@ def test_http_file_transfer(is_from_file_remote, is_to_file_remote, order):
             files=[FileTransfer(from_file=mock_to_file, to_file=mock_from_file, strategy=HTTP())]
         )
 
+    deps = mock_lepton_with_files.get_metadata("deps")
+    assert isinstance(deps["bash"], DepsBash)
+    assert deps.get("pip") is None
     call_before_deps = mock_lepton_with_files.get_metadata("call_before")
     call_after_deps = mock_lepton_with_files.get_metadata("call_after")
 
