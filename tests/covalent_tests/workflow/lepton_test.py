@@ -13,7 +13,7 @@ test_py_module = """
 def entrypoint(x: int, y: int) -> int:
     return x + y
 """
-temp_py_file = NamedTemporaryFile('w')
+temp_py_file = NamedTemporaryFile("w")
 with temp_py_file as f:
     f.write(test_py_module)
 
@@ -41,14 +41,19 @@ with temp_c_source_file as f:
 with temp_c_header_file as f:
     f.write(test_c_header)
 
-c_source_path, c_header_path = os.path.join(os.getcwd(), temp_c_source_file.name), os.path.join(os.getcwd(),
-                                                                                                temp_c_header_file.name)
+c_source_path, c_header_path = os.path.join(os.getcwd(), temp_c_source_file.name), os.path.join(
+    os.getcwd(), temp_c_header_file.name
+)
 
-proc = Popen(f"gcc -shared -fPIC -o libtest.so {c_source_path}", shell=True, stdout=PIPE, stderr=PIPE)
+proc = Popen(
+    f"gcc -shared -fPIC -o libtest.so {c_source_path}", shell=True, stdout=PIPE, stderr=PIPE
+)
 
 
 def test_init_lepton():
-    mock_py_lepton = Lepton(language="python", library_name=library_path, function_name="entrypoint")
+    mock_py_lepton = Lepton(
+        language="python", library_name=library_path, function_name="entrypoint"
+    )
 
     assert mock_py_lepton.language == "python"
     assert mock_py_lepton.library_name == temp_py_file.name
@@ -57,11 +62,12 @@ def test_init_lepton():
 
     mock_c_lepton = Lepton(
         language="C",
-        library_name=c_source_path, function_name="test_entry",
+        library_name=c_source_path,
+        function_name="test_entry",
         argtypes=[
             (c_int32, Lepton.INPUT),
             (POINTER(c_int32), Lepton.INPUT_OUTPUT),
-            (POINTER(c_int32), Lepton.OUTPUT)
+            (POINTER(c_int32), Lepton.OUTPUT),
         ],
     )
 
@@ -72,10 +78,21 @@ def test_init_lepton():
 
 
 def test_lepton_languages(
-        supported_languages=("C", "c", "python", "Python"),
-        unsupported_languages=("R", "r", "Erlang", "erlang", "Haskell", "haskell", "Julia", "julia", "C++", "c++",
-                               "Fortan", "fortran"
-                               )
+    supported_languages=("C", "c", "python", "Python"),
+    unsupported_languages=(
+        "R",
+        "r",
+        "Erlang",
+        "erlang",
+        "Haskell",
+        "haskell",
+        "Julia",
+        "julia",
+        "C++",
+        "c++",
+        "Fortan",
+        "fortran",
+    ),
 ):
     for language in supported_languages:
         assert language in Lepton._LANG_C or Lepton._LANG_PY
@@ -85,9 +102,7 @@ def test_lepton_languages(
             Lepton(language=language)
 
 
-@pytest.mark.parametrize(
-    "is_from_file_remote, is_to_file_remote", [(False, False)]
-)
+@pytest.mark.parametrize("is_from_file_remote, is_to_file_remote", [(False, False)])
 @pytest.mark.parametrize("order", (Order.BEFORE, Order.AFTER))
 def test_local_file_transfer_support(is_from_file_remote, is_to_file_remote, order):
     """
@@ -99,8 +114,8 @@ def test_local_file_transfer_support(is_from_file_remote, is_to_file_remote, ord
 
     mock_file_transfer = FileTransfer(from_file=mock_from_file, to_file=mock_to_file, order=order)
     mock_lepton_with_files = Lepton(files=[mock_file_transfer])
-    call_before_deps = mock_lepton_with_files.get_metadata('call_before')
-    call_after_deps = mock_lepton_with_files.get_metadata('call_after')
+    call_before_deps = mock_lepton_with_files.get_metadata("call_before")
+    call_after_deps = mock_lepton_with_files.get_metadata("call_after")
     print(mock_file_transfer.strategy)
     if mock_file_transfer.order == "before":
         # No file transfer should be done after executing the lepton
@@ -112,18 +127,17 @@ def test_local_file_transfer_support(is_from_file_remote, is_to_file_remote, ord
 
     # The defined file transfer strategies should not be mutated by the lepton
     for call in call_before_deps:
-        assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(mock_file_transfer.cp())
+        assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(
+            mock_file_transfer.cp()
+        )
     for call in call_after_deps:
-        assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(mock_file_transfer.cp())
+        assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(
+            mock_file_transfer.cp()
+        )
 
 
 @pytest.mark.parametrize(
-    "is_from_file_remote, is_to_file_remote",
-    [
-        (False, True),
-        (True, False),
-        (True, True)
-    ]
+    "is_from_file_remote, is_to_file_remote", [(False, True), (True, False), (True, True)]
 )
 @pytest.mark.parametrize("order", (Order.BEFORE, Order.AFTER))
 def test_http_file_transfer(is_from_file_remote, is_to_file_remote, order):
@@ -137,10 +151,12 @@ def test_http_file_transfer(is_from_file_remote, is_to_file_remote, order):
 
     # Test HTTP Upload strategy is not currently supported
     with pytest.raises(NotImplementedError):
-        Lepton(files=[FileTransfer(from_file=mock_to_file, to_file=mock_from_file, strategy=HTTP())])
+        Lepton(
+            files=[FileTransfer(from_file=mock_to_file, to_file=mock_from_file, strategy=HTTP())]
+        )
 
-    call_before_deps = mock_lepton_with_files.get_metadata('call_before')
-    call_after_deps = mock_lepton_with_files.get_metadata('call_after')
+    call_before_deps = mock_lepton_with_files.get_metadata("call_before")
+    call_after_deps = mock_lepton_with_files.get_metadata("call_after")
 
     if mock_file_download.order == "before":
         # No file transfer should be done after executing the lepton
@@ -152,9 +168,13 @@ def test_http_file_transfer(is_from_file_remote, is_to_file_remote, order):
 
     # The defined file transfer strategies should not be mutated by the lepton
     for call in call_before_deps:
-        assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(mock_file_download.cp())
+        assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(
+            mock_file_download.cp()
+        )
     for call in call_after_deps:
-        assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(mock_file_download.cp())
+        assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(
+            mock_file_download.cp()
+        )
 
 
 def test_python_wrapper():
