@@ -148,10 +148,6 @@ Navigate to the Covalent UI at `<http://localhost:48008>`_ to see your workflow 
 .. image:: hello_covalent_queue.png
    :align: center
 
-|
-
-.. warning::
-   In some browsers and operating systems, the address `0.0.0.0` does not resolve to localhost. If you experience issues, try instead navigating to `<http://localhost:48008>`_.
 
 Click on the dispatch ID to view the workflow graph:
 
