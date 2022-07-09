@@ -31,7 +31,7 @@ import networkx as nx
 import yaml
 from sqlalchemy.orm import Session
 
-from .._data_store import DataStore, models
+from .._data_store import DataStore, DataStoreNotInitializedError, models
 from .._shared_files import logger
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .utils import convert_to_lattice_function_call
@@ -455,10 +455,7 @@ Node Outputs
         if write_source:
             self._write_dispatch_to_python_file()
 
-        # TODO - This is only a place holder until result.persist and save implementations are switched.
-        # self.persist()
-
-    def persist(self, db: DataStore):  # Add default database from config file
+    def persist(self, db: DataStore):
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 
@@ -479,6 +476,9 @@ Node Outputs
         ELECTRON_INFO_FILENAME = "info.log"
         ELECTRON_RESULTS_FILENAME = "results.pkl"
         ELECTRON_STORAGE_TYPE = "local"
+
+        if not db:
+            raise DataStoreNotInitializedError
 
         with Session(db.engine) as session:
             lattice_exists = (
