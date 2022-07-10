@@ -57,14 +57,18 @@ class Lepton(Electron):
 
     _LANG_PY = ["Python", "python"]
     _LANG_C = ["C", "c"]
+    _LANG_SHELL = ["bash", "shell"]
 
     def __init__(
         self,
         language: str = "python",
+        *,
         library_name: str = "",
         function_name: str = "",
         argtypes: Optional[List] = [],
-        *,
+        command: Optional[str] = "",
+        named_outputs: Optional[List[str]] = [],
+        display_name: Optional[str] = "",
         executor: Union[
             List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
         ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
@@ -75,11 +79,39 @@ class Lepton(Electron):
         # Types must be stored as strings, since not all type objects can be pickled
         self.argtypes = [(arg[0].__name__, arg[1]) for arg in argtypes]
 
+        if self.language == Lepton._LANG_SHELL:
+            self.command = command
+            self.named_outputs = named_outputs
+            self.display_name = display_name
+
+            if self.command and self.library_name:
+                raise ValueError(
+                    "Invalid argument combination: library_name and command. Use one or the other."
+                )
+        else:
+            if command:
+                raise ValueError(
+                    f"Keyword argument 'command' incompatible with language {self.language}."
+                )
+            if named_outputs:
+                raise ValueError(
+                    f"Keyword argument 'named_outputs' incompatible with language {self.language}."
+                )
+            if display_name:
+                raise ValueError(
+                    f"Keyword argument 'display_name' incompatible with language {self.language}."
+                )
+
         # Assign the wrapper below as the task's callable function
         super().__init__(self.wrap_task())
 
         # Assign metadata defaults
         super().set_metadata("executor", executor)
+
+        # TODO: These are a temporary patch required to test leptons
+        super().set_metadata("deps", [])
+        super().set_metadata("call_before", [])
+        super().set_metadata("call_after", [])
 
     def wrap_task(self) -> Callable:
         """Return a lepton wrapper function."""
@@ -192,6 +224,14 @@ class Lepton(Electron):
                 return return_vals[0]
             else:
                 return tuple(return_vals)
+
+        def shell_wrapper(*args, **kwargs) -> Any:
+            """Invoke a shell function or script."""
+
+            import subprocess
+
+            if self.function_name == "":
+                raise ValueError
 
         if self.language in Lepton._LANG_PY:
             wrapper = python_wrapper
