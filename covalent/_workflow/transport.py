@@ -137,6 +137,34 @@ class TransportableObject:
             }
         )
 
+    def serialize_to_json(self) -> str:
+        """
+        Serialize the transportable object to JSON.
+
+        Args:
+            None
+
+        Returns:
+            A JSON string representation of the transportable object
+        """
+
+        return json.dumps(self.to_dict())
+
+    @staticmethod
+    def deserialize_from_json(json_string: str) -> str:
+        """
+        Reconstruct a transportable object from JSON
+
+        Args:
+            json_string: A JSON string representation of a TransportableObject
+
+        Returns:
+            A TransportableObject instance
+        """
+
+        object_dict = json.loads(json_string)
+        return TransportableObject.from_dict(object_dict)
+
     @staticmethod
     def make_transportable(obj) -> "TransportableObject":
         if isinstance(obj, TransportableObject):

@@ -96,6 +96,22 @@ def test_transportable_object_get_deserialized(transportable_object):
     assert to.get_deserialized()(x=2) == subtask(x=2)
 
 
+def test_transportable_object_serialize_to_json(transportable_object):
+    import json
+
+    to = transportable_object
+    assert json.dumps(to.to_dict()) == to.serialize_to_json()
+
+
+def test_transportable_object_deserialize_from_json(transportable_object):
+    import json
+
+    to = transportable_object
+    json_string = to.serialize_to_json()
+    deserialized_to = TransportableObject.deserialize_from_json(json_string)
+    assert to.__dict__ == deserialized_to.__dict__
+
+
 def test_transportable_object_serialize_deserialize(transportable_object):
     """Test that the transportable object is unchanged after serialization and deserialization."""
 
