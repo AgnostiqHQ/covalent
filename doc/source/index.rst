@@ -3,9 +3,11 @@
 .. raw:: html
 
    <style>
+   a[href="#covalent-documentation"] {
+     position: absolute;
+   }
    h1 {
      text-align: center;
-     position: absolute;
    }
    </style>
 
