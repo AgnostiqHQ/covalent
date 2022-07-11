@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.127.0] - 2022-07-11
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
 ### Added
 
 - When saving to DB, also persist to the new DB if running in develop mode
