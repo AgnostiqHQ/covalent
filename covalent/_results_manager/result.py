@@ -489,7 +489,7 @@ Node Outputs
             )
 
         # Store all lattice info that belongs in filenames in the results directory
-        data_storage_path = Path(self.results_dir)
+        data_storage_path = Path(self.results_dir) / self.dispatch_id
         with open(data_storage_path / LATTICE_FUNCTION_FILENAME, "wb") as f:
             cloudpickle.dump(self.lattice.workflow_function, f)
 
@@ -514,7 +514,7 @@ Node Outputs
                 "dispatch_id": self.dispatch_id,
                 "status": str(self.status),
                 "name": self.lattice.__name__,
-                "storage_path": self.results_dir,
+                "storage_path": str(data_storage_path),
                 "storage_type": LATTICE_STORAGE_TYPE,
                 "function_filename": LATTICE_FUNCTION_FILENAME,
                 "function_string_filename": LATTICE_FUNCTION_STRING_FILENAME,
