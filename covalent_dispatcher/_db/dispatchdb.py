@@ -184,10 +184,10 @@ class DispatchDB:
         result_object.save(**kwargs)
 
         try:
-            # result_object.persist(DataStore(self._db_dev_path()))
-            result_object.persist()
-        except Exception:
-            app_log.exception("Exception occured while saving to DB.")
+            result_object.persist(DataStore(self._db_dev_path(), echo=True, initialize_db=True))
+            # result_object.persist()
+        except Exception as e:
+            app_log.exception(f"Exception occured while saving to DB: {e}.")
 
     def get(self, dispatch_ids: [] = []) -> List[Tuple[str, str]]:
         """

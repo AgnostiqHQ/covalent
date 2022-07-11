@@ -664,7 +664,7 @@ Node Outputs
                     electron_record_kwarg = {
                         "parent_dispatch_id": self.dispatch_id,
                         "transport_graph_node_id": node_id,
-                        "status": tg.get_node_value(node_key=node_id, value_key="status"),
+                        "status": str(tg.get_node_value(node_key=node_id, value_key="status")),
                         "started_at": started_at,
                         "updated_at": datetime.now(),
                         "completed_at": completed_at,
