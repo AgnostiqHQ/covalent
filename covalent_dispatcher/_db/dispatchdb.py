@@ -172,19 +172,18 @@ class DispatchDB:
         return False
 
     def _db_dev_path(self):
-        if get_config("develop"):
-            sqlite = ".sqlite"
-            path = "sqlite+pysqlite:///" + self._dbpath.split(sqlite)[0] + "_dev" + sqlite
-            print("***SET DB PATH FOR DEVELOPMENT***")
-            print(path)
-            return path
-        else:
-            return None
+        """This is a temporary method for the Result.persist DB path.add()
+
+        TODO - Take this out when result.save and persist have been switched.
+        """
+        sqlite = ".sqlite"
+        return f"sqlite+pysqlite:///{self._dbpath.split(sqlite)[0]}_dev{sqlite}"
 
     def save_db(self, result_object: Result, **kwargs):
         try:
             result_object.save(**kwargs)
-            result_object.persist(DataStore(self._db_dev_path()))
+            # result_object.persist(DataStore(self._db_dev_path()))
+            result_object.persist()
         except Exception:
             app_log.exception("Exception occured while saving to DB.")
 

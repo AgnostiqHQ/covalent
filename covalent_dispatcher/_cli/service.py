@@ -304,7 +304,6 @@ def start(
         {
             "user_interface.address": "0.0.0.0",
             "user_interface.port": port,
-            "develop": develop,
             "dispatcher.address": "0.0.0.0",
             "dispatcher.port": port,
             "dask": {
