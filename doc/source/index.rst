@@ -16,6 +16,8 @@ COVALENT DOCUMENTATION
 
 .. image:: _static/covalent_ui_rtd.png
    :align: center
+.. image:: https://img.shields.io/pypi/dm/cova
+   :align: center
 |
 
 Covalent is a Pythonic distributed workflow tool used to prototype and run high performance classical and quantum software. Covalent can be used to...
