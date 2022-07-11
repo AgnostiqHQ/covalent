@@ -5,6 +5,7 @@
    <style>
    h1 {
      text-align: center;
+     position: absolute;
    }
    </style>
 
