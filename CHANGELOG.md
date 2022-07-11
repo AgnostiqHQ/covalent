@@ -12,6 +12,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Folder class
 - Added internal call before/after deps to execute File Transfer operations pre/post electron execution.
 
+### Operations
+
+- Enhanced hotfix action to create branches from existing commits
+
+## [0.125.0] - 2022-07-09
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Okechukwu Ochia <emmirald@gmail.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Added
+
+- Dask Cluster CLI functional/unit tests
+
+### Docs
+
+- Updated RTD concepts, how-to-guides, and api docs with electron dependencies.
+
 ## [0.124.0] - 2022-07-07
 
 ### Authors
