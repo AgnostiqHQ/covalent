@@ -443,10 +443,6 @@ class Electron:
         """
 
         @electron
-        def to_electron_collection(**x):
-            return list(x.values())[0]
-
-        @electron
         def to_decoded_electron_collection(**x):
             collection = list(x.values())[0]
             if isinstance(collection, list):
