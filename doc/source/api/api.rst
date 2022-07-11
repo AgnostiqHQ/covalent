@@ -7,6 +7,8 @@ The following API documentation describes how to use Covalent.
 
 - :ref:`electrons_api` and :ref:`lattices_api` are used for constructing workflows
 - :ref:`local_executor` is used to execute electrons locally
+- :ref:`file_transfer` is used to queue remote or local file transfer operations prior or post electron execution.
+- :ref:`file_transfer_strategies` are used to perform download/upload/copy operations over various protocols.
 - :ref:`dask_executor` is used to execute electrons in a Dask cluster
 - :ref:`deps` are used to specify any kind of electron dependency
 - :ref:`deps_pip` are used to specify PyPI packages that are required to run an electron
@@ -55,6 +57,47 @@ Executing tasks (electrons) directly on the local machine
     :inherited-members:
 
 ----------------------------------------------------------------
+
+.. _file_transfer:
+
+File Transfer
+"""""""""""""""""""""""""""
+
+File Transfer from (source) and to (destination) local or remote files prior/post electron execution. Instances are are provided to `files` keyword argument in an electron decorator.
+
+.. autoclass:: covalent._file_transfer.file.File
+    :members:
+    :inherited-members:
+
+.. autoclass:: covalent._file_transfer.folder.Folder
+    :members:
+    :inherited-members:
+
+.. autoclass:: covalent._file_transfer.file_transfer.FileTransfer
+    :members:
+    :inherited-members:
+
+.. autofunction:: covalent._file_transfer.file_transfer.TransferFromRemote
+
+.. autofunction:: covalent._file_transfer.file_transfer.TransferToRemote
+
+----------------------------------------------------------------
+
+.. _file_transfer_strategies:
+
+File Transfer Strategies
+"""""""""""""""""""""""""""
+
+A set of classes with a shared interface to perform copy, download, and upload operations given two (source & destination) File objects that support various protocols.
+
+
+.. autoclass:: covalent._file_transfer.strategies.transfer_strategy_base.FileTransferStrategy
+    :members:
+    :inherited-members:
+
+.. autoclass:: covalent._file_transfer.strategies.rsync_strategy.Rsync
+    :members:
+    :inherited-members:
 
 .. _dask_executor:
 
