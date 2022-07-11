@@ -173,30 +173,6 @@ class TransportableObject:
             return TransportableObject(obj)
 
     @staticmethod
-    def make_transportable_list(collection):
-        new_list = []
-        for item in collection:
-            if isinstance(item, list):
-                new_list.append(TransportableObject.make_transportable_list(item))
-            elif isinstance(item, dict):
-                new_list.append(TransportableObject.make_transportable_dict(item))
-            else:
-                new_list.append(TransportableObject.make_transportable(item))
-        return new_list
-
-    @staticmethod
-    def make_transportable_dict(collection):
-        new_dict = {}
-        for k, item in collection:
-            if isinstance(item, list):
-                new_dict[k] = TransportableObject.make_transportable_list(item)
-            elif isinstance(item, dict):
-                new_dict[k] = TransportableObject.make_transportable_dict(item)
-            else:
-                new_dict[k] = TransportableObject.make_transportable(item)
-        return new_dict
-
-    @staticmethod
     def deserialize(data: bytes) -> "TransportableObject":
         """
         Deserialize the transportable object.
