@@ -30,7 +30,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 import covalent as ct
-from covalent._data_store.datastore import DataStore
+from covalent._data_store.datastore import DataStore, DataStoreNotInitializedError
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.result import Result
 
@@ -74,6 +74,11 @@ def result_1():
     result = Result(lattice=workflow_1, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1")
     result._initialize_nodes()
     return result
+
+
+def test_result_no_db(result_1):
+    with pytest.raises(DataStoreNotInitializedError):
+        result_1.persist(db=None)
 
 
 def test_result_persist_workflow_1(db, result_1):

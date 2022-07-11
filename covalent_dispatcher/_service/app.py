@@ -25,6 +25,8 @@ from flask import Blueprint, Response, jsonify, request
 
 import covalent_dispatcher as dispatcher
 
+from .._db.dispatchdb import DispatchDB
+
 bp = Blueprint("dispatcher", __name__, url_prefix="/api")
 
 
@@ -77,3 +79,9 @@ def cancel() -> Response:
     dispatcher.cancel_running_dispatch(dispatch_id)
 
     return jsonify(f"Dispatch {dispatch_id} cancelled.")
+
+
+@bp.route("/db-path", methods=["GET"])
+def db_path() -> Response:
+    db_path = DispatchDB()._dbpath
+    return jsonify(db_path)
