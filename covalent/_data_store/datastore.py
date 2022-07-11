@@ -97,3 +97,11 @@ class DataStoreSession:
 
     def queue_delete(self, storage_type: str, storage_path: str, file_name: str):
         self.pending_deletes.append((storage_type, storage_path, file_name))
+
+
+class DataStoreNotInitializedError(Exception):
+    """Exception raised when a database action is attempted before the database is initialized."""
+
+    def __init__(self, message="Database is not initialized."):
+        self.message = message
+        super().__init__(self.message)

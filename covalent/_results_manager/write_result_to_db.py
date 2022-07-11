@@ -192,8 +192,8 @@ def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "L
                 electron_id=electron_id,
                 parent_electron_id=parent_electron_id,
                 edge_name=edge_data["edge_name"],
-                parameter_type=edge_data["param_type"],
-                arg_index=edge_data["arg_index"],
+                parameter_type=edge_data["param_type"] if "param_type" in edge_data else None,
+                arg_index=edge_data["arg_index"] if "arg_index" in edge_data else 0,
                 created_at=dt.now(),
             )
 

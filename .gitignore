@@ -33,6 +33,7 @@
 /covalent_ui/dask-worker-space/**.*lock
 !/covalent_dispatcher/**
 !/doc/**
+/doc/build/**
 !/tests/**
 
 # Allow config files
