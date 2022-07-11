@@ -7,10 +7,84 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.125.0] - 2022-07-09
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Okechukwu Ochia <emmirald@gmail.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Added
+
+- Dask Cluster CLI functional/unit tests
+
+### Docs
+
+- Updated RTD concepts, how-to-guides, and api docs with electron dependencies.
+
+## [0.124.0] - 2022-07-07
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Added
+
+- `Result.persist` method in `covalent/_results_manager/result.py`.
+
+### Operations
+
+- Package pre-releases go to `covalent` instead of `cova` on PyPI.
+
+## [0.123.0] - 2022-07-07
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- Added Folder class
+- Added internal call before/after deps to execute File Transfer operations pre/post electron execution.
+
+### Operations
+
+- `codeql.yml` and `condabuild.yml` run nightly instead of on every PR.
+- Style fixes in changelog
+
+## [0.122.1] - 2022-07-06
+
+### Authors
+
+Will Cunningham <wjcunningham7@users.noreply.github.com>
+Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
 ### Operations
 
 - Added license scanner action
 - Pre-commit autoupdate
+
+### Tests
+
+- Tests for running workflows with more than one iteration
+
+### Fixed
+
+- Attribute error caused by attempts to retrieve the name from the node function when the node function is set to None
 
 ## [0.122.0] - 2022-07-04
 
