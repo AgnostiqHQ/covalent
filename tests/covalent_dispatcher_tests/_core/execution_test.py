@@ -28,7 +28,7 @@ import cloudpickle as pickle
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._shared_files.defaults import prefix_separator, sublattice_prefix
-from covalent_dispatcher._core.execution import _plan_workflow, _post_process
+from covalent_dispatcher._core.execution import _get_task_inputs, _plan_workflow, _post_process
 
 TEST_RESULTS_DIR = "/tmp/results"
 
@@ -205,3 +205,61 @@ def test_result_post_process():
     execution_result = res.post_process()
 
     assert execution_result == compute_energy()
+
+
+def test_get_task_inputs():
+    """Test _get_task_inputs for both dicts and list parameter types"""
+
+    @ct.electron
+    def list_task(arg: []):
+        return len(arg)
+
+    @ct.electron
+    def dict_task(arg: dict):
+        return len(arg)
+
+    @ct.lattice
+    def list_workflow(arg):
+        return list_task(arg)
+
+    @ct.lattice
+    def dict_workflow(arg):
+        return dict_task(arg)
+
+    # list-type inputs
+
+    list_workflow.build_graph([1, 2, 3])
+    serialized_args = [ct.TransportableObject(i) for i in [1, 2, 3]]
+    tg = list_workflow.transport_graph
+    # Nodes 0=task, 1=:electron_list:, 2=1, 3=2, 4=3
+    tg.set_node_value(2, "output", ct.TransportableObject(1))
+    tg.set_node_value(3, "output", ct.TransportableObject(2))
+    tg.set_node_value(4, "output", ct.TransportableObject(3))
+
+    result_object = Result(lattice=list_workflow, results_dir="/tmp", dispatch_id="asdf")
+    task_inputs = _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
+
+    expected_inputs = {"args": [], "kwargs": {"x": ct.TransportableObject(serialized_args)}}
+
+    assert (
+        task_inputs["kwargs"]["x"].get_deserialized()
+        == expected_inputs["kwargs"]["x"].get_deserialized()
+    )
+
+    # dict-type inputs
+
+    dict_workflow.build_graph({"a": 1, "b": 2})
+    serialized_args = {"a": ct.TransportableObject(1), "b": ct.TransportableObject(2)}
+    tg = dict_workflow.transport_graph
+    # Nodes 0=task, 1=:electron_dict:, 2=1, 3=2
+    tg.set_node_value(2, "output", ct.TransportableObject(1))
+    tg.set_node_value(3, "output", ct.TransportableObject(2))
+
+    result_object = Result(lattice=dict_workflow, results_dir="/tmp", dispatch_id="asdf")
+    task_inputs = _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
+    expected_inputs = {"args": [], "kwargs": {"x": ct.TransportableObject(serialized_args)}}
+
+    assert (
+        task_inputs["kwargs"]["x"].get_deserialized()
+        == expected_inputs["kwargs"]["x"].get_deserialized()
+    )
