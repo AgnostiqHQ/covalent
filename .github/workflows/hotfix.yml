@@ -150,6 +150,7 @@ jobs:
           git checkout -b "hotfix-$VERSION"
           IFS=',' read -ra commit_shas <<< "${{ github.event.inputs.commit_shas }}"
           git cherry-pick -X ours ${commit_shas[@]}
+          git reset --soft "v${{ github.event.inputs.stable_version }}"
           git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
           git push -u origin "hotfix-$VERSION"
       - name: Increment version
@@ -160,4 +161,13 @@ jobs:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
           message: "The new version will be ${VERSION:1}"
-          tag: env.VERSION
+      - name: Squash commits
+        run: |
+          git reset --soft "v${{ github.event.inputs.stable_version }}"
+      - name: Commit
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: CovalentOpsBot
+          author_email: covalentopsbot@users.noreply.github.com
+          message: "The new version will be ${VERSION:1}"
+          push: "--force"
