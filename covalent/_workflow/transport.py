@@ -33,13 +33,6 @@ from .._data_store import DataStoreSession, models
 from .._shared_files.defaults import parameter_prefix
 
 
-def encode_transportable_object(obj):
-    if isinstance(obj, TransportableObject):
-        return obj.object_string
-    else:
-        return json.dumps(obj)
-
-
 class TransportableObject:
     """
     A function is converted to a transportable object by serializing it using cloudpickle
@@ -96,12 +89,6 @@ class TransportableObject:
         sc = TransportableObject(None)
         sc.__dict__ = object_dict["attributes"]
         return sc
-
-    def deserialize_if_builtin_type(self):
-        if len(self._json) > 0:
-            return json.loads(self._json)
-        else:
-            return self
 
     def get_serialized(self) -> str:
         """

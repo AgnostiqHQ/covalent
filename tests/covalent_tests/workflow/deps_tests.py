@@ -49,6 +49,7 @@ def test_bash_deps_serialize():
     assert new_dep.apply_fn == dep.apply_fn
     assert new_dep.apply_args == dep.apply_args
     assert new_dep.apply_kwargs == dep.apply_kwargs
+    assert dep.from_dict(None) == dep
 
 
 def test_call_deps_init():
@@ -133,6 +134,12 @@ def test_deps_pip_init():
     assert dep.requirements_content == reqs_contents
 
     Path(reqs_path).unlink()
+
+
+def test_deps_pip_init_from_str():
+    pkg = "pydash==5.10"
+    dep = ct.DepsPip(pkg)
+    assert dep.packages == [pkg]
 
 
 def test_deps_pip_apply():
