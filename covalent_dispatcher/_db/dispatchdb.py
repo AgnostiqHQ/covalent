@@ -57,6 +57,7 @@ def extract_metadata(metadata: dict):
         metadata = metadata.copy()
 
         name = metadata["executor"]
+        app_log.debug(f"Getting executor {name}")
         executor = covalent_executor._executor_manager.get_executor(name=name)
 
         if executor is not None:

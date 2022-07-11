@@ -38,9 +38,6 @@ class DepsCall(Deps):
     def __init__(self, func=None, args=[], kwargs={}):
         super().__init__(apply_fn=func, apply_args=args, apply_kwargs=kwargs)
 
-    def short_name(self):
-        return self.__module__.split("/")[-1]
-
     def to_dict(self):
         attributes = self.__dict__.copy()
         for k, v in attributes.items():

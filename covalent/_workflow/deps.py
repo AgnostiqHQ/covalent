@@ -52,7 +52,7 @@ class Deps(ABC):
         return (self.apply_fn, self.apply_args, self.apply_kwargs)
 
     def short_name(self):
-        return self.__module__.split("/")[-1]
+        return self.__module__.split("/")[-1].split(".")[-1]
 
     @abstractmethod
     def to_dict(self):

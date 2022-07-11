@@ -53,9 +53,6 @@ class DepsBash(Deps):
 
         super().__init__(apply_fn=apply_bash_commands, apply_args=[self.commands])
 
-    def short_name(self):
-        return self.__module__.split("/")[-1]
-
     def to_dict(self):
         attributes = self.__dict__.copy()
         for k, v in attributes.items():

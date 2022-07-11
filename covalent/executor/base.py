@@ -162,7 +162,8 @@ class BaseExecutor(ABC):
                 print(ss)
 
     def short_name(self):
-        return self.__module__.split("/")[-1]
+        module = self.__module__
+        return self.__module__.split("/")[-1].split(".")[-1]
 
     def to_dict(self):
         return {
