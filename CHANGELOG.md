@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Covalent server can now process workflows without having their deps installed
 
+### Operations
+
+- Enhanced hotfix action to create branches from existing commits
+
 ## [0.125.0] - 2022-07-09
 
 ### Authors
