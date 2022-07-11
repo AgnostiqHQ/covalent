@@ -28,7 +28,13 @@ import cloudpickle as pickle
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._shared_files.defaults import prefix_separator, sublattice_prefix
-from covalent_dispatcher._core.execution import _get_task_inputs, _plan_workflow, _post_process
+from covalent._workflow.lattice import Lattice
+from covalent_dispatcher._core.execution import (
+    _gather_deps,
+    _get_task_inputs,
+    _plan_workflow,
+    _post_process,
+)
 
 TEST_RESULTS_DIR = "/tmp/results"
 
@@ -263,3 +269,28 @@ def test_get_task_inputs():
         task_inputs["kwargs"]["x"].get_deserialized()
         == expected_inputs["kwargs"]["x"].get_deserialized()
     )
+
+
+def test_gather_deps():
+    """Test internal _gather_deps for assembling deps into call_before and
+    call_after"""
+
+    def square(x):
+        return x * x
+
+    @ct.electron(deps_bash=ct.DepsBash("ls -l"), call_after=[ct.DepsCall(square, [3])])
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph(5)
+
+    received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
+    result_object = Result(received_workflow, "/tmp", "asdf")
+
+    before, after = _gather_deps(result_object, 0)
+    assert len(before) == 1
+    assert len(after) == 1

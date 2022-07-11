@@ -26,7 +26,7 @@ import json
 import traceback
 from concurrent.futures import Future, ThreadPoolExecutor, wait
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 import cloudpickle as pickle
 
@@ -354,6 +354,47 @@ def _run_task(
     return node_result
 
 
+def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
+    """Assemble deps for a node into the final call_before and call_after"""
+
+    deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")["deps"]
+
+    # Assemble call_before and call_after from all the deps
+
+    call_before_objs_json = result_object.lattice.transport_graph.get_node_value(
+        node_id, "metadata"
+    )["call_before"]
+    call_after_objs_json = result_object.lattice.transport_graph.get_node_value(
+        node_id, "metadata"
+    )["call_after"]
+
+    call_before = []
+    call_after = []
+
+    # Rehydrate deps from JSON
+    if "bash" in deps:
+        dep = DepsBash()
+        dep.from_dict(deps["bash"])
+        call_before.append(dep.apply())
+
+    if "pip" in deps:
+        dep = DepsPip()
+        dep.from_dict(deps["pip"])
+        call_before.append(dep.apply())
+
+    for dep_json in call_before_objs_json:
+        dep = DepsCall()
+        dep.from_dict(dep_json)
+        call_before.append(dep.apply())
+
+    for dep_json in call_after_objs_json:
+        dep = DepsCall()
+        dep.from_dict(dep_json)
+        call_after.append(dep.apply())
+
+    return call_before, call_after
+
+
 def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
     """
     Run the workflow in the topological order of their position on the
@@ -448,42 +489,44 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
             app_log.debug(f"Collecting deps for task {node_id}")
             try:
-                deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
-                    "deps"
-                ]
+                # deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
+                #     "deps"
+                # ]
 
-                # Assemble call_before and call_after from all the deps
+                # # Assemble call_before and call_after from all the deps
 
-                call_before_objs_json = result_object.lattice.transport_graph.get_node_value(
-                    node_id, "metadata"
-                )["call_before"]
-                call_after_objs_json = result_object.lattice.transport_graph.get_node_value(
-                    node_id, "metadata"
-                )["call_after"]
+                # call_before_objs_json = result_object.lattice.transport_graph.get_node_value(
+                #     node_id, "metadata"
+                # )["call_before"]
+                # call_after_objs_json = result_object.lattice.transport_graph.get_node_value(
+                #     node_id, "metadata"
+                # )["call_after"]
 
-                call_before = []
-                call_after = []
+                # call_before = []
+                # call_after = []
 
-                # Rehydrate deps from JSON
-                if "bash" in deps:
-                    dep = DepsBash()
-                    dep.from_dict(deps["bash"])
-                    call_before.append(dep.apply())
+                # # Rehydrate deps from JSON
+                # if "bash" in deps:
+                #     dep = DepsBash()
+                #     dep.from_dict(deps["bash"])
+                #     call_before.append(dep.apply())
 
-                if "pip" in deps:
-                    dep = DepsPip()
-                    dep.from_dict(deps["pip"])
-                    call_before.append(dep.apply())
+                # if "pip" in deps:
+                #     dep = DepsPip()
+                #     dep.from_dict(deps["pip"])
+                #     call_before.append(dep.apply())
 
-                for dep_json in call_before_objs_json:
-                    dep = DepsCall()
-                    dep.from_dict(dep_json)
-                    call_before.append(dep.apply())
+                # for dep_json in call_before_objs_json:
+                #     dep = DepsCall()
+                #     dep.from_dict(dep_json)
+                #     call_before.append(dep.apply())
 
-                for dep_json in call_after_objs_json:
-                    dep = DepsCall()
-                    dep.from_dict(dep_json)
-                    call_after.append(dep.apply())
+                # for dep_json in call_after_objs_json:
+                #     dep = DepsCall()
+                #     dep.from_dict(dep_json)
+                #     call_after.append(dep.apply())
+
+                call_before, call_after = _gather_deps(result_object, node_id)
 
             except Exception as ex:
                 app_log.error(f"Exception when trying to collect deps: {ex}")
