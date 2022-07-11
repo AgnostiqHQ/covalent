@@ -133,7 +133,6 @@ jobs:
             echo "Cannot create a hotfix using this stable version. $version already exists."
             exit 1
           fi
-          echo ${version:1} > VERSION
           echo "VERSION=$version" >> $GITHUB_ENV
       - name: Validate SHAs
         run: |
@@ -153,3 +152,12 @@ jobs:
           git cherry-pick -X ours ${commit_shas[@]}
           git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
           git push -u origin "hotfix-$VERSION"
+      - name: Increment version
+        run: echo ${VERSION:1} > ./VERSION
+      - name: Commit
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: CovalentOpsBot
+          author_email: covalentopsbot@users.noreply.github.com
+          message: "The new version will be ${VERSION:1}"
+          tag: env.VERSION
