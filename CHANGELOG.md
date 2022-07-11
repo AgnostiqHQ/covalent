@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.110.2-1] - 2022-07-11
+
+### Fixed
+
+- `covalent status` checks if the server process is still alive.
+- Fix error when parsing electron positional arguments in workflows
+
+### Docs
+
+- Updated the compatibility matrix in the docs.
+- Remove hardcoding version info in README.md
+
 ## [0.110.2] - 2022-06-10
 
 ### Docs
