@@ -180,8 +180,10 @@ class DispatchDB:
         return f"sqlite+pysqlite:///{self._dbpath.split(sqlite)[0]}_dev{sqlite}"
 
     def save_db(self, result_object: Result, **kwargs):
+
+        result_object.save(**kwargs)
+
         try:
-            result_object.save(**kwargs)
             # result_object.persist(DataStore(self._db_dev_path()))
             result_object.persist()
         except Exception:
