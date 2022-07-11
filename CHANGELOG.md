@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added Folder class
+- Added internal call before/after deps to execute File Transfer operations pre/post electron execution.
+
 ### Operations
 
 - Enhanced hotfix action to create branches from existing commits
