@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- When saving to DB, also persist to the new DB if running in develop mode
+
+### Tests
+
+- Flask app route tests
+
 ## [0.126.0] - 2022-07-11
 
 ### Authors

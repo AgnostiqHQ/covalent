@@ -101,3 +101,15 @@ def test_delete():
         db.delete(["asdf", "jklm"])
         res = db.get([])
     assert len(res) == 0
+
+
+def test_save_db(mocker):
+    """Test the db save method."""
+
+    with DispatchDB(":memory:") as db:
+        res = Result(check, "/home/test/results", "asdf")
+        save_mock = mocker.patch("covalent._results_manager.result.Result.save")
+        persist_mock = mocker.patch("covalent._results_manager.result.Result.persist")
+        db.save_db(result_object=res)
+        save_mock.assert_called_once()
+        persist_mock.assert_called_once()
