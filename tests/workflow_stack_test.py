@@ -21,6 +21,7 @@
 """Workflow stack testing of TransportGraph, Lattice and Electron classes."""
 
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
@@ -28,6 +29,7 @@ import covalent as ct
 import covalent._results_manager.results_manager as rm
 from covalent._results_manager.result import Result
 from covalent._workflow.electron import Electron
+from covalent_dispatcher._core.execution import _dispatch_sublattice
 
 
 @ct.electron
@@ -121,6 +123,57 @@ def test_sublatticing():
 
     assert workflow_result.result == 3
     assert workflow_result.get_node_result(0)["sublattice_result"].result == 3
+
+
+def test_internal_sublattice_dispatch():
+    """Test dispatcher's out-of-process _dispatch_sublattice using a workflow executor"""
+    thread_pool = ThreadPoolExecutor()
+    sublattice_add = ct.TransportableObject(ct.lattice(add))
+    inputs = {}
+    inputs["args"] = []
+    inputs["kwargs"] = {"a": ct.TransportableObject(1), "b": ct.TransportableObject(2)}
+    workflow_executor = ["dask", {}]
+    dispatch_id = "asdf"
+    sub_dispatch_id = _dispatch_sublattice(
+        dispatch_id,
+        "/tmp",
+        inputs=inputs,
+        serialized_callable=sublattice_add,
+        tasks_pool=thread_pool,
+        workflow_executor=workflow_executor,
+    )
+
+    workflow_result = rm.get_result(sub_dispatch_id, wait=True)
+    assert workflow_result.result == 3
+
+    try:
+        sub_dispatch_id = _dispatch_sublattice(
+            dispatch_id,
+            "/tmp",
+            inputs=inputs,
+            serialized_callable=sublattice_add,
+            tasks_pool=thread_pool,
+            workflow_executor=["client", {}],
+        )
+
+        assert False
+    except Exception as e:
+        # Dispatch should not
+        assert str(e) == "No executor selected for dispatching sublattices"
+
+    try:
+        sub_dispatch_id = _dispatch_sublattice(
+            dispatch_id,
+            "/tmp",
+            inputs=inputs,
+            serialized_callable=sublattice_add,
+            tasks_pool=thread_pool,
+            workflow_executor=["bogus_executor", {}],
+        )
+
+        assert False
+    except Exception as e:
+        assert True
 
 
 def test_parallelization():

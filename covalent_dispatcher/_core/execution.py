@@ -186,6 +186,52 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         return result
 
 
+def _dispatch_sublattice(
+    dispatch_id: str,
+    results_dir: str,
+    inputs: Dict,
+    serialized_callable: Any,
+    tasks_pool: ThreadPoolExecutor,
+    workflow_executor: Any,
+) -> str:
+    """Dispatch a sublattice using the workflow_executor."""
+
+    try:
+        short_name, object_dict = workflow_executor
+
+        if short_name == "client":
+            raise RuntimeError("No executor selected for dispatching sublattices")
+
+    except Exception as ex:
+        app_log.debug(f"Exception when trying to determine sublattice executor: {ex}")
+        raise ex
+
+    sub_dispatch_inputs = {"args": [serialized_callable], "kwargs": inputs["kwargs"]}
+    for arg in inputs["args"]:
+        sub_dispatch_inputs["args"].append(arg)
+
+    # Dispatch the sublattice workflow. This must be run
+    # externally since it involves deserializing the
+    # sublattice workflow function.
+    fut = tasks_pool.submit(
+        _run_task,
+        node_id=-1,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        serialized_callable=TransportableObject.make_transportable(_dispatch),
+        selected_executor=workflow_executor,
+        node_name="dispatch_sublattice",
+        call_before=[],
+        call_after=[],
+        inputs=sub_dispatch_inputs,
+        tasks_pool=tasks_pool,
+        workflow_executor=workflow_executor,
+    )
+
+    sub_dispatch_id = json.loads(fut.result()["output"].json)
+    return sub_dispatch_id
+
+
 def _run_task(
     node_id: int,
     dispatch_id: str,
@@ -234,39 +280,14 @@ def _run_task(
 
         if node_name.startswith(sublattice_prefix):
 
-            try:
-                short_name, object_dict = workflow_executor
-
-                if short_name == "client":
-                    raise RuntimeError("No executor selected for dispatching sublattices")
-
-            except Exception as ex:
-                app_log.debug(f"Exception when trying to determine sublattice executor: {ex}")
-                raise ex
-
-            sub_dispatch_inputs = {"args": [serialized_callable], "kwargs": inputs["kwargs"]}
-            for arg in inputs["args"]:
-                sub_dispatch_inputs["args"].append(arg)
-
-            # Dispatch the sublattice workflow. This must be run
-            # externally since it involves deserializing the
-            # sublattice workflow function.
-            fut = tasks_pool.submit(
-                _run_task,
-                node_id=-1,
+            sub_dispatch_id = _dispatch_sublattice(
                 dispatch_id=dispatch_id,
                 results_dir=results_dir,
-                serialized_callable=TransportableObject.make_transportable(_dispatch),
-                selected_executor=workflow_executor,
-                node_name="dispatch_sublattice",
-                call_before=[],
-                call_after=[],
-                inputs=sub_dispatch_inputs,
+                inputs=inputs,
+                serialized_callable=serialized_callable,
                 tasks_pool=tasks_pool,
                 workflow_executor=workflow_executor,
             )
-
-            sub_dispatch_id = json.loads(fut.result()["output"].json)
 
             app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
 
