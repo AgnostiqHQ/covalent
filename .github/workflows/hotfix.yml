@@ -150,10 +150,6 @@ jobs:
           git config user.email "covalentopsbot@users.noreply.github.com"
           git checkout -b "hotfix-$VERSION"
           IFS=',' read -ra commit_shas <<< "${{ github.event.inputs.commit_shas }}"
-          for sha in ${commit_shas[@]} ; do
-            git cherry-pick "$sha"
-          done
+          git cherry-pick -X ours ${commit_shas[@]}
           git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
           git push -u origin "hotfix-$VERSION"
-          #git tag -a "$VERSION" -m "Release $VERSION"
-          #git push origin $VERSION
