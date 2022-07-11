@@ -89,7 +89,6 @@ const DispatchLayout = () => {
         }}
       >
         <LatticeGraph
-        selectedElectron={selectedElectron}
           graph={result.graph}
           hasSelectedNode={!!selectedElectron}
           marginLeft={latticeDrawerWidth + navDrawerWidth}
