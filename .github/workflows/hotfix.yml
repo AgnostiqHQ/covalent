@@ -160,7 +160,7 @@ jobs:
         with:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
-          message: "The new version will be ${VERSION:1}"
+          message: "The new version will be ${{ env.VERSION }}"
       - name: Squash commits
         run: |
           git reset --soft "v${{ github.event.inputs.stable_version }}"
@@ -169,5 +169,5 @@ jobs:
         with:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
-          message: "The new version will be ${VERSION:1}"
+          message: "Applying hotfix ${{ env.VERSION }}"
           push: "--force"
