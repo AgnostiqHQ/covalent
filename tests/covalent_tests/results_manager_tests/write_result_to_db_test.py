@@ -26,7 +26,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 import covalent as ct
-from covalent._data_store.datastore import DataStore
+from covalent._data_store.datastore import WorkflowDB
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.write_result_to_db import (
     MissingElectronRecordError,
@@ -67,7 +67,7 @@ INFO_FILENAME = "info.log"
 def db():
     """Instantiate and return an in-memory database."""
 
-    return DataStore(
+    return WorkflowDB(
         db_URL="sqlite+pysqlite:///:memory:",
         initialize_db=True,
     )

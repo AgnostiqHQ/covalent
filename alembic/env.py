@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from covalent._data_store.datastore import DataStore
+from covalent._data_store.datastore import workflow_db
 from covalent._data_store.models import Base
 
 # this is the Alembic Config object, which provides
@@ -15,7 +15,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = [Base.metadata]
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -35,7 +35,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = DataStore().db_URL
+    url = workflow_db.db_URL
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -55,7 +55,7 @@ def run_migrations_online() -> None:
 
     """
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = DataStore().db_URL
+    configuration["sqlalchemy.url"] = workflow_db.db_URL
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",

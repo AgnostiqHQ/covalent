@@ -31,7 +31,7 @@ from .storage_backends import LocalStorageBackend, StorageBackend
 default_backend_map = {"local": LocalStorageBackend(base_dir=get_config("workflow_data.base_dir"))}
 
 
-class DataStore:
+class WorkflowDB:
     def __init__(
         self,
         db_URL: Optional[str] = None,
@@ -48,6 +48,7 @@ class DataStore:
 
         self.engine = create_engine(self.db_URL, **kwargs)
 
+        # flag should only be used in pytest - tables should be generated using migrations
         if initialize_db:
             models.Base.metadata.create_all(self.engine)
 
@@ -85,6 +86,21 @@ class DataStore:
         raise NotImplementedError
 
 
+class DevWorkflowDB(WorkflowDB):
+    def __init__(
+        self,
+        db_URL: Optional[str] = None,
+        initialize_db: bool = False,
+        storage_backend_map: Dict[str, StorageBackend] = default_backend_map,
+        **kwargs,
+    ):
+        if not db_URL:
+            db_path = get_config("user_interface.dispatch_db")
+            sqlite = ".sqlite"
+            db_URL = f"sqlite+pysqlite:///{db_path.split(sqlite)[0]}_dev{sqlite}"
+        super().__init__(db_URL, storage_backend_map, initialize_db, **kwargs)
+
+
 class DataStoreSession:
     def __init__(self, session: Session, metadata={}):
         self.db_session = session
@@ -105,3 +121,9 @@ class DataStoreNotInitializedError(Exception):
     def __init__(self, message="Database is not initialized."):
         self.message = message
         super().__init__(self.message)
+
+
+# we can switch this to any class instance that has a db_URL property that points to the db
+# which we want to run migrations against - this command also creates the db without tables
+# via create_engine()
+workflow_db = DevWorkflowDB(echo=True)
