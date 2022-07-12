@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 import cloudpickle as pickle
 from flask import Blueprint, Response, jsonify, request
@@ -33,10 +33,7 @@ bp = Blueprint("dispatcher", __name__, url_prefix="/api")
 @bp.before_app_first_request
 def start_pools():
     global workflow_pool
-    global tasks_pool
-
-    workflow_pool = ThreadPoolExecutor()
-    tasks_pool = ThreadPoolExecutor()
+    workflow_pool = ProcessPoolExecutor()
 
 
 @bp.route("/submit", methods=["POST"])
@@ -56,7 +53,7 @@ def submit() -> Response:
 
     data = request.get_data()
     result_object = pickle.loads(data)
-    dispatch_id = dispatcher.run_dispatcher(result_object, workflow_pool, tasks_pool)
+    dispatch_id = dispatcher.run_dispatcher(result_object, workflow_pool)
 
     return jsonify(dispatch_id)
 

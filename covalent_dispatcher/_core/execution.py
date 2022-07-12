@@ -61,7 +61,7 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def _dispatch_sublattice(orig_lattice: Lattice, tasks_pool: ThreadPoolExecutor) -> Callable:
+def _dispatch_sublattice(orig_lattice: Lattice) -> Callable:
     """Internal version of of ct.dispatch_sync that doesn't involve an
     HTTP call to the dispatcher.
     """
@@ -93,7 +93,7 @@ def _dispatch_sublattice(orig_lattice: Lattice, tasks_pool: ThreadPoolExecutor) 
         result_object.save()
 
         try:
-            await _run_planned_workflow(result_object, tasks_pool)
+            await _run_planned_workflow(result_object)
         except Exception as ex:
             graceful_result_failure(result_object, ex)
             raise
@@ -224,7 +224,6 @@ async def _run_task(
     call_before: List,
     call_after: List,
     node_name: str,
-    tasks_pool: ThreadPoolExecutor = None,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -254,7 +253,7 @@ async def _run_task(
 
         if node_name.startswith(sublattice_prefix):
             func = serialized_callable.get_deserialized()
-            sublattice_result = await _dispatch_sublattice(func, tasks_pool)(
+            sublattice_result = await _dispatch_sublattice(func)(
                 *inputs["args"], **inputs["kwargs"]
             )
             output = sublattice_result.result
@@ -284,8 +283,11 @@ async def _run_task(
 
             else:
                 loop = asyncio.get_running_loop()
+
+                # Not specifying executor here will automatically use
+                # the default threadpool executor from concurrent.futures
                 result = loop.run_in_executor(
-                    tasks_pool,
+                    None,
                     partial(
                         executor.execute,
                         function=assembled_callable,
@@ -322,7 +324,7 @@ async def _run_task(
     return node_result
 
 
-async def _run_planned_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Result:
+async def _run_planned_workflow(result_object: Result) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -443,7 +445,6 @@ async def _run_planned_workflow(result_object: Result, tasks_pool: ThreadPoolExe
                     call_before=call_before,
                     call_after=call_after,
                     inputs=pickle.dumps(task_input),
-                    tasks_pool=tasks_pool,
                 )
             )
 
@@ -531,7 +532,7 @@ def graceful_result_failure(result_object: Result, exception: Exception):
     DispatchDB().save_db(result_object)
 
 
-def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecutor) -> Result:
+def run_workflow(dispatch_id: str, results_dir: str) -> Result:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -553,7 +554,7 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
 
     try:
         _plan_workflow(result_object)
-        asyncio.run(_run_planned_workflow(result_object, tasks_pool))
+        asyncio.run(_run_planned_workflow(result_object))
 
     except Exception as ex:
         graceful_result_failure(result_object, ex)

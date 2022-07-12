@@ -25,7 +25,7 @@ Self-contained entry point for the dispatcher
 import sys
 import threading
 import uuid
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from typing import List
 
 from covalent._results_manager import Result
@@ -56,9 +56,7 @@ def get_unique_id() -> str:
     return str(uuid.uuid4())
 
 
-def run_dispatcher(
-    result_object: Result, workflow_pool: ThreadPoolExecutor, tasks_pool: ThreadPoolExecutor
-) -> str:
+def run_dispatcher(result_object: Result, workflow_pool: ProcessPoolExecutor) -> str:
     """
     Run the dispatcher from the lattice asynchronously using Dask.
     Assign a new dispatch id to the result object and return it.
@@ -87,7 +85,7 @@ def run_dispatcher(
     from ._core import run_workflow
 
     futures[dispatch_id] = workflow_pool.submit(
-        run_workflow, result_object.dispatch_id, result_object.results_dir, tasks_pool
+        run_workflow, result_object.dispatch_id, result_object.results_dir
     )
 
     return dispatch_id
