@@ -307,3 +307,9 @@ def get_electron_type(node_name: str) -> str:
 
     else:
         return "function"
+
+
+def write_sublattice_electron_id(
+    parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
+) -> None:
+    return 1

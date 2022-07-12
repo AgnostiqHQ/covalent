@@ -37,6 +37,7 @@ from covalent._results_manager.write_result_to_db import (
     insert_lattices_data,
     update_electrons_data,
     update_lattices_data,
+    write_sublattice_electron_id,
 )
 from covalent._shared_files.defaults import (
     arg_prefix,
@@ -433,3 +434,7 @@ def test_get_electron_type(node_name, electron_type):
     """Test that given an electron node, the correct electron type is returned."""
 
     assert get_electron_type(node_name) == electron_type
+
+
+def test_write_sublattice_electron_id():
+    pass
