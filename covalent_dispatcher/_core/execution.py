@@ -31,8 +31,10 @@ from typing import Any, Dict, List, Tuple
 import cloudpickle as pickle
 
 from covalent import dispatch, dispatch_sync
+from covalent._data_store.datastore import DataStore
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
+from covalent._results_manager.write_result_to_db import write_sublattice_electron_id
 from covalent._shared_files import logger
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
@@ -291,6 +293,14 @@ def _run_task(
             )
 
             app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
+
+            with DispatchDB() as db:
+                write_sublattice_electron_id(
+                    db=DataStore(db._db_dev_path(), initialize_db=True),
+                    parent_dispatch_id=dispatch_id,
+                    sublattice_node_id=node_id,
+                    sublattice_dispatch_id=sub_dispatch_id,
+                )
 
             # Read the result object directly from the server
 
