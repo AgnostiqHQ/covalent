@@ -341,7 +341,7 @@ async def _run_planned_workflow(result_object: Result, tasks_pool: ThreadPoolExe
         result_object._update_node(**node_result)
         with DispatchDB() as db:
             db.upsert(result_object.dispatch_id, result_object)
-        result_object.save()
+            db.save_db(result_object)
         result_webhook.send_update(result_object)
 
     def task_callback(future: Future):
@@ -462,7 +462,7 @@ async def _run_planned_workflow(result_object: Result, tasks_pool: ThreadPoolExe
                 result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
                 with DispatchDB() as db:
                     db.upsert(result_object.dispatch_id, result_object)
-                result_object.save()
+                    db.save_db(result_object)
                 result_webhook.send_update(result_object)
                 return result_object
 
@@ -471,7 +471,7 @@ async def _run_planned_workflow(result_object: Result, tasks_pool: ThreadPoolExe
                 result_object._end_time = datetime.now(timezone.utc)
                 with DispatchDB() as db:
                     db.upsert(result_object.dispatch_id, result_object)
-                result_object.save()
+                    db.save_db(result_object)
                 result_webhook.send_update(result_object)
                 return result_object
 
@@ -484,7 +484,7 @@ async def _run_planned_workflow(result_object: Result, tasks_pool: ThreadPoolExe
     result_object._end_time = datetime.now(timezone.utc)
     with DispatchDB() as db:
         db.upsert(result_object.dispatch_id, result_object)
-    result_object.save(write_source=True)
+        db.save_db(result_object, write_source=True)
     result_webhook.send_update(result_object)
 
     return result_object
@@ -528,7 +528,7 @@ def graceful_result_failure(result_object: Result, exception: Exception):
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
     result_object._error = "".join(traceback.TracebackException.from_exception(exception).format())
-    result_object.save()
+    DispatchDB().save_db(result_object)
 
 
 def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecutor) -> Result:
