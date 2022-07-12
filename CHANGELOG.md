@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+
+### Added
+
+- Method to write electron id corresponding to sublattices in `execution.py` when running `_run_task`.
+
 ## [0.128.1] - 2022-07-12
 
 ### Authors
