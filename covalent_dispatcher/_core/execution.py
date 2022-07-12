@@ -54,23 +54,10 @@ from covalent.executor import BaseAsyncExecutor, BaseExecutor, _executor_manager
 from covalent_ui import result_webhook
 
 from .._db.dispatchdb import DispatchDB
+from ..entry_point import get_unique_id
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-def get_unique_id() -> str:
-    """
-    Get a unique ID.
-
-    Args:
-        None
-
-    Returns:
-        str: Unique ID
-    """
-
-    return str(uuid.uuid4())
 
 
 def _dispatch_sublattice(orig_lattice: Lattice, tasks_pool: ThreadPoolExecutor) -> Callable:
@@ -92,29 +79,19 @@ def _dispatch_sublattice(orig_lattice: Lattice, tasks_pool: ThreadPoolExecutor) 
 
         """
 
-        # Copied from ct.dispatch
-        lattice = deepcopy(orig_lattice)
-
-        lattice.build_graph(*args, **kwargs)
+        orig_lattice.build_graph(*args, **kwargs)
 
         # Serializing the transport graph and then passing it to the Result object
-        # lattice.transport_graph = lattice.transport_graph.serialize()
-        result_object = Result(lattice, lattice.metadata["results_dir"])
+        result_object = Result(orig_lattice, orig_lattice.metadata["results_dir"])
 
         if not result_object.dispatch_id:
             dispatch_id = get_unique_id()
             result_object._dispatch_id = dispatch_id
 
-        # transport_graph = _TransportGraph()
-        # transport_graph.deserialize(result_object.lattice.transport_graph)
-        # result_object._lattice.transport_graph = transport_graph
-
         result_object._initialize_nodes()
-
         result_object.save()
 
-        task = run_sublattice(result_object.dispatch_id, result_object.results_dir, tasks_pool)
-        return await task
+        await _run_planned_workflow(result_object, tasks_pool)
 
     return wrapper_async
 
@@ -575,11 +552,11 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
     result_object = rm._get_result_from_file(dispatch_id, results_dir)
 
     if result_object.status == Result.COMPLETED:
-        return result_object
+        return
 
     try:
         _plan_workflow(result_object)
-        result = asyncio.run(_run_planned_workflow(result_object, tasks_pool))
+        asyncio.run(_run_planned_workflow(result_object, tasks_pool))
 
     except Exception as ex:
         result_object._status = Result.FAILED
@@ -587,8 +564,6 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
         result_object._error = "".join(traceback.TracebackException.from_exception(ex).format())
         result_object.save()
         raise
-
-    return result
 
 
 def cancel_workflow(dispatch_id: str) -> None:

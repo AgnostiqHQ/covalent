@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """
-Class that defines the base executor template.
+Class that defines the base async executor template.
 """
 
 import os
@@ -40,45 +40,9 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def wrapper_fn(
-    function: TransportableObject,
-    call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
-    call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
-    *args,
-    **kwargs,
-):
-    """Wrapper for serialized callable.
-
-    Execute preparatory shell commands before deserializing and
-    running the callable. This is the actual function to be sent to
-    the various executors.
-
+class BaseAsyncExecutor(ABC):
     """
-
-    for tup in call_before:
-        serialized_fn, serialized_args, serialized_kwargs = tup
-        cb_fn = serialized_fn.get_deserialized()
-        cb_args = serialized_args.get_deserialized()
-        cb_kwargs = serialized_kwargs.get_deserialized()
-        cb_fn(*cb_args, **cb_kwargs)
-
-    fn = function.get_deserialized()
-
-    output = fn(*args, **kwargs)
-
-    for tup in call_after:
-        serialized_fn, serialized_args, serialized_kwargs = tup
-        ca_fn = serialized_fn.get_deserialized()
-        ca_args = serialized_args.get_deserialized()
-        ca_kwargs = serialized_kwargs.get_deserialized()
-        ca_fn(*ca_args, **ca_kwargs)
-
-    return output
-
-
-class BaseExecutor(ABC):
-    """
-    Base executor class to be used for defining any executor
+    Async base executor class to be used for defining any executor
     plugin. Subclassing this class will allow you to define
     your own executor plugin which can be used in covalent.
 
@@ -158,11 +122,13 @@ class BaseExecutor(ABC):
                 print(ss)
 
     @abstractmethod
-    def execute(
+    async def execute(
         self,
         function: TransportableObject,
         args: List,
         kwargs: Dict,
+        call_before: List,
+        call_after: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
@@ -295,85 +261,3 @@ class BaseExecutor(ABC):
             message = f"Executed node {node_id} on Conda environment {self.conda_env}."
             app_log.debug(message)
             return result
-
-    def _on_conda_env_fail(self, fn: Callable, args: List, kwargs: Dict, node_id: int):
-        """
-
-        Args:
-            fn: The input python function which will be executed and
-                whose result may be returned by this function.
-            args: List of positional arguments to be used by the function.
-            kwargs: Dictionary of keyword arguments to be used by the function.
-            node_id: The integer identifier for the current node.
-
-        Returns:
-            output: The result of the function execution, if
-                self.current_env_on_conda_fail == True, otherwise, return value is None.
-        """
-
-        result = None
-        message = f"Failed to execute node {node_id} on Conda environment {self.conda_env}."
-        if self.current_env_on_conda_fail:
-            message += "\nExecuting on the current Conda environment."
-            app_log.warning(message)
-            result = fn(*args, **kwargs)
-
-        else:
-            app_log.error(message)
-            raise RuntimeError
-
-        return result
-
-    def get_conda_envs(self) -> None:
-        """
-        Print a list of Conda environments detected on the system.
-
-        Args:
-            None
-
-        Returns:
-            None
-        """
-
-        self.conda_envs = []
-
-        env_output = subprocess.run(
-            ["conda", "env", "list"], capture_output=True, encoding="utf-8"
-        )
-
-        if len(env_output.stderr) > 0:
-            message = f"Problem in listing Conda environments:\n{env_output.stderr}"
-            app_log.warning(message)
-            return
-
-        for line in env_output.stdout.split("\n"):
-            if not line.startswith("#"):
-                row = line.split()
-                if len(row) > 1:
-                    if "*" in row:
-                        self.current_env = row[0]
-                    self.conda_envs.append(row[0])
-
-        app_log.debug(f"Conda environments:\n{self.conda_envs}")
-
-    def get_conda_path(self) -> bool:
-        """
-        Query the path where the conda executable can be found.
-
-        Args:
-            None
-
-        Returns:
-            found: True if Conda is found on the system.
-        """
-
-        self.conda_path = ""
-        which_conda = subprocess.run(
-            ["which", "conda"], capture_output=True, encoding="utf-8"
-        ).stdout
-        if which_conda == "":
-            message = "No Conda installation found on this compute node."
-            app_log.warning(message)
-            return False
-        self.conda_path = which_conda
-        return True
