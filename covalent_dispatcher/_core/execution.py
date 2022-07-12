@@ -30,8 +30,10 @@ from typing import Any, Dict, List
 import cloudpickle as pickle
 
 from covalent import dispatch_sync
+from covalent._data_store.datastore import DataStore
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
+from covalent._results_manager.write_result_to_db import write_sublattice_electron_id
 from covalent._shared_files import logger
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
@@ -124,11 +126,12 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
 
             for e_key, d in edge_data.items():
-                if d["param_type"] == "arg":
-                    task_input["args"].append(value)
-                elif d["param_type"] == "kwarg":
-                    key = d["edge_name"]
-                    task_input["kwargs"][key] = value
+                if not d.get("wait_for"):
+                    if d["param_type"] == "arg":
+                        task_input["args"].append(value)
+                    elif d["param_type"] == "kwarg":
+                        key = d["edge_name"]
+                        task_input["kwargs"][key] = value
 
     return task_input
 
@@ -155,11 +158,11 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         result: The result of the lattice function.
     """
 
-    ordered_node_outputs = [
-        val
-        for key, val in node_outputs.items()
-        if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix)
-    ]
+    ordered_node_outputs = []
+    for i, item in enumerate(node_outputs.items()):
+        key, val = item
+        if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
+            ordered_node_outputs.append((i, val))
 
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
@@ -209,6 +212,13 @@ def _run_task(
         if node_name.startswith(sublattice_prefix):
             func = serialized_callable.get_deserialized()
             sublattice_result = dispatch_sync(func)(*inputs["args"], **inputs["kwargs"])
+            with DispatchDB() as db:
+                write_sublattice_electron_id(
+                    db=DataStore(db._db_dev_path(), initialize_db=True),
+                    parent_dispatch_id=dispatch_id,
+                    sublattice_node_id=node_id,
+                    sublattice_dispatch_id=sublattice_result.dispatch_id,
+                )
             output = sublattice_result.result
 
             end_time = datetime.now(timezone.utc)
