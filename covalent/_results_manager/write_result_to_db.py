@@ -312,4 +312,10 @@ def get_electron_type(node_name: str) -> str:
 def write_sublattice_electron_id(
     parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
 ) -> None:
-    return 1
+    """Function to attach the electron id of a sublattice in the lattice record."""
+
+    # TODO - using node_id and parent_dispatch_id, get the electron id of the sublattice.
+
+    # TODO - get the sublattice lattice_id using the corresponding dispatch id.
+
+    # TODO - update corresponding sublattice record
