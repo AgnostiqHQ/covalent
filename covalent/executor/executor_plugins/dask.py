@@ -75,7 +75,7 @@ class DaskExecutor(BaseExecutor):
                 "covalent",
             )
 
-        if scheduler_address == "":
+        if not scheduler_address:
             scheduler_address = get_config("dask.scheduler_address")
 
         super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
@@ -117,8 +117,7 @@ class DaskExecutor(BaseExecutor):
         fn_version = function.python_version
 
         new_args = [function, call_before, call_after]
-        for arg in args:
-            new_args.append(arg)
+        new_args.extend(iter(args))
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()

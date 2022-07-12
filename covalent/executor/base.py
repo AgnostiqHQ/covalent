@@ -47,7 +47,8 @@ def wrapper_fn(
     *args,
     **kwargs,
 ):
-    """Wrapper for serialized callable.
+    """
+    Wrapper for serialized callable.
 
     Execute preparatory shell commands before deserializing and
     running the callable. This is the actual function to be sent to

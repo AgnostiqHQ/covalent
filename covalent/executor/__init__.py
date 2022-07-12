@@ -32,7 +32,8 @@ import pkg_resources
 
 from .._shared_files import logger
 from .._shared_files.config import get_config, update_config
-from .base import BaseAsyncExecutor, BaseExecutor, wrapper_fn
+from .base import BaseExecutor, wrapper_fn
+from .base_async import BaseAsyncExecutor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info

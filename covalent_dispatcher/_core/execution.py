@@ -91,7 +91,11 @@ def _dispatch_sublattice(orig_lattice: Lattice, tasks_pool: ThreadPoolExecutor) 
         result_object._initialize_nodes()
         result_object.save()
 
-        await _run_planned_workflow(result_object, tasks_pool)
+        try:
+            await _run_planned_workflow(result_object, tasks_pool)
+        except Exception as ex:
+            graceful_result_failure(result_object, ex)
+            raise
 
     return wrapper_async
 
@@ -174,7 +178,7 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
     return task_input
 
 
-def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[List]) -> Any:
+def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
     """
     Post processing function to be called after the lattice execution.
     This takes care of executing statements that were not an electron
@@ -190,7 +194,6 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
     Args:
         lattice: Lattice object that was dispatched.
         node_outputs: Dictionary containing the output of all the nodes.
-        execution_order: List of lists containing the order of execution of the nodes.
 
     Reurns:
         result: The result of the lattice function.
@@ -451,8 +454,6 @@ async def _run_planned_workflow(result_object: Result, tasks_pool: ThreadPoolExe
         # run the tasks for the current iteration concurrently
         # results are not used right now, but can be in the case of multiprocessing
         await asyncio.gather(*futures)
-        # wait(futures)
-        # del futures
 
         # When one or more nodes failed in the last iteration, don't iterate further
         for node_id in nodes:
@@ -477,7 +478,7 @@ async def _run_planned_workflow(result_object: Result, tasks_pool: ThreadPoolExe
 
     # post process the lattice
     result_object._result = _post_process(
-        result_object.lattice, result_object.get_all_node_outputs(), order
+        result_object.lattice, result_object.get_all_node_outputs()
     )
 
     result_object._status = Result.COMPLETED
@@ -512,26 +513,23 @@ def _plan_workflow(result_object: Result) -> None:
         pass
 
 
-def run_sublattice(
-    dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecutor
-) -> asyncio.Task:
-    result_object = rm._get_result_from_file(dispatch_id, results_dir)
+def graceful_result_failure(result_object: Result, exception: Exception):
+    """
+    Gracefully mark the result object as failed and store the exception and
+    other relevant information
 
-    if result_object.status == Result.COMPLETED:
-        return
+    Args:
+        result_object: Result object to mark as failed
+        exception: Exception which made the workflow fail
 
-    try:
-        _plan_workflow(result_object)
-        task = asyncio.create_task(_run_planned_workflow(result_object, tasks_pool))
+    Returns:
+        None
+    """
 
-    except Exception as ex:
-        result_object._status = Result.FAILED
-        result_object._end_time = datetime.now(timezone.utc)
-        result_object._error = "".join(traceback.TracebackException.from_exception(ex).format())
-        result_object.save()
-        raise
-
-    return task
+    result_object._status = Result.FAILED
+    result_object._end_time = datetime.now(timezone.utc)
+    result_object._error = "".join(traceback.TracebackException.from_exception(exception).format())
+    result_object.save()
 
 
 def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecutor) -> Result:
@@ -559,10 +557,7 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
         asyncio.run(_run_planned_workflow(result_object, tasks_pool))
 
     except Exception as ex:
-        result_object._status = Result.FAILED
-        result_object._end_time = datetime.now(timezone.utc)
-        result_object._error = "".join(traceback.TracebackException.from_exception(ex).format())
-        result_object.save()
+        graceful_result_failure(result_object, ex)
         raise
 
 
