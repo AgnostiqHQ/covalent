@@ -318,11 +318,12 @@ Node Outputs
 
         # Copied from server-side _post_process()
         node_outputs = self.get_all_node_outputs()
-        ordered_node_outputs = [
-            val
-            for key, val in node_outputs.items()
-            if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix)
-        ]
+        ordered_node_outputs = []
+        for i, item in enumerate(node_outputs.items()):
+            key, val = item
+            if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
+                ordered_node_outputs.append((i, val))
+
         lattice = self._lattice
 
         with active_lattice_manager.claim(lattice):

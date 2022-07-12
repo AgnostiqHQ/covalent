@@ -67,8 +67,13 @@ def test_wait_for_post_processing():
     workflow.build_graph()
     with active_lattice_manager.claim(workflow):
         workflow.post_processing = True
-        workflow.electron_outputs = [(0, 4), (2, 12), (4, 125), (6, 1500)]
-        assert workflow.workflow_function() == 1500
+        workflow.electron_outputs = [
+            (0, TransportableObject(4)),
+            (2, TransportableObject(12)),
+            (4, TransportableObject(125)),
+            (6, TransportableObject(1500)),
+        ]
+        assert workflow.workflow_function.get_deserialized()() == 1500
 
 
 def test_electron_add_collection_node():
