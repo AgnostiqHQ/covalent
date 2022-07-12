@@ -35,12 +35,13 @@ from .._shared_files import logger
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
 from .._workflow.transport import TransportableObject
+from .base import BaseExecutor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-class BaseAsyncExecutor(ABC):
+class BaseAsyncExecutor(BaseExecutor):
     """
     Async base executor class to be used for defining any executor
     plugin. Subclassing this class will allow you to define
@@ -59,29 +60,12 @@ class BaseAsyncExecutor(ABC):
                                    if conda fails to activate specified env.
     """
 
-    def __init__(
-        self,
-        log_stdout: str = "",
-        log_stderr: str = "",
-        conda_env: str = "",
-        cache_dir: str = "",
-        current_env_on_conda_fail: bool = False,
-    ) -> None:
-        self.log_stdout = log_stdout
-        self.log_stderr = log_stderr
-        self.conda_env = conda_env
-        self.cache_dir = cache_dir
-        self.current_env_on_conda_fail = current_env_on_conda_fail
-        self.current_env = ""
-
     @abstractmethod
     async def execute(
         self,
-        function: TransportableObject,
+        function: Callable,
         args: List,
         kwargs: Dict,
-        call_before: List,
-        call_after: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,

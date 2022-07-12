@@ -28,9 +28,9 @@ This is a plugin executor module; it is loaded if found and properly structured.
 import io
 import os
 from contextlib import redirect_stderr, redirect_stdout
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
-from dask.distributed import get_client
+from dask.distributed import Client
 
 from covalent._shared_files import logger
 
@@ -38,7 +38,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import DispatchInfo
 from covalent._workflow.transport import TransportableObject
-from covalent.executor import BaseExecutor, wrapper_fn
+from covalent.executor import BaseAsyncExecutor
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 executor_plugin_name = "DaskExecutor"
@@ -55,7 +55,7 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 }
 
 
-class DaskExecutor(BaseExecutor):
+class DaskExecutor(BaseAsyncExecutor):
     """
     Dask executor class that submits the input function to a running dask cluster.
     """
@@ -82,13 +82,11 @@ class DaskExecutor(BaseExecutor):
 
         self.scheduler_address = scheduler_address
 
-    def execute(
+    async def execute(
         self,
-        function: TransportableObject,
+        function: Callable,
         args: List,
         kwargs: Dict,
-        call_before: List,
-        call_after: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
@@ -110,35 +108,16 @@ class DaskExecutor(BaseExecutor):
             output: The result of the executed function.
         """
 
-        dask_client = get_client(address=self.scheduler_address, timeout=1)
+        dask_client = await Client(address=self.scheduler_address, timeout=1, asynchronous=True)
 
         dispatch_info = DispatchInfo(dispatch_id)
-
-        fn_version = function.python_version
-
-        new_args = [function, call_before, call_after]
-        new_args.extend(iter(args))
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()
         ) as stdout, redirect_stderr(io.StringIO()) as stderr:
 
-            if self.conda_env != "":
-                result = None
-
-                result = self.execute_in_conda_env(
-                    wrapper_fn,
-                    fn_version,
-                    new_args,
-                    kwargs,
-                    self.conda_env,
-                    self.cache_dir,
-                    node_id,
-                )
-
-            else:
-                future = dask_client.submit(wrapper_fn, *new_args, **kwargs)
-                result = future.result()
+            future = dask_client.submit(function, *args, **kwargs)
+            result = await future
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),

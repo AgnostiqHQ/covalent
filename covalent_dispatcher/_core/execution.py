@@ -50,11 +50,12 @@ from covalent._shared_files.defaults import (
 )
 from covalent._workflow.deps import Deps
 from covalent._workflow.lattice import Lattice
-from covalent.executor import BaseAsyncExecutor, BaseExecutor, _executor_manager
+from covalent.executor import BaseAsyncExecutor, _executor_manager
 from covalent_ui import result_webhook
 
 from .._db.dispatchdb import DispatchDB
 from ..entry_point import get_unique_id
+from ..utils import wrapper_fn
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -269,13 +270,13 @@ async def _run_task(
             )
 
         else:
+            assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
+
             if isinstance(executor, BaseAsyncExecutor):
                 output, stdout, stderr = await executor.execute(
-                    function=serialized_callable,
+                    function=assembled_callable,
                     args=inputs["args"],
                     kwargs=inputs["kwargs"],
-                    call_before=call_before,
-                    call_after=call_after,
                     dispatch_id=dispatch_id,
                     results_dir=results_dir,
                     node_id=node_id,
@@ -287,11 +288,9 @@ async def _run_task(
                     tasks_pool,
                     partial(
                         executor.execute,
-                        function=serialized_callable,
+                        function=assembled_callable,
                         args=inputs["args"],
                         kwargs=inputs["kwargs"],
-                        call_before=call_before,
-                        call_after=call_after,
                         dispatch_id=dispatch_id,
                         results_dir=results_dir,
                         node_id=node_id,
