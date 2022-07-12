@@ -42,7 +42,7 @@ const NavDrawer = () => {
     <Drawer
       variant="permanent"
       anchor="left"
-      className='side-drawernav'
+      className="side-drawernav"
       sx={{
         width: navDrawerWidth,
         flexShrink: 0,
@@ -63,7 +63,7 @@ const NavDrawer = () => {
           title="Dispatch list"
           path="/"
           icon={DispatchList}
-          margintop={13}
+          margintop={8}
         />
 
         <LinkButton

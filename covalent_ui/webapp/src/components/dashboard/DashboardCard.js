@@ -21,7 +21,13 @@
  */
 
 import React, { useEffect } from 'react'
-import { Paper, Typography, Divider, CircularProgress } from '@mui/material'
+import {
+  Paper,
+  Typography,
+  Divider,
+  CircularProgress,
+  Skeleton,
+} from '@mui/material'
 import { Box } from '@mui/system'
 import CopyButton from '../common/CopyButton'
 import { displayStatus, secondsToHms } from '../../utils/misc'
@@ -36,19 +42,19 @@ const DashboardCard = (props) => {
   const dashboardStats = useSelector(
     (state) => state.dashboard.dashboardOverview
   )
-  const isDeleted = useSelector((state) => (state.dashboard.deleteResults.isDeleted))
+  const isDeleted = useSelector((state) => state.dashboard.dispatchesDeleted)
 
   const isFetching = useSelector(
     (state) => state.dashboard.fetchDashboardOverview.isFetching
   )
 
-  const fetchDashboardOverviewResult =()=>{
+  const fetchDashboardOverviewResult = () => {
     dispatch(fetchDashboardOverview())
   }
 
   useEffect(() => {
     fetchDashboardOverviewResult()
-  },[isDeleted])
+  }, [isDeleted])
 
   return (
     <Paper elevation={0} sx={{ p: 3, mb: 2, borderRadius: '8px' }}>
@@ -77,12 +83,14 @@ const DashboardCard = (props) => {
           content={dashboardStats.total_jobs_running}
           desc="Total jobs running"
           align="center"
+          isSkeletonPresent={isFetching}
         />
         <DashboardDivider />
         <DashBoardCardItems
-          content={dashboardStats.total_jobs_done}
+          content={dashboardStats.total_jobs_completed}
           desc="Total jobs done"
           align="center"
+          isSkeletonPresent={isFetching}
         />
         <DashboardDivider />
         <DashBoardCardItems
@@ -91,19 +99,21 @@ const DashboardCard = (props) => {
           }
           desc="Latest running task status"
           align="center"
+          isSkeletonPresent={isFetching}
         />
         <DashboardDivider />
         <DashBoardCardItems
           content={secondsToHms(dashboardStats.total_dispatcher_duration)}
           desc="Total dispatcher duration"
           align="flex-end"
+          isSkeletonPresent={isFetching}
         />
       </Box>
     </Paper>
   )
 }
 
-const DashBoardCardItems = ({ desc, content, align }) => (
+const DashBoardCardItems = ({ desc, content, align, isSkeletonPresent }) => (
   <Box
     sx={{
       display: 'flex',
@@ -113,10 +123,24 @@ const DashBoardCardItems = ({ desc, content, align }) => (
       width: '100%',
     }}
   >
-    <Typography fontSize="h5.fontSize">
-      {content || content === 0 ? content : 'N/A'}
-    </Typography>
-    <Typography color="text.secondary">{desc}</Typography>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+      }}
+    >
+      <Typography fontSize="h5.fontSize" color="text.secondary">
+        {isSkeletonPresent ? (
+          <Skeleton width={25} />
+        ) : content || content === 0 ? (
+          content
+        ) : (
+          'N/A'
+        )}
+      </Typography>
+      <Typography color="text.primary"> {desc}</Typography>
+    </Box>
   </Box>
 )
 

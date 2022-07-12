@@ -132,6 +132,21 @@ const theme = createTheme(defaultTheme, {
         },
       },
     },
+    MuiTooltip: {
+			defaultProps: {
+				// The props to apply
+				arrow: true
+			},
+			styleOverrides: {
+				tooltip: {
+					backgroundColor: '#1C1C46',
+					color: '#FAFAFA'
+				},
+				arrow: {
+					color: '#1C1C46'
+				}
+			}
+		},
     MuiPaginationItem: {
 			styleOverrides: {
 				root: {

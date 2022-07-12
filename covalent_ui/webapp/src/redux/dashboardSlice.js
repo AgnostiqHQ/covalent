@@ -20,7 +20,6 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import _ from 'lodash'
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 import api from '../utils/api'
@@ -28,42 +27,60 @@ import api from '../utils/api'
 const initialState = {
   // results cache mapped by dispatch id
   dashboardList: [],
-  dashboardListCount:0,
+  totalDispatches: 0,
+  runningDispatches: 0,
+  completedDispatches: 0,
+  failedDispatches: 0,
   dashboardOverview: {},
   fetchDashboardList: { isFetching: false, error: null },
   fetchDashboardOverview: { isFetching: false, error: null },
-  deleteResults: { isFetching: false, error: null,isDeleted:false },
+  deleteResults: { isFetching: false, error: null },
+  dispatchesDeleted: false,
 }
 
 export const fetchDashboardList = createAsyncThunk(
   'dashboard/fetchList',
   async (bodyParams, thunkAPI) =>
-    await api.post('/api/v1/summary/dispatches',bodyParams).catch(thunkAPI.rejectWithValue)
-    )
+    await api
+      .get(
+        `/api/v1/dispatches?count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
+      )
+      .catch(thunkAPI.rejectWithValue)
+)
 
 export const fetchDashboardOverview = createAsyncThunk(
   'dashboard/overview',
   (values, thunkAPI) =>
-    api.get('/api/v1/summary/overview/').catch(thunkAPI.rejectWithValue)
+    api.get('/api/v1/dispatches/overview/').catch(thunkAPI.rejectWithValue)
 )
 
 export const deleteDispatches = createAsyncThunk(
   'dashbaord/deleteDispatches',
   async (bodyParams, thunkAPI) =>
-    await api.post('/api/v1/summary/dispatches/delete',bodyParams).catch(thunkAPI.rejectWithValue)
+    await api
+      .post('/api/v1/dispatches/delete', bodyParams)
+      .catch(thunkAPI.rejectWithValue)
 )
 
 export const dashboardSlice = createSlice({
   name: 'dashboard',
   initialState,
+  reducers: {
+    dispatchesDeleted(state) {
+      state.dispatchesDeleted = !state.dispatchesDeleted
+    },
+  },
   extraReducers: (builder) => {
     builder
       // dashboardList
-      .addCase(fetchDashboardList.fulfilled, (state,{payload} ) => {
+      .addCase(fetchDashboardList.fulfilled, (state, { payload }) => {
         // update dashboardList
         state.fetchDashboardList.isFetching = false
-        state.dashboardListCount = payload.count
+        state.totalDispatches = payload.count
         state.dashboardList = payload.items
+        state.runningDispatches = payload.running
+        state.completedDispatches = payload.completed
+        state.failedDispatches = payload.failed
       })
       .addCase(fetchDashboardList.pending, (state, { payload }) => {
         state.fetchDashboardList.isFetching = true
@@ -106,3 +123,5 @@ export const dashboardSlice = createSlice({
       })
   },
 })
+
+export const { dispatchesDeleted } = dashboardSlice.actions
