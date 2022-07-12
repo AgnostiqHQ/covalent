@@ -180,6 +180,50 @@ The following design pattern for deploying multiple experiments using the :code:
 
 This ensures that the independent experiments are performed in parallel rather than sequentially.
 
+Waiting for other electrons
+----------------------
+
+Sometimes the user might want to wait for a task's execution before executing another task even when the output of one is not the input of another. For those cases a `wait_for()` function is there which is called on the dependent electron and takes as input the depending electrons,
+
+.. code-block:: python
+    :linenos:
+
+    @ct.electron
+    def task_1a(a):
+        return a ** 2
+
+    @ct.electron
+    def task_1b(a):
+        return a ** 3
+
+    @ct.electron
+    def task_1c(a):
+        return a ** 4
+
+    @ct.electron
+    def task_2(x, y):
+        return x * y
+
+    @ct.electron
+    def task_3(b):
+        return b ** 3
+
+    @ct.lattice
+    def workflow():
+        res_1a = task_1a(2)
+        res_1b = task_1b(2)
+        res_1c = task_1c(2)
+        res_2 = task_2(res_1a, 3)
+        res_3 = task_3(5).wait_for([res_1a, res_1b, res_1c])
+
+        return task_2(res_2, res_3)
+        ...
+
+    res = ct.dispatch_sync(workflow)()
+
+This means that even though `task_3`'s input does not depend on anything, it's execution will still wait until all the tasks passed in `wait_for` have completed execution.
+
+
 Best Practices
 --------------
 

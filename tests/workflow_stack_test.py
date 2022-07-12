@@ -609,6 +609,50 @@ def test_two_iterations_float():
     assert [0, 1, 2, 3, 4, 5, 6] == list(add_half_quarter.transport_graph._graph.nodes)
 
 
+def test_wait_for():
+    """Test whether wait_for functionality executes as expected"""
+
+    @ct.electron
+    def task_1a(a):
+        return a**2
+
+    @ct.electron
+    def task_1b(a):
+        return a**3
+
+    @ct.electron
+    def task_2(x, y):
+        return x * y
+
+    @ct.electron
+    def task_3(b):
+        return b**3
+
+    @ct.lattice
+    def workflow():
+        res_1a = task_1a(2)
+        res_1b = task_1b(2)
+        res_2 = task_2(res_1a, 3)
+        res_3 = task_3(5).wait_for([res_1a, res_1b])
+
+        return task_2(res_2, res_3)
+
+    dispatch_id = ct.dispatch(workflow)()
+    result = ct.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
+
+    assert result.status == Result.COMPLETED
+    assert (
+        result.get_node_result(node_id=6)["start_time"]
+        > result.get_node_result(node_id=0)["end_time"]
+    )
+    assert (
+        result.get_node_result(node_id=6)["start_time"]
+        > result.get_node_result(node_id=2)["end_time"]
+    )
+    assert result.result == 1500
+
+
 def test_electron_getitem():
     """Test electron __getitem__, both with raw keys and with electron keys"""
 

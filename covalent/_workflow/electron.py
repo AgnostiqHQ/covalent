@@ -23,7 +23,7 @@
 import inspect
 import operator
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Union
 
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
@@ -31,7 +31,7 @@ from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     _DEFAULT_CONSTRAINT_VALUES,
-    arg_prefix,
+    WAIT_EDGE_NAME,
     attr_prefix,
     electron_dict_prefix,
     electron_list_prefix,
@@ -304,7 +304,16 @@ class Electron:
             return self.function(*args, **kwargs)
 
         if active_lattice.post_processing:
-            return active_lattice.electron_outputs.pop(0).get_deserialized()
+
+            # This is to resolve `wait_for` calls during post processing time
+            id, output = active_lattice.electron_outputs[0]
+
+            for _, _, attr in active_lattice.transport_graph._graph.in_edges(id, data=True):
+                if attr.get("wait_for"):
+                    return Electron(function=None, metadata=None, node_id=id)
+
+            active_lattice.electron_outputs.pop(0)
+            return output.get_deserialized()
 
         # Setting metadata for default values according to lattice's metadata
         # If metadata is default, then set it to lattice's default
@@ -458,6 +467,46 @@ class Electron:
         )
 
         return node_id
+
+    def wait_for(self, electrons: Union["Electron", Iterable["Electron"]]):
+        """
+        Waits for the given electrons to complete before executing this one.
+        Adds the necessary edges between this and those electrons without explicitly
+        connecting their inputs/outputs.
+
+        Useful when execution of this electron relies on a side-effect from the another one.
+
+        Args:
+            electrons: Electron(s) which will be waited for to complete execution
+                       before starting execution for this one
+
+        Returns:
+            Electron
+        """
+
+        active_lattice = active_lattice_manager.get_active_lattice()
+
+        if active_lattice.post_processing:
+            return active_lattice.electron_outputs.pop(0)[1]
+
+        # Just using list(electrons) will not work since we are overriding the __iter__
+        # method for an Electron which results in it essentially disappearing, thus using
+        # [electrons] to create the list if there's a single electron
+        electrons = [electrons] if isinstance(electrons, Electron) else list(electrons)
+
+        for el in electrons:
+            active_lattice.transport_graph.add_edge(
+                el.node_id,
+                self.node_id,
+                edge_name=WAIT_EDGE_NAME,
+                wait_for=True,
+            )
+
+        return Electron(
+            self.function,
+            metadata=self.metadata,
+            node_id=self.node_id,
+        )
 
 
 def electron(
