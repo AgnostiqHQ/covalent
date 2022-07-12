@@ -38,6 +38,8 @@ ignore_files = [
     "query_electron_execution_status.ipynb",
     "query_lattice_execution_status.ipynb",
     "visualize_lattice.ipynb",
+    "cancel_dispatch.ipynb",
+    "construct_bash_task.ipynb",
 ]
 
 
