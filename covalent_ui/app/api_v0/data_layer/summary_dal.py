@@ -42,7 +42,9 @@ class Summary:
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
 
-    def get_summary(self, req: DispatchSummaryRequest) -> List[Lattice]:
+    def get_summary(self, count,offset,sort_by,search,sort_direction) -> List[Lattice]:
+        if search is None:
+            search=""
         """
         Get summary of top most lattices
         Args:
@@ -61,25 +63,25 @@ class Summary:
                 (
                     func.strftime("%s", Lattice.updated_at)
                     - func.strftime("%s", Lattice.created_at)
-                ).label("run_time"),
-                Lattice.created_at.label("started"),
-                Lattice.updated_at.label("ended"),
+                ).label("runtime"),
+                Lattice.created_at.label("started_at"),
+                Lattice.updated_at.label("ended_at"),
                 Lattice.status.label("status"),
             )
             .filter(
                 or_(
-                    Lattice.name.ilike(f"%{req.search}%"),
-                    Lattice.dispatch_id.ilike(f"%{req.search}%"),
+                    Lattice.name.ilike(f"%{search}%"),
+                    Lattice.dispatch_id.ilike(f"%{search}%"),
                 ),
                 Lattice.electron_id.is_(None),
             )
             .order_by(
-                desc(req.sort_by.value)
-                if req.direction == SortDirection.DESCENDING
-                else req.sort_by.value
+                desc(sort_by.value)
+                if sort_direction == SortDirection.DESCENDING
+                else sort_by.value
             )
-            .offset(req.offset)
-            .limit(req.count)
+            .offset(offset)
+            .limit(count)
             .all()
         )
 

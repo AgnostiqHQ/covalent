@@ -43,11 +43,11 @@ class CaseInsensitiveEnum(Enum):
 class SortBy(CaseInsensitiveEnum):
     """Values to filter data by"""
 
-    RUNTIME = "run_time"
+    RUNTIME = "runtime"
     STATUS = "status"
-    STARTED = "started"
+    STARTED = "started_at"
     LATTICE = "lattice"
-    ENDED = "ended"
+    ENDED = "ended_at"
 
 
 class SortDirection(CaseInsensitiveEnum):
@@ -73,12 +73,12 @@ class DispatchModule(BaseModel):
     result: Optional[list]
     total_electrons: Optional[int]
     total_electrons_completed: Optional[int]
-    started: datetime
-    ended: datetime
+    started_at: datetime
+    ended_at: datetime
     results_dir: Optional[str]
     error: Optional[str]
     lattice: str
-    run_time: int
+    runtime: int
 
 
 class DispatchResponse(BaseModel):
