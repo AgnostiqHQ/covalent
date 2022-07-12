@@ -46,7 +46,7 @@ class SortBy(CaseInsensitiveEnum):
     RUNTIME = "runtime"
     STATUS = "status"
     STARTED = "started_at"
-    LATTICE = "lattice"
+    LATTICE_NAME = "lattice_name"
     ENDED = "ended_at"
 
 
@@ -70,14 +70,9 @@ class DispatchModule(BaseModel):
 
     dispatch_id: str
     status: str
-    result: Optional[list]
-    total_electrons: Optional[int]
-    total_electrons_completed: Optional[int]
     started_at: datetime
     ended_at: datetime
-    results_dir: Optional[str]
-    error: Optional[str]
-    lattice: str
+    lattice_name: str
     runtime: int
 
 
@@ -125,7 +120,7 @@ class DispatchDashBoardResponse(BaseModel):
     """Dashboard metadate model"""
 
     total_jobs_running: int
-    total_jobs_done: int
+    total_jobs_completed: int
     latest_running_task_status: Status
     total_dispatcher_duration: int = None
 

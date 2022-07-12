@@ -42,9 +42,11 @@ class Summary:
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
 
-    def get_summary(self, count,offset,sort_by,search,sort_direction) -> List[Lattice]:
+    def get_summary(self, count, offset, sort_by, search, sort_direction) -> List[Lattice]:
         if search is None:
-            search=""
+            search = ""
+        if sort_by == "lattice":
+            sort_by = ""
         """
         Get summary of top most lattices
         Args:
@@ -59,10 +61,10 @@ class Summary:
         data = (
             self.db_con.query(
                 Lattice.dispatch_id.label("dispatch_id"),
-                Lattice.name.label("lattice"),
+                Lattice.name.label("lattice_name"),
                 (
-                    func.strftime("%s", Lattice.updated_at)
-                    - func.strftime("%s", Lattice.created_at)
+                    func.strftime("%s", Lattice.completed_at)
+                    - func.strftime("%s", Lattice.started_at)
                 ).label("runtime"),
                 Lattice.created_at.label("started_at"),
                 Lattice.updated_at.label("ended_at"),
@@ -115,9 +117,9 @@ class Summary:
         ).first()
         return DispatchDashBoardResponse(
             total_jobs_running=query1[0],
-            total_jobs_done=query2[0],
+            total_jobs_completed=query2[0],
             latest_running_task_status=query3[0],
-            total_dispatcher_duration=query4[0],
+            total_dispatcher_duration=query4[0] * 1000,
         )
 
     def delete_dispatches(self, req: DeleteDispatchesRequest) -> Lattice:
@@ -134,8 +136,8 @@ class Summary:
         for u_id in req.items:
             ustr = str(u_id)
             uuid_str.append(ustr)
-        query = delete(Lattice).where(Lattice.dispatch_id is str(req.items[0]))
-        engine.execute(query)
+            query = delete(Lattice).where(Lattice.dispatch_id == ustr)
+            engine.execute(query)
         return DeleteDispatchesResponse(
             success_items=success,
             failure_items=failure,
