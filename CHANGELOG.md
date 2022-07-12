@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.128.0] - 2022-07-11
+
+## Authors
+- Anna Hughes <anna@agnostiq.ai>
+- Co-authored-by: Santosh Radha <santosh@agnostiq.ai>
+- Co-authored-by: Poojith Rao <poojith@agnostiq.ai>
+
+### Added
+
+- New tutorial 
+
+### Docs
+
+-New tutorial demonstrating how to solve the MaxCut Problem with QAOA and Covalent
+
 ## [0.127.0] - 2022-07-11
 
 ### Authors
