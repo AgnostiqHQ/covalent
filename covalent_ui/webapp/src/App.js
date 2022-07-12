@@ -74,6 +74,7 @@ const App = () => {
     return () => {
       socket.off('result-update', onUpdate)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathName])
   useEffect(() => {
     const onDrawRequest = (request) => {
