@@ -126,3 +126,5 @@ _DEFAULT_CONSTRAINTS_DEPRECATED = {
     "budget": 0,
     "conda_env": "",
 }
+
+WAIT_EDGE_NAME = "!waiting_edge"
