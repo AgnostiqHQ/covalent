@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.128.1] - 2022-07-12
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
 ### Fixed
 
 - `Result.persist` test in `result_test.py`.
