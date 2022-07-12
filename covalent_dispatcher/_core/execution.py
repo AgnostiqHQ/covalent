@@ -124,11 +124,12 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
 
             for e_key, d in edge_data.items():
-                if d["param_type"] == "arg":
-                    task_input["args"].append(value)
-                elif d["param_type"] == "kwarg":
-                    key = d["edge_name"]
-                    task_input["kwargs"][key] = value
+                if not d.get("wait_for"):
+                    if d["param_type"] == "arg":
+                        task_input["args"].append(value)
+                    elif d["param_type"] == "kwarg":
+                        key = d["edge_name"]
+                        task_input["kwargs"][key] = value
 
     return task_input
 
@@ -155,11 +156,11 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
         result: The result of the lattice function.
     """
 
-    ordered_node_outputs = [
-        val
-        for key, val in node_outputs.items()
-        if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix)
-    ]
+    ordered_node_outputs = []
+    for i, item in enumerate(node_outputs.items()):
+        key, val = item
+        if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
+            ordered_node_outputs.append((i, val))
 
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
@@ -274,7 +275,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         result_object._update_node(**node_result)
         with DispatchDB() as db:
             db.upsert(result_object.dispatch_id, result_object)
-        result_object.save()
+            db.save_db(result_object)
         result_webhook.send_update(result_object)
 
     def task_callback(future: Future):
@@ -395,7 +396,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
                 with DispatchDB() as db:
                     db.upsert(result_object.dispatch_id, result_object)
-                result_object.save()
+                    db.save_db(result_object)
                 result_webhook.send_update(result_object)
                 return
 
@@ -404,7 +405,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 result_object._end_time = datetime.now(timezone.utc)
                 with DispatchDB() as db:
                     db.upsert(result_object.dispatch_id, result_object)
-                result_object.save()
+                    db.save_db(result_object)
                 result_webhook.send_update(result_object)
                 return
 
@@ -417,7 +418,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     result_object._end_time = datetime.now(timezone.utc)
     with DispatchDB() as db:
         db.upsert(result_object.dispatch_id, result_object)
-    result_object.save(write_source=True)
+        db.save_db(result_object, write_source=True)
     result_webhook.send_update(result_object)
 
 
@@ -471,7 +472,7 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
         result_object._status = Result.FAILED
         result_object._end_time = datetime.now(timezone.utc)
         result_object._error = "".join(traceback.TracebackException.from_exception(ex).format())
-        result_object.save()
+        DispatchDB().save_db(result_object)
         raise
 
 
