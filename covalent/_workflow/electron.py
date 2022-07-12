@@ -481,7 +481,7 @@ def electron(
 
     Keyword Args:
         backend: DEPRECATED: Same as `executor`.
-        executor: Alternative executor object to be used by the electron execution. If not passed, the local
+        executor: Alternative executor object to be used by the electron execution. If not passed, the dask
             executor is used by default.
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
