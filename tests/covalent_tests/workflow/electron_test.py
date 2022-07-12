@@ -65,5 +65,5 @@ def test_wait_for_post_processing():
     workflow.build_graph()
     with active_lattice_manager.claim(workflow):
         workflow.post_processing = True
-        workflow.electron_outputs = [(0, 4), (1, 2), (2, 12), (3, 3), (4, 125), (5, 5), (6, 1500)]
+        workflow.electron_outputs = [(0, 4), (2, 12), (4, 125), (6, 1500)]
         assert workflow.workflow_function() == 1500
