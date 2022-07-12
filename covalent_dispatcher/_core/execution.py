@@ -30,6 +30,7 @@ from typing import Any, Dict, List
 import cloudpickle as pickle
 
 from covalent import dispatch_sync
+from covalent._data_store.datastore import DataStore
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._results_manager.write_result_to_db import write_sublattice_electron_id
@@ -211,11 +212,13 @@ def _run_task(
         if node_name.startswith(sublattice_prefix):
             func = serialized_callable.get_deserialized()
             sublattice_result = dispatch_sync(func)(*inputs["args"], **inputs["kwargs"])
-            write_sublattice_electron_id(
-                parent_dispatch_id=dispatch_id,
-                sublattice_node_id=node_id,
-                sublattice_dispatch_id=sublattice_result.dispatch_id,
-            )
+            with DispatchDB() as db:
+                write_sublattice_electron_id(
+                    db=DataStore(db._db_dev_path(), echo=True, initialize_db=True),
+                    parent_dispatch_id=dispatch_id,
+                    sublattice_node_id=node_id,
+                    sublattice_dispatch_id=sublattice_result.dispatch_id,
+                )
             output = sublattice_result.result
 
             end_time = datetime.now(timezone.utc)

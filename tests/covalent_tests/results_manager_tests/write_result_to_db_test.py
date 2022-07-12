@@ -470,7 +470,10 @@ def test_write_sublattice_electron_id(db):
 
     # Update sublattice record electron id
     write_sublattice_electron_id(
-        parent_dispatch_id="dispatch_1", sublattice_node_id=3, sublattice_dispatch_id="dispatch_2"
+        db=db,
+        parent_dispatch_id="dispatch_1",
+        sublattice_node_id=3,
+        sublattice_dispatch_id="dispatch_2",
     )
 
     # Assert that the electron id has indeed been written.

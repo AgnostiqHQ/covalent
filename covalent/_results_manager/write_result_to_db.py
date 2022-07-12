@@ -310,12 +310,24 @@ def get_electron_type(node_name: str) -> str:
 
 
 def write_sublattice_electron_id(
-    parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
+    db: DataStore, parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
 ) -> None:
     """Function to attach the electron id of a sublattice in the lattice record."""
 
-    # TODO - using node_id and parent_dispatch_id, get the electron id of the sublattice.
-
-    # TODO - get the sublattice lattice_id using the corresponding dispatch id.
-
-    # TODO - update corresponding sublattice record
+    with Session(db.engine) as session:
+        sublattice_electron_id = (
+            session.query(Lattice, Electron)
+            .where(
+                Lattice.id == Electron.parent_lattice_id,
+                Electron.transport_graph_node_id == sublattice_node_id,
+                Lattice.dispatch_id == parent_dispatch_id,
+            )
+            .first()
+            .Electron.id
+        )
+        session.execute(
+            update(Lattice)
+            .where(Lattice.dispatch_id == sublattice_dispatch_id)
+            .values(electron_id=sublattice_electron_id, updated_at=dt.now())
+        )
+        session.commit()
