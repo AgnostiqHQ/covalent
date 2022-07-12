@@ -7,7 +7,7 @@ When first getting started, we need to generate our initial set of migrations (t
 We do this by running the following in the project root of covalent
 
 ```bash
-alembic revision — autogenerate -m "init"
+alembic revision --autogenerate -m "init"
 ```
 
 You should see a new python file generated under `alembic/versions`. Also, there should be a table name in the database called `alembic_version` which will keep track of which migrations have run corresponding to the filenames in `alembic/versions`.
@@ -33,7 +33,7 @@ alembic history
 To generate new migrations as a result of editing our DB model files, we can run the following
 
 ```bash
-alembic revision — autogenerate -m "Description of DB update"
+alembic revision --autogenerate -m "Description of DB update"
 ```
 
 Which will create a new version file under `alembic/versions` (*This will not run the migrations, it will just generate the version file*)

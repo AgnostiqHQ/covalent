@@ -10,7 +10,9 @@ import sqlalchemy as sa
 ${imports if imports else ""}
 
 # revision identifiers, used by Alembic.
+# pragma: allowlist nextline secret
 revision = ${repr(up_revision)}
+# pragma: allowlist nextline secret
 down_revision = ${repr(down_revision)}
 branch_labels = ${repr(branch_labels)}
 depends_on = ${repr(depends_on)}
