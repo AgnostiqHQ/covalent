@@ -10,6 +10,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Set up alembic migrations & added migration guide (`alembic/README.md`)
+
+## [0.129.0] - 2022-07-12
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Support for `wait_for` type edges when two electrons are connected by their execution side effects instead of output-input relation.
+
+### Changed
+
+- `active_lattice.electron_outputs` now contains the node ids as well for the electron which is being post processed.
+
+## [0.128.1] - 2022-07-12
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Fixed
+
+- `Result.persist` test in `result_test.py`.
+- Electron dependency `arg_index` is changed back to Nullable.
+
+## [0.128.0] - 2022-07-12
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- File transfer support for leptons
+
 ## [0.127.0] - 2022-07-11
 
 ### Authors
