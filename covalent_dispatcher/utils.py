@@ -23,8 +23,7 @@
 from typing import List, Tuple
 
 from covalent._shared_files import logger
-
-from ..covalent._workflow.transport import TransportableObject
+from covalent._workflow.transport import TransportableObject
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
