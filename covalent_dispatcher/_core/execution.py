@@ -465,7 +465,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
                     db.upsert(result_object.dispatch_id, result_object)
                     db.save_db(result_object)
                 result_webhook.send_update(result_object)
-                return result_object
+                return
 
             elif result_object._get_node_status(node_id) == Result.CANCELLED:
                 result_object._status = Result.CANCELLED
@@ -474,7 +474,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
                     db.upsert(result_object.dispatch_id, result_object)
                     db.save_db(result_object)
                 result_webhook.send_update(result_object)
-                return result_object
+                return
 
     # post process the lattice
     result_object._result = _post_process(
@@ -488,7 +488,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
         db.save_db(result_object, write_source=True)
     result_webhook.send_update(result_object)
 
-    return result_object
+    return
 
 
 def _plan_workflow(result_object: Result) -> None:
