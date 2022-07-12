@@ -28,7 +28,7 @@ To see history of which migrations we have run we can execute
 alembic history
 ```
 
-## Generate Migrations
+## Autogenerate Migrations
 
 To generate new migrations as a result of editing our DB model files, we can run the following
 
@@ -37,6 +37,15 @@ alembic revision --autogenerate -m "Description of DB update"
 ```
 
 Which will create a new version file under `alembic/versions` (*This will not run the migrations, it will just generate the version file*)
+
+
+## Generate Template Migration
+
+To create a migration file which will be edited manually, one can run:
+
+```bash
+alembic revision -m "my custom migration file"
+```
 
 ## Undo Migrations
 
