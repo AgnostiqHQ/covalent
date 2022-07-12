@@ -81,11 +81,21 @@ class TransportableObject:
     def json(self):
         return self._json
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
+        """Return a JSON-serializable dictionary representation of self"""
         return {"type": "TransportableObject", "attributes": self.__dict__.copy()}
 
     @staticmethod
-    def from_dict(object_dict):
+    def from_dict(object_dict) -> "TransportableObject":
+        """Rehydrate a dictionary representation
+
+        Args:
+            object_dict: a dictionary representation returned by `to_dict`
+
+        Returns:
+            A `TransportableObject` represented by `object_dict`
+        """
+
         sc = TransportableObject(None)
         sc.__dict__ = object_dict["attributes"]
         return sc

@@ -38,13 +38,25 @@ class DepsCall(Deps):
     def __init__(self, func=None, args=[], kwargs={}):
         super().__init__(apply_fn=func, apply_args=args, apply_kwargs=kwargs)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
+        """Return a JSON-serializable dictionary representation of self"""
         attributes = self.__dict__.copy()
         for k, v in attributes.items():
             attributes[k] = v.to_dict()
         return {"type": "DepsCall", "short_name": self.short_name(), "attributes": attributes}
 
-    def from_dict(self, object_dict):
+    def from_dict(self, object_dict) -> "DepsCall":
+        """Rehydrate a dictionary representation
+
+        Args:
+            object_dict: a dictionary representation returned by `to_dict`
+
+        Returns:
+            self
+
+        Instance attributes will be overwritten.
+        """
+
         if not object_dict:
             return self
 

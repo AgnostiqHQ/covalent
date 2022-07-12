@@ -165,14 +165,25 @@ class BaseExecutor(ABC):
         module = self.__module__
         return self.__module__.split("/")[-1].split(".")[-1]
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
+        """Return a JSON-serializable dictionary representation of self"""
         return {
             "type": str(self.__class__),
             "short_name": self.short_name(),
             "attributes": self.__dict__.copy(),
         }
 
-    def from_dict(self, object_dict: dict):
+    def from_dict(self, object_dict: dict) -> "BaseExecutor":
+        """Rehydrate a dictionary representation
+
+        Args:
+            object_dict: a dictionary representation returned by `to_dict`
+
+        Returns:
+            self
+
+        Instance attributes will be overwritten.
+        """
         if object_dict:
             self.__dict__ = object_dict["attributes"]
         return self

@@ -73,13 +73,25 @@ class DepsPip(Deps):
         super().__init__(apply_fn=apply_pip_deps, apply_args=apply_args)
 
     def to_dict(self) -> dict:
+        """Return a JSON-serializable dictionary representation of self"""
         attributes = self.__dict__.copy()
         for k, v in attributes.items():
             if isinstance(v, TransportableObject):
                 attributes[k] = v.to_dict()
         return {"type": "DepsPip", "short_name": self.short_name(), "attributes": attributes}
 
-    def from_dict(self, object_dict):
+    def from_dict(self, object_dict) -> "DepsPip":
+        """Rehydrate a dictionary representation
+
+        Args:
+            object_dict: a dictionary representation returned by `to_dict`
+
+        Returns:
+            self
+
+        Instance attributes will be overwritten.
+        """
+
         if not object_dict:
             return self
 
