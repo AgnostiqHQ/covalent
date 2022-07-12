@@ -12,6 +12,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Method to write electron id corresponding to sublattices in `execution.py` when running `_run_task`.
 
+## [0.129.0] - 2022-07-12
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Support for `wait_for` type edges when two electrons are connected by their execution side effects instead of output-input relation.
+
+### Changed
+
+- `active_lattice.electron_outputs` now contains the node ids as well for the electron which is being post processed.
+
 ## [0.128.1] - 2022-07-12
 
 ### Authors
