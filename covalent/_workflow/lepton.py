@@ -88,6 +88,12 @@ class Lepton(Electron):
                 raise ValueError(
                     "Invalid argument combination: library_name and command. Use one or the other."
                 )
+
+            if not (self.command or self.library_name):
+                raise ValueError("Specify either library_name or command using this language.")
+
+            if self.library_name and not self.function_name:
+                raise ValueError("Must specify function_name when calling a library.")
         else:
             if command:
                 raise ValueError(
@@ -230,22 +236,79 @@ class Lepton(Electron):
 
             import subprocess
 
-            if self.function_name == "":
-                raise ValueError
+            output_string = ""
+            if self.named_outputs:
+                for output in self.named_outputs:
+                    output_string += f" && echo COVALENT-LEPTON-OUTPUT-{output}: ${output}"
+
+                # Check each output has a corresponding type specifier
+                if len(self.named_outputs) != list(zip(*self.argtypes))[1].count(Lepton.OUTPUT):
+                    raise ValueError(
+                        "Expected {} outputs but given {} type specifiers.".format(
+                            len(self.named_outputs), len(self.argtypes)
+                        )
+                    )
+
+            if self.command:
+                self.command = self.command.format(**kwargs)
+                cmd = ["/bin/bash", "-c", f"{self.command} {output_string}", "_"]
+                cmd += args
+                proc = subprocess.run(cmd, capture_output=True)
+            elif self.library_name:
+                mutated_args = ""
+                for arg in args:
+                    mutated_args += f'"{arg}" '
+
+                cmd = f"source {self.library_name} && {self.function_name} {mutated_args} {output_string}"
+                proc = subprocess.run(["/bin/bash", "-c", cmd], capture_output=True)
+            else:
+                raise AttributeError("Shell task does not have enough information to run.")
+
+            if proc.return_code != 0:
+                raise Exception(proc.stderr.decode("utf-8").strip())
+
+            return_vals = []
+            if self.named_outputs:
+                output_lines = proc.stdout.decode("utf-8").strip().split("\n")
+                for idx, output in enumerate(self.named_outputs):
+                    output_marker = f"COVALENT-LEPTON-OUTPUT-{output}: "
+                    for line in output_lines:
+                        if output_marker in line:
+                            # TODO: For some reason cannot pickle this line
+                            # return_vals += [getattr(__builtins__, self.argtypes[idx][0])(line.split(output_marker)[1])]
+                            return_vals += [str(line.split(output_marker)[1])]
+                            break
+
+            if return_vals:
+                return tuple(return_vals) if len(return_vals) > 1 else return_vals[0]
+            else:
+                return None
 
         if self.language in Lepton._LANG_PY:
             wrapper = python_wrapper
         elif self.language in Lepton._LANG_C:
             wrapper = c_wrapper
+        elif self.language in Lepton._LANG_SHELL:
+            wrapper = shell_wrapper
         else:
             raise ValueError(f"Language '{self.language}' is not supported.")
 
         # Attribute translation
-        wrapper.__name__ = self.function_name
-        wrapper.__qualname__ = f"Lepton.{self.library_name.split('.')[0]}.{self.function_name}"
-        wrapper.__module__ += f".{self.library_name.split('.')[0]}"
+        wrapper.__name__ = self.display_name or self.function_name or "unknown"
+        wrapper.__qualname__ = (
+            f"Lepton.{self.display_name}"
+            if self.display_name
+            else f"Lepton.{self.library_name.split('.')[0]}.{self.function_name}"
+        )
+        wrapper.__module__ += (
+            ".bash_cmd"
+            if self.language == Lepton._LANG_SHELL
+            else f".{self.library_name.split('.')[0]}"
+        )
         wrapper.__doc__ = (
             f"""Lepton interface for {self.language} function '{self.function_name}'."""
+            if self.function_name
+            else ""
         )
 
         return wrapper
