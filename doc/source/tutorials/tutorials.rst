@@ -16,12 +16,30 @@ Beginner
 
    * - Topic
      - Title
-   * - Machine learning
+   * - Machine Learning
      - :doc:`MNIST classifier<./machine_learning/mnist_classifier>`
-   * - Machine learning
-     - :doc:`Using Covalent with PennyLane for hybrid computation<./machine_learning/pennylane_hybrid>`
-   * - Machine learning
+   * - Machine Learning
      - :doc:`Linear and convolutional autoencoders<./machine_learning/autoencoders>`
+   * - Quantum Machine Learning
+     - :doc:`Using Covalent with PennyLane for hybrid computation<./machine_learning/pennylane_hybrid>`
+
+~~~~~~~~~~~~
+Intermediate
+~~~~~~~~~~~~
+
+.. list-table::
+   :widths: 25 60
+   :header-rows: 1
+
+   * - Topic
+     - Title
+   * - Machine Learning
+     - :doc:`Iris classification<./machine_learning/Covalent_pennylane_Iris_classification>`
+   * - Machine Learning
+     - :doc:`Variational parity classification<./machine_learning/Covalent_pennylane_Parity_classifier>`
+   * - Machine Learning
+     - :doc:`Modeling time series for sales forecasting<./machine_learning/dnn_comparison>`
+
 
 ~~~~~~~~
 Advanced
