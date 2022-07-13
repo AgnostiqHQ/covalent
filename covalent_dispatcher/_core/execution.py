@@ -291,19 +291,15 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         result_object._update_node(db=DispatchDB._get_data_store(), **node_result)
 
         # TODO (DBWORK) - Take it out?
-        with DispatchDB() as db:
-            db.save_db(result_object)
+        # with DispatchDB() as db:
+        #     db.save_db(result_object)
         result_webhook.send_update(result_object)
 
     def task_callback(future: Future):
         node_result = future.result()
         update_node_result(node_result)
 
-    # TODO (DBWORK) -  Do an initial Result.persist() to write the initial records to the DB that can later be updated.
-    with DispatchDB() as db:
-        db.save_db(result_object)
-
-    # TODO (DBWORK) - Replace with writing to DB?
+    # TODO (DBWORK) - Replace with writing to DB? - Answer - Do both!
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
@@ -348,6 +344,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                         key = result_object.lattice.transport_graph.get_node_value(node_id, "key")
                         output = output[key]
 
+                # TODO (DBWORK) - Any information that needs to get updated in the database will happen automatically here.
                 result_object._update_node(
                     node_id=node_id,
                     start_time=datetime.now(timezone.utc),
@@ -457,10 +454,9 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 result_object._status = Result.CANCELLED
                 result_object._end_time = datetime.now(timezone.utc)
 
-                # TODO (DBWORK) - Take out this persist method once more
-
-                with DispatchDB() as db:
-                    db.save_db(result_object)
+                # TODO (DBWORK) - Take out this persist method
+                # with DispatchDB() as db:
+                #     db.save_db(result_object)
                 result_webhook.send_update(result_object)
                 return
 
@@ -515,6 +511,8 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
     Returns:
         None
     """
+
+    # TODO (DBWORK) - Needs the entire workflow - I do have to rehydrate the result object
 
     result_object = rm._get_result_from_file(dispatch_id)
 
