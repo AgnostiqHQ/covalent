@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- `BaseAsyncExecutor` has been added which can be inherited by new async-aware executors.
+
+### Changed
+
+- Since tasks were basically submitting the functions to a Dask cluster by default, they have been converted into asyncio `Tasks` instead which support a far larger number of concurrent tasks than previously used `ThreadPool`.
+
+- `tasks_pool` is no longer being used and asyncio's default thread pool will be used to schedule tasks which use non-async executors.
+
+- `workflow_pool` is now a `ProcessPool` instead of a `ThreadPool` as we are in the process of transitioning that to an asyncio eventloop task eventually. This means that each workflow will get its own eventloop and thread pool if needed.
+
+- Sublattices are now recursively "run" instead of actually being "dispatched". They will still show up as a separate dispatches on the UI, but will use the resources of their respective parent workflow.
+
+- Executor's `executoe` will now receive a callable instead of a serialized function. This allows deserializing the function where it is going to be executed instead of the dispatcher side.
+
+- Tests have also been updated to reflect above changes.
+
 ## [0.131.0] - 2022-07-13
 
 ### Authors
