@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.131.0] - 2022-07-13
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Fixed
+
+- `covalent --version` now looks for `covalent` metadata instead of `cova`
+
+### Tests
+
+- Updated the cli test to include whether the correct version number is shown when `covalent --version` is run
 
 ### Added
 
@@ -32,7 +47,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Sankalp Sanand <sankalp@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Added
 
@@ -62,7 +76,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-
 
 ### Added
 
