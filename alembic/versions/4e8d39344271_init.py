@@ -1,8 +1,8 @@
 """init
 
-Revision ID: fcf27da36107
+Revision ID: 4e8d39344271
 Revises:
-Create Date: 2022-07-12 10:51:42.267094
+Create Date: 2022-07-13 15:50:18.953720
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 # pragma: allowlist nextline secret
-revision = "fcf27da36107"
+revision = "4e8d39344271"
 # pragma: allowlist nextline secret
 down_revision = None
 branch_labels = None
@@ -27,7 +27,7 @@ def upgrade() -> None:
         sa.Column("parent_electron_id", sa.Integer(), nullable=False),
         sa.Column("edge_name", sa.Text(), nullable=False),
         sa.Column("parameter_type", sa.String(length=24), nullable=True),
-        sa.Column("arg_index", sa.Integer(), nullable=False),
+        sa.Column("arg_index", sa.Integer(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
