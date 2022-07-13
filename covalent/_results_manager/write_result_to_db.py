@@ -310,7 +310,7 @@ def get_electron_type(node_name: str) -> str:
 
 
 def write_sublattice_electron_id(
-    db: DataStore, parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
+    db: WorkflowDB, parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
 ) -> None:
     """Function to attach the electron id of a sublattice in the lattice record."""
 
