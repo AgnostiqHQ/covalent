@@ -90,13 +90,15 @@ def _dispatch_sublattice(orig_lattice: Lattice) -> Callable:
             result_object._dispatch_id = dispatch_id
 
         result_object._initialize_nodes()
-        result_object.save()
+        DispatchDB().save_db(result_object)
 
         try:
             await _run_planned_workflow(result_object)
         except Exception as ex:
             graceful_result_failure(result_object, ex)
             raise
+
+        return result_object
 
     return wrapper_async
 
