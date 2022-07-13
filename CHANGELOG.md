@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Non-keyword arguments fill in `$1`, `$2`, etc.
 - Named outputs enumerate variables within the shell which will be returned to the user. These can be either `Lepton.OUTPUT` or `Lepton.INPUT_OUTPUT` types.
 
+### Added
+
+- New fields to the decomposed result object Database: 
+
 ## [0.131.0] - 2022-07-13
 
 ### Authors
