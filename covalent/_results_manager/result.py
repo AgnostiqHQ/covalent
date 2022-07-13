@@ -430,6 +430,8 @@ Node Outputs
             None
         """
 
+        app_log.info(f"Directory: {directory}")
+        app_log.info(f"Results dir: {self.results_dir}")
         directory = directory or self.results_dir
 
         result_folder_path = os.path.join(directory, f"{self.dispatch_id}")
@@ -458,7 +460,7 @@ Node Outputs
     def _initialize_results_dir(self):
         """Create the results directory."""
 
-        result_folder_path = os.path.join(self._results_dir, f"{self.dispatch_id}")
+        result_folder_path = os.path.join(self.results_dir, f"{self.dispatch_id}")
         Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
     def persist(self, db: DataStore):
