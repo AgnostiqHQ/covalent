@@ -22,7 +22,7 @@
 
 import enum
 
-from sqlalchemy import BigInteger, Column, DateTime, Enum, Integer, Text
+from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, Integer, Text
 
 from covalent_ui.app.api_v0.database.config.db import Base
 
@@ -36,8 +36,8 @@ class ParameterTypeEnum(enum.Enum):
         null: null value
     """
 
-    ARG = 1
-    KWARG = 2
+    arg = 1
+    kwarg = 2
     NULL = 3
 
 
@@ -57,7 +57,7 @@ class ElectronDependency(Base):
     __tablename__ = "electron_dependency"
     id = Column(BigInteger, primary_key=True)
 
-    electron_id = Column(Integer, nullable=False)
+    electron_id = Column(Integer, ForeignKey("electrons.id"), nullable=False)
 
     parent_electron_id = Column(Integer, nullable=False)
 

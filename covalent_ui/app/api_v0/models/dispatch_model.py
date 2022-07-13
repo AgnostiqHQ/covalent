@@ -105,7 +105,7 @@ class DispatchResponse(BaseModel):
 class DeleteDispatchesRequest(BaseModel):
     """Dashboard metadate model"""
 
-    items: List[UUID]
+    dispatches: List[UUID]
 
 
 class DeleteDispatchesResponse(BaseModel):

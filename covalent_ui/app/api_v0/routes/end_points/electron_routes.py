@@ -23,13 +23,11 @@ import uuid
 from enum import Enum
 
 from fastapi import APIRouter
-from httplib2 import Response
 from sqlalchemy.orm import Session
 
 from covalent_ui.app.api_v0.data_layer.electron_dal import Electrons
 from covalent_ui.app.api_v0.database.config.db import engine
-from covalent_ui.app.api_v0.database.graph_data import graph_data
-from covalent_ui.app.api_v0.models.lattices_model import ElectronErrorResponse, ElectronResponse
+from covalent_ui.app.api_v0.models.lattices_model import ElectronResponse
 
 routes: APIRouter = APIRouter()
 

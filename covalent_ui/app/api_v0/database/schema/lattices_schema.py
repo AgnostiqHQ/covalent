@@ -20,6 +20,7 @@
 
 """Lattices schema"""
 from sqlalchemy import BigInteger, Column, DateTime, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 from covalent_ui.app.api_v0.database.config.db import Base
 
@@ -78,3 +79,4 @@ class Lattice(Base):
     updated_at = Column(DateTime, nullable=False)
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
+    electrons = relationship("Electron", cascade="all, delete", backref="lattices")

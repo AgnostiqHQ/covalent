@@ -22,6 +22,7 @@
 import enum
 
 from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 from covalent_ui.app.api_v0.database.config.db import Base
 
@@ -39,13 +40,15 @@ class ElectronTypeEnum(enum.Enum):
         subscript
     """
 
-    ELECTRON = 1
-    PARAMETER = 2
-    SUBLATTICE = 3
-    COLLECTION = 4
-    ATTRIBUTE = 5
-    GENERATED = 6
-    SUBSCRIPT = 7
+    electron = 1
+    parameter = 2
+    sublattice = 3
+    collection = 4
+    attribute = 5
+    generated = 6
+    subscript = 7
+    function = 8
+    electron_list = 9
 
 
 class Electron(Base):
@@ -100,7 +103,7 @@ class Electron(Base):
 
     executor_filename = Column(Text)
 
-    error_filename = Column(Text)
+    # error_filename = Column(Text)
 
     results_filename = Column(Text)
 
@@ -120,3 +123,5 @@ class Electron(Base):
     updated_at = Column(DateTime, nullable=False)
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
+
+    electrons = relationship("ElectronDependency", cascade="all, delete", backref="electrons")

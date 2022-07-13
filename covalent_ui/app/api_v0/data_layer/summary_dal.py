@@ -18,20 +18,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from sqlite3 import InterfaceError
 from typing import List
 
-from sqlalchemy import delete
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func, or_
 
-from covalent_ui.app.api_v0.database.config.db import engine
 from covalent_ui.app.api_v0.database.schema.lattices_schema import Lattice
 from covalent_ui.app.api_v0.models.dispatch_model import (
     DeleteDispatchesRequest,
     DeleteDispatchesResponse,
     DispatchDashBoardResponse,
     DispatchResponse,
-    DispatchSummaryRequest,
     SortDirection,
 )
 
@@ -43,14 +41,6 @@ class Summary:
         self.db_con = db_con
 
     def get_summary(self, count, offset, sort_by, search, sort_direction) -> List[Lattice]:
-        counter = 0
-        if search is None:
-            counter = self.db_con.query(func.count(Lattice.id)).filter(
-                Lattice.electron_id.is_(None)
-            )
-            search = ""
-        # if sort_by == "lattice":
-        #     sort_by = ""
         """
         Get summary of top most lattices
         Args:
@@ -62,6 +52,12 @@ class Summary:
         Return:
             List of top most Lattices and count
         """
+        counter = 0
+        if search is None:
+            counter = self.db_con.query(func.count(Lattice.id)).filter(
+                Lattice.electron_id.is_(None)
+            )
+            search = ""
         data = (
             self.db_con.query(
                 Lattice.dispatch_id.label("dispatch_id"),
@@ -106,20 +102,19 @@ class Summary:
             Latest running task status,
             Total dispatcher duration
         """
-        query1 = self.db_con.query(
+        query1 = self.db_con.query((func.count(Lattice.id)).label("total_jobs_running")).first()
+        query2 = self.db_con.query(
             (func.count(Lattice.id))
             .filter(Lattice.status == "RUNNING")
             .label("total_jobs_running")
         ).first()
-        query2 = self.db_con.query(
+        query3 = self.db_con.query(
             (func.count(Lattice.id)).filter(Lattice.status == "COMPLETED").label("total_jobs_done")
         ).first()
-        query3 = self.db_con.query(Lattice.status).order_by(Lattice.updated_at.desc()).first()
         query4 = self.db_con.query(
-            func.sum(
-                func.strftime("%s", Lattice.completed_at) - func.strftime("%s", Lattice.started_at)
-            ).label("run_time")
+            (func.count(Lattice.id)).filter(Lattice.status == "FAILED").label("total_jobs_failed")
         ).first()
+        query5 = self.db_con.query(Lattice.status).order_by(Lattice.updated_at.desc()).first()
         query5 = self.db_con.query(
             (func.count(Lattice.id)).filter(Lattice.status == "FAILED").label("total_failed")
         ).first()
@@ -140,16 +135,30 @@ class Summary:
         Return:
             list of status(i.e whether given dispatch id is deleted successfully or failed)
         """
-        uuid_str = []
         success = []
         failure = []
-        for u_id in req.items:
-            ustr = str(u_id)
-            uuid_str.append(ustr)
-            query = delete(Lattice).where(Lattice.dispatch_id == ustr)
-            engine.execute(query)
+        for dispatch_id in req.dispatches:
+            try:
+                data = (
+                    self.db_con.query(Lattice)
+                    .filter(Lattice.dispatch_id == str(dispatch_id))
+                    .first()
+                )
+                if data is not None:
+                    self.db_con.delete(data)
+                    self.db_con.commit()
+                    success.append(dispatch_id)
+                else:
+                    failure.append(dispatch_id)
+            except InterfaceError:
+                failure.append(dispatch_id)
+
+        if len(failure) > 0:
+            message = "Some of the dispatches could not be deleted. Pls try again!"
+        else:
+            message = f"All {len(req.dispatches)} deleted successfully"
         return DeleteDispatchesResponse(
             success_items=success,
             failure_items=failure,
-            message=f"All {len(req.items)} deleted successfully",
+            message=message,
         )
