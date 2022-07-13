@@ -455,9 +455,17 @@ Node Outputs
         if write_source:
             self._write_dispatch_to_python_file()
 
+    def _initialize_results_dir(self):
+        """Create the results directory."""
+
+        result_folder_path = os.path.join(self._results_dir, f"{self.dispatch_id}")
+        Path(result_folder_path).mkdir(parents=True, exist_ok=True)
+
     def persist(self, db: DataStore):
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
+
+        self._initialize_results_dir()
 
         LATTICE_FUNCTION_FILENAME = "function.pkl"
         LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"

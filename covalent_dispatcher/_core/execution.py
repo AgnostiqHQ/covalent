@@ -214,7 +214,7 @@ def _run_task(
             sublattice_result = dispatch_sync(func)(*inputs["args"], **inputs["kwargs"])
             with DispatchDB() as db:
                 write_sublattice_electron_id(
-                    db=DataStore(db._db_dev_path(), initialize_db=True),
+                    db=db._get_data_store(),
                     parent_dispatch_id=dispatch_id,
                     sublattice_node_id=node_id,
                     sublattice_dispatch_id=sublattice_result.dispatch_id,

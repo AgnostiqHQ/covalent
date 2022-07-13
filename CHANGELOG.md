@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- New fields to the decomposed result object Database: 
+
 ## [0.131.0] - 2022-07-13
 
 ### Authors
