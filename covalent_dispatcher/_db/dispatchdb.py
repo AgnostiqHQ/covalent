@@ -1,6 +1,6 @@
+import copy
 import json
 import os
-import copy
 import sqlite3
 from datetime import datetime
 from typing import List, Tuple
