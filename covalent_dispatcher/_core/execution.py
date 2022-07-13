@@ -28,10 +28,10 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 import cloudpickle as pickle
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from covalent import dispatch_sync
-from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Lattice as Lattice_model
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
@@ -289,7 +289,9 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
     def update_node_result(node_result: dict):
 
-        result_object._update_node(**node_result)
+        result_object._update_node(db=DispatchDB._get_data_store(), **node_result)
+
+        # TODO (DBWORK) - Take it out?
         with DispatchDB() as db:
             db.save_db(result_object)
         result_webhook.send_update(result_object)
@@ -298,8 +300,25 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         node_result = future.result()
         update_node_result(node_result)
 
+    # TODO (DBWORK) -  Do an initial Result.persist() to write the initial records to the DB that can later be updated.
+    with DispatchDB() as db:
+        db.save_db(result_object)
+
+    # TODO (DBWORK) - Replace with writing to DB?
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
+
+    with Session(DispatchDB()._get_data_store()) as session:
+        session.execute(
+            update(Lattice)
+            .where(Lattice.dispatch_id == result_object.dispatch_id)
+            .values(
+                status=str(Result.RUNNING),
+                updated_at=datetime.now(timezone.utc),
+                started_at=datetime.now(timezone.utc),
+            )
+        )
+        session.commit()
 
     order = result_object.lattice.transport_graph.get_topologically_sorted_graph()
 
@@ -308,6 +327,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
         for node_id in nodes:
             # Get name of the node for the current task
+            # TODO (DBWORK) - Read info from database
+
             node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
 
             if node_name.startswith(
@@ -407,17 +428,38 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         # When one or more nodes failed in the last iteration, don't iterate further
         for node_id in nodes:
             if result_object._get_node_status(node_id) == Result.FAILED:
+
+                # TODO (DBWORK) - Write to DB directly
                 result_object._status = Result.FAILED
                 result_object._end_time = datetime.now(timezone.utc)
                 result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
-                with DispatchDB() as db:
-                    db.save_db(result_object)
+
+                # TODO (DBWORK) - Write error and updates to results file directly and only to the results file
+                result_object.upsert_lattice_data(DispatchDB()._get_data_store())
+
+                # Updated result status and end time
+                with Session(DispatchDB()._get_data_store()) as session:
+                    session.execute(
+                        update(Lattice)
+                        .where(Lattice.dispatch_id == result_object.dispatch_id)
+                        .values(
+                            status=str(Result.FAILED),
+                            updated_at=datetime.now(timezone.utc),
+                            started_at=datetime.now(timezone.utc),
+                        )
+                    )
+                    session.commit()
+
+                # NOTE - I removed save_db call here
                 result_webhook.send_update(result_object)
                 return
 
             elif result_object._get_node_status(node_id) == Result.CANCELLED:
                 result_object._status = Result.CANCELLED
                 result_object._end_time = datetime.now(timezone.utc)
+
+                # TODO (DBWORK) - Take out this persist method once more
+
                 with DispatchDB() as db:
                     db.save_db(result_object)
                 result_webhook.send_update(result_object)
@@ -430,6 +472,9 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
     result_object._status = Result.COMPLETED
     result_object._end_time = datetime.now(timezone.utc)
+
+    # TODO (DBWORK) - Remove this persist method
+    result_object.upsert_lattice_data(DispatchDB()._get_data_store())
     with DispatchDB() as db:
         db.save_db(result_object, write_source=True)
     result_webhook.send_update(result_object)
