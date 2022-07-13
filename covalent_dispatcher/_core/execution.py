@@ -37,6 +37,7 @@ from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._results_manager.write_result_to_db import (
     update_lattices_data,
+    write_lattice_error,
     write_sublattice_electron_id,
 )
 from covalent._shared_files import logger
@@ -471,8 +472,6 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
         None
     """
 
-    result_object = rm._get_result_from_file(dispatch_id)
-
     with Session(DispatchDB._get_data_store()) as session:
         lattice_record = (
             session.query(Lattice).where(Lattice_model.dispatch_id == dispatch_id).first()
@@ -482,22 +481,23 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
         return
 
     try:
-        _plan_workflow(result_object)
-        _run_planned_workflow(result_object, tasks_pool)
+        #        _plan_workflow(result_object)
+        _run_planned_workflow(lattice_record, tasks_pool)
 
     except Exception as ex:
         update_lattices_data(
-            db=DispatchDB()._get_data_store(),
+            DispatchDB()._get_data_store(),
+            lattice_record.dispatch_id,
             status=Result.FAILED,
             completed_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
-            started_at=lattice_record.started_at,
         )
 
-        result_object._status = Result.FAILED
-        result_object._end_time = datetime.now(timezone.utc)
-        result_object._error = "".join(traceback.TracebackException.from_exception(ex).format())
-        DispatchDB().save_db(result_object)
+        write_lattice_error(
+            DispatchDB()._get_data_store(),
+            lattice_record.dispatch_id,
+            "".join(traceback.TracebackException.from_exception(ex).format()),
+        )
         raise
 
 
