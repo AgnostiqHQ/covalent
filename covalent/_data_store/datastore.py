@@ -19,6 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from contextlib import contextmanager
+from os import path
+from pathlib import Path
 from typing import BinaryIO, Dict, Generator, List, Optional, Union
 
 from sqlalchemy import create_engine
@@ -51,6 +53,16 @@ class WorkflowDB:
         # flag should only be used in pytest - tables should be generated using migrations
         if initialize_db:
             models.Base.metadata.create_all(self.engine)
+
+    def run_migrations(self):
+        from alembic import command
+        from alembic.config import Config
+
+        alembic_ini_path = Path(path.join(__file__, "./../../../alembic.ini")).resolve()
+        alembic_config = Config(alembic_ini_path)
+        alembic_config.attributes["configure_logger"] = False
+        alembic_config.set_main_option("sqlalchemy.url", self.db_URL)
+        command.upgrade(alembic_config, "head")
 
     @contextmanager
     def begin_session(self, metadata={}):
