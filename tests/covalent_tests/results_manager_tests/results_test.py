@@ -34,7 +34,7 @@ from covalent._data_store.datastore import DataStore, DataStoreNotInitializedErr
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.result import Result
 
-TEMP_RESULTS_DIR = "/tmp"
+TEMP_RESULTS_DIR = "/tmp/results"
 
 
 def teardown_temp_results_dir(dispatch_id: str) -> None:
@@ -57,19 +57,20 @@ def db():
 
 @pytest.fixture
 def result_1():
-    @ct.electron
+    @ct.electron(executor="dask")
     def task_1(x, y):
         return x * y
 
-    @ct.electron
+    @ct.electron(executor="dask")
     def task_2(x, y):
         return x + y
 
-    @ct.lattice
+    @ct.lattice(executor="dask")
     def workflow_1(a, b):
         res_1 = task_1(a, b)
         return task_2(res_1, b)
 
+    Path(f"{TEMP_RESULTS_DIR}/dispatch_1").mkdir(parents=True, exist_ok=True)
     workflow_1.build_graph(a=1, b=2)
     result = Result(lattice=workflow_1, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1")
     result._initialize_nodes()
@@ -104,7 +105,7 @@ def test_result_persist_workflow_1(db, result_1):
     assert lattice_row.electron_id is None
 
     lattice_storage_path = Path(lattice_row.storage_path)
-    assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR)
+    assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR) / "dispatch_1"
 
     with open(lattice_storage_path / lattice_row.function_filename, "rb") as f:
         workflow_function = cloudpickle.load(f)
@@ -171,7 +172,7 @@ def test_result_persist_workflow_1(db, result_1):
         assert electron.parent_lattice_id == 1
         assert electron.started_at == electron.completed_at == cur_time
         assert Path(electron.storage_path) == Path(
-            f"{TEMP_RESULTS_DIR}/node_{electron.transport_graph_node_id}"
+            f"{TEMP_RESULTS_DIR}/dispatch_1/node_{electron.transport_graph_node_id}"
         )
 
     # Tear down temporary results directory

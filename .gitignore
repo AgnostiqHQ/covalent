@@ -34,6 +34,15 @@
 /doc/build/**
 !/tests/**
 
+# Ignore dask-worker-spaces
+**/dask-worker-space
+
+# Ignore __pycache__
+**/__pycache__
+
+# Ignore results
+**/results
+
 # Allow config files
 !.flake8
 !.gitignore
