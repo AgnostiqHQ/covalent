@@ -24,12 +24,8 @@ import { Typography } from '@mui/material'
 import { Handle } from 'react-flow-renderer'
 
 const ParameterNode = ({
-  id,
   data,
-  type,
-  selected,
   sourcePosition,
-  targetPosition,
   isConnectable,
 }) => {
   return (

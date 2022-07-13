@@ -100,7 +100,7 @@ const LatticeGraph = ({
     } else {
       assignNodePositions(graph, direction, showParams, algorithm).then((els) => {
         setElements(els);
-      }).catch((error) => console.log('Error'))
+      }).catch((error) => console.log(error))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph, direction, showParams, algorithm])
@@ -123,7 +123,6 @@ const LatticeGraph = ({
 
   return (
     <>
-      {/* {loader && <PageLoading/>} */}
       {elements?.length > 0 && (
         <ReactFlow
           nodeTypes={{ electron: ElectronNode, parameter: ParameterNode }}

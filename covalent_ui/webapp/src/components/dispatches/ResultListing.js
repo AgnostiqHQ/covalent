@@ -420,7 +420,6 @@ const ResultListing = () => {
     setPage(pageValue)
     const offsetValue = pageValue === 1 ? 0 : pageValue * 10 - 10
     setOffset(offsetValue)
-    console.log(typeof offsetValue)
   }
 
   const handleChangeSelection = (dispatchId) => {
@@ -456,8 +455,6 @@ const ResultListing = () => {
       }
     })
   }
-
-  console.log(selected)
 
   return (
     <>

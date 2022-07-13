@@ -20,8 +20,8 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useState,useEffect } from 'react'
+import { useSelector,useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import {
   Box,
@@ -38,14 +38,24 @@ import { TabContext, TabList, TabPanel } from '@mui/lab'
 import CopyButton from '../common/CopyButton'
 import { selectResultProgress } from '../dispatches/ResultProgress'
 import LatticeDispatchOverview from './LatticeDispatchOverview'
-import { statusIcon, truncateMiddle } from '../../utils/misc'
-import { LatticeOutput } from '../common/LogOutput'
+import { statusIcon, truncateMiddle ,  statusColor,
+} from '../../utils/misc'
 import ErrorCard from '../common/ErrorCard'
 import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
+import { latticeDetails,latticeError} from '../../redux/latticeSlice'
 
 const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
+  const dispatch = useDispatch()
   const [tab, setTab] = useState('overview')
+
+  const drawerLatticeDetails = useSelector((state) => state.latticeResults.latticeDetails)
+  const drawerLatticeError = useSelector((state) => state.latticeResults.latticeError)
+
+  useEffect(() => {
+    dispatch(latticeDetails({ dispatchId: dispatchId}))
+    dispatch(latticeError({dispatchId:dispatchId,params:'error'}))
+  }, [])
 
   return (
     <Box sx={{ p: 3 }}>
@@ -65,26 +75,24 @@ const DispatchDrawerContents = () => {
       <CopyButton content={dispatchId} size="small" title="Copy dispatch Id" />
 
       {/* status */}
-      <LatticeStatusCard dispatchId={dispatchId} />
+      <LatticeStatusCard dispatchId={dispatchId} latDetails={drawerLatticeDetails} 
+      latError={drawerLatticeError}/>
 
       {/* tabs */}
+      {/* {latOutput !== null && */}
       <TabContext value={tab}>
         <CustomTabList
           variant="fullWidth"
           onChange={(e, newTab) => setTab(newTab)}
         >
           <Tab label="Overview" value="overview" />
-          <Tab label="Output" value="output" />
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
-          <LatticeDispatchOverview dispatchId={dispatchId} />
-        </TabPanel>
-
-        <TabPanel value="output" sx={{ px: 0, py: 1 }}>
-          <LatticeOutput dispatchId={dispatchId} />
+          <LatticeDispatchOverview dispatchId={dispatchId} latDetails={drawerLatticeDetails} />
         </TabPanel>
       </TabContext>
+{/* } */}
     </Box>
   )
 }
@@ -102,11 +110,10 @@ const CustomTabList = styled(TabList)(({ theme }) => ({
   },
 }))
 
-const LatticeStatusCard = ({ dispatchId }) => {
-  const { completed, total, status, label, color, error } = useSelector(
+const LatticeStatusCard = ({ dispatchId ,latDetails,latError }) => {
+  const { color } = useSelector(
     (state) => selectResultProgress(state, dispatchId)
   )
-
   return (
     <Box sx={{ my: 2 }}>
         <Box
@@ -115,7 +122,6 @@ const LatticeStatusCard = ({ dispatchId }) => {
             gridTemplateColumns: 'repeat(2, 1fr)',
           }}
         >
-          {/* left column */}
           <Box sx={{ borderRight: '1px solid #303067' }}>
             <Typography color="text.secondary" fontSize="body2.fontSize">
               Status
@@ -123,26 +129,24 @@ const LatticeStatusCard = ({ dispatchId }) => {
 
             <Box
               sx={{
-                color: `${color}.main`,
+                color: statusColor(latDetails.status),
                 display: 'flex',
                 fontSize: '1.125rem',
                 alignItems: 'center',
                 py: 1,
               }}
             >
-              {statusIcon(status)}
+              {statusIcon(latDetails.status)}
               &nbsp;
-              {label}
+              {latDetails.status}
             </Box>
           </Box>
 
-          {/* right column */}
           <Box sx={{ justifySelf: 'end' }}>
             <Typography color="text.secondary" fontSize="body2.fontSize">
               Progress
             </Typography>
 
-            {/* electron progress */}
             <Box
               sx={{
                 display: 'flex',
@@ -154,12 +158,12 @@ const LatticeStatusCard = ({ dispatchId }) => {
                 <Box
                   component="span"
                   sx={{
-                    color: status === 'COMPLETED' ? 'inherit' : `${color}.main`,
+                    color: latDetails.status === 'COMPLETED' ? 'inherit' : `${color}.main`,
                   }}
                 >
-                  {completed}
+                  {latDetails.total_electrons_completed}
                 </Box>
-                &nbsp;/ {total}
+                &nbsp;/ {latDetails.total_electrons}
               </Typography>
 
               <Box sx={{ ml: 2, position: 'relative' }}>
@@ -172,17 +176,19 @@ const LatticeStatusCard = ({ dispatchId }) => {
                   value={100}
                 />
                 <CircularProgress
+                  style={{ color: statusColor(latDetails.status)}}
                   sx={{ position: 'absolute', left: 0 }}
                   variant="determinate"
-                  color={color}
                   size="2rem"
-                  value={(completed * 100) / total}
+                  value={(latDetails.total_electrons_completed * 100) / latDetails.total_electrons}
                 />
               </Box>
             </Box>
           </Box>
         </Box>
-      <ErrorCard showElectron error={error} />
+        {Object.keys(latError).length !==0 &&
+      <ErrorCard showElectron error={latError.data} />
+    }
     </Box>
   )
 }

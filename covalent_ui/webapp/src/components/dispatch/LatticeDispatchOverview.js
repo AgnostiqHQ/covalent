@@ -19,11 +19,9 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-
-import _ from 'lodash'
 import { Divider, Paper, Tooltip, Typography } from '@mui/material'
-import { useSelector } from 'react-redux'
-
+import { useSelector,useDispatch } from 'react-redux'
+import React, { useEffect } from 'react'
 import { formatDate, truncateMiddle } from '../../utils/misc'
 import CopyButton from '../common/CopyButton'
 import Runtime from '../dispatches/Runtime'
@@ -31,35 +29,45 @@ import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
 import InputSection from '../common/InputSection'
 import ExecutorSection from '../common/ExecutorSection'
+import { latticeResults,latticeFunctionString,latticeInput,
+  latticeExecutorDetail} from '../../redux/latticeSlice'
 
-const LatticeDispatchOverview = ({ dispatchId }) => {
-  const result = useSelector((state) => state.results.cache[dispatchId])
+const LatticeDispatchOverview = ({dispatchId,latDetails }) => {
+  const result = latDetails
+  const dispatch = useDispatch()  
+  const drawerInput = useSelector((state) => state.latticeResults.latticeInput)
+  const drawerResult = useSelector((state) => state.latticeResults.latticeResult)
+  const drawerFunctionString = useSelector((state) => state.latticeResults.latticeFunctionString)
+  const drawerExecutorDetail = useSelector((state) => state.latticeResults.latticeExecutorDetail)
 
-  const src = _.get(result, 'lattice.function_string', '# source unavailable')
-  const showResult = result.status === 'COMPLETED'
+  useEffect(() => {
+    dispatch(latticeResults({ dispatchId: dispatchId , params : 'result'}))
+    dispatch(latticeFunctionString({dispatchId:dispatchId,params:'function_string'}))
+    dispatch(latticeInput({dispatchId:dispatchId,params:'input'}))
+    dispatch(latticeExecutorDetail({dispatchId:dispatchId,params:'executor_details'}))
+  }, [])
 
-  const hasStarted = !!result.start_time
-  const hasEnded = !!result.end_time
+  const hasStarted = !!result.started_at
+  const hasEnded = !!result.ended_at
 
   return (
     <>
       {/* Description */}
-      {result.lattice.doc && (
-        <>
-          <Heading>Description</Heading>
-          <Typography fontSize="body2.fontSize">
-            {result.lattice.doc}
-          </Typography>
-        </>
-      )}
-
+        {result.lattice !== undefined && (
+          <>
+            <Heading>Description</Heading>
+            <Typography fontSize="body2.fontSize">
+              {result.lattice.doc}
+            </Typography>
+          </>
+        )}
       {/* Start/end times */}
       {hasStarted && (
         <>
           <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
           <Typography fontSize="body2.fontSize">
-            {formatDate(result.start_time)}
-            {hasEnded && ` - ${formatDate(result.end_time)}`}
+            {formatDate(result.started_at)}
+            {hasEnded && ` - ${formatDate(result.ended_at)}`}
           </Typography>
         </>
       )}
@@ -68,46 +76,53 @@ const LatticeDispatchOverview = ({ dispatchId }) => {
       <Heading>Runtime</Heading>
       <Runtime
         sx={{ fontSize: 'body2.fontSize' }}
-        startTime={result.start_time}
-        endTime={result.end_time}
+        startTime={result.started_at}
+        endTime={result.ended_at}
       />
 
       {/* Directory */}
       <Heading>Directory</Heading>
       <Typography sx={{ overflowWrap: 'anywhere', fontSize: 'body2.fontSize' }}>
-        <Tooltip title={result.results_dir} enterDelay={500}>
-          <span>{truncateMiddle(result.results_dir, 15, 25)}</span>
+        <Tooltip title={result.directory} enterDelay={500}>
+          <span>{truncateMiddle(result.directory, 15, 25)}</span>
         </Tooltip>
         <CopyButton
-          content={result.results_dir}
+          content={result.directory}
           size="small"
           title="Copy results directory"
         />
       </Typography>
 
       {/* Input */}
-      <InputSection inputs={_.get(result, 'lattice.inputs')} />
+      {Object.keys(drawerInput).length !==0 &&
+      <InputSection inputs={drawerInput.data}/>
+      }
 
       {/* Result */}
-      {showResult && (
+      {Object.keys(drawerResult).length !==0 &&
         <>
           <Heading>Result</Heading>
           <Paper elevation={0}>
-            <SyntaxHighlighter language="python" src={result.result} />
+            <SyntaxHighlighter language="python" src={drawerResult.data} />
           </Paper>
         </>
-      )}
+      }
 
       {/* Executor */}
-      <ExecutorSection metadata={_.get(result, 'lattice.metadata')} />
+      {Object.keys(drawerExecutorDetail).length !==0 &&
+      <ExecutorSection metadata={drawerExecutorDetail} />
+      }
 
       <Divider sx={{ my: 3 }} />
 
       {/* Source */}
+      
       <Heading />
+      {Object.keys(drawerFunctionString).length !==0 &&
       <Paper elevation={0}>
-        <SyntaxHighlighter src={src} />
+        <SyntaxHighlighter src={drawerFunctionString.data} />
       </Paper>
+      }
     </>
   )
 }

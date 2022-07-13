@@ -20,45 +20,23 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import _ from 'lodash'
-import { Paper } from '@mui/material'
-
-import Heading from './Heading'
-import SyntaxHighlighter from './SyntaxHighlighter'
-
-const InputSection = ({ inputs, node, graph , ...props}) => {
-  // check kwargs (legacy format)
-  if (!inputs) {
-    inputs = _.get(node, 'kwargs')
-  }
-  // construct arguments list from graph
-  if (!inputs && graph) {
-    inputs = _.chain(graph.links)
-      .filter(({ target }) => target === node.id)
-      .keyBy('edge_name')
-      .mapValues(({ source }) =>
-        _.get(_.find(graph.nodes, { id: source }), 'output')
-      )
-      .value()
-  }
-
-  if (_.isEmpty(inputs)) {
-    return null
-  }
-
-  const inputSrc = _.join(
-    _.map(inputs, (value, key) => `${key}=${value}`),
-    ', '
-  )
-
-  return (
-    <>
-      <Heading>Input</Heading>
-      <Paper elevation={0} {...props}>
-        <SyntaxHighlighter language="python" src={inputSrc} />
-      </Paper>
-    </>
-  )
-}
-
-export default InputSection
+ import _ from 'lodash'
+ import { Paper } from '@mui/material'
+ 
+ import Heading from './Heading'
+ import SyntaxHighlighter from './SyntaxHighlighter'
+ 
+ const InputSection = ({ inputs,...props}) => {
+ 
+   return (
+     <>
+       <Heading>Input</Heading>
+       <Paper elevation={0} {...props}>
+         <SyntaxHighlighter language="python" src={inputs} />
+       </Paper>
+     </>
+   )
+ }
+ 
+ export default InputSection
+ 

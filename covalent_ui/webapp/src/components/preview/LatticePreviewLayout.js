@@ -31,7 +31,6 @@ import NodeDrawer, { nodeDrawerWidth } from '../common/NodeDrawer'
 import { useEffect } from 'react'
 import { graphBgColor } from '../../utils/theme'
 import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
-// import MobileAppBar from '../common/MobileAppBar'
 import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
 import PreviewDrawerContents from './PreviewDrawerContents'
 

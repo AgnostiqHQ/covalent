@@ -24,12 +24,18 @@
  import { resultsSlice } from './resultsSlice'
  import { latticePreviewSlice } from './latticePreviewSlice'
  import { dashboardSlice } from './dashboardSlice'
+ import { graphSlice } from './graphSlice'
+ import { latticeSlice } from './latticeSlice'
+ import { electronSlice } from './electronSlice'
 
  const reducers = {
    common: commonSlice.reducer,
    results: resultsSlice.reducer,
    latticePreview: latticePreviewSlice.reducer,
-   dashboard:dashboardSlice.reducer
+   dashboard:dashboardSlice.reducer,
+   graphResults: graphSlice.reducer,
+   latticeResults:latticeSlice.reducer,
+   electronResults:electronSlice.reducer,
  }
 
  export default reducers

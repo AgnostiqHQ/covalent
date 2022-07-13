@@ -23,7 +23,6 @@
  import { Box, LinearProgress, Tooltip, Typography } from '@mui/material'
  import { createSelector } from '@reduxjs/toolkit'
  import _ from 'lodash'
- import { useSelector } from 'react-redux'
 
  import { isParameter } from '../../utils/misc'
 
@@ -53,10 +52,10 @@
        {
          total: 0,
          completed: 0,
-         status: result.status,
-         label: _.startCase(_.lowerCase(result.status)),
-         color: STATUS_COLORS[result.status],
-         error: result.error,
+         status: result?.status,
+         label: _.startCase(_.lowerCase(result?.status)),
+         color: STATUS_COLORS[result?.status],
+         error: result?.error,
        }
      )
    }

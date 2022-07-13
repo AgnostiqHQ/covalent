@@ -55,7 +55,7 @@ const NavDrawer = () => {
       }}
     >
       <List>
-        <ListItemButton sx={{ my: 0 }} component={Link} to="/">
+        <ListItemButton sx={{ my: 6 }} component={Link} to="/">
           <Logo style={{ margin: 'auto', width: '30px', height: '50px' }} />
         </ListItemButton>
 

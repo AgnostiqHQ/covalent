@@ -3,7 +3,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
 export function LayoutOptions(props) {
-	// const { anchorEl, handleClick, handleClose, handleArchive, handleDelete, handleEdit, handleMove, handleRestart, open } = props;
 	const {
 		algorithm,
 		handleChangeAlgorithm,
@@ -11,7 +10,6 @@ export function LayoutOptions(props) {
 		anchorEl,
 		handleClose
 	} = props;
-	// const options=['box','mrtree','rectpacking','stress','disco']
 	const options = [{
 		optionName: 'Layered',
 		optionValue: 'layered'

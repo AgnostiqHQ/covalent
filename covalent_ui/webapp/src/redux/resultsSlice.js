@@ -45,7 +45,7 @@ export const fetchResult = createAsyncThunk(
 
 export const fetchResults = createAsyncThunk(
   'results/fetchResults',
-  (values, thunkAPI) => api.get('/api/results').catch(thunkAPI.rejectWithValue)
+  (thunkAPI) => api.get('/api/results').catch(thunkAPI.rejectWithValue)
 )
 
 export const deleteResults = createAsyncThunk(
@@ -67,7 +67,7 @@ export const resultsSlice = createSlice({
         // update results cache
         state.cache[payload.dispatch_id] = payload
       })
-      .addCase(fetchResult.pending, (state, { payload }) => {
+      .addCase(fetchResult.pending, (state) => {
         state.fetchResult.isFetching = true
         state.fetchResult.error = null
       })
@@ -82,7 +82,7 @@ export const resultsSlice = createSlice({
         // update results cache
         state.cache = _.keyBy(payload, 'dispatch_id')
       })
-      .addCase(fetchResults.pending, (state, { payload }) => {
+      .addCase(fetchResults.pending, (state) => {
         state.fetchResults.isFetching = true
         state.fetchResults.error = null
       })
@@ -98,7 +98,7 @@ export const resultsSlice = createSlice({
         const dispatchIds = _.get(meta, 'arg.dispatchIds')
         _.each(dispatchIds, (key) => delete state.cache[key])
       })
-      .addCase(deleteResults.pending, (state, { payload }) => {
+      .addCase(deleteResults.pending, (state) => {
         state.deleteResults.isFetching = true
         state.deleteResults.error = null
       })

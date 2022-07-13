@@ -47,9 +47,7 @@ const ElectronTooltip = styled(({ className, ...props }) => (
 }))
 
 const ElectronNode = ({
-  id,
   data,
-  type,
   selected,
   sourcePosition,
   targetPosition,
