@@ -20,3 +20,4 @@ tailer==0.4.1
 toml==0.10.2
 uvicorn
 uvloop==0.16.0
+werkzeug==2.0.3

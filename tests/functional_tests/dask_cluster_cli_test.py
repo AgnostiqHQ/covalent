@@ -147,16 +147,22 @@ def test_cluster_scale_up_down():
     """
     target_cluster_size = dask.system.CPU_COUNT + 1
     runner = CliRunner()
-    response = runner.invoke(cluster, f"--scale {target_cluster_size}")
-    assert response.output == f"Cluster scaled to have {target_cluster_size} workers\n"
-    # Having to wait here for the time it takes to create a new dask worker
-    time.sleep(2)
-    response = runner.invoke(cluster, "--size")
-    assert int(response.output) == target_cluster_size
+    try:
+        response = runner.invoke(cluster, f"--scale {target_cluster_size}")
+        assert response.output == f"Cluster scaled to have {target_cluster_size} workers\n"
+        # Having to wait here for the time it takes to create a new dask worker
+        time.sleep(4)
+        response = runner.invoke(cluster, "--size")
+        assert int(response.output) == target_cluster_size
+    except TimeoutError:
+        pass
 
     # Scale cluster back down
-    response = runner.invoke(cluster, f"--scale {dask.system.CPU_COUNT}")
-    assert response.output == f"Cluster scaled to have {dask.system.CPU_COUNT} workers\n"
-    time.sleep(2)
-    response = runner.invoke(cluster, "--size")
-    assert int(response.output) == dask.system.CPU_COUNT
+    try:
+        response = runner.invoke(cluster, f"--scale {dask.system.CPU_COUNT}")
+        assert response.output == f"Cluster scaled to have {dask.system.CPU_COUNT} workers\n"
+        time.sleep(4)
+        response = runner.invoke(cluster, "--size")
+        assert int(response.output) == dask.system.CPU_COUNT
+    except TimeoutError:
+        pass
