@@ -1,5 +1,6 @@
 import json
 import os
+import copy
 import sqlite3
 from datetime import datetime
 from typing import List, Tuple
@@ -50,7 +51,8 @@ def extract_graph_node(node):
 def extract_metadata(metadata: dict):
     try:
         # avoid mutating original metadata
-        metadata = metadata.copy()
+        #metadata = metadata.copy()
+        metadata = copy.deepcopy(metadata)
 
         name = metadata["executor"]
         executor = covalent_executor._executor_manager.get_executor(name=name)
