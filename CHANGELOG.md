@@ -7,6 +7,141 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.131.0] - 2022-07-13
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Fixed
+
+- `covalent --version` now looks for `covalent` metadata instead of `cova`
+
+### Tests
+
+- Updated the cli test to include whether the correct version number is shown when `covalent --version` is run
+
+### Added
+
+- Method to write electron id corresponding to sublattices in `execution.py` when running `_run_task`.
+
+## [0.130.0] - 2022-07-12
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+### Changed
+
+- Ignoring tests for `cancel_dispatch` and `construct_bash`
+- Create a dummy requirements.txt file for pip deps tests
+- Fix version of `Werkzeug` package to avoid running into ValueError (unexpected kwarg `as_tuple`)
+- Update `customization` how to test by specifying the section header `sdk`
+
+## [0.129.0] - 2022-07-12
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+### Added
+
+- Support for `wait_for` type edges when two electrons are connected by their execution side effects instead of output-input relation.
+
+### Changed
+
+- `active_lattice.electron_outputs` now contains the node ids as well for the electron which is being post processed.
+
+## [0.128.1] - 2022-07-12
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Fixed
+
+- `Result.persist` test in `result_test.py`.
+- Electron dependency `arg_index` is changed back to Nullable.
+
+## [0.128.0] - 2022-07-12
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+### Added
+
+- File transfer support for leptons
+
+## [0.127.0] - 2022-07-11
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- When saving to DB, also persist to the new DB if running in develop mode
+
+### Tests
+
+- Flask app route tests
+
+## [0.126.0] - 2022-07-11
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+### Added
+
+- Added Folder class
+- Added internal call before/after deps to execute File Transfer operations pre/post electron execution.
+
+### Operations
+
+- Enhanced hotfix action to create branches from existing commits
+
+## [0.125.0] - 2022-07-09
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Okechukwu Ochia <emmirald@gmail.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Added
+
+- Dask Cluster CLI functional/unit tests
+
+### Docs
+
+- Updated RTD concepts, how-to-guides, and api docs with electron dependencies.
+
+### Operations
+
+- Separate out running tests and uploading coverage report to circumvent bug in
+  retry action
+
 ## [0.124.0] - 2022-07-07
 
 ### Authors
