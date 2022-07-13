@@ -21,10 +21,12 @@
 """Tests for Covalent local executor."""
 
 import tempfile
+from functools import partial
 
 import covalent as ct
 from covalent._workflow.transport import TransportableObject
 from covalent.executor.executor_plugins.local import LocalExecutor
+from covalent_dispatcher.utils import wrapper_fn
 
 
 def test_local_executor_passes_results_dir(mocker):
@@ -41,12 +43,11 @@ def test_local_executor_passes_results_dir(mocker):
             "covalent.executor.executor_plugins.local.LocalExecutor.write_streams_to_file"
         )
         le = LocalExecutor()
+        assembled_fn = partial(wrapper_fn, TransportableObject(simple_task), [], [])
         le.execute(
-            function=TransportableObject(simple_task),
+            function=assembled_fn,
             args={"x": 1},
             kwargs={"y": 2},
-            call_before=[],
-            call_after=[],
             dispatch_id=-1,
             results_dir=tmp_dir,
             node_id=0,
