@@ -427,7 +427,7 @@ Node Outputs
 
         if status is not None:
             self.lattice.transport_graph.set_node_value(node_id, "status", status)
-            electron_kwargs["status"] = status
+            electron_kwargs["status"] = str(status)
 
         if output is not None:
             self.lattice.transport_graph.set_node_value(node_id, "output", output)
@@ -514,14 +514,8 @@ Node Outputs
         result_folder_path = os.path.join(self.results_dir, f"{self.dispatch_id}")
         Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
-    def persist(self, db: DataStore):
-        """Save Result object to a DataStoreSession. Changes are queued until
-        committed by the caller."""
-
-        self._initialize_results_dir()
-
-        if not db:
-            raise DataStoreNotInitializedError
+    def upsert_lattice_data(self, db: DataStore):
+        """Update lattice data"""
 
         with Session(db.engine) as session:
             lattice_exists = (
@@ -583,6 +577,9 @@ Node Outputs
             }
             update_lattices_data(db=db, **lattice_record_kwarg)
 
+    def upsert_electron_data(self, db: DataStore):
+        """Update electron data"""
+
         tg = self.lattice.transport_graph
         dirty_nodes = set(tg.dirty_nodes)
         tg.dirty_nodes.clear()  # Ensure that dirty nodes list is reset once the data is updated
@@ -590,7 +587,7 @@ Node Outputs
         with Session(db.engine) as session:
             for node_id in dirty_nodes:
 
-                node_path = data_storage_path / f"node_{node_id}"
+                node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
 
                 if not node_path.exists():
                     node_path.mkdir()
@@ -616,7 +613,7 @@ Node Outputs
                 with open(node_path / ELECTRON_EXECUTOR_FILENAME, "wb") as f:
                     cloudpickle.dump(tg.get_node_value(node_id, "metadata")["executor"], f)
 
-                with open(data_storage_path / node_path / ELECTRON_STDOUT_FILENAME, "wb") as f:
+                with open(node_path / ELECTRON_STDOUT_FILENAME, "wb") as f:
                     try:
                         node_stdout = tg.get_node_value(node_id, "stdout")
                     except KeyError:
@@ -630,14 +627,14 @@ Node Outputs
                         node_stderr = None
                     cloudpickle.dump(node_stderr, f)
 
-                with open(data_storage_path / node_path / ELECTRON_INFO_FILENAME, "wb") as f:
+                with open(node_path / ELECTRON_INFO_FILENAME, "wb") as f:
                     try:
                         node_info = tg.get_node_value(node_id, "info")
                     except KeyError:
                         node_info = None
                     cloudpickle.dump(node_info, f)
 
-                with open(data_storage_path / node_path / ELECTRON_RESULTS_FILENAME, "wb") as f:
+                with open(node_path / ELECTRON_RESULTS_FILENAME, "wb") as f:
                     try:
                         node_output = tg.get_node_value(node_id, "output")
                     except KeyError:
@@ -685,7 +682,7 @@ Node Outputs
                         "name": tg.get_node_value(node_key=node_id, value_key="name"),
                         "status": str(tg.get_node_value(node_key=node_id, value_key="status")),
                         "storage_type": ELECTRON_STORAGE_TYPE,
-                        "storage_path": str(data_storage_path / node_path),
+                        "storage_path": str(node_path),
                         "function_filename": ELECTRON_FUNCTION_FILENAME,
                         "function_string_filename": ELECTRON_FUNCTION_STRING_FILENAME,
                         "executor_filename": ELECTRON_EXECUTOR_FILENAME,
@@ -714,6 +711,9 @@ Node Outputs
                     }
                     update_electrons_data(db=db, **electron_record_kwarg)
 
+    def insert_electron_dependency_data(self, db: DataStore):
+        """Update electron dependency data"""
+
         # Insert electron dependency records if they don't exist
         with Session(db.engine) as session:
             electron_dependencies_exist = (
@@ -731,6 +731,19 @@ Node Outputs
             insert_electron_dependency_data(
                 db=db, dispatch_id=self.dispatch_id, lattice=self.lattice
             )
+
+    def persist(self, db: DataStore):
+        """Save Result object to a DataStoreSession. Changes are queued until
+        committed by the caller."""
+
+        self._initialize_results_dir()
+
+        if not db:
+            raise DataStoreNotInitializedError
+
+        self.upsert_lattice_data(db)
+        self.upsert_electron_data(db)
+        self.insert_electron_dependency_data(db)
 
     def _convert_to_electron_result(self) -> Any:
         """
