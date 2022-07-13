@@ -192,8 +192,8 @@ def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "L
                 electron_id=electron_id,
                 parent_electron_id=parent_electron_id,
                 edge_name=edge_data["edge_name"],
-                parameter_type=edge_data["param_type"],
-                arg_index=edge_data["arg_index"],
+                parameter_type=edge_data["param_type"] if "param_type" in edge_data else None,
+                arg_index=edge_data["arg_index"] if "arg_index" in edge_data else None,
                 created_at=dt.now(),
             )
 
@@ -307,3 +307,27 @@ def get_electron_type(node_name: str) -> str:
 
     else:
         return "function"
+
+
+def write_sublattice_electron_id(
+    db: DataStore, parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
+) -> None:
+    """Function to attach the electron id of a sublattice in the lattice record."""
+
+    with Session(db.engine) as session:
+        sublattice_electron_id = (
+            session.query(Lattice, Electron)
+            .where(
+                Lattice.id == Electron.parent_lattice_id,
+                Electron.transport_graph_node_id == sublattice_node_id,
+                Lattice.dispatch_id == parent_dispatch_id,
+            )
+            .first()
+            .Electron.id
+        )
+        session.execute(
+            update(Lattice)
+            .where(Lattice.dispatch_id == sublattice_dispatch_id)
+            .values(electron_id=sublattice_electron_id, updated_at=dt.now())
+        )
+        session.commit()

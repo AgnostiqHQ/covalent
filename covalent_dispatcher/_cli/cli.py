@@ -41,7 +41,7 @@ def cli(ctx: click.Context, version: bool) -> None:
         click.echo("covalent:  Covalent Workflow CLI Tool")
         click.echo("Copyright (C) 2021 Agnostiq Inc.")
         click.echo("Built using Python 3.8 (Platform: x86_64-linux)")
-        click.echo(f"Release version {metadata.version('cova')}")
+        click.echo(f"Release version {metadata.version('covalent')}")
     elif ctx.invoked_subcommand is None:
         # Display the help menu if no command was provided
         ctx = click.get_current_context()

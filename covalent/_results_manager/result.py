@@ -31,7 +31,7 @@ import networkx as nx
 import yaml
 from sqlalchemy.orm import Session
 
-from .._data_store import DataStore, models
+from .._data_store import DataStore, DataStoreNotInitializedError, models
 from .._shared_files import logger
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .utils import convert_to_lattice_function_call
@@ -455,10 +455,7 @@ Node Outputs
         if write_source:
             self._write_dispatch_to_python_file()
 
-        # TODO - This is only a place holder until result.persist and save implementations are switched.
-        # self.persist()
-
-    def persist(self, db: DataStore):  # Add default database from config file
+    def persist(self, db: DataStore):
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 
@@ -480,6 +477,9 @@ Node Outputs
         ELECTRON_RESULTS_FILENAME = "results.pkl"
         ELECTRON_STORAGE_TYPE = "local"
 
+        if not db:
+            raise DataStoreNotInitializedError
+
         with Session(db.engine) as session:
             lattice_exists = (
                 session.query(models.Lattice)
@@ -489,7 +489,7 @@ Node Outputs
             )
 
         # Store all lattice info that belongs in filenames in the results directory
-        data_storage_path = Path(self.results_dir)
+        data_storage_path = Path(self.results_dir) / self.dispatch_id
         with open(data_storage_path / LATTICE_FUNCTION_FILENAME, "wb") as f:
             cloudpickle.dump(self.lattice.workflow_function, f)
 
@@ -514,7 +514,7 @@ Node Outputs
                 "dispatch_id": self.dispatch_id,
                 "status": str(self.status),
                 "name": self.lattice.__name__,
-                "storage_path": self.results_dir,
+                "storage_path": str(data_storage_path),
                 "storage_type": LATTICE_STORAGE_TYPE,
                 "function_filename": LATTICE_FUNCTION_FILENAME,
                 "function_string_filename": LATTICE_FUNCTION_STRING_FILENAME,
@@ -664,7 +664,7 @@ Node Outputs
                     electron_record_kwarg = {
                         "parent_dispatch_id": self.dispatch_id,
                         "transport_graph_node_id": node_id,
-                        "status": tg.get_node_value(node_key=node_id, value_key="status"),
+                        "status": str(tg.get_node_value(node_key=node_id, value_key="status")),
                         "started_at": started_at,
                         "updated_at": datetime.now(),
                         "completed_at": completed_at,
