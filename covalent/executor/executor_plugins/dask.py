@@ -25,19 +25,19 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
+import asyncio
 import io
 import os
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Callable, Dict, List
 
-from dask.distributed import Client
+from dask.distributed import Client, get_client
 
 from covalent._shared_files import logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import DispatchInfo
-from covalent._workflow.transport import TransportableObject
 from covalent.executor import BaseAsyncExecutor
 
 # The plugin class name must be given by the executor_plugin_name attribute:
@@ -108,7 +108,7 @@ class DaskExecutor(BaseAsyncExecutor):
             output: The result of the executed function.
         """
 
-        dask_client = await Client(address=self.scheduler_address, timeout=1, asynchronous=True)
+        dask_client = get_client(address=self.scheduler_address, timeout=1)
 
         dispatch_info = DispatchInfo(dispatch_id)
 
@@ -117,7 +117,8 @@ class DaskExecutor(BaseAsyncExecutor):
         ) as stdout, redirect_stderr(io.StringIO()) as stderr:
 
             future = dask_client.submit(function, *args, **kwargs)
-            result = await future
+            await asyncio.sleep(0)
+            result = future.result()
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
