@@ -20,6 +20,7 @@
 
 """This module contains all the functions required to save the decomposed result object in the database."""
 
+import os
 from datetime import datetime as dt
 
 import networkx as nx
@@ -204,14 +205,7 @@ def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "L
     return electron_dependency_ids
 
 
-def update_lattices_data(
-    db: DataStore,
-    dispatch_id: str,
-    status: str,
-    updated_at: dt,
-    started_at: dt,
-    completed_at: dt,
-) -> None:
+def update_lattices_data(db: DataStore, dispatch_id: str, **kwargs) -> None:
     """This function updates the lattices record."""
 
     with Session(db.engine) as session:
@@ -222,16 +216,12 @@ def update_lattices_data(
         if not valid_update:
             raise MissingLatticeRecordError
 
-        session.execute(
-            update(Lattice)
-            .where(Lattice.dispatch_id == dispatch_id)
-            .values(
-                status=status,
-                updated_at=updated_at,
-                started_at=started_at,
-                completed_at=completed_at,
-            )
-        )
+        for attr, value in kwargs.iteritems():
+            if value:
+                setattr(valid_update, attr, value)
+
+        session.add(valid_update)
+
         session.commit()
 
 
@@ -331,3 +321,16 @@ def write_sublattice_electron_id(
             .values(electron_id=sublattice_electron_id, updated_at=dt.now())
         )
         session.commit()
+
+
+def write_lattice_error(db: DataStore, dispatch_id: str, error: str):
+    with Session(db.engine) as session:
+        valid_update = (
+            session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first() is not None
+        )
+
+        if not valid_update:
+            raise MissingLatticeRecordError
+
+        with open(os.path.join(valid_update.storage_path, valid_update.error_filename), "w") as f:
+            f.write(error)
