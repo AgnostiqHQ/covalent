@@ -156,9 +156,10 @@ def test_post_process():
 def test_run_task(mocker, sublattice_workflow):
     """Note: This is not a full unit test for the _run_task method. Rather, this is intended to test the diff introduced to write the sublattice electron id in the Database."""
 
+    import asyncio
+
     # class MockResult:
     #     dispatch_id = "test"
-
     # def mock_func():
     #     return MockResult()
     # class MockSerializedCallable:
@@ -169,18 +170,20 @@ def test_run_task(mocker, sublattice_workflow):
         "covalent_dispatcher._core.execution.write_sublattice_electron_id"
     )
 
-    _run_task(
-        node_id=1,
-        dispatch_id="parent_dispatch_id",
-        results_dir="/tmp",
-        inputs=pickle.dumps({"args": [], "kwargs": {"x": 1}}),
-        serialized_callable=sublattice_workflow.transport_graph.get_node_value(
-            0,
-            "function",
-        ),
-        selected_executor=pickle.dumps(LocalExecutor()),
-        call_before=[],
-        call_after=[],
-        node_name=":sublattice:sublattice",
+    asyncio.run(
+        _run_task(
+            node_id=1,
+            dispatch_id="parent_dispatch_id",
+            results_dir="/tmp",
+            inputs=pickle.dumps({"args": [], "kwargs": {"x": 1}}),
+            serialized_callable=sublattice_workflow.transport_graph.get_node_value(
+                0,
+                "function",
+            ),
+            selected_executor=pickle.dumps(LocalExecutor()),
+            call_before=[],
+            call_after=[],
+            node_name=":sublattice:sublattice",
+        )
     )
     write_sublattice_electron_id_mock.assert_called_once()

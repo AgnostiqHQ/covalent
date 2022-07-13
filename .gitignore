@@ -42,6 +42,8 @@
 
 # Ignore results
 **/results
+covalent_ui/result_tmp*
+covalent_ui/tmp*
 
 # Allow config files
 !.flake8
