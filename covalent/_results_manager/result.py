@@ -750,7 +750,7 @@ Node Outputs
 
         import pkg_resources
 
-        dispatch_function = f"# File created by Covalent using version {pkg_resources.get_distribution('cova').version}\n"
+        dispatch_function = f"# File created by Covalent using version {pkg_resources.get_distribution('covalent').version}\n"
         dispatch_function += f"# Dispatch ID: {self.dispatch_id}\n"
         dispatch_function += f"# Workflow status: {self.status}\n"
         dispatch_function += f"# Workflow start time: {self.start_time}\n"
