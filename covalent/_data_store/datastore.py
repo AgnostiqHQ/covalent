@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import BinaryIO, Dict, Generator, List, Optional, Union
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
 from .._shared_files.config import get_config
 from . import models
@@ -47,8 +47,8 @@ class WorkflowDB:
             self.db_URL = "sqlite+pysqlite:///" + get_config("workflow_data.db_path")
 
         self.storage_backend_map = storage_backend_map
-
         self.engine = create_engine(self.db_URL, **kwargs)
+        self.Session = sessionmaker(self.engine)
 
         # flag should only be used in pytest - tables should be generated using migrations
         if initialize_db:
@@ -65,37 +65,9 @@ class WorkflowDB:
         command.upgrade(alembic_config, "head")
 
     @contextmanager
-    def begin_session(self, metadata={}):
-        with Session(self.engine, metadata) as session:
-            session.begin()
-            ds_session = DataStoreSession(session)
-            try:
-                yield ds_session
-
-                session.commit()
-                for arg in ds_session.pending_uploads:
-                    self.upload_file(*arg)
-                for arg in ds_session.pending_deletes:
-                    self.delete_file(*arg)
-
-            except Exception as ex:
-                session.rollback()
-                raise ex
-
-            finally:
-                pass
-
-    def upload_file(self, data: BinaryIO, storage_type: str, storage_path: str, file_name: str):
-
-        raise NotImplementedError
-
-    def delete_file(self, storage_type: str, storage_path: str, file_name: str):
-
-        raise NotImplementedError
-
-    def download_file(self, storage_type: str, storage_path: str, file_name: str):
-
-        raise NotImplementedError
+    def session(self) -> Generator[Session, None, None]:
+        with self.Session.begin() as session:
+            yield session
 
 
 class DevWorkflowDB(WorkflowDB):
