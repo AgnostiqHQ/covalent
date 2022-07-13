@@ -357,6 +357,7 @@ Node Outputs
 
     def _update_node(
         self,
+        db: DataStore,
         node_id: int,
         node_name: str = None,
         start_time: "datetime" = None,
@@ -467,14 +468,16 @@ Node Outputs
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 
+        app_log.info("Trying to initialize results dir")
         self._initialize_results_dir()
+        app_log.info("Results dir initialized")
 
         LATTICE_FUNCTION_FILENAME = "function.pkl"
         LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
         LATTICE_EXECUTOR_FILENAME = "executor.pkl"
         LATTICE_ERROR_FILENAME = "error.log"
         LATTICE_INPUTS_FILENAME = "inputs.pkl"
-        LATTICE_RESULTS_FILENAME = "results.pkl"
+        LATTICE_RESULTS_FILENAME = "result.pkl"
         LATTICE_STORAGE_TYPE = "local"
 
         ELECTRON_FUNCTION_FILENAME = "function.pkl"
@@ -484,7 +487,7 @@ Node Outputs
         ELECTRON_STDOUT_FILENAME = "stdout.log"
         ELECTRON_STDERR_FILENAME = "stderr.log"
         ELECTRON_INFO_FILENAME = "info.log"
-        ELECTRON_RESULTS_FILENAME = "results.pkl"
+        ELECTRON_RESULTS_FILENAME = "result.pkl"
         ELECTRON_STORAGE_TYPE = "local"
 
         if not db:

@@ -89,7 +89,7 @@ def _get_result_from_file(
 
     while True:
         try:
-            with open(os.path.join(result_dir, "result.pkl"), "rb") as f:
+            with open(os.path.join(result_dir, "results.pkl"), "rb") as f:
                 result = pickle.loads(f.read())
 
             if not wait:
