@@ -33,8 +33,7 @@ routes = APIRouter()
 
 
 routes.include_router(summary_routes.routes, prefix="/dispatches", tags=["Dispatches"])
-# routes.include_router(lattice_route.routes,
-#                       prefix="/dispatches", tags=['Dispatches'])
+routes.include_router(lattice_route.routes, prefix="/dispatches", tags=["Dispatches"])
 # routes.include_router(graph_route.routes,
 #                       prefix="/dispatches", tags=['Graph'])
 # routes.include_router(electron_routes.routes,

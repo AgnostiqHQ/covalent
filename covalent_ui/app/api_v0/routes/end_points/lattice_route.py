@@ -90,18 +90,27 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
         electron = Lattices(session)
         data = electron.get_lattices_id_storage_file(dispatch_id)
         file_module_name = int(FileMapper[name.name].value)
-        # if data[0] is not None:
-        #     executor_file_path=f"{file_path}{str(dispatch_id)}/"
-        #     #results = FileHandler.file_read(executor_file_path,data[file_module_name])
-        #     if file_module_name!=Filetype.FUNCTION_STRING.value:
-        #         if name.value==FileOutput.RESULT.value:
-        #             return LatticeFileResponse(data=f"{results.result}")
-        #         if name.value==FileOutput.INPUTS.value:
-        #             converter=str(f"{results}")
-        #             return LatticeFileResponse(data=converter.replace(":","=").\
-        #                 replace("{","").replace("}",""))
-        #         if name.value==FileOutput.FUNCTION_STRING.value or name.value==FileOutput.ERROR.value:
-        #             return LatticeFileResponse(data=results)
-        #         return LatticeExecutorResponse(data=results,executor_name=data[8])
-        #     return LatticeFileResponse(data=results)
-        # return LatticeFileResponse(data=None)
+        # return True
+        if data[0] is not None:
+            executor_file_path = f"{data[2]}/"
+            print(executor_file_path)
+            print(data[file_module_name])
+            results = FileHandler.file_read(executor_file_path, data[file_module_name])
+            if file_module_name != Filetype.FUNCTION_STRING.value:
+                if name.value == FileOutput.RESULT.value:
+                    if results is None:
+                        return LatticeFileResponse(data=f"{results}")
+                    return LatticeFileResponse(data=f"{results.result}")
+                if name.value == FileOutput.INPUTS.value:
+                    converter = str(f"{results}")
+                    return LatticeFileResponse(
+                        data=converter.replace(":", "=").replace("{", "").replace("}", "")
+                    )
+                if (
+                    name.value == FileOutput.FUNCTION_STRING.value
+                    or name.value == FileOutput.ERROR.value
+                ):
+                    return LatticeFileResponse(data=results)
+                return LatticeExecutorResponse(data=results, executor_name=data)
+            return LatticeFileResponse(data=results)
+        return LatticeFileResponse(data=None)

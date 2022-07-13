@@ -45,8 +45,8 @@ class Summary:
     def get_summary(self, count, offset, sort_by, search, sort_direction) -> List[Lattice]:
         if search is None:
             search = ""
-        if sort_by == "lattice":
-            sort_by = ""
+        # if sort_by == "lattice":
+        #     sort_by = ""
         """
         Get summary of top most lattices
         Args:

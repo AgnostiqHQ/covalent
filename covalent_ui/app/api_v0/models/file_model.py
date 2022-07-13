@@ -27,7 +27,7 @@ class Filetype(str, Enum):
     """Map module for mapping file module to their
     corresponding file extensions"""
 
-    RESULT = "result.pkl"
+    RESULT = "results.pkl"
     OUTPUT = "output"
     FUNCTION_STRING = "function_string.txt"
     INPUTS = "inputs.pkl"

@@ -20,9 +20,10 @@
 
 """Summary Routes"""
 
+from typing import Optional
+
 from fastapi import APIRouter, Query
 from pydantic import conint
-from typing import Optional
 from sqlalchemy.orm import Session
 
 from covalent_ui.app.api_v0.data_layer.summary_dal import Summary
@@ -31,16 +32,21 @@ from covalent_ui.app.api_v0.models.dispatch_model import (
     DeleteDispatchesRequest,
     DeleteDispatchesResponse,
     DispatchDashBoardResponse,
-    SortBy, SortDirection
+    SortBy,
+    SortDirection,
 )
 
 routes: APIRouter = APIRouter()
 
 
 @routes.get("/")
-def get_all_dispatches(count:Optional[conint(gt=0, lt=100)] = Query(10),
-                        offset:Optional[int] = Query(0),sort_by:Optional[SortBy] = Query(None),
-                        search:Optional[str]=None,sort_direction:Optional[SortDirection] = Query(None)):
+def get_all_dispatches(
+    count: Optional[conint(gt=0, lt=100)] = Query(10),
+    offset: Optional[int] = Query(0),
+    sort_by: Optional[SortBy] = SortBy.RUNTIME,
+    search: Optional[str] = None,
+    sort_direction: Optional[SortDirection] = SortDirection.DESCENDING,
+):
     """Get All Dispatches
 
     Args:
@@ -51,7 +57,7 @@ def get_all_dispatches(count:Optional[conint(gt=0, lt=100)] = Query(10),
     """
     with Session(engine) as session:
         summary = Summary(session)
-        return summary.get_summary(count,offset,sort_by,search,sort_direction)
+        return summary.get_summary(count, offset, sort_by, search, sort_direction)
 
 
 @routes.get("/overview/", response_model=DispatchDashBoardResponse)
