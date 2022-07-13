@@ -112,6 +112,7 @@ def test_results_dir_in_sublattice():
     with DispatchDB() as db:
         db.delete([dispatch_id])
 
+    assert result_object.error is None
     assert result_object.status == result_object.COMPLETED
 
     assert output == 25
