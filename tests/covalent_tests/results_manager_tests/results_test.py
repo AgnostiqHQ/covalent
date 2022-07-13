@@ -57,15 +57,15 @@ def db():
 
 @pytest.fixture
 def result_1():
-    @ct.electron
+    @ct.electron(executor="dask")
     def task_1(x, y):
         return x * y
 
-    @ct.electron
+    @ct.electron(executor="dask")
     def task_2(x, y):
         return x + y
 
-    @ct.lattice
+    @ct.lattice(executor="dask")
     def workflow_1(a, b):
         res_1 = task_1(a, b)
         return task_2(res_1, b)

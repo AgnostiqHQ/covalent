@@ -21,6 +21,7 @@
 """Main Covalent public functionality."""
 
 import os
+from importlib import metadata
 
 from . import _file_transfer as fs
 from . import executor
@@ -38,3 +39,5 @@ for _s in dir():
     if not _s.startswith("_"):
         _obj = globals()[_s]
         _obj.__module__ = __name__
+
+__version__ = metadata.version("covalent")

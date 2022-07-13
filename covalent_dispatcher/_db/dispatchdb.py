@@ -197,7 +197,7 @@ class DispatchDB:
             # set echo=True only if covalent is started in debug /develop mode `covalent start -d`
             # `initialize_db` flag can be removed as its redundant (sqlalchemy does check if the tables are
             # created or not before inserting/updating data)
-            result_object.persist(DataStore(self._db_dev_path(), echo=True, initialize_db=True))
+            result_object.persist(DataStore(self._db_dev_path(), initialize_db=True))
             # result_object.persist()
         except Exception as e:
             app_log.exception(f"Exception occured while saving to DB: {e}.")
