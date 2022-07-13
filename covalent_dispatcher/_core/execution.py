@@ -28,12 +28,17 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 import cloudpickle as pickle
+from sqlalchemy.orm import Session
 
 from covalent import dispatch_sync
 from covalent._data_store.datastore import DataStore
+from covalent._data_store.models import Lattice as Lattice_model
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
-from covalent._results_manager.write_result_to_db import write_sublattice_electron_id
+from covalent._results_manager.write_result_to_db import (
+    update_lattices_data,
+    write_sublattice_electron_id,
+)
 from covalent._shared_files import logger
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
@@ -466,9 +471,14 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
         None
     """
 
-    result_object = rm._get_result_from_file(dispatch_id, results_dir)
+    result_object = rm._get_result_from_file(dispatch_id)
 
-    if result_object.status == Result.COMPLETED:
+    with Session(DispatchDB._get_data_store()) as session:
+        lattice_record = (
+            session.query(Lattice).where(Lattice_model.dispatch_id == dispatch_id).first()
+        )
+
+    if lattice_record.status == Result.COMPLETED:
         return
 
     try:
@@ -476,6 +486,14 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
         _run_planned_workflow(result_object, tasks_pool)
 
     except Exception as ex:
+        update_lattices_data(
+            db=DispatchDB()._get_data_store(),
+            status=Result.FAILED,
+            completed_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+            started_at=lattice_record.started_at,
+        )
+
         result_object._status = Result.FAILED
         result_object._end_time = datetime.now(timezone.utc)
         result_object._error = "".join(traceback.TracebackException.from_exception(ex).format())
