@@ -288,7 +288,9 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
     def update_node_result(node_result: dict):
 
-        result_object._update_node(**node_result)
+        result_object._update_node(db=DispatchDB._get_data_store(), **node_result)
+
+        # TODO (DBWORK) - Take it out?
         with DispatchDB() as db:
             db.save_db(result_object)
         result_webhook.send_update(result_object)
@@ -307,6 +309,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
         for node_id in nodes:
             # Get name of the node for the current task
+            # TODO (DBWORK) - Read info from database
+
             node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
 
             if node_name.startswith(

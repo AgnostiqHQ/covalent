@@ -29,6 +29,7 @@ import cloudpickle
 import cloudpickle as pickle
 import networkx as nx
 import yaml
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from .._data_store import DataStore, DataStoreNotInitializedError, models
@@ -50,6 +51,24 @@ if TYPE_CHECKING:
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+LATTICE_FUNCTION_FILENAME = "function.pkl"
+LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
+LATTICE_EXECUTOR_FILENAME = "executor.pkl"
+LATTICE_ERROR_FILENAME = "error.log"
+LATTICE_INPUTS_FILENAME = "inputs.pkl"
+LATTICE_RESULTS_FILENAME = "results.pkl"
+LATTICE_STORAGE_TYPE = "local"
+
+ELECTRON_FUNCTION_FILENAME = "function.pkl"
+ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
+ELECTRON_VALUE_FILENAME = "value.pkl"
+ELECTRON_EXECUTOR_FILENAME = "executor.pkl"
+ELECTRON_STDOUT_FILENAME = "stdout.log"
+ELECTRON_STDERR_FILENAME = "stderr.log"
+ELECTRON_INFO_FILENAME = "info.log"
+ELECTRON_RESULTS_FILENAME = "results.pkl"
+ELECTRON_STORAGE_TYPE = "local"
 
 
 class Result:
@@ -389,20 +408,31 @@ Node Outputs
             None
         """
 
+        electron_kwargs = {}
+        node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
+        if not node_path.exists():
+            node_path.mkdir()
+
         if node_name is not None:
             self.lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
+            electron_kwargs["name"] = node_name
 
         if start_time is not None:
             self.lattice.transport_graph.set_node_value(node_id, "start_time", start_time)
+            electron_kwargs["started_at"] = start_time
 
         if end_time is not None:
             self.lattice.transport_graph.set_node_value(node_id, "end_time", end_time)
+            electron_kwargs["completed_at"] = end_time
 
         if status is not None:
             self.lattice.transport_graph.set_node_value(node_id, "status", status)
+            electron_kwargs["status"] = status
 
         if output is not None:
             self.lattice.transport_graph.set_node_value(node_id, "output", output)
+            with open(node_path / ELECTRON_RESULTS_FILENAME, "wb") as f:
+                cloudpickle.dump(output, f)
 
         if error is not None:
             self.lattice.transport_graph.set_node_value(node_id, "error", error)
@@ -411,12 +441,32 @@ Node Outputs
             self.lattice.transport_graph.set_node_value(
                 node_id, "sublattice_result", sublattice_result
             )
+            # TODO (DBWORK) - Write sublattice record - not sure what to do here - assuming that this data gets written during the sublattice dispatch sync
 
         if stdout is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
+            with open(node_path / ELECTRON_STDOUT_FILENAME, "wb") as f:
+                cloudpickle.dump(stdout, f)
 
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
+            with open(node_path / ELECTRON_STDERR_FILENAME, "wb") as f:
+                cloudpickle.dump(stderr, f)
+
+        with Session(db.engine) as session:
+
+            lattice_id = (
+                session.query(Lattice).where(Lattice.dispatch_id == self.dispatch_id).all()[0].id
+            )
+            session.execute(
+                update(models.Electron)
+                .where(
+                    models.Electron.parent_lattice_id == lattice_id,
+                    models.Electron.transport_graph_node_id == node_id,
+                )
+                .values(updated_at=datetime.now(), **electron_kwargs)
+            )
+            session.commit()
 
     def save(self, directory: str = None, write_source: bool = False) -> None:
         """
@@ -468,27 +518,7 @@ Node Outputs
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 
-        app_log.info("Trying to initialize results dir")
         self._initialize_results_dir()
-        app_log.info("Results dir initialized")
-
-        LATTICE_FUNCTION_FILENAME = "function.pkl"
-        LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
-        LATTICE_EXECUTOR_FILENAME = "executor.pkl"
-        LATTICE_ERROR_FILENAME = "error.log"
-        LATTICE_INPUTS_FILENAME = "inputs.pkl"
-        LATTICE_RESULTS_FILENAME = "result.pkl"
-        LATTICE_STORAGE_TYPE = "local"
-
-        ELECTRON_FUNCTION_FILENAME = "function.pkl"
-        ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
-        ELECTRON_VALUE_FILENAME = "value.pkl"
-        ELECTRON_EXECUTOR_FILENAME = "executor.pkl"
-        ELECTRON_STDOUT_FILENAME = "stdout.log"
-        ELECTRON_STDERR_FILENAME = "stderr.log"
-        ELECTRON_INFO_FILENAME = "info.log"
-        ELECTRON_RESULTS_FILENAME = "result.pkl"
-        ELECTRON_STORAGE_TYPE = "local"
 
         if not db:
             raise DataStoreNotInitializedError
