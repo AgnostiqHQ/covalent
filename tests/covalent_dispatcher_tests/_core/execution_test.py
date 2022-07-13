@@ -56,15 +56,15 @@ def p(x):
 
 @pytest.fixture
 def sublattice_workflow():
-    @ct.lattice
-    def parent_workflow(x):
-        res = sublattice(x)
-        return res
-
     @ct.electron
     @ct.lattice
     def sublattice(x):
         res = a(x)
+        return res
+
+    @ct.lattice
+    def parent_workflow(x):
+        res = sublattice(x)
         return res
 
     parent_workflow.build_graph(x=1)
@@ -327,15 +327,20 @@ def test_run_task(mocker, sublattice_workflow):
     #     def get_deserialized(self):
     #         return mock_func
 
+    from concurrent.futures import ThreadPoolExecutor
+
+    tasks_pool = ThreadPoolExecutor()
+
     write_sublattice_electron_id_mock = mocker.patch(
         "covalent_dispatcher._core.execution.write_sublattice_electron_id"
     )
+    ct.dispatch(sublattice_workflow)(1)
 
     _run_task(
         node_id=1,
         dispatch_id="parent_dispatch_id",
         results_dir="/tmp",
-        inputs=pickle.dumps({"args": [], "kwargs": {"x": ct.TransportableObject(1)}}),
+        inputs={"args": [], "kwargs": {"x": ct.TransportableObject(1)}},
         serialized_callable=sublattice_workflow.transport_graph.get_node_value(
             0,
             "function",
@@ -344,5 +349,7 @@ def test_run_task(mocker, sublattice_workflow):
         call_before=[],
         call_after=[],
         node_name=":sublattice:sublattice",
+        tasks_pool=tasks_pool,
+        workflow_executor=["local", {}],
     )
     write_sublattice_electron_id_mock.assert_called_once()
