@@ -294,6 +294,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             result_object._update_node(**node_result)
             with DispatchDB() as db:
                 db.upsert(result_object.dispatch_id, result_object)
+                db.save_db(result_object)
             result_object.save()
             result_webhook.send_update(result_object)
             g = result_object.lattice.transport_graph._graph
