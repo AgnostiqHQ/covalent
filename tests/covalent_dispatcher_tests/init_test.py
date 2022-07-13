@@ -43,7 +43,7 @@ def test_run_dispatcher():
 
     try:
         dispatch_id = dispatcher.run_dispatcher(
-            result_object=get_mock_result(), workflow_pool=workflow_pool, tasks_pool=task_pool
+            result_object=get_mock_result(), workflow_pool=workflow_pool
         )
     except Exception as e:
         assert False, f"Exception raised: {e}"
@@ -65,7 +65,7 @@ def test_get_result():
     task_pool = ThreadPoolExecutor()
 
     dispatch_id = dispatcher.run_dispatcher(
-        result_object=get_mock_result(), workflow_pool=workflow_pool, tasks_pool=task_pool
+        result_object=get_mock_result(), workflow_pool=workflow_pool
     )
     result = dispatcher.get_result(
         results_dir=TEST_RESULTS_DIR, wait=True, dispatch_id=dispatch_id

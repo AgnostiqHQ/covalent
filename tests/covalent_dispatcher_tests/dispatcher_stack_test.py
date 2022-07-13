@@ -64,7 +64,7 @@ def test_dispatcher_flow(mock_result, expected_res, expected_node_outputs):
     task_pool = ThreadPoolExecutor()
 
     dispatch_id = dispatcher.run_dispatcher(
-        result_object=mock_result(), workflow_pool=workflow_pool, tasks_pool=task_pool
+        result_object=mock_result(), workflow_pool=workflow_pool
     )
     result = dispatcher.get_result(
         results_dir=TEST_RESULTS_DIR, wait=True, dispatch_id=dispatch_id
