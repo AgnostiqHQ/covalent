@@ -37,6 +37,7 @@ from covalent._results_manager.write_result_to_db import (
     insert_lattices_data,
     update_electrons_data,
     update_lattices_data,
+    write_sublattice_electron_id,
 )
 from covalent._shared_files.defaults import (
     arg_prefix,
@@ -411,10 +412,6 @@ def test_update_electrons_data(db):
         assert electron.started_at == electron.updated_at == cur_time
 
 
-def test_are_electron_dependencies_added():
-    pass
-
-
 @pytest.mark.parametrize(
     "node_name,electron_type",
     [
@@ -433,3 +430,58 @@ def test_get_electron_type(node_name, electron_type):
     """Test that given an electron node, the correct electron type is returned."""
 
     assert get_electron_type(node_name) == electron_type
+
+
+def test_write_sublattice_electron_id(db):
+    """Test that the sublattice electron id is written in the lattice record."""
+
+    # Create lattice record.
+    cur_time = dt.now()
+    insert_lattices_data(
+        db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
+
+    # Create electron records.
+    electron_ids = []
+    cur_time = dt.now()
+    for (name, node_id) in [
+        ("task_1", 0),
+        (":parameter:1", 1),
+        (":parameter:2", 2),
+        (":sublattice:task_2", 3),  # Sublattice node id
+        (":parameter:2", 4),
+    ]:
+        electron_kwargs = get_electron_kwargs(
+            name=name,
+            transport_graph_node_id=node_id,
+            created_at=cur_time,
+            updated_at=cur_time,
+        )
+        electron_ids.append(insert_electrons_data(db=db, **electron_kwargs))
+
+    # Create sublattice record.
+    cur_time = dt.now()
+    insert_lattices_data(
+        db=db,
+        **get_lattice_kwargs(
+            dispatch_id="dispatch_2", created_at=cur_time, updated_at=cur_time, started_at=cur_time
+        ),
+    )
+
+    # Update sublattice record electron id
+    write_sublattice_electron_id(
+        db=db,
+        parent_dispatch_id="dispatch_1",
+        sublattice_node_id=3,
+        sublattice_dispatch_id="dispatch_2",
+    )
+
+    # Assert that the electron id has indeed been written.
+    with Session(db.engine) as session:
+        rows = session.query(Lattice).all()
+
+    assert rows[0].dispatch_id == "dispatch_1"
+    assert rows[0].electron_id is None
+
+    assert rows[1].dispatch_id == "dispatch_2"
+    assert rows[1].electron_id == electron_ids[3]
