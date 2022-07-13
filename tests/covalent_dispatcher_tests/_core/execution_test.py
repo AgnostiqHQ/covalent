@@ -56,15 +56,15 @@ def p(x):
 
 @pytest.fixture
 def sublattice_workflow():
-    @ct.lattice
-    def parent_workflow(x):
-        res = sublattice(x)
-        return res
-
     @ct.electron
     @ct.lattice
     def sublattice(x):
         res = a(x)
+        return res
+
+    @ct.lattice
+    def parent_workflow(x):
+        res = sublattice(x)
         return res
 
     parent_workflow.build_graph(x=1)
