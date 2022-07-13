@@ -54,9 +54,6 @@ class Summary:
         """
         counter = 0
         if search is None:
-            counter = self.db_con.query(func.count(Lattice.id)).filter(
-                Lattice.electron_id.is_(None)
-            )
             search = ""
         data = (
             self.db_con.query(
@@ -88,8 +85,11 @@ class Summary:
         )
 
         # count = self.db_con.query(func.count(Lattice.id)).filter(Lattice.electron_id.is_(None))
-        counter = len(data)
-        return DispatchResponse(items=data, count=counter)
+        counter = (
+            self.db_con.query(func.count(Lattice.id)).filter(Lattice.electron_id.is_(None)).first()
+        )
+        print(data)
+        return DispatchResponse(items=data, total_count=counter[0])
 
     def get_summary_overview(self) -> Lattice:
         """

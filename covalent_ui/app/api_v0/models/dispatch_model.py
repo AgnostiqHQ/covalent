@@ -80,7 +80,7 @@ class DispatchResponse(BaseModel):
     """Dispatch Response Model"""
 
     items: List[DispatchModule]
-    count: int
+    total_count: int
 
     class Config:
         """Configure example for openAPI"""
@@ -97,7 +97,7 @@ class DispatchResponse(BaseModel):
                         "status": "COMPLETED",
                     }
                 ],
-                "count": 10,
+                "total_count": 10,
             }
         }
 
