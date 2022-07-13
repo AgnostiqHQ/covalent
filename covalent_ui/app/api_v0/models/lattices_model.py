@@ -34,8 +34,8 @@ class LatticeDetailResponse(BaseModel):
     status: str = None
     total_electrons: int = None
     total_electrons_completed: int = None
-    start_time: datetime = None
-    end_time: datetime = None
+    started_at: datetime = None
+    ended_at: datetime = None
     directory: str = None
 
 

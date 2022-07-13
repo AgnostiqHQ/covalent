@@ -50,18 +50,23 @@ class FileHandler:
     def file_read(executor_file_path, file_module):
         executors = {}
         file_extension = pathlib.Path(executor_file_path + file_module).suffix
-        if file_extension == FileExtension.PKL.value and file_module != Filetype.EXECUTOR.value:
-            for item in read_from_pickle(executor_file_path + file_module):
-                vars1 = vars(item)
-                for value in vars1:
-                    executors[value] = getattr(item, value)
-                return executors
-            return executors
-        elif file_extension == FileExtension.PKL.value and file_module == Filetype.EXECUTOR.value:
+        # if file_extension == FileExtension.PKL.value and file_module != Filetype.EXECUTOR.value:
+        #     for item in read_from_pickle(executor_file_path + file_module):
+        #         vars1 = vars(item)
+        #         for value in vars1:
+        #             executors[value] = getattr(item, value)
+        #         return executors
+        #     return executors
+        if file_extension == FileExtension.PKL.value:
             with open(executor_file_path + file_module, "rb") as file:
                 data = pickle.load(file)
+                print(data)
             return data
         with open(executor_file_path + file_module, "rb") as fd:
             fd.seek(0)
-            result = fd.read().decode("utf-8")
-            return result
+            try:
+                result = fd.read().decode("utf-8")
+                print(result, "resssssssssssssssssssssssssssssssssss")
+                return result
+            except:
+                return None

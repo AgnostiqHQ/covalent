@@ -84,7 +84,7 @@ class Electron(Base):
 
     transport_graph_node_id = Column(Integer, nullable=False)
 
-    type = Column(Enum(ElectronTypeEnum), nullable=False)
+    type = Column(String(24), nullable=False)
 
     name = Column(Text, nullable=False)
 

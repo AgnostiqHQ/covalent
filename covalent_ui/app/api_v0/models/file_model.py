@@ -27,12 +27,13 @@ class Filetype(str, Enum):
     """Map module for mapping file module to their
     corresponding file extensions"""
 
-    RESULT = "results.pkl"
+    RESULT = "result.pkl"
     OUTPUT = "output"
     FUNCTION_STRING = "function_string.txt"
     INPUTS = "inputs.pkl"
     ERROR = "error.log"
     EXECUTOR = "executor.pkl"
+    RESULTS = "results.pkl"
 
 
 class FileMapper(str, Enum):

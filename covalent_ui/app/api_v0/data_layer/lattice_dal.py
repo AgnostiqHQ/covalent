@@ -85,8 +85,8 @@ class Lattices:
                 Lattice.inputs_filename,
                 Lattice.results_filename,
                 Lattice.storage_type,
-                Lattice.started_at.label("start_time"),
-                Lattice.completed_at.label("end_time"),
+                Lattice.started_at.label("started_at"),
+                Lattice.completed_at.label("ended_at"),
                 func.count(Electron.id).label("total_electrons"),
                 func.count(Electron.id)
                 .filter(Electron.completed_at.is_not(None))

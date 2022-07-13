@@ -75,42 +75,52 @@ def get_lattice_details(dispatch_id: uuid.UUID):
         )
 
 
-@routes.get("/{dispatch_id}/details/{name}")
-def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
-    """Get lattice file data
+# @routes.get("/{dispatch_id}/details/{name}")
+# def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
+#     """Get lattice file data
 
-    Args:
-        dispatch_id: To fetch lattice data with the provided dispatch id
-        name: To fetch specific file data for a lattice
+#     Args:
+#         dispatch_id: To fetch lattice data with the provided dispatch id
+#         name: To fetch specific file data for a lattice
 
-    Returns:
-        Returns the lattice file data with the dispatch id and file_module provided provided
-    """
-    with Session(engine) as session:
-        electron = Lattices(session)
-        data = electron.get_lattices_id_storage_file(dispatch_id)
-        file_module_name = int(FileMapper[name.name].value)
-        # return True
-        if data[0] is not None:
-            executor_file_path = f"{data[2]}/"
-            print(executor_file_path)
-            print(data[file_module_name])
-            results = FileHandler.file_read(executor_file_path, data[file_module_name])
-            if file_module_name != Filetype.FUNCTION_STRING.value:
-                if name.value == FileOutput.RESULT.value:
-                    if results is None:
-                        return LatticeFileResponse(data=f"{results}")
-                    return LatticeFileResponse(data=f"{results.result}")
-                if name.value == FileOutput.INPUTS.value:
-                    converter = str(f"{results}")
-                    return LatticeFileResponse(
-                        data=converter.replace(":", "=").replace("{", "").replace("}", "")
-                    )
-                if (
-                    name.value == FileOutput.FUNCTION_STRING.value
-                    or name.value == FileOutput.ERROR.value
-                ):
-                    return LatticeFileResponse(data=results)
-                return LatticeExecutorResponse(data=results, executor_name=data)
-            return LatticeFileResponse(data=results)
-        return LatticeFileResponse(data=None)
+#     Returns:
+#         Returns the lattice file data with the dispatch id and file_module provided provided
+#     """
+#     with Session(engine) as session:
+#         electron = Lattices(session)
+#         data = electron.get_lattices_id_storage_file(dispatch_id)
+#         file_module_name = int(FileMapper[name.name].value)
+#         #return True
+#         if data[0] is not None:
+#             executor_file_path = f"{data[2]}/"
+#             print(executor_file_path)
+
+#             if data[file_module_name]==Filetype.RESULTS.value:
+#                 print(Filetype.RESULT.value)
+#                 new_path=Filetype.RESULT.value
+#                 print(new_path,"ssssssssssssss")
+#             else:
+#                 file_module_name = int(FileMapper[name.name].value)
+#                 new_path=data[file_module_name]
+#                 print(new_path,"fffffffffffffffffff")
+#             results = FileHandler.file_read(executor_file_path,data[file_module_name])
+#             return results
+# if data[0] is not None:
+#     executor_file_path=f"{data[2]}/"
+#     print(executor_file_path)
+#     print(data[file_module_name])
+#     results = FileHandler.file_read(executor_file_path,data[file_module_name])
+#     if file_module_name!=Filetype.FUNCTION_STRING.value:
+#         if name.value==FileOutput.RESULT.value:
+#             if results is None:
+#                 return LatticeFileResponse(data=f"{results}")
+#             return LatticeFileResponse(data=f"{results.result}")
+#         if name.value==FileOutput.INPUTS.value:
+#             converter=str(f"{results}")
+#             return LatticeFileResponse(data=converter.replace(":","=").\
+#                 replace("{","").replace("}",""))
+#         if name.value==FileOutput.FUNCTION_STRING.value or name.value==FileOutput.ERROR.value:
+#             return LatticeFileResponse(data=results)
+#         return LatticeExecutorResponse(data=results,executor_name=data)
+#     return LatticeFileResponse(data=results)
+# return LatticeFileResponse(data=None)

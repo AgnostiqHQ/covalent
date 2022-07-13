@@ -43,7 +43,11 @@ class Summary:
         self.db_con = db_con
 
     def get_summary(self, count, offset, sort_by, search, sort_direction) -> List[Lattice]:
+        counter = 0
         if search is None:
+            counter = self.db_con.query(func.count(Lattice.id)).filter(
+                Lattice.electron_id.is_(None)
+            )
             search = ""
         # if sort_by == "lattice":
         #     sort_by = ""
@@ -87,8 +91,9 @@ class Summary:
             .all()
         )
 
-        count = self.db_con.query(func.count(Lattice.id)).filter(Lattice.electron_id.is_(None))
-        return DispatchResponse(items=data, count=count[0][0])
+        # count = self.db_con.query(func.count(Lattice.id)).filter(Lattice.electron_id.is_(None))
+        counter = len(data)
+        return DispatchResponse(items=data, count=counter)
 
     def get_summary_overview(self) -> Lattice:
         """
@@ -115,11 +120,16 @@ class Summary:
                 func.strftime("%s", Lattice.completed_at) - func.strftime("%s", Lattice.started_at)
             ).label("run_time")
         ).first()
+        query5 = self.db_con.query(
+            (func.count(Lattice.id)).filter(Lattice.status == "FAILED").label("total_failed")
+        ).first()
         return DispatchDashBoardResponse(
             total_jobs_running=query1[0],
             total_jobs_completed=query2[0],
             latest_running_task_status=query3[0],
             total_dispatcher_duration=query4[0] * 1000,
+            total_jobs_failed=query5[0],
+            total_jobs=query1[0] + query2[0] + query5[0],
         )
 
     def delete_dispatches(self, req: DeleteDispatchesRequest) -> Lattice:

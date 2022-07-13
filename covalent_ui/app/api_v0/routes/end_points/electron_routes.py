@@ -23,7 +23,11 @@ import uuid
 from enum import Enum
 
 from fastapi import APIRouter
+from httplib2 import Response
+from sqlalchemy.orm import Session
 
+from covalent_ui.app.api_v0.data_layer.electron_dal import Electrons
+from covalent_ui.app.api_v0.database.config.db import engine
 from covalent_ui.app.api_v0.database.graph_data import graph_data
 from covalent_ui.app.api_v0.models.lattices_model import ElectronErrorResponse, ElectronResponse
 
@@ -42,8 +46,8 @@ class FileOutput(str, Enum):
     ERROR = "error"
 
 
-@routes.get("/electron/{electron_id}/", response_model=ElectronResponse)
-def get_electron_details(electron_id: uuid.UUID):
+@routes.get("/{dispatch_id}/electron/{electron_id}", response_model=ElectronResponse)
+def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
     """Get Electron Details
 
     Args:
@@ -52,28 +56,21 @@ def get_electron_details(electron_id: uuid.UUID):
     Returns:
         Returns the electron details
     """
-    response = graph_data()["items"]
-    for results in response:
-        for data in results["graph"]["nodes"]:
-            if data["electron_id"] == str(electron_id):
-                return ElectronResponse(item=data)
-    return ElectronResponse(item=None)
-
-
-@routes.get("/electron/{electron_id}/get-file/{file_module}", response_model=ElectronErrorResponse)
-def get_electron_file(electron_id: uuid.UUID, file_module: FileOutput):
-    """Get Electron File
-
-    Args:
-        electron_id: To fetch electron data with the provided electron id.
-        file_module: The type of file that needs to be fetched
-
-    Returns:
-        Returns the content of the file with the parameters provided
-    """
-    response = graph_data()["items"]
-    for results in response:
-        for data in results["graph"]["nodes"]:
-            if data["electron_id"] == str(electron_id):
-                return ElectronErrorResponse(file=str(data[file_module]))
-    return ElectronErrorResponse(file=None)
+    with Session(engine) as session:
+        electron = Electrons(session)
+        result = electron.get_electrons_id(dispatch_id, electron_id)
+        if result is None:
+            return ElectronResponse(item=None)
+        return ElectronResponse(
+            item={
+                "id": result[0],
+                "transport_graph_node_id": result[1],
+                "parent_lattice_id": result[2],
+                "type": result[3],
+                "storage_path": result[4],
+                "name": result[5],
+                "status": result[6],
+                "started_at": result[7],
+                "ended_at": result[8],
+            }
+        )

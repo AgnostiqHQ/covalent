@@ -119,8 +119,10 @@ class DeleteDispatchesResponse(BaseModel):
 class DispatchDashBoardResponse(BaseModel):
     """Dashboard metadate model"""
 
+    total_jobs: int
     total_jobs_running: int
     total_jobs_completed: int
+    total_jobs_failed: int
     latest_running_task_status: Status
     total_dispatcher_duration: int = None
 

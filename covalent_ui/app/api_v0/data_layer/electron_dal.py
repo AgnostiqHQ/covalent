@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from covalent_ui.app.api_v0.database.schema.electrons_schema import Electron
+from covalent_ui.app.api_v0.database.schema.lattices_schema import Lattice
 from covalent_ui.app.api_v0.utils.file_handle import FileHandler
 from covalent_ui.app.api_v0.utils.file_name import FileName
 
@@ -29,7 +30,7 @@ class Electrons:
     def __init__(self, db_con) -> None:
         self.db_con = db_con
 
-    def get_electrons_id(self, electron_id: int) -> Electron:
+    def get_electrons_id(self, dispatch_id, electron_id) -> Electron:
         """
         Read electron table by electron id
         Args:
@@ -37,7 +38,27 @@ class Electrons:
         Return:
             Electron with PK as electron_id
         """
-        return self.db_con.query(Electron).filter(Electron.id == electron_id).first()
+        data = (
+            self.db_con.query(
+                Electron.id,
+                Electron.transport_graph_node_id,
+                Electron.parent_lattice_id,
+                Electron.type,
+                Electron.storage_path,
+                Electron.name,
+                Electron.status,
+                Electron.started_at,
+                Electron.completed_at,
+            )
+            .filter(
+                Lattice.id == Electron.parent_lattice_id,
+                Lattice.dispatch_id == str(dispatch_id),
+                Electron.transport_graph_node_id == electron_id,
+            )
+            .first()
+        )
+        # print(data)
+        return data
 
     def read_file(self, electron_id, file_module) -> str:
         """
