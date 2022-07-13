@@ -102,29 +102,31 @@ class Summary:
             Latest running task status,
             Total dispatcher duration
         """
-        query1 = self.db_con.query((func.count(Lattice.id)).label("total_jobs_running")).first()
-        query2 = self.db_con.query(
+        query1 = self.db_con.query(
             (func.count(Lattice.id))
             .filter(Lattice.status == "RUNNING")
             .label("total_jobs_running")
         ).first()
-        query3 = self.db_con.query(
+        query2 = self.db_con.query(
             (func.count(Lattice.id)).filter(Lattice.status == "COMPLETED").label("total_jobs_done")
         ).first()
+        query3 = self.db_con.query(Lattice.status).order_by(Lattice.updated_at.desc()).first()
         query4 = self.db_con.query(
-            (func.count(Lattice.id)).filter(Lattice.status == "FAILED").label("total_jobs_failed")
+            func.sum(
+                func.strftime("%s", Lattice.completed_at) - func.strftime("%s", Lattice.started_at)
+            ).label("run_time")
         ).first()
-        query5 = self.db_con.query(Lattice.status).order_by(Lattice.updated_at.desc()).first()
         query5 = self.db_con.query(
             (func.count(Lattice.id)).filter(Lattice.status == "FAILED").label("total_failed")
         ).first()
+        query6 = self.db_con.query((func.count(Lattice.id)).label("total_jobs")).first()
         return DispatchDashBoardResponse(
             total_jobs_running=query1[0],
             total_jobs_completed=query2[0],
             latest_running_task_status=query3[0],
             total_dispatcher_duration=query4[0] * 1000,
             total_jobs_failed=query5[0],
-            total_jobs=query1[0] + query2[0] + query5[0],
+            total_jobs=query6[0],
         )
 
     def delete_dispatches(self, req: DeleteDispatchesRequest) -> Lattice:
