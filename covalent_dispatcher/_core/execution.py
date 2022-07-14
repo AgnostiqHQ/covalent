@@ -237,6 +237,8 @@ def _run_task(
                 sublattice_result=sublattice_result,
             )
 
+            app_log.warning("Sublattice dispatched (run_task)")
+
         else:
             output, stdout, stderr = executor.execute(
                 function=serialized_callable,
@@ -269,6 +271,8 @@ def _run_task(
             status=Result.FAILED,
             error="".join(traceback.TracebackException.from_exception(ex).format()),
         )
+
+    app_log.warning("Returning node result (run_task)")
 
     return node_result
 
@@ -311,6 +315,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             )
         )
         session.commit()
+    app_log.warning("5: Wrote lattice status to DB (run_planned_workflow)")
 
     order = result_object.lattice.transport_graph.get_topologically_sorted_graph()
 
@@ -349,6 +354,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                     status=Result.COMPLETED,
                     output=output,
                 )
+
+                app_log.warning("6: Updated non-executable nodes")
 
                 continue
 
@@ -394,6 +401,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                     status=Result.RUNNING,
                 )
             )
+            app_log.warning("7: Updating nodes after deps (run_planned_workflow)")
 
             # Add the task generated for the node to the list of tasks
             future = thread_pool.submit(
@@ -418,6 +426,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         wait(futures)
         # del futures
 
+        app_log.warning("8: Run_task finished running (run_planned_workflow)")
+
         # When one or more nodes failed in the last iteration, don't iterate further
         for node_id in nodes:
             if result_object._get_node_status(node_id) == Result.FAILED:
@@ -428,6 +438,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
 
                 # TODO (DBWORK) - Write error and updates to results file directly and only to the results file
+                app_log.warning("8: Failed node upsert statement (run_planned_workflow)")
                 result_object.upsert_lattice_data(DispatchDB()._get_data_store())
 
                 # NOTE - I removed save_db call here
@@ -439,6 +450,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 result_object._end_time = datetime.now(timezone.utc)
 
                 # TODO (DBWORK) - Take out this persist method
+                app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
+                result_object.upsert_lattice_data(DispatchDB()._get_data_store())
                 # with DispatchDB() as db:
                 #     db.save_db(result_object)
                 result_webhook.send_update(result_object)
@@ -453,6 +466,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     result_object._end_time = datetime.now(timezone.utc)
 
     # TODO (DBWORK) - Remove this persist method
+    app_log.warning("10: Successfully post-processed result (run_planned_workflow)")
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
     with DispatchDB() as db:
         db.save_db(result_object, write_source=True)
@@ -499,7 +513,7 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
     # TODO (DBWORK) - Needs the entire workflow - I do have to rehydrate the result object
     app_log.warning("2: Beginning run_workflow")
     result_object = rm._get_result_from_file(dispatch_id)
-    app_log.warning("3: Result object hydrated")
+    app_log.warning("3: Result object hydrated (run_workflow)")
     with Session(DispatchDB._get_data_store()) as session:
         lattice_record = (
             session.query(Lattice).where(Lattice_model.dispatch_id == dispatch_id).first()
@@ -510,6 +524,7 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
 
     try:
         _plan_workflow(result_object)
+        app_log.warning("4: Getting into _run_planned_workflow (run_workflow)")
         _run_planned_workflow(lattice_record, tasks_pool)
 
     except Exception as ex:
