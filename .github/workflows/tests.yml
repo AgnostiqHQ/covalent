@@ -120,6 +120,23 @@ jobs:
       - name: Start Covalent dispatcher server
         run: covalent start
 
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            sdk: 
+              - 'covalent/'
+            dispatcher: 
+              - 'covalent_dispatcher/'
+
+      - name: Run SDK tests and measure coverage
+        if: ${{steps.filter.outputs.sdk == 'true'}}
+        run: pytest tests/covalent_tests --cov=covalent && coverage_sdk xml
+
+      - name: Run dispatcher tests and measure coverage
+        if: ${{steps.filter.output.dispatcher == 'true'}}
+        run: pytest tests/covalent_dispatcher_tests --cov=covalent/covalent_dispatcher && coverage_dispatcher xml
+
       - name: Run tests and measure coverage
         uses: nick-fields/retry@v2
         with:
