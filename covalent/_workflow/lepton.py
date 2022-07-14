@@ -317,10 +317,11 @@ class Lepton(Electron):
                     mutated_args += f'"{arg}" '
 
                 cmd = f"{mutated_kwargs} source {self.library_name} && {self.function_name} {mutated_args} {output_string}"
-                print(cmd)
                 proc = subprocess.run(["/bin/bash", "-c", cmd], capture_output=True)
             else:
-                raise AttributeError("Shell task does not have enough information to run.")
+                raise AttributeError(
+                    "Shell task does not have enough information to run."
+                )  # pragma: no cover
 
             if proc.returncode != 0:
                 raise Exception(proc.stderr.decode("utf-8").strip())

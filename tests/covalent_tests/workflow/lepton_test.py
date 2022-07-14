@@ -98,8 +98,11 @@ proc = Popen(
         ("python", "pylib", "", [(int, "type")], "pycmd", [], False),
         # Provide insufficient parameters for Python
         ("python", "pylib", "", [(int, "type")], "", [], False),
+        ("python", "", "", [], "", [], False),
         # Provide a command to a non-scripting language
         ("c", "", "", [(int, "type")], "ccmd", [], False),
+        # Attempt to use named outputs with a non-scripting language
+        ("c", "clib", "cfunc", [], "", ["output"], False),
     ],
 )
 def test_lepton_init(
@@ -344,6 +347,7 @@ modify() {
 @pytest.mark.parametrize(
     "library_name,library_body,function_name,argtypes,command,named_outputs,args,kwargs,expected_return,valid",
     [
+        # Valid usage examples
         # Call a bash function
         ("test_library.sh", sh_script_simple, "print_hostname", [], "", [], [], {}, None, True),
         # Call a bash function with two inputs and a return value (either syntax valid)
@@ -393,7 +397,38 @@ modify() {
         ("", "", "", [(str, Lepton.INPUT_OUTPUT)], "x=a$x", ["x"], [], {"x": "b"}, "ab", True),
         # Call a bash command with an output
         ("", "", "", [(int, Lepton.OUTPUT)], "x=17", "x", [], {}, 17, True),
-        # TODO: Add usage which should throw errors
+        # Call a bash command with multiple outputs
+        (
+            "",
+            "",
+            "",
+            [(int, Lepton.OUTPUT), (int, Lepton.OUTPUT)],
+            "x=17 && y=18",
+            ["x", "y"],
+            [],
+            {},
+            (17, 18),
+            True,
+        ),
+        # Invalid usage examples
+        # Insufficient named outputs
+        (
+            "",
+            "",
+            "",
+            [(int, Lepton.OUTPUT), (int, Lepton.OUTPUT)],
+            "x=17 && y=18",
+            "x",
+            [],
+            {},
+            (17, 18),
+            False,
+        ),
+        # Input outputs not specified by kwargs
+        ("", "", "", [(int, Lepton.INPUT_OUTPUT)], "x=a$x", ["x"], [], {}, "ab", False),
+        # Bash command returns non-zero exit code
+        ("", "", "", [], "exit 1", [], [], {}, None, False),
+        # TODO: Add more usage which should throw errors
     ],
 )
 def test_shell_wrapper(
