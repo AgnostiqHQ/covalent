@@ -28,9 +28,9 @@ export const graphSlice = createSlice({
         state.graphResultsList.error = null
       })
       .addCase(graphResults.rejected, (state, { payload }) => {
-        state.graphResultsList.isFetching = true
-        state.graphResultsList.error = payload.errors
-      }) 
+        state.graphResultsList.isFetching = false
+        state.graphResultsList.error = payload.detail
+      })
 
   },
 })
