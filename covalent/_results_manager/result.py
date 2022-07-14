@@ -29,12 +29,13 @@ import cloudpickle
 import cloudpickle as pickle
 import networkx as nx
 import yaml
-from sqlalchemy import update
+from sqlalchemy import and_, update
 from sqlalchemy.orm import Session
 
 from .._data_store import DataStore, DataStoreNotInitializedError, models
 from .._shared_files import logger
 from .._shared_files.util_classes import RESULT_STATUS, Status
+from .results_manager import _db_path
 from .utils import convert_to_lattice_function_call
 from .write_result_to_db import (
     get_electron_type,
@@ -142,7 +143,9 @@ Node Outputs
 ------------
 """
 
-        node_outputs = self.get_all_node_outputs()
+        node_outputs = self.get_all_node_outputs(
+            DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
+        )
         for k, v in node_outputs.items():
             show_result_str += f"{k}: {v}\n"
 
@@ -291,7 +294,7 @@ Node Outputs
             "stderr": self.lattice.transport_graph.get_node_value(node_id, "stderr"),
         }
 
-    def get_all_node_outputs(self) -> dict:
+    def get_all_node_outputs(self, db: DataStore) -> dict:
         """
         Return output of every node execution.
 
@@ -301,13 +304,22 @@ Node Outputs
         Returns:
             node_outputs: A dictionary containing the output of every node execution.
         """
+        with Session(db.engine) as session:
 
-        return {
-            self._get_node_name(node_id): self._get_node_output(node_id)
-            for node_id in range(self._num_nodes)
-        }
+            lattice_id = (
+                session.query(Lattice.id).where(Lattice.dispatch_id == self.dispatch_id).first()
+            )
+            nodes = (
+                session.query(models.Electron.transport_graph_node_id)
+                .where(models.Electron.parent_lattice_id == lattice_id)
+                .all()
+            )
+            return {
+                self._get_node_name(db, node_id): self._get_node_output(db, node_id)
+                for node_id in nodes
+            }
 
-    def get_all_node_results(self) -> List[Dict]:
+    def get_all_node_results(self, db: DataStore) -> List[Dict]:
         """
         Get all the node results.
 
@@ -317,10 +329,19 @@ Node Outputs
         Returns:
             node_results: A list of dictionaries containing the result of every node execution.
         """
+        with Session(db.engine) as session:
 
-        return [self.get_node_result(i) for i in range(self._num_nodes)]
+            lattice_id = (
+                session.query(Lattice.id).where(Lattice.dispatch_id == self.dispatch_id).first()
+            )
+            nodes = (
+                session.query(models.Electron.transport_graph_node_id)
+                .where(models.Electron.parent_lattice_id == lattice_id)
+                .all()
+            )
+            return [self.get_node_result(db, i) for i in nodes]
 
-    def _get_node_name(self, node_id: int) -> str:
+    def _get_node_name(self, db: DataStore, node_id: int) -> str:
         """
         Returns the name of the node with given node id.
 
@@ -328,12 +349,25 @@ Node Outputs
             node_id: The node id.
 
         Returns:
-            node_name: The name of said node.
+            The name of said node.
         """
+        with Session(db.engine) as session:
 
-        return self.lattice.transport_graph.get_node_value(node_id, "node_name")
+            lattice_id = (
+                session.query(Lattice.id).where(Lattice.dispatch_id == self.dispatch_id).first()
+            )
+            return (
+                session.query(models.Electron.name)
+                .where(
+                    and_(
+                        models.Electron.parent_lattice_id == lattice_id,
+                        models.Electron.transport_graph_node_id == node_id,
+                    )
+                )
+                .first()
+            )
 
-    def _get_node_status(self, node_id: int) -> "Status":
+    def _get_node_status(self, db: DataStore, node_id: int) -> "Status":
         """
         Returns the status of a node.
 
@@ -341,12 +375,25 @@ Node Outputs
             node_id: The node id.
 
         Returns:
-            status: The status of said node.
+            The status of said node.
         """
+        with Session(db.engine) as session:
 
-        return self.lattice.transport_graph.get_node_value(node_id, "status")
+            lattice_id = (
+                session.query(Lattice.id).where(Lattice.dispatch_id == self.dispatch_id).first()
+            )
+            return (
+                session.query(models.Electron.status)
+                .where(
+                    and_(
+                        models.Electron.parent_lattice_id == lattice_id,
+                        models.Electron.transport_graph_node_id == node_id,
+                    )
+                )
+                .first()
+            )
 
-    def _get_node_output(self, node_id: int) -> Any:
+    def _get_node_output(self, db: DataStore, node_id: int) -> Any:
         """
         Return the output of a node.
 
@@ -357,10 +404,27 @@ Node Outputs
             output: The output of said node.
                     Will return None if error occured in execution.
         """
+        with Session(db.engine) as session:
 
-        return self.lattice.transport_graph.get_node_value(node_id, "output")
+            lattice_id = (
+                session.query(Lattice.id).where(Lattice.dispatch_id == self.dispatch_id).first()
+            )
+            electron = (
+                session.query(models.Electron)
+                .where(
+                    (
+                        and_(
+                            models.Electron.parent_lattice_id == lattice_id,
+                            models.Electron.transport_graph_node_id == node_id,
+                        )
+                    )
+                )
+                .first()
+            )
+            with open(os.path.join(electron.storage_path, electron.results_filename)) as f:
+                return pickle.loads(f.read())
 
-    def _get_node_error(self, node_id: int) -> Any:
+    def _get_node_error(self, db: DataStore, node_id: int) -> Any:
         """
         Return the error of a node.
 
@@ -371,8 +435,25 @@ Node Outputs
             error: The error of said node.
                    Will return None if no error occured in execution.
         """
+        with Session(db.engine) as session:
 
-        return self.lattice.transport_graph.get_node_value(node_id, "error")
+            lattice_id = (
+                session.query(Lattice.id).where(Lattice.dispatch_id == self.dispatch_id).first()
+            )
+            electron = (
+                session.query(models.Electron)
+                .where(
+                    (
+                        and_(
+                            models.Electron.parent_lattice_id == lattice_id,
+                            models.Electron.transport_graph_node_id == node_id,
+                        )
+                    )
+                )
+                .first()
+            )
+            with open(os.path.join(electron.storage_path, electron.stderr_filename)) as f:
+                return pickle.loads(f.read())
 
     def _update_node(
         self,
