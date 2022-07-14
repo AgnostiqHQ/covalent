@@ -270,6 +270,10 @@ def test_insert_electrons_data(db):
         for key, value in electron_kwargs.items():
             if key == "parent_dispatch_id":
                 assert electron.parent_lattice_id == 1
+            elif key in ["created_at", "updated_at"]:
+                assert getattr(electron, key).strftime("%m/%d/%Y, %H:%M:%S") == value.strftime(
+                    "%m/%d/%Y, %H:%M:%S"
+                )
             else:
                 assert getattr(electron, key) == value
 
