@@ -39,6 +39,10 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
+def get_data_store() -> DataStore:
+    return DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
+
+
 def get_result(dispatch_id: str, wait: bool = False) -> Result:
     """
     Get the results of a dispatch from a file.
