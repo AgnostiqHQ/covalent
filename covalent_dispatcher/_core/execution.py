@@ -540,6 +540,9 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
     # result_object._lattice.transport_graph = transport_graph
     # result_object._initialize_nodes()
     # result_object.save()
+    app_log.warning(
+        f"Transport graph sorted (run_workflow): {result_object._lattice.transport_graph.get_topologically_sorted_graph()}"
+    )
 
     app_log.warning("3: Result object hydrated (run_workflow)")
     with Session(DispatchDB()._get_data_store().engine) as session:
@@ -555,7 +558,7 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
     try:
         _plan_workflow(result_object)
         app_log.warning("4: Getting into _run_planned_workflow (run_workflow)")
-        _run_planned_workflow(lattice_record, tasks_pool)
+        _run_planned_workflow(result_object, tasks_pool)
 
     except Exception as ex:
         update_lattices_data(

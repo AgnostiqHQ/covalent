@@ -93,7 +93,7 @@ def result_from(lattice_record: Lattice) -> Result:
     with open(
         os.path.join(lattice_record.storage_path, lattice_record.transport_graph_filename), "rb"
     ) as f:
-        transport_graph = f.read()
+        transport_graph = pickle.load(f)
 
     lattice = ct.lattice(function, executor=executor)
     result = Result(
@@ -107,6 +107,7 @@ def result_from(lattice_record: Lattice) -> Result:
     result._start_time = lattice_record.started_at
     result._end_time = lattice_record.completed_at
     result._lattice.transport_graph = transport_graph
+    app_log.warning(f"Transport graph sorted: {transport_graph.get_topologically_sorted_graph()}")
     return result
 
 
