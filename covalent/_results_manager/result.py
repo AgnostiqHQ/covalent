@@ -306,7 +306,9 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(Lattice.id).where(Lattice.dispatch_id == self.dispatch_id).first()
+                session.query(models.Lattice.id)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
             )
             nodes = (
                 session.query(models.Electron.transport_graph_node_id)
@@ -331,7 +333,9 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(Lattice.id).where(Lattice.dispatch_id == self.dispatch_id).first()
+                session.query(models.Lattice.id)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
             )
             nodes = (
                 session.query(models.Electron.transport_graph_node_id)
@@ -353,7 +357,9 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(Lattice.id).where(Lattice.dispatch_id == self.dispatch_id).first()
+                session.query(models.Lattice.id)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
             )
             return (
                 session.query(models.Electron.name)
@@ -379,7 +385,9 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(Lattice.id).where(Lattice.dispatch_id == self.dispatch_id).first()
+                session.query(models.Lattice.id)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
             )
             return (
                 session.query(models.Electron.status)
@@ -406,7 +414,9 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(Lattice.id).where(Lattice.dispatch_id == self.dispatch_id).first()
+                session.query(models.Lattice.id)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
             )
             electron = (
                 session.query(models.Electron)
@@ -437,7 +447,9 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(Lattice.id).where(Lattice.dispatch_id == self.dispatch_id).first()
+                session.query(models.Lattice.id)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
             )
             electron = (
                 session.query(models.Electron)
@@ -536,7 +548,10 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(Lattice).where(Lattice.dispatch_id == self.dispatch_id).all()[0].id
+                session.query(models.Lattice)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .all()[0]
+                .id
             )
             session.execute(
                 update(models.Electron)
