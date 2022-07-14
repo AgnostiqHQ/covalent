@@ -128,7 +128,6 @@ class LocalDispatcher(BaseDispatcher):
 
             return get_result(
                 LocalDispatcher.dispatch(lattice, dispatcher_addr)(*args, **kwargs),
-                lattice.metadata["results_dir"],
                 wait=True,
             )
 
