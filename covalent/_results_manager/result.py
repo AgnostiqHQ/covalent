@@ -21,7 +21,7 @@
 """Result object."""
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
@@ -58,6 +58,7 @@ LATTICE_EXECUTOR_FILENAME = "executor.pkl"
 LATTICE_ERROR_FILENAME = "error.log"
 LATTICE_INPUTS_FILENAME = "inputs.pkl"
 LATTICE_RESULTS_FILENAME = "results.pkl"
+LATTICE_TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 LATTICE_STORAGE_TYPE = "local"
 
 ELECTRON_FUNCTION_FILENAME = "function.pkl"
@@ -142,11 +143,11 @@ Node Outputs
 ------------
 """
 
-        node_outputs = self.get_all_node_outputs(
-            DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
-        )
-        for k, v in node_outputs.items():
-            show_result_str += f"{k}: {v}\n"
+        # node_outputs = self.get_all_node_outputs(
+        #     DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
+        # )
+        # for k, v in node_outputs.items():
+        #     show_result_str += f"{k}: {v}\n"
 
         return show_result_str
 
@@ -559,7 +560,7 @@ Node Outputs
                     models.Electron.parent_lattice_id == lattice_id,
                     models.Electron.transport_graph_node_id == node_id,
                 )
-                .values(updated_at=datetime.now(), **electron_kwargs)
+                .values(updated_at=datetime.now(timezone.utc), **electron_kwargs)
             )
             session.commit()
 
@@ -640,7 +641,8 @@ Node Outputs
         with open(data_storage_path / LATTICE_RESULTS_FILENAME, "wb") as f:
             cloudpickle.dump(self.result, f)
 
-        # TODO - Scott proposal (add transport graph)
+        with open(data_storage_path / LATTICE_TRANSPORT_GRAPH_FILENAME, "wb") as f:
+            cloudpickle.dump(self._lattice.transport_graph, f)
 
         # Write lattice records to Database
         if not lattice_exists:
@@ -656,8 +658,9 @@ Node Outputs
                 "error_filename": LATTICE_ERROR_FILENAME,
                 "inputs_filename": LATTICE_INPUTS_FILENAME,
                 "results_filename": LATTICE_RESULTS_FILENAME,
-                "created_at": datetime.now(),
-                "updated_at": datetime.now(),
+                "transport_graph_filename": LATTICE_TRANSPORT_GRAPH_FILENAME,
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc),
                 "started_at": self.start_time,
                 "completed_at": self.end_time,
             }
@@ -668,7 +671,7 @@ Node Outputs
                 # TODO - Include logic for electron_id in sublattice context
                 "dispatch_id": self.dispatch_id,
                 "status": str(self.status),
-                "updated_at": datetime.now(),
+                "updated_at": datetime.now(timezone.utc),
                 "started_at": self.start_time,
                 "completed_at": self.end_time,
             }
@@ -790,8 +793,8 @@ Node Outputs
                         "stdout_filename": ELECTRON_STDOUT_FILENAME,
                         "stderr_filename": ELECTRON_STDERR_FILENAME,
                         "info_filename": ELECTRON_INFO_FILENAME,
-                        "created_at": datetime.now(),
-                        "updated_at": datetime.now(),
+                        "created_at": datetime.now(timezone.utc),
+                        "updated_at": datetime.now(timezone.utc),
                         "started_at": started_at,
                         "completed_at": completed_at,
                     }
@@ -803,7 +806,7 @@ Node Outputs
                         "transport_graph_node_id": node_id,
                         "status": str(tg.get_node_value(node_key=node_id, value_key="status")),
                         "started_at": started_at,
-                        "updated_at": datetime.now(),
+                        "updated_at": datetime.now(timezone.utc),
                         "completed_at": completed_at,
                     }
                     update_electrons_data(db=db, **electron_record_kwarg)

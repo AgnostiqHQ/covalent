@@ -86,6 +86,11 @@ def result_from(lattice_record: Lattice) -> Result:
     with open(os.path.join(lattice_record.storage_path, lattice_record.error_filename), "rb") as f:
         error = f.read()
 
+    with open(
+        os.path.join(lattice_record.storage_path, lattice_record.transport_graph_filename), "rb"
+    ) as f:
+        transport_graph = f.read()
+
     lattice = ct.lattice(function, executor=executor)
     result = Result(
         lattice,
@@ -97,6 +102,7 @@ def result_from(lattice_record: Lattice) -> Result:
     result._inputs = inputs
     result._start_time = lattice_record.started_at
     result._end_time = lattice_record.completed_at
+    result._lattice.transport_graph = transport_graph
     return result
 
 
