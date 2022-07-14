@@ -20,6 +20,8 @@
 
 """Request and response models for Electrons"""
 
+from enum import Enum
+
 # pylint: disable=no-name-in-module
 from pydantic import BaseModel
 
@@ -40,3 +42,11 @@ class ElectronResponseModel(BaseModel):
     started_at: str
     completed_at: str
     updated_at: str
+
+
+class FileOutput(str, Enum):
+    RESULT = "result"
+    FUNCTION_STRING = "function_string"
+    INPUTS = "inputs"
+    ERROR = "error"
+    EXECUTOR = "executor_details"

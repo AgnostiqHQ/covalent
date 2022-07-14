@@ -43,7 +43,11 @@ class Graph:
         Return:
             Electron ids
         """
-        return self.db_con.query(Electron.id).filter(Electron.parent_lattice_id.in_(lattice_id))
+        return (
+            self.db_con.query(Electron.id, Electron.transport_graph_node_id)
+            .filter(Electron.parent_lattice_id.in_(lattice_id))
+            .first()
+        )
 
     def get_lattices_id(self, dispatch_id: UUID):
         """
@@ -53,7 +57,11 @@ class Graph:
         Return:
             Lattice ids
         """
-        return self.db_con.query(Lattice.id).filter(Lattice.dispatch_id == str(dispatch_id))
+        return (
+            self.db_con.query(Lattice.id, Lattice.dispatch_id)
+            .filter(Lattice.dispatch_id == str(dispatch_id))
+            .first()
+        )
 
     def get_nodes(self, lattice_id):
         """

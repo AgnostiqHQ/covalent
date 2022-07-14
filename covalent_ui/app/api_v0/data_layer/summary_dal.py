@@ -21,6 +21,7 @@
 from sqlite3 import InterfaceError
 from typing import List
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func, or_
 
@@ -52,16 +53,16 @@ class Summary:
         Return:
             List of top most Lattices and count
         """
-        counter = 0
-        if search is None:
-            search = ""
         data = (
             self.db_con.query(
                 Lattice.dispatch_id.label("dispatch_id"),
                 Lattice.name.label("lattice_name"),
                 (
-                    func.strftime("%s", Lattice.completed_at)
-                    - func.strftime("%s", Lattice.started_at)
+                    (
+                        func.strftime("%s", Lattice.completed_at)
+                        - func.strftime("%s", Lattice.started_at)
+                    )
+                    * 1000
                 ).label("runtime"),
                 Lattice.created_at.label("started_at"),
                 Lattice.updated_at.label("ended_at"),
@@ -86,9 +87,16 @@ class Summary:
 
         # count = self.db_con.query(func.count(Lattice.id)).filter(Lattice.electron_id.is_(None))
         counter = (
-            self.db_con.query(func.count(Lattice.id)).filter(Lattice.electron_id.is_(None)).first()
+            self.db_con.query(func.count(Lattice.id))
+            .filter(
+                or_(
+                    Lattice.name.ilike(f"%{search}%"),
+                    Lattice.dispatch_id.ilike(f"%{search}%"),
+                ),
+                Lattice.electron_id.is_(None),
+            )
+            .first()
         )
-        print(data)
         return DispatchResponse(items=data, total_count=counter[0])
 
     def get_summary_overview(self) -> Lattice:
@@ -156,7 +164,9 @@ class Summary:
                 failure.append(dispatch_id)
 
         if len(failure) > 0:
-            message = "Some of the dispatches could not be deleted. Pls try again!"
+            raise HTTPException(
+                status_code=400, detail="Some of the dispatches could not be deleted."
+            )
         else:
             message = f"All {len(req.dispatches)} deleted successfully"
         return DeleteDispatchesResponse(

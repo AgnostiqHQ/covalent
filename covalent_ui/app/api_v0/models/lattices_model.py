@@ -64,6 +64,19 @@ class ElectronResponse(BaseModel):
     item: dict = None
 
 
+class ElectronFileResponse(BaseModel):
+    """Electron Response Model"""
+
+    data: str = None
+
+
+class ElectronExecutorResponse(BaseModel):
+    """Lattices File Response Model"""
+
+    data: dict = (None,)
+    executor_name: str = None
+
+
 class ElectronErrorResponse(BaseModel):
     """Eelctron Error Response Model"""
 
