@@ -431,12 +431,15 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
         # When one or more nodes failed in the last iteration, don't iterate further
         for node_id in nodes:
-            if result_object._get_node_status(node_id) == Result.FAILED:
+            if (
+                result_object._get_node_status(DispatchDB()._get_data_store(), node_id)
+                == Result.FAILED
+            ):
 
                 # TODO (DBWORK) - Write to DB directly
                 result_object._status = Result.FAILED
                 result_object._end_time = datetime.now(timezone.utc)
-                result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
+                result_object._error = f"Node {result_object._get_node_name(DispatchDB()._get_data_store(),node_id)} failed: \n{result_object._get_node_error(DispatchDB()._get_data_store(),node_id)}"
 
                 # TODO (DBWORK) - Write error and updates to results file directly and only to the results file
                 app_log.warning("8: Failed node upsert statement (run_planned_workflow)")
@@ -446,7 +449,10 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 result_webhook.send_update(result_object)
                 return
 
-            elif result_object._get_node_status(node_id) == Result.CANCELLED:
+            elif (
+                result_object._get_node_status(DispatchDB()._get_data_store(), node_id)
+                == Result.CANCELLED
+            ):
                 result_object._status = Result.CANCELLED
                 result_object._end_time = datetime.now(timezone.utc)
 
