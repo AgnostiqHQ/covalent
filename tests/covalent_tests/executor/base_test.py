@@ -23,7 +23,9 @@
 import os
 import tempfile
 
-from covalent.executor import BaseExecutor
+import covalent as ct
+from covalent._workflow.transport import TransportableObject
+from covalent.executor import BaseExecutor, wrapper_fn
 
 
 class MockExecutor(BaseExecutor):
@@ -81,3 +83,23 @@ def test_execute_in_conda_env(mocker):
         "node_id",
     )
     conda_env_fail_mock.assert_called_once_with("function", "args", "kwargs", "node_id")
+
+
+def test_wrapper_fn_calldep_retval_injection():
+    """Test injecting calldep return values into main task"""
+
+    def f(x=0, y=0):
+        return x + y
+
+    def identity(y):
+        return y
+
+    serialized_fn = TransportableObject(f)
+    calldep = ct.DepsCall(identity, args=[5], retval_keyword="y")
+    call_before = [calldep.apply()]
+    args = []
+    kwargs = {"x": 2}
+
+    output = wrapper_fn(serialized_fn, call_before, [], *args, **kwargs)
+
+    assert output == 7

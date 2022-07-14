@@ -67,3 +67,27 @@ def test_wait_for_post_processing():
         workflow.post_processing = True
         workflow.electron_outputs = [(0, 4), (2, 12), (4, 125), (6, 1500)]
         assert workflow.workflow_function() == 1500
+
+
+def test_injected_inputs_are_not_in_tg():
+    """Test that arguments to electrons injected by calldeps aren't
+    added to the transport graph"""
+
+    def identity(y):
+        return y
+
+    calldep = ct.DepsCall(identity, args=[5], retval_keyword="y")
+
+    @ct.electron(call_before=[calldep])
+    def task(x, y=0):
+        return (x, y)
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph(2)
+    g = workflow.transport_graph._graph
+
+    assert list(g.nodes) == [0, 1]
+    assert list(g.edges) == [(1, 0, 0)]
