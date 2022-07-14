@@ -293,7 +293,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         None
     """
 
-    app_log.warning("Inside run workflow")
+    app_log.warning("Inside run_planned_workflow")
 
     def update_node_result(node_result: dict):
         app_log.info("Updating node result")
@@ -325,6 +325,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
     app_log.warning("5A: Topological sort finished (run_planned_workflow)")
 
+    db = DispatchDB()._get_data_store()
+
     for nodes in order:
         futures: list = []
 
@@ -333,15 +335,18 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             # TODO (DBWORK) - Read info from database
 
             node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
+            app_log.warning(f"Node name success: {node_name}")
 
             if node_name.startswith(
                 (subscript_prefix, generator_prefix, parameter_prefix, attr_prefix)
             ):
                 if node_name.startswith(parameter_prefix):
                     output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
+                    output_db = result_object._get_node_value(db, node_id)
                 else:
                     parent = result_object.lattice.transport_graph.get_dependencies(node_id)[0]
                     output = result_object.lattice.transport_graph.get_node_value(parent, "output")
+                    output_db = result_object._get_node_output(db, node_id)
 
                     if node_name.startswith(attr_prefix):
                         attr = result_object.lattice.transport_graph.get_node_value(
