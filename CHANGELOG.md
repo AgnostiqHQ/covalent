@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Bash decorator is introduced
+- Lepton commands can be specified as a list of strings rather than strings alone.
+
 ## [0.132.0] - 2022-07-14
 
 ### Authors
