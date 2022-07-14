@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+
+## [0.132.0] - 2022-07-14
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+
+
+### Added
+
+- Bash lepton support reintroduced with some UX modifications to the Lepton class. Leptons which use scripting languages can be specified as either (1) a command run in the shell/console or (2) a call to a function in a library/script. Leptons which use compiled languages must specify a library and a function name.
+- The keyword argument `display_name` can be used to override the name appearing in the UI. Particularly useful when the lepton is a command.
+- All arguments except for language are now keyword arguments.
+- Keyword arguments passed to a Bash lepton are understood to define environment variables within the shell.
+- Non-keyword arguments fill in `$1`, `$2`, etc.
+- Named outputs enumerate variables within the shell which will be returned to the user. These can be either `Lepton.OUTPUT` or `Lepton.INPUT_OUTPUT` types.
+
 ### Added
 
 - New fields to the decomposed result object Database: 
