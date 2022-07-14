@@ -1,22 +1,10 @@
 # DB Migration Guide
 
-## Getting Started
+## Getting Started & Running Migrations
 
-When first getting started, we need to generate our initial set of migrations (that is, generate scripts that will update the database schema to correspond to our DB models `covalent/_data_store/models.py`).
+Whenever merging other branches into your working branch always remember to run migrations as the database schema may have changed.
 
-We do this by running the following in the project root of covalent
-
-```bash
-alembic revision --autogenerate -m "init"
-```
-
-You should see a new python file generated under `alembic/versions`. Also, there should be a table name in the database called `alembic_version` which will keep track of which migrations have run corresponding to the filenames in `alembic/versions`.
-
-> The python files in `alembic/versions` contain an `upgrade()` method which will sync our database schema with our DB models `covalent/_data_store/models.py`. Furthermore, it contains a `downgrade()` command which will undo the operations performed by `upgrade()`. We do not explicitly call these methods, this is done by the alembic cli.
-
-## Run Migrations
-
-To now run the migrations which we have not yet run we execute
+In order to update the DB to reflect the most up to date DB models we run the migrations (that have not yet run) as such:
 
 ```bash
 alembic upgrade head
@@ -36,7 +24,10 @@ To generate new migrations as a result of editing our DB model files, we can run
 alembic revision --autogenerate -m "Description of DB update"
 ```
 
-Which will create a new version file under `alembic/versions` (*This will not run the migrations, it will just generate the version file*)
+
+You should see a new python file generated under `alembic/versions`. Also, there should be a table name in the database called `alembic_version` which will keep track of which migrations have run corresponding to the filenames in `alembic/versions`.
+
+> The python files in `alembic/versions` contain an `upgrade()` method which will sync our database schema with our DB models `covalent/_data_store/models.py`. Furthermore, it contains a `downgrade()` command which will undo the operations performed by `upgrade()`. We do not explicitly call these methods, this is done by the alembic cli.
 
 
 ## Generate Template Migration
