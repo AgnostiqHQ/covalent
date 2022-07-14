@@ -107,6 +107,8 @@ def result_from(lattice_record: Lattice) -> Result:
     result._start_time = lattice_record.started_at
     result._end_time = lattice_record.completed_at
     result._lattice.transport_graph = transport_graph
+    result._lattice.args = inputs["args"]
+    result._lattice.kwargs = inputs["kwargs"]
     app_log.warning(f"Transport graph sorted: {transport_graph.get_topologically_sorted_graph()}")
     return result
 

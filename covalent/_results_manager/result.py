@@ -312,14 +312,16 @@ Node Outputs
                 .first()
                 .id
             )
-            nodes = (
-                session.query(models.Electron.transport_graph_node_id)
+            electron_records = (
+                session.query(models.Electron)
                 .where(models.Electron.parent_lattice_id == lattice_id)
                 .all()
             )
             return {
-                self._get_node_name(db, node_id): self._get_node_output(db, node_id)
-                for node_id in nodes
+                self._get_node_name(db, electron.transport_graph_node_id): self._get_node_output(
+                    db, electron.transport_graph_node_id
+                )
+                for electron in electron_records
             }
 
     def get_all_node_results(self, db: DataStore) -> List[Dict]:
@@ -335,16 +337,20 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(models.Lattice.id)
+                session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
                 .first()
+                .id
             )
-            nodes = (
-                session.query(models.Electron.transport_graph_node_id)
+            electron_records = (
+                session.query(models.Electron)
                 .where(models.Electron.parent_lattice_id == lattice_id)
                 .all()
             )
-            return [self.get_node_result(db, i) for i in nodes]
+            return [
+                self.get_node_result(db, electron.transport_graph_node_id)
+                for electron in electron_records
+            ]
 
     def _get_node_name(self, db: DataStore, node_id: int) -> str:
         """
@@ -359,12 +365,13 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(models.Lattice.id)
+                session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
                 .first()
+                .id
             )
             return (
-                session.query(models.Electron.name)
+                session.query(models.Electron)
                 .where(
                     and_(
                         models.Electron.parent_lattice_id == lattice_id,
@@ -372,6 +379,7 @@ Node Outputs
                     )
                 )
                 .first()
+                .name
             )
 
     def _get_node_status(self, db: DataStore, node_id: int) -> "Status":
@@ -416,11 +424,8 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                (
-                    session.query(models.Lattice)
-                    .where(models.Lattice.dispatch_id == self.dispatch_id)
-                    .first()
-                )
+                session.query(models.Lattice)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
                 .first()
                 .id
             )
@@ -436,7 +441,7 @@ Node Outputs
                 )
                 .first()
             )
-            with open(os.path.join(electron.storage_path, electron.results_filename)) as f:
+            with open(os.path.join(electron.storage_path, electron.results_filename), "rb") as f:
                 return pickle.loads(f.read())
 
     def _get_node_value(self, db: DataStore, node_id: int) -> Any:
@@ -456,7 +461,8 @@ Node Outputs
                 session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
                 .first()
-            ).id
+                .id
+            )
             electron = (
                 session.query(models.Electron)
                 .where(
@@ -489,7 +495,8 @@ Node Outputs
                 session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
                 .first()
-            ).id
+                .id
+            )
             electron = (
                 session.query(models.Electron)
                 .where(
@@ -502,6 +509,7 @@ Node Outputs
                 )
                 .first()
             )
+
             with open(os.path.join(electron.storage_path, electron.stderr_filename)) as f:
                 return pickle.loads(f.read())
 

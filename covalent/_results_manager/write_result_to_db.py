@@ -217,7 +217,7 @@ def update_lattices_data(db: DataStore, dispatch_id: str, **kwargs) -> None:
         if not valid_update:
             raise MissingLatticeRecordError
 
-        for attr, value in kwargs.iteritems():
+        for attr, value in kwargs.items():
             if value:
                 setattr(valid_update, attr, value)
 

@@ -167,8 +167,11 @@ def _post_process(lattice: Lattice, node_outputs: Dict, execution_order: List[Li
     """
 
     ordered_node_outputs = []
+    app_log.warning(f"node_outputs: {node_outputs}")
+    app_log.warning(f"node_outputs: {node_outputs.items()}")
     for i, item in enumerate(node_outputs.items()):
         key, val = item
+        app_log.warning(f"Here's the key: {key}")
         if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
             ordered_node_outputs.append((i, val))
 
@@ -510,10 +513,16 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     result_object._end_time = datetime.now(timezone.utc)
 
     # TODO (DBWORK) - Remove this persist method
-    app_log.warning("10: Successfully post-processed result (run_planned_workflow)")
-    result_object.upsert_lattice_data(DispatchDB()._get_data_store())
-    with DispatchDB() as db:
-        db.save_db(result_object, write_source=True)
+    app_log.warning(
+        f"10: Successfully post-processed result {result_object.dispatch_id} (run_planned_workflow)"
+    )
+
+    try:
+        result_object.upsert_lattice_data(DispatchDB()._get_data_store())
+        with DispatchDB() as db:
+            db.save_db(result_object, write_source=True)
+    except Exception:
+        app_log.exception("Upsert or sve db issue")
     result_webhook.send_update(result_object)
 
 

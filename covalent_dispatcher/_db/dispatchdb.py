@@ -166,6 +166,12 @@ class DispatchDB:
         else:
             self._dbpath = get_config("user_interface.dispatch_db")
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return False
+
     def _get_data_store(self) -> DataStore:
         """Return the DataStore instance to write records."""
 
