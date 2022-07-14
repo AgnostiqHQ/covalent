@@ -210,9 +210,7 @@ def update_lattices_data(db: DataStore, dispatch_id: str, **kwargs) -> None:
     """This function updates the lattices record."""
 
     with Session(db.engine) as session:
-        valid_update = (
-            session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first() is not None
-        )
+        valid_update = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
 
         if not valid_update:
             raise MissingLatticeRecordError
@@ -326,9 +324,7 @@ def write_sublattice_electron_id(
 
 def write_lattice_error(db: DataStore, dispatch_id: str, error: str):
     with Session(db.engine) as session:
-        valid_update = (
-            session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first() is not None
-        )
+        valid_update = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
 
         if not valid_update:
             raise MissingLatticeRecordError
