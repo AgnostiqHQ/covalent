@@ -88,12 +88,15 @@ def result_from(lattice_record: Lattice) -> Result:
     ) as f:
         inputs = pickle.loads(f.read())
     with open(os.path.join(lattice_record.storage_path, lattice_record.error_filename), "rb") as f:
-        error = f.read()
-
+        error = pickle.loads(f.read())
     with open(
         os.path.join(lattice_record.storage_path, lattice_record.transport_graph_filename), "rb"
     ) as f:
         transport_graph = pickle.load(f)
+    with open(
+        os.path.join(lattice_record.storage_path, lattice_record.results_filename), "rb"
+    ) as f:
+        output = pickle.loads(f.read())
 
     lattice = ct.lattice(function, executor=executor)
     result = Result(
@@ -109,6 +112,7 @@ def result_from(lattice_record: Lattice) -> Result:
     result._lattice.transport_graph = transport_graph
     result._lattice.args = inputs["args"]
     result._lattice.kwargs = inputs["kwargs"]
+    result._result = output
     app_log.warning(f"Transport graph sorted: {transport_graph.get_topologically_sorted_graph()}")
     return result
 
