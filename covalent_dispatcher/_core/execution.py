@@ -24,6 +24,7 @@ Defines the core functionality of the dispatcher
 
 import traceback
 from concurrent.futures import Future, ThreadPoolExecutor, wait
+from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
@@ -322,6 +323,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
     order = result_object.lattice.transport_graph.get_topologically_sorted_graph()
 
+    app_log.warning("5A: Topological sort finished (run_planned_workflow)")
+
     for nodes in order:
         futures: list = []
 
@@ -523,16 +526,18 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
     app_log.warning("2: Beginning run_workflow")
 
     result_object = rm._get_result_from_db(DispatchDB()._get_data_store(), dispatch_id)
-    lattice = result_object.lattice
-    args = result_object.inputs["args"]
-    kwargs = result_object.inputs["kwargs"]
-    lattice.build_graph(*args, **kwargs)
-    lattice.transport_graph = lattice.transport_graph.serialize()
-    result_object = Result(lattice, lattice.metadata["results_dir"])
-    transport_graph = _TransportGraph()
-    transport_graph.deserialize(result_object.lattice.transport_graph)
-    result_object._lattice.transport_graph = transport_graph
-    result_object._initialize_nodes()
+    # lattice = deepcopy(result_object.lattice)
+    # args = result_object.inputs["args"]
+    # kwargs = result_object.inputs["kwargs"]
+    # app_log.warning(f"args: {args}, kwargs: {kwargs}")
+    # lattice.build_graph(*args, **kwargs)
+    # lattice.transport_graph = lattice.transport_graph.serialize()
+    # result_object = Result(lattice, lattice.metadata["results_dir"], dispatch_id)
+    # transport_graph = _TransportGraph()
+    # transport_graph.deserialize(result_object.lattice.transport_graph)
+    # result_object._lattice.transport_graph = transport_graph
+    # result_object._initialize_nodes()
+    # result_object.save()
 
     app_log.warning("3: Result object hydrated (run_workflow)")
     with Session(DispatchDB()._get_data_store().engine) as session:
