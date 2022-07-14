@@ -31,11 +31,13 @@ from .depscall import DepsCall
 from .depspip import DepsPip
 from .electron import Electron
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from ..executor import BaseExecutor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+# TODO: Review exceptions/errors
 
 
 class Lepton(Electron):
@@ -65,14 +67,19 @@ class Lepton(Electron):
 
     _LANG_PY = ["Python", "python"]
     _LANG_C = ["C", "c"]
+    _LANG_SHELL = ["bash", "shell"]
+    _SCRIPTING_LANGUAGES = _LANG_PY + _LANG_SHELL
 
     def __init__(
         self,
         language: str = "python",
+        *,
         library_name: str = "",
         function_name: str = "",
         argtypes: Optional[List] = [],
-        *,
+        command: Optional[str] = "",
+        named_outputs: Optional[List[str]] = [],
+        display_name: Optional[str] = "",
         executor: Union[
             List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
         ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
@@ -87,6 +94,30 @@ class Lepton(Electron):
         self.function_name = function_name
         # Types must be stored as strings, since not all type objects can be pickled
         self.argtypes = [(arg[0].__name__, arg[1]) for arg in argtypes]
+        self.command = command
+        self.named_outputs = named_outputs
+        self.display_name = display_name
+
+        if self.language in Lepton._SCRIPTING_LANGUAGES:
+            if self.command and self.library_name:
+                raise ValueError(
+                    "Invalid argument combination: library_name and command. Use one or the other."
+                )
+
+            if not (self.command or self.library_name):
+                raise ValueError("Specify either library_name or command using this language.")
+        else:
+            if command:
+                raise ValueError(
+                    f"Keyword argument 'command' incompatible with language {self.language}."
+                )
+            if named_outputs:
+                raise ValueError(
+                    f"Keyword argument 'named_outputs' incompatible with language {self.language}."
+                )
+
+        if self.library_name and not self.function_name:
+            raise ValueError("Must specify function_name when calling a library.")
 
         # Syncing behavior of file transfer with an electron
         internal_call_before_deps = []
@@ -247,19 +278,98 @@ class Lepton(Electron):
             else:
                 return tuple(return_vals)
 
+        def shell_wrapper(*args, **kwargs) -> Any:
+            """Invoke a shell function or script."""
+
+            import builtins
+            import subprocess
+
+            mutated_kwargs = ""
+            for k, v in kwargs.items():
+                mutated_kwargs += f"export {k}={v} && "
+
+            attrs = [a[1] for a in self.argtypes]
+            num_input_outputs = attrs.count(Lepton.INPUT_OUTPUT)
+            num_outputs = attrs.count(Lepton.OUTPUT)
+
+            if (num_input_outputs + num_outputs) != len(self.named_outputs):
+                raise Exception(
+                    "Expecting {} named outputs.".format(num_input_outputs + num_outputs)
+                )
+
+            if num_input_outputs != len(kwargs):
+                raise Exception("Expecting {} keyword arguments.".format(num_input_outputs))
+
+            output_string = ""
+            if self.named_outputs:
+                for output in self.named_outputs:
+                    output_string += f" && echo COVALENT-LEPTON-OUTPUT-{output}: ${output}"
+
+            if self.command:
+                self.command = self.command.format(**kwargs)
+                cmd = ["/bin/bash", "-c", f"{mutated_kwargs} {self.command} {output_string}", "_"]
+                cmd += args
+                proc = subprocess.run(cmd, capture_output=True)
+            elif self.library_name:
+                mutated_args = ""
+                for arg in args:
+                    mutated_args += f'"{arg}" '
+
+                cmd = f"{mutated_kwargs} source {self.library_name} && {self.function_name} {mutated_args} {output_string}"
+                proc = subprocess.run(["/bin/bash", "-c", cmd], capture_output=True)
+            else:
+                raise AttributeError(
+                    "Shell task does not have enough information to run."
+                )  # pragma: no cover
+
+            if proc.returncode != 0:
+                raise Exception(proc.stderr.decode("utf-8").strip())
+
+            return_vals = []
+            if self.named_outputs:
+                output_lines = proc.stdout.decode("utf-8").strip().split("\n")
+                for idx, output in enumerate(self.named_outputs):
+                    output_marker = f"COVALENT-LEPTON-OUTPUT-{output}: "
+                    for line in output_lines:
+                        if output_marker in line:
+                            # TODO: For some reason cannot pickle this line
+                            return_vals += [
+                                getattr(builtins, self.argtypes[idx][0])(
+                                    line.split(output_marker)[1]
+                                )
+                            ]
+                            break
+
+            if return_vals:
+                return tuple(return_vals) if len(return_vals) > 1 else return_vals[0]
+            else:
+                return None
+
         if self.language in Lepton._LANG_PY:
             wrapper = python_wrapper
         elif self.language in Lepton._LANG_C:
             wrapper = c_wrapper
+        elif self.language in Lepton._LANG_SHELL:
+            wrapper = shell_wrapper
         else:
             raise ValueError(f"Language '{self.language}' is not supported.")
 
         # Attribute translation
-        wrapper.__name__ = self.function_name
-        wrapper.__qualname__ = f"Lepton.{self.library_name.split('.')[0]}.{self.function_name}"
-        wrapper.__module__ += f".{self.library_name.split('.')[0]}"
+        wrapper.__name__ = self.display_name or self.function_name or self.command
+        wrapper.__qualname__ = (
+            f"Lepton.{self.display_name}"
+            if self.display_name
+            else f"Lepton.{self.library_name.split('.')[0]}.{self.function_name}"
+        )
+        wrapper.__module__ += (
+            ".console"
+            if (self.language in Lepton._SCRIPTING_LANGUAGES and self.command)
+            else f".{self.library_name.split('.')[0]}"
+        )
         wrapper.__doc__ = (
             f"""Lepton interface for {self.language} function '{self.function_name}'."""
+            if self.function_name
+            else ""
         )
 
         return wrapper
