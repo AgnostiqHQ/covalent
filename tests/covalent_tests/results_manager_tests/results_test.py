@@ -141,6 +141,7 @@ def test_result_persist_workflow_1(db, result_1):
 
     for node_id in range(5):
         result_1._update_node(
+            db=db,
             node_id=node_id,
             start_time=cur_time,
             end_time=cur_time,
@@ -157,10 +158,11 @@ def test_result_persist_workflow_1(db, result_1):
         lattice_row = session.query(Lattice).first()
         electron_rows = session.query(Electron).all()
         electron_dependency_rows = session.query(ElectronDependency).all()
-        print(f"THERE: {electron_dependency_rows}")
 
     # Check that the lattice records are as expected
-    assert lattice_row.completed_at == cur_time
+    assert lattice_row.completed_at.strftime("%Y-%m-%d %H:%M") == cur_time.strftime(
+        "%Y-%m-%d %H:%M"
+    )
     assert lattice_row.status == "COMPLETED"
 
     with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
@@ -171,7 +173,11 @@ def test_result_persist_workflow_1(db, result_1):
     for electron in electron_rows:
         assert electron.status == "COMPLETED"
         assert electron.parent_lattice_id == 1
-        assert electron.started_at == electron.completed_at == cur_time
+        assert (
+            electron.started_at.strftime("%Y-%m-%d %H:%M")
+            == electron.completed_at.strftime("%Y-%m-%d %H:%M")
+            == cur_time.strftime("%Y-%m-%d %H:%M")
+        )
         assert Path(electron.storage_path) == Path(
             f"{TEMP_RESULTS_DIR}/dispatch_1/node_{electron.transport_graph_node_id}"
         )
