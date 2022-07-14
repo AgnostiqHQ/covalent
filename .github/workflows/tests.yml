@@ -136,7 +136,7 @@ jobs:
         run: coverage xml
 
       - name: Run dispatcher tests and measure coverage
-        run: PYTHONPATH=$PWD/ pytest tests/covalent_dispatcher_tests --cov=covalent/covalent_dispatcher && coverage xml
+        run: PYTHONPATH=$PWD/ pytest tests/covalent_dispatcher_tests --cov=covalent/covalent_dispatcher
 
       - name: Generate coverage report for dispatcher
         run: coverage xml
