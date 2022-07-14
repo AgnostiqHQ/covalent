@@ -434,19 +434,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 # TODO (DBWORK) - Write error and updates to results file directly and only to the results file
                 result_object.upsert_lattice_data(DispatchDB()._get_data_store())
 
-                # Updated result status and end time
-                with Session(DispatchDB()._get_data_store()) as session:
-                    session.execute(
-                        update(Lattice)
-                        .where(Lattice.dispatch_id == result_object.dispatch_id)
-                        .values(
-                            status=str(Result.FAILED),
-                            updated_at=datetime.now(timezone.utc),
-                            started_at=datetime.now(timezone.utc),
-                        )
-                    )
-                    session.commit()
-
                 # NOTE - I removed save_db call here
                 result_webhook.send_update(result_object)
                 return
@@ -521,11 +508,11 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
             session.query(Lattice).where(Lattice_model.dispatch_id == dispatch_id).first()
         )
 
-    if lattice_record.status == Result.COMPLETED:
+    if lattice_record.status == str(Result.COMPLETED):
         return
 
     try:
-        #        _plan_workflow(result_object)
+        _plan_workflow(result_object)
         _run_planned_workflow(lattice_record, tasks_pool)
 
     except Exception as ex:
