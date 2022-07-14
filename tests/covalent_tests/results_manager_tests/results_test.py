@@ -23,6 +23,7 @@
 import os
 import shutil
 from datetime import datetime as dt
+from datetime import timezone
 from pathlib import Path
 
 import cloudpickle
@@ -133,7 +134,7 @@ def test_result_persist_workflow_1(db, result_1):
     assert len(electron_dependency_rows) == 4
 
     # Update some node / lattice statuses
-    cur_time = dt.now()
+    cur_time = dt.now(timezone.utc)
     result_1._end_time = cur_time
     result_1._status = "COMPLETED"
     result_1._result = {"helo": 1, "world": 2}

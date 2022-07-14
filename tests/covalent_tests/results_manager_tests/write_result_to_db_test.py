@@ -21,6 +21,7 @@
 """Unit tests for the module used to write the decomposed result object to the database."""
 
 from datetime import datetime as dt
+from datetime import timezone
 
 import pytest
 from sqlalchemy.orm import Session
@@ -194,7 +195,7 @@ def test_insert_lattices_data(db):
     timestamps = []
 
     for i in range(2):
-        cur_time = dt.now()
+        cur_time = dt.now(timezone.utc)
         timestamps.append(cur_time)
         lattice_args = get_lattice_kwargs(
             dispatch_id=f"dispatch_{i + 1}",
@@ -237,7 +238,7 @@ def test_insert_lattices_data(db):
 def test_insert_electrons_data(db):
     """Test the function that inserts the electron data to the Electrons table."""
 
-    cur_time = dt.now()
+    cur_time = dt.now(timezone.utc)
     insert_lattices_data(
         db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
     )
@@ -271,7 +272,7 @@ def test_insert_electrons_data(db):
 def test_insert_electrons_data_missing_lattice_record(db):
     """Test the function that inserts the electron data to the Electrons table."""
 
-    cur_time = dt.now()
+    cur_time = dt.now(timezone.utc)
     electron_kwargs = {
         **get_electron_kwargs(
             created_at=cur_time,
@@ -285,13 +286,13 @@ def test_insert_electrons_data_missing_lattice_record(db):
 def test_insert_electron_dependency_data(db, workflow_lattice):
     """Test the function that adds the electron dependencies of the lattice to the DB."""
 
-    cur_time = dt.now()
+    cur_time = dt.now(timezone.utc)
     insert_lattices_data(
         db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
     )
 
     electron_ids = []
-    cur_time = dt.now()
+    cur_time = dt.now(timezone.utc)
     for (name, node_id) in [
         ("task_1", 0),
         (":parameter:1", 1),
@@ -341,7 +342,7 @@ def test_insert_electron_dependency_data(db, workflow_lattice):
 def test_update_lattices_data(db):
     """Test the function that updates the lattice data."""
 
-    cur_time = dt.now()
+    cur_time = dt.now(timezone.utc)
     with pytest.raises(MissingLatticeRecordError):
         update_lattices_data(
             db=db,
@@ -378,7 +379,12 @@ def test_update_electrons_data(db):
     """Test the function that updates the data in the Electrons table."""
 
     insert_lattices_data(
-        db=db, **get_lattice_kwargs(created_at=dt.now(), updated_at=dt.now(), started_at=dt.now())
+        db=db,
+        **get_lattice_kwargs(
+            created_at=dt.now(timezone.utc),
+            updated_at=dt.now(timezone.utc),
+            started_at=dt.now(timezone.utc),
+        ),
     )
 
     with pytest.raises(MissingElectronRecordError):
@@ -387,13 +393,16 @@ def test_update_electrons_data(db):
             parent_dispatch_id="dispatch_1",
             transport_graph_node_id=0,
             status="RUNNING",
-            started_at=dt.now(),
-            updated_at=dt.now(),
+            started_at=dt.now(timezone.utc),
+            updated_at=dt.now(timezone.utc),
             completed_at=None,
         )
 
-    insert_electrons_data(db=db, **get_electron_kwargs(created_at=dt.now(), updated_at=dt.now()))
-    cur_time = dt.now()
+    insert_electrons_data(
+        db=db,
+        **get_electron_kwargs(created_at=dt.now(timezone.utc), updated_at=dt.now(timezone.utc)),
+    )
+    cur_time = dt.now(timezone.utc)
     update_electrons_data(
         db=db,
         parent_dispatch_id="dispatch_1",
@@ -436,14 +445,14 @@ def test_write_sublattice_electron_id(db):
     """Test that the sublattice electron id is written in the lattice record."""
 
     # Create lattice record.
-    cur_time = dt.now()
+    cur_time = dt.now(timezone.utc)
     insert_lattices_data(
         db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
     )
 
     # Create electron records.
     electron_ids = []
-    cur_time = dt.now()
+    cur_time = dt.now(timezone.utc)
     for (name, node_id) in [
         ("task_1", 0),
         (":parameter:1", 1),
@@ -460,7 +469,7 @@ def test_write_sublattice_electron_id(db):
         electron_ids.append(insert_electrons_data(db=db, **electron_kwargs))
 
     # Create sublattice record.
-    cur_time = dt.now()
+    cur_time = dt.now(timezone.utc)
     insert_lattices_data(
         db=db,
         **get_lattice_kwargs(
