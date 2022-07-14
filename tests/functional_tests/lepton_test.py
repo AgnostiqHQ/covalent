@@ -18,26 +18,33 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Main Covalent public functionality."""
+"""Lepton functional tests."""
 
 import os
-from importlib import metadata
+from pathlib import Path
 
-from . import _file_transfer as fs
-from . import executor, leptons
-from ._dispatcher_plugins import local_dispatch as dispatch
-from ._dispatcher_plugins import local_dispatch_sync as dispatch_sync
-from ._file_transfer import strategies as fs_strategies
-from ._results_manager.results_manager import cancel, get_result, sync
-from ._shared_files.config import get_config, reload_config, set_config
-from ._shared_files.util_classes import RESULT_STATUS as status
-from ._workflow import DepsBash, DepsCall, DepsPip, Lepton, electron, lattice
+import covalent as ct
 
-__all__ = [s for s in dir() if not s.startswith("_")]
 
-for _s in dir():
-    if not _s.startswith("_"):
-        _obj = globals()[_s]
-        _obj.__module__ = __name__
+@ct.leptons.bash(executor="local", display_name="debug")
+def task(x):
+    return f"echo {x} > /tmp/debug.txt"
 
-__version__ = metadata.version("covalent")
+
+@ct.lattice
+def workflow():
+    task(5)
+
+
+def test_bash_decorator():
+    ct.dispatch(workflow)()
+    ct.sync()
+
+    file = Path("/tmp/debug.txt")
+    assert file.is_file()
+
+    with open("/tmp/debug", "r") as f:
+        result = int(f.readline().strip())
+        assert result == 5
+
+    os.remove("/tmp/debug.txt")
