@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.132.0] - 2022-07-14
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+
+
 ### Added
 
 - Bash lepton support reintroduced with some UX modifications to the Lepton class. Leptons which use scripting languages can be specified as either (1) a command run in the shell/console or (2) a call to a function in a library/script. Leptons which use compiled languages must specify a library and a function name.
