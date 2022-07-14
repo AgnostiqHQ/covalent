@@ -130,13 +130,22 @@ jobs:
 #              - 'covalent_dispatcher/'
 
       - name: Run SDK tests and measure coverage
-        run: pytest tests/covalent_tests --cov=covalent && coverage xml
+        run: PYTHONPATH=$PWD/ pytest tests/covalent_tests --cov=covalent
+
+      - name: Generate coverage report for SDK
+        run: coverage xml
 
       - name: Run dispatcher tests and measure coverage
-        run: pytest tests/covalent_dispatcher_tests --cov=covalent/covalent_dispatcher && coverage xml
+        run: PYTHONPATH=$PWD/ pytest tests/covalent_dispatcher_tests --cov=covalent/covalent_dispatcher && coverage xml
+
+      - name: Generate coverage report for dispatcher
+        run: coverage xml
 
       - name: Run functional tests and measure coverage
-        run: pytest tests/functional_tests && coverage xml
+        run: PYTHONPATH=$PWD/ pytest tests/functional_tests
+
+      - name: Generate coverage report for functional tests
+        run:  coverage xml
 
 #      - name: Run tests and measure coverage
 #        uses: nick-fields/retry@v2
