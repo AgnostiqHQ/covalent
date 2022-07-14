@@ -496,7 +496,7 @@ def cluster(
     """
     # addr of the admin server for the Dask cluster process
     # started with covalent
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     try:
         admin_host = get_config("dask.admin_host")
         admin_port = get_config("dask.admin_port")
