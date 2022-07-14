@@ -27,7 +27,9 @@ from concurrent.futures import ThreadPoolExecutor
 import pytest
 
 import covalent_dispatcher as dispatcher
+from covalent._data_store.datastore import DataStore
 from covalent._results_manager import results_manager as rm
+from covalent._results_manager.utils import _db_path
 from covalent._shared_files.defaults import parameter_prefix
 from covalent_dispatcher._db.dispatchdb import DispatchDB
 
@@ -66,19 +68,19 @@ def test_dispatcher_flow(mock_result, expected_res, expected_node_outputs):
     dispatch_id = dispatcher.run_dispatcher(
         result_object=mock_result(), workflow_pool=workflow_pool, tasks_pool=task_pool
     )
-    result = dispatcher.get_result(
-        results_dir=TEST_RESULTS_DIR, wait=True, dispatch_id=dispatch_id
-    )
+    result = dispatcher.get_result(wait=True, dispatch_id=dispatch_id)
     assert result.dispatch_id == dispatch_id
     assert result.result == expected_res
-    assert result.get_all_node_outputs() == expected_node_outputs
+    assert (
+        result.get_all_node_outputs(
+            db=DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}", initialize_db=True)
+        )
+        == expected_node_outputs
+    )
 
     rm._delete_result(
         dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR, remove_parent_directory=True
     )
-
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
 
     workflow_pool.shutdown()
     task_pool.shutdown()

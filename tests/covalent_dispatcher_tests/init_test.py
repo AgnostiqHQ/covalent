@@ -48,10 +48,6 @@ def test_run_dispatcher():
     except Exception as e:
         assert False, f"Exception raised: {e}"
 
-    rm._delete_result(dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR)
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
-
     workflow_pool.shutdown()
     task_pool.shutdown()
 
@@ -67,16 +63,8 @@ def test_get_result():
     dispatch_id = dispatcher.run_dispatcher(
         result_object=get_mock_result(), workflow_pool=workflow_pool, tasks_pool=task_pool
     )
-    result = dispatcher.get_result(
-        results_dir=TEST_RESULTS_DIR, wait=True, dispatch_id=dispatch_id
-    )
+    result = dispatcher.get_result(wait=True, dispatch_id=dispatch_id)
     assert isinstance(result, covalent._results_manager.result.Result)
-
-    rm._delete_result(
-        dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR, remove_parent_directory=True
-    )
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
 
     workflow_pool.shutdown()
     task_pool.shutdown()

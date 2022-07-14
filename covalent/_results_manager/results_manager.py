@@ -78,17 +78,17 @@ def result_from(lattice_record: Lattice) -> Result:
     with open(
         os.path.join(lattice_record.storage_path, lattice_record.function_filename), "rb"
     ) as f:
-        function = pickle.loads(f.read())
+        function = pickle.load(f)
     with open(
         os.path.join(lattice_record.storage_path, lattice_record.executor_filename), "rb"
     ) as f:
-        executor = pickle.loads(f.read())
+        executor = pickle.load(f)
     with open(
         os.path.join(lattice_record.storage_path, lattice_record.inputs_filename), "rb"
     ) as f:
-        inputs = pickle.loads(f.read())
+        inputs = pickle.load(f)
     with open(os.path.join(lattice_record.storage_path, lattice_record.error_filename), "rb") as f:
-        error = pickle.loads(f.read())
+        error = pickle.load(f)
     with open(
         os.path.join(lattice_record.storage_path, lattice_record.transport_graph_filename), "rb"
     ) as f:
@@ -96,7 +96,7 @@ def result_from(lattice_record: Lattice) -> Result:
     with open(
         os.path.join(lattice_record.storage_path, lattice_record.results_filename), "rb"
     ) as f:
-        output = pickle.loads(f.read())
+        output = pickle.load(f)
 
     lattice = ct.lattice(function, executor=executor)
     result = Result(
