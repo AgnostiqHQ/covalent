@@ -92,7 +92,7 @@ def result_from(lattice_record: Lattice) -> Result:
         os.path.join(lattice_record.storage_path, lattice_record.inputs_filename), "rb"
     ) as f:
         inputs = pickle.loads(f.read())
-    with open(os.path.join(lattice_record.storage_path, lattice_record.error_filename), "r") as f:
+    with open(os.path.join(lattice_record.storage_path, lattice_record.error_filename), "rb") as f:
         error = f.read()
 
     lattice = ct.lattice(function, executor=executor)
@@ -137,7 +137,11 @@ def _get_result_from_db(
             raise MissingLatticeRecordError
         elif not wait:
             return lattice_record.status if status_only else result_from(lattice_record)
-        elif lattice_record.status in [Result.COMPLETED, Result.FAILED, Result.CANCELLED]:
+        elif lattice_record.status in [
+            str(Result.COMPLETED),
+            str(Result.FAILED),
+            str(Result.CANCELLED),
+        ]:
             return lattice_record.status if status_only else result_from(lattice_record)
 
 

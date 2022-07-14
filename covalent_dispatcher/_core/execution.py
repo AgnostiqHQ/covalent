@@ -54,6 +54,7 @@ from covalent._shared_files.defaults import (
 )
 from covalent._workflow.deps import Deps
 from covalent._workflow.lattice import Lattice
+from covalent._workflow.transport import _TransportGraph
 from covalent.executor import _executor_manager
 from covalent_ui import result_webhook
 
@@ -512,7 +513,19 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
 
     # TODO (DBWORK) - Needs the entire workflow - I do have to rehydrate the result object
     app_log.warning("2: Beginning run_workflow")
-    result_object = rm._get_result_from_db(dispatch_id)
+
+    result_object = rm._get_result_from_db(DispatchDB()._get_data_store(), dispatch_id)
+    lattice = result_object.lattice
+    args = result_object.inputs["args"]
+    kwargs = result_object.inputs["kwargs"]
+    lattice.build_graph(*args, **kwargs)
+    lattice.transport_graph = lattice.transport_graph.serialize()
+    result_object = Result(lattice, lattice.metadata["results_dir"])
+    transport_graph = _TransportGraph()
+    transport_graph.deserialize(result_object.lattice.transport_graph)
+    result_object._lattice.transport_graph = transport_graph
+    result_object._initialize_nodes()
+
     app_log.warning("3: Result object hydrated (run_workflow)")
     with Session(DispatchDB._get_data_store()) as session:
         lattice_record = (

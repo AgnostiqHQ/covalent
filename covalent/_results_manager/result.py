@@ -545,6 +545,8 @@ Node Outputs
         with open(data_storage_path / LATTICE_RESULTS_FILENAME, "wb") as f:
             cloudpickle.dump(self.result, f)
 
+        # TODO - Scott proposal (add transport graph)
+
         # Write lattice records to Database
         if not lattice_exists:
             lattice_record_kwarg = {
