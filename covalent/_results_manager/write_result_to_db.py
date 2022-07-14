@@ -22,6 +22,7 @@
 
 import os
 from datetime import datetime as dt
+from datetime import timezone
 
 import networkx as nx
 from sqlalchemy import update
@@ -195,7 +196,7 @@ def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "L
                 edge_name=edge_data["edge_name"],
                 parameter_type=edge_data["param_type"] if "param_type" in edge_data else None,
                 arg_index=edge_data["arg_index"] if "arg_index" in edge_data else None,
-                created_at=dt.now(),
+                created_at=dt.now(timezone.utc),
             )
 
             session.add(electron_dependency_row)
@@ -318,7 +319,7 @@ def write_sublattice_electron_id(
         session.execute(
             update(Lattice)
             .where(Lattice.dispatch_id == sublattice_dispatch_id)
-            .values(electron_id=sublattice_electron_id, updated_at=dt.now())
+            .values(electron_id=sublattice_electron_id, updated_at=dt.now(timezone.utc))
         )
         session.commit()
 

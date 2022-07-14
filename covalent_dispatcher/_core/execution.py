@@ -288,12 +288,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     """
 
     def update_node_result(node_result: dict):
-
+        app_log.info("Updating node result")
         result_object._update_node(db=DispatchDB._get_data_store(), **node_result)
-
-        # TODO (DBWORK) - Take it out?
-        # with DispatchDB() as db:
-        #     db.save_db(result_object)
         result_webhook.send_update(result_object)
 
     def task_callback(future: Future):
@@ -501,8 +497,9 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
     """
 
     # TODO (DBWORK) - Needs the entire workflow - I do have to rehydrate the result object
-
+    app_log.warning("2: Beginning run_workflow")
     result_object = rm._get_result_from_file(dispatch_id)
+    app_log.warning("3: Result object hydrated")
     with Session(DispatchDB._get_data_store()) as session:
         lattice_record = (
             session.query(Lattice).where(Lattice_model.dispatch_id == dispatch_id).first()
@@ -519,7 +516,7 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
         update_lattices_data(
             DispatchDB()._get_data_store(),
             lattice_record.dispatch_id,
-            status=Result.FAILED,
+            status=str(Result.FAILED),
             completed_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )

@@ -82,6 +82,7 @@ def run_dispatcher(
 
     result_object._initialize_nodes()
 
+    app_log.warning("0: First time saving result to DB")
     DispatchDB().save_db(result_object)
 
     from ._core import run_workflow
@@ -89,6 +90,7 @@ def run_dispatcher(
     futures[dispatch_id] = workflow_pool.submit(
         run_workflow, result_object.dispatch_id, result_object.results_dir, tasks_pool
     )
+    app_log.warning("1: Succeeded submitting workfow to workflow pool.")
 
     return dispatch_id
 
