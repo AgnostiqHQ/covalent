@@ -63,6 +63,7 @@ VALUE_FILENAME = "value.pkl"
 STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
 INFO_FILENAME = "info.log"
+TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 
 
 @pytest.fixture
@@ -112,6 +113,7 @@ def get_lattice_kwargs(
     error_filename=ERROR_FILENAME,
     inputs_filename=INPUTS_FILENAME,
     results_filename=RESULTS_FILENAME,
+    transport_graph_filename=TRANSPORT_GRAPH_FILENAME,
     created_at=None,
     updated_at=None,
     started_at=None,
@@ -131,6 +133,7 @@ def get_lattice_kwargs(
         "error_filename": error_filename,
         "inputs_filename": inputs_filename,
         "results_filename": results_filename,
+        "transport_graph_filename": transport_graph_filename,
         "created_at": created_at,
         "updated_at": updated_at,
         "started_at": started_at,
@@ -226,7 +229,12 @@ def test_insert_lattices_data(db):
         assert lattice.error_filename == ERROR_FILENAME
         assert lattice.inputs_filename == INPUTS_FILENAME
         assert lattice.results_filename == RESULTS_FILENAME
-        assert lattice.created_at == lattice.updated_at == lattice.started_at == timestamps[i]
+        assert (
+            lattice.created_at.strftime("%m/%d/%Y, %H:%M:%S")
+            == lattice.updated_at.strftime("%m/%d/%Y, %H:%M:%S")
+            == lattice.started_at.strftime("%m/%d/%Y, %H:%M:%S")
+            == timestamps[i].strftime("%m/%d/%Y, %H:%M:%S")
+        )
         assert lattice.completed_at is None
 
         with Session(db.engine) as session:
