@@ -94,7 +94,6 @@ class Lepton(Electron):
         self.function_name = function_name
         # Types must be stored as strings, since not all type objects can be pickled
         self.argtypes = [(arg[0].__name__, arg[1]) for arg in argtypes]
-        print(self.argtypes)
         self.command = command
         self.named_outputs = named_outputs
         self.display_name = display_name
