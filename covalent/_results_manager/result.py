@@ -35,8 +35,7 @@ from sqlalchemy.orm import Session
 from .._data_store import DataStore, DataStoreNotInitializedError, models
 from .._shared_files import logger
 from .._shared_files.util_classes import RESULT_STATUS, Status
-from .results_manager import _db_path
-from .utils import convert_to_lattice_function_call
+from .utils import _db_path, convert_to_lattice_function_call
 from .write_result_to_db import (
     get_electron_type,
     insert_electron_dependency_data,

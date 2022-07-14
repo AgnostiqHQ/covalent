@@ -24,7 +24,6 @@ from pathlib import Path
 from typing import List, Optional, Union
 
 import cloudpickle as pickle
-import requests
 from sqlalchemy.orm import Session
 
 from .. import _workflow as ct
@@ -33,19 +32,11 @@ from .._data_store.models import Lattice
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .result import Result
+from .utils import _db_path
 from .write_result_to_db import MissingLatticeRecordError
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-def _db_path(
-    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
-) -> str:
-    url = "http://" + dispatcher + "/api/db-path"
-    r = requests.get(url)
-    path = r.json()
-    return path
 
 
 def get_result(dispatch_id: str, wait: bool = False) -> Result:

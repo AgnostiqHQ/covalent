@@ -20,6 +20,10 @@
 
 """Utility functions for results manager."""
 
+import requests
+
+from .._shared_files.config import get_config
+
 
 def convert_to_lattice_function_call(
     lattice_function_string: str, lattice_function_name: str, inputs: dict
@@ -47,3 +51,12 @@ def convert_to_lattice_function_call(
     function_call_str = lattice_function_string
     function_call_str += f'if __name__ == "__main__":\n    {lattice_function_name}({inp})\n'
     return function_call_str
+
+
+def _db_path(
+    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
+) -> str:
+    url = "http://" + dispatcher + "/api/db-path"
+    r = requests.get(url)
+    path = r.json()
+    return path
