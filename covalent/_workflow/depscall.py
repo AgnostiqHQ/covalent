@@ -30,8 +30,23 @@ class DepsCall(Deps):
         func: A callable
         args: args list
         kwargs: kwargs dict
+        retval_keyword: An optional string referencing the return value of func.
+
+    If retval_keyword is specified, the return value of func will be
+    passed during workflow execution as an argument to the electron
+    corresponding to the parameter of the same name.
+
+    Notes:
+        Electron parameters to be injected during execution must have default
+        parameter values.
+
+        It is the user's responsibility to ensure that `retval_keyword` is
+        actually a parameter of the electron. Unexpected behavior may occur
+        otherwise.
 
     """
 
-    def __init__(self, func, args=[], kwargs={}):
-        super().__init__(apply_fn=func, apply_args=args, apply_kwargs=kwargs)
+    def __init__(self, func, args=[], kwargs={}, *, retval_keyword=""):
+        super().__init__(
+            apply_fn=func, apply_args=args, apply_kwargs=kwargs, retval_keyword=retval_keyword
+        )

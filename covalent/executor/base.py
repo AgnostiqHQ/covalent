@@ -55,19 +55,26 @@ def wrapper_fn(
 
     """
 
+    cb_retvals = {}
     for tup in call_before:
-        serialized_fn, serialized_args, serialized_kwargs = tup
+        serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
         cb_fn = serialized_fn.get_deserialized()
         cb_args = serialized_args.get_deserialized()
         cb_kwargs = serialized_kwargs.get_deserialized()
-        cb_fn(*cb_args, **cb_kwargs)
+        retval = cb_fn(*cb_args, **cb_kwargs)
+        if retval_key:
+            cb_retvals[retval_key] = retval
 
     fn = function.get_deserialized()
+
+    # Inject return values into kwargs
+    for key, val in cb_retvals.items():
+        kwargs[key] = val
 
     output = fn(*args, **kwargs)
 
     for tup in call_after:
-        serialized_fn, serialized_args, serialized_kwargs = tup
+        serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
         ca_fn = serialized_fn.get_deserialized()
         ca_args = serialized_args.get_deserialized()
         ca_kwargs = serialized_kwargs.get_deserialized()

@@ -370,7 +370,16 @@ class Electron:
                 )
 
             # For keyword arguments
+            # Filter out kwargs to be injected by call_before calldeps at execution
+            call_before = self.metadata["call_before"]
+            retval_keywords = {item.retval_keyword: None for item in call_before}
             for key, value in named_kwargs.items():
+                if key in retval_keywords:
+                    app_log.debug(
+                        f"kwarg {key} for function {self.function.__name__} to be injected at runtime"
+                    )
+                    continue
+
                 self.connect_node_with_others(
                     self.node_id, key, value, "kwarg", None, active_lattice.transport_graph
                 )
