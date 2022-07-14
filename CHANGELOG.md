@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Removed
+
+- Removed the deprecated function `draw_inline` as well as the `matplotlib` dependency.
+
 ## [0.132.0] - 2022-07-14
 
 ### Authors
