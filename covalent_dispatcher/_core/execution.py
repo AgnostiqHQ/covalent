@@ -512,7 +512,7 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
 
     # TODO (DBWORK) - Needs the entire workflow - I do have to rehydrate the result object
     app_log.warning("2: Beginning run_workflow")
-    result_object = rm._get_result_from_file(dispatch_id)
+    result_object = rm._get_result_from_db(dispatch_id)
     app_log.warning("3: Result object hydrated (run_workflow)")
     with Session(DispatchDB._get_data_store()) as session:
         lattice_record = (
