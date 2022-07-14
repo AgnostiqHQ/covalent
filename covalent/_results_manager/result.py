@@ -307,9 +307,10 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(models.Lattice.id)
+                session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
                 .first()
+                .id
             )
             nodes = (
                 session.query(models.Electron.transport_graph_node_id)
@@ -386,10 +387,10 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(models.Lattice.id)
+                session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
                 .first()
-            )
+            ).id
             return (
                 session.query(models.Electron.status)
                 .where(
@@ -415,9 +416,13 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(models.Lattice.id)
-                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                (
+                    session.query(models.Lattice)
+                    .where(models.Lattice.dispatch_id == self.dispatch_id)
+                    .first()
+                )
                 .first()
+                .id
             )
             electron = (
                 session.query(models.Electron)
@@ -448,10 +453,10 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(models.Lattice.id)
+                session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
                 .first()
-            )
+            ).id
             electron = (
                 session.query(models.Electron)
                 .where(
@@ -464,7 +469,7 @@ Node Outputs
                 )
                 .first()
             )
-            with open(os.path.join(electron.storage_path, electron.value_filename)) as f:
+            with open(os.path.join(electron.storage_path, electron.value_filename), "rb") as f:
                 return pickle.loads(f.read())
 
     def _get_node_error(self, db: DataStore, node_id: int) -> Any:
@@ -481,10 +486,10 @@ Node Outputs
         with Session(db.engine) as session:
 
             lattice_id = (
-                session.query(models.Lattice.id)
+                session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
                 .first()
-            )
+            ).id
             electron = (
                 session.query(models.Electron)
                 .where(
@@ -533,6 +538,8 @@ Node Outputs
         Returns:
             None
         """
+
+        app_log.warning("Inside update node")
 
         electron_kwargs = {}
         node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
@@ -596,6 +603,7 @@ Node Outputs
                 .values(updated_at=datetime.now(timezone.utc), **electron_kwargs)
             )
             session.commit()
+        app_log.warning("Inside update node - SUCCESS")
 
     def save(self, directory: str = None, write_source: bool = False) -> None:
         """
