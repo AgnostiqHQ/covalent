@@ -434,6 +434,39 @@ Node Outputs
             with open(os.path.join(electron.storage_path, electron.results_filename)) as f:
                 return pickle.loads(f.read())
 
+    def _get_node_value(self, db: DataStore, node_id: int) -> Any:
+        """
+        Return the output of a node.
+
+        Args:
+            node_id: The node id.
+
+        Returns:
+            output: The output of said node.
+                    Will return None if error occured in execution.
+        """
+        with Session(db.engine) as session:
+
+            lattice_id = (
+                session.query(models.Lattice.id)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
+            )
+            electron = (
+                session.query(models.Electron)
+                .where(
+                    (
+                        and_(
+                            models.Electron.parent_lattice_id == lattice_id,
+                            models.Electron.transport_graph_node_id == node_id,
+                        )
+                    )
+                )
+                .first()
+            )
+            with open(os.path.join(electron.storage_path, electron.value_filename)) as f:
+                return pickle.loads(f.read())
+
     def _get_node_error(self, db: DataStore, node_id: int) -> Any:
         """
         Return the error of a node.
