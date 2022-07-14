@@ -292,6 +292,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         None
     """
 
+    app_log.warning("Inside run workflow")
+
     def update_node_result(node_result: dict):
         app_log.info("Updating node result")
         result_object._update_node(db=DispatchDB._get_data_store(), **node_result)
@@ -305,10 +307,10 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
-    with Session(DispatchDB()._get_data_store()) as session:
+    with Session(DispatchDB()._get_data_store().engine) as session:
         session.execute(
-            update(Lattice)
-            .where(Lattice.dispatch_id == result_object.dispatch_id)
+            update(Lattice_model)
+            .where(Lattice_model.dispatch_id == result_object.dispatch_id)
             .values(
                 status=str(Result.RUNNING),
                 updated_at=datetime.now(timezone.utc),
@@ -533,10 +535,12 @@ def run_workflow(dispatch_id: str, results_dir: str, tasks_pool: ThreadPoolExecu
     result_object._initialize_nodes()
 
     app_log.warning("3: Result object hydrated (run_workflow)")
-    with Session(DispatchDB._get_data_store()) as session:
+    with Session(DispatchDB()._get_data_store().engine) as session:
+        app_log.warning("Connected to DB (run_workflow)")
         lattice_record = (
-            session.query(Lattice).where(Lattice_model.dispatch_id == dispatch_id).first()
+            session.query(Lattice_model).where(Lattice_model.dispatch_id == dispatch_id).first()
         )
+        app_log.warning("Retrieving lattice record (run_workflow)")
 
     if lattice_record.status == str(Result.COMPLETED):
         return
