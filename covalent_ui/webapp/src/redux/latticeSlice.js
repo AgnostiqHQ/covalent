@@ -21,37 +21,37 @@ const initialState = {
 
 export const latticeDetails = createAsyncThunk(
   'latticeResults/latticeDetails',
-  ({ dispatchId }, thunkAPI) => api.get(`/api/v1/dispatches/${dispatchId}`).catch(thunkAPI.rejectWithValue)
+  ({ dispatchId }, thunkAPI) => api.get(`dispatches/${dispatchId}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const latticeResults = createAsyncThunk(
     'latticeResults/latticeResults',
-    ({ dispatchId,params }, thunkAPI) => api.get(`/api/v1/dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    ({ dispatchId,params }, thunkAPI) => api.get(`dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const latticeOutput = createAsyncThunk(
     'latticeResults/latticeOutput',
-    ({ dispatchId,params }, thunkAPI) => api.get(`/api/v1/dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    ({ dispatchId,params }, thunkAPI) => api.get(`dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const latticeFunctionString = createAsyncThunk(
     'latticeResults/latticeFunctionString',
-    ({ dispatchId,params }, thunkAPI) => api.get(`/api/v1/dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    ({ dispatchId,params }, thunkAPI) => api.get(`dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const latticeInput = createAsyncThunk(
     'latticeResults/latticeInput',
-    ({ dispatchId,params }, thunkAPI) => api.get(`/api/v1/dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    ({ dispatchId,params }, thunkAPI) => api.get(`dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
   )
-  
+
   export const latticeError = createAsyncThunk(
     'latticeResults/latticeError',
-    ({ dispatchId,params }, thunkAPI) => api.get(`/api/v1/dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    ({ dispatchId,params }, thunkAPI) => api.get(`dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
   )
 
   export const latticeExecutorDetail = createAsyncThunk(
     'latticeResults/latticeExecutorDetail',
-    ({ dispatchId,params }, thunkAPI) => api.get(`/api/v1/dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    ({ dispatchId,params }, thunkAPI) => api.get(`dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
   )
 
 
@@ -59,7 +59,7 @@ export const latticeSlice = createSlice({
   name: 'latticeResults',
   initialState,
   extraReducers: (builder) => {
-    builder     
+    builder
       // latticeDeatils
       .addCase(latticeDetails.fulfilled, (state, { payload }) => {
         state.latticeDetailsResults.isFetching = false
@@ -72,8 +72,8 @@ export const latticeSlice = createSlice({
       .addCase(latticeDetails.rejected, (state, { payload }) => {
         state.latticeDetailsResults.isFetching = false
         state.latticeDetailsResults.error = payload.message
-      })    
-      
+      })
+
        // latticeResults
        .addCase(latticeResults.fulfilled, (state, { payload }) => {
         state.latticeResultsList.isFetching = false
@@ -86,7 +86,7 @@ export const latticeSlice = createSlice({
       .addCase(latticeResults.rejected, (state, { payload }) => {
         state.latticeDetailsResults.isFetching = false
         state.latticeResultsList.error = payload.message
-      }) 
+      })
 
       // latticeOutput
       .addCase(latticeOutput.fulfilled, (state, { payload }) => {
@@ -100,7 +100,7 @@ export const latticeSlice = createSlice({
       .addCase(latticeOutput.rejected, (state, { payload }) => {
         state.latticeOutputList.isFetching = false
         state.latticeOutputList.error = payload.message
-      }) 
+      })
 
       // latticeFunctiontostring
       .addCase(latticeFunctionString.fulfilled, (state, { payload }) => {
@@ -114,8 +114,8 @@ export const latticeSlice = createSlice({
       .addCase(latticeFunctionString.rejected, (state, { payload }) => {
         state.latticeFunctionStringList.isFetching = false
         state.latticeFunctionStringList.error = payload.message
-      })     
-      
+      })
+
        // latticeInput
        .addCase(latticeInput.fulfilled, (state, { payload }) => {
         state.latticeInputList.isFetching = false
@@ -128,7 +128,7 @@ export const latticeSlice = createSlice({
       .addCase(latticeInput.rejected, (state, { payload }) => {
         state.latticeInputList.isFetching = false
         state.latticeInputList.error = payload.message
-      }) 
+      })
 
       // latticeError
       .addCase(latticeError.fulfilled, (state, { payload }) => {

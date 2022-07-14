@@ -91,7 +91,7 @@ export default function DialogBox({
           </Grid>
 
           <CloseIcon
-            style={{ marginTop: '3px', width: '10px', height: '10px' }}
+            style={{ marginTop: '3px', width: '10px', height: '10px',cursor:'pointer' }}
             onClick={handleClose}
           />
         </Grid>

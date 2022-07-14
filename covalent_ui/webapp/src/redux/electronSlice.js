@@ -25,32 +25,32 @@ export const electronDetails = createAsyncThunk(
 
 export const electronResult = createAsyncThunk(
     'electronResults/electronResult',
-    ({electronId,params}, thunkAPI) => 
-    api.get(`/api/v1/dispatches/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    ({electronId,params}, thunkAPI) =>
+    api.get(`dispatches/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronFunctionString = createAsyncThunk(
     'electronResults/electronFunctionString',
-    ({electronId,params}, thunkAPI) => 
-    api.get(`/api/v1/dispatches/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    ({electronId,params}, thunkAPI) =>
+    api.get(`dispatches/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronInput = createAsyncThunk(
     'electronResults/electronInput',
-    ({electronId,params}, thunkAPI) => 
-    api.get(`/api/v1/dispatches/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    ({electronId,params}, thunkAPI) =>
+    api.get(`dispatches/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronError = createAsyncThunk(
     'electronResults/electronError',
-    ({electronId,params}, thunkAPI) => 
-    api.get(`/api/v1/dispatches/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    ({electronId,params}, thunkAPI) =>
+    api.get(`dispatches/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronExecutor = createAsyncThunk(
     'electronResults/electronExecutor',
-    ({electronId,params}, thunkAPI) => 
-    api.get(`/api/v1/dispatches/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    ({electronId,params}, thunkAPI) =>
+    api.get(`dispatches/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronSlice = createSlice({
@@ -70,7 +70,7 @@ export const electronSlice = createSlice({
       .addCase(electronDetails.rejected, (state, { payload }) => {
         state.electronDetailsList.isFetching = true
         state.electronDetailsList.error = payload.errors
-      }) 
+      })
 
       // electron Results
       .addCase(electronResult.fulfilled, (state, { payload }) => {
@@ -84,7 +84,7 @@ export const electronSlice = createSlice({
       .addCase(electronResult.rejected, (state, { payload }) => {
         state.electronResultList.isFetching = true
         state.electronResultList.error = payload.errors
-      }) 
+      })
 
        // electron function to string
        .addCase(electronFunctionString.fulfilled, (state, { payload }) => {
@@ -98,7 +98,7 @@ export const electronSlice = createSlice({
       .addCase(electronFunctionString.rejected, (state, { payload }) => {
         state.electronFunctionStringList.isFetching = true
         state.electronFunctionStringList.error = payload.errors
-      }) 
+      })
 
       // electron Input
       .addCase(electronInput.fulfilled, (state, { payload }) => {
@@ -112,7 +112,7 @@ export const electronSlice = createSlice({
       .addCase(electronInput.rejected, (state, { payload }) => {
         state.electronInputList.isFetching = true
         state.electronInputList.error = payload.errors
-      }) 
+      })
 
       // electron Error
       .addCase(electronError.fulfilled, (state, { payload }) => {
@@ -126,7 +126,7 @@ export const electronSlice = createSlice({
       .addCase(electronError.rejected, (state, { payload }) => {
         state.electronErrorList.isFetching = true
         state.electronErrorList.error = payload.errors
-      }) 
+      })
 
       // electron Error
       .addCase(electronExecutor.fulfilled, (state, { payload }) => {

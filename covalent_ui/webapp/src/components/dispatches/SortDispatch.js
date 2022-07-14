@@ -33,11 +33,13 @@ const SortDispatch = (props) => {
         alignItems: 'center',
         cursor: 'default',
         '&:hover': {
+          cursor:'pointer',
           color: (theme) => theme.palette.text.secondary,
           '.title': {
             color: (theme) => theme.palette.text.secondary,
           },
           '.chipContainer': {
+            cursor:'pointer',
             color: (theme) => theme.palette.text.secondary,
             border: '1 px solid',
             borderColor: (theme) => theme.palette.primary.blue04,
@@ -58,7 +60,7 @@ const SortDispatch = (props) => {
 
       {!isFetching ? (
         <Chip
-          label={count}
+          label={count?count:0}
           className="chipContainer"
           sx={{
             color: (theme) => theme.palette.text.tertiary,

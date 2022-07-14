@@ -36,9 +36,9 @@ import {
 import { ChevronLeft } from '@mui/icons-material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import CopyButton from '../common/CopyButton'
-import { selectResultProgress } from '../dispatches/ResultProgress'
+import { STATUS_COLORS } from '../dispatches/ResultProgress'
 import LatticeDispatchOverview from './LatticeDispatchOverview'
-import { statusIcon, truncateMiddle ,  statusColor,
+import { statusIcon, truncateMiddle ,  statusColor,statusLabel
 } from '../../utils/misc'
 import ErrorCard from '../common/ErrorCard'
 import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
@@ -75,7 +75,7 @@ const DispatchDrawerContents = () => {
       <CopyButton content={dispatchId} size="small" title="Copy dispatch Id" />
 
       {/* status */}
-      <LatticeStatusCard dispatchId={dispatchId} latDetails={drawerLatticeDetails} 
+      <LatticeStatusCard dispatchId={dispatchId} latDetails={drawerLatticeDetails}
       latError={drawerLatticeError}/>
 
       {/* tabs */}
@@ -111,9 +111,6 @@ const CustomTabList = styled(TabList)(({ theme }) => ({
 }))
 
 const LatticeStatusCard = ({ dispatchId ,latDetails,latError }) => {
-  const { color } = useSelector(
-    (state) => selectResultProgress(state, dispatchId)
-  )
   return (
     <Box sx={{ my: 2 }}>
         <Box
@@ -138,7 +135,7 @@ const LatticeStatusCard = ({ dispatchId ,latDetails,latError }) => {
             >
               {statusIcon(latDetails.status)}
               &nbsp;
-              {latDetails.status}
+              {statusLabel(latDetails.status)}
             </Box>
           </Box>
 
@@ -158,7 +155,7 @@ const LatticeStatusCard = ({ dispatchId ,latDetails,latError }) => {
                 <Box
                   component="span"
                   sx={{
-                    color: latDetails.status === 'COMPLETED' ? 'inherit' : `${color}.main`,
+                    color: latDetails.status!=='COMPLETED'?statusColor(latDetails.status):'',
                   }}
                 >
                   {latDetails.total_electrons_completed}

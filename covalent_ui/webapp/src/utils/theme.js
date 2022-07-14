@@ -125,6 +125,15 @@ const theme = createTheme(defaultTheme, {
         LinkComponent: LinkBehavior,
       },
     },
+    MuiSnackbarContent: {
+			styleOverrides: {
+				root: {
+					color: '#FAFAFA',
+					backgroundColor: '#1c1c46',
+					border: '1px solid #99daff'
+				}
+			}
+		},
     MuiCssBaseline: {
       styleOverrides: {
         body: {

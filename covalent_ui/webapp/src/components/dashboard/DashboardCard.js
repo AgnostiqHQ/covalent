@@ -20,13 +20,14 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Paper,
   Typography,
   Divider,
   CircularProgress,
   Skeleton,
+  Snackbar
 } from '@mui/material'
 import { Box } from '@mui/system'
 import CopyButton from '../common/CopyButton'
@@ -35,7 +36,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchDashboardOverview } from '../../redux/dashboardSlice'
 
 const DashboardCard = (props) => {
-  const { dispatcherAddress } = props
   const dispatch = useDispatch()
 
   // selecting the dashboardOverview from redux state
@@ -48,13 +48,24 @@ const DashboardCard = (props) => {
     (state) => state.dashboard.fetchDashboardOverview.isFetching
   )
 
+  const isError = useSelector(
+    (state) => state.dashboard.fetchDashboardOverview.error)
+
+  const [openSnackbar, setOpenSnackbar] = useState(Boolean(isError));
+
   const fetchDashboardOverviewResult = () => {
     dispatch(fetchDashboardOverview())
   }
 
   useEffect(() => {
     fetchDashboardOverviewResult()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDeleted])
+
+  useEffect(() => {
+    if (isError) setOpenSnackbar(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isError])
 
   return (
     <Paper elevation={0} sx={{ p: 3, mb: 2, borderRadius: '8px' }}>
@@ -62,8 +73,13 @@ const DashboardCard = (props) => {
         <Typography fontSize="h5.fontSize" sx={{ color: '#F1F1F6' }}>
           Dispatch list
         </Typography>
-        {isFetching && <CircularProgress size="1rem" sx={{ mx: 2 }} />}
-        {dispatcherAddress && (
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={3000}
+          message="Something went wrong,please contact the administrator!"
+          onClose={() => setOpenSnackbar(false)}
+        />
+        {/* {dispatcherAddress && (
           <>
             <Typography sx={{ ml: 'auto' }} color="text.secondary">
               {dispatcherAddress}
@@ -76,7 +92,7 @@ const DashboardCard = (props) => {
               isBorderPresent={true}
             />
           </>
-        )}
+        )} */}
       </Box>
       <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-around' }}>
         <DashBoardCardItems

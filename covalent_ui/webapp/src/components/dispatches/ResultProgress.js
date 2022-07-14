@@ -26,7 +26,7 @@
 
  import { isParameter } from '../../utils/misc'
 
- const STATUS_COLORS = {
+ export const STATUS_COLORS = {
    RUNNING: 'running',
    COMPLETED: 'success',
    FAILED: 'error',

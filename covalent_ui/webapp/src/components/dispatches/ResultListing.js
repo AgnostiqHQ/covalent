@@ -51,6 +51,7 @@ import {
   linkClasses,
   Grid,
   Skeleton,
+  Snackbar
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 import {
@@ -73,7 +74,7 @@ const headers = [
     label: 'Dispatch ID',
   },
   {
-    id: 'lattice',
+    id: 'lattice_name',
     getter: 'lattice.name',
     label: 'Lattice',
     sortable: true,
@@ -175,6 +176,7 @@ const ResultsTableToolbar = ({
   runningDispatches,
   completedDispatches,
   failedDispatches,
+  allDispatches,
   openDialogBox,
   setOpenDialogBox,
   isFetching,
@@ -234,7 +236,7 @@ const ResultsTableToolbar = ({
       >
         <SortDispatch
           title="All"
-          count={totalRecords}
+          count={allDispatches}
           isFetching={isFetching}
         />
         <SortDispatch
@@ -243,7 +245,7 @@ const ResultsTableToolbar = ({
           isFetching={isFetching}
         />
         <SortDispatch
-          title="Complete"
+          title="Completed"
           count={completedDispatches}
           isFetching={isFetching}
         />
@@ -262,6 +264,7 @@ const ResultsTableToolbar = ({
           border: '1px solid #303067',
           borderRadius: '60px',
         }}
+        disabled={isFetching}
         disableUnderline
         placeholder="Search"
         value={query}
@@ -296,9 +299,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-    {
-      fontSize: '1rem',
-    },
+  {
+    fontSize: '1rem',
+  },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -358,27 +361,18 @@ const ResultListing = () => {
   const [page, setPage] = useState(1)
   const [searchKey, setSearchKey] = useState('')
   const [searchValue] = useDebounce(searchKey, 1000)
-  const [sortColumn, setSortColumn] = useState('started')
+  const [sortColumn, setSortColumn] = useState('started_at')
   const [sortOrder, setSortOrder] = useState('desc')
   const [offset, setOffset] = useState(0)
   const [openDialogBox, setOpenDialogBox] = useState(false)
+  const isError = useSelector(
+    (state) => state.dashboard.fetchDashboardList.error)
+  const [openSnackbar, setOpenSnackbar] = useState(Boolean(isError));
+
 
   const isDeleted = useSelector((state) => state.dashboard.dispatchesDeleted)
-  const dashboardList = useSelector((state) => state.dashboard.dashboardList)
-  const runningDispatches = useSelector(
-    (state) => state.dashboard.runningDispatches
-  )
-  const completedDispatches = useSelector(
-    (state) => state.dashboard.completedDispatches
-  )
-  const failedDispatches = useSelector(
-    (state) => state.dashboard.failedDispatches
-  )
-  const totalRecords = useSelector((state) => state.dashboard.totalDispatches)
-  const isFetching = useSelector(
-    (state) => state.dashboard.fetchDashboardList.isFetching
-  )
-  const dashboardListFinal = dashboardList.map((e) => {
+
+  const dashboardListFinal = useSelector((state) => state.dashboard.dashboardList)?.map((e) => {
     return {
       dispatchId: e.dispatch_id,
       endTime: e.ended_at,
@@ -392,6 +386,25 @@ const ResultListing = () => {
       totalElectronsCompleted: e.total_electrons_completed,
     }
   })
+
+  const allDispatches = useSelector(
+    (state) => state.dashboard.dashboardOverview.total_jobs
+  )
+  const runningDispatches = useSelector(
+    (state) => state.dashboard.dashboardOverview.total_jobs_running
+  )
+  const completedDispatches = useSelector(
+    (state) => state.dashboard.dashboardOverview.total_jobs_completed
+  )
+  const failedDispatches = useSelector(
+    (state) => state.dashboard.dashboardOverview.total_jobs_failed
+  )
+  // get total records form dispatches api for pagination
+  const totalRecords = useSelector((state) => state.dashboard.totalDispatches)
+
+  const isFetching = useSelector(
+    (state) => state.dashboard.fetchDashboardList.isFetching
+  )
   const dashboardListAPI = () => {
     const bodyParams = {
       count: 10,
@@ -407,14 +420,26 @@ const ResultListing = () => {
 
   const onSearch = (e) => {
     setSearchKey(e.target.value)
-    if (e.target.value.length > 3) setOffset(0)
+    if (e.target.value.length > 3) {
+      setOffset(0)
+    }
   }
 
-  // refresh still-running results on first render
   useEffect(() => {
     dashboardListAPI()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortColumn, sortOrder, page, searchValue, isDeleted])
+
+  // check if there are any API errors and show a sncakbar
+  useEffect(() => {
+    if (isError) setOpenSnackbar(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isError])
+
+  useEffect(() => {
+    if (offset===0) setPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offset])
 
   const handlePageChanges = (event, pageValue) => {
     setPage(pageValue)
@@ -449,15 +474,24 @@ const ResultListing = () => {
   const handleDeleteSelected = () => {
     dispatch(deleteDispatches({ dispatches: selected })).then((action) => {
       if (action.type === deleteDispatches.fulfilled.type) {
-        dispatch(dispatchesDeleted())
+        if (selected.length === dashboardListFinal.length) {
+          setOffset(0)
+        }
         setSelected([])
         setOpenDialogBox(false)
+        dispatch(dispatchesDeleted())
       }
     })
   }
 
   return (
     <>
+    <Snackbar
+          open={openSnackbar}
+          autoHideDuration={3000}
+          message="Something went wrong,please contact the administrator!"
+          onClose={() => setOpenSnackbar(false)}
+        />
       <Box>
         <ResultsTableToolbar
           query={searchKey}
@@ -466,6 +500,7 @@ const ResultListing = () => {
           setQuery={setSearchKey}
           numSelected={_.size(selected)}
           onDeleteSelected={handleDeleteSelected}
+          allDispatches={allDispatches}
           runningDispatches={runningDispatches}
           completedDispatches={completedDispatches}
           failedDispatches={failedDispatches}
@@ -593,7 +628,7 @@ const ResultListing = () => {
             <StyledTable>
               <TableBody>
                 {[...Array(7)].map((_) => (
-                  <TableRow>
+                  <TableRow key={Math.random()}>
                     <TableCell padding="checkbox">
                       <Skeleton sx={{ my: 2, mx: 1 }} />
                     </TableCell>

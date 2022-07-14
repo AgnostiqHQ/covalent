@@ -43,7 +43,7 @@ export const fetchDashboardList = createAsyncThunk(
   async (bodyParams, thunkAPI) =>
     await api
       .get(
-        `/api/v1/dispatches?count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
+        `dispatches?count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
       )
       .catch(thunkAPI.rejectWithValue)
 )
@@ -51,14 +51,14 @@ export const fetchDashboardList = createAsyncThunk(
 export const fetchDashboardOverview = createAsyncThunk(
   'dashboard/overview',
   (values, thunkAPI) =>
-    api.get('/api/v1/dispatches/overview/').catch(thunkAPI.rejectWithValue)
+    api.get('dispatches/overview/').catch(thunkAPI.rejectWithValue)
 )
 
 export const deleteDispatches = createAsyncThunk(
-  'dashbaord/deleteDispatches',
+  'dashboard/deleteDispatches',
   async (bodyParams, thunkAPI) =>
     await api
-      .post('/api/v1/dispatches/delete', bodyParams)
+      .post('dispatches/delete', bodyParams)
       .catch(thunkAPI.rejectWithValue)
 )
 
@@ -76,11 +76,8 @@ export const dashboardSlice = createSlice({
       .addCase(fetchDashboardList.fulfilled, (state, { payload }) => {
         // update dashboardList
         state.fetchDashboardList.isFetching = false
-        state.totalDispatches = payload.count
+        state.totalDispatches = payload.total_count
         state.dashboardList = payload.items
-        state.runningDispatches = payload.running
-        state.completedDispatches = payload.completed
-        state.failedDispatches = payload.failed
       })
       .addCase(fetchDashboardList.pending, (state, { payload }) => {
         state.fetchDashboardList.isFetching = true
@@ -88,7 +85,7 @@ export const dashboardSlice = createSlice({
       })
       .addCase(fetchDashboardList.rejected, (state, { payload }) => {
         state.fetchDashboardList.isFetching = false
-        state.fetchDashboardList.error = payload.message
+        state.fetchDashboardList.error = payload.detail
       })
 
       // dashboardOverview
@@ -103,7 +100,7 @@ export const dashboardSlice = createSlice({
       })
       .addCase(fetchDashboardOverview.rejected, (state, { payload }) => {
         state.fetchDashboardOverview.isFetching = false
-        state.fetchDashboardOverview.error = payload.message
+        state.fetchDashboardOverview.error = payload.errors[0]
       })
 
       // deleteResults
@@ -119,7 +116,7 @@ export const dashboardSlice = createSlice({
       .addCase(deleteDispatches.rejected, (state, { payload }) => {
         state.deleteResults.isFetching = false
         state.deleteResults.isDeleted = false
-        state.deleteResults.error = payload.message
+        state.deleteResults.error = payload.detail
       })
   },
 })
