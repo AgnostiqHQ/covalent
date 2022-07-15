@@ -143,11 +143,11 @@ Node Outputs
 ------------
 """
 
-        # node_outputs = self.get_all_node_outputs(
-        #     DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
-        # )
-        # for k, v in node_outputs.items():
-        #     show_result_str += f"{k}: {v}\n"
+        node_outputs = self.get_all_node_outputs(
+            DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
+        )
+        for k, v in node_outputs.items():
+            show_result_str += f"{k}: {v}\n"
 
         return show_result_str
 
@@ -362,6 +362,7 @@ Node Outputs
         Returns:
             The name of said node.
         """
+
         with Session(db.engine) as session:
 
             lattice_id = (
@@ -392,6 +393,7 @@ Node Outputs
         Returns:
             The status of said node.
         """
+
         with Session(db.engine) as session:
 
             lattice_id = (
@@ -400,7 +402,7 @@ Node Outputs
                 .first()
             ).id
             return (
-                session.query(models.Electron.status)
+                session.query(models.Electron)
                 .where(
                     and_(
                         models.Electron.parent_lattice_id == lattice_id,
@@ -408,6 +410,7 @@ Node Outputs
                     )
                 )
                 .first()
+                .status
             )
 
     def _get_node_output(self, db: DataStore, node_id: int) -> Any:
@@ -421,6 +424,7 @@ Node Outputs
             output: The output of said node.
                     Will return None if error occured in execution.
         """
+
         with Session(db.engine) as session:
 
             lattice_id = (
@@ -455,6 +459,7 @@ Node Outputs
             output: The output of said node.
                     Will return None if error occured in execution.
         """
+
         with Session(db.engine) as session:
 
             lattice_id = (
@@ -489,6 +494,7 @@ Node Outputs
             error: The error of said node.
                    Will return None if no error occured in execution.
         """
+
         with Session(db.engine) as session:
 
             lattice_id = (
