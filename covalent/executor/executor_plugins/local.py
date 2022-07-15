@@ -94,7 +94,7 @@ def wrapper_fn(
 
     app_log.debug("Invoking call_after")
     for tup in call_after:
-        serialized_fn, serialized_args, serialized_kwargs = tup
+        serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
         ca_fn = serialized_fn.get_deserialized()
         ca_args = serialized_args.get_deserialized()
         ca_kwargs = serialized_kwargs.get_deserialized()
