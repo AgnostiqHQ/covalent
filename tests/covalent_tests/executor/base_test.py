@@ -120,8 +120,8 @@ def test_wrapper_fn():
     serialized_cb = TransportableObject(before)
     serialized_ca = TransportableObject(after)
 
-    call_before = [(serialized_cb, serialized_cb_args, serialized_cb_kwargs)]
-    call_after = [(serialized_ca, serialized_ca_args, serialized_ca_kwargs)]
+    call_before = [(serialized_cb, serialized_cb_args, serialized_cb_kwargs, "")]
+    call_after = [(serialized_ca, serialized_ca_args, serialized_ca_kwargs, "")]
     serialized_output = wrapper_fn(serialized_fn, call_before, call_after, *args, **kwargs)
 
     assert serialized_output.get_deserialized() == (25, 2)
