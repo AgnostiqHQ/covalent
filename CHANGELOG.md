@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.133.0] - 2022-07-15
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+
+
 ### Removed
 
 - Removed the deprecated function `draw_inline` as well as the `matplotlib` dependency.
