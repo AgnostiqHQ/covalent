@@ -61,6 +61,9 @@ def blacklist_packages():
     import site
     from importlib import metadata
 
+    if "READTHEDOCS" in os.environ:
+        return
+
     installed_packages = [
         d.metadata["Name"] for d in metadata.distributions(path=site.getsitepackages())
     ]
