@@ -33,7 +33,7 @@ from .storage_backends import LocalStorageBackend, StorageBackend
 default_backend_map = {"local": LocalStorageBackend(base_dir=get_config("workflow_data.base_dir"))}
 
 
-class WorkflowDB:
+class DataStore:
     def __init__(
         self,
         db_URL: Optional[str] = None,
@@ -70,7 +70,7 @@ class WorkflowDB:
             yield session
 
 
-class DevWorkflowDB(WorkflowDB):
+class DevWorkflowDB(DataStore):
     def __init__(
         self,
         db_URL: Optional[str] = None,

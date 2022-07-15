@@ -20,12 +20,12 @@
 
 from sqlalchemy import select
 
-from .._data_store import WorkflowDB, models
+from .._data_store import DataStore, models
 from .._results_manager.result import Result
 from .._shared_files.config import get_config
 
 
-def save_result(data_store: WorkflowDB, result_object: Result):
+def save_result(data_store: DataStore, result_object: Result):
     dispatch_id = result_object.dispatch_id
 
     update = False
@@ -40,5 +40,5 @@ def save_result(data_store: WorkflowDB, result_object: Result):
         result_object.persist(session, update)
 
 
-def load_result(data_store: WorkflowDB, dispatch_id: str) -> Result:
+def load_result(data_store: DataStore, dispatch_id: str) -> Result:
     raise NotImplementedError

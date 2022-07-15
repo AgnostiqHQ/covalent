@@ -31,7 +31,7 @@ import networkx as nx
 import yaml
 from sqlalchemy.orm import Session
 
-from .._data_store import DataStoreNotInitializedError, WorkflowDB, models
+from .._data_store import DataStore, DataStoreNotInitializedError, models
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import prefix_separator, sublattice_prefix
@@ -488,7 +488,7 @@ Node Outputs
         if write_source:
             self._write_dispatch_to_python_file()
 
-    def persist(self, db: WorkflowDB):
+    def persist(self, db: DataStore):
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 

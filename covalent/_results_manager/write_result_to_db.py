@@ -26,7 +26,7 @@ import networkx as nx
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from covalent._data_store.datastore import WorkflowDB
+from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 
 from .._shared_files.defaults import (
@@ -51,7 +51,7 @@ class MissingElectronRecordError(Exception):
 
 
 def insert_lattices_data(
-    db: WorkflowDB,
+    db: DataStore,
     dispatch_id: str,
     name: str,
     status: str,
@@ -97,7 +97,7 @@ def insert_lattices_data(
 
 
 def insert_electrons_data(
-    db: WorkflowDB,
+    db: DataStore,
     parent_dispatch_id: str,
     transport_graph_node_id: int,
     type: str,
@@ -162,7 +162,7 @@ def insert_electrons_data(
     return electron_id
 
 
-def insert_electron_dependency_data(db: WorkflowDB, dispatch_id: str, lattice: "Lattice"):
+def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "Lattice"):
     """Extract electron dependencies from the lattice transport graph and add them to the DB."""
 
     # TODO - Update how we access the transport graph edges directly in favor of using some interface provied by the TransportGraph class.
@@ -205,7 +205,7 @@ def insert_electron_dependency_data(db: WorkflowDB, dispatch_id: str, lattice: "
 
 
 def update_lattices_data(
-    db: WorkflowDB,
+    db: DataStore,
     dispatch_id: str,
     status: str,
     updated_at: dt,
@@ -236,7 +236,7 @@ def update_lattices_data(
 
 
 def update_electrons_data(
-    db: WorkflowDB,
+    db: DataStore,
     parent_dispatch_id: str,
     transport_graph_node_id: int,
     status: str,
@@ -310,7 +310,7 @@ def get_electron_type(node_name: str) -> str:
 
 
 def write_sublattice_electron_id(
-    db: WorkflowDB, parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
+    db: DataStore, parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
 ) -> None:
     """Function to attach the electron id of a sublattice in the lattice record."""
 

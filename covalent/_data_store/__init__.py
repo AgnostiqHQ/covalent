@@ -20,9 +20,9 @@
 
 from . import models
 from .datastore import (
+    DataStore,
     DataStoreNotInitializedError,
     DataStoreSession,
     DevWorkflowDB,
-    WorkflowDB,
     workflow_db,
 )

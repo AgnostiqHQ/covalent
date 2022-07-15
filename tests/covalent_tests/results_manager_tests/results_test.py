@@ -30,7 +30,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 import covalent as ct
-from covalent._data_store.datastore import DataStoreNotInitializedError, WorkflowDB
+from covalent._data_store.datastore import DataStore, DataStoreNotInitializedError
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.result import Result
 
@@ -49,7 +49,7 @@ def teardown_temp_results_dir(dispatch_id: str) -> None:
 def db():
     """Instantiate and return an in-memory database."""
 
-    return WorkflowDB(
+    return DataStore(
         db_URL="sqlite+pysqlite:///:memory:",
         initialize_db=True,
     )
