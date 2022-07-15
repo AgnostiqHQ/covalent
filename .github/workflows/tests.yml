@@ -98,7 +98,7 @@ jobs:
       - name: Install NPM and Yarn on Alpine
         if: matrix.container == 'python:3.8-alpine'
         run: |
-          apk add --update nodejs-16.15.0-r1 npm
+          apk add --update nodejs=16.15.0-r1 npm
           npm install -g yarn
 
       - name: Build webapp
