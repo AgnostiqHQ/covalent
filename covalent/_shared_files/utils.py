@@ -23,6 +23,7 @@
 import inspect
 import socket
 from datetime import timedelta
+from multiprocessing import Queue as MPQ
 from typing import Callable, Dict, Set, Tuple
 
 from . import logger
@@ -197,3 +198,6 @@ def get_named_params(func, args, kwargs):
                     named_kwargs[key] = value
 
     return (named_args, named_kwargs)
+
+
+_address_client_mapper = {}

@@ -38,6 +38,7 @@ from covalent._shared_files import logger
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import DispatchInfo
+from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor import BaseAsyncExecutor
 
 # The plugin class name must be given by the executor_plugin_name attribute:
@@ -108,7 +109,16 @@ class DaskExecutor(BaseAsyncExecutor):
             output: The result of the executed function.
         """
 
-        dask_client = get_client(address=self.scheduler_address, timeout=1)
+        dask_client = _address_client_mapper.get(self.scheduler_address)
+
+        if dask_client and not dask_client.scheduler:
+            await dask_client
+
+        if not dask_client or not dask_client.scheduler:
+            dask_client = Client(address=self.scheduler_address, timeout=2, asynchronous=True)
+            _address_client_mapper[self.scheduler_address] = dask_client
+
+            await dask_client
 
         dispatch_info = DispatchInfo(dispatch_id)
 
@@ -117,8 +127,7 @@ class DaskExecutor(BaseAsyncExecutor):
         ) as stdout, redirect_stderr(io.StringIO()) as stderr:
 
             future = dask_client.submit(function, *args, **kwargs)
-            await asyncio.sleep(0)
-            result = future.result()
+            result = await dask_client.gather(future)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
