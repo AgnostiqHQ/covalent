@@ -43,7 +43,9 @@ def test_run_dispatcher():
 
     try:
         dispatch_id = dispatcher.run_dispatcher(
-            result_object=get_mock_result(), workflow_pool=workflow_pool, tasks_pool=task_pool
+            json_lattice=get_mock_result().lattice.serialize_to_json(),
+            workflow_pool=workflow_pool,
+            tasks_pool=task_pool,
         )
     except Exception as e:
         assert False, f"Exception raised: {e}"
@@ -61,7 +63,9 @@ def test_get_result():
     task_pool = ThreadPoolExecutor()
 
     dispatch_id = dispatcher.run_dispatcher(
-        result_object=get_mock_result(), workflow_pool=workflow_pool, tasks_pool=task_pool
+        json_lattice=get_mock_result().lattice.serialize_to_json(),
+        workflow_pool=workflow_pool,
+        tasks_pool=task_pool,
     )
     result = dispatcher.get_result(wait=True, dispatch_id=dispatch_id)
     assert isinstance(result, covalent._results_manager.result.Result)

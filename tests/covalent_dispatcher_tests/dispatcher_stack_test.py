@@ -65,8 +65,11 @@ def test_dispatcher_flow(mock_result, expected_res, expected_node_outputs):
     workflow_pool = ThreadPoolExecutor()
     task_pool = ThreadPoolExecutor()
 
+    mock_result_object = mock_result()
+    serialized_lattice = mock_result_object.lattice.serialize_to_json()
+
     dispatch_id = dispatcher.run_dispatcher(
-        result_object=mock_result(), workflow_pool=workflow_pool, tasks_pool=task_pool
+        json_lattice=serialized_lattice, workflow_pool=workflow_pool, tasks_pool=task_pool
     )
     result = dispatcher.get_result(wait=True, dispatch_id=dispatch_id)
     assert result.dispatch_id == dispatch_id

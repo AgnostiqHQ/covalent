@@ -21,9 +21,11 @@
 """Class corresponding to computation workflow."""
 
 import inspect
+import json
 import os
 import warnings
 from contextlib import redirect_stdout
+from copy import deepcopy
 from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
@@ -45,7 +47,7 @@ from .._shared_files.utils import (
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
-from .transport import _TransportGraph
+from .transport import TransportableObject, _TransportGraph, encode_metadata
 
 if TYPE_CHECKING:
     from .._results_manager.result import Result
@@ -89,9 +91,84 @@ class Lattice:
         self.post_processing = False
         self.args = []
         self.kwargs = {}
+        self.named_args = {}
+        self.named_kwargs = {}
         self.electron_outputs = {}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
         self.cova_imports.update({"electron"})
+
+        self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
+
+    # To be called after build_graph
+    def serialize_to_json(self) -> str:
+
+        attributes = deepcopy(self.__dict__)
+        attributes["workflow_function"] = self.workflow_function.to_dict()
+
+        attributes["metadata"] = encode_metadata(self.metadata)
+        attributes["transport_graph"] = None
+        if self.transport_graph:
+            attributes["transport_graph"] = self.transport_graph.serialize_to_json()
+
+        attributes["args"] = []
+        attributes["kwargs"] = {}
+
+        for arg in self.args:
+            attributes["args"].append(arg.to_dict())
+        for k, v in self.kwargs.items():
+            attributes["kwargs"][k] = v.to_dict()
+
+        for k, v in self.named_args.items():
+            attributes["named_args"][k] = v.to_dict()
+        for k, v in self.named_kwargs.items():
+            attributes["named_kwargs"][k] = v.to_dict()
+
+        attributes["electron_outputs"] = {}
+        for node_name, output in self.electron_outputs.items():
+            attributes["electron_outputs"][node_name] = output.to_dict()
+
+        attributes["cova_imports"] = list(self.cova_imports)
+        # for k, v in attributes.items():
+        #     print(k, type(v))
+
+        return json.dumps(attributes)
+
+    @staticmethod
+    def deserialize_from_json(json_data: str) -> None:
+        attributes = json.loads(json_data)
+
+        attributes["cova_imports"] = set(attributes["cova_imports"])
+
+        for node_name, object_dict in attributes["electron_outputs"].items():
+            attributes["electron_outputs"][node_name] = TransportableObject.from_dict(object_dict)
+
+        for k, v in attributes["named_kwargs"].items():
+            attributes["named_kwargs"][k] = TransportableObject.from_dict(v)
+
+        for k, v in attributes["named_args"].items():
+            attributes["named_args"][k] = TransportableObject.from_dict(v)
+
+        for k, v in attributes["kwargs"].items():
+            attributes["kwargs"][k] = TransportableObject.from_dict(v)
+
+        for i, arg in enumerate(attributes["args"]):
+            attributes["args"][i] = TransportableObject.from_dict(arg)
+
+        if attributes["transport_graph"]:
+            tg = _TransportGraph()
+            tg.deserialize_from_json(attributes["transport_graph"])
+            attributes["transport_graph"] = tg
+
+        attributes["workflow_function"] = TransportableObject.from_dict(
+            attributes["workflow_function"]
+        )
+
+        def dummy_function(x):
+            return x
+
+        lat = Lattice(dummy_function)
+        lat.__dict__ = attributes
+        return lat
 
     def set_metadata(self, name: str, value: Any) -> None:
         """
@@ -143,20 +220,24 @@ class Lattice:
             None
         """
 
+        self.args = [TransportableObject.make_transportable(arg) for arg in args]
+        self.kwargs = {k: TransportableObject.make_transportable(v) for k, v in kwargs.items()}
+
         self.transport_graph.reset()
 
-        named_args, named_kwargs = get_named_params(self.workflow_function, args, kwargs)
+        workflow_function = self.workflow_function.get_deserialized()
 
-        args = [v for _, v in named_args.items()]
-        kwargs = named_kwargs
+        named_args, named_kwargs = get_named_params(workflow_function, self.args, self.kwargs)
+        self.named_args = named_args
+        self.named_kwargs = named_kwargs
 
-        self.args = args
-        self.kwargs = kwargs
+        new_args = [v.get_deserialized() for _, v in named_args.items()]
+        new_kwargs = {k: v.get_deserialized() for k, v in named_kwargs.items()}
 
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    self.workflow_function(*args, **kwargs)
+                    workflow_function(*new_args, **new_kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
@@ -185,7 +266,8 @@ class Lattice:
     def __call__(self, *args, **kwargs):
         """Execute lattice as an ordinary function for testing purposes."""
 
-        return self.workflow_function(*args, **kwargs)
+        workflow_function = self.workflow_function.get_deserialized()
+        return workflow_function(*args, **kwargs)
 
     def check_constraint_specific_sum(self, constraint_name: str, node_list: List[dict]) -> bool:
         """
@@ -308,6 +390,9 @@ def lattice(
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
+    workflow_executor: Optional[
+        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
+    ] = _DEFAULT_CONSTRAINT_VALUES["workflow_executor"],
     # Add custom metadata fields here
     deps_bash: Union[DepsBash, list, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None),
     deps_pip: Union[DepsPip, list] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("pip", None),
@@ -325,6 +410,8 @@ def lattice(
         backend: DEPRECATED: Same as `executor`.
         executor: Alternative executor object to be used in the execution of each node. If not passed, the local
             executor is used by default.
+        workflow_executor: Executor for postprocessing the workflow. Defaults to the built-in dask executor or
+            the local executor depending on whether Covalent is started with the `--no-cluster` option.
         results_dir: Directory to store the results
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
@@ -365,6 +452,7 @@ def lattice(
     constraints = {
         "executor": executor,
         "results_dir": results_dir,
+        "workflow_executor": workflow_executor,
         "deps": deps,
         "call_before": call_before,
         "call_after": call_after,

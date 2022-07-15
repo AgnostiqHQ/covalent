@@ -20,6 +20,7 @@
 
 
 import os
+import pickle as _pickle
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -141,16 +142,26 @@ def _get_result_from_db(
             lattice_record = (
                 session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
             )
-        if not lattice_record:
-            raise MissingLatticeRecordError
-        elif not wait:
-            return lattice_record.status if status_only else result_from(lattice_record)
-        elif lattice_record.status in [
-            str(Result.COMPLETED),
-            str(Result.FAILED),
-            str(Result.CANCELLED),
-        ]:
-            return lattice_record.status if status_only else result_from(lattice_record)
+        try:
+            if not lattice_record:
+                raise MissingLatticeRecordError
+            elif not wait:
+                return lattice_record.status if status_only else result_from(lattice_record)
+            elif lattice_record.status in [
+                str(Result.COMPLETED),
+                str(Result.FAILED),
+                str(Result.CANCELLED),
+                str(Result.POSTPROCESSING_FAILED),
+                str(Result.PENDING_POSTPROCESSING),
+            ]:
+                return lattice_record.status if status_only else result_from(lattice_record)
+
+        except (FileNotFoundError, EOFError, _pickle.UnpicklingError):
+            if wait:
+                continue
+            raise RuntimeError(
+                "Result not ready to read yet. Please wait for a couple of seconds."
+            )
 
 
 def _delete_result(

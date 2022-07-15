@@ -54,7 +54,12 @@ def extract_graph_node(node):
     # doc string
     f = node.get("function")
     if f is not None:
-        node["doc"] = f.get_deserialized().__doc__
+        node["doc"] = f.attrs["doc"]
+
+    if "value" in node and node["value"] is not None:
+        node["value"] = node["value"].object_string
+    if "output" in node and node["output"] is not None:
+        node["output"] = node["output"].object_string
 
     # metadata
     node["metadata"] = extract_metadata(node["metadata"])
@@ -75,6 +80,7 @@ def extract_metadata(metadata: dict):
         metadata = metadata.copy()
 
         name = metadata["executor"]
+        app_log.debug(f"Getting executor {name}")
         executor = covalent_executor._executor_manager.get_executor(name=name)
 
         if executor is not None:
@@ -97,8 +103,8 @@ def extract_metadata(metadata: dict):
         metadata["call_before"] = call_before
         metadata["call_after"] = call_after
 
-    except (KeyError, AttributeError):
-        pass
+    except (KeyError, AttributeError) as ex:
+        app_log.error(f"Exception when trying to extract metadata: {ex}")
 
     return metadata
 
@@ -129,13 +135,17 @@ def result_encoder(obj):
 
 def encode_result(result_obj):
     lattice = result_obj.lattice
-    ((named_args, named_kwargs),) = (
-        get_named_params(lattice.workflow_function, lattice.args, lattice.kwargs),
-    )
+
+    result_string = result_obj.encoded_result.json
+    if not result_string:
+        result_string = result_obj.encoded_result.object_string
+
+    named_args = {k: v.object_string for k, v in lattice.named_args.items()}
+    named_kwargs = {k: v.object_string for k, v in lattice.named_kwargs.items()}
     result_dict = {
         "dispatch_id": result_obj.dispatch_id,
         "status": result_obj.status,
-        "result": result_obj.result,
+        "result": result_string,
         "start_time": result_obj.start_time,
         "end_time": result_obj.end_time,
         "results_dir": result_obj.results_dir,
