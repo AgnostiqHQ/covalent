@@ -63,7 +63,9 @@ class Rsync(FileTransferStrategy):
         to_filepath = to_file.filepath
         return f"rsync -a {from_filepath} {to_filepath}"
 
-    def return_subprocess_callable(self, cmd, from_file: File, to_file: File) -> None:
+    def return_subprocess_callable(
+        self, cmd, from_file: File, to_file: File, return_type: str
+    ) -> None:
         from_filepath = from_file.filepath
         to_filepath = to_file.filepath
         is_from_temp_file = from_file.is_temp_file
@@ -78,6 +80,11 @@ class Rsync(FileTransferStrategy):
             output, error = p.communicate()
             if p.returncode != 0:
                 raise CalledProcessError(p.returncode, f'"{cmd}" with error: {str(error)}')
+            if return_type == "to":
+                return to_filepath
+            if return_type == "from":
+                return from_filepath
+            return (from_filepath, to_filepath)
 
         return callable
 
@@ -89,9 +96,9 @@ class Rsync(FileTransferStrategy):
     # return callable to download here implies 'from' is a remote source
     def download(self, from_file: File, to_file: File = File()) -> File:
         cmd = self.get_rsync_ssh_cmd(to_file, from_file, transfer_from_remote=True)
-        return self.return_subprocess_callable(cmd, from_file, to_file)
+        return self.return_subprocess_callable(cmd, from_file, to_file, return_type="to")
 
     # return callable to upload here implies 'to' is a remote source
     def upload(self, from_file: File, to_file: File) -> None:
         cmd = self.get_rsync_ssh_cmd(from_file, to_file, transfer_from_remote=False)
-        return self.return_subprocess_callable(cmd, from_file, to_file)
+        return self.return_subprocess_callable(cmd, from_file, to_file, return_type="from")

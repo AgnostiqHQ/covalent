@@ -20,6 +20,7 @@ class HTTP(FileTransferStrategy):
 
         def callable():
             urllib.request.urlretrieve(from_filepath, to_filepath)
+            return to_filepath
 
         return callable
 
