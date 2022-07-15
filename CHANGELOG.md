@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Covalent server can now process workflows without having their deps installed
 
+### Operations
+
+- Fixing the retry block for tests
+
 ## [0.132.0] - 2022-07-14
 
 ### Authors
