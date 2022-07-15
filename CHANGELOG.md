@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Installation will fail if `cova` is installed while trying to install `covalent`.
+
 ### Operations
 
 - Fixing the retry block for tests
