@@ -23,7 +23,6 @@
 import json
 from unittest.mock import MagicMock
 
-import cloudpickle as pickle
 import pytest
 from flask import Flask
 
@@ -48,7 +47,7 @@ def client(app):
 
 def test_submit(mocker, app, client):
     mocker.patch("covalent_dispatcher.run_dispatcher", return_value=DISPATCH_ID)
-    response = client.post("/api/submit", data=pickle.dumps({}))
+    response = client.post("/api/submit", data=json.dumps({}))
     assert json.loads(response.data) == DISPATCH_ID
 
 

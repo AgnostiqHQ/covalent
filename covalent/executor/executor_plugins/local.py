@@ -78,14 +78,19 @@ def wrapper_fn(
         if retval_key:
             cb_retvals[retval_key] = retval
 
+    app_log.debug(f"Serialized args: {args}, kwargs: {kwargs}")
+    new_args = [arg.get_deserialized() for arg in args]
+    new_kwargs = {k: v.get_deserialized() for k, v in kwargs.items()}
+
     fn = function.get_deserialized()
 
     # Inject return values into kwargs
     for key, val in cb_retvals.items():
-        kwargs[key] = val
+        new_kwargs[key] = val
         app_log.debug(f"Injecting argument {key}")
 
-    output = fn(*args, **kwargs)
+    app_log.debug(f"Invoking {fn}, {new_args}, {new_kwargs}")
+    output = fn(*new_args, **new_kwargs)
 
     app_log.debug("Invoking call_after")
     for tup in call_after:
@@ -96,7 +101,7 @@ def wrapper_fn(
         app_log.debug(f"Invoking ({ca_fn}, args={ca_args}, kwargs={ca_kwargs}")
         ca_fn(*ca_args, **ca_kwargs)
 
-    return output
+    return TransportableObject(output)
 
 
 class LocalExecutor(BaseExecutor):

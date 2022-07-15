@@ -22,6 +22,8 @@
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
+from covalent._workflow.electron import Electron
+from covalent._workflow.transport import TransportableObject, _TransportGraph
 
 
 @ct.electron
@@ -65,8 +67,32 @@ def test_wait_for_post_processing():
     workflow.build_graph()
     with active_lattice_manager.claim(workflow):
         workflow.post_processing = True
-        workflow.electron_outputs = [(0, 4), (2, 12), (4, 125), (6, 1500)]
-        assert workflow.workflow_function() == 1500
+        workflow.electron_outputs = [
+            (0, TransportableObject(4)),
+            (2, TransportableObject(12)),
+            (4, TransportableObject(125)),
+            (6, TransportableObject(1500)),
+        ]
+        assert workflow.workflow_function.get_deserialized()() == 1500
+
+
+def test_electron_add_collection_node():
+    """Test `to_decoded_electron_collection` in `Electron.add_collection_node`"""
+
+    def f(x):
+        return x
+
+    e = Electron(f)
+    tg = _TransportGraph()
+    node_id = e.add_collection_node_to_graph(tg, prefix=":")
+    collection_fn = tg.get_node_value(node_id, "function").get_deserialized()
+
+    collection = [
+        TransportableObject.make_transportable(1),
+        TransportableObject.make_transportable(2),
+    ]
+
+    assert collection_fn(x=collection) == [1, 2]
 
 
 def test_injected_inputs_are_not_in_tg():
