@@ -56,14 +56,25 @@ def recursively_append_files(directory: str):
 
 
 def blacklist_packages():
-    import pkg_resources
+    """Validate blacklisted packages are not installed."""
 
-    installed_packages = [p.project_name for p in pkg_resources.working_set]
-    conflicts = ["cova"]
+    import site
+    from importlib import metadata
 
-    for conflict in conflicts:
-        if conflict in installed_packages:
-            print(f"Package conflict: uninstall package {conflict} to proceed with installation.")
+    installed_packages = [
+        d.metadata["Name"] for d in metadata.distributions(path=site.getsitepackages())
+    ]
+
+    blacklist = ["cova"]
+
+    for package in blacklist:
+        if package in installed_packages:
+            print("\n***************************", file=sys.stderr)
+            print(
+                f"Package conflict: uninstall package {package} to proceed with installation.",
+                file=sys.stderr,
+            )
+            print("***************************\n", file=sys.stderr)
             sys.exit(1)
 
 
