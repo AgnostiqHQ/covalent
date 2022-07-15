@@ -26,6 +26,9 @@ from typing import BinaryIO, Dict, Generator, List, Optional, Union
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from alembic import command
+from alembic.config import Config
+
 from .._shared_files.config import get_config
 from . import models
 from .storage_backends import LocalStorageBackend, StorageBackend
@@ -55,8 +58,6 @@ class DataStore:
             models.Base.metadata.create_all(self.engine)
 
     def run_migrations(self):
-        from alembic import command
-        from alembic.config import Config
 
         alembic_ini_path = Path(path.join(__file__, "./../../../alembic.ini")).resolve()
         alembic_config = Config(alembic_ini_path)

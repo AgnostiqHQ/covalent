@@ -1,10 +1,14 @@
 import datetime
+from os import path
 from pathlib import Path
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from pytest_mock import MockerFixture
 from sqlalchemy import select
 
+import alembic
+from alembic.config import Config
 from covalent._data_store import models
 from covalent._data_store.datastore import DataStore, DevWorkflowDB
 from covalent._shared_files.config import get_config
@@ -58,6 +62,22 @@ def test_default_db_dev_path(db: DataStore, tmp_path: Path, mocker):
     db_dev_url = f"sqlite+pysqlite:///{DB_DEV_PATH}"
 
     assert DevWorkflowDB().db_URL == db_dev_url
+
+
+def test_run_migrations(db: DataStore, mocker):
+
+    alembic_command_mock = Mock()
+    alembic_config_mock = MagicMock()
+
+    def alembic_config_init(self, provided_path):
+        # ensure provided path matches project root / alembic.ini
+        assert provided_path == Path(path.join(__file__, "./../../../../alembic.ini")).resolve()
+
+    mocker.patch.object(Config, "__init__", alembic_config_init)
+    mocker.patch("covalent._data_store.datastore.Config", return_value=alembic_config_mock)
+    mocker.patch("covalent._data_store.datastore.command", return_value=alembic_command_mock)
+
+    db.run_migrations()
 
 
 @pytest.mark.usefixtures("workflow_fixture")
