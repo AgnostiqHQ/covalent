@@ -30,7 +30,6 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
-import matplotlib.pyplot as plt
 import networkx as nx
 
 import covalent_ui.result_webhook as result_webhook
@@ -244,56 +243,6 @@ class Lattice:
                         "Please make sure you are not manipulating an object inside the lattice."
                     )
                     raise
-
-    def draw_inline(self, ax: plt.Axes = None, *args, **kwargs) -> None:
-        """
-        Rebuilds the graph according to the kwargs passed and draws it on the given axis.
-        If no axis is given then a new figure is created.
-
-        Note: This function does `plt.show()` at the end.
-
-        Args:
-            ax: Axis on which the graph is to be drawn.
-            *args: Positional arguments to be passed to build the graph.
-            **kwargs: Keyword arguments to be passed to build the graph.
-
-        Returns:
-            None
-        """
-
-        self.build_graph(**kwargs)
-
-        main_graph = self.transport_graph.get_internal_graph_copy()
-
-        node_labels = nx.get_node_attributes(main_graph, "name")
-
-        if ax is None:
-            _, ax = plt.subplots()
-        main_graph.graph["graph"] = {"rankdir": "TD"}
-        main_graph.graph["node"] = {"shape": "circle"}
-        main_graph.graph["edges"] = {"arrowsize": "4.0"}
-
-        prog = "dot"
-        args = "-Gnodesep=1 -Granksep=2 -Gpad=0.1 -Grankdir=TD"
-        root = None
-        pos = nx.drawing.nx_agraph.graphviz_layout(main_graph, prog=prog, root=root, args=args)
-
-        # Print the node number in the label as `[node number]`
-        for key, value in node_labels.items():
-            node_labels[key] = "[" + str(key) + "]\n" + value
-        edge_labels = nx.get_edge_attributes(main_graph, "edge_name")
-        nx.draw(
-            main_graph,
-            pos=pos,
-            labels=node_labels,
-            node_color="w",
-            node_size=700,
-            node_shape="s",
-        )
-        nx.draw_networkx_edge_labels(main_graph, pos, edge_labels)
-        plt.margins(x=0.4)
-        plt.tight_layout()
-        return ax
 
     def persist(self, ds: DataStoreSession, update: bool):
         self.transport_graph.persist(ds, update)

@@ -448,7 +448,6 @@ def test_decorated_function():
     """
 
     import pennylane as qml
-    from matplotlib import pyplot as plt
 
     import covalent as ct
 
