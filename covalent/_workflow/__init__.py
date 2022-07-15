@@ -26,3 +26,4 @@ from .depspip import DepsPip
 from .electron import electron
 from .lattice import lattice
 from .lepton import Lepton
+from .transport import TransportableObject
