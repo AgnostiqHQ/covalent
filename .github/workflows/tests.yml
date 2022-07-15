@@ -119,7 +119,7 @@ jobs:
 
       - name: Start Covalent dispatcher server
         run: covalent start
-
+    
 #      - uses: dorny/paths-filter@v2
 #        id: filter
 #        with:
@@ -133,6 +133,16 @@ jobs:
         run: PYTHONPATH=$PWD/ pytest tests/covalent_tests --cov=covalent
 
       - name: Generate coverage report for SDK
+      - name: Run tests and measure coverage
+        uses: nick-fields/retry@v2
+        with:
+            timeout_minutes: 30
+            max_attempts: 2
+            on_retry_command: rm -f ~/.config/covalent/covalent.conf
+            command: |
+              PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher 
+
+      - name: Generate coverage report
         run: coverage xml
 
       - name: Run dispatcher tests and measure coverage
