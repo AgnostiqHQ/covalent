@@ -43,8 +43,8 @@ def test_local_executor_passes_results_dir(mocker):
         le = LocalExecutor()
         le.execute(
             function=TransportableObject(simple_task),
-            args={"x": 1},
-            kwargs={"y": 2},
+            args=[],
+            kwargs={"x": TransportableObject(1), "y": TransportableObject(2)},
             call_before=[],
             call_after=[],
             dispatch_id=-1,
@@ -52,3 +52,12 @@ def test_local_executor_passes_results_dir(mocker):
             node_id=0,
         )
         mocked_function.assert_called_once()
+
+
+def test_local_executor_json_serialization():
+    import json
+
+    le = LocalExecutor(log_stdout="/dev/null")
+    json_le = json.dumps(le.to_dict())
+    le_new = LocalExecutor().from_dict(json.loads(json_le))
+    assert le.__dict__ == le_new.__dict__
