@@ -55,6 +55,7 @@ class LatticeExecutorResponse(BaseModel):
 class GraphResponse(BaseModel):
     """Graph Response Model"""
 
+    dispatch_id: str = None
     graph: dict = None
 
 

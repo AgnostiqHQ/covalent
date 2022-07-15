@@ -27,7 +27,7 @@ from enum import Enum
 
 import cloudpickle as pickle
 
-from covalent_ui.app.api_v0.models.file_model import FileExtension, Filetype
+from covalent_ui.os_api.api_v0.models.file_model import FileExtension, Filetype
 
 
 def read_from_pickle(path):

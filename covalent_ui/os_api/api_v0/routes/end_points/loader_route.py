@@ -20,7 +20,7 @@
 
 from fastapi import APIRouter
 
-from covalent_ui.app.api_v0.utils.sqlite_loader import (
+from covalent_ui.os_api.api_v0.utils.sqlite_loader import (
     get_electrons,
     get_lattice,
     get_links,

@@ -17,9 +17,8 @@ cd Covalent
 
 ## Running the server
 ```sh
-cd covalent_ui/app
-uvicorn app.main:app --reload
-cd Covalent
+cd covalent_ui/os_api
+python3 main.py
 ```
 #### Testing the app (Swagger)
 FastAPI can be fully tested in [localhost](http://127.0.0.1:8000/docs)

@@ -25,8 +25,8 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func, or_
 
-from covalent_ui.app.api_v0.database.schema.lattices_schema import Lattice
-from covalent_ui.app.api_v0.models.dispatch_model import (
+from covalent_ui.os_api.api_v0.database.schema.lattices_schema import Lattice
+from covalent_ui.os_api.api_v0.models.dispatch_model import (
     DeleteDispatchesRequest,
     DeleteDispatchesResponse,
     DispatchDashBoardResponse,

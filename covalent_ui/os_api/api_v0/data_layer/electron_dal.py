@@ -18,10 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from covalent_ui.app.api_v0.database.schema.electrons_schema import Electron
-from covalent_ui.app.api_v0.database.schema.lattices_schema import Lattice
-from covalent_ui.app.api_v0.utils.file_handle import FileHandler
-from covalent_ui.app.api_v0.utils.file_name import FileName
+from covalent_ui.os_api.api_v0.database.schema.electrons_schema import Electron
+from covalent_ui.os_api.api_v0.database.schema.lattices_schema import Lattice
+from covalent_ui.os_api.api_v0.utils.file_handle import FileHandler
+from covalent_ui.os_api.api_v0.utils.file_name import FileName
 
 
 class Electrons:

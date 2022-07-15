@@ -24,9 +24,10 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from covalent_ui.app.api_v0.database.schema.electron_dependency import ElectronDependency
-from covalent_ui.app.api_v0.database.schema.electrons_schema import Electron
-from covalent_ui.app.api_v0.database.schema.lattices_schema import Lattice
+from covalent_ui.os_api.api_v0.database.schema.electron_dependency import ElectronDependency
+from covalent_ui.os_api.api_v0.database.schema.electrons_schema import Electron
+from covalent_ui.os_api.api_v0.database.schema.lattices_schema import Lattice
+from covalent_ui.os_api.api_v0.models.lattices_model import GraphResponse
 
 
 class Graph:
@@ -72,7 +73,16 @@ class Graph:
             List of nodes
         """
         return (
-            self.db_con.query(Electron.id).filter(Electron.parent_lattice_id.in_(lattice_id)).all()
+            self.db_con.query(
+                Electron.name,
+                Electron.transport_graph_node_id.label("node_id"),
+                Electron.started_at,
+                Electron.completed_at,
+                Electron.status,
+                Electron.type,
+            )
+            .filter(Electron.parent_lattice_id.in_(lattice_id))
+            .all()
         )
 
     def get_links(self, electron_id):
@@ -85,10 +95,11 @@ class Graph:
         """
         return (
             self.db_con.query(
-                ElectronDependency.id,
-                ElectronDependency.electron_id,
-                ElectronDependency.parent_electron_id,
                 ElectronDependency.edge_name,
+                ElectronDependency.parameter_type,
+                ElectronDependency.electron_id.label("source"),
+                ElectronDependency.parent_electron_id.label("target"),
+                ElectronDependency.arg_index,
             )
             .filter(~ElectronDependency.electron_id.in_(electron_id))
             .all()
@@ -116,4 +127,5 @@ class Graph:
 
         # Get list of electron dependency
         links = self.get_links(electron_id=electron_id)
-        return nodes, links
+        # return lattice_id[1], nodes, links
+        return GraphResponse(dispatch_id=lattice_id[1], graph={"nodes": nodes, "links": links})

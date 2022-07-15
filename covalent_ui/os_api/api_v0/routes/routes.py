@@ -18,35 +18,21 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Request and response models for Electrons"""
+"""Routes"""
 
-from enum import Enum
+from fastapi import APIRouter
 
-# pylint: disable=no-name-in-module
-from pydantic import BaseModel
+from covalent_ui.os_api.api_v0.routes.end_points import (
+    electron_routes,
+    graph_route,
+    lattice_route,
+    summary_routes,
+)
 
-from covalent_ui.app.api_v0.utils.status import Status
-
-
-class ElectronResponseModel(BaseModel):
-    """Electron Response Validation"""
-
-    id: int
-    parent_lattice_id: int
-    transport_graph_node_id: int
-    type: str
-    name: str
-    status: Status
-    executor: str
-    created_at: str
-    started_at: str
-    completed_at: str
-    updated_at: str
+routes = APIRouter()
 
 
-class FileOutput(str, Enum):
-    RESULT = "result"
-    FUNCTION_STRING = "function_string"
-    INPUTS = "inputs"
-    ERROR = "error"
-    EXECUTOR = "executor_details"
+routes.include_router(summary_routes.routes, prefix="/dispatches", tags=["Dispatches"])
+routes.include_router(lattice_route.routes, prefix="/dispatches", tags=["Dispatches"])
+routes.include_router(graph_route.routes, prefix="/dispatches", tags=["Graph"])
+routes.include_router(electron_routes.routes, prefix="/dispatches", tags=["Electrons"])

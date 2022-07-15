@@ -24,7 +24,7 @@ from typing import List
 # pylint: disable=no-name-in-module
 from pydantic import BaseModel
 
-from covalent_ui.app.api_v0.utils.status import Status
+from covalent_ui.os_api.api_v0.utils.status import Status
 
 
 class LinkModule(BaseModel):

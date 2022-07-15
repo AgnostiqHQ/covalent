@@ -29,7 +29,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from covalent._shared_files.config import get_config
-from covalent_ui.app.api_v0.routes import routes
+from covalent_ui.os_api.api_v0.routes import routes
 
 app = FastAPI()
 user = os.getlogin()

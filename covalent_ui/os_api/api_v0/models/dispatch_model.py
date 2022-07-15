@@ -19,15 +19,16 @@
 
 """Dispatch request and response model"""
 
+
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Union
 from uuid import UUID
 
 # pylint: disable=no-name-in-module
 from pydantic import BaseModel, conint
 
-from covalent_ui.app.api_v0.utils.status import Status
+from covalent_ui.os_api.api_v0.utils.status import Status
 
 
 class CaseInsensitiveEnum(Enum):
@@ -73,7 +74,7 @@ class DispatchModule(BaseModel):
     started_at: datetime
     ended_at: datetime
     lattice_name: str
-    runtime: int
+    runtime: Optional[Union[int, None]]
 
 
 class DispatchResponse(BaseModel):
