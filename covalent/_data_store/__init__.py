@@ -23,6 +23,6 @@ from .datastore import (
     DataStore,
     DataStoreNotInitializedError,
     DataStoreSession,
-    DevWorkflowDB,
+    DevDataStore,
     workflow_db,
 )

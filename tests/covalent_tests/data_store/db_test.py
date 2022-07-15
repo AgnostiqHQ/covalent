@@ -10,7 +10,7 @@ from sqlalchemy import select
 import alembic
 from alembic.config import Config
 from covalent._data_store import models
-from covalent._data_store.datastore import DataStore, DevWorkflowDB
+from covalent._data_store.datastore import DataStore, DevDataStore
 from covalent._shared_files.config import get_config
 
 from .fixtures import workflow_fixture
@@ -61,7 +61,7 @@ def test_default_db_dev_path(db: DataStore, tmp_path: Path, mocker):
 
     db_dev_url = f"sqlite+pysqlite:///{DB_DEV_PATH}"
 
-    assert DevWorkflowDB().db_URL == db_dev_url
+    assert DevDataStore().db_URL == db_dev_url
 
 
 def test_run_migrations(db: DataStore, mocker):

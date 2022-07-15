@@ -71,7 +71,7 @@ class DataStore:
             yield session
 
 
-class DevWorkflowDB(DataStore):
+class DevDataStore(DataStore):
     def __init__(
         self,
         db_URL: Optional[str] = None,
@@ -111,4 +111,4 @@ class DataStoreNotInitializedError(Exception):
 # we can switch this to any class instance that has a db_URL property that points to the db
 # which we want to run migrations against - this command also creates the db without tables
 # via create_engine()
-workflow_db = DevWorkflowDB(echo=True)
+workflow_db = DevDataStore(echo=True)
