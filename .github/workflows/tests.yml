@@ -64,9 +64,9 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install GCC on Alpine
+      - name: Install Alpine dependencies
         if: matrix.container == 'python:3.8-alpine'
-        run: apk add gcc
+        run: apk add gcc py3-psutil musl-dev linux-headers
 
       - name: Set up Python
         if: matrix.os == 'macos-latest'
