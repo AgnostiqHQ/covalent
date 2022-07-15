@@ -136,10 +136,10 @@ jobs:
         run: coverage xml
 
       - name: Run dispatcher tests and measure coverage
-        run: PYTHONPATH=$PWD/ pytest tests/covalent_dispatcher_tests --cov=covalent/covalent_dispatcher
+        run: PYTHONPATH=$PWD/ pytest tests/covalent_dispatcher_tests --cov=covalent_dispatcher
 #
-#      - name: Generate coverage report for dispatcher
-#        run: coverage xml
+      - name: Generate coverage report for dispatcher
+        run: coverage xml
 
       - name: Run functional tests and measure coverage
         run: PYTHONPATH=$PWD/ pytest tests/functional_tests
@@ -165,7 +165,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v2
         with:
-          files: ./covalent_tests/coverage.xml, ./covalent_dispatcher_tests/coverage.xml ./functional_tests/coverage.xml
+          files: covalent/coverage.xml
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
