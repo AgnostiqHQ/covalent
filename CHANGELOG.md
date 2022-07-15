@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Result.save() has been deprecated in favor of Result.persist() and querying the database directly.
+
+## [0.133.0] - 2022-07-15
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+
+
+### Removed
+
+- Removed the deprecated function `draw_inline` as well as the `matplotlib` dependency.
+
+### Operations
+
+- Fixing the retry block for tests
 
 ## [0.132.0] - 2022-07-14
 
