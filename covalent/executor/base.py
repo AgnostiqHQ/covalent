@@ -64,7 +64,11 @@ def wrapper_fn(
 
     fn = function.get_deserialized()
 
-    output = fn(*args, **kwargs)
+    new_args = [arg.get_deserialized() for arg in args]
+
+    new_kwargs = {k: v.get_deserialized() for k, v in kwargs.items()}
+
+    output = fn(*new_args, **new_kwargs)
 
     for tup in call_after:
         serialized_fn, serialized_args, serialized_kwargs = tup
@@ -73,7 +77,7 @@ def wrapper_fn(
         ca_kwargs = serialized_kwargs.get_deserialized()
         ca_fn(*ca_args, **ca_kwargs)
 
-    return output
+    return TransportableObject(output)
 
 
 class BaseExecutor(ABC):
@@ -156,6 +160,33 @@ class BaseExecutor(ABC):
                     f.write(ss)
             else:
                 print(ss)
+
+    def short_name(self):
+        module = self.__module__
+        return self.__module__.split("/")[-1].split(".")[-1]
+
+    def to_dict(self) -> dict:
+        """Return a JSON-serializable dictionary representation of self"""
+        return {
+            "type": str(self.__class__),
+            "short_name": self.short_name(),
+            "attributes": self.__dict__.copy(),
+        }
+
+    def from_dict(self, object_dict: dict) -> "BaseExecutor":
+        """Rehydrate a dictionary representation
+
+        Args:
+            object_dict: a dictionary representation returned by `to_dict`
+
+        Returns:
+            self
+
+        Instance attributes will be overwritten.
+        """
+        if object_dict:
+            self.__dict__ = object_dict["attributes"]
+        return self
 
     @abstractmethod
     async def execute(
