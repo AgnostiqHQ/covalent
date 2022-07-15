@@ -512,7 +512,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     result_object._status = Result.COMPLETED
     result_object._end_time = datetime.now(timezone.utc)
 
-    # TODO (DBWORK) - Remove this persist method
     app_log.warning(
         f"10: Successfully post-processed result {result_object.dispatch_id} (run_planned_workflow)"
     )

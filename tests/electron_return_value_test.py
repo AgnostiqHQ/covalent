@@ -134,6 +134,7 @@ def test_arithmetic_2(test_b, test_operand, expected):
     dispatch_id = ct.dispatch(arithmetic_test_2)(a=2, b=test_b, operand=test_operand)
 
     res = get_result(dispatch_id, wait=True)
+    print(res)
     _delete_result(dispatch_id)
 
     assert res.result == expected
