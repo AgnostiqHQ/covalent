@@ -64,6 +64,10 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Install GCC on Alpine
+        if: matrix.container.image == 'python:3.8-alpine'
+        run: apk add gcc
+
       - name: Set up Python
         if: matrix.os == 'macos-latest'
         uses: actions/setup-python@v2
@@ -91,7 +95,7 @@ jobs:
           yum install -y npm nodejs
           npm install -g yarn
 
-      - name: Install NPM, Yarn, and Git on Alpine
+      - name: Install NPM and Yarn on Alpine
         if: matrix.container == 'python:3.8-alpine'
         run: |
           apk add --update nodejs-16.15.0-r1 npm
