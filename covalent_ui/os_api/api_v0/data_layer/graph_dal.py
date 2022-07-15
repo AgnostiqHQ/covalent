@@ -19,9 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Graph Data Layer"""
-from os import link
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from covalent_ui.os_api.api_v0.database.schema.electron_dependency import ElectronDependency
@@ -118,14 +118,21 @@ class Graph:
         """
         # Get all lattice id for that dispatch id
         lattice_id = self.get_lattices_id(dispatch_id=dispatch_id)
+        if lattice_id is None:
+            raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
 
         # Get all electron associated with sub lattice and lattice
         electron_id = self.get_electron_id(lattice_id=lattice_id)
+        if electron_id is None:
+            raise HTTPException(status_code=400, detail=["Something went wrong"])
 
         # Get list of nodes
         nodes = self.get_nodes(lattice_id=lattice_id)
+        if nodes is None:
+            nodes = None
 
         # Get list of electron dependency
         links = self.get_links(electron_id=electron_id)
-        # return lattice_id[1], nodes, links
+        if links is None:
+            links = None
         return GraphResponse(dispatch_id=lattice_id[1], graph={"nodes": nodes, "links": links})

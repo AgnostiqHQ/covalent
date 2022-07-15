@@ -33,7 +33,7 @@ from covalent_ui.os_api.api_v0.models.lattices_model import GraphResponse
 routes: APIRouter = APIRouter()
 
 
-@routes.get("/{dispatch_id}/")  # , response_model=GraphResponse)
+@routes.get("/{dispatch_id}/graph")  # , response_model=GraphResponse)
 def get_graph(dispatch_id: uuid.UUID):
     """Get Graph
 
