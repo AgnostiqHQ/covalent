@@ -39,6 +39,8 @@ from .._workflow.transport import TransportableObject
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
+RESERVED_RETVAL_KEY__FILES = "files"
+
 
 def wrapper_fn(
     function: TransportableObject,
@@ -62,8 +64,21 @@ def wrapper_fn(
         cb_args = serialized_args.get_deserialized()
         cb_kwargs = serialized_kwargs.get_deserialized()
         retval = cb_fn(*cb_args, **cb_kwargs)
-        if retval_key:
+
+        # if value already exists in cb_retvals convert to list or append to list
+        if retval_key and retval_key in cb_retvals:
+            if isinstance(cb_retvals[retval_key], list):
+                cb_retvals[retval_key].append(retval)
+            else:
+                cb_retvals[retval_key] = [cb_retvals[retval_key], retval]
+        elif retval_key:
             cb_retvals[retval_key] = retval
+
+    # always convert files return value as list
+    if RESERVED_RETVAL_KEY__FILES in cb_retvals and not isinstance(
+        cb_retvals[RESERVED_RETVAL_KEY__FILES], list
+    ):
+        cb_retvals[RESERVED_RETVAL_KEY__FILES] = [cb_retvals[RESERVED_RETVAL_KEY__FILES]]
 
     fn = function.get_deserialized()
 

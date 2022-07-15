@@ -25,6 +25,8 @@ import operator
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Union
 
+from covalent.executor.base import RESERVED_RETVAL_KEY__FILES
+
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger
@@ -591,7 +593,9 @@ def electron(
         if file_transfer.order == Order.AFTER:
             internal_call_after_deps.append(DepsCall(_callback_))
         else:
-            internal_call_before_deps.append(DepsCall(_callback_))
+            internal_call_before_deps.append(
+                DepsCall(_callback_, retval_keyword=RESERVED_RETVAL_KEY__FILES)
+            )
 
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
