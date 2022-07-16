@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Expose a public `wait()` function
+
+### Docs
+
+- Updated the RTD on `wait_for()` to use the static `wait()` function
+
 ## [0.134.0] - 2022-07-15
 
 ### Authors
