@@ -299,8 +299,9 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             result_webhook.send_update(result_object)
             g = result_object.lattice.transport_graph._graph
             if node_result["status"] == Result.COMPLETED:
-                for child in g.neighbors(node_result["node_id"]):
-                    pending_deps[child] -= 1
+                for child, edges in g.adj[node_result["node_id"]].items():
+                    for edge in edges:
+                        pending_deps[child] -= 1
                     if pending_deps[child] < 1:
                         app_log.debug(f"Queuing node {child} for execution")
                         tasks_queue.put(child)
