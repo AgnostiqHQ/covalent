@@ -60,8 +60,8 @@ def get_lattice_details(dispatch_id: uuid.UUID):
                 status=data.status,
                 total_electrons=data.total_electrons,
                 total_electrons_completed=data.total_electrons_completed,
-                start_time=data.start_time,
-                end_time=data.end_time,
+                started_at=data.start_time,
+                ended_at=data.end_time,
                 directory=data.directory,
             )
         raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])

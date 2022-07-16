@@ -18,7 +18,11 @@ cd Covalent
 ## Running the server
 ```sh
 cd covalent_ui/os_api
-python3 main.py
+python3 oswebapi.py start >> this command starts both main.py and app.py
+python3 oswebapi.py stop >> this command stops both main.py and app.py
+python3 oswebapi.py restart >> this command restarts both main.py and app.py
 ```
+logs can be found at /covalent_ui/os_api/logs folder
+
 #### Testing the app (Swagger)
 FastAPI can be fully tested in [localhost](http://127.0.0.1:8000/docs)
