@@ -634,7 +634,7 @@ def test_wait_for():
         res_1a = task_1a(2)
         res_1b = task_1b(2)
         res_2 = task_2(res_1a, 3)
-        res_3 = task_3(5).wait_for([res_1a, res_1b])
+        res_3 = ct.wait(task_3(5), [res_1a, res_1b])
 
         return task_2(res_2, res_3)
 
@@ -652,6 +652,10 @@ def test_wait_for():
         > result.get_node_result(node_id=2)["end_time"]
     )
     assert result.result == 1500
+
+    # Check that workflow function returns the same result when called directly
+
+    assert workflow() == 1500
 
 
 def test_electron_getitem():
