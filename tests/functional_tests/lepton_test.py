@@ -24,6 +24,7 @@ import os
 from pathlib import Path
 
 import covalent as ct
+from covalent._results_manager import results_manager as rm
 
 
 @ct.leptons.bash(executor="local", display_name="debug")
@@ -37,13 +38,14 @@ def workflow():
 
 
 def test_bash_decorator():
-    ct.dispatch(workflow)()
-    ct.sync()
+    dispatch_id = ct.dispatch(workflow)()
+    ct.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
 
     file = Path("/tmp/debug.txt")
     assert file.is_file()
 
-    with open("/tmp/debug", "r") as f:
+    with open("/tmp/debug.txt", "r") as f:
         result = int(f.readline().strip())
         assert result == 5
 
