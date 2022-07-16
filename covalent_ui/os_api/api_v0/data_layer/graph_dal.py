@@ -36,44 +36,20 @@ class Graph:
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
 
-    def get_electron_id(self, lattice_id):
+    def get_nodes(self, dispatch_id: UUID):
         """
-        Get electron ids using parent lattice id
+        Get nodes from dispatch id
+        When dispatch id passed to get graph
+            Join lattice and electron on Electron.parent_lattice_id == Lattice.id
+            then filter it with dispatch id
         Args:
-            lattice_id: Refers to the parent_lattice_id in electron dependency
+            dispatch_id: Refers to the dispatch id from lattices table
         Return:
-            Electron ids
-        """
-        return (
-            self.db_con.query(Electron.id, Electron.transport_graph_node_id)
-            .filter(Electron.parent_lattice_id.in_(lattice_id))
-            .first()
-        )
-
-    def get_lattices_id(self, dispatch_id: UUID):
-        """
-        Get Lattice id from dispatch id
-        Args:
-            lattice_id: Refers to the parent_lattice_id in electron dependency
-        Return:
-            Lattice ids
-        """
-        return (
-            self.db_con.query(Lattice.id, Lattice.dispatch_id)
-            .filter(Lattice.dispatch_id == str(dispatch_id))
-            .first()
-        )
-
-    def get_nodes(self, lattice_id):
-        """
-        Get all nodes corresponding to lattices id
-        Args:
-            lattice_id: Refers to the parent_lattice_id in electron dependency
-        Return:
-            List of nodes
+            graph data with list of nodes and links
         """
         return (
             self.db_con.query(
+                Electron.id,
                 Electron.name,
                 Electron.transport_graph_node_id.label("node_id"),
                 Electron.started_at,
@@ -81,17 +57,23 @@ class Graph:
                 Electron.status,
                 Electron.type,
             )
-            .filter(Electron.parent_lattice_id.in_(lattice_id))
+            .filter(
+                Electron.parent_lattice_id == Lattice.id, Lattice.dispatch_id == str(dispatch_id)
+            )
             .all()
         )
 
-    def get_links(self, electron_id):
+    def get_links(self, dispatch_id: UUID):
         """
-        Get all links corresponding to electron id
+        Get links from dispatch id
+        When dispatch id passed to get graph
+            Join lattice and electron by Electron.parent_lattice_id == Lattice.id
+            Join Electron and Electron Dependency by ElectronDependency.electron_id == Electron.id
+            then filter it with dispatch id
         Args:
-            electron_id: Refers to the electron id in electron dependency
+            dispatch_id: Refers to the dispatch id from lattices table
         Return:
-            List of links
+            graph data with list of nodes and links
         """
         return (
             self.db_con.query(
@@ -101,9 +83,28 @@ class Graph:
                 ElectronDependency.parent_electron_id.label("target"),
                 ElectronDependency.arg_index,
             )
-            .filter(~ElectronDependency.electron_id.in_(electron_id))
+            .filter(
+                Electron.parent_lattice_id == Lattice.id,
+                ElectronDependency.electron_id == Electron.id,
+                Lattice.dispatch_id == str(dispatch_id),
+            )
             .all()
         )
+
+    def check_error(self, data):
+        """
+        Helper method to rise exception if data is None
+
+        Args:
+            data: list of queried data
+        Return:
+            data
+        Rise:
+            Http Exception with status code 400 and details
+        """
+        if data is None:
+            raise HTTPException(status_code=400, detail=["Something went wrong"])
+        return data
 
     def get_graph(self, dispatch_id: UUID):
         """
@@ -116,23 +117,8 @@ class Graph:
         Return:
             graph data with list of nodes and links
         """
-        # Get all lattice id for that dispatch id
-        lattice_id = self.get_lattices_id(dispatch_id=dispatch_id)
-        if lattice_id is None:
-            raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
-
-        # Get all electron associated with sub lattice and lattice
-        electron_id = self.get_electron_id(lattice_id=lattice_id)
-        if electron_id is None:
-            raise HTTPException(status_code=400, detail=["Something went wrong"])
-
-        # Get list of nodes
-        nodes = self.get_nodes(lattice_id=lattice_id)
-        if nodes is None:
-            nodes = None
-
-        # Get list of electron dependency
-        links = self.get_links(electron_id=electron_id)
-        if links is None:
-            links = None
-        return GraphResponse(dispatch_id=lattice_id[1], graph={"nodes": nodes, "links": links})
+        data = self.get_nodes(dispatch_id=dispatch_id)
+        nodes = self.check_error(data=data)
+        data = self.get_links(dispatch_id=dispatch_id)
+        links = self.check_error(data=data)
+        return GraphResponse(dispatch_id=str(dispatch_id), graph={"nodes": nodes, "links": links})
