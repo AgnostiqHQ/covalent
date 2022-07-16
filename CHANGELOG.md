@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Disabled several dask functional tests
+
 ## [0.134.0] - 2022-07-15
 
 ### Authors
