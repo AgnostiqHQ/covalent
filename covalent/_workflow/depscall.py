@@ -32,17 +32,35 @@ class DepsCall(Deps):
         func: A callable
         args: args list
         kwargs: kwargs dict
+        retval_keyword: An optional string referencing the return value of func.
+
+    If retval_keyword is specified, the return value of func will be
+    passed during workflow execution as an argument to the electron
+    corresponding to the parameter of the same name.
+
+    Notes:
+        Electron parameters to be injected during execution must have default
+        parameter values.
+
+        It is the user's responsibility to ensure that `retval_keyword` is
+        actually a parameter of the electron. Unexpected behavior may occur
+        otherwise.
 
     """
 
-    def __init__(self, func=None, args=[], kwargs={}):
-        super().__init__(apply_fn=func, apply_args=args, apply_kwargs=kwargs)
+    def __init__(self, func=None, args=[], kwargs={}, *, retval_keyword=""):
+        super().__init__(
+            apply_fn=func, apply_args=args, apply_kwargs=kwargs, retval_keyword=retval_keyword
+        )
 
     def to_dict(self) -> dict:
         """Return a JSON-serializable dictionary representation of self"""
         attributes = self.__dict__.copy()
         for k, v in attributes.items():
-            attributes[k] = v.to_dict()
+            if isinstance(v, TransportableObject):
+                attributes[k] = v.to_dict()
+            else:
+                attributes[k] = v
         return {"type": "DepsCall", "short_name": self.short_name(), "attributes": attributes}
 
     def from_dict(self, object_dict) -> "DepsCall":
@@ -62,6 +80,7 @@ class DepsCall(Deps):
 
         attributes = deepcopy(object_dict["attributes"])
         for k, v in attributes.items():
-            attributes[k] = TransportableObject.from_dict(v)
+            if isinstance(v, dict) and v.get("type") == "TransportableObject":
+                attributes[k] = TransportableObject.from_dict(v)
         self.__dict__ = attributes
         return self
