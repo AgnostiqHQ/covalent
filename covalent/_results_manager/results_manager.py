@@ -27,6 +27,8 @@ from typing import List, Optional, Union
 import cloudpickle as pickle
 from sqlalchemy.orm import Session
 
+from covalent._workflow.transport import TransportableObject
+
 from .. import _workflow as ct
 from .._data_store.datastore import DataStore
 from .._data_store.models import Lattice
@@ -99,9 +101,22 @@ def result_from(lattice_record: Lattice) -> Result:
     ) as f:
         output = pickle.loads(f.read())
 
-    lattice = ct.lattice(function, executor=executor)
+    attributes = {
+        "metadata": {"executor": executor},
+        "args": inputs["args"],
+        "kwargs": inputs["kwargs"],
+        "transport_graph": transport_graph,
+        "workflow_function": function,
+    }
+
+    def dummy_function(x):
+        return x
+
+    lat = ct.lattice(dummy_function)
+    lat.__dict__ = attributes
+
     result = Result(
-        lattice,
+        lat,
         str(Path(lattice_record.storage_path).parent),
         dispatch_id=lattice_record.dispatch_id,
     )
@@ -110,11 +125,7 @@ def result_from(lattice_record: Lattice) -> Result:
     result._inputs = inputs
     result._start_time = lattice_record.started_at
     result._end_time = lattice_record.completed_at
-    result._lattice.transport_graph = transport_graph
-    result._lattice.args = inputs["args"]
-    result._lattice.kwargs = inputs["kwargs"]
-    result._result = output
-    app_log.warning(f"Transport graph sorted: {transport_graph.get_topologically_sorted_graph()}")
+    result._result = output if output is not None else TransportableObject(None)
     return result
 
 
