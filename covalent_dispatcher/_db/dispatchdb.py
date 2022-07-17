@@ -198,7 +198,8 @@ class DispatchDB:
             result_object.persist(self._get_data_store(initialize_db))
 
             if write_source:
-                result_object._write_dispatch_to_python_file()
+                pass
+                # result_object._write_dispatch_to_python_file()
         except Exception as e:
             app_log.exception(f"Exception occured while saving to DB: {e}.")
             raise

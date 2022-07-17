@@ -619,7 +619,6 @@ Node Outputs
             self.lattice.transport_graph.set_node_value(
                 node_id, "sublattice_result", sublattice_result
             )
-            # TODO (DBWORK) - Write sublattice record - not sure what to do here - assuming that this data gets written during the sublattice dispatch sync
 
         if stdout is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
@@ -725,7 +724,7 @@ Node Outputs
             cloudpickle.dump(self.inputs, f)
 
         with open(data_storage_path / LATTICE_RESULTS_FILENAME, "wb") as f:
-            cloudpickle.dump(self.result, f)
+            cloudpickle.dump(self._result, f)
 
         with open(data_storage_path / LATTICE_TRANSPORT_GRAPH_FILENAME, "wb") as f:
             cloudpickle.dump(self._lattice.transport_graph, f)
@@ -824,7 +823,9 @@ Node Outputs
                     try:
                         node_output = tg.get_node_value(node_id, "output")
                     except KeyError:
-                        node_output = None
+                        node_output = TransportableObject(None)
+                    if not isinstance(node_output, TransportableObject):
+                        node_output = TransportableObject(node_output)
                     cloudpickle.dump(node_output, f)
 
                 electron_exists = (
@@ -942,7 +943,7 @@ Node Outputs
             result: The final output of the dispatch.
         """
 
-        return self.result
+        return self._result
 
     def _write_dispatch_to_python_file(self, directory: str = None) -> None:
         """
