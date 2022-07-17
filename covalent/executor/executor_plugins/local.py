@@ -67,13 +67,16 @@ def wrapper_fn(
     """
 
     app_log.debug("Invoking call_before")
+    cb_retvals = {}
     for tup in call_before:
-        serialized_fn, serialized_args, serialized_kwargs = tup
+        serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
         cb_fn = serialized_fn.get_deserialized()
         cb_args = serialized_args.get_deserialized()
         cb_kwargs = serialized_kwargs.get_deserialized()
         app_log.debug(f"Invoking ({cb_fn}, args={cb_args}, kwargs={cb_kwargs}")
-        cb_fn(*cb_args, **cb_kwargs)
+        retval = cb_fn(*cb_args, **cb_kwargs)
+        if retval_key:
+            cb_retvals[retval_key] = retval
 
     app_log.debug(f"Serialized args: {args}, kwargs: {kwargs}")
     new_args = [arg.get_deserialized() for arg in args]
@@ -81,12 +84,17 @@ def wrapper_fn(
 
     fn = function.get_deserialized()
 
+    # Inject return values into kwargs
+    for key, val in cb_retvals.items():
+        new_kwargs[key] = val
+        app_log.debug(f"Injecting argument {key}")
+
     app_log.debug(f"Invoking {fn}, {new_args}, {new_kwargs}")
     output = fn(*new_args, **new_kwargs)
 
     app_log.debug("Invoking call_after")
     for tup in call_after:
-        serialized_fn, serialized_args, serialized_kwargs = tup
+        serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
         ca_fn = serialized_fn.get_deserialized()
         ca_args = serialized_args.get_deserialized()
         ca_kwargs = serialized_kwargs.get_deserialized()
