@@ -23,7 +23,7 @@
 import os
 import tempfile
 
-from covalent import TransportableObject
+from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
 
 
@@ -120,8 +120,8 @@ def test_wrapper_fn():
     serialized_cb = TransportableObject(before)
     serialized_ca = TransportableObject(after)
 
-    call_before = [(serialized_cb, serialized_cb_args, serialized_cb_kwargs)]
-    call_after = [(serialized_ca, serialized_ca_args, serialized_ca_kwargs)]
+    call_before = [(serialized_cb, serialized_cb_args, serialized_cb_kwargs, "")]
+    call_after = [(serialized_ca, serialized_ca_args, serialized_ca_kwargs, "")]
     serialized_output = wrapper_fn(serialized_fn, call_before, call_after, *args, **kwargs)
 
     assert serialized_output.get_deserialized() == (25, 2)
@@ -134,3 +134,23 @@ def test_wrapper_fn():
 
     Path(tmp_path_before).unlink()
     Path(tmp_path_after).unlink()
+
+
+def test_wrapper_fn_calldep_retval_injection():
+    """Test injecting calldep return values into main task"""
+
+    def f(x=0, y=0):
+        return x + y
+
+    def identity(y):
+        return y
+
+    serialized_fn = TransportableObject(f)
+    calldep = DepsCall(identity, args=[5], retval_keyword="y")
+    call_before = [calldep.apply()]
+    args = []
+    kwargs = {"x": TransportableObject(2)}
+
+    output = wrapper_fn(serialized_fn, call_before, [], *args, **kwargs)
+
+    assert output.get_deserialized() == 7

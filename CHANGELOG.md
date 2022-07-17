@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Result.save() has been deprecated in favor of Result.persist() and querying the database directly.
+### Added
+
+- Support injecting return values of calldeps into electrons during workflow execution
 
 ## [0.134.0] - 2022-07-15
 

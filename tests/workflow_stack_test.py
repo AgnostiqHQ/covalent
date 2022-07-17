@@ -282,9 +282,33 @@ def test_electron_deps_call_before():
     dispatch_id = ct.dispatch(workflow)(file_path=tmp_path)
     res = ct.get_result(dispatch_id, wait=True)
 
+    assert res.error is None
+
     assert res.result == (True, "Hello")
 
     assert not Path(tmp_path).is_file()
+
+
+def test_electron_deps_inject_calldep_retval():
+    def identity(y):
+        return y
+
+    calldep = ct.DepsCall(identity, args=[5], retval_keyword="y")
+
+    @ct.electron(call_before=[calldep])
+    def task(x, y=0):
+        return (x, y)
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    dispatch_id = ct.dispatch(workflow)(2)
+
+    result_object = ct.get_result(dispatch_id, wait=True)
+
+    rm._delete_result(dispatch_id)
+    assert result_object.result == (2, 5)
 
 
 def test_electron_deps_pip():
