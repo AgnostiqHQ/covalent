@@ -473,8 +473,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
         for node_id in nodes:
             # Get name of the node for the current task
-            # TODO (DBWORK) - Read info from database
-
             node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
             app_log.warning(f"Node name success: {node_name}")
 
@@ -509,7 +507,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                         key = result_object.lattice.transport_graph.get_node_value(node_id, "key")
                         output = output[key]
 
-                # TODO (DBWORK) - Any information that needs to get updated in the database will happen automatically here.
                 app_log.warning("Starting update node")
 
                 try:
@@ -642,13 +639,9 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 if result_object._get_node_status(DispatchDB()._get_data_store(), node_id) == str(
                     Result.FAILED
                 ):
-
-                    # TODO (DBWORK) - Write to DB directly
                     result_object._status = Result.FAILED
                     result_object._end_time = datetime.now(timezone.utc)
                     result_object._error = f"Node {result_object._get_node_name(DispatchDB()._get_data_store(),node_id)} failed: \n{result_object._get_node_error(DispatchDB()._get_data_store(),node_id)}"
-
-                    # TODO (DBWORK) - Write error and updates to results file directly and only to the results file
                     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
                     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
 
@@ -662,8 +655,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 ):
                     result_object._status = Result.CANCELLED
                     result_object._end_time = datetime.now(timezone.utc)
-
-                    # TODO (DBWORK) - Take out this persist method
                     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
                     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
                     # with DispatchDB() as db:
@@ -689,7 +680,9 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     post_processing_inputs = {}
     post_processing_inputs["args"] = [
         TransportableObject.make_transportable(result_object.lattice),
-        TransportableObject.make_transportable(result_object.get_all_node_outputs()),
+        TransportableObject.make_transportable(
+            result_object.get_all_node_outputs(DispatchDB()._get_data_store())
+        ),
         TransportableObject.make_transportable(order),
     ]
     post_processing_inputs["kwargs"] = {}
@@ -762,6 +755,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     try:
         with DispatchDB() as db:
             db.save_db(result_object, write_source=True)
+            app_log.warning("DIDN't work")
     except Exception:
         app_log.exception("Upsert or save db issue")
     result_webhook.send_update(result_object)
@@ -809,7 +803,7 @@ def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExec
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
-    DispatchDB().save_db(result_object)
+    DispatchDB().save_db(result_object, initialize_db=True)
 
     if result_object.status == Result.COMPLETED:
         return result_object

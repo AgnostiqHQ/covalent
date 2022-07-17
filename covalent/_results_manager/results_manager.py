@@ -62,7 +62,7 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
 
     try:
         result_object = _get_result_from_db(
-            DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}", initialize_db=True),
+            DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}"),
             dispatch_id,
             wait,
         )
