@@ -78,7 +78,7 @@ class DepsBash(Deps):
 
         attributes = deepcopy(object_dict)["attributes"]
         for k, v in attributes.items():
-            if k != "commands":
+            if isinstance(v, dict) and v.get("type", None) == "TransportableObject":
                 attributes[k] = TransportableObject.from_dict(v)
 
         self.__dict__ = attributes

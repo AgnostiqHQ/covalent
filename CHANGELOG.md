@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Installation will fail if `cova` is installed while trying to install `covalent`.
 
+### Operations
+
+- Psiog is only codeowner of js files
+
+### Added
+
+- Support injecting return values of calldeps into electrons during workflow execution
+
 ## [0.134.0] - 2022-07-15
 
 ### Authors
