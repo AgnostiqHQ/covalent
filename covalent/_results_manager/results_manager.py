@@ -67,10 +67,10 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
             wait,
         )
 
-    except MissingLatticeRecordError:
+    except MissingLatticeRecordError as e:
         raise MissingLatticeRecordError(
-            f"Dispatch ID {dispatch_id} was not found in the database. Please make sure the ID is correct."
-        )
+            f"Dispatch ID {dispatch_id} was not found in the database. Either the Dispatch ID is incorrect or wait a couple of seconds before trying again."
+        ) from e
 
     return result_object
 

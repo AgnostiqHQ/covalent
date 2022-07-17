@@ -429,10 +429,10 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         None
     """
 
-    app_log.warning("Inside run_planned_workflow")
+    app_log.warning("3: Inside run_planned_workflow (run_planned_workflow).")
 
     def update_node_result(node_result: dict):
-        app_log.warning("Updating node result")
+        app_log.warning("Updating node result (run_planned_workflow).")
         result_object._update_node(db=DispatchDB()._get_data_store(), **node_result)
         result_webhook.send_update(result_object)
 
@@ -440,7 +440,9 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         node_result = future.result()
         update_node_result(node_result)
 
-    app_log.debug(f"Running workflow {result_object.dispatch_id}")
+    app_log.debug(
+        f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
+    )
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
@@ -455,7 +457,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             )
         )
         session.commit()
-    app_log.warning("5: Wrote lattice status to DB (run_planned_workflow)")
+    app_log.warning("5: Wrote lattice status to DB (run_planned_workflow).")
 
     # Executor for post_processing and dispatching sublattices
     pp_executor = result_object.lattice.get_metadata("workflow_executor")
@@ -464,7 +466,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
     order = result_object.lattice.transport_graph.get_topologically_sorted_graph()
 
-    app_log.warning("5A: Topological sort finished (run_planned_workflow)")
+    app_log.warning(f"6: Topological sort finished {order} (run_planned_workflow).")
 
     db = DispatchDB()._get_data_store()
 
@@ -474,40 +476,38 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         for node_id in nodes:
             # Get name of the node for the current task
             node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
-            app_log.warning(f"Node name success: {node_name}")
+            app_log.warning(f"7A: Node name: {node_name} (run_planned_workflow).")
 
             if node_name.startswith(
                 (subscript_prefix, generator_prefix, parameter_prefix, attr_prefix)
             ):
-                app_log.warning("Check generator, subscript etc. if")
+                app_log.warning("7B: Check generator, subscript etc. if (run_planned_workflow).")
                 if node_name.startswith(parameter_prefix):
-                    app_log.warning("Parameter if block")
+                    app_log.warning("7C: Parameter if block (run_planned_workflow).")
                     output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
-                    app_log.warning("Output success")
-                    output_db = result_object._get_node_value(db, node_id)
-                    app_log.warning(f"Node output success: {output_db, output}")
+                    app_log.warning(f"7C: Node output: {output} (run_planned_workflow).")
                 else:
-                    app_log.warning("Not parameter else block")
+                    app_log.warning("7D: Not parameter else block (run_planned_workflow).")
                     try:
                         parent = result_object.lattice.transport_graph.get_dependencies(node_id)[0]
                         output = result_object.lattice.transport_graph.get_node_value(
                             parent, "output"
                         )
-                        output_db = result_object._get_node_output(db, node_id)
+                        app_log.warning(f"7E: Node output: {output} (run_planned_workflow).")
                     except Exception:
                         app_log.exception("Subscripted")
-                    app_log.warning(f"Node output success: {output_db, output}")
 
                     if node_name.startswith(attr_prefix):
                         attr = result_object.lattice.transport_graph.get_node_value(
                             node_id, "attribute_name"
                         )
                         output = getattr(output, attr)
+                        app_log.warning(f"7F: Node output: {output} (run_planned_workflow).")
                     else:
                         key = result_object.lattice.transport_graph.get_node_value(node_id, "key")
                         output = output[key]
 
-                app_log.warning("Starting update node")
+                app_log.warning("8: Starting update node (run_planned_workflow).")
 
                 try:
                     result_object._update_node(
@@ -518,14 +518,14 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                         status=Result.COMPLETED,
                         output=output,
                     )
+                    app_log.warning("8A: Update node success (run_planned_workflow).")
                 except Exception:
                     app_log.exception("Caught exception")
-
-                app_log.warning("6: Updated non-executable nodes")
+                    app_log.warning("8B: Update node fail (run_planned_workflow).")
 
                 continue
 
-            app_log.debug(f"Gathering inputs for task {node_id}")
+            app_log.warning(f"Gathering inputs for task {node_id} (run_planned_workflow).")
             task_input = _get_task_inputs(node_id, node_name, result_object)
 
             start_time = datetime.now(timezone.utc)
@@ -799,10 +799,15 @@ def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExec
     Returns:
         The result object from the workflow execution
     """
+
+    app_log.warning("1: Inside run_workflow.")
+
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
+
+    app_log.warning("2: Constructed result object and initialized nodes.")
     DispatchDB().save_db(result_object, initialize_db=True)
 
     if result_object.status == Result.COMPLETED:

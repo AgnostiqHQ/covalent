@@ -77,7 +77,7 @@ def run_dispatcher(
     futures[dispatch_id] = workflow_pool.submit(
         run_workflow, dispatch_id, json_lattice, tasks_pool
     )
-    app_log.warning("1: Succeeded submitting workfow to workflow pool.")
+    app_log.warning("0: Submitted lattice JSON to run_workflow.")
 
     return dispatch_id
 

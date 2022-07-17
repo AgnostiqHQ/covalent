@@ -250,9 +250,7 @@ Node Outputs
 
         self._num_nodes = self.lattice.transport_graph.get_internal_graph_copy().number_of_nodes()
         for node_id in range(self._num_nodes):
-            node_name = (
-                self.lattice.transport_graph.get_node_value(node_id, "name") + f"({node_id})"
-            )
+            node_name = self.lattice.transport_graph.get_node_value(node_id, "name")
 
             self.lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
 

@@ -138,7 +138,7 @@ def insert_electrons_data(
         parent_lattice_id=parent_lattice_id,
         transport_graph_node_id=transport_graph_node_id,
         type=type,
-        name=f"{name}({transport_graph_node_id})",
+        name=name,
         status=status,
         storage_type=storage_type,
         storage_path=storage_path,
