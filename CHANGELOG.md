@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Adding a RTD tutorial/steps on creating a custom executor
+
+
 ### Tests
 
 - Disabled several dask functional tests
