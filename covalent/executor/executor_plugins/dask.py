@@ -115,7 +115,7 @@ class DaskExecutor(BaseAsyncExecutor):
             await dask_client
 
         if not dask_client or not dask_client.scheduler:
-            dask_client = Client(address=self.scheduler_address, timeout=2, asynchronous=True)
+            dask_client = Client(address=self.scheduler_address, asynchronous=True)
             _address_client_mapper[self.scheduler_address] = dask_client
 
             await dask_client
