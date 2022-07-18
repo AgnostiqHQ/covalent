@@ -26,13 +26,13 @@ RUN apt-get update \
   && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
   && apt-get install -y nodejs \
   && npm install --global yarn \
-  && pip install --upgrade pip \
   && rm -rf /var/lib/apt/lists/*
 
 COPY . /app/
 RUN cd /app \
   && python -m venv --copies /app/.venv \
   && . /app/.venv/bin/activate \
+  && pip install --upgrade pip \
   && pip install --no-cache-dir --use-feature=in-tree-build -r /app/requirements.txt \
   && cd /app/covalent_ui/webapp \
   && yarn install --network-timeout 100000 \
