@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Set up alembic migrations & added migration guide (`alembic/README.md`)
 
+### Tests
+
+- Disabled several dask functional tests
+
 ## [0.136.0] - 2022-07-18
 
 ### Authors
