@@ -54,13 +54,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build images
+      - name: Build and push images
         run: |
           for platform in linux/amd64 linux/arm64 darwin/amd64 ; do
             docker buildx build \ 
             --tag ${{ steps.login-ecr.outputs.registry }}/covalent:${{ env.VERSION }}-${platform} \
             --output type=docker \
             --platform $platform \
+            --driver-opt network=host \
             ./
           done
 
