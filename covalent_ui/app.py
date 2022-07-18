@@ -29,9 +29,6 @@ from pathlib import Path
 
 import simplejson
 import tailer
-import uvicorn
-from fastapi import FastAPI, Request, status
-from fastapi.middleware.wsgi import WSGIMiddleware
 from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -44,8 +41,6 @@ from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
 from covalent_dispatcher._service.app_dask import DaskCluster
-from covalent_ui.os_api.api_v0.routes import routes
-from covalent_ui.os_api.main import app as fastapiapp
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
@@ -56,8 +51,6 @@ log_stack_info = logger.log_stack_info
 
 app = Flask(__name__, static_folder=WEBAPP_PATH)
 app.register_blueprint(bp)
-fast = FastAPI()
-
 # allow cross-origin requests when API and static files are served separately
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -179,8 +172,4 @@ if __name__ == "__main__":
         dask_cluster.start()
 
     # Start covalent main app
-    # socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
-
-    fast.include_router(routes.routes, prefix="/api/v1")
-    fast.mount("/", WSGIMiddleware(app))
-    uvicorn.run(fast, host="0.0.0.0", port=48012)
+    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
