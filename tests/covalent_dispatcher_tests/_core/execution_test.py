@@ -27,7 +27,9 @@ import cloudpickle as pickle
 import pytest
 
 import covalent as ct
+from covalent._data_store.datastore import DataStore
 from covalent._results_manager import Result
+from covalent._results_manager.utils import _db_path
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
     _gather_deps,
@@ -227,7 +229,7 @@ def test_result_post_process():
 
     res._status = Result.PENDING_POSTPROCESSING
     res._dispatch_id = "MOCK"
-    res.persist()
+    res.persist(DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}", initialize_db=True))
     execution_result = res.post_process()
 
     assert execution_result == compute_energy()
