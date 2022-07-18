@@ -108,7 +108,7 @@ def test_plan_workflow():
     assert updated_tg["lattice_metadata"]["schedule"]
 
 
-def test_post_process(db):
+def test_post_process():
     """Test post-processing of results."""
 
     import covalent as ct
