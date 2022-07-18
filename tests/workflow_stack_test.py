@@ -131,7 +131,7 @@ def test_sublatticing(db):
     assert workflow_result.error is None
     assert workflow_result.status == str(Result.COMPLETED)
     assert workflow_result.result == 3
-    assert workflow_result.get_node_result(0)["sublattice_result"].result == 3
+    assert workflow_result.get_node_result(db, 0)["sublattice_result"].result == 3
 
 
 def test_internal_sublattice_dispatch():
@@ -642,7 +642,7 @@ def test_two_iterations_float():
     assert [0, 1, 2, 3, 4, 5, 6] == list(add_half_quarter.transport_graph._graph.nodes)
 
 
-def test_wait_for():
+def test_wait_for(db):
     """Test whether wait_for functionality executes as expected"""
 
     @ct.electron
@@ -672,21 +672,22 @@ def test_wait_for():
 
     dispatch_id = ct.dispatch(workflow)()
     result = ct.get_result(dispatch_id, wait=True)
-    rm._delete_result(dispatch_id)
+    result.persist(db)
 
     assert result.status == str(Result.COMPLETED)
     assert (
-        result.get_node_result(node_id=6)["start_time"]
-        > result.get_node_result(node_id=0)["end_time"]
+        result.get_node_result(db=db, node_id=6)["start_time"]
+        > result.get_node_result(db=db, node_id=0)["end_time"]
     )
     assert (
-        result.get_node_result(node_id=6)["start_time"]
-        > result.get_node_result(node_id=2)["end_time"]
+        result.get_node_result(db=db, node_id=6)["start_time"]
+        > result.get_node_result(db=db, node_id=2)["end_time"]
     )
     assert result.result == 1500
+    rm._delete_result(dispatch_id)
 
 
-def test_electron_getitem():
+def test_electron_getitem(db):
     """Test electron __getitem__, both with raw keys and with electron keys"""
 
     @ct.electron
