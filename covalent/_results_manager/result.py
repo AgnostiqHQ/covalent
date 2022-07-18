@@ -272,7 +272,7 @@ Node Outputs
 
             self.lattice.transport_graph.set_node_value(node_id, "stderr", None)
 
-    def get_node_result(self, node_id: int) -> dict:
+    def get_node_result(self, db: DataStore, node_id: int) -> dict:
         """Return the result of a particular node.
 
         Args:
@@ -292,19 +292,34 @@ Node Outputs
                             - stderr: The stderr of the node execution.
         """
 
+        # return {
+        #     "node_id": node_id,
+        #     "node_name": self.lattice.transport_graph.get_node_value(node_id, "node_name"),
+        #     "start_time": self.lattice.transport_graph.get_node_value(node_id, "start_time"),
+        #     "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
+        #     "status": self.lattice.transport_graph.get_node_value(node_id, "status"),
+        #     "output": self.lattice.transport_graph.get_node_value(node_id, "output"),
+        #     "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
+        #     "sublattice_result": self.lattice.transport_graph.get_node_value(
+        #         node_id, "sublattice_result"
+        #     ),
+        #     "stdout": self.lattice.transport_graph.get_node_value(node_id, "stdout"),
+        #     "stderr": self.lattice.transport_graph.get_node_value(node_id, "stderr"),
+        # }
+
         return {
             "node_id": node_id,
-            "node_name": self.lattice.transport_graph.get_node_value(node_id, "node_name"),
+            "node_name": self._get_node_name(db, node_id),
             "start_time": self.lattice.transport_graph.get_node_value(node_id, "start_time"),
             "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
-            "status": self.lattice.transport_graph.get_node_value(node_id, "status"),
-            "output": self.lattice.transport_graph.get_node_value(node_id, "output"),
+            "status": self._get_node_status(db, node_id),
+            "output": self._get_node_output(db, node_id),
             "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
             "sublattice_result": self.lattice.transport_graph.get_node_value(
                 node_id, "sublattice_result"
             ),
             "stdout": self.lattice.transport_graph.get_node_value(node_id, "stdout"),
-            "stderr": self.lattice.transport_graph.get_node_value(node_id, "stderr"),
+            "stderr": self._get_node_error(db, node_id),
         }
 
     def get_all_node_outputs(self, db: DataStore) -> dict:

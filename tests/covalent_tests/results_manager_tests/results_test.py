@@ -200,8 +200,12 @@ def test_get_node_value(db, result_1):
     assert result_1._get_node_value(db=db, node_id=0) is None
 
 
-# def test_get_all_node_results(db, result_1):
-#     """Test result method to get all the node results."""
+def test_get_all_node_results(db, result_1):
+    """Test result method to get all the node results."""
 
-#     result_1.persist(db)
-#     print(result_1.get_all_node_results(db))
+    result_1.persist(db)
+    for data_row in result_1.get_all_node_results(db):
+        if data_row["node_id"] == 0:
+            assert data_row["node_name"] == "task_1"
+        elif data_row["node_id"] == 1:
+            assert data_row["node_name"] == ":parameter:1"
