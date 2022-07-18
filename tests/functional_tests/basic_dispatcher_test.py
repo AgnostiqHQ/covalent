@@ -81,9 +81,6 @@ def test_dispatcher_functional():
         output = "failed"
 
     rm._delete_result(dispatch_id)
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
-
     assert output == "failed"
 
     Path(the_executor.log_stdout).unlink(missing_ok=True)
