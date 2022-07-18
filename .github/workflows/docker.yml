@@ -64,4 +64,4 @@ jobs:
       - name: Build and push image
         run: |
           docker build -t ${{ secrets.ECR_DEV_REPO }}:${{ env.TAG }} .
-          docker push ${{ secrets.ECR_DEV_REPO }}
+          docker push ${{ secrets.ECR_DEV_REPO }}:${{ env.TAG }}
