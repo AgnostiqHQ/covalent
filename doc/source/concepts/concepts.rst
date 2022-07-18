@@ -186,7 +186,7 @@ Waiting for other electrons
 Covalent normally infers the dependencies between electrons from
 their inputs and ouputs. Sometimes the user might want to wait for a
 task's execution before executing another task even when the output of
-one is not the input of another. The `wait()` function can come in
+one is not the input of another. The `wait()` function can be
 handy in those cases.
 
 .. code-block:: python
