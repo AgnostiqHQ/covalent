@@ -18,8 +18,16 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-[flake8]
-max-line-length = 99
-max-complexity = 45
-select = B,C,E,F,W,T4,B9
-ignore = E501, E722, W503, F401, F403, F811, F841, E203
+"""
+Unit tests for DataStore object
+"""
+
+from covalent._data_store.datastore import DataStore
+from covalent._shared_files.config import get_config
+
+
+def test_datastore_init():
+    """Test data store initialization method."""
+
+    ds = DataStore(db_URL=None)
+    assert ds.db_URL == "sqlite+pysqlite:///" + get_config("workflow_data.db_path")

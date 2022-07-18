@@ -23,7 +23,8 @@
 import os
 import tempfile
 
-from covalent.executor import BaseExecutor
+from covalent import DepsCall, TransportableObject
+from covalent.executor import BaseExecutor, wrapper_fn
 
 
 class MockExecutor(BaseExecutor):
@@ -81,3 +82,75 @@ def test_execute_in_conda_env(mocker):
         "node_id",
     )
     conda_env_fail_mock.assert_called_once_with("function", "args", "kwargs", "node_id")
+
+
+def test_wrapper_fn():
+    import tempfile
+    from pathlib import Path
+
+    f = tempfile.NamedTemporaryFile(delete=True)
+    tmp_path_before = f.name
+    f.close()
+    f = tempfile.NamedTemporaryFile(delete=True)
+    tmp_path_after = f.name
+    f.close()
+
+    def f(x, y):
+        return x * x, y
+
+    def before(path):
+        with open(path, "w") as f:
+            f.write("Hello")
+
+    def after(path):
+        with open(path, "w") as f:
+            f.write("Bye")
+
+    args = [TransportableObject.make_transportable(5)]
+    kwargs = {"y": TransportableObject.make_transportable(2)}
+
+    before_args = [tmp_path_before]
+    after_args = [tmp_path_after]
+    serialized_cb_args = TransportableObject.make_transportable(before_args)
+    serialized_cb_kwargs = TransportableObject.make_transportable({})
+    serialized_ca_args = TransportableObject.make_transportable(after_args)
+    serialized_ca_kwargs = TransportableObject.make_transportable({})
+
+    serialized_fn = TransportableObject.make_transportable(f)
+    serialized_cb = TransportableObject(before)
+    serialized_ca = TransportableObject(after)
+
+    call_before = [(serialized_cb, serialized_cb_args, serialized_cb_kwargs, "")]
+    call_after = [(serialized_ca, serialized_ca_args, serialized_ca_kwargs, "")]
+    serialized_output = wrapper_fn(serialized_fn, call_before, call_after, *args, **kwargs)
+
+    assert serialized_output.get_deserialized() == (25, 2)
+
+    with open(tmp_path_before, "r") as f:
+        assert f.read() == "Hello"
+
+    with open(tmp_path_after, "r") as f:
+        assert f.read() == "Bye"
+
+    Path(tmp_path_before).unlink()
+    Path(tmp_path_after).unlink()
+
+
+def test_wrapper_fn_calldep_retval_injection():
+    """Test injecting calldep return values into main task"""
+
+    def f(x=0, y=0):
+        return x + y
+
+    def identity(y):
+        return y
+
+    serialized_fn = TransportableObject(f)
+    calldep = DepsCall(identity, args=[5], retval_keyword="y")
+    call_before = [calldep.apply()]
+    args = []
+    kwargs = {"x": TransportableObject(2)}
+
+    output = wrapper_fn(serialized_fn, call_before, [], *args, **kwargs)
+
+    assert output.get_deserialized() == 7
