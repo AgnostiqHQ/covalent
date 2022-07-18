@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Psiog is only codeowner of js files
+- Fix in changelog action to handle null author when a bot is committing
 
 ### Added
 
