@@ -36,7 +36,6 @@ import {
 import { ChevronLeft } from '@mui/icons-material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import CopyButton from '../common/CopyButton'
-import { STATUS_COLORS } from '../dispatches/ResultProgress'
 import LatticeDispatchOverview from './LatticeDispatchOverview'
 import { statusIcon, truncateMiddle ,  statusColor,statusLabel
 } from '../../utils/misc'
@@ -53,8 +52,9 @@ const DispatchDrawerContents = () => {
   const drawerLatticeError = useSelector((state) => state.latticeResults.latticeError)
 
   useEffect(() => {
-    dispatch(latticeDetails({ dispatchId: dispatchId}))
-    dispatch(latticeError({dispatchId:dispatchId,params:'error'}))
+    dispatch(latticeDetails({ dispatchId}))
+    dispatch(latticeError({dispatchId,params:'error'}))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

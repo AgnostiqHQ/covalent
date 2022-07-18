@@ -2,7 +2,7 @@ import _ from 'lodash'
 import React, { useEffect } from 'react'
 import { Box } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { useStoreActions,useStoreState } from 'react-flow-renderer'
+import { useStoreActions, useStoreState } from 'react-flow-renderer'
 import { useParams } from 'react-router-dom'
 import LatticeGraph from '../graph/LatticeGraph'
 import NotFound from '../NotFound'
@@ -20,7 +20,8 @@ export function DispatchLayout() {
   const graph_result = useSelector((state) => state.graphResults.graphList)
   const fetch = useSelector((state) => state.graphResults.graphResultsList.isFetching)
   useEffect(() => {
-    dispatch(graphResults({ dispatchId: dispatchId}))
+    dispatch(graphResults({ dispatchId }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const selectedElectron = useStoreState((state) => {
@@ -33,7 +34,6 @@ export function DispatchLayout() {
       (node) => nodeId === String(_.get(node, 'id'))
     )
   })
-
   const setSelectedElements = useStoreActions(
     (actions) => actions.setSelectedElements
   )
@@ -58,25 +58,23 @@ export function DispatchLayout() {
           bgcolor: graphBgColor,
         }}
       >
-        {Object.keys(graph_result).length !==0 ?
-        <LatticeGraph
-          graph={graph_result}
-          hasSelectedNode={!!selectedElectron}
-          marginLeft={latticeDrawerWidth + navDrawerWidth}
-        />
-        :
-        <PageLoading />
+        {Object.keys(graph_result).length !== 0 ?
+          <LatticeGraph
+            graph={graph_result}
+            hasSelectedNode={!!selectedElectron}
+            marginLeft={latticeDrawerWidth + navDrawerWidth}
+          />
+          :
+          <PageLoading />
         }
       </Box>
-
       <NavDrawer />
-        <LatticeDrawer>
-            <DispatchDrawerContents />
-        </LatticeDrawer>
-        {Object.keys(graph_result).length !==0 ? 
-          <NodeDrawer node={selectedElectron} graph={graph_result} 
-          dispatchId={dispatchId}/>
-        : <PageLoading /> }
+      <LatticeDrawer>
+        <DispatchDrawerContents />
+      </LatticeDrawer>
+      {selectedElectron &&
+        <NodeDrawer node={selectedElectron} dispatchId={dispatchId} />
+      }
     </>
   )
 }

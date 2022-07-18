@@ -21,45 +21,13 @@
  */
 
  import { Box, LinearProgress, Tooltip, Typography } from '@mui/material'
- import { createSelector } from '@reduxjs/toolkit'
- import _ from 'lodash'
 
- import { isParameter } from '../../utils/misc'
-
- export const STATUS_COLORS = {
+ const STATUS_COLORS = {
    RUNNING: 'running',
    COMPLETED: 'success',
    FAILED: 'error',
    CANCELLED: 'error',
  }
-
- export const selectResultProgress = createSelector(
-   (state, dispatchId) => state.results.cache[dispatchId],
-   (result) => {
-     return _.reduce(
-       _.get(result, 'graph.nodes'),
-       (progress, node) => {
-         if (!isParameter(node)) {
-           progress.total++
-           progress.completed += node.status === 'COMPLETED' ? 1 : 0
-           // record first electron error
-           if (node.error && !progress.error) {
-             progress.error = `${node.name}: ${node.error}`
-           }
-         }
-         return progress
-       },
-       {
-         total: 0,
-         completed: 0,
-         status: result?.status,
-         label: _.startCase(_.lowerCase(result?.status)),
-         color: STATUS_COLORS[result?.status],
-         error: result?.error,
-       }
-     )
-   }
- )
 
  const ResultProgress = (props) => {
    const {status,totalElectronsCompleted,totalElectrons}=props.result

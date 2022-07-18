@@ -81,10 +81,10 @@ const mapGraphToElements = (graph, direction, showParams) => {
   return [...nodes, ...edges]
 }
 
-const assignNodePositions = async (graph, direction,showParams,algorithm) => {
-  const elements=layoutElk(graph,direction,showParams);
+const assignNodePositions = async (graph, direction, showParams, algorithm) => {
+  const elements=layoutElk(graph, direction, showParams);
   const DEFAULT_WIDTH = 75
-const DEFAULT_HEIGHT = 75
+  const DEFAULT_HEIGHT = 75
   const nodes= [];
   const edges= [];
   const elk = new ELK({
@@ -121,7 +121,7 @@ const DEFAULT_HEIGHT = 75
       const node = newGraph?.children?.find((n) => n.id === el.id)
       if (node?.x && node?.y && node?.width && node?.height) {
         el.position = {
-          x: node.x ,
+          x: node.x,
           y: node.y
         }
       }
@@ -137,7 +137,7 @@ const DEFAULT_HEIGHT = 75
  *
  * @returns { source: <position>, target: <position> }
  */
- const getHandlePositions = (direction) => {
+const getHandlePositions = (direction) => {
   switch (direction) {
     case 'DOWN':
       return { source: 'bottom', target: 'top' }

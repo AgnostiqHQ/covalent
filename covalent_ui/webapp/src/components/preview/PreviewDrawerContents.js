@@ -108,10 +108,10 @@ const LatticePreviewOverview = ({ preview }) => {
       )}
 
       {/* Input */}
-      <InputSection inputs={_.get(preview, 'lattice.inputs')} />
+      <InputSection preview inputs={_.get(preview, 'lattice.inputs')} />
 
       {/* Executor */}
-      <ExecutorSection metadata={_.get(preview, 'lattice.metadata')} />
+      <ExecutorSection preview metadata={_.get(preview, 'lattice.metadata')} />
 
       <Divider sx={{ my: 3 }} />
 

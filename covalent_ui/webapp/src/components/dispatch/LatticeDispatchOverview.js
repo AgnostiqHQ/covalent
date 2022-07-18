@@ -34,17 +34,18 @@ import { latticeResults,latticeFunctionString,latticeInput,
 
 const LatticeDispatchOverview = ({dispatchId,latDetails }) => {
   const result = latDetails
-  const dispatch = useDispatch()  
+  const dispatch = useDispatch()
   const drawerInput = useSelector((state) => state.latticeResults.latticeInput)
   const drawerResult = useSelector((state) => state.latticeResults.latticeResult)
   const drawerFunctionString = useSelector((state) => state.latticeResults.latticeFunctionString)
   const drawerExecutorDetail = useSelector((state) => state.latticeResults.latticeExecutorDetail)
 
   useEffect(() => {
-    dispatch(latticeResults({ dispatchId: dispatchId , params : 'result'}))
-    dispatch(latticeFunctionString({dispatchId:dispatchId,params:'function_string'}))
-    dispatch(latticeInput({dispatchId:dispatchId,params:'input'}))
-    dispatch(latticeExecutorDetail({dispatchId:dispatchId,params:'executor_details'}))
+    dispatch(latticeResults({ dispatchId , params : 'result'}))
+    dispatch(latticeFunctionString({dispatchId,params:'function_string'}))
+    dispatch(latticeInput({dispatchId,params:'inputs'}))
+    dispatch(latticeExecutorDetail({dispatchId,params:'executor_details'}))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const hasStarted = !!result.started_at
@@ -84,7 +85,7 @@ const LatticeDispatchOverview = ({dispatchId,latDetails }) => {
       <Heading>Directory</Heading>
       <Typography sx={{ overflowWrap: 'anywhere', fontSize: 'body2.fontSize' }}>
         <Tooltip title={result.directory} enterDelay={500}>
-          <span>{truncateMiddle(result.directory, 15, 25)}</span>
+          <span>{truncateMiddle(result.directory, 10, 25)}</span>
         </Tooltip>
         <CopyButton
           content={result.directory}
@@ -116,7 +117,7 @@ const LatticeDispatchOverview = ({dispatchId,latDetails }) => {
       <Divider sx={{ my: 3 }} />
 
       {/* Source */}
-      
+
       <Heading />
       {Object.keys(drawerFunctionString).length !==0 &&
       <Paper elevation={0}>
