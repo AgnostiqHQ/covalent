@@ -53,7 +53,7 @@ jobs:
 
       - name: Test image
         run: |
-          docker run -d -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/covalent:${{ env.VERSION }}
+          docker run -d -p 8080:8080 --network host ${{ steps.login-ecr.outputs.registry }}/covalent:${{ env.VERSION }}
           curl http://localhost:8080/status
           docker kill $(docker ps -q)
 
