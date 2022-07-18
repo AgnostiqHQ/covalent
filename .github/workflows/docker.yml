@@ -40,13 +40,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out head
-        if: ! github.event.inputs.commit_sha
+        if: >
+          github.event_name == 'pull_request'
+          || github.event_name == 'push'
         uses: actions/checkout@v3
         with:
           persist-credentials: false
 
       - name: Check out SHA
-        if: github.event.inputs.commit_sha
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/checkout@v3
         with:
           persist-credentials: false
