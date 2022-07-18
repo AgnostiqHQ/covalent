@@ -24,7 +24,7 @@ import tempfile
 
 import covalent as ct
 from covalent._workflow.transport import TransportableObject
-from covalent.executor.executor_plugins.local import LocalExecutor
+from covalent.executor.executor_plugins.local import LocalExecutor, wrapper_fn
 
 
 def test_local_executor_passes_results_dir(mocker):
@@ -43,8 +43,8 @@ def test_local_executor_passes_results_dir(mocker):
         le = LocalExecutor()
         le.execute(
             function=TransportableObject(simple_task),
-            args={"x": 1},
-            kwargs={"y": 2},
+            args=[],
+            kwargs={"x": TransportableObject(1), "y": TransportableObject(2)},
             call_before=[],
             call_after=[],
             dispatch_id=-1,
@@ -52,3 +52,32 @@ def test_local_executor_passes_results_dir(mocker):
             node_id=0,
         )
         mocked_function.assert_called_once()
+
+
+def test_local_executor_json_serialization():
+    import json
+
+    le = LocalExecutor(log_stdout="/dev/null")
+    json_le = json.dumps(le.to_dict())
+    le_new = LocalExecutor().from_dict(json.loads(json_le))
+    assert le.__dict__ == le_new.__dict__
+
+
+def test_wrapper_fn_calldep_retval_injection():
+    """Test injecting calldep return values into main task"""
+
+    def f(x=0, y=0):
+        return x + y
+
+    def identity(y):
+        return y
+
+    serialized_fn = TransportableObject(f)
+    calldep = ct.DepsCall(identity, args=[5], retval_keyword="y")
+    call_before = [calldep.apply()]
+    args = []
+    kwargs = {"x": TransportableObject(2)}
+
+    output = wrapper_fn(serialized_fn, call_before, [], *args, **kwargs)
+
+    assert output.get_deserialized() == 7

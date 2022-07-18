@@ -66,6 +66,9 @@ class Lattice(Base):
     # name of the file containing the serialized output
     results_filename = Column(Text)
 
+    # Name of the file containing the transport graph
+    transport_graph_filename = Column(Text)
+
     # Timestamps
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
@@ -148,10 +151,10 @@ class ElectronDependency(Base):
 
     edge_name = Column(Text, nullable=False)
 
-    # "args, kwarg, null"
+    # arg, kwarg, null
     parameter_type = Column(String(24), nullable=True)
 
-    # Argument position
-    arg_index = Column(Integer, nullable=False)
+    # Argument position - this value is null unless parameter_type is arg
+    arg_index = Column(Integer, nullable=True)
 
     created_at = Column(DateTime, nullable=False)
