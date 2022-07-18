@@ -95,7 +95,7 @@ def get_result(dispatch_id: str, wait: bool) -> Result:
         result: Result object containing the results of the said dispatch.
     """
 
-    return rm._get_result_from_db(DispatchDB()._get_data_store(), dispatch_id, wait)
+    return rm._get_result_from_dispatcher(dispatch_id, wait)
 
 
 def cancel_running_dispatch(dispatch_id: str) -> None:
