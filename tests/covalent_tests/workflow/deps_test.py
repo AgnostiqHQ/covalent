@@ -23,7 +23,7 @@ def test_bash_deps_apply():
     cmds = [f"touch {tmp_path}"]
     deps = ct.DepsBash(cmds)
 
-    serialized_fn, serialized_args, serialized_kwargs = deps.apply()
+    serialized_fn, serialized_args, serialized_kwargs, retval_keyword = deps.apply()
 
     fn = serialized_fn.get_deserialized()
     args = serialized_args.get_deserialized()
@@ -72,7 +72,10 @@ def test_call_deps_apply():
         return x * x
 
     dep = ct.DepsCall(f, args=[5])
-    g, args, kwargs = (t.get_deserialized() for t in dep.apply())
+    g, args, kwargs, retval_keyword = dep.apply()
+    g = g.get_deserialized()
+    args = args.get_deserialized()
+    kwargs = kwargs.get_deserialized()
     assert args == [5]
     assert kwargs == {}
     assert g(*args) == f(*args)
