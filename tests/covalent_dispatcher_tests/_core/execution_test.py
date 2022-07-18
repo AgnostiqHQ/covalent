@@ -28,7 +28,6 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager import Result
-from covalent._shared_files.defaults import prefix_separator, sublattice_prefix
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
     _gather_deps,
@@ -107,7 +106,7 @@ def test_plan_workflow():
     assert updated_tg["lattice_metadata"]["schedule"]
 
 
-def test_post_process():
+def test_post_process(db):
     """Test post-processing of results."""
 
     import covalent as ct
@@ -227,6 +226,8 @@ def test_result_post_process():
         compute_energy.transport_graph.set_node_value(i, "output", v)
 
     res._status = Result.PENDING_POSTPROCESSING
+    res._dispatch_id = "MOCK"
+    res.persist()
     execution_result = res.post_process()
 
     assert execution_result == compute_energy()

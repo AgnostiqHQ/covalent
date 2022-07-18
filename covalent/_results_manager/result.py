@@ -32,6 +32,8 @@ import yaml
 from sqlalchemy import and_, update
 from sqlalchemy.orm import Session
 
+from covalent._shared_files.config import get_config
+
 from .._data_store import DataStore, DataStoreNotInitializedError, models
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
@@ -305,7 +307,9 @@ Node Outputs
             "stderr": self.lattice.transport_graph.get_node_value(node_id, "stderr"),
         }
 
-    def get_all_node_outputs(self, db: DataStore) -> dict:
+    def get_all_node_outputs(
+        self, db: DataStore = DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
+    ) -> dict:
         """
         Return output of every node execution.
 
@@ -920,7 +924,10 @@ Node Outputs
                 db=db, dispatch_id=self.dispatch_id, lattice=self.lattice
             )
 
-    def persist(self, db: DataStore):
+    def persist(
+        self,
+        db: DataStore = DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}", initialize_db=True),
+    ) -> None:
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 

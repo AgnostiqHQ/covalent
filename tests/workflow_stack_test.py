@@ -27,9 +27,16 @@ import pytest
 
 import covalent as ct
 import covalent._results_manager.results_manager as rm
+from covalent._data_store.datastore import DataStore
 from covalent._results_manager.result import Result
+from covalent._results_manager.utils import _db_path
 from covalent._workflow.electron import Electron
 from covalent_dispatcher._core.execution import _dispatch_sublattice
+
+
+@pytest.fixture
+def db():
+    return DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
 
 
 @ct.electron
@@ -104,7 +111,7 @@ def test_electron_takes_nested_iterables():
     rm._delete_result(dispatch_id)
 
 
-def test_sublatticing():
+def test_sublatticing(db):
     """
     Test to check whether an electron can be sublatticed
     and used inside of a bigger lattice.
@@ -124,7 +131,7 @@ def test_sublatticing():
     assert workflow_result.error is None
     assert workflow_result.status == Result.COMPLETED
     assert workflow_result.result == 3
-    assert workflow_result.get_node_result(0)["sublattice_result"].result == 3
+    assert workflow_result.get_node_result(db, 0)["sublattice_result"].result == 3
 
 
 def test_internal_sublattice_dispatch():
@@ -598,6 +605,7 @@ def test_client_workflow_executor():
 
     assert workflow_result.status == Result.PENDING_POSTPROCESSING
     assert workflow_result.result is None
+    workflow_result.persist()
 
     assert workflow_result.post_process() == 15
 
@@ -666,14 +674,16 @@ def test_wait_for():
     result = ct.get_result(dispatch_id, wait=True)
     rm._delete_result(dispatch_id)
 
+    db = DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
+
     assert result.status == Result.COMPLETED
     assert (
-        result.get_node_result(node_id=6)["start_time"]
-        > result.get_node_result(node_id=0)["end_time"]
+        result.get_node_result(db, node_id=6)["start_time"]
+        > result.get_node_result(db, node_id=0)["end_time"]
     )
     assert (
-        result.get_node_result(node_id=6)["start_time"]
-        > result.get_node_result(node_id=2)["end_time"]
+        result.get_node_result(db, node_id=6)["start_time"]
+        > result.get_node_result(db, node_id=2)["end_time"]
     )
     assert result.result == 1500
 
