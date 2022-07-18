@@ -20,17 +20,37 @@
 
 name: docker
 
-# TODO: Change workflow trigger
-on: [pull_request]
+on: 
+  pull_request:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - "CHANGELOG.md"
+      - "VERSION"
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "SHA used to build and push image."
+        type: string
+        required: true
 
 jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
       - name: Check out head
+        if: ! github.event.inputs.commit_sha
         uses: actions/checkout@v3
         with:
           persist-credentials: false
+
+      - name: Check out SHA
+        if: github.event.inputs.commit_sha
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: github.event.inputs.commit_sha
 
       - name: Extract version
         run: |
