@@ -36,7 +36,7 @@ from covalent_dispatcher._core.execution import _dispatch_sublattice
 
 @pytest.fixture
 def db():
-    return DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
+    return DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}", initialize_db=True)
 
 
 @ct.electron
@@ -129,9 +129,9 @@ def test_sublatticing(db):
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
     assert workflow_result.error is None
-    assert workflow_result.status == Result.COMPLETED
+    assert workflow_result.status == str(Result.COMPLETED)
     assert workflow_result.result == 3
-    assert workflow_result.get_node_result(db, 0)["sublattice_result"].result == 3
+    assert workflow_result.get_node_result(0)["sublattice_result"].result == 3
 
 
 def test_internal_sublattice_dispatch():
