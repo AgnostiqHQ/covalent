@@ -62,7 +62,7 @@ jobs:
             --load \
             --platform $platform \
             --driver-opt network=host \
-            ./
+            .
           done
 
       - name: Push images
