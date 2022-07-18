@@ -33,7 +33,7 @@ RUN cd /app \
   && python -m venv --copies /app/.venv \
   && . /app/.venv/bin/activate \
   && pip install --upgrade pip \
-  && pip install --no-cache-dir --use-feature=in-tree-build -r /app/requirements.txt \
+  && pip install --no-cache-dir -r /app/requirements.txt \
   && cd /app/covalent_ui/webapp \
   && yarn install --network-timeout 100000 \
   && yarn build --network-timeout 100000 \
