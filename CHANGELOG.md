@@ -10,6 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Result.save() has been deprecated in favor of Result.persist() and querying the database directly.
+
+## [0.135.0] - 2022-07-18
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Operations
+
+- Psiog is only codeowner of js files
+- Fix in changelog action to handle null author when a bot is committing
+
 ### Added
 
 - Support injecting return values of calldeps into electrons during workflow execution
