@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Columns `is_active` in the lattice, eLectron and Electron dependency tables.
+
 ### Tests
 
 - Disabled several dask functional tests
