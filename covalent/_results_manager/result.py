@@ -33,7 +33,10 @@ from sqlalchemy.orm import Session
 
 from .._data_store import DataStore, DataStoreNotInitializedError, models
 from .._shared_files import logger
+from .._shared_files.context_managers import active_lattice_manager
+from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
+from .._workflow.transport import TransportableObject
 from .utils import convert_to_lattice_function_call
 from .write_result_to_db import (
     get_electron_type,
@@ -78,6 +81,9 @@ class Result:
 
     NEW_OBJ = RESULT_STATUS.NEW_OBJECT
     COMPLETED = RESULT_STATUS.COMPLETED
+    POSTPROCESSING = RESULT_STATUS.POSTPROCESSING
+    PENDING_POSTPROCESSING = RESULT_STATUS.PENDING_POSTPROCESSING
+    POSTPROCESSING_FAILED = RESULT_STATUS.POSTPROCESSING_FAILED
     RUNNING = RESULT_STATUS.RUNNING
     FAILED = RESULT_STATUS.FAILED
     CANCELLED = RESULT_STATUS.CANCELLED
@@ -94,7 +100,7 @@ class Result:
 
         self._status = Result.NEW_OBJ
 
-        self._result = None
+        self._result = TransportableObject(None)
 
         self._inputs = {"args": [], "kwargs": {}}
         if lattice.args:
@@ -178,12 +184,19 @@ Node Outputs
         return self._status
 
     @property
+    def encoded_result(self) -> TransportableObject:
+        """
+        Encoded final result of current dispatch
+        """
+        return self._result
+
+    @property
     def result(self) -> Union[int, float, list, dict]:
         """
         Final result of current dispatch.
         """
 
-        return self._result
+        return self._result.get_deserialized()
 
     @property
     def inputs(self) -> dict:
@@ -300,6 +313,26 @@ Node Outputs
         """
 
         return [self.get_node_result(i) for i in range(self._num_nodes)]
+
+    def post_process(self):
+
+        # Copied from server-side _post_process()
+        node_outputs = self.get_all_node_outputs()
+        ordered_node_outputs = []
+        for i, item in enumerate(node_outputs.items()):
+            key, val = item
+            if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
+                ordered_node_outputs.append((i, val))
+
+        lattice = self._lattice
+
+        with active_lattice_manager.claim(lattice):
+            lattice.post_processing = True
+            lattice.electron_outputs = ordered_node_outputs
+            workflow_function = lattice.workflow_function.get_deserialized()
+            result = workflow_function(*lattice.args, **lattice.kwargs)
+            lattice.post_processing = False
+        return result
 
     def _get_node_name(self, node_id: int) -> str:
         """
@@ -717,16 +750,16 @@ Node Outputs
 
         import pkg_resources
 
-        dispatch_function = f"# File created by Covalent using version {pkg_resources.get_distribution('cova').version}\n"
+        dispatch_function = f"# File created by Covalent using version {pkg_resources.get_distribution('covalent').version}\n"
         dispatch_function += f"# Dispatch ID: {self.dispatch_id}\n"
         dispatch_function += f"# Workflow status: {self.status}\n"
         dispatch_function += f"# Workflow start time: {self.start_time}\n"
         dispatch_function += f"# Workflow end time: {self.end_time}" + "\n"
 
         dispatch_function += "# Covalent result -"
-        result_string_lines = str(self.result).split("\n")
+        result_string_lines = str(self.encoded_result.object_string).split("\n")
         if len(result_string_lines) == 1:
-            dispatch_function += f" {self.result}\n\n"
+            dispatch_function += f" {self.encoded_result.object_string}\n\n"
         else:
             dispatch_function += "\n"
             for line in result_string_lines:
@@ -745,10 +778,11 @@ Node Outputs
         functions_added = []
         for level in topo_sorted_graph:
             for nodes in level:
-                function = self.lattice.transport_graph.get_node_value(
-                    nodes, value_key="function"
-                ).get_deserialized()
-                if function is not None and function.__name__ not in functions_added:
+                function = self.lattice.transport_graph.get_node_value(nodes, value_key="function")
+                if (
+                    function.object_string != "None"
+                    and function.attrs["name"] not in functions_added
+                ):
 
                     function_str = self.lattice.transport_graph.get_node_value(
                         nodes, value_key="function_string"
@@ -758,11 +792,11 @@ Node Outputs
                         self.lattice.cova_imports,
                     )
                     dispatch_function += function_str
-                    functions_added.append(function.__name__)
+                    functions_added.append(function.attrs["name"])
 
         lattice_function_str = convert_to_lattice_function_call(
             self.lattice.workflow_function_string,
-            self.lattice.workflow_function.__name__,
+            self.lattice.workflow_function.attrs["name"],
             self.inputs,
         )
         lattice_function_str = _filter_cova_decorators(
