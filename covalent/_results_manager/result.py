@@ -307,9 +307,7 @@ Node Outputs
             "stderr": self.lattice.transport_graph.get_node_value(node_id, "stderr"),
         }
 
-    def get_all_node_outputs(
-        self, db: DataStore = DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
-    ) -> dict:
+    def get_all_node_outputs(self, db: DataStore) -> dict:
         """
         Return output of every node execution.
 
@@ -924,10 +922,7 @@ Node Outputs
                 db=db, dispatch_id=self.dispatch_id, lattice=self.lattice
             )
 
-    def persist(
-        self,
-        db: DataStore = DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}", initialize_db=True),
-    ) -> None:
+    def persist(self, db: DataStore) -> None:
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 
