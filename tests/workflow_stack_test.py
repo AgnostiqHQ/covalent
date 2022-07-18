@@ -674,8 +674,6 @@ def test_wait_for():
     result = ct.get_result(dispatch_id, wait=True)
     rm._delete_result(dispatch_id)
 
-    db = DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
-
     assert result.status == str(Result.COMPLETED)
     assert (
         result.get_node_result(node_id=6)["start_time"]

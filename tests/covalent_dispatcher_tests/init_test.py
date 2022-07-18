@@ -22,15 +22,13 @@
 Tests for self-contained entry point for the dispatcher
 """
 
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 import covalent
 import covalent_dispatcher as dispatcher
-from covalent._results_manager import results_manager as rm
-from covalent_dispatcher._db.dispatchdb import DispatchDB
-from tests.functional_tests.basic_dispatcher_test import workflow
 
-from .data import TEST_RESULTS_DIR, get_mock_result
+from .data import get_mock_result
 
 
 def test_run_dispatcher():
@@ -67,6 +65,7 @@ def test_get_result():
         workflow_pool=workflow_pool,
         tasks_pool=task_pool,
     )
+    time.sleep(1)
     result = dispatcher.get_result(wait=True, dispatch_id=dispatch_id)
     assert isinstance(result, covalent._results_manager.result.Result)
 
