@@ -448,6 +448,37 @@ def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue
     result_webhook.send_update(result_object)
 
 
+def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
+    with lock:
+        app_log.warning("Updating node result (run_planned_workflow).")
+        result_object._update_node(db=DispatchDB()._get_data_store(), **node_result)
+        result_webhook.send_update(result_object)
+
+        node_status = node_result["status"]
+        if node_status == Result.COMPLETED:
+            _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
+            return
+
+        if node_status == Result.FAILED:
+            _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
+            return
+
+        if node_status == Result.CANCELLED:
+            _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
+            return
+
+        if node_status == Result.RUNNING:
+            return
+
+        app_log.error(f"Illegal node status: {node_status}")
+        assert False
+
+
+def _task_callback_real(fut, lock, result_object, pending_deps, tasks_queue):
+    node_result = fut.result()
+    _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+
+
 def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
     """
     Run the workflow in the topological order of their position on the
@@ -470,34 +501,13 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     lock = Lock()
     task_futures: list = []
 
-    def update_node_result(node_result: dict):
-        with lock:
-            app_log.warning("Updating node result (run_planned_workflow).")
-            result_object._update_node(db=DispatchDB()._get_data_store(), **node_result)
-            result_webhook.send_update(result_object)
-
-            node_status = node_result["status"]
-            if node_status == Result.COMPLETED:
-                _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
-                return
-
-            if node_status == Result.FAILED:
-                _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
-                return
-
-            if node_status == Result.CANCELLED:
-                _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
-                return
-
-            if node_status == Result.RUNNING:
-                return
-
-            app_log.error(f"Illegal node status: {node_status}")
-            assert False
-
-    def task_callback(future: Future):
-        node_result = future.result()
-        update_node_result(node_result)
+    task_callback = partial(
+        _task_callback_real,
+        lock=lock,
+        result_object=result_object,
+        pending_deps=pending_deps,
+        tasks_queue=tasks_queue,
+    )
 
     app_log.debug(
         f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
@@ -589,7 +599,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                     "status": Result.COMPLETED,
                     "output": output,
                 }
-                update_node_result(node_result)
+                _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
                 app_log.warning("8A: Update node success (run_planned_workflow).")
                 continue
 
@@ -631,13 +641,12 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             raise ex
 
         try:
-            update_node_result(
-                generate_node_result(
-                    node_id=node_id,
-                    start_time=start_time,
-                    status=Result.RUNNING,
-                )
+            node_result = generate_node_result(
+                node_id=node_id,
+                start_time=start_time,
+                status=Result.RUNNING,
             )
+            _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
             app_log.warning("7: Updating nodes after deps (run_planned_workflow)")
 
         except Exception as ex:
