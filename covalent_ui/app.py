@@ -142,9 +142,9 @@ def serve(path):
         return send_from_directory(app.static_folder, "index.html")
 
 
-@app.route("/status")
-def status():
-    return app.response_class("ready", status=200, mimetype="application/json")
+@app.route("/ping")
+def ping():
+    return app.response_class("pong", status=200, mimetype="application/json")
 
 
 if __name__ == "__main__":
