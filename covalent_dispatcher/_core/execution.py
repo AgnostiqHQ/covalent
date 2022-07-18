@@ -734,17 +734,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     pp_end_time = post_process_result["end_time"]
     app_log.debug(f"Post-processing completed at {pp_end_time}")
     result_object._result = post_process_result["output"]
-
-    try:
-        # post process the lattice
-        result_object._result = _post_process(
-            result_object.lattice,
-            result_object.get_all_node_outputs(DispatchDB()._get_data_store()),
-            order,
-        )
-        app_log.warning("Postprocessed")
-    except Exception:
-        app_log.exception("Postprocessing exception")
     result_object._status = Result.COMPLETED
     result_object._end_time = datetime.now(timezone.utc)
 
