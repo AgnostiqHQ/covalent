@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.136.0] - 2022-07-18
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- Result.save() has been deprecated in favor of Result.persist() and querying the database directly.
+
+## [0.135.0] - 2022-07-18
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Operations
+
+- Psiog is only codeowner of js files
+- Fix in changelog action to handle null author when a bot is committing
+
 ### Added
 
 - Set up alembic migrations & added migration guide (`alembic/README.md`)
@@ -54,6 +80,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Keyword arguments passed to a Bash lepton are understood to define environment variables within the shell.
 - Non-keyword arguments fill in `$1`, `$2`, etc.
 - Named outputs enumerate variables within the shell which will be returned to the user. These can be either `Lepton.OUTPUT` or `Lepton.INPUT_OUTPUT` types.
+
+### Added
+
+- New fields to the decomposed result object Database: 
 
 ## [0.131.0] - 2022-07-13
 

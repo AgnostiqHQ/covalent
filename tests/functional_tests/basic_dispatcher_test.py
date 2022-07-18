@@ -81,9 +81,6 @@ def test_dispatcher_functional():
         output = "failed"
 
     rm._delete_result(dispatch_id)
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
-
     assert output == "failed"
 
     Path(the_executor.log_stdout).unlink(missing_ok=True)
@@ -109,11 +106,8 @@ def test_results_dir_in_sublattice():
 
     rm._delete_result(dispatch_id, results_dir="/tmp/results")
 
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
-
     assert result_object.error is None
-    assert result_object.status == result_object.COMPLETED
+    assert result_object.status == str(result_object.COMPLETED)
 
     assert output == 25
 

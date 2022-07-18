@@ -21,22 +21,33 @@
 
 import os
 import pickle as _pickle
+import time
 from pathlib import Path
 from typing import List, Optional, Union
 
 import cloudpickle as pickle
+from sqlalchemy.orm import Session
 
+from covalent._workflow.transport import TransportableObject
+
+from .. import _workflow as ct
+from .._data_store.datastore import DataStore
+from .._data_store.models import Lattice
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .result import Result
+from .utils import _db_path
+from .write_result_to_db import MissingLatticeRecordError
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def get_result(
-    dispatch_id: str, results_dir: str = get_config("dispatcher.results_dir"), wait: bool = False
-) -> Result:
+def get_data_store() -> DataStore:
+    return DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
+
+
+def get_result(dispatch_id: str, wait: bool = False) -> Result:
     """
     Get the results of a dispatch from a file.
 
@@ -49,59 +60,117 @@ def get_result(
         result_object: The result from the file.
 
     Raises:
-        RuntimeError: If the result is not ready to read yet.
-        FileNotFoundError: If the result file is not found.
+        MissingLatticeRecordError: If the result file is not found.
     """
 
     try:
-        result_object = _get_result_from_file(dispatch_id, results_dir, wait)
-
-    except FileNotFoundError:
-        raise FileNotFoundError(
-            f"Result was not found in the specified directory. Please make sure it hasn't been moved or try a different directory than {results_dir}."
+        result_object = _get_result_from_db(
+            DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}"),
+            dispatch_id,
+            wait,
         )
+
+    except MissingLatticeRecordError as e:
+        app_log.warning(
+            f"Dispatch ID {dispatch_id} was not found in the database. Either the Dispatch ID is incorrect or wait a couple of seconds before trying again."
+        )
+
+        time.sleep(0.01)
+        return get_result(dispatch_id, wait)
 
     return result_object
 
 
-def _get_result_from_file(
-    dispatch_id: str, results_dir: str = get_config("dispatcher.results_dir"), wait: bool = False
+def result_from(lattice_record: Lattice) -> Result:
+    with open(
+        os.path.join(lattice_record.storage_path, lattice_record.function_filename), "rb"
+    ) as f:
+        function = pickle.loads(f.read())
+    with open(
+        os.path.join(lattice_record.storage_path, lattice_record.executor_filename), "rb"
+    ) as f:
+        executor = pickle.loads(f.read())
+    with open(
+        os.path.join(lattice_record.storage_path, lattice_record.inputs_filename), "rb"
+    ) as f:
+        inputs = pickle.loads(f.read())
+    with open(os.path.join(lattice_record.storage_path, lattice_record.error_filename), "rb") as f:
+        error = pickle.loads(f.read())
+    with open(
+        os.path.join(lattice_record.storage_path, lattice_record.transport_graph_filename), "rb"
+    ) as f:
+        transport_graph = pickle.loads(f.read())
+    with open(
+        os.path.join(lattice_record.storage_path, lattice_record.results_filename), "rb"
+    ) as f:
+        output = pickle.loads(f.read())
+
+    attributes = {
+        "metadata": {"executor": executor},
+        "args": inputs["args"],
+        "kwargs": inputs["kwargs"],
+        "transport_graph": transport_graph,
+        "workflow_function": function,
+    }
+
+    def dummy_function(x):
+        return x
+
+    lat = ct.lattice(dummy_function)
+    lat.__dict__ = attributes
+
+    result = Result(
+        lat,
+        str(Path(lattice_record.storage_path).parent),
+        dispatch_id=lattice_record.dispatch_id,
+    )
+    result._status = lattice_record.status
+    result._error = error
+    result._inputs = inputs
+    result._start_time = lattice_record.started_at
+    result._end_time = lattice_record.completed_at
+    result._result = output if output is not None else TransportableObject(None)
+    return result
+
+
+def _get_result_from_db(
+    db: DataStore, dispatch_id: str, wait: bool = False, status_only: bool = False
 ) -> Result:
 
     """
     Internal function to get the results of a dispatch from a file without checking if it is ready to read.
 
     Args:
+        db: The DataStore object which yields the SQLAlchemy session that stores results.
         dispatch_id: The dispatch id of the result.
-        results_dir: The directory where the results are stored in dispatch id named folders.
         wait: Whether to wait for the result to be completed/failed, default is False.
 
     Returns:
-        result_object: The result from the file.
+        result_object: The result object constructed from the DB lattice record.
 
     Raises:
-        RuntimeError: If the result is found but is not ready to read yet.
-        FileNotFoundError: If the result is not found.
+        MissingLatticeRecordError: If the result is not found.
     """
 
-    results_dir_expanded = str(Path(results_dir).expanduser().resolve())
-    result_dir = os.path.join(results_dir_expanded, f"{dispatch_id}")
-
     while True:
+        with Session(db.engine) as session:
+            lattice_record = (
+                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+            )
         try:
-            with open(os.path.join(result_dir, "result.pkl"), "rb") as f:
-                result = pickle.loads(f.read())
-
-            if not wait:
-                return result
-            elif result.status in [
-                Result.COMPLETED,
-                Result.POSTPROCESSING_FAILED,
-                Result.PENDING_POSTPROCESSING,
-                Result.FAILED,
-                Result.CANCELLED,
+            if not lattice_record:
+                raise MissingLatticeRecordError
+            elif not wait:
+                return lattice_record.status if status_only else result_from(lattice_record)
+            elif lattice_record.status in [
+                str(Result.COMPLETED),
+                str(Result.FAILED),
+                str(Result.CANCELLED),
+                str(Result.POSTPROCESSING_FAILED),
+                str(Result.PENDING_POSTPROCESSING),
             ]:
-                return result
+                return lattice_record.status if status_only else result_from(lattice_record)
+
         except (FileNotFoundError, EOFError, _pickle.UnpicklingError):
             if wait:
                 continue
@@ -165,8 +234,8 @@ def redispatch_result(result_object: Result, dispatcher: str = None) -> str:
 
 
 def sync(
+    db: DataStore,
     dispatch_id: Optional[Union[List[str], str]] = None,
-    results_dir: Optional[str] = get_config("dispatcher.results_dir"),
 ) -> None:
     """
     Synchronization call. Returns when one or more dispatches have completed.
@@ -180,17 +249,15 @@ def sync(
     """
 
     if isinstance(dispatch_id, str):
-        _get_result_from_file(dispatch_id, results_dir, True)
+        _get_result_from_db(db, dispatch_id, wait=True, status_only=True)
     elif isinstance(dispatch_id, list):
         for d in dispatch_id:
-            _get_result_from_file(d, results_dir, True)
+            _get_result_from_db(db, d, wait=True, status_only=True)
     else:
-        from glob import glob
-
-        dirs = glob(f"{results_dir}/*/")
-        for d in dirs:
-            dispatch_id = os.path.basename(d.rstrip("/"))
-            _get_result_from_file(dispatch_id, results_dir, True)
+        with Session(db.engine) as session:
+            dispatch_id = session.query(Lattice.dispatch_id).all()
+        for d in dispatch_id:
+            _get_result_from_db(db, d, wait=True, status_only=True)
 
 
 def cancel(
