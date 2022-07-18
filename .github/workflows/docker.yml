@@ -55,8 +55,7 @@ jobs:
           username: ${{ secrets.AWS_KEY_ID }}
           password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Build image
-        run: docker build -t ${{ steps.login-ecr.outputs.registry }}/covalent:${{ env.VERSION }} .
-
-      - name: Push images
-        run: docker push ${{ steps.login-ecr.outputs.registry }}/covalent:${{ env.VERSION }}
+      - name: Build and push image
+        run: |
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/covalent:${{ env.VERSION }} .
+          docker push ${{ steps.login-ecr.outputs.registry }}/covalent:${{ env.VERSION }}
