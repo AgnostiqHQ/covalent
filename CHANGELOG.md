@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Check that user data is not unpickled by the Covalent server process
 
+### Removed
+
+- `result.save()`
+- `result._write_dispatch_to_python_file()`
+
 ## [0.145.0] - 2022-07-20
 
 ### Authors
