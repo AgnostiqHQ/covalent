@@ -72,7 +72,4 @@ jobs:
       - name: Build, test, and push image
         run: |
           docker build -t ${{ secrets.ECR_DEV_REPO }}:${{ env.TAG }} .
-          docker run -d -p 8080:8080 ${{ secrets.ECR_DEV_REPO }}:${{ env.TAG }}
-          curl http://0.0.0.0:8080/ping
-          docker kill $(docker ps -q)
           docker push ${{ secrets.ECR_DEV_REPO }}:${{ env.TAG }}
