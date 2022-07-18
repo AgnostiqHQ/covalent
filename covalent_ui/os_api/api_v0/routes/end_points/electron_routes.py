@@ -55,17 +55,15 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
         if result is None:
             raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
         return ElectronResponse(
-            item={
-                "id": result[0],
-                "transport_graph_node_id": result[1],
-                "parent_lattice_id": result[2],
-                "type": result[3],
-                "storage_path": result[4],
-                "name": result[5],
-                "status": result[6],
-                "started_at": result[7],
-                "ended_at": result[8],
-            }
+            id=result[0],
+            node_id=result[1],
+            parent_lattice_id=result[2],
+            type=result[3],
+            storage_path=result[4],
+            name=result[5],
+            status=result[6],
+            started_at=result[7],
+            ended_at=result[8],
         )
 
 

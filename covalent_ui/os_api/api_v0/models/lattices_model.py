@@ -62,7 +62,15 @@ class GraphResponse(BaseModel):
 class ElectronResponse(BaseModel):
     """Electron Response Model"""
 
-    item: dict = None
+    id: int = None
+    node_id: int = None
+    parent_lattice_id: int = None
+    type: str = None
+    storage_path: str = None
+    name: str = None
+    status: str = None
+    started_at: datetime = None
+    ended_at: datetime = None
 
 
 class ElectronFileResponse(BaseModel):
