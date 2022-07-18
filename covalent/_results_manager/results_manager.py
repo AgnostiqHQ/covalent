@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import codecs
 import os
 import time
 from pathlib import Path
@@ -60,8 +61,6 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
     Returns:
         result_object: The result from the file.
 
-    Raises:
-        MissingLatticeRecordError: If the result file is not found.
     """
 
     try:
@@ -69,7 +68,7 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
             dispatch_id,
             wait,
         )
-        result_object = pickle.loads(result["result"])
+        result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
 
     except MissingLatticeRecordError as e:
         app_log.warning(
@@ -161,6 +160,8 @@ def _get_result_from_dispatcher(
     http.mount("http://", adapter)
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
     response = http.get(url, params={"wait": wait, "status_only": status_only})
+    if response.status_code == 404:
+        raise MissingLatticeRecordError
     response.raise_for_status()
     result = response.json()
     return result
