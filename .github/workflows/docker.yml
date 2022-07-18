@@ -47,6 +47,7 @@ jobs:
 
       - name: Check out SHA
         if: github.event.inputs.commit_sha
+        uses: actions/checkout@v3
         with:
           persist-credentials: false
           fetch-depth: 0
