@@ -215,7 +215,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated RTD concepts, how-to-guides, and api docs with electron dependencies.
 
-
 ### Operations
 
 - Separate out running tests and uploading coverage report to circumvent bug in
