@@ -79,8 +79,8 @@ class Graph:
             self.db_con.query(
                 ElectronDependency.edge_name,
                 ElectronDependency.parameter_type,
-                ElectronDependency.electron_id.label("source"),
-                ElectronDependency.parent_electron_id.label("target"),
+                ElectronDependency.electron_id.label("target"),
+                ElectronDependency.parent_electron_id.label("source"),
                 ElectronDependency.arg_index,
             )
             .filter(
