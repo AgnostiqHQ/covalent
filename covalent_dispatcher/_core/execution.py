@@ -441,14 +441,12 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
     def update_node_result(node_result: dict):
         with lock:
-            result_object._update_node(**node_result)
-            with DispatchDB() as db:
-                db.upsert(result_object.dispatch_id, result_object)
-                db.save_db(result_object)
-            result_object.save()
+            app_log.warning("Updating node result (run_planned_workflow).")
+            result_object._update_node(db=DispatchDB()._get_data_store(), **node_result)
             result_webhook.send_update(result_object)
 
-            if node_result["status"] == Result.COMPLETED:
+            node_status = node_result["status"]
+            if node_status == Result.COMPLETED:
 
                 g = result_object.lattice.transport_graph._graph
 
@@ -460,35 +458,35 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                         tasks_queue.put(child)
                 return
 
-            if node_result["status"] == Result.FAILED:
+            if node_status == Result.FAILED:
                 failed_node_callback()
                 tasks_queue.put(-1)
                 return
 
-            if node_result["status"] == Result.CANCELLED:
+            if node_status == Result.CANCELLED:
                 cancelled_node_callback()
                 tasks_queue.put(-1)
                 return
 
-            # For debugging -- this should never happen
-            app_log.error("Illegal node status")
+            if node_status == Result.RUNNING:
+                return
+
+            app_log.error(f"Illegal node status: {node_status}")
             assert False
 
     def failed_node_callback():
         result_object._status = Result.FAILED
         result_object._end_time = datetime.now(timezone.utc)
         result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
-        with DispatchDB() as db:
-            db.upsert(result_object.dispatch_id, result_object)
-        result_object.save()
+        app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
+        result_object.upsert_lattice_data(DispatchDB()._get_data_store())
         result_webhook.send_update(result_object)
 
     def cancelled_node_callback():
         result_object._status = Result.CANCELLED
         result_object._end_time = datetime.now(timezone.utc)
-        with DispatchDB() as db:
-            db.upsert(result_object.dispatch_id, result_object)
-            db.save_db(result_object)
+        app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
+        result_object.upsert_lattice_data(DispatchDB()._get_data_store())
         result_webhook.send_update(result_object)
 
     def task_callback(future: Future):
