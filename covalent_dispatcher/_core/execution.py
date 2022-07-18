@@ -26,6 +26,7 @@ import json
 import traceback
 from concurrent.futures import Future, ThreadPoolExecutor, wait
 from datetime import datetime, timezone
+from functools import partial
 from queue import Queue
 from threading import Lock
 from typing import Any, Dict, List, Tuple
@@ -417,6 +418,36 @@ def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
     return call_before, call_after
 
 
+def _handle_completed_node(result_object, node_result, pending_deps, tasks_queue):
+    g = result_object.lattice.transport_graph._graph
+
+    for child, edges in g.adj[node_result["node_id"]].items():
+        for edge in edges:
+            pending_deps[child] -= 1
+        if pending_deps[child] < 1:
+            app_log.debug(f"Queuing node {child} for execution")
+            tasks_queue.put(child)
+
+
+def _handle_failed_node(result_object, node_result, pending_deps, tasks_queue):
+    node_id = node_result["node_id"]
+    result_object._status = Result.FAILED
+    result_object._end_time = datetime.now(timezone.utc)
+    result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
+    app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
+    result_object.upsert_lattice_data(DispatchDB()._get_data_store())
+    result_webhook.send_update(result_object)
+    tasks_queue.put(-1)
+
+
+def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue):
+    result_object._status = Result.CANCELLED
+    result_object._end_time = datetime.now(timezone.utc)
+    app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
+    result_object.upsert_lattice_data(DispatchDB()._get_data_store())
+    result_webhook.send_update(result_object)
+
+
 def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
     """
     Run the workflow in the topological order of their position on the
@@ -447,25 +478,15 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
             node_status = node_result["status"]
             if node_status == Result.COMPLETED:
-
-                g = result_object.lattice.transport_graph._graph
-
-                for child, edges in g.adj[node_result["node_id"]].items():
-                    for edge in edges:
-                        pending_deps[child] -= 1
-                    if pending_deps[child] < 1:
-                        app_log.debug(f"Queuing node {child} for execution")
-                        tasks_queue.put(child)
+                _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
                 return
 
             if node_status == Result.FAILED:
-                failed_node_callback()
-                tasks_queue.put(-1)
+                _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
                 return
 
             if node_status == Result.CANCELLED:
-                cancelled_node_callback()
-                tasks_queue.put(-1)
+                _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
                 return
 
             if node_status == Result.RUNNING:
@@ -473,21 +494,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
             app_log.error(f"Illegal node status: {node_status}")
             assert False
-
-    def failed_node_callback():
-        result_object._status = Result.FAILED
-        result_object._end_time = datetime.now(timezone.utc)
-        result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
-        app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
-        result_object.upsert_lattice_data(DispatchDB()._get_data_store())
-        result_webhook.send_update(result_object)
-
-    def cancelled_node_callback():
-        result_object._status = Result.CANCELLED
-        result_object._end_time = datetime.now(timezone.utc)
-        app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
-        result_object.upsert_lattice_data(DispatchDB()._get_data_store())
-        result_webhook.send_update(result_object)
 
     def task_callback(future: Future):
         node_result = future.result()
