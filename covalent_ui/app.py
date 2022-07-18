@@ -142,6 +142,11 @@ def serve(path):
         return send_from_directory(app.static_folder, "index.html")
 
 
+@app.route("/status")
+def status():
+    return app.response_class("ready", status=200, mimetype="application/json")
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
 

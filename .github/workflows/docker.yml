@@ -48,10 +48,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and push images
+      - name: Build image
+        run: docker build -t ${{ steps.login-ecr.outputs.registry }}/covalent:${{ env.VERSION }} .
+
+      - name: Test image
         run: |
-          docker build -t ${{ steps.login-ecr.outputs.registry }}/covalent:${{ env.VERSION }} .
+          docker run -d -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/covalent:${{ env.VERSION }}
+          curl http://localhost:8080/status
+          docker kill $(docker ps -q)
 
       - name: Push images
-        run: |
-          docker push -a
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/covalent:${{ env.VERSION }}
