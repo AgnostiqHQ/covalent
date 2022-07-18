@@ -52,8 +52,4 @@ def test_using_current_env() -> None:
     dispatch_id = ct.dispatch(workflow)(y="input")
     result = ct.get_result(dispatch_id, wait=True)
 
-    rm._delete_result(dispatch_id)
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
-
     assert result.result == "input"

@@ -66,6 +66,9 @@ class Lattice(Base):
     # name of the file containing the serialized output
     results_filename = Column(Text)
 
+    # Name of the file containing the transport graph
+    transport_graph_filename = Column(Text)
+
     # Timestamps
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)

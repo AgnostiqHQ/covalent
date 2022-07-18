@@ -18,35 +18,16 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import covalent as ct
-from covalent._dispatcher_plugins.local import LocalDispatcher
+"""
+Unit tests for DataStore object
+"""
 
-dispatcher = LocalDispatcher()
-
-
-@ct.electron
-def add(a, b):
-    return a + b
+from covalent._data_store.datastore import DataStore
+from covalent._shared_files.config import get_config
 
 
-@ct.lattice
-def workflow(x, y):
-    res = add(x, y)
-    return add(res, y)
+def test_datastore_init():
+    """Test data store initialization method."""
 
-
-def test_local_dispatcher_dispatch():
-    """Tests whether the local dispatcher can dispatch a workflow successfully."""
-
-    dispatch_id = dispatcher.dispatch(workflow)(1, 2)
-    result = ct.get_result(dispatch_id, wait=True)
-    assert result.result == 5
-
-    assert isinstance(dispatch_id, str)
-
-
-def test_local_dispatcher_dispatch_sync():
-    """Tests whether the local dispatcher can synchronously dispatch a workflow successfully."""
-
-    result = dispatcher.dispatch_sync(workflow)(1, 2)
-    assert result.result == 5
+    ds = DataStore(db_URL=None)
+    assert ds.db_URL == "sqlite+pysqlite:///" + get_config("workflow_data.db_path")
