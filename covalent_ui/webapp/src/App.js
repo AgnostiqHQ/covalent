@@ -26,11 +26,9 @@
  import ThemeProvider from '@mui/system/ThemeProvider'
  import { Helmet, HelmetProvider } from 'react-helmet-async'
  import { Routes, Route } from 'react-router-dom'
-
 import './App.css'
 import Dashboard from './components/dashboard/Dashboard'
 import socket from './utils/socket'
-import { fetchResult } from './redux/resultsSlice'
 import { setLattice } from './redux/latticePreviewSlice'
 import theme from './utils/theme'
 import { ReactFlowProvider } from 'react-flow-renderer'
@@ -42,39 +40,39 @@ import { differenceInSeconds} from 'date-fns'
  const App = () => {
    const dispatch = useDispatch()
 
-   useEffect(() => {
-       let lastCalledOn = null;
-       var onUpdate = (update) => {
-       let canCallAPI = false;
-       if (lastCalledOn) {
-         let currentTime = new Date()
-         let compareTime = new Date(lastCalledOn)
-         const diffInSec = differenceInSeconds(currentTime,compareTime)
-         if (diffInSec >= 3) {
-           canCallAPI = true;
-         } else {
-           canCallAPI = false;
-         }
-       } else {
-         canCallAPI = true;
-       }
-       if(canCallAPI || update.result.status==='COMPLETED') {
-         lastCalledOn = new Date();
-         dispatch(
-           fetchResult({
-             dispatchId: update.result.dispatch_id,
-             resultsDir: update.result.results_dir,
-           })
-         )
-       }
-     }
+  //  useEffect(() => {
+  //      let lastCalledOn = null;
+  //      var onUpdate = (update) => {
+  //      let canCallAPI = false;
+  //      if (lastCalledOn) {
+  //        let currentTime = new Date()
+  //        let compareTime = new Date(lastCalledOn)
+  //        const diffInSec = differenceInSeconds(currentTime,compareTime)
+  //        if (diffInSec >= 3) {
+  //          canCallAPI = true;
+  //        } else {
+  //          canCallAPI = false;
+  //        }
+  //      } else {
+  //        canCallAPI = true;
+  //      }
+  //      if(canCallAPI || update.result.status==='COMPLETED') {
+  //        lastCalledOn = new Date();
+  //        dispatch(
+  //          fetchResult({
+  //            dispatchId: update.result.dispatch_id,
+  //            resultsDir: update.result.results_dir,
+  //          })
+  //        )
+  //      }
+  //    }
 
 
-     socket.on('result-update', onUpdate)
-     return () => {
-       socket.off('result-update', onUpdate)
-     }
-   }, [dispatch])
+  //    socket.on('result-update', onUpdate)
+  //    return () => {
+  //      socket.off('result-update', onUpdate)
+  //    }
+  //  }, [dispatch])
 
    useEffect(() => {
      const onDrawRequest = (request) => {

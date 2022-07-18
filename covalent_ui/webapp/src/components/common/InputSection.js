@@ -20,23 +20,26 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
- import _ from 'lodash'
- import { Paper } from '@mui/material'
- 
- import Heading from './Heading'
- import SyntaxHighlighter from './SyntaxHighlighter'
- 
- const InputSection = ({ inputs,...props}) => {
- 
-   return (
-     <>
-       <Heading>Input</Heading>
-       <Paper elevation={0} {...props}>
-         <SyntaxHighlighter language="python" src={inputs} />
-       </Paper>
-     </>
-   )
- }
- 
- export default InputSection
- 
+import _ from 'lodash'
+import { Paper } from '@mui/material'
+
+import Heading from './Heading'
+import SyntaxHighlighter from './SyntaxHighlighter'
+
+const InputSection = ({ inputs,preview, ...props }) => {
+  const inputSrc = preview ? _.join(
+    _.map(inputs, (value, key) => `${key}: ${value}`),
+    '\n'
+  ) : inputs
+
+  return (
+    <>
+      <Heading>Input</Heading>
+      <Paper elevation={0} {...props}>
+        <SyntaxHighlighter language="python" src={inputSrc} />
+      </Paper>
+    </>
+  )
+}
+
+export default InputSection

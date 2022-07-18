@@ -51,9 +51,9 @@ import {electronDetails,electronInput,electronResult,electronExecutor,electronFu
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node, graph ,dispatchId}) => {
+const NodeDrawer = ({ node,dispatchId}) => {
   const dispatch = useDispatch()
-  const electronId = node !== undefined && node.electron_id
+  const electronId = node !== undefined && node.node_id
   const electronDetail = useSelector((state) => state.electronResults.electronList)
   const electronInputResult = useSelector((state) => state.electronResults.electronInput)
   const electronResultData = useSelector((state) => state.electronResults.electronResult)
@@ -63,15 +63,15 @@ const NodeDrawer = ({ node, graph ,dispatchId}) => {
 
   useEffect(() => {
     if(!!node){
-        dispatch(electronDetails({electronId:electronId,dispatchId: dispatchId}))
-        dispatch(electronInput({electronId:electronId,params: 'input'}))
-        dispatch(electronResult({electronId:electronId,params: 'result'}))
-        dispatch(electronExecutor({electronId:electronId,params: 'executor_details'}))
-        dispatch(electronFunctionString({electronId:electronId,params: 'function_string'}))
-        dispatch(electronError({electronId:electronId,params: 'error'}))
+        dispatch(electronDetails({electronId,dispatchId}))
+        dispatch(electronInput({dispatchId,electronId,params: 'inputs'}))
+        dispatch(electronResult({dispatchId,electronId,params: 'result'}))
+        dispatch(electronExecutor({dispatchId,electronId,params: 'executor_details'}))
+        dispatch(electronFunctionString({dispatchId,electronId,params: 'function_string'}))
+        dispatch(electronError({dispatchId,electronId,params: 'error'}))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node])
-
   const setSelectedElements = useStoreActions(
     (actions) => actions.setSelectedElements
   )
@@ -79,7 +79,6 @@ const NodeDrawer = ({ node, graph ,dispatchId}) => {
     setSelectedElements([])
   }
 
-  const src = _.get(node, 'function_string', '# source unavailable')
   const hasStarted = !!_.get(electronDetail, 'started_at')
   const hasEnded = !!_.get(electronDetail, 'ended_at')
 
@@ -193,7 +192,7 @@ const NodeDrawer = ({ node, graph ,dispatchId}) => {
           )}
 
           {/* Executor */}
-          <ExecutorSection metadata={electronExecutorResult} 
+          <ExecutorSection metadata={electronExecutorResult}
            sx={(theme) =>({ bgcolor: theme.palette.background.darkblackbg })}/>
 
           <Divider sx={{ my: 2 }} />

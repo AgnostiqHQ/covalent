@@ -21,7 +21,6 @@
  */
 
  import { commonSlice } from './commonSlice'
- import { resultsSlice } from './resultsSlice'
  import { latticePreviewSlice } from './latticePreviewSlice'
  import { dashboardSlice } from './dashboardSlice'
  import { graphSlice } from './graphSlice'
@@ -30,7 +29,6 @@
 
  const reducers = {
    common: commonSlice.reducer,
-   results: resultsSlice.reducer,
    latticePreview: latticePreviewSlice.reducer,
    dashboard:dashboardSlice.reducer,
    graphResults: graphSlice.reducer,
