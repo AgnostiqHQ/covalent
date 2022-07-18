@@ -122,7 +122,7 @@ def test_result_persist_workflow_1(db, result_1):
 
     with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
         result = cloudpickle.load(f)
-    assert result is None
+    assert result.get_deserialized() is None
 
     # Check that the electron records are as expected
     for electron in electron_rows:
@@ -167,7 +167,7 @@ def test_result_persist_workflow_1(db, result_1):
 
     with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
         result = cloudpickle.load(f)
-    assert result_1.result == result
+    assert result_1.result == result.get_deserialized()
 
     # Check that the electron records are as expected
     for electron in electron_rows:
