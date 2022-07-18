@@ -744,7 +744,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     try:
         with DispatchDB() as db:
             db.save_db(result_object, write_source=True)
-            app_log.warning("DIDN't work")
     except Exception:
         app_log.exception("Upsert or save db issue")
     result_webhook.send_update(result_object)

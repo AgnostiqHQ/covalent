@@ -328,12 +328,13 @@ Node Outputs
                 .where(models.Electron.parent_lattice_id == lattice_id)
                 .all()
             )
-            return {
-                self._get_node_name(db, electron.transport_graph_node_id): self._get_node_output(
-                    db, electron.transport_graph_node_id
-                )
-                for electron in electron_records
-            }
+            all_node_outputs = {}
+            for electron in electron_records:
+                node_id = electron.transport_graph_node_id
+                all_node_outputs[
+                    f"{self._get_node_name(db, node_id)}({node_id})"
+                ] = self._get_node_output(db, node_id)
+            return all_node_outputs
 
     def get_all_node_results(self, db: DataStore) -> List[Dict]:
         """

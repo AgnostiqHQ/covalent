@@ -21,6 +21,7 @@
 
 import os
 import pickle as _pickle
+import time
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -70,9 +71,12 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
         )
 
     except MissingLatticeRecordError as e:
-        raise MissingLatticeRecordError(
+        app_log.warning(
             f"Dispatch ID {dispatch_id} was not found in the database. Either the Dispatch ID is incorrect or wait a couple of seconds before trying again."
-        ) from e
+        )
+
+        time.sleep(0.01)
+        return get_result(dispatch_id, wait)
 
     return result_object
 
