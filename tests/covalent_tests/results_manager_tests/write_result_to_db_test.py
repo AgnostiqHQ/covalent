@@ -236,6 +236,7 @@ def test_insert_lattices_data(db):
             == timestamps[i].strftime("%m/%d/%Y, %H:%M:%S")
         )
         assert lattice.completed_at is None
+        assert lattice.is_active
 
         with Session(db.engine) as session:
             rows = session.query(Lattice).where(Lattice.dispatch_id == "dispatch_3").all()
@@ -276,6 +277,7 @@ def test_insert_electrons_data(db):
                 )
             else:
                 assert getattr(electron, key) == value
+        assert electron.is_active
 
     electron_id = insert_electrons_data(db=db, **electron_kwargs)
     assert electron_id == 2
@@ -349,6 +351,8 @@ def test_insert_electron_dependency_data(db, workflow_lattice):
             assert electron_dependency.edge_name == "arg[1]"
             assert electron_dependency.arg_index == 1
             assert electron_dependency.parameter_type == "arg"
+
+        assert electron_dependency.is_active
 
 
 def test_update_lattices_data(db):
