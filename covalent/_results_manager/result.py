@@ -552,7 +552,7 @@ Node Outputs
                 .first()
             )
 
-            with open(os.path.join(electron.storage_path, electron.stderr_filename)) as f:
+            with open(os.path.join(electron.storage_path, electron.stderr_filename), "rb") as f:
                 return pickle.load(f)
 
     def _update_node(
