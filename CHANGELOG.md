@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Result.save() has been deprecated in favor of Result.persist() and querying the database directly.
+
 ## [0.135.0] - 2022-07-18
 
 ### Authors
@@ -67,6 +71,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Keyword arguments passed to a Bash lepton are understood to define environment variables within the shell.
 - Non-keyword arguments fill in `$1`, `$2`, etc.
 - Named outputs enumerate variables within the shell which will be returned to the user. These can be either `Lepton.OUTPUT` or `Lepton.INPUT_OUTPUT` types.
+
+### Added
+
+- New fields to the decomposed result object Database: 
 
 ## [0.131.0] - 2022-07-13
 
