@@ -353,6 +353,7 @@ def test_insert_electron_dependency_data(db, workflow_lattice):
             assert electron_dependency.parameter_type == "arg"
 
         assert electron_dependency.is_active
+        assert electron_dependency.updated is not None
 
 
 def test_update_lattices_data(db):
