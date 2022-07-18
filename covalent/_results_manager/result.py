@@ -369,7 +369,9 @@ Node Outputs
     def post_process(self):
 
         # Copied from server-side _post_process()
-        node_outputs = self.get_all_node_outputs()
+        node_outputs = self.get_all_node_outputs(
+            DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
+        )
         ordered_node_outputs = []
         for i, item in enumerate(node_outputs.items()):
             key, val = item
@@ -715,7 +717,11 @@ Node Outputs
             cloudpickle.dump(self.lattice.workflow_function, f)
 
         with open(data_storage_path / LATTICE_FUNCTION_STRING_FILENAME, "wb") as f:
-            cloudpickle.dump(self.lattice.workflow_function_string, f)
+            try:
+                cloudpickle.dump(self.lattice.workflow_function_string, f)
+            except AttributeError as e:
+                app_log.warning(f"{e}")
+                cloudpickle.dump(None, f)
 
         with open(data_storage_path / LATTICE_EXECUTOR_FILENAME, "wb") as f:
             cloudpickle.dump(self.lattice.metadata["executor"], f)

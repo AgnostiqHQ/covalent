@@ -500,7 +500,7 @@ def test_decorated_function():
 
     rm._delete_result(dispatch_id)
 
-    assert workflow_result.status == Result.COMPLETED
+    assert workflow_result.status == str(Result.COMPLETED)
 
 
 @pytest.mark.skip(reason="Inconsistent outcomes")
@@ -584,7 +584,7 @@ def test_all_parameter_types_in_lattice():
     assert result.result == (10, (3, 4), {"d": 6, "e": 7})
 
 
-def test_client_workflow_executor():
+def test_client_workflow_executor(db):
     """
     Test setting `workflow_executor="client"`
     """
@@ -603,9 +603,9 @@ def test_client_workflow_executor():
 
     rm._delete_result(dispatch_id)
 
-    assert workflow_result.status == Result.PENDING_POSTPROCESSING
+    assert workflow_result.status == str(Result.PENDING_POSTPROCESSING)
     assert workflow_result.result is None
-    workflow_result.persist()
+    workflow_result.persist(db)
 
     assert workflow_result.post_process() == 15
 
@@ -676,14 +676,14 @@ def test_wait_for():
 
     db = DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
 
-    assert result.status == Result.COMPLETED
+    assert result.status == str(Result.COMPLETED)
     assert (
-        result.get_node_result(db, node_id=6)["start_time"]
-        > result.get_node_result(db, node_id=0)["end_time"]
+        result.get_node_result(node_id=6)["start_time"]
+        > result.get_node_result(node_id=0)["end_time"]
     )
     assert (
-        result.get_node_result(db, node_id=6)["start_time"]
-        > result.get_node_result(db, node_id=2)["end_time"]
+        result.get_node_result(node_id=6)["start_time"]
+        > result.get_node_result(node_id=2)["end_time"]
     )
     assert result.result == 1500
 
