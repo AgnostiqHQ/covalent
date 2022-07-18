@@ -143,6 +143,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Disabled several dask functional tests
 
+### Changed
+
+- get_result to query an HTTP endpoint instead of a DB session
+
 ## [0.136.0] - 2022-07-18
 
 ### Authors

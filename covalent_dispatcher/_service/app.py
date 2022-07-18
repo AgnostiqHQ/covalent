@@ -21,9 +21,14 @@
 from concurrent.futures import ThreadPoolExecutor
 
 import cloudpickle as pickle
-from flask import Blueprint, Response, jsonify, request
+from flask import Blueprint, Response, jsonify, make_response, request
+from sqlalchemy.orm import Session
 
 import covalent_dispatcher as dispatcher
+from covalent._data_store.models import Lattice
+from covalent._results_manager.result import Result
+from covalent._results_manager.results_manager import result_from
+from covalent._results_manager.write_result_to_db import MissingLatticeRecordError
 
 from .._db.dispatchdb import DispatchDB
 
@@ -85,3 +90,59 @@ def cancel() -> Response:
 def db_path() -> Response:
     db_path = DispatchDB()._dbpath
     return jsonify(db_path)
+
+
+@bp.route("/result/<dispatch_id>", methods=["GET"])
+def get_result(dispatch_id) -> Response:
+    args = request.args
+    wait = args.get("wait")
+    status_only = args.get("status_only")
+    while True:
+        with Session(DispatchDB()._get_data_store().engine) as session:
+            lattice_record = (
+                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+            )
+        try:
+            if not lattice_record:
+                return (
+                    jsonify(
+                        {"message": f"The requested dispatch ID {dispatch_id} was not found."}
+                    ),
+                    404,
+                )
+            elif not wait:
+                output = {
+                    "id": dispatch_id,
+                    "status": lattice_record.status,
+                }
+                if not status_only:
+                    output["result"] = (pickle.dumps(result_from(lattice_record)),)
+                return jsonify(output)
+            elif lattice_record.status in [
+                str(Result.COMPLETED),
+                str(Result.FAILED),
+                str(Result.CANCELLED),
+                str(Result.POSTPROCESSING_FAILED),
+                str(Result.PENDING_POSTPROCESSING),
+            ]:
+                output = {
+                    "id": dispatch_id,
+                    "status": lattice_record.status,
+                }
+                if not status_only:
+                    output["result"] = (pickle.dumps(result_from(lattice_record)),)
+                return jsonify(output)
+
+        except (FileNotFoundError, EOFError):
+            if wait:
+                continue
+            response = make_response(
+                jsonify(
+                    {
+                        "message": "Result not ready to read yet. Please wait for a couple of seconds."
+                    }
+                ),
+                503,
+            )
+            response.retry_after = 2
+            return response
