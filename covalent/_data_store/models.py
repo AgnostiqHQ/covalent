@@ -76,7 +76,7 @@ class Lattice(Base):
     transport_graph_filename = Column(Text)
 
     # Name of the column which signifies soft deletion of a lattice
-    is_active = Column(Boolean, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
 
     # Timestamps
     created_at = Column(DateTime, nullable=False)
@@ -151,7 +151,7 @@ class Electron(Base):
     info_filename = Column(Text)
 
     # Name of the column which signifies soft deletion of the electrons corresponding to a lattice
-    is_active = Column(Boolean, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
 
     # Timestamps
     created_at = Column(DateTime, nullable=False)
@@ -179,7 +179,7 @@ class ElectronDependency(Base):
     arg_index = Column(Integer, nullable=True)
 
     # Name of the column which signifies soft deletion of the electron dependencies corresponding to a lattice
-    is_active = Column(Boolean, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
 
     updated_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False)

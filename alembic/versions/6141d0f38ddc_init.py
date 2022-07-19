@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 0c4d7b2707e5
+Revision ID: 6141d0f38ddc
 Revises:
-Create Date: 2022-07-15 16:06:43.515672
+Create Date: 2022-07-19 16:06:59.928677
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 # pragma: allowlist nextline secret
-revision = "0c4d7b2707e5"
+revision = "6141d0f38ddc"
 # pragma: allowlist nextline secret
 down_revision = None
 branch_labels = None
@@ -28,6 +28,8 @@ def upgrade() -> None:
         sa.Column("edge_name", sa.Text(), nullable=False),
         sa.Column("parameter_type", sa.String(length=24), nullable=True),
         sa.Column("arg_index", sa.Integer(), nullable=True),
+        sa.Column("is_active", sa.Boolean(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -38,6 +40,8 @@ def upgrade() -> None:
         sa.Column("electron_id", sa.Integer(), nullable=True),
         sa.Column("name", sa.Text(), nullable=False),
         sa.Column("status", sa.String(length=24), nullable=False),
+        sa.Column("electron_num", sa.Integer(), nullable=False),
+        sa.Column("completed_electron_num", sa.Integer(), nullable=False),
         sa.Column("storage_type", sa.Text(), nullable=True),
         sa.Column("storage_path", sa.Text(), nullable=True),
         sa.Column("function_filename", sa.Text(), nullable=True),
@@ -46,6 +50,8 @@ def upgrade() -> None:
         sa.Column("error_filename", sa.Text(), nullable=True),
         sa.Column("inputs_filename", sa.Text(), nullable=True),
         sa.Column("results_filename", sa.Text(), nullable=True),
+        sa.Column("transport_graph_filename", sa.Text(), nullable=True),
+        sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("started_at", sa.DateTime(), nullable=True),
@@ -68,10 +74,14 @@ def upgrade() -> None:
         sa.Column("results_filename", sa.Text(), nullable=True),
         sa.Column("value_filename", sa.Text(), nullable=True),
         sa.Column("attribute_name", sa.Text(), nullable=True),
-        sa.Column("key", sa.Integer(), nullable=True),
+        sa.Column("key_filename", sa.Text(), nullable=True),
         sa.Column("stdout_filename", sa.Text(), nullable=True),
+        sa.Column("deps_filename", sa.Text(), nullable=True),
+        sa.Column("call_before_filename", sa.Text(), nullable=True),
+        sa.Column("call_after_filename", sa.Text(), nullable=True),
         sa.Column("stderr_filename", sa.Text(), nullable=True),
         sa.Column("info_filename", sa.Text(), nullable=True),
+        sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("started_at", sa.DateTime(), nullable=True),
