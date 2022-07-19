@@ -52,7 +52,7 @@ jobs:
       - name: Build package
         run: |
           $CONDA/bin/activate buildenv
-          conda build --override-channels --output-folder . .
+          conda build --override-channels --output-folder . --python ${{ matrix.python-version }} .
 
       - name: Convert package
         run: conda convert --platform all ./linux-64/*.tar.bz2
