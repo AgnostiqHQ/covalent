@@ -42,6 +42,12 @@ class Lattice(Base):
     # Workflow status
     status = Column(String(24), nullable=False)
 
+    # Number of nodes in the lattice
+    electron_num = Column(Integer, nullable=False)
+
+    # Number of completed nodes in the lattice
+    completed_electron_num = Column(Integer, nullable=False)
+
     # Storage backend type for data files ("local", "s3")
     storage_type = Column(Text)
 

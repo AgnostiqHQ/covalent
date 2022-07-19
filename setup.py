@@ -23,6 +23,8 @@ import site
 import sys
 
 from setuptools import Command, find_packages, setup
+from setuptools.command.build_py import build_py
+from setuptools.command.develop import develop
 
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
@@ -51,6 +53,44 @@ def recursively_append_files(directory: str):
             filepaths.append(os.path.join(path, filename).split("/", 1)[1])
 
     return filepaths
+
+
+def blacklist_packages():
+    """Validate blacklisted packages are not installed."""
+
+    import site
+    from importlib import metadata
+
+    if "READTHEDOCS" in os.environ:
+        return
+
+    installed_packages = [
+        d.metadata["Name"] for d in metadata.distributions(path=site.getsitepackages())
+    ]
+
+    blacklist = ["cova"]
+
+    for package in blacklist:
+        if package in installed_packages:
+            print("\n***************************", file=sys.stderr)
+            print(
+                f"Package conflict: uninstall package {package} to proceed with installation.",
+                file=sys.stderr,
+            )
+            print("***************************\n", file=sys.stderr)
+            sys.exit(1)
+
+
+class BuildCovalent(build_py):
+    def run(self):
+        blacklist_packages()
+        build_py.run(self)
+
+
+class DevelopCovalent(develop):
+    def run(self):
+        blacklist_packages()
+        develop.run(self)
 
 
 class Docs(Command):
@@ -140,6 +180,8 @@ setup_info = {
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Topic :: Adaptive Technologies",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
@@ -147,6 +189,8 @@ setup_info = {
         "Topic :: System :: Distributed Computing",
     ],
     "cmdclass": {
+        "build_py": BuildCovalent,
+        "develop": DevelopCovalent,
         "docs": Docs,
         "webapp": BuildUI,
     },
