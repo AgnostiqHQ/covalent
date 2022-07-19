@@ -495,6 +495,7 @@ def test_handle_failed_node(mocker):
 
     assert tasks_queue.get(timeout=1) == -1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
+    assert result_object.status == Result.FAILED
     mock_get_node_name.assert_called_once()
     mock_get_node_error.assert_called_once()
 
@@ -521,6 +522,7 @@ def test_handle_cancelled_node(mocker):
 
     assert tasks_queue.get(timeout=1) == -1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
+    assert result_object.status == Result.CANCELLED
 
 
 def test_initialize_deps_and_queue(mocker):
