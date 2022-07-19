@@ -48,5 +48,6 @@ jobs:
         stale-pr-message: 'This pull request is stale because it has been open for at least 15 days. It will be closed in five more days.'
         close-pr-message: 'This pull request was closed because it has been open for at least 20 days.'
         ignore-pr-updates: true
+        exempt-pr-labels: 'stale-exempt'
         days-before-issue-stale: -1
         days-before-issue-close: -1
