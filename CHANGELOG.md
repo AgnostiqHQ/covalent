@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Changed API socket calls interval for graph optimization.
+### Tests
+
+- Disabled several dask functional tests
 
 ## [0.136.0] - 2022-07-18
 
