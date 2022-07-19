@@ -51,3 +51,7 @@ Advanced
 ---------------------------------
 
 Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.  To get started, check out the :doc:`guide <tutorial_guide>`.
+
+.. Hidden tutorials:
+   * - Machine Learning
+     - :doc:`Comparison of kernel-based and variational circuit learning algorithms<./machine_learning/Kernel_pennylane>`

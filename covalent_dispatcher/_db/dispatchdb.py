@@ -20,6 +20,7 @@
 
 """Dispatch DataBase script."""
 
+import copy
 import json
 import os
 import sqlite3
@@ -77,7 +78,7 @@ def extract_graph_node(node):
 def extract_metadata(metadata: dict):
     try:
         # avoid mutating original metadata
-        metadata = metadata.copy()
+        metadata = copy.deepcopy(metadata)
 
         name = metadata["executor"]
         app_log.debug(f"Getting executor {name}")
