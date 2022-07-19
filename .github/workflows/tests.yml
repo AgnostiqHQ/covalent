@@ -138,12 +138,9 @@ jobs:
             max_attempts: 2
             on_retry_command: rm -f ~/.config/covalent/covalent.conf
             command: |
-              if: ${{ steps.filter.sdk }}
-              run: PYTHONPATH=$PWD/ pytest tests/covalent_tests -vv  --cov=covalent
-              if: ${{ steps.filter.dispatcher }}
-              run: PYTHONPATH=$PWD/ pytest tests/covalent_dispatcher_tests -vv  --cov=covalent_dispatcher
-              if: ${{ steps.filter.functional_tests }}
-              run:PYTHONPATH=$PWD/ pytest tests/functional_tests
+              PYTHONPATH=$PWD/ pytest tests/covalent_tests -vv  --cov=covalent
+              PYTHONPATH=$PWD/ pytest tests/covalent_dispatcher_tests -vv  --cov=covalent_dispatcher
+              PYTHONPATH=$PWD/ pytest tests/functional_tests
             
       - name: Generate coverage report
         if: ${{ steps.filter.sdk || steps.filter.dispatcher || steps.filter.functional_tests }}
