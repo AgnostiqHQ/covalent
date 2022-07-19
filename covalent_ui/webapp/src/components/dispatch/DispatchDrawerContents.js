@@ -46,12 +46,15 @@ const DispatchDrawerContents = (props) => {
   const drawerLatticeErrorFetching = useSelector(
     (state) => state.latticeResults.latticeErrorList.isFetching
   )
+  const callSocketApi = useSelector(
+    (state) => state.common.callSocketApi
+  )
 
   useEffect(() => {
     dispatch(latticeDetails({ dispatchId }))
     dispatch(latticeError({ dispatchId, params: 'error' }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [callSocketApi])
 
   return (
     <Box sx={{ px: 3, my: 0 }}>

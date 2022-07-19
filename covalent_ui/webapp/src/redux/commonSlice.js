@@ -24,6 +24,7 @@ import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
   latticeDrawerOpen: false,
+  callSocketApi:false
 }
 
 export const commonSlice = createSlice({
@@ -33,7 +34,10 @@ export const commonSlice = createSlice({
     toggleLatticeDrawer(state) {
       state.latticeDrawerOpen = !state.latticeDrawerOpen
     },
+    socketAPI(state) {
+      state.callSocketApi = !state.callSocketApi
+    },
   },
 })
 
-export const { toggleLatticeDrawer } = commonSlice.actions
+export const { toggleLatticeDrawer,socketAPI } = commonSlice.actions

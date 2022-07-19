@@ -66,7 +66,7 @@ const ElectronNode = ({
           alignItems: 'center',
           px: 1,
           py: 0.5,
-          borderRadius: 1,
+          borderRadius: '16px',
           // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
           color: !selected ? NODE_TEXT_COLOR : '#FAFAFA',
           borderColor: color,

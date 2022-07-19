@@ -95,6 +95,9 @@ const NodeDrawer = ({ node, dispatchId }) => {
   const electronFunctionResultIsFetching = useSelector(
     (state) => state.electronResults.electronFunctionStringList.isFetching
   )
+  const callSocketApi = useSelector(
+    (state) => state.common.callSocketApi
+  )
 
   useEffect(() => {
     if (!!node) {
@@ -114,7 +117,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
       dispatch(electronError({ dispatchId, electronId, params: 'error' }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [node])
+  }, [node,callSocketApi])
   const setSelectedElements = useStoreActions(
     (actions) => actions.setSelectedElements
   )

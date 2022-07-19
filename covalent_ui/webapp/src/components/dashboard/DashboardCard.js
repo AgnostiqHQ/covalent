@@ -37,19 +37,22 @@ import { fetchDashboardOverview } from '../../redux/dashboardSlice'
 
 const DashboardCard = (props) => {
   const dispatch = useDispatch()
-
+  // check if socket message is received and call API
+  const callSocketApi = useSelector(
+    (state) => state.common.callSocketApi
+  )
   // selecting the dashboardOverview from redux state
   const dashboardStats = useSelector(
     (state) => state.dashboard.dashboardOverview
   )
-  const isDeleted = useSelector((state) => state.dashboard.dispatchesDeleted)
-
   const isFetching = useSelector(
     (state) => state.dashboard.fetchDashboardOverview.isFetching
   )
 
   const isError = useSelector(
     (state) => state.dashboard.fetchDashboardOverview.error)
+  //check if any dispatches are deleted and call the API
+  const isDeleted = useSelector((state) => state.dashboard.dispatchesDeleted)
 
   const [openSnackbar, setOpenSnackbar] = useState(Boolean(isError));
 
@@ -60,7 +63,7 @@ const DashboardCard = (props) => {
   useEffect(() => {
     fetchDashboardOverviewResult()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDeleted])
+  }, [isDeleted,callSocketApi])
 
   useEffect(() => {
     if (isError) setOpenSnackbar(true);

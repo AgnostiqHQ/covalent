@@ -41,13 +41,15 @@ export function DispatchLayout() {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
   const graph_result = useSelector((state) => state.graphResults.graphList)
-  const fetch = useSelector(
-    (state) => state.graphResults.graphResultsList.isFetching
+  const fetch = useSelector((state) => state.graphResults.graphResultsList.isFetching)
+  // check if socket message is received and call API
+  const callSocketApi = useSelector(
+    (state) => state.common.callSocketApi
   )
   useEffect(() => {
     dispatch(graphResults({ dispatchId }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [callSocketApi])
 
   const selectedElectron = useStoreState((state) => {
     const nodeId = _.get(

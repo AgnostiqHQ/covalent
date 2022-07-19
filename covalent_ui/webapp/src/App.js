@@ -31,8 +31,8 @@ import {
 import './App.css'
 import Dashboard from './components/dashboard/Dashboard'
 import socket from './utils/socket'
-import { fetchResult } from './redux/resultsSlice'
 import { setLattice } from './redux/latticePreviewSlice'
+import { socketAPI } from './redux/commonSlice'
 import theme from './utils/theme'
 import { ReactFlowProvider } from 'react-flow-renderer'
 import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
@@ -63,10 +63,7 @@ const App = () => {
       if (canCallAPI || update.result.status === 'COMPLETED') {
         lastCalledOn = new Date();
         dispatch(
-          fetchResult({
-            dispatchId: update.result.dispatch_id,
-            resultsDir: update.result.results_dir,
-          })
+          socketAPI()
         )
       }
     }

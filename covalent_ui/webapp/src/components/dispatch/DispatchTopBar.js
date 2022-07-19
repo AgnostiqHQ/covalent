@@ -56,7 +56,7 @@ const DispatchTopBar = () => {
           {drawerLatticeDetailsFetching ? (
             <Skeleton width={200} />
           ) : (
-            <Tooltip title={drawerLatticeDetails.dispatch_id} placement="top">
+            <Tooltip title={drawerLatticeDetails?.dispatch_id} placement="top">
               <Typography
                 component="span"
                 sx={{ mx: 1, verticalAlign: 'middle' }}
@@ -70,6 +70,7 @@ const DispatchTopBar = () => {
             content={drawerLatticeDetails.dispatch_id}
             size="small"
             title="Copy dispatch Id"
+            isBorderPresent
           />
         </Box>
 

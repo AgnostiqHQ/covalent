@@ -369,10 +369,10 @@ const ResultListing = () => {
     (state) => state.dashboard.fetchDashboardList.error)
   const [openSnackbar, setOpenSnackbar] = useState(Boolean(isError));
 
-
+  //check if any dispatches are deleted and call the API
   const isDeleted = useSelector((state) => state.dashboard.dispatchesDeleted)
 
-  const dashboardListFinal = useSelector((state) => state.dashboard.dashboardList)?.map((e) => {
+  const dashboardListView = useSelector((state) => state.dashboard.dashboardList)?.map((e) => {
     return {
       dispatchId: e.dispatch_id,
       endTime: e.ended_at,
@@ -405,6 +405,10 @@ const ResultListing = () => {
   const isFetching = useSelector(
     (state) => state.dashboard.fetchDashboardList.isFetching
   )
+  // check if socket message is received and call API
+  const callSocketApi = useSelector(
+    (state) => state.common.callSocketApi
+  )
   const dashboardListAPI = () => {
     const bodyParams = {
       count: 10,
@@ -428,7 +432,7 @@ const ResultListing = () => {
   useEffect(() => {
     dashboardListAPI()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortColumn, sortOrder, page, searchValue, isDeleted])
+  }, [sortColumn, sortOrder, page, searchValue, isDeleted, callSocketApi])
 
   // check if there are any API errors and show a sncakbar
   useEffect(() => {
@@ -437,7 +441,7 @@ const ResultListing = () => {
   }, [isError])
 
   useEffect(() => {
-    if (offset===0) setPage(1);
+    if (offset === 0) setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offset])
 
@@ -464,8 +468,8 @@ const ResultListing = () => {
   }
 
   const handleSelectAllClick = () => {
-    if (_.size(selected) < _.size(dashboardListFinal)) {
-      setSelected(_.map(dashboardListFinal, 'dispatchId'))
+    if (_.size(selected) < _.size(dashboardListView)) {
+      setSelected(_.map(dashboardListView, 'dispatchId'))
     } else {
       setSelected([])
     }
@@ -474,7 +478,7 @@ const ResultListing = () => {
   const handleDeleteSelected = () => {
     dispatch(deleteDispatches({ dispatches: selected })).then((action) => {
       if (action.type === deleteDispatches.fulfilled.type) {
-        if (selected.length === dashboardListFinal.length) {
+        if (selected.length === dashboardListView.length) {
           setOffset(0)
         }
         setSelected([])
@@ -486,12 +490,12 @@ const ResultListing = () => {
 
   return (
     <>
-    <Snackbar
-          open={openSnackbar}
-          autoHideDuration={3000}
-          message="Something went wrong,please contact the administrator!"
-          onClose={() => setOpenSnackbar(false)}
-        />
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        message="Something went wrong,please contact the administrator!"
+        onClose={() => setOpenSnackbar(false)}
+      />
       <Box>
         <ResultsTableToolbar
           query={searchKey}
@@ -516,14 +520,14 @@ const ResultListing = () => {
                   order={sortOrder}
                   orderBy={sortColumn}
                   numSelected={_.size(selected)}
-                  total={_.size(dashboardListFinal)}
+                  total={_.size(dashboardListView)}
                   onSort={handleChangeSort}
                   onSelectAllClick={handleSelectAllClick}
                 />
 
                 <TableBody>
-                  {dashboardListFinal &&
-                    dashboardListFinal.map((result, index) => (
+                  {dashboardListView &&
+                    dashboardListView.map((result, index) => (
                       <TableRow hover key={result.dispatchId}>
                         <TableCell padding="checkbox">
                           <Checkbox
@@ -578,7 +582,7 @@ const ResultListing = () => {
               </StyledTable>
             </TableContainer>
 
-            {_.isEmpty(dashboardListFinal) && (
+            {_.isEmpty(dashboardListView) && (
               <Typography
                 sx={{
                   my: 3,
