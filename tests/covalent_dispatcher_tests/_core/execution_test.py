@@ -37,6 +37,9 @@ from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
     _gather_deps,
     _get_task_inputs,
+    _handle_cancelled_node,
+    _handle_completed_node,
+    _handle_failed_node,
     _plan_workflow,
     _post_process,
     _run_planned_workflow,
@@ -91,14 +94,17 @@ def get_mock_result() -> Result:
 
     @ct.lattice(results_dir=TEST_RESULTS_DIR)
     def pipeline(x):
-        return task(x)
+        res1 = task(x)
+        res2 = task(res1)
+        return res2
 
     pipeline.build_graph(x="absolute")
-
-    return Result(
-        lattice=pipeline,
-        results_dir=pipeline.metadata["results_dir"],
+    received_workflow = Lattice.deserialize_from_json(pipeline.serialize_to_json())
+    result_object = Result(
+        received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
     )
+
+    return result_object
 
 
 def test_plan_workflow():
@@ -363,23 +369,11 @@ def test_run_task(mocker, sublattice_workflow):
 def test_update_failed_node(mocker):
     """Check that update_node_result correctly invokes _handle_failed_node"""
 
-    @ct.electron
-    def task(x):
-        assert False
-        return x
-
-    @ct.lattice(workflow_executor="client")
-    def workflow(x):
-        return task(x)
-
-    workflow.build_graph(5)
-
     lock = Lock()
     tasks_queue = Queue()
     pending_deps = {}
 
-    received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    result_object = Result(received_workflow, "/tmp", "asdf")
+    result_object = get_mock_result()
     mock_fail_handler = mocker.patch("covalent_dispatcher._core.execution._handle_failed_node")
     mock_upsert_lattice = mocker.patch(
         "covalent._results_manager.result.Result.upsert_lattice_data"
@@ -389,4 +383,131 @@ def test_update_failed_node(mocker):
     node_result = {"node_id": 0, "status": Result.FAILED}
     _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
 
-    assert mock_fail_handler.called_once()
+    mock_fail_handler.assert_called_once_with(
+        result_object, node_result, pending_deps, tasks_queue
+    )
+
+
+def test_update_cancelled_node(mocker):
+    """Check that update_node_result correctly invokes _handle_cancelled_node"""
+
+    lock = Lock()
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
+    mock_cancel_handler = mocker.patch(
+        "covalent_dispatcher._core.execution._handle_cancelled_node"
+    )
+    mock_upsert_lattice = mocker.patch(
+        "covalent._results_manager.result.Result.upsert_lattice_data"
+    )
+    mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
+
+    node_result = {"node_id": 0, "status": Result.CANCELLED}
+    _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+
+    mock_cancel_handler.assert_called_once_with(
+        result_object, node_result, pending_deps, tasks_queue
+    )
+
+
+def test_update_completed_node(mocker):
+    """Check that update_node_result correctly invokes _handle_completed_node"""
+
+    lock = Lock()
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
+    mock_completed_handler = mocker.patch(
+        "covalent_dispatcher._core.execution._handle_completed_node"
+    )
+    mock_upsert_lattice = mocker.patch(
+        "covalent._results_manager.result.Result.upsert_lattice_data"
+    )
+    mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
+
+    node_result = {"node_id": 0, "status": Result.COMPLETED}
+    _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+
+    mock_completed_handler.assert_called_once_with(
+        result_object, node_result, pending_deps, tasks_queue
+    )
+
+
+def test_handle_completed_node(mocker):
+    """Unit test for completed node handler"""
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
+
+    # tg edges are (1, 0), (0, 2)
+    pending_deps[0] = 1
+    pending_deps[1] = 0
+    pending_deps[2] = 1
+
+    mock_upsert_lattice = mocker.patch(
+        "covalent._results_manager.result.Result.upsert_lattice_data"
+    )
+
+    node_result = {"node_id": 1, "status": Result.COMPLETED}
+
+    _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
+
+    assert tasks_queue.get(timeout=1) == 0
+    assert pending_deps == {0: 0, 1: 0, 2: 1}
+
+
+def test_handle_failed_node(mocker):
+    """Unit test for failed node handler"""
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
+
+    # tg edges are (1, 0), (0, 2)
+    pending_deps[0] = 1
+    pending_deps[1] = 0
+    pending_deps[2] = 1
+
+    mock_upsert_lattice = mocker.patch(
+        "covalent._results_manager.result.Result.upsert_lattice_data"
+    )
+    mock_get_node_name = mocker.patch("covalent._results_manager.result.Result._get_node_name")
+
+    mock_get_node_error = mocker.patch("covalent._results_manager.result.Result._get_node_error")
+
+    node_result = {"node_id": 1, "status": Result.FAILED}
+
+    _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
+
+    assert tasks_queue.get(timeout=1) == -1
+    assert pending_deps == {0: 1, 1: 0, 2: 1}
+    mock_get_node_name.assert_called_once()
+    mock_get_node_error.assert_called_once()
+
+
+def test_handle_cancelled_node(mocker):
+    """Unit test for cancelled node handler"""
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
+
+    # tg edges are (1, 0), (0, 2)
+    pending_deps[0] = 1
+    pending_deps[1] = 0
+    pending_deps[2] = 1
+
+    mock_upsert_lattice = mocker.patch(
+        "covalent._results_manager.result.Result.upsert_lattice_data"
+    )
+
+    node_result = {"node_id": 1, "status": Result.CANCELLED}
+
+    _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
+
+    assert tasks_queue.get(timeout=1) == -1
+    assert pending_deps == {0: 1, 1: 0, 2: 1}
