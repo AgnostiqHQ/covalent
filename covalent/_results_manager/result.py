@@ -32,12 +32,6 @@ import yaml
 from sqlalchemy import and_, update
 from sqlalchemy.orm import Session
 
-from covalent._shared_files.config import get_config
-from tests.covalent_tests.results_manager_tests.write_result_to_db_test import (
-    CALL_AFTER_FILENAME,
-    CALL_BEFORE_FILENAME,
-)
-
 from .._data_store import DataStore, DataStoreNotInitializedError, models
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
@@ -72,6 +66,7 @@ LATTICE_STORAGE_TYPE = "local"
 
 ELECTRON_FUNCTION_FILENAME = "function.pkl"
 ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
+ELECTRON_KEY_FILENAME = "key.pkl"
 ELECTRON_VALUE_FILENAME = "value.pkl"
 ELECTRON_EXECUTOR_FILENAME = "executor.pkl"
 ELECTRON_STDOUT_FILENAME = "stdout.log"
@@ -808,6 +803,26 @@ Node Outputs
                 if not node_path.exists():
                     node_path.mkdir()
 
+                try:
+                    attribute_name = tg.get_node_value(node_key=node_id, value_key="name")
+                except KeyError:
+                    attribute_name = None
+
+                try:
+                    node_key = tg.get_node_value(node_key=node_id, value_key="key")
+                except KeyError:
+                    node_key = None
+
+                try:
+                    started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
+                except KeyError:
+                    started_at = None
+
+                try:
+                    completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
+                except KeyError:
+                    completed_at = None
+
                 # Write all electron data to the appropriate filepaths
                 with open(node_path / ELECTRON_FUNCTION_FILENAME, "wb") as f:
                     cloudpickle.dump(tg.get_node_value(node_id, "function"), f)
@@ -868,6 +883,9 @@ Node Outputs
                         node_output = TransportableObject(node_output)
                     cloudpickle.dump(node_output, f)
 
+                with open(node_path / ELECTRON_KEY_FILENAME, "wb") as f:
+                    cloudpickle.dump(node_key, f)
+
                 electron_exists = (
                     session.query(models.Electron, models.Lattice)
                     .where(
@@ -878,26 +896,6 @@ Node Outputs
                     .first()
                     is not None
                 )
-
-                try:
-                    attribute_name = tg.get_node_value(node_key=node_id, value_key="name")
-                except KeyError:
-                    attribute_name = None
-
-                try:
-                    node_key = tg.get_node_value(node_key=node_id, value_key="key")
-                except KeyError:
-                    node_key = None
-
-                try:
-                    started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
-                except KeyError:
-                    started_at = None
-
-                try:
-                    completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
-                except KeyError:
-                    completed_at = None
 
                 if not electron_exists:
                     electron_record_kwarg = {
@@ -916,13 +914,13 @@ Node Outputs
                         "results_filename": ELECTRON_RESULTS_FILENAME,
                         "value_filename": ELECTRON_VALUE_FILENAME,
                         "attribute_name": attribute_name,
-                        "key": node_key,
+                        "key_filename": ELECTRON_KEY_FILENAME,
                         "stdout_filename": ELECTRON_STDOUT_FILENAME,
                         "stderr_filename": ELECTRON_STDERR_FILENAME,
                         "info_filename": ELECTRON_INFO_FILENAME,
                         "deps_filename": ELECTRON_DEPS_FILENAME,
-                        "call_before_filename": CALL_BEFORE_FILENAME,
-                        "call_after_filename": CALL_AFTER_FILENAME,
+                        "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
+                        "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
                         "created_at": datetime.now(timezone.utc),
                         "updated_at": datetime.now(timezone.utc),
                         "started_at": started_at,

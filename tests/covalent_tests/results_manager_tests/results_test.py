@@ -143,6 +143,10 @@ def test_result_persist_workflow_1(db, result_1):
                 call_after = cloudpickle.load(f)
                 assert call_after == []
 
+            with open(Path(electron.storage_path) / electron.key_filename, "rb") as f:
+                key = cloudpickle.load(f)
+                assert key is None
+
     # Check that there are the appropriate amount of electron dependency records
     assert len(electron_dependency_rows) == 4
 

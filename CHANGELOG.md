@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Modify the test and implementation logic of inserting the electron record with these new fields.
+- Field `key` to `key_filename` in `Electron` table.
 
 ### Docs
 

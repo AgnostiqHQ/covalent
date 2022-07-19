@@ -63,6 +63,7 @@ VALUE_FILENAME = "value.pkl"
 STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
 INFO_FILENAME = "info.log"
+KEY_FILENAME = "key.pkl"
 TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 DEPS_FILENAME = "deps.pkl"
 CALL_BEFORE_FILENAME = "call_before.pkl"
@@ -158,7 +159,7 @@ def get_electron_kwargs(
     results_filename=RESULTS_FILENAME,
     value_filename=VALUE_FILENAME,
     attribute_name=None,
-    key=None,
+    key_filename=KEY_FILENAME,
     stdout_filename=STDOUT_FILENAME,
     stderr_filename=STDERR_FILENAME,
     info_filename=INFO_FILENAME,
@@ -186,7 +187,7 @@ def get_electron_kwargs(
         "results_filename": results_filename,
         "value_filename": value_filename,
         "attribute_name": attribute_name,
-        "key": key,
+        "key_filename": key_filename,
         "stdout_filename": stdout_filename,
         "stderr_filename": stderr_filename,
         "info_filename": info_filename,
@@ -285,6 +286,7 @@ def test_insert_electrons_data(db):
                 )
             else:
                 assert getattr(electron, key) == value
+            assert electron.key_filename == KEY_FILENAME
 
     electron_id = insert_electrons_data(db=db, **electron_kwargs)
     assert electron_id == 2
