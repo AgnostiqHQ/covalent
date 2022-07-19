@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecate topological sort in favor of inspect in-degree of nodes until they are zero before dispatching task
 - Use deepcopy to generate a copy of the metadata dictionary before saving result object to the database
 
+### Docs
+
+- Adding quantum ensemble tutorial
+
 ## [0.140.0] - 2022-07-19
 
 ### Authors
