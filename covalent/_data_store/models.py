@@ -22,7 +22,7 @@
 Models for the workflows db. Based on schema v9
 """
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -68,6 +68,9 @@ class Lattice(Base):
 
     # Name of the file containing the transport graph
     transport_graph_filename = Column(Text)
+
+    # Name of the column which signifies soft deletion of a lattice
+    is_active = Column(Boolean, nullable=False)
 
     # Timestamps
     created_at = Column(DateTime, nullable=False)
@@ -132,6 +135,9 @@ class Electron(Base):
     # runtime (such as Slurm logs)
     info_filename = Column(Text)
 
+    # Name of the column which signifies soft deletion of the electrons corresponding to a lattice
+    is_active = Column(Boolean, nullable=False)
+
     # Timestamps
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
@@ -157,4 +163,8 @@ class ElectronDependency(Base):
     # Argument position - this value is null unless parameter_type is arg
     arg_index = Column(Integer, nullable=True)
 
+    # Name of the column which signifies soft deletion of the electron dependencies corresponding to a lattice
+    is_active = Column(Boolean, nullable=False)
+
+    updated_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False)
