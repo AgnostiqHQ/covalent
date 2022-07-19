@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Columns `is_active` in the lattice, eLectron and Electron dependency tables.
 
+### Docs
+
+- Adding a RTD tutorial/steps on creating a custom executor
+
 ## [0.138.0] - 2022-07-19
 
 ### Authors
