@@ -96,6 +96,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Columns `is_active` in the lattice, eLectron and Electron dependency tables.
 
+### Removed
+
+- `entry_point.get_result()`
+
 ### Changed
 
 - get_result to query an HTTP endpoint instead of a DB session
