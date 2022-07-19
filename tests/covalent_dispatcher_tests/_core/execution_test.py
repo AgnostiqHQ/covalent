@@ -47,6 +47,7 @@ from covalent_dispatcher._core.execution import (
     _run_task,
     _update_node_result,
     generate_node_result,
+    run_workflow,
 )
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -536,3 +537,56 @@ def test_initialize_deps_and_queue(mocker):
     assert tasks_queue.get(timeout=1) == 1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
     assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
+
+
+def test_run_workflow_with_failing_nonleaf(mocker):
+    """Test running workflow with a failing intermediate node"""
+
+    @ct.electron
+    def failing_task(x):
+        assert False
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        res1 = failing_task(x)
+        res2 = failing_task(res1)
+        return res2
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    workflow.build_graph(5)
+
+    json_lattice = workflow.serialize_to_json()
+    dispatch_id = "asdf"
+    tasks_pool = ThreadPoolExecutor()
+
+    result_object = run_workflow(dispatch_id, json_lattice, tasks_pool)
+
+    assert result_object.status == Result.FAILED
+
+
+def test_run_workflow_with_failing_leaf(mocker):
+    """Test running workflow with a failing leaf node"""
+
+    @ct.electron
+    def failing_task(x):
+        assert False
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        res1 = failing_task(x)
+        return res1
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    workflow.build_graph(5)
+
+    json_lattice = workflow.serialize_to_json()
+    dispatch_id = "asdf"
+    tasks_pool = ThreadPoolExecutor()
+
+    result_object = run_workflow(dispatch_id, json_lattice, tasks_pool)
+
+    assert result_object.status == Result.FAILED
