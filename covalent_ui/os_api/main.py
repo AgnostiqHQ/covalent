@@ -143,15 +143,15 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 @app.post(WEBHOOK_PATH)
-async def handle_result_update(result_update):
+async def handle_result_update(result_update: dict):
     await sio.emit("result-update", result_update)
-    return {{"ok": True}}
+    return {"ok": True}
 
 
 @app.post("/api/draw")
-async def handle_draw_request(draw_request):
+async def handle_draw_request(draw_request: dict):
     await sio.emit("draw_request", draw_request)
-    return {{"ok": True}}
+    return {"ok": True}
 
 
 if __name__ == "__main__":
