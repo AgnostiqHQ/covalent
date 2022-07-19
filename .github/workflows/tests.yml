@@ -169,7 +169,7 @@ jobs:
 
       - name: Upload report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-        uses: codecov/codecov-actions@v2
+        uses: codecov/codecov-action@v2
         with:
           files: covalent_dispatcher/coverage.xml, covalent/coverage.xml
           flags: covalent_dispatcher, covalent
