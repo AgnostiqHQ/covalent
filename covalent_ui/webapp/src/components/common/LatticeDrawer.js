@@ -34,7 +34,6 @@ const drawerPaperStyles = (theme) => ({
   border: 'none',
   backgroundColor: theme.palette.background.default,
   boxShadow: '0px 16px 50px rgba(0, 0, 0, 0.9)',
-  backdropFilter: 'blur(8px)',
   '&:not(:hover)::-webkit-scrollbar-thumb': {
     backgroundColor: 'inherit',
   },

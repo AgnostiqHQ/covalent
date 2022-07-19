@@ -20,7 +20,9 @@
 
 """This module contains all the functions required to save the decomposed result object in the database."""
 
+import os
 from datetime import datetime as dt
+from datetime import timezone
 
 import networkx as nx
 from sqlalchemy import update
@@ -63,6 +65,7 @@ def insert_lattices_data(
     error_filename: str,
     inputs_filename: str,
     results_filename: str,
+    transport_graph_filename: str,
     created_at: dt,
     updated_at: dt,
     started_at: dt,
@@ -82,6 +85,8 @@ def insert_lattices_data(
         error_filename=error_filename,
         inputs_filename=inputs_filename,
         results_filename=results_filename,
+        transport_graph_filename=transport_graph_filename,
+        is_active=True,
         created_at=created_at,
         updated_at=updated_at,
         started_at=started_at,
@@ -111,10 +116,13 @@ def insert_electrons_data(
     results_filename: str,
     value_filename: str,
     attribute_name: str,
-    key: str,
+    key_filename: str,
     stdout_filename: str,
     stderr_filename: str,
     info_filename: str,
+    deps_filename: str,
+    call_before_filename: str,
+    call_after_filename: str,
     created_at: dt,
     updated_at: dt,
     started_at: dt,
@@ -144,10 +152,14 @@ def insert_electrons_data(
         results_filename=results_filename,
         value_filename=value_filename,
         attribute_name=attribute_name,
-        key=key,
+        key_filename=key_filename,
         stdout_filename=stdout_filename,
         stderr_filename=stderr_filename,
         info_filename=info_filename,
+        deps_filename=deps_filename,
+        call_before_filename=call_before_filename,
+        call_after_filename=call_after_filename,
+        is_active=True,
         created_at=created_at,
         updated_at=updated_at,
         started_at=started_at,
@@ -194,7 +206,9 @@ def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "L
                 edge_name=edge_data["edge_name"],
                 parameter_type=edge_data["param_type"] if "param_type" in edge_data else None,
                 arg_index=edge_data["arg_index"] if "arg_index" in edge_data else None,
-                created_at=dt.now(),
+                is_active=True,
+                created_at=dt.now(timezone.utc),
+                updated_at=dt.now(timezone.utc),
             )
 
             session.add(electron_dependency_row)
@@ -204,34 +218,21 @@ def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "L
     return electron_dependency_ids
 
 
-def update_lattices_data(
-    db: DataStore,
-    dispatch_id: str,
-    status: str,
-    updated_at: dt,
-    started_at: dt,
-    completed_at: dt,
-) -> None:
+def update_lattices_data(db: DataStore, dispatch_id: str, **kwargs) -> None:
     """This function updates the lattices record."""
 
     with Session(db.engine) as session:
-        valid_update = (
-            session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first() is not None
-        )
+        valid_update = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
 
         if not valid_update:
             raise MissingLatticeRecordError
 
-        session.execute(
-            update(Lattice)
-            .where(Lattice.dispatch_id == dispatch_id)
-            .values(
-                status=status,
-                updated_at=updated_at,
-                started_at=started_at,
-                completed_at=completed_at,
-            )
-        )
+        for attr, value in kwargs.items():
+            if value:
+                setattr(valid_update, attr, value)
+
+        session.add(valid_update)
+
         session.commit()
 
 
@@ -328,6 +329,17 @@ def write_sublattice_electron_id(
         session.execute(
             update(Lattice)
             .where(Lattice.dispatch_id == sublattice_dispatch_id)
-            .values(electron_id=sublattice_electron_id, updated_at=dt.now())
+            .values(electron_id=sublattice_electron_id, updated_at=dt.now(timezone.utc))
         )
         session.commit()
+
+
+def write_lattice_error(db: DataStore, dispatch_id: str, error: str):
+    with Session(db.engine) as session:
+        valid_update = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+
+        if not valid_update:
+            raise MissingLatticeRecordError
+
+        with open(os.path.join(valid_update.storage_path, valid_update.error_filename), "w") as f:
+            f.write(error)

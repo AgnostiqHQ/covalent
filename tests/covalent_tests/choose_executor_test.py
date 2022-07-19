@@ -52,10 +52,6 @@ def test_using_executor_names():
         dispatch_id = ct.dispatch(workflow)(y="input")
         output = ct.get_result(dispatch_id, wait=True)
 
-        rm._delete_result(dispatch_id)
-        with DispatchDB() as db:
-            db.delete([dispatch_id])
-
         assert output.result == "input"
 
 
