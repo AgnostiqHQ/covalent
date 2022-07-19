@@ -125,14 +125,18 @@ jobs:
 
       - name: Filter paths to test
         uses: dorny/paths-filter@v2
+        id: changes
         with:
           filters: |
             sdk:
-              - 'covalent/'
+            - 'covalent/*'
             dispatcher:
-            - 'covalent_dispatcher/'
+            - 'covalent_dispatcher/*'
             functional_tests:
-            - 'tests/functional_tests/'  
+            - 'tests/functional_tests/*'
+            tests:
+            - 'tests/*'
+               
 
       - name: Run tests and measure coverage   
         uses: nick-fields/retry@v2
@@ -146,7 +150,6 @@ jobs:
               PYTHONPATH=$PWD/ pytest tests/functional_tests
             
       - name: Generate coverage report
-        if: ${{ steps.filter.outputs.sdk || steps.outputs.filter.outputs.dispatcher || steps.filter.outputs.functional_tests }}
         run:  coverage xml
 
       - name: Upload report to Codecov
