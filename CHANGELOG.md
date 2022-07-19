@@ -7,12 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## [0.128.0] - 2022-07-11
-
-### Added
-
-- New tutorial 
-
 ### Docs
 
 -New tutorial demonstrating how to solve the MaxCut Problem with QAOA and Covalent
