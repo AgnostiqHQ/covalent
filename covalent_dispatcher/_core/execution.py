@@ -476,9 +476,13 @@ def _update_node_result(lock, result_object, node_result, pending_deps, tasks_qu
         assert False
 
 
-def _task_callback_real(fut, lock, result_object, pending_deps, tasks_queue):
-    node_result = fut.result()
+def _run_task_and_update(run_task_callable, lock, result_object, pending_deps, tasks_queue):
+    node_result = run_task_callable()
+
+    # NOTE: This is a blocking operation because of db writes and needs special handling when
+    # we switch to an event loop for processing tasks
     _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+    return node_result
 
 
 def _initialize_deps_and_queue(
@@ -522,17 +526,10 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     lock = Lock()
     task_futures: list = []
 
-    task_callback = partial(
-        _task_callback_real,
-        lock=lock,
-        result_object=result_object,
-        pending_deps=pending_deps,
-        tasks_queue=tasks_queue,
-    )
-
     app_log.debug(
         f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
     )
+
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
@@ -668,8 +665,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
         app_log.debug(f"Submitting task {node_id} to executor")
 
-        # Add the task generated for the node to the list of tasks
-        future = thread_pool.submit(
+        run_task_callable = partial(
             _run_task,
             node_id=node_id,
             dispatch_id=result_object.dispatch_id,
@@ -684,7 +680,15 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             workflow_executor=post_processor,
         )
 
-        future.add_done_callback(task_callback)
+        # Add the task generated for the node to the list of tasks
+        future = thread_pool.submit(
+            _run_task_and_update,
+            run_task_callable=run_task_callable,
+            lock=lock,
+            result_object=result_object,
+            pending_deps=pending_deps,
+            tasks_queue=tasks_queue,
+        )
 
         task_futures.append(future)
 
