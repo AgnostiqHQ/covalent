@@ -481,6 +481,26 @@ def _task_callback_real(fut, lock, result_object, pending_deps, tasks_queue):
     _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
 
 
+def _initialize_deps_and_queue(
+    result_object: Result, tasks_queue: Queue, pending_deps: dict
+) -> int:
+    """Initialize the data structures controlling when tasks are queued for execution.
+
+    Returns the total number of nodes in the transport graph."""
+
+    num_tasks = 0
+    g = result_object.lattice.transport_graph._graph
+    for node_id, d in g.in_degree():
+        app_log.debug(f"Node {node_id} has {d} parents")
+
+        pending_deps[node_id] = d
+        num_tasks += 1
+        if d == 0:
+            tasks_queue.put(node_id)
+
+    return num_tasks
+
+
 def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
     """
     Run the workflow in the topological order of their position on the
@@ -499,7 +519,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
     tasks_queue = Queue()
     pending_deps = {}
-    tasks_left = 0
     lock = Lock()
     task_futures: list = []
 
@@ -535,16 +554,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
     post_processor = [pp_executor, pp_executor_data]
 
-    g = result_object.lattice.transport_graph._graph
-    for node_id, d in g.in_degree():
-        app_log.debug(f"Node {node_id} has {d} parents")
-
-        pending_deps[node_id] = d
-        tasks_left += 1
-        if d == 0:
-            tasks_queue.put(node_id)
-
     db = DispatchDB()._get_data_store()
+    tasks_left = _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
 
     while tasks_left > 0:
         app_log.debug(f"{tasks_left} tasks left")

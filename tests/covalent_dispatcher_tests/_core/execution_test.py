@@ -40,6 +40,7 @@ from covalent_dispatcher._core.execution import (
     _handle_cancelled_node,
     _handle_completed_node,
     _handle_failed_node,
+    _initialize_deps_and_queue,
     _plan_workflow,
     _post_process,
     _run_planned_workflow,
@@ -522,9 +523,14 @@ def test_handle_cancelled_node(mocker):
     assert pending_deps == {0: 1, 1: 0, 2: 1}
 
 
-def test_initialize_queue_and_deps(mocker):
+def test_initialize_deps_and_queue(mocker):
     """Test internal function for initializing tasks_queue and pending_deps"""
     tasks_queue = Queue()
     pending_deps = {}
 
     result_object = get_mock_result()
+    num_tasks = _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
+
+    assert tasks_queue.get(timeout=1) == 1
+    assert pending_deps == {0: 1, 1: 0, 2: 1}
+    assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
