@@ -137,26 +137,49 @@ jobs:
             tests:
             - 'tests/*'
                
+      - name: Run SDK tests and measure coverage
+        working-directory: covalent
+        run: PYTHONPATH=$PWD/ pytest -vv tests/covalent_tests  --cov=covalent
 
-      - name: Run tests and measure coverage   
-        uses: nick-fields/retry@v2
-        with:
-            timeout_minutes: 30
-            max_attempts: 2
-            on_retry_command: rm -f ~/.config/covalent/covalent.conf
-            command: |
-              PYTHONPATH=$PWD/ pytest tests/covalent_tests -vv  --cov=covalent
-              PYTHONPATH=$PWD/ pytest tests/covalent_dispatcher_tests -vv  --cov=covalent_dispatcher
-              PYTHONPATH=$PWD/ pytest tests/functional_tests
+      - name: Run Dispatcher tests and measure coverage
+        working-directory: covalent_dispatcher
+        run: PYTHONPATH=$PWD/ pytest -vv tests/covalent_dispatcher_tests  --cov=covalent_dispatcher
+
+      - name: Run Functional tests and measure coverage
+        run: PYTHONPATH=$PWD/ pytest -vv tests/functional_tests  --cov=covalent
+
+      # - name: Run tests and measure coverage   
+      #   uses: nick-fields/retry@v2
+      #   with:
+      #       timeout_minutes: 30
+      #       max_attempts: 2
+      #       on_retry_command: rm -f ~/.config/covalent/covalent.conf
+      #       command: |
+      #         PYTHONPATH=$PWD/ pytest tests/covalent_tests -vv  --cov=covalent
+              
+      #         PYTHONPATH=$PWD/ pytest tests/functional_tests
             
-      - name: Generate coverage report
+      - name: Generate SDK coverage report
+        working-directory: covalent
         run:  coverage xml
+      
+      - name: Generate Dispatcher coverage report
+        working-directory: covalent_dispatcher
+        run: coverage xml
 
       - name: Upload report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-        uses: codecov/codecov-action@v2
-        with:
-          files: coverage.xml
+      if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+      uses: codecov/codecov-actions@v2
+      with:
+        files: covalent_dispatcher/coverage.xml, covalent/coverage.xml
+        flags: covalent_dispatcher, covalent
+      
+
+      # - name: Upload report to Codecov
+      #   if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+      #   uses: codecov/codecov-action@v2
+      #   with:
+      #     files: coverage.xml
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
