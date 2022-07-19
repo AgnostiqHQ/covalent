@@ -7,16 +7,16 @@ In order to dispatch lattice workflows for execution, the user needs to start th
 .. code-block:: sh
 
     $ covalent start
-    Covalent server has started at http://0.0.0.0:48008
+    Covalent server has started at http://localhost:48008
 
-.. note:: By default, the server port is set to `48008`. Users should navigate to http://0.0.0.0:48008 to view the browser-based UI.
+.. note:: By default, the server port is set to `48008`. Users should navigate to http://localhost:48008 to view the browser-based UI.
 
 The user can check the server status using the command below.
 
 .. code-block:: sh
 
     $ covalent status
-    Covalent server is running at http://0.0.0.0:48008.
+    Covalent server is running at http://localhost:48008.
 
 In order to stop the server, use the shell command below.
 
@@ -31,14 +31,14 @@ Covalent also lets the user stop and restart the server via:
 
     $ covalent restart
     Covalent server has stopped.
-    Covalent server has started at http://0.0.0.0:48008
+    Covalent server has started at http://localhost:48008
 
 Custom ports can be specified using the `--port` flag.
 
 .. code-block:: sh
 
     $ covalent start --port 5001
-    Covalent server has started at http://0.0.0.0:5001
+    Covalent server has started at http://localhost:5001
 
 It is important to note that the default port value can also be specified in the global config file as discussed in the :doc:`configuration customization<../config/customization>` how-to guide.
 
