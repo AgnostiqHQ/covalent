@@ -138,11 +138,9 @@ jobs:
             - 'tests/*'
                
       - name: Run SDK tests and measure coverage
-        working-directory: covalent
         run: PYTHONPATH=$PWD/ pytest -vv tests/covalent_tests  --cov=covalent
 
       - name: Run Dispatcher tests and measure coverage
-        working-directory: covalent_dispatcher
         run: PYTHONPATH=$PWD/ pytest -vv tests/covalent_dispatcher_tests  --cov=covalent_dispatcher
 
       - name: Run Functional tests and measure coverage
