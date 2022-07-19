@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 6141d0f38ddc
+Revision ID: b60c5ecdf927
 Revises:
-Create Date: 2022-07-19 16:06:59.928677
+Create Date: 2022-07-19 16:31:18.833092
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 # pragma: allowlist nextline secret
-revision = "6141d0f38ddc"
+revision = "b60c5ecdf927"
 # pragma: allowlist nextline secret
 down_revision = None
 branch_labels = None
@@ -29,8 +29,18 @@ def upgrade() -> None:
         sa.Column("parameter_type", sa.String(length=24), nullable=True),
         sa.Column("arg_index", sa.Integer(), nullable=True),
         sa.Column("is_active", sa.Boolean(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(), nullable=True),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(),
+            server_default=sa.text("(CURRENT_TIMESTAMP)"),
+            nullable=True,
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(),
+            server_default=sa.text("(CURRENT_TIMESTAMP)"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
@@ -52,8 +62,18 @@ def upgrade() -> None:
         sa.Column("results_filename", sa.Text(), nullable=True),
         sa.Column("transport_graph_filename", sa.Text(), nullable=True),
         sa.Column("is_active", sa.Boolean(), nullable=False),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(),
+            server_default=sa.text("(CURRENT_TIMESTAMP)"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(),
+            server_default=sa.text("(CURRENT_TIMESTAMP)"),
+            nullable=False,
+        ),
         sa.Column("started_at", sa.DateTime(), nullable=True),
         sa.Column("completed_at", sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
@@ -82,8 +102,18 @@ def upgrade() -> None:
         sa.Column("stderr_filename", sa.Text(), nullable=True),
         sa.Column("info_filename", sa.Text(), nullable=True),
         sa.Column("is_active", sa.Boolean(), nullable=False),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(),
+            server_default=sa.text("(CURRENT_TIMESTAMP)"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(),
+            server_default=sa.text("(CURRENT_TIMESTAMP)"),
+            nullable=False,
+        ),
         sa.Column("started_at", sa.DateTime(), nullable=True),
         sa.Column("completed_at", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
