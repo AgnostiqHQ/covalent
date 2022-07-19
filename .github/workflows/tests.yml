@@ -119,63 +119,37 @@ jobs:
 
       - name: Start Covalent dispatcher server
         run: covalent start
-    
-#      - uses: dorny/paths-filter@v2
-#        id: filter
-#        with:
-#          filters: |
-#            sdk:
-#              - 'covalent/'
-#            dispatcher:
-#              - 'covalent_dispatcher/'
-
-      - name: Run SDK tests and measure coverage
-        run: PYTHONPATH=$PWD/ pytest tests/covalent_tests --cov=covalent
-
-      - name: Generate coverage report for SDK
-      - name: Run tests and measure coverage
+        
+      - name: Run tests and measure coverage   
         uses: nick-fields/retry@v2
         with:
             timeout_minutes: 30
             max_attempts: 2
             on_retry_command: rm -f ~/.config/covalent/covalent.conf
-            command: |
-              PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher 
+            commands: |
+              PYTHONPATH=$PWD/ pytest tests/covalent_tests -vv  --cov=covalent
+              PYTHONPATH=$PWD/ pytest tests -vv  --cov=covalent_dispatcher
+              PYTHONPATH=$PWD/ pytest tests/functional_tests
 
       - name: Generate coverage report
-        run: coverage xml
-
-      - name: Run dispatcher tests and measure coverage
-        run: PYTHONPATH=$PWD/ pytest tests/covalent_dispatcher_tests --cov=covalent_dispatcher
-#
-      - name: Generate coverage report for dispatcher
-        run: coverage xml
-
-      - name: Run functional tests and measure coverage
-        run: PYTHONPATH=$PWD/ pytest tests/functional_tests
-
-      - name: Generate coverage report for functional tests
+        uses: dorny/paths-filter@v2
+        id: filter:
+        with:
+          filters:|
+            sdk:
+            - './covalent/'
+            dispatcher:
+            - './covalent_dispatcher/'
+            functional_tests:
+            - './tests/functional_tests' 
+        if: ${{steps.filters.sdk}} or ${{steps.filters.dispatcher}} or ${{steps.filters.functional_tests}}
         run:  coverage xml
-
-#      - name: Run tests and measure coverage
-#        uses: nick-fields/retry@v2
-#        with:
-#            timeout_minutes: 30
-#            max_attempts: 2
-#            on_retry_command: |
-#              covalent purge
-#              covalent start
-#            command: |
-#              PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher
-
-#      - name: Generate coverage report
-#        run: coverage xml
 
       - name: Upload report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v2
         with:
-          files: covalent/coverage.xml
+          files: [covalent/coverage.xml, covalent_dispatcher/coverage.xml]
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
