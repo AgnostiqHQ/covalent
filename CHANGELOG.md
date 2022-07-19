@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Added workflow to stale and close pull requests
+
 ### Docs
 
 - Adding quantum ensemble tutorial
