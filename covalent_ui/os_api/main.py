@@ -39,10 +39,87 @@ ROUTE_WEBAPP_PATH = "/webapp/build"
 app = FastAPI()
 user = os.getlogin()
 
+# app.mount(ROUTE_WEBAPP_PATH, StaticFiles(directory=WEBAPP_PATH), name="webapp")
+# origins = [
+#     "*",
+# ]
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
+
+# @app.exception_handler(RequestValidationError)
+# async def validation_exception_handler(request: Request, exc: RequestValidationError):
+#     message = []
+#     errors = exc.errors()
+#     for d in errors:
+#         message.append(d["msg"])
+#     return JSONResponse(
+#         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+#         content=jsonable_encoder({"errors": message}),
+#     )
+
+
+# @app.on_event("startup")
+# async def app_init():
+#     """app init"""
+#     app.include_router(routes.routes, prefix="/api/v1")
+
+
+# # socket
+
+
+# sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
+# socketio_app = socketio.ASGIApp(sio, app)
+
+
+# @sio.event
+# def connect():
+#     print("connect ")
+
+
+# @sio.on("message")
+# async def chat_message(data):
+#     print("message ", data)
+#     await sio.emit("response", "hi " + data)
+
+
+# @sio.event
+# def disconnect():
+#     print("disconnect ")
+
+
+sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
+
+socketio_app = socketio.ASGIApp(sio, app)
+
+
+@sio.event
+def connect(sid, environ):
+    print("connect ", sid)
+
+
+@sio.on("message")
+async def chat_message(sid, data):
+    print("message ", data)
+    await sio.emit("draw-request", "hi ")
+
+
+@sio.event
+def disconnect(sid):
+    print("disconnect ", sid)
+
+
 app.mount(ROUTE_WEBAPP_PATH, StaticFiles(directory=WEBAPP_PATH), name="webapp")
 origins = [
     "*",
 ]
+app.include_router(routes.routes, prefix="/api/v1")
 
 app.add_middleware(
     CORSMiddleware,
@@ -63,35 +140,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content=jsonable_encoder({"errors": message}),
     )
-
-
-@app.on_event("startup")
-async def app_init():
-    """app init"""
-    app.include_router(routes.routes, prefix="/api/v1")
-
-
-# socket
-
-
-sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
-socketio_app = socketio.ASGIApp(sio, app)
-
-
-@sio.event
-def connect():
-    print("connect ")
-
-
-@sio.on("message")
-async def chat_message(data):
-    print("message ", data)
-    await sio.emit("response", "hi " + data)
-
-
-@sio.event
-def disconnect():
-    print("disconnect ")
 
 
 @app.post(WEBHOOK_PATH)
@@ -131,4 +179,4 @@ if __name__ == "__main__":
     # reload = True if args.develop is True else False
     RELOAD = True
 
-    uvicorn.run("main:app", debug=DEBUG, host="0.0.0.0", reload=RELOAD, port=8000)
+    uvicorn.run("main:socketio_app", debug=DEBUG, host="0.0.0.0", reload=RELOAD, port=8000)
