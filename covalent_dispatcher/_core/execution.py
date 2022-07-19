@@ -446,6 +446,7 @@ def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue
     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
     result_webhook.send_update(result_object)
+    tasks_queue.put(-1)
 
 
 def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
