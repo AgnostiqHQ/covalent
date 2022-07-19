@@ -131,17 +131,19 @@ jobs:
               PYTHONPATH=$PWD/ pytest tests -vv  --cov=covalent_dispatcher
               PYTHONPATH=$PWD/ pytest tests/functional_tests
 
-      - name: Generate coverage report
+      - name: Filtering paths
         uses: dorny/paths-filter@v2
-        id: filter:
+        id: filter
         with:
-          filters:|
+          filters:  |
             sdk:
-            - './covalent/'
+              - './covalent/'
             dispatcher:
             - './covalent_dispatcher/'
             functional_tests:
             - './tests/functional_tests' 
+            
+      - name: Generate coverage report
         if: ${{steps.filters.sdk}} or ${{steps.filters.dispatcher}} or ${{steps.filters.functional_tests}}
         run:  coverage xml
 
@@ -149,7 +151,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v2
         with:
-          files: [covalent/coverage.xml, covalent_dispatcher/coverage.xml]
+          files: covalent/coverage.xml, covalent_dispatcher/coverage.xml
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
