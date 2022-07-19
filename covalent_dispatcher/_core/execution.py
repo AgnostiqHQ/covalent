@@ -574,23 +574,15 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             app_log.warning(f"7C: Node output: {output} (run_planned_workflow).")
             app_log.warning("8: Starting update node (run_planned_workflow).")
 
-            try:
-                node_result = {
-                    "node_id": node_id,
-                    "start_time": datetime.now(timezone.utc),
-                    "end_time": datetime.now(timezone.utc),
-                    "status": Result.COMPLETED,
-                    "output": output,
-                }
-                _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
-                app_log.warning("8A: Update node success (run_planned_workflow).")
-                continue
-
-            except Exception as ex:
-                app_log.exception("Caught exception")
-                app_log.warning("8B: Update node fail (run_planned_workflow).")
-
-                raise ex
+            node_result = {
+                "node_id": node_id,
+                "start_time": datetime.now(timezone.utc),
+                "end_time": datetime.now(timezone.utc),
+                "status": Result.COMPLETED,
+                "output": output,
+            }
+            _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+            app_log.warning("8A: Update node success (run_planned_workflow).")
 
             continue
 
@@ -603,17 +595,13 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             node_id, "function"
         )
 
-        try:
-            selected_executor = result_object.lattice.transport_graph.get_node_value(
-                node_id, "metadata"
-            )["executor"]
+        selected_executor = result_object.lattice.transport_graph.get_node_value(
+            node_id, "metadata"
+        )["executor"]
 
-            selected_executor_data = result_object.lattice.transport_graph.get_node_value(
-                node_id, "metadata"
-            )["executor_data"]
-        except Exception as ex:
-            app_log.error(f"Exception when trying to extract executor: {ex}")
-            raise ex
+        selected_executor_data = result_object.lattice.transport_graph.get_node_value(
+            node_id, "metadata"
+        )["executor_data"]
 
         app_log.debug(f"Collecting deps for task {node_id}")
         try:
@@ -623,18 +611,13 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             app_log.error(f"Exception when trying to collect deps: {ex}")
             raise ex
 
-        try:
-            node_result = generate_node_result(
-                node_id=node_id,
-                start_time=start_time,
-                status=Result.RUNNING,
-            )
-            _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
-            app_log.warning("7: Updating nodes after deps (run_planned_workflow)")
-
-        except Exception as ex:
-            app_log.error(f"Error updating node {node_id}: {ex}")
-            raise ex
+        node_result = generate_node_result(
+            node_id=node_id,
+            start_time=start_time,
+            status=Result.RUNNING,
+        )
+        _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+        app_log.warning("7: Updating nodes after deps (run_planned_workflow)")
 
         app_log.debug(f"Submitting task {node_id} to executor")
 
@@ -814,6 +797,7 @@ def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExec
         result_object = _run_planned_workflow(result_object, tasks_pool)
 
     except Exception as ex:
+        app_log.error(f"Exception during _run_planned_workflow: {ex}")
         update_lattices_data(
             DispatchDB()._get_data_store(),
             dispatch_id,
