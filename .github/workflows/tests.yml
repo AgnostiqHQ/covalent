@@ -168,11 +168,11 @@ jobs:
         run: coverage xml
 
       - name: Upload report to Codecov
-      if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-      uses: codecov/codecov-actions@v2
-      with:
-        files: covalent_dispatcher/coverage.xml, covalent/coverage.xml
-        flags: covalent_dispatcher, covalent
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-actions@v2
+        with:
+          files: covalent_dispatcher/coverage.xml, covalent/coverage.xml
+          flags: covalent_dispatcher, covalent
       
 
       # - name: Upload report to Codecov
