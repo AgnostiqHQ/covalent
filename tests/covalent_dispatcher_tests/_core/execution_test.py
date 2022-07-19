@@ -23,6 +23,9 @@ Tests for the core functionality of the dispatcher.
 """
 
 
+from queue import Queue
+from threading import Lock
+
 import cloudpickle as pickle
 import pytest
 
@@ -36,7 +39,10 @@ from covalent_dispatcher._core.execution import (
     _get_task_inputs,
     _plan_workflow,
     _post_process,
+    _run_planned_workflow,
     _run_task,
+    _update_node_result,
+    generate_node_result,
 )
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -352,3 +358,35 @@ def test_run_task(mocker, sublattice_workflow):
         workflow_executor=["local", {}],
     )
     write_sublattice_electron_id_mock.assert_called_once()
+
+
+def test_update_failed_node(mocker):
+    """Check that update_node_result correctly invokes _handle_failed_node"""
+
+    @ct.electron
+    def task(x):
+        assert False
+        return x
+
+    @ct.lattice(workflow_executor="client")
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph(5)
+
+    lock = Lock()
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
+    result_object = Result(received_workflow, "/tmp", "asdf")
+    mock_fail_handler = mocker.patch("covalent_dispatcher._core.execution._handle_failed_node")
+    mock_upsert_lattice = mocker.patch(
+        "covalent._results_manager.result.Result.upsert_lattice_data"
+    )
+    mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
+
+    node_result = {"node_id": 0, "status": Result.FAILED}
+    _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+
+    assert mock_fail_handler.called_once()
