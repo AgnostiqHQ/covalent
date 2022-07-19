@@ -29,7 +29,7 @@ import {
   useLocation
 } from 'react-router-dom'
 import './App.css'
-import Dashboard from './components/Dashboard'
+import Dashboard from './components/dashboard/Dashboard'
 import socket from './utils/socket'
 import { fetchResult } from './redux/resultsSlice'
 import { setLattice } from './redux/latticePreviewSlice'
