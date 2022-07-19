@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Ensure that the files uploaded are not `TransportableObjects` when they're stored in the Database.
+- Ensure that when the files are loaded, they're converted to `TransportableObjects`.
+
 ## [0.139.1] - 2022-07-19
 
 ### Authors
