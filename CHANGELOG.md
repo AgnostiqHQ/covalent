@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- `electron_num`, `completed_electron_num` fields to the Lattice table.
+
 ## [0.141.0] - 2022-07-19
 
 ### Authors
