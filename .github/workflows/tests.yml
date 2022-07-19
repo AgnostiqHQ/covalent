@@ -156,18 +156,10 @@ jobs:
       #         PYTHONPATH=$PWD/ pytest tests/covalent_tests -vv  --cov=covalent
               
       #         PYTHONPATH=$PWD/ pytest tests/functional_tests
-            
-      - name: Generate SDK coverage report
-        working-directory: covalent
-        run:  coverage xml
-      
-      - name: Generate Dispatcher coverage report
-        working-directory: covalent_dispatcher
-        run: coverage xml
 
       - name: Upload report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           files: covalent_dispatcher/coverage.xml, covalent/coverage.xml
           flags: covalent_dispatcher, covalent
