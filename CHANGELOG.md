@@ -19,6 +19,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Adding a RTD tutorial/steps on creating a custom executor
+
+## [0.138.0] - 2022-07-19
+
+### Authors
+
+- Anna Hughes <annagwen42@gmail.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Docker build workflow
+
+### Changed
+
+- Dockerfile uses multi-stage build
+
+### Docs
+
 - New tutorial demonstrating how to solve the MaxCut Problem with QAOA and Covalent
 
 ## [0.137.0] - 2022-07-19
@@ -37,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Changed API socket calls interval for graph optimization.
+
 ### Tests
 
 - Disabled several dask functional tests
