@@ -52,10 +52,25 @@ class MissingElectronRecordError(Exception):
     pass
 
 
+def update_lattice_completed_electron_num(db: DataStore, dispatch_id: str) -> None:
+    """Update the number of completed electrons by one corresponding to a lattice."""
+
+    with Session(db.engine) as session:
+        session.query(Lattice).filter_by(dispatch_id=dispatch_id).update(
+            {
+                "completed_electron_num": Lattice.completed_electron_num + 1,
+                "updated_at": dt.now(timezone.utc),
+            }
+        )
+        session.commit()
+
+
 def insert_lattices_data(
     db: DataStore,
     dispatch_id: str,
     name: str,
+    electron_num: int,
+    completed_electron_num: int,
     status: str,
     storage_type: str,
     storage_path: str,
@@ -77,6 +92,8 @@ def insert_lattices_data(
         dispatch_id=dispatch_id,
         name=name,
         status=status,
+        electron_num=electron_num,
+        completed_electron_num=completed_electron_num,
         storage_type=storage_type,
         storage_path=storage_path,
         function_filename=function_filename,
@@ -232,7 +249,6 @@ def update_lattices_data(db: DataStore, dispatch_id: str, **kwargs) -> None:
                 setattr(valid_update, attr, value)
 
         session.add(valid_update)
-
         session.commit()
 
 

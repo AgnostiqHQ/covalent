@@ -41,6 +41,8 @@ Advanced
      - :doc:`Training quantum embedding kernels for classification<./machine_learning/quantum_embedding_kernel>`
    * - Quantum Optimization
      - :doc:`Using QAOA to Solve the Max-Cut Problem<./machine_learning/qaoa_maxcut>`
+   * - Machine Learning
+     - :doc:`Quantum Ensemble Classification<./machine_learning/Ensemble_pennylane>`
    * - Astronomy
      - :doc:`Tracking stars in the night sky<./astronomy/star_tracker>`
    * - Quantum Gravity
@@ -49,3 +51,7 @@ Advanced
 ---------------------------------
 
 Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.  To get started, check out the :doc:`guide <tutorial_guide>`.
+
+.. Hidden tutorials:
+   * - Machine Learning
+     - :doc:`Comparison of kernel-based and variational circuit learning algorithms<./machine_learning/Kernel_pennylane>`

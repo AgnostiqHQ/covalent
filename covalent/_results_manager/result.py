@@ -45,6 +45,7 @@ from .write_result_to_db import (
     insert_electrons_data,
     insert_lattices_data,
     update_electrons_data,
+    update_lattice_completed_electron_num,
     update_lattices_data,
 )
 
@@ -125,6 +126,8 @@ class Result:
         self._status = Result.NEW_OBJ
 
         self._result = TransportableObject(None)
+
+        self._num_nodes = -1
 
         self._inputs = {"args": [], "kwargs": {}}
         if lattice.args:
@@ -652,8 +655,10 @@ Node Outputs
             with open(node_path / ELECTRON_STDERR_FILENAME, "wb") as f:
                 cloudpickle.dump(stderr, f)
 
-        with Session(db.engine) as session:
+        if str(status) == "COMPLETED":
+            update_lattice_completed_electron_num(db, self.dispatch_id)
 
+        with Session(db.engine) as session:
             lattice_id = (
                 session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
@@ -761,6 +766,8 @@ Node Outputs
                 "dispatch_id": self.dispatch_id,
                 "status": str(self.status),
                 "name": self.lattice.__name__,
+                "electron_num": self._num_nodes,
+                "completed_electron_num": 0,  # None of the nodes have been executed or completed yet.
                 "storage_path": str(data_storage_path),
                 "storage_type": LATTICE_STORAGE_TYPE,
                 "function_filename": LATTICE_FUNCTION_FILENAME,
@@ -779,7 +786,6 @@ Node Outputs
 
         else:
             lattice_record_kwarg = {
-                # TODO - Include logic for electron_id in sublattice context
                 "dispatch_id": self.dispatch_id,
                 "status": str(self.status),
                 "updated_at": datetime.now(timezone.utc),
