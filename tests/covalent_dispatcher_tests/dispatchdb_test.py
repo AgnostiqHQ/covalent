@@ -43,61 +43,11 @@ def check(a, b):
     return identity(a=result1)
 
 
-def test_insert():
-    """
-    Test db insert
-    """
-
-    with DispatchDB(":memory:") as db:
-
-        res = Result(check, "/home/test/results", "asdf")
-        db.upsert("asdf", res)
-        res = Result(check, "/home/test/results", "jklm")
-        db.upsert("jklm", res)
-        res = db.get(["asdf", "jklm"])
-
-    assert len(res) == 2
-
-
-def test_get():
-    """
-    Test db get
-    """
-
-    with DispatchDB(":memory:") as db:
-        res = db.get(["asdf"])
-
-    assert len(res) == 0
-
-
-def test_update():
-    """
-    Test db update
-    """
+def test_save_db(mocker):
+    """Test the db save method."""
 
     with DispatchDB(":memory:") as db:
         res = Result(check, "/home/test/results", "asdf")
-        db.upsert("asdf", res)
-
-        res._status = Result.COMPLETED
-        db.upsert("asdf", res)
-        res = db.get(["asdf"])[0]
-
-    assert simplejson.loads(res[1])["status"] == "COMPLETED"
-
-
-def test_delete():
-    """
-    Test db delete
-    """
-
-    with DispatchDB(":memory:") as db:
-
-        res = Result(check, "/home/test/results", "asdf")
-        db.upsert("asdf", res)
-        res = Result(check, "/home/test/results", "jklm")
-        db.upsert("asdf", res)
-
-        db.delete(["asdf", "jklm"])
-        res = db.get([])
-    assert len(res) == 0
+        persist_mock = mocker.patch("covalent._results_manager.result.Result.persist")
+        db.save_db(result_object=res)
+        persist_mock.assert_called_once()

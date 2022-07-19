@@ -20,6 +20,8 @@ Beginner
      - :doc:`MNIST classifier<./machine_learning/mnist_classifier>`
    * - Machine learning
      - :doc:`Using Covalent with PennyLane for hybrid computation<./machine_learning/pennylane_hybrid>`
+   * - Machine learning
+     - :doc:`Linear and convolutional autoencoders<./machine_learning/autoencoders>`
 
 ~~~~~~~~
 Advanced
@@ -35,8 +37,12 @@ Advanced
      - :doc:`Simulating the Nitrogen-Copper interaction<./quantum_chemistry/nitrogen_copper_interaction>`
    * - Machine Learning
      - :doc:`Classical and quantum support vector machines<./machine_learning/classical_quantum_svm>`
-   * - Machine learning
+   * - Machine Learning
      - :doc:`Training quantum embedding kernels for classification<./machine_learning/quantum_embedding_kernel>`
+   * - Quantum Optimization
+     - :doc:`Using QAOA to Solve the Max-Cut Problem<./machine_learning/qaoa_maxcut>`
+   * - Machine Learning
+     - :doc:`Quantum Ensemble Classification<./machine_learning/Ensemble_pennylane>`
    * - Astronomy
      - :doc:`Tracking stars in the night sky<./astronomy/star_tracker>`
    * - Quantum Gravity

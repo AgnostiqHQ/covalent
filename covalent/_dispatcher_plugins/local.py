@@ -29,6 +29,7 @@ from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
+from .._workflow.transport import TransportableObject
 from .base import BaseDispatcher
 
 
@@ -78,13 +79,12 @@ class LocalDispatcher(BaseDispatcher):
 
             lattice.build_graph(*args, **kwargs)
 
-            # Serializing the transport graph and then passing it to the Result object
-            lattice.transport_graph = lattice.transport_graph.serialize()
+            # Serialize the transport graph to JSON
+            json_lattice = lattice.serialize_to_json()
 
-            pickled_res = pickle.dumps(Result(lattice, lattice.metadata["results_dir"]))
             test_url = f"http://{dispatcher_addr}/api/submit"
 
-            r = requests.post(test_url, data=pickled_res)
+            r = requests.post(test_url, data=json_lattice)
             r.raise_for_status()
             return r.content.decode("utf-8").strip().replace('"', "")
 
@@ -128,7 +128,6 @@ class LocalDispatcher(BaseDispatcher):
 
             return get_result(
                 LocalDispatcher.dispatch(lattice, dispatcher_addr)(*args, **kwargs),
-                lattice.metadata["results_dir"],
                 wait=True,
             )
 

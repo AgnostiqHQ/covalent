@@ -49,7 +49,7 @@ _DEFAULT_CONFIG = {
         + "/covalent/executor_plugins",
     },
     "dispatcher": {
-        "address": "0.0.0.0",
+        "address": "localhost",
         "port": 48008,
         "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
@@ -63,8 +63,15 @@ _DEFAULT_CONFIG = {
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
     },
+    "workflow_data": {
+        "db_path": (os.environ.get("XDG_DATA_HOME"))
+        or (os.environ["HOME"] + "/.local/share") + "/covalent/workflow_db.sqlite",
+        "storage_type": "local",
+        "base_dir": (os.environ.get("XDG_DATA_HOME"))
+        or (os.environ["HOME"] + "/.local/share") + "/covalent/workflow_data",
+    },
     "user_interface": {
-        "address": "0.0.0.0",
+        "address": "localhost",
         "port": 48008,
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
@@ -102,6 +109,11 @@ def set_executor() -> dict:
 # Going forward we may only want to return the executor field of DEFAULT_CONSTRAINT_VALUES
 # The rest of those parameters will now be in this dictionary
 _DEFAULT_CONSTRAINT_VALUES = set_executor()
+_DEFAULT_CONSTRAINT_VALUES["deps"] = {}
+_DEFAULT_CONSTRAINT_VALUES["call_before"] = []
+_DEFAULT_CONSTRAINT_VALUES["call_after"] = []
+_DEFAULT_CONSTRAINT_VALUES["workflow_executor"] = _DEFAULT_CONSTRAINT_VALUES["executor"]
+
 _DEFAULT_CONSTRAINTS_DEPRECATED = {
     "schedule": False,
     "num_cpu": 1,
@@ -115,3 +127,5 @@ _DEFAULT_CONSTRAINTS_DEPRECATED = {
     "budget": 0,
     "conda_env": "",
 }
+
+WAIT_EDGE_NAME = "!waiting_edge"

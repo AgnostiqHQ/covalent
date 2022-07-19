@@ -38,7 +38,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import DispatchInfo
 from covalent._workflow.transport import TransportableObject
-from covalent.executor import BaseExecutor
+from covalent.executor import BaseExecutor, wrapper_fn
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 executor_plugin_name = "DaskExecutor"
@@ -76,7 +76,12 @@ class DaskExecutor(BaseExecutor):
             )
 
         if scheduler_address == "":
-            scheduler_address = get_config("dask.scheduler_address")
+            try:
+                scheduler_address = get_config("dask.scheduler_address")
+            except KeyError as ex:
+                app_log.debug(
+                    "No dask scheduler address found in config. Address must be set manually."
+                )
 
         super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
 
@@ -87,6 +92,8 @@ class DaskExecutor(BaseExecutor):
         function: TransportableObject,
         args: List,
         kwargs: Dict,
+        call_before: List,
+        call_after: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
@@ -111,8 +118,12 @@ class DaskExecutor(BaseExecutor):
         dask_client = get_client(address=self.scheduler_address, timeout=1)
 
         dispatch_info = DispatchInfo(dispatch_id)
-        fn = function.get_deserialized()
+
         fn_version = function.python_version
+
+        new_args = [function, call_before, call_after]
+        for arg in args:
+            new_args.append(arg)
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()
@@ -122,9 +133,9 @@ class DaskExecutor(BaseExecutor):
                 result = None
 
                 result = self.execute_in_conda_env(
-                    fn,
+                    wrapper_fn,
                     fn_version,
-                    args,
+                    new_args,
                     kwargs,
                     self.conda_env,
                     self.cache_dir,
@@ -132,7 +143,7 @@ class DaskExecutor(BaseExecutor):
                 )
 
             else:
-                future = dask_client.submit(fn, *args, **kwargs)
+                future = dask_client.submit(wrapper_fn, *new_args, **kwargs)
                 result = future.result()
 
         self.write_streams_to_file(

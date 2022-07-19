@@ -40,6 +40,53 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
+def wrapper_fn(
+    function: TransportableObject,
+    call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
+    call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
+    *args,
+    **kwargs,
+):
+    """Wrapper for serialized callable.
+
+    Execute preparatory shell commands before deserializing and
+    running the callable. This is the actual function to be sent to
+    the various executors.
+
+    """
+
+    cb_retvals = {}
+    for tup in call_before:
+        serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
+        cb_fn = serialized_fn.get_deserialized()
+        cb_args = serialized_args.get_deserialized()
+        cb_kwargs = serialized_kwargs.get_deserialized()
+        retval = cb_fn(*cb_args, **cb_kwargs)
+        if retval_key:
+            cb_retvals[retval_key] = retval
+
+    fn = function.get_deserialized()
+
+    new_args = [arg.get_deserialized() for arg in args]
+
+    new_kwargs = {k: v.get_deserialized() for k, v in kwargs.items()}
+
+    # Inject return values into kwargs
+    for key, val in cb_retvals.items():
+        new_kwargs[key] = val
+
+    output = fn(*new_args, **new_kwargs)
+
+    for tup in call_after:
+        serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
+        ca_fn = serialized_fn.get_deserialized()
+        ca_args = serialized_args.get_deserialized()
+        ca_kwargs = serialized_kwargs.get_deserialized()
+        ca_fn(*ca_args, **ca_kwargs)
+
+    return TransportableObject(output)
+
+
 class BaseExecutor(ABC):
     """
     Base executor class to be used for defining any executor
@@ -121,12 +168,41 @@ class BaseExecutor(ABC):
             else:
                 print(ss)
 
+    def short_name(self):
+        module = self.__module__
+        return self.__module__.split("/")[-1].split(".")[-1]
+
+    def to_dict(self) -> dict:
+        """Return a JSON-serializable dictionary representation of self"""
+        return {
+            "type": str(self.__class__),
+            "short_name": self.short_name(),
+            "attributes": self.__dict__.copy(),
+        }
+
+    def from_dict(self, object_dict: dict) -> "BaseExecutor":
+        """Rehydrate a dictionary representation
+
+        Args:
+            object_dict: a dictionary representation returned by `to_dict`
+
+        Returns:
+            self
+
+        Instance attributes will be overwritten.
+        """
+        if object_dict:
+            self.__dict__ = object_dict["attributes"]
+        return self
+
     @abstractmethod
     async def execute(
         self,
         function: TransportableObject,
         args: List,
         kwargs: Dict,
+        call_before: List,
+        call_after: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,

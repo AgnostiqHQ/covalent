@@ -177,12 +177,12 @@ jobs:
           fi
           VERSION="$(echo $VERSION | sed 's/-/.post/')"
           cd dist
-          tar xzf cova-${VERSION}.tar.gz
-          diff -r cova-${VERSION}/covalent ../covalent
-          diff -r cova-${VERSION}/covalent_dispatcher ../covalent_dispatcher
-          diff -x README.md -x webapp cova-${VERSION}/covalent_ui ../covalent_ui 
-          diff -r cova-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
-          rm -rf cova-${VERSION}/
+          tar xzf covalent-${VERSION}.tar.gz
+          diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
+          diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
+          diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
+          rm -rf covalent-${VERSION}/
       - name: Upload Distribution
         if: >
           steps.pre-build.outcome == 'success'

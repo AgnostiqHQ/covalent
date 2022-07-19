@@ -1,0 +1,71 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+# 
+# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any 
+# modifications or derivative works of this file must retain this copyright 
+# notice, and modified files must contain a notice indicating that they have 
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+# XML files
+*.xml
+
+# mac
+**/.DS_Store
+**/.idea
+
+# Visual Studio
+*.vscode
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+**.pytest_cache/**
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+*.python-version
+
+# PEP 582
+__pypackages__/
+
+# Environments
+*.ini
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/*.
+.env
+
+# Shared libraries
+*.so
+
+# Distribution / packaging
+develop-eggs/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+
+# Coverage
+.coverage
+
+# Temporary files
+*_scratch.py
