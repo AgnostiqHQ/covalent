@@ -37,6 +37,7 @@ from covalent._results_manager.write_result_to_db import (
     insert_electrons_data,
     insert_lattices_data,
     update_electrons_data,
+    update_lattice_completed_electron_num,
     update_lattices_data,
     write_sublattice_electron_id,
 )
@@ -109,6 +110,8 @@ def get_lattice_kwargs(
     dispatch_id="dispatch_1",
     name="workflow_1",
     status="RUNNING",
+    electron_num=6,
+    completed_electron_num=0,
     storage_type=STORAGE_TYPE,
     storage_path="results/dispatch_1/",
     function_filename=FUNCTION_FILENAME,
@@ -129,6 +132,8 @@ def get_lattice_kwargs(
         "dispatch_id": dispatch_id,
         "name": name,
         "status": status,
+        "electron_num": electron_num,
+        "completed_electron_num": completed_electron_num,
         "storage_type": storage_type,
         "storage_path": storage_path,
         "function_filename": function_filename,
@@ -201,6 +206,20 @@ def get_electron_kwargs(
     }
 
 
+def test_update_lattice_completed_electron_num(db):
+    """Test the funtion used to update the number of completed electrons for a lattice by 1."""
+
+    cur_time = dt.now(timezone.utc)
+    insert_lattices_data(
+        db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
+    update_lattice_completed_electron_num(db=db, dispatch_id="dispatch_1")
+
+    with Session(db.engine) as session:
+        lat_record = session.query(Lattice).filter_by(dispatch_id="dispatch_1").first()
+    assert lat_record.completed_electron_num == 1
+
+
 def test_insert_lattices_data(db):
     """Test the function that inserts the lattices data in the DB."""
 
@@ -247,6 +266,8 @@ def test_insert_lattices_data(db):
         )
         assert lattice.completed_at is None
         assert lattice.is_active
+        assert isinstance(lattice.electron_num, int)
+        assert isinstance(lattice.completed_electron_num, int)
 
         with Session(db.engine) as session:
             rows = session.query(Lattice).where(Lattice.dispatch_id == "dispatch_3").all()
@@ -388,6 +409,7 @@ def test_update_lattices_data(db):
         db=db,
         dispatch_id="dispatch_1",
         status="COMPLETED",
+        completed_electron_num=5,
         updated_at=cur_time,
         completed_at=cur_time,
     )
@@ -404,6 +426,7 @@ def test_update_lattices_data(db):
             == lattice.started_at.strftime("%m/%d/%Y, %H:%M:%S")
         )
         assert lattice.id == 1
+        assert lattice.completed_electron_num == 5
 
 
 def test_update_electrons_data(db):
