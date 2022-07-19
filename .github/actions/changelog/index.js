@@ -21,7 +21,7 @@ const check_author = (author, authors) => {
 
 const get_author = (commit, authors) => {
   let output = "";
-  if (commit.author.type === "User") {
+  if (commit.author && commit.author.type === "User") {
     output += check_author(commit.commit.author, authors);
     const coauthors = commit.commit.message.match(/Co-authored-by:.+<.+@.+>/g);
     for (author in coauthors) {

@@ -57,7 +57,7 @@ def get_unique_id() -> str:
 
 
 def run_dispatcher(
-    result_object: Result, workflow_pool: ThreadPoolExecutor, tasks_pool: ThreadPoolExecutor
+    json_lattice: str, workflow_pool: ThreadPoolExecutor, tasks_pool: ThreadPoolExecutor
 ) -> str:
     """
     Run the dispatcher from the lattice asynchronously using Dask.
@@ -65,35 +65,24 @@ def run_dispatcher(
     Also save the result in this initial stage to the file mentioned in the result object.
 
     Args:
-        result_object: A Result object containing necessary information for the dispatcher
-                       to execute the workflow.
+        json_lattice: A JSON-serialized lattice
 
     Returns:
         dispatch_id: A string containing the dispatch id of current dispatch.
     """
 
-    if not result_object.dispatch_id:
-        dispatch_id = get_unique_id()
-        result_object._dispatch_id = dispatch_id
-
-    transport_graph = _TransportGraph()
-    transport_graph.deserialize(result_object.lattice.transport_graph)
-    result_object._lattice.transport_graph = transport_graph
-
-    result_object._initialize_nodes()
-
-    DispatchDB().save_db(result_object)
-
+    dispatch_id = get_unique_id()
     from ._core import run_workflow
 
     futures[dispatch_id] = workflow_pool.submit(
-        run_workflow, result_object.dispatch_id, result_object.results_dir, tasks_pool
+        run_workflow, dispatch_id, json_lattice, tasks_pool
     )
+    app_log.warning("0: Submitted lattice JSON to run_workflow.")
 
     return dispatch_id
 
 
-def get_result(dispatch_id: str, results_dir: str, wait: bool) -> Result:
+def get_result(dispatch_id: str, wait: bool) -> Result:
     """
     Return the results of the dispatcher.
 
@@ -106,7 +95,7 @@ def get_result(dispatch_id: str, results_dir: str, wait: bool) -> Result:
         result: Result object containing the results of the said dispatch.
     """
 
-    return rm._get_result_from_file(dispatch_id, results_dir, wait)
+    return rm._get_result_from_db(DispatchDB()._get_data_store(), dispatch_id, wait)
 
 
 def cancel_running_dispatch(dispatch_id: str) -> None:

@@ -112,6 +112,7 @@ _DEFAULT_CONSTRAINT_VALUES = set_executor()
 _DEFAULT_CONSTRAINT_VALUES["deps"] = {}
 _DEFAULT_CONSTRAINT_VALUES["call_before"] = []
 _DEFAULT_CONSTRAINT_VALUES["call_after"] = []
+_DEFAULT_CONSTRAINT_VALUES["workflow_executor"] = _DEFAULT_CONSTRAINT_VALUES["executor"]
 
 _DEFAULT_CONSTRAINTS_DEPRECATED = {
     "schedule": False,
@@ -126,3 +127,5 @@ _DEFAULT_CONSTRAINTS_DEPRECATED = {
     "budget": 0,
     "conda_env": "",
 }
+
+WAIT_EDGE_NAME = "!waiting_edge"
