@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Modify the test and implementation logic of inserting the electron record with these new fields.
 
+### Docs
+
+- New tutorial demonstrating how to solve the MaxCut Problem with QAOA and Covalent
+
 ## [0.137.0] - 2022-07-19
 
 ### Authors
