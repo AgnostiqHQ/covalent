@@ -96,6 +96,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Columns `is_active` in the lattice, eLectron and Electron dependency tables.
 
+### Changed
+
+- get_result to query an HTTP endpoint instead of a DB session
+
 ### Docs
 
 - Adding a RTD tutorial/steps on creating a custom executor
@@ -142,10 +146,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 
 - Disabled several dask functional tests
-
-### Changed
-
-- get_result to query an HTTP endpoint instead of a DB session
 
 ## [0.136.0] - 2022-07-18
 
