@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Adding incomplete pennylane kernel tutorial
 - Adding quantum ensemble tutorial
 
 ## [0.140.0] - 2022-07-19
