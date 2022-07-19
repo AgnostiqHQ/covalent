@@ -567,27 +567,11 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
         app_log.warning(f"7A: Node name: {node_name} (run_planned_workflow).")
 
-        # Handle special node types
-        if node_name.startswith(
-            (subscript_prefix, generator_prefix, parameter_prefix, attr_prefix)
-        ):
-            app_log.warning("7B: Check generator, subscript etc. if (run_planned_workflow).")
-            if node_name.startswith(parameter_prefix):
-                app_log.warning("7C: Parameter if block (run_planned_workflow).")
-                output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
-                app_log.warning(f"7C: Node output: {output} (run_planned_workflow).")
-            else:
-                app_log.warning("7D: Not parameter else block (run_planned_workflow).")
-                try:
-                    parent = result_object.lattice.transport_graph.get_dependencies(node_id)[0]
-                    output = result_object.lattice.transport_graph.get_node_value(parent, "output")
-                    app_log.warning(f"7E: Node output: {output} (run_planned_workflow).")
-                except Exception:
-                    app_log.exception("Subscripted")
-
-                key = result_object.lattice.transport_graph.get_node_value(node_id, "key")
-                output = output[key]
-
+        # Handle parameter nodes
+        if node_name.startswith(parameter_prefix):
+            app_log.warning("7C: Parameter if block (run_planned_workflow).")
+            output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
+            app_log.warning(f"7C: Node output: {output} (run_planned_workflow).")
             app_log.warning("8: Starting update node (run_planned_workflow).")
 
             try:
