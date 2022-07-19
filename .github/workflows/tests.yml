@@ -161,15 +161,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v3
         with:
-          files: covalent_dispatcher/coverage.xml, covalent/coverage.xml
+          files: coverage.xml
           flags: covalent_dispatcher, covalent
-      
-
-      # - name: Upload report to Codecov
-      #   if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-      #   uses: codecov/codecov-action@v2
-      #   with:
-      #     files: coverage.xml
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
