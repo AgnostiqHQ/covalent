@@ -23,7 +23,7 @@
 import _ from 'lodash'
 import React, { useEffect } from 'react'
 import { Close } from '@mui/icons-material'
-import { useDispatch,useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   Box,
   Divider,
@@ -31,6 +31,7 @@ import {
   IconButton,
   Paper,
   Typography,
+  Skeleton,
 } from '@mui/material'
 import { useStoreActions } from 'react-flow-renderer'
 import { alpha } from '@mui/material/styles'
@@ -47,28 +48,70 @@ import Heading from '../common/Heading'
 import ErrorCard from './ErrorCard'
 import InputSection from './InputSection'
 import ExecutorSection from './ExecutorSection'
-import {electronDetails,electronInput,electronResult,electronExecutor,electronFunctionString,electronError} from '../../redux/electronSlice'
+import {
+  electronDetails,
+  electronInput,
+  electronResult,
+  electronExecutor,
+  electronFunctionString,
+  electronError,
+} from '../../redux/electronSlice'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node,dispatchId}) => {
+const NodeDrawer = ({ node, dispatchId }) => {
   const dispatch = useDispatch()
   const electronId = node !== undefined && node.node_id
-  const electronDetail = useSelector((state) => state.electronResults.electronList)
-  const electronInputResult = useSelector((state) => state.electronResults.electronInput)
-  const electronResultData = useSelector((state) => state.electronResults.electronResult)
-  const electronExecutorResult = useSelector((state) => state.electronResults.electronExecutor)
-  const electronFunctionResult = useSelector((state) => state.electronResults.electronFunctionString)
-  const electronErrorData = useSelector((state) => state.electronResults.electronError)
+  const electronDetail = useSelector(
+    (state) => state.electronResults.electronList
+  )
+  const electronInputResult = useSelector(
+    (state) => state.electronResults.electronInput
+  )
+  const electronResultData = useSelector(
+    (state) => state.electronResults.electronResult
+  )
+  const electronExecutorResult = useSelector(
+    (state) => state.electronResults.electronExecutor
+  )
+  const electronFunctionResult = useSelector(
+    (state) => state.electronResults.electronFunctionString
+  )
+  const electronErrorData = useSelector(
+    (state) => state.electronResults.electronError
+  )
+  const electronDetailIsFetching = useSelector(
+    (state) => state.electronResults.electronDetailsList.isFetching
+  )
+  const electronInputResultIsFetching = useSelector(
+    (state) => state.electronResults.electronInputList.isFetching
+  )
+  const electronResultDataIsFetching = useSelector(
+    (state) => state.electronResults.electronResultList.isFetching
+  )
+  const electronExecutorResultIsFetching = useSelector(
+    (state) => state.electronResults.electronExecutorList.isFetching
+  )
+  const electronFunctionResultIsFetching = useSelector(
+    (state) => state.electronResults.electronFunctionStringList.isFetching
+  )
 
   useEffect(() => {
-    if(!!node){
-        dispatch(electronDetails({electronId,dispatchId}))
-        dispatch(electronInput({dispatchId,electronId,params: 'inputs'}))
-        dispatch(electronResult({dispatchId,electronId,params: 'result'}))
-        dispatch(electronExecutor({dispatchId,electronId,params: 'executor_details'}))
-        dispatch(electronFunctionString({dispatchId,electronId,params: 'function_string'}))
-        dispatch(electronError({dispatchId,electronId,params: 'error'}))
+    if (!!node) {
+      dispatch(electronDetails({ electronId, dispatchId }))
+      dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
+      dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
+      dispatch(
+        electronExecutor({ dispatchId, electronId, params: 'executor_details' })
+      )
+      dispatch(
+        electronFunctionString({
+          dispatchId,
+          electronId,
+          params: 'function_string',
+        })
+      )
+      dispatch(electronError({ dispatchId, electronId, params: 'error' }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node])
@@ -110,9 +153,14 @@ const NodeDrawer = ({ node,dispatchId}) => {
               mb: 2,
             }}
           >
-            <Typography sx={{ color: '#A5A6F6', overflowWrap: 'anywhere' }}>
-              {electronDetail.name}
-            </Typography>
+            {electronDetailIsFetching ? (
+              <Skeleton width={150} />
+            ) : (
+              <Typography sx={{ color: '#A5A6F6', overflowWrap: 'anywhere' }}>
+                {electronDetail.name}
+              </Typography>
+            )}
+
             <Box>
               <IconButton onClick={handleClose}>
                 <Close />
@@ -124,40 +172,54 @@ const NodeDrawer = ({ node,dispatchId}) => {
           {electronDetail.status && (
             <>
               <Heading>Status</Heading>
-              <Box
-                sx={{
-                  mt: 1,
-                  color: statusColor(electronDetail.status),
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                {statusIcon(electronDetail.status)}
-                &nbsp;
-                {statusLabel(electronDetail.status)}
-              </Box>
+              {electronDetailIsFetching ? (
+                <Skeleton width={150} />
+              ) : (
+                <Box
+                  sx={{
+                    mt: 1,
+                    mb: 2,
+                    color: statusColor(electronDetail.status),
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  {statusIcon(electronDetail.status)}
+                  &nbsp;
+                  {statusLabel(electronDetail.status)}
+                </Box>
+              )}
             </>
           )}
 
           <ErrorCard error={electronErrorData.data} />
 
           {/* Description */}
-          {electronDetail.doc && (
-            <>
-              <Heading>Description</Heading>
-              <Typography fontSize="body2.fontSize" color ='text.tertiary'>{electronDetail.doc}</Typography>
-            </>
-          )}
+          {electronDetail.doc &&
+            (electronDetailIsFetching ? (
+              <Skeleton />
+            ) : (
+              <>
+                <Heading>Description</Heading>
+                <Typography fontSize="body2.fontSize" color="text.tertiary">
+                  {electronDetail.doc}
+                </Typography>
+              </>
+            ))}
 
           {/* Start/end times */}
 
           {hasStarted && (
             <>
               <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-              <Typography fontSize="body2.fontSize" color = 'text.tertiary'>
-                {formatDate(electronDetail.started_at)}
-                {hasEnded && ` - ${formatDate(electronDetail.ended_at)}`}
-              </Typography>
+              {electronDetailIsFetching ? (
+                <Skeleton />
+              ) : (
+                <Typography fontSize="body2.fontSize" color="text.tertiary">
+                  {formatDate(electronDetail.started_at)}
+                  {hasEnded && ` - ${formatDate(electronDetail.ended_at)}`}
+                </Typography>
+              )}
             </>
           )}
 
@@ -166,42 +228,76 @@ const NodeDrawer = ({ node,dispatchId}) => {
           {electronDetail.status && electronDetail.status !== 'NEW_OBJECT' && (
             <>
               <Heading>Runtime</Heading>
-              <Runtime
-                sx={(theme) =>({
-                  color:theme.palette.text.tertiary,
-                  fontSize: 'body2.fontSize'
-                })}
-                startTime={electronDetail.started_at}
-                endTime={electronDetail.ended_at}
-              />
+              {electronDetailIsFetching ? (
+                <Skeleton />
+              ) : (
+                <Runtime
+                  sx={(theme) => ({
+                    color: theme.palette.text.tertiary,
+                    fontSize: 'body2.fontSize',
+                  })}
+                  startTime={electronDetail.started_at}
+                  endTime={electronDetail.ended_at}
+                />
+              )}
             </>
           )}
 
           {/* Input */}
-          <InputSection inputs={electronInputResult.data}
-          sx={(theme) =>({ bgcolor: theme.palette.background.darkblackbg })}/>
+          <InputSection
+            inputs={electronInputResult.data}
+            sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
+            isFetching={electronInputResultIsFetching}
+          />
 
           {/* Result */}
           {electronDetail.status === 'COMPLETED' && (
             <>
               <Heading>Result</Heading>
-              <Paper elevation={0} sx={(theme) =>({ bgcolor: theme.palette.background.darkblackbg })}>
-                <SyntaxHighlighter language="python" src={electronResultData.data} />
-              </Paper>
+              {electronResultDataIsFetching ? (
+                <Skeleton sx={{ height: '80px' }} />
+              ) : (
+                <Paper
+                  elevation={0}
+                  sx={(theme) => ({
+                    bgcolor: theme.palette.background.darkblackbg,
+                  })}
+                >
+                  <SyntaxHighlighter
+                    language="python"
+                    src={electronResultData.data}
+                  />
+                </Paper>
+              )}
             </>
           )}
 
           {/* Executor */}
-          <ExecutorSection metadata={electronExecutorResult}
-           sx={(theme) =>({ bgcolor: theme.palette.background.darkblackbg })}/>
+          <ExecutorSection
+            metadata={electronExecutorResult}
+            sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
+            isFetching={electronExecutorResultIsFetching}
+          />
 
           <Divider sx={{ my: 2 }} />
 
           {/* Source */}
-          <Heading />
-          <Paper elevation={0} sx={(theme) =>({ bgcolor: theme.palette.background.darkblackbg })}>
-            <SyntaxHighlighter src={electronFunctionResult.data} />
-          </Paper>
+
+          {electronFunctionResultIsFetching ? (
+            <Skeleton sx={{ height: '100px' }} />
+          ) : (
+            <>
+              <Heading />
+              <Paper
+                elevation={0}
+                sx={(theme) => ({
+                  bgcolor: theme.palette.background.darkblackbg,
+                })}
+              >
+                <SyntaxHighlighter src={electronFunctionResult.data} />
+              </Paper>
+            </>
+          )}
         </>
       )}
     </Drawer>

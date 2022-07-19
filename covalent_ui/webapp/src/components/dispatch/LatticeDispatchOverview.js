@@ -19,8 +19,8 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-import { Divider, Paper, Tooltip, Typography } from '@mui/material'
-import { useSelector,useDispatch } from 'react-redux'
+import { Divider, Paper, Tooltip, Typography, Skeleton } from '@mui/material'
+import { useSelector, useDispatch } from 'react-redux'
 import React, { useEffect } from 'react'
 import { formatDate, truncateMiddle } from '../../utils/misc'
 import CopyButton from '../common/CopyButton'
@@ -29,22 +29,44 @@ import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
 import InputSection from '../common/InputSection'
 import ExecutorSection from '../common/ExecutorSection'
-import { latticeResults,latticeFunctionString,latticeInput,
-  latticeExecutorDetail} from '../../redux/latticeSlice'
+import {
+  latticeResults,
+  latticeFunctionString,
+  latticeInput,
+  latticeExecutorDetail,
+} from '../../redux/latticeSlice'
 
-const LatticeDispatchOverview = ({dispatchId,latDetails }) => {
+const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
   const result = latDetails
   const dispatch = useDispatch()
   const drawerInput = useSelector((state) => state.latticeResults.latticeInput)
-  const drawerResult = useSelector((state) => state.latticeResults.latticeResult)
-  const drawerFunctionString = useSelector((state) => state.latticeResults.latticeFunctionString)
-  const drawerExecutorDetail = useSelector((state) => state.latticeResults.latticeExecutorDetail)
+  const drawerInputListFetching = useSelector(
+    (state) => state.latticeResults.latticeInputList.isFetching
+  )
+  const drawerResult = useSelector(
+    (state) => state.latticeResults.latticeResult
+  )
+  const drawerResultListFetching = useSelector(
+    (state) => state.latticeResults.latticeResultsList.isFetching
+  )
+  const drawerFunctionString = useSelector(
+    (state) => state.latticeResults.latticeFunctionString
+  )
+  const drawerFunctionStringListFetching = useSelector(
+    (state) => state.latticeResults.latticeFunctionStringList.isFetching
+  )
+  const drawerExecutorDetail = useSelector(
+    (state) => state.latticeResults.latticeExecutorDetail
+  )
+  const drawerExecutorDetailListFetching = useSelector(
+    (state) => state.latticeResults.latticeExecutorDetailList.isFetching
+  )
 
   useEffect(() => {
-    dispatch(latticeResults({ dispatchId , params : 'result'}))
-    dispatch(latticeFunctionString({dispatchId,params:'function_string'}))
-    dispatch(latticeInput({dispatchId,params:'inputs'}))
-    dispatch(latticeExecutorDetail({dispatchId,params:'executor_details'}))
+    dispatch(latticeResults({ dispatchId, params: 'result' }))
+    dispatch(latticeFunctionString({ dispatchId, params: 'function_string' }))
+    dispatch(latticeInput({ dispatchId, params: 'inputs' }))
+    dispatch(latticeExecutorDetail({ dispatchId, params: 'executor_details' }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -54,76 +76,107 @@ const LatticeDispatchOverview = ({dispatchId,latDetails }) => {
   return (
     <>
       {/* Description */}
-        {result.lattice !== undefined && (
+      {result.lattice !== undefined &&
+        (isFetching ? (
+          <Skeleton />
+        ) : (
           <>
             <Heading>Description</Heading>
             <Typography fontSize="body2.fontSize">
               {result.lattice.doc}
             </Typography>
           </>
-        )}
+        ))}
       {/* Start/end times */}
       {hasStarted && (
         <>
           <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-          <Typography fontSize="body2.fontSize">
-            {formatDate(result.started_at)}
-            {hasEnded && ` - ${formatDate(result.ended_at)}`}
-          </Typography>
+          {isFetching ? (
+            <Skeleton />
+          ) : (
+            <Typography fontSize="body2.fontSize">
+              {formatDate(result.started_at)}
+              {hasEnded && ` - ${formatDate(result.ended_at)}`}
+            </Typography>
+          )}
         </>
       )}
 
       {/* Runtime */}
       <Heading>Runtime</Heading>
-      <Runtime
-        sx={{ fontSize: 'body2.fontSize' }}
-        startTime={result.started_at}
-        endTime={result.ended_at}
-      />
+      {isFetching ? (
+        <Skeleton />
+      ) : (
+        <Runtime
+          sx={{ fontSize: 'body2.fontSize' }}
+          startTime={result.started_at}
+          endTime={result.ended_at}
+        />
+      )}
 
       {/* Directory */}
       <Heading>Directory</Heading>
-      <Typography sx={{ overflowWrap: 'anywhere', fontSize: 'body2.fontSize' }}>
-        <Tooltip title={result.directory} enterDelay={500}>
-          <span>{truncateMiddle(result.directory, 10, 25)}</span>
-        </Tooltip>
-        <CopyButton
-          content={result.directory}
-          size="small"
-          title="Copy results directory"
-        />
-      </Typography>
+      {isFetching ? (
+        <Skeleton />
+      ) : (
+        <Typography
+          sx={{ overflowWrap: 'anywhere', fontSize: 'body2.fontSize' }}
+        >
+          <Tooltip title={result.directory} enterDelay={500}>
+            <span>{truncateMiddle(result.directory, 15, 20)}</span>
+          </Tooltip>
+          <CopyButton
+            content={result.directory}
+            size="small"
+            title="Copy results directory"
+          />
+        </Typography>
+      )}
 
       {/* Input */}
-      {Object.keys(drawerInput).length !==0 &&
-      <InputSection inputs={drawerInput.data}/>
-      }
+      {Object.keys(drawerInput).length !== 0 && (
+        <InputSection
+          isFetching={drawerInputListFetching}
+          inputs={drawerInput.data}
+        />
+      )}
 
       {/* Result */}
-      {Object.keys(drawerResult).length !==0 &&
+      {Object.keys(drawerResult).length !== 0 && (
         <>
           <Heading>Result</Heading>
-          <Paper elevation={0}>
-            <SyntaxHighlighter language="python" src={drawerResult.data} />
-          </Paper>
+          {drawerResultListFetching ? (
+            <Skeleton height={60} style={{ mt: 1 }} />
+          ) : (
+            <Paper elevation={0}>
+              <SyntaxHighlighter language="python" src={drawerResult.data} />
+            </Paper>
+          )}
         </>
-      }
+      )}
 
       {/* Executor */}
-      {Object.keys(drawerExecutorDetail).length !==0 &&
-      <ExecutorSection metadata={drawerExecutorDetail} />
-      }
+      {Object.keys(drawerExecutorDetail).length !== 0 && (
+        <ExecutorSection
+          isFetching={drawerExecutorDetailListFetching}
+          metadata={drawerExecutorDetail}
+        />
+      )}
 
       <Divider sx={{ my: 3 }} />
 
       {/* Source */}
 
       <Heading />
-      {Object.keys(drawerFunctionString).length !==0 &&
-      <Paper elevation={0}>
-        <SyntaxHighlighter src={drawerFunctionString.data} />
-      </Paper>
-      }
+
+      {Object.keys(drawerFunctionString).length !== 0 &&
+        (drawerFunctionStringListFetching ? (
+          <Skeleton height={100} />
+        ) : (
+          <Paper elevation={0}>
+            <SyntaxHighlighter src={drawerFunctionString.data} />
+          </Paper>
+        ))}
     </>
   )
 }

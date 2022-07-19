@@ -55,7 +55,7 @@ const NavDrawer = () => {
       }}
     >
       <List>
-        <ListItemButton sx={{ my: 6 }} component={Link} to="/">
+        <ListItemButton sx={{ my: 5 }} component={Link} to="/">
           <Logo style={{ margin: 'auto', width: '30px', height: '50px' }} />
         </ListItemButton>
 
@@ -116,5 +116,4 @@ const LinkButton = ({ title, icon, path, margintop }) => {
     </Tooltip>
   )
 }
-
 export default NavDrawer

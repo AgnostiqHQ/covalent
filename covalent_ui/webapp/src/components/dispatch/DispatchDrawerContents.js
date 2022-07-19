@@ -20,63 +20,48 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { useState,useEffect } from 'react'
-import { useSelector,useDispatch } from 'react-redux'
+import { useState, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import {
-  Box,
-  CircularProgress,
-  IconButton,
-  styled,
-  Tab,
-  Tooltip,
-  Typography,
-  SvgIcon
-} from '@mui/material'
-import { ChevronLeft } from '@mui/icons-material'
+import { Box, styled, Tab, Skeleton } from '@mui/material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
-import CopyButton from '../common/CopyButton'
 import LatticeDispatchOverview from './LatticeDispatchOverview'
-import { statusIcon, truncateMiddle ,  statusColor,statusLabel
-} from '../../utils/misc'
 import ErrorCard from '../common/ErrorCard'
-import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
-import { latticeDetails,latticeError} from '../../redux/latticeSlice'
+import { latticeDetails, latticeError } from '../../redux/latticeSlice'
 
-const DispatchDrawerContents = () => {
+const DispatchDrawerContents = (props) => {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
   const [tab, setTab] = useState('overview')
 
-  const drawerLatticeDetails = useSelector((state) => state.latticeResults.latticeDetails)
-  const drawerLatticeError = useSelector((state) => state.latticeResults.latticeError)
+  const drawerLatticeDetails = useSelector(
+    (state) => state.latticeResults.latticeDetails
+  )
+  const drawerLatticeError = useSelector(
+    (state) => state.latticeResults.latticeError
+  )
+  const drawerLatticeDetailsFetching = useSelector(
+    (state) => state.latticeResults.latticeDetailsResults.isFetching
+  )
+  const drawerLatticeErrorFetching = useSelector(
+    (state) => state.latticeResults.latticeErrorList.isFetching
+  )
 
   useEffect(() => {
-    dispatch(latticeDetails({ dispatchId}))
-    dispatch(latticeError({dispatchId,params:'error'}))
+    dispatch(latticeDetails({ dispatchId }))
+    dispatch(latticeError({ dispatchId, params: 'error' }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* dispatch id */}
-      <IconButton href="/" sx={{ color: 'text.disabled', mr: 1 }}>
-        <ChevronLeft />
-      </IconButton>
-
-      <SvgIcon component={TreeSvg} sx={{verticalAlign:"middle",marginTop:1}}/>
-
-      <Tooltip title={dispatchId} placement="top">
-        <Typography component="span" sx={{ mx: 1 ,verticalAlign:"middle"}}>
-          {truncateMiddle(dispatchId, 8, 13)}
-        </Typography>
-      </Tooltip>
-
-      <CopyButton content={dispatchId} size="small" title="Copy dispatch Id" />
-
-      {/* status */}
-      <LatticeStatusCard dispatchId={dispatchId} latDetails={drawerLatticeDetails}
-      latError={drawerLatticeError}/>
+    <Box sx={{ px: 3, my: 0 }}>
+      {Object.keys(drawerLatticeError).length !== 0 &&
+        (drawerLatticeErrorFetching &&
+        drawerLatticeError.status === 'FAILED' ? (
+          <Skeleton height={300} />
+        ) : (
+          <ErrorCard showElectron error={drawerLatticeError.data} />
+        ))}
 
       {/* tabs */}
       {/* {latOutput !== null && */}
@@ -89,10 +74,14 @@ const DispatchDrawerContents = () => {
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
-          <LatticeDispatchOverview dispatchId={dispatchId} latDetails={drawerLatticeDetails} />
+          <LatticeDispatchOverview
+            dispatchId={dispatchId}
+            latDetails={drawerLatticeDetails}
+            isFetching={drawerLatticeDetailsFetching}
+          />
         </TabPanel>
       </TabContext>
-{/* } */}
+      {/* } */}
     </Box>
   )
 }
@@ -109,85 +98,5 @@ const CustomTabList = styled(TabList)(({ theme }) => ({
     backgroundColor: theme.palette.text.primary,
   },
 }))
-
-const LatticeStatusCard = ({ dispatchId ,latDetails,latError }) => {
-  return (
-    <Box sx={{ my: 2 }}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-          }}
-        >
-          <Box sx={{ borderRight: '1px solid #303067' }}>
-            <Typography color="text.secondary" fontSize="body2.fontSize">
-              Status
-            </Typography>
-
-            <Box
-              sx={{
-                color: statusColor(latDetails.status),
-                display: 'flex',
-                fontSize: '1.125rem',
-                alignItems: 'center',
-                py: 1,
-              }}
-            >
-              {statusIcon(latDetails.status)}
-              &nbsp;
-              {statusLabel(latDetails.status)}
-            </Box>
-          </Box>
-
-          <Box sx={{ justifySelf: 'end' }}>
-            <Typography color="text.secondary" fontSize="body2.fontSize">
-              Progress
-            </Typography>
-
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                py: 1,
-              }}
-            >
-              <Typography fontSize="body2.fontSize">
-                <Box
-                  component="span"
-                  sx={{
-                    color: latDetails.status!=='COMPLETED'?statusColor(latDetails.status):'',
-                  }}
-                >
-                  {latDetails.total_electrons_completed}
-                </Box>
-                &nbsp;/ {latDetails.total_electrons}
-              </Typography>
-
-              <Box sx={{ ml: 2, position: 'relative' }}>
-                <CircularProgress
-                  variant="determinate"
-                  sx={(theme) => ({
-                    color: theme.palette.secondary.main,
-                  })}
-                  size="2rem"
-                  value={100}
-                />
-                <CircularProgress
-                  style={{ color: statusColor(latDetails.status)}}
-                  sx={{ position: 'absolute', left: 0 }}
-                  variant="determinate"
-                  size="2rem"
-                  value={(latDetails.total_electrons_completed * 100) / latDetails.total_electrons}
-                />
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-        {Object.keys(latError).length !==0 &&
-      <ErrorCard showElectron error={latError.data} />
-    }
-    </Box>
-  )
-}
 
 export default DispatchDrawerContents

@@ -26,12 +26,11 @@ import { Box } from '@mui/system'
 import NavDrawer from '../common/NavDrawer'
 import DashboardCard from './DashboardCard'
 
-
 const Dashboard = () => {
   return (
     <Box sx={{ display: 'flex' }}>
       <NavDrawer />
-      <Container maxWidth="xl" sx={{ mb: 4, mt: 3 }}>
+      <Container maxWidth="xl" sx={{ mb: 4, mt: 7.5 }}>
         <DashboardCard />
         <ResultListing />
       </Container>

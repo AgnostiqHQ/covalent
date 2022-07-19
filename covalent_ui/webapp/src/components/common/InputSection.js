@@ -21,23 +21,28 @@
  */
 
 import _ from 'lodash'
-import { Paper } from '@mui/material'
+import { Paper, Skeleton } from '@mui/material'
 
 import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'
 
-const InputSection = ({ inputs,preview, ...props }) => {
-  const inputSrc = preview ? _.join(
-    _.map(inputs, (value, key) => `${key}: ${value}`),
-    '\n'
-  ) : inputs
-
+const InputSection = ({ isFetching, inputs, preview, ...props }) => {
+  const inputSrc = preview
+    ? _.join(
+        _.map(inputs, (value, key) => `${key}: ${value}`),
+        '\n'
+      )
+    : inputs
   return (
     <>
       <Heading>Input</Heading>
-      <Paper elevation={0} {...props}>
-        <SyntaxHighlighter language="python" src={inputSrc} />
-      </Paper>
+      {isFetching ? (
+        <Skeleton sx={{ height: '80px' }} />
+      ) : (
+        <Paper elevation={0} {...props}>
+          <SyntaxHighlighter language="python" src={inputSrc} />
+        </Paper>
+      )}
     </>
   )
 }

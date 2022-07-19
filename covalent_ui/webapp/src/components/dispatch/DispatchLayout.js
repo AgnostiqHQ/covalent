@@ -1,3 +1,25 @@
+/**
+ * Copyright 2021 Agnostiq Inc.
+ *
+ * This file is part of Covalent.
+ *
+ * Licensed under the GNU Affero General Public License 3.0 (the "License").
+ * A copy of the License may be obtained with this software package or at
+ *
+ *      https://www.gnu.org/licenses/agpl-3.0.en.html
+ *
+ * Use of this file is prohibited except in compliance with the License. Any
+ * modifications or derivative works of this file must retain this copyright
+ * notice, and modified files must contain a notice indicating that they have
+ * been altered from the originals.
+ *
+ * Covalent is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+ *
+ * Relief from the License may be granted by purchasing a commercial license.
+ */
+
 import _ from 'lodash'
 import React, { useEffect } from 'react'
 import { Box } from '@mui/material'
@@ -12,13 +34,16 @@ import { graphBgColor } from '../../utils/theme'
 import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
 import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
 import { graphResults } from '../../redux/graphSlice'
+import DispatchTopBar from './DispatchTopBar'
 import DispatchDrawerContents from './DispatchDrawerContents'
 
 export function DispatchLayout() {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
   const graph_result = useSelector((state) => state.graphResults.graphList)
-  const fetch = useSelector((state) => state.graphResults.graphResultsList.isFetching)
+  const fetch = useSelector(
+    (state) => state.graphResults.graphResultsList.isFetching
+  )
   useEffect(() => {
     dispatch(graphResults({ dispatchId }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -43,13 +68,13 @@ export function DispatchLayout() {
     setSelectedElements([])
   }, [dispatchId, setSelectedElements])
 
-
   if (fetch) {
     return <PageLoading />
   }
 
   return (
     <>
+      <DispatchTopBar />
       <Box
         sx={{
           display: 'flex',
@@ -58,23 +83,29 @@ export function DispatchLayout() {
           bgcolor: graphBgColor,
         }}
       >
-        {Object.keys(graph_result).length !== 0 ?
+        {Object.keys(graph_result).length !== 0 ? (
           <LatticeGraph
             graph={graph_result}
             hasSelectedNode={!!selectedElectron}
             marginLeft={latticeDrawerWidth + navDrawerWidth}
           />
-          :
+        ) : (
           <PageLoading />
-        }
+        )}
       </Box>
       <NavDrawer />
       <LatticeDrawer>
         <DispatchDrawerContents />
       </LatticeDrawer>
-      {selectedElectron &&
-        <NodeDrawer node={selectedElectron} dispatchId={dispatchId} />
-      }
+      {Object.keys(graph_result).length !== 0 ? (
+        <NodeDrawer
+          node={selectedElectron}
+          graph={graph_result}
+          dispatchId={dispatchId}
+        />
+      ) : (
+        <PageLoading />
+      )}
     </>
   )
 }
@@ -90,4 +121,4 @@ const DispatchLayoutValidate = () => {
   return <DispatchLayout />
 }
 
-export default DispatchLayoutValidate;
+export default DispatchLayoutValidate

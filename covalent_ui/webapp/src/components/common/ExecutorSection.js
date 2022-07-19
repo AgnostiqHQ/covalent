@@ -21,12 +21,12 @@
  */
 
 import _ from 'lodash'
-import { Paper } from '@mui/material'
+import { Paper, Skeleton } from '@mui/material'
 import React from 'react'
 import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'
 
-const ExecutorSection = ({ metadata ,preview, ...props}) => {
+const ExecutorSection = ({ isFetching,metadata ,preview, ...props}) => {
   const executorType = _.get(metadata, 'executor_name')
   const executorParams = _.omitBy(_.get(metadata, preview?'executor':'data'), (v) => v === '')
   const src = _.join(
@@ -38,9 +38,13 @@ const ExecutorSection = ({ metadata ,preview, ...props}) => {
       <Heading>
         Executor: <strong>{executorType}</strong>
       </Heading>
+      {isFetching ? (
+        <Skeleton height={100} />
+      ) : (
         <Paper elevation={0} {...props}>
           <SyntaxHighlighter language="yaml" src={src} />
         </Paper>
+      )}
     </>
   )
 }
