@@ -27,8 +27,8 @@ import { isNode } from 'react-flow-renderer'
 import { isParameter } from '../../utils/misc'
 import theme from '../../utils/theme'
 
-const layout = (graph, direction, showParams = true) => {
-  const elements = mapGraphToElements(graph, direction, showParams)
+const layout = (graph, direction, showParams = true,hideLabels) => {
+  const elements = mapGraphToElements(graph, direction, showParams,hideLabels)
   assignNodePositions(elements, direction)
 
   return elements
@@ -47,7 +47,7 @@ const filterGraph = (graph, nodePredicate) => {
 /**
  * Map Covalent graph nodes and links to ReactFlow graph elements.
  */
-const mapGraphToElements = (graph, direction, showParams) => {
+const mapGraphToElements = (graph, direction, showParams,hideLabels) => {
   if (!showParams) {
     graph = filterGraph(graph, (node) => !isParameter(node))
   }
@@ -63,7 +63,7 @@ const mapGraphToElements = (graph, direction, showParams) => {
       type: isParam ? 'parameter' : 'electron',
       data: {
         fullName: name,
-        label: _.truncate(name, { length: 70 }),
+        label: hideLabels?_.truncate(name, { length: 0 }):_.truncate(name, { length: 70 }),
         status: node.status,
       },
       targetPosition: handlePositions.target,

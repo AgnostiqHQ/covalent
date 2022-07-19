@@ -33,6 +33,7 @@ import { Handle } from 'react-flow-renderer'
 import { ReactComponent as AtomSvg } from '../../assets/status/activity.svg'
 import { ReactComponent as CheckSvg } from '../../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../../assets/status/error.svg'
+import { ReactComponent as CancelSvg } from '../../assets/status/stop.svg'
 import { statusColor } from '../../utils/misc'
 import { ReactComponent as LoaderSvg } from '../../assets/loader.svg'
 
@@ -84,14 +85,14 @@ const ElectronNode = ({
           switch (data.status) {
             case 'NEW_OBJECT':
               return (
-                <SvgIcon sx={{ mt: 0.5,mr: 0.5,fontSize: 14, fill: color }}>
+                <SvgIcon sx={{ mt: 0.5, mr: 0.5, fontSize: 14, fill: color }}>
                   <AtomSvg />
                 </SvgIcon>
               )
             case 'RUNNING':
               return (
                 <SvgIcon
-                  sx={{ mt: 0.5,mr: 0.5,fontSize: 14, fill: color }}>
+                  sx={{ mt: 0.5, mr: 0.5, fontSize: 14, fill: color }}>
                   <LoaderSvg />
                 </SvgIcon>
               )
@@ -103,8 +104,14 @@ const ElectronNode = ({
               )
             case 'FAILED':
               return (
-                <SvgIcon sx={{ mr: 0.5, fontSize: 12, fill: color }}>
+                <SvgIcon sx={{ mt: 0.8, fontSize: 14, fill: color }}>
                   <ErrorSvg />
+                </SvgIcon>
+              )
+            case 'CANCELLED':
+              return (
+                <SvgIcon sx={{ mt: 0.8, fontSize: 14, fill: color }}>
+                  <CancelSvg />
                 </SvgIcon>
               )
             default:
