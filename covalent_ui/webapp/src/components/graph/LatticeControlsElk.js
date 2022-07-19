@@ -36,6 +36,8 @@ import {
 } from '@mui/icons-material'
 import useFitViewHelper from './ReactFlowHooks'
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import LabelOffIcon from '@mui/icons-material/LabelOff';
+import LabelIcon from '@mui/icons-material/Label';
 import * as React from 'react';
 import { LayoutOptions } from './LayoutOptions';
 
@@ -55,11 +57,14 @@ const LatticeControls = ({
   open,
   handleClick,
   anchorEl,
-  handleClose
+  handleClose,
+  handleHideLabels,
+  hideLabels
 }) => {
   const { zoomIn, zoomOut } = useZoomPanHelper()
   const { fitView } = useFitViewHelper()
   return (
+
     <ToggleButtonGroup
       orientation="vertical"
       size="small"
@@ -94,12 +99,6 @@ const LatticeControls = ({
           <Fullscreen />
         </ToggleButton>
       </Hint>
-
-      <Hint title="Toggle parameters">
-        <ToggleButton onClick={toggleParams} value="" selected={showParams}>
-          P
-        </ToggleButton>
-      </Hint>
       <Hint title="Toggle minimap">
         <ToggleButton onClick={toggleMinimap} value="" selected={showMinimap}>
           <MapOutlined />
@@ -111,12 +110,13 @@ const LatticeControls = ({
         </ToggleButton>
       </Hint>
       <LayoutOptions
-      algorithm={algorithm}
+        algorithm={algorithm}
         open={open}
         anchorEl={anchorEl}
         handleClick={handleClick}
         handleClose={handleClose}
         handleChangeAlgorithm={handleChangeAlgorithm} />
+
       <Hint title="Change orientation">
         <ToggleButton
           onClick={() => {
@@ -145,6 +145,16 @@ const LatticeControls = ({
         </ToggleButton>
       </Hint>
 
+      <Hint title={hideLabels ? "Show labels" : "Hide labels"}>
+        <ToggleButton value="" onClick={() => handleHideLabels()}>
+          {hideLabels ? <LabelOffIcon /> : <LabelIcon />}
+        </ToggleButton>
+      </Hint>
+      <Hint title="Toggle parameters">
+        <ToggleButton onClick={toggleParams} value="" selected={showParams}>
+          P
+        </ToggleButton>
+      </Hint>
       <Hint title="Toggle draggable nodes">
         <ToggleButton onClick={toggleNodesDraggable} value="">
           {nodesDraggable ? <LockOpenOutlined /> : <LockOutlined />}

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Ability to hide/show labels on the graph
+- Graph layout with elk configurations
+
+### Changed
+
+- Changed API socket calls interval for graph optimization.
 ### Tests
 
 - Disabled several dask functional tests
