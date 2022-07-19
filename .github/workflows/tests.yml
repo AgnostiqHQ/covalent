@@ -119,32 +119,34 @@ jobs:
 
       - name: Start Covalent dispatcher server
         run: covalent start
-        
+
+      - name: Filter paths to test
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            sdk:
+              - './covalent/'
+            dispatcher:
+            - './covalent_dispatcher/'
+            functional_tests:
+            - './tests/functional_tests'  
+
       - name: Run tests and measure coverage   
         uses: nick-fields/retry@v2
         with:
             timeout_minutes: 30
             max_attempts: 2
             on_retry_command: rm -f ~/.config/covalent/covalent.conf
-            commands: |
-              PYTHONPATH=$PWD/ pytest tests/covalent_tests -vv  --cov=covalent
-              PYTHONPATH=$PWD/ pytest tests -vv  --cov=covalent_dispatcher
-              PYTHONPATH=$PWD/ pytest tests/functional_tests
-
-      - name: Filtering paths
-        uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters:  |
-            sdk:
-              - './covalent/'
-            dispatcher:
-            - './covalent_dispatcher/'
-            functional_tests:
-            - './tests/functional_tests' 
+            command: |
+              if: ${{ steps.filter.sdk }}
+              run: PYTHONPATH=$PWD/ pytest tests/covalent_tests -vv  --cov=covalent
+              if: ${{ steps.filter.dispatcher }}
+              run: PYTHONPATH=$PWD/ pytest tests/covalent_dispatcher_tests -vv  --cov=covalent_dispatcher
+              if: ${{ steps.filter.functional_tests }}
+              run:PYTHONPATH=$PWD/ pytest tests/functional_tests
             
       - name: Generate coverage report
-        if: ${{steps.filters.sdk}} or ${{steps.filters.dispatcher}} or ${{steps.filters.functional_tests}}
+        if: ${{ steps.filter.sdk || steps.filter.dispatcher || steps.filter.functional_tests }}
         run:  coverage xml
 
       - name: Upload report to Codecov
