@@ -421,7 +421,7 @@ See the how-to guide on customizing the local executor :doc:`How to customize th
     class CustomExecutor(BaseExecutor):
         ...
 
-A variety of interesting executors are coming soon!
+Refer the how-to guide on building custom executors :doc:`How to create a custom executor <../../how_to/execution/creating_custom_executors>` for more details.
 
 .. _Workflow status polling:
 

@@ -71,7 +71,6 @@ const NodeDrawer = ({ node, graph }) => {
           border: 'none',
           p: 3,
           bgcolor: alpha(theme.palette.background.default),
-          backdropFilter: 'blur(16px)',
         },
       })}
       anchor="right"

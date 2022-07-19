@@ -23,6 +23,7 @@
 import os
 import shutil
 from datetime import datetime as dt
+from datetime import timezone
 from pathlib import Path
 
 import cloudpickle
@@ -121,7 +122,7 @@ def test_result_persist_workflow_1(db, result_1):
 
     with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
         result = cloudpickle.load(f)
-    assert result is None
+    assert result.get_deserialized() is None
 
     # Check that the electron records are as expected
     for electron in electron_rows:
@@ -129,17 +130,35 @@ def test_result_persist_workflow_1(db, result_1):
         assert electron.parent_lattice_id == 1
         assert electron.started_at is None and electron.completed_at is None
 
+        if electron.transport_graph_node_id == 1:
+            with open(Path(electron.storage_path) / electron.deps_filename, "rb") as f:
+                deps = cloudpickle.load(f)
+                assert deps == {}
+
+            with open(Path(electron.storage_path) / electron.call_before_filename, "rb") as f:
+                call_before = cloudpickle.load(f)
+                assert call_before == []
+
+            with open(Path(electron.storage_path) / electron.call_after_filename, "rb") as f:
+                call_after = cloudpickle.load(f)
+                assert call_after == []
+
+            with open(Path(electron.storage_path) / electron.key_filename, "rb") as f:
+                key = cloudpickle.load(f)
+                assert key is None
+
     # Check that there are the appropriate amount of electron dependency records
     assert len(electron_dependency_rows) == 4
 
     # Update some node / lattice statuses
-    cur_time = dt.now()
+    cur_time = dt.now(timezone.utc)
     result_1._end_time = cur_time
     result_1._status = "COMPLETED"
     result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
 
     for node_id in range(5):
         result_1._update_node(
+            db=db,
             node_id=node_id,
             start_time=cur_time,
             end_time=cur_time,
@@ -156,24 +175,54 @@ def test_result_persist_workflow_1(db, result_1):
         lattice_row = session.query(Lattice).first()
         electron_rows = session.query(Electron).all()
         electron_dependency_rows = session.query(ElectronDependency).all()
-        print(f"THERE: {electron_dependency_rows}")
 
     # Check that the lattice records are as expected
-    assert lattice_row.completed_at == cur_time
+    assert lattice_row.completed_at.strftime("%Y-%m-%d %H:%M") == cur_time.strftime(
+        "%Y-%m-%d %H:%M"
+    )
     assert lattice_row.status == "COMPLETED"
 
     with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
         result = cloudpickle.load(f)
-    assert result_1.result == result
+    assert result_1.result == result.get_deserialized()
 
     # Check that the electron records are as expected
     for electron in electron_rows:
         assert electron.status == "COMPLETED"
         assert electron.parent_lattice_id == 1
-        assert electron.started_at == electron.completed_at == cur_time
+        assert (
+            electron.started_at.strftime("%Y-%m-%d %H:%M")
+            == electron.completed_at.strftime("%Y-%m-%d %H:%M")
+            == cur_time.strftime("%Y-%m-%d %H:%M")
+        )
         assert Path(electron.storage_path) == Path(
             f"{TEMP_RESULTS_DIR}/dispatch_1/node_{electron.transport_graph_node_id}"
         )
 
     # Tear down temporary results directory
     teardown_temp_results_dir(dispatch_id="dispatch_1")
+
+
+def test_get_node_error(db, result_1):
+    """Test result method to get the node error."""
+
+    result_1.persist(db)
+    assert result_1._get_node_error(db=db, node_id=0) is None
+
+
+def test_get_node_value(db, result_1):
+    """Test result method to get the node value."""
+
+    result_1.persist(db)
+    assert result_1._get_node_value(db=db, node_id=0) is None
+
+
+def test_get_all_node_results(db, result_1):
+    """Test result method to get all the node results."""
+
+    result_1.persist(db)
+    for data_row in result_1.get_all_node_results(db):
+        if data_row["node_id"] == 0:
+            assert data_row["node_name"] == "task_1"
+        elif data_row["node_id"] == 1:
+            assert data_row["node_name"] == ":parameter:1"
