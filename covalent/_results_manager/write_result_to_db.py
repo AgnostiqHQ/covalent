@@ -86,6 +86,7 @@ def insert_lattices_data(
         inputs_filename=inputs_filename,
         results_filename=results_filename,
         transport_graph_filename=transport_graph_filename,
+        is_active=True,
         created_at=created_at,
         updated_at=updated_at,
         started_at=started_at,
@@ -152,6 +153,7 @@ def insert_electrons_data(
         stdout_filename=stdout_filename,
         stderr_filename=stderr_filename,
         info_filename=info_filename,
+        is_active=True,
         created_at=created_at,
         updated_at=updated_at,
         started_at=started_at,
@@ -198,7 +200,9 @@ def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "L
                 edge_name=edge_data["edge_name"],
                 parameter_type=edge_data["param_type"] if "param_type" in edge_data else None,
                 arg_index=edge_data["arg_index"] if "arg_index" in edge_data else None,
+                is_active=True,
                 created_at=dt.now(timezone.utc),
+                updated_at=dt.now(timezone.utc),
             )
 
             session.add(electron_dependency_row)
