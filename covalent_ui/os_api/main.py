@@ -21,6 +21,7 @@
 import argparse
 import os
 
+import socketio
 import uvicorn
 from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
@@ -63,6 +64,41 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def app_init():
     """app init"""
     app.include_router(routes.routes, prefix="/api/v1")
+
+
+# socket
+
+
+sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
+socketio_app = socketio.ASGIApp(sio, app)
+
+
+@sio.event
+def connect():
+    print("connect ")
+
+
+@sio.on("message")
+async def chat_message(data):
+    print("message ", data)
+    await sio.emit("response", "hi " + data)
+
+
+@sio.event
+def disconnect():
+    print("disconnect ")
+
+
+@app.post("/api/draw")
+async def handle_result_update(result_update):
+    await sio.emit("result-update", result_update)
+    return {{"ok": True}}
+
+
+@app.post("/api/draw")
+async def handle_draw_request(draw_request):
+    await sio.emit("draw_request", draw_request)
+    return {{"ok": True}}
 
 
 if __name__ == "__main__":
