@@ -45,6 +45,7 @@ from .write_result_to_db import (
     insert_electrons_data,
     insert_lattices_data,
     update_electrons_data,
+    update_lattice_completed_electron_num,
     update_lattices_data,
 )
 
@@ -631,10 +632,6 @@ Node Outputs
             self.lattice.transport_graph.set_node_value(node_id, "status", status)
             electron_kwargs["status"] = str(status)
 
-            if str(status) == "COMPLETED":
-                # TODO - update completed electron num in lattice
-                pass
-
         if output is not None:
             self.lattice.transport_graph.set_node_value(node_id, "output", output)
             with open(node_path / ELECTRON_RESULTS_FILENAME, "wb") as f:
@@ -658,8 +655,10 @@ Node Outputs
             with open(node_path / ELECTRON_STDERR_FILENAME, "wb") as f:
                 cloudpickle.dump(stderr, f)
 
-        with Session(db.engine) as session:
+        if str(status) == "COMPLETED":
+            update_lattice_completed_electron_num(db, self.dispatch_id)
 
+        with Session(db.engine) as session:
             lattice_id = (
                 session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)

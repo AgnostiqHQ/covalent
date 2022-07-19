@@ -37,6 +37,7 @@ from covalent._results_manager.write_result_to_db import (
     insert_electrons_data,
     insert_lattices_data,
     update_electrons_data,
+    update_lattice_completed_electron_num,
     update_lattices_data,
     write_sublattice_electron_id,
 )
@@ -203,6 +204,20 @@ def get_electron_kwargs(
         "started_at": started_at,
         "completed_at": completed_at,
     }
+
+
+def test_update_lattice_completed_electron_num(db):
+    """Test the funtion used to update the number of completed electrons for a lattice by 1."""
+
+    cur_time = dt.now(timezone.utc)
+    insert_lattices_data(
+        db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
+    update_lattice_completed_electron_num(db=db, dispatch_id="dispatch_1")
+
+    with Session(db.engine) as session:
+        lat_record = session.query(Lattice).filter_by(dispatch_id="dispatch_1").first()
+    assert lat_record.completed_electron_num == 1
 
 
 def test_insert_lattices_data(db):
