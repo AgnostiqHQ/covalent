@@ -111,17 +111,7 @@ def get_result(dispatch_id) -> Response:
                     ),
                     404,
                 )
-            elif not wait:
-                output = {
-                    "id": dispatch_id,
-                    "status": lattice_record.status,
-                }
-                if not status_only:
-                    output["result"] = codecs.encode(
-                        pickle.dumps(result_from(lattice_record)), "base64"
-                    ).decode()
-                return jsonify(output)
-            elif lattice_record.status in [
+            elif not wait or lattice_record.status in [
                 str(Result.COMPLETED),
                 str(Result.FAILED),
                 str(Result.CANCELLED),
