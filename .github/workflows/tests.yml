@@ -57,6 +57,9 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     outputs:
       release: ${{ steps.push.outputs.release }}
+      sdk: ${{ steps.filter.outputs.sdk}}
+      dispatcher: ${{ steps.filter.outputs.dispatcher }}
+      functional_tests: ${{ steps.filter.outputs.functional_tests}}
     steps:
       - name: Check out head
         uses: actions/checkout@v3
