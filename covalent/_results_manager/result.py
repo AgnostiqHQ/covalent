@@ -33,6 +33,10 @@ from sqlalchemy import and_, update
 from sqlalchemy.orm import Session
 
 from covalent._shared_files.config import get_config
+from tests.covalent_tests.results_manager_tests.write_result_to_db_test import (
+    CALL_AFTER_FILENAME,
+    CALL_BEFORE_FILENAME,
+)
 
 from .._data_store import DataStore, DataStoreNotInitializedError, models
 from .._shared_files import logger
@@ -74,6 +78,9 @@ ELECTRON_STDOUT_FILENAME = "stdout.log"
 ELECTRON_STDERR_FILENAME = "stderr.log"
 ELECTRON_INFO_FILENAME = "info.log"
 ELECTRON_RESULTS_FILENAME = "results.pkl"
+ELECTRON_DEPS_FILENAME = "deps.pkl"
+ELECTRON_CALL_BEFORE_FILENAME = "call_before.pkl"
+ELECTRON_CALL_AFTER_FILENAME = "call_after.pkl"
 ELECTRON_STORAGE_TYPE = "local"
 
 
@@ -822,6 +829,15 @@ Node Outputs
                 with open(node_path / ELECTRON_EXECUTOR_FILENAME, "wb") as f:
                     cloudpickle.dump(tg.get_node_value(node_id, "metadata")["executor"], f)
 
+                with open(node_path / ELECTRON_DEPS_FILENAME, "wb") as f:
+                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["deps"], f)
+
+                with open(node_path / ELECTRON_CALL_BEFORE_FILENAME, "wb") as f:
+                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["call_before"], f)
+
+                with open(node_path / ELECTRON_CALL_AFTER_FILENAME, "wb") as f:
+                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["call_after"], f)
+
                 with open(node_path / ELECTRON_STDOUT_FILENAME, "wb") as f:
                     try:
                         node_stdout = tg.get_node_value(node_id, "stdout")
@@ -904,6 +920,9 @@ Node Outputs
                         "stdout_filename": ELECTRON_STDOUT_FILENAME,
                         "stderr_filename": ELECTRON_STDERR_FILENAME,
                         "info_filename": ELECTRON_INFO_FILENAME,
+                        "deps_filename": ELECTRON_DEPS_FILENAME,
+                        "call_before_filename": CALL_BEFORE_FILENAME,
+                        "call_after_filename": CALL_AFTER_FILENAME,
                         "created_at": datetime.now(timezone.utc),
                         "updated_at": datetime.now(timezone.utc),
                         "started_at": started_at,

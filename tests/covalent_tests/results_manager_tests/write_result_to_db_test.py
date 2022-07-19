@@ -64,6 +64,9 @@ STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
 INFO_FILENAME = "info.log"
 TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
+DEPS_FILENAME = "deps.pkl"
+CALL_BEFORE_FILENAME = "call_before.pkl"
+CALL_AFTER_FILENAME = "call_after.pkl"
 
 
 @pytest.fixture
@@ -159,6 +162,9 @@ def get_electron_kwargs(
     stdout_filename=STDOUT_FILENAME,
     stderr_filename=STDERR_FILENAME,
     info_filename=INFO_FILENAME,
+    deps_filename=DEPS_FILENAME,
+    call_before_filename=CALL_BEFORE_FILENAME,
+    call_after_filename=CALL_AFTER_FILENAME,
     created_at=None,
     updated_at=None,
     started_at=None,
@@ -184,6 +190,9 @@ def get_electron_kwargs(
         "stdout_filename": stdout_filename,
         "stderr_filename": stderr_filename,
         "info_filename": info_filename,
+        "deps_filename": deps_filename,
+        "call_before_filename": call_before_filename,
+        "call_after_filename": call_after_filename,
         "created_at": created_at,
         "updated_at": updated_at,
         "started_at": started_at,

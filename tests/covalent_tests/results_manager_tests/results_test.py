@@ -130,6 +130,19 @@ def test_result_persist_workflow_1(db, result_1):
         assert electron.parent_lattice_id == 1
         assert electron.started_at is None and electron.completed_at is None
 
+        if electron.transport_graph_node_id == 1:
+            with open(Path(electron.storage_path) / electron.deps_filename, "rb") as f:
+                deps = cloudpickle.load(f)
+                assert deps == {}
+
+            with open(Path(electron.storage_path) / electron.call_before_filename, "rb") as f:
+                call_before = cloudpickle.load(f)
+                assert call_before == []
+
+            with open(Path(electron.storage_path) / electron.call_after_filename, "rb") as f:
+                call_after = cloudpickle.load(f)
+                assert call_after == []
+
     # Check that there are the appropriate amount of electron dependency records
     assert len(electron_dependency_rows) == 4
 
