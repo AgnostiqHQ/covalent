@@ -135,7 +135,6 @@ const NodeDrawer = ({ node, dispatchId }) => {
           border: 'none',
           p: 3,
           bgcolor: alpha(theme.palette.background.default),
-          backdropFilter: 'blur(16px)',
         },
       })}
       anchor="right"

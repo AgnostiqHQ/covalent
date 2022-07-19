@@ -44,7 +44,7 @@ const LatticeGraph = ({
   graph,
   hasSelectedNode,
   marginLeft = 0,
-  marginRight = 0,
+  marginRight = 0
 }) => {
   const { fitView } = useFitViewHelper()
 
@@ -54,6 +54,7 @@ const LatticeGraph = ({
   const [showParams, setShowParams] = useState(false)
   const [nodesDraggable, setNodesDraggable] = useState(false)
   const [algorithm, setAlgorithm] = useState('layered')
+  const [hideLabels, setHideLabels] = useState(false)
 
   // set Margin
   const prevMarginRight = usePrevious(marginRight)
@@ -101,7 +102,7 @@ const LatticeGraph = ({
         .catch((error) => console.log(error))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [graph, direction, showParams, algorithm])
+  }, [graph, direction, showParams, algorithm,hideLabels])
 
   // menu for layout
   const [anchorEl, setAnchorEl] = useState(null)
@@ -114,9 +115,15 @@ const LatticeGraph = ({
   }
 
   const handleChangeAlgorithm = (event) => {
-    setAnchorEl(null)
-    setAlgorithm(event)
-  }
+    setAnchorEl(null);
+    setAlgorithm(event);
+  };
+
+  const handleHideLabels = () => {
+    const value= !hideLabels
+    setHideLabels(value);
+  };
+
 
   return (
     <>
@@ -128,8 +135,8 @@ const LatticeGraph = ({
           nodesConnectable={false}
           elements={elements}
           defaultZoom={1}
-          minZoom={0.1}
-          maxZoom={1}
+          minZoom={0}
+          maxZoom={3}
           // prevent selection when nothing is selected to prevent fitView
           selectNodesOnDrag={hasSelectedNode}
         >
@@ -158,6 +165,8 @@ const LatticeGraph = ({
             direction={direction}
             setDirection={setDirection}
             algorithm={algorithm}
+            handleHideLabels={handleHideLabels}
+            hideLabels={hideLabels}
             handleChangeAlgorithm={handleChangeAlgorithm}
             nodesDraggable={nodesDraggable}
             toggleNodesDraggable={() => setNodesDraggable(!nodesDraggable)}

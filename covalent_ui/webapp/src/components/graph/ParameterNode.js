@@ -20,16 +20,28 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { Typography } from '@mui/material'
+ import _ from 'lodash'
+import { Typography,Tooltip,  tooltipClasses} from '@mui/material'
 import { Handle } from 'react-flow-renderer'
+import { styled } from '@mui/material/styles'
+
+const ParameterTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(() => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    // customize tooltip
+  },
+}))
 
 const ParameterNode = ({
   data,
   sourcePosition,
-  isConnectable,
+  targetPosition,
+  isConnectable
 }) => {
   return (
-    <Typography
+    <ParameterTooltip title={_.truncate(data.fullName, { length: 70 })} arrow placement="bottom-end">
+     <Typography
       component="div"
       sx={(theme) => ({
         px: 2,
@@ -47,6 +59,8 @@ const ParameterNode = ({
         isConnectable={isConnectable}
       />
     </Typography>
+    </ParameterTooltip>
+
   )
 }
 
