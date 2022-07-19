@@ -567,7 +567,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         if node_id < 0:
 
             app_log.debug(f"Workflow {result_object.dispatch_id} failed or cancelled.")
-            wait(futures)
+            wait(task_futures)
             return result_object
 
         # Get name of the node for the current task
