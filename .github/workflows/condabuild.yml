@@ -34,9 +34,9 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - 3.8
-          - 3.9
-          - 3.10
+          - "3.8"
+          - "3.9"
+          - "3.10"
     steps:
       - name: Check out head
         uses: actions/checkout@v3
@@ -52,7 +52,7 @@ jobs:
       - name: Build package
         run: |
           $CONDA/bin/activate buildenv
-          conda build --override-channels --output-folder . --python=${{ matrix.python-version }} .
+          conda build --override-channels --output-folder . .
 
       - name: Convert package
         run: conda convert --platform all ./linux-64/*.tar.bz2
