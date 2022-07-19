@@ -17,6 +17,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modify the test and implementation logic of inserting the electron record with these new fields.
 - Field `key` to `key_filename` in `Electron` table.
 
+## [0.139.0] - 2022-07-19
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+
+### Added
+
+- Columns `is_active` in the lattice, eLectron and Electron dependency tables.
+
 ### Docs
 
 - Adding a RTD tutorial/steps on creating a custom executor
