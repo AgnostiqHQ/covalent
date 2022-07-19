@@ -51,8 +51,8 @@ def client(app):
 
 
 class MockDataStore:
-    def __init__(self, lattice):
-        engine = create_engine("sqlite+pysqlite://")
+    def __init__(self, lattice, dbpath):
+        engine = create_engine("sqlite+pysqlite:///" + str(dbpath / "workflow_db.sqlite"))
         models.Base.metadata.create_all(engine)
         session = Session(engine)
         if lattice:
@@ -83,7 +83,7 @@ def test_db_path(mocker, app, client):
     assert json.loads(response.data) == dbpath
 
 
-def test_get_result(mocker, app, client):
+def test_get_result(mocker, app, client, tmp_path):
     lattice = Lattice(
         status=str(Result.COMPLETED),
         dispatch_id=DISPATCH_ID,
@@ -91,10 +91,12 @@ def test_get_result(mocker, app, client):
         created_at=datetime.now(),
         updated_at=datetime.now(),
         is_active=False,
+        electron_num=0,
+        completed_electron_num=0,
     )
 
     def _get_data_store(self, initialize_db=False):
-        return MockDataStore(lattice)
+        return MockDataStore(lattice, tmp_path)
 
     mocker.patch.object(DispatchDB, "_get_data_store", _get_data_store)
     mocker.patch("covalent_dispatcher._service.app.result_from", return_value={})
@@ -104,7 +106,7 @@ def test_get_result(mocker, app, client):
     assert result["status"] == str(Result.COMPLETED)
 
 
-def test_get_result_503(mocker, app, client):
+def test_get_result_503(mocker, app, client, tmp_path):
     lattice = Lattice(
         status=str(Result.COMPLETED),
         dispatch_id=DISPATCH_ID,
@@ -112,10 +114,12 @@ def test_get_result_503(mocker, app, client):
         created_at=datetime.now(),
         updated_at=datetime.now(),
         is_active=False,
+        electron_num=0,
+        completed_electron_num=0,
     )
 
     def _get_data_store(self, initialize_db=False):
-        return MockDataStore(lattice)
+        return MockDataStore(lattice, tmp_path)
 
     mocker.patch.object(DispatchDB, "_get_data_store", _get_data_store)
     mocker.patch("covalent_dispatcher._service.app.result_from", side_effect=FileNotFoundError())
@@ -123,9 +127,9 @@ def test_get_result_503(mocker, app, client):
     assert response.status_code == 503
 
 
-def test_get_result_dispatch_id_not_found(mocker, app, client):
+def test_get_result_dispatch_id_not_found(mocker, app, client, tmp_path):
     def _get_data_store(self, initialize_db=False):
-        return MockDataStore(None)
+        return MockDataStore(None, tmp_path)
 
     mocker.patch.object(DispatchDB, "_get_data_store", _get_data_store)
     mocker.patch("covalent_dispatcher._service.app.result_from", return_value={})
