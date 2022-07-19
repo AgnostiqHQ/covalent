@@ -19,10 +19,12 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import subprocess
+from copy import deepcopy
 from typing import List, Union
 
 from .deps import Deps
 from .depscall import DepsCall
+from .transport import TransportableObject
 
 
 def apply_bash_commands(commands):
@@ -43,10 +45,42 @@ class DepsBash(Deps):
 
     """
 
-    def __init__(self, commands: Union[List, str]):
+    def __init__(self, commands: Union[List, str] = []):
         if isinstance(commands, str):
             self.commands = [commands]
         else:
             self.commands = commands
 
         super().__init__(apply_fn=apply_bash_commands, apply_args=[self.commands])
+
+    def to_dict(self) -> dict:
+        """Return a JSON-serializable dictionary representation of self"""
+        attributes = self.__dict__.copy()
+        for k, v in attributes.items():
+            if isinstance(v, TransportableObject):
+                attributes[k] = v.to_dict()
+        return {"type": "DepsBash", "short_name": self.short_name(), "attributes": attributes}
+
+    def from_dict(self, object_dict) -> "DepsBash":
+        """Rehydrate a dictionary representation
+
+        Args:
+            object_dict: a dictionary representation returned by `to_dict`
+
+        Returns:
+            self
+
+        Instance attributes will be overwritten.
+        """
+
+        if not object_dict:
+            return self
+
+        attributes = deepcopy(object_dict)["attributes"]
+        for k, v in attributes.items():
+            if isinstance(v, dict) and v.get("type", None) == "TransportableObject":
+                attributes[k] = TransportableObject.from_dict(v)
+
+        self.__dict__ = attributes
+
+        return self
