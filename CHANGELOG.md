@@ -12,6 +12,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecate topological sort in favor of inspect in-degree of nodes until they are zero before dispatching task
 - Use deepcopy to generate a copy of the metadata dictionary before saving result object to the database
 
+## [0.140.0] - 2022-07-19
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Fields `deps_filename`, `call_before_filename` and `call_after_filename` to the `Electron` table.
+- Re-write the deps / call before and after file contents when inserting / updating electron record in the database.
+
+### Changed
+
+- Modify the test and implementation logic of inserting the electron record with these new fields.
+- Field `key` to `key_filename` in `Electron` table.
+
 ## [0.139.1] - 2022-07-19
 
 ### Authors
