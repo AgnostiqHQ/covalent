@@ -35,7 +35,7 @@ build:
 
 requirements:
   build:
-    - python 3.8
+    - python
     - pip
     - nodejs
     - yarn
@@ -44,6 +44,9 @@ requirements:
     {% endfor %}
   run:
     - python
+    {% for package in data.get('install_requires', []) -%}
+    - {{ package }}
+    {% endfor %}
 
 test:
   imports:
