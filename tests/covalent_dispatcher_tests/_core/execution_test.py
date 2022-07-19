@@ -110,12 +110,21 @@ def get_mock_result() -> Result:
 def test_plan_workflow():
     """Test workflow planning method."""
 
-    mock_result = get_mock_result()
-    mock_result.lattice.metadata["schedule"] = True
-    _plan_workflow(result_object=mock_result)
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.metadata["schedule"] = True
+    received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
+    result_object = Result(received_workflow, "/tmp", "asdf")
+    _plan_workflow(result_object=result_object)
 
     # Updated transport graph post planning
-    updated_tg = pickle.loads(mock_result.lattice.transport_graph.serialize(metadata_only=True))
+    updated_tg = pickle.loads(result_object.lattice.transport_graph.serialize(metadata_only=True))
 
     assert updated_tg["lattice_metadata"]["schedule"]
 
@@ -511,3 +520,11 @@ def test_handle_cancelled_node(mocker):
 
     assert tasks_queue.get(timeout=1) == -1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
+
+
+def test_initialize_queue_and_deps(mocker):
+    """Test internal function for initializing tasks_queue and pending_deps"""
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
