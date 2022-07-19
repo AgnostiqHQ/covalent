@@ -813,15 +813,8 @@ Node Outputs
                 except KeyError:
                     node_key = None
 
-                try:
-                    started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
-                except KeyError:
-                    started_at = None
-
-                try:
-                    completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
-                except KeyError:
-                    completed_at = None
+                started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
+                completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
 
                 # Write all electron data to the appropriate filepaths
                 with open(node_path / ELECTRON_FUNCTION_FILENAME, "wb") as f:
