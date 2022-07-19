@@ -35,13 +35,12 @@ build:
 
 requirements:
   build:
-    - python 3.8
+    - python
     - pip
     - nodejs
     - yarn
   run:
-    - python
-    {% for package in data.get('install_requires', []) -%}
+    {% for package in resolved_packages('build') -%}
     - {{ package }}
     {% endfor %}
 
