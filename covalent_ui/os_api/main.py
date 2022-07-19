@@ -28,13 +28,18 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError, ValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from covalent._shared_files.config import get_config
 from covalent_ui.os_api.api_v0.routes import routes
 
+WEBHOOK_PATH = "/api/webhook"
+WEBAPP_PATH = "../webapp/build"
+ROUTE_WEBAPP_PATH = "/webapp/build"
 app = FastAPI()
 user = os.getlogin()
 
+app.mount(ROUTE_WEBAPP_PATH, StaticFiles(directory=WEBAPP_PATH), name="webapp")
 origins = [
     "*",
 ]
@@ -89,7 +94,7 @@ def disconnect():
     print("disconnect ")
 
 
-@app.post("/api/draw")
+@app.post(WEBHOOK_PATH)
 async def handle_result_update(result_update):
     await sio.emit("result-update", result_update)
     return {{"ok": True}}
