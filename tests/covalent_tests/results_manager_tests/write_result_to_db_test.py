@@ -109,6 +109,8 @@ def get_lattice_kwargs(
     dispatch_id="dispatch_1",
     name="workflow_1",
     status="RUNNING",
+    electron_num=6,
+    completed_electron_num=0,
     storage_type=STORAGE_TYPE,
     storage_path="results/dispatch_1/",
     function_filename=FUNCTION_FILENAME,
@@ -129,6 +131,8 @@ def get_lattice_kwargs(
         "dispatch_id": dispatch_id,
         "name": name,
         "status": status,
+        "electron_num": electron_num,
+        "completed_electron_num": completed_electron_num,
         "storage_type": storage_type,
         "storage_path": storage_path,
         "function_filename": function_filename,
@@ -247,6 +251,8 @@ def test_insert_lattices_data(db):
         )
         assert lattice.completed_at is None
         assert lattice.is_active
+        assert isinstance(lattice.electron_num, int)
+        assert isinstance(lattice.completed_electron_num, int)
 
         with Session(db.engine) as session:
             rows = session.query(Lattice).where(Lattice.dispatch_id == "dispatch_3").all()
@@ -388,6 +394,7 @@ def test_update_lattices_data(db):
         db=db,
         dispatch_id="dispatch_1",
         status="COMPLETED",
+        completed_electron_num=5,
         updated_at=cur_time,
         completed_at=cur_time,
     )
@@ -404,6 +411,7 @@ def test_update_lattices_data(db):
             == lattice.started_at.strftime("%m/%d/%Y, %H:%M:%S")
         )
         assert lattice.id == 1
+        assert lattice.completed_electron_num == 5
 
 
 def test_update_electrons_data(db):

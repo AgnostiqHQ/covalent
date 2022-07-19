@@ -126,6 +126,8 @@ class Result:
 
         self._result = TransportableObject(None)
 
+        self._num_nodes = -1
+
         self._inputs = {"args": [], "kwargs": {}}
         if lattice.args:
             self._inputs["args"] = lattice.args
@@ -629,6 +631,10 @@ Node Outputs
             self.lattice.transport_graph.set_node_value(node_id, "status", status)
             electron_kwargs["status"] = str(status)
 
+            if str(status) == "COMPLETED":
+                # TODO - update completed electron num in lattice
+                pass
+
         if output is not None:
             self.lattice.transport_graph.set_node_value(node_id, "output", output)
             with open(node_path / ELECTRON_RESULTS_FILENAME, "wb") as f:
@@ -761,6 +767,8 @@ Node Outputs
                 "dispatch_id": self.dispatch_id,
                 "status": str(self.status),
                 "name": self.lattice.__name__,
+                "electron_num": self._num_nodes,
+                "completed_electron_num": 0,  # None of the nodes have been executed or completed yet.
                 "storage_path": str(data_storage_path),
                 "storage_type": LATTICE_STORAGE_TYPE,
                 "function_filename": LATTICE_FUNCTION_FILENAME,
@@ -779,7 +787,6 @@ Node Outputs
 
         else:
             lattice_record_kwarg = {
-                # TODO - Include logic for electron_id in sublattice context
                 "dispatch_id": self.dispatch_id,
                 "status": str(self.status),
                 "updated_at": datetime.now(timezone.utc),
