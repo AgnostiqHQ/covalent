@@ -472,9 +472,6 @@ def _update_node_result(lock, result_object, node_result, pending_deps, tasks_qu
         if node_status == Result.RUNNING:
             return
 
-        app_log.error(f"Illegal node status: {node_status}")
-        assert False
-
 
 def _run_task_and_update(run_task_callable, lock, result_object, pending_deps, tasks_queue):
     node_result = run_task_callable()
@@ -562,7 +559,6 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         app_log.debug(f"Processing node {node_id}")
 
         if node_id < 0:
-
             app_log.debug(f"Workflow {result_object.dispatch_id} failed or cancelled.")
             wait(task_futures)
             return result_object
@@ -589,15 +585,8 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 except Exception:
                     app_log.exception("Subscripted")
 
-                if node_name.startswith(attr_prefix):
-                    attr = result_object.lattice.transport_graph.get_node_value(
-                        node_id, "attribute_name"
-                    )
-                    output = getattr(output, attr)
-                    app_log.warning(f"7F: Node output: {output} (run_planned_workflow).")
-                else:
-                    key = result_object.lattice.transport_graph.get_node_value(node_id, "key")
-                    output = output[key]
+                key = result_object.lattice.transport_graph.get_node_value(node_id, "key")
+                output = output[key]
 
             app_log.warning("8: Starting update node (run_planned_workflow).")
 
