@@ -11,6 +11,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Columns `is_active` in the lattice, eLectron and Electron dependency tables.
 
+## [0.138.0] - 2022-07-19
+
+### Authors
+
+- Anna Hughes <annagwen42@gmail.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Docker build workflow
+
+### Changed
+
+- Dockerfile uses multi-stage build
+
+### Docs
+
+- New tutorial demonstrating how to solve the MaxCut Problem with QAOA and Covalent
+
+## [0.137.0] - 2022-07-19
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Ability to hide/show labels on the graph
+- Graph layout with elk configurations
+
+### Changed
+
+- Changed API socket calls interval for graph optimization.
+
 ### Tests
 
 - Disabled several dask functional tests
