@@ -803,10 +803,7 @@ Node Outputs
                 if not node_path.exists():
                     node_path.mkdir()
 
-                try:
-                    attribute_name = tg.get_node_value(node_key=node_id, value_key="name")
-                except KeyError:
-                    attribute_name = None
+                attribute_name = tg.get_node_value(node_key=node_id, value_key="name")
 
                 try:
                     node_key = tg.get_node_value(node_key=node_id, value_key="key")
