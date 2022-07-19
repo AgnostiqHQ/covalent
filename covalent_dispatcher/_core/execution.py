@@ -690,6 +690,10 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
     wait(task_futures)
 
+    if result_object._status == Result.FAILED or result_object._status == Result.CANCELLED:
+        app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
+        return result_object
+
     app_log.warning("8: All tasks finished running (run_planned_workflow)")
 
     result_object._status = Result.POSTPROCESSING
