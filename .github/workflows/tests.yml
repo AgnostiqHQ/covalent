@@ -125,11 +125,11 @@ jobs:
         with:
           filters: |
             sdk:
-              - './covalent/'
+              - 'covalent/'
             dispatcher:
-            - './covalent_dispatcher/'
+            - 'covalent_dispatcher/'
             functional_tests:
-            - './tests/functional_tests'  
+            - 'tests/functional_tests/'  
 
       - name: Run tests and measure coverage   
         uses: nick-fields/retry@v2
@@ -143,14 +143,14 @@ jobs:
               PYTHONPATH=$PWD/ pytest tests/functional_tests
             
       - name: Generate coverage report
-        if: ${{ steps.filter.sdk || steps.filter.dispatcher || steps.filter.functional_tests }}
+        if: ${{ steps.filter.outputs.sdk || steps.outputs.filter.outputs.dispatcher || steps.filter.outputs.functional_tests }}
         run:  coverage xml
 
       - name: Upload report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v2
         with:
-          files: covalent/coverage.xml, covalent_dispatcher/coverage.xml
+          files: coverage.xml
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
