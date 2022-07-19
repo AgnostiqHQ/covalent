@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Docker build workflow
+
+### Changed
+
+- Dockerfile uses multi-stage build
+
 ### Docs
 
 - New tutorial demonstrating how to solve the MaxCut Problem with QAOA and Covalent
@@ -27,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Changed API socket calls interval for graph optimization.
+
 ### Tests
 
 - Disabled several dask functional tests
