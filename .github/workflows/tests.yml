@@ -141,8 +141,9 @@ jobs:
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
             PYTHONPATH=$PWD/ pytest -vv tests/covalent_tests  --cov=covalent --cov-config=.coveragerc
-        - name: Generate SDK coverage report
-          run: coverage xml -o sdk_coverage.xml
+            
+      - name: Generate SDK coverage report
+        run: coverage xml -o sdk_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
         if: ${{ steps.working-directory.outputs.dispatcher }} == 'true'
@@ -153,8 +154,9 @@ jobs:
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
             PYTHONPATH=$PWD/ pytest -vv tests/covalent_dispatcher_tests  --cov=covalent_dispatcher --cov-config=.coveragerc
-        - name: Generate dispatcher coverage report
-          run: coverage xml -o dispatcher_coverage.xml
+      
+      - name: Generate dispatcher coverage report
+        run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
         if: ${{ steps.working-directory.outputs.functional_tests }} == 'true'
@@ -165,8 +167,9 @@ jobs:
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
             PYTHONPATH=$PWD/ pytest -vv tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
-        - name: Generate functional test coverage report
-          run: coverage xml -o functional_tests_coverage.xml
+      
+      - name: Generate functional test coverage report
+        run: coverage xml -o functional_tests_coverage.xml
 
       - name: Run UI backend tests and measure coverage
         if: ${{ steps.working-directory.outputs.covalent_ui }} == 'true'
@@ -177,8 +180,9 @@ jobs:
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
             PYTHONPATH=$PWD/ pytest -vv tests --cov=covalent_ui --cov-config=.coveragerc
-        - name: Generate UI backend coverage report
-          run: coverage xml ui_backend_coverage.xml
+      
+      - name: Generate UI backend coverage report
+        run: coverage xml ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
