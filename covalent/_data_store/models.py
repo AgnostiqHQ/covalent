@@ -22,7 +22,7 @@
 Models for the workflows db. Based on schema v9
 """
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -76,11 +76,11 @@ class Lattice(Base):
     transport_graph_filename = Column(Text)
 
     # Name of the column which signifies soft deletion of a lattice
-    is_active = Column(Boolean, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
 
     # Timestamps
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    updated_at = Column(DateTime, nullable=False, onupdate=func.now(), server_default=func.now())
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
 
@@ -151,11 +151,11 @@ class Electron(Base):
     info_filename = Column(Text)
 
     # Name of the column which signifies soft deletion of the electrons corresponding to a lattice
-    is_active = Column(Boolean, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
 
     # Timestamps
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    updated_at = Column(DateTime, nullable=False, onupdate=func.now(), server_default=func.now())
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
 
@@ -179,7 +179,7 @@ class ElectronDependency(Base):
     arg_index = Column(Integer, nullable=True)
 
     # Name of the column which signifies soft deletion of the electron dependencies corresponding to a lattice
-    is_active = Column(Boolean, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
 
-    updated_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=True, onupdate=func.now(), server_default=func.now())
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
