@@ -172,7 +172,7 @@ jobs:
         run: coverage xml -o functional_tests_coverage.xml
 
       - name: Run UI backend tests and measure coverage
-        if: ${{ steps.working-directory.outputs.covalent_ui }} == 'true'
+        if: ${{ steps.working-directory.outputs.covalent_ui }} == 'true' && false
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
