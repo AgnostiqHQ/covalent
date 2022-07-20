@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+
+### Added
+
+- Ensure that transportable objects are rendered correctly when printing the result object.
+
 ### Tests
 
 - Check that user data is not unpickled by the Covalent server process
