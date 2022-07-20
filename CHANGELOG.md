@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Check that user data is not unpickled by the Covalent server process
+
 ## [0.145.0] - 2022-07-20
 
 ### Authors
