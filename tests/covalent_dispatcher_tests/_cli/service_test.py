@@ -44,7 +44,7 @@ from covalent_dispatcher._cli.service import (
 )
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
-RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://0.0.0.0:42.\n"
+RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://localhost:42.\n"
 
 
 def test_read_pid_nonexistent_file():
