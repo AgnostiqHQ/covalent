@@ -72,10 +72,6 @@ jobs:
             - 'covalent_dispatcher/*'
             functional_tests:
             - 'tests/functional_tests/*'
-            all_tests:
-            - 'tests/*'
-            workflows:
-            - '.github/workflows/*'
 
       - name: Set up Python
         if: matrix.os == 'macos-latest'
