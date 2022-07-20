@@ -51,9 +51,9 @@ def submit() -> Response:
                      returned as a Flask Response object.
     """
 
-    data = request.get_data()
-    result_object = pickle.loads(data)
-    dispatch_id = dispatcher.run_dispatcher(result_object, workflow_pool)
+    json_lattice = request.get_data()
+
+    dispatch_id = dispatcher.run_dispatcher(json_lattice, workflow_pool)
 
     return jsonify(dispatch_id)
 
