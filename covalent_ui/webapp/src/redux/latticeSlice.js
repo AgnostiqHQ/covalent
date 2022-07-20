@@ -80,11 +80,11 @@ export const latticeSlice = createSlice({
         state.latticeResult = payload
       })
       .addCase(latticeResults.pending, (state) => {
-        state.latticeDetailsResults.isFetching = true
+        state.latticeResultsList.isFetching = true
         state.latticeResultsList.error = null
       })
       .addCase(latticeResults.rejected, (state, { payload }) => {
-        state.latticeDetailsResults.isFetching = false
+        state.latticeResultsList.isFetching = false
         state.latticeResultsList.error = payload.message
       })
 

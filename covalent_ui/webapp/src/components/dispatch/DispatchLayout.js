@@ -70,9 +70,9 @@ export function DispatchLayout() {
      setSelectedElements([])
    }, [dispatchId, setSelectedElements])
 
-  if (fetch) {
-    return <PageLoading />
-  }
+  // if (fetch) {
+  //   return <PageLoading />
+  // }
 
   return (
     <>
