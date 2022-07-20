@@ -142,7 +142,8 @@ jobs:
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
-            PYTHONPATH=$PWD/ pytest -vv tests/covalent_tests  --cov=covalent
+            PYTHONPATH=$PWD/ pytest -vv tests/covalent_tests  --cov=covalent --cov-config=.coveragerc
+            coverage xml -o sdk_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
         if: ${{ steps.working-directory.outputs.dispatcher }} == 'true'
@@ -152,7 +153,8 @@ jobs:
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
-            PYTHONPATH=$PWD/ pytest -vv tests/covalent_dispatcher_tests  --cov=covalent_dispatcher
+            PYTHONPATH=$PWD/ pytest -vv tests/covalent_dispatcher_tests  --cov=covalent_dispatcher --cov-config=.coveragerc
+            coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
         if: ${{ steps.working-directory.outputs.functional_tests }} == 'true'
@@ -162,47 +164,32 @@ jobs:
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
-            PYTHONPATH=$PWD/ pytest -vv tests/functional_tests  --cov=covalent
-
-#      - name: Upload reports to Codecov
-#        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-#        uses: codecov/codecov-action@v3
-#        with:
-#          files: covalent_dispatcher/coverage.xml, covalent/coverage.xml
-#          flags: covalent_dispatcher, covalent
-
-      - name: Generate coverage report for SDK
-        if: ${{ steps.working-directory.outputs.dispatcher }} == 'true'
-        run: coverage xml
-
-      - name: Generate coverage report for dispatcher
-        if: ${{ steps.working-directory.outputs.dispatcher }} == 'true'
-        run: coverage xml
-
-      - name: Generate coverage report for functional tests
-        if: ${{ steps.working-directory.outputs.functional_tests }} == 'true'
-        run: coverage xml
+            PYTHONPATH=$PWD/ pytest -vv tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+            coverage xml -o functional_tests_coverage.xml
 
       - name: Upload SDK report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v3
         with:
-          files: ./coverage.xml
-          flags: sdk
+          files: ./sdk_coverage.xml
+          flags: SDK
+          name: "SDK Unit Tests"
 
-      - name: Upload dispatcher report to Codecov
+      - name: Upload Dispatcher report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v3
         with:
-          files: ./covalent_dispatcher/coverage.xml
-          flags: dispatcher
+          files: ./dispatcher_coverage.xml
+          flags: Dispatcher
+          name: "Dispatcher Unit Tests"
 
-      - name: Upload functional tests report to Codecov
+      - name: Upload Functional report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v3
         with:
-          files: ./tests/functional_tests/coverage.xml
-          flags: functional-tests
+          files: ./functional_tests_coverage.xml
+          flags: Functional_Tests
+          name: "Functional Tests"
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
