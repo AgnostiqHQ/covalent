@@ -27,7 +27,7 @@ from typing import Dict, List, Optional, Union
 
 import cloudpickle as pickle
 import requests
-from requests.adapters import HTTPAdapter
+from requests.adapters import HTTPAdapter, Retry
 from sqlalchemy.orm import Session
 
 from covalent._workflow.transport import TransportableObject
@@ -74,9 +74,6 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
         app_log.warning(
             f"Dispatch ID {dispatch_id} was not found in the database. Either the Dispatch ID is incorrect or wait a couple of seconds before trying again."
         )
-
-        time.sleep(0.01)
-        return get_result(dispatch_id, wait)
 
     return result_object
 
@@ -156,7 +153,7 @@ def _get_result_from_dispatcher(
     Raises:
         MissingLatticeRecordError: If the result is not found.
     """
-    adapter = HTTPAdapter()
+    adapter = HTTPAdapter(max_retries=Retry(total=5, backoff_factor=0.1))
     http = requests.Session()
     http.mount("http://", adapter)
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
