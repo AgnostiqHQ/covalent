@@ -52,10 +52,25 @@ class MissingElectronRecordError(Exception):
     pass
 
 
+def update_lattice_completed_electron_num(db: DataStore, dispatch_id: str) -> None:
+    """Update the number of completed electrons by one corresponding to a lattice."""
+
+    with Session(db.engine) as session:
+        session.query(Lattice).filter_by(dispatch_id=dispatch_id).update(
+            {
+                "completed_electron_num": Lattice.completed_electron_num + 1,
+                "updated_at": dt.now(timezone.utc),
+            }
+        )
+        session.commit()
+
+
 def insert_lattices_data(
     db: DataStore,
     dispatch_id: str,
     name: str,
+    electron_num: int,
+    completed_electron_num: int,
     status: str,
     storage_type: str,
     storage_path: str,
@@ -77,6 +92,8 @@ def insert_lattices_data(
         dispatch_id=dispatch_id,
         name=name,
         status=status,
+        electron_num=electron_num,
+        completed_electron_num=completed_electron_num,
         storage_type=storage_type,
         storage_path=storage_path,
         function_filename=function_filename,
@@ -86,6 +103,7 @@ def insert_lattices_data(
         inputs_filename=inputs_filename,
         results_filename=results_filename,
         transport_graph_filename=transport_graph_filename,
+        is_active=True,
         created_at=created_at,
         updated_at=updated_at,
         started_at=started_at,
@@ -115,10 +133,13 @@ def insert_electrons_data(
     results_filename: str,
     value_filename: str,
     attribute_name: str,
-    key: str,
+    key_filename: str,
     stdout_filename: str,
     stderr_filename: str,
     info_filename: str,
+    deps_filename: str,
+    call_before_filename: str,
+    call_after_filename: str,
     created_at: dt,
     updated_at: dt,
     started_at: dt,
@@ -148,10 +169,14 @@ def insert_electrons_data(
         results_filename=results_filename,
         value_filename=value_filename,
         attribute_name=attribute_name,
-        key=key,
+        key_filename=key_filename,
         stdout_filename=stdout_filename,
         stderr_filename=stderr_filename,
         info_filename=info_filename,
+        deps_filename=deps_filename,
+        call_before_filename=call_before_filename,
+        call_after_filename=call_after_filename,
+        is_active=True,
         created_at=created_at,
         updated_at=updated_at,
         started_at=started_at,
@@ -198,7 +223,9 @@ def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "L
                 edge_name=edge_data["edge_name"],
                 parameter_type=edge_data["param_type"] if "param_type" in edge_data else None,
                 arg_index=edge_data["arg_index"] if "arg_index" in edge_data else None,
+                is_active=True,
                 created_at=dt.now(timezone.utc),
+                updated_at=dt.now(timezone.utc),
             )
 
             session.add(electron_dependency_row)
@@ -222,7 +249,6 @@ def update_lattices_data(db: DataStore, dispatch_id: str, **kwargs) -> None:
                 setattr(valid_update, attr, value)
 
         session.add(valid_update)
-
         session.commit()
 
 
