@@ -136,7 +136,7 @@ jobs:
         if: ${{ steps.working-directory.outputs.sdk}} == 'true'
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 10
+          timeout_minutes: 15
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
@@ -149,7 +149,7 @@ jobs:
         if: ${{ steps.working-directory.outputs.dispatcher }} == 'true'
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 10
+          timeout_minutes: 15
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
@@ -162,7 +162,7 @@ jobs:
         if: ${{ steps.working-directory.outputs.functional_tests }} == 'true'
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 10
+          timeout_minutes: 15
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
@@ -175,7 +175,7 @@ jobs:
         if: ${{ steps.working-directory.outputs.covalent_ui }} == 'true'
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 10
+          timeout_minutes: 15
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
