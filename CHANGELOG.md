@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Set up alembic migrations & added migration guide (`alembic/README.md`)
+
 ## [0.143.0] - 2022-07-19
 
 ### Authors
