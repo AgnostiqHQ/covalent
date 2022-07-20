@@ -19,10 +19,15 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from contextlib import contextmanager
-from typing import BinaryIO, Dict, Generator, List, Union
+from os import path
+from pathlib import Path
+from typing import BinaryIO, Dict, Generator, List, Optional, Union
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
+
+from alembic import command
+from alembic.config import Config
 
 from .._shared_files.config import get_config
 from . import models
@@ -34,7 +39,7 @@ default_backend_map = {"local": LocalStorageBackend(base_dir=get_config("workflo
 class DataStore:
     def __init__(
         self,
-        db_URL,
+        db_URL: Optional[str] = None,
         storage_backend_map: Dict[str, StorageBackend] = default_backend_map,
         initialize_db: bool = False,
         **kwargs,
@@ -45,44 +50,40 @@ class DataStore:
             self.db_URL = "sqlite+pysqlite:///" + get_config("workflow_data.db_path")
 
         self.storage_backend_map = storage_backend_map
-
         self.engine = create_engine(self.db_URL, **kwargs)
+        self.Session = sessionmaker(self.engine)
 
+        # flag should only be used in pytest - tables should be generated using migrations
         if initialize_db:
             models.Base.metadata.create_all(self.engine)
 
+    def run_migrations(self):
+
+        alembic_ini_path = Path(path.join(__file__, "./../../../alembic.ini")).resolve()
+        alembic_config = Config(alembic_ini_path)
+        alembic_config.attributes["configure_logger"] = False
+        alembic_config.set_main_option("sqlalchemy.url", self.db_URL)
+        command.upgrade(alembic_config, "head")
+
     @contextmanager
-    def begin_session(self, metadata={}):
-        with Session(self.engine, metadata) as session:
-            session.begin()
-            ds_session = DataStoreSession(session)
-            try:
-                yield ds_session
+    def session(self) -> Generator[Session, None, None]:
+        with self.Session.begin() as session:
+            yield session
 
-                session.commit()
-                for arg in ds_session.pending_uploads:
-                    self.upload_file(*arg)
-                for arg in ds_session.pending_deletes:
-                    self.delete_file(*arg)
 
-            except Exception as ex:
-                session.rollback()
-                raise ex
-
-            finally:
-                pass
-
-    def upload_file(self, data: BinaryIO, storage_type: str, storage_path: str, file_name: str):
-
-        raise NotImplementedError
-
-    def delete_file(self, storage_type: str, storage_path: str, file_name: str):
-
-        raise NotImplementedError
-
-    def download_file(self, storage_type: str, storage_path: str, file_name: str):
-
-        raise NotImplementedError
+class DevDataStore(DataStore):
+    def __init__(
+        self,
+        db_URL: Optional[str] = None,
+        initialize_db: bool = False,
+        storage_backend_map: Dict[str, StorageBackend] = default_backend_map,
+        **kwargs,
+    ):
+        if not db_URL:
+            db_path = get_config("user_interface.dispatch_db")
+            sqlite = ".sqlite"
+            db_URL = f"sqlite+pysqlite:///{db_path.split(sqlite)[0]}_dev{sqlite}"
+        super().__init__(db_URL, storage_backend_map, initialize_db, **kwargs)
 
 
 class DataStoreSession:
@@ -105,3 +106,9 @@ class DataStoreNotInitializedError(Exception):
     def __init__(self, message="Database is not initialized."):
         self.message = message
         super().__init__(self.message)
+
+
+# we can switch this to any class instance that has a db_URL property that points to the db
+# which we want to run migrations against - this command also creates the db without tables
+# via create_engine()
+workflow_db = DevDataStore(echo=True)
