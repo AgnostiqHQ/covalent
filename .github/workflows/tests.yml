@@ -210,7 +210,7 @@ jobs:
           name: "Functional Tests"
 
       - name: Upload UI backend report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && false
         uses: codecov/codecov-action@v3
         with:
           files: ./ui_backend_coverage.xml
