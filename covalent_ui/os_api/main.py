@@ -115,7 +115,7 @@ def disconnect(sid):
     print("disconnect ", sid)
 
 
-app.mount(ROUTE_WEBAPP_PATH, StaticFiles(directory=WEBAPP_PATH), name="webapp")
+# app.mount(ROUTE_WEBAPP_PATH, StaticFiles(directory=WEBAPP_PATH), name="webapp")
 origins = [
     "*",
 ]
