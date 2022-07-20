@@ -130,6 +130,7 @@ def result_from(lattice_record: Lattice) -> Result:
     result._start_time = lattice_record.started_at
     result._end_time = lattice_record.completed_at
     result._result = output if output is not None else TransportableObject(None)
+    result._num_nodes = lattice_record.electron_num
     return result
 
 

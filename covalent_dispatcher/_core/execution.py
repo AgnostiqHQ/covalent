@@ -672,9 +672,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     post_processing_inputs = {}
     post_processing_inputs["args"] = [
         TransportableObject.make_transportable(result_object.lattice),
-        TransportableObject.make_transportable(
-            result_object.get_all_node_outputs(DispatchDB()._get_data_store())
-        ),
+        TransportableObject.make_transportable(result_object.get_all_node_outputs()),
     ]
     post_processing_inputs["kwargs"] = {}
 

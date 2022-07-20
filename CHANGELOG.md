@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Retrieve Result object node metadata from the transport graph rather than the Database.
+
 ## [0.146.0] - 2022-07-20
 
 ### Authors
