@@ -20,7 +20,7 @@
 
 from sqlalchemy import select
 
-from .._data_store import DataStore, DataStoreSession, models
+from .._data_store import DataStore, models
 from .._results_manager.result import Result
 from .._shared_files.config import get_config
 
