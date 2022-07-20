@@ -33,8 +33,8 @@ call_before = DepsCall(deps_bash)
 call_after = DepsCall(deps_bash)
 
 @ct.leptons.bash(
-    executor="local", 
-    display_name="debug", 
+    executor="local",
+    display_name="debug",
     call_before=call_before,
     call_after=call_after,
     deps_bash=deps_bash,
