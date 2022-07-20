@@ -81,3 +81,13 @@ def test_wrapper_fn_calldep_retval_injection():
     output = wrapper_fn(serialized_fn, call_before, [], *args, **kwargs)
 
     assert output.get_deserialized() == 7
+
+
+def test_local_executor_run():
+    def f(x):
+        return x**2
+
+    le = LocalExecutor()
+    args = [5]
+    kwargs = {}
+    assert le.run(f, args, kwargs) == 25

@@ -78,7 +78,7 @@ def test_get_executor(mocker):
     """Test get executor method in executor manager."""
 
     class MockExecutor(BaseExecutor):
-        def execute(self):
+        def run(self):
             pass
 
     def plugin_mock(**kwargs):
