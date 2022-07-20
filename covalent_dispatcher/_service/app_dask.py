@@ -4,7 +4,7 @@ import asyncio
 import os
 from logging import Logger
 from multiprocessing import Process, current_process
-from threading import Event, Thread
+from threading import Thread, Event
 
 import dask.config
 from dask.distributed import Client, LocalCluster
@@ -33,7 +33,9 @@ class DaskAdminWorker(Thread):
     the cluster that are not supported by the Dask scheduler directly
     """
 
-    def __init__(self, cluster: LocalCluster, admin_host: str, admin_port: int, logger=None):
+    def __init__(
+        self, cluster: LocalCluster, admin_host: str, admin_port: int, logger=None
+    ):
         # Admin handler server connection args
         self.cluster = cluster
         self._admin_host = admin_host
@@ -214,7 +216,9 @@ class DaskCluster(Process):
                 }
             )
 
-            admin = DaskAdminWorker(self.cluster, self.admin_host, self.admin_port, self.logger)
+            admin = DaskAdminWorker(
+                self.cluster, self.admin_host, self.admin_port, self.logger
+            )
             admin.start()
         except Exception as e:
             self.logger.exception(e)
