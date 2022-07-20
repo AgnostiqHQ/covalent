@@ -51,10 +51,13 @@ const DispatchDrawerContents = (props) => {
   )
 
   useEffect(() => {
-    dispatch(latticeDetails({ dispatchId }))
-    dispatch(latticeError({ dispatchId, params: 'error' }))
+    return () => {
+      dispatch(latticeError({ dispatchId, params: 'error' }))
+      dispatch(latticeDetails({ dispatchId }))
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [callSocketApi])
+  },[callSocketApi])
+
 
   return (
     <Box sx={{ px: 3, my: 0 }}>
@@ -77,11 +80,13 @@ const DispatchDrawerContents = (props) => {
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
+        {Object.keys(drawerLatticeDetails).length !== 0 &&
           <LatticeDispatchOverview
             dispatchId={dispatchId}
             latDetails={drawerLatticeDetails}
             isFetching={drawerLatticeDetailsFetching}
           />
+        }
         </TabPanel>
       </TabContext>
       {/* } */}

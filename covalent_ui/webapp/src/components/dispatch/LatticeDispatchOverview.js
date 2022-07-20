@@ -66,12 +66,14 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
   )
 
   useEffect(() => {
-    dispatch(latticeResults({ dispatchId, params: 'result' }))
-    dispatch(latticeFunctionString({ dispatchId, params: 'function_string' }))
-    dispatch(latticeInput({ dispatchId, params: 'inputs' }))
-    dispatch(latticeExecutorDetail({ dispatchId, params: 'executor_details' }))
+    return () => {
+      dispatch(latticeResults({ dispatchId, params: 'result' }))
+      dispatch(latticeFunctionString({ dispatchId, params: 'function_string' }))
+      dispatch(latticeInput({ dispatchId, params: 'inputs' }))
+      dispatch(latticeExecutorDetail({ dispatchId, params: 'executor_details' }))
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [callSocketApi])
+  },[callSocketApi])
 
   const hasStarted = !!result.started_at
   const hasEnded = !!result.ended_at
