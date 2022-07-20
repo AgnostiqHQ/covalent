@@ -28,6 +28,9 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from alembic import command
 from alembic.config import Config
+from alembic.environment import EnvironmentContext
+from alembic.migration import MigrationContext
+from alembic.script import ScriptDirectory
 
 from .._shared_files.config import get_config
 from . import models
@@ -57,13 +60,31 @@ class DataStore:
         if initialize_db:
             models.Base.metadata.create_all(self.engine)
 
-    def run_migrations(self):
-
+    def get_alembic_config(self, logging_enabled: bool = True):
         alembic_ini_path = Path(path.join(__file__, "./../../../alembic.ini")).resolve()
         alembic_config = Config(alembic_ini_path)
         alembic_config.attributes["configure_logger"] = False
+        alembic_config.attributes["configure_logger"] = logging_enabled
         alembic_config.set_main_option("sqlalchemy.url", self.db_URL)
+        return alembic_config
+
+    def run_migrations(self, logging_enabled: bool = True):
+        alembic_config = self.get_alembic_config(logging_enabled=logging_enabled)
         command.upgrade(alembic_config, "head")
+
+    def current_revision(self):
+        alembic_config = self.get_alembic_config(logging_enabled=False)
+        script = ScriptDirectory.from_config(alembic_config)
+        with EnvironmentContext(alembic_config, script) as ctx:
+            context = MigrationContext.configure(self.engine.connect(), environment_context=ctx)
+            current_rev = context.get_current_revision()
+            return current_rev
+
+    def current_head(self):
+        alembic_config = self.get_alembic_config(logging_enabled=False)
+        script = ScriptDirectory.from_config(alembic_config)
+        current_head = script.get_current_head()
+        return current_head
 
     @contextmanager
     def session(self) -> Generator[Session, None, None]:

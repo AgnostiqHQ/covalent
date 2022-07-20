@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added methods to programatically fetch information from Alembic without needing subprocess
 ### Tests
 
 - Check that user data is not unpickled by the Covalent server process
