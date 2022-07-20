@@ -138,12 +138,18 @@ class Result:
         self._error = None
 
     def __str__(self):
+        """String representation of the result object"""
+
+        arg_str_repr = [e.object_string for e in self.inputs["args"]]
+        kwarg_str_repr = {key: value.object_string for key, value in self.inputs["kwargs"].items()}
+
         show_result_str = f"""
 Lattice Result
 ==============
 status: {self._status}
 result: {self.result}
-inputs: {self.inputs}
+input args: {arg_str_repr}
+input kwargs: {kwarg_str_repr}
 error: {self.error}
 
 start_time: {self.start_time}
@@ -160,7 +166,7 @@ Node Outputs
             DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
         )
         for k, v in node_outputs.items():
-            show_result_str += f"{k}: {v}\n"
+            show_result_str += f"{k}: {v.object_string}\n"
 
         return show_result_str
 
