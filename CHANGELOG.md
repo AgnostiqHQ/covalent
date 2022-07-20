@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Enhanced `tests.yml` to upload coverage reports by domain
+
 ## [0.144.0] - 2022-07-20
 
 ### Authors
