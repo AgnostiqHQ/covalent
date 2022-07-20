@@ -24,13 +24,14 @@ import os
 from pathlib import Path
 
 import covalent as ct
+from covalent import DepsBash, DepsCall, DepsPip
 from covalent._results_manager import results_manager as rm
-from covalent import DepsBash, DepsPip, DepsCall
 
 deps_bash = DepsBash(["whoami"])
 deps_pip = DepsPip(packages=["cloudpickle==2.0.0"])
 call_before = DepsCall(deps_bash)
 call_after = DepsCall(deps_bash)
+
 
 @ct.leptons.bash(
     executor="local",
@@ -38,7 +39,7 @@ call_after = DepsCall(deps_bash)
     call_before=call_before,
     call_after=call_after,
     deps_bash=deps_bash,
-    deps_pip=deps_pip
+    deps_pip=deps_pip,
 )
 def task(x):
     return f"echo {x} > /tmp/debug.txt"
