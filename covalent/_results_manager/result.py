@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 import cloudpickle
 import cloudpickle as pickle
-import networkx as nx
 import yaml
 from sqlalchemy import and_, update
 from sqlalchemy.orm import Session
@@ -138,12 +137,23 @@ class Result:
         self._error = None
 
     def __str__(self):
+
+        arg_str_repr = []
+        kwarg_str_repr = {}
+
+        for e in self.inputs["args"]:
+            arg_str_repr.append(e.object_string)
+
+        for key, value in self.inputs["kwargs"].items():
+            kwarg_str_repr[key] = value.object_string
+
         show_result_str = f"""
 Lattice Result
 ==============
 status: {self._status}
 result: {self.result}
-inputs: {self.inputs}
+input args: {arg_str_repr}
+input kwargs: {kwarg_str_repr}
 error: {self.error}
 
 start_time: {self.start_time}
@@ -160,7 +170,7 @@ Node Outputs
             DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
         )
         for k, v in node_outputs.items():
-            show_result_str += f"{k}: {v}\n"
+            show_result_str += f"{k}: {v.object_string}\n"
 
         return show_result_str
 

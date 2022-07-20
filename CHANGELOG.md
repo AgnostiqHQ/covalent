@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ensure that the files uploaded are not `TransportableObjects` when they're stored in the Database.
 - Ensure that when the files are loaded, they're converted to `TransportableObjects`.
+- Reverting get node outputs in the Result class to use the Transport Graph rather than the Database.
 
 ### Tests
 
