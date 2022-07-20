@@ -93,9 +93,9 @@ const LatticeGraph = ({
   // layouting
   useEffect(() => {
     if (algorithm === 'oldLayout') {
-      setElements(layout(graph, direction, showParams))
+      setElements(layout(graph, direction, showParams,hideLabels))
     } else {
-      assignNodePositions(graph, direction, showParams, algorithm)
+      assignNodePositions(graph, direction, showParams, algorithm,hideLabels)
         .then((els) => {
           setElements(els)
         })

@@ -503,6 +503,49 @@ def test_decorated_function():
     assert workflow_result.status == str(Result.COMPLETED)
 
 
+def test_leaf_electron_failure():
+    @ct.electron
+    def failing_task():
+        assert False
+        return 1
+
+    @ct.lattice
+    def workflow():
+        failing_task()
+        return 1
+
+    dispatch_id = ct.dispatch(workflow)()
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
+
+    tg = workflow_result.lattice.transport_graph
+
+    assert workflow_result.status == str(Result.FAILED)
+    assert tg.get_node_value(0, "status") == Result.FAILED
+
+
+def test_intermediate_electron_failure():
+    @ct.electron
+    def failing_task(x):
+        assert False
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        res1 = failing_task(x)
+        res2 = failing_task(res1)
+        return res2
+
+    dispatch_id = ct.dispatch(workflow)(5)
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
+
+    tg = workflow_result.lattice.transport_graph
+
+    assert workflow_result.status == str(Result.FAILED)
+    assert tg.get_node_value(0, "status") == Result.FAILED
+
+
 @pytest.mark.skip(reason="Inconsistent outcomes")
 def test_dispatch_cancellation():
     """
