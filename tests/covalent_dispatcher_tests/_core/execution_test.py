@@ -590,3 +590,34 @@ def test_run_workflow_with_failing_leaf(mocker):
     result_object = run_workflow(dispatch_id, json_lattice, tasks_pool)
 
     assert result_object.status == Result.FAILED
+
+
+def test_run_workflow_does_not_deserialize(mocker):
+    """Check that dispatcher does not deserialize user data when using
+    out-of-process `workflow_executor`"""
+
+    @ct.electron(executor="dask")
+    def task(x):
+        return x
+
+    @ct.lattice(executor="dask", workflow_executor="dask")
+    def workflow(x):
+        # Exercise both sublatticing and postprocessing
+        sublattice_task = ct.lattice(task, workflow_executor="dask")
+        res1 = ct.electron(sublattice_task(x), executor="dask")
+        return res1
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    workflow.build_graph(5)
+
+    json_lattice = workflow.serialize_to_json()
+    dispatch_id = "asdf"
+    tasks_pool = ThreadPoolExecutor()
+
+    mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
+
+    result_object = run_workflow(dispatch_id, json_lattice, tasks_pool)
+
+    mock_to_deserialize.assert_not_called()
+    assert result_object.status == Result.COMPLETED

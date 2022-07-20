@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ensure that the files uploaded are not `TransportableObjects` when they're stored in the Database.
 - Ensure that when the files are loaded, they're converted to `TransportableObjects`.
 
+### Tests
+
+- Check that user data is not unpickled by the Covalent server process
+
 ## [0.145.0] - 2022-07-20
 
 ### Authors
