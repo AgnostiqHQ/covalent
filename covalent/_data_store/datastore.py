@@ -75,9 +75,11 @@ class DataStore:
     def current_revision(self):
         alembic_config = self.get_alembic_config(logging_enabled=False)
         script = ScriptDirectory.from_config(alembic_config)
-        with EnvironmentContext(alembic_config, script) as ctx:
-            context = MigrationContext.configure(self.engine.connect(), environment_context=ctx)
-            current_rev = context.get_current_revision()
+        with EnvironmentContext(alembic_config, script) as env_ctx:
+            migration_ctx = MigrationContext.configure(
+                self.engine.connect(), environment_context=env_ctx
+            )
+            current_rev = migration_ctx.get_current_revision()
             return current_rev
 
     def current_head(self):
@@ -85,6 +87,10 @@ class DataStore:
         script = ScriptDirectory.from_config(alembic_config)
         current_head = script.get_current_head()
         return current_head
+
+    @property
+    def is_migration_pending(self):
+        return self.current_head() != self.current_revision()
 
     @contextmanager
     def session(self) -> Generator[Session, None, None]:
@@ -132,4 +138,4 @@ class DataStoreNotInitializedError(Exception):
 # we can switch this to any class instance that has a db_URL property that points to the db
 # which we want to run migrations against - this command also creates the db without tables
 # via create_engine()
-workflow_db = DevDataStore(echo=True)
+workflow_db = DevDataStore(echo=False)

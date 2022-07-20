@@ -35,12 +35,16 @@ import psutil
 from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
+from covalent._data_store import workflow_db
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
+
+MIGRATION_COMMAND_MSG = '   (use "covalent db migrate" to run database migrations)'
+MIGRATION_WARNING_MSG = "There have been changes applied to the database."
 
 
 def _read_pid(filename: str) -> int:
@@ -287,7 +291,7 @@ def _graceful_shutdown(pidfile: str) -> None:
 @click.argument("no-cluster", required=False)
 @click.pass_context
 def start(
-    ctx,
+    ctx: click.Context,
     port: int,
     develop: bool,
     no_cluster: str,
@@ -298,6 +302,12 @@ def start(
     """
     Start the Covalent server.
     """
+
+    if workflow_db.is_migration_pending:
+        click.secho(MIGRATION_WARNING_MSG, fg="yellow")
+        click.echo(MIGRATION_COMMAND_MSG)
+        return ctx.exit(1)
+
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     no_cluster_flag = "--no-cluster"
     set_config(
