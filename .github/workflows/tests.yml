@@ -57,14 +57,23 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     outputs:
       release: ${{ steps.push.outputs.release }}
-      sdk: ${{ steps.filter.outputs.sdk}}
-      dispatcher: ${{ steps.filter.outputs.dispatcher }}
-      functional_tests: ${{ steps.filter.outputs.functional_tests}}
     steps:
       - name: Check out head
         uses: actions/checkout@v3
         with:
           persist-credentials: false
+      - uses: dorny/paths-filter@v2
+        id: working-directory
+        with:
+          filters: |
+            sdk:
+            - 'covalent/*'
+            dispatcher:
+            - 'covalent_dispatcher/*'
+            functional_tests:
+            - 'tests/functional_tests/*'
+            tests:
+            - 'tests/*'
 
       - name: Set up Python
         if: matrix.os == 'macos-latest'
@@ -122,48 +131,25 @@ jobs:
 
       - name: Start Covalent dispatcher server
         run: covalent start
-
-      - name: Filter paths to test
-        uses: dorny/paths-filter@v2
-        id: changes
-        with:
-          filters: |
-            sdk:
-            - 'covalent/*'
-            dispatcher:
-            - 'covalent_dispatcher/*'
-            functional_tests:
-            - 'tests/functional_tests/*'
-            tests:
-            - 'tests/*'
                
       - name: Run SDK tests and measure coverage
+        if: ${{ steps.working-directory.outputs.sdk}} == 'true'
         run: PYTHONPATH=$PWD/ pytest -vv tests/covalent_tests  --cov=covalent
 
       - name: Run Dispatcher tests and measure coverage
+        if: ${{ steps.working-directory.outputs.dispatcher }} == 'true'
         run: PYTHONPATH=$PWD/ pytest -vv tests/covalent_dispatcher_tests  --cov=covalent_dispatcher
 
       - name: Run Functional tests and measure coverage
+        if: ${{ steps.working-directory.outputs.functional_tests }} == 'true'
         run: PYTHONPATH=$PWD/ pytest -vv tests/functional_tests  --cov=covalent
 
-      # - name: Run tests and measure coverage   
-      #   uses: nick-fields/retry@v2
-      #   with:
-      #       timeout_minutes: 30
-      #       max_attempts: 2
-      #       on_retry_command: rm -f ~/.config/covalent/covalent.conf
-      #       command: |
-      #         PYTHONPATH=$PWD/ pytest tests/covalent_tests -vv  --cov=covalent
-              
-      #         PYTHONPATH=$PWD/ pytest tests/functional_tests
-
-      - name: Upload report to Codecov
+      - name: Upload reports to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v3
         with:
           files: covalent_dispatcher/coverage.xml, covalent/coverage.xml
           flags: covalent_dispatcher, covalent
-      
 
       # - name: Upload report to Codecov
       #   if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
