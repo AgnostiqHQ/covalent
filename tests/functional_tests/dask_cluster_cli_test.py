@@ -20,6 +20,7 @@
 
 import asyncio
 import time
+
 import dask.system
 import pytest
 from dask.distributed import LocalCluster
@@ -57,9 +58,9 @@ def admin_worker_addr(test_cluster):
     admin_host = "127.0.0.1"
     admin_port = 9000
     uri = unparse_address("tcp", f"{admin_host}:{admin_port}")
-    admin_worker = DaskAdminWorker(cluster = test_cluster,
-                        admin_host = admin_host,
-                        admin_port = admin_port)
+    admin_worker = DaskAdminWorker(
+        cluster=test_cluster, admin_host=admin_host, admin_port=admin_port
+    )
     admin_worker.daemon = True
     admin_worker.start()
     yield uri
