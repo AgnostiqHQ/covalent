@@ -18,68 +18,81 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import ast
-import time
-
-import dask.system
 import pytest
-from click.testing import CliRunner
-from distributed.comm import parse_address
+import asyncio
+import time
+import dask.system
+from dask.distributed import LocalCluster
+from distributed.comm import parse_address, unparse_address
+from covalent_dispatcher._service.app_dask import DaskAdminWorker
 
-from covalent._shared_files.config import get_config
-from covalent_dispatcher._cli.service import _is_server_running, cluster
+from covalent_dispatcher._cli.service import (
+    _get_cluster_status,
+    _get_cluster_size,
+    _get_cluster_info,
+    _get_cluster_address,
+    _cluster_restart,
+    _cluster_scale
+)
+
+@pytest.fixture(scope="module")
+def test_cluster():
+    cluster = LocalCluster()
+    yield cluster
+    cluster.close()
+
+@pytest.fixture(scope="module")
+def event_loop():
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
+
+@pytest.fixture(scope="module")
+def admin_worker_addr(test_cluster):
+    admin_host = "127.0.0.1"
+    admin_port = 9000
+    uri = unparse_address("tcp", f"{admin_host}:{admin_port}")
+    admin_worker = DaskAdminWorker(cluster = test_cluster,
+                        admin_host = admin_host,
+                        admin_port = admin_port)
+    admin_worker.daemon = True
+    admin_worker.start()
+    yield uri
 
 
-@pytest.fixture(autouse=True)
-def covalent():
-    """
-    Check to see if covalent is already running in the default
-    configuration
-    """
-    assert _is_server_running()
-
-
-def test_worker_config_option():
-    """
-    Assert that `num_workers` exists as a key in covalent.conf/dask
-    """
-    num_workers = get_config("dask.num_workers")
-    assert int(num_workers) == dask.system.CPU_COUNT
-
-
-@pytest.mark.skip(reason="unstable test")
-def test_cluster_size_cli():
+@pytest.mark.asyncio
+async def test_cluster_size_cli(test_cluster, admin_worker_addr, event_loop):
     """
     Assert covalent cluster size is equal to the default value
     """
-    runner = CliRunner()
-    response = runner.invoke(cluster, "--size")
-    assert int(response.output) == dask.system.CPU_COUNT
+    asyncio.set_event_loop(event_loop)
+    result = await _get_cluster_size(admin_worker_addr)
+    assert int(result) == len(test_cluster.workers)
 
 
-@pytest.mark.skip(reason="unstable test")
-def test_cluster_status_cli():
+@pytest.mark.asyncio
+async def test_cluster_status_cli(admin_worker_addr, event_loop):
     """
     Assert cluster status CLI for default number of workers in the cluster
     """
-    runner = CliRunner()
-    response = runner.invoke(cluster, "--status")
+    asyncio.set_event_loop(event_loop)
+    response = await _get_cluster_status(admin_worker_addr)
+    print(type(response))
     expected = {}
     expected["scheduler"] = "running"
     for i in range(dask.system.CPU_COUNT):
         expected[f"worker-{i}"] = "running"
 
-    assert expected == ast.literal_eval(response.output)
+    assert expected == response
 
 
-@pytest.mark.skip(reason="unstable test")
-def test_cluster_info_cli():
+@pytest.mark.asyncio
+async def test_cluster_info_cli(admin_worker_addr, event_loop):
     """
     Test cluster info CLI for default number of workers, memory and threads per
     worker
     """
-    runner = CliRunner()
-    response = ast.literal_eval(runner.invoke(cluster, "--info").output)
+    asyncio.set_event_loop(event_loop)
     expected_keys = ["type", "id", "address", "services", "started", "workers"]
     worker_info_expected_keys = [
         "type",
@@ -96,6 +109,7 @@ def test_cluster_info_cli():
         "status",
         "nanny",
     ]
+    response = await _get_cluster_info(admin_worker_addr)
     assert list(response.keys()) == expected_keys
     assert len(response["workers"]) == dask.system.CPU_COUNT
 
@@ -104,16 +118,17 @@ def test_cluster_info_cli():
         assert list(value.keys()) == worker_info_expected_keys
 
 
-@pytest.mark.skip(reason="unstable test")
-def test_cluster_address_cli():
+@pytest.mark.asyncio
+async def test_cluster_address_cli(admin_worker_addr, event_loop):
     """
     Test cluster address CLI
     """
-    runner = CliRunner()
+    asyncio.set_event_loop(event_loop)
     expected_protocol = "tcp"
     expected_host = "127.0.0.1"
 
-    response = ast.literal_eval(runner.invoke(cluster, "--address").output)
+    response = await _get_cluster_address(admin_worker_addr)
+
     assert list(response.keys()) == ["scheduler", "workers"]
     assert len(response["workers"]) == dask.system.CPU_COUNT
 
@@ -130,45 +145,45 @@ def test_cluster_address_cli():
         assert host == expected_host
 
 
-@pytest.mark.skip(reason="unstable test")
-def test_cluster_restart():
+@pytest.mark.asyncio
+async def test_cluster_restart(admin_worker_addr, event_loop):
     """
     Test restarting the cluster by asserting the addresses are different
     """
-    runner = CliRunner()
-    current_addresses = ast.literal_eval(runner.invoke(cluster, "--address").output)
+    asyncio.set_event_loop(event_loop)
+    current_addresses = await _get_cluster_address(admin_worker_addr)
 
-    response = runner.invoke(cluster, "--restart").output
-    assert response == "Cluster restarted\n"
+    # Restart the cluster
+    await _cluster_restart(admin_worker_addr)
 
-    new_addresses = ast.literal_eval(runner.invoke(cluster, "--address").output)
+    new_addresses = await _get_cluster_address(admin_worker_addr)
 
     assert current_addresses != new_addresses
 
 
-@pytest.mark.skip(reason="unstable test")
-def test_cluster_scale_up_down():
+@pytest.mark.asyncio
+async def test_cluster_scale_up_down(admin_worker_addr, event_loop):
     """
     Test scaling up/down by one worker
     """
+    asyncio.set_event_loop(event_loop)
+
     target_cluster_size = dask.system.CPU_COUNT + 1
-    runner = CliRunner()
     try:
-        response = runner.invoke(cluster, f"--scale {target_cluster_size}")
-        assert response.output == f"Cluster scaled to have {target_cluster_size} workers\n"
+        await _cluster_scale(admin_worker_addr, target_cluster_size)
+
         # Having to wait here for the time it takes to create a new dask worker
         time.sleep(4)
-        response = runner.invoke(cluster, "--size")
-        assert int(response.output) == target_cluster_size
+        cluster_size = await _get_cluster_size(admin_worker_addr)
+        assert cluster_size == target_cluster_size
     except TimeoutError:
         pass
 
     # Scale cluster back down
     try:
-        response = runner.invoke(cluster, f"--scale {dask.system.CPU_COUNT}")
-        assert response.output == f"Cluster scaled to have {dask.system.CPU_COUNT} workers\n"
+        await _cluster_scale(admin_worker_addr, dask.system.CPU_COUNT)
         time.sleep(4)
-        response = runner.invoke(cluster, "--size")
-        assert int(response.output) == dask.system.CPU_COUNT
+        cluster_size = await _get_cluster_size(admin_worker_addr)
+        assert cluster_size == dask.system.CPU_COUNT
     except TimeoutError:
         pass

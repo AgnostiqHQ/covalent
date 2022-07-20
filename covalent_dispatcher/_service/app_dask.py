@@ -4,7 +4,7 @@ import asyncio
 import os
 from logging import Logger
 from multiprocessing import Process, current_process
-from threading import Thread
+from threading import Thread, Event
 
 import dask.config
 from dask.distributed import Client, LocalCluster
@@ -12,7 +12,7 @@ from distributed.core import Server, rpc
 from distributed.node import ServerNode
 
 from covalent._shared_files import logger
-from covalent._shared_files.config import get_config, set_config, update_config
+from covalent._shared_files.config import get_config, update_config
 from covalent._shared_files.utils import get_random_available_port
 
 app_log = logger.app_log
@@ -34,11 +34,10 @@ class DaskAdminWorker(Thread):
     """
 
     def __init__(
-        self, cluster: LocalCluster, event_loop, admin_host: str, admin_port: int, logger=None
+        self, cluster: LocalCluster, admin_host: str, admin_port: int, logger=None
     ):
         # Admin handler server connection args
         self.cluster = cluster
-        self.event_loop = event_loop
         self._admin_host = admin_host
         self._admin_port = admin_port
         self.logger = logger
@@ -140,9 +139,12 @@ class DaskAdminWorker(Thread):
         return 0
 
     def run(self):
-        asyncio.set_event_loop(self.event_loop)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         s = Server(handlers=self.handlers)
-        self.event_loop.create_task(s.listen(f"tcp://{self._admin_host}:{self._admin_port}"))
+        addr = f"tcp://{self._admin_host}:{self._admin_port}"
+        loop.create_task(s.listen(addr))
+        loop.run_forever()
 
 
 class DaskCluster(Process):
@@ -168,9 +170,6 @@ class DaskCluster(Process):
 
         self.admin_host = "127.0.0.1"
         self.admin_port = get_random_available_port()
-
-        self.event_loop = None
-
         # Read the configuration options from the main config file
         try:
             self.num_workers = get_config("dask.num_workers")
@@ -191,8 +190,6 @@ class DaskCluster(Process):
         """
         Runs a local dask cluster along with its monitoring thread
         """
-        self.event_loop = asyncio.get_event_loop()
-
         try:
             self.cluster = LocalCluster(
                 n_workers=self.num_workers,
@@ -220,9 +217,8 @@ class DaskCluster(Process):
             )
 
             admin = DaskAdminWorker(
-                self.cluster, self.event_loop, self.admin_host, self.admin_port, self.logger
+                self.cluster, self.admin_host, self.admin_port, self.logger
             )
             admin.start()
-            self.event_loop.run_forever()
         except Exception as e:
             self.logger.exception(e)
