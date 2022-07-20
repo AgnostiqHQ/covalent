@@ -182,6 +182,7 @@ jobs:
             PYTHONPATH=$PWD/ pytest -vv tests --cov=covalent_ui --cov-config=.coveragerc
       
       - name: Generate UI backend coverage report
+        if: false
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
