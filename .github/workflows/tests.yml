@@ -179,7 +179,7 @@ jobs:
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
-            PYTHONPATH=$PWD/ pytest -vv tests --cov=covalent_ui --cov-config=.coveragerc
+            PYTHONPATH=$PWD/ pytest -vv tests/covalent_ui --cov=covalent_ui --cov-config=.coveragerc
       
       - name: Generate UI backend coverage report
         if: false
