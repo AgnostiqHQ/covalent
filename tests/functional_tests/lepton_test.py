@@ -27,10 +27,15 @@ import covalent as ct
 from covalent import DepsBash, DepsCall, DepsPip
 from covalent._results_manager import results_manager as rm
 
+
+def call_hook():
+    return None
+
+
 deps_bash = DepsBash(["whoami"])
 deps_pip = DepsPip(packages=["cloudpickle==2.0.0"])
-call_before = DepsCall(deps_bash)
-call_after = DepsCall(deps_bash)
+call_before = DepsCall(call_hook)
+call_after = DepsCall(call_hook)
 
 
 @ct.leptons.bash(
