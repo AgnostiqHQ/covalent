@@ -72,8 +72,10 @@ jobs:
             - 'covalent_dispatcher/*'
             functional_tests:
             - 'tests/functional_tests/*'
-            tests:
+            all_tests:
             - 'tests/*'
+            workflows:
+            - '.github/workflows/*'
 
       - name: Set up Python
         if: matrix.os == 'macos-latest'
@@ -134,15 +136,33 @@ jobs:
                
       - name: Run SDK tests and measure coverage
         if: ${{ steps.working-directory.outputs.sdk}} == 'true'
-        run: PYTHONPATH=$PWD/ pytest -vv tests/covalent_tests  --cov=covalent
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 2
+          on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          command: |
+            PYTHONPATH=$PWD/ pytest -vv tests/covalent_tests  --cov=covalent
 
       - name: Run Dispatcher tests and measure coverage
         if: ${{ steps.working-directory.outputs.dispatcher }} == 'true'
-        run: PYTHONPATH=$PWD/ pytest -vv tests/covalent_dispatcher_tests  --cov=covalent_dispatcher
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 2
+          on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          command: |
+            PYTHONPATH=$PWD/ pytest -vv tests/covalent_dispatcher_tests  --cov=covalent_dispatcher
 
       - name: Run Functional tests and measure coverage
         if: ${{ steps.working-directory.outputs.functional_tests }} == 'true'
-        run: PYTHONPATH=$PWD/ pytest -vv tests/functional_tests  --cov=covalent
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 2
+          on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          command: |
+            PYTHONPATH=$PWD/ pytest -vv tests/functional_tests  --cov=covalent
 
       - name: Upload reports to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
