@@ -72,6 +72,8 @@ jobs:
             - 'covalent_dispatcher/**'
             functional_tests:
             - 'tests/functional_tests/**'
+            ui_backend:
+            - 'covalent_ui/**'
 
       - name: Set up Python
         if: matrix.os == 'macos-latest'
@@ -166,6 +168,18 @@ jobs:
         - name: Generate functional test coverage report
           run: coverage xml -o functional_tests_coverage.xml
 
+      - name: Run UI backend tests and measure coverage
+        if: ${{ steps.working-directory.outputs.covalent_ui }} == 'true'
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 2
+          on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          command: |
+            PYTHONPATH=$PWD/ pytest -vv tests --cov=covalent_ui --cov-config=.coveragerc
+        - name: Generate UI backend coverage report
+          run: coverage xml ui_backend_coverage.xml
+
       - name: Upload SDK report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v3
@@ -189,6 +203,14 @@ jobs:
           files: ./functional_tests_coverage.xml
           flags: Functional_Tests
           name: "Functional Tests"
+
+      - name: Upload UI backend report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./ui_backend_coverage.xml
+          flags: UI_Backend
+          name: "UI Backend Unit Tests"
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
