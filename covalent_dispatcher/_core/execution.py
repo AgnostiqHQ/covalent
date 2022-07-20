@@ -31,11 +31,10 @@ from queue import Queue
 from threading import Lock
 from typing import Any, Dict, List, Tuple
 
-import cloudpickle as pickle
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from covalent import dispatch, dispatch_sync
+from covalent import dispatch
 from covalent._data_store.models import Lattice as Lattice_model
 from covalent._results_manager import Result
 from covalent._results_manager.write_result_to_db import (
@@ -46,14 +45,11 @@ from covalent._results_manager.write_result_to_db import (
 from covalent._shared_files import logger
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
-    attr_prefix,
     electron_dict_prefix,
     electron_list_prefix,
-    generator_prefix,
     parameter_prefix,
     prefix_separator,
     sublattice_prefix,
-    subscript_prefix,
 )
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
