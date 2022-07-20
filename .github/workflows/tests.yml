@@ -183,12 +183,26 @@ jobs:
         if: ${{ steps.working-directory.outputs.functional_tests }} == 'true'
         run: coverage xml
 
-
-      - name: Upload report to Codecov
+      - name: Upload SDK report to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
         uses: codecov/codecov-action@v3
         with:
-          files: ./coverage.xml, ./covalent_dispatcher/coverage.xml, ./tests/functional_tests/coverage.xml
+          files: ./coverage.xml
+          flags: sdk
+
+      - name: Upload dispatcher report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./covalent_dispatcher/coverage.xml
+          flags: dispatcher
+
+      - name: Upload functional tests report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./tests/functional_tests/coverage.xml
+          flags: functional-tests
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
