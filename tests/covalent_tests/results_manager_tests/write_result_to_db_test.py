@@ -37,6 +37,7 @@ from covalent._results_manager.write_result_to_db import (
     insert_electrons_data,
     insert_lattices_data,
     update_electrons_data,
+    update_lattice_completed_electron_num,
     update_lattices_data,
     write_sublattice_electron_id,
 )
@@ -63,7 +64,11 @@ VALUE_FILENAME = "value.pkl"
 STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
 INFO_FILENAME = "info.log"
+KEY_FILENAME = "key.pkl"
 TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
+DEPS_FILENAME = "deps.pkl"
+CALL_BEFORE_FILENAME = "call_before.pkl"
+CALL_AFTER_FILENAME = "call_after.pkl"
 
 
 @pytest.fixture
@@ -105,6 +110,8 @@ def get_lattice_kwargs(
     dispatch_id="dispatch_1",
     name="workflow_1",
     status="RUNNING",
+    electron_num=6,
+    completed_electron_num=0,
     storage_type=STORAGE_TYPE,
     storage_path="results/dispatch_1/",
     function_filename=FUNCTION_FILENAME,
@@ -125,6 +132,8 @@ def get_lattice_kwargs(
         "dispatch_id": dispatch_id,
         "name": name,
         "status": status,
+        "electron_num": electron_num,
+        "completed_electron_num": completed_electron_num,
         "storage_type": storage_type,
         "storage_path": storage_path,
         "function_filename": function_filename,
@@ -155,10 +164,13 @@ def get_electron_kwargs(
     results_filename=RESULTS_FILENAME,
     value_filename=VALUE_FILENAME,
     attribute_name=None,
-    key=None,
+    key_filename=KEY_FILENAME,
     stdout_filename=STDOUT_FILENAME,
     stderr_filename=STDERR_FILENAME,
     info_filename=INFO_FILENAME,
+    deps_filename=DEPS_FILENAME,
+    call_before_filename=CALL_BEFORE_FILENAME,
+    call_after_filename=CALL_AFTER_FILENAME,
     created_at=None,
     updated_at=None,
     started_at=None,
@@ -180,15 +192,32 @@ def get_electron_kwargs(
         "results_filename": results_filename,
         "value_filename": value_filename,
         "attribute_name": attribute_name,
-        "key": key,
+        "key_filename": key_filename,
         "stdout_filename": stdout_filename,
         "stderr_filename": stderr_filename,
         "info_filename": info_filename,
+        "deps_filename": deps_filename,
+        "call_before_filename": call_before_filename,
+        "call_after_filename": call_after_filename,
         "created_at": created_at,
         "updated_at": updated_at,
         "started_at": started_at,
         "completed_at": completed_at,
     }
+
+
+def test_update_lattice_completed_electron_num(db):
+    """Test the funtion used to update the number of completed electrons for a lattice by 1."""
+
+    cur_time = dt.now(timezone.utc)
+    insert_lattices_data(
+        db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
+    update_lattice_completed_electron_num(db=db, dispatch_id="dispatch_1")
+
+    with Session(db.engine) as session:
+        lat_record = session.query(Lattice).filter_by(dispatch_id="dispatch_1").first()
+    assert lat_record.completed_electron_num == 1
 
 
 def test_insert_lattices_data(db):
@@ -236,6 +265,9 @@ def test_insert_lattices_data(db):
             == timestamps[i].strftime("%m/%d/%Y, %H:%M:%S")
         )
         assert lattice.completed_at is None
+        assert lattice.is_active
+        assert isinstance(lattice.electron_num, int)
+        assert isinstance(lattice.completed_electron_num, int)
 
         with Session(db.engine) as session:
             rows = session.query(Lattice).where(Lattice.dispatch_id == "dispatch_3").all()
@@ -276,6 +308,8 @@ def test_insert_electrons_data(db):
                 )
             else:
                 assert getattr(electron, key) == value
+            assert electron.key_filename == KEY_FILENAME
+        assert electron.is_active
 
     electron_id = insert_electrons_data(db=db, **electron_kwargs)
     assert electron_id == 2
@@ -350,6 +384,9 @@ def test_insert_electron_dependency_data(db, workflow_lattice):
             assert electron_dependency.arg_index == 1
             assert electron_dependency.parameter_type == "arg"
 
+        assert electron_dependency.is_active
+        assert electron_dependency.updated_at is not None
+
 
 def test_update_lattices_data(db):
     """Test the function that updates the lattice data."""
@@ -372,6 +409,7 @@ def test_update_lattices_data(db):
         db=db,
         dispatch_id="dispatch_1",
         status="COMPLETED",
+        completed_electron_num=5,
         updated_at=cur_time,
         completed_at=cur_time,
     )
@@ -388,6 +426,7 @@ def test_update_lattices_data(db):
             == lattice.started_at.strftime("%m/%d/%Y, %H:%M:%S")
         )
         assert lattice.id == 1
+        assert lattice.completed_electron_num == 5
 
 
 def test_update_electrons_data(db):
