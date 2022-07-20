@@ -18,22 +18,24 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import pytest
 import asyncio
 import time
+
 import dask.system
+import pytest
 from dask.distributed import LocalCluster
 from distributed.comm import parse_address, unparse_address
-from covalent_dispatcher._service.app_dask import DaskAdminWorker
 
 from covalent_dispatcher._cli.service import (
-    _get_cluster_status,
-    _get_cluster_size,
-    _get_cluster_info,
-    _get_cluster_address,
     _cluster_restart,
-    _cluster_scale
+    _cluster_scale,
+    _get_cluster_address,
+    _get_cluster_info,
+    _get_cluster_size,
+    _get_cluster_status,
 )
+from covalent_dispatcher._service.app_dask import DaskAdminWorker
+
 
 @pytest.fixture(scope="module")
 def test_cluster():
@@ -41,20 +43,22 @@ def test_cluster():
     yield cluster
     cluster.close()
 
+
 @pytest.fixture(scope="module")
 def event_loop():
     loop = asyncio.get_event_loop()
     yield loop
     loop.close()
 
+
 @pytest.fixture(scope="module")
 def admin_worker_addr(test_cluster):
     admin_host = "127.0.0.1"
     admin_port = 9000
     uri = unparse_address("tcp", f"{admin_host}:{admin_port}")
-    admin_worker = DaskAdminWorker(cluster = test_cluster,
-                        admin_host = admin_host,
-                        admin_port = admin_port)
+    admin_worker = DaskAdminWorker(
+        cluster=test_cluster, admin_host=admin_host, admin_port=admin_port
+    )
     admin_worker.daemon = True
     admin_worker.start()
     yield uri
