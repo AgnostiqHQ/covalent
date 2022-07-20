@@ -18,4 +18,4 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .entry_point import cancel_running_dispatch, get_result, run_dispatcher
+from .entry_point import cancel_running_dispatch, run_dispatcher
