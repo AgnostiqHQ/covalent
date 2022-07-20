@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Enhanced `tests.yml` to upload coverage reports by domain
 
+## [0.146.0] - 2022-07-20
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+
+### Added
+
+- Ensure that transportable objects are rendered correctly when printing the result object.
+
 ### Tests
 
 - Check that user data is not unpickled by the Covalent server process
