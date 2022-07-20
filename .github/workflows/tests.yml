@@ -184,11 +184,11 @@ jobs:
         run: coverage xml
 
 
-       - name: Upload report to Codecov
-         if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-         uses: codecov/codecov-action@v3
-         with:
-           files: ./coverage.xml
+      - name: Upload report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
