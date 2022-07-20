@@ -215,14 +215,14 @@ def test_get_node_value(db, result_1):
     """Test result method to get the node value."""
 
     result_1.persist(db)
-    assert result_1._get_node_value(db=db, node_id=0) is None
+    assert result_1._get_node_value(node_id=0) is None
 
 
 def test_get_all_node_results(db, result_1):
     """Test result method to get all the node results."""
 
     result_1.persist(db)
-    for data_row in result_1.get_all_node_results(db):
+    for data_row in result_1.get_all_node_results():
         if data_row["node_id"] == 0:
             assert data_row["node_name"] == "task_1"
         elif data_row["node_id"] == 1:
