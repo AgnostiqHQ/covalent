@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `result.save()`
 - `result._write_dispatch_to_python_file()`
 
+### Docs
+- Fixed `get_metadata` calls in examples to remove `results_dir` argument
+
 ## [0.145.0] - 2022-07-20
 
 ### Authors
