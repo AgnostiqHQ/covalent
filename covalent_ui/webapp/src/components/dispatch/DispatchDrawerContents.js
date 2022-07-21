@@ -51,10 +51,8 @@ const DispatchDrawerContents = (props) => {
   )
 
   useEffect(() => {
-    return () => {
       dispatch(latticeError({ dispatchId, params: 'error' }))
       dispatch(latticeDetails({ dispatchId }))
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[callSocketApi])
 

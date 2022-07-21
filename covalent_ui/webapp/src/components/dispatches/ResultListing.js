@@ -264,7 +264,6 @@ const ResultsTableToolbar = ({
           border: '1px solid #303067',
           borderRadius: '60px',
         }}
-        disabled={isFetching}
         disableUnderline
         placeholder="Search"
         value={query}
