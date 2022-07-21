@@ -31,7 +31,7 @@ import networkx as nx
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from covalent._data_store.datastore import DataStore
+from covalent._data_store.datastore import DataStore, workflow_db
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 
 from .._shared_files.defaults import (
@@ -59,10 +59,10 @@ class InvalidFileExtension(Exception):
     pass
 
 
-def update_lattice_completed_electron_num(db: DataStore, dispatch_id: str) -> None:
+def update_lattice_completed_electron_num(dispatch_id: str) -> None:
     """Update the number of completed electrons by one corresponding to a lattice."""
 
-    with Session(db.engine) as session:
+    with workflow_db.session() as session:
         session.query(Lattice).filter_by(dispatch_id=dispatch_id).update(
             {
                 "completed_electron_num": Lattice.completed_electron_num + 1,
@@ -73,7 +73,6 @@ def update_lattice_completed_electron_num(db: DataStore, dispatch_id: str) -> No
 
 
 def insert_lattices_data(
-    db: DataStore,
     dispatch_id: str,
     name: str,
     electron_num: int,
@@ -117,7 +116,7 @@ def insert_lattices_data(
         completed_at=completed_at,
     )
 
-    with Session(db.engine) as session:
+    with workflow_db.session() as session:
         session.add(lattice_row)
         session.commit()
         lattice_id = lattice_row.id
@@ -126,7 +125,6 @@ def insert_lattices_data(
 
 
 def insert_electrons_data(
-    db: DataStore,
     parent_dispatch_id: str,
     transport_graph_node_id: int,
     type: str,
@@ -155,7 +153,7 @@ def insert_electrons_data(
     """This function writes the transport graph node data to the Electrons table in the DB."""
 
     # Check that the foreign key corresponding to this table exists
-    with Session(db.engine) as session:
+    with workflow_db.session() as session:
         row = session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()
     if len(row) == 0:
         raise MissingLatticeRecordError
@@ -190,7 +188,7 @@ def insert_electrons_data(
         completed_at=completed_at,
     )
 
-    with Session(db.engine) as session:
+    with workflow_db.session() as session:
         session.add(electron_row)
         session.commit()
         electron_id = electron_row.id
@@ -198,14 +196,14 @@ def insert_electrons_data(
     return electron_id
 
 
-def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "Lattice"):
+def insert_electron_dependency_data(dispatch_id: str, lattice: "Lattice"):
     """Extract electron dependencies from the lattice transport graph and add them to the DB."""
 
     # TODO - Update how we access the transport graph edges directly in favor of using some interface provied by the TransportGraph class.
     node_links = nx.readwrite.node_link_data(lattice.transport_graph._graph)["links"]
 
     electron_dependency_ids = []
-    with Session(db.engine) as session:
+    with workflow_db.session() as session:
         for edge_data in node_links:
             electron_id = (
                 session.query(Lattice, Electron)
@@ -242,10 +240,10 @@ def insert_electron_dependency_data(db: DataStore, dispatch_id: str, lattice: "L
     return electron_dependency_ids
 
 
-def update_lattices_data(db: DataStore, dispatch_id: str, **kwargs) -> None:
+def update_lattices_data(dispatch_id: str, **kwargs) -> None:
     """This function updates the lattices record."""
 
-    with Session(db.engine) as session:
+    with workflow_db.session() as session:
         valid_update = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
 
         if not valid_update:
@@ -260,7 +258,6 @@ def update_lattices_data(db: DataStore, dispatch_id: str, **kwargs) -> None:
 
 
 def update_electrons_data(
-    db: DataStore,
     parent_dispatch_id: str,
     transport_graph_node_id: int,
     status: str,
@@ -270,7 +267,7 @@ def update_electrons_data(
 ) -> None:
     """This function updates the electrons record."""
 
-    with Session(db.engine) as session:
+    with workflow_db.session() as session:
         parent_lattice_id = (
             session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()[0].id
         )
@@ -334,11 +331,11 @@ def get_electron_type(node_name: str) -> str:
 
 
 def write_sublattice_electron_id(
-    db: DataStore, parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
+    parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
 ) -> None:
     """Function to attach the electron id of a sublattice in the lattice record."""
 
-    with Session(db.engine) as session:
+    with workflow_db.session() as session:
         sublattice_electron_id = (
             session.query(Lattice, Electron)
             .where(
@@ -357,8 +354,8 @@ def write_sublattice_electron_id(
         session.commit()
 
 
-def write_lattice_error(db: DataStore, dispatch_id: str, error: str):
-    with Session(db.engine) as session:
+def write_lattice_error(dispatch_id: str, error: str):
+    with workflow_db.session() as session:
         valid_update = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
 
         if not valid_update:

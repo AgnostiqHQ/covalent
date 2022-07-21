@@ -69,6 +69,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Changed the custom executor how-to to be shorter and more concise.
 
+### Changed
+
+- Replaced `Session(DispatchDB()._get_data_store())` with `workflow_db.session()`
+
+### Removed
+
+- `DevDataStore` class from `datastore.py`
+
 ## [0.156.0] - 2022-07-27
 
 ### Authors

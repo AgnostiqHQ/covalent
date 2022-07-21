@@ -26,6 +26,7 @@ from flask import Blueprint, Response, jsonify, make_response, request
 from sqlalchemy.orm import Session
 
 import covalent_dispatcher as dispatcher
+from covalent._data_store.datastore import workflow_db
 from covalent._data_store.models import Lattice
 from covalent._results_manager.result import Result
 from covalent._results_manager.results_manager import result_from
@@ -98,7 +99,7 @@ def get_result(dispatch_id) -> Response:
     wait = args.get("wait", default=False, type=lambda v: v.lower() == "true")
     status_only = args.get("status_only", default=False, type=lambda v: v.lower() == "true")
     while True:
-        with Session(DispatchDB()._get_data_store().engine) as session:
+        with workflow_db.session as session:
             lattice_record = (
                 session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
             )

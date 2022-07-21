@@ -303,13 +303,11 @@ async def _run_task(
 
             app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
 
-            with DispatchDB() as db:
-                write_sublattice_electron_id(
-                    db=workflow_db,
-                    parent_dispatch_id=dispatch_id,
-                    sublattice_node_id=node_id,
-                    sublattice_dispatch_id=sub_dispatch_id,
-                )
+            write_sublattice_electron_id(
+                parent_dispatch_id=dispatch_id,
+                sublattice_node_id=node_id,
+                sublattice_dispatch_id=sub_dispatch_id,
+            )
             # Read the result object directly from the server
 
             sublattice_result = futures[sub_dispatch_id].result()
@@ -333,7 +331,7 @@ async def _run_task(
                 node_result["status"] = Result.FAILED
                 node_result["error"] = "Sublattice workflow failed to complete"
 
-                sublattice_result.upsert_lattice_data(workflow_db)
+                sublattice_result.upsert_lattice_data()
 
         else:
             app_log.debug(f"Executing task {node_name}")
@@ -440,9 +438,9 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
     node_id = node_result["node_id"]
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
-    result_object._error = f"Node {result_object._get_node_name(node_id=node_id, db=workflow_db)} failed: \n{result_object._get_node_error(node_id=node_id, db=workflow_db)}"
-    app_log.debug("8A: Failed node upsert statement (run_planned_workflow)")
-    result_object.upsert_lattice_data(workflow_db)
+    result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
+    app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
+    result_object.upsert_lattice_data()
     result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
 
@@ -450,16 +448,16 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
 async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue):
     result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
-    app_log.debug("9: Failed node upsert statement (run_planned_workflow)")
-    result_object.upsert_lattice_data(workflow_db)
+    app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
+    result_object.upsert_lattice_data()
     result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
 
 
 async def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
     with lock:
-        app_log.debug("Updating node result (run_planned_workflow).")
-        result_object._update_node(db=workflow_db, **node_result)
+        app_log.warning("Updating node result (run_planned_workflow).")
+        result_object._update_node(**node_result)
         result_webhook.send_update(result_object)
 
         node_status = node_result["status"]
@@ -620,10 +618,6 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
     pending_deps = {}
     lock = Lock()
     task_futures: list = []
-
-    app_log.debug(
-        f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
-    )
 
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
@@ -816,7 +810,6 @@ def run_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Resul
     except Exception as ex:
         app_log.error(f"Exception during _run_planned_workflow: {ex}")
         update_lattices_data(
-            workflow_db,
             result_object.dispatch_id,
             status=str(Result.FAILED),
             completed_at=datetime.now(timezone.utc),
@@ -824,7 +817,6 @@ def run_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Resul
         )
 
         write_lattice_error(
-            workflow_db,
             result_object.dispatch_id,
             "".join(traceback.TracebackException.from_exception(ex).format()),
         )
