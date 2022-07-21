@@ -45,13 +45,14 @@ jobs:
       - name: Install Conda dependencies
         run: |
           conda install conda-build conda-verify anaconda-client
+          conda config --append channels conda-forge
 
       - name: Create Conda environment
         run: conda create --name buildenv python=${{ matrix.python-version }}
 
       - name: Build package
         run: |
-          conda activate buildenv
+          $CONDA/bin/activate buildenv
           conda env list
           conda build --override-channels --output-folder ./ --python ${{ matrix.python-version }} .
 
