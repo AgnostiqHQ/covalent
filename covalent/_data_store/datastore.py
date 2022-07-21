@@ -50,7 +50,7 @@ class DataStore:
         if db_URL:
             self.db_URL = db_URL
         else:
-            self.db_URL = "sqlite+pysqlite:///" + get_config("workflow_data.db_path")
+            self.db_URL = "sqlite+pysqlite:///" + get_config("user_interface.dispatch_db")
 
         self.storage_backend_map = storage_backend_map
         self.engine = create_engine(self.db_URL, **kwargs)
@@ -138,4 +138,4 @@ class DataStoreNotInitializedError(Exception):
 # we can switch this to any class instance that has a db_URL property that points to the db
 # which we want to run migrations against - this command also creates the db without tables
 # via create_engine()
-workflow_db = DevDataStore(echo=False)
+workflow_db = DataStore(echo=True)

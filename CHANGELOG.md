@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added methods to programatically fetch information from Alembic without needing subprocess
 
+## [0.148.0] - 2022-07-21
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+
+- Changed DataStore default db path to correspond to dispatch db config path
+
 ### Operations
 
 - Added workflow to stale and close pull requests
