@@ -18,11 +18,33 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from . import models
-from .datastore import (
-    DataStore,
-    DataStoreNotInitializedError,
-    DataStoreSession,
-    DevDataStore,
-    workflow_db,
-)
+"""Tests for Covalent dask executor."""
+
+
+def test_dask_executor_init(mocker):
+    """Test dask executor constructor"""
+
+    from covalent.executor import DaskExecutor
+
+    de = DaskExecutor("127.0.0.1")
+
+    assert de.scheduler_address == "127.0.0.1"
+
+
+def test_dask_executor_run():
+    """Test run method for Dask executor"""
+
+    from dask.distributed import LocalCluster
+
+    from covalent.executor import DaskExecutor
+
+    cluster = LocalCluster()
+
+    dask_exec = DaskExecutor(cluster.scheduler_address)
+
+    def f(x, y):
+        return x, y
+
+    args = [5]
+    kwargs = {"y": 7}
+    assert dask_exec.run(f, args, kwargs) == (5, 7)
