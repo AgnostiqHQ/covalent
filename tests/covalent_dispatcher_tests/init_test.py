@@ -50,24 +50,3 @@ def test_run_dispatcher():
 
     workflow_pool.shutdown()
     task_pool.shutdown()
-
-
-def test_get_result():
-    """
-    Integration test combining run_dispatcher and get_result to ensure that a results object is
-    returned once the workflow has executed.
-    """
-    workflow_pool = ThreadPoolExecutor()
-    task_pool = ThreadPoolExecutor()
-
-    dispatch_id = dispatcher.run_dispatcher(
-        json_lattice=get_mock_result().lattice.serialize_to_json(),
-        workflow_pool=workflow_pool,
-        tasks_pool=task_pool,
-    )
-    time.sleep(1)
-    result = dispatcher.get_result(wait=True, dispatch_id=dispatch_id)
-    assert isinstance(result, covalent._results_manager.result.Result)
-
-    workflow_pool.shutdown()
-    task_pool.shutdown()

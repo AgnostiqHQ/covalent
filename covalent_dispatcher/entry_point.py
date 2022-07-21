@@ -82,22 +82,6 @@ def run_dispatcher(
     return dispatch_id
 
 
-def get_result(dispatch_id: str, wait: bool) -> Result:
-    """
-    Return the results of the dispatcher.
-
-    Args:
-        dispatch_id: Dispatch id of the result to be fetched.
-        results_dir: Path of the results directory.
-        wait: Whether to wait for the result to be complete/fail before returning.
-
-    Returns:
-        result: Result object containing the results of the said dispatch.
-    """
-
-    return rm._get_result_from_db(DispatchDB()._get_data_store(), dispatch_id, wait)
-
-
 def cancel_running_dispatch(dispatch_id: str) -> None:
     """
     Cancels a running dispatch job.

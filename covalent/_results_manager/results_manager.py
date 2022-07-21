@@ -19,13 +19,15 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import codecs
 import os
-import pickle as _pickle
 import time
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import cloudpickle as pickle
+import requests
+from requests.adapters import HTTPAdapter
 from sqlalchemy.orm import Session
 
 from covalent._workflow.transport import TransportableObject
@@ -59,16 +61,14 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
     Returns:
         result_object: The result from the file.
 
-    Raises:
-        MissingLatticeRecordError: If the result file is not found.
     """
 
     try:
-        result_object = _get_result_from_db(
-            DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}"),
+        result = _get_result_from_dispatcher(
             dispatch_id,
             wait,
         )
+        result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
 
     except MissingLatticeRecordError as e:
         app_log.warning(
@@ -133,50 +133,38 @@ def result_from(lattice_record: Lattice) -> Result:
     return result
 
 
-def _get_result_from_db(
-    db: DataStore, dispatch_id: str, wait: bool = False, status_only: bool = False
-) -> Result:
+def _get_result_from_dispatcher(
+    dispatch_id: str,
+    wait: bool = False,
+    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
+    status_only: bool = False,
+) -> Dict:
 
     """
-    Internal function to get the results of a dispatch from a file without checking if it is ready to read.
+    Internal function to get the results of a dispatch from the server without checking if it is ready to read.
 
     Args:
-        db: The DataStore object which yields the SQLAlchemy session that stores results.
         dispatch_id: The dispatch id of the result.
         wait: Whether to wait for the result to be completed/failed, default is False.
+        status_only: If true, only returns result status, not the full result object, default is False.
+        dispatcher: Dispatcher server address, defaults to the address set in covalent.config.
 
     Returns:
-        result_object: The result object constructed from the DB lattice record.
+        The result object from the server.
 
     Raises:
         MissingLatticeRecordError: If the result is not found.
     """
-
-    while True:
-        with Session(db.engine) as session:
-            lattice_record = (
-                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-            )
-        try:
-            if not lattice_record:
-                raise MissingLatticeRecordError
-            elif not wait:
-                return lattice_record.status if status_only else result_from(lattice_record)
-            elif lattice_record.status in [
-                str(Result.COMPLETED),
-                str(Result.FAILED),
-                str(Result.CANCELLED),
-                str(Result.POSTPROCESSING_FAILED),
-                str(Result.PENDING_POSTPROCESSING),
-            ]:
-                return lattice_record.status if status_only else result_from(lattice_record)
-
-        except (FileNotFoundError, EOFError, _pickle.UnpicklingError):
-            if wait:
-                continue
-            raise RuntimeError(
-                "Result not ready to read yet. Please wait for a couple of seconds."
-            )
+    adapter = HTTPAdapter()
+    http = requests.Session()
+    http.mount("http://", adapter)
+    url = "http://" + dispatcher + "/api/result/" + dispatch_id
+    response = http.get(url, params={"wait": wait, "status_only": status_only})
+    if response.status_code == 404:
+        raise MissingLatticeRecordError
+    response.raise_for_status()
+    result = response.json()
+    return result
 
 
 def _delete_result(
@@ -249,15 +237,15 @@ def sync(
     """
 
     if isinstance(dispatch_id, str):
-        _get_result_from_db(db, dispatch_id, wait=True, status_only=True)
+        _get_result_from_dispatcher(dispatch_id, wait=True, status_only=True)
     elif isinstance(dispatch_id, list):
         for d in dispatch_id:
-            _get_result_from_db(db, d, wait=True, status_only=True)
+            _get_result_from_dispatcher(d, wait=True, status_only=True)
     else:
         with Session(db.engine) as session:
             dispatch_id = session.query(Lattice.dispatch_id).all()
         for d in dispatch_id:
-            _get_result_from_db(db, d, wait=True, status_only=True)
+            _get_result_from_dispatcher(d, wait=True, status_only=True)
 
 
 def cancel(
@@ -274,8 +262,6 @@ def cancel(
     Returns:
         None
     """
-
-    import requests
 
     url = "http://" + dispatcher + "/api/cancel"
 
