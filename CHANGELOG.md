@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Made Santosh the sole owner of `/docs`
 
+### Docs
+
+- Removed YouTube video temporarily
+
 ## [0.147.0] - 2022-07-21
 
 ### Authors
