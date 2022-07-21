@@ -78,7 +78,7 @@ class Summary:
                     Lattice.dispatch_id.ilike(f"%{search}%"),
                 ),
                 Lattice.electron_id.is_(None),
-                Lattice.is_active is not False,
+                Lattice.is_active.is_not(False),
             )
             .order_by(
                 desc(sort_by.value)
@@ -99,6 +99,7 @@ class Summary:
                     Lattice.dispatch_id.ilike(f"%{search}%"),
                 ),
                 Lattice.electron_id.is_(None),
+                Lattice.is_active.is_not(False),
             )
             .first()
         )
@@ -117,17 +118,17 @@ class Summary:
         """
         query1 = self.db_con.query(
             (func.count(Lattice.id))
-            .filter(Lattice.status == "RUNNING", Lattice.is_active is not False)
+            .filter(Lattice.status == "RUNNING", Lattice.is_active.is_not(False))
             .label("total_jobs_running")
         ).first()
         query2 = self.db_con.query(
             (func.count(Lattice.id))
-            .filter(Lattice.status == "COMPLETED", Lattice.is_active is not False)
+            .filter(Lattice.status == "COMPLETED", Lattice.is_active.is_not(False))
             .label("total_jobs_done")
         ).first()
         query3 = (
             self.db_con.query(Lattice.status)
-            .filter(Lattice.is_active is not False)
+            .filter(Lattice.is_active.is_not(False))
             .order_by(Lattice.updated_at.desc())
             .first()
         )
@@ -138,16 +139,16 @@ class Summary:
                     - func.strftime("%s", Lattice.started_at)
                 ).label("run_time")
             )
-            .filter(Lattice.is_active is not False)
+            .filter(Lattice.is_active.is_not(False))
             .first()
         )
         query5 = self.db_con.query(
             (func.count(Lattice.id))
-            .filter(Lattice.status == "FAILED", Lattice.is_active is not False)
+            .filter(Lattice.status == "FAILED", Lattice.is_active.is_not(False))
             .label("total_failed")
         ).first()
         query6 = self.db_con.query(
-            (func.count(Lattice.id)).filter(Lattice.is_active is not False).label("total_jobs")
+            (func.count(Lattice.id)).filter(Lattice.is_active.is_not(False)).label("total_jobs")
         ).first()
         return DispatchDashBoardResponse(
             total_jobs_running=query1[0],
@@ -173,7 +174,7 @@ class Summary:
                 lattice_id = (
                     self.db_con.query(Lattice.id)
                     .filter(
-                        Lattice.dispatch_id == str(dispatch_id), Lattice.is_active is not False
+                        Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False)
                     )
                     .first()
                 )

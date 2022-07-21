@@ -65,7 +65,7 @@ class Lattices:
                 ).label("runtime"),
             )
             .join(Electron, Electron.parent_lattice_id == Lattice.id)
-            .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active is not False)
+            .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
             .first()
         )
 
@@ -96,7 +96,7 @@ class Lattices:
                 Lattice.completed_electron_num.label("total_electrons_completed"),
             )
             .join(Electron, Electron.parent_lattice_id == Lattice.id)
-            .filter(Lattice.dispatch_id == str(dispatch_id))
+            .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
             .first()
         )
 
