@@ -51,7 +51,7 @@ jobs:
 
       - name: Build package
         run: |
-          $CONDA/bin/activate buildenv
+          conda activate buildenv
           conda env list
           conda build --override-channels --output-folder ./ --python ${{ matrix.python-version }} .
 
