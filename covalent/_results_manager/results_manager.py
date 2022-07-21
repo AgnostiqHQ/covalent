@@ -63,6 +63,7 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
 
     """
 
+    result_object = None
     try:
         result = _get_result_from_dispatcher(
             dispatch_id,
@@ -70,15 +71,10 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
         )
         result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
 
-    except MissingLatticeRecordError as e:
-        app_log.warning(
-            f"Dispatch ID {dispatch_id} was not found in the database. Either the Dispatch ID is incorrect or wait a couple of seconds before trying again."
-        )
-
-        time.sleep(0.01)
-        return get_result(dispatch_id, wait)
-
-    return result_object
+    except MissingLatticeRecordError:
+        app_log.exception()
+    finally:
+        return result_object
 
 
 def result_from(lattice_record: Lattice) -> Result:
@@ -155,11 +151,11 @@ def _get_result_from_dispatcher(
     Raises:
         MissingLatticeRecordError: If the result is not found.
     """
-    adapter = HTTPAdapter()
+    adapter = HTTPAdapter(max_retries=0)
     http = requests.Session()
     http.mount("http://", adapter)
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
-    response = http.get(url, params={"wait": wait, "status_only": status_only})
+    response = http.get(url, params={"wait": wait, "status_only": status_only}, timeout=1)
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()

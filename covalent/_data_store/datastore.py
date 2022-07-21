@@ -47,7 +47,7 @@ class DataStore:
         if db_URL:
             self.db_URL = db_URL
         else:
-            self.db_URL = "sqlite+pysqlite:///" + get_config("workflow_data.db_path")
+            self.db_URL = "sqlite+pysqlite:///" + get_config("user_interface.dispatch_db")
 
         self.storage_backend_map = storage_backend_map
         self.engine = create_engine(self.db_URL, **kwargs)

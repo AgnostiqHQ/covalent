@@ -106,7 +106,6 @@ def test_arithmetic_1(test_operand, expected):
     """Test arithmetic operations"""
 
     dispatch_id = ct.dispatch(arithmetic_test_1)(a=2, operand=test_operand)
-
     res = get_result(dispatch_id, wait=True)
     _delete_result(dispatch_id)
 

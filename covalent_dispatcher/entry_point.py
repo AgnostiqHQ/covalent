@@ -72,11 +72,12 @@ def run_dispatcher(
     """
 
     dispatch_id = get_unique_id()
-    from ._core import run_workflow
+    from ._core import construct_result_object, run_workflow
 
-    futures[dispatch_id] = workflow_pool.submit(
-        run_workflow, dispatch_id, json_lattice, tasks_pool
-    )
+    result_future = workflow_pool.submit(construct_result_object, dispatch_id, json_lattice)
+    result_object = result_future.result()
+
+    futures[dispatch_id] = workflow_pool.submit(run_workflow, result_object, tasks_pool)
     app_log.warning("0: Submitted lattice JSON to run_workflow.")
 
     return dispatch_id
