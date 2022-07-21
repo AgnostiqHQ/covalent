@@ -62,11 +62,13 @@ def task2(x):
 @ct.lattice
 def workflow():
     task(5)
-    ct.leptons.bash(
-        task2,
-        files=[ct.fs.FileTransfer(str(source_file), str(dest_file2), order=Order.AFTER)],
-        deps_pip=["cloudpickle==2.0.0"],
-    )(5)
+
+
+#    ct.leptons.bash(
+#        task2,
+#        files=[ct.fs.FileTransfer(str(source_file), str(dest_file2), order=Order.AFTER)],
+#        deps_pip=["cloudpickle==2.0.0"],
+#    )(5)
 
 
 def test_bash_decorator():
@@ -83,15 +85,16 @@ def test_bash_decorator():
         result = int(f.readline().strip())
         assert result == 5
 
-    file2 = Path("/tmp/debug2.txt")
-    assert file2.is_file()
 
-    with open("/tmp/debug2.txt", "r") as f:
-        result = int(f.readline().strip())
-        assert result == 5
+#    file2 = Path("/tmp/debug2.txt")
+#    assert file2.is_file()
 
-    file.unlink()
-    file2.unlink()
-    source_file.unlink()
-    dest_file.unlink()
-    dest_file2.unlink()
+#    with open("/tmp/debug2.txt", "r") as f:
+#        result = int(f.readline().strip())
+#        assert result == 5
+
+#    file.unlink()
+#    file2.unlink()
+#    source_file.unlink()
+#    dest_file.unlink()
+#    dest_file2.unlink()
