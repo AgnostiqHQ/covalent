@@ -85,7 +85,7 @@ export function DispatchLayout() {
           bgcolor: graphBgColor,
         }}
       >
-        {Object.keys(graph_result).length !== 0 ? (
+        {!fetch ? (
           <LatticeGraph
             graph={graph_result}
             hasSelectedNode={!!selectedElectron}

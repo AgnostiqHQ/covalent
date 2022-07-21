@@ -60,7 +60,7 @@ import {
   dispatchesDeleted,
 } from '../../redux/dashboardSlice'
 import CopyButton from '../common/CopyButton'
-import { formatDate } from '../../utils/misc'
+import { formatDate,secondsToHms } from '../../utils/misc'
 import Runtime from './Runtime'
 import ResultProgress from './ResultProgress'
 import SortDispatch from './SortDispatch'
@@ -374,12 +374,12 @@ const ResultListing = () => {
   const dashboardListView = useSelector((state) => state.dashboard.dashboardList)?.map((e) => {
     return {
       dispatchId: e.dispatch_id,
-      endTime: e.ended_at,
+      endTime: parseISO(e.ended_at),
       latticeName: e.lattice_name,
       resultsDir: e.results_dir,
       status: e.status,
       error: e.error,
-      runTime: parseISO(e.runtime),
+      runTime: e.runtime,
       startTime: parseISO(e.started_at),
       totalElectrons: e.total_electrons,
       totalElectronsCompleted: e.total_electrons_completed,
@@ -562,10 +562,7 @@ const ResultListing = () => {
 
                         <TableCell>{result.latticeName}</TableCell>
                         <TableCell>
-                          <Runtime
-                            startTime={result.startTime}
-                            endTime={result.endTime}
-                          />
+                          {secondsToHms(result.runTime)}
                         </TableCell>
 
                         <TableCell>{formatDate(result.startTime)}</TableCell>
