@@ -25,6 +25,7 @@ from pathlib import Path
 
 import covalent as ct
 from covalent import DepsBash, DepsCall, DepsPip
+from covalent._file_transfer.enums import Order
 from covalent._results_manager import results_manager as rm
 
 
@@ -36,6 +37,8 @@ deps_bash = DepsBash(["whoami"])
 deps_pip = DepsPip(packages=["cloudpickle==2.0.0"])
 call_before = DepsCall(call_hook)
 call_after = DepsCall(call_hook)
+source_file = Path("/tmp/src.txt")
+dest_file = Path("/tmp/dest.txt")
 
 
 @ct.leptons.bash(
@@ -45,17 +48,27 @@ call_after = DepsCall(call_hook)
     call_after=call_after,
     deps_bash=deps_bash,
     deps_pip=deps_pip,
+    files=[ct.fs.FileTransfer(str(source_file), str(dest_file), order=Order.BEFORE)],
 )
 def task(x):
     return f"echo {x} > /tmp/debug.txt"
 
 
+def task2(x):
+    return f"echo {x} > /tmp/debug2.txt"
+
+
 @ct.lattice
 def workflow():
     task(5)
+    ct.leptons.bash(
+        task2, files=[ct.fs.FileTransfer(str(source_file), str(dest_file), order=Order.AFTER)]
+    )(5)
 
 
 def test_bash_decorator():
+    source_file.touch()
+
     dispatch_id = ct.dispatch(workflow)()
     ct.get_result(dispatch_id, wait=True)
     rm._delete_result(dispatch_id)
@@ -67,4 +80,14 @@ def test_bash_decorator():
         result = int(f.readline().strip())
         assert result == 5
 
-    os.remove("/tmp/debug.txt")
+    file.unlink()
+
+    file2 = Path("/tmp/debug2.txt")
+    assert file2.is_file()
+
+    with open("/tmp/debug2.txt", "r") as f:
+        result = int(f.readline().strip())
+        assert result == 5
+
+    file2.unlink()
+    source_file.unlink()
