@@ -123,6 +123,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
             <span>{truncateMiddle(result.directory, 15, 20)}</span>
           </Tooltip>
           <CopyButton
+            isBorderPresent
             content={result.directory}
             size="small"
             title="Copy results directory"

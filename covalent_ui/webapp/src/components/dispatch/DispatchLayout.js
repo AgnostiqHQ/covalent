@@ -85,6 +85,7 @@ export function DispatchLayout() {
           width: '100vw',
           height: '100vh',
           bgcolor: graphBgColor,
+          paddingTop:'20px'
         }}
       >
         {Object.keys(graph_result).length !== 0 && !fetch ?
