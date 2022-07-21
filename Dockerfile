@@ -18,24 +18,37 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-FROM python:3.8-slim-buster
+# syntax=docker/dockerfile:1
+FROM python:3.8-slim-bullseye AS build
 
 RUN apt-get update \
-  && apt-get install -y curl gcc \
+  && apt-get install -y --no-install-recommends curl gcc \
   && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
   && apt-get install -y nodejs \
   && npm install --global yarn \
   && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /opt/covalent
-COPY . /opt/covalent
-RUN pip install --no-cache-dir --use-feature=in-tree-build /opt/covalent
-RUN cd /opt/covalent/covalent_ui/webapp \
-  && yarn install  \
-  && yarn build
+COPY . /app/
+RUN cd /app \
+  && python -m venv --copies /app/.venv \
+  && . /app/.venv/bin/activate \
+  && pip install --upgrade pip \
+  && pip install --no-cache-dir -r /app/requirements.txt \
+  && cd /app/covalent_ui/webapp \
+  && yarn install --network-timeout 100000 \
+  && yarn build --network-timeout 100000 \
+  && cd ../../ \
+  && python setup.py sdist \
+  && pip install dist/covalent*.tar.gz
 
-WORKDIR /opt/covalent
+FROM python:3.8-slim-bullseye AS prod
+
+COPY --from=build /app/.venv/ /app/.venv
 
 EXPOSE 8080
-ENTRYPOINT [ "python" ]
-CMD ["/opt/covalent/covalent_ui/app.py", "--port", "8080"]
+ENTRYPOINT [ \
+  "/app/.venv/bin/python", \
+  "/app/.venv/lib/python3.8/site-packages/covalent_ui/app.py", \
+  "--port", \
+  "8080" \
+]

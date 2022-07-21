@@ -25,6 +25,7 @@ import shutil
 from datetime import datetime as dt
 from datetime import timezone
 from pathlib import Path
+from unicodedata import name
 
 import cloudpickle
 import pytest
@@ -130,6 +131,23 @@ def test_result_persist_workflow_1(db, result_1):
         assert electron.parent_lattice_id == 1
         assert electron.started_at is None and electron.completed_at is None
 
+        if electron.transport_graph_node_id == 1:
+            with open(Path(electron.storage_path) / electron.deps_filename, "rb") as f:
+                deps = cloudpickle.load(f)
+                assert deps == {}
+
+            with open(Path(electron.storage_path) / electron.call_before_filename, "rb") as f:
+                call_before = cloudpickle.load(f)
+                assert call_before == []
+
+            with open(Path(electron.storage_path) / electron.call_after_filename, "rb") as f:
+                call_after = cloudpickle.load(f)
+                assert call_after == []
+
+            with open(Path(electron.storage_path) / electron.key_filename, "rb") as f:
+                key = cloudpickle.load(f)
+                assert key is None
+
     # Check that there are the appropriate amount of electron dependency records
     assert len(electron_dependency_rows) == 4
 
@@ -209,3 +227,76 @@ def test_get_all_node_results(db, result_1):
             assert data_row["node_name"] == "task_1"
         elif data_row["node_id"] == 1:
             assert data_row["node_name"] == ":parameter:1"
+
+
+def test_update_node(db, result_1):
+    """Test the node update method."""
+
+    # Call Result.persist
+    result_1.persist(db=db)
+
+    result_1._update_node(
+        db=db,
+        node_id=0,
+        node_name="test_name",
+        start_time=dt.now(timezone.utc),
+        status="RUNNING",
+        error="test_error",
+        sublattice_result="test_sublattice",
+        stdout="test_stdout",
+        stderr="test_stderr",
+    )
+
+    with Session(db.engine) as session:
+        lattice_record = session.query(Lattice).first()
+        electron_record = (
+            session.query(Electron).where(Electron.transport_graph_node_id == 0).first()
+        )
+
+    assert electron_record.name == "test_name"
+    assert electron_record.status == "RUNNING"
+    assert electron_record.started_at is not None
+
+    with open(Path(electron_record.storage_path) / electron_record.stdout_filename, "rb") as f:
+        stdout = cloudpickle.load(f)
+        assert stdout == "test_stdout"
+
+    with open(Path(electron_record.storage_path) / electron_record.stderr_filename, "rb") as f:
+        stderr = cloudpickle.load(f)
+        assert stderr == "test_stderr"
+
+    assert result_1.lattice.transport_graph.get_node_value(0, "error") == "test_error"
+    assert (
+        result_1.lattice.transport_graph.get_node_value(0, "sublattice_result")
+        == "test_sublattice"
+    )
+
+    assert lattice_record.electron_num == 5
+    assert lattice_record.completed_electron_num == 0
+    assert lattice_record.updated_at is not None
+
+    result_1._update_node(
+        db=db,
+        node_id=0,
+        end_time=dt.now(timezone.utc),
+        status="COMPLETED",
+        output=5,
+    )
+
+    with Session(db.engine) as session:
+        lattice_record = session.query(Lattice).first()
+        electron_record = (
+            session.query(Electron).where(Electron.transport_graph_node_id == 0).first()
+        )
+
+    assert electron_record.status == "COMPLETED"
+    assert electron_record.completed_at is not None
+    assert electron_record.updated_at is not None
+
+    with open(Path(electron_record.storage_path) / electron_record.results_filename, "rb") as f:
+        result = cloudpickle.load(f)
+        assert result == 5
+
+    assert lattice_record.electron_num == 5
+    assert lattice_record.completed_electron_num == 1
+    assert lattice_record.updated_at is not None

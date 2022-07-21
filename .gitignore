@@ -27,8 +27,10 @@
 # Allow tests, docs, core source, github actions, and detect-secrets filters
 !/.detect_secrets_filters/**
 !/.github/**
+!/alembic/**
 !/covalent/**
 !/covalent_ui/**
+/covalent_ui/dask-worker-space/**.*lock
 !/covalent_dispatcher/**
 !/doc/**
 /doc/build/**
@@ -51,6 +53,7 @@
 !.pylintrc
 !.readthedocs.yaml
 !.secrets.baseline
+!alembic.ini
 !Dockerfile
 !MANIFEST.in
 !Makefile

@@ -23,6 +23,9 @@ Tests for the core functionality of the dispatcher.
 """
 
 
+from queue import Queue
+from threading import Lock
+
 import cloudpickle as pickle
 import pytest
 
@@ -34,9 +37,17 @@ from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
     _gather_deps,
     _get_task_inputs,
+    _handle_cancelled_node,
+    _handle_completed_node,
+    _handle_failed_node,
+    _initialize_deps_and_queue,
     _plan_workflow,
     _post_process,
+    _run_planned_workflow,
     _run_task,
+    _update_node_result,
+    generate_node_result,
+    run_workflow,
 )
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -85,25 +96,37 @@ def get_mock_result() -> Result:
 
     @ct.lattice(results_dir=TEST_RESULTS_DIR)
     def pipeline(x):
-        return task(x)
+        res1 = task(x)
+        res2 = task(res1)
+        return res2
 
     pipeline.build_graph(x="absolute")
-
-    return Result(
-        lattice=pipeline,
-        results_dir=pipeline.metadata["results_dir"],
+    received_workflow = Lattice.deserialize_from_json(pipeline.serialize_to_json())
+    result_object = Result(
+        received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
     )
+
+    return result_object
 
 
 def test_plan_workflow():
     """Test workflow planning method."""
 
-    mock_result = get_mock_result()
-    mock_result.lattice.metadata["schedule"] = True
-    _plan_workflow(result_object=mock_result)
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.metadata["schedule"] = True
+    received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
+    result_object = Result(received_workflow, "/tmp", "asdf")
+    _plan_workflow(result_object=result_object)
 
     # Updated transport graph post planning
-    updated_tg = pickle.loads(mock_result.lattice.transport_graph.serialize(metadata_only=True))
+    updated_tg = pickle.loads(result_object.lattice.transport_graph.serialize(metadata_only=True))
 
     assert updated_tg["lattice_metadata"]["schedule"]
 
@@ -144,10 +167,6 @@ def test_post_process():
 
     compute_energy.build_graph()
 
-    order = [
-        i for i in range(len(compute_energy.transport_graph.get_internal_graph_copy().nodes()))
-    ]
-
     node_outputs = {
         "construct_n_molecule(0)": 1,
         ":parameter:1(1)": 1,
@@ -164,7 +183,7 @@ def test_post_process():
         k: ct.TransportableObject.make_transportable(v) for k, v in node_outputs.items()
     }
 
-    execution_result = _post_process(compute_energy, encoded_node_outputs, order)
+    execution_result = _post_process(compute_energy, encoded_node_outputs)
 
     assert execution_result == compute_energy()
 
@@ -356,3 +375,249 @@ def test_run_task(mocker, sublattice_workflow):
         workflow_executor=["local", {}],
     )
     write_sublattice_electron_id_mock.assert_called_once()
+
+
+def test_update_failed_node(mocker):
+    """Check that update_node_result correctly invokes _handle_failed_node"""
+
+    lock = Lock()
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
+    mock_fail_handler = mocker.patch("covalent_dispatcher._core.execution._handle_failed_node")
+    mock_upsert_lattice = mocker.patch(
+        "covalent._results_manager.result.Result.upsert_lattice_data"
+    )
+    mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
+
+    node_result = {"node_id": 0, "status": Result.FAILED}
+    _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+
+    mock_fail_handler.assert_called_once_with(
+        result_object, node_result, pending_deps, tasks_queue
+    )
+
+
+def test_update_cancelled_node(mocker):
+    """Check that update_node_result correctly invokes _handle_cancelled_node"""
+
+    lock = Lock()
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
+    mock_cancel_handler = mocker.patch(
+        "covalent_dispatcher._core.execution._handle_cancelled_node"
+    )
+    mock_upsert_lattice = mocker.patch(
+        "covalent._results_manager.result.Result.upsert_lattice_data"
+    )
+    mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
+
+    node_result = {"node_id": 0, "status": Result.CANCELLED}
+    _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+
+    mock_cancel_handler.assert_called_once_with(
+        result_object, node_result, pending_deps, tasks_queue
+    )
+
+
+def test_update_completed_node(mocker):
+    """Check that update_node_result correctly invokes _handle_completed_node"""
+
+    lock = Lock()
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
+    mock_completed_handler = mocker.patch(
+        "covalent_dispatcher._core.execution._handle_completed_node"
+    )
+    mock_upsert_lattice = mocker.patch(
+        "covalent._results_manager.result.Result.upsert_lattice_data"
+    )
+    mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
+
+    node_result = {"node_id": 0, "status": Result.COMPLETED}
+    _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+
+    mock_completed_handler.assert_called_once_with(
+        result_object, node_result, pending_deps, tasks_queue
+    )
+
+
+def test_handle_completed_node(mocker):
+    """Unit test for completed node handler"""
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
+
+    # tg edges are (1, 0), (0, 2)
+    pending_deps[0] = 1
+    pending_deps[1] = 0
+    pending_deps[2] = 1
+
+    mock_upsert_lattice = mocker.patch(
+        "covalent._results_manager.result.Result.upsert_lattice_data"
+    )
+
+    node_result = {"node_id": 1, "status": Result.COMPLETED}
+
+    _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
+
+    assert tasks_queue.get(timeout=1) == 0
+    assert pending_deps == {0: 0, 1: 0, 2: 1}
+
+
+def test_handle_failed_node(mocker):
+    """Unit test for failed node handler"""
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
+
+    # tg edges are (1, 0), (0, 2)
+    pending_deps[0] = 1
+    pending_deps[1] = 0
+    pending_deps[2] = 1
+
+    mock_upsert_lattice = mocker.patch(
+        "covalent._results_manager.result.Result.upsert_lattice_data"
+    )
+    mock_get_node_name = mocker.patch("covalent._results_manager.result.Result._get_node_name")
+
+    mock_get_node_error = mocker.patch("covalent._results_manager.result.Result._get_node_error")
+
+    node_result = {"node_id": 1, "status": Result.FAILED}
+
+    _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
+
+    assert tasks_queue.get(timeout=1) == -1
+    assert pending_deps == {0: 1, 1: 0, 2: 1}
+    assert result_object.status == Result.FAILED
+    mock_get_node_name.assert_called_once()
+    mock_get_node_error.assert_called_once()
+
+
+def test_handle_cancelled_node(mocker):
+    """Unit test for cancelled node handler"""
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
+
+    # tg edges are (1, 0), (0, 2)
+    pending_deps[0] = 1
+    pending_deps[1] = 0
+    pending_deps[2] = 1
+
+    mock_upsert_lattice = mocker.patch(
+        "covalent._results_manager.result.Result.upsert_lattice_data"
+    )
+
+    node_result = {"node_id": 1, "status": Result.CANCELLED}
+
+    _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
+
+    assert tasks_queue.get(timeout=1) == -1
+    assert pending_deps == {0: 1, 1: 0, 2: 1}
+    assert result_object.status == Result.CANCELLED
+
+
+def test_initialize_deps_and_queue(mocker):
+    """Test internal function for initializing tasks_queue and pending_deps"""
+    tasks_queue = Queue()
+    pending_deps = {}
+
+    result_object = get_mock_result()
+    num_tasks = _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
+
+    assert tasks_queue.get(timeout=1) == 1
+    assert pending_deps == {0: 1, 1: 0, 2: 1}
+    assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
+
+
+def test_run_workflow_with_failing_nonleaf(mocker):
+    """Test running workflow with a failing intermediate node"""
+
+    @ct.electron
+    def failing_task(x):
+        assert False
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        res1 = failing_task(x)
+        res2 = failing_task(res1)
+        return res2
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    workflow.build_graph(5)
+
+    json_lattice = workflow.serialize_to_json()
+    dispatch_id = "asdf"
+    tasks_pool = ThreadPoolExecutor()
+
+    result_object = run_workflow(dispatch_id, json_lattice, tasks_pool)
+
+    assert result_object.status == Result.FAILED
+
+
+def test_run_workflow_with_failing_leaf(mocker):
+    """Test running workflow with a failing leaf node"""
+
+    @ct.electron
+    def failing_task(x):
+        assert False
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        res1 = failing_task(x)
+        return res1
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    workflow.build_graph(5)
+
+    json_lattice = workflow.serialize_to_json()
+    dispatch_id = "asdf"
+    tasks_pool = ThreadPoolExecutor()
+
+    result_object = run_workflow(dispatch_id, json_lattice, tasks_pool)
+
+    assert result_object.status == Result.FAILED
+
+
+def test_run_workflow_does_not_deserialize(mocker):
+    """Check that dispatcher does not deserialize user data when using
+    out-of-process `workflow_executor`"""
+
+    @ct.electron(executor="dask")
+    def task(x):
+        return x
+
+    @ct.lattice(executor="dask", workflow_executor="dask")
+    def workflow(x):
+        # Exercise both sublatticing and postprocessing
+        sublattice_task = ct.lattice(task, workflow_executor="dask")
+        res1 = ct.electron(sublattice_task(x), executor="dask")
+        return res1
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    workflow.build_graph(5)
+
+    json_lattice = workflow.serialize_to_json()
+    dispatch_id = "asdf"
+    tasks_pool = ThreadPoolExecutor()
+
+    mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
+
+    result_object = run_workflow(dispatch_id, json_lattice, tasks_pool)
+
+    mock_to_deserialize.assert_not_called()
+    assert result_object.status == Result.COMPLETED

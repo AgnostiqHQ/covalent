@@ -32,8 +32,6 @@ import yaml
 from sqlalchemy import and_, update
 from sqlalchemy.orm import Session
 
-from covalent._shared_files.config import get_config
-
 from .._data_store import DataStore, DataStoreNotInitializedError, models
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
@@ -47,6 +45,7 @@ from .write_result_to_db import (
     insert_electrons_data,
     insert_lattices_data,
     update_electrons_data,
+    update_lattice_completed_electron_num,
     update_lattices_data,
 )
 
@@ -68,12 +67,16 @@ LATTICE_STORAGE_TYPE = "local"
 
 ELECTRON_FUNCTION_FILENAME = "function.pkl"
 ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
+ELECTRON_KEY_FILENAME = "key.pkl"
 ELECTRON_VALUE_FILENAME = "value.pkl"
 ELECTRON_EXECUTOR_FILENAME = "executor.pkl"
 ELECTRON_STDOUT_FILENAME = "stdout.log"
 ELECTRON_STDERR_FILENAME = "stderr.log"
 ELECTRON_INFO_FILENAME = "info.log"
 ELECTRON_RESULTS_FILENAME = "results.pkl"
+ELECTRON_DEPS_FILENAME = "deps.pkl"
+ELECTRON_CALL_BEFORE_FILENAME = "call_before.pkl"
+ELECTRON_CALL_AFTER_FILENAME = "call_after.pkl"
 ELECTRON_STORAGE_TYPE = "local"
 
 
@@ -124,6 +127,8 @@ class Result:
 
         self._result = TransportableObject(None)
 
+        self._num_nodes = -1
+
         self._inputs = {"args": [], "kwargs": {}}
         if lattice.args:
             self._inputs["args"] = lattice.args
@@ -133,12 +138,18 @@ class Result:
         self._error = None
 
     def __str__(self):
+        """String representation of the result object"""
+
+        arg_str_repr = [e.object_string for e in self.inputs["args"]]
+        kwarg_str_repr = {key: value.object_string for key, value in self.inputs["kwargs"].items()}
+
         show_result_str = f"""
 Lattice Result
 ==============
 status: {self._status}
 result: {self.result}
-inputs: {self.inputs}
+input args: {arg_str_repr}
+input kwargs: {kwarg_str_repr}
 error: {self.error}
 
 start_time: {self.start_time}
@@ -155,7 +166,7 @@ Node Outputs
             DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
         )
         for k, v in node_outputs.items():
-            show_result_str += f"{k}: {v}\n"
+            show_result_str += f"{k}: {v.object_string}\n"
 
         return show_result_str
 
@@ -650,8 +661,10 @@ Node Outputs
             with open(node_path / ELECTRON_STDERR_FILENAME, "wb") as f:
                 cloudpickle.dump(stderr, f)
 
-        with Session(db.engine) as session:
+        if str(status) == "COMPLETED":
+            update_lattice_completed_electron_num(db, self.dispatch_id)
 
+        with Session(db.engine) as session:
             lattice_id = (
                 session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
@@ -759,6 +772,8 @@ Node Outputs
                 "dispatch_id": self.dispatch_id,
                 "status": str(self.status),
                 "name": self.lattice.__name__,
+                "electron_num": self._num_nodes,
+                "completed_electron_num": 0,  # None of the nodes have been executed or completed yet.
                 "storage_path": str(data_storage_path),
                 "storage_type": LATTICE_STORAGE_TYPE,
                 "function_filename": LATTICE_FUNCTION_FILENAME,
@@ -777,7 +792,6 @@ Node Outputs
 
         else:
             lattice_record_kwarg = {
-                # TODO - Include logic for electron_id in sublattice context
                 "dispatch_id": self.dispatch_id,
                 "status": str(self.status),
                 "updated_at": datetime.now(timezone.utc),
@@ -801,6 +815,16 @@ Node Outputs
                 if not node_path.exists():
                     node_path.mkdir()
 
+                attribute_name = tg.get_node_value(node_key=node_id, value_key="name")
+
+                try:
+                    node_key = tg.get_node_value(node_key=node_id, value_key="key")
+                except KeyError:
+                    node_key = None
+
+                started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
+                completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
+
                 # Write all electron data to the appropriate filepaths
                 with open(node_path / ELECTRON_FUNCTION_FILENAME, "wb") as f:
                     cloudpickle.dump(tg.get_node_value(node_id, "function"), f)
@@ -821,6 +845,15 @@ Node Outputs
 
                 with open(node_path / ELECTRON_EXECUTOR_FILENAME, "wb") as f:
                     cloudpickle.dump(tg.get_node_value(node_id, "metadata")["executor"], f)
+
+                with open(node_path / ELECTRON_DEPS_FILENAME, "wb") as f:
+                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["deps"], f)
+
+                with open(node_path / ELECTRON_CALL_BEFORE_FILENAME, "wb") as f:
+                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["call_before"], f)
+
+                with open(node_path / ELECTRON_CALL_AFTER_FILENAME, "wb") as f:
+                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["call_after"], f)
 
                 with open(node_path / ELECTRON_STDOUT_FILENAME, "wb") as f:
                     try:
@@ -852,6 +885,9 @@ Node Outputs
                         node_output = TransportableObject(node_output)
                     cloudpickle.dump(node_output, f)
 
+                with open(node_path / ELECTRON_KEY_FILENAME, "wb") as f:
+                    cloudpickle.dump(node_key, f)
+
                 electron_exists = (
                     session.query(models.Electron, models.Lattice)
                     .where(
@@ -862,26 +898,6 @@ Node Outputs
                     .first()
                     is not None
                 )
-
-                try:
-                    attribute_name = tg.get_node_value(node_key=node_id, value_key="name")
-                except KeyError:
-                    attribute_name = None
-
-                try:
-                    node_key = tg.get_node_value(node_key=node_id, value_key="key")
-                except KeyError:
-                    node_key = None
-
-                try:
-                    started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
-                except KeyError:
-                    started_at = None
-
-                try:
-                    completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
-                except KeyError:
-                    completed_at = None
 
                 if not electron_exists:
                     electron_record_kwarg = {
@@ -900,10 +916,13 @@ Node Outputs
                         "results_filename": ELECTRON_RESULTS_FILENAME,
                         "value_filename": ELECTRON_VALUE_FILENAME,
                         "attribute_name": attribute_name,
-                        "key": node_key,
+                        "key_filename": ELECTRON_KEY_FILENAME,
                         "stdout_filename": ELECTRON_STDOUT_FILENAME,
                         "stderr_filename": ELECTRON_STDERR_FILENAME,
                         "info_filename": ELECTRON_INFO_FILENAME,
+                        "deps_filename": ELECTRON_DEPS_FILENAME,
+                        "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
+                        "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
                         "created_at": datetime.now(timezone.utc),
                         "updated_at": datetime.now(timezone.utc),
                         "started_at": started_at,

@@ -172,4 +172,4 @@ if __name__ == "__main__":
         dask_cluster.start()
 
     # Start covalent main app
-    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
+    socketio.run(app, debug=debug, host="localhost", port=port, use_reloader=reload)
