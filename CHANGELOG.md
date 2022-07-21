@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.110.2-2] - 2022-07-21
+
+### Docs
+
+- Removed YouTube video temporarily
+
 ## [0.110.2-1] - 2022-07-11
 
 ### Fixed
