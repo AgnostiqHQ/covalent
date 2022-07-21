@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Removed
+
+- `result.save()`
+- `result._write_dispatch_to_python_file()`
+
 ### Docs
 
+- Fixed `get_metadata` calls in examples to remove `results_dir` argument
 - Removed YouTube video temporarily
 
 ## [0.147.0] - 2022-07-21
@@ -40,14 +46,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 
 - Check that user data is not unpickled by the Covalent server process
-
-### Removed
-
-- `result.save()`
-- `result._write_dispatch_to_python_file()`
-
-### Docs
-- Fixed `get_metadata` calls in examples to remove `results_dir` argument
 
 ## [0.145.0] - 2022-07-20
 
