@@ -648,7 +648,9 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
 
         task_futures.append(future)
 
+    app_log.warning("Before wait task futures")
     wait(task_futures)
+    app_log.warning("After wait task futures")
 
     if result_object._status == Result.FAILED or result_object._status == Result.CANCELLED:
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
@@ -762,7 +764,20 @@ def _plan_workflow(result_object: Result) -> None:
         pass
 
 
-def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExecutor) -> Result:
+def create_result_object(dispatch_id: str, json_lattice: str) -> Result:
+    """Create result object."""
+
+    lattice = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lattice, lattice.metadata["results_dir"])
+    result_object._dispatch_id = dispatch_id
+    result_object._initialize_nodes()
+
+    app_log.warning("2: Constructed result object and initialized nodes.")
+    DispatchDB().save_db(result_object, initialize_db=True)
+    return result_object
+
+
+def run_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Result:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -779,13 +794,13 @@ def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExec
 
     app_log.warning("1: Inside run_workflow.")
 
-    lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
-    result_object._dispatch_id = dispatch_id
-    result_object._initialize_nodes()
+    # lattice = Lattice.deserialize_from_json(json_lattice)
+    # result_object = Result(lattice, lattice.metadata["results_dir"])
+    # result_object._dispatch_id = dispatch_id
+    # result_object._initialize_nodes()
 
-    app_log.warning("2: Constructed result object and initialized nodes.")
-    DispatchDB().save_db(result_object, initialize_db=True)
+    # app_log.warning("2: Constructed result object and initialized nodes.")
+    # DispatchDB().save_db(result_object, initialize_db=True)
 
     if result_object.status == Result.COMPLETED:
         return result_object
@@ -798,7 +813,7 @@ def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExec
         app_log.error(f"Exception during _run_planned_workflow: {ex}")
         update_lattices_data(
             DispatchDB()._get_data_store(),
-            dispatch_id,
+            result_object.dispatch_id,
             status=str(Result.FAILED),
             completed_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
@@ -806,7 +821,7 @@ def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExec
 
         write_lattice_error(
             DispatchDB()._get_data_store(),
-            dispatch_id,
+            result_object.dispatch_id,
             "".join(traceback.TracebackException.from_exception(ex).format()),
         )
         raise

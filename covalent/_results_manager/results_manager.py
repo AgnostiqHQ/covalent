@@ -74,6 +74,8 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
         app_log.warning(
             f"Dispatch ID {dispatch_id} was not found in the database. Either the Dispatch ID is incorrect or wait a couple of seconds before trying again."
         )
+        time.sleep(0.1)
+        get_result(dispatch_id, wait)
 
     return result_object
 
@@ -136,6 +138,7 @@ def _get_result_from_dispatcher(
     wait: bool = False,
     dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
     status_only: bool = False,
+    timeout: int = 1,
 ) -> Dict:
 
     """
@@ -153,11 +156,11 @@ def _get_result_from_dispatcher(
     Raises:
         MissingLatticeRecordError: If the result is not found.
     """
-    adapter = HTTPAdapter(max_retries=Retry(total=5, backoff_factor=0.1))
+    adapter = HTTPAdapter(max_retries=Retry(total=5))
     http = requests.Session()
     http.mount("http://", adapter)
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
-    response = http.get(url, params={"wait": wait, "status_only": status_only})
+    response = http.get(url, params={"wait": wait, "status_only": status_only}, timeout=timeout)
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()

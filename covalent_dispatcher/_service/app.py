@@ -26,6 +26,7 @@ from flask import Blueprint, Response, jsonify, make_response, request
 from sqlalchemy.orm import Session
 
 import covalent_dispatcher as dispatcher
+from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Lattice
 from covalent._results_manager.result import Result
 from covalent._results_manager.results_manager import result_from
@@ -128,7 +129,7 @@ def get_result(dispatch_id) -> Response:
                     ).decode()
                 return jsonify(output)
 
-        except (FileNotFoundError, EOFError):
+        except (FileNotFoundError, EOFError, MissingLatticeRecordError):
             if wait:
                 continue
             response = make_response(

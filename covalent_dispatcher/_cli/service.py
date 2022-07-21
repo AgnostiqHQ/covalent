@@ -35,6 +35,7 @@ import psutil
 from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
+from covalent._data_store.datastore import DataStore
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
 
@@ -160,6 +161,7 @@ def _graceful_start(
     Returns:
         port: Port assigned to the server.
     """
+
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         port = get_config("user_interface.port")
