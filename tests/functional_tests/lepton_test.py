@@ -62,7 +62,9 @@ def task2(x):
 def workflow():
     task(5)
     ct.leptons.bash(
-        task2, files=[ct.fs.FileTransfer(str(source_file), str(dest_file), order=Order.AFTER)]
+        task2,
+        files=[ct.fs.FileTransfer(str(source_file), str(dest_file), order=Order.AFTER)],
+        deps_pip=["cloudpickle==2.0.0"],
     )(5)
 
 
@@ -91,3 +93,4 @@ def test_bash_decorator():
 
     file2.unlink()
     source_file.unlink()
+    dest_file.unlink()
