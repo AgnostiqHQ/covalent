@@ -49,7 +49,7 @@ dest_file2 = Path("/tmp/dest2.txt")
     call_after=call_after,
     deps_bash=deps_bash,
     deps_pip=deps_pip,
-    files=[ct.fs.FileTransfer(str(source_file), str(dest_file), order=Order.BEFORE)],
+    #    files=[ct.fs.FileTransfer(str(source_file), str(dest_file), order=Order.BEFORE)],
 )
 def task(x):
     return f"echo {x} > /tmp/debug.txt"
