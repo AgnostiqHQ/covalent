@@ -87,70 +87,12 @@ class DaskExecutor(BaseExecutor):
 
         self.scheduler_address = scheduler_address
 
-    def execute(
-        self,
-        function: TransportableObject,
-        args: List,
-        kwargs: Dict,
-        call_before: List,
-        call_after: List,
-        dispatch_id: str,
-        results_dir: str,
-        node_id: int = -1,
-    ) -> Any:
-        """
-        Executes the input function and returns the result.
-
-        Args:
-            function: The input python function which will be executed and whose result
-                      is ultimately returned by this function.
-            args: List of positional arguments to be used by the function.
-            kwargs: Dictionary of keyword arguments to be used by the function.
-            dispatch_id: The unique identifier of the external lattice process which is
-                         calling this function.
-            results_dir: The location of the results directory.
-            node_id: The node ID of this task in the bigger workflow graph.
-
-        Returns:
-            output: The result of the executed function.
-        """
-
+    def run(self, function: callable, args: List, kwargs: Dict):
+        """Submit the function and inputs to the dask cluster"""
         dask_client = get_client(address=self.scheduler_address, timeout=1)
+        future = dask_client.submit(function, *args, **kwargs)
+        app_log.debug("Submitted task to dask")
+        result = future.result()
 
-        dispatch_info = DispatchInfo(dispatch_id)
-
-        fn_version = function.python_version
-
-        new_args = [function, call_before, call_after]
-        for arg in args:
-            new_args.append(arg)
-
-        with self.get_dispatch_context(dispatch_info), redirect_stdout(
-            io.StringIO()
-        ) as stdout, redirect_stderr(io.StringIO()) as stderr:
-
-            if self.conda_env != "":
-                result = None
-
-                result = self.execute_in_conda_env(
-                    wrapper_fn,
-                    fn_version,
-                    new_args,
-                    kwargs,
-                    self.conda_env,
-                    self.cache_dir,
-                    node_id,
-                )
-
-            else:
-                future = dask_client.submit(wrapper_fn, *new_args, **kwargs)
-                result = future.result()
-
-        self.write_streams_to_file(
-            (stdout.getvalue(), stderr.getvalue()),
-            (self.log_stdout, self.log_stderr),
-            dispatch_id,
-            results_dir,
-        )
-
-        return (result, stdout.getvalue(), stderr.getvalue())
+        # FIX: need to get stdout and stderr from dask worker and print them
+        return result
