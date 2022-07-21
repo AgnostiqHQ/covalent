@@ -74,8 +74,6 @@ jobs:
             - 'tests/functional_tests/**'
             ui_backend:
             - 'covalent_ui/**'
-            ui_backend_tests:
-            - 'covalent_ui_tests/**'
             
       - name: Set up Python
         if: matrix.os == 'macos-latest'
@@ -174,14 +172,14 @@ jobs:
         run: coverage xml -o functional_tests_coverage.xml
 
       - name: Run UI backend tests and measure coverage
-        if: ${{ steps.working-directory.outputs.ui_backend}} == true && ${{ steps.working-directory.outputs.ui_backend_tests}}$ == true || echo 'tests for UI backend do not exist'
+        if: ${{ steps.working-directory.outputs.ui_backend}} == true && false
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
-            PYTHONPATH=$PWD/ pytest -vv tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
+            PYTHONPATH=$PWD/ pytest -vv tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc. || echo 'tests for UI backend do not exist'
       
       - name: Generate UI backend coverage report
         if: false
