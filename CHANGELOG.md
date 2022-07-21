@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.149.0] - 2022-07-21
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
 ### Removed
 
 - `result.save()`
