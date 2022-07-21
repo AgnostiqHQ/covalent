@@ -56,19 +56,8 @@ jobs:
           conda env list
           conda build --override-channels --output-folder ./ --python ${{ matrix.python-version }} .
 
-      - name: Convert package
-        run: conda convert --platform all ./linux-64/*.tar.bz2
+#      - name: Install package
+#        run: conda install --override-channels -c local covalent
 
-#      - name: Upload packages
-#        run: anaconda upload -t ${{ secrets.ANACONDA_TOKEN }} upload -u agnostiq -l beta --skip-existing ./{linux,osx,win}-*/*.tar.bz2
-          
-#      - name: Build conda package
-#        run: |
-#          conda install conda-build conda-verify anaconda-client
-#          conda config --append channels conda-forge
-#          conda create --name buildenv python=${{ matrix.python-version }}
-#          $CONDA/bin/activate buildenv
-#          conda build --override-channels --output-folder=./ --python=${{ matrix.python-version }} .
-#          conda convert --platform all ./linux-64/*.tar.bz2
-#          anaconda upload -t ${{ secrets.ANACONDA_TOKEN }} upload -u agnostiq -l beta --skip-existing ./{linux,osx,win}-*/*.tar.bz2
-
+#      - name: Test package
+#        run: covalent --version
