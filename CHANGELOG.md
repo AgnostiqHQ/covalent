@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Changed DataStore default db path to correspond to dispatch db config path
 
+### Operations
+
+- Added workflow to stale and close pull requests
+
 ### Docs
 
 - Removed YouTube video temporarily
