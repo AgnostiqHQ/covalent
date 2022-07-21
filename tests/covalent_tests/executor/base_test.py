@@ -24,7 +24,8 @@ import os
 import tempfile
 
 from covalent import DepsCall, TransportableObject
-from covalent.executor import BaseExecutor, wrapper_fn
+from covalent.executor import BaseExecutor
+from covalent_dispatcher.utils import wrapper_fn
 
 
 class MockExecutor(BaseExecutor):

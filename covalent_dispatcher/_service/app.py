@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import codecs
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 
 import cloudpickle as pickle
 from flask import Blueprint, Response, jsonify, make_response, request
@@ -39,7 +39,7 @@ bp = Blueprint("dispatcher", __name__, url_prefix="/api")
 @bp.before_app_first_request
 def start_pools():
     global workflow_pool
-    workflow_pool = ProcessPoolExecutor()
+    workflow_pool = ThreadPoolExecutor()
 
 
 @bp.route("/submit", methods=["POST"])

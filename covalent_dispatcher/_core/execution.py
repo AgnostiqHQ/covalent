@@ -225,22 +225,20 @@ async def _dispatch_sublattice(
     # Dispatch the sublattice workflow. This must be run
     # externally since it involves deserializing the
     # sublattice workflow function.
-    fut = asyncio.create_task(
-        _run_task(
-            node_id=-1,
-            dispatch_id=dispatch_id,
-            results_dir=results_dir,
-            serialized_callable=TransportableObject.make_transportable(_dispatch),
-            selected_executor=workflow_executor,
-            node_name="dispatch_sublattice",
-            call_before=[],
-            call_after=[],
-            inputs=sub_dispatch_inputs,
-            workflow_executor=workflow_executor,
-        )
+    res = await _run_task(
+        node_id=-1,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        serialized_callable=TransportableObject.make_transportable(_dispatch),
+        selected_executor=workflow_executor,
+        node_name="dispatch_sublattice",
+        call_before=[],
+        call_after=[],
+        inputs=sub_dispatch_inputs,
+        workflow_executor=workflow_executor,
     )
 
-    sub_dispatch_id = json.loads(fut.result()["output"].json)
+    sub_dispatch_id = json.loads(res["output"].json)
     return sub_dispatch_id
 
 
@@ -488,8 +486,8 @@ def _update_node_result(lock, result_object, node_result, pending_deps, tasks_qu
             return
 
 
-def _run_task_and_update(run_task_callable, lock, result_object, pending_deps, tasks_queue):
-    node_result = run_task_callable()
+async def _run_task_and_update(run_task_callable, lock, result_object, pending_deps, tasks_queue):
+    node_result = await run_task_callable()
 
     # NOTE: This is a blocking operation because of db writes and needs special handling when
     # we switch to an event loop for processing tasks
@@ -717,7 +715,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     except Exception as ex:
         app_log.debug(f"Exception during post-processing: {ex}")
         result_object._status = Result.POSTPROCESSING_FAILED
-        result_object._error = "Post-processing failed"
+        result_object._error = f"Post-processing failed:{''.join(traceback.TracebackException.from_exception(ex).format())}"
         result_object._end_time = datetime.now(timezone.utc)
         result_object.upsert_lattice_data(DispatchDB()._get_data_store())
         result_webhook.send_update(result_object)
