@@ -74,12 +74,9 @@ jobs:
             - 'tests/functional_tests/**'
             ui_backend:
             - 'covalent_ui/**'
-      - name: Check for UI backend tests
-        id: check_files
-        uses: andstor/file-existence-action@v1
-        with:
-          files: "tests/covalent_ui_tests/**"
-
+            ui_backend_tests:
+            - 'covalent_ui_tests/**'
+            
       - name: Set up Python
         if: matrix.os == 'macos-latest'
         uses: actions/setup-python@v2
@@ -177,7 +174,7 @@ jobs:
         run: coverage xml -o functional_tests_coverage.xml
 
       - name: Run UI backend tests and measure coverage
-        if: ${{ steps.working-directory.outputs.covalent_ui }} == true && false  &&  ${{ steps.check_files.outputs.files_exists}}$ == true || echo 'tests for UI backend do not exist'
+        if: ${{ steps.working-directory.outputs.ui_backend}} == true && ${{ steps.working-directory.outputs.ui_backend_tests}}$ == true || echo 'tests for UI backend do not exist'
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
