@@ -61,17 +61,15 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
   const drawerExecutorDetailListFetching = useSelector(
     (state) => state.latticeResults.latticeExecutorDetailList.isFetching
   )
-  const callSocketApi = useSelector(
-    (state) => state.common.callSocketApi
-  )
+  const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
   useEffect(() => {
-      dispatch(latticeResults({ dispatchId, params: 'result' }))
-      dispatch(latticeFunctionString({ dispatchId, params: 'function_string' }))
-      dispatch(latticeInput({ dispatchId, params: 'inputs' }))
-      dispatch(latticeExecutorDetail({ dispatchId, params: 'executor_details' }))
+    dispatch(latticeResults({ dispatchId, params: 'result' }))
+    dispatch(latticeFunctionString({ dispatchId, params: 'function_string' }))
+    dispatch(latticeInput({ dispatchId, params: 'inputs' }))
+    dispatch(latticeExecutorDetail({ dispatchId, params: 'executor_details' }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[callSocketApi])
+  }, [callSocketApi])
 
   const hasStarted = !!result.started_at
   const hasEnded = !!result.ended_at

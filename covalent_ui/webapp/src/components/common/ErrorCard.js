@@ -35,6 +35,7 @@ const ErrorCard = ({ showElectron = false, error }) => {
         fontSize: 'body2.fontSize',
         display: 'flex',
         alignItems: 'center',
+        mt: 2,
         mb: 2,
         px: 2,
         py: 1,

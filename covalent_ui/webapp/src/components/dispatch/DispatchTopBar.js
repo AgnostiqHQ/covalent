@@ -1,23 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import {
-  Box,
-  CircularProgress,
-  IconButton,
-  Tooltip,
-  Typography,
-  SvgIcon,
-  Skeleton,
-} from '@mui/material'
-import { ChevronLeft } from '@mui/icons-material'
-import CopyButton from '../common/CopyButton'
-import {
-  statusIcon,
-  truncateMiddle,
-  statusColor,
-  statusLabel,
-} from '../../utils/misc'
-import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
+import { Box, Typography, Skeleton } from '@mui/material'
+import { statusIcon, statusColor, statusLabel } from '../../utils/misc'
 
 const DispatchTopBar = () => {
   const drawerLatticeDetails = useSelector(
@@ -34,55 +18,25 @@ const DispatchTopBar = () => {
           position: 'absolute',
           top: 0,
           width: '100%',
-          justifyContent: 'space-evenly',
+          height: '55px',
+          justifyContent: 'center',
           zIndex: 95,
           display: 'flex',
           alignItems: 'center',
           mt: 0,
-          pt: 0,
-          ml: 7,
+          paddingLeft: '27%',
+          ml: 0,
           backgroundColor: (theme) => theme.palette.background.default,
         }}
       >
-        <Box sx={{ width: '35%', display: 'flex', alignItems: 'center' }}>
-          <IconButton href="/" sx={{ color: 'text.disabled', mr: 1 }}>
-            <ChevronLeft />
-          </IconButton>
-
-          <SvgIcon
-            component={TreeSvg}
-            sx={{ verticalAlign: 'middle', marginTop: 1 }}
-          />
-          {drawerLatticeDetailsFetching ? (
-            <Skeleton width={200} />
-          ) : (
-            <Tooltip title={drawerLatticeDetails?.dispatch_id} placement="top">
-              <Typography
-                component="span"
-                sx={{ mx: 1, verticalAlign: 'middle' }}
-              >
-                {truncateMiddle(drawerLatticeDetails.dispatch_id, 8, 13)}
-              </Typography>
-            </Tooltip>
-          )}
-
-          <CopyButton
-            content={drawerLatticeDetails.dispatch_id}
-            size="small"
-            title="Copy dispatch Id"
-            isBorderPresent
-          />
-        </Box>
-
         {/* status */}
-        <Box sx={{ width: '20%', ml: 20, my: 2 }}>
+        <Box>
           <LatticeStatusCard
             dispatchId={drawerLatticeDetails.dispatch_id}
             latDetails={drawerLatticeDetails}
             isFetching={drawerLatticeDetailsFetching}
           />
         </Box>
-        <Box sx={{ width: '30%' }}></Box>
       </Box>
     </>
   )
@@ -92,14 +46,21 @@ export default DispatchTopBar
 
 const LatticeStatusCard = ({ dispatchId, latDetails, isFetching }) => {
   return (
-    <Box sx={{ my: 0 }}>
+    <Box sx={{ my: 0, pt: 1 }}>
       <Box
         sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
+          display: 'flex',
         }}
       >
-        <Box sx={{ borderRight: '1px solid #303067' }}>
+        <Box
+          sx={{
+            borderRight: !isFetching ? '1px solid #303067' : 'none',
+            height: '25px',
+            display: 'flex',
+            alignItems: 'center',
+            pr: 4.4,
+          }}
+        >
           {isFetching ? (
             <Skeleton
               width={150}
@@ -107,7 +68,7 @@ const LatticeStatusCard = ({ dispatchId, latDetails, isFetching }) => {
               sx={{
                 alignItems: 'center',
                 py: 2,
-                mr: 2,
+                mt: 4,
               }}
             />
           ) : (
@@ -118,11 +79,10 @@ const LatticeStatusCard = ({ dispatchId, latDetails, isFetching }) => {
                 fontSize: '1.125rem',
                 alignItems: 'center',
                 justifySelf: 'center',
-                py: 1.5,
               }}
             >
-              {statusIcon(latDetails.status)}
-              &nbsp;
+              {/* {statusIcon(latDetails.status)}
+              &nbsp; */}
               {statusLabel(latDetails.status)}
             </Box>
           )}
@@ -144,10 +104,12 @@ const LatticeStatusCard = ({ dispatchId, latDetails, isFetching }) => {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                py: 1,
+                pl: 4.4,
+                height: '25px',
               }}
             >
-              <Typography fontSize="body2.fontSize">
+              {statusIcon(latDetails.status)}
+              <Typography fontSize="body2.fontSize" sx={{ ml: 1 }}>
                 <Box
                   component="span"
                   sx={{
@@ -161,27 +123,6 @@ const LatticeStatusCard = ({ dispatchId, latDetails, isFetching }) => {
                 </Box>
                 &nbsp;/ {latDetails.total_electrons}
               </Typography>
-
-              <Box sx={{ ml: 2, position: 'relative' }}>
-                <CircularProgress
-                  variant="determinate"
-                  sx={(theme) => ({
-                    color: theme.palette.secondary.main,
-                  })}
-                  size="2rem"
-                  value={100}
-                />
-                <CircularProgress
-                  style={{ color: statusColor(latDetails.status) }}
-                  sx={{ position: 'absolute', left: 0 }}
-                  variant="determinate"
-                  size="2rem"
-                  value={
-                    (latDetails.total_electrons_completed * 100) /
-                    latDetails.total_electrons
-                  }
-                />
-              </Box>
             </Box>
           )}
         </Box>

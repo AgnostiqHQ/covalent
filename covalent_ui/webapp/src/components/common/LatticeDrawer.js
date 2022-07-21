@@ -26,8 +26,7 @@ import { navDrawerWidth } from './NavDrawer'
 export const latticeDrawerWidth = 400
 
 const drawerPaperStyles = (theme) => ({
-  position:'absolute',
-  top:80,
+  py: 2,
   width: latticeDrawerWidth,
   boxSizing: 'border-box',
   border: 'none',
@@ -43,7 +42,6 @@ const drawerPaperStyles = (theme) => ({
 })
 
 const LatticeDrawer = ({ children }) => {
-
   return (
     <>
       {/* Desktop */}

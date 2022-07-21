@@ -41,11 +41,11 @@ export function DispatchLayout() {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
   const graph_result = useSelector((state) => state.graphResults.graphList)
-  const fetch = useSelector((state) => state.graphResults.graphResultsList.isFetching)
-  // check if socket message is received and call API
-  const callSocketApi = useSelector(
-    (state) => state.common.callSocketApi
+  const fetch = useSelector(
+    (state) => state.graphResults.graphResultsList.isFetching
   )
+  // check if socket message is received and call API
+  const callSocketApi = useSelector((state) => state.common.callSocketApi)
   useEffect(() => {
     dispatch(graphResults({ dispatchId }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -65,10 +65,10 @@ export function DispatchLayout() {
     (actions) => actions.setSelectedElements
   )
 
-   // unselect on change of dispatch
-   useEffect(() => {
-     setSelectedElements([])
-   }, [dispatchId, setSelectedElements])
+  // unselect on change of dispatch
+  useEffect(() => {
+    setSelectedElements([])
+  }, [dispatchId, setSelectedElements])
 
   // if (fetch) {
   //   return <PageLoading />
@@ -112,15 +112,15 @@ export function DispatchLayout() {
   )
 }
 
- const UUID_PATTERN =
-   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+const UUID_PATTERN =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
 
- const DispatchLayoutValidate = () => {
-   let { dispatchId } = useParams()
-   if (!UUID_PATTERN.test(dispatchId)) {
-     return <NotFound />
-   }
-   return <DispatchLayout />
- }
+const DispatchLayoutValidate = () => {
+  let { dispatchId } = useParams()
+  if (!UUID_PATTERN.test(dispatchId)) {
+    return <NotFound />
+  }
+  return <DispatchLayout />
+}
 
- export default DispatchLayoutValidate
+export default DispatchLayoutValidate

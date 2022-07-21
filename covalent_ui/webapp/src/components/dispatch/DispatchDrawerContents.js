@@ -23,11 +23,24 @@
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { Box, styled, Tab, Skeleton } from '@mui/material'
+import {
+  Box,
+  styled,
+  Tab,
+  Skeleton,
+  IconButton,
+  Tooltip,
+  Typography,
+  SvgIcon,
+} from '@mui/material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import LatticeDispatchOverview from './LatticeDispatchOverview'
 import ErrorCard from '../common/ErrorCard'
 import { latticeDetails, latticeError } from '../../redux/latticeSlice'
+import { ChevronLeft } from '@mui/icons-material'
+import CopyButton from '../common/CopyButton'
+import { truncateMiddle } from '../../utils/misc'
+import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
 
 const DispatchDrawerContents = (props) => {
   const { dispatchId } = useParams()
@@ -46,19 +59,56 @@ const DispatchDrawerContents = (props) => {
   const drawerLatticeErrorFetching = useSelector(
     (state) => state.latticeResults.latticeErrorList.isFetching
   )
-  const callSocketApi = useSelector(
-    (state) => state.common.callSocketApi
-  )
+  const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
   useEffect(() => {
-      dispatch(latticeError({ dispatchId, params: 'error' }))
-      dispatch(latticeDetails({ dispatchId }))
+    dispatch(latticeError({ dispatchId, params: 'error' }))
+    dispatch(latticeDetails({ dispatchId }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[callSocketApi])
-
+  }, [callSocketApi])
 
   return (
-    <Box sx={{ px: 3, my: 0 }}>
+    <Box sx={{ px: 3 }}>
+      <Box sx={{ m: 0, p: 0, display: 'flex', alignItems: 'center' }}>
+        <IconButton
+          href="/"
+          sx={{
+            color: 'text.disabled',
+            mr: 1,
+            backgroundColor: (theme) => theme.palette.background.buttonBg,
+            borderRadius: '10px',
+            width: '32px',
+            height: '32px',
+          }}
+        >
+          <ChevronLeft />
+        </IconButton>
+
+        <SvgIcon
+          component={TreeSvg}
+          sx={{ verticalAlign: 'middle', marginTop: 1 }}
+        />
+        {drawerLatticeDetailsFetching ? (
+          <Skeleton width={200} />
+        ) : (
+          <Tooltip title={dispatchId} placement="top">
+            <Typography
+              component="span"
+              sx={{ mx: 1, verticalAlign: 'middle' }}
+            >
+              {truncateMiddle(dispatchId, 8, 13)}
+            </Typography>
+          </Tooltip>
+        )}
+
+        <CopyButton
+          content={dispatchId}
+          size="small"
+          title="Copy dispatch Id"
+          isBorderPresent
+        />
+      </Box>
+
       {Object.keys(drawerLatticeError).length !== 0 &&
         (drawerLatticeErrorFetching &&
         drawerLatticeError.status === 'FAILED' ? (
@@ -78,13 +128,13 @@ const DispatchDrawerContents = (props) => {
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
-        {Object.keys(drawerLatticeDetails).length !== 0 &&
-          <LatticeDispatchOverview
-            dispatchId={dispatchId}
-            latDetails={drawerLatticeDetails}
-            isFetching={drawerLatticeDetailsFetching}
-          />
-        }
+          {Object.keys(drawerLatticeDetails).length !== 0 && (
+            <LatticeDispatchOverview
+              dispatchId={dispatchId}
+              latDetails={drawerLatticeDetails}
+              isFetching={drawerLatticeDetailsFetching}
+            />
+          )}
         </TabPanel>
       </TabContext>
       {/* } */}
