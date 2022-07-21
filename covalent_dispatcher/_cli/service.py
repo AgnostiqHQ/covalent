@@ -325,7 +325,6 @@ def start(
         except OSError:
             server_listening = True
 
-        time.sleep(1)
     DataStore(initialize_db=True)
 
 
