@@ -281,6 +281,14 @@ def _graceful_shutdown(pidfile: str) -> None:
     help="Number of CPU threads per worker.",
 )
 @click.option(
+    "--ignore-migrations",
+    is_flag=True,
+    required=False,
+    show_default=True,
+    default=False,
+    help="Start the server without requiring migrations",
+)
+@click.option(
     "--no-cluster",
     is_flag=True,
     required=False,
@@ -298,12 +306,12 @@ def start(
     mem_per_worker: int,
     threads_per_worker: int,
     workers: int,
+    ignore_migrations: bool,
 ) -> None:
     """
     Start the Covalent server.
     """
-
-    if workflow_db.is_migration_pending:
+    if workflow_db.is_migration_pending and not ignore_migrations:
         click.secho(MIGRATION_WARNING_MSG, fg="yellow")
         click.echo(MIGRATION_COMMAND_MSG)
         return ctx.exit(1)
