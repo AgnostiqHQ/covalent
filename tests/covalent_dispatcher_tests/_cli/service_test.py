@@ -198,7 +198,7 @@ def test_start(mocker, monkeypatch):
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
 
-    runner.invoke(start, f"--port {port_val} -d")
+    runner.invoke(start, f"--port {port_val} -d --ignore-migrations")
     graceful_start_mock.assert_called_once()
     set_config_mock.assert_called_once()
 
