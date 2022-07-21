@@ -74,4 +74,4 @@ def wrapper_fn(
         ca_kwargs = serialized_kwargs.get_deserialized()
         ca_fn(*ca_args, **ca_kwargs)
 
-    return output
+    return TransportableObject(output)

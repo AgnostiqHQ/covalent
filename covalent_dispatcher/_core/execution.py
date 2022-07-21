@@ -25,9 +25,9 @@ Defines the core functionality of the dispatcher
 import asyncio
 import json
 import traceback
+from asyncio import Queue
 from datetime import datetime, timezone
 from functools import partial
-from queue import Queue
 from threading import Lock
 from typing import Any, Dict, List, Tuple
 
@@ -431,7 +431,7 @@ def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
     return call_before, call_after
 
 
-def _handle_completed_node(result_object, node_result, pending_deps, tasks_queue):
+async def _handle_completed_node(result_object, node_result, pending_deps, tasks_queue):
     g = result_object.lattice.transport_graph._graph
 
     for child, edges in g.adj[node_result["node_id"]].items():
@@ -439,10 +439,10 @@ def _handle_completed_node(result_object, node_result, pending_deps, tasks_queue
             pending_deps[child] -= 1
         if pending_deps[child] < 1:
             app_log.debug(f"Queuing node {child} for execution")
-            tasks_queue.put(child)
+            await tasks_queue.put(child)
 
 
-def _handle_failed_node(result_object, node_result, pending_deps, tasks_queue):
+async def _handle_failed_node(result_object, node_result, pending_deps, tasks_queue):
     node_id = node_result["node_id"]
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
@@ -451,35 +451,35 @@ def _handle_failed_node(result_object, node_result, pending_deps, tasks_queue):
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
     result_webhook.send_update(result_object)
-    tasks_queue.put(-1)
+    await tasks_queue.put(-1)
 
 
-def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue):
+async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue):
     result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
     result_webhook.send_update(result_object)
-    tasks_queue.put(-1)
+    await tasks_queue.put(-1)
 
 
-def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
+async def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
     with lock:
         app_log.warning("Updating node result (run_planned_workflow).")
         result_object._update_node(db=DispatchDB()._get_data_store(), **node_result)
-        result_webhook.send_update(result_object)
+        # result_webhook.send_update(result_object)
 
         node_status = node_result["status"]
         if node_status == Result.COMPLETED:
-            _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
+            await _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
             return
 
         if node_status == Result.FAILED:
-            _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
+            await _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
             return
 
         if node_status == Result.CANCELLED:
-            _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
+            await _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
             return
 
         if node_status == Result.RUNNING:
@@ -491,11 +491,11 @@ async def _run_task_and_update(run_task_callable, lock, result_object, pending_d
 
     # NOTE: This is a blocking operation because of db writes and needs special handling when
     # we switch to an event loop for processing tasks
-    _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+    await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
     return node_result
 
 
-def _initialize_deps_and_queue(
+async def _initialize_deps_and_queue(
     result_object: Result, tasks_queue: Queue, pending_deps: dict
 ) -> int:
     """Initialize the data structures controlling when tasks are queued for execution.
@@ -510,7 +510,7 @@ def _initialize_deps_and_queue(
         pending_deps[node_id] = d
         num_tasks += 1
         if d == 0:
-            tasks_queue.put(node_id)
+            await tasks_queue.put(node_id)
 
     return num_tasks
 
@@ -562,13 +562,13 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     post_processor = [pp_executor, pp_executor_data]
 
     db = DispatchDB()._get_data_store()
-    tasks_left = _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
+    tasks_left = await _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
 
     while tasks_left > 0:
         app_log.debug(f"{tasks_left} tasks left")
 
         tasks_left -= 1
-        node_id = tasks_queue.get()
+        node_id = await tasks_queue.get()
         app_log.debug(f"Processing node {node_id}")
 
         if node_id < 0:
@@ -594,7 +594,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
                 "status": Result.COMPLETED,
                 "output": output,
             }
-            _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+            await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
             app_log.warning("8A: Update node success (run_planned_workflow).")
 
             continue
@@ -629,7 +629,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
             start_time=start_time,
             status=Result.RUNNING,
         )
-        _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+        await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
         app_log.warning("7: Updating nodes after deps (run_planned_workflow)")
 
         app_log.debug(f"Submitting task {node_id} to executor")
@@ -679,7 +679,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
         result_object._status = Result.PENDING_POSTPROCESSING
         result_object._end_time = datetime.now(timezone.utc)
         result_object.upsert_lattice_data(DispatchDB()._get_data_store())
-        result_webhook.send_update(result_object)
+        # result_webhook.send_update(result_object)
         return result_object
 
     post_processing_inputs = {}
@@ -711,14 +711,14 @@ async def _run_planned_workflow(result_object: Result) -> Result:
             f"Submitted post-processing job to executor {post_processor} at {pp_start_time}"
         )
 
-        post_process_result = future.result()
+        post_process_result = await future
     except Exception as ex:
         app_log.debug(f"Exception during post-processing: {ex}")
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = f"Post-processing failed:{''.join(traceback.TracebackException.from_exception(ex).format())}"
         result_object._end_time = datetime.now(timezone.utc)
         result_object.upsert_lattice_data(DispatchDB()._get_data_store())
-        result_webhook.send_update(result_object)
+        # result_webhook.send_update(result_object)
 
         return result_object
 
@@ -731,7 +731,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
         result_object._error = f"Post-processing failed: {err}"
         result_object._end_time = datetime.now(timezone.utc)
         result_object.upsert_lattice_data(DispatchDB()._get_data_store())
-        result_webhook.send_update(result_object)
+        # result_webhook.send_update(result_object)
 
         return result_object
 
@@ -750,7 +750,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
             db.save_db(result_object, write_source=True)
     except Exception:
         app_log.exception("Upsert or save db issue")
-    result_webhook.send_update(result_object)
+    # result_webhook.send_update(result_object)
 
     return result_object
 
