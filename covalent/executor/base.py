@@ -22,10 +22,12 @@
 Class that defines the base executor template.
 """
 
+import io
 import os
 import subprocess
 import tempfile
 from abc import ABC, abstractmethod
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
@@ -148,7 +150,6 @@ class BaseExecutor(ABC):
             self.__dict__ = object_dict["attributes"]
         return self
 
-    @abstractmethod
     def execute(
         self,
         function: Callable,
@@ -160,8 +161,8 @@ class BaseExecutor(ABC):
     ) -> Any:
         """
         Execute the function with the given arguments.
-        This will be overriden by other executor plugins
-        to design how said function needs to be run.
+
+        This calls the executor-specific `run()` method.
 
         Args:
             function: The input python function which will be executed and whose result
@@ -175,6 +176,51 @@ class BaseExecutor(ABC):
 
         Returns:
             output: The result of the function execution.
+        """
+
+        dispatch_info = DispatchInfo(dispatch_id)
+        fn_version = function.args[0].python_version
+
+        with self.get_dispatch_context(dispatch_info), redirect_stdout(
+            io.StringIO()
+        ) as stdout, redirect_stderr(io.StringIO()) as stderr:
+
+            if self.conda_env != "":
+                result = None
+
+                result = self.execute_in_conda_env(
+                    function,
+                    fn_version,
+                    args,
+                    kwargs,
+                    self.conda_env,
+                    self.cache_dir,
+                    node_id,
+                )
+
+            else:
+                result = self.run(function, args, kwargs)
+
+        self.write_streams_to_file(
+            (stdout.getvalue(), stderr.getvalue()),
+            (self.log_stdout, self.log_stderr),
+            dispatch_id,
+            results_dir,
+        )
+
+        return (result, stdout.getvalue(), stderr.getvalue())
+
+    @abstractmethod
+    def run(self, function: callable, args: List, kwargs: Dict) -> Any:
+        """Abstract method to run a function in the executor.
+
+        Args:
+            function: The function to run in the executor
+            args: List of positional arguments to be used by the function
+            kwargs: Dictionary of keyword arguments to be used by the function.
+
+        Returns:
+            output: The result of the function execution
         """
 
         raise NotImplementedError

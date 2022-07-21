@@ -88,31 +88,8 @@ class DaskExecutor(BaseAsyncExecutor):
 
         self.scheduler_address = scheduler_address
 
-    async def execute(
-        self,
-        function: Callable,
-        args: List,
-        kwargs: Dict,
-        dispatch_id: str,
-        results_dir: str,
-        node_id: int = -1,
-    ) -> Any:
-        """
-        Executes the input function and returns the result.
-
-        Args:
-            function: The input python function which will be executed and whose result
-                      is ultimately returned by this function.
-            args: List of positional arguments to be used by the function.
-            kwargs: Dictionary of keyword arguments to be used by the function.
-            dispatch_id: The unique identifier of the external lattice process which is
-                         calling this function.
-            results_dir: The location of the results directory.
-            node_id: The node ID of this task in the bigger workflow graph.
-
-        Returns:
-            output: The result of the executed function.
-        """
+    async def run(self, function: callable, args: List, kwargs: Dict):
+        """Submit the function and inputs to the dask cluster"""
 
         dask_client = _address_client_mapper.get(self.scheduler_address)
 
@@ -125,20 +102,11 @@ class DaskExecutor(BaseAsyncExecutor):
 
             await dask_client
 
-        dispatch_info = DispatchInfo(dispatch_id)
+        future = dask_client.submit(function, *args, **kwargs)
 
-        with self.get_dispatch_context(dispatch_info), redirect_stdout(
-            io.StringIO()
-        ) as stdout, redirect_stderr(io.StringIO()) as stderr:
+        app_log.debug("Submitted task to dask")
 
-            future = dask_client.submit(function, *args, **kwargs)
-            result = await dask_client.gather(future)
+        result = await dask_client.gather(future)
 
-        self.write_streams_to_file(
-            (stdout.getvalue(), stderr.getvalue()),
-            (self.log_stdout, self.log_stderr),
-            dispatch_id,
-            results_dir,
-        )
-
-        return (result, stdout.getvalue(), stderr.getvalue())
+        # FIX: need to get stdout and stderr from dask worker and print them
+        return result

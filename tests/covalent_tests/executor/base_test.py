@@ -29,8 +29,8 @@ from covalent_dispatcher.utils import wrapper_fn
 
 
 class MockExecutor(BaseExecutor):
-    def execute(self):
-        pass
+    def run(self, function, args, kwargs):
+        return function(*args, **kwargs)
 
 
 def test_write_streams_to_file(mocker):
@@ -155,3 +155,82 @@ def test_wrapper_fn_calldep_retval_injection():
     output = wrapper_fn(serialized_fn, call_before, [], *args, **kwargs)
 
     assert output.get_deserialized() == 7
+
+
+def test_base_executor_subclassing():
+    """Test that executors must implement run"""
+
+    class BrokenMockExecutor(BaseExecutor):
+        def __init__(self):
+            super().__init__(self)
+
+    try:
+        me = BrokenMockExecutor()
+    except TypeError:
+        assert True
+
+
+def test_base_executor_execute(mocker):
+    """Test the execute method"""
+
+    def f(x, y):
+        return x + y
+
+    me = MockExecutor()
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    result, stdout, stderr = me.execute(
+        function=function,
+        args=args,
+        kwargs=kwargs,
+        call_before=call_before,
+        call_after=call_after,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    assert result.get_deserialized() == 5
+
+
+def test_base_executor_execute_conda(mocker):
+    """Test the execute method with a condaenv"""
+
+    def f(x, y):
+        return x + y
+
+    me = MockExecutor(conda_env="testenv")
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    mock_conda_exec = mocker.patch(
+        "covalent.executor.BaseExecutor.execute_in_conda_env", return_value=TransportableObject(5)
+    )
+
+    result, stdout, stderr = me.execute(
+        function=function,
+        args=args,
+        kwargs=kwargs,
+        call_before=call_before,
+        call_after=call_after,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    assert result.get_deserialized() == 5
+    mock_conda_exec.assert_called_once()

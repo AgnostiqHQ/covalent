@@ -22,19 +22,13 @@
 Class that defines the base async executor template.
 """
 
-import os
-import subprocess
-import tempfile
-from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
-
-import cloudpickle as pickle
+import io
+from abc import abstractmethod
+from contextlib import redirect_stderr, redirect_stdout
+from typing import Any, Callable, Dict, List
 
 from .._shared_files import logger
-from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
-from .._workflow.transport import TransportableObject
 from .base import BaseExecutor
 
 app_log = logger.app_log
@@ -60,7 +54,6 @@ class BaseAsyncExecutor(BaseExecutor):
                                    if conda fails to activate specified env.
     """
 
-    @abstractmethod
     async def execute(
         self,
         function: Callable,
@@ -72,8 +65,8 @@ class BaseAsyncExecutor(BaseExecutor):
     ) -> Any:
         """
         Execute the function with the given arguments.
-        This will be overriden by other executor plugins
-        to design how said function needs to be run.
+
+        This calls the executor-specific `run()` method in an async-aware manner.
 
         Args:
             function: The input python function which will be executed and whose result
@@ -87,6 +80,52 @@ class BaseAsyncExecutor(BaseExecutor):
 
         Returns:
             output: The result of the function execution.
+        """
+
+        dispatch_info = DispatchInfo(dispatch_id)
+        fn_version = function.args[0].python_version
+
+        with self.get_dispatch_context(dispatch_info), redirect_stdout(
+            io.StringIO()
+        ) as stdout, redirect_stderr(io.StringIO()) as stderr:
+
+            if self.conda_env != "":
+                result = None
+
+                result = self.execute_in_conda_env(
+                    function,
+                    fn_version,
+                    args,
+                    kwargs,
+                    self.conda_env,
+                    self.cache_dir,
+                    node_id,
+                )
+
+            else:
+                result = await self.run(function, args, kwargs)
+
+        self.write_streams_to_file(
+            (stdout.getvalue(), stderr.getvalue()),
+            (self.log_stdout, self.log_stderr),
+            dispatch_id,
+            results_dir,
+        )
+
+        return (result, stdout.getvalue(), stderr.getvalue())
+
+    @abstractmethod
+    async def run(self, function: callable, args: List, kwargs: Dict) -> Any:
+        """
+        Abstract method to run a function in the executor in async-aware manner.
+
+        Args:
+            function: The function to run in the executor
+            args: List of positional arguments to be used by the function
+            kwargs: Dictionary of keyword arguments to be used by the function.
+
+        Returns:
+            output: The result of the function execution
         """
 
         raise NotImplementedError
