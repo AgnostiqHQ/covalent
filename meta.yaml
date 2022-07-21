@@ -39,6 +39,9 @@ requirements:
     - pip
     - nodejs
     - yarn
+    {% for package in data.get('install_requires', []) -%}
+    - {{ package }}
+    {% endfor %}
   run:
     {% for package in resolved_packages('build') -%}
     - {{ package }}
