@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Adding maximum number of retries and timeout parameter to the get result http call.
 
+## [0.149.0] - 2022-07-21
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Removed
+
+- `result.save()`
+- `result._write_dispatch_to_python_file()`
+
 ## [0.148.0] - 2022-07-21
 
 ### Authors
@@ -28,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Fixed `get_metadata` calls in examples to remove `results_dir` argument
 - Removed YouTube video temporarily
 
 ## [0.147.0] - 2022-07-21
