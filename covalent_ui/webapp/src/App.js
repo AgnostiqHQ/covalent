@@ -60,7 +60,7 @@ const App = () => {
       } else {
         canCallAPI = true;
       }
-      if (canCallAPI || update.result.status === 'COMPLETED') {
+      if (canCallAPI || update.result.status !== 'RUNNING') {
         lastCalledOn = new Date();
         dispatch(
           socketAPI()
