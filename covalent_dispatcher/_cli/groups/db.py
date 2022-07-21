@@ -25,11 +25,15 @@ from covalent._data_store.datastore import workflow_db
 @click.group(invoke_without_command=True)
 @click.pass_context
 def db(ctx: click.Context):
+    """
+    Group of utility commands to manage dispatcher database
+    """
     if ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
 
 
 @click.command()
+@click.pass_context
 def migrate(ctx: click.Context) -> None:
     """
     Run DB Migrations programatically

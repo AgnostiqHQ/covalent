@@ -60,4 +60,5 @@ def test_cli_commands():
         "start",
         "status",
         "stop",
+        "db",
     ]
