@@ -28,6 +28,8 @@ from click.testing import CliRunner
 from psutil import pid_exists
 
 from covalent_dispatcher._cli.service import (
+    MIGRATION_COMMAND_MSG,
+    MIGRATION_WARNING_MSG,
     _graceful_shutdown,
     _graceful_start,
     _is_server_running,
@@ -184,7 +186,18 @@ def test_graceful_shutdown_stopped_server(mocker):
     assert not process_mock.called
 
 
-def test_start(mocker, monkeypatch):
+def test_start_with_migration_warning(mocker):
+    """Test the start CLI command invoking migration warning"""
+    runner = CliRunner()
+    runner.invoke(start)
+    from covalent._data_store import workflow_db
+
+
+@pytest.mark.parametrize(
+    "is_migration_pending, ignore_migrations",
+    [(True, True), (True, False), (False, False), (False, True)],
+)
+def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
     """Test the start CLI command."""
 
     runner = CliRunner()
@@ -193,14 +206,29 @@ def test_start(mocker, monkeypatch):
     graceful_start_mock = mocker.patch(
         "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
     )
+    mock_db = mocker.patch("covalent_dispatcher._cli.service.workflow_db")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
 
-    runner.invoke(start, f"--port {port_val} -d --ignore-migrations")
-    graceful_start_mock.assert_called_once()
-    set_config_mock.assert_called_once()
+    mock_db.is_migration_pending = is_migration_pending
+
+    cli_args = f"--port {port_val} -d"
+
+    if ignore_migrations:
+        cli_args = f"{cli_args} --ignore-migrations"
+
+    res = runner.invoke(start, cli_args)
+
+    if ignore_migrations or not is_migration_pending:
+        graceful_start_mock.assert_called_once()
+        set_config_mock.assert_called_once()
+    else:
+        assert MIGRATION_COMMAND_MSG in res.output
+        assert MIGRATION_WARNING_MSG in res.output
+        assert res.exit_code == 1
 
 
 def test_stop(mocker, monkeypatch):
