@@ -57,7 +57,6 @@ class Electrons:
             )
             .first()
         )
-        # print(data)
         return data
 
     def read_file(self, electron_id, file_module) -> str:

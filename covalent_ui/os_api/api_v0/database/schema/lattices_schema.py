@@ -59,6 +59,11 @@ class Lattice(Base):
 
     status = Column(String(24), nullable=False)
 
+    electron_num = Column(Integer, nullable=False)
+
+    # Number of completed nodes in the lattice
+    completed_electron_num = Column(Integer, nullable=False)
+
     storage_type = Column(Text)
 
     storage_path = Column(Text)
@@ -82,4 +87,3 @@ class Lattice(Base):
     updated_at = Column(DateTime, nullable=False)
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
-    # electrons = relationship("Electron", cascade="all, delete", backref="lattices")

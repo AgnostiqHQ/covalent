@@ -21,8 +21,7 @@
 """Electrons Schema """
 import enum
 
-from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import BigInteger, Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 
 from covalent_ui.os_api.api_v0.database.config.db import Base
 
@@ -103,25 +102,29 @@ class Electron(Base):
 
     executor_filename = Column(Text)
 
-    # error_filename = Column(Text)
-
     results_filename = Column(Text)
 
     value_filename = Column(Text)
 
     attribute_name = Column(Text)
 
-    key = Column(Integer)
+    key_filename = Column(Integer)
 
     stdout_filename = Column(Text)
+
+    deps_filename = Column(Text)
+
+    call_before_filename = Column(Text)
+
+    call_after_filename = Column(Text)
 
     stderr_filename = Column(Text)
 
     info_filename = Column(Text)
 
+    is_active = Column(Boolean)
+
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
-
-    electrons = relationship("ElectronDependency", cascade="all, delete", backref="electrons")

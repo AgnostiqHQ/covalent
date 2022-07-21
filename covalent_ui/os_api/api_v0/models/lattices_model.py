@@ -37,6 +37,7 @@ class LatticeDetailResponse(BaseModel):
     started_at: datetime = None
     ended_at: datetime = None
     directory: str = None
+    runtime: int = 0
 
 
 class LatticeFileResponse(BaseModel):

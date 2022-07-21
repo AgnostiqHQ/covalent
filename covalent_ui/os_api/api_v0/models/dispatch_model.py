@@ -75,6 +75,8 @@ class DispatchModule(BaseModel):
     ended_at: datetime
     lattice_name: str
     runtime: Optional[Union[int, None]]
+    total_electrons: int
+    total_electrons_completed: int
 
 
 class DispatchResponse(BaseModel):

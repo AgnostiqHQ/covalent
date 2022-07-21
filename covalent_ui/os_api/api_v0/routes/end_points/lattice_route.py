@@ -36,6 +36,7 @@ from covalent_ui.os_api.api_v0.models.lattices_model import (
     LatticeExecutorResponse,
     LatticeFileResponse,
 )
+from covalent_ui.os_api.api_v0.utils.file_handle import FileHandler
 
 routes: APIRouter = APIRouter()
 
@@ -63,6 +64,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
                 started_at=data.start_time,
                 ended_at=data.end_time,
                 directory=data.directory,
+                runtime=data.runtime,
             )
         raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
 

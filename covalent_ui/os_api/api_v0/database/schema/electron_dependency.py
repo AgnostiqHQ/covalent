@@ -22,7 +22,7 @@
 
 import enum
 
-from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, Integer, Text
+from sqlalchemy import BigInteger, Boolean, Column, DateTime, Enum, ForeignKey, Integer, Text
 
 from covalent_ui.os_api.api_v0.database.config.db import Base
 
@@ -68,3 +68,5 @@ class ElectronDependency(Base):
     arg_index = Column(Integer, nullable=False)
 
     created_at = Column(DateTime, nullable=False)
+
+    is_active = Column(Boolean)

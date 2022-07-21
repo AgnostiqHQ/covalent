@@ -18,13 +18,15 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import datetime
 from sqlite3 import InterfaceError
 from typing import List
 
-from fastapi import HTTPException
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func, or_
 
+from covalent_ui.os_api.api_v0.database.schema.electrons_schema import Electron
 from covalent_ui.os_api.api_v0.database.schema.lattices_schema import Lattice
 from covalent_ui.os_api.api_v0.models.dispatch_model import (
     DeleteDispatchesRequest,
@@ -64,6 +66,8 @@ class Summary:
                     )
                     * 1000
                 ).label("runtime"),
+                Lattice.electron_num.label("total_electrons"),
+                Lattice.completed_electron_num.label("total_electrons_completed"),
                 Lattice.created_at.label("started_at"),
                 Lattice.updated_at.label("ended_at"),
                 Lattice.status.label("status"),
@@ -74,6 +78,7 @@ class Summary:
                     Lattice.dispatch_id.ilike(f"%{search}%"),
                 ),
                 Lattice.electron_id.is_(None),
+                Lattice.is_active is not False,
             )
             .order_by(
                 desc(sort_by.value)
@@ -112,22 +117,38 @@ class Summary:
         """
         query1 = self.db_con.query(
             (func.count(Lattice.id))
-            .filter(Lattice.status == "RUNNING")
+            .filter(Lattice.status == "RUNNING", Lattice.is_active is not False)
             .label("total_jobs_running")
         ).first()
         query2 = self.db_con.query(
-            (func.count(Lattice.id)).filter(Lattice.status == "COMPLETED").label("total_jobs_done")
+            (func.count(Lattice.id))
+            .filter(Lattice.status == "COMPLETED", Lattice.is_active is not False)
+            .label("total_jobs_done")
         ).first()
-        query3 = self.db_con.query(Lattice.status).order_by(Lattice.updated_at.desc()).first()
-        query4 = self.db_con.query(
-            func.sum(
-                func.strftime("%s", Lattice.completed_at) - func.strftime("%s", Lattice.started_at)
-            ).label("run_time")
-        ).first()
+        query3 = (
+            self.db_con.query(Lattice.status)
+            .filter(Lattice.is_active is not False)
+            .order_by(Lattice.updated_at.desc())
+            .first()
+        )
+        query4 = (
+            self.db_con.query(
+                func.sum(
+                    func.strftime("%s", Lattice.completed_at)
+                    - func.strftime("%s", Lattice.started_at)
+                ).label("run_time")
+            )
+            .filter(Lattice.is_active is not False)
+            .first()
+        )
         query5 = self.db_con.query(
-            (func.count(Lattice.id)).filter(Lattice.status == "FAILED").label("total_failed")
+            (func.count(Lattice.id))
+            .filter(Lattice.status == "FAILED", Lattice.is_active is not False)
+            .label("total_failed")
         ).first()
-        query6 = self.db_con.query((func.count(Lattice.id)).label("total_jobs")).first()
+        query6 = self.db_con.query(
+            (func.count(Lattice.id)).filter(Lattice.is_active is not False).label("total_jobs")
+        ).first()
         return DispatchDashBoardResponse(
             total_jobs_running=query1[0],
             total_jobs_completed=query2[0],
@@ -149,13 +170,33 @@ class Summary:
         failure = []
         for dispatch_id in req.dispatches:
             try:
-                data = (
-                    self.db_con.query(Lattice)
-                    .filter(Lattice.dispatch_id == str(dispatch_id))
+                lattice_id = (
+                    self.db_con.query(Lattice.id)
+                    .filter(
+                        Lattice.dispatch_id == str(dispatch_id), Lattice.is_active is not False
+                    )
                     .first()
                 )
-                if data is not None:
-                    self.db_con.delete(data)
+                if lattice_id is not None:
+                    query1 = (
+                        update(Electron)
+                        .where(Electron.parent_lattice_id == lattice_id[0])
+                        .values(
+                            {
+                                Electron.updated_at: datetime.datetime.now(),
+                                Electron.is_active: False,
+                            }
+                        )
+                    )
+                    query2 = (
+                        update(Lattice)
+                        .where(Lattice.id == lattice_id[0])
+                        .values(
+                            {Lattice.updated_at: datetime.datetime.now(), Lattice.is_active: False}
+                        )
+                    )
+                    self.db_con.execute(query1)
+                    self.db_con.execute(query2)
                     self.db_con.commit()
                     success.append(dispatch_id)
                 else:
@@ -164,9 +205,7 @@ class Summary:
                 failure.append(dispatch_id)
 
         if len(failure) > 0:
-            raise HTTPException(
-                status_code=400, detail="Some of the dispatches could not be deleted."
-            )
+            message = "Some of the dispatches could not be deleted"
         else:
             message = f"All {len(req.dispatches)} deleted successfully"
         return DeleteDispatchesResponse(

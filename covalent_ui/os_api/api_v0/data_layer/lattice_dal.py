@@ -54,13 +54,18 @@ class Lattices:
                 Lattice.error_filename,
                 Lattice.started_at.label("start_time"),
                 Lattice.completed_at.label("end_time"),
-                func.count(Electron.id).label("total_electrons"),
-                func.count(Electron.id)
-                .filter(Electron.completed_at.is_not(None))
-                .label("total_electrons_completed"),
+                Lattice.electron_num.label("total_electrons"),
+                Lattice.completed_electron_num.label("total_electrons_completed"),
+                (
+                    (
+                        func.strftime("%s", Lattice.completed_at)
+                        - func.strftime("%s", Lattice.started_at)
+                    )
+                    * 1000
+                ).label("runtime"),
             )
             .join(Electron, Electron.parent_lattice_id == Lattice.id)
-            .filter(Lattice.dispatch_id == str(dispatch_id))
+            .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active is not False)
             .first()
         )
 
@@ -87,10 +92,8 @@ class Lattices:
                 Lattice.storage_type,
                 Lattice.started_at.label("started_at"),
                 Lattice.completed_at.label("ended_at"),
-                func.count(Electron.id).label("total_electrons"),
-                func.count(Electron.id)
-                .filter(Electron.completed_at.is_not(None))
-                .label("total_electrons_completed"),
+                Lattice.electron_num.label("total_electrons"),
+                Lattice.completed_electron_num.label("total_electrons_completed"),
             )
             .join(Electron, Electron.parent_lattice_id == Lattice.id)
             .filter(Lattice.dispatch_id == str(dispatch_id))
