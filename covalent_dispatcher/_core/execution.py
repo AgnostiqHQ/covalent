@@ -23,6 +23,7 @@ Defines the core functionality of the dispatcher
 """
 
 import json
+import time
 import traceback
 from concurrent.futures import Future, ThreadPoolExecutor, wait
 from datetime import datetime, timezone
@@ -767,13 +768,18 @@ def _plan_workflow(result_object: Result) -> None:
 def construct_result_object(dispatch_id: str, json_lattice: str) -> Result:
     """Construct result object."""
 
+    app_log.warning(f"Dispatch id: {dispatch_id} workflow written to DB. {datetime.now()}")
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    app_log.warning("2: Constructed result object and initialized nodes.")
+    app_log.warning(f"2: Constructed result object and initialized nodes. {datetime.now()}")
     DispatchDB().save_db(result_object)
+
+    with Session(DispatchDB()._get_data_store().engine) as session:
+        app_log.warning(f"Reading from DB: {session.query(Lattice_model).first().status}")
+
     return result_object
 
 

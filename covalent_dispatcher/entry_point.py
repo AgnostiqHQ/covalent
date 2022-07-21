@@ -26,6 +26,7 @@ import sys
 import threading
 import uuid
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from datetime import datetime as time
 from typing import List
 
 from covalent._results_manager import Result
@@ -76,9 +77,10 @@ def run_dispatcher(
 
     result_future = workflow_pool.submit(construct_result_object, dispatch_id, json_lattice)
     result_object = result_future.result()
+    app_log.warning(f"-1: Result object retrieved {result_object.status}. {time.now()}")
 
     futures[dispatch_id] = workflow_pool.submit(run_workflow, result_object, tasks_pool)
-    app_log.warning("0: Submitted lattice JSON to run_workflow.")
+    app_log.warning(f"0: Submitted lattice JSON to run_workflow. {time.now()}")
 
     return dispatch_id
 

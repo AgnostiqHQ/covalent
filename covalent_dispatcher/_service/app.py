@@ -31,8 +31,12 @@ from covalent._data_store.models import Lattice
 from covalent._results_manager.result import Result
 from covalent._results_manager.results_manager import result_from
 from covalent._results_manager.write_result_to_db import MissingLatticeRecordError
+from covalent._shared_files import logger
 
 from .._db.dispatchdb import DispatchDB
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 bp = Blueprint("dispatcher", __name__, url_prefix="/api")
 
@@ -96,6 +100,7 @@ def db_path() -> Response:
 
 @bp.route("/result/<dispatch_id>", methods=["GET"])
 def get_result(dispatch_id) -> Response:
+    app_log.warning("Inside get_result blueprint")
     args = request.args
     wait = args.get("wait", default=False, type=lambda v: v.lower() == "true")
     status_only = args.get("status_only", default=False, type=lambda v: v.lower() == "true")

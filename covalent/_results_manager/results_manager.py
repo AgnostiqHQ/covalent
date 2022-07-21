@@ -21,7 +21,7 @@
 
 import codecs
 import os
-import time
+from datetime import datetime as dt
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -65,13 +65,14 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
 
     result_object = None
     try:
+        app_log.warning(f"TRYING TO GET RESULT FROM DISPATCHER: {dt.now()}")
         result = _get_result_from_dispatcher(
             dispatch_id,
             wait,
         )
         result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
 
-    except MissingLatticeRecordError:
+    except Exception:
         app_log.exception()
     finally:
         return result_object
@@ -151,15 +152,21 @@ def _get_result_from_dispatcher(
     Raises:
         MissingLatticeRecordError: If the result is not found.
     """
-    adapter = HTTPAdapter(max_retries=0)
+
+    adapter = HTTPAdapter(max_retries=1)
     http = requests.Session()
     http.mount("http://", adapter)
-    url = "http://" + dispatcher + "/api/result/" + dispatch_id
-    response = http.get(url, params={"wait": wait, "status_only": status_only}, timeout=1)
+    url = "http://" + dispatcher + "/result/" + dispatch_id
+    try:
+        response = http.get(url, params={"wait": wait, "status_only": status_only}, timeout=1)
+    except Exception:
+        app_log.warning(f"URL {url}")
+        app_log.exception("INside get resault from dispatcher")
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()
     result = response.json()
+    app_log.exception("Exiting get_result from dispatcher")
     return result
 
 
