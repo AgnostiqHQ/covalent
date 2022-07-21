@@ -46,6 +46,7 @@ class DataStore:
         else:
             self.db_URL = "sqlite+pysqlite:///" + get_config("dispatcher.db_path")
 
+
         self.engine = create_engine(self.db_URL, **kwargs)
         self.Session = sessionmaker(self.engine)
 
