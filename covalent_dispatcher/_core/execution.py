@@ -384,7 +384,7 @@ async def _run_task(
             status=Result.FAILED,
             error="".join(traceback.TracebackException.from_exception(ex).format()),
         )
-        app_log.exception("Run task - sublattice exception")
+        app_log.exception("Run task exception")
     app_log.warning("Returning node result (run_task)")
 
     return node_result
@@ -450,7 +450,7 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
     result_object._error = f"Node {result_object._get_node_name(db, node_id)} failed: \n{result_object._get_node_error(db, node_id)}"
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
-    result_webhook.send_update(result_object)
+    # result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
 
 
@@ -459,7 +459,7 @@ async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks
     result_object._end_time = datetime.now(timezone.utc)
     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
-    result_webhook.send_update(result_object)
+    # result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
 
 
