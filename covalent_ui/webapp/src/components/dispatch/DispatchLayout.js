@@ -70,9 +70,11 @@ export function DispatchLayout() {
     setSelectedElements([])
   }, [dispatchId, setSelectedElements])
 
-  // if (fetch) {
-  //   return <PageLoading />
-  // }
+  if (Object.keys(graph_result).length !== 0) {
+    if(graph_result.links.length === 0){
+    return <NotFound text="Lattice dispatch not found." />
+  }
+  }
 
   return (
     <>
@@ -85,7 +87,8 @@ export function DispatchLayout() {
           bgcolor: graphBgColor,
         }}
       >
-        {!fetch ? (
+        {Object.keys(graph_result).length !== 0 && !fetch ?
+          (
           <LatticeGraph
             graph={graph_result}
             hasSelectedNode={!!selectedElectron}
@@ -115,12 +118,12 @@ export function DispatchLayout() {
 const UUID_PATTERN =
   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
 
-const DispatchLayoutValidate = () => {
-  let { dispatchId } = useParams()
-  if (!UUID_PATTERN.test(dispatchId)) {
-    return <NotFound />
-  }
-  return <DispatchLayout />
-}
+ const DispatchLayoutValidate = () => {
+   let { dispatchId } = useParams()
+   if (!UUID_PATTERN.test(dispatchId)) {
+     return <NotFound text="Lattice dispatch not found." />
+   }
+   return <DispatchLayout />
+ }
 
 export default DispatchLayoutValidate

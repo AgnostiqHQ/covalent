@@ -25,17 +25,15 @@ import {
   Paper,
   Typography,
   Divider,
-  CircularProgress,
   Skeleton,
   Snackbar
 } from '@mui/material'
 import { Box } from '@mui/system'
-import CopyButton from '../common/CopyButton'
 import { displayStatus, secondsToHms } from '../../utils/misc'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchDashboardOverview } from '../../redux/dashboardSlice'
 
-const DashboardCard = (props) => {
+const DashboardCard = (_props) => {
   const dispatch = useDispatch()
   // check if socket message is received and call API
   const callSocketApi = useSelector(
@@ -82,20 +80,6 @@ const DashboardCard = (props) => {
           message="Something went wrong,please contact the administrator!"
           onClose={() => setOpenSnackbar(false)}
         />
-        {/* {dispatcherAddress && (
-          <>
-            <Typography sx={{ ml: 'auto' }} color="text.secondary">
-              {dispatcherAddress}
-            </Typography>
-            <CopyButton
-              sx={{ ml: 1 }}
-              size="small"
-              content={dispatcherAddress}
-              title="Copy dispatcher address"
-              isBorderPresent={true}
-            />
-          </>
-        )} */}
       </Box>
       <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-around' }}>
         <DashBoardCardItems

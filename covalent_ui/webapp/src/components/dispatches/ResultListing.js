@@ -61,7 +61,6 @@ import {
 } from '../../redux/dashboardSlice'
 import CopyButton from '../common/CopyButton'
 import { formatDate,secondsToHms } from '../../utils/misc'
-import Runtime from './Runtime'
 import ResultProgress from './ResultProgress'
 import SortDispatch from './SortDispatch'
 import DialogBox from '../common/DialogBox'
@@ -172,7 +171,6 @@ const ResultsTableToolbar = ({
   setQuery,
   numSelected,
   onDeleteSelected,
-  totalRecords,
   runningDispatches,
   completedDispatches,
   failedDispatches,

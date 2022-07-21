@@ -44,7 +44,7 @@ const DispatchTopBar = () => {
 
 export default DispatchTopBar
 
-const LatticeStatusCard = ({ dispatchId, latDetails, isFetching }) => {
+const LatticeStatusCard = ({ _dispatchId, latDetails, isFetching }) => {
   return (
     <Box sx={{ my: 0, pt: 1 }}>
       <Box

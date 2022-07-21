@@ -36,7 +36,6 @@ export default function DialogBox({
   title,
   handler,
   message,
-  selected,
 }) {
   const handleClose = () => setOpenDialogBox(false)
 
