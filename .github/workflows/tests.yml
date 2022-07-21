@@ -74,6 +74,11 @@ jobs:
             - 'tests/functional_tests/**'
             ui_backend:
             - 'covalent_ui/**'
+      - name: Check for UI backend tests
+        id: check_files
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "tests/covalent_ui_tests/**"
 
       - name: Set up Python
         if: matrix.os == 'macos-latest'
@@ -172,17 +177,17 @@ jobs:
         run: coverage xml -o functional_tests_coverage.xml
 
       - name: Run UI backend tests and measure coverage
-        if: ${{ steps.working-directory.outputs.covalent_ui }} == 'true' && false  && [ -d "tests/covalent_ui" ]
+        if: ${{ steps.working-directory.outputs.covalent_ui }} == true && false  &&  ${{ steps.check_files.outputs.files_exists}}$ == true || echo 'tests for UI backend do not exist'
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
-            PYTHONPATH=$PWD/ pytest -vv tests/covalent_ui --cov=covalent_ui --cov-config=.coveragerc
+            PYTHONPATH=$PWD/ pytest -vv tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
       
       - name: Generate UI backend coverage report
-        if: false
+        if: false &&
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
