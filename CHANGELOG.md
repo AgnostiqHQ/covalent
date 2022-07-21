@@ -11,6 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added methods to programatically fetch information from Alembic without needing subprocess
 
+### Operations
+
+- Added workflow to stale and close pull requests
+
+### Docs
+
+- Removed YouTube video temporarily
+
+## [0.147.0] - 2022-07-21
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Simplified interface for custom executors. All the boilerplate has
+  been moved to `BaseExecutor`.
+
 ## [0.146.0] - 2022-07-20
 
 ### Authors
