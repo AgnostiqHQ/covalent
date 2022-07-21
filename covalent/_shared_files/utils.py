@@ -23,7 +23,6 @@
 import inspect
 import socket
 from datetime import timedelta
-from multiprocessing import Queue as MPQ
 from typing import Callable, Dict, Set, Tuple
 
 from . import logger

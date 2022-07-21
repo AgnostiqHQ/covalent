@@ -25,19 +25,16 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
-import asyncio
-import io
 import os
-from contextlib import redirect_stderr, redirect_stdout
-from typing import Any, Callable, Dict, List
+from typing import Dict, List
 
-from dask.distributed import Client, get_client
+import cloudpickle as pickle
+from dask.distributed import Client
 
 from covalent._shared_files import logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
-from covalent._shared_files.util_classes import DispatchInfo
 from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor import BaseAsyncExecutor
 
@@ -96,7 +93,7 @@ class DaskExecutor(BaseAsyncExecutor):
         if dask_client and not dask_client.scheduler:
             await dask_client
 
-        if not dask_client or not dask_client.scheduler:
+        if not dask_client or not dask_client.scheduler or not dask_client.asynchronous:
             dask_client = Client(address=self.scheduler_address, asynchronous=True)
             _address_client_mapper[self.scheduler_address] = dask_client
 

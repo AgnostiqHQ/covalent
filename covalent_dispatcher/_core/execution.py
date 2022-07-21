@@ -826,6 +826,8 @@ def run_workflow(dispatch_id: str, json_lattice: str) -> Result:
         )
         raise
 
+    app_log.warning("11: Workflow finished execution.")
+
     return result_object
 
 
