@@ -12,6 +12,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `result.save()`
 - `result._write_dispatch_to_python_file()`
 
+## [0.148.0] - 2022-07-21
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+
+- Changed DataStore default db path to correspond to dispatch db config path
+
+### Operations
+
+- Added workflow to stale and close pull requests
+
 ### Docs
 
 - Fixed `get_metadata` calls in examples to remove `results_dir` argument
