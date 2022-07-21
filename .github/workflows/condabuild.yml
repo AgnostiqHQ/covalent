@@ -21,22 +21,22 @@
 name: conda
 
 on:
-  schedule:
-    - cron: "02 4 * * *"
   # TODO: remove this line
   push:
+#  schedule:
+#    - cron: "02 4 * * *"
       
 
 jobs:
   conda:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version:
-          - "3.8"
-          - "3.9"
-          - "3.10"
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        python-version:
+#          - "3.8"
+#          - "3.9"
+#          - "3.10"
     steps:
       - name: Check out head
         uses: actions/checkout@v3
@@ -46,9 +46,9 @@ jobs:
         run: |
           conda install conda-build conda-verify anaconda-client
           conda config --append channels conda-forge
-          conda create --name buildenv python=${{ matrix.python-version }}
+          conda create --name buildenv python=3.8
           $CONDA/bin/activate buildenv
-          conda build --override-channels --output-folder . --python=${{ matrix.python-version }} .
+          conda build --override-channels --output-folder=./ .
           conda convert --platform all ./linux-64/*.tar.bz2
 #          anaconda upload -t ${{ secrets.ANACONDA_TOKEN }} upload -u agnostiq -l beta --skip-existing ./{linux,osx,win}-*/*.tar.bz2
 
