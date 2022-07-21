@@ -39,6 +39,7 @@ call_before = DepsCall(call_hook)
 call_after = DepsCall(call_hook)
 source_file = Path("/tmp/src.txt")
 dest_file = Path("/tmp/dest.txt")
+dest_file2 = Path("/tmp/dest2.txt")
 
 
 @ct.leptons.bash(
@@ -63,7 +64,7 @@ def workflow():
     task(5)
     ct.leptons.bash(
         task2,
-        files=[ct.fs.FileTransfer(str(source_file), str(dest_file), order=Order.AFTER)],
+        files=[ct.fs.FileTransfer(str(source_file), str(dest_file2), order=Order.AFTER)],
         deps_pip=["cloudpickle==2.0.0"],
     )(5)
 
@@ -82,8 +83,6 @@ def test_bash_decorator():
         result = int(f.readline().strip())
         assert result == 5
 
-    file.unlink()
-
     file2 = Path("/tmp/debug2.txt")
     assert file2.is_file()
 
@@ -91,6 +90,8 @@ def test_bash_decorator():
         result = int(f.readline().strip())
         assert result == 5
 
+    file.unlink()
     file2.unlink()
     source_file.unlink()
     dest_file.unlink()
+    dest_file2.unlink()
