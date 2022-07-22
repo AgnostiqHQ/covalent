@@ -83,6 +83,7 @@ class DaskExecutor(BaseAsyncExecutor):
         super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
 
         self.scheduler_address = scheduler_address
+        self.dask_client = None
 
     async def run(self, function: Callable, args: List, kwargs: Dict):
         """Submit the function and inputs to the dask cluster"""
