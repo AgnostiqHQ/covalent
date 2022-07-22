@@ -22,12 +22,9 @@
 Integration test for choosing executors.
 """
 
-
 import pytest
 
 import covalent as ct
-import covalent._results_manager.results_manager as rm
-from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 
 def test_executors_exist():
@@ -56,7 +53,7 @@ def test_using_executor_names():
         assert output.result == "input"
 
 
-# @pytest.mark.skip(reason="Unable to pickle for some reason")
+@pytest.mark.skip(reason="Trying to pickle _asyncio.Task even though there is no such object")
 def test_using_executor_classes():
     """Test creating executor objects and using them in a simple electron."""
 
