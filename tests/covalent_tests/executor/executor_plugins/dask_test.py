@@ -20,6 +20,8 @@
 
 """Tests for Covalent dask executor."""
 
+import asyncio
+
 import pytest
 
 
@@ -34,7 +36,7 @@ def test_dask_executor_init(mocker):
 
 
 @pytest.mark.asyncio
-async def test_dask_executor_run(event_loop):
+async def test_dask_executor_run():
     """Test run method for Dask executor"""
 
     from dask.distributed import LocalCluster
@@ -50,4 +52,4 @@ async def test_dask_executor_run(event_loop):
 
     args = [5]
     kwargs = {"y": 7}
-    assert event_loop.run_until_complete(dask_exec.run(f, args, kwargs)) == (5, 7)
+    assert asyncio.run(dask_exec.run(f, args, kwargs)) == (5, 7)
