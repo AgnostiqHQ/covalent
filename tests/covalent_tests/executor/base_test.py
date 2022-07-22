@@ -40,6 +40,9 @@ class MockAsyncExecutor(BaseAsyncExecutor):
     async def run(self, function, args, kwargs, task_metadata):
         return function(*args, **kwargs)
 
+    def teardown(self):
+        return
+
 
 def test_write_streams_to_file(mocker):
     """Test write log streams to file method in BaseExecutor via LocalExecutor."""
