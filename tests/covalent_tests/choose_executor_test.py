@@ -58,11 +58,9 @@ def test_using_executor_names():
 def test_using_executor_classes():
     """Test creating executor objects and using them in a simple electron."""
 
-    for executor_name in ct.executor._executor_manager.executor_plugins_map:
-        executor_class = ct.executor._executor_manager.executor_plugins_map[executor_name]
-        executor = executor_class()
+    for executor in [ct.executor.LocalExecutor, ct.executor.DaskExecutor]:
 
-        @ct.electron(executor=executor)
+        @ct.electron(executor=executor())
         def passthrough(x):
             return x
 
