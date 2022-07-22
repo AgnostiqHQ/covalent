@@ -261,9 +261,8 @@ class BaseExecutor(ABC):
 
         return (result, stdout.getvalue(), stderr.getvalue())
 
-    @abstractmethod
     def setup(self) -> Any:
-        """[Optional] Abstract method to run an executor specific setup code
+        """[Optional] Convenient method to run any executor specific setup code
 
         Args:
             None
@@ -288,9 +287,8 @@ class BaseExecutor(ABC):
 
         raise NotImplementedError
 
-    @abstractmethod
     def teardown(self) -> Any:
-        """[Optional] Abstract method to run any executor specific cleanup/teardown actions"""
+        """[Optional] Method to run any executor specific cleanup/teardown actions"""
         pass
 
     def execute_in_conda_env(
