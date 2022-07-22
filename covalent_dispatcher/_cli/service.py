@@ -412,7 +412,7 @@ async def _get_cluster_status(uri: str):
     """
     Returns status of all workers and scheduler in the cluster
     """
-    async with rpc(uri) as r:
+    async with rpc(uri, timeout=2) as r:
         cluster_status = await r.cluster_status()
     return cluster_status
 
@@ -421,7 +421,7 @@ async def _get_cluster_address(uri):
     """
     Returns the TCP addresses of the scheduler and workers
     """
-    async with rpc(uri) as r:
+    async with rpc(uri, timeout=2) as r:
         addresses = await r.cluster_address()
     return addresses
 
@@ -430,7 +430,7 @@ async def _get_cluster_info(uri):
     """
     Return summary of cluster info
     """
-    async with rpc(uri) as r:
+    async with rpc(uri, timeout=2) as r:
         return await r.cluster_info()
 
 
@@ -438,7 +438,7 @@ async def _cluster_restart(uri):
     """
     Restart the cluster by individually restarting the cluster workers
     """
-    async with rpc(uri) as r:
+    async with rpc(uri, timeout=2) as r:
         await r.cluster_restart()
 
 
@@ -446,7 +446,7 @@ async def _cluster_scale(uri: str, nworkers: int):
     """
     Scale the cluster up/down depending on `nworkers`
     """
-    comm = await connect(uri)
+    comm = await connect(uri, timeout=2)
     await comm.write({"op": "cluster_scale", "size": nworkers})
     result = await comm.read()
     comm.close()
@@ -454,7 +454,7 @@ async def _cluster_scale(uri: str, nworkers: int):
 
 
 async def _get_cluster_size(uri) -> int:
-    async with rpc(uri) as r:
+    async with rpc(uri, timeout=2) as r:
         size = await r.cluster_size()
     return size
 
@@ -464,7 +464,7 @@ async def _get_cluster_logs(uri):
     Retrive the cluster logs from the scheduler directly
     """
     click.echo("Calling logs handler")
-    comm = await connect(uri)
+    comm = await connect(uri, timeout=2)
     await comm.write({"op": "cluster_logs"})
     cluster_logs = await comm.read()
     comm.close()
@@ -532,5 +532,7 @@ def cluster(
             loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
             click.echo(f"Cluster scaled to have {scale} workers")
             return
-    except KeyError:
-        click.echo("Error")
+    except OSError as e:
+        click.echo(e)
+    except KeyError as e:
+        click.echo("Covalent not running")
