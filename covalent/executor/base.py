@@ -304,9 +304,8 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         raise NotImplementedError
 
-    @abstractmethod
     def teardown(self) -> Any:
-        """[Optional] Abstract method to run any executor specific cleanup/teardown actions"""
+        """[Optional] Method to run any executor specific cleanup/teardown actions"""
         pass
 
     def execute_in_conda_env(
