@@ -20,8 +20,6 @@
 """Electrons Route"""
 
 import uuid
-from enum import Enum
-from random import randrange
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
@@ -35,6 +33,7 @@ from covalent_ui.os_api.api_v0.models.lattices_model import (
     ElectronFileResponse,
     ElectronResponse,
 )
+from covalent_ui.os_api.api_v0.utils.file_handle import FileHandler
 
 routes: APIRouter = APIRouter()
 
@@ -52,18 +51,19 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
+        print(result)
         if result is None:
             raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
         return ElectronResponse(
-            id=result[0],
-            node_id=result[1],
-            parent_lattice_id=result[2],
-            type=result[3],
-            storage_path=result[4],
-            name=result[5],
-            status=result[6],
-            started_at=result[7],
-            ended_at=result[8],
+            id=result["id"],
+            node_id=result["transport_graph_node_id"],
+            parent_lattice_id=result["parent_lattice_id"],
+            type=result["type"],
+            storage_path=result["storage_path"],
+            name=result["name"],
+            status=result["status"],
+            started_at=result["started_at"],
+            ended_at=result["completed_at"],
         )
 
 
@@ -72,16 +72,43 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
-        if result is None:
-            raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
-        if name in ["result", "inputs"]:
-            response = file_read()
-            return ElectronFileResponse(data=str(response[name]))
-        elif name == "function_string":
-            response = file_read()
-            return ElectronFileResponse(data=response[name][randrange(3)])
-        elif name == "executor_details":
-            response = file_read()
-            return ElectronExecutorResponse(data=response[name], executor_name="dask")
-        response = file_read()
-        return ElectronFileResponse(data=response[name])
+        if result[0] is not None:
+            handler = FileHandler(result["storage_path"])
+            if name == "function_string":
+                response = handler.read_from_text(result["function_string_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "function":
+                response = handler.read_from_pickle(result["function_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "executor_details":
+                response = handler.read_from_pickle(result["executor_filename"])
+                return ElectronExecutorResponse(data=response, executor_name="dask")
+            elif name == "result":
+                response = handler.read_from_pickle(result["results_filename"])
+                return ElectronFileResponse(data=str(response))
+            elif name == "value":
+                response = handler.read_from_pickle(result["value_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "key":
+                response = handler.read_from_pickle(result["key_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "stdout":
+                response = handler.read_from_text(result["stdout_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "deps":
+                response = handler.read_from_pickle(result["deps_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "call_before":
+                response = handler.read_from_pickle(result["call_before_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "call_after":
+                response = handler.read_from_pickle(result["call_after_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "stderr":
+                response = handler.read_from_text(result["stderr_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "info":
+                response = handler.read_from_text(result["info_filename"])
+                return ElectronFileResponse(data=response)
+            else:
+                raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])

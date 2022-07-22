@@ -20,53 +20,63 @@
 
 """File handlers"""
 
-import glob
-import os
-import pathlib
-from enum import Enum
+import codecs
+import json
 
 import cloudpickle as pickle
 
-from covalent_ui.os_api.api_v0.models.file_model import FileExtension, Filetype
-
-
-def read_from_pickle(path):
-    with open(path, "rb") as file:
-        try:
-            while True:
-                yield pickle.load(file)
-        except EOFError:
-            pass
+from covalent._workflow.transport import TransportableObject, _TransportGraph
 
 
 class FileHandler:
     """File read"""
 
-    def __init__(self, path, file_name) -> None:
-        self.path = path
-        self.file_name = file_name
-        self.file_path = self.path + self.file_name
+    def __init__(self, location) -> None:
+        self.location = location
 
-    def file_read(executor_file_path, file_module):
-        executors = {}
-        file_extension = pathlib.Path(executor_file_path + file_module).suffix
-        # if file_extension == FileExtension.PKL.value and file_module != Filetype.EXECUTOR.value:
-        #     for item in read_from_pickle(executor_file_path + file_module):
-        #         vars1 = vars(item)
-        #         for value in vars1:
-        #             executors[value] = getattr(item, value)
-        #         return executors
-        #     return executors
-        if file_extension == FileExtension.PKL.value:
-            with open(executor_file_path + file_module, "rb") as file:
-                data = pickle.load(file)
-                print(data)
-            return data
-        with open(executor_file_path + file_module, "rb") as fd:
-            fd.seek(0)
-            try:
-                result = fd.read().decode("utf-8")
-                print(result, "resssssssssssssssssssssssssssssssssss")
-                return result
-            except:
-                return None
+    def read_from_pickle(self, path):
+        try:
+            read_file = open(self.location + "/" + path, "rb")
+            unpickled_object = pickle.load(read_file)
+            read_file.close()
+            print(type(unpickled_object))
+            if isinstance(unpickled_object, list):
+                if not (unpickled_object):
+                    return ""
+                else:
+                    list_str = ""
+                    for obj in unpickled_object:
+                        list_str += obj
+                    return list_str
+            if isinstance(unpickled_object, dict):
+
+                args_array = []
+                kwargs_array = {}
+
+                if bool(unpickled_object):
+                    for obj in unpickled_object["args"]:
+                        args_array.append(obj.object_string)
+
+                    for obj in unpickled_object["kwargs"]:
+                        kwargs_array[obj] = unpickled_object["kwargs"][obj].object_string
+
+                    return json.dumps({"args": args_array, "kwargs": kwargs_array})
+                else:
+                    return ""
+            elif isinstance(unpickled_object, str):
+                return unpickled_object
+            elif isinstance(unpickled_object, TransportableObject):
+                res = unpickled_object.object_string
+                print(res)
+                return json.dumps(res)
+            elif isinstance(unpickled_object, _TransportGraph):
+                return str(unpickled_object.__dict__)
+            else:
+                return unpickled_object
+        except EOFError:
+            pass
+
+    def read_from_text(self, path):
+        """Read from text"""
+        file = codecs.open(self.location + "/" + path, "rb").read().decode("ISO-8859-1")
+        return file

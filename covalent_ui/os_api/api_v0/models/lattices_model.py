@@ -49,7 +49,7 @@ class LatticeFileResponse(BaseModel):
 class LatticeExecutorResponse(BaseModel):
     """Lattices File Response Model"""
 
-    data: dict = (None,)
+    data: str = (None,)
     executor_name: str = None
 
 
@@ -83,7 +83,7 @@ class ElectronFileResponse(BaseModel):
 class ElectronExecutorResponse(BaseModel):
     """Lattices File Response Model"""
 
-    data: dict = (None,)
+    data: str = (None,)
     executor_name: str = None
 
 
@@ -105,3 +105,5 @@ class FileOutput(str, Enum):
     INPUTS = "inputs"
     ERROR = "error"
     EXECUTOR = "executor_details"
+    FUNCTION = "function"
+    TRANSPORT_GRAPH = "transport_graph"

@@ -84,15 +84,27 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
         electron = Lattices(session)
         data = electron.get_lattices_id_storage_file(dispatch_id)
         if data[0] is not None:
-            if name in ["result", "inputs"]:
-                response = file_read()
-                return LatticeFileResponse(data=str(response[name]))
+            handler = FileHandler(data["directory"])
+            if name == "result":
+                response = handler.read_from_pickle(data["results_filename"])
+                return LatticeFileResponse(data=str(response))
+            if name == "inputs":
+                response = handler.read_from_pickle(data["inputs_filename"])
+                return LatticeFileResponse(data=response)
             elif name == "function_string":
-                response = file_read()
-                return LatticeFileResponse(data=response[name][randrange(3)])
+                response = handler.read_from_text(data["function_string_filename"])
+                return LatticeFileResponse(data=response)
             elif name == "executor_details":
-                response = file_read()
-                return LatticeExecutorResponse(data=response[name], executor_name="dask")
-            response = file_read()
-            return LatticeFileResponse(data=response[name])
-        raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
+                response = handler.read_from_pickle(data["executor_filename"])
+                return LatticeExecutorResponse(data=response, executor_name="dask")
+            elif name == "error":
+                response = handler.read_from_text(data["error_filename"])
+                return LatticeFileResponse(data=response)
+            elif name == "function":
+                response = handler.read_from_pickle(data["function_filename"])
+                return LatticeFileResponse(data=response)
+            elif name == "transport_graph":
+                response = handler.read_from_pickle(data["transport_graph_filename"])
+                return LatticeFileResponse(data=response)
+            else:
+                raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])

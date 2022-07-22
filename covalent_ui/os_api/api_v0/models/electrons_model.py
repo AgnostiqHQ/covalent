@@ -45,8 +45,15 @@ class ElectronResponseModel(BaseModel):
 
 
 class FileOutput(str, Enum):
-    RESULT = "result"
     FUNCTION_STRING = "function_string"
-    INPUTS = "inputs"
-    ERROR = "error"
+    FUNCTION = "function"
     EXECUTOR = "executor_details"
+    RESULT = "result"
+    VALUE = "value"
+    KEY = "key"
+    STDOUT = "stdout"
+    DEPS = "deps"
+    CALL_BEFORE = "call_before"
+    CALL_AFTER = "call_after"
+    STDERR = "stderr"
+    INFO = "info"

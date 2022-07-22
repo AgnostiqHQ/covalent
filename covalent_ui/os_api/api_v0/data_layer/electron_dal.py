@@ -45,13 +45,26 @@ class Electrons:
                 Electron.parent_lattice_id,
                 Electron.type,
                 Electron.storage_path,
+                Electron.function_filename,
+                Electron.function_string_filename,
+                Electron.executor_filename,
+                Electron.results_filename,
+                Electron.value_filename,
+                Electron.attribute_name,
+                Electron.key_filename,
+                Electron.stdout_filename,
+                Electron.deps_filename,
+                Electron.call_before_filename,
+                Electron.call_after_filename,
+                Electron.stderr_filename,
+                Electron.info_filename,
                 Electron.name,
                 Electron.status,
                 Electron.started_at,
                 Electron.completed_at,
             )
+            .join(Lattice, Lattice.id == Electron.parent_lattice_id)
             .filter(
-                Lattice.id == Electron.parent_lattice_id,
                 Lattice.dispatch_id == str(dispatch_id),
                 Electron.transport_graph_node_id == electron_id,
             )
