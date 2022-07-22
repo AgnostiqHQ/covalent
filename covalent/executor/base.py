@@ -28,6 +28,7 @@ import os
 import subprocess
 import tempfile
 from abc import ABC, abstractmethod
+from ast import Call
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
@@ -247,7 +248,9 @@ class BaseExecutor(ABC):
                 )
 
             else:
+                self.setup()
                 result = self.run(function, args, kwargs)
+                self.teardown()
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
@@ -259,7 +262,19 @@ class BaseExecutor(ABC):
         return (result, stdout.getvalue(), stderr.getvalue())
 
     @abstractmethod
-    def run(self, function: Callable, args: List, kwargs: Dict) -> Any:
+    def setup(self) -> Any:
+        """[Optional] Abstract method to run an executor specific setup code
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        pass
+
+    @abstractmethod
+    def run(self, function: callable, args: List, kwargs: Dict) -> Any:
         """Abstract method to run a function in the executor.
 
         Args:
@@ -272,6 +287,11 @@ class BaseExecutor(ABC):
         """
 
         raise NotImplementedError
+
+    @abstractmethod
+    def teardown(self) -> Any:
+        """[Optional] Abstract method to run any executor specific cleanup/teardown actions"""
+        pass
 
     def execute_in_conda_env(
         self,
