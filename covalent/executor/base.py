@@ -28,6 +28,7 @@ import os
 import subprocess
 import tempfile
 from abc import ABC, abstractmethod
+from ast import Call
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
@@ -302,6 +303,11 @@ class BaseExecutor(_AbstractBaseExecutor):
         """
 
         raise NotImplementedError
+
+    @abstractmethod
+    def teardown(self) -> Any:
+        """[Optional] Abstract method to run any executor specific cleanup/teardown actions"""
+        pass
 
     def execute_in_conda_env(
         self,
