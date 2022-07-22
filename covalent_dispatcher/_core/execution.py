@@ -26,12 +26,12 @@ import asyncio
 import json
 import traceback
 
-# from threading import Lock
 # from queue import Queue
-from asyncio import Lock, Queue
+from asyncio import Queue
 from concurrent.futures import Future, ThreadPoolExecutor, wait
 from datetime import datetime, timezone
 from functools import partial
+from threading import Lock
 from typing import Any, Dict, List, Tuple
 
 import cloudpickle as pickle
@@ -466,7 +466,7 @@ async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks
 
 
 async def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
-    async with lock:
+    with lock:
         app_log.warning("Updating node result (run_planned_workflow).")
         result_object._update_node(db=DispatchDB()._get_data_store(), **node_result)
         result_webhook.send_update(result_object)

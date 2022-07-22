@@ -20,6 +20,8 @@
 
 """Tests for Covalent dask executor."""
 
+import pytest
+
 
 def test_dask_executor_init(mocker):
     """Test dask executor constructor"""
@@ -31,7 +33,8 @@ def test_dask_executor_init(mocker):
     assert de.scheduler_address == "127.0.0.1"
 
 
-def test_dask_executor_run():
+@pytest.mark.asyncio
+async def test_dask_executor_run():
     """Test run method for Dask executor"""
 
     from dask.distributed import LocalCluster
@@ -47,4 +50,4 @@ def test_dask_executor_run():
 
     args = [5]
     kwargs = {"y": 7}
-    assert dask_exec.run(f, args, kwargs) == (5, 7)
+    assert await dask_exec.run(f, args, kwargs) == (5, 7)

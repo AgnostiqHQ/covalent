@@ -23,6 +23,8 @@ Tests for the core functionality of the dispatcher.
 """
 
 
+import asyncio
+
 # from queue import Queue
 from asyncio import Queue
 from threading import Lock
@@ -474,7 +476,7 @@ async def test_handle_completed_node(mocker):
 
     await _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
 
-    assert await tasks_queue.get(timeout=1) == 0
+    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == 0
     assert pending_deps == {0: 0, 1: 0, 2: 1}
 
 
@@ -502,7 +504,7 @@ async def test_handle_failed_node(mocker):
 
     await _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
 
-    assert await tasks_queue.get(timeout=1) == -1
+    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == -1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
     assert result_object.status == Result.FAILED
     mock_get_node_name.assert_called_once()
@@ -530,7 +532,7 @@ async def test_handle_cancelled_node(mocker):
 
     await _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
 
-    assert await tasks_queue.get(timeout=1) == -1
+    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == -1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
     assert result_object.status == Result.CANCELLED
 
@@ -544,7 +546,7 @@ async def test_initialize_deps_and_queue(mocker):
     result_object = get_mock_result()
     num_tasks = await _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
 
-    assert await tasks_queue.get(timeout=1) == 1
+    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == 1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
     assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
 
