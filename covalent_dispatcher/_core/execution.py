@@ -25,21 +25,18 @@ Defines the core functionality of the dispatcher
 import asyncio
 import json
 import traceback
-
-# from queue import Queue
 from asyncio import Queue
-from concurrent.futures import Future, ThreadPoolExecutor, wait
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import partial
 from threading import Lock
 from typing import Any, Dict, List, Tuple
 
-import cloudpickle as pickle
 import uvloop
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from covalent import dispatch, dispatch_sync
+from covalent import dispatch
 from covalent._data_store.models import Lattice as Lattice_model
 from covalent._results_manager import Result
 from covalent._results_manager.write_result_to_db import (
@@ -75,8 +72,7 @@ log_stack_info = logger.log_stack_info
 
 # This is to be run out-of-process
 def _dispatch(fn, *args, **kwargs):
-    dispatch_id = dispatch(fn)(*args, **kwargs)
-    return dispatch_id
+    return dispatch(fn)(*args, **kwargs)
 
 
 def generate_node_result(
@@ -193,12 +189,8 @@ def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
         lattice.electron_outputs = ordered_node_outputs
-        args = []
-        kwargs = {}
-        for arg in lattice.args:
-            args.append(arg.get_deserialized())
-        for k, v in lattice.kwargs.items():
-            kwargs[k] = v.get_deserialized()
+        args = [arg.get_deserialized() for arg in lattice.args]
+        kwargs = {k: v.get_deserialized() for k, v in lattice.kwargs.items()}
         workflow_function = lattice.workflow_function.get_deserialized()
         result = workflow_function(*args, **kwargs)
         lattice.post_processing = False
@@ -249,8 +241,7 @@ async def _dispatch_sublattice(
     )
 
     res = await fut
-    sub_dispatch_id = json.loads(res["output"].json)
-    return sub_dispatch_id
+    return json.loads(res["output"].json)
 
 
 async def _run_task(
@@ -666,7 +657,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
 
     await asyncio.gather(*task_futures)
 
-    if result_object._status == Result.FAILED or result_object._status == Result.CANCELLED:
+    if result_object._status in [Result.FAILED, Result.CANCELLED]:
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
         return result_object
 

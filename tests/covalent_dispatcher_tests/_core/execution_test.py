@@ -24,8 +24,6 @@ Tests for the core functionality of the dispatcher.
 
 
 import asyncio
-
-# from queue import Queue
 from asyncio import Queue
 from threading import Lock
 from typing import Dict, List

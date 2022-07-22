@@ -25,20 +25,16 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
-import io
 import os
-from contextlib import redirect_stderr, redirect_stdout
-from typing import Any, Callable, Dict, List
+from typing import Callable, Dict, List
 
-from dask.distributed import Client, get_client
+from dask.distributed import Client
 
 from covalent._shared_files import logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
-from covalent._shared_files.util_classes import DispatchInfo
 from covalent._shared_files.utils import _address_client_mapper
-from covalent._workflow.transport import TransportableObject
 from covalent.executor.base import BaseAsyncExecutor
 
 # The plugin class name must be given by the executor_plugin_name attribute:
@@ -76,7 +72,7 @@ class DaskExecutor(BaseAsyncExecutor):
                 "covalent",
             )
 
-        if scheduler_address == "":
+        if not scheduler_address:
             try:
                 scheduler_address = get_config("dask.scheduler_address")
             except KeyError as ex:
