@@ -28,7 +28,6 @@ import os
 import subprocess
 import tempfile
 from abc import ABC, abstractmethod
-from ast import Call
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
@@ -573,6 +572,14 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
         )
 
         return (result, stdout.getvalue(), stderr.getvalue())
+
+    async def setup(self):
+        """Executor specific setup method"""
+        pass
+
+    async def teardown(self):
+        """Executor specific teardown method"""
+        pass
 
     @abstractmethod
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
