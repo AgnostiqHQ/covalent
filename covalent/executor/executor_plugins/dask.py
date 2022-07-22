@@ -28,7 +28,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 import io
 import os
 from contextlib import redirect_stderr, redirect_stdout
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
 from dask.distributed import Client, get_client
 
@@ -88,7 +88,7 @@ class DaskExecutor(BaseAsyncExecutor):
 
         self.scheduler_address = scheduler_address
 
-    async def run(self, function: callable, args: List, kwargs: Dict):
+    async def run(self, function: Callable, args: List, kwargs: Dict):
         """Submit the function and inputs to the dask cluster"""
 
         dask_client = _address_client_mapper.get(self.scheduler_address)

@@ -502,7 +502,7 @@ class BaseAsyncExecutor(BaseExecutor):
         return (result, stdout.getvalue(), stderr.getvalue())
 
     @abstractmethod
-    async def run(self, function: callable, args: List, kwargs: Dict) -> Any:
+    async def run(self, function: Callable, args: List, kwargs: Dict) -> Any:
         """Abstract method to run a function in the executor in async-aware manner.
 
         Args:
