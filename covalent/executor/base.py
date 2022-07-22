@@ -247,7 +247,9 @@ class BaseExecutor(ABC):
                 )
 
             else:
+                self.setup()
                 result = self.run(function, args, kwargs)
+                self.teardown()
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
@@ -258,8 +260,19 @@ class BaseExecutor(ABC):
 
         return (result, stdout.getvalue(), stderr.getvalue())
 
+    def setup(self) -> Any:
+        """[Optional] Convenient method to run any executor specific setup code
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        pass
+
     @abstractmethod
-    def run(self, function: Callable, args: List, kwargs: Dict) -> Any:
+    def run(self, function: callable, args: List, kwargs: Dict) -> Any:
         """Abstract method to run a function in the executor.
 
         Args:
@@ -272,6 +285,10 @@ class BaseExecutor(ABC):
         """
 
         raise NotImplementedError
+
+    def teardown(self) -> Any:
+        """[Optional] Method to run any executor specific cleanup/teardown actions"""
+        pass
 
     def execute_in_conda_env(
         self,
@@ -492,6 +509,14 @@ class BaseAsyncExecutor(BaseExecutor):
         )
 
         return (result, stdout.getvalue(), stderr.getvalue())
+
+    async def setup(self):
+        """Executor specific setup method"""
+        pass
+
+    async def teardown(self):
+        """Executor specific teardown method"""
+        pass
 
     @abstractmethod
     async def run(self, function: Callable, args: List, kwargs: Dict) -> Any:

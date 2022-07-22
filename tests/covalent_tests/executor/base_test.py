@@ -29,8 +29,14 @@ from covalent.executor import BaseExecutor, wrapper_fn
 
 
 class MockExecutor(BaseExecutor):
+    def setup(self):
+        return
+
     def run(self, function, args, kwargs):
         return function(*args, **kwargs)
+
+    def teardown(self):
+        return
 
 
 def test_write_streams_to_file(mocker):
