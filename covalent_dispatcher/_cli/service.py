@@ -35,6 +35,7 @@ import psutil
 from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
+from covalent._data_store.datastore import DataStore
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
 
@@ -324,7 +325,7 @@ def start(
         except OSError:
             server_listening = True
 
-        time.sleep(1)
+    DataStore(initialize_db=True)
 
 
 @click.command()
