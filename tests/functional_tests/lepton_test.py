@@ -41,6 +41,9 @@ source_file = Path("/tmp/src.txt")
 dest_file = Path("/tmp/dest.txt")
 dest_file2 = Path("/tmp/dest2.txt")
 
+echofile = Path("/tmp/debug.txt")
+echofile2 = Path("/tmp/debug2.txt")
+
 
 @ct.leptons.bash(
     executor="local",
@@ -49,14 +52,14 @@ dest_file2 = Path("/tmp/dest2.txt")
     call_after=call_after,
     deps_bash=deps_bash,
     deps_pip=deps_pip,
-    #    files=[ct.fs.FileTransfer(str(source_file), str(dest_file), order=Order.BEFORE)],
+    files=[ct.fs.FileTransfer(str(source_file), str(dest_file), order=Order.BEFORE)],
 )
 def task(x):
-    return f"echo {x} > /tmp/debug.txt"
+    return f"echo {x} > {str(echofile)}"
 
 
 def task2(x):
-    return f"echo {x} > /tmp/debug2.txt"
+    return f"echo {x} > {str(echofile2)}"
 
 
 @ct.lattice
@@ -67,7 +70,7 @@ def workflow():
         task2,
         files=[ct.fs.FileTransfer(str(source_file), str(dest_file2), order=Order.AFTER)],
         deps_pip=["cloudpickle==2.0.0"],
-    )(5)
+    )(3)
 
 
 def test_bash_decorator():
@@ -77,23 +80,20 @@ def test_bash_decorator():
     ct.get_result(dispatch_id, wait=True)
     rm._delete_result(dispatch_id)
 
-    file = Path("/tmp/debug.txt")
-    assert file.is_file()
+    assert echofile.is_file()
 
-    with open("/tmp/debug.txt", "r") as f:
+    with open(str(echofile), "r") as f:
         result = int(f.readline().strip())
         assert result == 5
 
-    file2 = Path("/tmp/debug2.txt")
-    assert file2.is_file()
+    assert echofile2.is_file()
 
-    with open("/tmp/debug2.txt", "r") as f:
+    with open(str(echofile2), "r") as f:
         result = int(f.readline().strip())
-        assert result == 5
+        assert result == 3
 
-
-#    file.unlink()
-#    file2.unlink()
-#    source_file.unlink()
-#    dest_file.unlink()
-#    dest_file2.unlink()
+    echofile.unlink()
+    echofile2.unlink()
+    source_file.unlink()
+    dest_file.unlink()
+    dest_file2.unlink()
