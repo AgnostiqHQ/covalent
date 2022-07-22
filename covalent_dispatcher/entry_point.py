@@ -27,6 +27,7 @@ import sys
 import threading
 import uuid
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from multiprocessing import Queue
 from typing import List
 
 import cloudpickle as pickle
@@ -46,6 +47,8 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 futures = {}
+
+mpq = Queue()
 
 
 def get_unique_id() -> str:
@@ -78,11 +81,13 @@ def run_dispatcher(
     """
 
     dispatch_id = get_unique_id()
-    from ._core import run_workflow
+    from ._core import create_result_object, run_workflow
 
-    futures[dispatch_id] = workflow_pool.submit(
-        run_workflow, dispatch_id, json_lattice, tasks_pool
-    )
+    fut = workflow_pool.submit(create_result_object, mpq, dispatch_id, json_lattice)
+
+    result_object = fut.result()
+
+    futures[dispatch_id] = workflow_pool.submit(run_workflow, mpq, result_object, tasks_pool)
     app_log.warning("0: Submitted lattice JSON to run_workflow.")
 
     return dispatch_id
@@ -106,6 +111,7 @@ def cancel_running_dispatch(dispatch_id: str) -> None:
 
 def get_result_internal(dispatch_id, args, wait, status_only):
     while True:
+        app_log.warning("get_result_internal: entering while loop")
         with Session(DispatchDB()._get_data_store().engine) as session:
             lattice_record = (
                 session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
@@ -148,3 +154,8 @@ def get_result_internal(dispatch_id, args, wait, status_only):
             )
             response.retry_after = 2
             return response
+
+        app_log.warning("Blocking in get_result_internal: Waiting for mpq")
+        mpq.get()
+
+        app_log.warning("Unblocking in get_result_internal")

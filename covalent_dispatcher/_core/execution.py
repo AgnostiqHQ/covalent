@@ -29,6 +29,7 @@ from asyncio import Queue
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import partial
+from multiprocessing import Queue as MPQueue
 from threading import Lock
 from typing import Any, Dict, List, Tuple
 
@@ -456,12 +457,14 @@ async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks
     await tasks_queue.put(-1)
 
 
-async def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
+async def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue, mpq):
     with lock:
         app_log.warning("Updating node result (run_planned_workflow).")
         result_object._update_node(db=DispatchDB()._get_data_store(), **node_result)
         result_webhook.send_update(result_object)
-
+        app_log.warning("In _update_node_result: putting into mpq")
+        mpq.put(1)
+        app_log.warning("In _update_node_result: put into mpq")
         node_status = node_result["status"]
         if node_status == Result.COMPLETED:
             await _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
@@ -469,6 +472,10 @@ async def _update_node_result(lock, result_object, node_result, pending_deps, ta
 
         if node_status == Result.FAILED:
             await _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
+            app_log.warning("In _update_node_result: putting into mpq")
+            mpq.put(1)
+            app_log.warning("In _update_node_result: put into mpq")
+
             return
 
         if node_status == Result.CANCELLED:
@@ -479,12 +486,14 @@ async def _update_node_result(lock, result_object, node_result, pending_deps, ta
             return
 
 
-async def _run_task_and_update(run_task_callable, lock, result_object, pending_deps, tasks_queue):
+async def _run_task_and_update(
+    run_task_callable, lock, result_object, pending_deps, tasks_queue, mpq
+):
     node_result = await run_task_callable()
 
     # NOTE: This is a blocking operation because of db writes and needs special handling when
     # we switch to an event loop for processing tasks
-    await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+    await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue, mpq)
     return node_result
 
 
@@ -508,7 +517,9 @@ async def _initialize_deps_and_queue(
     return num_tasks
 
 
-async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
+async def _run_planned_workflow(
+    mpq: MPQueue, result_object: Result, thread_pool: ThreadPoolExecutor
+) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -547,6 +558,10 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
             )
         )
         session.commit()
+
+    app_log.warning("In _run_planned_workflow: Putting to queue")
+    mpq.put(1)
+    app_log.warning("In _run_planned_workflow: Put to queue")
     app_log.warning("5: Wrote lattice status to DB (run_planned_workflow).")
 
     # Executor for post_processing and dispatching sublattices
@@ -587,7 +602,9 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
                 "status": Result.COMPLETED,
                 "output": output,
             }
-            await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+            await _update_node_result(
+                lock, result_object, node_result, pending_deps, tasks_queue, mpq
+            )
             app_log.warning("8A: Update node success (run_planned_workflow).")
 
             continue
@@ -622,7 +639,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
             start_time=start_time,
             status=Result.RUNNING,
         )
-        await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+        await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue, mpq)
         app_log.warning("7: Updating nodes after deps (run_planned_workflow)")
 
         app_log.debug(f"Submitting task {node_id} to executor")
@@ -650,6 +667,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
                 result_object=result_object,
                 pending_deps=pending_deps,
                 tasks_queue=tasks_queue,
+                mpq=mpq,
             )
         )
 
@@ -665,6 +683,11 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
 
     result_object._status = Result.POSTPROCESSING
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
+
+    app_log.warning("In _run_planned_workflow: Putting to queue")
+    mpq.put(1)
+    app_log.warning("In _run_planned_workflow: Put to queue")
+    app_log.warning("5: Wrote lattice status to DB (run_planned_workflow).")
 
     app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
 
@@ -713,6 +736,12 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
         result_object._error = "Post-processing failed"
         result_object._end_time = datetime.now(timezone.utc)
         result_object.upsert_lattice_data(DispatchDB()._get_data_store())
+
+        app_log.warning("In _run_planned_workflow: Putting to queue")
+        mpq.put(1)
+        app_log.warning("In _run_planned_workflow: Put to queue")
+        app_log.warning("5: Wrote lattice status to DB (run_planned_workflow).")
+
         result_webhook.send_update(result_object)
 
         return result_object
@@ -727,6 +756,11 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
         result_object._end_time = datetime.now(timezone.utc)
         result_object.upsert_lattice_data(DispatchDB()._get_data_store())
         result_webhook.send_update(result_object)
+
+        app_log.warning("In _run_planned_workflow: Putting to queue")
+        mpq.put(1)
+        app_log.warning("In _run_planned_workflow: Put to queue")
+        app_log.warning("5: Wrote lattice status to DB (run_planned_workflow).")
 
         return result_object
 
@@ -746,6 +780,11 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
     except Exception:
         app_log.exception("Upsert or save db issue")
     result_webhook.send_update(result_object)
+
+    app_log.warning("In _run_planned_workflow: Putting to queue")
+    mpq.put(1)
+    app_log.warning("In _run_planned_workflow: Put to queue")
+    app_log.warning("5: Wrote lattice status to DB (run_planned_workflow).")
 
     return result_object
 
@@ -772,7 +811,24 @@ def _plan_workflow(result_object: Result) -> None:
         pass
 
 
-def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExecutor) -> Result:
+def create_result_object(mpq: MPQueue, dispatch_id: str, json_lattice: str):
+    app_log.warning("1: Inside run_workflow.")
+
+    lattice = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lattice, lattice.metadata["results_dir"])
+    result_object._dispatch_id = dispatch_id
+    result_object._initialize_nodes()
+
+    app_log.warning("2: Constructed result object and initialized nodes.")
+    DispatchDB().save_db(result_object, initialize_db=True)
+    app_log.warning("create_result_object: Putting into mpq")
+    mpq.put(1)
+    app_log.warning("create_result_object: Put into mpq")
+
+    return result_object
+
+
+def run_workflow(mpq: MPQueue, result_object: Result, tasks_pool: ThreadPoolExecutor) -> Result:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -787,16 +843,6 @@ def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExec
         The result object from the workflow execution
     """
 
-    app_log.warning("1: Inside run_workflow.")
-
-    lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
-    result_object._dispatch_id = dispatch_id
-    result_object._initialize_nodes()
-
-    app_log.warning("2: Constructed result object and initialized nodes.")
-    DispatchDB().save_db(result_object, initialize_db=True)
-
     if result_object.status == Result.COMPLETED:
         return result_object
 
@@ -805,13 +851,13 @@ def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExec
 
         uvloop.install()
 
-        result_object = asyncio.run(_run_planned_workflow(result_object, tasks_pool))
+        result_object = asyncio.run(_run_planned_workflow(mpq, result_object, tasks_pool))
 
     except Exception as ex:
         app_log.error(f"Exception during _run_planned_workflow: {ex}")
         update_lattices_data(
             DispatchDB()._get_data_store(),
-            dispatch_id,
+            result_object.dispatch_id,
             status=str(Result.FAILED),
             completed_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
@@ -819,9 +865,12 @@ def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExec
 
         write_lattice_error(
             DispatchDB()._get_data_store(),
-            dispatch_id,
+            result_object.dispatch_id,
             "".join(traceback.TracebackException.from_exception(ex).format()),
         )
+        app_log.warning("In run_workflow: putting into mpq")
+        mpq.put(1)
+        app_log.warning("In run_workflow: put into mpq")
         raise
 
     return result_object
