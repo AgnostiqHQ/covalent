@@ -35,8 +35,7 @@ def test_dask_executor_init(mocker):
     assert de.scheduler_address == "127.0.0.1"
 
 
-@pytest.mark.asyncio
-async def test_dask_executor_run():
+def test_dask_executor_run():
     """Test run method for Dask executor"""
 
     from dask.distributed import LocalCluster
