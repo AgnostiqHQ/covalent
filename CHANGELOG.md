@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Adding maximum number of retries and timeout parameter to the get result http call.
+- Disabling result_webhook for now.
 
 ## [0.151.0] - 2022-07-22
 
