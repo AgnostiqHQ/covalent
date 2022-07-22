@@ -21,12 +21,14 @@
 """Tests for Covalent command line interface (CLI) Tool."""
 
 import tempfile
+from unittest.mock import Mock
 
 import mock
 import pytest
 from click.testing import CliRunner
 from psutil import pid_exists
 
+from covalent._data_store.datastore import DataStore
 from covalent_dispatcher._cli.service import (
     MIGRATION_COMMAND_MSG,
     MIGRATION_WARNING_MSG,
@@ -186,13 +188,6 @@ def test_graceful_shutdown_stopped_server(mocker):
     assert not process_mock.called
 
 
-def test_start_with_migration_warning(mocker):
-    """Test the start CLI command invoking migration warning"""
-    runner = CliRunner()
-    runner.invoke(start)
-    from covalent._data_store import workflow_db
-
-
 @pytest.mark.parametrize(
     "is_migration_pending, ignore_migrations",
     [(True, True), (True, False), (False, False), (False, True)],
@@ -206,14 +201,15 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
     graceful_start_mock = mocker.patch(
         "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
     )
-    mock_db = mocker.patch("covalent_dispatcher._cli.service.workflow_db")
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
 
-    mock_db.is_migration_pending = is_migration_pending
+    db_mock.is_migration_pending = is_migration_pending
 
     cli_args = f"--port {port_val} -d"
 

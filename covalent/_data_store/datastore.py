@@ -60,6 +60,10 @@ class DataStore:
         if initialize_db:
             models.Base.metadata.create_all(self.engine)
 
+    @staticmethod
+    def factory():
+        return DataStore(echo=False)
+
     def get_alembic_config(self, logging_enabled: bool = True):
         alembic_ini_path = Path(path.join(__file__, "./../../../alembic.ini")).resolve()
         alembic_config = Config(alembic_ini_path)
@@ -133,9 +137,3 @@ class DataStoreNotInitializedError(Exception):
     def __init__(self, message="Database is not initialized."):
         self.message = message
         super().__init__(self.message)
-
-
-# we can switch this to any class instance that has a db_URL property that points to the db
-# which we want to run migrations against - this command also creates the db without tables
-# via create_engine()
-workflow_db = DataStore(echo=True)

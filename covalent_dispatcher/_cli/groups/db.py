@@ -19,7 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 import click
 
-from covalent._data_store.datastore import workflow_db
+from covalent._data_store.datastore import DataStore
+
+MIGRATION_WARNING_MSG = "There was an issue running migrations.\nPlease read https://covalent.readthedocs.io/en/latest/how_to/db/migration_error.html for more information."
 
 
 @click.group(invoke_without_command=True)
@@ -39,12 +41,12 @@ def migrate(ctx: click.Context) -> None:
     Run DB Migrations programatically
     """
     try:
-        workflow_db.run_migrations()
+        db = DataStore.factory()
+        db.run_migrations()
         click.secho("Migrations are up to date.", fg="green")
-    except Exception:
-        click.echo(
-            "There was an issue running migrations.\nPlease read https://covalent.readthedocs.io/en/latest/how_to/db/migration_error.html for more information."
-        )
+    except Exception as migration_error:
+        click.echo(str(migration_error))
+        click.secho(MIGRATION_WARNING_MSG, fg="red")
         return ctx.exit(1)
 
 
