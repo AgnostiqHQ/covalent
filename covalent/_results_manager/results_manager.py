@@ -154,11 +154,11 @@ def _get_result_from_dispatcher(
     Raises:
         MissingLatticeRecordError: If the result is not found.
     """
-    adapter = HTTPAdapter()
+    adapter = HTTPAdapter(max_retries=5)
     http = requests.Session()
     http.mount("http://", adapter)
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
-    response = http.get(url, params={"wait": wait, "status_only": status_only})
+    response = http.get(url, params={"wait": wait, "status_only": status_only}, timeout=1)
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()
