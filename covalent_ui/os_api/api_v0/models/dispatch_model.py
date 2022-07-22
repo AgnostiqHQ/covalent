@@ -122,11 +122,11 @@ class DeleteDispatchesResponse(BaseModel):
 class DispatchDashBoardResponse(BaseModel):
     """Dashboard metadate model"""
 
-    total_jobs: int
-    total_jobs_running: int
-    total_jobs_completed: int
-    total_jobs_failed: int
-    latest_running_task_status: Status
+    total_jobs: int = None
+    total_jobs_running: int = None
+    total_jobs_completed: int = None
+    total_jobs_failed: int = None
+    latest_running_task_status: Status = None
     total_dispatcher_duration: int = None
 
     class Config:

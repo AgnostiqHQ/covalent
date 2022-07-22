@@ -150,11 +150,13 @@ class Summary:
         query6 = self.db_con.query(
             (func.count(Lattice.id)).filter(Lattice.is_active.is_not(False)).label("total_jobs")
         ).first()
+        if query4 is None:
+            query4 = 0
         return DispatchDashBoardResponse(
             total_jobs_running=query1[0],
             total_jobs_completed=query2[0],
-            latest_running_task_status=query3[0],
-            total_dispatcher_duration=query4[0] * 1000,
+            latest_running_task_status=query3[0] if query3 is not None else None,
+            total_dispatcher_duration=query4[0],
             total_jobs_failed=query5[0],
             total_jobs=query6[0],
         )
