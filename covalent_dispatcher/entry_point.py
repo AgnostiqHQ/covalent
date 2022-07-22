@@ -22,12 +22,18 @@
 Self-contained entry point for the dispatcher
 """
 
+import codecs
 import sys
 import threading
 import uuid
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from typing import List
 
+import cloudpickle as pickle
+from flask import Blueprint, Response, jsonify, make_response, request
+from sqlalchemy.orm import Session
+
+from covalent._data_store.models import Lattice
 from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
@@ -96,3 +102,49 @@ def cancel_running_dispatch(dispatch_id: str) -> None:
     from ._core import cancel_workflow
 
     cancel_workflow(dispatch_id)
+
+
+def get_result_internal(dispatch_id, args, wait, status_only):
+    while True:
+        with Session(DispatchDB()._get_data_store().engine) as session:
+            lattice_record = (
+                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+            )
+        try:
+            if not lattice_record:
+                return (
+                    jsonify(
+                        {"message": f"The requested dispatch ID {dispatch_id} was not found."}
+                    ),
+                    404,
+                )
+            elif not wait or lattice_record.status in [
+                str(Result.COMPLETED),
+                str(Result.FAILED),
+                str(Result.CANCELLED),
+                str(Result.POSTPROCESSING_FAILED),
+                str(Result.PENDING_POSTPROCESSING),
+            ]:
+                output = {
+                    "id": dispatch_id,
+                    "status": lattice_record.status,
+                }
+                if not status_only:
+                    output["result"] = codecs.encode(
+                        pickle.dumps(rm.result_from(lattice_record)), "base64"
+                    ).decode()
+                return jsonify(output)
+
+        except (FileNotFoundError, EOFError):
+            if wait:
+                continue
+            response = make_response(
+                jsonify(
+                    {
+                        "message": "Result not ready to read yet. Please wait for a couple of seconds."
+                    }
+                ),
+                503,
+            )
+            response.retry_after = 2
+            return response
