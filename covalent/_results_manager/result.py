@@ -682,46 +682,6 @@ Node Outputs
             session.commit()
         app_log.warning("Inside update node - SUCCESS")
 
-    def save(self, directory: str = None, write_source: bool = False) -> None:
-        """
-        Save the result object to a file.
-
-        Args:
-            directory: The directory to save the result object to.
-                       If not specified, the result object will be saved to the
-                       `self.results_dir` directory.
-
-        Returns:
-            None
-        """
-
-        app_log.info(f"Directory: {directory}")
-        app_log.info(f"Results dir: {self.results_dir}")
-        directory = directory or self.results_dir
-
-        result_folder_path = os.path.join(directory, f"{self.dispatch_id}")
-        Path(result_folder_path).mkdir(parents=True, exist_ok=True)
-
-        result_info = {
-            "dispatch_id": self.dispatch_id,
-            "result_status": self.status,
-            "start_time": self.start_time.strftime("%Y-%m-%d %H:%M")
-            if self.start_time
-            else self.start_time,
-            "end_time": self.end_time.strftime("%Y-%m-%d %H:%M")
-            if self.end_time
-            else self.end_time,
-        }
-
-        with open(os.path.join(result_folder_path, "result.pkl"), "wb") as f:
-            f.write(pickle.dumps(self))
-
-        with open(os.path.join(result_folder_path, "result_info.yaml"), "w") as f:
-            yaml.dump(result_info, f)
-
-        if write_source:
-            self._write_dispatch_to_python_file()
-
     def _initialize_results_dir(self):
         """Create the results directory."""
 
@@ -987,79 +947,6 @@ Node Outputs
         """
 
         return self._result
-
-    def _write_dispatch_to_python_file(self, directory: str = None) -> None:
-        """
-        Writes the source code of user function definitions to a python file.
-
-        Args:
-            directory: The directory to write the source file to.
-
-        Returns:
-            None
-        """
-
-        directory = directory or self.results_dir
-
-        import pkg_resources
-
-        dispatch_function = f"# File created by Covalent using version {pkg_resources.get_distribution('covalent').version}\n"
-        dispatch_function += f"# Dispatch ID: {self.dispatch_id}\n"
-        dispatch_function += f"# Workflow status: {self.status}\n"
-        dispatch_function += f"# Workflow start time: {self.start_time}\n"
-        dispatch_function += f"# Workflow end time: {self.end_time}" + "\n"
-
-        dispatch_function += "# Covalent result -"
-        result_string_lines = str(self.encoded_result.object_string).split("\n")
-        if len(result_string_lines) == 1:
-            dispatch_function += f" {self.encoded_result.object_string}\n\n"
-        else:
-            dispatch_function += "\n"
-            for line in result_string_lines:
-                dispatch_function += f"# {line}\n"
-            dispatch_function += "\n"
-
-        # add imports
-        dispatch_function += self.lattice.lattice_imports + "\n" * 2
-
-        directory = directory or self.results_dir
-        result_folder_path = os.path.join(directory, f"{self.dispatch_id}")
-        Path(result_folder_path).mkdir(parents=True, exist_ok=True)
-
-        # Accumulate the tasks and workflow in a string
-        topo_sorted_graph = self.lattice.transport_graph.get_topologically_sorted_graph()
-        functions_added = []
-        for level in topo_sorted_graph:
-            for nodes in level:
-                function = self.lattice.transport_graph.get_node_value(nodes, value_key="function")
-                if (
-                    function.object_string != "None"
-                    and function.attrs["name"] not in functions_added
-                ):
-
-                    function_str = self.lattice.transport_graph.get_node_value(
-                        nodes, value_key="function_string"
-                    )
-                    function_str = _filter_cova_decorators(
-                        function_str,
-                        self.lattice.cova_imports,
-                    )
-                    dispatch_function += function_str
-                    functions_added.append(function.attrs["name"])
-
-        lattice_function_str = convert_to_lattice_function_call(
-            self.lattice.workflow_function_string,
-            self.lattice.workflow_function.attrs["name"],
-            self.inputs,
-        )
-        lattice_function_str = _filter_cova_decorators(
-            lattice_function_str,
-            self.lattice.cova_imports,
-        )
-        dispatch_function += lattice_function_str
-
-        with open(os.path.join(result_folder_path, "dispatch_source.py"), "w") as f:
-            f.write(dispatch_function)
 
 
 def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:

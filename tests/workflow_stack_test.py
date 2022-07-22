@@ -134,7 +134,8 @@ def test_sublatticing(db):
     assert workflow_result.get_node_result(db, 0)["sublattice_result"].result == 3
 
 
-def test_internal_sublattice_dispatch():
+@pytest.mark.asyncio
+async def test_internal_sublattice_dispatch():
     """Test dispatcher's out-of-process _dispatch_sublattice using a workflow executor"""
     thread_pool = ThreadPoolExecutor()
     sublattice_add = ct.TransportableObject(ct.lattice(add))
@@ -143,7 +144,7 @@ def test_internal_sublattice_dispatch():
     inputs["kwargs"] = {"a": ct.TransportableObject(1), "b": ct.TransportableObject(2)}
     workflow_executor = ["dask", {}]
     dispatch_id = "asdf"
-    sub_dispatch_id = _dispatch_sublattice(
+    sub_dispatch_id = await _dispatch_sublattice(
         dispatch_id,
         "/tmp",
         inputs=inputs,
@@ -156,7 +157,7 @@ def test_internal_sublattice_dispatch():
     assert workflow_result.result == 3
 
     try:
-        sub_dispatch_id = _dispatch_sublattice(
+        sub_dispatch_id = await _dispatch_sublattice(
             dispatch_id,
             "/tmp",
             inputs=inputs,
@@ -171,7 +172,7 @@ def test_internal_sublattice_dispatch():
         assert str(e) == "No executor selected for dispatching sublattices"
 
     try:
-        sub_dispatch_id = _dispatch_sublattice(
+        sub_dispatch_id = await _dispatch_sublattice(
             dispatch_id,
             "/tmp",
             inputs=inputs,
