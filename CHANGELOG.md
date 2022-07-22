@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - CHANGE FOR PR CREATION
 
+### Operations
+
+- Made Santosh the sole owner of `/docs`
+
 ## [0.150.0] - 2022-07-22
 
 ### Authors
