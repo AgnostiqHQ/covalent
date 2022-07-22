@@ -96,7 +96,7 @@ const ElectronNode = ({
               )
             case 'COMPLETED':
               return (
-                <SvgIcon sx={{ mr: 0.2, fontSize: 14, fill: color,mt:0.5 }}>
+                <SvgIcon sx={{ mr: 0.1, fontSize: 14, fill: color,mt:0.6 }}>
                   <CheckSvg />
                 </SvgIcon>
               )

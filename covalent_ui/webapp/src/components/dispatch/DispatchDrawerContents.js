@@ -108,14 +108,14 @@ const DispatchDrawerContents = (_props) => {
           isBorderPresent
         />
       </Box>
-
-      {Object.keys(drawerLatticeError).length !== 0 &&
-        (drawerLatticeErrorFetching &&
-        drawerLatticeError.status === 'FAILED' ? (
+      {drawerLatticeDetails.status === 'FAILED' &&
+        (drawerLatticeErrorFetching ? (
           <Skeleton height={300} />
         ) : (
           <ErrorCard showElectron error={drawerLatticeError.data} />
-        ))}
+        )
+        )
+      }
 
       {/* tabs */}
       {/* {latOutput !== null && */}

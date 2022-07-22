@@ -42,7 +42,7 @@ const SyntaxHighlighter = ({ src, ...props }) => {
       }}
       {...props}
     >
-      {_.trim(src, '\n')}
+      {_.trim(src, '"" \n')}
     </Light>
   )
 }
