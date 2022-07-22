@@ -43,6 +43,9 @@ UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
 
+MIGRATION_COMMAND_MSG = '   (use "covalent db migrate" to run database migrations)'
+MIGRATION_WARNING_MSG = "There have been changes applied to the database."
+
 
 def _read_pid(filename: str) -> int:
     """
@@ -278,6 +281,14 @@ def _graceful_shutdown(pidfile: str) -> None:
     help="Number of CPU threads per worker.",
 )
 @click.option(
+    "--ignore-migrations",
+    is_flag=True,
+    required=False,
+    show_default=True,
+    default=False,
+    help="Start the server without requiring migrations",
+)
+@click.option(
     "--no-cluster",
     is_flag=True,
     required=False,
@@ -288,17 +299,24 @@ def _graceful_shutdown(pidfile: str) -> None:
 @click.argument("no-cluster", required=False)
 @click.pass_context
 def start(
-    ctx,
+    ctx: click.Context,
     port: int,
     develop: bool,
     no_cluster: str,
     mem_per_worker: int,
     threads_per_worker: int,
     workers: int,
+    ignore_migrations: bool,
 ) -> None:
     """
     Start the Covalent server.
     """
+    db = DataStore.factory()
+    if db.is_migration_pending and not ignore_migrations:
+        click.secho(MIGRATION_WARNING_MSG, fg="yellow")
+        click.echo(MIGRATION_COMMAND_MSG)
+        return ctx.exit(1)
+
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     no_cluster_flag = "--no-cluster"
     set_config(

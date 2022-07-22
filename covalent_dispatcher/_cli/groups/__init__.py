@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
@@ -19,3 +17,4 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+from .db import db

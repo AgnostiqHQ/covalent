@@ -24,6 +24,7 @@
 
 import click
 
+from .groups import db
 from .service import cluster, logs, purge, restart, start, status, stop
 
 
@@ -56,6 +57,7 @@ cli.add_command(status)
 cli.add_command(purge)
 cli.add_command(logs)
 cli.add_command(cluster)
+cli.add_command(db)
 
 if __name__ == "__main__":
     cli()

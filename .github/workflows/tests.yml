@@ -118,7 +118,7 @@ jobs:
         run: pip install -e .
 
       - name: Start Covalent dispatcher server
-        run: covalent start
+        run: covalent start --ignore-migrations
 
       - name: Run tests and measure coverage
         uses: nick-fields/retry@v2
