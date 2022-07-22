@@ -197,3 +197,6 @@ def get_named_params(func, args, kwargs):
                     named_kwargs[key] = value
 
     return (named_args, named_kwargs)
+
+
+_address_client_mapper = {}

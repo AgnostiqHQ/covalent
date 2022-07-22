@@ -30,15 +30,16 @@ import os
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Dict, List
 
-from dask.distributed import get_client
+from dask.distributed import Client, get_client
 
 from covalent._shared_files import logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import DispatchInfo
+from covalent._shared_files.utils import _address_client_mapper
 from covalent._workflow.transport import TransportableObject
-from covalent.executor import BaseExecutor, wrapper_fn
+from covalent.executor.base import BaseAsyncExecutor
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 executor_plugin_name = "DaskExecutor"
@@ -55,7 +56,7 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 }
 
 
-class DaskExecutor(BaseExecutor):
+class DaskExecutor(BaseAsyncExecutor):
     """
     Dask executor class that submits the input function to a running dask cluster.
     """
@@ -87,12 +88,23 @@ class DaskExecutor(BaseExecutor):
 
         self.scheduler_address = scheduler_address
 
-    def run(self, function: callable, args: List, kwargs: Dict):
+    async def run(self, function: callable, args: List, kwargs: Dict):
         """Submit the function and inputs to the dask cluster"""
-        dask_client = get_client(address=self.scheduler_address, timeout=1)
+
+        dask_client = _address_client_mapper.get(self.scheduler_address)
+
+        if dask_client and not dask_client.scheduler:
+            await dask_client
+
+        if not dask_client or not dask_client.scheduler or not dask_client.asynchronous:
+            dask_client = Client(address=self.scheduler_address, asynchronous=True)
+            _address_client_mapper[self.scheduler_address] = dask_client
+
+            await dask_client
+
         future = dask_client.submit(function, *args, **kwargs)
         app_log.debug("Submitted task to dask")
-        result = future.result()
+        result = await dask_client.gather(future)
 
         # FIX: need to get stdout and stderr from dask worker and print them
         return result

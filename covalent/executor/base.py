@@ -22,6 +22,7 @@
 Class that defines the base executor template.
 """
 
+import asyncio
 import io
 import os
 import subprocess
@@ -467,3 +468,50 @@ class BaseExecutor(ABC):
             return False
         self.conda_path = which_conda
         return True
+
+
+class BaseAsyncExecutor(BaseExecutor):
+    async def execute(
+        self,
+        function: TransportableObject,
+        args: List,
+        kwargs: Dict,
+        call_before: List,
+        call_after: List,
+        dispatch_id: str,
+        results_dir: str,
+        node_id: int = -1,
+    ) -> Any:
+        awaitable_run, out, err = super().execute(
+            function, args, kwargs, call_before, call_after, dispatch_id, results_dir, node_id
+        )
+
+        if not asyncio.iscoroutine(awaitable_run):
+            return (awaitable_run, out, err)
+
+        with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
+            result = await awaitable_run
+
+        self.write_streams_to_file(
+            (stdout.getvalue(), stderr.getvalue()),
+            (self.log_stdout, self.log_stderr),
+            dispatch_id,
+            results_dir,
+        )
+
+        return (result, stdout.getvalue(), stderr.getvalue())
+
+    @abstractmethod
+    async def run(self, function: callable, args: List, kwargs: Dict) -> Any:
+        """Abstract method to run a function in the executor in async-aware manner.
+
+        Args:
+            function: The function to run in the executor
+            args: List of positional arguments to be used by the function
+            kwargs: Dictionary of keyword arguments to be used by the function.
+
+        Returns:
+            output: The result of the function execution
+        """
+
+        raise NotImplementedError

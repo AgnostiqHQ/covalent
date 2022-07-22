@@ -26,12 +26,12 @@ import asyncio
 import json
 import traceback
 
+# from threading import Lock
 # from queue import Queue
-from asyncio import Queue
+from asyncio import Lock, Queue
 from concurrent.futures import Future, ThreadPoolExecutor, wait
 from datetime import datetime, timezone
 from functools import partial
-from threading import Lock
 from typing import Any, Dict, List, Tuple
 
 import cloudpickle as pickle
@@ -63,6 +63,7 @@ from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
+from covalent.executor.base import BaseAsyncExecutor
 from covalent_ui import result_webhook
 
 from .._db.dispatchdb import DispatchDB
@@ -231,20 +232,23 @@ async def _dispatch_sublattice(
     # Dispatch the sublattice workflow. This must be run
     # externally since it involves deserializing the
     # sublattice workflow function.
-    res = await _run_task(
-        node_id=-1,
-        dispatch_id=dispatch_id,
-        results_dir=results_dir,
-        serialized_callable=TransportableObject.make_transportable(_dispatch),
-        selected_executor=workflow_executor,
-        node_name="dispatch_sublattice",
-        call_before=[],
-        call_after=[],
-        inputs=sub_dispatch_inputs,
-        tasks_pool=tasks_pool,
-        workflow_executor=workflow_executor,
+    fut = asyncio.create_task(
+        _run_task(
+            node_id=-1,
+            dispatch_id=dispatch_id,
+            results_dir=results_dir,
+            serialized_callable=TransportableObject.make_transportable(_dispatch),
+            selected_executor=workflow_executor,
+            node_name="dispatch_sublattice",
+            call_before=[],
+            call_after=[],
+            inputs=sub_dispatch_inputs,
+            tasks_pool=tasks_pool,
+            workflow_executor=workflow_executor,
+        )
     )
 
+    res = await fut
     sub_dispatch_id = json.loads(res["output"].json)
     return sub_dispatch_id
 
@@ -354,7 +358,7 @@ async def _run_task(
                 node_id=node_id,
             )
 
-            if asyncio.iscoroutinefunction(execute_callable):
+            if isinstance(executor, BaseAsyncExecutor):
                 output, stdout, stderr = await execute_callable()
             else:
                 loop = asyncio.get_running_loop()
@@ -462,7 +466,7 @@ async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks
 
 
 async def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
-    with lock:
+    async with lock:
         app_log.warning("Updating node result (run_planned_workflow).")
         result_object._update_node(db=DispatchDB()._get_data_store(), **node_result)
         result_webhook.send_update(result_object)
@@ -571,7 +575,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
 
         if node_id < 0:
             app_log.debug(f"Workflow {result_object.dispatch_id} failed or cancelled.")
-            await asyncio.gather(task_futures)
+            await asyncio.gather(*task_futures)
             return result_object
 
         # Get name of the node for the current task
@@ -648,12 +652,14 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
         )
 
         # Add the task generated for the node to the list of tasks
-        future = _run_task_and_update(
-            run_task_callable=run_task_callable,
-            lock=lock,
-            result_object=result_object,
-            pending_deps=pending_deps,
-            tasks_queue=tasks_queue,
+        future = asyncio.create_task(
+            _run_task_and_update(
+                run_task_callable=run_task_callable,
+                lock=lock,
+                result_object=result_object,
+                pending_deps=pending_deps,
+                tasks_queue=tasks_queue,
+            )
         )
 
         task_futures.append(future)
@@ -689,18 +695,20 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
     post_processing_inputs["kwargs"] = {}
 
     try:
-        future = _run_task(
-            node_id=-1,
-            dispatch_id=result_object.dispatch_id,
-            results_dir=result_object.results_dir,
-            serialized_callable=TransportableObject(_post_process),
-            selected_executor=post_processor,
-            node_name="post_process",
-            call_before=[],
-            call_after=[],
-            inputs=post_processing_inputs,
-            tasks_pool=thread_pool,
-            workflow_executor=post_processor,
+        future = asyncio.create_task(
+            _run_task(
+                node_id=-1,
+                dispatch_id=result_object.dispatch_id,
+                results_dir=result_object.results_dir,
+                serialized_callable=TransportableObject(_post_process),
+                selected_executor=post_processor,
+                node_name="post_process",
+                call_before=[],
+                call_after=[],
+                inputs=post_processing_inputs,
+                tasks_pool=thread_pool,
+                workflow_executor=post_processor,
+            )
         )
         pp_start_time = datetime.now(timezone.utc)
         app_log.debug(
