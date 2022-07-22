@@ -200,11 +200,9 @@ class BaseExecutor(ABC):
 
     def execute(
         self,
-        function: TransportableObject,
+        function: Callable,
         args: List,
         kwargs: Dict,
-        call_before: List,
-        call_after: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
@@ -229,11 +227,7 @@ class BaseExecutor(ABC):
         """
 
         dispatch_info = DispatchInfo(dispatch_id)
-        fn_version = function.python_version
-
-        new_args = [function, call_before, call_after]
-        for arg in args:
-            new_args.append(arg)
+        fn_version = function.args[0].python_version
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()
@@ -243,9 +237,9 @@ class BaseExecutor(ABC):
                 result = None
 
                 result = self.execute_in_conda_env(
-                    wrapper_fn,
+                    function,
                     fn_version,
-                    new_args,
+                    args,
                     kwargs,
                     self.conda_env,
                     self.cache_dir,
@@ -253,7 +247,7 @@ class BaseExecutor(ABC):
                 )
 
             else:
-                result = self.run(wrapper_fn, new_args, kwargs)
+                result = self.run(function, args, kwargs)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
@@ -265,7 +259,7 @@ class BaseExecutor(ABC):
         return (result, stdout.getvalue(), stderr.getvalue())
 
     @abstractmethod
-    def run(self, function: callable, args: List, kwargs: Dict) -> Any:
+    def run(self, function: Callable, args: List, kwargs: Dict) -> Any:
         """Abstract method to run a function in the executor.
 
         Args:
@@ -473,17 +467,15 @@ class BaseExecutor(ABC):
 class BaseAsyncExecutor(BaseExecutor):
     async def execute(
         self,
-        function: TransportableObject,
+        function: Callable,
         args: List,
         kwargs: Dict,
-        call_before: List,
-        call_after: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
     ) -> Any:
         awaitable_run, out, err = super().execute(
-            function, args, kwargs, call_before, call_after, dispatch_id, results_dir, node_id
+            function, args, kwargs, dispatch_id, results_dir, node_id
         )
 
         if not asyncio.iscoroutine(awaitable_run):

@@ -63,7 +63,7 @@ from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
-from covalent.executor.base import BaseAsyncExecutor
+from covalent.executor.base import BaseAsyncExecutor, wrapper_fn
 from covalent_ui import result_webhook
 
 from .._db.dispatchdb import DispatchDB
@@ -346,13 +346,13 @@ async def _run_task(
         else:
             app_log.debug(f"Executing task {node_name}")
 
+            assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
+
             execute_callable = partial(
                 executor.execute,
-                function=serialized_callable,
+                function=assembled_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
-                call_before=call_before,
-                call_after=call_after,
                 dispatch_id=dispatch_id,
                 results_dir=results_dir,
                 node_id=node_id,
