@@ -34,7 +34,7 @@ def test_dask_executor_init(mocker):
 
 
 @pytest.mark.asyncio
-async def test_dask_executor_run():
+async def test_dask_executor_run(event_loop):
     """Test run method for Dask executor"""
 
     from dask.distributed import LocalCluster
@@ -50,4 +50,4 @@ async def test_dask_executor_run():
 
     args = [5]
     kwargs = {"y": 7}
-    assert await dask_exec.run(f, args, kwargs) == (5, 7)
+    assert event_loop.run_until_complete(dask_exec.run(f, args, kwargs)) == (5, 7)
