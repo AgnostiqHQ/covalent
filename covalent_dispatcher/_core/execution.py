@@ -36,6 +36,7 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from covalent import dispatch, dispatch_sync
+from covalent._data_store.datastore import workflow_db
 from covalent._data_store.models import Lattice as Lattice_model
 from covalent._results_manager import Result
 from covalent._results_manager.write_result_to_db import (
@@ -304,13 +305,11 @@ def _run_task(
 
             app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
 
-            with DispatchDB() as db:
-                write_sublattice_electron_id(
-                    db=db._get_data_store(),
-                    parent_dispatch_id=dispatch_id,
-                    sublattice_node_id=node_id,
-                    sublattice_dispatch_id=sub_dispatch_id,
-                )
+            write_sublattice_electron_id(
+                parent_dispatch_id=dispatch_id,
+                sublattice_node_id=node_id,
+                sublattice_dispatch_id=sub_dispatch_id,
+            )
             # Read the result object directly from the server
 
             sublattice_result = futures[sub_dispatch_id].result()
@@ -334,7 +333,7 @@ def _run_task(
                 node_result["status"] = Result.FAILED
                 node_result["error"] = "Sublattice workflow failed to complete"
 
-                sublattice_result.upsert_lattice_data(DispatchDB()._get_data_store())
+                sublattice_result.upsert_lattice_data()
 
         else:
             app_log.debug(f"Executing task {node_name}")
@@ -433,10 +432,9 @@ def _handle_failed_node(result_object, node_result, pending_deps, tasks_queue):
     node_id = node_result["node_id"]
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
-    db = DispatchDB()._get_data_store()
-    result_object._error = f"Node {result_object._get_node_name(db, node_id)} failed: \n{result_object._get_node_error(db, node_id)}"
+    result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
-    result_object.upsert_lattice_data(DispatchDB()._get_data_store())
+    result_object.upsert_lattice_data()
     result_webhook.send_update(result_object)
     tasks_queue.put(-1)
 
@@ -445,7 +443,7 @@ def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue
     result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
-    result_object.upsert_lattice_data(DispatchDB()._get_data_store())
+    result_object.upsert_lattice_data()
     result_webhook.send_update(result_object)
     tasks_queue.put(-1)
 
@@ -453,7 +451,7 @@ def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue
 def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
     with lock:
         app_log.warning("Updating node result (run_planned_workflow).")
-        result_object._update_node(db=DispatchDB()._get_data_store(), **node_result)
+        result_object._update_node(**node_result)
         result_webhook.send_update(result_object)
 
         node_status = node_result["status"]
@@ -516,21 +514,15 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         None
     """
 
-    app_log.warning("3: Inside run_planned_workflow (run_planned_workflow).")
-
     tasks_queue = Queue()
     pending_deps = {}
     lock = Lock()
     task_futures: list = []
 
-    app_log.debug(
-        f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
-    )
-
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
-    with Session(DispatchDB()._get_data_store().engine) as session:
+    with workflow_db.session() as session:
         session.execute(
             update(Lattice_model)
             .where(Lattice_model.dispatch_id == result_object.dispatch_id)
@@ -541,14 +533,12 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             )
         )
         session.commit()
-    app_log.warning("5: Wrote lattice status to DB (run_planned_workflow).")
 
     # Executor for post_processing and dispatching sublattices
     pp_executor = result_object.lattice.get_metadata("workflow_executor")
     pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
     post_processor = [pp_executor, pp_executor_data]
 
-    db = DispatchDB()._get_data_store()
     tasks_left = _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
 
     while tasks_left > 0:
@@ -657,7 +647,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     app_log.warning("8: All tasks finished running (run_planned_workflow)")
 
     result_object._status = Result.POSTPROCESSING
-    result_object.upsert_lattice_data(DispatchDB()._get_data_store())
+    result_object.upsert_lattice_data()
 
     app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
 
@@ -665,16 +655,14 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         app_log.debug("Workflow to be postprocessed client side")
         result_object._status = Result.PENDING_POSTPROCESSING
         result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data(DispatchDB()._get_data_store())
+        result_object.upsert_lattice_data()
         result_webhook.send_update(result_object)
         return result_object
 
     post_processing_inputs = {}
     post_processing_inputs["args"] = [
         TransportableObject.make_transportable(result_object.lattice),
-        TransportableObject.make_transportable(
-            result_object.get_all_node_outputs(DispatchDB()._get_data_store())
-        ),
+        TransportableObject.make_transportable(result_object.get_all_node_outputs()),
     ]
     post_processing_inputs["kwargs"] = {}
 
@@ -704,7 +692,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = "Post-processing failed"
         result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data(DispatchDB()._get_data_store())
+        result_object.upsert_lattice_data()
         result_webhook.send_update(result_object)
 
         return result_object
@@ -717,7 +705,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = f"Post-processing failed: {err}"
         result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data(DispatchDB()._get_data_store())
+        result_object.upsert_lattice_data()
         result_webhook.send_update(result_object)
 
         return result_object
@@ -799,7 +787,6 @@ def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExec
     except Exception as ex:
         app_log.error(f"Exception during _run_planned_workflow: {ex}")
         update_lattices_data(
-            DispatchDB()._get_data_store(),
             dispatch_id,
             status=str(Result.FAILED),
             completed_at=datetime.now(timezone.utc),
@@ -807,7 +794,6 @@ def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExec
         )
 
         write_lattice_error(
-            DispatchDB()._get_data_store(),
             dispatch_id,
             "".join(traceback.TracebackException.from_exception(ex).format()),
         )
