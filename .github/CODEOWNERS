@@ -23,7 +23,7 @@
 # Core code, docs, and tests are owned by the Agnostiq engineering team.
 /covalent/		@AgnostiqHQ/aq-engineers
 /covalent_dispatcher/	@AgnostiqHQ/aq-engineers
-/doc/			@AgnostiqHQ/aq-engineers
+/doc/			@santoshkumarradha
 /tests/			@AgnostiqHQ/aq-engineers
 .flake8			@AgnostiqHQ/aq-engineers
 .gitignore		@AgnostiqHQ/aq-engineers

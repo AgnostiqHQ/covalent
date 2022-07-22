@@ -20,6 +20,10 @@
 
 """Tests for Covalent dask executor."""
 
+import asyncio
+
+import pytest
+
 
 def test_dask_executor_init(mocker):
     """Test dask executor constructor"""
@@ -47,4 +51,4 @@ def test_dask_executor_run():
 
     args = [5]
     kwargs = {"y": 7}
-    assert dask_exec.run(f, args, kwargs) == (5, 7)
+    assert asyncio.run(dask_exec.run(f, args, kwargs)) == (5, 7)

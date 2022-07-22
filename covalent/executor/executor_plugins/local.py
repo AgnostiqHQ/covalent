@@ -28,7 +28,7 @@ import io
 import os
 import subprocess
 from contextlib import redirect_stderr, redirect_stdout
-from typing import Any, Dict, List, Tuple
+from typing import Any, Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import logger
@@ -56,6 +56,6 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
-    def run(self, function: callable, args: List, kwargs: Dict):
+    def run(self, function: Callable, args: List, kwargs: Dict):
         app_log.debug(f"Running function {function} locally")
         return function(*args, **kwargs)

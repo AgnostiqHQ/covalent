@@ -22,6 +22,7 @@
 
 import os
 import tempfile
+from functools import partial
 
 from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
@@ -186,12 +187,12 @@ def test_base_executor_execute(mocker):
     results_dir = "/tmp"
     node_id = -1
 
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
     result, stdout, stderr = me.execute(
-        function=function,
+        function=assembled_callable,
         args=args,
         kwargs=kwargs,
-        call_before=call_before,
-        call_after=call_after,
         dispatch_id=dispatch_id,
         results_dir=results_dir,
         node_id=node_id,
@@ -220,12 +221,12 @@ def test_base_executor_execute_conda(mocker):
         "covalent.executor.BaseExecutor.execute_in_conda_env", return_value=TransportableObject(5)
     )
 
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
     result, stdout, stderr = me.execute(
-        function=function,
+        function=assembled_callable,
         args=args,
         kwargs=kwargs,
-        call_before=call_before,
-        call_after=call_after,
         dispatch_id=dispatch_id,
         results_dir=results_dir,
         node_id=node_id,

@@ -23,8 +23,10 @@ Tests for the core functionality of the dispatcher.
 """
 
 
-from queue import Queue
+import asyncio
+from asyncio import Queue
 from threading import Lock
+from typing import Dict, List
 
 import cloudpickle as pickle
 import pytest
@@ -258,11 +260,11 @@ def test_get_task_inputs():
     """Test _get_task_inputs for both dicts and list parameter types"""
 
     @ct.electron
-    def list_task(arg: []):
+    def list_task(arg: List):
         return len(arg)
 
     @ct.electron
-    def dict_task(arg: dict):
+    def dict_task(arg: Dict):
         return len(arg)
 
     @ct.lattice
@@ -337,7 +339,8 @@ def test_gather_deps():
     assert len(after) == 1
 
 
-def test_run_task(mocker, sublattice_workflow):
+@pytest.mark.asyncio
+async def test_run_task(mocker, sublattice_workflow):
     """Note: This is not a full unit test for the _run_task method. Rather, this is intended to test the diff introduced to write the sublattice electron id in the Database."""
 
     # class MockResult:
@@ -358,7 +361,7 @@ def test_run_task(mocker, sublattice_workflow):
     )
     ct.dispatch(sublattice_workflow)(1)
 
-    _run_task(
+    await _run_task(
         node_id=1,
         dispatch_id="parent_dispatch_id",
         results_dir="/tmp",
@@ -377,7 +380,8 @@ def test_run_task(mocker, sublattice_workflow):
     write_sublattice_electron_id_mock.assert_called_once()
 
 
-def test_update_failed_node(mocker):
+@pytest.mark.asyncio
+async def test_update_failed_node(mocker):
     """Check that update_node_result correctly invokes _handle_failed_node"""
 
     lock = Lock()
@@ -392,14 +396,15 @@ def test_update_failed_node(mocker):
     mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
 
     node_result = {"node_id": 0, "status": Result.FAILED}
-    _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+    await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
 
     mock_fail_handler.assert_called_once_with(
         result_object, node_result, pending_deps, tasks_queue
     )
 
 
-def test_update_cancelled_node(mocker):
+@pytest.mark.asyncio
+async def test_update_cancelled_node(mocker):
     """Check that update_node_result correctly invokes _handle_cancelled_node"""
 
     lock = Lock()
@@ -416,14 +421,15 @@ def test_update_cancelled_node(mocker):
     mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
 
     node_result = {"node_id": 0, "status": Result.CANCELLED}
-    _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+    await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
 
     mock_cancel_handler.assert_called_once_with(
         result_object, node_result, pending_deps, tasks_queue
     )
 
 
-def test_update_completed_node(mocker):
+@pytest.mark.asyncio
+async def test_update_completed_node(mocker):
     """Check that update_node_result correctly invokes _handle_completed_node"""
 
     lock = Lock()
@@ -440,14 +446,15 @@ def test_update_completed_node(mocker):
     mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
 
     node_result = {"node_id": 0, "status": Result.COMPLETED}
-    _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+    await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
 
     mock_completed_handler.assert_called_once_with(
         result_object, node_result, pending_deps, tasks_queue
     )
 
 
-def test_handle_completed_node(mocker):
+@pytest.mark.asyncio
+async def test_handle_completed_node(mocker):
     """Unit test for completed node handler"""
     tasks_queue = Queue()
     pending_deps = {}
@@ -465,13 +472,14 @@ def test_handle_completed_node(mocker):
 
     node_result = {"node_id": 1, "status": Result.COMPLETED}
 
-    _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
+    await _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
 
-    assert tasks_queue.get(timeout=1) == 0
+    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == 0
     assert pending_deps == {0: 0, 1: 0, 2: 1}
 
 
-def test_handle_failed_node(mocker):
+@pytest.mark.asyncio
+async def test_handle_failed_node(mocker):
     """Unit test for failed node handler"""
     tasks_queue = Queue()
     pending_deps = {}
@@ -492,16 +500,17 @@ def test_handle_failed_node(mocker):
 
     node_result = {"node_id": 1, "status": Result.FAILED}
 
-    _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
+    await _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
 
-    assert tasks_queue.get(timeout=1) == -1
+    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == -1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
     assert result_object.status == Result.FAILED
     mock_get_node_name.assert_called_once()
     mock_get_node_error.assert_called_once()
 
 
-def test_handle_cancelled_node(mocker):
+@pytest.mark.asyncio
+async def test_handle_cancelled_node(mocker):
     """Unit test for cancelled node handler"""
     tasks_queue = Queue()
     pending_deps = {}
@@ -519,22 +528,23 @@ def test_handle_cancelled_node(mocker):
 
     node_result = {"node_id": 1, "status": Result.CANCELLED}
 
-    _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
+    await _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
 
-    assert tasks_queue.get(timeout=1) == -1
+    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == -1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
     assert result_object.status == Result.CANCELLED
 
 
-def test_initialize_deps_and_queue(mocker):
+@pytest.mark.asyncio
+async def test_initialize_deps_and_queue(mocker):
     """Test internal function for initializing tasks_queue and pending_deps"""
     tasks_queue = Queue()
     pending_deps = {}
 
     result_object = get_mock_result()
-    num_tasks = _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
+    num_tasks = await _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
 
-    assert tasks_queue.get(timeout=1) == 1
+    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == 1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
     assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
 
