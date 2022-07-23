@@ -25,11 +25,9 @@ import shutil
 from datetime import datetime as dt
 from datetime import timezone
 from pathlib import Path
-from unicodedata import name
 
 import cloudpickle
 import pytest
-from sqlalchemy.orm import Session
 
 import covalent as ct
 from covalent._data_store.datastore import DataStore, DataStoreNotInitializedError
@@ -91,7 +89,7 @@ def test_result_persist_workflow_1(db, result_1):
     result_1.persist(db=db)
 
     # Query lattice / electron / electron dependency
-    with Session(db.engine) as session:
+    with db.session() as session:
         lattice_row = session.query(Lattice).first()
         electron_rows = session.query(Electron).all()
         electron_dependency_rows = session.query(ElectronDependency).all()
@@ -172,7 +170,7 @@ def test_result_persist_workflow_1(db, result_1):
     result_1.persist(db=db)
 
     # Query lattice / electron / electron dependency
-    with Session(db.engine) as session:
+    with db.session() as session:
         lattice_row = session.query(Lattice).first()
         electron_rows = session.query(Electron).all()
         electron_dependency_rows = session.query(ElectronDependency).all()
@@ -247,7 +245,7 @@ def test_update_node(db, result_1):
         stderr="test_stderr",
     )
 
-    with Session(db.engine) as session:
+    with db.session() as session:
         lattice_record = session.query(Lattice).first()
         electron_record = (
             session.query(Electron).where(Electron.transport_graph_node_id == 0).first()
@@ -283,7 +281,7 @@ def test_update_node(db, result_1):
         output=5,
     )
 
-    with Session(db.engine) as session:
+    with db.session() as session:
         lattice_record = session.query(Lattice).first()
         electron_record = (
             session.query(Electron).where(Electron.transport_graph_node_id == 0).first()

@@ -27,8 +27,7 @@ from typing import Dict, List, Optional, Union
 
 import cloudpickle as pickle
 import requests
-from requests.adapters import HTTPAdapter, Retry
-from sqlalchemy.orm import Session
+from requests.adapters import HTTPAdapter
 
 from covalent._workflow.transport import TransportableObject
 
@@ -38,15 +37,10 @@ from .._data_store.models import Lattice
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .result import Result
-from .utils import _db_path
 from .write_result_to_db import MissingLatticeRecordError
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-def get_data_store() -> DataStore:
-    return DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
 
 
 def get_result(dispatch_id: str, wait: bool = False) -> Result:
@@ -239,7 +233,7 @@ def sync(
         for d in dispatch_id:
             _get_result_from_dispatcher(d, wait=True, status_only=True)
     else:
-        with Session(db.engine) as session:
+        with db.session() as session:
             dispatch_id = session.query(Lattice.dispatch_id).all()
         for d in dispatch_id:
             _get_result_from_dispatcher(d, wait=True, status_only=True)

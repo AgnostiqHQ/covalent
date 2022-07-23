@@ -26,10 +26,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 import cloudpickle
-import cloudpickle as pickle
-import yaml
-from sqlalchemy import and_, update
-from sqlalchemy.orm import Session
+from sqlalchemy import update
 
 from .._data_store import DataStore, DataStoreNotInitializedError, models
 from .._shared_files import logger
@@ -37,7 +34,6 @@ from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.transport import TransportableObject
-from .utils import _db_path, convert_to_lattice_function_call
 from .write_result_to_db import (
     get_electron_type,
     insert_electron_dependency_data,
@@ -514,7 +510,7 @@ Node Outputs
         if str(status) == "COMPLETED":
             update_lattice_completed_electron_num(db, self.dispatch_id)
 
-        with Session(db.engine) as session:
+        with db.session() as session:
             lattice_id = (
                 session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
@@ -541,7 +537,7 @@ Node Outputs
     def upsert_lattice_data(self, db: DataStore):
         """Update lattice data"""
 
-        with Session(db.engine) as session:
+        with db.session() as session:
             lattice_exists = (
                 session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
@@ -617,7 +613,7 @@ Node Outputs
         dirty_nodes = set(tg.dirty_nodes)
         tg.dirty_nodes.clear()  # Ensure that dirty nodes list is reset once the data is updated
 
-        with Session(db.engine) as session:
+        with db.session() as session:
             for node_id in dirty_nodes:
 
                 node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
@@ -755,7 +751,7 @@ Node Outputs
         """Update electron dependency data"""
 
         # Insert electron dependency records if they don't exist
-        with Session(db.engine) as session:
+        with db.session() as session:
             electron_dependencies_exist = (
                 session.query(models.ElectronDependency, models.Electron, models.Lattice)
                 .where(

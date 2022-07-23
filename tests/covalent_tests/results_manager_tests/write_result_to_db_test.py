@@ -24,7 +24,6 @@ from datetime import datetime as dt
 from datetime import timezone
 
 import pytest
-from sqlalchemy.orm import Session
 
 import covalent as ct
 from covalent._data_store.datastore import DataStore
@@ -215,7 +214,7 @@ def test_update_lattice_completed_electron_num(db):
     )
     update_lattice_completed_electron_num(db=db, dispatch_id="dispatch_1")
 
-    with Session(db.engine) as session:
+    with db.session() as session:
         lat_record = session.query(Lattice).filter_by(dispatch_id="dispatch_1").first()
     assert lat_record.completed_electron_num == 1
 
@@ -242,7 +241,7 @@ def test_insert_lattices_data(db):
 
     assert lattice_ids == [1, 2]
 
-    with Session(db.engine) as session:
+    with db.session() as session:
         rows = session.query(Lattice).all()
 
     for i, lattice in enumerate(rows):
@@ -269,7 +268,7 @@ def test_insert_lattices_data(db):
         assert isinstance(lattice.electron_num, int)
         assert isinstance(lattice.completed_electron_num, int)
 
-        with Session(db.engine) as session:
+        with db.session() as session:
             rows = session.query(Lattice).where(Lattice.dispatch_id == "dispatch_3").all()
 
         assert not rows
@@ -293,7 +292,7 @@ def test_insert_electrons_data(db):
     electron_id = insert_electrons_data(db=db, **electron_kwargs)
     assert electron_id == 1
 
-    with Session(db.engine) as session:
+    with db.session() as session:
         rows = session.query(Electron).all()
 
     assert len(rows) == 1
@@ -360,7 +359,7 @@ def test_insert_electron_dependency_data(db, workflow_lattice):
 
     assert dependency_ids == [1, 2, 3, 4]
 
-    with Session(db.engine) as session:
+    with db.session() as session:
         rows = session.query(ElectronDependency).all()
 
     for electron_dependency in rows:
@@ -414,7 +413,7 @@ def test_update_lattices_data(db):
         completed_at=cur_time,
     )
 
-    with Session(db.engine) as session:
+    with db.session() as session:
         rows = session.query(Lattice).all()
 
     for lattice in rows:
@@ -467,7 +466,7 @@ def test_update_electrons_data(db):
         completed_at=None,
     )
 
-    with Session(db.engine) as session:
+    with db.session() as session:
         rows = session.query(Electron).all()
 
     for electron in rows:
@@ -544,7 +543,7 @@ def test_write_sublattice_electron_id(db):
     )
 
     # Assert that the electron id has indeed been written.
-    with Session(db.engine) as session:
+    with db.session() as session:
         rows = session.query(Lattice).all()
 
     assert rows[0].dispatch_id == "dispatch_1"
