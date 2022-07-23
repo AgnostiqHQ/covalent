@@ -31,7 +31,7 @@ import pytest
 
 from covalent import DepsBash
 from covalent._file_transfer.file_transfer import HTTP, File, FileTransfer, Order
-from covalent._workflow.lepton import Lepton
+from covalent._workflow.lepton import Lepton, bash
 from covalent.executor import LocalExecutor
 
 test_py_module = """
@@ -390,6 +390,8 @@ modify() {
         ),
         # Call a bash command
         ("", "", "", [], "hostname", [], [], {}, None, True),
+        # Call a list of bash commands
+        ("", "", "", [], ["hostname", "whoami"], [], [], {}, None, True),
         # Call a bash command with an input
         ("", "", "", [], "touch /tmp/$1", [], ["debug.txt"], {}, None, True),
         ("", "", "", [(str, Lepton.INPUT)], "touch /tmp/$1", [], ["debug.txt"], {}, None, True),

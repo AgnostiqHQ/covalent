@@ -24,7 +24,7 @@ import os
 from importlib import metadata
 
 from . import _file_transfer as fs
-from . import executor
+from . import executor, leptons
 from ._dispatcher_plugins import local_dispatch as dispatch
 from ._dispatcher_plugins import local_dispatch_sync as dispatch_sync
 from ._file_transfer import strategies as fs_strategies
