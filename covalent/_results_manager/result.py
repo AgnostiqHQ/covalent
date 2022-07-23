@@ -341,7 +341,7 @@ Node Outputs
                 node_id = electron.transport_graph_node_id
                 all_node_outputs[
                     f"{self._get_node_name(node_id=node_id, db=db)}({node_id})"
-                ] = self._get_node_output(db, node_id)
+                ] = self._get_node_output(node_id=node_id, db=db)
             return all_node_outputs
 
     def get_all_node_results(self, db: DataStore = workflow_db) -> List[Dict]:
