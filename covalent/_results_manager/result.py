@@ -44,6 +44,8 @@ from .write_result_to_db import (
     insert_electron_dependency_data,
     insert_electrons_data,
     insert_lattices_data,
+    load_file,
+    store_file,
     update_electrons_data,
     update_lattice_completed_electron_num,
     update_lattices_data,
@@ -640,8 +642,7 @@ Node Outputs
 
         if output is not None:
             self.lattice.transport_graph.set_node_value(node_id, "output", output)
-            with open(node_path / ELECTRON_RESULTS_FILENAME, "wb") as f:
-                cloudpickle.dump(output, f)
+            store_file(node_path, ELECTRON_RESULTS_FILENAME, output)
 
         if error is not None:
             self.lattice.transport_graph.set_node_value(node_id, "error", error)
@@ -653,13 +654,11 @@ Node Outputs
 
         if stdout is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
-            with open(node_path / ELECTRON_STDOUT_FILENAME, "wb") as f:
-                cloudpickle.dump(stdout, f)
+            store_file(node_path, ELECTRON_STDOUT_FILENAME, stdout)
 
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
-            with open(node_path / ELECTRON_STDERR_FILENAME, "wb") as f:
-                cloudpickle.dump(stderr, f)
+            store_file(node_path, ELECTRON_STDERR_FILENAME, stderr)
 
         if str(status) == "COMPLETED":
             update_lattice_completed_electron_num(db, self.dispatch_id)
@@ -701,30 +700,17 @@ Node Outputs
 
         # Store all lattice info that belongs in filenames in the results directory
         data_storage_path = Path(self.results_dir) / self.dispatch_id
-        with open(data_storage_path / LATTICE_FUNCTION_FILENAME, "wb") as f:
-            cloudpickle.dump(self.lattice.workflow_function, f)
+        for filename, data in [
+            (LATTICE_FUNCTION_FILENAME, self.lattice.workflow_function),
+            (LATTICE_FUNCTION_STRING_FILENAME, self.lattice.workflow_function_string),
+            (LATTICE_EXECUTOR_FILENAME, self.lattice.metadata["executor"]),
+            (LATTICE_ERROR_FILENAME, self.error),
+            (LATTICE_INPUTS_FILENAME, self.inputs),
+            (LATTICE_RESULTS_FILENAME, self._result),
+            (LATTICE_TRANSPORT_GRAPH_FILENAME, self._lattice.transport_graph),
+        ]:
 
-        with open(data_storage_path / LATTICE_FUNCTION_STRING_FILENAME, "wb") as f:
-            try:
-                cloudpickle.dump(self.lattice.workflow_function_string, f)
-            except AttributeError as e:
-                app_log.warning(f"{e}")
-                cloudpickle.dump(None, f)
-
-        with open(data_storage_path / LATTICE_EXECUTOR_FILENAME, "wb") as f:
-            cloudpickle.dump(self.lattice.metadata["executor"], f)
-
-        with open(data_storage_path / LATTICE_ERROR_FILENAME, "wb") as f:
-            cloudpickle.dump(self.error, f)
-
-        with open(data_storage_path / LATTICE_INPUTS_FILENAME, "wb") as f:
-            cloudpickle.dump(self.inputs, f)
-
-        with open(data_storage_path / LATTICE_RESULTS_FILENAME, "wb") as f:
-            cloudpickle.dump(self._result, f)
-
-        with open(data_storage_path / LATTICE_TRANSPORT_GRAPH_FILENAME, "wb") as f:
-            cloudpickle.dump(self._lattice.transport_graph, f)
+            store_file(data_storage_path, filename, data)
 
         # Write lattice records to Database
         if not lattice_exists:
@@ -781,72 +767,60 @@ Node Outputs
                     node_key = tg.get_node_value(node_key=node_id, value_key="key")
                 except KeyError:
                     node_key = None
+                try:
+                    function_string = tg.get_node_value(node_id, "function_string")
+                except KeyError:
+                    function_string = None
+                try:
+                    node_value = tg.get_node_value(node_id, "value")
+                except KeyError:
+                    node_value = None
+                try:
+                    node_stdout = tg.get_node_value(node_id, "stdout")
+                except KeyError:
+                    node_stdout = None
+                try:
+                    node_stderr = tg.get_node_value(node_id, "stderr")
+                except KeyError:
+                    node_stderr = None
+                try:
+                    node_info = tg.get_node_value(node_id, "info")
+                except KeyError:
+                    node_info = None
+                try:
+                    node_output = tg.get_node_value(node_id, "output")
+                except KeyError:
+                    node_output = TransportableObject(None)
+                if not isinstance(node_output, TransportableObject):
+                    node_output = TransportableObject(node_output)
 
                 started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
                 completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
 
-                # Write all electron data to the appropriate filepaths
-                with open(node_path / ELECTRON_FUNCTION_FILENAME, "wb") as f:
-                    cloudpickle.dump(tg.get_node_value(node_id, "function"), f)
-
-                with open(node_path / ELECTRON_FUNCTION_STRING_FILENAME, "wb") as f:
-                    try:
-                        function_string = tg.get_node_value(node_id, "function_string")
-                    except KeyError:
-                        function_string = None
-                    cloudpickle.dump(function_string, f)
-
-                with open(node_path / ELECTRON_VALUE_FILENAME, "wb") as f:
-                    try:
-                        node_value = tg.get_node_value(node_id, "value")
-                    except KeyError:
-                        node_value = None
-                    cloudpickle.dump(node_value, f)
-
-                with open(node_path / ELECTRON_EXECUTOR_FILENAME, "wb") as f:
-                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["executor"], f)
-
-                with open(node_path / ELECTRON_DEPS_FILENAME, "wb") as f:
-                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["deps"], f)
-
-                with open(node_path / ELECTRON_CALL_BEFORE_FILENAME, "wb") as f:
-                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["call_before"], f)
-
-                with open(node_path / ELECTRON_CALL_AFTER_FILENAME, "wb") as f:
-                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["call_after"], f)
-
-                with open(node_path / ELECTRON_STDOUT_FILENAME, "wb") as f:
-                    try:
-                        node_stdout = tg.get_node_value(node_id, "stdout")
-                    except KeyError:
-                        node_stdout = None
-                    cloudpickle.dump(node_stdout, f)
-
-                with open(node_path / ELECTRON_STDERR_FILENAME, "wb") as f:
-                    try:
-                        node_stderr = tg.get_node_value(node_id, "stderr")
-                    except KeyError:
-                        node_stderr = None
-                    cloudpickle.dump(node_stderr, f)
-
-                with open(node_path / ELECTRON_INFO_FILENAME, "wb") as f:
-                    try:
-                        node_info = tg.get_node_value(node_id, "info")
-                    except KeyError:
-                        node_info = None
-                    cloudpickle.dump(node_info, f)
-
-                with open(node_path / ELECTRON_RESULTS_FILENAME, "wb") as f:
-                    try:
-                        node_output = tg.get_node_value(node_id, "output")
-                    except KeyError:
-                        node_output = TransportableObject(None)
-                    if not isinstance(node_output, TransportableObject):
-                        node_output = TransportableObject(node_output)
-                    cloudpickle.dump(node_output, f)
-
-                with open(node_path / ELECTRON_KEY_FILENAME, "wb") as f:
-                    cloudpickle.dump(node_key, f)
+                for filename, data in [
+                    (ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
+                    (ELECTRON_FUNCTION_STRING_FILENAME, function_string),
+                    (ELECTRON_VALUE_FILENAME, node_value),
+                    (
+                        ELECTRON_EXECUTOR_FILENAME,
+                        tg.get_node_value(node_id, "metadata")["executor"],
+                    ),
+                    (ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
+                    (
+                        ELECTRON_CALL_BEFORE_FILENAME,
+                        tg.get_node_value(node_id, "metadata")["call_before"],
+                    ),
+                    (
+                        ELECTRON_CALL_AFTER_FILENAME,
+                        tg.get_node_value(node_id, "metadata")["call_after"],
+                    ),
+                    (ELECTRON_STDOUT_FILENAME, node_stdout),
+                    (ELECTRON_STDERR_FILENAME, node_stderr),
+                    (ELECTRON_INFO_FILENAME, node_info),
+                    (ELECTRON_RESULTS_FILENAME, node_output),
+                    (ELECTRON_KEY_FILENAME, node_key),
+                ]:
+                    store_file(node_path, filename, data)
 
                 electron_exists = (
                     session.query(models.Electron, models.Lattice)

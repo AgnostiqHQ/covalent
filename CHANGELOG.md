@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Helper function to load and save files corresponding to the DB filenames.
+
+### Changed
+
+- Files with .txt, .log extensions are stored as strings.
+
 ## [0.151.1] - 2022-07-22
 
 ### Authors

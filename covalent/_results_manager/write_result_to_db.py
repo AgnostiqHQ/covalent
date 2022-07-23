@@ -23,7 +23,10 @@
 import os
 from datetime import datetime as dt
 from datetime import timezone
+from pathlib import Path
+from typing import Any
 
+import cloudpickle
 import networkx as nx
 from sqlalchemy import update
 from sqlalchemy.orm import Session
@@ -49,6 +52,10 @@ class MissingLatticeRecordError(Exception):
 
 
 class MissingElectronRecordError(Exception):
+    pass
+
+
+class InvalidFileExtension(Exception):
     pass
 
 
@@ -359,3 +366,28 @@ def write_lattice_error(db: DataStore, dispatch_id: str, error: str):
 
         with open(os.path.join(valid_update.storage_path, valid_update.error_filename), "w") as f:
             f.write(error)
+
+
+def store_file(storage_path: str, filename: str, data: Any = None) -> None:
+    """This function stores data corresponding to the filepaths in the DB."""
+
+    if filename.endswith(".pkl"):
+        with open(Path(storage_path) / filename, "wb") as f:
+            cloudpickle.dump(data, f)
+
+    elif filename.endswith(".log") or filename.endswith(".txt"):
+        if not isinstance(data, str):
+            raise InvalidFileExtension("Data must be string type.")
+
+        if data is None:
+            data = ""
+
+        with open(Path(storage_path) / filename, "w+") as f:
+            f.write(data)
+
+    else:
+        raise InvalidFileExtension("The file extension is not supported.")
+
+
+def load_file():
+    pass
