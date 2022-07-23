@@ -440,7 +440,7 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
     db = DispatchDB()._get_data_store()
-    result_object._error = f"Node {result_object._get_node_name(db, node_id)} failed: \n{result_object._get_node_error(db, node_id)}"
+    result_object._error = f"Node {result_object._get_node_name(node_id=node_id, db=db)} failed: \n{result_object._get_node_error(node_id=node_id, db=db)}"
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
     result_webhook.send_update(result_object)
