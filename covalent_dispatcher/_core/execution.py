@@ -22,20 +22,21 @@
 Defines the core functionality of the dispatcher
 """
 
+import asyncio
 import json
 import traceback
-from concurrent.futures import Future, ThreadPoolExecutor, wait
+from asyncio import Queue
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import partial
-from queue import Queue
 from threading import Lock
 from typing import Any, Dict, List, Tuple
 
-import cloudpickle as pickle
+import uvloop
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from covalent import dispatch, dispatch_sync
+from covalent import dispatch
 from covalent._data_store.models import Lattice as Lattice_model
 from covalent._results_manager import Result
 from covalent._results_manager.write_result_to_db import (
@@ -46,19 +47,17 @@ from covalent._results_manager.write_result_to_db import (
 from covalent._shared_files import logger
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
-    attr_prefix,
     electron_dict_prefix,
     electron_list_prefix,
-    generator_prefix,
     parameter_prefix,
     prefix_separator,
     sublattice_prefix,
-    subscript_prefix,
 )
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
+from covalent.executor.base import BaseAsyncExecutor, wrapper_fn
 from covalent_ui import result_webhook
 
 from .._db.dispatchdb import DispatchDB
@@ -70,8 +69,7 @@ log_stack_info = logger.log_stack_info
 
 # This is to be run out-of-process
 def _dispatch(fn, *args, **kwargs):
-    dispatch_id = dispatch(fn)(*args, **kwargs)
-    return dispatch_id
+    return dispatch(fn)(*args, **kwargs)
 
 
 def generate_node_result(
@@ -188,19 +186,15 @@ def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
         lattice.electron_outputs = ordered_node_outputs
-        args = []
-        kwargs = {}
-        for arg in lattice.args:
-            args.append(arg.get_deserialized())
-        for k, v in lattice.kwargs.items():
-            kwargs[k] = v.get_deserialized()
+        args = [arg.get_deserialized() for arg in lattice.args]
+        kwargs = {k: v.get_deserialized() for k, v in lattice.kwargs.items()}
         workflow_function = lattice.workflow_function.get_deserialized()
         result = workflow_function(*args, **kwargs)
         lattice.post_processing = False
         return result
 
 
-def _dispatch_sublattice(
+async def _dispatch_sublattice(
     dispatch_id: str,
     results_dir: str,
     inputs: Dict,
@@ -227,26 +221,27 @@ def _dispatch_sublattice(
     # Dispatch the sublattice workflow. This must be run
     # externally since it involves deserializing the
     # sublattice workflow function.
-    fut = tasks_pool.submit(
-        _run_task,
-        node_id=-1,
-        dispatch_id=dispatch_id,
-        results_dir=results_dir,
-        serialized_callable=TransportableObject.make_transportable(_dispatch),
-        selected_executor=workflow_executor,
-        node_name="dispatch_sublattice",
-        call_before=[],
-        call_after=[],
-        inputs=sub_dispatch_inputs,
-        tasks_pool=tasks_pool,
-        workflow_executor=workflow_executor,
+    fut = asyncio.create_task(
+        _run_task(
+            node_id=-1,
+            dispatch_id=dispatch_id,
+            results_dir=results_dir,
+            serialized_callable=TransportableObject.make_transportable(_dispatch),
+            selected_executor=workflow_executor,
+            node_name="dispatch_sublattice",
+            call_before=[],
+            call_after=[],
+            inputs=sub_dispatch_inputs,
+            tasks_pool=tasks_pool,
+            workflow_executor=workflow_executor,
+        )
     )
 
-    sub_dispatch_id = json.loads(fut.result()["output"].json)
-    return sub_dispatch_id
+    res = await fut
+    return json.loads(res["output"].json)
 
 
-def _run_task(
+async def _run_task(
     node_id: int,
     dispatch_id: str,
     results_dir: str,
@@ -293,7 +288,7 @@ def _run_task(
     try:
 
         if node_name.startswith(sublattice_prefix):
-            sub_dispatch_id = _dispatch_sublattice(
+            sub_dispatch_id = await _dispatch_sublattice(
                 dispatch_id=dispatch_id,
                 results_dir=results_dir,
                 inputs=inputs,
@@ -338,16 +333,24 @@ def _run_task(
 
         else:
             app_log.debug(f"Executing task {node_name}")
-            output, stdout, stderr = executor.execute(
-                function=serialized_callable,
+
+            assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
+
+            execute_callable = partial(
+                executor.execute,
+                function=assembled_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
-                call_before=call_before,
-                call_after=call_after,
                 dispatch_id=dispatch_id,
                 results_dir=results_dir,
                 node_id=node_id,
             )
+
+            if isinstance(executor, BaseAsyncExecutor):
+                output, stdout, stderr = await execute_callable()
+            else:
+                loop = asyncio.get_running_loop()
+                output, stdout, stderr = await loop.run_in_executor(tasks_pool, execute_callable)
 
             end_time = datetime.now(timezone.utc)
 
@@ -371,7 +374,7 @@ def _run_task(
             status=Result.FAILED,
             error="".join(traceback.TracebackException.from_exception(ex).format()),
         )
-        app_log.exception("Run task - sublattice exception")
+        app_log.exception("Run task exception")
     app_log.warning("Returning node result (run_task)")
 
     return node_result
@@ -418,7 +421,7 @@ def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
     return call_before, call_after
 
 
-def _handle_completed_node(result_object, node_result, pending_deps, tasks_queue):
+async def _handle_completed_node(result_object, node_result, pending_deps, tasks_queue):
     g = result_object.lattice.transport_graph._graph
 
     for child, edges in g.adj[node_result["node_id"]].items():
@@ -426,10 +429,10 @@ def _handle_completed_node(result_object, node_result, pending_deps, tasks_queue
             pending_deps[child] -= 1
         if pending_deps[child] < 1:
             app_log.debug(f"Queuing node {child} for execution")
-            tasks_queue.put(child)
+            await tasks_queue.put(child)
 
 
-def _handle_failed_node(result_object, node_result, pending_deps, tasks_queue):
+async def _handle_failed_node(result_object, node_result, pending_deps, tasks_queue):
     node_id = node_result["node_id"]
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
@@ -438,19 +441,19 @@ def _handle_failed_node(result_object, node_result, pending_deps, tasks_queue):
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
     result_webhook.send_update(result_object)
-    tasks_queue.put(-1)
+    await tasks_queue.put(-1)
 
 
-def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue):
+async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue):
     result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
     result_webhook.send_update(result_object)
-    tasks_queue.put(-1)
+    await tasks_queue.put(-1)
 
 
-def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
+async def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
     with lock:
         app_log.warning("Updating node result (run_planned_workflow).")
         result_object._update_node(db=DispatchDB()._get_data_store(), **node_result)
@@ -458,31 +461,31 @@ def _update_node_result(lock, result_object, node_result, pending_deps, tasks_qu
 
         node_status = node_result["status"]
         if node_status == Result.COMPLETED:
-            _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
+            await _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
             return
 
         if node_status == Result.FAILED:
-            _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
+            await _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
             return
 
         if node_status == Result.CANCELLED:
-            _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
+            await _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
             return
 
         if node_status == Result.RUNNING:
             return
 
 
-def _run_task_and_update(run_task_callable, lock, result_object, pending_deps, tasks_queue):
-    node_result = run_task_callable()
+async def _run_task_and_update(run_task_callable, lock, result_object, pending_deps, tasks_queue):
+    node_result = await run_task_callable()
 
     # NOTE: This is a blocking operation because of db writes and needs special handling when
     # we switch to an event loop for processing tasks
-    _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+    await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
     return node_result
 
 
-def _initialize_deps_and_queue(
+async def _initialize_deps_and_queue(
     result_object: Result, tasks_queue: Queue, pending_deps: dict
 ) -> int:
     """Initialize the data structures controlling when tasks are queued for execution.
@@ -497,12 +500,12 @@ def _initialize_deps_and_queue(
         pending_deps[node_id] = d
         num_tasks += 1
         if d == 0:
-            tasks_queue.put(node_id)
+            await tasks_queue.put(node_id)
 
     return num_tasks
 
 
-def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
+async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -549,18 +552,18 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     post_processor = [pp_executor, pp_executor_data]
 
     db = DispatchDB()._get_data_store()
-    tasks_left = _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
+    tasks_left = await _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
 
     while tasks_left > 0:
         app_log.debug(f"{tasks_left} tasks left")
 
         tasks_left -= 1
-        node_id = tasks_queue.get()
+        node_id = await tasks_queue.get()
         app_log.debug(f"Processing node {node_id}")
 
         if node_id < 0:
             app_log.debug(f"Workflow {result_object.dispatch_id} failed or cancelled.")
-            wait(task_futures)
+            await asyncio.gather(*task_futures)
             return result_object
 
         # Get name of the node for the current task
@@ -581,7 +584,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
                 "status": Result.COMPLETED,
                 "output": output,
             }
-            _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+            await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
             app_log.warning("8A: Update node success (run_planned_workflow).")
 
             continue
@@ -616,7 +619,7 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
             start_time=start_time,
             status=Result.RUNNING,
         )
-        _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+        await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
         app_log.warning("7: Updating nodes after deps (run_planned_workflow)")
 
         app_log.debug(f"Submitting task {node_id} to executor")
@@ -637,22 +640,21 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
         )
 
         # Add the task generated for the node to the list of tasks
-        future = thread_pool.submit(
-            _run_task_and_update,
-            run_task_callable=run_task_callable,
-            lock=lock,
-            result_object=result_object,
-            pending_deps=pending_deps,
-            tasks_queue=tasks_queue,
+        future = asyncio.create_task(
+            _run_task_and_update(
+                run_task_callable=run_task_callable,
+                lock=lock,
+                result_object=result_object,
+                pending_deps=pending_deps,
+                tasks_queue=tasks_queue,
+            )
         )
 
         task_futures.append(future)
 
-    app_log.warning("Before wait task futures")
-    wait(task_futures)
-    app_log.warning("After wait task futures")
+    await asyncio.gather(*task_futures)
 
-    if result_object._status == Result.FAILED or result_object._status == Result.CANCELLED:
+    if result_object._status in [Result.FAILED, Result.CANCELLED]:
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
         return result_object
 
@@ -679,26 +681,27 @@ def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor
     post_processing_inputs["kwargs"] = {}
 
     try:
-        future = thread_pool.submit(
-            _run_task,
-            node_id=-1,
-            dispatch_id=result_object.dispatch_id,
-            results_dir=result_object.results_dir,
-            serialized_callable=TransportableObject(_post_process),
-            selected_executor=post_processor,
-            node_name="post_process",
-            call_before=[],
-            call_after=[],
-            inputs=post_processing_inputs,
-            tasks_pool=thread_pool,
-            workflow_executor=post_processor,
+        future = asyncio.create_task(
+            _run_task(
+                node_id=-1,
+                dispatch_id=result_object.dispatch_id,
+                results_dir=result_object.results_dir,
+                serialized_callable=TransportableObject(_post_process),
+                selected_executor=post_processor,
+                node_name="post_process",
+                call_before=[],
+                call_after=[],
+                inputs=post_processing_inputs,
+                tasks_pool=thread_pool,
+                workflow_executor=post_processor,
+            )
         )
         pp_start_time = datetime.now(timezone.utc)
         app_log.debug(
             f"Submitted post-processing job to executor {post_processor} at {pp_start_time}"
         )
 
-        post_process_result = future.result()
+        post_process_result = await future
     except Exception as ex:
         app_log.debug(f"Exception during post-processing: {ex}")
         result_object._status = Result.POSTPROCESSING_FAILED
@@ -807,7 +810,10 @@ def run_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Resul
 
     try:
         _plan_workflow(result_object)
-        result_object = _run_planned_workflow(result_object, tasks_pool)
+
+        uvloop.install()
+
+        result_object = asyncio.run(_run_planned_workflow(result_object, tasks_pool))
 
     except Exception as ex:
         app_log.error(f"Exception during _run_planned_workflow: {ex}")

@@ -11,6 +11,104 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Retrieve Result object node metadata from the transport graph rather than the Database.
 
+## [0.151.1] - 2022-07-22
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Fixed
+
+- Adding maximum number of retries and timeout parameter to the get result http call.
+- Disabling result_webhook for now.
+
+## [0.151.0] - 2022-07-22
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+### Added
+
+- `BaseAsyncExecutor` has been added which can be inherited by new async-aware executors.
+
+### Changed
+
+- Since tasks were basically submitting the functions to a Dask cluster by default, they have been converted into asyncio `Tasks` instead which support a far larger number of concurrent tasks than previously used `ThreadPool`.
+
+- `tasks_pool` will still be used to schedule tasks which use non-async executors.
+
+- Executor's `executor` will now receive a callable instead of a serialized function. This allows deserializing the function where it is going to be executed while providing a simplified `execute` at the same time.
+
+- `uvloop` is being used instead of the default event loop of `asyncio` for better performance.
+
+- Tests have also been updated to reflect above changes.
+
+### Operations
+
+- Made Santosh the sole owner of `/docs`
+
+## [0.150.0] - 2022-07-22
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Added
+
+- Initialize database tables when the covalent server is started.
+
+## [0.149.0] - 2022-07-21
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Removed
+
+- `result.save()`
+- `result._write_dispatch_to_python_file()`
+
+## [0.148.0] - 2022-07-21
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+
+- Changed DataStore default db path to correspond to dispatch db config path
+
+### Operations
+
+- Added workflow to stale and close pull requests
+
+### Docs
+
+- Fixed `get_metadata` calls in examples to remove `results_dir` argument
+- Removed YouTube video temporarily
+
+## [0.147.0] - 2022-07-21
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Simplified interface for custom executors. All the boilerplate has
+  been moved to `BaseExecutor`.
+
 ## [0.146.0] - 2022-07-20
 
 ### Authors

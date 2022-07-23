@@ -55,11 +55,10 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
 
     Args:
         dispatch_id: The dispatch id of the result.
-        results_dir: The directory where the results are stored in dispatch id named folders.
         wait: Whether to wait for the result to be completed/failed, default is False.
 
     Returns:
-        result_object: The result from the file.
+        The result from the file.
 
     """
 
@@ -138,7 +137,6 @@ def _get_result_from_dispatcher(
     wait: bool = False,
     dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
     status_only: bool = False,
-    timeout: int = 1,
 ) -> Dict:
 
     """
@@ -156,16 +154,15 @@ def _get_result_from_dispatcher(
     Raises:
         MissingLatticeRecordError: If the result is not found.
     """
-    adapter = HTTPAdapter(max_retries=Retry(total=5))
+    adapter = HTTPAdapter(max_retries=5)
     http = requests.Session()
     http.mount("http://", adapter)
-    url = "http://" + dispatcher + "/api/result/" + dispatch_id
-    response = http.get(url, params={"wait": wait, "status_only": status_only}, timeout=timeout)
+    url = f"http://{dispatcher}/api/result/{dispatch_id}"
+    response = http.get(url, params={"wait": wait, "status_only": status_only}, timeout=1)
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()
-    result = response.json()
-    return result
+    return response.json()
 
 
 def _delete_result(
@@ -231,7 +228,6 @@ def sync(
 
     Args:
         dispatch_id: One or more dispatch IDs to wait for before returning.
-        results_dir: The directory where results objects are stored.
 
     Returns:
         None
@@ -264,7 +260,7 @@ def cancel(
         None
     """
 
-    url = "http://" + dispatcher + "/api/cancel"
+    url = f"http://{dispatcher}/api/cancel"
 
     r = requests.post(url, data=dispatch_id.encode("utf-8"))
     r.raise_for_status()
