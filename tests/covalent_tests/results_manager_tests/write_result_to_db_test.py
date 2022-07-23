@@ -552,3 +552,11 @@ def test_write_sublattice_electron_id(db):
 
     assert rows[1].dispatch_id == "dispatch_2"
     assert rows[1].electron_id == electron_ids[3]
+
+
+def test_store_file():
+    pass
+
+
+def test_load_file():
+    pass
