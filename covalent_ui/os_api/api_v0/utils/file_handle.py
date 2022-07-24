@@ -24,8 +24,13 @@ import codecs
 import json
 
 import cloudpickle as pickle
+import regex as rx
 
 from covalent._workflow.transport import TransportableObject, _TransportGraph
+
+
+def remove_control_characters(str):
+    return rx.sub(r"\p{C}", "", str)
 
 
 class FileHandler:
@@ -79,4 +84,4 @@ class FileHandler:
     def read_from_text(self, path):
         """Read from text"""
         file = codecs.open(self.location + "/" + path, "rb").read().decode("ISO-8859-1")
-        return file
+        return remove_control_characters(file)
