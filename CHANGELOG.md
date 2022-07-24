@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Fixed syntax errors in `stale.yml` and in `hotfix.yml`
+- `docker.yml` triggered after version bump in `develop` instead of before
+
 ## [0.151.1] - 2022-07-22
 
 ### Authors
