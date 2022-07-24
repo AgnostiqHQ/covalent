@@ -55,11 +55,10 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
 
     Args:
         dispatch_id: The dispatch id of the result.
-        results_dir: The directory where the results are stored in dispatch id named folders.
         wait: Whether to wait for the result to be completed/failed, default is False.
 
     Returns:
-        result_object: The result from the file.
+        The result from the file.
 
     """
 
@@ -155,11 +154,11 @@ def _get_result_from_dispatcher(
     Raises:
         MissingLatticeRecordError: If the result is not found.
     """
-    adapter = HTTPAdapter()
+    adapter = HTTPAdapter(max_retries=5)
     http = requests.Session()
     http.mount("http://", adapter)
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
-    response = http.get(url, params={"wait": wait, "status_only": status_only})
+    response = http.get(url, params={"wait": wait, "status_only": status_only}, timeout=1)
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()
@@ -230,7 +229,6 @@ def sync(
 
     Args:
         dispatch_id: One or more dispatch IDs to wait for before returning.
-        results_dir: The directory where results objects are stored.
 
     Returns:
         None

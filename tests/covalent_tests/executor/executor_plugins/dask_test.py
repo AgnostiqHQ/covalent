@@ -18,16 +18,37 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""
-Unit tests for DataStore object
-"""
+"""Tests for Covalent dask executor."""
 
-from covalent._data_store.datastore import DataStore
-from covalent._shared_files.config import get_config
+import asyncio
+
+import pytest
 
 
-def test_datastore_init():
-    """Test data store initialization method."""
+def test_dask_executor_init(mocker):
+    """Test dask executor constructor"""
 
-    ds = DataStore(db_URL=None)
-    assert ds.db_URL == "sqlite+pysqlite:///" + get_config("user_interface.dispatch_db")
+    from covalent.executor import DaskExecutor
+
+    de = DaskExecutor("127.0.0.1")
+
+    assert de.scheduler_address == "127.0.0.1"
+
+
+def test_dask_executor_run():
+    """Test run method for Dask executor"""
+
+    from dask.distributed import LocalCluster
+
+    from covalent.executor import DaskExecutor
+
+    cluster = LocalCluster()
+
+    dask_exec = DaskExecutor(cluster.scheduler_address)
+
+    def f(x, y):
+        return x, y
+
+    args = [5]
+    kwargs = {"y": 7}
+    assert asyncio.run(dask_exec.run(f, args, kwargs)) == (5, 7)
