@@ -21,56 +21,47 @@
 {% set data = load_setup_py_data(setup_file='./setup.py', from_recipe_dir=True) %}
 
 package:
-    name: covalent
-    version: {{ data.get('version') }}
+  name: covalent
+  version: {{ data.get('version') }}
 
 source:
-    - path: .
-      folder: cova
-    - url: https://files.pythonhosted.org/packages/5b/78/0c8e4b41ee425be92888bc118af7c15fc7b771a7e495d7b48b223cd6c382/sentinel-0.3.0.tar.gz
-      sha256: f28143aa4716dbc8f6193f5682176a3c33cd26aaae05d9ecf66c186a9887cc2d
-      folder: sentinel
+  - path: .
+    folder: covalent
 
 build:
-    script:
-        - pip install ./sentinel
-        - pip install ./cova
-        - |
-          cd ./cova/covalent_ui/webapp
-          npm install
-          yarn build
+  script:
+    - (cd ./covalent/covalent_ui/webapp && npm install && yarn build)
+    - pip install ./covalent
 
 requirements:
-    build:
-        - python 3.8
-        - pip
-        - nodejs
-        - yarn
-        - poetry
-        {% for package in data.get('install_requires', []) -%}
-        {%   if not ( package.startswith('sentinel') ) -%}
-        - {{ package }}
-        {%   endif -%}
-        {% endfor %}
-    run:
-        {% for package in resolved_packages('build') -%}
-        - {{ package }}
-        {% endfor %}
+  build:
+    - python
+    - pip
+    - nodejs
+    - yarn
+    {% for package in data.get('install_requires', []) -%}
+    - {{ package }}
+    {% endfor %}
+  run:
+    {% for package in resolved_packages('build') -%}
+    - {{ package }}
+    {% endfor %}
 
 test:
-    imports:
-        - covalent
-        - covalent_dispatcher
-    commands:
-        - covalent status
+  imports:
+    - covalent
+    - covalent_dispatcher
+    - covalent_ui
+  commands:
+    - covalent status
 
 about:
-    home: {{ data.get('url') }}
-    license: AGPL
-    license_file: LICENSE
+  home: {{ data.get('url') }}
+  license: AGPL
+  license_file: LICENSE
 
 extra:
-    recipe-maintainers:
-        - {{ data.get('maintainer') }}
-    contact:
-        - {{ data.get('author_email') }}
+  recipe-maintainers:
+    - {{ data.get('maintainer') }}
+  contact:
+    - {{ data.get('author_email') }}

@@ -21,21 +21,45 @@
 name: conda
 
 on:
-  schedule:
-    - cron: "02 4 * * *"
+  # TODO: remove this line
+  push:
+    branches: [conda-release]
+#  schedule:
+#    - cron: "02 4 * * *"
+      
 
 jobs:
   conda:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
     steps:
       - name: Check out head
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-      - name: Build conda package
+          persist-credentials: false
+
+      - name: Install Conda dependencies
         run: |
-          conda install conda-build conda-verify
+          conda install conda-build conda-verify anaconda-client
           conda config --append channels conda-forge
-          conda create --name buildenv python=3.8
+
+      - name: Create Conda environment
+        run: conda create --name buildenv python=${{ matrix.python-version }}
+
+      - name: Build package
+        run: |
           $CONDA/bin/activate buildenv
-          conda build --override-channels .
+          conda env list
+          conda build --override-channels --output-folder ./ --python ${{ matrix.python-version }} .
+
+      - name: Install package
+        run: conda install --override-channels -c local covalent
+
+      - name: Test package
+        run: covalent --version
