@@ -178,11 +178,12 @@ jobs:
           timeout_minutes: 15
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          continue-on-error: false
           command: |
-            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc.
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc. || error "tests for UI backend do not exist."
       
       - name: Generate UI backend coverage report
-        if: success() && ${{ steps.working-directory.outputs.ui_backend}} == true
+        if: ${{ steps.working-directory.outputs.ui_backend}} == true. && ${{ steps.ui_tests.outcome }} == 'success'
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
