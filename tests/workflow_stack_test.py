@@ -130,7 +130,7 @@ def test_sublatticing(db):
     assert workflow_result.error == ""
     assert workflow_result.status == str(Result.COMPLETED)
     assert workflow_result.result == 3
-    assert workflow_result.get_node_result(db, 0)["sublattice_result"].result == 3
+    assert workflow_result.get_node_result(db=db, node_id=0)["sublattice_result"].result == 3
 
 
 @pytest.mark.asyncio

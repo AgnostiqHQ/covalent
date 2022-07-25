@@ -27,18 +27,14 @@ from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 import cloudpickle
 import cloudpickle as pickle
-import networkx as nx
-import yaml
 from sqlalchemy import and_, update
-from sqlalchemy.orm import Session
 
-from .._data_store import DataStore, DataStoreNotInitializedError, models
+from .._data_store import DataStore, DataStoreNotInitializedError, models, workflow_db
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.transport import TransportableObject
-from .utils import _db_path, convert_to_lattice_function_call
 from .write_result_to_db import (
     get_electron_type,
     insert_electron_dependency_data,
@@ -164,9 +160,7 @@ Node Outputs
 ------------
 """
 
-        node_outputs = self.get_all_node_outputs(
-            DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
-        )
+        node_outputs = self.get_all_node_outputs()
         for k, v in node_outputs.items():
             show_result_str += f"{k}: {v.object_string}\n"
 
@@ -285,7 +279,7 @@ Node Outputs
 
             self.lattice.transport_graph.set_node_value(node_id, "stderr", None)
 
-    def get_node_result(self, db: DataStore, node_id: int) -> dict:
+    def get_node_result(self, node_id: int, db: DataStore = workflow_db) -> dict:
         """Return the result of a particular node.
 
         Args:
@@ -305,37 +299,22 @@ Node Outputs
                             - stderr: The stderr of the node execution.
         """
 
-        # return {
-        #     "node_id": node_id,
-        #     "node_name": self.lattice.transport_graph.get_node_value(node_id, "node_name"),
-        #     "start_time": self.lattice.transport_graph.get_node_value(node_id, "start_time"),
-        #     "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
-        #     "status": self.lattice.transport_graph.get_node_value(node_id, "status"),
-        #     "output": self.lattice.transport_graph.get_node_value(node_id, "output"),
-        #     "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
-        #     "sublattice_result": self.lattice.transport_graph.get_node_value(
-        #         node_id, "sublattice_result"
-        #     ),
-        #     "stdout": self.lattice.transport_graph.get_node_value(node_id, "stdout"),
-        #     "stderr": self.lattice.transport_graph.get_node_value(node_id, "stderr"),
-        # }
-
         return {
             "node_id": node_id,
-            "node_name": self._get_node_name(db, node_id),
+            "node_name": self._get_node_name(node_id=node_id, db=db),
             "start_time": self.lattice.transport_graph.get_node_value(node_id, "start_time"),
             "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
-            "status": self._get_node_status(db, node_id),
-            "output": self._get_node_output(db, node_id),
+            "status": self._get_node_status(node_id=node_id, db=db),
+            "output": self._get_node_output(node_id=node_id, db=db),
             "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
             "sublattice_result": self.lattice.transport_graph.get_node_value(
                 node_id, "sublattice_result"
             ),
             "stdout": self.lattice.transport_graph.get_node_value(node_id, "stdout"),
-            "stderr": self._get_node_error(db, node_id),
+            "stderr": self._get_node_error(node_id=node_id, db=db),
         }
 
-    def get_all_node_outputs(self, db: DataStore) -> dict:
+    def get_all_node_outputs(self, db: DataStore = workflow_db) -> dict:
         """
         Return output of every node execution.
 
@@ -345,7 +324,8 @@ Node Outputs
         Returns:
             node_outputs: A dictionary containing the output of every node execution.
         """
-        with Session(db.engine) as session:
+
+        with db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -362,11 +342,11 @@ Node Outputs
             for electron in electron_records:
                 node_id = electron.transport_graph_node_id
                 all_node_outputs[
-                    f"{self._get_node_name(db, node_id)}({node_id})"
-                ] = self._get_node_output(db, node_id)
+                    f"{self._get_node_name(node_id=node_id, db=db)}({node_id})"
+                ] = self._get_node_output(node_id=node_id, db=db)
             return all_node_outputs
 
-    def get_all_node_results(self, db: DataStore) -> List[Dict]:
+    def get_all_node_results(self, db: DataStore = workflow_db) -> List[Dict]:
         """
         Get all the node results.
 
@@ -376,7 +356,8 @@ Node Outputs
         Returns:
             node_results: A list of dictionaries containing the result of every node execution.
         """
-        with Session(db.engine) as session:
+
+        with db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -390,16 +371,14 @@ Node Outputs
                 .all()
             )
             return [
-                self.get_node_result(db, electron.transport_graph_node_id)
+                self.get_node_result(node_id=electron.transport_graph_node_id, db=db)
                 for electron in electron_records
             ]
 
     def post_process(self):
 
         # Copied from server-side _post_process()
-        node_outputs = self.get_all_node_outputs(
-            DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
-        )
+        node_outputs = self.get_all_node_outputs()
         ordered_node_outputs = []
         for i, item in enumerate(node_outputs.items()):
             key, val = item
@@ -416,7 +395,7 @@ Node Outputs
             lattice.post_processing = False
         return result
 
-    def _get_node_name(self, db: DataStore, node_id: int) -> str:
+    def _get_node_name(self, node_id: int, db: DataStore = workflow_db) -> str:
         """
         Returns the name of the node with given node id.
 
@@ -427,7 +406,7 @@ Node Outputs
             The name of said node.
         """
 
-        with Session(db.engine) as session:
+        with db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -447,7 +426,7 @@ Node Outputs
                 .name
             )
 
-    def _get_node_status(self, db: DataStore, node_id: int) -> "Status":
+    def _get_node_status(self, node_id: int, db: DataStore = workflow_db) -> "Status":
         """
         Returns the status of a node.
 
@@ -458,7 +437,7 @@ Node Outputs
             The status of said node.
         """
 
-        with Session(db.engine) as session:
+        with db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -477,7 +456,7 @@ Node Outputs
                 .status
             )
 
-    def _get_node_output(self, db: DataStore, node_id: int) -> Any:
+    def _get_node_output(self, node_id: int, db: DataStore = workflow_db) -> Any:
         """
         Return the output of a node.
 
@@ -489,7 +468,7 @@ Node Outputs
                     Will return None if error occured in execution.
         """
 
-        with Session(db.engine) as session:
+        with db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -513,7 +492,7 @@ Node Outputs
                 storage_path=electron.storage_path, filename=electron.results_filename
             )
 
-    def _get_node_value(self, db: DataStore, node_id: int) -> Any:
+    def _get_node_value(self, node_id: int, db: DataStore = workflow_db) -> Any:
         """
         Return the output of a node.
 
@@ -525,7 +504,7 @@ Node Outputs
                     Will return None if error occured in execution.
         """
 
-        with Session(db.engine) as session:
+        with db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -547,7 +526,7 @@ Node Outputs
             )
             return load_file(storage_path=electron.storage_path, filename=electron.value_filename)
 
-    def _get_node_error(self, db: DataStore, node_id: int) -> Any:
+    def _get_node_error(self, node_id: int, db: DataStore = workflow_db) -> Any:
         """
         Return the error of a node.
 
@@ -559,7 +538,7 @@ Node Outputs
                    Will return None if no error occured in execution.
         """
 
-        with Session(db.engine) as session:
+        with db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -583,7 +562,6 @@ Node Outputs
 
     def _update_node(
         self,
-        db: DataStore,
         node_id: int,
         node_name: str = None,
         start_time: "datetime" = None,
@@ -594,6 +572,7 @@ Node Outputs
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
+        db: DataStore = workflow_db,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -661,7 +640,7 @@ Node Outputs
         if str(status) == "COMPLETED":
             update_lattice_completed_electron_num(db, self.dispatch_id)
 
-        with Session(db.engine) as session:
+        with db.session() as session:
             lattice_id = (
                 session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
@@ -688,7 +667,7 @@ Node Outputs
     def upsert_lattice_data(self, db: DataStore):
         """Update lattice data"""
 
-        with Session(db.engine) as session:
+        with db.session() as session:
             lattice_exists = (
                 session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
@@ -756,7 +735,7 @@ Node Outputs
         dirty_nodes = set(tg.dirty_nodes)
         tg.dirty_nodes.clear()  # Ensure that dirty nodes list is reset once the data is updated
 
-        with Session(db.engine) as session:
+        with db.session() as session:
             for node_id in dirty_nodes:
 
                 node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
@@ -878,11 +857,11 @@ Node Outputs
                     }
                     update_electrons_data(db=db, **electron_record_kwarg)
 
-    def insert_electron_dependency_data(self, db: DataStore):
+    def insert_electron_dependency_data(self, db: DataStore = workflow_db):
         """Update electron dependency data"""
 
         # Insert electron dependency records if they don't exist
-        with Session(db.engine) as session:
+        with db.session() as session:
             electron_dependencies_exist = (
                 session.query(models.ElectronDependency, models.Electron, models.Lattice)
                 .where(
@@ -899,7 +878,7 @@ Node Outputs
                 db=db, dispatch_id=self.dispatch_id, lattice=self.lattice
             )
 
-    def persist(self, db: DataStore) -> None:
+    def persist(self, db: DataStore = workflow_db) -> None:
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 

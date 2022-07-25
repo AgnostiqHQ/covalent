@@ -16,6 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Files with .txt, .log extensions are stored as strings.
 - Get result web request timeout to 2 seconds.
 
+## [0.152.0] - 2022-07-25
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Changed
+
+- Pass default DataStore object to node value retrieval method in the Results object.
+
 ## [0.151.1] - 2022-07-22
 
 ### Authors
