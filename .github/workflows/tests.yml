@@ -180,10 +180,9 @@ jobs:
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
             PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc.
-            echo ::set-output name=exit_code::$?
       
       - name: Generate UI backend coverage report
-        if:  ${{ steps.working-directory.outputs.ui_backend}} == true && $${{ steps.ui_tests.outputs.exit_code }} == 0
+        if: success() && ${{ steps.working-directory.outputs.ui_backend}} == true
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
