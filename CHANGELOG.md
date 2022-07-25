@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Tests
 
-- Updated/Fixed Dask cluster CLI tests
+- Fixed Dask cluster CLI tests
 
+## [0.153.0] - 2022-07-25
 
 ### Authors
 
@@ -39,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pass default DataStore object to node value retrieval method in the Results object.
 
 ## [0.151.1] - 2022-07-22
+
+### Authors
 
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
