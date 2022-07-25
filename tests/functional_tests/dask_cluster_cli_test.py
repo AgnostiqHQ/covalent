@@ -35,7 +35,6 @@ from covalent_dispatcher._cli.service import (
     _get_cluster_logs,
     _get_cluster_size,
     _get_cluster_status,
-    _get_cluster_logs
 )
 from covalent_dispatcher._service.app_dask import DaskAdminWorker
 
