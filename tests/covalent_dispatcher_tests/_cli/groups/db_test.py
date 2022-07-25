@@ -28,24 +28,21 @@ def test_migration_success(mocker):
     db_mock.run_migrations.assert_called_once()
 
 
-def test_alembic_command_invalid_alembic_args(mocker):
+def test_alembic_command_args(mocker):
     runner = CliRunner()
-    MOCK_ALEMBIC_ARGS = "some alembic command --with-flags -m 'comment'"
+    MOCK_ALEMBIC_ARGS_VALID = "current"
+    MOCK_ALEMBIC_ARGS_INVALID = "some alembic command --with-flags -m 'comment'"
     ALEMBIC_ERROR_STDERR = b"alembic: error: invalid..."
-    popen_mock = mocker.patch.object(sys.modules["covalent_dispatcher._cli.groups.db"], "Popen")
-    popen_mock().communicate.return_value = (b"", ALEMBIC_ERROR_STDERR)
-    res = runner.invoke(alembic, MOCK_ALEMBIC_ARGS, catch_exceptions=False)
-    assert ALEMBIC_ERROR_STDERR.decode("utf-8") in res.output
-
-
-def test_alembic_command_valid_alembic_args(mocker):
-    runner = CliRunner()
-    MOCK_ALEMBIC_ARGS = "current"
     ALEMBIC_ERROR_STDOUT = b"b60c5 (head)"
     popen_mock = mocker.patch.object(sys.modules["covalent_dispatcher._cli.groups.db"], "Popen")
+    # test valid alembic args
     popen_mock().communicate.return_value = (ALEMBIC_ERROR_STDOUT, b"")
-    res = runner.invoke(alembic, MOCK_ALEMBIC_ARGS, catch_exceptions=False)
+    res = runner.invoke(alembic, MOCK_ALEMBIC_ARGS_VALID, catch_exceptions=False)
     assert ALEMBIC_ERROR_STDOUT.decode("utf-8") in res.output
+    # test valid alembic args
+    popen_mock().communicate.return_value = (b"", ALEMBIC_ERROR_STDERR)
+    res = runner.invoke(alembic, MOCK_ALEMBIC_ARGS_INVALID, catch_exceptions=False)
+    assert ALEMBIC_ERROR_STDERR.decode("utf-8") in res.output
 
 
 def test_alembic_not_installed_error(mocker):
