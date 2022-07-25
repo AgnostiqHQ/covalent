@@ -376,11 +376,11 @@ def store_file(storage_path: str, filename: str, data: Any = None) -> None:
             cloudpickle.dump(data, f)
 
     elif filename.endswith(".log") or filename.endswith(".txt"):
-        if not isinstance(data, str):
-            raise InvalidFileExtension("Data must be string type.")
-
         if data is None:
             data = ""
+
+        if not isinstance(data, str):
+            raise InvalidFileExtension("Data must be string type.")
 
         with open(Path(storage_path) / filename, "w+") as f:
             f.write(data)
@@ -397,7 +397,7 @@ def load_file(storage_path: str, filename: str) -> Any:
             data = cloudpickle.load(f)
 
     elif filename.endswith(".log") or filename.endswith(".txt"):
-        with open(Path(storage_path) / filename, "w+") as f:
-            data = f.read(data)
+        with open(Path(storage_path) / filename, "r") as f:
+            data = f.read()
 
     return data
