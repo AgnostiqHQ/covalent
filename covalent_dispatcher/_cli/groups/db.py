@@ -76,7 +76,7 @@ def alembic(ctx: click.Context, alembic_args) -> None:
             click.echo(output.decode("utf-8").strip())
     except Exception as migration_error:
         if migration_error:
-            click.echo(str(migration_error))
+            click.echo(f"{type(migration_error)}:{str(migration_error)}")
         click.secho(
             "There was an error forwarding arguments to alembic CLI please ensure that alembic is installed.",
             fg="red",
