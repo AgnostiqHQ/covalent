@@ -25,7 +25,10 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
+import io
 import os
+import sys
+from contextlib import redirect_stderr, redirect_stdout
 from typing import Callable, Dict, List
 
 from dask.distributed import Client
@@ -50,6 +53,13 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
         os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
     ),
 }
+
+
+def dask_wrapper(fn, args, kwargs):
+    with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
+        output = fn(*args, **kwargs)
+
+    return output, stdout.getvalue(), stderr.getvalue()
 
 
 class DaskExecutor(BaseAsyncExecutor):
@@ -98,9 +108,11 @@ class DaskExecutor(BaseAsyncExecutor):
 
             await dask_client
 
-        future = dask_client.submit(function, *args, **kwargs)
+        future = dask_client.submit(dask_wrapper, function, args, kwargs)
         app_log.debug("Submitted task to dask")
-        result = await dask_client.gather(future)
+        result, worker_stdout, worker_stderr = await dask_client.gather(future)
 
-        # FIX: need to get stdout and stderr from dask worker and print them
+        print(worker_stdout, end="", file=sys.stdout)
+        print(worker_stderr, end="", file=sys.stderr)
+
         return result
