@@ -23,7 +23,6 @@ import codecs
 import os
 import time
 from pathlib import Path
-from pkgutil import get_data
 from typing import Dict, List, Optional, Union
 
 import cloudpickle as pickle
