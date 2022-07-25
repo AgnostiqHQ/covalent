@@ -72,6 +72,8 @@ jobs:
             - 'covalent_dispatcher/**'
             ui_backend:
             - 'covalent_ui/**'
+            ui_backend_tests:
+            - 'tests/covalent_tests/**'
             
       - name: Set up Python
         if: matrix.os == 'macos-latest'
@@ -131,7 +133,7 @@ jobs:
         run: covalent start
                
       - name: Run SDK tests and measure coverage
-        if: ${{ steps.working-directory.outputs.sdk}} == 'true'
+        if: ${{ steps.working-directory.outputs.sdk}} == true
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
@@ -141,11 +143,11 @@ jobs:
             PYTHONPATH=$PWD/ pytest -vv tests/covalent_tests  --cov=covalent --cov-config=.coveragerc
             
       - name: Generate SDK coverage report
-        if: ${{ steps.working-directory.outputs.sdk}} == 'true'
+        if: ${{ steps.working-directory.outputs.sdk}} == true
         run: coverage xml -o sdk_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
-        if: ${{ steps.working-directory.outputs.dispatcher }} == 'true'
+        if: ${{ steps.working-directory.outputs.dispatcher }} == true
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
@@ -172,7 +174,7 @@ jobs:
 
       - name: Run UI backend tests and measure coverage
         id: ui_tests
-        if: ${{ steps.working-directory.outputs.ui_backend}} == true
+        if: ${{ steps.working-directory.outputs.ui_backend}} == true && ${{ steps.working-directory.outputs.ui_backend_tests}} == true
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
