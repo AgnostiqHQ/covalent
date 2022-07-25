@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Stdout and stderr are now captured when using the dask executor.
+
 ### Tests
 
 - Fixed Dask cluster CLI tests
