@@ -154,6 +154,8 @@ async def handle_draw_request(draw_request: dict):
     return {"ok": True}
 
 
+app.mount("/", socketio_app)
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
 
@@ -179,4 +181,4 @@ if __name__ == "__main__":
     # reload = True if args.develop is True else False
     RELOAD = True
 
-    uvicorn.run("main:socketio_app", debug=DEBUG, host="0.0.0.0", reload=RELOAD, port=8000)
+    uvicorn.run("main:app", debug=DEBUG, host="0.0.0.0", reload=RELOAD, port=8000)
