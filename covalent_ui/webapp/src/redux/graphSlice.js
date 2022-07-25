@@ -15,6 +15,11 @@ export const graphResults = createAsyncThunk(
 export const graphSlice = createSlice({
   name: 'results',
   initialState,
+  reducers: {
+    resetGraphState() {
+      return initialState
+    }
+  },
   extraReducers: (builder) => {
     builder
        // graph Results
@@ -34,3 +39,5 @@ export const graphSlice = createSlice({
 
   },
 })
+
+export const { resetGraphState } = graphSlice.actions

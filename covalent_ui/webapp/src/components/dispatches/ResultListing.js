@@ -60,7 +60,7 @@ import {
   dispatchesDeleted,
 } from '../../redux/dashboardSlice'
 import CopyButton from '../common/CopyButton'
-import { formatDate,secondsToHms } from '../../utils/misc'
+import { formatDate, secondsToHms } from '../../utils/misc'
 import ResultProgress from './ResultProgress'
 import SortDispatch from './SortDispatch'
 import DialogBox from '../common/DialogBox'
@@ -365,6 +365,7 @@ const ResultListing = () => {
   const isError = useSelector(
     (state) => state.dashboard.fetchDashboardList.error)
   const [openSnackbar, setOpenSnackbar] = useState(Boolean(isError));
+  const [snackbarMessage, setSnackbarMessage] = useState(null);
 
   //check if any dispatches are deleted and call the API
   const isDeleted = useSelector((state) => state.dashboard.dispatchesDeleted)
@@ -433,7 +434,10 @@ const ResultListing = () => {
 
   // check if there are any API errors and show a sncakbar
   useEffect(() => {
-    if (isError) setOpenSnackbar(true);
+    if (isError) {
+      setOpenSnackbar(true)
+      setSnackbarMessage('Something went wrong,please contact the administrator!')
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isError])
 
@@ -475,6 +479,8 @@ const ResultListing = () => {
   const handleDeleteSelected = () => {
     dispatch(deleteDispatches({ dispatches: selected })).then((action) => {
       if (action.type === deleteDispatches.fulfilled.type) {
+        setOpenSnackbar(true);
+        setSnackbarMessage('Dispatches have been deleted successfully!')
         if (selected.length === dashboardListView.length) {
           setOffset(0)
         }
@@ -490,7 +496,7 @@ const ResultListing = () => {
       <Snackbar
         open={openSnackbar}
         autoHideDuration={3000}
-        message="Something went wrong,please contact the administrator!"
+        message={snackbarMessage}
         onClose={() => setOpenSnackbar(false)}
       />
       <Box>
@@ -618,7 +624,7 @@ const ResultListing = () => {
         )}
       </Box>
 
-      {isFetching && (
+      {isFetching && _.isEmpty(dashboardListView) && (
         <>
           {/*  */}
           {/* <Skeleton variant="rectangular" height={50} /> */}

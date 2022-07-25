@@ -36,7 +36,7 @@ export const secondsToHms = (ms) => {
   const days = Math.floor(sec / (3600 * 24))
   const hours = Math.floor(sec / 3600)
   const minutes = ('0' + (Math.floor(sec / 60) % 60)).slice(-2)
-  if (sec <= 0) {
+  if (sec < 0) {
     time = '< 1sec'
   } else if (sec > 0 && sec < 60) {
     time = '< 1min'

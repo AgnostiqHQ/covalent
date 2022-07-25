@@ -42,7 +42,7 @@ import CopyButton from '../common/CopyButton'
 import { truncateMiddle } from '../../utils/misc'
 import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
 
-const DispatchDrawerContents = (_props) => {
+const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
   const [tab, setTab] = useState('overview')
@@ -122,7 +122,7 @@ const DispatchDrawerContents = (_props) => {
       <TabContext value={tab}>
         <CustomTabList
           variant="fullWidth"
-          onChange={(_e, newTab) => setTab(newTab)}
+          onChange={(e, newTab) => setTab(newTab)}
         >
           <Tab label="Overview" value="overview" />
         </CustomTabList>

@@ -33,7 +33,9 @@ import PageLoading from '../common/PageLoading'
 import { graphBgColor } from '../../utils/theme'
 import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
 import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
-import { graphResults } from '../../redux/graphSlice'
+import { graphResults, resetGraphState } from '../../redux/graphSlice'
+import { resetLatticeState } from '../../redux/latticeSlice'
+import { resetElectronState } from '../../redux/electronSlice'
 import DispatchTopBar from './DispatchTopBar'
 import DispatchDrawerContents from './DispatchDrawerContents'
 
@@ -50,6 +52,18 @@ export function DispatchLayout() {
     dispatch(graphResults({ dispatchId }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
+
+
+  // reset store values to initial state when moved to another page
+  useEffect(() => {
+    return () => {
+      dispatch(resetGraphState());
+      dispatch(resetLatticeState());
+      dispatch(resetElectronState());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const selectedElectron = useStoreState((state) => {
     const nodeId = _.get(
@@ -71,9 +85,9 @@ export function DispatchLayout() {
   }, [dispatchId, setSelectedElements])
 
   if (Object.keys(graph_result).length !== 0) {
-    if(graph_result.links.length === 0){
-    return <NotFound text="Lattice dispatch not found." />
-  }
+    if (graph_result.links.length === 0) {
+      return <NotFound text="Lattice dispatch not found." />
+    }
   }
 
   return (
@@ -85,19 +99,14 @@ export function DispatchLayout() {
           width: '100vw',
           height: '100vh',
           bgcolor: graphBgColor,
-          paddingTop:'20px'
+          paddingTop: '20px'
         }}
       >
-        {Object.keys(graph_result).length !== 0 && !fetch ?
-          (
-          <LatticeGraph
-            graph={graph_result}
-            hasSelectedNode={!!selectedElectron}
-            marginLeft={latticeDrawerWidth + navDrawerWidth}
-          />
-        ) : (
-          <PageLoading />
-        )}
+        {Object.keys(graph_result).length !== 0 && (<LatticeGraph
+          graph={graph_result}
+          hasSelectedNode={!!selectedElectron}
+          marginLeft={latticeDrawerWidth + navDrawerWidth}
+        />)}
       </Box>
       <NavDrawer />
       <LatticeDrawer>
@@ -119,12 +128,12 @@ export function DispatchLayout() {
 const UUID_PATTERN =
   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
 
- const DispatchLayoutValidate = () => {
-   let { dispatchId } = useParams()
-   if (!UUID_PATTERN.test(dispatchId)) {
-     return <NotFound text="Lattice dispatch not found." />
-   }
-   return <DispatchLayout />
- }
+const DispatchLayoutValidate = () => {
+  let { dispatchId } = useParams()
+  if (!UUID_PATTERN.test(dispatchId)) {
+    return <NotFound text="Lattice dispatch not found." />
+  }
+  return <DispatchLayout />
+}
 
 export default DispatchLayoutValidate

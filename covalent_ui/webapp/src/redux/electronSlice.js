@@ -56,6 +56,11 @@ export const electronExecutor = createAsyncThunk(
 export const electronSlice = createSlice({
   name: 'electronResults',
   initialState,
+  reducers: {
+    resetElectronState() {
+      return initialState
+    }
+  },
   extraReducers: (builder) => {
     builder
        // electron Details
@@ -144,3 +149,5 @@ export const electronSlice = createSlice({
 
   },
 })
+
+export const { resetElectronState } = electronSlice.actions

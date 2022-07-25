@@ -58,6 +58,11 @@ export const latticeInput = createAsyncThunk(
 export const latticeSlice = createSlice({
   name: 'latticeResults',
   initialState,
+  reducers: {
+    resetLatticeState() {
+      return initialState
+    }
+  },
   extraReducers: (builder) => {
     builder
       // latticeDeatils
@@ -161,3 +166,5 @@ export const latticeSlice = createSlice({
 
   },
 })
+
+export const { resetLatticeState } = latticeSlice.actions

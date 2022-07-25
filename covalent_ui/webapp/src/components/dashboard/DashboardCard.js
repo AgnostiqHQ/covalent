@@ -33,7 +33,7 @@ import { displayStatus, secondsToHms } from '../../utils/misc'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchDashboardOverview } from '../../redux/dashboardSlice'
 
-const DashboardCard = (_props) => {
+const DashboardCard = () => {
   const dispatch = useDispatch()
   // check if socket message is received and call API
   const callSocketApi = useSelector(
