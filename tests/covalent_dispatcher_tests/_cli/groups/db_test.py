@@ -39,7 +39,7 @@ def test_alembic_command_args(mocker):
     popen_mock().communicate.return_value = (ALEMBIC_ERROR_STDOUT, b"")
     res = runner.invoke(alembic, MOCK_ALEMBIC_ARGS_VALID, catch_exceptions=False)
     assert ALEMBIC_ERROR_STDOUT.decode("utf-8") in res.output
-    # test valid alembic args
+    # test invalid alembic args
     popen_mock().communicate.return_value = (b"", ALEMBIC_ERROR_STDERR)
     res = runner.invoke(alembic, MOCK_ALEMBIC_ARGS_INVALID, catch_exceptions=False)
     assert ALEMBIC_ERROR_STDERR.decode("utf-8") in res.output
