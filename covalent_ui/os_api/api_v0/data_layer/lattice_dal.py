@@ -20,6 +20,7 @@
 
 """Lattice Data Layer"""
 
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -58,7 +59,7 @@ class Lattices:
                 Lattice.completed_electron_num.label("total_electrons_completed"),
                 (
                     (
-                        func.strftime("%s", Lattice.completed_at)
+                        func.strftime("%s", func.IFNULL(Lattice.completed_at, func.datetime.now()))
                         - func.strftime("%s", Lattice.started_at)
                     )
                     * 1000

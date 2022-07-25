@@ -55,7 +55,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
     with Session(engine) as session:
         electron = Lattices(session)
         data = electron.get_lattices_id(dispatch_id)
-        if data[0] is not None:
+        if data is not None:
             return LatticeDetailResponse(
                 dispatch_id=data.dispatch_id,
                 status=data.status,
@@ -83,7 +83,7 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
     with Session(engine) as session:
         electron = Lattices(session)
         data = electron.get_lattices_id_storage_file(dispatch_id)
-        if data[0] is not None:
+        if data is not None:
             handler = FileHandler(data["directory"])
             if name == "result":
                 response = handler.read_from_pickle(data["results_filename"])
@@ -106,5 +106,5 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
             elif name == "transport_graph":
                 response = handler.read_from_pickle(data["transport_graph_filename"])
                 return LatticeFileResponse(data=response)
-            else:
-                raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
+        else:
+            raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
