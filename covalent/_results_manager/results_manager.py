@@ -39,7 +39,7 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .result import Result
 from .utils import _db_path
-from .write_result_to_db import MissingLatticeRecordError
+from .write_result_to_db import MissingLatticeRecordError, load_file
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -81,28 +81,26 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
 
 
 def result_from(lattice_record: Lattice) -> Result:
-    with open(
-        os.path.join(lattice_record.storage_path, lattice_record.function_filename), "rb"
-    ) as f:
-        function = pickle.loads(f.read())
-    with open(
-        os.path.join(lattice_record.storage_path, lattice_record.executor_filename), "rb"
-    ) as f:
-        executor = pickle.loads(f.read())
-    with open(
-        os.path.join(lattice_record.storage_path, lattice_record.inputs_filename), "rb"
-    ) as f:
-        inputs = pickle.loads(f.read())
-    with open(os.path.join(lattice_record.storage_path, lattice_record.error_filename), "rb") as f:
-        error = pickle.loads(f.read())
-    with open(
-        os.path.join(lattice_record.storage_path, lattice_record.transport_graph_filename), "rb"
-    ) as f:
-        transport_graph = pickle.loads(f.read())
-    with open(
-        os.path.join(lattice_record.storage_path, lattice_record.results_filename), "rb"
-    ) as f:
-        output = pickle.loads(f.read())
+    """Re-hydrate result object from the lattice record."""
+
+    function = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.function_filename
+    )
+    executor = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.executor_filename
+    )
+    inputs = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.inputs_filename
+    )
+    error = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.error_filename
+    )
+    transport_graph = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.transport_graph_filename
+    )
+    output = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.results_filename
+    )
 
     attributes = {
         "metadata": {"executor": executor},
@@ -158,7 +156,7 @@ def _get_result_from_dispatcher(
     http = requests.Session()
     http.mount("http://", adapter)
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
-    response = http.get(url, params={"wait": wait, "status_only": status_only}, timeout=1)
+    response = http.get(url, params={"wait": wait, "status_only": status_only}, timeout=2)
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()
