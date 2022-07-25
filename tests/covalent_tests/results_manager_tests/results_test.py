@@ -35,6 +35,7 @@ import covalent as ct
 from covalent._data_store.datastore import DataStore, DataStoreNotInitializedError
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.result import Result
+from covalent._results_manager.write_result_to_db import load_file
 
 TEMP_RESULTS_DIR = "/tmp/results"
 
@@ -109,21 +110,21 @@ def test_result_persist_workflow_1(db, result_1):
     lattice_storage_path = Path(lattice_row.storage_path)
     assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR) / "dispatch_1"
 
-    with open(lattice_storage_path / lattice_row.function_filename, "rb") as f:
-        workflow_function = cloudpickle.load(f).get_deserialized()
+    workflow_function = load_file(
+        storage_path=lattice_storage_path, filename=lattice_row.function_filename
+    ).get_deserialized()
     assert workflow_function(1, 2) == 4
-
-    with open(lattice_storage_path / lattice_row.executor_filename, "rb") as f:
-        executor_function = cloudpickle.load(f)
-    assert executor_function == "dask"
-
-    with open(lattice_storage_path / lattice_row.error_filename, "rb") as f:
-        error_log = cloudpickle.load(f)
-    assert error_log == result_1.error
-
-    with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
-        result = cloudpickle.load(f)
-    assert result.get_deserialized() is None
+    assert (
+        load_file(storage_path=lattice_storage_path, filename=lattice_row.executor_filename)
+        == "dask"
+    )
+    assert load_file(storage_path=lattice_storage_path, filename=lattice_row.error_filename) == ""
+    assert (
+        load_file(
+            storage_path=lattice_storage_path, filename=lattice_row.results_filename
+        ).get_deserialized()
+        is None
+    )
 
     # Check that the electron records are as expected
     for electron in electron_rows:
@@ -132,21 +133,26 @@ def test_result_persist_workflow_1(db, result_1):
         assert electron.started_at is None and electron.completed_at is None
 
         if electron.transport_graph_node_id == 1:
-            with open(Path(electron.storage_path) / electron.deps_filename, "rb") as f:
-                deps = cloudpickle.load(f)
-                assert deps == {}
-
-            with open(Path(electron.storage_path) / electron.call_before_filename, "rb") as f:
-                call_before = cloudpickle.load(f)
-                assert call_before == []
-
-            with open(Path(electron.storage_path) / electron.call_after_filename, "rb") as f:
-                call_after = cloudpickle.load(f)
-                assert call_after == []
-
-            with open(Path(electron.storage_path) / electron.key_filename, "rb") as f:
-                key = cloudpickle.load(f)
-                assert key is None
+            assert (
+                load_file(storage_path=electron.storage_path, filename=electron.deps_filename)
+                == {}
+            )
+            assert (
+                load_file(
+                    storage_path=electron.storage_path, filename=electron.call_before_filename
+                )
+                == []
+            )
+            assert (
+                load_file(
+                    storage_path=electron.storage_path, filename=electron.call_after_filename
+                )
+                == []
+            )
+            assert (
+                load_file(storage_path=electron.storage_path, filename=electron.key_filename)
+                is None
+            )
 
     # Check that there are the appropriate amount of electron dependency records
     assert len(electron_dependency_rows) == 4
@@ -182,9 +188,7 @@ def test_result_persist_workflow_1(db, result_1):
         "%Y-%m-%d %H:%M"
     )
     assert lattice_row.status == "COMPLETED"
-
-    with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
-        result = cloudpickle.load(f)
+    result = load_file(storage_path=lattice_storage_path, filename=lattice_row.results_filename)
     assert result_1.result == result.get_deserialized()
 
     # Check that the electron records are as expected
@@ -208,7 +212,7 @@ def test_get_node_error(db, result_1):
     """Test result method to get the node error."""
 
     result_1.persist(db)
-    assert result_1._get_node_error(db=db, node_id=0) is None
+    assert result_1._get_node_error(db=db, node_id=0) == ""
 
 
 def test_get_node_value(db, result_1):
@@ -257,13 +261,15 @@ def test_update_node(db, result_1):
     assert electron_record.status == "RUNNING"
     assert electron_record.started_at is not None
 
-    with open(Path(electron_record.storage_path) / electron_record.stdout_filename, "rb") as f:
-        stdout = cloudpickle.load(f)
-        assert stdout == "test_stdout"
+    stdout = load_file(
+        storage_path=electron_record.storage_path, filename=electron_record.stdout_filename
+    )
+    assert stdout == "test_stdout"
 
-    with open(Path(electron_record.storage_path) / electron_record.stderr_filename, "rb") as f:
-        stderr = cloudpickle.load(f)
-        assert stderr == "test_stderr"
+    stderr = load_file(
+        storage_path=electron_record.storage_path, filename=electron_record.stderr_filename
+    )
+    assert stderr == "test_stderr"
 
     assert result_1.lattice.transport_graph.get_node_value(0, "error") == "test_error"
     assert (
@@ -293,9 +299,10 @@ def test_update_node(db, result_1):
     assert electron_record.completed_at is not None
     assert electron_record.updated_at is not None
 
-    with open(Path(electron_record.storage_path) / electron_record.results_filename, "rb") as f:
-        result = cloudpickle.load(f)
-        assert result == 5
+    result = load_file(
+        storage_path=electron_record.storage_path, filename=electron_record.results_filename
+    )
+    assert result == 5
 
     assert lattice_record.electron_num == 5
     assert lattice_record.completed_electron_num == 1

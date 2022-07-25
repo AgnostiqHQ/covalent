@@ -21,7 +21,7 @@
 from contextlib import contextmanager
 from os import path
 from pathlib import Path
-from typing import BinaryIO, Dict, Generator, List, Optional, Union
+from typing import BinaryIO, Dict, Generator, Optional
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
