@@ -13,7 +13,6 @@ psutil==5.9.0
 pytest
 pytest-asyncio
 PyYAML==6.0
-regex
 requests==2.24.0
 simplejson==3.17.6
 sqlalchemy==1.4.37

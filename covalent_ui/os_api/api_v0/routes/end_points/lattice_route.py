@@ -24,6 +24,7 @@ import uuid
 from random import randrange
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from covalent_ui.os_api.api_v0.data_layer.lattice_dal import Lattices
@@ -36,6 +37,7 @@ from covalent_ui.os_api.api_v0.models.lattices_model import (
     LatticeExecutorResponse,
     LatticeFileResponse,
 )
+from covalent_ui.os_api.api_v0.utils.exceptions import CustomException
 from covalent_ui.os_api.api_v0.utils.file_handle import FileHandler
 
 routes: APIRouter = APIRouter()
@@ -82,29 +84,31 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
     """
     with Session(engine) as session:
         electron = Lattices(session)
-        data = electron.get_lattices_id_storage_file(dispatch_id)
-        if data is not None:
-            handler = FileHandler(data["directory"])
+        lattice_data = electron.get_lattices_id_storage_file(dispatch_id)
+        if lattice_data is not None:
+            handler = FileHandler(lattice_data["directory"])
             if name == "result":
-                response = handler.read_from_pickle(data["results_filename"])
+                response = handler.read_from_pickle(lattice_data["results_filename"])
                 return LatticeFileResponse(data=str(response))
             if name == "inputs":
-                response = handler.read_from_pickle(data["inputs_filename"])
+                response = handler.read_from_pickle(lattice_data["inputs_filename"])
                 return LatticeFileResponse(data=response)
             elif name == "function_string":
-                response = handler.read_from_text(data["function_string_filename"])
+                response = handler.read_from_pickle(lattice_data["function_string_filename"])
                 return LatticeFileResponse(data=response)
             elif name == "executor_details":
-                response = handler.read_from_pickle(data["executor_filename"])
+                response = handler.read_from_pickle(lattice_data["executor_filename"])
                 return LatticeExecutorResponse(data=response, executor_name="dask")
             elif name == "error":
-                response = handler.read_from_text(data["error_filename"])
+                response = handler.read_from_pickle(lattice_data["error_filename"])
                 return LatticeFileResponse(data=response)
             elif name == "function":
-                response = handler.read_from_pickle(data["function_filename"])
+                response = handler.read_from_pickle(lattice_data["function_filename"])
                 return LatticeFileResponse(data=response)
             elif name == "transport_graph":
-                response = handler.read_from_pickle(data["transport_graph_filename"])
+                response = handler.read_from_pickle(lattice_data["transport_graph_filename"])
                 return LatticeFileResponse(data=response)
+            else:
+                return LatticeFileResponse(data=None)
         else:
-            raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
+            return LatticeFileResponse(data=None)

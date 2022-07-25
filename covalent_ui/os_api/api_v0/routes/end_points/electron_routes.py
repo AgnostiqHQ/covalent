@@ -51,7 +51,6 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
-        print(result)
         if result is None:
             raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
         return ElectronResponse(
@@ -111,4 +110,6 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput
                 response = handler.read_from_text(result["info_filename"])
                 return ElectronFileResponse(data=response)
             else:
-                raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
+                return ElectronFileResponse(data=None)
+        else:
+            return ElectronFileResponse(data=None)
