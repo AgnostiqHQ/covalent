@@ -181,9 +181,10 @@ jobs:
           continue_on_error: true
           command: |
             PYTHONPATH=$PWD/ pytest -vv tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc.
+            echo ::set-output name=exit_code::$?
       
       - name: Generate UI backend coverage report
-        if:  ${{ steps.working-directory.outputs.ui_backend}} == true && $${{ steps.ui_tests.conclusion }} == 'success'
+        if:  ${{ steps.working-directory.outputs.ui_backend}} == true && $${{ steps.ui_tests.outputs.exit_code }} == 0
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
@@ -211,7 +212,7 @@ jobs:
           name: "Functional Tests"
 
       - name: Upload UI backend report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.ui_backend}} == true && $${{ steps.ui_tests.conclusion }} == 'success'
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.ui_backend}} == true && $${{ steps.ui_tests.outputs.exit_code }} == 0
         uses: codecov/codecov-action@v3
         with:
           files: ./ui_backend_coverage.xml
