@@ -696,11 +696,16 @@ Node Outputs
                 is not None
             )
 
+        try:
+            workflow_func_string = self.lattice.workflow_function_string
+        except AttributeError:
+            workflow_func_string is None
+
         # Store all lattice info that belongs in filenames in the results directory
         data_storage_path = Path(self.results_dir) / self.dispatch_id
         for filename, data in [
             (LATTICE_FUNCTION_FILENAME, self.lattice.workflow_function),
-            (LATTICE_FUNCTION_STRING_FILENAME, self.lattice.workflow_function_string),
+            (LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
             (LATTICE_EXECUTOR_FILENAME, self.lattice.metadata["executor"]),
             (LATTICE_ERROR_FILENAME, self.error),
             (LATTICE_INPUTS_FILENAME, self.inputs),
