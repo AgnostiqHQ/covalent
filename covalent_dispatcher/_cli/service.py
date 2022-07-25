@@ -498,41 +498,32 @@ def cluster(
     # addr of the admin server for the Dask cluster process
     # started with covalent
     loop = asyncio.get_event_loop()
-    try:
-        admin_host = get_config("dask.admin_host")
-        admin_port = get_config("dask.admin_port")
-        admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
+    admin_host = get_config("dask.admin_host")
+    admin_port = get_config("dask.admin_port")
+    admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
 
-        if status:
-            click.echo(loop.run_until_complete(_get_cluster_status(admin_server_addr)))
-            return
+    assert _is_server_running()
 
-        if info:
-            click.echo(loop.run_until_complete(_get_cluster_info(admin_server_addr)))
-            return
-
-        if address:
-            click.echo(loop.run_until_complete(_get_cluster_address(admin_server_addr)))
-            return
-
-        if size:
-            click.echo(loop.run_until_complete(_get_cluster_size(admin_server_addr)))
-            return
-
-        if restart:
-            loop.run_until_complete(_cluster_restart(admin_server_addr))
-            click.echo("Cluster restarted")
-            return
-
-        if logs:
-            click.echo(loop.run_until_complete(_get_cluster_logs(admin_server_addr)))
-            return
-
-        if scale:
-            loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
-            click.echo(f"Cluster scaled to have {scale} workers")
-            return
-    except OSError as e:
-        click.echo(e)
-    except KeyError as e:
-        click.echo("Covalent not running")
+    if status:
+        click.echo(loop.run_until_complete(_get_cluster_status(admin_server_addr)))
+        return
+    if info:
+        click.echo(loop.run_until_complete(_get_cluster_info(admin_server_addr)))
+        return
+    if address:
+        click.echo(loop.run_until_complete(_get_cluster_address(admin_server_addr)))
+        return
+    if size:
+        click.echo(loop.run_until_complete(_get_cluster_size(admin_server_addr)))
+        return
+    if restart:
+        loop.run_until_complete(_cluster_restart(admin_server_addr))
+        click.echo("Cluster restarted")
+        return
+    if logs:
+        click.echo(loop.run_until_complete(_get_cluster_logs(admin_server_addr)))
+        return
+    if scale:
+        loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
+        click.echo(f"Cluster scaled to have {scale} workers")
+        return
