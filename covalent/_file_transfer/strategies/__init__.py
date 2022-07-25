@@ -20,3 +20,4 @@
 
 from .http_strategy import HTTP
 from .rsync_strategy import Rsync
+from .s3_strategy import S3
