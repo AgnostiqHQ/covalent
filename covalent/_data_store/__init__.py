@@ -19,4 +19,10 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from . import models
-from .datastore import DataStore, DataStoreNotInitializedError, DataStoreSession, DevDataStore
+from .datastore import (
+    DataStore,
+    DataStoreNotInitializedError,
+    DataStoreSession,
+    DevDataStore,
+    workflow_db,
+)

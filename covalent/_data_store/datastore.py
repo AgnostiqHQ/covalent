@@ -137,3 +137,6 @@ class DataStoreNotInitializedError(Exception):
     def __init__(self, message="Database is not initialized."):
         self.message = message
         super().__init__(self.message)
+
+
+workflow_db = DataStore.factory()
