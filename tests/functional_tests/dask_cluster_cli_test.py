@@ -26,17 +26,17 @@ import pytest
 from dask.distributed import LocalCluster
 from distributed.comm import parse_address, unparse_address
 
+from covalent_dispatcher._cli.cli import cluster
 from covalent_dispatcher._cli.service import (
     _cluster_restart,
     _cluster_scale,
     _get_cluster_address,
     _get_cluster_info,
+    _get_cluster_logs,
     _get_cluster_size,
     _get_cluster_status,
-    _get_cluster_logs
 )
-from covalent_dispatcher._service.app_dask import DaskCluster, DaskAdminWorker
-from covalent_dispatcher._cli.cli import cluster
+from covalent_dispatcher._service.app_dask import DaskAdminWorker, DaskCluster
 
 
 @pytest.fixture(scope="module")
