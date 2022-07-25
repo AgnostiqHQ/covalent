@@ -70,8 +70,6 @@ jobs:
             - 'covalent/**'
             dispatcher:
             - 'covalent_dispatcher/**'
-            functional_tests:
-            - 'tests/functional_tests/**'
             ui_backend:
             - 'covalent_ui/**'
             
@@ -143,6 +141,7 @@ jobs:
             PYTHONPATH=$PWD/ pytest -vv tests/covalent_tests  --cov=covalent --cov-config=.coveragerc
             
       - name: Generate SDK coverage report
+        if: ${{ steps.working-directory.outputs.sdk}} == 'true'
         run: coverage xml -o sdk_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
@@ -156,10 +155,10 @@ jobs:
             PYTHONPATH=$PWD/ pytest -vv tests/covalent_dispatcher_tests  --cov=covalent_dispatcher --cov-config=.coveragerc
       
       - name: Generate dispatcher coverage report
+        if: ${{ steps.working-directory.outputs.dispatcher }} == 'true'
         run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
-        if: ${{ steps.working-directory.outputs.functional_tests }} == 'true'
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
@@ -186,7 +185,7 @@ jobs:
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.sdk}} == 'true'
         uses: codecov/codecov-action@v3
         with:
           files: ./sdk_coverage.xml
@@ -194,7 +193,7 @@ jobs:
           name: "SDK Unit Tests"
 
       - name: Upload Dispatcher report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.dispatcher }} == 'true'
         uses: codecov/codecov-action@v3
         with:
           files: ./dispatcher_coverage.xml
@@ -210,7 +209,7 @@ jobs:
           name: "Functional Tests"
 
       - name: Upload UI backend report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && false
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && false && ${{ steps.working-directory.outputs.ui_backend}} == true
         uses: codecov/codecov-action@v3
         with:
           files: ./ui_backend_coverage.xml
