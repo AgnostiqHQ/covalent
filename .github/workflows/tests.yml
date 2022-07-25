@@ -174,14 +174,15 @@ jobs:
 
       - name: Run UI backend tests and measure coverage
         id: ui_tests
-        if: ${{ steps.working-directory.outputs.ui_backend}} == true && ${{ steps.working-directory.outputs.ui_backend_tests}} == true
+        if: ${{ steps.working-directory.outputs.ui_backend}} == true
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          continue_on_error: true
           command: |
-            PYTHONPATH=$PWD/ pytest -vv tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc. || echo 'tests for UI backend do not exist'
+            PYTHONPATH=$PWD/ pytest -vv tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc.
       
       - name: Generate UI backend coverage report
         if:  ${{ steps.working-directory.outputs.ui_backend}} == true && $${{ steps.ui_tests.output }} == 'true'
