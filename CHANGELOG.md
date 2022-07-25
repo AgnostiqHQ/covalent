@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Pass default DataStore object to node value retrieval method in the Results object.
+
 ## [0.151.1] - 2022-07-22
 
 ### Authors
