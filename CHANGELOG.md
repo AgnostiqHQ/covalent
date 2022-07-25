@@ -24,7 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added methods to programatically fetch information from Alembic without needing subprocess
 
-
 ## [0.153.1] - 2022-07-25
 
 ### Authors
