@@ -22,15 +22,15 @@
 
 import os
 import tempfile
+from functools import partial
 
-import covalent as ct
-from covalent._workflow.transport import TransportableObject
+from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
 
 
 class MockExecutor(BaseExecutor):
-    def execute(self):
-        pass
+    def run(self, function, args, kwargs):
+        return function(*args, **kwargs)
 
 
 def test_write_streams_to_file(mocker):
@@ -85,6 +85,58 @@ def test_execute_in_conda_env(mocker):
     conda_env_fail_mock.assert_called_once_with("function", "args", "kwargs", "node_id")
 
 
+def test_wrapper_fn():
+    import tempfile
+    from pathlib import Path
+
+    f = tempfile.NamedTemporaryFile(delete=True)
+    tmp_path_before = f.name
+    f.close()
+    f = tempfile.NamedTemporaryFile(delete=True)
+    tmp_path_after = f.name
+    f.close()
+
+    def f(x, y):
+        return x * x, y
+
+    def before(path):
+        with open(path, "w") as f:
+            f.write("Hello")
+
+    def after(path):
+        with open(path, "w") as f:
+            f.write("Bye")
+
+    args = [TransportableObject.make_transportable(5)]
+    kwargs = {"y": TransportableObject.make_transportable(2)}
+
+    before_args = [tmp_path_before]
+    after_args = [tmp_path_after]
+    serialized_cb_args = TransportableObject.make_transportable(before_args)
+    serialized_cb_kwargs = TransportableObject.make_transportable({})
+    serialized_ca_args = TransportableObject.make_transportable(after_args)
+    serialized_ca_kwargs = TransportableObject.make_transportable({})
+
+    serialized_fn = TransportableObject.make_transportable(f)
+    serialized_cb = TransportableObject(before)
+    serialized_ca = TransportableObject(after)
+
+    call_before = [(serialized_cb, serialized_cb_args, serialized_cb_kwargs, "")]
+    call_after = [(serialized_ca, serialized_ca_args, serialized_ca_kwargs, "")]
+    serialized_output = wrapper_fn(serialized_fn, call_before, call_after, *args, **kwargs)
+
+    assert serialized_output.get_deserialized() == (25, 2)
+
+    with open(tmp_path_before, "r") as f:
+        assert f.read() == "Hello"
+
+    with open(tmp_path_after, "r") as f:
+        assert f.read() == "Bye"
+
+    Path(tmp_path_before).unlink()
+    Path(tmp_path_after).unlink()
+
+
 def test_wrapper_fn_calldep_retval_injection():
     """Test injecting calldep return values into main task"""
 
@@ -95,11 +147,90 @@ def test_wrapper_fn_calldep_retval_injection():
         return y
 
     serialized_fn = TransportableObject(f)
-    calldep = ct.DepsCall(identity, args=[5], retval_keyword="y")
+    calldep = DepsCall(identity, args=[5], retval_keyword="y")
     call_before = [calldep.apply()]
     args = []
-    kwargs = {"x": 2}
+    kwargs = {"x": TransportableObject(2)}
 
     output = wrapper_fn(serialized_fn, call_before, [], *args, **kwargs)
 
-    assert output == 7
+    assert output.get_deserialized() == 7
+
+
+def test_base_executor_subclassing():
+    """Test that executors must implement run"""
+
+    class BrokenMockExecutor(BaseExecutor):
+        def __init__(self):
+            super().__init__(self)
+
+    try:
+        me = BrokenMockExecutor()
+    except TypeError:
+        assert True
+
+
+def test_base_executor_execute(mocker):
+    """Test the execute method"""
+
+    def f(x, y):
+        return x + y
+
+    me = MockExecutor()
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    result, stdout, stderr = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    assert result.get_deserialized() == 5
+
+
+def test_base_executor_execute_conda(mocker):
+    """Test the execute method with a condaenv"""
+
+    def f(x, y):
+        return x + y
+
+    me = MockExecutor(conda_env="testenv")
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    mock_conda_exec = mocker.patch(
+        "covalent.executor.BaseExecutor.execute_in_conda_env", return_value=TransportableObject(5)
+    )
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    result, stdout, stderr = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    assert result.get_deserialized() == 5
+    mock_conda_exec.assert_called_once()

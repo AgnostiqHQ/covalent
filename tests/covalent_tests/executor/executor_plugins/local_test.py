@@ -21,6 +21,7 @@
 """Tests for Covalent local executor."""
 
 import tempfile
+from functools import partial
 
 import covalent as ct
 from covalent._workflow.transport import TransportableObject
@@ -41,17 +42,27 @@ def test_local_executor_passes_results_dir(mocker):
             "covalent.executor.executor_plugins.local.LocalExecutor.write_streams_to_file"
         )
         le = LocalExecutor()
+
+        assembled_callable = partial(wrapper_fn, TransportableObject(simple_task), [], [])
+
         le.execute(
-            function=TransportableObject(simple_task),
-            args={"x": 1},
-            kwargs={"y": 2},
-            call_before=[],
-            call_after=[],
+            function=assembled_callable,
+            args=[],
+            kwargs={"x": TransportableObject(1), "y": TransportableObject(2)},
             dispatch_id=-1,
             results_dir=tmp_dir,
             node_id=0,
         )
         mocked_function.assert_called_once()
+
+
+def test_local_executor_json_serialization():
+    import json
+
+    le = LocalExecutor(log_stdout="/dev/null")
+    json_le = json.dumps(le.to_dict())
+    le_new = LocalExecutor().from_dict(json.loads(json_le))
+    assert le.__dict__ == le_new.__dict__
 
 
 def test_wrapper_fn_calldep_retval_injection():
@@ -67,8 +78,18 @@ def test_wrapper_fn_calldep_retval_injection():
     calldep = ct.DepsCall(identity, args=[5], retval_keyword="y")
     call_before = [calldep.apply()]
     args = []
-    kwargs = {"x": 2}
+    kwargs = {"x": TransportableObject(2)}
 
     output = wrapper_fn(serialized_fn, call_before, [], *args, **kwargs)
 
-    assert output == 7
+    assert output.get_deserialized() == 7
+
+
+def test_local_executor_run():
+    def f(x):
+        return x**2
+
+    le = LocalExecutor()
+    args = [5]
+    kwargs = {}
+    assert le.run(f, args, kwargs) == 25

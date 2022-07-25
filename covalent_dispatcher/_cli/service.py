@@ -35,12 +35,16 @@ import psutil
 from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
+from covalent._data_store.datastore import DataStore
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
+
+MIGRATION_COMMAND_MSG = '   (use "covalent db migrate" to run database migrations)'
+MIGRATION_WARNING_MSG = "There have been changes applied to the database."
 
 
 def _read_pid(filename: str) -> int:
@@ -112,7 +116,7 @@ def _next_available_port(requested_port: int) -> int:
 
     while not avail_port_found:
         try:
-            sock.bind(("0.0.0.0", try_port))
+            sock.bind(("localhost", try_port))
             avail_port_found = True
         except:
             try_port += 1
@@ -163,7 +167,7 @@ def _graceful_start(
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         port = get_config("user_interface.port")
-        click.echo(f"Covalent server is already running at http://0.0.0.0:{port}.")
+        click.echo(f"Covalent server is already running at http://localhost:{port}.")
         return port
 
     _rm_pid_file(pidfile)
@@ -183,7 +187,7 @@ def _graceful_start(
     with open(pidfile, "w") as PIDFILE:
         PIDFILE.write(str(pid))
 
-    click.echo(f"Covalent server has started at http://0.0.0.0:{port}")
+    click.echo(f"Covalent server has started at http://localhost:{port}")
     return port
 
 
@@ -277,6 +281,14 @@ def _graceful_shutdown(pidfile: str) -> None:
     help="Number of CPU threads per worker.",
 )
 @click.option(
+    "--ignore-migrations",
+    is_flag=True,
+    required=False,
+    show_default=True,
+    default=False,
+    help="Start the server without requiring migrations",
+)
+@click.option(
     "--no-cluster",
     is_flag=True,
     required=False,
@@ -287,24 +299,31 @@ def _graceful_shutdown(pidfile: str) -> None:
 @click.argument("no-cluster", required=False)
 @click.pass_context
 def start(
-    ctx,
+    ctx: click.Context,
     port: int,
     develop: bool,
     no_cluster: str,
     mem_per_worker: int,
     threads_per_worker: int,
     workers: int,
+    ignore_migrations: bool,
 ) -> None:
     """
     Start the Covalent server.
     """
+    db = DataStore.factory()
+    if db.is_migration_pending and not ignore_migrations:
+        click.secho(MIGRATION_WARNING_MSG, fg="yellow")
+        click.echo(MIGRATION_COMMAND_MSG)
+        return ctx.exit(1)
+
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     no_cluster_flag = "--no-cluster"
     set_config(
         {
-            "user_interface.address": "0.0.0.0",
+            "user_interface.address": "localhost",
             "user_interface.port": port,
-            "dispatcher.address": "0.0.0.0",
+            "dispatcher.address": "localhost",
             "dispatcher.port": port,
             "dask": {
                 "mem_per_worker": mem_per_worker or "auto",
@@ -319,12 +338,12 @@ def start(
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while not server_listening:
         try:
-            sock.bind(("0.0.0.0", port))
+            sock.bind(("localhost", port))
             sock.close()
         except OSError:
             server_listening = True
 
-        time.sleep(1)
+    DataStore(initialize_db=True)
 
 
 @click.command()
@@ -364,7 +383,7 @@ def status() -> None:
     pid = _read_pid(UI_PIDFILE)
     if _read_pid(UI_PIDFILE) != -1 and psutil.pid_exists(pid):
         ui_port = get_config("user_interface.port")
-        click.echo(f"Covalent server is running at http://0.0.0.0:{ui_port}.")
+        click.echo(f"Covalent server is running at http://localhost:{ui_port}.")
     else:
         _rm_pid_file(UI_PIDFILE)
         click.echo("Covalent server is stopped.")
@@ -411,7 +430,7 @@ async def _get_cluster_status(uri: str):
     """
     Returns status of all workers and scheduler in the cluster
     """
-    async with rpc(uri) as r:
+    async with rpc(uri, timeout=2) as r:
         cluster_status = await r.cluster_status()
     return cluster_status
 
@@ -420,7 +439,7 @@ async def _get_cluster_address(uri):
     """
     Returns the TCP addresses of the scheduler and workers
     """
-    async with rpc(uri) as r:
+    async with rpc(uri, timeout=2) as r:
         addresses = await r.cluster_address()
     return addresses
 
@@ -429,7 +448,7 @@ async def _get_cluster_info(uri):
     """
     Return summary of cluster info
     """
-    async with rpc(uri) as r:
+    async with rpc(uri, timeout=2) as r:
         return await r.cluster_info()
 
 
@@ -437,7 +456,7 @@ async def _cluster_restart(uri):
     """
     Restart the cluster by individually restarting the cluster workers
     """
-    async with rpc(uri) as r:
+    async with rpc(uri, timeout=2) as r:
         await r.cluster_restart()
 
 
@@ -445,7 +464,7 @@ async def _cluster_scale(uri: str, nworkers: int):
     """
     Scale the cluster up/down depending on `nworkers`
     """
-    comm = await connect(uri)
+    comm = await connect(uri, timeout=2)
     await comm.write({"op": "cluster_scale", "size": nworkers})
     result = await comm.read()
     comm.close()
@@ -453,7 +472,7 @@ async def _cluster_scale(uri: str, nworkers: int):
 
 
 async def _get_cluster_size(uri) -> int:
-    async with rpc(uri) as r:
+    async with rpc(uri, timeout=2) as r:
         size = await r.cluster_size()
     return size
 
@@ -463,7 +482,7 @@ async def _get_cluster_logs(uri):
     Retrive the cluster logs from the scheduler directly
     """
     click.echo("Calling logs handler")
-    comm = await connect(uri)
+    comm = await connect(uri, timeout=2)
     await comm.write({"op": "cluster_logs"})
     cluster_logs = await comm.read()
     comm.close()
@@ -497,39 +516,32 @@ def cluster(
     # addr of the admin server for the Dask cluster process
     # started with covalent
     loop = asyncio.get_event_loop()
-    try:
-        admin_host = get_config("dask.admin_host")
-        admin_port = get_config("dask.admin_port")
-        admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
+    admin_host = get_config("dask.admin_host")
+    admin_port = get_config("dask.admin_port")
+    admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
 
-        if status:
-            click.echo(loop.run_until_complete(_get_cluster_status(admin_server_addr)))
-            return
+    assert _is_server_running()
 
-        if info:
-            click.echo(loop.run_until_complete(_get_cluster_info(admin_server_addr)))
-            return
-
-        if address:
-            click.echo(loop.run_until_complete(_get_cluster_address(admin_server_addr)))
-            return
-
-        if size:
-            click.echo(loop.run_until_complete(_get_cluster_size(admin_server_addr)))
-            return
-
-        if restart:
-            loop.run_until_complete(_cluster_restart(admin_server_addr))
-            click.echo("Cluster restarted")
-            return
-
-        if logs:
-            click.echo(loop.run_until_complete(_get_cluster_logs(admin_server_addr)))
-            return
-
-        if scale:
-            loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
-            click.echo(f"Cluster scaled to have {scale} workers")
-            return
-    except KeyError:
-        click.echo("Error")
+    if status:
+        click.echo(loop.run_until_complete(_get_cluster_status(admin_server_addr)))
+        return
+    if info:
+        click.echo(loop.run_until_complete(_get_cluster_info(admin_server_addr)))
+        return
+    if address:
+        click.echo(loop.run_until_complete(_get_cluster_address(admin_server_addr)))
+        return
+    if size:
+        click.echo(loop.run_until_complete(_get_cluster_size(admin_server_addr)))
+        return
+    if restart:
+        loop.run_until_complete(_cluster_restart(admin_server_addr))
+        click.echo("Cluster restarted")
+        return
+    if logs:
+        click.echo(loop.run_until_complete(_get_cluster_logs(admin_server_addr)))
+        return
+    if scale:
+        loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
+        click.echo(f"Cluster scaled to have {scale} workers")
+        return

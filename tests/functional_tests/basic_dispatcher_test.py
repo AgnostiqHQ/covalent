@@ -81,9 +81,6 @@ def test_dispatcher_functional():
         output = "failed"
 
     rm._delete_result(dispatch_id)
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
-
     assert output == "failed"
 
     Path(the_executor.log_stdout).unlink(missing_ok=True)
@@ -104,12 +101,13 @@ def test_results_dir_in_sublattice():
         return ct.electron(lattice_square)(x=y)
 
     dispatch_id = ct.dispatch(outer_lattice)(y=5)
-    output = ct.get_result(dispatch_id, wait=True).result
+    result_object = ct.get_result(dispatch_id, wait=True)
+    output = result_object.result
 
     rm._delete_result(dispatch_id, results_dir="/tmp/results")
 
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
+    assert result_object.error == ""
+    assert result_object.status == str(result_object.COMPLETED)
 
     assert output == 25
 

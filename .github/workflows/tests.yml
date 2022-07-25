@@ -118,18 +118,16 @@ jobs:
         run: pip install -e .
 
       - name: Start Covalent dispatcher server
-        run: covalent start
+        run: covalent start --ignore-migrations
 
       - name: Run tests and measure coverage
         uses: nick-fields/retry@v2
         with:
             timeout_minutes: 30
             max_attempts: 2
-            on_retry_command: |
-              covalent purge
-              covalent start
+            on_retry_command: rm -f ~/.config/covalent/covalent.conf
             command: |
-              PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher 
+              PYTHONPATH=$PWD/ pytest tests -vv --reruns=5 --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher
 
       - name: Generate coverage report
         run: coverage xml

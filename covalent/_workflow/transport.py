@@ -21,7 +21,9 @@
 """Class implementation of the transport graph in the workflow graph."""
 
 import base64
+import json
 import platform
+from copy import deepcopy
 from typing import Any, Callable, Dict, List
 
 import cloudpickle
@@ -46,6 +48,21 @@ class TransportableObject:
         self._object = base64.b64encode(cloudpickle.dumps(obj)).decode("utf-8")
         self.python_version = platform.python_version()
 
+        self.object_string = str(obj)
+
+        try:
+            self._json = json.dumps(obj)
+
+        except TypeError as ex:
+            self._json = ""
+
+        self.attrs = {"doc": getattr(obj, "doc", ""), "name": getattr(obj, "name", "")}
+
+    def __eq__(self, obj) -> bool:
+        if not isinstance(obj, TransportableObject):
+            return False
+        return self.__dict__ == obj.__dict__
+
     def get_deserialized(self) -> Callable:
         """
         Get the deserialized transportable object.
@@ -59,6 +76,29 @@ class TransportableObject:
         """
 
         return cloudpickle.loads(base64.b64decode(self._object.encode("utf-8")))
+
+    @property
+    def json(self):
+        return self._json
+
+    def to_dict(self) -> dict:
+        """Return a JSON-serializable dictionary representation of self"""
+        return {"type": "TransportableObject", "attributes": self.__dict__.copy()}
+
+    @staticmethod
+    def from_dict(object_dict) -> "TransportableObject":
+        """Rehydrate a dictionary representation
+
+        Args:
+            object_dict: a dictionary representation returned by `to_dict`
+
+        Returns:
+            A `TransportableObject` represented by `object_dict`
+        """
+
+        sc = TransportableObject(None)
+        sc.__dict__ = object_dict["attributes"]
+        return sc
 
     def get_serialized(self) -> str:
         """
@@ -85,8 +125,49 @@ class TransportableObject:
         """
 
         return cloudpickle.dumps(
-            {"object": self.get_serialized(), "py_version": self.python_version}
+            {
+                "object": self.get_serialized(),
+                "object_string": self.object_string,
+                "json": self._json,
+                "attrs": self.attrs,
+                "py_version": self.python_version,
+            }
         )
+
+    def serialize_to_json(self) -> str:
+        """
+        Serialize the transportable object to JSON.
+
+        Args:
+            None
+
+        Returns:
+            A JSON string representation of the transportable object
+        """
+
+        return json.dumps(self.to_dict())
+
+    @staticmethod
+    def deserialize_from_json(json_string: str) -> str:
+        """
+        Reconstruct a transportable object from JSON
+
+        Args:
+            json_string: A JSON string representation of a TransportableObject
+
+        Returns:
+            A TransportableObject instance
+        """
+
+        object_dict = json.loads(json_string)
+        return TransportableObject.from_dict(object_dict)
+
+    @staticmethod
+    def make_transportable(obj) -> "TransportableObject":
+        if isinstance(obj, TransportableObject):
+            return obj
+        else:
+            return TransportableObject(obj)
 
     @staticmethod
     def deserialize(data: bytes) -> "TransportableObject":
@@ -103,8 +184,95 @@ class TransportableObject:
         obj = cloudpickle.loads(data)
         sc = TransportableObject(None)
         sc._object = obj["object"]
+        sc._json = obj["json"]
+        sc.attrs = obj["attrs"]
         sc.python_version = obj["py_version"]
         return sc
+
+    @staticmethod
+    def deserialize_list(collection: list) -> list:
+        """
+        Recursively deserializes a list of TransportableObjects. More
+        precisely, `collection` is a list, each of whose entries is
+        assumed to be either a `TransportableObject`, a list, or dict`
+        """
+
+        new_list = []
+        for item in collection:
+            if isinstance(item, TransportableObject):
+                new_list.append(item.get_deserialized())
+            elif isinstance(item, list):
+                new_list.append(TransportableObject.deserialize_list(item))
+            elif isinstance(item, dict):
+                new_list.append(TransportableObject.deserialize_dict(item))
+            else:
+                raise TypeError("Couldn't deserialize collection")
+        return new_list
+
+    @staticmethod
+    def deserialize_dict(collection: dict) -> dict:
+        """
+        Recursively deserializes a dict of TransportableObjects. More
+        precisely, `collection` is a dict, each of whose entries is
+        assumed to be either a `TransportableObject`, a list, or dict`
+
+        """
+
+        new_dict = {}
+        for k, item in collection.items():
+            if isinstance(item, TransportableObject):
+                new_dict[k] = item.get_deserialized()
+            elif isinstance(item, list):
+                new_dict[k] = TransportableObject.deserialize_list(item)
+            elif isinstance(item, dict):
+                new_dict[k] = TransportableObject.deserialize_dict(item)
+            else:
+                raise TypeError("Couldn't deserialize collection")
+        return new_dict
+
+
+# Functions for encoding the transport graph
+
+
+def encode_metadata(metadata: dict) -> dict:
+    # Idempotent
+    # Special handling required for: executor, workflow_executor, deps, call_before/after
+
+    encoded_metadata = deepcopy(metadata)
+    if "executor" in metadata:
+        if "executor_data" not in metadata:
+            encoded_metadata["executor_data"] = {}
+        if not isinstance(metadata["executor"], str):
+            encoded_executor = metadata["executor"].to_dict()
+            encoded_metadata["executor"] = encoded_executor["short_name"]
+            encoded_metadata["executor_data"] = encoded_executor
+
+    if "workflow_executor" in metadata:
+        if "workflow_executor_data" not in metadata:
+            encoded_metadata["workflow_executor_data"] = {}
+        if not isinstance(metadata["workflow_executor"], str):
+            encoded_wf_executor = metadata["workflow_executor"].to_dict()
+            encoded_metadata["workflow_executor"] = encoded_wf_executor["short_name"]
+            encoded_metadata["workflow_executor_data"] = encoded_wf_executor
+
+    # Bash Deps, Pip Deps, Env Deps, etc
+    if "deps" in metadata:
+        for dep_type, dep_object in metadata["deps"].items():
+            if not isinstance(dep_object, dict):
+                encoded_metadata["deps"][dep_type] = dep_object.to_dict()
+
+    # call_before/after
+    if "call_before" in metadata:
+        for i, dep in enumerate(metadata["call_before"]):
+            if not isinstance(dep, dict):
+                encoded_metadata["call_before"][i] = dep.to_dict()
+
+    if "call_after" in metadata:
+        for i, dep in enumerate(metadata["call_after"]):
+            if not isinstance(dep, dict):
+                encoded_metadata["call_after"][i] = dep.to_dict()
+
+    return encoded_metadata
 
 
 class _TransportGraph:
@@ -342,6 +510,60 @@ class _TransportGraph:
         data["lattice_metadata"] = self.lattice_metadata
         return cloudpickle.dumps(data)
 
+    def serialize_to_json(self, metadata_only: bool = False) -> str:
+        """
+        Convert transport graph object to JSON to be used in the workflow scheduler.
+
+        Convert transport graph networkx.DiGraph object into JSON format, filter out
+        computation specific attributes and lastly add the lattice metadata. This also
+        serializes the function Callable into by base64 encoding the cloudpickled result.
+
+        Args:
+            metadata_only: If true, only serialize the metadata.
+
+        Returns:
+            str: json string representation of transport graph
+
+        Note: serialize_to_json converts metadata objects into dictionary represetations.
+        """
+
+        # Convert networkx.DiGraph to a format that can be converted to json .
+        data = nx.readwrite.node_link_data(self._graph)
+
+        # process each node
+        for idx, node in enumerate(data["nodes"]):
+            data["nodes"][idx]["function"] = data["nodes"][idx].pop("function").to_dict()
+            if "value" in node:
+                node["value"] = node["value"].to_dict()
+            if "metadata" in node:
+                node["metadata"] = encode_metadata(node["metadata"])
+
+        if metadata_only:
+            parameter_node_id = [
+                i
+                for i, node in enumerate(data["nodes"])
+                if node["name"].startswith(parameter_prefix)
+            ]
+
+            for node in data["nodes"].copy():
+                if node["id"] in parameter_node_id:
+                    data["nodes"].remove(node)
+
+            # Remove the non-metadata fields such as 'function', 'name', etc from the scheduler workflow input data.
+            for idx, node in enumerate(data["nodes"]):
+                for field in data["nodes"][idx].copy():
+                    if field != "metadata":
+                        data["nodes"][idx].pop(field, None)
+
+            # Remove the non-source-target fields from the scheduler workflow input data.
+            for idx, node in enumerate(data["links"]):
+                for name in data["links"][idx].copy():
+                    if name not in ["source", "target"]:
+                        data["links"][idx].pop("edge_name", None)
+
+        data["lattice_metadata"] = encode_metadata(self.lattice_metadata)
+        return json.dumps(data)
+
     def deserialize(self, pickled_data: bytes) -> None:
         """
         Load pickled representation of transport graph into the transport graph instance.
@@ -365,6 +587,35 @@ class _TransportGraph:
             node_link_data["nodes"][idx]["function"] = TransportableObject.deserialize(
                 function_ser
             )
+        self._graph = nx.readwrite.node_link_graph(node_link_data)
+        self.sort_edges_based_on_insertion_order()
+
+    def deserialize_from_json(self, json_data: str) -> None:
+        """Load JSON representation of transport graph into the transport graph instance.
+
+        This overwrites anything currently set in the transport
+        graph. Note that metadata (node and lattice-level) need to be
+        reconstituted from their dictionary representations when
+        needed.
+
+        Args:
+            json_data: JSON representation of the transport graph
+
+        Returns:
+            None
+
+        """
+
+        node_link_data = json.loads(json_data)
+        if "lattice_metadata" in node_link_data:
+            self.lattice_metadata = node_link_data["lattice_metadata"]
+
+        for idx, node in enumerate(node_link_data["nodes"]):
+            function_ser = node_link_data["nodes"][idx].pop("function")
+            node_link_data["nodes"][idx]["function"] = TransportableObject.from_dict(function_ser)
+            if "value" in node:
+                node["value"] = TransportableObject.from_dict(node["value"])
+
         self._graph = nx.readwrite.node_link_graph(node_link_data)
         self.sort_edges_based_on_insertion_order()
 

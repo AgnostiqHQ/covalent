@@ -55,9 +55,7 @@ def test_dispatcher_server():
     assert result.start_time is not None
     assert result.end_time is not None
     assert result.end_time > result.start_time
-    assert result.status == ct.status.COMPLETED
+    assert result.status == str(ct.status.COMPLETED)
     assert result.result == 3
 
     rm._delete_result(dispatch_id)
-    with DispatchDB() as db:
-        db.delete([dispatch_id])

@@ -23,7 +23,9 @@
 import os
 import shutil
 from datetime import datetime as dt
+from datetime import timezone
 from pathlib import Path
+from unicodedata import name
 
 import cloudpickle
 import pytest
@@ -33,6 +35,7 @@ import covalent as ct
 from covalent._data_store.datastore import DataStore, DataStoreNotInitializedError
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.result import Result
+from covalent._results_manager.write_result_to_db import load_file
 
 TEMP_RESULTS_DIR = "/tmp/results"
 
@@ -107,21 +110,21 @@ def test_result_persist_workflow_1(db, result_1):
     lattice_storage_path = Path(lattice_row.storage_path)
     assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR) / "dispatch_1"
 
-    with open(lattice_storage_path / lattice_row.function_filename, "rb") as f:
-        workflow_function = cloudpickle.load(f)
+    workflow_function = load_file(
+        storage_path=lattice_storage_path, filename=lattice_row.function_filename
+    ).get_deserialized()
     assert workflow_function(1, 2) == 4
-
-    with open(lattice_storage_path / lattice_row.executor_filename, "rb") as f:
-        executor_function = cloudpickle.load(f)
-    assert executor_function == "dask"
-
-    with open(lattice_storage_path / lattice_row.error_filename, "rb") as f:
-        error_log = cloudpickle.load(f)
-    assert error_log == result_1.error
-
-    with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
-        result = cloudpickle.load(f)
-    assert result is None
+    assert (
+        load_file(storage_path=lattice_storage_path, filename=lattice_row.executor_filename)
+        == "dask"
+    )
+    assert load_file(storage_path=lattice_storage_path, filename=lattice_row.error_filename) == ""
+    assert (
+        load_file(
+            storage_path=lattice_storage_path, filename=lattice_row.results_filename
+        ).get_deserialized()
+        is None
+    )
 
     # Check that the electron records are as expected
     for electron in electron_rows:
@@ -129,17 +132,40 @@ def test_result_persist_workflow_1(db, result_1):
         assert electron.parent_lattice_id == 1
         assert electron.started_at is None and electron.completed_at is None
 
+        if electron.transport_graph_node_id == 1:
+            assert (
+                load_file(storage_path=electron.storage_path, filename=electron.deps_filename)
+                == {}
+            )
+            assert (
+                load_file(
+                    storage_path=electron.storage_path, filename=electron.call_before_filename
+                )
+                == []
+            )
+            assert (
+                load_file(
+                    storage_path=electron.storage_path, filename=electron.call_after_filename
+                )
+                == []
+            )
+            assert (
+                load_file(storage_path=electron.storage_path, filename=electron.key_filename)
+                is None
+            )
+
     # Check that there are the appropriate amount of electron dependency records
     assert len(electron_dependency_rows) == 4
 
     # Update some node / lattice statuses
-    cur_time = dt.now()
+    cur_time = dt.now(timezone.utc)
     result_1._end_time = cur_time
     result_1._status = "COMPLETED"
-    result_1._result = {"helo": 1, "world": 2}
+    result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
 
     for node_id in range(5):
         result_1._update_node(
+            db=db,
             node_id=node_id,
             start_time=cur_time,
             end_time=cur_time,
@@ -156,24 +182,128 @@ def test_result_persist_workflow_1(db, result_1):
         lattice_row = session.query(Lattice).first()
         electron_rows = session.query(Electron).all()
         electron_dependency_rows = session.query(ElectronDependency).all()
-        print(f"THERE: {electron_dependency_rows}")
 
     # Check that the lattice records are as expected
-    assert lattice_row.completed_at == cur_time
+    assert lattice_row.completed_at.strftime("%Y-%m-%d %H:%M") == cur_time.strftime(
+        "%Y-%m-%d %H:%M"
+    )
     assert lattice_row.status == "COMPLETED"
-
-    with open(lattice_storage_path / lattice_row.results_filename, "rb") as f:
-        result = cloudpickle.load(f)
-    assert result_1.result == result
+    result = load_file(storage_path=lattice_storage_path, filename=lattice_row.results_filename)
+    assert result_1.result == result.get_deserialized()
 
     # Check that the electron records are as expected
     for electron in electron_rows:
         assert electron.status == "COMPLETED"
         assert electron.parent_lattice_id == 1
-        assert electron.started_at == electron.completed_at == cur_time
+        assert (
+            electron.started_at.strftime("%Y-%m-%d %H:%M")
+            == electron.completed_at.strftime("%Y-%m-%d %H:%M")
+            == cur_time.strftime("%Y-%m-%d %H:%M")
+        )
         assert Path(electron.storage_path) == Path(
             f"{TEMP_RESULTS_DIR}/dispatch_1/node_{electron.transport_graph_node_id}"
         )
 
     # Tear down temporary results directory
     teardown_temp_results_dir(dispatch_id="dispatch_1")
+
+
+def test_get_node_error(db, result_1):
+    """Test result method to get the node error."""
+
+    result_1.persist(db)
+    assert result_1._get_node_error(db=db, node_id=0) == ""
+
+
+def test_get_node_value(db, result_1):
+    """Test result method to get the node value."""
+
+    result_1.persist(db)
+    assert result_1._get_node_value(db=db, node_id=0) is None
+
+
+def test_get_all_node_results(db, result_1):
+    """Test result method to get all the node results."""
+
+    result_1.persist(db)
+    for data_row in result_1.get_all_node_results(db):
+        if data_row["node_id"] == 0:
+            assert data_row["node_name"] == "task_1"
+        elif data_row["node_id"] == 1:
+            assert data_row["node_name"] == ":parameter:1"
+
+
+def test_update_node(db, result_1):
+    """Test the node update method."""
+
+    # Call Result.persist
+    result_1.persist(db=db)
+
+    result_1._update_node(
+        db=db,
+        node_id=0,
+        node_name="test_name",
+        start_time=dt.now(timezone.utc),
+        status="RUNNING",
+        error="test_error",
+        sublattice_result="test_sublattice",
+        stdout="test_stdout",
+        stderr="test_stderr",
+    )
+
+    with Session(db.engine) as session:
+        lattice_record = session.query(Lattice).first()
+        electron_record = (
+            session.query(Electron).where(Electron.transport_graph_node_id == 0).first()
+        )
+
+    assert electron_record.name == "test_name"
+    assert electron_record.status == "RUNNING"
+    assert electron_record.started_at is not None
+
+    stdout = load_file(
+        storage_path=electron_record.storage_path, filename=electron_record.stdout_filename
+    )
+    assert stdout == "test_stdout"
+
+    stderr = load_file(
+        storage_path=electron_record.storage_path, filename=electron_record.stderr_filename
+    )
+    assert stderr == "test_stderr"
+
+    assert result_1.lattice.transport_graph.get_node_value(0, "error") == "test_error"
+    assert (
+        result_1.lattice.transport_graph.get_node_value(0, "sublattice_result")
+        == "test_sublattice"
+    )
+
+    assert lattice_record.electron_num == 5
+    assert lattice_record.completed_electron_num == 0
+    assert lattice_record.updated_at is not None
+
+    result_1._update_node(
+        db=db,
+        node_id=0,
+        end_time=dt.now(timezone.utc),
+        status="COMPLETED",
+        output=5,
+    )
+
+    with Session(db.engine) as session:
+        lattice_record = session.query(Lattice).first()
+        electron_record = (
+            session.query(Electron).where(Electron.transport_graph_node_id == 0).first()
+        )
+
+    assert electron_record.status == "COMPLETED"
+    assert electron_record.completed_at is not None
+    assert electron_record.updated_at is not None
+
+    result = load_file(
+        storage_path=electron_record.storage_path, filename=electron_record.results_filename
+    )
+    assert result == 5
+
+    assert lattice_record.electron_num == 5
+    assert lattice_record.completed_electron_num == 1
+    assert lattice_record.updated_at is not None

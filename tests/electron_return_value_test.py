@@ -109,15 +109,7 @@ def test_arithmetic_1(test_operand, expected):
 
     res = get_result(dispatch_id, wait=True)
     _delete_result(dispatch_id)
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
 
-    with DispatchDB() as db:
-        dbres = db.get([dispatch_id])
-
-    print(res)
-
-    assert len(dbres) == 0
     assert res.result == expected
 
 
@@ -129,8 +121,6 @@ def test_arithmetic_1_rev(test_operand, expected):
 
     res = get_result(dispatch_id, wait=True)
     _delete_result(dispatch_id)
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
 
     assert res.result == expected
 
@@ -144,10 +134,8 @@ def test_arithmetic_2(test_b, test_operand, expected):
     dispatch_id = ct.dispatch(arithmetic_test_2)(a=2, b=test_b, operand=test_operand)
 
     res = get_result(dispatch_id, wait=True)
+    print(res)
     _delete_result(dispatch_id)
-
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
 
     assert res.result == expected
 
@@ -161,9 +149,6 @@ def test_type_conversion_numbers(test_type_to):
     res = get_result(dispatch_id, wait=True)
     _delete_result(dispatch_id)
 
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
-
     assert res.result
 
 
@@ -176,9 +161,6 @@ def test_type_conversion_iterables(test_type_to):
     res = get_result(dispatch_id, wait=True)
     _delete_result(dispatch_id)
 
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
-
     assert res.result
 
 
@@ -189,8 +171,5 @@ def test_type_conversion_dict():
 
     res = get_result(dispatch_id, wait=True)
     _delete_result(dispatch_id)
-
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
 
     assert res.result

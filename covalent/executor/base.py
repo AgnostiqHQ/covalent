@@ -22,10 +22,13 @@
 Class that defines the base executor template.
 """
 
+import asyncio
+import io
 import os
 import subprocess
 import tempfile
 from abc import ABC, abstractmethod
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
@@ -64,8 +67,6 @@ def wrapper_fn(
         cb_args = serialized_args.get_deserialized()
         cb_kwargs = serialized_kwargs.get_deserialized()
         retval = cb_fn(*cb_args, **cb_kwargs)
-
-        # if value already exists in cb_retvals convert to list or append to list
         if retval_key and retval_key in cb_retvals:
             if isinstance(cb_retvals[retval_key], list):
                 cb_retvals[retval_key].append(retval)
@@ -82,11 +83,15 @@ def wrapper_fn(
 
     fn = function.get_deserialized()
 
+    new_args = [arg.get_deserialized() for arg in args]
+
+    new_kwargs = {k: v.get_deserialized() for k, v in kwargs.items()}
+
     # Inject return values into kwargs
     for key, val in cb_retvals.items():
-        kwargs[key] = val
+        new_kwargs[key] = val
 
-    output = fn(*args, **kwargs)
+    output = fn(*new_args, **new_kwargs)
 
     for tup in call_after:
         serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
@@ -95,7 +100,7 @@ def wrapper_fn(
         ca_kwargs = serialized_kwargs.get_deserialized()
         ca_fn(*ca_args, **ca_kwargs)
 
-    return output
+    return TransportableObject(output)
 
 
 class BaseExecutor(ABC):
@@ -179,22 +184,46 @@ class BaseExecutor(ABC):
             else:
                 print(ss)
 
-    @abstractmethod
-    async def execute(
+    def short_name(self):
+        module = self.__module__
+        return self.__module__.split("/")[-1].split(".")[-1]
+
+    def to_dict(self) -> dict:
+        """Return a JSON-serializable dictionary representation of self"""
+        return {
+            "type": str(self.__class__),
+            "short_name": self.short_name(),
+            "attributes": self.__dict__.copy(),
+        }
+
+    def from_dict(self, object_dict: dict) -> "BaseExecutor":
+        """Rehydrate a dictionary representation
+
+        Args:
+            object_dict: a dictionary representation returned by `to_dict`
+
+        Returns:
+            self
+
+        Instance attributes will be overwritten.
+        """
+        if object_dict:
+            self.__dict__ = object_dict["attributes"]
+        return self
+
+    def execute(
         self,
-        function: TransportableObject,
+        function: Callable,
         args: List,
         kwargs: Dict,
-        call_before: List,
-        call_after: List,
         dispatch_id: str,
         results_dir: str,
         node_id: int = -1,
     ) -> Any:
         """
         Execute the function with the given arguments.
-        This will be overriden by other executor plugins
-        to design how said function needs to be run.
+
+        This calls the executor-specific `run()` method.
 
         Args:
             function: The input python function which will be executed and whose result
@@ -208,6 +237,51 @@ class BaseExecutor(ABC):
 
         Returns:
             output: The result of the function execution.
+        """
+
+        dispatch_info = DispatchInfo(dispatch_id)
+        fn_version = function.args[0].python_version
+
+        with self.get_dispatch_context(dispatch_info), redirect_stdout(
+            io.StringIO()
+        ) as stdout, redirect_stderr(io.StringIO()) as stderr:
+
+            if self.conda_env != "":
+                result = None
+
+                result = self.execute_in_conda_env(
+                    function,
+                    fn_version,
+                    args,
+                    kwargs,
+                    self.conda_env,
+                    self.cache_dir,
+                    node_id,
+                )
+
+            else:
+                result = self.run(function, args, kwargs)
+
+        self.write_streams_to_file(
+            (stdout.getvalue(), stderr.getvalue()),
+            (self.log_stdout, self.log_stderr),
+            dispatch_id,
+            results_dir,
+        )
+
+        return (result, stdout.getvalue(), stderr.getvalue())
+
+    @abstractmethod
+    def run(self, function: Callable, args: List, kwargs: Dict) -> Any:
+        """Abstract method to run a function in the executor.
+
+        Args:
+            function: The function to run in the executor
+            args: List of positional arguments to be used by the function
+            kwargs: Dictionary of keyword arguments to be used by the function.
+
+        Returns:
+            output: The result of the function execution
         """
 
         raise NotImplementedError
@@ -401,3 +475,48 @@ class BaseExecutor(ABC):
             return False
         self.conda_path = which_conda
         return True
+
+
+class BaseAsyncExecutor(BaseExecutor):
+    async def execute(
+        self,
+        function: Callable,
+        args: List,
+        kwargs: Dict,
+        dispatch_id: str,
+        results_dir: str,
+        node_id: int = -1,
+    ) -> Any:
+        awaitable_run, out, err = super().execute(
+            function, args, kwargs, dispatch_id, results_dir, node_id
+        )
+
+        if not asyncio.iscoroutine(awaitable_run):
+            return (awaitable_run, out, err)
+
+        with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
+            result = await awaitable_run
+
+        self.write_streams_to_file(
+            (stdout.getvalue(), stderr.getvalue()),
+            (self.log_stdout, self.log_stderr),
+            dispatch_id,
+            results_dir,
+        )
+
+        return (result, stdout.getvalue(), stderr.getvalue())
+
+    @abstractmethod
+    async def run(self, function: Callable, args: List, kwargs: Dict) -> Any:
+        """Abstract method to run a function in the executor in async-aware manner.
+
+        Args:
+            function: The function to run in the executor
+            args: List of positional arguments to be used by the function
+            kwargs: Dictionary of keyword arguments to be used by the function.
+
+        Returns:
+            output: The result of the function execution
+        """
+
+        raise NotImplementedError

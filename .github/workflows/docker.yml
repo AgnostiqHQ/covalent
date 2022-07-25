@@ -1,0 +1,98 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+# 
+# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any 
+# modifications or derivative works of this file must retain this copyright 
+# notice, and modified files must contain a notice indicating that they have 
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: docker
+
+on: 
+  pull_request:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - "CHANGELOG.md"
+      - "VERSION"
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "SHA used to build and push image."
+        type: string
+        required: true
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out head
+        if: >
+          github.event_name == 'pull_request'
+          || github.event_name == 'push'
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Check out SHA
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: github.event.inputs.commit_sha
+
+      - name: Extract version
+        run: |
+          VERSION="$(cat ./VERSION)"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Generate tag
+        run: |
+          aws --version
+          docker info
+          docker --version
+          TAG=${{ env.VERSION }}
+          if aws ecr describe-images \
+            --repository-name covalent-dev \
+            --image-ids imageTag=$TAG $> /dev/null ; then
+            SHORT_SHA="${GITHUB_SHA::8}"
+            TAG=$TAG-$SHORT_SHA
+          fi
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Build, test, and push image
+        run: |
+          docker build -t ${{ secrets.ECR_DEV_REPO }}:${{ env.TAG }} .
+          docker push ${{ secrets.ECR_DEV_REPO }}:${{ env.TAG }}

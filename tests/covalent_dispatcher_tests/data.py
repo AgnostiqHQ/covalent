@@ -41,10 +41,6 @@ def get_mock_result() -> Result:
 
     pipeline.build_graph(y=1)
 
-    # Serializing the transport graph and then passing it to the Result object
-    transport_graph = pipeline.transport_graph.serialize()
-    pipeline.transport_graph, transport_graph = transport_graph, pipeline.transport_graph
-
     return Result(
         lattice=pipeline,
         results_dir=pipeline.metadata["results_dir"],
@@ -69,10 +65,6 @@ def get_mock_result_2() -> Result:
 
     pipeline.build_graph(x=1, y=1)
 
-    # Serializing the transport graph and then passing it to the Result object
-    transport_graph = pipeline.transport_graph.serialize()
-    pipeline.transport_graph, transport_graph = transport_graph, pipeline.transport_graph
-
     return Result(
         lattice=pipeline,
         results_dir=pipeline.metadata["results_dir"],
@@ -88,10 +80,6 @@ def get_mock_result_3() -> Result:
         return x * y
 
     pipeline.build_graph(x=1, y=1)
-
-    # Serializing the transport graph and then passing it to the Result object
-    transport_graph = pipeline.transport_graph.serialize()
-    pipeline.transport_graph, transport_graph = transport_graph, pipeline.transport_graph
 
     return Result(
         lattice=pipeline,

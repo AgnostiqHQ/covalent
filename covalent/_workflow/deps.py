@@ -51,3 +51,14 @@ class Deps(ABC):
             A tuple of transportable objects containing the function and optional args/kwargs
         """
         return (self.apply_fn, self.apply_args, self.apply_kwargs, self.retval_keyword)
+
+    def short_name(self):
+        return self.__module__.split("/")[-1].split(".")[-1]
+
+    @abstractmethod
+    def to_dict(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def from_dict(self, object_dict):
+        raise NotImplementedError

@@ -27,18 +27,18 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import io
 import os
+import sys
 from contextlib import redirect_stderr, redirect_stdout
-from typing import Any, Dict, List
+from typing import Callable, Dict, List
 
-from dask.distributed import get_client
+from dask.distributed import Client
 
 from covalent._shared_files import logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
-from covalent._shared_files.util_classes import DispatchInfo
-from covalent._workflow.transport import TransportableObject
-from covalent.executor import BaseExecutor, wrapper_fn
+from covalent._shared_files.utils import _address_client_mapper
+from covalent.executor.base import BaseAsyncExecutor
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 executor_plugin_name = "DaskExecutor"
@@ -55,7 +55,14 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 }
 
 
-class DaskExecutor(BaseExecutor):
+def dask_wrapper(fn, args, kwargs):
+    with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
+        output = fn(*args, **kwargs)
+
+    return output, stdout.getvalue(), stderr.getvalue()
+
+
+class DaskExecutor(BaseAsyncExecutor):
     """
     Dask executor class that submits the input function to a running dask cluster.
     """
@@ -75,77 +82,37 @@ class DaskExecutor(BaseExecutor):
                 "covalent",
             )
 
-        if scheduler_address == "":
-            scheduler_address = get_config("dask.scheduler_address")
+        if not scheduler_address:
+            try:
+                scheduler_address = get_config("dask.scheduler_address")
+            except KeyError as ex:
+                app_log.debug(
+                    "No dask scheduler address found in config. Address must be set manually."
+                )
 
         super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
 
         self.scheduler_address = scheduler_address
 
-    def execute(
-        self,
-        function: TransportableObject,
-        args: List,
-        kwargs: Dict,
-        call_before: List,
-        call_after: List,
-        dispatch_id: str,
-        results_dir: str,
-        node_id: int = -1,
-    ) -> Any:
-        """
-        Executes the input function and returns the result.
+    async def run(self, function: Callable, args: List, kwargs: Dict):
+        """Submit the function and inputs to the dask cluster"""
 
-        Args:
-            function: The input python function which will be executed and whose result
-                      is ultimately returned by this function.
-            args: List of positional arguments to be used by the function.
-            kwargs: Dictionary of keyword arguments to be used by the function.
-            dispatch_id: The unique identifier of the external lattice process which is
-                         calling this function.
-            results_dir: The location of the results directory.
-            node_id: The node ID of this task in the bigger workflow graph.
+        dask_client = _address_client_mapper.get(self.scheduler_address)
 
-        Returns:
-            output: The result of the executed function.
-        """
+        if dask_client and not dask_client.scheduler:
+            await dask_client
 
-        dask_client = get_client(address=self.scheduler_address, timeout=1)
+        if not dask_client or not dask_client.scheduler or not dask_client.asynchronous:
+            dask_client = Client(address=self.scheduler_address, asynchronous=True)
+            _address_client_mapper[self.scheduler_address] = dask_client
 
-        dispatch_info = DispatchInfo(dispatch_id)
+            await dask_client
 
-        fn_version = function.python_version
+        future = dask_client.submit(dask_wrapper, function, args, kwargs)
+        app_log.debug("Submitted task to dask")
+        result, worker_stdout, worker_stderr = await dask_client.gather(future)
 
-        new_args = [function, call_before, call_after]
-        for arg in args:
-            new_args.append(arg)
+        print(worker_stdout, end="", file=sys.stdout)
+        print(worker_stderr, end="", file=sys.stderr)
 
-        with self.get_dispatch_context(dispatch_info), redirect_stdout(
-            io.StringIO()
-        ) as stdout, redirect_stderr(io.StringIO()) as stderr:
-
-            if self.conda_env != "":
-                result = None
-
-                result = self.execute_in_conda_env(
-                    wrapper_fn,
-                    fn_version,
-                    new_args,
-                    kwargs,
-                    self.conda_env,
-                    self.cache_dir,
-                    node_id,
-                )
-
-            else:
-                future = dask_client.submit(wrapper_fn, *new_args, **kwargs)
-                result = future.result()
-
-        self.write_streams_to_file(
-            (stdout.getvalue(), stderr.getvalue()),
-            (self.log_stdout, self.log_stderr),
-            dispatch_id,
-            results_dir,
-        )
-
-        return (result, stdout.getvalue(), stderr.getvalue())
+        return result

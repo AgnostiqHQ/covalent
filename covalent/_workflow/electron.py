@@ -39,6 +39,7 @@ from .._shared_files.defaults import (
     electron_list_prefix,
     generator_prefix,
     parameter_prefix,
+    prefix_separator,
     sublattice_prefix,
     subscript_prefix,
 )
@@ -47,6 +48,7 @@ from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
 from .lattice import Lattice
+from .transport import TransportableObject
 
 consumable_constraints = ["budget", "time_limit"]
 
@@ -227,25 +229,22 @@ class Electron:
         for i in range(expected_unpack_values):
             if active_lattice := active_lattice_manager.get_active_lattice():
                 try:
-                    node_name = generator_prefix + self.function.__name__ + "()" + f"[{i}]"
+                    node_name = prefix_separator + self.function.__name__ + "()" + f"[{i}]"
 
                 except AttributeError:
                     # The case when nested iter calls are made on the same electron
-                    node_name = generator_prefix + active_lattice.transport_graph.get_node_value(
+                    node_name = prefix_separator + active_lattice.transport_graph.get_node_value(
                         self.node_id, "name"
                     )
                     node_name += f"[{i}]"
 
-                node_id = active_lattice.transport_graph.add_node(
-                    name=node_name,
-                    function=None,
-                    metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                    key=i,
-                )
+                def get_item(e, key):
+                    return e[key]
 
-                active_lattice.transport_graph.add_edge(self.node_id, node_id, f"[{i}]")
+                get_item.__name__ = node_name
 
-                yield Electron(function=None, node_id=node_id, metadata=None)
+                get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
+                yield get_item_electron(self, i)
 
     def __getattr__(self, attr: str) -> "Electron":
         # This is to handle the cases where magic functions are attempted
@@ -262,49 +261,27 @@ class Electron:
             )
 
         if active_lattice := active_lattice_manager.get_active_lattice():
-            try:
-                node_name = attr_prefix + self.function.__name__ + "." + attr
-            except AttributeError:
-                node_name = attr_prefix + active_lattice.transport_graph.get_node_value(
-                    self.node_id, "name"
-                )
-                node_name += f".{attr}"
 
-            node_id = active_lattice.transport_graph.add_node(
-                name=node_name,
-                function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                attribute_name=attr,
-            )
+            def get_attr(e, attr):
+                return getattr(e, attr)
 
-            active_lattice.transport_graph.add_edge(self.node_id, node_id, f".{attr}")
-
-            return Electron(function=None, node_id=node_id, metadata=None)
+            get_attr.__name__ = prefix_separator + self.function.__name__ + ".__getattr__"
+            get_attr_electron = Electron(function=get_attr, metadata=self.metadata.copy())
+            return get_attr_electron(self, attr)
 
         return super().__getattr__(attr)
 
     def __getitem__(self, key: Union[int, str]) -> "Electron":
 
         if active_lattice := active_lattice_manager.get_active_lattice():
-            try:
-                node_name = subscript_prefix + self.function.__name__ + "()" + f"[{key}]"
-            except AttributeError:
-                # Nested subscripting calls are made on the same electron
-                node_name = subscript_prefix + active_lattice.transport_graph.get_node_value(
-                    self.node_id, "name"
-                )
-                node_name += f"[{key}]"
 
-            node_id = active_lattice.transport_graph.add_node(
-                name=node_name,
-                function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                key=key,
-            )
+            def get_item(e, key):
+                return e[key]
 
-            active_lattice.transport_graph.add_edge(self.node_id, node_id, f"[{key}]")
+            get_item.__name__ = prefix_separator + self.function.__name__ + ".__getitem__"
 
-            return Electron(function=None, node_id=node_id, metadata=None)
+            get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
+            return get_item_electron(self, key)
 
         raise StopIteration
 
@@ -338,7 +315,7 @@ class Electron:
                     return Electron(function=None, metadata=None, node_id=id)
 
             active_lattice.electron_outputs.pop(0)
-            return output
+            return output.get_deserialized()
 
         # Setting metadata for default values according to lattice's metadata
         # If metadata is default, then set it to lattice's default
@@ -427,9 +404,9 @@ class Electron:
         elif isinstance(param_value, list):
             list_node = self.add_collection_node_to_graph(transport_graph, electron_list_prefix)
 
-            for v in param_value:
+            for index, v in enumerate(param_value):
                 self.connect_node_with_others(
-                    list_node, param_name, v, "kwarg", None, transport_graph
+                    list_node, param_name, v, "kwarg", index, transport_graph
                 )
 
             transport_graph.add_edge(
@@ -456,11 +433,12 @@ class Electron:
 
         else:
 
+            encoded_param_value = TransportableObject.make_transportable(param_value)
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
                 metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                value=param_value,
+                value=encoded_param_value,
             )
             transport_graph.add_edge(
                 parameter_node,
@@ -485,14 +463,18 @@ class Electron:
         """
 
         @electron
-        def to_electron_collection(**x):
-            return list(x.values())[0]
+        def to_decoded_electron_collection(**x):
+            collection = list(x.values())[0]
+            if isinstance(collection, list):
+                return TransportableObject.deserialize_list(collection)
+            elif isinstance(collection, dict):
+                return TransportableObject.deserialize_dict(collection)
 
         node_id = graph.add_node(
             name=prefix,
-            function=to_electron_collection,
-            metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-            function_string=get_serialized_function_str(to_electron_collection),
+            function=to_decoded_electron_collection,
+            metadata=self.metadata.copy(),
+            function_string=get_serialized_function_str(to_decoded_electron_collection),
         )
 
         return node_id

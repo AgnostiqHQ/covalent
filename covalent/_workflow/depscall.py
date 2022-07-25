@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from copy import deepcopy
+
 from .deps import Deps
 from .transport import TransportableObject
 
@@ -46,7 +48,39 @@ class DepsCall(Deps):
 
     """
 
-    def __init__(self, func, args=[], kwargs={}, *, retval_keyword=""):
+    def __init__(self, func=None, args=[], kwargs={}, *, retval_keyword=""):
         super().__init__(
             apply_fn=func, apply_args=args, apply_kwargs=kwargs, retval_keyword=retval_keyword
         )
+
+    def to_dict(self) -> dict:
+        """Return a JSON-serializable dictionary representation of self"""
+        attributes = self.__dict__.copy()
+        for k, v in attributes.items():
+            if isinstance(v, TransportableObject):
+                attributes[k] = v.to_dict()
+            else:
+                attributes[k] = v
+        return {"type": "DepsCall", "short_name": self.short_name(), "attributes": attributes}
+
+    def from_dict(self, object_dict) -> "DepsCall":
+        """Rehydrate a dictionary representation
+
+        Args:
+            object_dict: a dictionary representation returned by `to_dict`
+
+        Returns:
+            self
+
+        Instance attributes will be overwritten.
+        """
+
+        if not object_dict:
+            return self
+
+        attributes = deepcopy(object_dict["attributes"])
+        for k, v in attributes.items():
+            if isinstance(v, dict) and v.get("type") == "TransportableObject":
+                attributes[k] = TransportableObject.from_dict(v)
+        self.__dict__ = attributes
+        return self

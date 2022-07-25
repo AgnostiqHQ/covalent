@@ -84,8 +84,7 @@ def list_results():
 
 @app.route("/api/dev/results/<dispatch_id>")
 def fetch_result_dev(dispatch_id):
-    results_dir = request.args["resultsDir"]
-    result = rm.get_result(dispatch_id, results_dir=results_dir)
+    result = rm.get_result(dispatch_id)
 
     jsonified_result = encode_result(result)
 
@@ -173,4 +172,4 @@ if __name__ == "__main__":
         dask_cluster.start()
 
     # Start covalent main app
-    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
+    socketio.run(app, debug=debug, host="localhost", port=port, use_reloader=reload)

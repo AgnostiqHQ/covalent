@@ -21,13 +21,22 @@
 """Workflow stack testing of TransportGraph, Lattice and Electron classes."""
 
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
 import covalent as ct
 import covalent._results_manager.results_manager as rm
+from covalent._data_store.datastore import DataStore
 from covalent._results_manager.result import Result
+from covalent._results_manager.utils import _db_path
 from covalent._workflow.electron import Electron
+from covalent_dispatcher._core.execution import _dispatch_sublattice
+
+
+@pytest.fixture
+def db():
+    return DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}", initialize_db=True)
 
 
 @ct.electron
@@ -102,7 +111,7 @@ def test_electron_takes_nested_iterables():
     rm._delete_result(dispatch_id)
 
 
-def test_sublatticing():
+def test_sublatticing(db):
     """
     Test to check whether an electron can be sublatticed
     and used inside of a bigger lattice.
@@ -116,11 +125,64 @@ def test_sublatticing():
         return identity(a=res_1)
 
     dispatch_id = ct.dispatch(workflow)(a=1, b=2)
-
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
+    assert workflow_result.error == ""
+    assert workflow_result.status == str(Result.COMPLETED)
     assert workflow_result.result == 3
-    assert workflow_result.get_node_result(0)["sublattice_result"].result == 3
+    assert workflow_result.get_node_result(db=db, node_id=0)["sublattice_result"].result == 3
+
+
+@pytest.mark.asyncio
+async def test_internal_sublattice_dispatch():
+    """Test dispatcher's out-of-process _dispatch_sublattice using a workflow executor"""
+    thread_pool = ThreadPoolExecutor()
+    sublattice_add = ct.TransportableObject(ct.lattice(add))
+    inputs = {}
+    inputs["args"] = []
+    inputs["kwargs"] = {"a": ct.TransportableObject(1), "b": ct.TransportableObject(2)}
+    workflow_executor = ["dask", {}]
+    dispatch_id = "asdf"
+    sub_dispatch_id = await _dispatch_sublattice(
+        dispatch_id,
+        "/tmp",
+        inputs=inputs,
+        serialized_callable=sublattice_add,
+        tasks_pool=thread_pool,
+        workflow_executor=workflow_executor,
+    )
+
+    workflow_result = rm.get_result(sub_dispatch_id, wait=True)
+    assert workflow_result.result == 3
+
+    try:
+        sub_dispatch_id = await _dispatch_sublattice(
+            dispatch_id,
+            "/tmp",
+            inputs=inputs,
+            serialized_callable=sublattice_add,
+            tasks_pool=thread_pool,
+            workflow_executor=["client", {}],
+        )
+
+        assert False
+    except Exception as e:
+        # Dispatch should not
+        assert str(e) == "No executor selected for dispatching sublattices"
+
+    try:
+        sub_dispatch_id = await _dispatch_sublattice(
+            dispatch_id,
+            "/tmp",
+            inputs=inputs,
+            serialized_callable=sublattice_add,
+            tasks_pool=thread_pool,
+            workflow_executor=["bogus_executor", {}],
+        )
+
+        assert False
+    except Exception as e:
+        assert True
 
 
 def test_parallelization():
@@ -226,6 +288,8 @@ def test_electron_deps_call_before():
 
     dispatch_id = ct.dispatch(workflow)(file_path=tmp_path)
     res = ct.get_result(dispatch_id, wait=True)
+
+    assert res.error == ""
 
     assert res.result == (True, "Hello")
 
@@ -415,7 +479,6 @@ def test_decorated_function():
     """
 
     import pennylane as qml
-    from matplotlib import pyplot as plt
 
     import covalent as ct
 
@@ -437,7 +500,50 @@ def test_decorated_function():
 
     rm._delete_result(dispatch_id)
 
-    assert workflow_result.status == Result.COMPLETED
+    assert workflow_result.status == str(Result.COMPLETED)
+
+
+def test_leaf_electron_failure():
+    @ct.electron
+    def failing_task():
+        assert False
+        return 1
+
+    @ct.lattice
+    def workflow():
+        failing_task()
+        return 1
+
+    dispatch_id = ct.dispatch(workflow)()
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
+
+    tg = workflow_result.lattice.transport_graph
+
+    assert workflow_result.status == str(Result.FAILED)
+    assert tg.get_node_value(0, "status") == Result.FAILED
+
+
+def test_intermediate_electron_failure():
+    @ct.electron
+    def failing_task(x):
+        assert False
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        res1 = failing_task(x)
+        res2 = failing_task(res1)
+        return res2
+
+    dispatch_id = ct.dispatch(workflow)(5)
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
+
+    tg = workflow_result.lattice.transport_graph
+
+    assert workflow_result.status == str(Result.FAILED)
+    assert tg.get_node_value(0, "status") == Result.FAILED
 
 
 @pytest.mark.skip(reason="Inconsistent outcomes")
@@ -511,10 +617,40 @@ def test_all_parameter_types_in_lattice():
     result = rm.get_result(dispatch_id, wait=True)
     rm._delete_result(dispatch_id)
 
-    assert result.inputs["args"] == [1, 2, 3, 4]
-    assert result.inputs["kwargs"] == {"c": 5, "d": 6, "e": 7}
+    assert ct.TransportableObject.deserialize_list(result.inputs["args"]) == [1, 2, 3, 4]
+    assert ct.TransportableObject.deserialize_dict(result.inputs["kwargs"]) == {
+        "c": 5,
+        "d": 6,
+        "e": 7,
+    }
 
     assert result.result == (10, (3, 4), {"d": 6, "e": 7})
+
+
+def test_client_workflow_executor(db):
+    """
+    Test setting `workflow_executor="client"`
+    """
+
+    @ct.electron
+    def new_func(a, b, c, d, e):
+        return a + b + c + d + e
+
+    @ct.lattice(workflow_executor="client")
+    def work_func(a, b, c):
+        return new_func(a, b, c, d=4, e=5)
+
+    dispatch_id = ct.dispatch(work_func)(1, 2, c=3)
+
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+
+    rm._delete_result(dispatch_id)
+
+    assert workflow_result.status == str(Result.PENDING_POSTPROCESSING)
+    assert workflow_result.result is None
+    workflow_result.persist(db)
+
+    assert workflow_result.post_process() == 15
 
 
 def test_two_iterations():
@@ -530,7 +666,7 @@ def test_two_iterations():
         return first + b + last
 
     midword.build_graph("hello world", "beautiful", 6)
-    assert [0, 1, 2, 3, 4, 5, 6, 7] == list(midword.transport_graph._graph.nodes)
+    assert [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] == list(midword.transport_graph._graph.nodes)
 
 
 def test_two_iterations_float():
@@ -546,10 +682,10 @@ def test_two_iterations_float():
         return half + quarter
 
     add_half_quarter.build_graph(0.1)
-    assert [0, 1, 2, 3, 4] == list(add_half_quarter.transport_graph._graph.nodes)
+    assert [0, 1, 2, 3, 4, 5, 6] == list(add_half_quarter.transport_graph._graph.nodes)
 
 
-def test_wait_for():
+def test_wait_for(db):
     """Test whether wait_for functionality executes as expected"""
 
     @ct.electron
@@ -579,15 +715,78 @@ def test_wait_for():
 
     dispatch_id = ct.dispatch(workflow)()
     result = ct.get_result(dispatch_id, wait=True)
-    rm._delete_result(dispatch_id)
+    result.persist(db)
 
-    assert result.status == Result.COMPLETED
+    assert result.status == str(Result.COMPLETED)
     assert (
-        result.get_node_result(node_id=6)["start_time"]
-        > result.get_node_result(node_id=0)["end_time"]
+        result.get_node_result(db=db, node_id=6)["start_time"]
+        > result.get_node_result(db=db, node_id=0)["end_time"]
     )
     assert (
-        result.get_node_result(node_id=6)["start_time"]
-        > result.get_node_result(node_id=2)["end_time"]
+        result.get_node_result(db=db, node_id=6)["start_time"]
+        > result.get_node_result(db=db, node_id=2)["end_time"]
     )
     assert result.result == 1500
+    rm._delete_result(dispatch_id)
+
+
+def test_electron_getitem(db):
+    """Test electron __getitem__, both with raw keys and with electron keys"""
+
+    @ct.electron
+    def create_array():
+        return [0, 1, 2, 3, 4, 5]
+
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.lattice
+    def workflow():
+        arr = create_array()
+        third_element = arr[2]
+        return third_element
+
+    @ct.lattice
+    def workflow_using_electron_key():
+        arr = create_array()
+        third_element = arr[identity(2)]
+        return third_element
+
+    dispatch_id = ct.dispatch(workflow)()
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    assert workflow_result.result == 2
+    rm._delete_result(dispatch_id)
+
+    dispatch_id = ct.dispatch(workflow_using_electron_key)()
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    assert workflow_result.result == 2
+
+    rm._delete_result(dispatch_id)
+
+
+def test_electron_getattr():
+    """Test electron __getattr__"""
+
+    class Point:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+
+    @ct.electron
+    def create_point():
+        return Point(3, 4)
+
+    @ct.electron
+    def echo(a):
+        return a
+
+    @ct.lattice
+    def workflow():
+        point = create_point()
+        return point.x * point.x + point.y * point.y
+
+    dispatch_id = ct.dispatch(workflow)()
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    assert workflow_result.result == 25
+    rm._delete_result(dispatch_id)
