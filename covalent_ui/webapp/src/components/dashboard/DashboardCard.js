@@ -26,19 +26,19 @@ import {
   Typography,
   Divider,
   Skeleton,
-  Snackbar
+  Snackbar,
+  SvgIcon,
 } from '@mui/material'
 import { Box } from '@mui/system'
 import { displayStatus, secondsToHms } from '../../utils/misc'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchDashboardOverview } from '../../redux/dashboardSlice'
+import { ReactComponent as closeIcon } from '../../assets/close.svg'
 
 const DashboardCard = () => {
   const dispatch = useDispatch()
   // check if socket message is received and call API
-  const callSocketApi = useSelector(
-    (state) => state.common.callSocketApi
-  )
+  const callSocketApi = useSelector((state) => state.common.callSocketApi)
   // selecting the dashboardOverview from redux state
   const dashboardStats = useSelector(
     (state) => state.dashboard.dashboardOverview
@@ -48,11 +48,12 @@ const DashboardCard = () => {
   )
 
   const isError = useSelector(
-    (state) => state.dashboard.fetchDashboardOverview.error)
+    (state) => state.dashboard.fetchDashboardOverview.error
+  )
   //check if any dispatches are deleted and call the API
   const isDeleted = useSelector((state) => state.dashboard.dispatchesDeleted)
 
-  const [openSnackbar, setOpenSnackbar] = useState(Boolean(isError));
+  const [openSnackbar, setOpenSnackbar] = useState(Boolean(isError))
 
   const fetchDashboardOverviewResult = () => {
     dispatch(fetchDashboardOverview())
@@ -61,10 +62,10 @@ const DashboardCard = () => {
   useEffect(() => {
     fetchDashboardOverviewResult()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDeleted,callSocketApi])
+  }, [isDeleted, callSocketApi])
 
   useEffect(() => {
-    if (isError) setOpenSnackbar(true);
+    if (isError) setOpenSnackbar(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isError])
 
@@ -79,6 +80,17 @@ const DashboardCard = () => {
           autoHideDuration={3000}
           message="Something went wrong,please contact the administrator!"
           onClose={() => setOpenSnackbar(false)}
+          action={
+            <SvgIcon
+              sx={{
+                mt: 2,
+                zIndex: 2,
+                cursor: 'pointer',
+              }}
+              component={closeIcon}
+              onClick={() => setOpenSnackbar(false)}
+            />
+          }
         />
       </Box>
       <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-around' }}>

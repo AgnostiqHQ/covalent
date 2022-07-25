@@ -51,7 +51,8 @@ import {
   linkClasses,
   Grid,
   Skeleton,
-  Snackbar
+  Snackbar,
+  SvgIcon,
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 import {
@@ -65,6 +66,7 @@ import ResultProgress from './ResultProgress'
 import SortDispatch from './SortDispatch'
 import DialogBox from '../common/DialogBox'
 import { ReactComponent as DeleteNewIcon } from '../../assets/delete.svg'
+import { ReactComponent as closeIcon } from '../../assets/close.svg'
 
 const headers = [
   {
@@ -296,9 +298,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-  {
-    fontSize: '1rem',
-  },
+    {
+      fontSize: '1rem',
+    },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -363,14 +365,17 @@ const ResultListing = () => {
   const [offset, setOffset] = useState(0)
   const [openDialogBox, setOpenDialogBox] = useState(false)
   const isError = useSelector(
-    (state) => state.dashboard.fetchDashboardList.error)
-  const [openSnackbar, setOpenSnackbar] = useState(Boolean(isError));
-  const [snackbarMessage, setSnackbarMessage] = useState(null);
+    (state) => state.dashboard.fetchDashboardList.error
+  )
+  const [openSnackbar, setOpenSnackbar] = useState(Boolean(isError))
+  const [snackbarMessage, setSnackbarMessage] = useState(null)
 
   //check if any dispatches are deleted and call the API
   const isDeleted = useSelector((state) => state.dashboard.dispatchesDeleted)
 
-  const dashboardListView = useSelector((state) => state.dashboard.dashboardList)?.map((e) => {
+  const dashboardListView = useSelector(
+    (state) => state.dashboard.dashboardList
+  )?.map((e) => {
     return {
       dispatchId: e.dispatch_id,
       endTime: parseISO(e.ended_at),
@@ -404,9 +409,7 @@ const ResultListing = () => {
     (state) => state.dashboard.fetchDashboardList.isFetching
   )
   // check if socket message is received and call API
-  const callSocketApi = useSelector(
-    (state) => state.common.callSocketApi
-  )
+  const callSocketApi = useSelector((state) => state.common.callSocketApi)
   const dashboardListAPI = () => {
     const bodyParams = {
       count: 10,
@@ -436,13 +439,15 @@ const ResultListing = () => {
   useEffect(() => {
     if (isError) {
       setOpenSnackbar(true)
-      setSnackbarMessage('Something went wrong,please contact the administrator!')
+      setSnackbarMessage(
+        'Something went wrong,please contact the administrator!'
+      )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isError])
 
   useEffect(() => {
-    if (offset === 0) setPage(1);
+    if (offset === 0) setPage(1)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offset])
 
@@ -479,7 +484,7 @@ const ResultListing = () => {
   const handleDeleteSelected = () => {
     dispatch(deleteDispatches({ dispatches: selected })).then((action) => {
       if (action.type === deleteDispatches.fulfilled.type) {
-        setOpenSnackbar(true);
+        setOpenSnackbar(true)
         setSnackbarMessage('Dispatches have been deleted successfully!')
         if (selected.length === dashboardListView.length) {
           setOffset(0)
@@ -498,6 +503,17 @@ const ResultListing = () => {
         autoHideDuration={3000}
         message={snackbarMessage}
         onClose={() => setOpenSnackbar(false)}
+        action={
+          <SvgIcon
+            sx={{
+              mt: 2,
+              zIndex: 2,
+              cursor: 'pointer',
+            }}
+            component={closeIcon}
+            onClick={() => setOpenSnackbar(false)}
+          />
+        }
       />
       <Box>
         <ResultsTableToolbar
@@ -565,9 +581,7 @@ const ResultListing = () => {
                         </TableCell>
 
                         <TableCell>{result.latticeName}</TableCell>
-                        <TableCell>
-                          {secondsToHms(result.runTime)}
-                        </TableCell>
+                        <TableCell>{secondsToHms(result.runTime)}</TableCell>
 
                         <TableCell>{formatDate(result.startTime)}</TableCell>
 
