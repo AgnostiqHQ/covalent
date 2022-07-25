@@ -194,6 +194,7 @@ async def test_cluster_scale_up_down(admin_worker_addr, event_loop):
     except TimeoutError:
         pass
 
+
 @pytest.mark.asyncio
 async def test_cluster_logs_cli(admin_worker_addr, event_loop):
     asyncio.set_event_loop(event_loop)
