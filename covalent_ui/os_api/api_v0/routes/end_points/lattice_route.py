@@ -37,7 +37,6 @@ from covalent_ui.os_api.api_v0.models.lattices_model import (
     LatticeExecutorResponse,
     LatticeFileResponse,
 )
-from covalent_ui.os_api.api_v0.utils.exceptions import CustomException
 from covalent_ui.os_api.api_v0.utils.file_handle import FileHandler
 
 routes: APIRouter = APIRouter()
