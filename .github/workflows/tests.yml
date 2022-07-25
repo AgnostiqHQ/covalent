@@ -183,7 +183,7 @@ jobs:
             PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc. || error "tests for UI backend do not exist."
       
       - name: Generate UI backend coverage report
-        if: ${{ steps.working-directory.outputs.ui_backend}} == true. && ${{ steps.ui_tests.outcome }} == 'success'
+        if: ${{ steps.working-directory.outputs.ui_backend}} == true && ${{ steps.ui_tests.outcome }} == 'success'
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
@@ -211,7 +211,7 @@ jobs:
           name: "Functional Tests"
 
       - name: Upload UI backend report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.ui_backend}} == true && $${{ steps.ui_tests.outputs.exit_code }} == 0
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.ui_backend}} == true
         uses: codecov/codecov-action@v3
         with:
           files: ./ui_backend_coverage.xml
