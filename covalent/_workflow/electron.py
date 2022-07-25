@@ -25,8 +25,6 @@ import operator
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Union
 
-from covalent.executor.base import RESERVED_RETVAL_KEY__FILES
-
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger
@@ -45,7 +43,7 @@ from .._shared_files.defaults import (
 )
 from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
-from .depscall import DepsCall
+from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
 from .lattice import Lattice
 from .transport import TransportableObject

@@ -23,6 +23,8 @@ from copy import deepcopy
 from .deps import Deps
 from .transport import TransportableObject
 
+RESERVED_RETVAL_KEY__FILES = "files"
+
 
 class DepsCall(Deps):
     """Deps class to encapsulate python functions to be

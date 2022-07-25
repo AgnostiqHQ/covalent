@@ -34,6 +34,8 @@ from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
 import cloudpickle as pickle
 
+from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
+
 from .._shared_files import logger
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
@@ -41,8 +43,6 @@ from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-RESERVED_RETVAL_KEY__FILES = "files"
 
 
 def wrapper_fn(
