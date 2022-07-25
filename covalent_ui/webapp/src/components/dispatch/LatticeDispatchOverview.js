@@ -22,7 +22,7 @@
 import { Divider, Paper, Tooltip, Typography, Skeleton } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import React, { useEffect } from 'react'
-import { formatDate, truncateMiddle,secondsToHms } from '../../utils/misc'
+import { formatDate, truncateMiddle, secondsToHms } from '../../utils/misc'
 import CopyButton from '../common/CopyButton'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
@@ -132,15 +132,13 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       )}
 
       {/* Input */}
-      {Object.keys(drawerInput).length !== 0 && (
         <InputSection
-          isFetching={drawerInputListFetching}
+          isFetching={drawerInputListFetching && Object.keys(drawerInput).length === 0}
           inputs={drawerInput.data}
         />
-      )}
 
       {/* Result */}
-      {Object.keys(drawerResult).length !== 0 && (
+      {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
         <>
           <Heading>Result</Heading>
           {drawerResultListFetching ? (
@@ -154,12 +152,10 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       )}
 
       {/* Executor */}
-      {Object.keys(drawerExecutorDetail).length !== 0 && (
-        <ExecutorSection
-          isFetching={drawerExecutorDetailListFetching}
-          metadata={drawerExecutorDetail}
-        />
-      )}
+      <ExecutorSection
+        isFetching={Object.keys(drawerExecutorDetail).length === 0 && drawerExecutorDetailListFetching}
+        metadata={drawerExecutorDetail}
+      />
 
       <Divider sx={{ my: 3 }} />
 
@@ -167,14 +163,13 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
 
       <Heading />
 
-      {Object.keys(drawerFunctionString).length !== 0 &&
-        (drawerFunctionStringListFetching ? (
-          <Skeleton height={100} />
-        ) : (
-          <Paper elevation={0}>
-            <SyntaxHighlighter src={drawerFunctionString.data} />
-          </Paper>
-        ))}
+      {Object.keys(drawerFunctionString).length === 0 && drawerFunctionStringListFetching ? (
+        <Skeleton height={100} />
+      ) : (
+        <Paper elevation={0}>
+          <SyntaxHighlighter src={drawerFunctionString.data} />
+        </Paper>
+      )}
     </>
   )
 }
