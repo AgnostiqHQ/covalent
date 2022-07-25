@@ -182,7 +182,7 @@ jobs:
             PYTHONPATH=$PWD/ pytest -vv tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc. || echo 'tests for UI backend do not exist'
       
       - name: Generate UI backend coverage report
-        if: $${{ steps.ui_tests.outcome }} == 'success'
+        if:  ${{ steps.working-directory.outputs.ui_backend}} == true && $${{ steps.ui_tests.output }} == 'true'
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
