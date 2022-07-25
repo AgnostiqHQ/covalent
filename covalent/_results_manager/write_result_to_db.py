@@ -369,7 +369,7 @@ def write_lattice_error(db: DataStore, dispatch_id: str, error: str):
 
 
 def store_file(storage_path: str, filename: str, data: Any = None) -> None:
-    """This function stores data corresponding to the filepaths in the DB."""
+    """This function writes data corresponding to the filepaths in the DB."""
 
     if filename.endswith(".pkl"):
         with open(Path(storage_path) / filename, "wb") as f:
@@ -389,5 +389,15 @@ def store_file(storage_path: str, filename: str, data: Any = None) -> None:
         raise InvalidFileExtension("The file extension is not supported.")
 
 
-def load_file():
-    pass
+def load_file(storage_path: str, filename: str) -> Any:
+    """This function loads data for the filenames in the DB."""
+
+    if filename.endswith(".pkl"):
+        with open(Path(storage_path) / filename, "rb") as f:
+            data = cloudpickle.load(f)
+
+    elif filename.endswith(".log") or filename.endswith(".txt"):
+        with open(Path(storage_path) / filename, "w+") as f:
+            data = f.read(data)
+
+    return data

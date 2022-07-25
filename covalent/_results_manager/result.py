@@ -509,8 +509,9 @@ Node Outputs
                 )
                 .first()
             )
-            with open(os.path.join(electron.storage_path, electron.results_filename), "rb") as f:
-                return pickle.load(f)
+            return load_file(
+                storage_path=electron.storage_path, filename=electron.results_filename
+            )
 
     def _get_node_value(self, db: DataStore, node_id: int) -> Any:
         """
@@ -544,8 +545,7 @@ Node Outputs
                 )
                 .first()
             )
-            with open(os.path.join(electron.storage_path, electron.value_filename), "rb") as f:
-                return pickle.load(f)
+            return load_file(storage_path=electron.storage_path, filename=electron.value_filename)
 
     def _get_node_error(self, db: DataStore, node_id: int) -> Any:
         """
@@ -579,9 +579,7 @@ Node Outputs
                 )
                 .first()
             )
-
-            with open(os.path.join(electron.storage_path, electron.stderr_filename), "rb") as f:
-                return pickle.load(f)
+            return load_file(storage_path=electron.storage_path, filename=electron.stderr_filename)
 
     def _update_node(
         self,

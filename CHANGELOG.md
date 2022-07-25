@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Files with .txt, .log extensions are stored as strings.
+- Get result web request timeout to 2 seconds.
 
 ## [0.151.1] - 2022-07-22
 
