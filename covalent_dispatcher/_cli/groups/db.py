@@ -65,7 +65,6 @@ def alembic(ctx: click.Context, alembic_args) -> None:
     Expose alembic CLI to be used via covalent CLI
     """
     try:
-        # convert
         alembic_args = list(alembic_args)
         alembic_command = ["alembic"] + alembic_args
         p = Popen(alembic_command, stdout=PIPE, stderr=PIPE)
