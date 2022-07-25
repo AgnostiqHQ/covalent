@@ -10,6 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Enhanced `tests.yml` to upload coverage reports by domain
+=======
+## [0.153.1] - 2022-07-25
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Fixed
+
+- Stdout and stderr are now captured when using the dask executor.
+
 
 ### Tests
 
@@ -123,7 +136,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Added workflow to stale and close pull requests
->>>>>>> develop
+
 
 ### Docs
 
