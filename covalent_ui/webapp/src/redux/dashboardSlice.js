@@ -85,7 +85,7 @@ export const dashboardSlice = createSlice({
       })
       .addCase(fetchDashboardList.rejected, (state, { payload }) => {
         state.fetchDashboardList.isFetching = false
-        state.fetchDashboardList.error = payload.detail
+        state.fetchDashboardList.error = payload
       })
 
       // dashboardOverview
@@ -100,7 +100,7 @@ export const dashboardSlice = createSlice({
       })
       .addCase(fetchDashboardOverview.rejected, (state, { payload }) => {
         state.fetchDashboardOverview.isFetching = false
-        state.fetchDashboardOverview.error = payload.errors[0]
+        state.fetchDashboardOverview.error = payload
       })
 
       // deleteResults
@@ -116,7 +116,7 @@ export const dashboardSlice = createSlice({
       .addCase(deleteDispatches.rejected, (state, { payload }) => {
         state.deleteResults.isFetching = false
         state.deleteResults.isDeleted = false
-        state.deleteResults.error = payload.detail
+        state.deleteResults.error = payload
       })
   },
 })

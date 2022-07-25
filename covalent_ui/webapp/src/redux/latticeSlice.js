@@ -76,7 +76,7 @@ export const latticeSlice = createSlice({
       })
       .addCase(latticeDetails.rejected, (state, { payload }) => {
         state.latticeDetailsResults.isFetching = false
-        state.latticeDetailsResults.error = payload.message
+        state.latticeDetailsResults.error = payload
       })
 
        // latticeResults
@@ -90,7 +90,7 @@ export const latticeSlice = createSlice({
       })
       .addCase(latticeResults.rejected, (state, { payload }) => {
         state.latticeResultsList.isFetching = false
-        state.latticeResultsList.error = payload.message
+        state.latticeResultsList.error = payload
       })
 
       // latticeOutput
@@ -104,7 +104,7 @@ export const latticeSlice = createSlice({
       })
       .addCase(latticeOutput.rejected, (state, { payload }) => {
         state.latticeOutputList.isFetching = false
-        state.latticeOutputList.error = payload.message
+        state.latticeOutputList.error = payload
       })
 
       // latticeFunctiontostring
@@ -118,7 +118,7 @@ export const latticeSlice = createSlice({
       })
       .addCase(latticeFunctionString.rejected, (state, { payload }) => {
         state.latticeFunctionStringList.isFetching = false
-        state.latticeFunctionStringList.error = payload.message
+        state.latticeFunctionStringList.error = payload
       })
 
        // latticeInput
@@ -132,7 +132,7 @@ export const latticeSlice = createSlice({
       })
       .addCase(latticeInput.rejected, (state, { payload }) => {
         state.latticeInputList.isFetching = false
-        state.latticeInputList.error = payload.message
+        state.latticeInputList.error = payload
       })
 
       // latticeError
@@ -146,7 +146,7 @@ export const latticeSlice = createSlice({
       })
       .addCase(latticeError.rejected, (state, { payload }) => {
         state.latticeErrorList.isFetching = false
-        state.latticeErrorList.error = payload.message
+        state.latticeErrorList.error = payload
       })
 
       // latticeExecutorDetails
@@ -160,7 +160,7 @@ export const latticeSlice = createSlice({
       })
       .addCase(latticeExecutorDetail.rejected, (state, { payload }) => {
         state.latticeExecutorDetailList.isFetching = false
-        state.latticeExecutorDetailList.error = payload.message
+        state.latticeExecutorDetailList.error = payload
       })
 
 

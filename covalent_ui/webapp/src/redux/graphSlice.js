@@ -34,7 +34,7 @@ export const graphSlice = createSlice({
       })
       .addCase(graphResults.rejected, (state, { payload }) => {
         state.graphResultsList.isFetching = false
-        state.graphResultsList.error = payload.detail
+        state.graphResultsList.error = payload
       })
 
   },

@@ -90,7 +90,7 @@ const ElectronNode = ({
             case 'RUNNING':
               return (
                 <SvgIcon
-                  sx={{ mt: 0.5, mr: 0.5, fontSize: 14, fill: color }}>
+                  sx={{ mt: 0.1, mr: 0.5, fontSize: 10, fill: color }}>
                   <LoaderSvg />
                 </SvgIcon>
               )

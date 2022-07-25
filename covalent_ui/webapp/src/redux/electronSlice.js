@@ -73,8 +73,8 @@ export const electronSlice = createSlice({
         state.electronDetailsList.error = null
       })
       .addCase(electronDetails.rejected, (state, { payload }) => {
-        state.electronDetailsList.isFetching = true
-        state.electronDetailsList.error = payload.errors
+        state.electronDetailsList.isFetching = false
+        state.electronDetailsList.error = payload
       })
 
       // electron Results
@@ -87,8 +87,8 @@ export const electronSlice = createSlice({
         state.electronResultList.error = null
       })
       .addCase(electronResult.rejected, (state, { payload }) => {
-        state.electronResultList.isFetching = true
-        state.electronResultList.error = payload.errors
+        state.electronResultList.isFetching = false
+        state.electronResultList.error = payload
       })
 
        // electron function to string
@@ -101,8 +101,8 @@ export const electronSlice = createSlice({
         state.electronFunctionStringList.error = null
       })
       .addCase(electronFunctionString.rejected, (state, { payload }) => {
-        state.electronFunctionStringList.isFetching = true
-        state.electronFunctionStringList.error = payload.errors
+        state.electronFunctionStringList.isFetching = false
+        state.electronFunctionStringList.error = payload
       })
 
       // electron Input
@@ -115,8 +115,8 @@ export const electronSlice = createSlice({
         state.electronInputList.error = null
       })
       .addCase(electronInput.rejected, (state, { payload }) => {
-        state.electronInputList.isFetching = true
-        state.electronInputList.error = payload.errors
+        state.electronInputList.isFetching = false
+        state.electronInputList.error = payload
       })
 
       // electron Error
@@ -129,8 +129,8 @@ export const electronSlice = createSlice({
         state.electronErrorList.error = null
       })
       .addCase(electronError.rejected, (state, { payload }) => {
-        state.electronErrorList.isFetching = true
-        state.electronErrorList.error = payload.errors
+        state.electronErrorList.isFetching = false
+        state.electronErrorList.error = payload
       })
 
       // electron Error
@@ -143,8 +143,8 @@ export const electronSlice = createSlice({
         state.electronExecutorList.error = null
       })
       .addCase(electronExecutor.rejected, (state, { payload }) => {
-        state.electronExecutorList.isFetching = true
-        state.electronExecutorList.error = payload.errors
+        state.electronExecutorList.isFetching = false
+        state.electronExecutorList.error = payload
       })
 
   },

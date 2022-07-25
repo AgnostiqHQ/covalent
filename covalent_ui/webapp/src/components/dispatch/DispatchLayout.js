@@ -43,9 +43,7 @@ export function DispatchLayout() {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
   const graph_result = useSelector((state) => state.graphResults.graphList)
-  const fetch = useSelector(
-    (state) => state.graphResults.graphResultsList.isFetching
-  )
+  const latDetailError = useSelector((state) => state.latticeResults.latticeDetailsResults.error)
   // check if socket message is received and call API
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
   useEffect(() => {
@@ -84,10 +82,9 @@ export function DispatchLayout() {
     setSelectedElements([])
   }, [dispatchId, setSelectedElements])
 
-  if (Object.keys(graph_result).length !== 0) {
-    if (graph_result.links.length === 0) {
-      return <NotFound text="Lattice dispatch not found." />
-    }
+  // dispatch id not found
+  if(latDetailError !== null && latDetailError.status === 400){
+    return <NotFound text="Lattice dispatch not found." />
   }
 
   return (

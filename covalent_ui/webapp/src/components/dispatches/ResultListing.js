@@ -492,6 +492,10 @@ const ResultListing = () => {
         setSelected([])
         setOpenDialogBox(false)
         dispatch(dispatchesDeleted())
+      } else if (action.type === deleteDispatches.rejected.type) {
+        setOpenSnackbar(true)
+        setSnackbarMessage('Something went wrong and could not delete dispatches!')
+        setOpenDialogBox(false)
       }
     })
   }
