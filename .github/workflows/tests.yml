@@ -127,7 +127,7 @@ jobs:
             max_attempts: 2
             on_retry_command: rm -f ~/.config/covalent/covalent.conf
             command: |
-              PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher 
+              PYTHONPATH=$PWD/ pytest tests -vv --reruns=5 --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher
 
       - name: Generate coverage report
         run: coverage xml
