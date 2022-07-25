@@ -106,7 +106,7 @@ def test_results_dir_in_sublattice():
 
     rm._delete_result(dispatch_id, results_dir="/tmp/results")
 
-    assert result_object.error is None
+    assert result_object.error == ""
     assert result_object.status == str(result_object.COMPLETED)
 
     assert output == 25
