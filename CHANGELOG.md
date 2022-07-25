@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.151.1] - 2022-07-22
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Fixed
+
+- Adding maximum number of retries and timeout parameter to the get result http call.
+- Disabling result_webhook for now.
+
+## [0.151.0] - 2022-07-22
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+### Added
+
+- `BaseAsyncExecutor` has been added which can be inherited by new async-aware executors.
+
+### Changed
+
+- Since tasks were basically submitting the functions to a Dask cluster by default, they have been converted into asyncio `Tasks` instead which support a far larger number of concurrent tasks than previously used `ThreadPool`.
+
+- `tasks_pool` will still be used to schedule tasks which use non-async executors.
+
+- Executor's `executor` will now receive a callable instead of a serialized function. This allows deserializing the function where it is going to be executed while providing a simplified `execute` at the same time.
+
+- `uvloop` is being used instead of the default event loop of `asyncio` for better performance.
+
+- Tests have also been updated to reflect above changes.
+
 ### Operations
 
 - Made Santosh the sole owner of `/docs`
