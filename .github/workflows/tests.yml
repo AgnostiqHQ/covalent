@@ -130,7 +130,7 @@ jobs:
         run: pip install -e .
 
       - name: Start Covalent dispatcher server
-        run: covalent start
+        run: covalent start --ignore-migrations
                
       - name: Run SDK tests and measure coverage
         if: ${{ steps.working-directory.outputs.sdk}} == true

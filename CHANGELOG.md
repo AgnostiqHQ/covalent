@@ -10,7 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Enhanced `tests.yml` to upload coverage reports by domain
-=======
+
+## [0.154.0] - 2022-07-25
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Added methods to programatically fetch information from Alembic without needing subprocess
+
 ## [0.153.1] - 2022-07-25
 
 ### Authors
