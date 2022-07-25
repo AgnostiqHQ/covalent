@@ -72,6 +72,8 @@ jobs:
             - 'covalent_dispatcher/**'
             ui_backend:
             - 'covalent_ui/**'
+            ui_backend_tests:
+            - 'tests/covalent_ui_tests/**'
             
       - name: Set up Python
         if: matrix.os == 'macos-latest'
@@ -172,7 +174,7 @@ jobs:
 
       - name: Run UI backend tests and measure coverage
         id: ui_tests
-        if: ${{ steps.working-directory.outputs.ui_backend}} == true
+        if: ${{ steps.working-directory.outputs.ui_backend }} == true && ${{ steps.working-directory.outputs.ui_backend_tests }} == true
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
@@ -183,7 +185,7 @@ jobs:
             PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc. || error "tests for UI backend do not exist."
       
       - name: Generate UI backend coverage report
-        if: ${{ steps.working-directory.outputs.ui_backend}} == true && ${{ steps.ui_tests.outcome }} == 'success'
+        if: ${{ steps.working-directory.outputs.ui_backend}} == true && ${{ steps.working-directory.outputs.ui_backend_tests }} == true
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
