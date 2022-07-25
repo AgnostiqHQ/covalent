@@ -71,10 +71,10 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
-        if result[0] is not None:
+        if result is not None:
             handler = FileHandler(result["storage_path"])
             if name == "function_string":
-                response = handler.read_from_text(result["function_string_filename"])
+                response = handler.read_from_pickle(result["function_string_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "function":
                 response = handler.read_from_pickle(result["function_filename"])
