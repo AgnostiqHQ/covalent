@@ -72,8 +72,6 @@ jobs:
             - 'covalent_dispatcher/**'
             ui_backend:
             - 'covalent_ui/**'
-            ui_backend_tests:
-            - 'tests/covalent_tests/**'
             
       - name: Set up Python
         if: matrix.os == 'macos-latest'
@@ -157,7 +155,7 @@ jobs:
             PYTHONPATH=$PWD/ pytest -vv tests/covalent_dispatcher_tests  --cov=covalent_dispatcher --cov-config=.coveragerc
       
       - name: Generate dispatcher coverage report
-        if: ${{ steps.working-directory.outputs.dispatcher }} == 'true'
+        if: ${{ steps.working-directory.outputs.dispatcher }} == true
         run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
@@ -185,11 +183,11 @@ jobs:
             PYTHONPATH=$PWD/ pytest -vv tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc.
       
       - name: Generate UI backend coverage report
-        if:  ${{ steps.working-directory.outputs.ui_backend}} == true && $${{ steps.ui_tests.outcome }} == 'success'
+        if:  ${{ steps.working-directory.outputs.ui_backend}} == true && $${{ steps.ui_tests.conclusion }} == 'success'
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.sdk}} == 'true'
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.sdk}} == true
         uses: codecov/codecov-action@v3
         with:
           files: ./sdk_coverage.xml
@@ -213,7 +211,7 @@ jobs:
           name: "Functional Tests"
 
       - name: Upload UI backend report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.ui_backend}} == true && $${{ steps.ui_tests.outcome }} == 'success'
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.ui_backend}} == true && $${{ steps.ui_tests.conclusion }} == 'success'
         uses: codecov/codecov-action@v3
         with:
           files: ./ui_backend_coverage.xml
