@@ -128,13 +128,11 @@ const DispatchDrawerContents = () => {
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
-          {Object.keys(drawerLatticeDetails).length !== 0 && (
-            <LatticeDispatchOverview
-              dispatchId={dispatchId}
-              latDetails={drawerLatticeDetails}
-              isFetching={drawerLatticeDetailsFetching}
-            />
-          )}
+          <LatticeDispatchOverview
+            dispatchId={dispatchId}
+            latDetails={drawerLatticeDetails}
+            isFetching={drawerLatticeDetailsFetching}
+          />
         </TabPanel>
       </TabContext>
       {/* } */}
