@@ -112,7 +112,7 @@ class DaskExecutor(BaseAsyncExecutor):
         app_log.debug("Submitted task to dask")
         result, worker_stdout, worker_stderr = await dask_client.gather(future)
 
-        print(worker_stdout, end="")
+        print(worker_stdout, end="", file=sys.stdout)
         print(worker_stderr, end="", file=sys.stderr)
 
         return result
