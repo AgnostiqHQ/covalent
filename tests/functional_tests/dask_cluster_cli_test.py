@@ -35,8 +35,9 @@ from covalent_dispatcher._cli.service import (
     _get_cluster_logs,
     _get_cluster_size,
     _get_cluster_status,
+    _get_cluster_logs
 )
-from covalent_dispatcher._service.app_dask import DaskAdminWorker, DaskCluster
+from covalent_dispatcher._service.app_dask import DaskAdminWorker
 
 
 @pytest.fixture(scope="module")
@@ -193,7 +194,6 @@ async def test_cluster_scale_up_down(admin_worker_addr, event_loop):
         assert cluster_size == dask.system.CPU_COUNT
     except TimeoutError:
         pass
-
 
 @pytest.mark.asyncio
 async def test_cluster_logs_cli(admin_worker_addr, event_loop):
