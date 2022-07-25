@@ -138,7 +138,7 @@ jobs:
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
-            PYTHONPATH=$PWD/ pytest -vv tests/covalent_tests  --cov=covalent --cov-config=.coveragerc
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests  --cov=covalent --cov-config=.coveragerc
             
       - name: Generate SDK coverage report
         if: ${{ steps.working-directory.outputs.sdk}} == true
@@ -152,7 +152,7 @@ jobs:
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
-            PYTHONPATH=$PWD/ pytest -vv tests/covalent_dispatcher_tests  --cov=covalent_dispatcher --cov-config=.coveragerc
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_dispatcher_tests  --cov=covalent_dispatcher --cov-config=.coveragerc
       
       - name: Generate dispatcher coverage report
         if: ${{ steps.working-directory.outputs.dispatcher }} == true
@@ -165,7 +165,7 @@ jobs:
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
-            PYTHONPATH=$PWD/ pytest -vv tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
       
       - name: Generate functional test coverage report
         run: coverage xml -o functional_tests_coverage.xml
@@ -179,7 +179,7 @@ jobs:
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
-            PYTHONPATH=$PWD/ pytest -vv tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc.
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc.
             echo ::set-output name=exit_code::$?
       
       - name: Generate UI backend coverage report

@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Enhanced `tests.yml` to upload coverage reports by domain
 
+### Tests
+
+- Fixed Dask cluster CLI tests
+
 ## [0.153.0] - 2022-07-25
 
 ### Authors
