@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
-- Enhanced `tests.yml` to upload coverage reports by domain
+- Improved `tests.yml` to upload coverage reports by domain
 
 ### Docs
 
