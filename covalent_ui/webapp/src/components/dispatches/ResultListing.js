@@ -67,6 +67,7 @@ import SortDispatch from './SortDispatch'
 import DialogBox from '../common/DialogBox'
 import { ReactComponent as DeleteNewIcon } from '../../assets/delete.svg'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
+import Runtime from './Runtime'
 
 const headers = [
   {
@@ -260,7 +261,8 @@ const ResultsTableToolbar = ({
           ml: 'auto',
           px: 1,
           py: 0.5,
-          maxWidth: 240,
+          maxWidth: 260,
+          height: '32px',
           border: '1px solid #303067',
           borderRadius: '60px',
         }}
@@ -322,10 +324,10 @@ const StyledTable = styled(Table)(({ theme }) => ({
       borderColor: theme.palette.background.default,
       paddingTop: 2,
       paddingBottom: 2,
-      color: theme.palette.primary.white,
+      color: theme.palette.text.secondary,
     },
     [`& .${linkClasses.root}`]: {
-      color: theme.palette.primary.white,
+      color: theme.palette.text.secondary,
     },
   },
 
@@ -494,7 +496,9 @@ const ResultListing = () => {
         dispatch(dispatchesDeleted())
       } else if (action.type === deleteDispatches.rejected.type) {
         setOpenSnackbar(true)
-        setSnackbarMessage('Something went wrong and could not delete dispatches!')
+        setSnackbarMessage(
+          'Something went wrong and could not delete dispatches!'
+        )
         setOpenDialogBox(false)
       }
     })
@@ -585,7 +589,16 @@ const ResultListing = () => {
                         </TableCell>
 
                         <TableCell>{result.latticeName}</TableCell>
-                        <TableCell>{secondsToHms(result.runTime)}</TableCell>
+                        {result.status === 'RUNNING' ? (
+                          <TableCell>
+                            <Runtime
+                              startTime={result.startTime}
+                              endTime={result.endTime}
+                            />
+                          </TableCell>
+                        ) : (
+                          <TableCell>{secondsToHms(result.runTime)}</TableCell>
+                        )}
 
                         <TableCell>{formatDate(result.startTime)}</TableCell>
 

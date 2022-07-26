@@ -34,6 +34,7 @@ import {
   latticeInput,
   latticeExecutorDetail,
 } from '../../redux/latticeSlice'
+import Runtime from '../dispatches/Runtime'
 
 const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
   const result = latDetails
@@ -106,10 +107,11 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       <Heading>Runtime</Heading>
       {isFetching ? (
         <Skeleton />
+      ) : result.status === 'RUNNING' ? (
+        <Runtime startTime={result.started_at} endTime={result.ended_at} />
       ) : (
         secondsToHms(result.runtime)
-      )
-      }
+      )}
 
       {/* Directory */}
       <Heading>Directory</Heading>
@@ -132,10 +134,12 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       )}
 
       {/* Input */}
-        <InputSection
-          isFetching={drawerInputListFetching && Object.keys(drawerInput).length === 0}
-          inputs={drawerInput.data}
-        />
+      <InputSection
+        isFetching={
+          drawerInputListFetching && Object.keys(drawerInput).length === 0
+        }
+        inputs={drawerInput.data}
+      />
 
       {/* Result */}
       {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
@@ -153,7 +157,10 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
 
       {/* Executor */}
       <ExecutorSection
-        isFetching={Object.keys(drawerExecutorDetail).length === 0 && drawerExecutorDetailListFetching}
+        isFetching={
+          Object.keys(drawerExecutorDetail).length === 0 &&
+          drawerExecutorDetailListFetching
+        }
         metadata={drawerExecutorDetail}
       />
 
@@ -163,7 +170,8 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
 
       <Heading />
 
-      {Object.keys(drawerFunctionString).length === 0 && drawerFunctionStringListFetching ? (
+      {Object.keys(drawerFunctionString).length === 0 &&
+      drawerFunctionStringListFetching ? (
         <Skeleton height={100} />
       ) : (
         <Paper elevation={0}>

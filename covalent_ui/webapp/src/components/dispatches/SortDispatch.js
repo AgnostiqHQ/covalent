@@ -32,15 +32,17 @@ const SortDispatch = (props) => {
         display: 'flex',
         alignItems: 'center',
         cursor: 'default',
+        fontWeight: 'bold',
         '&:hover': {
-          cursor:'pointer',
+          cursor: 'pointer',
           color: (theme) => theme.palette.text.secondary,
           '.title': {
             color: (theme) => theme.palette.text.secondary,
           },
           '.chipContainer': {
-            cursor:'pointer',
+            cursor: 'pointer',
             color: (theme) => theme.palette.text.secondary,
+            fontWeight: 'bold',
             border: '1 px solid',
             borderColor: (theme) => theme.palette.primary.blue04,
           },
@@ -52,7 +54,7 @@ const SortDispatch = (props) => {
         mr={1}
         sx={{
           color: (theme) => theme.palette.text.tertiary,
-          fontSize:'0.875rem'
+          fontSize: '0.875rem',
         }}
       >
         {title}
@@ -60,9 +62,11 @@ const SortDispatch = (props) => {
 
       {!isFetching ? (
         <Chip
-          label={count?count:0}
+          label={count ? count : 0}
           className="chipContainer"
           sx={{
+            width: '24px',
+            height: '24px',
             color: (theme) => theme.palette.text.tertiary,
             borderRadius: '8px',
             border: '1px solid ',
@@ -73,7 +77,7 @@ const SortDispatch = (props) => {
               border: '1px solid ',
               borderColor: (theme) => theme.palette.primary.blue04,
             },
-            '& .MuiChip-label': { fontSize: '15' },
+            '& .MuiChip-label': { fontSize: '14px', padding: '0' },
           }}
         />
       ) : (
