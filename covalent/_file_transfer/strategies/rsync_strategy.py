@@ -64,7 +64,7 @@ class Rsync(FileTransferStrategy):
         return f"rsync -a {from_filepath} {to_filepath}"
 
     def return_subprocess_callable(
-        self, cmd, from_file: File, to_file: File, return_type: str
+        self, cmd, from_file: File, to_file: File, return_type: Optional[str] = None
     ) -> None:
         from_filepath = from_file.filepath
         to_filepath = to_file.filepath
