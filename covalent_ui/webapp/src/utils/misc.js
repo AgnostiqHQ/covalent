@@ -32,7 +32,7 @@ import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
 
 export const secondsToHms = (ms) => {
   let time = ''
-  const sec = Math.floor((ms / 1000) % 60)
+  const sec = Math.floor(ms / 1000)
   const days = Math.floor(sec / (3600 * 24))
   const hours = Math.floor(sec / 3600)
   const minutes = ('0' + (Math.floor(sec / 60) % 60)).slice(-2)

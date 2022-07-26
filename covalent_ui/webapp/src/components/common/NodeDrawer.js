@@ -41,6 +41,7 @@ import {
   statusColor,
   statusIcon,
   statusLabel,
+  secondsToHms,
 } from '../../utils/misc'
 import Runtime from '../dispatches/Runtime'
 import SyntaxHighlighter from './SyntaxHighlighter'
@@ -95,9 +96,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
   const electronFunctionResultIsFetching = useSelector(
     (state) => state.electronResults.electronFunctionStringList.isFetching
   )
-  const callSocketApi = useSelector(
-    (state) => state.common.callSocketApi
-  )
+  const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
   useEffect(() => {
     if (!!node) {
@@ -117,7 +116,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
       // dispatch(electronError({ dispatchId, electronId, params: 'error' }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [node,callSocketApi])
+  }, [node, callSocketApi])
   const setSelectedElements = useStoreActions(
     (actions) => actions.setSelectedElements
   )
@@ -232,7 +231,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
               <Heading>Runtime</Heading>
               {electronDetailIsFetching ? (
                 <Skeleton />
-              ) : (
+              ) : electronDetail.status === 'RUNNING' ? (
                 <Runtime
                   sx={(theme) => ({
                     color: theme.palette.text.tertiary,
@@ -241,6 +240,8 @@ const NodeDrawer = ({ node, dispatchId }) => {
                   startTime={electronDetail.started_at}
                   endTime={electronDetail.ended_at}
                 />
+              ) : (
+                secondsToHms(electronDetail.runtime)
               )}
             </>
           )}

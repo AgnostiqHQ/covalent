@@ -136,9 +136,12 @@ class Summary:
         )
         query4 = (
             self.db_con.query(
-                func.sum(
-                    func.strftime("%s", Lattice.completed_at)
-                    - func.strftime("%s", Lattice.started_at)
+                (
+                    func.sum(
+                        func.strftime("%s", Lattice.completed_at)
+                        - func.strftime("%s", Lattice.started_at)
+                    )
+                    * 1000
                 ).label("run_time")
             )
             .filter(Lattice.is_active.is_not(False))

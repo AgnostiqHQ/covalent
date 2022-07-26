@@ -94,7 +94,12 @@ const DispatchDrawerContents = () => {
           <Tooltip title={dispatchId} placement="top">
             <Typography
               component="span"
-              sx={{ mx: 1, verticalAlign: 'middle' }}
+              sx={{
+                mx: 1,
+                verticalAlign: 'middle',
+                fontSize: '1 rem',
+                color: (theme) => theme.palette.text.secondary,
+              }}
             >
               {truncateMiddle(dispatchId, 8, 13)}
             </Typography>
@@ -113,9 +118,7 @@ const DispatchDrawerContents = () => {
           <Skeleton height={300} />
         ) : (
           <ErrorCard showElectron error={drawerLatticeError.data} />
-        )
-        )
-      }
+        ))}
 
       {/* tabs */}
       {/* {latOutput !== null && */}
