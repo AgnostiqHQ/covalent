@@ -38,15 +38,10 @@ from .._data_store.models import Lattice
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .result import Result
-from .utils import _db_path
 from .write_result_to_db import MissingLatticeRecordError, load_file
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-def get_data_store() -> DataStore:
-    return DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
 
 
 def get_result(dispatch_id: str, wait: bool = False) -> Result:
@@ -69,12 +64,12 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
         )
         result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
 
-    except MissingLatticeRecordError as e:
-        app_log.warning(
-            f"Dispatch ID {dispatch_id} was not found in the database. Either the Dispatch ID is incorrect or wait a couple of seconds before trying again."
+    except MissingLatticeRecordError:
+        app_log.debug(
+            f"Dispatch ID {dispatch_id} was not found in the database. Incorrect dispatch id."
         )
 
-        time.sleep(0.01)
+        time.sleep(0.1)
         return get_result(dispatch_id, wait)
 
     return result_object
@@ -155,13 +150,12 @@ def _get_result_from_dispatcher(
     adapter = HTTPAdapter(max_retries=5)
     http = requests.Session()
     http.mount("http://", adapter)
-    url = "http://" + dispatcher + "/api/result/" + dispatch_id
+    url = f"http://{dispatcher}/api/result/{dispatch_id}"
     response = http.get(url, params={"wait": wait, "status_only": status_only}, timeout=2)
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()
-    result = response.json()
-    return result
+    return response.json()
 
 
 def _delete_result(
