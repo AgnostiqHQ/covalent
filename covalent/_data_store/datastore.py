@@ -21,13 +21,16 @@
 from contextlib import contextmanager
 from os import path
 from pathlib import Path
-from typing import BinaryIO, Dict, Generator, List, Optional, Union
+from typing import BinaryIO, Dict, Generator, Optional
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from alembic import command
 from alembic.config import Config
+from alembic.environment import EnvironmentContext
+from alembic.migration import MigrationContext
+from alembic.script import ScriptDirectory
 
 from .._shared_files.config import get_config
 from . import models
@@ -57,13 +60,41 @@ class DataStore:
         if initialize_db:
             models.Base.metadata.create_all(self.engine)
 
-    def run_migrations(self):
+    @staticmethod
+    def factory():
+        return DataStore(echo=False)
 
+    def get_alembic_config(self, logging_enabled: bool = True):
         alembic_ini_path = Path(path.join(__file__, "./../../../alembic.ini")).resolve()
         alembic_config = Config(alembic_ini_path)
         alembic_config.attributes["configure_logger"] = False
+        alembic_config.attributes["configure_logger"] = logging_enabled
         alembic_config.set_main_option("sqlalchemy.url", self.db_URL)
+        return alembic_config
+
+    def run_migrations(self, logging_enabled: bool = True):
+        alembic_config = self.get_alembic_config(logging_enabled=logging_enabled)
         command.upgrade(alembic_config, "head")
+
+    def current_revision(self):
+        alembic_config = self.get_alembic_config(logging_enabled=False)
+        script = ScriptDirectory.from_config(alembic_config)
+        with EnvironmentContext(alembic_config, script) as env_ctx:
+            migration_ctx = MigrationContext.configure(
+                self.engine.connect(), environment_context=env_ctx
+            )
+            current_rev = migration_ctx.get_current_revision()
+            return current_rev
+
+    def current_head(self):
+        alembic_config = self.get_alembic_config(logging_enabled=False)
+        script = ScriptDirectory.from_config(alembic_config)
+        current_head = script.get_current_head()
+        return current_head
+
+    @property
+    def is_migration_pending(self):
+        return self.current_head() != self.current_revision()
 
     @contextmanager
     def session(self) -> Generator[Session, None, None]:
@@ -108,7 +139,4 @@ class DataStoreNotInitializedError(Exception):
         super().__init__(self.message)
 
 
-# we can switch this to any class instance that has a db_URL property that points to the db
-# which we want to run migrations against - this command also creates the db without tables
-# via create_engine()
-workflow_db = DataStore(echo=True)
+workflow_db = DataStore.factory()
