@@ -648,7 +648,7 @@ def test_client_workflow_executor(db):
 
     assert workflow_result.status == str(Result.PENDING_POSTPROCESSING)
     assert workflow_result.result is None
-    workflow_result.persist(db)
+    workflow_result.persist()
 
     assert workflow_result.post_process() == 15
 
@@ -715,7 +715,7 @@ def test_wait_for(db):
 
     dispatch_id = ct.dispatch(workflow)()
     result = ct.get_result(dispatch_id, wait=True)
-    result.persist(db)
+    result.persist()
 
     assert result.status == str(Result.COMPLETED)
     assert (

@@ -80,16 +80,11 @@ def result_1():
     return result
 
 
-def test_result_no_db(result_1):
-    with pytest.raises(DataStoreNotInitializedError):
-        result_1.persist(db=None)
-
-
 def test_result_persist_workflow_1(db, result_1):
     """Test the persist method for the Result object."""
 
     # Call Result.persist
-    result_1.persist(db=db)
+    result_1.persist()
 
     # Query lattice / electron / electron dependency
     with Session(db.engine) as session:
@@ -175,7 +170,7 @@ def test_result_persist_workflow_1(db, result_1):
         )
 
     # Call Result.persist
-    result_1.persist(db=db)
+    result_1.persist()
 
     # Query lattice / electron / electron dependency
     with Session(db.engine) as session:
@@ -211,21 +206,21 @@ def test_result_persist_workflow_1(db, result_1):
 def test_get_node_error(db, result_1):
     """Test result method to get the node error."""
 
-    result_1.persist(db)
+    result_1.persist()
     assert result_1._get_node_error(db=db, node_id=0) == ""
 
 
 def test_get_node_value(db, result_1):
     """Test result method to get the node value."""
 
-    result_1.persist(db)
+    result_1.persist()
     assert result_1._get_node_value(db=db, node_id=0) is None
 
 
 def test_get_all_node_results(db, result_1):
     """Test result method to get all the node results."""
 
-    result_1.persist(db)
+    result_1.persist()
     for data_row in result_1.get_all_node_results(db):
         if data_row["node_id"] == 0:
             assert data_row["node_name"] == "task_1"
@@ -237,7 +232,7 @@ def test_update_node(db, result_1):
     """Test the node update method."""
 
     # Call Result.persist
-    result_1.persist(db=db)
+    result_1.persist()
 
     result_1._update_node(
         db=db,
