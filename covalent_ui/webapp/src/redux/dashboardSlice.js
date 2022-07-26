@@ -43,7 +43,7 @@ export const fetchDashboardList = createAsyncThunk(
   async (bodyParams, thunkAPI) =>
     await api
       .get(
-        `dispatches?count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
+        `dispatches/list?count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
       )
       .catch(thunkAPI.rejectWithValue)
 )

@@ -39,7 +39,7 @@ from covalent_ui.os_api.api_v0.models.dispatch_model import (
 routes: APIRouter = APIRouter()
 
 
-@routes.get("/")
+@routes.get("/list")
 def get_all_dispatches(
     count: Optional[conint(gt=0, lt=100)] = Query(10),
     offset: Optional[int] = Query(0),
@@ -90,3 +90,8 @@ def delete_dispatches(req: DeleteDispatchesRequest):
     with Session(engine) as session:
         summary = Summary(session)
         return summary.delete_dispatches(req)
+
+
+# Shrikanth - Temporary fix since after mounting flask app, the overview API was working but the list API wasn't
+# only overlap was the fact that the /dispatches is loaded as a prefix to a route of '/' which I thought overlapped with the flask mounting.
+# This route has also been changed on the UI side

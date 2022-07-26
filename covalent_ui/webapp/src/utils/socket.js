@@ -35,7 +35,7 @@
      }
    }
 
-   const socket = io('http://localhost:8000', {
+   const socket = io('http://localhost:48008', {
      // required for CORS
      withCredentials: true,
    })

@@ -49,21 +49,22 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-app = Flask(__name__, static_folder=WEBAPP_PATH)
+# app = Flask(__name__, static_folder=WEBAPP_PATH)
+app = Flask(__name__)
 app.register_blueprint(bp)
 # allow cross-origin requests when API and static files are served separately
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 
-@app.route(WEBHOOK_PATH, methods=["POST"])
+# @app.route(WEBHOOK_PATH, methods=["POST"])
 def handle_result_update():
     result_update = request.get_json(force=True)
     socketio.emit("result-update", result_update)
     return jsonify({"ok": True})
 
 
-@app.route("/api/draw", methods=["POST"])
+# @app.route("/api/draw", methods=["POST"])
 def handle_draw_request():
     draw_request = request.get_json(force=True)
 
@@ -71,7 +72,7 @@ def handle_draw_request():
     return jsonify({"ok": True})
 
 
-@app.route("/api/results")
+# @app.route("/api/results")
 def list_results():
     with DispatchDB() as db:
         res = db.get()
@@ -81,7 +82,7 @@ def list_results():
         return jsonify([simplejson.loads(r[1]) for r in res])
 
 
-@app.route("/api/dev/results/<dispatch_id>")
+# @app.route("/api/dev/results/<dispatch_id>")
 def fetch_result_dev(dispatch_id):
     result = rm.get_result(dispatch_id)
 
@@ -90,7 +91,7 @@ def fetch_result_dev(dispatch_id):
     return app.response_class(jsonified_result, status=200, mimetype="application/json")
 
 
-@app.route("/api/results/<dispatch_id>")
+# @app.route("/api/results/<dispatch_id>")
 def fetch_result(dispatch_id):
     with DispatchDB() as db:
         res = db.get([dispatch_id])
@@ -104,7 +105,7 @@ def fetch_result(dispatch_id):
     return app.response_class(response, status=status, mimetype="application/json")
 
 
-@app.route("/api/results", methods=["DELETE"])
+# @app.route("/api/results", methods=["DELETE"])
 def delete_results():
     dispatch_ids = request.json.get("dispatchIds", [])
     with DispatchDB() as db:
@@ -112,7 +113,7 @@ def delete_results():
     return jsonify({"ok": True})
 
 
-@app.route("/api/logoutput/<dispatch_id>")
+# app.route("/api/logoutput/<dispatch_id>")
 def fetch_file(dispatch_id):
     path = request.args.get("path")
     n = int(request.args.get("n", 10))
@@ -129,8 +130,8 @@ def fetch_file(dispatch_id):
 
 
 # catch-all: serve web app static files
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
+# @app.route("/", defaults={"path": ""})
+# @app.route("/<path:path>")
 def serve(path):
     if path != "" and os.path.exists(app.static_folder + "/" + path):
         # static file
@@ -171,4 +172,7 @@ if __name__ == "__main__":
         dask_cluster.start()
 
     # Start covalent main app
-    socketio.run(app, debug=debug, host="localhost", port=port, use_reloader=reload)
+    # socketio.run(app, debug=debug, host="localhost", port=port, use_reloader=reload)
+
+# Shrikanth - Disabled all routes from Flask & stopped serving UI static files from Flask.
+# This file is only to initiate a flask app() and get in the blueprint with the 3 back end APIs.
