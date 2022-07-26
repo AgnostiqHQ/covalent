@@ -25,6 +25,7 @@ Self-contained entry point for the dispatcher
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 
+from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 
 app_log = logger.app_log
@@ -63,10 +64,19 @@ def run_dispatcher(
     """
 
     dispatch_id = get_unique_id()
-    from ._core import construct_result_object, run_workflow
+    from covalent._workflow.lattice import Lattice
+    from covalent_dispatcher._db.dispatchdb import DispatchDB
 
-    result_future = workflow_pool.submit(construct_result_object, dispatch_id, json_lattice)
-    result_object = result_future.result()
+    from ._core import run_workflow
+
+    lattice = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lattice, lattice.metadata["results_dir"])
+    result_object._dispatch_id = dispatch_id
+    result_object._initialize_nodes()
+
+    app_log.debug("2: Constructed result object and initialized nodes.")
+    DispatchDB().save_db(result_object)
+
     app_log.debug("Result object retrieved.")
 
     futures[dispatch_id] = workflow_pool.submit(run_workflow, result_object, tasks_pool)

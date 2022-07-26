@@ -766,21 +766,6 @@ def _plan_workflow(result_object: Result) -> None:
         pass
 
 
-def construct_result_object(dispatch_id: str, json_lattice: str) -> Result:
-    """Construct result object."""
-
-    app_log.debug(f"Dispatch id: {dispatch_id} workflow written to DB. {datetime.now()}")
-    lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
-    result_object._dispatch_id = dispatch_id
-    result_object._initialize_nodes()
-
-    app_log.debug("2: Constructed result object and initialized nodes.")
-    DispatchDB().save_db(result_object)
-
-    return result_object
-
-
 def run_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Result:
     """
     Plan and run the workflow by loading the result object corresponding to the
@@ -802,17 +787,12 @@ def run_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Resul
         return result_object
 
     try:
-        app_log.debug("Plan workflow.")
         _plan_workflow(result_object)
-        app_log.debug("Run planned workflow.")
-        try:
-            result_object = _run_planned_workflow(result_object, tasks_pool)
-        except Exception as e:
-            app_log.debug(f"Error: {e}")
+        uvloop.install()
+        result_object = asyncio.run(_run_planned_workflow(result_object, tasks_pool))
 
     except Exception as ex:
         app_log.error(f"Exception during _run_planned_workflow: {ex}")
-        app_log.debug("Before lattice data update.")
         update_lattices_data(
             workflow_db,
             result_object.dispatch_id,
@@ -820,7 +800,6 @@ def run_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Resul
             completed_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
-        app_log.debug("After lattice data update.")
 
         write_lattice_error(
             workflow_db,
