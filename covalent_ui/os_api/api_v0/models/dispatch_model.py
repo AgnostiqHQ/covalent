@@ -70,13 +70,14 @@ class DispatchModule(BaseModel):
     """Dispatch Modeule Validation"""
 
     dispatch_id: str
-    status: str
-    started_at: datetime
-    ended_at: datetime
     lattice_name: str
     runtime: Optional[Union[int, None]]
-    total_electrons: int
-    total_electrons_completed: int
+    total_electrons: Optional[Union[int, None]]
+    total_electrons_completed: Optional[Union[int, None]]
+    started_at: datetime
+    ended_at: Optional[Union[datetime, None]]
+    status: Status
+    updated_at: Optional[Union[datetime, None]]
 
 
 class DispatchResponse(BaseModel):

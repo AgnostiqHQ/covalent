@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import datetime
+from datetime import datetime, timezone
 from sqlite3 import InterfaceError
 from typing import List
 
@@ -61,16 +61,18 @@ class Summary:
                 Lattice.name.label("lattice_name"),
                 (
                     (
-                        func.strftime("%s", Lattice.completed_at)
+                        func.strftime("%s", func.IFNULL(Lattice.completed_at, func.datetime.now(timezone.utc)))
                         - func.strftime("%s", Lattice.started_at)
                     )
                     * 1000
                 ).label("runtime"),
                 Lattice.electron_num.label("total_electrons"),
                 Lattice.completed_electron_num.label("total_electrons_completed"),
-                Lattice.created_at.label("started_at"),
-                Lattice.updated_at.label("ended_at"),
+                Lattice.started_at.label("started_at"),
+                func.IFNULL(Lattice.completed_at, None).label("ended_at"),
+                #Lattice.completed_at.label("ended_at"),
                 Lattice.status.label("status"),
+                Lattice.updated_at.label("updated_at")
             )
             .filter(
                 or_(
@@ -186,7 +188,7 @@ class Summary:
                         .where(Electron.parent_lattice_id == lattice_id[0])
                         .values(
                             {
-                                Electron.updated_at: datetime.datetime.now(),
+                                Electron.updated_at: datetime.now(timezone.utc),
                                 Electron.is_active: False,
                             }
                         )
@@ -195,7 +197,7 @@ class Summary:
                         update(Lattice)
                         .where(Lattice.id == lattice_id[0])
                         .values(
-                            {Lattice.updated_at: datetime.datetime.now(), Lattice.is_active: False}
+                            {Lattice.updated_at: datetime.now(timezone.utc), Lattice.is_active: False}
                         )
                     )
                     self.db_con.execute(query1)

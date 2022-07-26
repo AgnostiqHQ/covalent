@@ -38,6 +38,7 @@ class LatticeDetailResponse(BaseModel):
     ended_at: datetime = None
     directory: str = None
     runtime: int = None
+    updated_at: datetime = None
 
 
 class LatticeFileResponse(BaseModel):
@@ -72,6 +73,7 @@ class ElectronResponse(BaseModel):
     status: str = None
     started_at: datetime = None
     ended_at: datetime = None
+    runtime: int = None
 
 
 class ElectronFileResponse(BaseModel):

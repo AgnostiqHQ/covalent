@@ -34,7 +34,7 @@ from fastapi.staticfiles import StaticFiles
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent_dispatcher._service.app_dask import DaskCluster
-from covalent_ui.app import app as flask_app
+#from covalent_ui.app import app as flask_app
 from covalent_ui.os_api.api_v0.routes import routes
 
 WEBHOOK_PATH = "/api/webhook"
@@ -47,7 +47,7 @@ app = FastAPI()
 user = os.getlogin()
 
 sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
-socketio_app = socketio.ASGIApp(sio, app)
+#socketio_app = socketio.ASGIApp(sio, app)
 
 
 @sio.event
@@ -105,7 +105,7 @@ async def handle_draw_request(draw_request: dict):
     return {"ok": True}
 
 
-app.mount("/", WSGIMiddleware(flask_app))
+#app.mount("/", WSGIMiddleware(flask_app))
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
