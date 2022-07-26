@@ -17,6 +17,9 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+from subprocess import PIPE, Popen
+from typing import List
+
 import click
 
 from covalent._data_store.datastore import DataStore
@@ -50,4 +53,35 @@ def migrate(ctx: click.Context) -> None:
         return ctx.exit(1)
 
 
+@click.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+    )
+)
+@click.pass_context
+@click.argument("alembic_args", nargs=-1, type=click.UNPROCESSED)
+def alembic(ctx: click.Context, alembic_args) -> None:
+    """
+    Expose alembic CLI to be used via covalent CLI
+    """
+    try:
+        alembic_args = list(alembic_args)
+        alembic_command = ["alembic"] + alembic_args
+        p = Popen(alembic_command, stdout=PIPE, stderr=PIPE)
+        output, error = p.communicate()
+        if error:
+            click.echo(error.decode("utf-8").strip())
+        else:
+            click.echo(output.decode("utf-8").strip())
+    except Exception as migration_error:
+        if migration_error:
+            click.echo(f"{type(migration_error)}:{str(migration_error)}")
+        click.secho(
+            "There was an error forwarding arguments to alembic CLI please ensure that alembic is installed.",
+            fg="red",
+        )
+        return ctx.exit(1)
+
+
+db.add_command(alembic)
 db.add_command(migrate)

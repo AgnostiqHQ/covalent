@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Enhanced `tests.yml` to upload coverage reports by domain
 
+## [0.155.0] - 2022-07-26
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Exposing `alembic {args}` cli commands through: `covalent db alembic {args}`
+
 ## [0.154.0] - 2022-07-25
 
 ### Authors
