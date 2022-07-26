@@ -174,7 +174,7 @@ jobs:
 
       - name: Run UI backend tests and measure coverage
         id: ui_tests
-        if: ${{ steps.working-directory.outputs.ui_backend_tests }} == true
+        if: ${{ steps.working-directory.outputs.ui_backend }} == true
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
@@ -182,13 +182,13 @@ jobs:
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           continue_on_error: true
           command: |
-            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc || error "tests for UI backend do not exist."
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
       
       - name: Generate UI backend coverage report
+        continue-on-error: true
         if: | 
-          ${{ steps.working-directory.outputs.ui_backend_tests }} == true && 
-          ${{ steps.working-directory.outputs.ui_backend }} == 'true' && 
-          ${{ steps.ui_tests_outputs.exit_code }} != 1
+          ${{ steps.working-directory.outputs.ui_backend_tests }} == true && ${{ steps.working-directory.outputs.ui_backend }} == 'true' && 
+          ${{ steps.ui_tests_outputs.exit_code }} == 0
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
@@ -216,7 +216,10 @@ jobs:
           name: "Functional Tests"
 
       - name: Upload UI backend report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.ui_backend}} == true
+        if: |
+          matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && 
+          ${{ steps.working-directory.outputs.ui_backend}} == true &&
+          ${{ steps.ui_tests_outputs.exit_code }} == 0
         uses: codecov/codecov-action@v3
         with:
           files: ./ui_backend_coverage.xml
