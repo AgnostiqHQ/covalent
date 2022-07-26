@@ -600,8 +600,43 @@ def test_transport_graph_compare():
     assert tg4_1.compare(tg4_3) == [0, 1, 4]
 
 
+def test_transport_graph_compare_meta():
+    """Check that tg comparison detects metadata differences"""
+
+    def task(x):
+        return x
+
+    task_local = ct.electron(task, executor="local")
+    task_dask = ct.electron(task, executor="dask")
+
+    #      1
+    #     /
+    #    0
+    #     \
+    #      2
+    #       \
+    #        3
+    @ct.lattice
+    def workflow_1(x):
+        res1 = task_local(x)
+        res2 = task_local(res1)
+        return task_dask(res2)
+
+    @ct.lattice
+    def workflow_2(x):
+        res1 = task_local(x)
+        res2 = task_local(res1)
+        return task_local(res2)
+
+    workflow_1.build_graph(1)
+    workflow_2.build_graph(1)
+    tg1 = workflow_1.transport_graph
+    tg2 = workflow_2.transport_graph
+    assert tg1.compare(tg2) == [0, 1, 2]
+
+
 def test_transport_graph_compare_edges():
-    """Check that edge comparison picks up different edge attributes"""
+    """Check that tg comparison picks up different edge attributes"""
 
     @ct.electron
     def task_1(x):

@@ -277,14 +277,21 @@ def encode_metadata(metadata: dict) -> dict:
 
 
 # Default node comparison function for diffing transport graphs
-def _cmp_fstr_and_pval(A: nx.MultiDiGraph, B: nx.MultiDiGraph, node: int):
+def _cmp_fstr_meta_pval(A: nx.MultiDiGraph, B: nx.MultiDiGraph, node: int):
 
-    # Compare pickled functions and parameter values
+    # Compare metadata, pickled functions, and parameter values
 
     A_fn = A.nodes[node].get("function", None)
     B_fn = B.nodes[node].get("function", None)
     A_fn_str = A.nodes[node].get("function_string", "")
     B_fn_str = A.nodes[node].get("function_string", "")
+
+    A_meta = encode_metadata(A.nodes[node].get("metadata"))
+    B_meta = encode_metadata(B.nodes[node].get("metadata"))
+
+    # Compare metadata
+    if A_meta != B_meta:
+        return False
 
     # Compare function strings
     if A_fn_str != B_fn_str:
@@ -486,7 +493,7 @@ class _TransportGraph:
 
         return self._graph.copy()
 
-    def compare(self, other: "_TransportGraph", node_cmp=_cmp_fstr_and_pval) -> list:
+    def compare(self, other: "_TransportGraph", node_cmp=_cmp_fstr_meta_pval) -> list:
         """Returns a list of reusable nodes from another transport graph.
 
         Args:
