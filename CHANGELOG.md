@@ -11,6 +11,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed syntax errors in `stale.yml` and in `hotfix.yml`
 - `docker.yml` triggered after version bump in `develop` instead of before
+- Enhanced `tests.yml` to upload coverage reports by domain
+
+## [0.155.0] - 2022-07-26
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Exposing `alembic {args}` cli commands through: `covalent db alembic {args}`
+
+## [0.154.0] - 2022-07-25
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Added methods to programatically fetch information from Alembic without needing subprocess
+
+## [0.153.1] - 2022-07-25
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Fixed
+
+- Stdout and stderr are now captured when using the dask executor.
+
+
+### Tests
+
+- Fixed Dask cluster CLI tests
+
+## [0.153.0] - 2022-07-25
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Added
+
+- Helper function to load and save files corresponding to the DB filenames.
+
+### Changed
+
+- Files with .txt, .log extensions are stored as strings.
+- Get result web request timeout to 2 seconds.
 
 ## [0.152.0] - 2022-07-25
 
@@ -104,6 +162,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Added workflow to stale and close pull requests
+
 
 ### Docs
 
