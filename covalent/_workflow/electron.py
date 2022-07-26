@@ -569,12 +569,16 @@ def electron(
     internal_call_after_deps = []
 
     for file_transfer in files:
-        _callback_ = file_transfer.cp()
+        _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
+
+        # pre-file transfer hook to create any necessary temporary files
+        internal_call_before_deps.append(DepsCall(_file_transfer_pre_hook_))
+
         if file_transfer.order == Order.AFTER:
-            internal_call_after_deps.append(DepsCall(_callback_))
+            internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
         else:
             internal_call_before_deps.append(
-                DepsCall(_callback_, retval_keyword=RESERVED_RETVAL_KEY__FILES)
+                DepsCall(_file_transfer_call_dep_, retval_keyword=RESERVED_RETVAL_KEY__FILES)
             )
 
     if isinstance(deps_pip, DepsPip):

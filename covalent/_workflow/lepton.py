@@ -27,7 +27,7 @@ from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .depsbash import DepsBash
-from .depscall import DepsCall
+from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
 from .electron import Electron
 
@@ -122,12 +122,19 @@ class Lepton(Electron):
         # Syncing behavior of file transfer with an electron
         internal_call_before_deps = []
         internal_call_after_deps = []
+
         for file_transfer in files:
-            _callback_ = file_transfer.cp()
+            _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
+
+            # pre-file transfer hook to create any necessary temporary files
+            internal_call_before_deps.append(DepsCall(_file_transfer_pre_hook_))
+
             if file_transfer.order == Order.AFTER:
-                internal_call_after_deps.append(DepsCall(_callback_))
+                internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
             else:
-                internal_call_before_deps.append(DepsCall(_callback_))
+                internal_call_before_deps.append(
+                    DepsCall(_file_transfer_call_dep_, retval_keyword=RESERVED_RETVAL_KEY__FILES)
+                )
 
         # Copied from electron.py
         deps = {}

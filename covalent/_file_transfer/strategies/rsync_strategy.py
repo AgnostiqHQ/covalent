@@ -68,14 +68,8 @@ class Rsync(FileTransferStrategy):
     ) -> None:
         from_filepath = from_file.filepath
         to_filepath = to_file.filepath
-        is_from_temp_file = from_file.is_temp_file
-        is_to_temp_file = to_file.is_temp_file
 
         def callable():
-            if is_from_temp_file:
-                Path(from_filepath).touch()
-            if is_to_temp_file:
-                Path(to_filepath).touch()
             p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
             output, error = p.communicate()
             if p.returncode != 0:
