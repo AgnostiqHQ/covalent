@@ -31,6 +31,7 @@ import networkx as nx
 
 from .._data_store import DataStoreSession, models
 from .._shared_files.defaults import parameter_prefix
+from .tgutils import max_cbms
 
 
 class TransportableObject:
@@ -275,6 +276,44 @@ def encode_metadata(metadata: dict) -> dict:
     return encoded_metadata
 
 
+# Utils for diffing transport graphs
+
+
+def _invalidate_successors(A: nx.MultiDiGraph, node_statuses: dict, starting_node: int):
+    nodes_to_invalidate = [starting_node]
+    for node, successors in nx.bfs_successors(A, starting_node):
+        for child in successors:
+            nodes_to_invalidate.append(child)
+    for node in nodes_to_invalidate:
+        node_statuses[node] = -1
+
+
+def _same_node(A: nx.MultiDiGraph, B: nx.MultiDiGraph, node: int):
+
+    # Compare pickled functions and parameter values
+
+    A_fn = A.nodes[node].get("function", None)
+    B_fn = B.nodes[node].get("function", None)
+    A_fn_str = A.nodes[node].get("function_string", "")
+    B_fn_str = A.nodes[node].get("function_string", "")
+
+    # Compare function strings
+    if A_fn_str != B_fn_str:
+        return False
+
+    # Compared serialized functions
+    if A_fn_str:
+        return A_fn.get_serialized() == B_fn.get_serialized()
+    else:
+        A_val = A.nodes[node].get("value", TransportableObject(None))
+        B_val = B.nodes[node].get("value", TransportableObject(None))
+        return A_val.get_serialized() == B_val.get_serialized()
+
+
+def _same_edges(A: nx.MultiDiGraph, B: nx.MultiDiGraph, parent: int, node: int):
+    return A.adj[parent][node] == B.adj[parent][node]
+
+
 class _TransportGraph:
     """
     A TransportGraph is the most essential part of the whole workflow. This contains
@@ -461,6 +500,32 @@ class _TransportGraph:
         """
 
         return self._graph.copy()
+
+    def compare(self, other: "_TransportGraph", node_cmp=_same_node, edge_cmp=_same_edges) -> list:
+        """Returns a list of reusable nodes from another transport graph.
+
+        Args:
+            other: Another transport graph
+            node_cmp: An optional function for comparing node attributes in A and B.
+                      Defaults to comparing function strings and serialized parameter values
+            edge_cmp: An optional function for comparing the edges between two nodes.
+                      Defaults to checking that the two sets of edges have the same attributes
+
+        Returns:
+            list: a list of reusuable nodes
+
+        The nodes can then be copied from the other transport graph so
+        that previously completed nodes don't need to be re-run.
+
+        A node is reusable if its predecessor subgraphs in both
+        transport graphs are the same.
+        """
+        A = self.get_internal_graph_copy()
+        B = other.get_internal_graph_copy()
+
+        A_node_status, B_node_status = max_cbms(A, B, node_cmp, edge_cmp)
+
+        return [node for node, status in A_node_status.items() if status is True]
 
     def serialize(self, metadata_only: bool = False) -> bytes:
         """
