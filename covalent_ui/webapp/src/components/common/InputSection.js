@@ -29,19 +29,22 @@ import SyntaxHighlighter from './SyntaxHighlighter'
 const InputSection = ({ isFetching, inputs, preview, ...props }) => {
   const inputSrc = preview
     ? _.join(
-        _.map(inputs, (value, key) => `${key}: ${value}`),
-        '\n'
-      )
+      _.map(inputs, (value, key) => `${key}: ${value}`),
+      '\n'
+    )
     : inputs
   return (
     <>
-      <Heading>Input</Heading>
       {isFetching ? (
         <Skeleton sx={{ height: '80px' }} />
       ) : (
-        <Paper elevation={0} {...props}>
-          <SyntaxHighlighter language="python" src={inputSrc} />
-        </Paper>
+        inputSrc && (
+          <>
+            <Heading>Input</Heading>
+            <Paper elevation={0} {...props}>
+              <SyntaxHighlighter language="python" src={inputSrc} />
+            </Paper>
+          </>)
       )}
     </>
   )

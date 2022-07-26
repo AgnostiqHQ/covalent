@@ -72,7 +72,7 @@ const DashboardCard = () => {
   return (
     <Paper elevation={0} sx={{ p: 3, mb: 2, borderRadius: '8px' }}>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Typography fontSize="h5.fontSize" sx={{ color: '#F1F1F6' }}>
+        <Typography fontSize="h5.fontSize" sx={{ color: '#FFFFFF' }}>
           Dispatch list
         </Typography>
         <Snackbar

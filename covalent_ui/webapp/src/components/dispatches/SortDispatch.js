@@ -50,9 +50,9 @@ const SortDispatch = (props) => {
       <Typography
         className="title"
         mr={1}
-        fontSize="h7.fontSize"
         sx={{
           color: (theme) => theme.palette.text.tertiary,
+          fontSize:'0.875rem'
         }}
       >
         {title}
@@ -73,7 +73,7 @@ const SortDispatch = (props) => {
               border: '1px solid ',
               borderColor: (theme) => theme.palette.primary.blue04,
             },
-            '& .MuiChip-label': { fontSize: 15 },
+            '& .MuiChip-label': { fontSize: '15' },
           }}
         />
       ) : (
