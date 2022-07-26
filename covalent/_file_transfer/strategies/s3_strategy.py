@@ -17,10 +17,10 @@ class S3(FileTransferStrategy):
     """
 
     def __init__(self,
-                 aws_access_key_id : str = None,
-                 aws_secret_access_key : str = None,
-                 aws_session_token : str = None,
-                 region_name : str = None):
+                 aws_access_key_id : str = os.environ['AWS_ACCESS_KEY_ID'] or None,
+                 aws_secret_access_key : str = os.environ['AWS_SECRET_ACCESS_KEY'] or None,
+                 aws_session_token : str = os.environ['AWS_SESSION_TOKEN'] or None,
+                 region_name : str = os.environ['AWS_REGION'] or None):
 
         self.aws_access_key_id = aws_access_key_id
         self.aws_secret_access_key = aws_secret_access_key
