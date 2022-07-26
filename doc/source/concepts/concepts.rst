@@ -629,7 +629,7 @@ The following will describe an Rsync file transfer operation over SSH to downloa
 
 S3
 ~~~~~~~~~~~~
-.. warning:: S3 must be installed on an electron’s backend execution environment. It can be installed using :code:`pip install boto3`
+.. warning:: AWS Python SDK must be installed on an electron’s backend execution environment. It can be installed using :code:`pip install boto3`
 
 If one of the files is a S3 bucket location (s3://repository-name/file-path) S3 strategy will be used. For accessing the S3 bucket necessary credentials (aws_access_key_id, aws_secret_access_key, aws_session_token, region_name) can be passed to it. In case they are not provided default values described in the environment will be used.
 
