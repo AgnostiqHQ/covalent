@@ -338,7 +338,7 @@ def test_insert_electron_dependency_data(db, workflow_lattice):
 
     cur_time = dt.now(timezone.utc)
     insert_lattices_data(
-        db=db, **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+        **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
     )
 
     electron_ids = []
@@ -359,7 +359,7 @@ def test_insert_electron_dependency_data(db, workflow_lattice):
         electron_ids.append(insert_electrons_data(db=db, **electron_kwargs))
 
     dependency_ids = insert_electron_dependency_data(
-        db=db, dispatch_id="dispatch_1", lattice=workflow_lattice
+        dispatch_id="dispatch_1", lattice=workflow_lattice
     )
 
     assert dependency_ids == [1, 2, 3, 4]
