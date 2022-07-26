@@ -61,7 +61,10 @@ class Summary:
                 Lattice.name.label("lattice_name"),
                 (
                     (
-                        func.strftime("%s", func.IFNULL(Lattice.completed_at, func.datetime.now(timezone.utc)))
+                        func.strftime(
+                            "%s",
+                            func.IFNULL(Lattice.completed_at, func.datetime.now(timezone.utc)),
+                        )
                         - func.strftime("%s", Lattice.started_at)
                     )
                     * 1000
@@ -70,9 +73,9 @@ class Summary:
                 Lattice.completed_electron_num.label("total_electrons_completed"),
                 Lattice.started_at.label("started_at"),
                 func.IFNULL(Lattice.completed_at, None).label("ended_at"),
-                #Lattice.completed_at.label("ended_at"),
+                # Lattice.completed_at.label("ended_at"),
                 Lattice.status.label("status"),
-                Lattice.updated_at.label("updated_at")
+                Lattice.updated_at.label("updated_at"),
             )
             .filter(
                 or_(
@@ -138,8 +141,8 @@ class Summary:
             self.db_con.query(
                 (
                     func.sum(
-                        func.strftime("%s", Lattice.completed_at)
-                        - func.strftime("%s", Lattice.started_at)
+                        func.strftime("%s", func.IFNULL(Lattice.completed_at, 0))
+                        - func.strftime("%s", func.IFNULL(Lattice.started_at, 0))
                     )
                     * 1000
                 ).label("run_time")
@@ -161,7 +164,7 @@ class Summary:
             total_jobs_running=query1[0],
             total_jobs_completed=query2[0],
             latest_running_task_status=query3[0] if query3 is not None else None,
-            total_dispatcher_duration=query4[0],
+            total_dispatcher_duration=query4[0] if query3 is not None else 0,
             total_jobs_failed=query5[0],
             total_jobs=query6[0],
         )
@@ -200,7 +203,10 @@ class Summary:
                         update(Lattice)
                         .where(Lattice.id == lattice_id[0])
                         .values(
-                            {Lattice.updated_at: datetime.now(timezone.utc), Lattice.is_active: False}
+                            {
+                                Lattice.updated_at: datetime.now(timezone.utc),
+                                Lattice.is_active: False,
+                            }
                         )
                     )
                     self.db_con.execute(query1)

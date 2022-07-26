@@ -3,7 +3,7 @@ alembic==1.8.0
 cloudpickle==2.0.0
 dask[distributed]==2022.6.0
 
-fastapi
+fastapi[standard]==0.79.0
 flask==2.0.1
 flask-cors==3.0.10
 flask-socketio==5.1.1
@@ -19,6 +19,6 @@ sqlalchemy==1.4.37
 supervisor
 tailer==0.4.1
 toml==0.10.2
-uvicorn
+uvicorn==0.18.2
 uvloop==0.16.0
 werkzeug==2.0.3
