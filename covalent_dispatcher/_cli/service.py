@@ -311,12 +311,15 @@ def start(
     """
     Start the Covalent server.
     """
+    if develop:
+        set_config({"sdk.log_level": "debug"})
+
     db = DataStore.factory()
     if db.is_migration_pending and not ignore_migrations:
         click.secho(MIGRATION_WARNING_MSG, fg="yellow")
         click.echo(MIGRATION_COMMAND_MSG)
         return ctx.exit(1)
-
+    
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     no_cluster_flag = "--no-cluster"
     set_config(
