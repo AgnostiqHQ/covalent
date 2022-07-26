@@ -178,11 +178,11 @@ def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
     """
 
     ordered_node_outputs = []
-    app_log.warning(f"node_outputs: {node_outputs}")
-    app_log.warning(f"node_outputs: {node_outputs.items()}")
+    app_log.debug(f"node_outputs: {node_outputs}")
+    app_log.debug(f"node_outputs: {node_outputs.items()}")
     for i, item in enumerate(node_outputs.items()):
         key, val = item
-        app_log.warning(f"Here's the key: {key}")
+        app_log.debug(f"Here's the key: {key}")
         if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
             ordered_node_outputs.append((i, val))
 
@@ -326,7 +326,7 @@ async def _run_task(
                 sublattice_result=sublattice_result,
             )
 
-            app_log.warning("Sublattice dispatched (run_task)")
+            app_log.debug("Sublattice dispatched (run_task)")
             # Don't continue unless sublattice finishes
             if sublattice_result.status != Result.COMPLETED:
                 node_result["status"] = Result.FAILED
@@ -378,7 +378,7 @@ async def _run_task(
             error="".join(traceback.TracebackException.from_exception(ex).format()),
         )
         app_log.exception("Run task exception")
-    app_log.warning("Returning node result (run_task)")
+    app_log.debug("Returning node result (run_task)")
 
     return node_result
 
@@ -441,7 +441,7 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
     result_object._end_time = datetime.now(timezone.utc)
     db = DispatchDB()._get_data_store()
     result_object._error = f"Node {result_object._get_node_name(node_id=node_id, db=db)} failed: \n{result_object._get_node_error(node_id=node_id, db=db)}"
-    app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
+    app_log.debug("8A: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
     result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
@@ -450,7 +450,7 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
 async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue):
     result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
-    app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
+    app_log.debug("9: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
     result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
@@ -458,7 +458,7 @@ async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks
 
 async def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
     with lock:
-        app_log.warning("Updating node result (run_planned_workflow).")
+        app_log.debug("Updating node result (run_planned_workflow).")
         result_object._update_node(db=DispatchDB()._get_data_store(), **node_result)
         result_webhook.send_update(result_object)
 
@@ -522,7 +522,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
         None
     """
 
-    app_log.warning("3: Inside run_planned_workflow (run_planned_workflow).")
+    app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
 
     tasks_queue = Queue()
     pending_deps = {}
@@ -547,7 +547,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
             )
         )
         session.commit()
-    app_log.warning("5: Wrote lattice status to DB (run_planned_workflow).")
+    app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
     # Executor for post_processing and dispatching sublattices
     pp_executor = result_object.lattice.get_metadata("workflow_executor")
@@ -571,14 +571,14 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
 
         # Get name of the node for the current task
         node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
-        app_log.warning(f"7A: Node name: {node_name} (run_planned_workflow).")
+        app_log.debug(f"7A: Node name: {node_name} (run_planned_workflow).")
 
         # Handle parameter nodes
         if node_name.startswith(parameter_prefix):
-            app_log.warning("7C: Parameter if block (run_planned_workflow).")
+            app_log.debug("7C: Parameter if block (run_planned_workflow).")
             output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
-            app_log.warning(f"7C: Node output: {output} (run_planned_workflow).")
-            app_log.warning("8: Starting update node (run_planned_workflow).")
+            app_log.debug(f"7C: Node output: {output} (run_planned_workflow).")
+            app_log.debug("8: Starting update node (run_planned_workflow).")
 
             node_result = {
                 "node_id": node_id,
@@ -588,12 +588,12 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
                 "output": output,
             }
             await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
-            app_log.warning("8A: Update node success (run_planned_workflow).")
+            app_log.debug("8A: Update node success (run_planned_workflow).")
 
             continue
 
         # Gather inputs and dispatch task
-        app_log.warning(f"Gathering inputs for task {node_id} (run_planned_workflow).")
+        app_log.debug(f"Gathering inputs for task {node_id} (run_planned_workflow).")
         task_input = _get_task_inputs(node_id, node_name, result_object)
 
         start_time = datetime.now(timezone.utc)
@@ -623,7 +623,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
             status=Result.RUNNING,
         )
         await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
-        app_log.warning("7: Updating nodes after deps (run_planned_workflow)")
+        app_log.debug("7: Updating nodes after deps (run_planned_workflow)")
 
         app_log.debug(f"Submitting task {node_id} to executor")
 
@@ -661,7 +661,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
         return result_object
 
-    app_log.warning("8: All tasks finished running (run_planned_workflow)")
+    app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
     result_object._status = Result.POSTPROCESSING
     result_object.upsert_lattice_data(DispatchDB()._get_data_store())
@@ -736,7 +736,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
     result_object._status = Result.COMPLETED
     result_object._end_time = datetime.now(timezone.utc)
 
-    app_log.warning(
+    app_log.debug(
         f"10: Successfully post-processed result {result_object.dispatch_id} (run_planned_workflow)"
     )
 
@@ -787,14 +787,14 @@ def run_workflow(dispatch_id: str, json_lattice: str, tasks_pool: ThreadPoolExec
         The result object from the workflow execution
     """
 
-    app_log.warning("1: Inside run_workflow.")
+    app_log.debug("1: Inside run_workflow.")
 
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    app_log.warning("2: Constructed result object and initialized nodes.")
+    app_log.debug("2: Constructed result object and initialized nodes.")
     DispatchDB().save_db(result_object, initialize_db=True)
 
     if result_object.status == Result.COMPLETED:

@@ -594,7 +594,7 @@ Node Outputs
             None
         """
 
-        app_log.warning("Inside update node")
+        app_log.debug("Inside update node")
 
         electron_kwargs = {}
         node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
@@ -656,7 +656,7 @@ Node Outputs
                 .values(updated_at=datetime.now(timezone.utc), **electron_kwargs)
             )
             session.commit()
-        app_log.warning("Inside update node - SUCCESS")
+        app_log.debug("Inside update node - SUCCESS")
 
     def _initialize_results_dir(self):
         """Create the results directory."""

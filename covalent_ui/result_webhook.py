@@ -62,7 +62,7 @@ def send_update(result: Result) -> None:
         },
     )
 
-    app_log.warning("Moving to Fast API soon - stay tuned!!")
+    app_log.debug("Moving to Fast API soon - stay tuned!!")
     # try:
     #     # ignore response
     #     requests.post(get_ui_url(ui_server.WEBHOOK_PATH), data=result_update, timeout=1)

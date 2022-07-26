@@ -351,7 +351,7 @@ class Lattice:
             Dispatch id assigned to job
         """
 
-        app_log.warning(
+        app_log.debug(
             "workflow.dispatch(your_arguments_here) is deprecated and may get removed without notice in future releases. Please use covalent.dispatch(workflow)(your_arguments_here) instead.",
             exc_info=DeprecationWarning,
         )
