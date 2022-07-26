@@ -188,7 +188,7 @@ jobs:
         continue-on-error: true
         if: | 
           ${{ steps.working-directory.outputs.ui_backend_tests }} == true && ${{ steps.working-directory.outputs.ui_backend }} == 'true' && 
-          ${{ steps.ui_tests_outputs.exit_code }} == 0
+          ${{ steps.ui_tests.outputs.exit_code }} == 0
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
@@ -219,7 +219,7 @@ jobs:
         if: |
           matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && 
           ${{ steps.working-directory.outputs.ui_backend}} == true &&
-          ${{ steps.ui_tests_outputs.exit_code }} == 0
+          ${{ steps.ui_tests.outputs.exit_code }} == 0
         uses: codecov/codecov-action@v3
         with:
           files: ./ui_backend_coverage.xml
