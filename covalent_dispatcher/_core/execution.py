@@ -802,11 +802,17 @@ def run_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Resul
         return result_object
 
     try:
+        app_log.debug("Plan workflow.")
         _plan_workflow(result_object)
-        result_object = _run_planned_workflow(result_object, tasks_pool)
+        app_log.debug("Run planned workflow.")
+        try:
+            result_object = _run_planned_workflow(result_object, tasks_pool)
+        except Exception as e:
+            app_log.debug(f"Error: {e}")
 
     except Exception as ex:
         app_log.error(f"Exception during _run_planned_workflow: {ex}")
+        app_log.debug("Before lattice data update.")
         update_lattices_data(
             workflow_db,
             result_object.dispatch_id,
@@ -814,6 +820,7 @@ def run_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Resul
             completed_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
+        app_log.debug("After lattice data update.")
 
         write_lattice_error(
             workflow_db,
