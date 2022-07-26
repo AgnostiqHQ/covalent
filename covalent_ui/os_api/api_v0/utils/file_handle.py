@@ -61,7 +61,11 @@ class FileHandler:
                     else:
                         return None
                 elif isinstance(unpickled_object, str):
-                    return unpickled_object
+                    return (
+                        unpickled_object
+                        if (unpickled_object != "" or unpickled_object is not None)
+                        else None
+                    )
                 elif isinstance(unpickled_object, TransportableObject):
                     res = unpickled_object.object_string
                     return json.dumps(res)
@@ -69,6 +73,23 @@ class FileHandler:
                     return str(unpickled_object.__dict__)
                 else:
                     return unpickled_object
+        except EOFError:
+            return None
+        except Exception:
+            return None
+
+    def read_from_text(self, path):
+        try:
+            with open(self.location + "/" + path, "r") as read_file:
+                text_object = read_file.readlines()
+                list_str = ""
+                read_file.close()
+                if isinstance(text_object, list):
+                    for i in text_object:
+                        list_str += i
+                    return list_str if (list_str != "" or list_str is not None) else None
+                else:
+                    return text_object if (text_object != "" or text_object is not None) else None
         except EOFError:
             return None
         except Exception:

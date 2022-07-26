@@ -74,7 +74,7 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput
         if result is not None:
             handler = FileHandler(result["storage_path"])
             if name == "function_string":
-                response = handler.read_from_pickle(result["function_string_filename"])
+                response = handler.read_from_text(result["function_string_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "function":
                 response = handler.read_from_pickle(result["function_filename"])

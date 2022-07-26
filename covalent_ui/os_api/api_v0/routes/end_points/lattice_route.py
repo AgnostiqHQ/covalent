@@ -93,13 +93,13 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
                 response = handler.read_from_pickle(lattice_data["inputs_filename"])
                 return LatticeFileResponse(data=response)
             elif name == "function_string":
-                response = handler.read_from_pickle(lattice_data["function_string_filename"])
+                response = handler.read_from_text(lattice_data["function_string_filename"])
                 return LatticeFileResponse(data=response)
             elif name == "executor_details":
                 response = handler.read_from_pickle(lattice_data["executor_filename"])
                 return LatticeExecutorResponse(data=response, executor_name="dask")
             elif name == "error":
-                response = handler.read_from_pickle(lattice_data["error_filename"])
+                response = handler.read_from_text(lattice_data["error_filename"])
                 return LatticeFileResponse(data=response)
             elif name == "function":
                 response = handler.read_from_pickle(lattice_data["function_filename"])
