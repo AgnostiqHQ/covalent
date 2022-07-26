@@ -141,8 +141,8 @@ class Summary:
             self.db_con.query(
                 (
                     func.sum(
-                        func.strftime("%s", func.IFNULL(Lattice.completed_at, 0))
-                        - func.strftime("%s", func.IFNULL(Lattice.started_at, 0))
+                        func.strftime("%s", Lattice.completed_at)
+                        - func.strftime("%s", Lattice.started_at)
                     )
                     * 1000
                 ).label("run_time")
@@ -164,7 +164,7 @@ class Summary:
             total_jobs_running=query1[0],
             total_jobs_completed=query2[0],
             latest_running_task_status=query3[0] if query3 is not None else None,
-            total_dispatcher_duration=query4[0] if query3 is not None else 0,
+            total_dispatcher_duration=query4[0] if query4 is not None else 0,
             total_jobs_failed=query5[0],
             total_jobs=query6[0],
         )
