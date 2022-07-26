@@ -27,7 +27,7 @@
 # Allow tests, docs, core source, github actions, and detect-secrets filters
 !/.detect_secrets_filters/**
 !/.github/**
-!/alembic/**
+!/covalent_migrations/**
 !/covalent/**
 !/covalent_ui/**
 /covalent_ui/dask-worker-space/**.*lock

@@ -7,13 +7,13 @@ Whenever merging other branches into your working branch always remember to run 
 In order to update the DB to reflect the most up to date DB models we run the migrations (that have not yet run) as such:
 
 ```bash
-alembic upgrade head
+covalent db alembic upgrade head
 ```
 
 To see history of which migrations we have run we can execute
 
 ```bash
-alembic history
+covalent db alembic history
 ```
 
 ## Autogenerate Migrations
@@ -21,7 +21,7 @@ alembic history
 To generate new migrations as a result of editing our DB model files, we can run the following
 
 ```bash
-alembic revision --autogenerate -m "Description of DB update"
+covalent db alembic revision --autogenerate -m "Description of DB update"
 ```
 
 
@@ -35,7 +35,7 @@ You should see a new python file generated under `alembic/versions`. Also, there
 To create a migration file which will be edited manually, one can run:
 
 ```bash
-alembic revision -m "my custom migration file"
+covalent db alembic revision -m "my custom migration file"
 ```
 
 ## Undo Migrations
@@ -43,11 +43,11 @@ alembic revision -m "my custom migration file"
 To undo the last migration we can run
 
 ```bash
-alembic downgrade -1
+covalent db alembic downgrade -1
 ```
 
 Alternatively we can specify the exact version which we want to revert to (we can use `alembic history` for this)
 
 ```bash
-alembic downgrade 1ed41b6d3f3f
+covalent db alembic downgrade 1ed41b6d3f3f
 ```

@@ -23,14 +23,13 @@ from os import path
 from pathlib import Path
 from typing import BinaryIO, Dict, Generator, Optional
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
-
 from alembic import command
 from alembic.config import Config
 from alembic.environment import EnvironmentContext
 from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
 from .._shared_files.config import get_config
 from . import models
@@ -65,9 +64,10 @@ class DataStore:
         return DataStore(echo=False)
 
     def get_alembic_config(self, logging_enabled: bool = True):
-        alembic_ini_path = Path(path.join(__file__, "./../../../alembic.ini")).resolve()
+        alembic_ini_path = Path(
+            path.join(__file__, "./../../../covalent_migrations/alembic.ini")
+        ).resolve()
         alembic_config = Config(alembic_ini_path)
-        alembic_config.attributes["configure_logger"] = False
         alembic_config.attributes["configure_logger"] = logging_enabled
         alembic_config.set_main_option("sqlalchemy.url", self.db_URL)
         return alembic_config
