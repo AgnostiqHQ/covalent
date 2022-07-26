@@ -17,6 +17,8 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+from os import path
+from pathlib import Path
 from subprocess import PIPE, Popen
 from typing import List
 
@@ -66,7 +68,11 @@ def alembic(ctx: click.Context, alembic_args) -> None:
     """
     try:
         alembic_args = list(alembic_args)
-        alembic_command = ["alembic"] + alembic_args
+        settings_file_path = Path(
+            path.join(__file__, "./../../../../covalent_migrations/alembic.ini")
+        ).resolve()
+        alembic_command = ["alembic", "-c", settings_file_path] + alembic_args
+        print(alembic_command)
         p = Popen(alembic_command, stdout=PIPE, stderr=PIPE)
         output, error = p.communicate()
         if error:
