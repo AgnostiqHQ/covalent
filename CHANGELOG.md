@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Exposing `alembic {args}` cli commands through: `covalent db alembic {args}`
+
 ## [0.154.0] - 2022-07-25
 
 ### Authors
