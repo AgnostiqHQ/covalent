@@ -181,7 +181,7 @@ jobs:
           max_attempts: 2
           on_retry_command: rm -f ~/.config/covalent/covalent.conf
           command: |
-            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc. || error "tests for UI backend do not exist."
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc || error "tests for UI backend do not exist."
       
       - name: Generate UI backend coverage report
         if: | 
