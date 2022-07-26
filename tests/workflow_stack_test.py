@@ -318,6 +318,30 @@ def test_electron_deps_inject_calldep_retval():
     assert result_object.result == (2, 5)
 
 
+def test_electron_deps_inject_non_unique_calldep_retvals():
+    def identity(y):
+        return y
+
+    calldep_one = ct.DepsCall(identity, args=[1], retval_keyword="y")
+    calldep_two = ct.DepsCall(identity, args=[2], retval_keyword="y")
+    calldep_three = ct.DepsCall(identity, args=[3], retval_keyword="y")
+
+    @ct.electron(call_before=[calldep_one, calldep_two, calldep_three])
+    def task(y=[]):
+        return y
+
+    @ct.lattice
+    def workflow():
+        return task()
+
+    dispatch_id = ct.dispatch(workflow)()
+
+    result_object = ct.get_result(dispatch_id, wait=True)
+
+    rm._delete_result(dispatch_id)
+    assert result_object.result == [1, 2, 3]
+
+
 def test_electron_deps_pip():
 
     import subprocess
