@@ -276,19 +276,8 @@ def encode_metadata(metadata: dict) -> dict:
     return encoded_metadata
 
 
-# Utils for diffing transport graphs
-
-
-def _invalidate_successors(A: nx.MultiDiGraph, node_statuses: dict, starting_node: int):
-    nodes_to_invalidate = [starting_node]
-    for node, successors in nx.bfs_successors(A, starting_node):
-        for child in successors:
-            nodes_to_invalidate.append(child)
-    for node in nodes_to_invalidate:
-        node_statuses[node] = -1
-
-
-def _same_node(A: nx.MultiDiGraph, B: nx.MultiDiGraph, node: int):
+# Default node comparison function for diffing transport graphs
+def _cmp_fstr_and_pval(A: nx.MultiDiGraph, B: nx.MultiDiGraph, node: int):
 
     # Compare pickled functions and parameter values
 
@@ -308,10 +297,6 @@ def _same_node(A: nx.MultiDiGraph, B: nx.MultiDiGraph, node: int):
         A_val = A.nodes[node].get("value", TransportableObject(None))
         B_val = B.nodes[node].get("value", TransportableObject(None))
         return A_val.get_serialized() == B_val.get_serialized()
-
-
-def _same_edges(A: nx.MultiDiGraph, B: nx.MultiDiGraph, parent: int, node: int):
-    return A.adj[parent][node] == B.adj[parent][node]
 
 
 class _TransportGraph:
@@ -501,7 +486,7 @@ class _TransportGraph:
 
         return self._graph.copy()
 
-    def compare(self, other: "_TransportGraph", node_cmp=_same_node, edge_cmp=_same_edges) -> list:
+    def compare(self, other: "_TransportGraph", node_cmp=_cmp_fstr_and_pval) -> list:
         """Returns a list of reusable nodes from another transport graph.
 
         Args:
@@ -523,7 +508,7 @@ class _TransportGraph:
         A = self.get_internal_graph_copy()
         B = other.get_internal_graph_copy()
 
-        A_node_status, B_node_status = max_cbms(A, B, node_cmp, edge_cmp)
+        A_node_status, B_node_status = max_cbms(A, B, node_cmp)
 
         return [node for node, status in A_node_status.items() if status is True]
 

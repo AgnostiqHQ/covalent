@@ -598,3 +598,76 @@ def test_transport_graph_compare():
 
     assert tg4_1.compare(tg4_2) == [0, 1, 2, 4]
     assert tg4_1.compare(tg4_3) == [0, 1, 4]
+
+
+def test_transport_graph_compare_edges():
+    """Check that edge comparison picks up different edge attributes"""
+
+    @ct.electron
+    def task_1(x):
+        return x
+
+    @ct.electron
+    def task_2(x, y):
+        return x + y * y
+
+    #    1       3
+    #     \     / (arg)
+    #      0   2
+    #       \ /
+    #        4
+    @ct.lattice
+    def workflow_1(x, y):
+        res1 = task_1(x)
+        res2 = task_1(y)
+        res3 = task_2(res1, res2)
+        return res3
+
+    #    1       3
+    #     \     / (kwarg)
+    #      0   2
+    #   (0) \ / (1)
+    #        4
+    @ct.lattice
+    def workflow_1a(x, y):
+        res1 = task_1(x)
+        res2 = task_1(y=y)
+        res3 = task_2(res1, res2)
+
+    #    1       3
+    #     \     / (kwarg)
+    #      0   2
+    #   (1) \ / (0)
+    #        4
+    @ct.lattice
+    def workflow_2(x, y):
+        res1 = task_1(x)
+        res2 = task_1(y)
+        res3 = task_2(res2, res1)
+        return res3
+
+    #    1        3
+    #     \      / (kwarg)
+    #      0    2
+    #       \\
+    #        4
+    @ct.lattice
+    def workflow_3(x, y):
+        res1 = task_1(x)
+        res2 = task_1(y)
+        res3 = task_2(res1, res1)
+        return res3
+
+    workflow_1.build_graph(1, 2)
+    tg1 = workflow_1.transport_graph
+    workflow_1a.build_graph(1, 2)
+    tg1a = workflow_1a.transport_graph
+    workflow_2.build_graph(1, 2)
+    tg2 = workflow_2.transport_graph
+    workflow_3.build_graph(1, 2)
+    tg3 = workflow_3.transport_graph
+
+    assert list(tg1._graph.nodes) == [0, 1, 2, 3, 4]
+    assert tg1.compare(tg1a) == [0, 1]
+    assert tg1.compare(tg2) == [0, 1, 2, 3]
+    assert tg1.compare(tg3) == [0, 1, 2, 3]
