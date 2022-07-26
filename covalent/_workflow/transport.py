@@ -30,6 +30,7 @@ import cloudpickle
 import networkx as nx
 
 from .._shared_files.defaults import parameter_prefix
+from .tgutils import max_cbms
 
 
 class TransportableObject:
@@ -274,6 +275,33 @@ def encode_metadata(metadata: dict) -> dict:
     return encoded_metadata
 
 
+# Default node comparison function for diffing transport graphs
+def _cmp_fstr_meta_pval(A: nx.MultiDiGraph, B: nx.MultiDiGraph, node: int):
+
+    # Compare metadata, function strings, and parameter values
+
+    A_fn = A.nodes[node].get("function", None)
+    B_fn = B.nodes[node].get("function", None)
+    A_fn_str = A.nodes[node].get("function_string", "")
+    B_fn_str = A.nodes[node].get("function_string", "")
+
+    A_meta = encode_metadata(A.nodes[node].get("metadata"))
+    B_meta = encode_metadata(B.nodes[node].get("metadata"))
+
+    # Compare metadata
+    if A_meta != B_meta:
+        return False
+
+    # Compare function strings
+    if A_fn_str != B_fn_str:
+        return False
+
+    # Compare parameter values
+    A_val = A.nodes[node].get("value", TransportableObject(None))
+    B_val = B.nodes[node].get("value", TransportableObject(None))
+    return A_val.get_serialized() == B_val.get_serialized()
+
+
 class _TransportGraph:
     """
     A TransportGraph is the most essential part of the whole workflow. This contains
@@ -433,6 +461,32 @@ class _TransportGraph:
         """
 
         return self._graph.copy()
+
+    def compare(self, other: "_TransportGraph", node_cmp=_cmp_fstr_meta_pval) -> list:
+        """Returns a list of reusable nodes from another transport graph.
+
+        Args:
+            other: Another transport graph
+            node_cmp: An optional function for comparing node attributes in A and B.
+                      Defaults to comparing function strings and serialized parameter values
+            edge_cmp: An optional function for comparing the edges between two nodes.
+                      Defaults to checking that the two sets of edges have the same attributes
+
+        Returns:
+            list: a list of reusuable nodes
+
+        The nodes can then be copied from the other transport graph so
+        that previously completed nodes don't need to be re-run.
+
+        A node is reusable if its predecessor subgraphs in both
+        transport graphs are the same.
+        """
+        A = self.get_internal_graph_copy()
+        B = other.get_internal_graph_copy()
+
+        A_node_status, B_node_status = max_cbms(A, B, node_cmp)
+
+        return [node for node, status in A_node_status.items() if status is True]
 
     def serialize(self, metadata_only: bool = False) -> bytes:
         """
