@@ -71,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Replaced `Session(DispatchDB()._get_data_store())` with `workflow_db.session()`
+- Replaced `Session(DispatchDB()._get_data_store().engine)` with `workflow_db.session()`
 
 ### Removed
 

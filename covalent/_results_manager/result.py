@@ -312,7 +312,7 @@ Node Outputs
             "stderr": self._get_node_error(node_id),
         }
 
-    def get_all_node_outputs(self, db: DataStore = workflow_db) -> dict:
+    def get_all_node_outputs(self) -> dict:
         """
         Return output of every node execution.
 
@@ -339,11 +339,11 @@ Node Outputs
             for electron in electron_records:
                 node_id = electron.transport_graph_node_id
                 all_node_outputs[
-                    f"{self._get_node_name(node_id=node_id, db=db)}({node_id})"
-                ] = self._get_node_output(node_id=node_id, db=db)
+                    f"{self._get_node_name(node_id=node_id)}({node_id})"
+                ] = self._get_node_output(node_id=node_id)
             return all_node_outputs
 
-    def get_all_node_results(self, db: DataStore = workflow_db) -> List[Dict]:
+    def get_all_node_results(self) -> List[Dict]:
         """
         Get all the node results.
 
@@ -367,7 +367,7 @@ Node Outputs
                 .all()
             )
             return [
-                self.get_node_result(node_id=electron.transport_graph_node_id, db=db)
+                self.get_node_result(node_id=electron.transport_graph_node_id)
                 for electron in electron_records
             ]
 
@@ -568,7 +568,6 @@ Node Outputs
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
-        db: DataStore = workflow_db,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -660,7 +659,7 @@ Node Outputs
         result_folder_path = os.path.join(self.results_dir, f"{self.dispatch_id}")
         Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
-    def upsert_lattice_data(self, db: DataStore):
+    def upsert_lattice_data(self):
         """Update lattice data"""
 
         with workflow_db.session() as session:
@@ -712,7 +711,7 @@ Node Outputs
                 "started_at": self.start_time,
                 "completed_at": self.end_time,
             }
-            insert_lattices_data(db=db, **lattice_record_kwarg)
+            insert_lattices_data(**lattice_record_kwarg)
 
         else:
             lattice_record_kwarg = {
@@ -722,9 +721,9 @@ Node Outputs
                 "started_at": self.start_time,
                 "completed_at": self.end_time,
             }
-            update_lattices_data(db=db, **lattice_record_kwarg)
+            update_lattices_data(**lattice_record_kwarg)
 
-    def upsert_electron_data(self, db: DataStore):
+    def upsert_electron_data(self):
         """Update electron data"""
 
         tg = self.lattice.transport_graph
@@ -840,7 +839,7 @@ Node Outputs
                         "started_at": started_at,
                         "completed_at": completed_at,
                     }
-                    insert_electrons_data(db=db, **electron_record_kwarg)
+                    insert_electrons_data(**electron_record_kwarg)
 
                 else:
                     electron_record_kwarg = {
@@ -851,9 +850,9 @@ Node Outputs
                         "updated_at": datetime.now(timezone.utc),
                         "completed_at": completed_at,
                     }
-                    update_electrons_data(db=db, **electron_record_kwarg)
+                    update_electrons_data(**electron_record_kwarg)
 
-    def insert_electron_dependency_data(self, db: DataStore = workflow_db):
+    def insert_electron_dependency_data(self):
         """Update electron dependency data"""
 
         # Insert electron dependency records if they don't exist
@@ -870,22 +869,17 @@ Node Outputs
             )
 
         if not electron_dependencies_exist:
-            insert_electron_dependency_data(
-                db=db, dispatch_id=self.dispatch_id, lattice=self.lattice
-            )
+            insert_electron_dependency_data(dispatch_id=self.dispatch_id, lattice=self.lattice)
 
-    def persist(self, db: DataStore = workflow_db) -> None:
+    def persist(self) -> None:
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 
         self._initialize_results_dir()
 
-        if not db:
-            raise DataStoreNotInitializedError
-
-        self.upsert_lattice_data(db)
-        self.upsert_electron_data(db)
-        self.insert_electron_dependency_data(db)
+        self.upsert_lattice_data()
+        self.upsert_electron_data()
+        self.insert_electron_dependency_data()
 
     def _convert_to_electron_result(self) -> Any:
         """
