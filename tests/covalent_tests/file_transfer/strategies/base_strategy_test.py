@@ -63,9 +63,6 @@ class TestBaseFileTransferStrategy:
         to_file = File(is_remote=is_to_remote)
         ft = FileTransfer(from_file, to_file, strategy=strategy)
         pre_transfer_hook_callable, file_transfer_callable = ft.cp()
-        path_mock: Mock = mocker.patch(
-            "covalent._file_transfer.strategies.transfer_strategy_base.Path"
-        )
         return_value = pre_transfer_hook_callable()
         if not is_to_remote and not is_from_remote:
             assert return_value == (from_file.filepath, to_file.filepath)
