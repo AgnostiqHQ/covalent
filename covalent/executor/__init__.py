@@ -29,6 +29,7 @@ import os
 from typing import Any, Dict, List, Union
 
 import pkg_resources
+from attr import has
 
 from .._shared_files import logger
 from .._shared_files.config import get_config, update_config
@@ -129,7 +130,10 @@ class _ExecutorManager:
             None
         """
 
-        if not hasattr(the_module, "EXECUTOR_PLUGIN_NAME"):
+        if not (
+            hasattr(the_module, "EXECUTOR_PLUGIN_NAME")
+            or hasattr(the_module, "executor_plugin_name")
+        ):
             message = f"{the_module.__name__} does not seem to have a well-defined plugin class.\n"
             message += f"Specify the plugin class with 'EXECUTOR_PLUGIN_NAME = <plugin class name>' in the {the_module.__name__} module."
             app_log.warning(message)
@@ -139,9 +143,14 @@ class _ExecutorManager:
         all_classes = inspect.getmembers(the_module, inspect.isclass)
         # Classes that are defined in the module:
         module_classes = [c[1] for c in all_classes if c[1].__module__ == the_module.__name__]
-        # The module should have a global attribute named executor_plugin_name
+        # The module should have a global attribute named EXECUTOR_PLUGIN_NAME
         # which is set to the class name defining the plugin.
-        plugin_class = [c for c in module_classes if c.__name__ == the_module.EXECUTOR_PLUGIN_NAME]
+        executor_name = (
+            the_module.executor_plugin_name
+            if hasattr(the_module, "executor_plugin_name")
+            else the_module.EXECUTOR_PLUGIN_NAME
+        )
+        plugin_class = [c for c in module_classes if c.__name__ == executor_name]
 
         if len(plugin_class):
             plugin_class = plugin_class[0]
@@ -156,7 +165,14 @@ class _ExecutorManager:
 
         else:
             # The requested plugin (the_module.module_name) was not found in the module.
-            message = f"Requested executor plugin {the_module.executor_plugin_name} was not found in {the_module.__name__}"
+            executor_name = (
+                the_module.executor_plugin_name
+                if hasattr(the_module, "executor_plugin_name")
+                else the_module.EXECUTOR_PLUGIN_NAME
+            )
+            message = (
+                f"Requested executor plugin {executor_name} was not found in {the_module.__name__}"
+            )
             app_log.warning(message)
 
     def _load_installed_plugins(self) -> None:
