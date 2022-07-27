@@ -20,6 +20,7 @@
 
 """Language translation module for Electron objects."""
 
+from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._file_transfer.enums import Order
@@ -77,7 +78,7 @@ class Lepton(Electron):
         library_name: str = "",
         function_name: str = "",
         argtypes: Optional[List] = [],
-        command: Optional[str] = "",
+        command: Optional[Union[str, List[str]]] = "",
         named_outputs: Optional[List[str]] = [],
         display_name: Optional[str] = "",
         executor: Union[
@@ -313,6 +314,8 @@ class Lepton(Electron):
                     output_string += f" && echo COVALENT-LEPTON-OUTPUT-{output}: ${output}"
 
             if self.command:
+                if isinstance(self.command, list):
+                    self.command = " && ".join(self.command)
                 self.command = self.command.format(**kwargs)
                 cmd = ["/bin/bash", "-c", f"{mutated_kwargs} {self.command} {output_string}", "_"]
                 cmd += args
@@ -380,3 +383,75 @@ class Lepton(Electron):
         )
 
         return wrapper
+
+
+def bash(
+    _func: Optional[Callable] = None,
+    *,
+    display_name: Optional[str] = "",
+    executor: Optional[
+        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
+    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+    files: List[FileTransfer] = [],
+    deps_bash: Union[DepsBash, List, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", []),
+    deps_pip: Union[DepsPip, list] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("pip", None),
+    call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
+    call_after: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
+) -> Callable:
+    """Bash decorator which wraps a Python function as a Bash Lepton."""
+
+    deps = {}
+
+    if isinstance(deps_bash, DepsBash):
+        deps["bash"] = deps_bash
+    if isinstance(deps_bash, list) or isinstance(deps_bash, str):
+        deps["bash"] = DepsBash(commands=deps_bash)
+
+    internal_call_before_deps = []
+    internal_call_after_deps = []
+
+    for file_transfer in files:
+        _callback_ = file_transfer.cp()
+        if file_transfer.order == Order.AFTER:
+            internal_call_after_deps.append(DepsCall(_callback_))
+        else:
+            internal_call_before_deps.append(DepsCall(_callback_))
+
+    if isinstance(deps_pip, DepsPip):
+        deps["pip"] = deps_pip
+    if isinstance(deps_pip, list):
+        deps["pip"] = DepsPip(packages=deps_pip)
+
+    if isinstance(call_before, DepsCall):
+        call_before = [call_before]
+
+    if isinstance(call_after, DepsCall):
+        call_after = [call_after]
+
+    call_before = internal_call_before_deps + call_before
+    call_after = internal_call_after_deps + call_after
+
+    def decorator_bash_lepton(func=None):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            arg_dict = dict(zip(func.__code__.co_varnames[: func.__code__.co_argcount], args))
+            arg_dict.update(kwargs)
+            lepton_object = Lepton(
+                "bash",
+                command=func(*args, **kwargs),
+                display_name=display_name,
+                executor=executor,
+                files=files,
+                deps_bash=deps_bash,
+                deps_pip=deps_pip,
+                call_before=call_before,
+                call_after=call_after,
+            )
+            return lepton_object()
+
+        return wrapper
+
+    if _func is None:
+        return decorator_bash_lepton
+    else:
+        return decorator_bash_lepton(_func)
