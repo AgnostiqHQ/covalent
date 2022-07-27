@@ -431,6 +431,7 @@ const ResultListing = () => {
   const onSearch = (e) => {
     setSearchKey(e.target.value)
     if (e.target.value.length > 3) {
+      setSelected([])
       setOffset(0)
     }
   }
@@ -472,6 +473,7 @@ const ResultListing = () => {
   }
 
   const handleChangeSort = (column) => {
+    setSelected([])
     setPage(1)
     setOffset(0)
     const isAsc = sortColumn === column && sortOrder === 'asc'
