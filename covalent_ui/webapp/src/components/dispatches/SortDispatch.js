@@ -65,7 +65,7 @@ const SortDispatch = (props) => {
           label={count ? count : 0}
           className="chipContainer"
           sx={{
-            width: '24px',
+            minWidth: '24px',
             height: '24px',
             color: (theme) => theme.palette.text.tertiary,
             borderRadius: '8px',
