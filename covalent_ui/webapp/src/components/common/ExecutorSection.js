@@ -27,7 +27,7 @@ import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'
 
 const ExecutorSection = ({ isFetching, metadata, preview, ...props }) => {
-  const executorType = _.get(metadata, 'executor_name')
+  const executorType = preview?_.get(metadata, 'executor_name'):_.get(metadata, 'data')
   const executorParams = _.omitBy(_.get(metadata, preview ? 'executor' : 'data'), (v) => v === '')
   const src = _.join(
     _.map(executorParams, (value, key) => `${key}: ${value}`),
@@ -38,14 +38,10 @@ const ExecutorSection = ({ isFetching, metadata, preview, ...props }) => {
       <Heading>
         Executor: <strong>{executorType}</strong>
       </Heading>
-      {isFetching ? (
-        <Skeleton height={100} />
-      ) : (
-        metadata.executor_name !== metadata.data && (
-          <Paper elevation={0} {...props}>
-            <SyntaxHighlighter language="yaml" src={src} />
-          </Paper>
-        )
+      {preview && (
+        <Paper elevation={0} {...props}>
+          <SyntaxHighlighter language="yaml" src={src} />
+        </Paper>
       )}
     </>
   )

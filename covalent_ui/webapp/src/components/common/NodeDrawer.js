@@ -78,9 +78,9 @@ const NodeDrawer = ({ node, dispatchId }) => {
   const electronFunctionResult = useSelector(
     (state) => state.electronResults.electronFunctionString
   )
-  // const electronErrorData = useSelector(
-  //   (state) => state.electronResults.electronError
-  // )
+  const electronErrorData = useSelector(
+    (state) => state.electronResults.electronError
+  )
   const electronDetailIsFetching = useSelector(
     (state) => state.electronResults.electronDetailsList.isFetching
   )
@@ -113,7 +113,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
           params: 'function_string',
         })
       )
-      // dispatch(electronError({ dispatchId, electronId, params: 'error' }))
+      dispatch(electronError({ dispatchId, electronId, params: 'error' }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node, callSocketApi])
@@ -193,7 +193,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
             </>
           )}
 
-          {/* <ErrorCard error={electronErrorData.data} /> */}
+          <ErrorCard error={electronErrorData.data} />
 
           {/* Description */}
           {electronDetail.doc &&

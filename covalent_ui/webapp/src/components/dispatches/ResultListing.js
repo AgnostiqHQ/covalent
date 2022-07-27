@@ -180,7 +180,7 @@ const ResultsTableToolbar = ({
   allDispatches,
   openDialogBox,
   setOpenDialogBox,
-  isFetching,
+  dashboardOverviewFetching
 }) => {
   return (
     <Toolbar disableGutters sx={{ mb: 1 }}>
@@ -238,22 +238,22 @@ const ResultsTableToolbar = ({
         <SortDispatch
           title="All"
           count={allDispatches}
-          isFetching={isFetching}
+          isFetching={dashboardOverviewFetching}
         />
         <SortDispatch
           title="Running"
           count={runningDispatches}
-          isFetching={isFetching}
+          isFetching={dashboardOverviewFetching}
         />
         <SortDispatch
           title="Completed"
           count={completedDispatches}
-          isFetching={isFetching}
+          isFetching={dashboardOverviewFetching}
         />
         <SortDispatch
           title="Failed"
           count={failedDispatches}
-          isFetching={isFetching}
+          isFetching={dashboardOverviewFetching}
         />
       </Grid>
       <Input
@@ -380,17 +380,21 @@ const ResultListing = () => {
   )?.map((e) => {
     return {
       dispatchId: e.dispatch_id,
-      endTime: parseISO(e.ended_at),
+      endTime: e.ended_at,
       latticeName: e.lattice_name,
       resultsDir: e.results_dir,
       status: e.status,
       error: e.error,
       runTime: e.runtime,
-      startTime: parseISO(e.started_at),
+      startTime: e.started_at,
       totalElectrons: e.total_electrons,
       totalElectronsCompleted: e.total_electrons_completed,
     }
   })
+
+  const dashboardOverviewFetching = useSelector(
+    (state) => state.dashboard.fetchDashboardOverview.isFetching
+  )
 
   const allDispatches = useSelector(
     (state) => state.dashboard.dashboardOverview.total_jobs
@@ -537,7 +541,7 @@ const ResultListing = () => {
           failedDispatches={failedDispatches}
           openDialogBox={openDialogBox}
           setOpenDialogBox={setOpenDialogBox}
-          isFetching={isFetching}
+          dashboardOverviewFetching={dashboardOverviewFetching}
         />
         {!isFetching && (
           <Grid>
