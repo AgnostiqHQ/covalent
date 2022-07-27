@@ -74,7 +74,7 @@ class DispatchModule(BaseModel):
     runtime: Optional[Union[int, None]]
     total_electrons: Optional[Union[int, None]]
     total_electrons_completed: Optional[Union[int, None]]
-    started_at: datetime
+    started_at: Optional[Union[datetime, None]]
     ended_at: Optional[Union[datetime, None]]
     status: Status
     updated_at: Optional[Union[datetime, None]]

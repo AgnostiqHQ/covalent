@@ -42,25 +42,22 @@ import { differenceInSeconds } from 'date-fns'
 const App = () => {
   const dispatch = useDispatch()
   const pathName = useLocation();
+
   useEffect(() => {
     let lastCalledOn = null;
     var onUpdate = (update) => {
       let canCallAPI = false;
-      if (lastCalledOn) {
+      if (pathName.pathname === '/' || (pathName.pathname !== '/' && pathName.pathname === `/${update.result.dispatch_id}`)) {
         let currentTime = new Date()
         let compareTime = new Date(lastCalledOn)
         const diffInSec = differenceInSeconds(currentTime, compareTime)
-        if (diffInSec >= 3) {
-          if (pathName.pathname === '/' || (pathName.pathname !== '/' && pathName.pathname === `/${update.result.dispatch_id}`)) {
-            canCallAPI = true;
-          }
+        if (diffInSec >= 3 || update.result.status !== 'RUNNING') {
+          canCallAPI = true;
         } else {
           canCallAPI = false;
         }
-      } else {
-        canCallAPI = true;
       }
-      if (canCallAPI || update.result.status !== 'RUNNING') {
+      if (canCallAPI) {
         lastCalledOn = new Date();
         dispatch(
           socketAPI()
@@ -73,6 +70,8 @@ const App = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathName])
+
+
   useEffect(() => {
     const onDrawRequest = (request) => {
       dispatch(setLattice(request.payload))

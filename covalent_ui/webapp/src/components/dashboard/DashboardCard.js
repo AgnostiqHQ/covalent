@@ -154,7 +154,10 @@ const DashBoardCardItems = ({ desc, content, align, isSkeletonPresent }) => (
           'N/A'
         )}
       </Typography>
-      <Typography color="text.primary"> {desc}</Typography>
+      <Typography sx={{ marginTop: '16px' }} color="text.primary">
+        {' '}
+        {desc}
+      </Typography>
     </Box>
   </Box>
 )
