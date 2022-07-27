@@ -25,10 +25,7 @@ from fastapi import APIRouter
 from sqlalchemy.orm import Session
 
 from covalent_ui.os_api.api_v0.data_layer.graph_dal import Graph
-from covalent_ui.os_api.api_v0.data_layer.lattice_dal import Lattices
 from covalent_ui.os_api.api_v0.database.config.db import engine
-from covalent_ui.os_api.api_v0.database.graph_data import graph_data
-from covalent_ui.os_api.api_v0.models.lattices_model import GraphResponse
 
 routes: APIRouter = APIRouter()
 

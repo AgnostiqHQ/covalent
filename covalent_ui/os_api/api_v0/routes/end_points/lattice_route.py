@@ -29,8 +29,6 @@ from sqlalchemy.orm import Session
 
 from covalent_ui.os_api.api_v0.data_layer.lattice_dal import Lattices
 from covalent_ui.os_api.api_v0.database.config.db import engine
-from covalent_ui.os_api.api_v0.database.lattice_file_mock import file_read
-from covalent_ui.os_api.api_v0.models.file_model import FileMapper, Filetype
 from covalent_ui.os_api.api_v0.models.lattices_model import (
     FileOutput,
     LatticeDetailResponse,

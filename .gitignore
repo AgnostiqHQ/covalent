@@ -74,3 +74,8 @@
 # Ignore Lock & dirLock files
 covalent_ui/dask-worker-space/*.*lock
 covalent_ui/app/dask-worker-space/*.*lock
+
+# Ignore .sonarwork files
+covalent_ui/os_api/.scannerwork/.sonar_lock
+covalent_ui/os_api/.scannerwork/report-task.txt
+covalent_ui/os_api/sonar.sh
