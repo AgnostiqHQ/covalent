@@ -60,7 +60,7 @@ def get_all_dispatches(
         return summary.get_summary(count, offset, sort_by, search, sort_direction)
 
 
-@routes.get("/overview/", response_model=DispatchDashBoardResponse)
+@routes.get("/overview", response_model=DispatchDashBoardResponse)
 def get_dashboard_details():
     """Overview of Dispatches
 

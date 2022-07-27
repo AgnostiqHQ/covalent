@@ -68,9 +68,7 @@ def disconnect(sid):
 
 
 # app.mount(ROUTE_WEBAPP_PATH, StaticFiles(directory=WEBAPP_PATH), name="webapp")
-origins = [
-    "*",
-]
+origins = ["http://localhost:49009", "http://localhost:48008"]
 app.include_router(routes.routes, prefix="/api/v1")
 
 app.add_middleware(
