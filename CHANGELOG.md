@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed YouTube video temporarily
 
+## [0.148.0] - 2022-07-27
+
+### Authors
+
+- Poojith U Rao <poojith@agnostiq.ai>
+
+### Added
+
+- S3 File transfer strategy
+
 ## [0.147.0] - 2022-07-21
 
 ### Authors
