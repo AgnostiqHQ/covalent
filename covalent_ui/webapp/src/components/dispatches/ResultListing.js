@@ -458,6 +458,7 @@ const ResultListing = () => {
 
   const handlePageChanges = (event, pageValue) => {
     setPage(pageValue)
+    setSelected([])
     const offsetValue = pageValue === 1 ? 0 : pageValue * 10 - 10
     setOffset(offsetValue)
   }
