@@ -64,13 +64,12 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
         )
         result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
 
-    except MissingLatticeRecordError:
-        app_log.debug(
+    except MissingLatticeRecordError as ex:
+        app_log.warning(
             f"Dispatch ID {dispatch_id} was not found in the database. Incorrect dispatch id."
         )
 
-        time.sleep(0.1)
-        return get_result(dispatch_id, wait)
+        raise ex
 
     return result_object
 
