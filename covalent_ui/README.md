@@ -1,3 +1,27 @@
+
+
+&nbsp;
+
+
+
+<div  align="center">
+
+
+
+<img  src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/covalent_readme_banner.svg"  width=150%>
+
+
+
+[![python](https://img.shields.io/pypi/pyversions/cova)](https://github.com/AgnostiqHQ/covalent)
+
+[![tests](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml/badge.svg)](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml)
+
+[![docs](https://readthedocs.org/projects/covalent/badge/?version=latest)](https://covalent.readthedocs.io/en/latest/?badge=latest)
+
+
+[![agpl](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.en.html)
+</div>
+
 # Covalent UI
 
 ## Setup
@@ -39,7 +63,7 @@ yarn build
 ## Run web app
 
 ```shell
-npm run start
+yarn start
 ```
 ## Run server
 Recomended python version is 3.8
