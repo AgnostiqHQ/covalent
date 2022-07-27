@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from datetime import datetime, timezone
+
 from sqlalchemy.sql import func
 
 from covalent_ui.os_api.api_v0.database.schema.electrons_schema import Electron
@@ -63,15 +64,18 @@ class Electrons:
                 Electron.info_filename,
                 Electron.name,
                 Electron.status,
-                Electron.started_at,
-                Electron.completed_at,
+                func.datetime(Electron.started_at, "localhost"),
+                func.datetime(Electron.completed_at, "localhost"),
                 (
                     (
-                        func.strftime("%s", func.IFNULL(Electron.completed_at, func.datetime.now(timezone.utc)))
+                        func.strftime(
+                            "%s",
+                            func.IFNULL(Electron.completed_at, func.datetime.now(timezone.utc)),
+                        )
                         - func.strftime("%s", Electron.started_at)
                     )
-                   *1000
-                ).label("runtime")
+                    * 1000
+                ).label("runtime"),
             )
             .join(Lattice, Lattice.id == Electron.parent_lattice_id)
             .filter(

@@ -71,11 +71,13 @@ class Summary:
                 ).label("runtime"),
                 Lattice.electron_num.label("total_electrons"),
                 Lattice.completed_electron_num.label("total_electrons_completed"),
-                Lattice.started_at.label("started_at"),
-                func.IFNULL(Lattice.completed_at, None).label("ended_at"),
+                func.datetime(Lattice.started_at, "localtime").label("started_at"),
+                func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label(
+                    "ended_at"
+                ),
                 # Lattice.completed_at.label("ended_at"),
                 Lattice.status.label("status"),
-                Lattice.updated_at.label("updated_at"),
+                func.datetime(Lattice.updated_at, "localtime").label("updated_at"),
             )
             .filter(
                 or_(
