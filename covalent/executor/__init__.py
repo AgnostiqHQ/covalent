@@ -120,7 +120,7 @@ class _ExecutorManager:
     def _populate_executor_map_from_module(self, the_module: Any) -> None:
         """
         Populate the executor map from a module.
-        Also checks whether `executor_plugin_name` is defined in the module.
+        Also checks whether `EXECUTOR_PLUGIN_NAME` is defined in the module.
 
         Args:
             the_module: The module to populate the executor map from.
@@ -129,9 +129,9 @@ class _ExecutorManager:
             None
         """
 
-        if not hasattr(the_module, "executor_plugin_name"):
+        if not hasattr(the_module, "EXECUTOR_PLUGIN_NAME"):
             message = f"{the_module.__name__} does not seem to have a well-defined plugin class.\n"
-            message += f"Specify the plugin class with 'executor_plugin_name = <plugin class name>' in the {the_module.__name__} module."
+            message += f"Specify the plugin class with 'EXECUTOR_PLUGIN_NAME = <plugin class name>' in the {the_module.__name__} module."
             app_log.warning(message)
             return
 
@@ -141,7 +141,7 @@ class _ExecutorManager:
         module_classes = [c[1] for c in all_classes if c[1].__module__ == the_module.__name__]
         # The module should have a global attribute named executor_plugin_name
         # which is set to the class name defining the plugin.
-        plugin_class = [c for c in module_classes if c.__name__ == the_module.executor_plugin_name]
+        plugin_class = [c for c in module_classes if c.__name__ == the_module.EXECUTOR_PLUGIN_NAME]
 
         if len(plugin_class):
             plugin_class = plugin_class[0]
