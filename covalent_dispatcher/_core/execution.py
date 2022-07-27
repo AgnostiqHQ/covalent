@@ -662,6 +662,12 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
         node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
         app_log.debug(f"7A: Node name: {node_name} (run_planned_workflow).")
 
+        # Skip previously completed nodes
+        node_status = result_object.lattice.transport_graph.get_node_value(node_id, "status")
+        if node_status == Result.COMPLETED:
+            app_log.debug(f"Skipping node {node_id} as it was previously completed.")
+            continue
+
         # Handle parameter nodes
         if node_name.startswith(parameter_prefix):
             app_log.debug("7C: Parameter if block (run_planned_workflow).")
