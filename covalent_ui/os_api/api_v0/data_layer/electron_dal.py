@@ -64,8 +64,8 @@ class Electrons:
                 Electron.info_filename,
                 Electron.name,
                 Electron.status,
-                func.datetime(Electron.started_at, "localhost"),
-                func.datetime(Electron.completed_at, "localhost"),
+                func.datetime(Electron.started_at, "localtime").label("started_at"),
+                func.datetime(Electron.completed_at, "localtime").label("completed_at"),
                 (
                     (
                         func.strftime(

@@ -53,9 +53,11 @@ class Lattices:
                 Lattice.status,
                 Lattice.storage_path.label("directory"),
                 Lattice.error_filename,
-                func.datetime(Lattice.started_at, "localhost").label("start_time"),
+                func.datetime(Lattice.started_at, "localtime").label("start_time"),
                 # Lattice.completed_at.label("end_time"),
-                func.IFNULL(Lattice.completed_at, None).label("end_time"),
+                func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label(
+                    "end_time"
+                ),
                 Lattice.electron_num.label("total_electrons"),
                 Lattice.completed_electron_num.label("total_electrons_completed"),
                 (
@@ -68,7 +70,10 @@ class Lattices:
                     )
                     * 1000
                 ).label("runtime"),
-                func.datetime(Lattice.updated_at, "localtime").label("updated_at"),
+                # func.datetime(Lattice.updated_at, "localtime").label("updated_at"),
+                func.IFNULL(func.datetime(Lattice.updated_at, "localtime"), None).label(
+                    "updated_at"
+                ),
             )
             .join(Electron, Electron.parent_lattice_id == Lattice.id)
             .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
