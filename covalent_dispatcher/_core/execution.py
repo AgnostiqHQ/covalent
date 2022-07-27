@@ -505,6 +505,98 @@ async def _initialize_deps_and_queue(
     return num_tasks
 
 
+async def _postprocess_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
+    """
+    Postprocesses a workflow with a completed computational graph
+
+    Args:
+        result_object: Result object being used for current dispatch
+
+    Returns:
+        The postprocessed result object
+    """
+
+    # Executor for post_processing
+    pp_executor = result_object.lattice.get_metadata("workflow_executor")
+    pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
+    post_processor = [pp_executor, pp_executor_data]
+
+    result_object._status = Result.POSTPROCESSING
+    result_object.upsert_lattice_data(workflow_db)
+
+    app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
+
+    if pp_executor == "client":
+        app_log.debug("Workflow to be postprocessed client side")
+        result_object._status = Result.PENDING_POSTPROCESSING
+        result_object._end_time = datetime.now(timezone.utc)
+        result_object.upsert_lattice_data(workflow_db)
+        result_webhook.send_update(result_object)
+        return result_object
+
+    post_processing_inputs = {}
+    post_processing_inputs["args"] = [
+        TransportableObject.make_transportable(result_object.lattice),
+        TransportableObject.make_transportable(result_object.get_all_node_outputs(workflow_db)),
+    ]
+    post_processing_inputs["kwargs"] = {}
+
+    try:
+        future = asyncio.create_task(
+            _run_task(
+                node_id=-1,
+                dispatch_id=result_object.dispatch_id,
+                results_dir=result_object.results_dir,
+                serialized_callable=TransportableObject(_post_process),
+                selected_executor=post_processor,
+                node_name="post_process",
+                call_before=[],
+                call_after=[],
+                inputs=post_processing_inputs,
+                tasks_pool=thread_pool,
+                workflow_executor=post_processor,
+            )
+        )
+        pp_start_time = datetime.now(timezone.utc)
+        app_log.debug(
+            f"Submitted post-processing job to executor {post_processor} at {pp_start_time}"
+        )
+
+        post_process_result = await future
+    except Exception as ex:
+        app_log.debug(f"Exception during post-processing: {ex}")
+        result_object._status = Result.POSTPROCESSING_FAILED
+        result_object._error = "Post-processing failed"
+        result_object._end_time = datetime.now(timezone.utc)
+        result_object.upsert_lattice_data(workflow_db)
+        result_webhook.send_update(result_object)
+
+        return result_object
+
+    if post_process_result["status"] != Result.COMPLETED:
+        err = post_process_result["stderr"]
+        app_log.debug(f"Post-processing failed: {err}")
+        result_object._status = Result.POSTPROCESSING_FAILED
+        result_object._error = f"Post-processing failed: {err}"
+        result_object._end_time = datetime.now(timezone.utc)
+        result_object.upsert_lattice_data(workflow_db)
+        result_webhook.send_update(result_object)
+
+        return result_object
+
+    pp_end_time = post_process_result["end_time"]
+    app_log.debug(f"Post-processing completed at {pp_end_time}")
+    result_object._result = post_process_result["output"]
+    result_object._status = Result.COMPLETED
+    result_object._end_time = datetime.now(timezone.utc)
+
+    app_log.debug(
+        f"10: Successfully post-processed result {result_object.dispatch_id} (run_planned_workflow)"
+    )
+
+    return result_object
+
+
 async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
     """
     Run the workflow in the topological order of their position on the
@@ -659,80 +751,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
-    result_object._status = Result.POSTPROCESSING
-    result_object.upsert_lattice_data(workflow_db)
-
-    app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
-
-    if pp_executor == "client":
-        app_log.debug("Workflow to be postprocessed client side")
-        result_object._status = Result.PENDING_POSTPROCESSING
-        result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data(workflow_db)
-        result_webhook.send_update(result_object)
-        return result_object
-
-    post_processing_inputs = {}
-    post_processing_inputs["args"] = [
-        TransportableObject.make_transportable(result_object.lattice),
-        TransportableObject.make_transportable(result_object.get_all_node_outputs(workflow_db)),
-    ]
-    post_processing_inputs["kwargs"] = {}
-
-    try:
-        future = asyncio.create_task(
-            _run_task(
-                node_id=-1,
-                dispatch_id=result_object.dispatch_id,
-                results_dir=result_object.results_dir,
-                serialized_callable=TransportableObject(_post_process),
-                selected_executor=post_processor,
-                node_name="post_process",
-                call_before=[],
-                call_after=[],
-                inputs=post_processing_inputs,
-                tasks_pool=thread_pool,
-                workflow_executor=post_processor,
-            )
-        )
-        pp_start_time = datetime.now(timezone.utc)
-        app_log.debug(
-            f"Submitted post-processing job to executor {post_processor} at {pp_start_time}"
-        )
-
-        post_process_result = await future
-    except Exception as ex:
-        app_log.debug(f"Exception during post-processing: {ex}")
-        result_object._status = Result.POSTPROCESSING_FAILED
-        result_object._error = "Post-processing failed"
-        result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data(workflow_db)
-        result_webhook.send_update(result_object)
-
-        return result_object
-
-    # app_log.debug(f"Post-process result: {post_process_result}")
-
-    if post_process_result["status"] != Result.COMPLETED:
-        err = post_process_result["stderr"]
-        app_log.debug(f"Post-processing failed: {err}")
-        result_object._status = Result.POSTPROCESSING_FAILED
-        result_object._error = f"Post-processing failed: {err}"
-        result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data(workflow_db)
-        result_webhook.send_update(result_object)
-
-        return result_object
-
-    pp_end_time = post_process_result["end_time"]
-    app_log.debug(f"Post-processing completed at {pp_end_time}")
-    result_object._result = post_process_result["output"]
-    result_object._status = Result.COMPLETED
-    result_object._end_time = datetime.now(timezone.utc)
-
-    app_log.debug(
-        f"10: Successfully post-processed result {result_object.dispatch_id} (run_planned_workflow)"
-    )
+    result_object = await _postprocess_workflow(result_object, thread_pool)
 
     try:
         with DispatchDB() as db:
