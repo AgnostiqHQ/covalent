@@ -23,7 +23,7 @@ import os
 
 import socketio
 import uvicorn
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError, ValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -34,7 +34,8 @@ from fastapi.staticfiles import StaticFiles
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent_dispatcher._service.app_dask import DaskCluster
-#from covalent_ui.app import app as flask_app
+
+# from covalent_ui.app import app as flask_app
 from covalent_ui.os_api.api_v0.routes import routes
 
 WEBHOOK_PATH = "/api/webhook"
@@ -47,7 +48,7 @@ app = FastAPI()
 user = os.getlogin()
 
 sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
-#socketio_app = socketio.ASGIApp(sio, app)
+# socketio_app = socketio.ASGIApp(sio, app)
 
 
 @sio.event
@@ -83,13 +84,17 @@ app.add_middleware(
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    message = []
-    errors = exc.errors()
-    for d in errors:
-        message.append(d["msg"])
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content=jsonable_encoder({"errors": message}),
+        status_code=422,
+        content=jsonable_encoder({"detail": exc.errors()}),
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc: HTTPException):
+    return JSONResponse(
+        status_code=400,
+        content=jsonable_encoder({"detail": exc.detail}),
     )
 
 
@@ -105,7 +110,7 @@ async def handle_draw_request(draw_request: dict):
     return {"ok": True}
 
 
-#app.mount("/", WSGIMiddleware(flask_app))
+# app.mount("/", WSGIMiddleware(flask_app))
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()

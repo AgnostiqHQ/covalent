@@ -119,7 +119,16 @@ class Graph:
         """
         data = self.get_nodes(dispatch_id=dispatch_id)
         if len(data) == 0:
-            raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
+            raise HTTPException(
+                status_code=400,
+                detail=[
+                    {
+                        "loc": ["path", "dispatch_id"],
+                        "msg": f"Dispatch ID {dispatch_id} does not exist",
+                        "type": None,
+                    }
+                ],
+            )
         nodes = self.check_error(data=data)
         data = self.get_links(dispatch_id=dispatch_id)
         links = self.check_error(data=data)

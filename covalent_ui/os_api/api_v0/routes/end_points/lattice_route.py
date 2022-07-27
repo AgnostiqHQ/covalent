@@ -67,7 +67,16 @@ def get_lattice_details(dispatch_id: uuid.UUID):
                 directory=data.directory,
                 runtime=data.runtime,
             )
-        raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
+        raise HTTPException(
+            status_code=400,
+            detail=[
+                {
+                    "loc": ["path", "dispatch_id"],
+                    "msg": f"Dispatch ID {dispatch_id} does not exist",
+                    "type": None,
+                }
+            ],
+        )
 
 
 @routes.get("/{dispatch_id}/details/{name}")
@@ -110,4 +119,13 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
             else:
                 return LatticeFileResponse(data=None)
         else:
-            return LatticeFileResponse(data=None)
+            raise HTTPException(
+                status_code=400,
+                detail=[
+                    {
+                        "loc": ["path", "dispatch_id"],
+                        "msg": f"Dispatch ID {dispatch_id} does not exist",
+                        "type": None,
+                    }
+                ],
+            )

@@ -52,7 +52,16 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
         if result is None:
-            raise HTTPException(status_code=400, detail=[f"{dispatch_id} does not exists"])
+            raise HTTPException(
+                status_code=400,
+                detail=[
+                    {
+                        "loc": ["path", "dispatch_id"],
+                        "msg": f"Dispatch ID {dispatch_id} or Electron ID does not exist",
+                        "type": None,
+                    }
+                ],
+            )
         return ElectronResponse(
             id=result["id"],
             node_id=result["transport_graph_node_id"],
@@ -63,7 +72,7 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
             status=result["status"],
             started_at=result["started_at"],
             ended_at=result["completed_at"],
-            runtime=result["runtime"]
+            runtime=result["runtime"],
         )
 
 
@@ -113,4 +122,13 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput
             else:
                 return ElectronFileResponse(data=None)
         else:
-            return ElectronFileResponse(data=None)
+            raise HTTPException(
+                status_code=400,
+                detail=[
+                    {
+                        "loc": ["path", "dispatch_id"],
+                        "msg": f"Dispatch ID {dispatch_id} or Electron ID does not exist",
+                        "type": None,
+                    }
+                ],
+            )
