@@ -1,19 +1,41 @@
+/**
+ * Copyright 2021 Agnostiq Inc.
+ *
+ * This file is part of Covalent.
+ *
+ * Licensed under the GNU Affero General Public License 3.0 (the "License").
+ * A copy of the License may be obtained with this software package or at
+ *
+ *      https://www.gnu.org/licenses/agpl-3.0.en.html
+ *
+ * Use of this file is prohibited except in compliance with the License. Any
+ * modifications or derivative works of this file must retain this copyright
+ * notice, and modified files must contain a notice indicating that they have
+ * been altered from the originals.
+ *
+ * Covalent is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+ *
+ * Relief from the License may be granted by purchasing a commercial license.
+ */
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 import api from '../utils/api'
 
 const initialState = {
-  latticeDetails:{},
-  latticeError:{},
-  latticeOutput:{},
-  latticeResult:{},
-  latticeInput:{},
-  latticeFunctionString:{},
-  latticeExecutorDetail:{},
+  latticeDetails: {},
+  latticeError: {},
+  latticeOutput: {},
+  latticeResult: {},
+  latticeInput: {},
+  latticeFunctionString: {},
+  latticeExecutorDetail: {},
   latticeDetailsResults: { isFetching: false, error: null },
   latticeResultsList: { isFetching: false, error: null },
-  latticeOutputList : {isFetching:false,error:null},
-  latticeFunctionStringList : {isFetching:false,error:null},
+  latticeOutputList: { isFetching: false, error: null },
+  latticeFunctionStringList: { isFetching: false, error: null },
   latticeInputList: { isFetching: false, error: null },
   latticeErrorList: { isFetching: false, error: null },
   latticeExecutorDetailList: { isFetching: false, error: null },
@@ -21,39 +43,57 @@ const initialState = {
 
 export const latticeDetails = createAsyncThunk(
   'latticeResults/latticeDetails',
-  ({ dispatchId }, thunkAPI) => api.get(`dispatches/${dispatchId}`).catch(thunkAPI.rejectWithValue)
+  ({ dispatchId }, thunkAPI) =>
+    api.get(`dispatches/${dispatchId}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const latticeResults = createAsyncThunk(
-    'latticeResults/latticeResults',
-    ({ dispatchId,params }, thunkAPI) => api.get(`dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+  'latticeResults/latticeResults',
+  ({ dispatchId, params }, thunkAPI) =>
+    api
+      .get(`dispatches/${dispatchId}/details/${params}`)
+      .catch(thunkAPI.rejectWithValue)
 )
 
 export const latticeOutput = createAsyncThunk(
-    'latticeResults/latticeOutput',
-    ({ dispatchId,params }, thunkAPI) => api.get(`dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+  'latticeResults/latticeOutput',
+  ({ dispatchId, params }, thunkAPI) =>
+    api
+      .get(`dispatches/${dispatchId}/details/${params}`)
+      .catch(thunkAPI.rejectWithValue)
 )
 
 export const latticeFunctionString = createAsyncThunk(
-    'latticeResults/latticeFunctionString',
-    ({ dispatchId,params }, thunkAPI) => api.get(`dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+  'latticeResults/latticeFunctionString',
+  ({ dispatchId, params }, thunkAPI) =>
+    api
+      .get(`dispatches/${dispatchId}/details/${params}`)
+      .catch(thunkAPI.rejectWithValue)
 )
 
 export const latticeInput = createAsyncThunk(
-    'latticeResults/latticeInput',
-    ({ dispatchId,params }, thunkAPI) => api.get(`dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
-  )
+  'latticeResults/latticeInput',
+  ({ dispatchId, params }, thunkAPI) =>
+    api
+      .get(`dispatches/${dispatchId}/details/${params}`)
+      .catch(thunkAPI.rejectWithValue)
+)
 
-  export const latticeError = createAsyncThunk(
-    'latticeResults/latticeError',
-    ({ dispatchId,params }, thunkAPI) => api.get(`dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
-  )
+export const latticeError = createAsyncThunk(
+  'latticeResults/latticeError',
+  ({ dispatchId, params }, thunkAPI) =>
+    api
+      .get(`dispatches/${dispatchId}/details/${params}`)
+      .catch(thunkAPI.rejectWithValue)
+)
 
-  export const latticeExecutorDetail = createAsyncThunk(
-    'latticeResults/latticeExecutorDetail',
-    ({ dispatchId,params }, thunkAPI) => api.get(`dispatches/${dispatchId}/details/${params}`).catch(thunkAPI.rejectWithValue)
-  )
-
+export const latticeExecutorDetail = createAsyncThunk(
+  'latticeResults/latticeExecutorDetail',
+  ({ dispatchId, params }, thunkAPI) =>
+    api
+      .get(`dispatches/${dispatchId}/details/${params}`)
+      .catch(thunkAPI.rejectWithValue)
+)
 
 export const latticeSlice = createSlice({
   name: 'latticeResults',
@@ -61,7 +101,7 @@ export const latticeSlice = createSlice({
   reducers: {
     resetLatticeState() {
       return initialState
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -79,8 +119,8 @@ export const latticeSlice = createSlice({
         state.latticeDetailsResults.error = payload
       })
 
-       // latticeResults
-       .addCase(latticeResults.fulfilled, (state, { payload }) => {
+      // latticeResults
+      .addCase(latticeResults.fulfilled, (state, { payload }) => {
         state.latticeResultsList.isFetching = false
         state.latticeResult = payload
       })
@@ -121,8 +161,8 @@ export const latticeSlice = createSlice({
         state.latticeFunctionStringList.error = payload
       })
 
-       // latticeInput
-       .addCase(latticeInput.fulfilled, (state, { payload }) => {
+      // latticeInput
+      .addCase(latticeInput.fulfilled, (state, { payload }) => {
         state.latticeInputList.isFetching = false
         state.latticeInput = payload
       })
@@ -162,8 +202,6 @@ export const latticeSlice = createSlice({
         state.latticeExecutorDetailList.isFetching = false
         state.latticeExecutorDetailList.error = payload
       })
-
-
   },
 })
 

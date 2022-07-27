@@ -21,7 +21,7 @@
  */
 
 import _ from 'lodash'
-import { Paper, Skeleton } from '@mui/material'
+import { Paper } from '@mui/material'
 import React from 'react'
 import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'

@@ -24,7 +24,6 @@ import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'use-debounce'
-import { parseISO } from 'date-fns'
 import {
   Table,
   Link,
@@ -180,7 +179,7 @@ const ResultsTableToolbar = ({
   allDispatches,
   openDialogBox,
   setOpenDialogBox,
-  dashboardOverviewFetching
+  dashboardOverviewFetching,
 }) => {
   return (
     <Toolbar disableGutters sx={{ mb: 1 }}>
