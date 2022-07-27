@@ -703,6 +703,11 @@ def test_run_workflow_with_failed_postprocess():
         assert False
         return 1
 
+    result_object.lattice.set_metadata("workflow_executor", "bogus")
+    result_object = run_workflow(result_object, tasks_pool)
+
+    assert result_object.status == Result.POSTPROCESSING_FAILED
+
     result_object.lattice.workflow_function = ct.TransportableObject(failing_workflow)
     result_object.lattice.set_metadata("workflow_executor", "dask")
 
