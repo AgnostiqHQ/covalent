@@ -50,8 +50,7 @@ class LatticeFileResponse(BaseModel):
 class LatticeExecutorResponse(BaseModel):
     """Lattices File Response Model"""
 
-    data: str = (None,)
-    executor_name: str = None
+    data: str = None
 
 
 class GraphResponse(BaseModel):

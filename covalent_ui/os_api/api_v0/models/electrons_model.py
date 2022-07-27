@@ -55,5 +55,5 @@ class FileOutput(str, Enum):
     DEPS = "deps"
     CALL_BEFORE = "call_before"
     CALL_AFTER = "call_after"
-    STDERR = "stderr"
+    ERROR = "error"
     INFO = "info"

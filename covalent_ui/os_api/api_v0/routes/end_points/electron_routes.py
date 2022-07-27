@@ -113,7 +113,7 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput
             elif name == "call_after":
                 response = handler.read_from_pickle(result["call_after_filename"])
                 return ElectronFileResponse(data=response)
-            elif name == "stderr":
+            elif name == "error":
                 response = handler.read_from_text(result["stderr_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "info":

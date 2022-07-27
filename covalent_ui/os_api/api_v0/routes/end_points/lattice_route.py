@@ -106,7 +106,7 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
                 return LatticeFileResponse(data=response)
             elif name == "executor_details":
                 response = handler.read_from_pickle(lattice_data["executor_filename"])
-                return LatticeExecutorResponse(data=response, executor_name="dask")
+                return LatticeExecutorResponse(data=response)
             elif name == "error":
                 response = handler.read_from_text(lattice_data["error_filename"])
                 return LatticeFileResponse(data=response)
