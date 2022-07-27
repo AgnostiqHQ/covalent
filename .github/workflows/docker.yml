@@ -25,8 +25,7 @@ on:
   push:
     branches:
       - develop
-    paths-ignore:
-      - "CHANGELOG.md"
+    paths:
       - "VERSION"
   workflow_dispatch:
     inputs:
