@@ -99,7 +99,7 @@ def get_result(dispatch_id) -> Response:
     wait = args.get("wait", default=False, type=lambda v: v.lower() == "true")
     status_only = args.get("status_only", default=False, type=lambda v: v.lower() == "true")
     while True:
-        with workflow_db.session as session:
+        with workflow_db.session() as session:
             lattice_record = (
                 session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
             )
