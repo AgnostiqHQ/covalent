@@ -10,6 +10,6 @@ Covalent offers various forms of plugins, first set of which are Executer Plugin
    :maxdepth: 1
    :caption: Executer Plugins
 
-   api/executers/dask 
+   api/executers/dask
    api/executers/ssh
    api/executers/slurm

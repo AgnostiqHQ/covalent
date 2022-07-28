@@ -36,7 +36,7 @@ def apply_bash_commands(commands):
 
 class DepsBash(Deps):
     """Shell commands to run before an electron
-    
+
     Deps class to encapsulate Bash dependencies for an electron.
 
     The specified commands will be executed as subprocesses in the
