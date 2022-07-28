@@ -300,6 +300,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated the RTD on `wait_for()` to use the static `wait()` function
 
+
+### Added
+
+- Add support to allow users to export additional classes from executor plugins
+
 ### Operations
 
 - pre-commit autoupdate
