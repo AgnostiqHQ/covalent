@@ -1,6 +1,6 @@
 autodocsumm==0.2.6
 docutils
-furo==2022.4.7
+furo
 ipython
 ipython_genutils==0.2.0
 ipython_genutils==0.2.0
@@ -26,3 +26,5 @@ sphinxcontrib-htmlhelp==2.0.0
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
+covalent-slurm-plugin
+covalent-ssh-plugin

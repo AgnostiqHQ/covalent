@@ -25,7 +25,9 @@ from .transport import TransportableObject
 
 
 class DepsCall(Deps):
-    """Deps class to encapsulate python functions to be
+    """Functions, shell commands, PyPI packages, and other types of dependencies to be called in an electron's execution environment
+    
+    Deps class to encapsulate python functions to be
     called in the same execution environment as the electron.
 
     Attributes:
