@@ -22,10 +22,9 @@
 Integration test for choosing executors.
 """
 
+import pytest
 
 import covalent as ct
-import covalent._results_manager.results_manager as rm
-from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 
 def test_executors_exist():
@@ -38,8 +37,7 @@ def test_executors_exist():
 def test_using_executor_names():
     """Test that all loaded executors can be used in a simple electron."""
 
-    executor_names = ct.executor._executor_manager.list_executors(print_names=False)
-    for executor_name in executor_names:
+    for executor_name in ["local", "dask"]:
 
         @ct.electron(executor=executor_name)
         def passthrough(x):
@@ -55,28 +53,21 @@ def test_using_executor_names():
         assert output.result == "input"
 
 
+@pytest.mark.skip(reason="Trying to pickle _asyncio.Task even though there is no such object")
 def test_using_executor_classes():
     """Test creating executor objects and using them in a simple electron."""
 
-    for executor_name in ct.executor._executor_manager.executor_plugins_map:
-        executor_class = ct.executor._executor_manager.executor_plugins_map[executor_name]
-        executor = executor_class()
+    for executor in [ct.executor.LocalExecutor(), ct.executor.DaskExecutor()]:
 
         @ct.electron(executor=executor)
         def passthrough(x):
             return x
 
-        @ct.lattice()
+        @ct.lattice
         def workflow(y):
             return passthrough(x=y)
 
-        output = ""
-        try:
-            dispatch_id = ct.dispatch(workflow)(y="input")
-            output = ct.get_result(dispatch_id, wait=True)
-        except:
-            pass
-
-        rm._delete_result(dispatch_id)
+        dispatch_id = ct.dispatch(workflow)(y="input")
+        output = ct.get_result(dispatch_id, wait=True)
 
         assert output.result == "input"

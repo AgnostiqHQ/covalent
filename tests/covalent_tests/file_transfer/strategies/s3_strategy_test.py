@@ -14,30 +14,30 @@ class TestS3Strategy:
         # validate boto3.client('s3').download_file is called with appropriate arguments
         boto3_mock = mocker.patch("boto3.client")
         boto3_mock.download_file.return_value = None
-        
+
         from_file = File(self.MOCK_REMOTE_FILEPATH)
         to_file = File(self.MOCK_LOCAL_FILEPATH)
 
         bucket_name = furl(from_file.uri).origin[5:]
-        
+
         S3().download(from_file, to_file)()
-        
+
         boto3_mock().download_file.assert_called_with(bucket_name, from_file.filepath, to_file.filepath)
 
     def test_upload(self, mocker):
         # validate boto3.client('s3').upload_file is called with appropriate arguments
         boto3_mock = mocker.patch("boto3.client")
         boto3_mock.upload_file.return_value = None
-        
+
         to_file = File(self.MOCK_REMOTE_FILEPATH)
         from_file = File(self.MOCK_LOCAL_FILEPATH)
 
         bucket_name = furl(to_file.uri).origin[5:]
-        
+
         S3().upload(from_file, to_file)()
-        
+
         boto3_mock().upload_file.assert_called_with(from_file.filepath,bucket_name, to_file.filepath)
-    
+
 
     def test_cp_failure(self, mocker):
         with pytest.raises(NotImplementedError):

@@ -62,7 +62,19 @@ jobs:
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-
+      - uses: dorny/paths-filter@v2
+        id: working-directory
+        with:
+          filters: |
+            sdk:
+            - 'covalent/**'
+            dispatcher:
+            - 'covalent_dispatcher/**'
+            ui_backend:
+            - 'covalent_ui/**'
+            ui_backend_tests:
+            - 'tests/covalent_ui_tests/**'
+            
       - name: Set up Python
         if: matrix.os == 'macos-latest'
         uses: actions/setup-python@v2
@@ -77,7 +89,7 @@ jobs:
       - name: Install NPM and Yarn on Ubuntu
         if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye' || matrix.container == 'python:3.10-buster' || matrix.container == 'python:3.10-bullseye'
         run: |
-          apt-get update && apt-get install -y curl
+          apt-get update && apt-get install -y curl rsync
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
           apt-get install -y nodejs
           npm install -g yarn
@@ -118,25 +130,101 @@ jobs:
         run: pip install -e .
 
       - name: Start Covalent dispatcher server
-        run: covalent start
-
-      - name: Run tests and measure coverage
+        run: covalent start --ignore-migrations
+               
+      - name: Run SDK tests and measure coverage
+        if: ${{ steps.working-directory.outputs.sdk}} == true
         uses: nick-fields/retry@v2
         with:
-            timeout_minutes: 30
-            max_attempts: 2
-            on_retry_command: rm -f ~/.config/covalent/covalent.conf
-            command: |
-              PYTHONPATH=$PWD/ pytest tests -vv --ignore=tests/qa --ignore=tests/stress_tests  --cov=covalent --cov=covalent_dispatcher 
+          timeout_minutes: 15
+          max_attempts: 2
+          on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          command: |
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests  --cov=covalent --cov-config=.coveragerc
+            
+      - name: Generate SDK coverage report
+        if: ${{ steps.working-directory.outputs.sdk}} == true
+        run: coverage xml -o sdk_coverage.xml
 
-      - name: Generate coverage report
-        run: coverage xml
-
-      - name: Upload report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-        uses: codecov/codecov-action@v2
+      - name: Run dispatcher tests and measure coverage
+        if: ${{ steps.working-directory.outputs.dispatcher }} == true
+        uses: nick-fields/retry@v2
         with:
-          files: ./coverage.xml
+          timeout_minutes: 15
+          max_attempts: 2
+          on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          command: |
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_dispatcher_tests  --cov=covalent_dispatcher --cov-config=.coveragerc
+      
+      - name: Generate dispatcher coverage report
+        if: ${{ steps.working-directory.outputs.dispatcher }} == true
+        run: coverage xml -o dispatcher_coverage.xml
+
+      - name: Run functional tests and measure coverage
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 15
+          max_attempts: 2
+          on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          command: |
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+      
+      - name: Generate functional test coverage report
+        run: coverage xml -o functional_tests_coverage.xml
+
+      - name: Run UI backend tests and measure coverage
+        id: ui_tests
+        if: ${{ steps.working-directory.outputs.ui_backend }} == true
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 15
+          max_attempts: 2
+          on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          continue_on_error: true
+          command: |
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
+      
+      - name: Generate UI backend coverage report
+        continue-on-error: true
+        if: | 
+          ${{ steps.working-directory.outputs.ui_backend_tests }} == true && ${{ steps.working-directory.outputs.ui_backend }} == 'true' && 
+          ${{ steps.ui_tests.outputs.exit_code }} == 0
+        run: coverage xml -o ui_backend_coverage.xml
+
+      - name: Upload SDK report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.sdk}} == true
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./sdk_coverage.xml
+          flags: SDK
+          name: "SDK Unit Tests"
+
+      - name: Upload Dispatcher report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.dispatcher }} == 'true'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./dispatcher_coverage.xml
+          flags: Dispatcher
+          name: "Dispatcher Unit Tests"
+
+      - name: Upload Functional report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./functional_tests_coverage.xml
+          flags: Functional_Tests
+          name: "Functional Tests"
+
+      - name: Upload UI backend report to Codecov
+        if: |
+          matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && 
+          ${{ steps.working-directory.outputs.ui_backend}} == true &&
+          ${{ steps.ui_tests.outputs.exit_code }} == 0
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./ui_backend_coverage.xml
+          flags: UI_Backend
+          name: "UI Backend Unit Tests"
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1

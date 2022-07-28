@@ -27,13 +27,13 @@ class S3(FileTransferStrategy):
         self.aws_secret_access_key = aws_secret_access_key
         self.aws_session_token = aws_session_token
         self.region_name = region_name
-        
-        
+
+
     # return callable to download here implies 'from' is a remote source
     def download(self, from_file: File, to_file: File = File()) -> File:
         from_filepath = from_file.filepath
         to_filepath = to_file.filepath
-        bucket_name = furl(from_file.uri).origin[5:] 
+        bucket_name = furl(from_file.uri).origin[5:]
 
         def callable():
             s3 = boto3.client("s3",
@@ -51,7 +51,7 @@ class S3(FileTransferStrategy):
 
         from_filepath = from_file.filepath
         to_filepath = to_file.filepath
-        bucket_name = furl(to_file.uri).origin[5:] 
+        bucket_name = furl(to_file.uri).origin[5:]
 
         def callable():
             s3 = boto3.client("s3",
@@ -63,7 +63,7 @@ class S3(FileTransferStrategy):
             s3.upload_file(from_filepath,bucket_name, to_filepath)
 
         return callable
-    
+
     # No S3 Strategy for copy
     def cp(self, from_file: File, to_file: File = File()) -> File:
         raise NotImplementedError

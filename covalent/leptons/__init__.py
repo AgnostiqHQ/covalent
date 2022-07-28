@@ -18,16 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""
-Unit tests for DataStore object
-"""
+"""Lepton wrappers."""
 
-from covalent._data_store.datastore import DataStore
-from covalent._shared_files.config import get_config
-
-
-def test_datastore_init():
-    """Test data store initialization method."""
-
-    ds = DataStore(db_URL=None)
-    assert ds.db_URL == "sqlite+pysqlite:///" + get_config("user_interface.dispatch_db")
+from .._workflow.lepton import bash
