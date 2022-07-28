@@ -26,30 +26,6 @@ from sqlalchemy import BigInteger, Boolean, Column, DateTime, ForeignKey, Intege
 from covalent_ui.api.v1.database.config.db import Base
 
 
-class ElectronTypeEnum(enum.Enum):
-    """Electron Type Of Enum
-
-    Attributes:
-        electron
-        parameter
-        sublattice
-        collection
-        attribute
-        generated
-        subscript
-    """
-
-    electron = 1
-    parameter = 2
-    sublattice = 3
-    collection = 4
-    attribute = 5
-    generated = 6
-    subscript = 7
-    function = 8
-    electron_list = 9
-
-
 class Electron(Base):
     """Electron
 
