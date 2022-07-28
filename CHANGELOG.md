@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - pre-commit autoupdate
 
+### Docs
+
+- Changed the custom executor how-to to be shorter and more concise.
+
 ## [0.156.0] - 2022-07-27
 
 ### Authors
