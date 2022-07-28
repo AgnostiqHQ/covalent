@@ -8,7 +8,7 @@ Executing tasks (electrons) via SSH in remote machine. This executor plugin inte
 To use this plugin with Covalent, simply install it using `pip`:
 
 .. code:: shell
-    
+
     pip install covalent-ssh-plugin
 
 

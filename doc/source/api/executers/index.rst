@@ -17,7 +17,7 @@ Plugins
    :maxdepth: 1
 
    local
-   dask 
+   dask
    ssh
    slurm
 

@@ -9,13 +9,13 @@ Default configuration for covalent can be set by defining the environment variab
 
 Example settings in config file
 
-.. note:: 
-    
+.. note::
+
     This is a YAML file, so you can use any YAML syntax.
 
 
-.. tip:: 
-    
+.. tip::
+
     Each executer comes with its own configuration parameters that is stored in this same config file config file.
     For example, for SSH plugin, we have the following settings:
 
