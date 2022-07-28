@@ -21,138 +21,40 @@
 from __future__ import annotations
 
 import argparse
-from hashlib import new
-import os
-import signal
-import sys
 from distutils.log import debug
+from hashlib import new
 from logging import Logger
 from logging.handlers import DEFAULT_TCP_LOGGING_PORT
 from pathlib import Path
 
-import uvicorn 
-
-import simplejson
-import tailer
+import socketio
+import uvicorn
+from fastapi.middleware.wsgi import WSGIMiddleware
 from flask import Flask, jsonify, make_response, request, send_from_directory
-from flask_cors import CORS
-from flask_socketio import SocketIO
 
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config, set_config, update_config
 from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
-from covalent._shared_files.util_classes import Status
-from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
+from covalent_dispatcher._db.dispatchdb import encode_result
 from covalent_dispatcher._service.app import bp
 from covalent_dispatcher._service.app_dask import DaskCluster
+from covalent_ui.os_api.main import app as fastapi_app
+from covalent_ui.os_api.main import sio
 
-import socketio
-from fastapi import FastAPI
-from fastapi.middleware.wsgi import WSGIMiddleware
-from fastapi.middleware.cors import CORSMiddleware
-from covalent_ui.os_api.main import sio, app as fastapi_app, routes
-
+# Config
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
+STATIC_FILES = {"": WEBAPP_PATH, "/": f"{WEBAPP_PATH}/index.html"}
 
+# Log configuration
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
-# new_fastapi = FastAPI()
-# app = Flask(__name__, static_folder=WEBAPP_PATH)
+# Initialize flask app & mount on FastAPI
 app = Flask(__name__)
 app.register_blueprint(bp)
-# allow cross-origin requests when API and static files are served separately
-CORS(app)
-# socketio = SocketIO(app, cors_allowed_origins="*")
-# import fastapi_app
-
-fastapi_app.mount('/', WSGIMiddleware(app))
-
-# # @app.route(WEBHOOK_PATH, methods=["POST"])
-# def handle_result_update():
-#     result_update = request.get_json(force=True)
-#     socketio.emit("result-update", result_update)
-#     return jsonify({"ok": True})
-
-
-# # @app.route("/api/draw", methods=["POST"])
-# def handle_draw_request():
-#     draw_request = request.get_json(force=True)
-
-#     socketio.emit("draw-request", draw_request)
-#     return jsonify({"ok": True})
-
-
-# # @app.route("/api/results")
-# def list_results():
-#     with DispatchDB() as db:
-#         res = db.get()
-#     if not res:
-#         return jsonify([])
-#     else:
-#         return jsonify([simplejson.loads(r[1]) for r in res])
-
-
-# # @app.route("/api/dev/results/<dispatch_id>")
-# def fetch_result_dev(dispatch_id):
-#     result = rm.get_result(dispatch_id)
-
-#     jsonified_result = encode_result(result)
-
-#     return app.response_class(jsonified_result, status=200, mimetype="application/json")
-
-
-# # @app.route("/api/results/<dispatch_id>")
-# def fetch_result(dispatch_id):
-#     with DispatchDB() as db:
-#         res = db.get([dispatch_id])
-#     if len(res) > 0:
-#         response = res[0][1]
-#         status = 200
-#     else:
-#         response = ""
-#         status = 400
-
-#     return app.response_class(response, status=status, mimetype="application/json")
-
-
-# # @app.route("/api/results", methods=["DELETE"])
-# def delete_results():
-#     dispatch_ids = request.json.get("dispatchIds", [])
-#     with DispatchDB() as db:
-#         db.delete(dispatch_ids)
-#     return jsonify({"ok": True})
-
-
-# # app.route("/api/logoutput/<dispatch_id>")
-# def fetch_file(dispatch_id):
-#     path = request.args.get("path")
-#     n = int(request.args.get("n", 10))
-
-#     if not Path(path).expanduser().is_absolute():
-#         path = os.path.join(get_config("dispatcher.results_dir"), dispatch_id, path)
-
-#     try:
-#         lines = tailer.tail(open(path), n)
-#     except Exception as ex:
-#         return make_response(jsonify({"message": str(ex)}), 404)
-
-#     return jsonify({"lines": lines})
-
-
-# # catch-all: serve web app static files
-# # @app.route("/", defaults={"path": ""})
-# # @app.route("/<path:path>")
-# def serve(path):
-#     if path != "" and os.path.exists(app.static_folder + "/" + path):
-#         # static file
-#         return send_from_directory(app.static_folder, path)
-#     else:
-#         # handle all other routes inside web app
-#         return send_from_directory(app.static_folder, "index.html")
-
+fastapi_app.mount("/", WSGIMiddleware(app))
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
@@ -185,6 +87,5 @@ if __name__ == "__main__":
         dask_cluster.start()
 
     # Start covalent main app
-    # socketio.run(app, debug=debug, host="localhost", port=port, use_reloader=reload)
-    socketio_app = socketio.ASGIApp(sio, fastapi_app)
+    socketio_app = socketio.ASGIApp(sio, fastapi_app, static_files=STATIC_FILES)
     uvicorn.run(socketio_app, host="localhost", port=port)
