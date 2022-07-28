@@ -11,7 +11,7 @@ class TestS3Strategy:
     MOCK_REMOTE_FILEPATH = "s3://covalent-tmp/data.csv"
 
     def test_download(self, mocker):
-        # validate urlretrieve called with appropriate arguments
+        # validate boto3.client('s3').download_file is called with appropriate arguments
         boto3_mock = mocker.patch("boto3.client")
         boto3_mock.download_file.return_value = None
         
@@ -25,7 +25,7 @@ class TestS3Strategy:
         boto3_mock().download_file.assert_called_with(bucket_name, from_file.filepath, to_file.filepath)
 
     def test_upload(self, mocker):
-        # validate urlretrieve called with appropriate arguments
+        # validate boto3.client('s3').upload_file is called with appropriate arguments
         boto3_mock = mocker.patch("boto3.client")
         boto3_mock.upload_file.return_value = None
         
