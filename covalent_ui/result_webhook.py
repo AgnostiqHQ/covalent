@@ -109,6 +109,3 @@ def send_draw_request(lattice) -> None:
         app_log.error(ex)
     except requests.exceptions.RequestException:
         app_log.error("Connection failure. Please check Covalent server is running.")
-
-
-# Shrikanth - Hardcoded 48008 as port to ping for socket end point

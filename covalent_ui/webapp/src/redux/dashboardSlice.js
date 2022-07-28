@@ -43,7 +43,7 @@ export const fetchDashboardList = createAsyncThunk(
   async (bodyParams, thunkAPI) =>
     await api
       .get(
-        `dispatches/list?count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
+        `api/v1/dispatches/list?count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
       )
       .catch(thunkAPI.rejectWithValue)
 )
@@ -51,14 +51,14 @@ export const fetchDashboardList = createAsyncThunk(
 export const fetchDashboardOverview = createAsyncThunk(
   'dashboard/overview',
   (values, thunkAPI) =>
-    api.get('dispatches/overview').catch(thunkAPI.rejectWithValue)
+    api.get('api/v1/dispatches/overview').catch(thunkAPI.rejectWithValue)
 )
 
 export const deleteDispatches = createAsyncThunk(
   'dashboard/deleteDispatches',
   async (bodyParams, thunkAPI) =>
     await api
-      .post('dispatches/delete', bodyParams)
+      .post('api/v1/dispatches/delete', bodyParams)
       .catch(thunkAPI.rejectWithValue)
 )
 

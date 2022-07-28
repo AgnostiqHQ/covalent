@@ -32,7 +32,7 @@ const initialState = {
 export const graphResults = createAsyncThunk(
   'results/graphResults',
   ({ dispatchId }, thunkAPI) =>
-    api.get(`dispatches/${dispatchId}/graph`).catch(thunkAPI.rejectWithValue)
+    api.get(`api/v1/dispatches/${dispatchId}/graph`).catch(thunkAPI.rejectWithValue)
 )
 
 export const graphSlice = createSlice({

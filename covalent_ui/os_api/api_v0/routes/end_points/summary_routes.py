@@ -90,8 +90,3 @@ def delete_dispatches(req: DeleteDispatchesRequest):
     with Session(engine) as session:
         summary = Summary(session)
         return summary.delete_dispatches(req)
-
-
-# Shrikanth - Temporary fix since after mounting flask app, the overview API was working but the list API wasn't
-# only overlap was the fact that the /dispatches is loaded as a prefix to a route of '/' which I thought overlapped with the flask mounting.
-# This route has also been changed on the UI side

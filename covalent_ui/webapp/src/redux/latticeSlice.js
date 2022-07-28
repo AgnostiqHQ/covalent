@@ -44,14 +44,14 @@ const initialState = {
 export const latticeDetails = createAsyncThunk(
   'latticeResults/latticeDetails',
   ({ dispatchId }, thunkAPI) =>
-    api.get(`dispatches/${dispatchId}`).catch(thunkAPI.rejectWithValue)
+    api.get(`api/v1/dispatches/${dispatchId}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const latticeResults = createAsyncThunk(
   'latticeResults/latticeResults',
   ({ dispatchId, params }, thunkAPI) =>
     api
-      .get(`dispatches/${dispatchId}/details/${params}`)
+      .get(`api/v1/dispatches/${dispatchId}/details/${params}`)
       .catch(thunkAPI.rejectWithValue)
 )
 
@@ -59,7 +59,7 @@ export const latticeOutput = createAsyncThunk(
   'latticeResults/latticeOutput',
   ({ dispatchId, params }, thunkAPI) =>
     api
-      .get(`dispatches/${dispatchId}/details/${params}`)
+      .get(`api/v1/dispatches/${dispatchId}/details/${params}`)
       .catch(thunkAPI.rejectWithValue)
 )
 
@@ -67,7 +67,7 @@ export const latticeFunctionString = createAsyncThunk(
   'latticeResults/latticeFunctionString',
   ({ dispatchId, params }, thunkAPI) =>
     api
-      .get(`dispatches/${dispatchId}/details/${params}`)
+      .get(`api/v1/dispatches/${dispatchId}/details/${params}`)
       .catch(thunkAPI.rejectWithValue)
 )
 
@@ -75,7 +75,7 @@ export const latticeInput = createAsyncThunk(
   'latticeResults/latticeInput',
   ({ dispatchId, params }, thunkAPI) =>
     api
-      .get(`dispatches/${dispatchId}/details/${params}`)
+      .get(`api/v1/dispatches/${dispatchId}/details/${params}`)
       .catch(thunkAPI.rejectWithValue)
 )
 
@@ -83,7 +83,7 @@ export const latticeError = createAsyncThunk(
   'latticeResults/latticeError',
   ({ dispatchId, params }, thunkAPI) =>
     api
-      .get(`dispatches/${dispatchId}/details/${params}`)
+      .get(`api/v1/dispatches/${dispatchId}/details/${params}`)
       .catch(thunkAPI.rejectWithValue)
 )
 
@@ -91,7 +91,7 @@ export const latticeExecutorDetail = createAsyncThunk(
   'latticeResults/latticeExecutorDetail',
   ({ dispatchId, params }, thunkAPI) =>
     api
-      .get(`dispatches/${dispatchId}/details/${params}`)
+      .get(`api/v1/dispatches/${dispatchId}/details/${params}`)
       .catch(thunkAPI.rejectWithValue)
 )
 

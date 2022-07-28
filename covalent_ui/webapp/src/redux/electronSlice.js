@@ -42,37 +42,37 @@ const initialState = {
 export const electronDetails = createAsyncThunk(
   'electronResults/electronDetails',
   ({electronId,dispatchId}, thunkAPI) =>
-  api.get(`dispatches/${dispatchId}/electron/${electronId}`).catch(thunkAPI.rejectWithValue)
+  api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronResult = createAsyncThunk(
     'electronResults/electronResult',
     ({dispatchId,electronId,params}, thunkAPI) =>
-    api.get(`dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronFunctionString = createAsyncThunk(
     'electronResults/electronFunctionString',
     ({dispatchId,electronId,params}, thunkAPI) =>
-    api.get(`dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronInput = createAsyncThunk(
     'electronResults/electronInput',
     ({dispatchId,electronId,params}, thunkAPI) =>
-    api.get(`dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronError = createAsyncThunk(
     'electronResults/electronError',
     ({dispatchId,electronId,params}, thunkAPI) =>
-    api.get(`dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronExecutor = createAsyncThunk(
     'electronResults/electronExecutor',
     ({dispatchId,electronId,params}, thunkAPI) =>
-    api.get(`dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+    api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronSlice = createSlice({
