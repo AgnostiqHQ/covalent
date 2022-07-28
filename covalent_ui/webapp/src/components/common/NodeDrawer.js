@@ -47,11 +47,9 @@ import Runtime from '../dispatches/Runtime'
 import SyntaxHighlighter from './SyntaxHighlighter'
 import Heading from '../common/Heading'
 import ErrorCard from './ErrorCard'
-import InputSection from './InputSection'
 import ExecutorSection from './ExecutorSection'
 import {
   electronDetails,
-  electronInput,
   electronResult,
   electronExecutor,
   electronFunctionString,
