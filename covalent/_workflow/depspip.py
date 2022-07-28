@@ -45,7 +45,7 @@ def apply_pip_deps(pkgs: [] = [], requirements_content: str = ""):
 
 class DepsPip(Deps):
     """PyPI packages to be installed before executing an electron
-    
+
     A specification of Pip packages to be installed
 
     Attributes:
