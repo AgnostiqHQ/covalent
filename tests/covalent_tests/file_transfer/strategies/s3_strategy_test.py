@@ -1,9 +1,9 @@
 import pytest
+from furl import furl
 
 from covalent._file_transfer import File
 from covalent._file_transfer.strategies.s3_strategy import S3
 
-from furl import furl
 
 class TestS3Strategy:
 

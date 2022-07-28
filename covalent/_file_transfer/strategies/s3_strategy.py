@@ -4,11 +4,12 @@ from pathlib import Path
 from subprocess import PIPE, CalledProcessError, Popen
 from typing import Optional
 
+import boto3
+from furl import furl
+
 from covalent._file_transfer import File
 from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
 
-import boto3
-from furl import furl
 
 class S3(FileTransferStrategy):
 
