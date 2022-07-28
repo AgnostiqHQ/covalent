@@ -88,7 +88,9 @@ const headers = [
   // },
   {
     id: 'runtime',
+    getter: 'runtime',
     label: 'Runtime',
+    sortable: true,
   },
   {
     id: 'started_at',
