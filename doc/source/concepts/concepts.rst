@@ -219,7 +219,7 @@ handy in those cases.
         res_1c = task_1c(2)
         res_2 = task_2(res_1a, 3)
         res_3 = task_3(5)
-	ct.wait(current_electron=res_3, parents=[res_1a, res_1b, res_1c])
+	ct.wait(child=res_3, parents=[res_1a, res_1b, res_1c])
 
         return task_2(res_2, res_3)
         ...

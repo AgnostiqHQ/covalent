@@ -613,12 +613,12 @@ def electron(
         return decorator_electron(_func)
 
 
-def wait(waiting_electron, parents):
+def wait(child, parents):
     """Instructs Covalent that an electron should wait for some other
     tasks to complete before it is dispatched.
 
     Args:
-        waiting_electron: the dependent electron
+        child: the dependent electron
         parents: Electron(s) which must complete before `waiting_electron` starts
 
     Returns:
@@ -631,6 +631,6 @@ def wait(waiting_electron, parents):
     active_lattice = active_lattice_manager.get_active_lattice()
 
     if active_lattice:
-        return waiting_electron.wait_for(parents)
+        return child.wait_for(parents)
     else:
-        return waiting_electron
+        return child
