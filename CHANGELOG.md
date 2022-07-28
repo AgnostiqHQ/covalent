@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Expose a public `wait()` function compatible with both calling and dispatching lattices
+
+### Docs
+
+- Updated the RTD on `wait_for()` to use the static `wait()` function
 ### Operations
 
 - pre-commit autoupdate
