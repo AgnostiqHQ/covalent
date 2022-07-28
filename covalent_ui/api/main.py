@@ -18,37 +18,27 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 """Fastapi init"""
-import argparse
-import os
 
 import socketio
-import uvicorn
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import RequestValidationError, ValidationError
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent_dispatcher._service.app_dask import DaskCluster
-
-# from covalent_ui.app import app as flask_app
 from covalent_ui.api.v1.routes import routes
 
+# Config
+
 WEBHOOK_PATH = "/api/webhook"
-WEBAPP_PATH = "../webapp/build"
-ROUTE_WEBAPP_PATH = "/webapp/build"
+origins = ["http://localhost:49009", "http://localhost:48008"]
 
 app_log = logger.app_log
 
 app = FastAPI()
-user = os.getlogin()
-
 sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
-# socketio_app = socketio.ASGIApp(sio, app)
 
 
 @sio.event
@@ -67,8 +57,6 @@ def disconnect(sid):
     print("disconnect ", sid)
 
 
-# app.mount(ROUTE_WEBAPP_PATH, StaticFiles(directory=WEBAPP_PATH), name="webapp")
-origins = ["http://localhost:49009", "http://localhost:48008"]
 app.include_router(routes.routes, prefix="/api/v1")
 
 app.add_middleware(
@@ -106,38 +94,3 @@ async def handle_result_update(result_update: dict):
 async def handle_draw_request(draw_request: dict):
     await sio.emit("draw_request", draw_request)
     return {"ok": True}
-
-
-# app.mount("/", WSGIMiddleware(flask_app))
-
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-
-    ap.add_argument("-p", "--port", required=False, help="Server port number.")
-    ap.add_argument(
-        "-d",
-        "--develop",
-        required=False,
-        action="store_true",
-        help="Start the server in developer mode.",
-    )
-    ap.add_argument("--no-cluster", required=False, help="Start Covalent server without Dask")
-
-    args, unknown = ap.parse_known_args()
-
-    # port to be specified by cli
-    if args.port:
-        PORT = int(args.port)
-    else:
-        PORT = int(get_config("dispatcher.port"))
-
-    DEBUG = True if args.develop is True else False
-    # reload = True if args.develop is True else False
-    RELOAD = True
-
-    # Start dask if no-cluster flag is not specified (covalent stop auto terminates all child processes of this)
-    if not args.no_cluster:
-        dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log)
-        dask_cluster.start()
-
-    uvicorn.run("main:socketio_app", debug=DEBUG, host="0.0.0.0", reload=RELOAD, port=48008)
