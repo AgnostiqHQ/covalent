@@ -17,7 +17,6 @@
 
 # Relief from the License may be granted by purchasing a commercial license.
 
-# Test
 from __future__ import annotations
 
 import argparse
