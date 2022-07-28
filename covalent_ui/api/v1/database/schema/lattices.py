@@ -34,7 +34,8 @@ class Lattice(Base):
         electron_id: id of node if the lattice is actually a sublattice
         name: name of the lattice function
         status: workflow status
-        status: Execution status of the node
+        electron_num: Total number of electron in a workflow
+        completed_electron_num: Total number of completed electron in a workflow
         storage_type: Storage backend type for data files ("local", "s3")
         storage_path: Bucket name (dispatch_id)
         function_filename: Name of the file containing the serialized function
@@ -43,6 +44,8 @@ class Lattice(Base):
         error_filename: Name of the file containing an error message for the electron
         results_filename: Name of the file containing the serialized output
         inputs_filename: Name of the file containing the serialized input data
+        transport_graph_filename: Name of the file containing generic transport graph data
+        is_active: Status of the record, 1: active and 0: inactive
         created_at: created timestamp
         updated_at: updated timestamp
         started_at: started timestamp

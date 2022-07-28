@@ -22,8 +22,8 @@ from datetime import datetime, timezone
 
 from sqlalchemy.sql import func
 
-from covalent_ui.api.v1.database.schema.electrons_schema import Electron
-from covalent_ui.api.v1.database.schema.lattices_schema import Lattice
+from covalent_ui.api.v1.database.schema.electron import Electron
+from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.utils.file_handle import FileHandler
 from covalent_ui.api.v1.utils.file_name import FileName
 

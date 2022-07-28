@@ -52,6 +52,7 @@ class ElectronDependency(Base):
         parameter_type: parameter type of enum
         arg_index: Argument Posistion
         created_at: created date
+        is_active: Status of the record, 1: active and 0: inactive
     """
 
     __tablename__ = "electron_dependency"

@@ -25,8 +25,8 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.database.schema.electron_dependency import ElectronDependency
-from covalent_ui.api.v1.database.schema.electrons_schema import Electron
-from covalent_ui.api.v1.database.schema.lattices_schema import Lattice
+from covalent_ui.api.v1.database.schema.electron import Electron
+from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.models.lattices_model import GraphResponse
 
 
