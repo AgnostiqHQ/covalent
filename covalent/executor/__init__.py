@@ -73,6 +73,7 @@ class _ExecutorManager:
 
         # Dictionary mapping executor name to executor class
         self.executor_plugins_map: Dict[str, Any] = {}
+        self.executor_plugins_exports_map: Dict[str, Any] = {}
 
         # Load plugins that are part of the covalent path:
         pkg_plugins_path = os.path.join(os.path.dirname(__file__), "executor_plugins")
@@ -156,6 +157,13 @@ class _ExecutorManager:
             plugin_class = plugin_class[0]
             short_name = the_module.__name__.split("/")[-1].split(".")[-1]
             self.executor_plugins_map[short_name] = plugin_class
+
+            # Check if the module has defined any additional exports
+            plugin_class_exports = []
+            if hasattr(the_module, "EXPORTS"):
+                plugin_class_exports = [c for c in the_module.EXPORTS]
+                if len(plugin_class_exports):
+                    self.executor_plugins_exports_map[short_name] = plugin_class_exports
 
             if hasattr(the_module, "_EXECUTOR_PLUGIN_DEFAULTS"):
                 default_params = {
@@ -247,3 +255,9 @@ _executor_manager = _ExecutorManager()
 for name in _executor_manager.executor_plugins_map:
     plugin_class = _executor_manager.executor_plugins_map[name]
     globals()[plugin_class.__name__] = plugin_class
+    try:
+        plugin_exports = _executor_manager.executor_plugins_exports_map[name]
+        for plugin_export in plugin_exports:
+            globals()[plugin_export.__name__] = plugin_export
+    except KeyError:
+        pass
