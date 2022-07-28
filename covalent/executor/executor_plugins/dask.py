@@ -94,6 +94,19 @@ class DaskExecutor(BaseAsyncExecutor):
 
         self.scheduler_address = scheduler_address
 
+    def get_files_to_monitor(self):
+        return ["/tmp/stdout.log"]
+
+    async def poll_file(self, path, starting_pos):
+        app_log.debug(f"Polling {path} starting at {starting_pos}")
+        try:
+            with open(path, "r") as f:
+                f.seek(starting_pos)
+                contents = f.read()
+        except:
+            contents = ""
+        return contents
+
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
 

@@ -30,7 +30,7 @@ import tempfile
 from abc import ABC, abstractmethod
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
-from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
+from typing import Any, Callable, ContextManager, Dict, Generator, Iterable, List, Tuple
 
 import aiofiles
 import cloudpickle as pickle
@@ -541,6 +541,71 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
                 async with aiofiles.open(filepath, "a") as f:
                     await f.write(ss)
 
+    # Compute list of files to monitor based on dispatch id and node id
+    def get_files_to_monitor(self) -> List[str]:
+        raise NotImplementedError
+
+    # The user overrides this method to retrieve the contents of a
+    # remote file starting at the specified position (in bytes).
+    async def poll_file(self, path: str, starting_pos: int) -> str:
+        raise NotImplementedError
+
+    # Async generator
+    async def create_file_monitor(self, path) -> Generator:
+        bytes_read = 0
+        while True:
+            contents = await self.poll_file(path, bytes_read)
+            bytes_read += len(contents)
+
+            app_log.debug(f"create_file_monitor: read {bytes_read} bytes from {path}")
+            yield contents
+
+    async def update_node_info(self, path, chunk):
+        app_log.debug(f"update_node_info: {path}: {chunk}")
+
+    async def start_watching_file(self, path: str, msg_queue: asyncio.Queue):
+        app_log.debug(f"Starting to watch file {path}")
+        monitored_file = self.create_file_monitor(path)
+        msg = await msg_queue.get()
+
+        if msg != "get":
+            app_log.debug("start_watching_file: cancelled")
+            return
+        async for chunk in monitored_file:
+            # Append retrieved file contents to node's info field
+            await self.update_node_info(path, chunk)
+            msg = await msg_queue.get()
+            if msg != "get":
+                app_log.debug("start_watching_file: cancelled")
+                return
+
+    # Poll file according to a timer
+    async def watch_file_periodically(
+        self, path: str, msg_queue: asyncio.Queue, pollfreq: int = 1
+    ):
+        app_log.debug("Starting file watching timer")
+        watcher_queue = asyncio.Queue()
+        fut = asyncio.create_task(self.start_watching_file(path, watcher_queue))
+        app_log.debug("Started file watching timer")
+        while True:
+            try:
+                app_log.debug("watch_file_periodically: Checking for messages")
+                msg = msg_queue.get_nowait()
+
+                app_log.debug(f"watch_file_periodically: Received message {msg}")
+                await watcher_queue.put("cancel")
+                break
+            except asyncio.QueueEmpty:
+                app_log.debug("watch_file_periodically: no messages")
+                pass
+
+            app_log.debug(f"watch_file_periodically: polling {path}")
+            await watcher_queue.put("get")
+            await asyncio.sleep(pollfreq)
+
+        app_log.debug("watch_file_periodically: cancelled")
+        await fut
+
     async def execute(
         self,
         function: Callable,
@@ -550,6 +615,16 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
         results_dir: str,
         node_id: int = -1,
     ) -> Any:
+
+        # Install file polling timers; in a push-based model we'd run start_watching_file directly
+        files_to_monitor = self.get_files_to_monitor()
+
+        app_log.debug(f"{node_id}: Monitoring files {files_to_monitor}")
+        msg_queue = asyncio.Queue()
+        file_watch_futures = []
+        for path in files_to_monitor:
+            fut = asyncio.create_task(self.watch_file_periodically(path, msg_queue))
+            file_watch_futures.append(fut)
 
         task_metadata = {
             "dispatch_id": dispatch_id,
@@ -566,6 +641,12 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
             dispatch_id,
             results_dir,
         )
+        # Cancel polling timers
+
+        await msg_queue.put("cancel")
+        app_log.debug("Execute: cancelled polling timers")
+        for fut in file_watch_futures:
+            await fut
 
         return (result, stdout.getvalue(), stderr.getvalue())
 
