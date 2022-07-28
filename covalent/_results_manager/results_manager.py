@@ -154,7 +154,8 @@ def _get_result_from_dispatcher(
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()
-    return response.json()
+    result = response.json()
+    return result
 
 
 def _delete_result(
