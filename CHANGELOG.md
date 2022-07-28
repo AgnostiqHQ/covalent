@@ -346,6 +346,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Changed the custom executor how-to to be shorter and more concise.
+- Re-structured the docs
 
 ## [0.156.0] - 2022-07-27
 
