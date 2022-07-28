@@ -29,6 +29,8 @@ from pathlib import Path
 
 import socketio
 import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from flask import Flask, jsonify, make_response, request, send_from_directory
 
@@ -39,10 +41,9 @@ from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from covalent_dispatcher._db.dispatchdb import encode_result
 from covalent_dispatcher._service.app import bp
 from covalent_dispatcher._service.app_dask import DaskCluster
-from covalent_ui.os_api.main import app as fastapi_app
-from covalent_ui.os_api.main import sio
+from covalent_ui.api.main import app as fastapi_app
+from covalent_ui.api.main import routes, sio
 
-# Config
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
 STATIC_FILES = {"": WEBAPP_PATH, "/": f"{WEBAPP_PATH}/index.html"}

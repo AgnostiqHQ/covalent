@@ -18,18 +18,21 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Routes"""
 
-from enum import Enum
+from fastapi import APIRouter
+
+from covalent_ui.api.v1.routes.end_points import (
+    electron_routes,
+    graph_route,
+    lattice_route,
+    summary_routes,
+)
+
+routes = APIRouter()
 
 
-class Status(Enum):
-    """To restrict status field"""
-    NEW_OBJECT = "NEW_OBJECT"
-    COMPLETED = "COMPLETED"
-    POSTPROCESSING = "POSTPROCESSING"
-    PENDING_POSTPROCESSING ="PENDING_POSTPROCESSING"
-    POSTPROCESSING_FAILED = "POSTPROCESSING_FAILED"
-    FAILED = "FAILED"
-    RUNNING = "RUNNING"
-    CANCELLED = "CANCELLED"
-
+routes.include_router(summary_routes.routes, prefix="/dispatches", tags=["Dispatches"])
+routes.include_router(lattice_route.routes, prefix="/dispatches", tags=["Dispatches"])
+routes.include_router(graph_route.routes, prefix="/dispatches", tags=["Graph"])
+routes.include_router(electron_routes.routes, prefix="/dispatches", tags=["Electrons"])

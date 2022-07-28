@@ -18,21 +18,42 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Routes"""
+"""Request and response models for Electrons"""
 
-from fastapi import APIRouter
+from enum import Enum
 
-from covalent_ui.os_api.api_v0.routes.end_points import (
-    electron_routes,
-    graph_route,
-    lattice_route,
-    summary_routes,
-)
+# pylint: disable=no-name-in-module
+from pydantic import BaseModel
 
-routes = APIRouter()
+from covalent_ui.api.v1.utils.status import Status
 
 
-routes.include_router(summary_routes.routes, prefix="/dispatches", tags=["Dispatches"])
-routes.include_router(lattice_route.routes, prefix="/dispatches", tags=["Dispatches"])
-routes.include_router(graph_route.routes, prefix="/dispatches", tags=["Graph"])
-routes.include_router(electron_routes.routes, prefix="/dispatches", tags=["Electrons"])
+class ElectronResponseModel(BaseModel):
+    """Electron Response Validation"""
+
+    id: int
+    parent_lattice_id: int
+    transport_graph_node_id: int
+    type: str
+    name: str
+    status: Status
+    executor: str
+    created_at: str
+    started_at: str
+    completed_at: str
+    updated_at: str
+
+
+class FileOutput(str, Enum):
+    FUNCTION_STRING = "function_string"
+    FUNCTION = "function"
+    EXECUTOR = "executor_details"
+    RESULT = "result"
+    VALUE = "value"
+    KEY = "key"
+    STDOUT = "stdout"
+    DEPS = "deps"
+    CALL_BEFORE = "call_before"
+    CALL_AFTER = "call_after"
+    ERROR = "error"
+    INFO = "info"

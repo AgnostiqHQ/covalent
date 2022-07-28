@@ -26,9 +26,9 @@ from fastapi import APIRouter, Query
 from pydantic import conint
 from sqlalchemy.orm import Session
 
-from covalent_ui.os_api.api_v0.data_layer.summary_dal import Summary
-from covalent_ui.os_api.api_v0.database.config.db import engine
-from covalent_ui.os_api.api_v0.models.dispatch_model import (
+from covalent_ui.api.v1.data_layer.summary_dal import Summary
+from covalent_ui.api.v1.database.config.db import engine
+from covalent_ui.api.v1.models.dispatch_model import (
     DeleteDispatchesRequest,
     DeleteDispatchesResponse,
     DispatchDashBoardResponse,

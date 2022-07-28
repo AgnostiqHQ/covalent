@@ -26,9 +26,9 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
-from covalent_ui.os_api.api_v0.database.schema.electrons_schema import Electron
-from covalent_ui.os_api.api_v0.database.schema.lattices_schema import Lattice
-from covalent_ui.os_api.api_v0.models.lattices_model import LatticeDetailResponse
+from covalent_ui.api.v1.database.schema.electrons_schema import Electron
+from covalent_ui.api.v1.database.schema.lattices_schema import Lattice
+from covalent_ui.api.v1.models.lattices_model import LatticeDetailResponse
 
 
 class Lattices:

@@ -15,45 +15,41 @@
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Request and response models for Electrons"""
+"""Electron Dependency Request and Respone Model"""
 
-from enum import Enum
+from typing import List
 
 # pylint: disable=no-name-in-module
 from pydantic import BaseModel
 
-from covalent_ui.os_api.api_v0.utils.status import Status
+from covalent_ui.api.v1.utils.status import Status
 
 
-class ElectronResponseModel(BaseModel):
-    """Electron Response Validation"""
+class LinkModule(BaseModel):
+    """Link Module Validation"""
 
     id: int
-    parent_lattice_id: int
-    transport_graph_node_id: int
-    type: str
-    name: str
-    status: Status
-    executor: str
+    electron_id: int
+    parent_electron_id: int
+    edge_name: str
+    parameter_type: str
     created_at: str
-    started_at: str
-    completed_at: str
-    updated_at: str
 
 
-class FileOutput(str, Enum):
-    FUNCTION_STRING = "function_string"
-    FUNCTION = "function"
-    EXECUTOR = "executor_details"
-    RESULT = "result"
-    VALUE = "value"
-    KEY = "key"
-    STDOUT = "stdout"
-    DEPS = "deps"
-    CALL_BEFORE = "call_before"
-    CALL_AFTER = "call_after"
-    ERROR = "error"
-    INFO = "info"
+class NodeModule(BaseModel):
+    """Node Module Validation"""
+
+    id: int
+    name: str
+    start_time: str
+    end_time: str
+    status: Status
+
+
+class GraphResponseModel(BaseModel):
+    """Graph Response Validation"""
+
+    node: List[NodeModule]
+    links: List[LinkModule]

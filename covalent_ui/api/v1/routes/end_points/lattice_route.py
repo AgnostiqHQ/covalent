@@ -27,15 +27,15 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from covalent_ui.os_api.api_v0.data_layer.lattice_dal import Lattices
-from covalent_ui.os_api.api_v0.database.config.db import engine
-from covalent_ui.os_api.api_v0.models.lattices_model import (
+from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
+from covalent_ui.api.v1.database.config.db import engine
+from covalent_ui.api.v1.models.lattices_model import (
     FileOutput,
     LatticeDetailResponse,
     LatticeExecutorResponse,
     LatticeFileResponse,
 )
-from covalent_ui.os_api.api_v0.utils.file_handle import FileHandler
+from covalent_ui.api.v1.utils.file_handle import FileHandler
 
 routes: APIRouter = APIRouter()
 

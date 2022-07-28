@@ -36,7 +36,7 @@ from covalent._shared_files.config import get_config
 from covalent_dispatcher._service.app_dask import DaskCluster
 
 # from covalent_ui.app import app as flask_app
-from covalent_ui.os_api.api_v0.routes import routes
+from covalent_ui.api.v1.routes import routes
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "../webapp/build"

@@ -24,8 +24,8 @@ import uuid
 from fastapi import APIRouter
 from sqlalchemy.orm import Session
 
-from covalent_ui.os_api.api_v0.data_layer.graph_dal import Graph
-from covalent_ui.os_api.api_v0.database.config.db import engine
+from covalent_ui.api.v1.data_layer.graph_dal import Graph
+from covalent_ui.api.v1.database.config.db import engine
 
 routes: APIRouter = APIRouter()
 

@@ -15,41 +15,21 @@
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Electron Dependency Request and Respone Model"""
 
-from typing import List
-
-# pylint: disable=no-name-in-module
-from pydantic import BaseModel
-
-from covalent_ui.os_api.api_v0.utils.status import Status
+from enum import Enum
 
 
-class LinkModule(BaseModel):
-    """Link Module Validation"""
+class Status(Enum):
+    """To restrict status field"""
 
-    id: int
-    electron_id: int
-    parent_electron_id: int
-    edge_name: str
-    parameter_type: str
-    created_at: str
-
-
-class NodeModule(BaseModel):
-    """Node Module Validation"""
-
-    id: int
-    name: str
-    start_time: str
-    end_time: str
-    status: Status
-
-
-class GraphResponseModel(BaseModel):
-    """Graph Response Validation"""
-
-    node: List[NodeModule]
-    links: List[LinkModule]
+    NEW_OBJECT = "NEW_OBJECT"
+    COMPLETED = "COMPLETED"
+    POSTPROCESSING = "POSTPROCESSING"
+    PENDING_POSTPROCESSING = "PENDING_POSTPROCESSING"
+    POSTPROCESSING_FAILED = "POSTPROCESSING_FAILED"
+    FAILED = "FAILED"
+    RUNNING = "RUNNING"
+    CANCELLED = "CANCELLED"

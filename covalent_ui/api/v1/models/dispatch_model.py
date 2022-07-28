@@ -28,7 +28,7 @@ from uuid import UUID
 # pylint: disable=no-name-in-module
 from pydantic import BaseModel, conint
 
-from covalent_ui.os_api.api_v0.utils.status import Status
+from covalent_ui.api.v1.utils.status import Status
 
 
 class CaseInsensitiveEnum(Enum):

@@ -24,7 +24,7 @@ import enum
 
 from sqlalchemy import BigInteger, Boolean, Column, DateTime, Enum, ForeignKey, Integer, Text
 
-from covalent_ui.os_api.api_v0.database.config.db import Base
+from covalent_ui.api.v1.database.config.db import Base
 
 
 class ParameterTypeEnum(enum.Enum):

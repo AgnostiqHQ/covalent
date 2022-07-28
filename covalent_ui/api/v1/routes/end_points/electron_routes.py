@@ -24,15 +24,15 @@ import uuid
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
 
-from covalent_ui.os_api.api_v0.data_layer.electron_dal import Electrons
-from covalent_ui.os_api.api_v0.database.config.db import engine
-from covalent_ui.os_api.api_v0.models.electrons_model import FileOutput
-from covalent_ui.os_api.api_v0.models.lattices_model import (
+from covalent_ui.api.v1.data_layer.electron_dal import Electrons
+from covalent_ui.api.v1.database.config.db import engine
+from covalent_ui.api.v1.models.electrons_model import FileOutput
+from covalent_ui.api.v1.models.lattices_model import (
     ElectronExecutorResponse,
     ElectronFileResponse,
     ElectronResponse,
 )
-from covalent_ui.os_api.api_v0.utils.file_handle import FileHandler
+from covalent_ui.api.v1.utils.file_handle import FileHandler
 
 routes: APIRouter = APIRouter()
 
