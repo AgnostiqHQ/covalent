@@ -51,7 +51,7 @@ export const fetchDashboardList = createAsyncThunk(
 export const fetchDashboardOverview = createAsyncThunk(
   'dashboard/overview',
   (values, thunkAPI) =>
-    api.get('dispatches/overview/').catch(thunkAPI.rejectWithValue)
+    api.get('dispatches/overview').catch(thunkAPI.rejectWithValue)
 )
 
 export const deleteDispatches = createAsyncThunk(
