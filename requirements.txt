@@ -2,7 +2,7 @@ alembic==1.8.0
 cloudpickle==2.0.0
 dask[distributed]==2022.6.0
 
-fastapi[standard]==0.79.0
+fastapi==0.79.0
 flask==2.0.1
 flask-cors==3.0.10
 flask-socketio==5.1.1
