@@ -295,6 +295,8 @@ def test_get_task_inputs():
         electron_y = identity(y)
         res1 = multivariable_task(electron_x, electron_y)
         res2 = multivariable_task(electron_y, electron_x)
+        res3 = multivariable_task(electron_y, electron_x)
+        res4 = multivariable_task(electron_x, electron_y)
         return 1
 
     # list-type inputs
@@ -341,7 +343,7 @@ def test_get_task_inputs():
     result_object = Result(lattice=received_lattice, results_dir="/tmp", dispatch_id="asdf")
     tg = received_lattice.transport_graph
 
-    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5]
+    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7]
     tg.set_node_value(0, "output", ct.TransportableObject(1))
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
@@ -353,6 +355,14 @@ def test_get_task_inputs():
     task_inputs = _get_task_inputs(5, tg.get_node_value(5, "name"), result_object)
     input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
     assert input_args == [2, 1]
+
+    task_inputs = _get_task_inputs(6, tg.get_node_value(6, "name"), result_object)
+    input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
+    assert input_args == [2, 1]
+
+    task_inputs = _get_task_inputs(7, tg.get_node_value(7, "name"), result_object)
+    input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
+    assert input_args == [1, 2]
 
 
 def test_gather_deps():
