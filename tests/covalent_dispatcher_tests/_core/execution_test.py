@@ -267,6 +267,10 @@ def test_get_task_inputs():
     def dict_task(arg: Dict):
         return len(arg)
 
+    @ct.electron
+    def multivariable_task(x, y):
+        return x, y
+
     @ct.lattice
     def list_workflow(arg):
         return list_task(arg)
@@ -274,6 +278,24 @@ def test_get_task_inputs():
     @ct.lattice
     def dict_workflow(arg):
         return dict_task(arg)
+
+    #    1   2
+    #     \   \
+    #      0   3
+    #     / /\/
+    #     4   5
+
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.lattice
+    def multivar_workflow(x, y):
+        electron_x = identity(x)
+        electron_y = identity(y)
+        res1 = multivariable_task(electron_x, electron_y)
+        res2 = multivariable_task(electron_y, electron_x)
+        return 1
 
     # list-type inputs
 
@@ -312,6 +334,25 @@ def test_get_task_inputs():
         task_inputs["kwargs"]["x"].get_deserialized()
         == expected_inputs["kwargs"]["x"].get_deserialized()
     )
+
+    # Check arg order
+    multivar_workflow.build_graph(1, 2)
+    received_lattice = Lattice.deserialize_from_json(multivar_workflow.serialize_to_json())
+    result_object = Result(lattice=received_lattice, results_dir="/tmp", dispatch_id="asdf")
+    tg = received_lattice.transport_graph
+
+    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5]
+    tg.set_node_value(0, "output", ct.TransportableObject(1))
+    tg.set_node_value(2, "output", ct.TransportableObject(2))
+
+    task_inputs = _get_task_inputs(4, tg.get_node_value(4, "name"), result_object)
+
+    input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
+    assert input_args == [1, 2]
+
+    task_inputs = _get_task_inputs(5, tg.get_node_value(5, "name"), result_object)
+    input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
+    assert input_args == [2, 1]
 
 
 def test_gather_deps():
