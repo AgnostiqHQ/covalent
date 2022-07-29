@@ -36,6 +36,7 @@ from covalent._data_store.datastore import DataStore, DataStoreNotInitializedErr
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.result import Result
 from covalent._results_manager.write_result_to_db import load_file
+from covalent._workflow.lattice import Lattice as LatticeClass
 
 TEMP_RESULTS_DIR = "/tmp/results"
 
@@ -68,14 +69,17 @@ def result_1():
     def task_2(x, y):
         return x + y
 
-    @ct.lattice(executor="dask")
+    @ct.lattice(executor="dask", workflow_executor="ssh")
     def workflow_1(a, b):
         res_1 = task_1(a, b)
         return task_2(res_1, b)
 
     Path(f"{TEMP_RESULTS_DIR}/dispatch_1").mkdir(parents=True, exist_ok=True)
     workflow_1.build_graph(a=1, b=2)
-    result = Result(lattice=workflow_1, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1")
+    received_lattice = LatticeClass.deserialize_from_json(workflow_1.serialize_to_json())
+    result = Result(
+        lattice=received_lattice, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1"
+    )
     result._initialize_nodes()
     return result
 
@@ -106,6 +110,8 @@ def test_result_persist_workflow_1(db, result_1):
     assert lattice_row.status == "NEW_OBJECT"
     assert lattice_row.name == "workflow_1"
     assert lattice_row.electron_id is None
+    assert lattice_row.executor == "dask"
+    assert lattice_row.workflow_executor == "ssh"
 
     lattice_storage_path = Path(lattice_row.storage_path)
     assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR) / "dispatch_1"
@@ -114,10 +120,6 @@ def test_result_persist_workflow_1(db, result_1):
         storage_path=lattice_storage_path, filename=lattice_row.function_filename
     ).get_deserialized()
     assert workflow_function(1, 2) == 4
-    assert (
-        load_file(storage_path=lattice_storage_path, filename=lattice_row.executor_filename)
-        == "dask"
-    )
     assert load_file(storage_path=lattice_storage_path, filename=lattice_row.error_filename) == ""
     assert (
         load_file(
@@ -125,6 +127,19 @@ def test_result_persist_workflow_1(db, result_1):
         ).get_deserialized()
         is None
     )
+
+    saved_named_args = load_file(
+        storage_path=lattice_storage_path, filename=lattice_row.named_args_filename
+    )
+
+    saved_named_kwargs = load_file(
+        storage_path=lattice_storage_path, filename=lattice_row.named_kwargs_filename
+    )
+    saved_named_args_raw = {k: v.get_deserialized() for k, v in saved_named_args.items()}
+    saved_named_kwargs_raw = {k: v.get_deserialized() for k, v in saved_named_kwargs.items()}
+
+    assert saved_named_args_raw == {}
+    assert saved_named_kwargs_raw == {"a": 1, "b": 2}
 
     # Check that the electron records are as expected
     for electron in electron_rows:
@@ -148,10 +163,6 @@ def test_result_persist_workflow_1(db, result_1):
                     storage_path=electron.storage_path, filename=electron.call_after_filename
                 )
                 == []
-            )
-            assert (
-                load_file(storage_path=electron.storage_path, filename=electron.key_filename)
-                is None
             )
 
     # Check that there are the appropriate amount of electron dependency records
