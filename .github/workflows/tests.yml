@@ -63,6 +63,20 @@ jobs:
         with:
           persist-credentials: false
 
+      - uses: dorny/paths-filter@v2
+        if: github.event_name == 'pull_request'
+        id: working-directory
+        with:
+          filters: |
+            sdk:
+            - 'covalent/**'
+            dispatcher:
+            - 'covalent_dispatcher/**'
+            ui_backend:
+            - 'covalent_ui/**'
+            ui_backend_tests:
+            - 'tests/covalent_ui_tests/**'
+            
       - name: Set up Python
         if: matrix.os == 'macos-latest'
         uses: actions/setup-python@v2
