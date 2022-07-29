@@ -619,6 +619,10 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
     lock = Lock()
     task_futures: list = []
 
+    app_log.debug(
+        f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
+    )
+
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
