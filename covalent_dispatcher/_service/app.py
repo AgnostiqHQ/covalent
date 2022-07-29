@@ -108,41 +108,41 @@ def get_result(dispatch_id) -> Response:
                 session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
             )
             status = lattice_record.status if lattice_record else None
-        try:
-            if not lattice_record:
-                return (
-                    jsonify(
-                        {"message": f"The requested dispatch ID {dispatch_id} was not found."}
-                    ),
-                    404,
-                )
-            elif not wait or status in [
-                str(Result.COMPLETED),
-                str(Result.FAILED),
-                str(Result.CANCELLED),
-                str(Result.POSTPROCESSING_FAILED),
-                str(Result.PENDING_POSTPROCESSING),
-            ]:
-                output = {
-                    "id": dispatch_id,
-                    "status": lattice_record.status,
-                }
-                if not status_only:
-                    output["result"] = codecs.encode(
-                        pickle.dumps(result_from(lattice_record)), "base64"
-                    ).decode()
-                return jsonify(output)
-
-        except (FileNotFoundError, EOFError):
-            if wait:
-                continue
-            response = make_response(
-                jsonify(
-                    {
-                        "message": "Result not ready to read yet. Please wait for a couple of seconds."
+            try:
+                if not lattice_record:
+                    return (
+                        jsonify(
+                            {"message": f"The requested dispatch ID {dispatch_id} was not found."}
+                        ),
+                        404,
+                    )
+                elif not wait or status in [
+                    str(Result.COMPLETED),
+                    str(Result.FAILED),
+                    str(Result.CANCELLED),
+                    str(Result.POSTPROCESSING_FAILED),
+                    str(Result.PENDING_POSTPROCESSING),
+                ]:
+                    output = {
+                        "id": dispatch_id,
+                        "status": lattice_record.status,
                     }
-                ),
-                503,
-            )
-            response.retry_after = 2
-            return response
+                    if not status_only:
+                        output["result"] = codecs.encode(
+                            pickle.dumps(result_from(lattice_record)), "base64"
+                        ).decode()
+                    return jsonify(output)
+
+            except (FileNotFoundError, EOFError):
+                if wait:
+                    continue
+                response = make_response(
+                    jsonify(
+                        {
+                            "message": "Result not ready to read yet. Please wait for a couple of seconds."
+                        }
+                    ),
+                    503,
+                )
+                response.retry_after = 2
+                return response
