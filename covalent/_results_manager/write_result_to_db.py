@@ -211,45 +211,47 @@ def insert_electrons_data(
     """This function writes the transport graph node data to the Electrons table in the DB."""
 
     # Check that the foreign key corresponding to this table exists
+    app_log.debug("insert_electrons_data")
     with workflow_db.session() as session:
         row = session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()
-    if len(row) == 0:
-        raise MissingLatticeRecordError
+        if len(row) == 0:
+            raise MissingLatticeRecordError
 
-    parent_lattice_id = row[0].id
+        parent_lattice_id = row[0].id
+        app_log.debug(parent_lattice_id)
 
-    electron_row = Electron(
-        parent_lattice_id=parent_lattice_id,
-        transport_graph_node_id=transport_graph_node_id,
-        type=type,
-        name=name,
-        status=status,
-        storage_type=storage_type,
-        storage_path=storage_path,
-        function_filename=function_filename,
-        function_string_filename=function_string_filename,
-        executor_filename=executor_filename,
-        results_filename=results_filename,
-        value_filename=value_filename,
-        attribute_name=attribute_name,
-        key_filename=key_filename,
-        stdout_filename=stdout_filename,
-        stderr_filename=stderr_filename,
-        info_filename=info_filename,
-        deps_filename=deps_filename,
-        call_before_filename=call_before_filename,
-        call_after_filename=call_after_filename,
-        is_active=True,
-        created_at=created_at,
-        updated_at=updated_at,
-        started_at=started_at,
-        completed_at=completed_at,
-    )
+        electron_row = Electron(
+            parent_lattice_id=parent_lattice_id,
+            transport_graph_node_id=transport_graph_node_id,
+            type=type,
+            name=name,
+            status=status,
+            storage_type=storage_type,
+            storage_path=storage_path,
+            function_filename=function_filename,
+            function_string_filename=function_string_filename,
+            executor_filename=executor_filename,
+            results_filename=results_filename,
+            value_filename=value_filename,
+            attribute_name=attribute_name,
+            key_filename=key_filename,
+            stdout_filename=stdout_filename,
+            stderr_filename=stderr_filename,
+            info_filename=info_filename,
+            deps_filename=deps_filename,
+            call_before_filename=call_before_filename,
+            call_after_filename=call_after_filename,
+            is_active=True,
+            created_at=created_at,
+            updated_at=updated_at,
+            started_at=started_at,
+            completed_at=completed_at,
+        )
 
     with workflow_db.session() as session:
         session.add(electron_row)
-        session.commit()
         electron_id = electron_row.id
+        session.commit()
 
     return electron_id
 
@@ -259,6 +261,7 @@ def insert_electron_dependency_data(dispatch_id: str, lattice: "Lattice"):
 
     # TODO - Update how we access the transport graph edges directly in favor of using some interface provied by the TransportGraph class.
     node_links = nx.readwrite.node_link_data(lattice.transport_graph._graph)["links"]
+    app_log.debug("node links " + str(node_links))
 
     electron_dependency_ids = []
     with workflow_db.session() as session:
@@ -292,8 +295,8 @@ def insert_electron_dependency_data(dispatch_id: str, lattice: "Lattice"):
             )
 
             session.add(electron_dependency_row)
-            session.commit()
             electron_dependency_ids.append(electron_dependency_row.id)
+        session.commit()
 
     return electron_dependency_ids
 

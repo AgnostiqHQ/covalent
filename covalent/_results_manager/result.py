@@ -730,8 +730,9 @@ Node Outputs
         tg = self.lattice.transport_graph
         dirty_nodes = set(tg.dirty_nodes)
         tg.dirty_nodes.clear()  # Ensure that dirty nodes list is reset once the data is updated
-        app_log.debgu("upsert_electron_data session begin")
+        app_log.debug("upsert_electron_data session begin")
         with workflow_db.session() as session:
+            app_log.debug("upsert_electron_data session success")
             for node_id in dirty_nodes:
 
                 node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
@@ -868,7 +869,7 @@ Node Outputs
                 .first()
                 is not None
             )
-
+        app_log.debug("electron_dependencies_exist is " + str(electron_dependencies_exist))
         if not electron_dependencies_exist:
             insert_electron_dependency_data(dispatch_id=self.dispatch_id, lattice=self.lattice)
 

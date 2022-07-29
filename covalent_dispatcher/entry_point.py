@@ -77,7 +77,7 @@ def run_dispatcher(
     result_object._initialize_nodes()
 
     app_log.debug("2: Constructed result object and initialized nodes.")
-    DispatchDB().save_db(result_object)
+    result_object.persist()
 
     app_log.debug("Result object retrieved.")
 
