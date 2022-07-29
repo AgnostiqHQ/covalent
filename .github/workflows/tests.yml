@@ -64,7 +64,7 @@ jobs:
           persist-credentials: false
 
       - uses: dorny/paths-filter@v2
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'pull_request'
         id: working-directory
         with:
           filters: |
@@ -135,7 +135,7 @@ jobs:
         run: covalent start --ignore-migrations
                
       - name: Run SDK tests and measure coverage
-        if: ${{ steps.working-directory.outputs.sdk}} == true
+        if: github.event_name != 'pull_request' || ${{ steps.working-directory.outputs.sdk}} == true
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
@@ -145,11 +145,11 @@ jobs:
             PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests  --cov=covalent --cov-config=.coveragerc
             
       - name: Generate SDK coverage report
-        if: ${{ steps.working-directory.outputs.sdk}} == true
+        if: github.event_name != 'pull_request' || ${{ steps.working-directory.outputs.sdk}} == true
         run: coverage xml -o sdk_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
-        if: ${{ steps.working-directory.outputs.dispatcher }} == true
+        if: github.event_name != 'pull_request' || ${{ steps.working-directory.outputs.dispatcher }} == true
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
@@ -159,7 +159,7 @@ jobs:
             PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_dispatcher_tests  --cov=covalent_dispatcher --cov-config=.coveragerc
       
       - name: Generate dispatcher coverage report
-        if: ${{ steps.working-directory.outputs.dispatcher }} == true
+        if: github.event_name != 'pull_request' || ${{ steps.working-directory.outputs.dispatcher }} == true
         run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
@@ -176,7 +176,7 @@ jobs:
 
       - name: Run UI backend tests and measure coverage
         id: ui_tests
-        if: ${{ steps.working-directory.outputs.ui_backend }} == true
+        if: github.event_name != 'pull_request' || ${{ steps.working-directory.outputs.ui_backend }} == true
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 15
@@ -189,12 +189,13 @@ jobs:
       - name: Generate UI backend coverage report
         continue-on-error: true
         if: | 
+          github.event_name != 'pull_request' ||
           ${{ steps.working-directory.outputs.ui_backend_tests }} == true && ${{ steps.working-directory.outputs.ui_backend }} == 'true' && 
           ${{ steps.ui_tests.outputs.exit_code }} == 0
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.sdk}} == true
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && (github.event_name != 'pull_request' || ${{ steps.working-directory.outputs.sdk}} == true)
         uses: codecov/codecov-action@v3
         with:
           files: ./sdk_coverage.xml
@@ -202,7 +203,7 @@ jobs:
           name: "SDK Unit Tests"
 
       - name: Upload Dispatcher report to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.dispatcher }} == 'true'
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && (github.event_name != 'pull_request' || ${{ steps.working-directory.outputs.dispatcher }} == 'true')
         uses: codecov/codecov-action@v3
         with:
           files: ./dispatcher_coverage.xml
@@ -220,8 +221,11 @@ jobs:
       - name: Upload UI backend report to Codecov
         if: |
           matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && 
+          (
+          github.event_name != 'pull_request' ||
           ${{ steps.working-directory.outputs.ui_backend}} == true &&
           ${{ steps.ui_tests.outputs.exit_code }} == 0
+          )
         uses: codecov/codecov-action@v3
         with:
           files: ./ui_backend_coverage.xml
