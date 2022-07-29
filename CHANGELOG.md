@@ -11,6 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - paths-filter will only be run on PRs, i.e on workflow runs, the whole test suite will be run.
 
+## [0.157.1] - 2022-07-29
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+### Fixed
+
+- Pass non-kwargs to electrons in the correct order during dispatch.
+
 ## [0.157.0] - 2022-07-28
 
 ### Authors
