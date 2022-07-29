@@ -538,7 +538,9 @@ async def _initialize_deps_and_queue(
     return num_tasks
 
 
-async def _postprocess_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
+async def _postprocess_workflow(
+    result_object: Result, thread_pool: ThreadPoolExecutor, executor_cache: ExecutorCache
+) -> Result:
     """
     Postprocesses a workflow with a completed computational graph
 
@@ -588,6 +590,8 @@ async def _postprocess_workflow(result_object: Result, thread_pool: ThreadPoolEx
                 inputs=post_processing_inputs,
                 tasks_pool=thread_pool,
                 workflow_executor=post_processor,
+                executor_cache=executor_cache,
+                increment_task_count=False,
             )
         )
         pp_start_time = datetime.now(timezone.utc)
@@ -814,7 +818,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
-    result_object = await _postprocess_workflow(result_object, thread_pool)
+    result_object = await _postprocess_workflow(result_object, thread_pool, exec_cache)
 
     result_object.persist()
     result_webhook.send_update(result_object)
