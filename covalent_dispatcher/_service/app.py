@@ -23,16 +23,17 @@ from concurrent.futures import ThreadPoolExecutor
 
 import cloudpickle as pickle
 from flask import Blueprint, Response, jsonify, make_response, request
-from sqlalchemy.orm import Session
-
 import covalent_dispatcher as dispatcher
 from covalent._data_store.datastore import workflow_db
 from covalent._data_store.models import Lattice
 from covalent._results_manager.result import Result
 from covalent._results_manager.results_manager import result_from
+from covalent._shared_files import logger
 
 from .._db.dispatchdb import DispatchDB
 
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 bp = Blueprint("dispatcher", __name__, url_prefix="/api")
 
 
@@ -95,14 +96,17 @@ def db_path() -> Response:
 
 @bp.route("/result/<dispatch_id>", methods=["GET"])
 def get_result(dispatch_id) -> Response:
+    app_log.warning("get result")
     args = request.args
     wait = args.get("wait", default=False, type=lambda v: v.lower() == "true")
+    app_log.warning("wait is " + str(wait))
     status_only = args.get("status_only", default=False, type=lambda v: v.lower() == "true")
     while True:
         with workflow_db.session() as session:
             lattice_record = (
                 session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
             )
+            status = lattice_record.status if lattice_record else None
         try:
             if not lattice_record:
                 return (
@@ -111,7 +115,7 @@ def get_result(dispatch_id) -> Response:
                     ),
                     404,
                 )
-            elif not wait or lattice_record.status in [
+            elif not wait or status in [
                 str(Result.COMPLETED),
                 str(Result.FAILED),
                 str(Result.CANCELLED),

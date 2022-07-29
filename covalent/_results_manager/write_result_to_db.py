@@ -20,6 +20,7 @@
 
 """This module contains all the functions required to save the decomposed result object in the database."""
 
+import json
 import os
 from datetime import datetime as dt
 from datetime import timezone
@@ -33,6 +34,7 @@ from sqlalchemy.orm import Session
 
 from covalent._data_store.datastore import DataStore, workflow_db
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
+from covalent._shared_files.util_classes import RESULT_STATUS
 
 from .._shared_files.defaults import (
     arg_prefix,
@@ -45,6 +47,29 @@ from .._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
+
+LATTICE_FUNCTION_FILENAME = "function.pkl"
+LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
+LATTICE_EXECUTOR_FILENAME = "executor.pkl"
+LATTICE_ERROR_FILENAME = "error.log"
+LATTICE_INPUTS_FILENAME = "inputs.pkl"
+LATTICE_RESULTS_FILENAME = "results.pkl"
+LATTICE_TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
+LATTICE_STORAGE_TYPE = "local"
+
+ELECTRON_FUNCTION_FILENAME = "function.pkl"
+ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
+ELECTRON_KEY_FILENAME = "key.pkl"
+ELECTRON_VALUE_FILENAME = "value.pkl"
+ELECTRON_EXECUTOR_FILENAME = "executor.pkl"
+ELECTRON_STDOUT_FILENAME = "stdout.log"
+ELECTRON_STDERR_FILENAME = "stderr.log"
+ELECTRON_INFO_FILENAME = "info.log"
+ELECTRON_RESULTS_FILENAME = "results.pkl"
+ELECTRON_DEPS_FILENAME = "deps.pkl"
+ELECTRON_CALL_BEFORE_FILENAME = "call_before.pkl"
+ELECTRON_CALL_AFTER_FILENAME = "call_after.pkl"
+ELECTRON_STORAGE_TYPE = "local"
 
 
 class MissingLatticeRecordError(Exception):
@@ -70,6 +95,31 @@ def update_lattice_completed_electron_num(dispatch_id: str) -> None:
             }
         )
         session.commit()
+
+
+def insert_json_lattice(dispatch_id: str, json_lattice: str):
+    lattice = json.loads(json_lattice)
+    lattice_record_kwarg = {
+        "dispatch_id": dispatch_id,
+        "status": str(RESULT_STATUS.NEW_OBJECT),
+        "name": lattice["__name__"],
+        "electron_num": -1,
+        "completed_electron_num": 0,  # None of the nodes have been executed or completed yet.
+        "storage_path": lattice["metadata"]["results_dir"],
+        "storage_type": LATTICE_STORAGE_TYPE,
+        "function_filename": LATTICE_FUNCTION_FILENAME,
+        "function_string_filename": LATTICE_FUNCTION_STRING_FILENAME,
+        "executor_filename": LATTICE_EXECUTOR_FILENAME,
+        "error_filename": LATTICE_ERROR_FILENAME,
+        "inputs_filename": LATTICE_INPUTS_FILENAME,
+        "results_filename": LATTICE_RESULTS_FILENAME,
+        "transport_graph_filename": LATTICE_TRANSPORT_GRAPH_FILENAME,
+        "created_at": dt.now(timezone.utc),
+        "updated_at": dt.now(timezone.utc),
+        "started_at": None,
+        "completed_at": None,
+    }
+    return insert_lattices_data(**lattice_record_kwarg)
 
 
 def insert_lattices_data(
@@ -118,8 +168,8 @@ def insert_lattices_data(
 
     with workflow_db.session() as session:
         session.add(lattice_row)
-        session.commit()
         lattice_id = lattice_row.id
+        session.commit()
 
     return lattice_id
 

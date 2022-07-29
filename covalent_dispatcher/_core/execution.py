@@ -750,11 +750,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
 
     result_object = await _postprocess_workflow(result_object, thread_pool)
 
-    try:
-        with DispatchDB() as db:
-            db.save_db(result_object, write_source=True)
-    except Exception:
-        app_log.exception("Upsert or save db issue")
+    result_object.persist()
     result_webhook.send_update(result_object)
 
     return result_object
