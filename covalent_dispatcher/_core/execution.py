@@ -523,7 +523,7 @@ async def _postprocess_workflow(result_object: Result, thread_pool: ThreadPoolEx
     post_processor = [pp_executor, pp_executor_data]
 
     result_object._status = Result.POSTPROCESSING
-    result_object.upsert_lattice_data(workflow_db)
+    result_object.upsert_lattice_data()
 
     app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
 
@@ -531,14 +531,14 @@ async def _postprocess_workflow(result_object: Result, thread_pool: ThreadPoolEx
         app_log.debug("Workflow to be postprocessed client side")
         result_object._status = Result.PENDING_POSTPROCESSING
         result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data(workflow_db)
+        result_object.upsert_lattice_data()
         result_webhook.send_update(result_object)
         return result_object
 
     post_processing_inputs = {}
     post_processing_inputs["args"] = [
         TransportableObject.make_transportable(result_object.lattice),
-        TransportableObject.make_transportable(result_object.get_all_node_outputs(workflow_db)),
+        TransportableObject.make_transportable(result_object.get_all_node_outputs()),
     ]
     post_processing_inputs["kwargs"] = {}
 
@@ -569,7 +569,7 @@ async def _postprocess_workflow(result_object: Result, thread_pool: ThreadPoolEx
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = "Post-processing failed"
         result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data(workflow_db)
+        result_object.upsert_lattice_data()
         result_webhook.send_update(result_object)
 
         return result_object
@@ -580,7 +580,7 @@ async def _postprocess_workflow(result_object: Result, thread_pool: ThreadPoolEx
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = f"Post-processing failed: {err}"
         result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data(workflow_db)
+        result_object.upsert_lattice_data()
         result_webhook.send_update(result_object)
 
         return result_object
