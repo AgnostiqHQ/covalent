@@ -144,10 +144,13 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
             for e_key, d in edge_data.items():
                 if not d.get("wait_for"):
                     if d["param_type"] == "arg":
-                        task_input["args"].append(value)
+                        task_input["args"].append((value, d["arg_index"]))
                     elif d["param_type"] == "kwarg":
                         key = d["edge_name"]
                         task_input["kwargs"][key] = value
+
+        sorted_args = sorted(task_input["args"], key=lambda x: x[1])
+        task_input["args"] = [x[0] for x in sorted_args]
 
     return task_input
 
