@@ -64,7 +64,7 @@ jobs:
           persist-credentials: false
 
       - uses: dorny/paths-filter@v2
-        if: github.event_name == 'pull_request'
+        if: github.event_name != 'pull_request'
         id: working-directory
         with:
           filters: |
