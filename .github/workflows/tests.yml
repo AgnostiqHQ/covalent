@@ -62,29 +62,35 @@ jobs:
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-      - uses: dorny/paths-filter@v2
-        id: working-directory
-        with:
-          filters: |
-            sdk:
-            - 'covalent/**'
-            dispatcher:
-            - 'covalent_dispatcher/**'
-            ui_backend:
-            - 'covalent_ui/**'
-            ui_backend_tests:
-            - 'tests/covalent_ui_tests/**'
-            
-  #     - name: Set up Python
-  #       if: matrix.os == 'macos-latest'
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
+      
+      - name: Verifying git branch show-current
+        run: |
+          apt update
+          apt install -y git/buster-backports
 
-  #     - name: Install Python dependencies
-  #       run: |
-  #         pip install --no-cache-dir -r ./requirements.txt
-  #         pip install --no-cache-dir -r ./tests/requirements.txt
+      # - uses: dorny/paths-filter@v2
+      #   id: working-directory
+      #   with:
+      #     filters: |
+      #       sdk:
+      #       - 'covalent/**'
+      #       dispatcher:
+      #       - 'covalent_dispatcher/**'
+      #       ui_backend:
+      #       - 'covalent_ui/**'
+      #       ui_backend_tests:
+      #       - 'tests/covalent_ui_tests/**'
+            
+      # - name: Set up Python
+      #   if: matrix.os == 'macos-latest'
+      #   uses: actions/setup-python@v2
+      #   with:
+      #     python-version: ${{ matrix.python-version }}
+
+      # - name: Install Python dependencies
+      #   run: |
+      #     pip install --no-cache-dir -r ./requirements.txt
+      #     pip install --no-cache-dir -r ./tests/requirements.txt
 
       # - name: Install NPM and Yarn on Ubuntu
       #   if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye' || matrix.container == 'python:3.10-buster' || matrix.container == 'python:3.10-bullseye'
