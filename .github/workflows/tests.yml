@@ -23,7 +23,7 @@ name: tests
 on:
   pull_request:
   workflow_run:
-    workflows: [changelog, version]
+    workflows: [changelog]
     types: [completed]
 
 jobs:
@@ -62,236 +62,217 @@ jobs:
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-      
-      - name: Verifying git branch show-current
+
+      - name: Set up Python
+        if: matrix.os == 'macos-latest'
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Python dependencies
         run: |
-          echo deb "http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list
-          apt-get update
-          apt-get install -y git/buster-backports
+          pip install --no-cache-dir -r ./requirements.txt
+          pip install --no-cache-dir -r ./tests/requirements.txt
 
-      # - uses: dorny/paths-filter@v2
-      #   id: working-directory
-      #   with:
-      #     filters: |
-      #       sdk:
-      #       - 'covalent/**'
-      #       dispatcher:
-      #       - 'covalent_dispatcher/**'
-      #       ui_backend:
-      #       - 'covalent_ui/**'
-      #       ui_backend_tests:
-      #       - 'tests/covalent_ui_tests/**'
-            
-      # - name: Set up Python
-      #   if: matrix.os == 'macos-latest'
-      #   uses: actions/setup-python@v2
-      #   with:
-      #     python-version: ${{ matrix.python-version }}
+      - name: Install NPM and Yarn on Ubuntu
+        if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye' || matrix.container == 'python:3.10-buster' || matrix.container == 'python:3.10-bullseye'
+        run: |
+          apt-get update && apt-get install -y curl rsync
+          curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+          apt-get install -y nodejs
+          npm install -g yarn
 
-      # - name: Install Python dependencies
-      #   run: |
-      #     pip install --no-cache-dir -r ./requirements.txt
-      #     pip install --no-cache-dir -r ./tests/requirements.txt
+      - name: Install NPM and Yarn on CentOS
+        if: matrix.container.image == 'centos/python-38-centos7'
+        run: |
+          yum remove -y npm nodejs
+          curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
+          yum install -y npm nodejs
+          npm install -g yarn
 
-      # - name: Install NPM and Yarn on Ubuntu
-      #   if: matrix.container == 'python:3.8-buster' || matrix.container == 'python:3.8-bullseye' || matrix.container == 'python:3.9-buster' || matrix.container == 'python:3.9-bullseye' || matrix.container == 'python:3.10-buster' || matrix.container == 'python:3.10-bullseye'
-      #   run: |
-      #     apt-get update && apt-get install -y curl rsync
-      #     curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
-      #     apt-get install -y nodejs
-      #     npm install -g yarn
+      - name: Build webapp
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 2
+          command: |
+            cd ./covalent_ui/webapp
+            yarn install
+            yarn build
 
-  #     - name: Install NPM and Yarn on CentOS
-  #       if: matrix.container.image == 'centos/python-38-centos7'
-  #       run: |
-  #         yum remove -y npm nodejs
-  #         curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
-  #         yum install -y npm nodejs
-  #         npm install -g yarn
+      - name: Build distribution
+        run: python setup.py sdist
 
-  #     - name: Build webapp
-  #       uses: nick-fields/retry@v2
-  #       with:
-  #         timeout_minutes: 10
-  #         max_attempts: 2
-  #         command: |
-  #           cd ./covalent_ui/webapp
-  #           yarn install
-  #           yarn build
+      - name: Validate distribution
+        run: |
+          VERSION="$(cat ./VERSION)"
+          cd dist
+          tar xzf covalent-${VERSION}.tar.gz
+          diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
+          diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
+          diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
+          rm -rf covalent-${VERSION}/
 
-  #     - name: Build distribution
-  #       run: python setup.py sdist
+      - name: Install Covalent
+        run: pip install -e .
 
-  #     - name: Validate distribution
-  #       run: |
-  #         VERSION="$(cat ./VERSION)"
-  #         cd dist
-  #         tar xzf covalent-${VERSION}.tar.gz
-  #         diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
-  #         diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
-  #         diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
-  #         diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
-  #         rm -rf covalent-${VERSION}/
-
-  #     - name: Install Covalent
-  #       run: pip install -e .
-
-  #     - name: Start Covalent dispatcher server
-  #       run: covalent start --ignore-migrations
+      - name: Start Covalent dispatcher server
+        run: covalent start --ignore-migrations
                
-  #     - name: Run SDK tests and measure coverage
-  #       if: ${{ steps.working-directory.outputs.sdk}} == true
-  #       uses: nick-fields/retry@v2
-  #       with:
-  #         timeout_minutes: 15
-  #         max_attempts: 2
-  #         on_retry_command: rm -f ~/.config/covalent/covalent.conf
-  #         command: |
-  #           PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests  --cov=covalent --cov-config=.coveragerc
+      - name: Run SDK tests and measure coverage
+        if: ${{ steps.working-directory.outputs.sdk}} == true
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 15
+          max_attempts: 2
+          on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          command: |
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests  --cov=covalent --cov-config=.coveragerc
             
-  #     - name: Generate SDK coverage report
-  #       if: ${{ steps.working-directory.outputs.sdk}} == true
-  #       run: coverage xml -o sdk_coverage.xml
+      - name: Generate SDK coverage report
+        if: ${{ steps.working-directory.outputs.sdk}} == true
+        run: coverage xml -o sdk_coverage.xml
 
-  #     - name: Run dispatcher tests and measure coverage
-  #       if: ${{ steps.working-directory.outputs.dispatcher }} == true
-  #       uses: nick-fields/retry@v2
-  #       with:
-  #         timeout_minutes: 15
-  #         max_attempts: 2
-  #         on_retry_command: rm -f ~/.config/covalent/covalent.conf
-  #         command: |
-  #           PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_dispatcher_tests  --cov=covalent_dispatcher --cov-config=.coveragerc
+      - name: Run dispatcher tests and measure coverage
+        if: ${{ steps.working-directory.outputs.dispatcher }} == true
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 15
+          max_attempts: 2
+          on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          command: |
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_dispatcher_tests  --cov=covalent_dispatcher --cov-config=.coveragerc
       
-  #     - name: Generate dispatcher coverage report
-  #       if: ${{ steps.working-directory.outputs.dispatcher }} == true
-  #       run: coverage xml -o dispatcher_coverage.xml
+      - name: Generate dispatcher coverage report
+        if: ${{ steps.working-directory.outputs.dispatcher }} == true
+        run: coverage xml -o dispatcher_coverage.xml
 
-  #     - name: Run functional tests and measure coverage
-  #       uses: nick-fields/retry@v2
-  #       with:
-  #         timeout_minutes: 15
-  #         max_attempts: 2
-  #         on_retry_command: rm -f ~/.config/covalent/covalent.conf
-  #         command: |
-  #           PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+      - name: Run functional tests and measure coverage
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 15
+          max_attempts: 2
+          on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          command: |
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
       
-  #     - name: Generate functional test coverage report
-  #       run: coverage xml -o functional_tests_coverage.xml
+      - name: Generate functional test coverage report
+        run: coverage xml -o functional_tests_coverage.xml
 
-  #     - name: Run UI backend tests and measure coverage
-  #       id: ui_tests
-  #       if: ${{ steps.working-directory.outputs.ui_backend }} == true
-  #       uses: nick-fields/retry@v2
-  #       with:
-  #         timeout_minutes: 15
-  #         max_attempts: 2
-  #         on_retry_command: rm -f ~/.config/covalent/covalent.conf
-  #         continue_on_error: true
-  #         command: |
-  #           PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
+      - name: Run UI backend tests and measure coverage
+        id: ui_tests
+        if: ${{ steps.working-directory.outputs.ui_backend }} == true
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 15
+          max_attempts: 2
+          on_retry_command: rm -f ~/.config/covalent/covalent.conf
+          continue_on_error: true
+          command: |
+            PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
       
-  #     - name: Generate UI backend coverage report
-  #       continue-on-error: true
-  #       if: | 
-  #         ${{ steps.working-directory.outputs.ui_backend_tests }} == true && ${{ steps.working-directory.outputs.ui_backend }} == 'true' && 
-  #         ${{ steps.ui_tests.outputs.exit_code }} == 0
-  #       run: coverage xml -o ui_backend_coverage.xml
+      - name: Generate UI backend coverage report
+        continue-on-error: true
+        if: | 
+          ${{ steps.working-directory.outputs.ui_backend_tests }} == true && ${{ steps.working-directory.outputs.ui_backend }} == 'true' && 
+          ${{ steps.ui_tests.outputs.exit_code }} == 0
+        run: coverage xml -o ui_backend_coverage.xml
 
-  #     - name: Upload SDK report to Codecov
-  #       if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.sdk}} == true
-  #       uses: codecov/codecov-action@v3
-  #       with:
-  #         files: ./sdk_coverage.xml
-  #         flags: SDK
-  #         name: "SDK Unit Tests"
+      - name: Upload SDK report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.sdk}} == true
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./sdk_coverage.xml
+          flags: SDK
+          name: "SDK Unit Tests"
 
-  #     - name: Upload Dispatcher report to Codecov
-  #       if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.dispatcher }} == 'true'
-  #       uses: codecov/codecov-action@v3
-  #       with:
-  #         files: ./dispatcher_coverage.xml
-  #         flags: Dispatcher
-  #         name: "Dispatcher Unit Tests"
+      - name: Upload Dispatcher report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && ${{ steps.working-directory.outputs.dispatcher }} == 'true'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./dispatcher_coverage.xml
+          flags: Dispatcher
+          name: "Dispatcher Unit Tests"
 
-  #     - name: Upload Functional report to Codecov
-  #       if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-  #       uses: codecov/codecov-action@v3
-  #       with:
-  #         files: ./functional_tests_coverage.xml
-  #         flags: Functional_Tests
-  #         name: "Functional Tests"
+      - name: Upload Functional report to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./functional_tests_coverage.xml
+          flags: Functional_Tests
+          name: "Functional Tests"
 
-  #     - name: Upload UI backend report to Codecov
-  #       if: |
-  #         matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && 
-  #         ${{ steps.working-directory.outputs.ui_backend}} == true &&
-  #         ${{ steps.ui_tests.outputs.exit_code }} == 0
-  #       uses: codecov/codecov-action@v3
-  #       with:
-  #         files: ./ui_backend_coverage.xml
-  #         flags: UI_Backend
-  #         name: "UI Backend Unit Tests"
+      - name: Upload UI backend report to Codecov
+        if: |
+          matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && 
+          ${{ steps.working-directory.outputs.ui_backend}} == true &&
+          ${{ steps.ui_tests.outputs.exit_code }} == 0
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./ui_backend_coverage.xml
+          flags: UI_Backend
+          name: "UI Backend Unit Tests"
 
-  #     - name: Get latest release
-  #       uses: actions-ecosystem/action-get-latest-tag@v1
-  #       id: get-latest-tag
-  #       if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-  #       with:
-  #         semver_only: true
+      - name: Get latest release
+        uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        with:
+          semver_only: true
 
-  #     - name: Push to master
-  #       id: push
-  #       if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-  #       run: |
-  #         MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
-  #         VERSION="$(cat ./VERSION)"
-  #         release=false
-  #         if [ "$MASTER_VERSION" = "$VERSION" ] ; then
-  #           echo "$VERSION has been previously released."
-  #         elif dpkg --compare-versions $VERSION 'gt' '0.71.0' ; then
-  #           git config user.name "CovalentOpsBot"
-  #           git config user.email "covalentopsbot@users.noreply.github.com"
-  #           git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
-  #           git push origin HEAD:master
-  #           release=true
-  #         else
-  #           echo "We cannot release versions less than 0.71.0."
-  #         fi
-  #         echo "RELEASE=$release" >> $GITHUB_ENV
-  #         echo "::set-output name=release::$release"
+      - name: Push to master
+        id: push
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        run: |
+          MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
+          VERSION="$(cat ./VERSION)"
+          release=false
+          if [ "$MASTER_VERSION" = "$VERSION" ] ; then
+            echo "$VERSION has been previously released."
+          elif dpkg --compare-versions $VERSION 'gt' '0.71.0' ; then
+            git config user.name "CovalentOpsBot"
+            git config user.email "covalentopsbot@users.noreply.github.com"
+            git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
+            git push origin HEAD:master
+            release=true
+          else
+            echo "We cannot release versions less than 0.71.0."
+          fi
+          echo "RELEASE=$release" >> $GITHUB_ENV
+          echo "::set-output name=release::$release"
 
-  #     - name: Format Slack message
-  #       if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
-  #       run: |
-  #         VERSION="$(cat ./VERSION)"
-  #         SLACK_MSG=":rocket: Version $VERSION is now available."
-  #         echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
+      - name: Format Slack message
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster'
+        run: |
+          VERSION="$(cat ./VERSION)"
+          SLACK_MSG=":rocket: Version $VERSION is now available."
+          echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
 
-  #     - name: Notify Slack
-  #       if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && env.RELEASE == 'true'
-  #       uses: rtCamp/action-slack-notify@v2
-  #       env:
-  #         SLACK_CHANNEL: "covalent-ci"
-  #         SLACK_USERNAME: "CovalentOpsBot"
-  #         SLACK_MESSAGE: ${{ env.SLACK_MSG }}
-  #         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      - name: Notify Slack
+        if: github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.container == 'python:3.8-buster' && env.RELEASE == 'true'
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "covalent-ci"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: ${{ env.SLACK_MSG }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
 
-  #     - name: Alert Slack
-  #       if: github.ref == 'ref/heads/develop' && failure()
-  #       uses: rtCamp/action-slack-notify@v2
-  #       env:
-  #         SLACK_CHANNEL: "covalent"
-  #         SLACK_USERNAME: "CovalentOpsBot"
-  #         SLACK_MESSAGE: "The tests.yml workflow is failing in develop!"
-  #         SLACK_COLOR: ${{ job.status }}
-  #         SLACK_TITLE: ":warning:  Attention Required  :warning:"
-  #         SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+      - name: Alert Slack
+        if: github.ref == 'ref/heads/develop' && failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "covalent"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: "The tests.yml workflow is failing in develop!"
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ":warning:  Attention Required  :warning:"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
 
-  # release:
-  #   needs: tests
-  #   if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
-  #   uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
-  #   secrets: inherit
-  #   with:
-  #     prerelease: true
+  release:
+    needs: tests
+    if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
+    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
+    secrets: inherit
+    with:
+      prerelease: true
