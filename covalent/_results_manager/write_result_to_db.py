@@ -36,6 +36,7 @@ from covalent._data_store.datastore import DataStore, workflow_db
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._shared_files.util_classes import RESULT_STATUS
 
+from .._shared_files import logger
 from .._shared_files.defaults import (
     arg_prefix,
     attr_prefix,
@@ -70,6 +71,9 @@ ELECTRON_DEPS_FILENAME = "deps.pkl"
 ELECTRON_CALL_BEFORE_FILENAME = "call_before.pkl"
 ELECTRON_CALL_AFTER_FILENAME = "call_after.pkl"
 ELECTRON_STORAGE_TYPE = "local"
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 
 class MissingLatticeRecordError(Exception):
@@ -143,6 +147,7 @@ def insert_lattices_data(
     completed_at: dt,
 ) -> int:
     """This funtion writes the lattice data / metadata to the Lattices table in the DB."""
+    app_log.debug("insert_lattices_data")
 
     lattice_row = Lattice(
         dispatch_id=dispatch_id,
@@ -165,12 +170,15 @@ def insert_lattices_data(
         started_at=started_at,
         completed_at=completed_at,
     )
+    app_log.debug("lattice_row")
+    app_log.debug(lattice_row)
 
     with workflow_db.session() as session:
         session.add(lattice_row)
         lattice_id = lattice_row.id
         session.commit()
 
+    app_log.debug(f"returning lattice id {lattice_id}")
     return lattice_id
 
 
@@ -292,6 +300,7 @@ def insert_electron_dependency_data(dispatch_id: str, lattice: "Lattice"):
 
 def update_lattices_data(dispatch_id: str, **kwargs) -> None:
     """This function updates the lattices record."""
+    app_log.debug("update_lattices_data")
 
     with workflow_db.session() as session:
         valid_update = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()

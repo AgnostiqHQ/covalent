@@ -653,12 +653,13 @@ Node Outputs
 
     def _initialize_results_dir(self):
         """Create the results directory."""
-
+        app_log.debug("_initialize_results_dir")
         result_folder_path = os.path.join(self.results_dir, f"{self.dispatch_id}")
         Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
     def upsert_lattice_data(self):
         """Update lattice data"""
+        app_log.debug("upsert_lattice_data")
 
         with workflow_db.session() as session:
             lattice_exists = (
@@ -724,11 +725,12 @@ Node Outputs
 
     def upsert_electron_data(self):
         """Update electron data"""
+        app_log.debug("upsert_electron_data")
 
         tg = self.lattice.transport_graph
         dirty_nodes = set(tg.dirty_nodes)
         tg.dirty_nodes.clear()  # Ensure that dirty nodes list is reset once the data is updated
-
+        app_log.debgu("upsert_electron_data session begin")
         with workflow_db.session() as session:
             for node_id in dirty_nodes:
 
@@ -873,12 +875,15 @@ Node Outputs
     def persist(self) -> None:
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
+        app_log.debug("persist")
 
         self._initialize_results_dir()
-
+        app_log.debug("upsert start")
         self.upsert_lattice_data()
         self.upsert_electron_data()
+        app_log.debug("upsert complete")
         self.insert_electron_dependency_data()
+        app_log.debug("persis complete")
 
     def _convert_to_electron_result(self) -> Any:
         """
