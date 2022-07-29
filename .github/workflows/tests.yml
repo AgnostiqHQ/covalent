@@ -65,8 +65,9 @@ jobs:
       
       - name: Verifying git branch show-current
         run: |
-          apt update
-          apt install -y git/buster-backports
+          echo deb "http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list
+          apt-get update
+          apt-get install -y git/buster-backports
 
       # - uses: dorny/paths-filter@v2
       #   id: working-directory
