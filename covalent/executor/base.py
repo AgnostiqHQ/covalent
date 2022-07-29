@@ -188,6 +188,11 @@ class BaseExecutor(_AbstractBaseExecutor):
         self.cache_dir = cache_dir
         self.current_env_on_conda_fail = current_env_on_conda_fail
         self.current_env = ""
+        self.instance_id = id(self)
+
+        # Maybe better to make setup() idempotent
+        self.warmed_up = False
+        self.tasks_left = 1
 
     def write_streams_to_file(
         self,
@@ -220,6 +225,12 @@ class BaseExecutor(_AbstractBaseExecutor):
                 with open(filepath, "a") as f:
                     f.write(ss)
 
+    def setup(self):
+        pass
+
+    def cleanup(self):
+        pass
+
     def execute(
         self,
         function: Callable,
@@ -247,6 +258,10 @@ class BaseExecutor(_AbstractBaseExecutor):
         Returns:
             output: The result of the function execution.
         """
+
+        if not self.warmed_up:
+            self.setup()
+            self.warmed_up = True
 
         dispatch_info = DispatchInfo(dispatch_id)
         fn_version = function.args[0].python_version
@@ -283,6 +298,11 @@ class BaseExecutor(_AbstractBaseExecutor):
             dispatch_id,
             results_dir,
         )
+
+        self.tasks_left -= 1
+
+        if self.tasks_left < 1:
+            self.cleanup()
 
         return (result, stdout.getvalue(), stderr.getvalue())
 
@@ -541,6 +561,12 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
                 async with aiofiles.open(filepath, "a") as f:
                     await f.write(ss)
 
+    async def setup(self):
+        pass
+
+    async def cleanup(self):
+        pass
+                    
     async def execute(
         self,
         function: Callable,
@@ -557,6 +583,10 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
+        if not self.warmed_up:
+            await self.setup()
+            self.warmed_up = True
+
         with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
             result = await self.run(function, args, kwargs, task_metadata)
 
@@ -566,6 +596,11 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
             dispatch_id,
             results_dir,
         )
+
+        self.tasks_left -= 1
+
+        if self.tasks_left < 1:
+            await self.cleanup()
 
         return (result, stdout.getvalue(), stderr.getvalue())
 

@@ -68,6 +68,12 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
+class ExecutorCache:
+    def __init__(self):
+        self.id_instance_map = {}
+        self.tasks_per_instance = {}
+
+
 # This is to be run out-of-process
 def _dispatch(fn, *args, **kwargs):
     return dispatch(fn)(*args, **kwargs)
@@ -205,6 +211,7 @@ async def _dispatch_sublattice(
     serialized_callable: Any,
     tasks_pool: ThreadPoolExecutor,
     workflow_executor: Any,
+    executor_cache: ExecutorCache,
 ) -> str:
     """Dispatch a sublattice using the workflow_executor."""
 
@@ -225,6 +232,9 @@ async def _dispatch_sublattice(
     # Dispatch the sublattice workflow. This must be run
     # externally since it involves deserializing the
     # sublattice workflow function.
+
+    # increment the task count b/c this is an "un-planned" task (not
+    # visible in the initial transport graph)
     fut = asyncio.create_task(
         _run_task(
             node_id=-1,
@@ -238,6 +248,8 @@ async def _dispatch_sublattice(
             inputs=sub_dispatch_inputs,
             tasks_pool=tasks_pool,
             workflow_executor=workflow_executor,
+            executor_cache=executor_cache,
+            increment_task_count=True,
         )
     )
 
@@ -257,6 +269,8 @@ async def _run_task(
     node_name: str,
     tasks_pool: ThreadPoolExecutor,
     workflow_executor: Any,
+    executor_cache: ExecutorCache,
+    increment_task_count: bool,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -279,11 +293,28 @@ async def _run_task(
     try:
         short_name, object_dict = selected_executor
 
+        if object_dict:
+            # Try hitting the cache
+            executor_id = object_dict["attributes"]["instance_id"]
+
+            executor = executor_cache.id_instance_map[executor_id]
+            if increment_task_count:
+                executor.tasks_left += 1
+        else:
+            # Short name was specified instead of an instance
+            executor_id = 0
+            executor = None
+
         app_log.debug(f"Running task {node_name} using executor {short_name}, {object_dict}")
 
-        # the executor is determined during scheduling and provided in the execution metadata
-        executor = _executor_manager.get_executor(short_name)
-        executor.from_dict(object_dict)
+        # Construct and cache a new executor instance
+        if not executor:
+            executor = _executor_manager.get_executor(short_name)
+            executor.from_dict(object_dict)
+        if executor_id > 0:
+            executor_cache.id_instance_map[executor_id] = executor
+            executor.tasks_left = executor_cache.tasks_per_instance[executor_id]
+
     except Exception as ex:
         app_log.debug(f"Exception when trying to determine executor: {ex}")
         raise ex
@@ -299,6 +330,7 @@ async def _run_task(
                 serialized_callable=serialized_callable,
                 tasks_pool=tasks_pool,
                 workflow_executor=workflow_executor,
+                executor_cache=executor_cache,
             )
 
             app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
@@ -614,6 +646,34 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
 
     app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
 
+    # Tabulate number of tasks assigned to each executor instance
+    exec_cache = ExecutorCache()
+    g = result_object.lattice.transport_graph
+
+    for node in g._graph.nodes:
+        executor_data = g.get_node_value(node, "metadata")["executor_data"]
+
+        # User specified short name only, not an object instance
+        if not executor_data:
+            continue
+
+        executor_id = executor_data["attributes"]["instance_id"]
+        exec_cache.id_instance_map[executor_id] = None
+        if executor_id not in exec_cache.tasks_per_instance:
+            exec_cache.tasks_per_instance[executor_id] = 1
+        else:
+            exec_cache.tasks_per_instance[executor_id] += 1
+
+    # Do the same for postprocessing (if postprocessing is still around:) )
+    executor_data = result_object.lattice.get_metadata("workflow_executor_data")
+    if executor_data:
+        executor_id = executor_data["attributes"]["instance_id"]
+        exec_cache.id_instance_map[executor_id] = None
+        if executor_id not in exec_cache.tasks_per_instance:
+            exec_cache.tasks_per_instance[executor_id] = 1
+        else:
+            exec_cache.tasks_per_instance[executor_id] += 1
+
     tasks_queue = Queue()
     pending_deps = {}
     lock = Lock()
@@ -729,6 +789,8 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
             inputs=task_input,
             tasks_pool=thread_pool,
             workflow_executor=post_processor,
+            executor_cache=exec_cache,
+            increment_task_count=False,
         )
 
         # Add the task generated for the node to the list of tasks

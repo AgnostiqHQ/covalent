@@ -37,6 +37,7 @@ from covalent._data_store.datastore import DataStore
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
+    ExecutorCache,
     _gather_deps,
     _get_task_inputs,
     _handle_cancelled_node,
