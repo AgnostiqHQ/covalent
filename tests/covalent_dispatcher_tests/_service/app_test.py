@@ -29,7 +29,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from covalent._data_store import models
-from covalent._data_store.datastore import DataStore, DataStoreNotInitializedError
+from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Lattice
 from covalent._results_manager.result import Result
 from covalent_dispatcher._db.dispatchdb import DispatchDB
