@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
-- paths-filter will only be run on PRs, i.e on workflow runs, the whole test suite will be run.
+- `paths-filter` will only be run on PRs, i.e on workflow runs, the whole test suite will be run.
+- Removed retry action from running on `pytest` steps since they instead use `pytest` retries.
 
 ## [0.157.1] - 2022-07-29
 
