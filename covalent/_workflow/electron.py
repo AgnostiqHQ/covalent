@@ -468,10 +468,13 @@ class Electron:
             elif isinstance(collection, dict):
                 return TransportableObject.deserialize_dict(collection)
 
+        new_metadata=_DEFAULT_CONSTRAINT_VALUES.copy()
+        # new_metadata["executor"]=self.metadata["executor"]
+
         node_id = graph.add_node(
             name=prefix,
             function=to_decoded_electron_collection,
-            metadata=self.metadata.copy(),
+            metadata=new_metadata,
             function_string=get_serialized_function_str(to_decoded_electron_collection),
         )
 
