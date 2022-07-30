@@ -73,6 +73,15 @@ class ExecutorCache:
         self.id_instance_map = {}
         self.tasks_per_instance = {}
 
+    async def finalize_executors(self):
+        """Clean up any executors still running"""
+        for key, executor in self.id_instance_map.items():
+            if isinstance(executor, BaseAsyncExecutor):
+                await executor.cleanup()
+            else:
+                loop = asyncio.get_running_loop()
+                await loop.run_in_executor(None, executor.cleanup)
+
 
 # This is to be run out-of-process
 def _dispatch(fn, *args, **kwargs):
@@ -823,6 +832,10 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
 
     if result_object._status in [Result.FAILED, Result.CANCELLED]:
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
+
+        # Clean up any reserved resources
+        await exec_cache.finalize_executors()
+
         return result_object
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
