@@ -298,8 +298,6 @@ async def _run_task(
             executor_id = object_dict["attributes"]["instance_id"]
 
             executor = executor_cache.id_instance_map[executor_id]
-            if increment_task_count:
-                executor.tasks_left += 1
         else:
             # Short name was specified instead of an instance
             executor_id = 0
@@ -307,13 +305,19 @@ async def _run_task(
 
         app_log.debug(f"Running task {node_name} using executor {short_name}, {object_dict}")
 
-        # Construct and cache a new executor instance
+        # Cache miss: construct a new executor instance
         if not executor:
             executor = _executor_manager.get_executor(short_name)
             executor.from_dict(object_dict)
-        if executor_id > 0:
-            executor_cache.id_instance_map[executor_id] = executor
-            executor.tasks_left = executor_cache.tasks_per_instance[executor_id]
+
+            # cache the instance if an instance was specified during
+            # workflow construction
+            if executor_id > 0:
+                executor_cache.id_instance_map[executor_id] = executor
+                executor.tasks_left = executor_cache.tasks_per_instance[executor_id]
+
+        if increment_task_count:
+            executor.tasks_left += 1
 
     except Exception as ex:
         app_log.debug(f"Exception when trying to determine executor: {ex}")
@@ -655,6 +659,11 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
     g = result_object.lattice.transport_graph
 
     for node in g._graph.nodes:
+        node_name = result_object.lattice.transport_graph.get_node_value(node, "name")
+
+        # Skip parameter nodes
+        if node_name.startswith(parameter_prefix):
+            continue
         executor_data = g.get_node_value(node, "metadata")["executor_data"]
 
         # User specified short name only, not an object instance

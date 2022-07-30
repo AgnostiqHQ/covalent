@@ -290,7 +290,18 @@ class BaseExecutor(_AbstractBaseExecutor):
                 )
 
             else:
-                result = self.run(function, args, kwargs, task_metadata)
+                try:
+                    result = self.run(function, args, kwargs, task_metadata)
+
+                    self.tasks_left -= 1
+                    if self.tasks_left < 1:
+                        self.cleanup()
+                except Exception as ex:
+                    self.tasks_left -= 1
+                    if self.tasks_left < 1:
+                        self.cleanup()
+
+                    raise ex
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
@@ -298,11 +309,6 @@ class BaseExecutor(_AbstractBaseExecutor):
             dispatch_id,
             results_dir,
         )
-
-        self.tasks_left -= 1
-
-        if self.tasks_left < 1:
-            self.cleanup()
 
         return (result, stdout.getvalue(), stderr.getvalue())
 
@@ -587,8 +593,21 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
             await self.setup()
             self.warmed_up = True
 
-        with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
-            result = await self.run(function, args, kwargs, task_metadata)
+        try:
+            with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(
+                io.StringIO()
+            ) as stderr:
+                result = await self.run(function, args, kwargs, task_metadata)
+
+            self.tasks_left -= 1
+            if self.tasks_left < 1:
+                await self.cleanup()
+        except Exception as ex:
+            # Don't forget to cleanup even if run() raises an exception
+            self.tasks_left -= 1
+            if self.tasks_left < 1:
+                await self.cleanup()
+            raise ex
 
         await self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
@@ -596,11 +615,6 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
             dispatch_id,
             results_dir,
         )
-
-        self.tasks_left -= 1
-
-        if self.tasks_left < 1:
-            await self.cleanup()
 
         return (result, stdout.getvalue(), stderr.getvalue())
 
