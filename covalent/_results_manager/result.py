@@ -34,27 +34,6 @@ from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.transport import TransportableObject
 from .write_result_to_db import (
-    ELECTRON_CALL_AFTER_FILENAME,
-    ELECTRON_CALL_BEFORE_FILENAME,
-    ELECTRON_DEPS_FILENAME,
-    ELECTRON_EXECUTOR_FILENAME,
-    ELECTRON_FUNCTION_FILENAME,
-    ELECTRON_FUNCTION_STRING_FILENAME,
-    ELECTRON_INFO_FILENAME,
-    ELECTRON_KEY_FILENAME,
-    ELECTRON_RESULTS_FILENAME,
-    ELECTRON_STDERR_FILENAME,
-    ELECTRON_STDOUT_FILENAME,
-    ELECTRON_STORAGE_TYPE,
-    ELECTRON_VALUE_FILENAME,
-    LATTICE_ERROR_FILENAME,
-    LATTICE_EXECUTOR_FILENAME,
-    LATTICE_FUNCTION_FILENAME,
-    LATTICE_FUNCTION_STRING_FILENAME,
-    LATTICE_INPUTS_FILENAME,
-    LATTICE_RESULTS_FILENAME,
-    LATTICE_STORAGE_TYPE,
-    LATTICE_TRANSPORT_GRAPH_FILENAME,
     get_electron_type,
     insert_electron_dependency_data,
     insert_electrons_data,
@@ -72,6 +51,29 @@ if TYPE_CHECKING:
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+LATTICE_FUNCTION_FILENAME = "function.pkl"
+LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
+LATTICE_EXECUTOR_FILENAME = "executor.pkl"
+LATTICE_ERROR_FILENAME = "error.log"
+LATTICE_INPUTS_FILENAME = "inputs.pkl"
+LATTICE_RESULTS_FILENAME = "results.pkl"
+LATTICE_TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
+LATTICE_STORAGE_TYPE = "local"
+
+ELECTRON_FUNCTION_FILENAME = "function.pkl"
+ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
+ELECTRON_KEY_FILENAME = "key.pkl"
+ELECTRON_VALUE_FILENAME = "value.pkl"
+ELECTRON_EXECUTOR_FILENAME = "executor.pkl"
+ELECTRON_STDOUT_FILENAME = "stdout.log"
+ELECTRON_STDERR_FILENAME = "stderr.log"
+ELECTRON_INFO_FILENAME = "info.log"
+ELECTRON_RESULTS_FILENAME = "results.pkl"
+ELECTRON_DEPS_FILENAME = "deps.pkl"
+ELECTRON_CALL_BEFORE_FILENAME = "call_before.pkl"
+ELECTRON_CALL_AFTER_FILENAME = "call_after.pkl"
+ELECTRON_STORAGE_TYPE = "local"
 
 
 class Result:
@@ -653,13 +655,12 @@ Node Outputs
 
     def _initialize_results_dir(self):
         """Create the results directory."""
-        app_log.debug("_initialize_results_dir")
+
         result_folder_path = os.path.join(self.results_dir, f"{self.dispatch_id}")
         Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
     def upsert_lattice_data(self):
         """Update lattice data"""
-        app_log.debug("upsert_lattice_data")
 
         with workflow_db.session() as session:
             lattice_exists = (
@@ -725,7 +726,6 @@ Node Outputs
 
     def upsert_electron_data(self):
         """Update electron data"""
-        app_log.debug("upsert_electron_data")
 
         tg = self.lattice.transport_graph
         dirty_nodes = set(tg.dirty_nodes)
@@ -876,7 +876,6 @@ Node Outputs
     def persist(self) -> None:
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
-        app_log.debug("persist")
 
         self._initialize_results_dir()
         app_log.debug("upsert start")
