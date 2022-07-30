@@ -143,13 +143,13 @@ jobs:
       - name: Run SDK tests and measure coverage
         if: >
           github.event_name != 'pull_request'
-          || ${{ steps.working-directory.outputs.sdk }} == 'true'
+          || steps.working-directory.outputs.sdk == 'true'
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
             
       - name: Generate SDK coverage report
         if: >
           github.event_name != 'pull_request'
-          || ${{ steps.working-directory.outputs.sdk }} == 'true'
+          || steps.working-directory.outputs.sdk == 'true'
         run: coverage xml -o sdk_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
