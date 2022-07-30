@@ -12,6 +12,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `paths-filter` will only be run on PRs, i.e on workflow runs, the whole test suite will be run.
 - Removed retry action from running on `pytest` steps since they instead use `pytest` retries.
 
+## [0.158.0] - 2022-07-29
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- Construct the result object in the dispatcher `entry_point.py` module in order to avoid the Missing Latticed Id error so frequently.
+- Update the sleep statement length to 0.1 seconds in the results.manager.
+
 ## [0.157.1] - 2022-07-29
 
 ### Authors
@@ -46,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Updated the RTD on `wait_for()` to use the static `wait()` function
+
 ### Operations
 
 - pre-commit autoupdate

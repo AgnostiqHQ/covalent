@@ -45,6 +45,7 @@ from covalent_dispatcher._core.execution import (
     _initialize_deps_and_queue,
     _plan_workflow,
     _post_process,
+    _postprocess_workflow,
     _run_planned_workflow,
     _run_task,
     _update_node_result,
@@ -616,13 +617,22 @@ def test_run_workflow_with_failing_nonleaf(mocker):
 
     from concurrent.futures import ThreadPoolExecutor
 
+    from covalent._workflow.lattice import Lattice
+    from covalent_dispatcher._db.dispatchdb import DispatchDB
+
     workflow.build_graph(5)
 
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
     tasks_pool = ThreadPoolExecutor()
+    lattice = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lattice, lattice.metadata["results_dir"])
+    result_object._dispatch_id = dispatch_id
+    result_object._initialize_nodes()
 
-    result_object = run_workflow(dispatch_id, json_lattice, tasks_pool)
+    DispatchDB().save_db(result_object)
+
+    result_object = run_workflow(result_object, tasks_pool)
 
     assert result_object.status == Result.FAILED
 
@@ -642,13 +652,22 @@ def test_run_workflow_with_failing_leaf(mocker):
 
     from concurrent.futures import ThreadPoolExecutor
 
+    from covalent._workflow.lattice import Lattice
+    from covalent_dispatcher._db.dispatchdb import DispatchDB
+
     workflow.build_graph(5)
 
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
     tasks_pool = ThreadPoolExecutor()
+    lattice = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lattice, lattice.metadata["results_dir"])
+    result_object._dispatch_id = dispatch_id
+    result_object._initialize_nodes()
 
-    result_object = run_workflow(dispatch_id, json_lattice, tasks_pool)
+    DispatchDB().save_db(result_object)
+
+    result_object = run_workflow(result_object, tasks_pool)
 
     assert result_object.status == Result.FAILED
 
@@ -656,6 +675,11 @@ def test_run_workflow_with_failing_leaf(mocker):
 def test_run_workflow_does_not_deserialize(mocker):
     """Check that dispatcher does not deserialize user data when using
     out-of-process `workflow_executor`"""
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    from covalent._workflow.lattice import Lattice
+    from covalent_dispatcher._db.dispatchdb import DispatchDB
 
     @ct.electron(executor="dask")
     def task(x):
@@ -668,17 +692,76 @@ def test_run_workflow_does_not_deserialize(mocker):
         res1 = ct.electron(sublattice_task(x), executor="dask")
         return res1
 
-    from concurrent.futures import ThreadPoolExecutor
-
     workflow.build_graph(5)
 
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
     tasks_pool = ThreadPoolExecutor()
+    lattice = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lattice, lattice.metadata["results_dir"])
+    result_object._dispatch_id = dispatch_id
+    result_object._initialize_nodes()
+
+    DispatchDB().save_db(result_object)
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
 
-    result_object = run_workflow(dispatch_id, json_lattice, tasks_pool)
+    result_object = run_workflow(result_object, tasks_pool)
 
     mock_to_deserialize.assert_not_called()
     assert result_object.status == Result.COMPLETED
+
+
+def test_run_workflow_with_client_side_postprocess():
+    """Check that run_workflow handles "client" workflow_executor for
+    postprocessing"""
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    from covalent._workflow.lattice import Lattice
+    from covalent_dispatcher._db.dispatchdb import DispatchDB
+
+    dispatch_id = "asdf"
+    tasks_pool = ThreadPoolExecutor()
+    result_object = get_mock_result()
+    result_object.lattice.set_metadata("workflow_executor", "client")
+    result_object._dispatch_id = dispatch_id
+    result_object._initialize_nodes()
+
+    DispatchDB().save_db(result_object)
+
+    result_object = run_workflow(result_object, tasks_pool)
+    assert result_object.status == Result.PENDING_POSTPROCESSING
+
+
+def test_run_workflow_with_failed_postprocess():
+    """Check that run_workflow handles postprocessing failures"""
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    from covalent._workflow.lattice import Lattice
+    from covalent_dispatcher._db.dispatchdb import DispatchDB
+
+    dispatch_id = "asdf"
+    tasks_pool = ThreadPoolExecutor()
+    result_object = get_mock_result()
+    result_object._dispatch_id = dispatch_id
+    result_object._initialize_nodes()
+
+    DispatchDB().save_db(result_object)
+
+    def failing_workflow(x):
+        assert False
+        return 1
+
+    result_object.lattice.set_metadata("workflow_executor", "bogus")
+    result_object = run_workflow(result_object, tasks_pool)
+
+    assert result_object.status == Result.POSTPROCESSING_FAILED
+
+    result_object.lattice.workflow_function = ct.TransportableObject(failing_workflow)
+    result_object.lattice.set_metadata("workflow_executor", "dask")
+
+    result_object = run_workflow(result_object, tasks_pool)
+
+    assert result_object.status == Result.POSTPROCESSING_FAILED
