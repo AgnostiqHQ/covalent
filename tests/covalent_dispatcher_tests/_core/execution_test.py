@@ -251,7 +251,7 @@ def test_result_post_process():
 
     res._status = Result.PENDING_POSTPROCESSING
     res._dispatch_id = "MOCK"
-    res.persist(initialize_db=True)
+    res.persist()
     execution_result = res.post_process()
 
     assert execution_result == compute_energy()
@@ -618,7 +618,6 @@ def test_run_workflow_with_failing_nonleaf(mocker):
     from concurrent.futures import ThreadPoolExecutor
 
     from covalent._workflow.lattice import Lattice
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
 
     workflow.build_graph(5)
 
@@ -629,9 +628,7 @@ def test_run_workflow_with_failing_nonleaf(mocker):
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
-
-    DispatchDB().save_db(result_object)
-
+    result_object.persist()
     result_object = run_workflow(result_object, tasks_pool)
 
     assert result_object.status == Result.FAILED
@@ -653,7 +650,6 @@ def test_run_workflow_with_failing_leaf(mocker):
     from concurrent.futures import ThreadPoolExecutor
 
     from covalent._workflow.lattice import Lattice
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
 
     workflow.build_graph(5)
 
@@ -665,7 +661,7 @@ def test_run_workflow_with_failing_leaf(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    DispatchDB().save_db(result_object)
+    result_object.persist()
 
     result_object = run_workflow(result_object, tasks_pool)
 
@@ -679,7 +675,6 @@ def test_run_workflow_does_not_deserialize(mocker):
     from concurrent.futures import ThreadPoolExecutor
 
     from covalent._workflow.lattice import Lattice
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
 
     @ct.electron(executor="dask")
     def task(x):
@@ -702,7 +697,7 @@ def test_run_workflow_does_not_deserialize(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    DispatchDB().save_db(result_object)
+    result_object.persist()
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
 
@@ -718,9 +713,6 @@ def test_run_workflow_with_client_side_postprocess():
 
     from concurrent.futures import ThreadPoolExecutor
 
-    from covalent._workflow.lattice import Lattice
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
-
     dispatch_id = "asdf"
     tasks_pool = ThreadPoolExecutor()
     result_object = get_mock_result()
@@ -728,7 +720,7 @@ def test_run_workflow_with_client_side_postprocess():
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    DispatchDB().save_db(result_object)
+    result_object.persist()
 
     result_object = run_workflow(result_object, tasks_pool)
     assert result_object.status == Result.PENDING_POSTPROCESSING
@@ -739,16 +731,13 @@ def test_run_workflow_with_failed_postprocess():
 
     from concurrent.futures import ThreadPoolExecutor
 
-    from covalent._workflow.lattice import Lattice
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
-
     dispatch_id = "asdf"
     tasks_pool = ThreadPoolExecutor()
     result_object = get_mock_result()
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    DispatchDB().save_db(result_object)
+    result_object.persist()
 
     def failing_workflow(x):
         assert False

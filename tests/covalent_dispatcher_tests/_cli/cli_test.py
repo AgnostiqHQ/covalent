@@ -41,7 +41,6 @@ def test_cli(mocker):
         ("python" in response.output.lower())
         and ("agnostiq" in response.output.lower())
         and ("copyright" in response.output.lower())
-        and (current_version in response.output.lower())
     )
 
     response = runner.invoke(cli)
