@@ -56,6 +56,13 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
+    def setup(self):
+        app_log.debug(f"Local executor {self.instance_id}: provisioning resources")
+
+    def cleanup(self):
+        app_log.debug(f"Local executor {self.instance_id}: relinquishing resources")
+
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
+        app_log.debug(f"Local executor {self.instance_id}: {self.tasks_left} tasks left")
         app_log.debug(f"Running function {function} locally")
         return function(*args, **kwargs)
