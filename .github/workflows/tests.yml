@@ -143,25 +143,25 @@ jobs:
       - name: Run SDK tests and measure coverage
         if: >
           github.event_name != 'pull_request'
-          || ${{ steps.working-directory.outputs.sdk }}
+          || ${{ steps.working-directory.outputs.sdk }} == 'true'
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
             
       - name: Generate SDK coverage report
         if: >
           github.event_name != 'pull_request'
-          || ${{ steps.working-directory.outputs.sdk }}
+          || ${{ steps.working-directory.outputs.sdk }} == 'true'
         run: coverage xml -o sdk_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
         if: >
           github.event_name != 'pull_request'
-          || ${{ steps.working-directory.outputs.dispatcher }}
+          || ${{ steps.working-directory.outputs.dispatcher }} == 'true'
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
       
       - name: Generate dispatcher coverage report
         if: >
           github.event_name != 'pull_request'
-          || ${{ steps.working-directory.outputs.dispatcher }}
+          || ${{ steps.working-directory.outputs.dispatcher }} == 'true'
         run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
@@ -173,19 +173,17 @@ jobs:
       - name: Run UI backend tests and measure coverage
         id: ui_tests
         if: >
-          'false'
-          && (github.event_name != 'pull_request'
-          || ${{ steps.working-directory.outputs.ui_backend }})
+          github.event_name != 'pull_request'
+          || ${{ steps.working-directory.outputs.ui_backend }} == 'true'
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
       
       - name: Generate UI backend coverage report
         continue-on-error: true
         if: > 
-          'false'
-          && (github.event_name != 'pull_request'
-          || (${{ steps.working-directory.outputs.ui_backend_tests }}
-              && ${{ steps.working-directory.outputs.ui_backend }}
-              && ${{ steps.ui_tests.outputs.exit_code }} == 0))
+          github.event_name != 'pull_request'
+          || (${{ steps.working-directory.outputs.ui_backend_tests }} == 'true'
+              && ${{ steps.working-directory.outputs.ui_backend }} == 'true'
+              && ${{ steps.ui_tests.outputs.exit_code }} == 0)
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
@@ -193,7 +191,7 @@ jobs:
           matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
           && (github.event_name != 'pull_request'
-              || ${{ steps.working-directory.outputs.sdk}})
+              || ${{ steps.working-directory.outputs.sdk }} == 'true')
         uses: codecov/codecov-action@v3
         with:
           files: ./sdk_coverage.xml
@@ -205,7 +203,7 @@ jobs:
           matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
           && (github.event_name != 'pull_request'
-              || ${{ steps.working-directory.outputs.dispatcher }})
+              || ${{ steps.working-directory.outputs.dispatcher }} == 'true')
         uses: codecov/codecov-action@v3
         with:
           files: ./dispatcher_coverage.xml
@@ -228,7 +226,7 @@ jobs:
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
           && (github.event_name != 'pull_request'
-              || (${{ steps.working-directory.outputs.ui_backend}}
+              || (${{ steps.working-directory.outputs.ui_backend }} == 'true'
                   && ${{ steps.ui_tests.outputs.exit_code }} == 0))
         uses: codecov/codecov-action@v3
         with:
