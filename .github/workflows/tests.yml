@@ -173,19 +173,19 @@ jobs:
       - name: Run UI backend tests and measure coverage
         id: ui_tests
         if: >
-          false
-          && github.event_name != 'pull_request'
-          || ${{ steps.working-directory.outputs.ui_backend }}
+          'false'
+          && (github.event_name != 'pull_request'
+          || ${{ steps.working-directory.outputs.ui_backend }})
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
       
       - name: Generate UI backend coverage report
         continue-on-error: true
         if: > 
-          false
-          && github.event_name != 'pull_request'
+          'false'
+          && (github.event_name != 'pull_request'
           || (${{ steps.working-directory.outputs.ui_backend_tests }}
               && ${{ steps.working-directory.outputs.ui_backend }}
-              && ${{ steps.ui_tests.outputs.exit_code }} == 0)
+              && ${{ steps.ui_tests.outputs.exit_code }} == 0))
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
@@ -224,7 +224,7 @@ jobs:
 
       - name: Upload UI backend report to Codecov
         if: >
-          false
+          'false'
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
           && (github.event_name != 'pull_request'
