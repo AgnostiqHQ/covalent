@@ -23,6 +23,7 @@ Class that defines the base executor template.
 """
 
 import asyncio
+import copy
 import io
 import os
 import subprocess
@@ -193,6 +194,11 @@ class BaseExecutor(_AbstractBaseExecutor):
         # Maybe better to make setup() idempotent
         self.warmed_up = False
         self.tasks_left = 1
+
+    def clone(self):
+        new_exec = copy.deepcopy(self)
+        new_exec.instance_id = id(new_exec)
+        return new_exec
 
     def write_streams_to_file(
         self,
@@ -572,7 +578,7 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
 
     async def cleanup(self):
         pass
-                    
+
     async def execute(
         self,
         function: Callable,
