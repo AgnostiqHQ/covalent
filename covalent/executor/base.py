@@ -542,7 +542,7 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
                     await f.write(ss)
 
     # Compute list of files to monitor based on dispatch id and node id
-    def get_files_to_monitor(self) -> List[str]:
+    def get_files_to_monitor(self, dispatch_id: str, node_id: str) -> List[str]:
         raise NotImplementedError
 
     # The user overrides this method to retrieve the contents of a
@@ -617,7 +617,7 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
     ) -> Any:
 
         # Install file polling timers; in a push-based model we'd run start_watching_file directly
-        files_to_monitor = self.get_files_to_monitor()
+        files_to_monitor = self.get_files_to_monitor(dispatch_id, node_id)
 
         app_log.debug(f"{node_id}: Monitoring files {files_to_monitor}")
         msg_queue = asyncio.Queue()

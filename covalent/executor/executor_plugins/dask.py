@@ -94,7 +94,7 @@ class DaskExecutor(BaseAsyncExecutor):
 
         self.scheduler_address = scheduler_address
 
-    def get_files_to_monitor(self):
+    def get_files_to_monitor(self, dispatch_id: str, node_id: str):
         return ["/tmp/stdout.log"]
 
     async def poll_file(self, path, starting_pos):
