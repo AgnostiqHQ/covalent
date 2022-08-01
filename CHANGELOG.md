@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Re-structured the docs
+
 ### Operations
 
 - `paths-filter` will only be run on PRs, i.e on workflow runs, the whole test suite will be run.
@@ -72,7 +76,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Changed the custom executor how-to to be shorter and more concise.
-- Re-structured the docs
 
 ## [0.156.0] - 2022-07-27
 
