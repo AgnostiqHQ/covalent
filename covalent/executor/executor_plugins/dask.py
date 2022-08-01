@@ -25,10 +25,12 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
+import asyncio
 import io
 import os
 import sys
 from contextlib import redirect_stderr, redirect_stdout
+from functools import partial
 from typing import Callable, Dict, List
 
 from dask.distributed import Client
@@ -97,7 +99,7 @@ class DaskExecutor(BaseAsyncExecutor):
     def get_files_to_monitor(self, dispatch_id: str, node_id: str):
         return ["/tmp/stdout.log"]
 
-    async def poll_file(self, path, starting_pos):
+    def poll_file_sync(self, path, starting_pos):
         app_log.debug(f"Polling {path} starting at {starting_pos}")
         try:
             with open(path, "r") as f:
@@ -106,6 +108,12 @@ class DaskExecutor(BaseAsyncExecutor):
         except:
             contents = ""
         return contents
+
+    async def poll_file(self, path, starting_pos):
+        loop = asyncio.get_running_loop()
+        poll_file_runnable = partial(self.poll_file_sync, path, starting_pos)
+        fut = loop.run_in_executor(None, poll_file_runnable)
+        return await fut
 
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
