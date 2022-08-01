@@ -3,7 +3,7 @@
 🔌 Dask Executor
 """""""""""""""""""""""""""
 
-Executing tasks (electrons) in a Dask cluster. This is the default executer when covalent is started without the :code:`--no-cluster` flag.
+Executing tasks (electrons) in a Dask cluster. This is the default executor when covalent is started without the :code:`--no-cluster` flag.
 
 .. code:: python
 
