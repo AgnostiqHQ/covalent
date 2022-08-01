@@ -289,9 +289,7 @@ class _TransportGraph:
     """
 
     def __init__(self) -> None:
-        # Edge insertion order is not preserved in networkx. So manually persist it
-        # using 'edge_insertion_order' attribute.
-        self._graph = nx.MultiDiGraph(edge_insertion_order=[])
+        self._graph = nx.MultiDiGraph()
         self.lattice_metadata = None
 
         # IDs of nodes modified during the workflow run
@@ -341,7 +339,6 @@ class _TransportGraph:
             ValueError: If the edge already exists.
         """
 
-        self._graph.graph["edge_insertion_order"].append(x)
         self._graph.add_edge(x, y, edge_name=edge_name, **attr)
 
     def reset(self) -> None:
@@ -355,7 +352,7 @@ class _TransportGraph:
             None
         """
 
-        self._graph = nx.MultiDiGraph(edge_insertion_order=[])
+        self._graph = nx.MultiDiGraph()
 
     def get_topologically_sorted_graph(self) -> List[List[int]]:
         """
@@ -588,7 +585,6 @@ class _TransportGraph:
                 function_ser
             )
         self._graph = nx.readwrite.node_link_graph(node_link_data)
-        self.sort_edges_based_on_insertion_order()
 
     def deserialize_from_json(self, json_data: str) -> None:
         """Load JSON representation of transport graph into the transport graph instance.
@@ -617,20 +613,6 @@ class _TransportGraph:
                 node["value"] = TransportableObject.from_dict(node["value"])
 
         self._graph = nx.readwrite.node_link_graph(node_link_data)
-        self.sort_edges_based_on_insertion_order()
-
-    def sort_edges_based_on_insertion_order(self):
-        unsorted_edges = list(self._graph.edges(data=True))
-        insertion_order = self._graph.graph["edge_insertion_order"]
-        unsorted_edges_position_index = [insertion_order.index(i[0]) for i in unsorted_edges]
-        unsorted_index_map = zip(unsorted_edges_position_index, unsorted_edges)
-        sorted_edge_list_with_index = sorted(unsorted_index_map, key=lambda x: x[0])
-        sorted_edge_list = [i[1] for i in sorted_edge_list_with_index]
-
-        # Creates graph without any edges.
-        self._graph = nx.create_empty_copy(self._graph)
-        # Updates the graph with the edges.
-        self._graph.update(edges=sorted_edge_list)
 
     def persist(self, ds: DataStoreSession, update: bool):
         if update:
