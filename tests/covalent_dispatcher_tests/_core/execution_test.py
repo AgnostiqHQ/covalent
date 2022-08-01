@@ -699,3 +699,71 @@ def test_run_workflow_with_failed_postprocess(mocker):
     result_object = run_workflow(result_object, tasks_pool)
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
+
+
+def test_executor_cache_initialize():
+    """Test ExecuterCache initialize correctly counts the tasks assigned
+    to each cached executor"""
+
+    from covalent._workflow.lattice import Lattice
+    from covalent.executor import LocalExecutor
+
+    le1 = LocalExecutor()
+    le2 = LocalExecutor()
+
+    id_1 = le1.instance_id
+    id_2 = le2.instance_id
+
+    @ct.electron(executor=le1)
+    def task_1(x):
+        return x
+
+    @ct.electron(executor=le2)
+    def task_2(x):
+        return x
+
+    @ct.electron(executor=le2)
+    def task_3(x):
+        return x
+
+    @ct.electron(executor="local")
+    def task_4(x):
+        return x
+
+    @ct.lattice(workflow_executor="local")
+    def workflow_1(x):
+        res1 = task_1(x)
+        res2 = task_2(res1)
+        res3 = task_3(res2)
+        res4 = task_4(res3)
+        return res4
+
+    @ct.lattice(workflow_executor=le2)
+    def workflow_2(x):
+        res1 = task_1(x)
+        res2 = task_2(res1)
+        res3 = task_3(res2)
+        res4 = task_4(res3)
+        return res4
+
+    workflow_1.build_graph(5)
+    received_lattice = Lattice.deserialize_from_json(workflow_1.serialize_to_json())
+
+    result_object = Result(received_lattice, "/tmp", "asdf")
+
+    cache = ExecutorCache()
+    cache.initialize_from_result_object(result_object)
+
+    assert cache.tasks_per_instance[id_1] == 1
+    assert cache.tasks_per_instance[id_2] == 2
+
+    workflow_2.build_graph(5)
+    received_lattice = Lattice.deserialize_from_json(workflow_2.serialize_to_json())
+
+    result_object = Result(received_lattice, "/tmp", "asdf")
+
+    cache = ExecutorCache()
+    cache.initialize_from_result_object(result_object)
+
+    assert cache.tasks_per_instance[id_1] == 1
+    assert cache.tasks_per_instance[id_2] == 3

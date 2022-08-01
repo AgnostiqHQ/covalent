@@ -75,6 +75,47 @@ class ExecutorCache:
 
         self.id_instance_map[0] = None
 
+    def initialize_from_result_object(self, result_object: Result):
+        g = result_object.lattice.transport_graph
+
+        for node in g._graph.nodes:
+            node_name = result_object.lattice.transport_graph.get_node_value(node, "name")
+
+            # Skip parameter nodes
+            if node_name.startswith(parameter_prefix):
+                continue
+            executor_data = g.get_node_value(node, "metadata")["executor_data"]
+
+            # User specified short name only, not an object instance
+            if not executor_data:
+                continue
+
+            executor_id = executor_data["attributes"]["instance_id"]
+
+            # Don't track one-time-use executor instances
+            if executor_id == 0:
+                continue
+
+            self.id_instance_map[executor_id] = None
+            if executor_id not in self.tasks_per_instance:
+                self.tasks_per_instance[executor_id] = 1
+            else:
+                self.tasks_per_instance[executor_id] += 1
+
+        # Do the same for postprocessing (if postprocessing is still around:) )
+        executor_data = result_object.lattice.get_metadata("workflow_executor_data")
+        if executor_data:
+            executor_id = executor_data["attributes"]["instance_id"]
+            self.id_instance_map[executor_id] = None
+
+            # Don't track non-shared instances
+            if executor_id == 0:
+                pass
+            elif executor_id not in self.tasks_per_instance:
+                self.tasks_per_instance[executor_id] = 1
+            else:
+                self.tasks_per_instance[executor_id] += 1
+
     async def finalize_executors(self):
         """Clean up any executors still running"""
         for key, executor in self.id_instance_map.items():
@@ -669,45 +710,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
 
     # Tabulate number of tasks assigned to each executor instance
     exec_cache = ExecutorCache()
-    g = result_object.lattice.transport_graph
-
-    for node in g._graph.nodes:
-        node_name = result_object.lattice.transport_graph.get_node_value(node, "name")
-
-        # Skip parameter nodes
-        if node_name.startswith(parameter_prefix):
-            continue
-        executor_data = g.get_node_value(node, "metadata")["executor_data"]
-
-        # User specified short name only, not an object instance
-        if not executor_data:
-            continue
-
-        executor_id = executor_data["attributes"]["instance_id"]
-
-        # Don't track one-time-use executor instances
-        if executor_id == 0:
-            continue
-
-        exec_cache.id_instance_map[executor_id] = None
-        if executor_id not in exec_cache.tasks_per_instance:
-            exec_cache.tasks_per_instance[executor_id] = 1
-        else:
-            exec_cache.tasks_per_instance[executor_id] += 1
-
-    # Do the same for postprocessing (if postprocessing is still around:) )
-    executor_data = result_object.lattice.get_metadata("workflow_executor_data")
-    if executor_data:
-        executor_id = executor_data["attributes"]["instance_id"]
-        exec_cache.id_instance_map[executor_id] = None
-
-        # Don't track non-shared instances
-        if executor_id == 0:
-            pass
-        elif executor_id not in exec_cache.tasks_per_instance:
-            exec_cache.tasks_per_instance[executor_id] = 1
-        else:
-            exec_cache.tasks_per_instance[executor_id] += 1
+    exec_cache.initialize_from_result_object(result_object)
 
     tasks_queue = Queue()
     pending_deps = {}
