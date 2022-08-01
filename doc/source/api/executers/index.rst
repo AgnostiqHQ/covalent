@@ -9,7 +9,7 @@ Executers
    :height: 200px
 
 
-Executers are responsible for taking a task and executing it in a certain place in a certain way. For example, the local executor invokes the task on the user's local computer. Users can define custom executors to make Covalent compatible with any remote backend system and covalent has a wide range of executor plugin libraries that connects to various resources from local Slurm cluster to cloud based AWS/GCP/Azzure resources.
+Executers are responsible for taking a task and executing it in a certain place in a certain way. For example, the local executor invokes the task on the user's local computer. Users can define custom executors to make Covalent compatible with any remote backend system and covalent has a wide range of executor plugin libraries that connects to various resources from local Slurm cluster to cloud based AWS/GCP/Azure resources.
 
 Plugins
 **********
@@ -32,7 +32,3 @@ The way in which workflows and tasks interface with the hardware is through exec
 
    basesync
    baseasync
-
-
-
-
