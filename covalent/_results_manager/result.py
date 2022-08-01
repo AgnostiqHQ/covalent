@@ -25,8 +25,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
-import cloudpickle
-import cloudpickle as pickle
 from sqlalchemy import and_, update
 
 from .._data_store import DataStore, DataStoreNotInitializedError, models, workflow_db
@@ -594,7 +592,7 @@ Node Outputs
             None
         """
 
-        app_log.warning("Inside update node")
+        app_log.debug("Inside update node")
 
         electron_kwargs = {}
         node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
@@ -656,7 +654,7 @@ Node Outputs
                 .values(updated_at=datetime.now(timezone.utc), **electron_kwargs)
             )
             session.commit()
-        app_log.warning("Inside update node - SUCCESS")
+        app_log.debug("Inside update node - SUCCESS")
 
     def _initialize_results_dir(self):
         """Create the results directory."""
