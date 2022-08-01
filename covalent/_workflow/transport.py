@@ -354,30 +354,6 @@ class _TransportGraph:
 
         self._graph = nx.MultiDiGraph()
 
-    def get_topologically_sorted_graph(self) -> List[List[int]]:
-        """
-        Generates a list of node ids in the hierarchical
-        order of their position in the graph. Taking care
-        of dependencies of each node. Allows for parrallel
-        execution of nodes which are at the same level.
-
-        Args:
-            None
-
-        Returns:
-            sorted_nodes: List of node ids where nodes
-                          belonging to the same level are
-                          grouped together.
-        """
-
-        _g = self._graph.copy()
-        res = []
-        while _g:
-            zero_indegree = [v for v, d in _g.in_degree() if d == 0]
-            res.append(zero_indegree)
-            _g.remove_nodes_from(zero_indegree)
-        return res
-
     def get_node_value(self, node_key: int, value_key: str) -> Any:
         """
         Get a specific value from a node depending upon the value key.
