@@ -325,7 +325,9 @@ async def _run_task(
                 executor_cache.id_instance_map[executor_id] = executor
                 executor.tasks_left = executor_cache.tasks_per_instance[executor_id]
 
-        if increment_task_count:
+        # Check if we are using a shared instance for an un-planned
+        # task
+        if increment_task_count and executor_id > 0:
             executor.tasks_left += 1
 
     except Exception as ex:
