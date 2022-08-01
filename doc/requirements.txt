@@ -1,7 +1,7 @@
 autodocsumm==0.2.6
 covalent-slurm-plugin
 covalent-ssh-plugin
-docutils>=0.19
+docutils
 furo>=2022.6.21
 ipython>=8.4.0
 ipython_genutils==0.2.0
