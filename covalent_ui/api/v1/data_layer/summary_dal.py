@@ -219,11 +219,12 @@ class Summary:
                     failure.append(dispatch_id)
             except InterfaceError:
                 failure.append(dispatch_id)
-
-        if len(failure) > 0:
+        if (len(failure) == 0 and len(success) == 0) or (len(failure) > 0 and len(success) == 0):
+            message = "No dispatches were deleted"
+        elif len(failure) > 0 and len(success) > 0:
             message = "Some of the dispatches could not be deleted"
         else:
-            message = f"All {len(req.dispatches)} deleted successfully"
+            message = "Dispatch(es) have been deleted successfully!"
         return DeleteDispatchesResponse(
             success_items=success,
             failure_items=failure,
