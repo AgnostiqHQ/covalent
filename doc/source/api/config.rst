@@ -16,7 +16,7 @@ Example settings in config file
 
 .. tip::
 
-    Each executer comes with its own configuration parameters that is stored in this same config file config file.
+    Each executor comes with its own configuration parameters that is stored in this same config file config file.
     For example, for SSH plugin, we have the following settings:
 
     .. code:: shell
