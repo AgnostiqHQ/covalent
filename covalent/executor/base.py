@@ -189,7 +189,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         self.cache_dir = cache_dir
         self.current_env_on_conda_fail = current_env_on_conda_fail
         self.current_env = ""
-        self.instance_id = id(self)
+        self.instance_id = 0
 
         # Maybe better to make setup() idempotent
         self.warmed_up = False
@@ -199,6 +199,11 @@ class BaseExecutor(_AbstractBaseExecutor):
         new_exec = copy.deepcopy(self)
         new_exec.instance_id = id(new_exec)
         return new_exec
+
+    def get_shared_instance(self) -> "BaseExecutor":
+        shared_exec = self.clone()
+        shared_exec.instance_id = id(shared_exec)
+        return shared_exec
 
     def write_streams_to_file(
         self,

@@ -369,3 +369,10 @@ def test_async_write_streams_to_file(mocker):
         with open(tmp_file.name) as f:
             lines = f.readlines()
         assert lines[0] == "absolute"
+
+
+def test_get_shared_instance():
+    me = MockExecutor()
+    shared_me = me.get_shared_instance()
+    assert me.instance_id == 0
+    assert shared_me.instance_id > 0
