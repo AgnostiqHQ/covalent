@@ -73,6 +73,8 @@ class ExecutorCache:
         self.id_instance_map = {}
         self.tasks_per_instance = {}
 
+        self.id_instance_map[0] = None
+
     async def finalize_executors(self):
         """Clean up any executors still running"""
         for key, executor in self.id_instance_map.items():
@@ -319,7 +321,7 @@ async def _run_task(
             executor = _executor_manager.get_executor(short_name)
             executor.from_dict(object_dict)
 
-            # cache the instance if an instance was specified during
+            # cache the instance if a shared instance was specified during
             # workflow construction
             if executor_id > 0:
                 executor_cache.id_instance_map[executor_id] = executor
@@ -682,6 +684,11 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
             continue
 
         executor_id = executor_data["attributes"]["instance_id"]
+
+        # Don't track one-time-use executor instances
+        if executor_id == 0:
+            continue
+
         exec_cache.id_instance_map[executor_id] = None
         if executor_id not in exec_cache.tasks_per_instance:
             exec_cache.tasks_per_instance[executor_id] = 1
@@ -693,7 +700,11 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
     if executor_data:
         executor_id = executor_data["attributes"]["instance_id"]
         exec_cache.id_instance_map[executor_id] = None
-        if executor_id not in exec_cache.tasks_per_instance:
+
+        # Don't track non-shared instances
+        if executor_id == 0:
+            pass
+        elif executor_id not in exec_cache.tasks_per_instance:
             exec_cache.tasks_per_instance[executor_id] = 1
         else:
             exec_cache.tasks_per_instance[executor_id] += 1
