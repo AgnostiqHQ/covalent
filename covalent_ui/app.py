@@ -20,28 +20,15 @@
 from __future__ import annotations
 
 import argparse
-from distutils.log import debug
-from hashlib import new
-from logging import Logger
-from logging.handlers import DEFAULT_TCP_LOGGING_PORT
-from pathlib import Path
 
 import socketio
 import uvicorn
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.wsgi import WSGIMiddleware
-from flask import Flask, jsonify, make_response, request, send_from_directory
 
-from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
-from covalent._shared_files.config import get_config, set_config, update_config
-from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
-from covalent_dispatcher._db.dispatchdb import encode_result
-from covalent_dispatcher._service.app import bp
+from covalent._shared_files.config import get_config
 from covalent_dispatcher._service.app_dask import DaskCluster
 from covalent_ui.api.main import app as fastapi_app
-from covalent_ui.api.main import routes, sio
+from covalent_ui.api.main import sio
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
@@ -50,11 +37,6 @@ STATIC_FILES = {"": WEBAPP_PATH, "/": f"{WEBAPP_PATH}/index.html"}
 # Log configuration
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-# Initialize flask app & mount on FastAPI
-app = Flask(__name__)
-app.register_blueprint(bp)
-fastapi_app.mount("/", WSGIMiddleware(app))
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
@@ -77,9 +59,9 @@ if __name__ == "__main__":
     else:
         port = int(get_config("dispatcher.port"))
 
-    debug = True if args.develop is True else False
+    DEBUG = True if args.develop is True else False
     # reload = True if args.develop is True else False
-    reload = False
+    RELOAD = False
 
     # Start dask if no-cluster flag is not specified (covalent stop auto terminates all child processes of this)
     if not args.no_cluster:
