@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Re-structured the docs
+
 ## [0.170.1] - 2022-08-09
 
 ### Authors
@@ -346,7 +350,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Changed the custom executor how-to to be shorter and more concise.
-- Re-structured the docs
 
 ## [0.156.0] - 2022-07-27
 
