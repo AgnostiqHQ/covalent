@@ -108,7 +108,7 @@ def test_get_result(mocker, app, client, tmp_path):
 
 def test_get_result_503(mocker, app, client, tmp_path):
     lattice = Lattice(
-        status=str(Result.COMPLETED),
+        status=str(Result.NEW_OBJ),
         dispatch_id=DISPATCH_ID,
         name="test-lattice",
         created_at=datetime.now(),
@@ -122,8 +122,10 @@ def test_get_result_503(mocker, app, client, tmp_path):
         return MockDataStore(lattice, tmp_path)
 
     mocker.patch.object(DispatchDB, "_get_data_store", _get_data_store)
-    mocker.patch("covalent_dispatcher._service.app.result_from", side_effect=FileNotFoundError())
-    response = client.get(f"/api/result/{DISPATCH_ID}")
+    mocker.patch("covalent_dispatcher._service.app.result_from", return_value={})
+    response = client.get(
+        f"/api/result/{DISPATCH_ID}", query_string={"wait": True, "status_only": True}
+    )
     assert response.status_code == 503
 
 
