@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Database schema has been updated to v11
+
 ### Operations
 
 - `paths-filter` will only be run on PRs, i.e on workflow runs, the whole test suite will be run.
