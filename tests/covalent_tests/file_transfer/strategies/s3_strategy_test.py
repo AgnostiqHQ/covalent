@@ -22,7 +22,9 @@ class TestS3Strategy:
 
         S3().download(from_file, to_file)()
 
-        boto3_mock().download_file.assert_called_with(bucket_name, from_file.filepath, to_file.filepath)
+        boto3_mock().download_file.assert_called_with(
+            bucket_name, from_file.filepath, to_file.filepath
+        )
 
     def test_upload(self, mocker):
         # validate boto3.client('s3').upload_file is called with appropriate arguments
@@ -36,8 +38,9 @@ class TestS3Strategy:
 
         S3().upload(from_file, to_file)()
 
-        boto3_mock().upload_file.assert_called_with(from_file.filepath,bucket_name, to_file.filepath)
-
+        boto3_mock().upload_file.assert_called_with(
+            from_file.filepath, bucket_name, to_file.filepath
+        )
 
     def test_cp_failure(self, mocker):
         with pytest.raises(NotImplementedError):
