@@ -183,7 +183,11 @@ This ensures that the independent experiments are performed in parallel rather t
 Waiting for other electrons
 ----------------------
 
-Sometimes the user might want to wait for a task's execution before executing another task even when the output of one is not the input of another. For those cases a `wait_for()` function is there which is called on the dependent electron and takes as input the depending electrons,
+Covalent normally infers the dependencies between electrons from
+their inputs and ouputs. Sometimes the user might want to wait for a
+task's execution before executing another task even when the output of
+one is not the input of another. The `wait()` function can be
+handy in those cases.
 
 .. code-block:: python
     :linenos:
@@ -214,14 +218,15 @@ Sometimes the user might want to wait for a task's execution before executing an
         res_1b = task_1b(2)
         res_1c = task_1c(2)
         res_2 = task_2(res_1a, 3)
-        res_3 = task_3(5).wait_for([res_1a, res_1b, res_1c])
+        res_3 = task_3(5)
+	ct.wait(child=res_3, parents=[res_1a, res_1b, res_1c])
 
         return task_2(res_2, res_3)
         ...
 
     res = ct.dispatch_sync(workflow)()
 
-This means that even though `task_3`'s input does not depend on anything, it's execution will still wait until all the tasks passed in `wait_for` have completed execution.
+The `wait()` statement instructs Covalent to wait for `task_1a`, `task_1b`, and `task_1c` to finish before dispatching `task_3`.
 
 
 Best Practices
