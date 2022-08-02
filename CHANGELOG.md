@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.160.1] - 2022-08-02
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+
+
 ### Fixed
 
 - `script_location` key not found issue when installing with pip (second attempt)
