@@ -376,3 +376,81 @@ def test_get_shared_instance():
     shared_me = me.get_shared_instance()
     assert me.instance_id == 0
     assert shared_me.instance_id > 0
+
+
+def test_is_shared_instance():
+    me = MockExecutor()
+    assert me.is_shared_instance() is False
+    me.instance_id = 1
+    assert me.is_shared_instance() is True
+
+
+def test_base_executor_run_exception(mocker):
+    """Check base executor's handling of exceptions in run"""
+    import asyncio
+
+    def f():
+        raise RuntimeError
+
+    class MockCleanup:
+        def __init__(self):
+            self.times_called = 0
+
+        def __call__(self):
+            self.times_called += 1
+
+    class MockAsyncCleanup:
+        def __init__(self):
+            self.times_called = 0
+
+        async def __call__(self):
+            self.times_called += 1
+
+    me = MockExecutor()
+    async_me = MockAsyncExecutor()
+
+    me.cleanup = MockCleanup()
+    async_me.cleanup = MockAsyncCleanup()
+
+    function = TransportableObject(f)
+    args = []
+    kwargs = {}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = 1
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    # BaseExecutor
+    try:
+        me.execute(
+            function=assembled_callable,
+            args=args,
+            kwargs=kwargs,
+            dispatch_id=dispatch_id,
+            results_dir="tmp",
+            node_id=node_id,
+        )
+        assert False
+
+    except RuntimeError as ex:
+        assert me.tasks_left == 0
+        me.cleanup.times_called == 1
+
+    # BaseAsyncExecutor
+    try:
+        awaitable = async_me.execute(
+            function=assembled_callable,
+            args=args,
+            kwargs=kwargs,
+            dispatch_id=dispatch_id,
+            results_dir="tmp",
+            node_id=node_id,
+        )
+        asyncio.run(awaitable)
+        assert False
+
+    except RuntimeError as ex:
+        assert async_me.tasks_left == 0
+        async_me.cleanup.times_called == 1

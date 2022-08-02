@@ -711,6 +711,7 @@ def test_executor_cache_initialize():
 
     le1 = LocalExecutor().get_shared_instance()
     le2 = LocalExecutor().get_shared_instance()
+    le3 = LocalExecutor()
 
     id_1 = le1.instance_id
     id_2 = le2.instance_id
@@ -747,6 +748,18 @@ def test_executor_cache_initialize():
         res4 = task_4(res3)
         return res4
 
+    @ct.lattice(workflow_executor=le3)
+    def workflow_3(x):
+        res1 = task_1(x)
+        res2 = task_2(res1)
+        res3 = task_3(res2)
+        res4 = task_4(res3)
+        return res4
+
+    @ct.lattice(workflow_executor=le2)
+    def workflow_4(x):
+        return task_1(x)
+
     workflow_1.build_graph(5)
     received_lattice = Lattice.deserialize_from_json(workflow_1.serialize_to_json())
 
@@ -762,6 +775,7 @@ def test_executor_cache_initialize():
     assert cache.tasks_per_instance[id_1] == 1
     assert cache.tasks_per_instance[id_2] == 2
 
+    # Test using shared workflow executor instance
     workflow_2.build_graph(5)
     received_lattice = Lattice.deserialize_from_json(workflow_2.serialize_to_json())
 
@@ -772,6 +786,29 @@ def test_executor_cache_initialize():
 
     assert cache.tasks_per_instance[id_1] == 1
     assert cache.tasks_per_instance[id_2] == 3
+
+    # Test using exclusive workflow executor instance
+    workflow_3.build_graph(5)
+    received_lattice = Lattice.deserialize_from_json(workflow_3.serialize_to_json())
+    result_object = Result(received_lattice, "/tmp", "asdf")
+
+    cache = ExecutorCache()
+    cache.initialize_from_result_object(result_object)
+
+    assert cache.tasks_per_instance[id_1] == 1
+    assert cache.tasks_per_instance[id_2] == 2
+
+    # Test using workflow executor instance not shared by any other tasks
+    workflow_4.build_graph(5)
+    received_lattice = Lattice.deserialize_from_json(workflow_4.serialize_to_json())
+
+    result_object = Result(received_lattice, "/tmp", "asdf")
+
+    cache = ExecutorCache()
+    cache.initialize_from_result_object(result_object)
+
+    assert cache.tasks_per_instance[id_1] == 1
+    assert cache.tasks_per_instance[id_2] == 1
 
 
 def test_get_executor_instance():
