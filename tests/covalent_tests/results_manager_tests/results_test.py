@@ -36,6 +36,8 @@ from covalent._data_store.datastore import DataStore, DataStoreNotInitializedErr
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.result import Result
 from covalent._results_manager.write_result_to_db import load_file
+from covalent._workflow.lattice import Lattice as LatticeClass
+from covalent.executor import LocalExecutor
 
 TEMP_RESULTS_DIR = "/tmp/results"
 
@@ -58,24 +60,30 @@ def test_db():
     )
 
 
+le = LocalExecutor(log_stdout="/tmp/stdout.log")
+
+
 @pytest.fixture
 def result_1():
     @ct.electron(executor="dask")
     def task_1(x, y):
         return x * y
 
-    @ct.electron(executor="dask")
+    @ct.electron(executor=le)
     def task_2(x, y):
         return x + y
 
-    @ct.lattice(executor="dask")
+    @ct.lattice(executor=le, workflow_executor=le)
     def workflow_1(a, b):
         res_1 = task_1(a, b)
         return task_2(res_1, b)
 
     Path(f"{TEMP_RESULTS_DIR}/dispatch_1").mkdir(parents=True, exist_ok=True)
     workflow_1.build_graph(a=1, b=2)
-    result = Result(lattice=workflow_1, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1")
+    received_lattice = LatticeClass.deserialize_from_json(workflow_1.serialize_to_json())
+    result = Result(
+        lattice=received_lattice, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1"
+    )
     result._initialize_nodes()
     return result
 
@@ -102,12 +110,15 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         assert lattice_row.status == "NEW_OBJECT"
         assert lattice_row.name == "workflow_1"
         assert lattice_row.electron_id is None
+        assert lattice_row.executor == "local"
+        assert lattice_row.workflow_executor == "local"
 
         lattice_storage_path = Path(lattice_row.storage_path)
         assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR) / "dispatch_1"
 
         workflow_function = load_file(
             storage_path=lattice_storage_path, filename=lattice_row.function_filename
+
         ).get_deserialized()
         assert workflow_function(1, 2) == 4
         assert (
@@ -123,6 +134,33 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
             ).get_deserialized()
             is None
         )
+
+
+        executor_data = load_file(
+            storage_path=lattice_storage_path, filename=lattice_row.executor_data_filename
+        )
+
+        assert executor_data["short_name"] == le.short_name()
+        assert executor_data["attributes"] == le.__dict__
+
+        workflow_executor_data = load_file(
+            storage_path=lattice_storage_path, filename=lattice_row.workflow_executor_data_filename
+        )
+        assert workflow_executor_data["short_name"] == le.short_name()
+        assert workflow_executor_data["attributes"] == le.__dict__
+
+        saved_named_args = load_file(
+            storage_path=lattice_storage_path, filename=lattice_row.named_args_filename
+        )
+
+        saved_named_kwargs = load_file(
+            storage_path=lattice_storage_path, filename=lattice_row.named_kwargs_filename
+        )
+        saved_named_args_raw = {k: v.get_deserialized() for k, v in saved_named_args.items()}
+        saved_named_kwargs_raw = {k: v.get_deserialized() for k, v in saved_named_kwargs.items()}
+
+        assert saved_named_args_raw == {}
+        assert saved_named_kwargs_raw == {"a": 1, "b": 2}
 
         # Check that the electron records are as expected
         for electron in electron_rows:
@@ -151,6 +189,13 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
                     load_file(storage_path=electron.storage_path, filename=electron.key_filename)
                     is None
                 )
+            if electron.transport_graph_node_id == 3:
+              executor_data = load_file(
+                  storage_path=electron.storage_path, filename=electron.executor_data_filename
+              )
+
+              assert executor_data["short_name"] == le.short_name()
+              assert executor_data["attributes"] == le.__dict__
 
         # Check that there are the appropriate amount of electron dependency records
         assert len(electron_dependency_rows) == 4
@@ -170,6 +215,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
                 # output={"test_data": "test_data"},  # TODO - Put back in later
                 # sublattice_result=None,  # TODO - Add a test where this is not None
             )
+
 
         # Call Result.persist
         result_1.persist()

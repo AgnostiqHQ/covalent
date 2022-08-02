@@ -59,15 +59,17 @@ from covalent._shared_files.defaults import (
 STORAGE_TYPE = "local"
 FUNCTION_FILENAME = "dispatch_source.pkl"
 FUNCTION_STRING_FILENAME = "dispatch_source.py"
-EXECUTOR_FILENAME = "executor.pkl"
+EXECUTOR_DATA_FILENAME = "executor_data.pkl"
+WORKFLOW_EXECUTOR_DATA_FILENAME = "workflow_executor_data.pkl"
 ERROR_FILENAME = "error.txt"
 INPUTS_FILENAME = "inputs.pkl"
+NAMED_ARGS_FILENAME = "named_args.pkl"
+NAMED_KWARGS_FILENAME = "named_kwargs.pkl"
 RESULTS_FILENAME = "results.pkl"
 VALUE_FILENAME = "value.pkl"
 STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
 INFO_FILENAME = "info.log"
-KEY_FILENAME = "key.pkl"
 TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 DEPS_FILENAME = "deps.pkl"
 CALL_BEFORE_FILENAME = "call_before.pkl"
@@ -119,9 +121,14 @@ def get_lattice_kwargs(
     storage_path="results/dispatch_1/",
     function_filename=FUNCTION_FILENAME,
     function_string_filename=FUNCTION_STRING_FILENAME,
-    executor_filename=EXECUTOR_FILENAME,
+    executor="dask",
+    executor_data_filename=EXECUTOR_DATA_FILENAME,
+    workflow_executor="dask",
+    workflow_executor_data_filename=WORKFLOW_EXECUTOR_DATA_FILENAME,
     error_filename=ERROR_FILENAME,
     inputs_filename=INPUTS_FILENAME,
+    named_args_filename=NAMED_ARGS_FILENAME,
+    named_kwargs_filename=NAMED_KWARGS_FILENAME,
     results_filename=RESULTS_FILENAME,
     transport_graph_filename=TRANSPORT_GRAPH_FILENAME,
     created_at=None,
@@ -141,9 +148,14 @@ def get_lattice_kwargs(
         "storage_path": storage_path,
         "function_filename": function_filename,
         "function_string_filename": function_string_filename,
-        "executor_filename": executor_filename,
+        "executor": executor,
+        "executor_data_filename": executor_data_filename,
+        "workflow_executor": workflow_executor,
+        "workflow_executor_data_filename": workflow_executor_data_filename,
         "error_filename": error_filename,
         "inputs_filename": inputs_filename,
+        "named_args_filename": named_args_filename,
+        "named_kwargs_filename": named_kwargs_filename,
         "results_filename": results_filename,
         "transport_graph_filename": transport_graph_filename,
         "created_at": created_at,
@@ -163,11 +175,10 @@ def get_electron_kwargs(
     storage_path="results/dispatch_1/node_0/",
     function_filename=FUNCTION_STRING_FILENAME,
     function_string_filename=FUNCTION_STRING_FILENAME,
-    executor_filename=EXECUTOR_FILENAME,
+    executor="dask",
+    executor_data_filename=EXECUTOR_DATA_FILENAME,
     results_filename=RESULTS_FILENAME,
     value_filename=VALUE_FILENAME,
-    attribute_name=None,
-    key_filename=KEY_FILENAME,
     stdout_filename=STDOUT_FILENAME,
     stderr_filename=STDERR_FILENAME,
     info_filename=INFO_FILENAME,
@@ -191,11 +202,10 @@ def get_electron_kwargs(
         "storage_path": storage_path,
         "function_filename": function_filename,
         "function_string_filename": function_string_filename,
-        "executor_filename": executor_filename,
+        "executor": executor,
+        "executor_data_filename": executor_data_filename,
         "results_filename": results_filename,
         "value_filename": value_filename,
-        "attribute_name": attribute_name,
-        "key_filename": key_filename,
         "stdout_filename": stdout_filename,
         "stderr_filename": stderr_filename,
         "info_filename": info_filename,
@@ -237,6 +247,8 @@ def test_insert_lattices_data(test_db, mocker):
             dispatch_id=f"dispatch_{i + 1}",
             name=f"workflow_{i + 1}",
             storage_path=f"results/dispatch_{i+1}/",
+            executor="dask",
+            workflow_executor="dask",
             created_at=cur_time,
             updated_at=cur_time,
             started_at=cur_time,
@@ -247,31 +259,37 @@ def test_insert_lattices_data(test_db, mocker):
         rows = session.query(Lattice).all()
 
         for i, lattice in enumerate(rows):
-            assert lattice.id == i + 1
-            assert lattice.dispatch_id == f"dispatch_{i + 1}"
-            assert lattice.name == f"workflow_{i + 1}"
-            assert lattice.status == "RUNNING"
-            assert lattice.storage_type == STORAGE_TYPE
-            assert lattice.storage_path == f"results/dispatch_{i+1}/"
-            assert lattice.function_filename == FUNCTION_FILENAME
-            assert lattice.function_string_filename == FUNCTION_STRING_FILENAME
-            assert lattice.executor_filename == EXECUTOR_FILENAME
-            assert lattice.error_filename == ERROR_FILENAME
-            assert lattice.inputs_filename == INPUTS_FILENAME
-            assert lattice.results_filename == RESULTS_FILENAME
-            assert (
-                lattice.created_at.strftime("%m/%d/%Y, %H:%M:%S")
-                == lattice.updated_at.strftime("%m/%d/%Y, %H:%M:%S")
-                == lattice.started_at.strftime("%m/%d/%Y, %H:%M:%S")
-                == timestamps[i].strftime("%m/%d/%Y, %H:%M:%S")
-            )
-            assert lattice.completed_at is None
-            assert lattice.is_active
-            assert isinstance(lattice.electron_num, int)
-            assert isinstance(lattice.completed_electron_num, int)
+          assert lattice.id == i + 1
+          assert lattice.dispatch_id == f"dispatch_{i + 1}"
+          assert lattice.name == f"workflow_{i + 1}"
+          assert lattice.status == "RUNNING"
+          assert lattice.storage_type == STORAGE_TYPE
+          assert lattice.storage_path == f"results/dispatch_{i+1}/"
+          assert lattice.function_filename == FUNCTION_FILENAME
+          assert lattice.function_string_filename == FUNCTION_STRING_FILENAME
+          assert lattice.executor == "dask"
+          assert lattice.executor_data_filename == EXECUTOR_DATA_FILENAME
+          assert lattice.workflow_executor == "dask"
+          assert lattice.workflow_executor_data_filename == WORKFLOW_EXECUTOR_DATA_FILENAME
+          assert lattice.error_filename == ERROR_FILENAME
+          assert lattice.inputs_filename == INPUTS_FILENAME
+          assert lattice.named_args_filename == NAMED_ARGS_FILENAME
+          assert lattice.named_kwargs_filename == NAMED_KWARGS_FILENAME
+          assert lattice.results_filename == RESULTS_FILENAME
+          assert (
+              lattice.created_at.strftime("%m/%d/%Y, %H:%M:%S")
+              == lattice.updated_at.strftime("%m/%d/%Y, %H:%M:%S")
+              == lattice.started_at.strftime("%m/%d/%Y, %H:%M:%S")
+              == timestamps[i].strftime("%m/%d/%Y, %H:%M:%S")
+          )
+          assert lattice.completed_at is None
+          assert lattice.is_active
+          assert isinstance(lattice.electron_num, int)
+          assert isinstance(lattice.completed_electron_num, int)
 
     with test_db.session() as session:
         rows = session.query(Lattice).where(Lattice.dispatch_id == "dispatch_3").all()
+
         assert not rows
 
 
@@ -309,6 +327,7 @@ def test_insert_electrons_data(test_db, mocker):
                     assert getattr(electron, key) == value
                 assert electron.key_filename == KEY_FILENAME
             assert electron.is_active
+
 
         insert_electrons_data(**electron_kwargs)
 
