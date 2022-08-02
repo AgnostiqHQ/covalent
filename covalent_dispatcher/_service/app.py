@@ -29,7 +29,6 @@ import covalent_dispatcher as dispatcher
 from covalent._data_store.models import Lattice
 from covalent._results_manager.result import Result
 from covalent._results_manager.results_manager import result_from
-from covalent._results_manager.write_result_to_db import MissingLatticeRecordError
 
 from .._db.dispatchdb import DispatchDB
 

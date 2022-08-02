@@ -75,8 +75,9 @@ def test_dask_executor_run():
 
     args = [5]
     kwargs = {"y": 7}
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
     with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
-        result = asyncio.run(dask_exec.run(f, args, kwargs))
+        result = asyncio.run(dask_exec.run(f, args, kwargs, task_metadata))
 
     assert result == (5, 7)
     assert stdout.getvalue() == "Hello\n"
