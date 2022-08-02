@@ -80,11 +80,21 @@ def result_from(lattice_record: Lattice) -> Result:
     function = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.function_filename
     )
-    executor = load_file(
-        storage_path=lattice_record.storage_path, filename=lattice_record.executor_filename
+    executor_data = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.executor_data_filename
+    )
+    workflow_executor_data = load_file(
+        storage_path=lattice_record.storage_path,
+        filename=lattice_record.workflow_executor_data_filename,
     )
     inputs = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.inputs_filename
+    )
+    named_args = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.named_args_filename
+    )
+    named_kwargs = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.named_kwargs_filename
     )
     error = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.error_filename
@@ -96,10 +106,20 @@ def result_from(lattice_record: Lattice) -> Result:
         storage_path=lattice_record.storage_path, filename=lattice_record.results_filename
     )
 
+    executor = lattice_record.executor
+    workflow_executor = lattice_record.workflow_executor
+
     attributes = {
-        "metadata": {"executor": executor},
+        "metadata": {
+            "executor": executor,
+            "executor_data": executor_data,
+            "workflow_executor": workflow_executor,
+            "workflow_exector_data": workflow_executor_data,
+        },
         "args": inputs["args"],
         "kwargs": inputs["kwargs"],
+        "named_args": named_args,
+        "named_kwargs": named_kwargs,
         "transport_graph": transport_graph,
         "workflow_function": function,
     }
