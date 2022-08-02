@@ -67,6 +67,7 @@ import DialogBox from '../common/DialogBox'
 import { ReactComponent as DeleteNewIcon } from '../../assets/delete.svg'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import Runtime from './Runtime'
+import OverflowTip from '../common/EllipsisTooltip'
 
 const headers = [
   {
@@ -596,7 +597,9 @@ const ResultListing = () => {
                           />
                         </TableCell>
 
-                        <TableCell>{result.latticeName}</TableCell>
+                        <TableCell>
+                          <OverflowTip value={result.latticeName}/>
+                          </TableCell>
                         {result.status === 'RUNNING' ? (
                           <TableCell>
                             <Runtime

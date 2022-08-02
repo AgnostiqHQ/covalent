@@ -20,46 +20,51 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
- import { Box, LinearProgress, Tooltip, Typography } from '@mui/material'
+import { Box, LinearProgress, Tooltip, Typography } from '@mui/material'
+import { statusLabel } from '../../utils/misc'
 
- const STATUS_COLORS = {
-   RUNNING: 'running',
-   COMPLETED: 'success',
-   FAILED: 'error',
-   CANCELLED: 'error',
- }
+const STATUS_COLORS = {
+  RUNNING: 'running',
+  COMPLETED: 'success',
+  FAILED: 'error',
+  CANCELLED: 'error',
+  POSTPROCESSING: 'success',
+  PENDING_POSTPROCESSING: 'success',
+  POSTPROCESSING_FAILED: 'success',
+}
 
- const ResultProgress = (props) => {
-   const {status,totalElectronsCompleted,totalElectrons}=props.result
-   return (
-     <Tooltip title={status} placement="right">
-       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-         <Box sx={{ width: '100%', mr: 1 }}>
-           <LinearProgress
-             variant="determinate"
-             color={STATUS_COLORS[status.toUpperCase()]}
-             value={(totalElectronsCompleted * 100) / totalElectrons}
-           />
-         </Box>
-         <Box sx={{ minWidth: 35 }}>
-           <Typography variant="body2"
-           color={STATUS_COLORS[status.toUpperCase()]}
-           >
-             <Typography variant="body2">
-               <Box component="div" display="inline"
-               sx={{color: `${STATUS_COLORS[status.toUpperCase()]}.main`,fontSize: '1rem'}}>{totalElectronsCompleted}</Box>
-               <Box component="div" display="inline"
-               sx={{
-                 color: totalElectrons===totalElectronsCompleted?`${STATUS_COLORS[status.toUpperCase()]}.main`:'',
-                 fontSize: '1rem'}
-                 }>/{totalElectrons}</Box>
-             </Typography>
-           </Typography>
+const ResultProgress = (props) => {
+  const { status, totalElectronsCompleted, totalElectrons } = props.result
+  return (
+    <Tooltip title={statusLabel(status)} placement="right">
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ width: '100%', mr: 1 }}>
+          <LinearProgress
+            variant="determinate"
+            color={STATUS_COLORS[status.toUpperCase()]}
+            value={(totalElectronsCompleted * 100) / totalElectrons}
+          />
+        </Box>
+        <Box sx={{ minWidth: 35 }}>
+          <Typography variant="body2"
+            color={STATUS_COLORS[status.toUpperCase()]}
+          >
+            <Typography variant="body2">
+              <Box component="div" display="inline"
+                sx={{ color: `${STATUS_COLORS[status.toUpperCase()]}.main`, fontSize: '1rem' }}>{totalElectronsCompleted}</Box>
+              <Box component="div" display="inline"
+                sx={{
+                  color: totalElectrons === totalElectronsCompleted ? `${STATUS_COLORS[status.toUpperCase()]}.main` : '',
+                  fontSize: '1rem'
+                }
+                }>/{totalElectrons}</Box>
+            </Typography>
+          </Typography>
 
-         </Box>
-       </Box>
-     </Tooltip>
-   )
- }
+        </Box>
+      </Box>
+    </Tooltip>
+  )
+}
 
- export default ResultProgress
+export default ResultProgress

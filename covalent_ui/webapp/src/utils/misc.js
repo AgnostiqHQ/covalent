@@ -82,6 +82,9 @@ export const statusColor = (status) => {
     RUNNING: theme.palette.running.main,
     NEW_OBJECT: theme.palette.running.main,
     COMPLETED: theme.palette.success.main,
+    POSTPROCESSING: theme.palette.success.main,
+    PENDING_POSTPROCESSING: theme.palette.success.main,
+    POSTPROCESSING_FAILED: theme.palette.success.main,
     FAILED: theme.palette.error.main,
     CANCELLED: theme.palette.error.main,
   }[status]
@@ -95,6 +98,9 @@ export const statusLabel = (status) => {
       COMPLETED: 'Completed',
       FAILED: 'Failed',
       CANCELLED: 'Cancelled',
+      POSTPROCESSING: 'Completed',
+      PENDING_POSTPROCESSING: 'Completed',
+      POSTPROCESSING_FAILED: 'Completed',
     }[status] || status
   )
 }
@@ -114,6 +120,24 @@ export const statusIcon = (status) => {
         </SvgIcon>
       )
     case 'COMPLETED':
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <CheckSvg />
+        </SvgIcon>
+      )
+    case 'POSTPROCESSING':
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <CheckSvg />
+        </SvgIcon>
+      )
+    case 'PENDING_POSTPROCESSING':
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <CheckSvg />
+        </SvgIcon>
+      )
+    case 'POSTPROCESSING_FAILED':
       return (
         <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
           <CheckSvg />

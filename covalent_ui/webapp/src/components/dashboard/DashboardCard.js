@@ -30,7 +30,7 @@ import {
   SvgIcon,
 } from '@mui/material'
 import { Box } from '@mui/system'
-import { displayStatus, secondsToHms } from '../../utils/misc'
+import { statusLabel, secondsToHms } from '../../utils/misc'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchDashboardOverview } from '../../redux/dashboardSlice'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
@@ -110,7 +110,7 @@ const DashboardCard = () => {
         <DashboardDivider />
         <DashBoardCardItems
           content={
-            displayStatus(dashboardStats.latest_running_task_status) || 'N/A'
+            statusLabel(dashboardStats.latest_running_task_status) || 'N/A'
           }
           desc="Latest running task status"
           align="center"

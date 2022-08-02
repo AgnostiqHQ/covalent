@@ -67,7 +67,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
     dispatch(latticeResults({ dispatchId, params: 'result' }))
     dispatch(latticeFunctionString({ dispatchId, params: 'function_string' }))
     dispatch(latticeInput({ dispatchId, params: 'inputs' }))
-    dispatch(latticeExecutorDetail({ dispatchId, params: 'executor_details' }))
+    dispatch(latticeExecutorDetail({ dispatchId, params: 'executor' }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
 

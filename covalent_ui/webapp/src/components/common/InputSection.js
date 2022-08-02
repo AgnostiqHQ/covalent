@@ -42,7 +42,7 @@ const InputSection = ({ isFetching, inputs, preview, ...props }) => {
           <>
             <Heading>Input</Heading>
             <Paper elevation={0} {...props}>
-              <SyntaxHighlighter language="python" src={inputSrc} />
+              <SyntaxHighlighter language="json" src={inputSrc} />
             </Paper>
           </>)
       )}

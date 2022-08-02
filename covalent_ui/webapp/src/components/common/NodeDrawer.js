@@ -102,7 +102,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
       // dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
       dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
       dispatch(
-        electronExecutor({ dispatchId, electronId, params: 'executor_details' })
+        electronExecutor({ dispatchId, electronId, params: 'executor' })
       )
       dispatch(
         electronFunctionString({
