@@ -94,8 +94,10 @@ class DaskExecutor(BaseAsyncExecutor):
 
         self.scheduler_address = scheduler_address
 
-    async def run(self, function: Callable, args: List, kwargs: Dict):
+    async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
+
+        node_id = task_metadata["node_id"]
 
         dask_client = _address_client_mapper.get(self.scheduler_address)
 
@@ -109,7 +111,7 @@ class DaskExecutor(BaseAsyncExecutor):
             await dask_client
 
         future = dask_client.submit(dask_wrapper, function, args, kwargs)
-        app_log.debug("Submitted task to dask")
+        app_log.debug(f"Submitted task {node_id} to dask")
         result, worker_stdout, worker_stderr = await dask_client.gather(future)
 
         print(worker_stdout, end="", file=sys.stdout)
