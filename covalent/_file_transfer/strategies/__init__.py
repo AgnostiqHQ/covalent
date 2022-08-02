@@ -20,4 +20,9 @@
 
 from .http_strategy import HTTP
 from .rsync_strategy import Rsync
-from .s3_strategy import S3
+
+try:
+    import boto3
+    from .s3_strategy import S3
+except:
+    print("Kindly install covalent as \"pip install covalent[aws]\" in order to use S3 file transfer strategy.")

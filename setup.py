@@ -168,7 +168,7 @@ setup_info = {
     },
     "install_requires": required,
     "extras_require": {
-        "s3": ["boto3==1.20.48"],
+        "aws": ["boto3==1.20.48"],
     },
     "classifiers": [
         "Development Status :: 4 - Beta",
