@@ -784,7 +784,6 @@ Node Outputs
                     node_output = TransportableObject(node_output)
 
                 executor = tg.get_node_value(node_id, "metadata")["executor"]
-
                 started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
                 completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
 
