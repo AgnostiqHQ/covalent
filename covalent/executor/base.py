@@ -229,7 +229,11 @@ class BaseExecutor(ABC):
         dispatch_info = DispatchInfo(dispatch_id)
         fn_version = function.args[0].python_version
 
-        task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id}
+        task_metadata = {
+            "dispatch_id": dispatch_id,
+            "node_id": node_id,
+            "results_dir": results_dir,
+        }
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()
@@ -479,7 +483,11 @@ class BaseAsyncExecutor(BaseExecutor):
         node_id: int = -1,
     ) -> Any:
 
-        task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id}
+        task_metadata = {
+            "dispatch_id": dispatch_id,
+            "node_id": node_id,
+            "results_dir": results_dir,
+        }
 
         with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
             result = await self.run(function, args, kwargs, task_metadata)
