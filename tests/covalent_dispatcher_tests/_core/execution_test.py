@@ -227,6 +227,8 @@ def test_result_post_process():
 
     compute_energy.build_graph()
 
+    compute_energy = Lattice.deserialize_from_json(compute_energy.serialize_to_json())
+
     node_outputs = {
         "construct_n_molecule(0)": 1,
         ":parameter:1(1)": 1,
