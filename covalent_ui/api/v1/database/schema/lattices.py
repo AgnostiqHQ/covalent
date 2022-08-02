@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Lattices schema"""
-from sqlalchemy import BigInteger, Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, Column, DateTime, Integer, String, Text, func
 from sqlalchemy.orm import relationship
 
 from covalent_ui.api.v1.database.config.db import Base
@@ -53,40 +53,71 @@ class Lattice(Base):
     """
 
     __tablename__ = "lattices"
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
     dispatch_id = Column(String(64), nullable=False)
 
+    # id of node if the lattice is actually a sublattice
     electron_id = Column(Integer)
 
+    # name of the lattice function
     name = Column(Text, nullable=False)
 
+    # Workflow status
     status = Column(String(24), nullable=False)
 
+    # Number of nodes in the lattice
     electron_num = Column(Integer, nullable=False)
 
     # Number of completed nodes in the lattice
     completed_electron_num = Column(Integer, nullable=False)
 
+    # Storage backend type for data files ("local", "s3")
     storage_type = Column(Text)
 
+    # Bucket name (dispatch_id)
     storage_path = Column(Text)
 
+    # Name of the file containing the serialized function
     function_filename = Column(Text)
 
+    # Name of the file containing the function string
     function_string_filename = Column(Text)
 
-    executor_filename = Column(Text)
+    # Short name describing the executor ("local", "dask", etc)
+    executor = Column(Text)
 
+    # Name of the file containing the serialized executor data
+    executor_data_filename = Column(Text)
+
+    # Short name describing the workflow executor ("local", "dask", etc)
+    workflow_executor = Column(Text)
+
+    # Name of the file containing the serialized workflow executor data
+    workflow_executor_data_filename = Column(Text)
+
+    # Name of the file containing an error message for the workflow
     error_filename = Column(Text)
 
+    # Name of the file containing the serialized input data
     inputs_filename = Column(Text)
 
+    # Name of the file containing the serialized named args
+    named_args_filename = Column(Text)
+
+    # Name of the file containing the serialized named kwargs
+    named_kwargs_filename = Column(Text)
+
+    # name of the file containing the serialized output
     results_filename = Column(Text)
+
+    # Name of the file containing the transport graph
     transport_graph_filename = Column(Text)
 
-    is_active = Column(Boolean)
+    # Name of the column which signifies soft deletion of a lattice
+    is_active = Column(Boolean, nullable=False, default=True)
 
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=False)
+    # Timestamps
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    updated_at = Column(DateTime, nullable=False, onupdate=func.now(), server_default=func.now())
     started_at = Column(DateTime)
     completed_at = Column(DateTime)

@@ -49,7 +49,15 @@ class LatticeFileResponse(BaseModel):
 class LatticeExecutorResponse(BaseModel):
     """Lattices File Response Model"""
 
-    data: str = None
+    executor_name: str = None
+    executor_details: str = None
+
+
+class LatticeWorkflowExecutorResponse(BaseModel):
+    """Lattices File Response Model"""
+
+    workflow_executor_name: str = None
+    workflow_executor_details: str = None
 
 
 class GraphResponse(BaseModel):
@@ -83,8 +91,8 @@ class ElectronFileResponse(BaseModel):
 class ElectronExecutorResponse(BaseModel):
     """Lattices File Response Model"""
 
-    data: str = (None,)
-    executor_name: str = None
+    executor: str = (None,)
+    executor_details: str = None
 
 
 class ElectronErrorResponse(BaseModel):
@@ -104,6 +112,7 @@ class FileOutput(str, Enum):
     FUNCTION_STRING = "function_string"
     INPUTS = "inputs"
     ERROR = "error"
-    EXECUTOR = "executor_details"
+    EXECUTOR = "executor"
+    WORKFLOW_EXECUTOR = "workflow_executor"
     FUNCTION = "function"
     TRANSPORT_GRAPH = "transport_graph"

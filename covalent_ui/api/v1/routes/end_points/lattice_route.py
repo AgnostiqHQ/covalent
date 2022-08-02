@@ -34,6 +34,7 @@ from covalent_ui.api.v1.models.lattices_model import (
     LatticeDetailResponse,
     LatticeExecutorResponse,
     LatticeFileResponse,
+    LatticeWorkflowExecutorResponse,
 )
 from covalent_ui.api.v1.utils.file_handle import FileHandler
 
@@ -102,9 +103,20 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
             elif name == "function_string":
                 response = handler.read_from_text(lattice_data["function_string_filename"])
                 return LatticeFileResponse(data=response)
-            elif name == "executor_details":
-                response = handler.read_from_pickle(lattice_data["executor_filename"])
-                return LatticeExecutorResponse(data=response)
+            elif name == "executor":
+                executor_name = lattice_data["executor"]
+                executor_data = handler.read_from_pickle(lattice_data["executor_data_filename"])
+                return LatticeExecutorResponse(
+                    executor_name=executor_name, executor_data=executor_data
+                )
+            elif name == "workflow_executor":
+                executor_name = lattice_data["workflow_executor"]
+                executor_data = handler.read_from_pickle(
+                    lattice_data["workflow_executor_data_filename"]
+                )
+                return LatticeWorkflowExecutorResponse(
+                    workflow_executor_name=executor_name, workflow_executor_details=executor_data
+                )
             elif name == "error":
                 response = handler.read_from_text(lattice_data["error_filename"])
                 return LatticeFileResponse(data=response)

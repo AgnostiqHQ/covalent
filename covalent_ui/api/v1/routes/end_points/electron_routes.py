@@ -88,9 +88,12 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput
             elif name == "function":
                 response = handler.read_from_pickle(result["function_filename"])
                 return ElectronFileResponse(data=response)
-            elif name == "executor_details":
-                response = handler.read_from_pickle(result["executor_filename"])
-                return ElectronExecutorResponse(data=response, executor_name="dask")
+            elif name == "executor":
+                executor_name = result["executor"]
+                executor_data = handler.read_from_pickle(result["executor_data_filename"])
+                return ElectronExecutorResponse(
+                    executor=executor_name, executor_details=executor_data
+                )
             elif name == "result":
                 response = handler.read_from_pickle(result["results_filename"])
                 return ElectronFileResponse(data=str(response))

@@ -22,7 +22,7 @@
 
 import enum
 
-from sqlalchemy import BigInteger, Boolean, Column, DateTime, Enum, ForeignKey, Integer, Text
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
 
 from covalent_ui.api.v1.database.config.db import Base
 
@@ -56,18 +56,24 @@ class ElectronDependency(Base):
     """
 
     __tablename__ = "electron_dependency"
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
-    electron_id = Column(Integer, ForeignKey("electrons.id"), nullable=False)
+    # Unique ID of electron
+    electron_id = Column(Integer, nullable=False)
 
+    # Unique ID of the electron's parent
     parent_electron_id = Column(Integer, nullable=False)
 
     edge_name = Column(Text, nullable=False)
 
-    parameter_type = Column(Enum(ParameterTypeEnum), nullable=False)
+    # arg, kwarg, null
+    parameter_type = Column(String(24), nullable=True)
 
-    arg_index = Column(Integer, nullable=False)
+    # Argument position - this value is null unless parameter_type is arg
+    arg_index = Column(Integer, nullable=True)
 
-    created_at = Column(DateTime, nullable=False)
+    # Name of the column which signifies soft deletion of the electron dependencies corresponding to a lattice
+    is_active = Column(Boolean, nullable=False, default=True)
 
-    is_active = Column(Boolean)
+    updated_at = Column(DateTime, nullable=True, onupdate=func.now(), server_default=func.now())
+    created_at = Column(DateTime, nullable=False, server_default=func.now())

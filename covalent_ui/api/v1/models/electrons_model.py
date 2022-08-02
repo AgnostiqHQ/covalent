@@ -46,7 +46,7 @@ class ElectronResponseModel(BaseModel):
 class FileOutput(str, Enum):
     FUNCTION_STRING = "function_string"
     FUNCTION = "function"
-    EXECUTOR = "executor_details"
+    EXECUTOR = "executor"
     RESULT = "result"
     VALUE = "value"
     KEY = "key"
