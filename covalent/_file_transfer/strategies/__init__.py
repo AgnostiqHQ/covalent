@@ -24,4 +24,4 @@ try:
     import boto3
     from .s3_strategy import S3
 except:
-    print("To use the S3 file transfer strategy kindly install the boto3 package")
+    print("To use the S3 file transfer strategy kindly install the boto3 packagefrom AWS")
