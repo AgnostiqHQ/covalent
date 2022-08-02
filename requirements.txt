@@ -1,5 +1,4 @@
 alembic==1.8.0
-boto3==1.24.38
 cloudpickle==2.0.0
 dask[distributed]==2022.6.0
 flask==2.0.1
