@@ -131,9 +131,11 @@ jobs:
             yarn build
 
       - name: Build distribution
+        if: github.event_name != 'pull_request'
         run: python setup.py sdist
 
       - name: Validate distribution
+        if: github.event_name != 'pull_request'
         run: |
           VERSION="$(cat ./VERSION)"
           cd dist
