@@ -325,7 +325,6 @@ def test_insert_electrons_data(test_db, mocker):
                     )
                 else:
                     assert getattr(electron, key) == value
-                assert electron.key_filename == KEY_FILENAME
             assert electron.is_active
 
         insert_electrons_data(**electron_kwargs)
