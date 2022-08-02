@@ -118,7 +118,6 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
 
         workflow_function = load_file(
             storage_path=lattice_storage_path, filename=lattice_row.function_filename
-
         ).get_deserialized()
         assert workflow_function(1, 2) == 4
         assert (
@@ -134,7 +133,6 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
             ).get_deserialized()
             is None
         )
-
 
         executor_data = load_file(
             storage_path=lattice_storage_path, filename=lattice_row.executor_data_filename
@@ -190,12 +188,12 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
                     is None
                 )
             if electron.transport_graph_node_id == 3:
-              executor_data = load_file(
-                  storage_path=electron.storage_path, filename=electron.executor_data_filename
-              )
+                executor_data = load_file(
+                    storage_path=electron.storage_path, filename=electron.executor_data_filename
+                )
 
-              assert executor_data["short_name"] == le.short_name()
-              assert executor_data["attributes"] == le.__dict__
+                assert executor_data["short_name"] == le.short_name()
+                assert executor_data["attributes"] == le.__dict__
 
         # Check that there are the appropriate amount of electron dependency records
         assert len(electron_dependency_rows) == 4
@@ -215,7 +213,6 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
                 # output={"test_data": "test_data"},  # TODO - Put back in later
                 # sublattice_result=None,  # TODO - Add a test where this is not None
             )
-
 
         # Call Result.persist
         result_1.persist()
