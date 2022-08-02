@@ -91,7 +91,7 @@ class ElectronFileResponse(BaseModel):
 class ElectronExecutorResponse(BaseModel):
     """Lattices File Response Model"""
 
-    executor: str = (None,)
+    executor_name: str = None
     executor_details: str = None
 
 
