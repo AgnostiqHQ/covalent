@@ -39,6 +39,7 @@ from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
     ExecutorCache,
     _gather_deps,
+    _get_executor_instance,
     _get_task_inputs,
     _handle_cancelled_node,
     _handle_completed_node,
@@ -754,6 +755,10 @@ def test_executor_cache_initialize():
     cache = ExecutorCache()
     cache.initialize_from_result_object(result_object)
 
+    assert 0 in cache.id_instance_map.keys()
+    assert id_1 in cache.id_instance_map.keys()
+    assert id_2 in cache.id_instance_map.keys()
+    assert len(cache.id_instance_map.keys()) == 3
     assert cache.tasks_per_instance[id_1] == 1
     assert cache.tasks_per_instance[id_2] == 2
 
@@ -767,3 +772,140 @@ def test_executor_cache_initialize():
 
     assert cache.tasks_per_instance[id_1] == 1
     assert cache.tasks_per_instance[id_2] == 3
+
+
+def test_get_executor_instance():
+    """Test _get_executor_instance"""
+
+    from covalent._workflow.lattice import Lattice
+    from covalent.executor import LocalExecutor
+
+    le = LocalExecutor()
+    le_shared_instance = le.get_shared_instance()
+
+    @ct.electron(executor="local")
+    def task_1(x):
+        return x
+
+    @ct.electron(executor=le)
+    def task_2(x):
+        return x
+
+    @ct.electron(executor=le_shared_instance)
+    def task_3(x):
+        return x
+
+    @ct.electron(executor=le_shared_instance)
+    def task_4(x):
+        return x
+
+    @ct.lattice(workflow_executor="local")
+    def workflow_1(x):
+        res1 = task_1(x)
+        res2 = task_2(res1)
+        res3 = task_3(res2)
+        res4 = task_4(res3)
+        return res1 + res2 + res3 + res4
+
+    workflow_1.build_graph(5)
+    received_lattice = Lattice.deserialize_from_json(workflow_1.serialize_to_json())
+
+    result_object = Result(received_lattice, "/tmp", "asdf")
+
+    cache = ExecutorCache()
+    cache.initialize_from_result_object(result_object)
+    tg = result_object.lattice.transport_graph
+
+    # short name
+    node_id = 0
+    node_name = tg.get_node_value(node_id, "name")
+    executor = tg.get_node_value(node_id, "metadata")["executor"]
+    executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
+    selected_executor = [executor, executor_data]
+
+    executor_instance = _get_executor_instance(
+        node_id=node_id,
+        dispatch_id="asdf",
+        node_name=node_name,
+        selected_executor=selected_executor,
+        executor_cache=cache,
+        increment_task_count=False,
+    )
+
+    assert executor_instance.short_name() == "local"
+    assert cache.id_instance_map[0] is None
+
+    # throwaway instance -- don't cache
+    node_id = 2
+    node_name = tg.get_node_value(node_id, "name")
+    executor = tg.get_node_value(node_id, "metadata")["executor"]
+    executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
+    assert executor_data["attributes"]["instance_id"] == 0
+    selected_executor = [executor, executor_data]
+
+    executor_instance = _get_executor_instance(
+        node_id=node_id,
+        dispatch_id="asdf",
+        node_name=node_name,
+        selected_executor=selected_executor,
+        executor_cache=cache,
+        increment_task_count=False,
+    )
+
+    assert executor_instance.short_name() == "local"
+    assert cache.id_instance_map[0] is None
+
+    # shared instance -- to cache
+    node_id = 3
+    node_name = tg.get_node_value(node_id, "name")
+    executor = tg.get_node_value(node_id, "metadata")["executor"]
+    executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
+    assert executor_data["attributes"]["instance_id"] > 0
+    selected_executor = [executor, executor_data]
+
+    shared_instance = _get_executor_instance(
+        node_id=node_id,
+        dispatch_id="asdf",
+        node_name=node_name,
+        selected_executor=selected_executor,
+        executor_cache=cache,
+        increment_task_count=False,
+    )
+
+    exec_id = shared_instance.instance_id
+    assert shared_instance.short_name() == "local"
+    assert shared_instance.is_shared_instance()
+    assert cache.id_instance_map[exec_id] == shared_instance
+
+    # shared instance -- retrieve from cache
+    node_id = 4
+    node_name = tg.get_node_value(node_id, "name")
+    executor = tg.get_node_value(node_id, "metadata")["executor"]
+    executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
+    selected_executor = [executor, executor_data]
+
+    new_shared_instance = _get_executor_instance(
+        node_id=node_id,
+        dispatch_id="asdf",
+        node_name=node_name,
+        selected_executor=selected_executor,
+        executor_cache=cache,
+        increment_task_count=False,
+    )
+
+    assert new_shared_instance is shared_instance
+
+    task_count = shared_instance.tasks_left
+
+    # Test increment task count (for un-planned tasks)
+    shared_instance = _get_executor_instance(
+        node_id=node_id,
+        dispatch_id="asdf",
+        node_name=node_name,
+        selected_executor=selected_executor,
+        executor_cache=cache,
+        increment_task_count=True,
+    )
+
+    task_count += 1
+    assert task_count == shared_instance.tasks_left

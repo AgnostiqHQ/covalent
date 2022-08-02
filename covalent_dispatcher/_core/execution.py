@@ -309,39 +309,16 @@ async def _dispatch_sublattice(
     return json.loads(res["output"].json)
 
 
-async def _run_task(
+def _get_executor_instance(
     node_id: int,
     dispatch_id: str,
-    results_dir: str,
-    inputs: Dict,
-    serialized_callable: Any,
-    selected_executor: Any,
-    call_before: List,
-    call_after: List,
     node_name: str,
-    tasks_pool: ThreadPoolExecutor,
-    workflow_executor: Any,
+    selected_executor: List,
     executor_cache: ExecutorCache,
-    increment_task_count: bool,
-) -> None:
-    """
-    Run a task with given inputs on the selected executor.
-    Also updates the status of current node execution while
-    checking if a redispatch has occurred. Exclude those nodes
-    from execution which were completed.
+    increment_task_count,
+):
 
-    Also verifies if execution of this dispatch has been cancelled.
-
-    Args:
-        inputs: Inputs for the task.
-        result_object: Result object being used for current dispatch
-        node_id: Node id of the task to be executed.
-
-    Returns:
-        None
-    """
-
-    # Instantiate the executor from JSON
+    # Instantiate the executor from its JSON description
     try:
         short_name, object_dict = selected_executor
 
@@ -376,6 +353,50 @@ async def _run_task(
     except Exception as ex:
         app_log.debug(f"Exception when trying to determine executor: {ex}")
         raise ex
+
+    return executor
+
+
+async def _run_task(
+    node_id: int,
+    dispatch_id: str,
+    results_dir: str,
+    inputs: Dict,
+    serialized_callable: Any,
+    selected_executor: Any,
+    call_before: List,
+    call_after: List,
+    node_name: str,
+    tasks_pool: ThreadPoolExecutor,
+    workflow_executor: Any,
+    executor_cache: ExecutorCache,
+    increment_task_count: bool,
+) -> None:
+    """
+    Run a task with given inputs on the selected executor.
+    Also updates the status of current node execution while
+    checking if a redispatch has occurred. Exclude those nodes
+    from execution which were completed.
+
+    Also verifies if execution of this dispatch has been cancelled.
+
+    Args:
+        inputs: Inputs for the task.
+        result_object: Result object being used for current dispatch
+        node_id: Node id of the task to be executed.
+
+    Returns:
+        None
+    """
+
+    executor = _get_executor_instance(
+        node_id=node_id,
+        dispatch_id=dispatch_id,
+        node_name=node_name,
+        selected_executor=selected_executor,
+        executor_cache=executor_cache,
+        increment_task_count=increment_task_count,
+    )
 
     # run the task on the executor and register any failures
     try:
