@@ -92,7 +92,7 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput
                 executor_name = result["executor"]
                 executor_data = handler.read_from_pickle(result["executor_data_filename"])
                 return ElectronExecutorResponse(
-                    executor=executor_name, executor_details=executor_data
+                    executor_name=executor_name, executor_details=executor_data
                 )
             elif name == "result":
                 response = handler.read_from_pickle(result["results_filename"])
