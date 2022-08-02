@@ -16,7 +16,7 @@
 
 ## 🤔 What is Covalent?
 
-Covalent is a Pythonic workflow tool used to execute HPC and quantum tasks in heterogenous environments. Computational scientists and engineers use Covalent to....
+Covalent is a Pythonic workflow tool used to execute HPC and quantum tasks in heterogenous environments. Computational scientists and engineers use Covalent to...
 
 - rapidly iterate prototypes and exploratory research models
 - automate, manage, and share reproducible experiments
