@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.159.0] - 2022-08-02
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
 ### Changed
 
 - Database schema has been updated to v11
