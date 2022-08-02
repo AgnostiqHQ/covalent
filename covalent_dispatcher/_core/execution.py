@@ -116,9 +116,13 @@ class ExecutorCache:
             else:
                 self.tasks_per_instance[executor_id] += 1
 
+    # Might be better to bring back the info_queue and just send a
+    # "cleanup" message
     async def finalize_executors(self):
         """Clean up any executors still running"""
         for key, executor in self.id_instance_map.items():
+            if executor is None:
+                continue
             if isinstance(executor, BaseAsyncExecutor):
                 await executor.cleanup()
             else:
