@@ -11,6 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated Base executor to support non-unique `retval_key`s, particularly for use in File Transfer where we may have several CallDeps with the reserved `retval_key` of value `files`.
 
+## [0.160.1] - 2022-08-02
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Fixed
+
+- `script_location` key not found issue when installing with pip (second attempt)
+
+### Docs
+
+- Remove migration guide reference from README
+
+### Operations
+
+- Explicitly check `release == true` in tests.yml
+
 ## [0.160.0] - 2022-08-02
 
 ### Authors
