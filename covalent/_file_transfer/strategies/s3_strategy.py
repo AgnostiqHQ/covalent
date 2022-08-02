@@ -4,7 +4,6 @@ from pathlib import Path
 from subprocess import PIPE, CalledProcessError, Popen
 from typing import Optional
 
-import boto3
 from furl import furl
 
 from covalent._file_transfer import File
@@ -29,6 +28,12 @@ class S3(FileTransferStrategy):
         self.aws_secret_access_key = aws_secret_access_key
         self.aws_session_token = aws_session_token
         self.region_name = region_name
+
+        try:
+            import boto3
+        except ImportError:
+            raise ImportError("Using S3 strategy requires boto3 from AWS installed on your system.")
+
 
     # return callable to download here implies 'from' is a remote source
     def download(self, from_file: File, to_file: File = File()) -> File:
