@@ -29,7 +29,7 @@ from covalent.executor import BaseExecutor, wrapper_fn
 
 
 class MockExecutor(BaseExecutor):
-    def run(self, function, args, kwargs):
+    def run(self, function, args, kwargs, task_metadata):
         return function(*args, **kwargs)
 
 

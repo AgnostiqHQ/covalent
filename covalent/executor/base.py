@@ -229,6 +229,8 @@ class BaseExecutor(ABC):
         dispatch_info = DispatchInfo(dispatch_id)
         fn_version = function.args[0].python_version
 
+        task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id}
+
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()
         ) as stdout, redirect_stderr(io.StringIO()) as stderr:
@@ -247,7 +249,7 @@ class BaseExecutor(ABC):
                 )
 
             else:
-                result = self.run(function, args, kwargs)
+                result = self.run(function, args, kwargs, task_metadata)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
@@ -259,13 +261,15 @@ class BaseExecutor(ABC):
         return (result, stdout.getvalue(), stderr.getvalue())
 
     @abstractmethod
-    def run(self, function: Callable, args: List, kwargs: Dict) -> Any:
+    def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
         """Abstract method to run a function in the executor.
 
         Args:
             function: The function to run in the executor
             args: List of positional arguments to be used by the function
             kwargs: Dictionary of keyword arguments to be used by the function.
+            task_metadata: Dictionary of metadata for the task. Current keys are
+                          `dispatch_id` and `node_id`
 
         Returns:
             output: The result of the function execution
@@ -474,15 +478,11 @@ class BaseAsyncExecutor(BaseExecutor):
         results_dir: str,
         node_id: int = -1,
     ) -> Any:
-        awaitable_run, out, err = super().execute(
-            function, args, kwargs, dispatch_id, results_dir, node_id
-        )
 
-        if not asyncio.iscoroutine(awaitable_run):
-            return (awaitable_run, out, err)
+        task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id}
 
         with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
-            result = await awaitable_run
+            result = await self.run(function, args, kwargs, task_metadata)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
@@ -494,13 +494,15 @@ class BaseAsyncExecutor(BaseExecutor):
         return (result, stdout.getvalue(), stderr.getvalue())
 
     @abstractmethod
-    async def run(self, function: Callable, args: List, kwargs: Dict) -> Any:
+    async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
         """Abstract method to run a function in the executor in async-aware manner.
 
         Args:
             function: The function to run in the executor
             args: List of positional arguments to be used by the function
             kwargs: Dictionary of keyword arguments to be used by the function.
+            task_metadata: Dictionary of metadata for the task. Current keys are
+                          `dispatch_id` and `node_id`
 
         Returns:
             output: The result of the function execution
