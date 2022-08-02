@@ -121,10 +121,6 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         ).get_deserialized()
         assert workflow_function(1, 2) == 4
         assert (
-            load_file(storage_path=lattice_storage_path, filename=lattice_row.executor_filename)
-            == "dask"
-        )
-        assert (
             load_file(storage_path=lattice_storage_path, filename=lattice_row.error_filename) == ""
         )
         assert (
@@ -140,12 +136,6 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
 
         assert executor_data["short_name"] == le.short_name()
         assert executor_data["attributes"] == le.__dict__
-
-        workflow_executor_data = load_file(
-            storage_path=lattice_storage_path, filename=lattice_row.workflow_executor_data_filename
-        )
-        assert workflow_executor_data["short_name"] == le.short_name()
-        assert workflow_executor_data["attributes"] == le.__dict__
 
         saved_named_args = load_file(
             storage_path=lattice_storage_path, filename=lattice_row.named_args_filename
@@ -182,10 +172,6 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
                         storage_path=electron.storage_path, filename=electron.call_after_filename
                     )
                     == []
-                )
-                assert (
-                    load_file(storage_path=electron.storage_path, filename=electron.key_filename)
-                    is None
                 )
             if electron.transport_graph_node_id == 3:
                 executor_data = load_file(
