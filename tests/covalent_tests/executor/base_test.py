@@ -20,16 +20,24 @@
 
 """Tests for the Covalent executor base module."""
 
+import io
 import os
 import tempfile
+from contextlib import redirect_stdout
 from functools import partial
 
 from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
+from covalent.executor.base import BaseAsyncExecutor
 
 
 class MockExecutor(BaseExecutor):
     def run(self, function, args, kwargs, task_metadata):
+        return function(*args, **kwargs)
+
+
+class MockAsyncExecutor(BaseAsyncExecutor):
+    async def run(self, function, args, kwargs, task_metadata):
         return function(*args, **kwargs)
 
 
@@ -234,3 +242,71 @@ def test_base_executor_execute_conda(mocker):
 
     assert result.get_deserialized() == 5
     mock_conda_exec.assert_called_once()
+
+
+def test_base_executor_passes_task_metadata(mocker):
+    def f(x, y):
+        return x, y
+
+    def fake_run(function, args, kwargs, task_metadata):
+        return task_metadata
+
+    me = MockExecutor()
+    me.run = fake_run
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    metadata, stdout, stderr = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+    task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
+    assert metadata == task_metadata
+
+
+def test_base_async_executor_passes_task_metadata(mocker):
+    import asyncio
+
+    def f(x, y):
+        return x, y
+
+    async def fake_run(function, args, kwargs, task_metadata):
+        return task_metadata
+
+    me = MockAsyncExecutor()
+    me.run = fake_run
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    awaitable = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    metadata, stdout, stderr = asyncio.run(awaitable)
+    task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
+    assert metadata == task_metadata
