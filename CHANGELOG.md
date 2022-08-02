@@ -27,6 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Explicitly check `release == true` in tests.yml
 
+### Removed
+
+- `while True` in `app.get_result`
+
+### Changed
+
+- Flask route logic to return 503 when the result is not ready
+
 ## [0.160.0] - 2022-08-02
 
 ### Authors
