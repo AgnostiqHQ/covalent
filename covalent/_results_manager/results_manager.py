@@ -114,7 +114,7 @@ def result_from(lattice_record: Lattice) -> Result:
             "executor": executor,
             "executor_data": executor_data,
             "workflow_executor": workflow_executor,
-            "workflow_exector_data": workflow_executor_data,
+            "workflow_executor_data": workflow_executor_data,
         },
         "args": inputs["args"],
         "kwargs": inputs["kwargs"],
