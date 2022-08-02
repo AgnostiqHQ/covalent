@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `paths-filter` will only be run on PRs, i.e on workflow runs, the whole test suite will be run.
 - Removed retry action from running on `pytest` steps since they instead use `pytest` retries.
+- `codecov.yml` added to enable carry-forward flags
+- UI front-end is only built for pull requests when the source changes
 
 ## [0.158.0] - 2022-07-29
 

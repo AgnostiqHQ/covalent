@@ -73,9 +73,11 @@ jobs:
             dispatcher:
             - 'covalent_dispatcher/**'
             ui_backend:
-            - 'covalent_ui/**'
+            - 'covalent_ui/*.py'
             ui_backend_tests:
             - 'tests/covalent_ui_tests/**'
+            ui_frontend:
+            - 'covalent_ui/webapp/**'
             
       - name: Set up Python
         if: matrix.os == 'macos-latest'
@@ -90,12 +92,14 @@ jobs:
 
       - name: Install NPM and Yarn on Ubuntu
         if: >
-          matrix.container == 'python:3.8-buster'
+          (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_frontend == 'true')
+          && (matrix.container == 'python:3.8-buster'
           || matrix.container == 'python:3.8-bullseye'
           || matrix.container == 'python:3.9-buster'
           || matrix.container == 'python:3.9-bullseye'
           || matrix.container == 'python:3.10-buster'
-          || matrix.container == 'python:3.10-bullseye'
+          || matrix.container == 'python:3.10-bullseye')
         run: |
           apt-get update && apt-get install -y curl rsync
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
@@ -103,7 +107,10 @@ jobs:
           npm install -g yarn
 
       - name: Install NPM and Yarn on CentOS
-        if: matrix.container.image == 'centos/python-38-centos7'
+        if: >
+          (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_frontend == 'true')
+           && matrix.container.image == 'centos/python-38-centos7'
         run: |
           yum remove -y npm nodejs
           curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
@@ -111,6 +118,9 @@ jobs:
           npm install -g yarn
 
       - name: Build webapp
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_frontend == 'true'
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
@@ -173,17 +183,19 @@ jobs:
       - name: Run UI backend tests and measure coverage
         id: ui_tests
         if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.ui_backend == 'true'
+          false
+          && (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_backend == 'true')
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
       
       - name: Generate UI backend coverage report
         continue-on-error: true
         if: > 
-          github.event_name != 'pull_request'
+          false
+          && (github.event_name != 'pull_request'
           || (steps.working-directory.outputs.ui_backend_tests == 'true'
               && steps.working-directory.outputs.ui_backend == 'true'
-              && steps.ui_tests.outputs.exit_code == 0)
+              && steps.ui_tests.outputs.exit_code == 0))
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
@@ -222,7 +234,7 @@ jobs:
 
       - name: Upload UI backend report to Codecov
         if: >
-          'false'
+          false
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
           && (github.event_name != 'pull_request'
