@@ -90,6 +90,16 @@ jobs:
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
 
+      - name: Install rsync on Ubuntu
+        if: >
+          matrix.container == 'python:3.8-buster'
+          || matrix.container == 'python:3.8-bullseye'
+          || matrix.container == 'python:3.9-buster'
+          || matrix.container == 'python:3.9-bullseye'
+          || matrix.container == 'python:3.10-buster'
+          || matrix.container == 'python:3.10-bullseye'
+        run: apt-get update && apt-get install -y rsync
+
       - name: Install NPM and Yarn on Ubuntu
         if: >
           (github.event_name != 'pull_request'
@@ -101,7 +111,7 @@ jobs:
           || matrix.container == 'python:3.10-buster'
           || matrix.container == 'python:3.10-bullseye')
         run: |
-          apt-get update && apt-get install -y curl rsync
+          apt-get install -y curl
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
           apt-get install -y nodejs
           npm install -g yarn
