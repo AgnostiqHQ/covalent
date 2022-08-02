@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove migration guide reference from README
 
+### Operations
+
+- Explicitly check `release == true` in tests.yml
+
 ## [0.160.0] - 2022-08-02
 
 ### Authors
