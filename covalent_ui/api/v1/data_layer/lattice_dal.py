@@ -54,7 +54,6 @@ class Lattices:
                 Lattice.storage_path.label("directory"),
                 Lattice.error_filename,
                 func.datetime(Lattice.started_at, "localtime").label("start_time"),
-                # Lattice.completed_at.label("end_time"),
                 func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label(
                     "end_time"
                 ),
@@ -70,7 +69,6 @@ class Lattices:
                     )
                     * 1000
                 ).label("runtime"),
-                # func.datetime(Lattice.updated_at, "localtime").label("updated_at"),
                 func.IFNULL(func.datetime(Lattice.updated_at, "localtime"), None).label(
                     "updated_at"
                 ),

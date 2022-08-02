@@ -28,33 +28,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from covalent._shared_files import logger
+from covalent._shared_files.config import get_config
 from covalent_ui.api.v1.routes import routes
 
 # Config
 
 WEBHOOK_PATH = "/api/webhook"
-origins = ["http://localhost:49009", "http://localhost:48008"]
+address = get_config("user_interface.address")
+port = str(get_config("user_interface.dev_port"))
+socket_port = str(get_config("user_interface.port"))
+origins = [f"http://{address}:{port}"]
+socket_origins = [f"http://{address}:{port}", f"http://{address}:{socket_port}"]
 
 app_log = logger.app_log
 
 app = FastAPI()
-sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
-
-
-@sio.event
-def connect(sid, environ):
-    print("connect ", sid)
+sio = socketio.AsyncServer(cors_allowed_origins=socket_origins, async_mode="asgi")
 
 
 @sio.on("message")
 async def chat_message(sid, data):
-    print("message ", data)
     await sio.emit("draw-request", "hi ")
-
-
-@sio.event
-def disconnect(sid):
-    print("disconnect ", sid)
 
 
 app.include_router(routes.routes)

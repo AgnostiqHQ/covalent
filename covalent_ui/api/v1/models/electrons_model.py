@@ -22,7 +22,6 @@
 
 from enum import Enum
 
-# pylint: disable=no-name-in-module
 from pydantic import BaseModel
 
 from covalent_ui.api.v1.utils.status import Status

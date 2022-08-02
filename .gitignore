@@ -71,9 +71,7 @@
 !README.md
 !VERSION
 
-# Ignore Lock & dirLock files
-covalent_ui/dask-worker-space/*.*lock
-covalent_ui/app/dask-worker-space/*.*lock
+
 
 # Ignore .sonarwork files
 covalent_ui/api/.scannerwork/.sonar_lock

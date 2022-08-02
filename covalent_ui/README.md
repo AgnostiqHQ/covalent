@@ -2,8 +2,7 @@
 
 ## Setup
 
--   Clone the repo ```git clone https://github.com/AgnostiqHQ/covalent.git```
--   Switch to branch webapp-db-revamp
+-   Clone the repo
 -   Install the dependencies
 
 ```shell

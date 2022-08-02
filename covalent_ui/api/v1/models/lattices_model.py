@@ -20,7 +20,6 @@
 
 """Lattice request and response model"""
 
-# pylint: disable=no-name-in-module
 from datetime import datetime
 from enum import Enum
 

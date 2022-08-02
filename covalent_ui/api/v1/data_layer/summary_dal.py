@@ -75,7 +75,6 @@ class Summary:
                 func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label(
                     "ended_at"
                 ),
-                # Lattice.completed_at.label("ended_at"),
                 Lattice.status.label("status"),
                 func.datetime(Lattice.updated_at, "localtime").label("updated_at"),
             )
@@ -97,7 +96,6 @@ class Summary:
             .all()
         )
 
-        # count = self.db_con.query(func.count(Lattice.id)).filter(Lattice.electron_id.is_(None))
         counter = (
             self.db_con.query(func.count(Lattice.id))
             .filter(

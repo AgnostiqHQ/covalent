@@ -45,8 +45,3 @@ def get_graph(dispatch_id: uuid.UUID):
 
         graph = Graph(session)
         return graph.get_graph(dispatch_id)
-    # response = graph_data()["items"]
-    # for results in response:
-    #     if str(dispatch_id) == results["dispatch_id"]:
-    #         return GraphResponse(graph=results["graph"])
-    # return GraphResponse(graph=None)
