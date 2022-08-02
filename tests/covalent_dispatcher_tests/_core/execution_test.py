@@ -708,8 +708,8 @@ def test_executor_cache_initialize():
     from covalent._workflow.lattice import Lattice
     from covalent.executor import LocalExecutor
 
-    le1 = LocalExecutor()
-    le2 = LocalExecutor()
+    le1 = LocalExecutor().get_shared_instance()
+    le2 = LocalExecutor().get_shared_instance()
 
     id_1 = le1.instance_id
     id_2 = le2.instance_id
