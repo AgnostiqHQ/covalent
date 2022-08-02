@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- `Executor.run()` now accepts a `task_metadata` dictionary. Current
+  keys consist of `dispatch_id` and `node_id`.
+
+
 ### Operations
 
 - `paths-filter` will only be run on PRs, i.e on workflow runs, the whole test suite will be run.
