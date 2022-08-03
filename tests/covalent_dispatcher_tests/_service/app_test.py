@@ -29,6 +29,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from covalent._data_store import models
+from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Lattice
 from covalent._results_manager.result import Result
 from covalent_dispatcher._db.dispatchdb import DispatchDB
@@ -48,6 +49,16 @@ def app():
 @pytest.fixture
 def client(app):
     return app.test_client()
+
+
+@pytest.fixture
+def test_db():
+    """Instantiate and return an in-memory database."""
+
+    return DataStore(
+        db_URL="sqlite+pysqlite:///:memory:",
+        initialize_db=True,
+    )
 
 
 class MockDataStore:
@@ -83,7 +94,7 @@ def test_db_path(mocker, app, client):
     assert json.loads(response.data) == dbpath
 
 
-def test_get_result(mocker, app, client, tmp_path):
+def test_get_result(mocker, app, client, test_db, tmp_path):
     lattice = Lattice(
         status=str(Result.COMPLETED),
         dispatch_id=DISPATCH_ID,
@@ -94,19 +105,19 @@ def test_get_result(mocker, app, client, tmp_path):
         electron_num=0,
         completed_electron_num=0,
     )
+    with test_db.session() as session:
+        session.add(lattice)
+        session.commit()
 
-    def _get_data_store(self, initialize_db=False):
-        return MockDataStore(lattice, tmp_path)
-
-    mocker.patch.object(DispatchDB, "_get_data_store", _get_data_store)
     mocker.patch("covalent_dispatcher._service.app.result_from", return_value={})
+    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db)
     response = client.get(f"/api/result/{DISPATCH_ID}")
     result = json.loads(response.data)
     assert result["id"] == DISPATCH_ID
     assert result["status"] == str(Result.COMPLETED)
 
 
-def test_get_result_503(mocker, app, client, tmp_path):
+def test_get_result_503(mocker, app, client, test_db, tmp_path):
     lattice = Lattice(
         status=str(Result.NEW_OBJ),
         dispatch_id=DISPATCH_ID,
@@ -117,15 +128,16 @@ def test_get_result_503(mocker, app, client, tmp_path):
         electron_num=0,
         completed_electron_num=0,
     )
+    with test_db.session() as session:
+        session.add(lattice)
+        session.commit()
+    mocker.patch("covalent_dispatcher._service.app.result_from", side_effect=FileNotFoundError())
+    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db)
 
-    def _get_data_store(self, initialize_db=False):
-        return MockDataStore(lattice, tmp_path)
-
-    mocker.patch.object(DispatchDB, "_get_data_store", _get_data_store)
-    mocker.patch("covalent_dispatcher._service.app.result_from", return_value={})
     response = client.get(
         f"/api/result/{DISPATCH_ID}", query_string={"wait": True, "status_only": True}
     )
+
     assert response.status_code == 503
 
 
