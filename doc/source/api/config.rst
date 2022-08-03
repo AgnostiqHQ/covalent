@@ -36,7 +36,7 @@ Generated each time covalent is installed and can be found at :code:`~/.config/c
 .. code:: shell
 
     [sdk]
-    log_dir = "/Users/voldemort/.cache/covalent"
+    log_dir = "/Users/he-who-must-not-be-named/.cache/covalent"
     log_level = "warning"
     enable_logging = "false"
     executor_dir = "/Users/voldemort/.config/covalent/executor_plugins"
