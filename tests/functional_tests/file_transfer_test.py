@@ -23,11 +23,13 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 
 import covalent as ct
 import covalent._results_manager.results_manager as rm
+from covalent._file_transfer.strategies.rsync_strategy import Rsync
 from covalent._results_manager.result import Result
 from covalent_dispatcher._core.execution import _dispatch_sublattice
 
@@ -140,3 +142,48 @@ def test_local_file_transfer_with_kwargs_multiple(tmp_path: Path):
 
     for f in [source_file_1, dest_file_1, source_file_2, dest_file_2]:
         f.unlink()
+
+
+def test_local_file_transfer_transfer_from(tmp_path: Path, mocker):
+    """
+    Test to check if electron is able to transfer file from source to destination path and
+    includes injected 'files' kwarg
+    """
+
+    MOCK_CONTENTS = "hello"
+
+    source_file = tmp_path / Path("source.txt")
+    source_file.write_text(MOCK_CONTENTS)
+
+    def cp_mock(from_file, to_file):
+        def callable():
+            pass
+
+        return callable
+
+    mocker.patch.object(Rsync, "cp", cp_mock)
+
+    # mock Popen so ssh rsync command does not run
+    Popen = Mock()
+    Popen.communicate.return_value = ("", "")
+    Popen.returncode = 0
+    mocker.patch("covalent._file_transfer.strategies.rsync_strategy.Popen", return_value=Popen)
+
+    ft = ct.fs.TransferFromRemote(str(source_file))
+
+    @ct.electron(files=[ft])
+    def test_transfer(files=[]):
+        return files  # first element should be 'destination' / 'to' filepath
+
+    @ct.lattice
+    def workflow():
+        return test_transfer()
+
+    dispatch_id = ct.dispatch(workflow)()
+
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
+
+    assert workflow_result.result == [ft.to_file.filepath]
+
+    source_file.unlink()
