@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Replaced `Session(DispatchDB()._get_data_store().engine)` with `workflow_db.session()`
+
+### Removed
+
+- `DevDataStore` class from `datastore.py`
+- workflows manager
+
 ## [0.160.1] - 2022-08-02
 
 ### Authors
