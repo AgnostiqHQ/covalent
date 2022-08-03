@@ -163,6 +163,16 @@ class Lepton(Electron):
         call_before = internal_call_before_deps + call_before
         call_after = internal_call_after_deps + call_after
 
+        # Leptons do not currently support retval_keyword(s) from DepsCall
+        for cd in call_after + call_before:
+            return_value_keyword = cd.retval_keyword
+            if return_value_keyword in [RESERVED_RETVAL_KEY__FILES]:
+                cd.retval_keyword = None
+            elif return_value_keyword:
+                raise Exception(
+                    "DepsCall retval_keyword(s) are not currently supported for Leptons, please remove the retval_keyword arg from DepsCall for the workflow to be constructed successfully."
+                )
+
         # Should be synced with electron
         constraints = {
             "executor": executor,
@@ -207,11 +217,6 @@ class Lepton(Electron):
             """Call a C function specified in a shared library."""
 
             import ctypes
-
-            # remove reserved retval kwargs from kwargs in lepton (ex. 'files')
-            for reserved_kwarg in [RESERVED_RETVAL_KEY__FILES]:
-                if reserved_kwarg in kwargs:
-                    kwargs.pop(reserved_kwarg, None)
 
             if kwargs:
                 raise ValueError(
@@ -300,11 +305,6 @@ class Lepton(Electron):
 
             import builtins
             import subprocess
-
-            # remove reserved retval kwargs from kwargs in lepton (ex. 'files')
-            for reserved_kwarg in [RESERVED_RETVAL_KEY__FILES]:
-                if reserved_kwarg in kwargs:
-                    kwargs.pop(reserved_kwarg, None)
 
             mutated_kwargs = ""
             for k, v in kwargs.items():
