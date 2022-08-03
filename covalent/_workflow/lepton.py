@@ -292,6 +292,11 @@ class Lepton(Electron):
             import builtins
             import subprocess
 
+            # remove reserved retval kwargs from kwargs in lepton (ex. 'files')
+            for reserved_kwarg in [RESERVED_RETVAL_KEY__FILES]:
+                if reserved_kwarg in kwargs:
+                    kwargs.pop(reserved_kwarg, None)
+
             mutated_kwargs = ""
             for k, v in kwargs.items():
                 mutated_kwargs += f"export {k}={v} && "
@@ -411,11 +416,17 @@ def bash(
     internal_call_after_deps = []
 
     for file_transfer in files:
-        _callback_ = file_transfer.cp()
+        _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
+
+        # pre-file transfer hook to create any necessary temporary files
+        internal_call_before_deps.append(
+            DepsCall(_file_transfer_pre_hook_, retval_keyword=RESERVED_RETVAL_KEY__FILES)
+        )
+
         if file_transfer.order == Order.AFTER:
-            internal_call_after_deps.append(DepsCall(_callback_))
+            internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
         else:
-            internal_call_before_deps.append(DepsCall(_callback_))
+            internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
 
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
