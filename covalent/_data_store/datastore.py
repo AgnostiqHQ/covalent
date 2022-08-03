@@ -35,23 +35,19 @@ from .._shared_files.config import get_config
 from . import models
 from .storage_backends import LocalStorageBackend, StorageBackend
 
-default_backend_map = {"local": LocalStorageBackend(base_dir=get_config("workflow_data.base_dir"))}
-
 
 class DataStore:
     def __init__(
         self,
         db_URL: Optional[str] = None,
-        storage_backend_map: Dict[str, StorageBackend] = default_backend_map,
         initialize_db: bool = False,
         **kwargs,
     ):
         if db_URL:
             self.db_URL = db_URL
         else:
-            self.db_URL = "sqlite+pysqlite:///" + get_config("user_interface.dispatch_db")
+            self.db_URL = "sqlite+pysqlite:///" + get_config("dispatcher.db_path")
 
-        self.storage_backend_map = storage_backend_map
         self.engine = create_engine(self.db_URL, **kwargs)
         self.Session = sessionmaker(self.engine)
 
@@ -100,21 +96,6 @@ class DataStore:
     def session(self) -> Generator[Session, None, None]:
         with self.Session.begin() as session:
             yield session
-
-
-class DevDataStore(DataStore):
-    def __init__(
-        self,
-        db_URL: Optional[str] = None,
-        initialize_db: bool = False,
-        storage_backend_map: Dict[str, StorageBackend] = default_backend_map,
-        **kwargs,
-    ):
-        if not db_URL:
-            db_path = get_config("user_interface.dispatch_db")
-            sqlite = ".sqlite"
-            db_URL = f"sqlite+pysqlite:///{db_path.split(sqlite)[0]}_dev{sqlite}"
-        super().__init__(db_URL, storage_backend_map, initialize_db, **kwargs)
 
 
 class DataStoreSession:
