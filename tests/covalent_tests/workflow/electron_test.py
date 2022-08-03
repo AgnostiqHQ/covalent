@@ -119,7 +119,7 @@ def test_injected_inputs_are_not_in_tg():
     assert list(g.edges) == [(1, 0, 0)]
 
 
-    
+
 def test_metadata_in_electron_list():
     """Test if metadata of the created electron list apart from executor is set to default values"""
 
@@ -138,11 +138,11 @@ def test_metadata_in_electron_list():
         return task(x)
 
     workflow.build_graph([2])
-    
+
     task_metadata = workflow.transport_graph.get_node_value(0, "metadata")
     e_list_metadata = workflow.transport_graph.get_node_value(1, "metadata")
 
     assert list(e_list_metadata["call_before"]) == []
     assert list(e_list_metadata["call_after"]) == []
-    
+
     assert e_list_metadata["executor"] == task_metadata["executor"]
