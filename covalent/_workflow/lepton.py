@@ -204,6 +204,11 @@ class Lepton(Electron):
 
             import ctypes
 
+            # remove reserved retval kwargs from kwargs in lepton (ex. 'files')
+            for reserved_kwarg in [RESERVED_RETVAL_KEY__FILES]:
+                if reserved_kwarg in kwargs:
+                    kwargs.pop(reserved_kwarg, None)
+
             if kwargs:
                 raise ValueError(
                     f"Keyword arguments {kwargs} are not supported when calling {self.function}."
@@ -412,22 +417,6 @@ def bash(
     if isinstance(deps_bash, list) or isinstance(deps_bash, str):
         deps["bash"] = DepsBash(commands=deps_bash)
 
-    internal_call_before_deps = []
-    internal_call_after_deps = []
-
-    for file_transfer in files:
-        _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
-
-        # pre-file transfer hook to create any necessary temporary files
-        internal_call_before_deps.append(
-            DepsCall(_file_transfer_pre_hook_, retval_keyword=RESERVED_RETVAL_KEY__FILES)
-        )
-
-        if file_transfer.order == Order.AFTER:
-            internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
-        else:
-            internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
-
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
     if isinstance(deps_pip, list):
@@ -438,9 +427,6 @@ def bash(
 
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
-
-    call_before = internal_call_before_deps + call_before
-    call_after = internal_call_after_deps + call_after
 
     def decorator_bash_lepton(func=None):
         @wraps(func)
