@@ -81,12 +81,6 @@ def wrapper_fn(
         for key, value in cb_retvals.items()
     }
 
-    # always convert files return value as list
-    if RESERVED_RETVAL_KEY__FILES in cb_retvals and not isinstance(
-        cb_retvals[RESERVED_RETVAL_KEY__FILES], list
-    ):
-        cb_retvals[RESERVED_RETVAL_KEY__FILES] = [cb_retvals[RESERVED_RETVAL_KEY__FILES]]
-
     fn = function.get_deserialized()
 
     new_args = [arg.get_deserialized() for arg in args]
