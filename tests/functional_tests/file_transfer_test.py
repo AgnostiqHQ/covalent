@@ -162,12 +162,6 @@ def test_local_file_transfer_transfer_from(tmp_path: Path, mocker):
     source_file = tmp_path / Path("source.txt")
     source_file.write_text(MOCK_CONTENTS)
 
-    def cp_mock(from_file, to_file):
-        def callable():
-            pass
-
-        return callable
-
     # mock Popen so ssh rsync command does not run
     Popen = Mock()
     Popen.communicate.return_value = ("", "")
@@ -192,3 +186,40 @@ def test_local_file_transfer_transfer_from(tmp_path: Path, mocker):
     assert workflow_result.result == [ft.to_file.filepath]
 
     source_file.unlink()
+
+
+def test_local_file_transfer_transfer_to(tmp_path: Path, mocker):
+    """
+    Test to check if electron is able to transfer file to destination from source (temp) path and
+    includes injected 'files' kwarg
+    """
+
+    MOCK_CONTENTS = "hello"
+
+    dest_file = tmp_path / Path("dest.txt")
+    dest_file.write_text(MOCK_CONTENTS)
+
+    # mock Popen so ssh rsync command does not run
+    Popen = Mock()
+    Popen.communicate.return_value = ("", "")
+    Popen.returncode = 0
+    mocker.patch("covalent._file_transfer.strategies.rsync_strategy.Popen", return_value=Popen)
+
+    ft = ct.fs.TransferToRemote(str(dest_file))
+
+    @ct.electron(files=[ft])
+    def test_transfer(files=[]):
+        return files  # first element should be 'source' / 'from' filepath
+
+    @ct.lattice
+    def workflow():
+        return test_transfer()
+
+    dispatch_id = ct.dispatch(workflow)()
+
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
+
+    assert workflow_result.result == [ft.from_file.filepath]
+
+    dest_file.unlink()
