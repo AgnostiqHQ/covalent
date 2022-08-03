@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+When a list was passed to an electron, the generated electron list had metadata copied from the electron. This was resulting in call_before and call_after functions being called by the electron list as well. The metadata (apart from executor) is now set to default values for the electron list.
+
+### Authors
+
+- Poojith U Rao <poojith@agnostiq.ai>
+
 ## [0.155.1] - 2022-07-26
 
 ### Authors
