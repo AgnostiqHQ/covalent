@@ -319,20 +319,6 @@ def start(
         return ctx.exit(1)
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
-    no_cluster_flag = "--no-cluster"
-    set_config(
-        {
-            "user_interface.address": "localhost",
-            "user_interface.port": port,
-            "dispatcher.address": "localhost",
-            "dispatcher.port": port,
-            "dask": {
-                "mem_per_worker": mem_per_worker or "auto",
-                "threads_per_worker": threads_per_worker or 1,
-                "num_workers": workers or dask.system.CPU_COUNT,
-            },
-        }
-    )
 
     # Wait until the server actually starts listening on the port
     server_listening = False

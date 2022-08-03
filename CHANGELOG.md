@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Removed
+
+- Overwriting dispatcher config values with defaults every time the Covalent server is stopped and started.
+
 ## [0.160.1] - 2022-08-02
 
 ### Authors
