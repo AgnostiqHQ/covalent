@@ -161,8 +161,6 @@ def test_local_file_transfer_transfer_from(tmp_path: Path, mocker):
 
         return callable
 
-    mocker.patch.object(Rsync, "cp", cp_mock)
-
     # mock Popen so ssh rsync command does not run
     Popen = Mock()
     Popen.communicate.return_value = ("", "")
