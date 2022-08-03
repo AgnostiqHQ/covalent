@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scott Wyman Neagle <scott@agnostiq.ai>
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 
+
 ### Changed
 
 - Replaced `Session(DispatchDB()._get_data_store().engine)` with `workflow_db.session()`
