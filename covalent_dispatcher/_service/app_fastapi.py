@@ -27,6 +27,7 @@ from uuid import UUID
 import cloudpickle as pickle
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
+from h11 import Data
 from sqlalchemy.orm import Session
 
 import covalent_dispatcher as dispatcher
@@ -70,7 +71,7 @@ async def submit(request: Request) -> UUID:
 
 
 @router.post("/cancel")
-def cancel(data: Any) -> str:
+async def cancel(request: Request) -> str:
     """
     Function to accept the cancel request of
     a dispatch.
@@ -82,8 +83,11 @@ def cancel(data: Any) -> str:
         Flask Response object confirming that the dispatch
         has been cancelled.
     """
-    dispatcher.cancel_running_dispatch(data)
-    return f"Dispatch {data} cancelled."
+    data = await request.body()
+    dispatch_id = data.decode("utf-8")
+
+    dispatcher.cancel_running_dispatch(dispatch_id)
+    return f"Dispatch {dispatch_id} cancelled."
 
 
 @router.get("/db-path")
@@ -94,10 +98,11 @@ def db_path() -> str:
 
 
 @router.get("/result/{dispatch_id}")
-def get_result(dispatch_id, wait: Optional[bool], status_only: Optional[bool]):
+def get_result(dispatch_id: str, wait: Optional[bool] = True, status_only: Optional[bool] = True):
     # args = request.args
     # wait = args.get("wait", default=False, type=lambda v: v.lower() == "true")
     # status_only = args.get("status_only", default=False, type=lambda v: v.lower() == "true")
+    print(wait)
     while True:
         with Session(DispatchDB()._get_data_store().engine) as session:
             lattice_record = (
@@ -105,11 +110,9 @@ def get_result(dispatch_id, wait: Optional[bool], status_only: Optional[bool]):
             )
         try:
             if not lattice_record:
-                return (
-                    JSONResponse(
-                        {"message": f"The requested dispatch ID {dispatch_id} was not found."}
-                    ),
-                    404,
+                return JSONResponse(
+                    status_code=404,
+                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
                 )
             elif not wait or lattice_record.status in [
                 str(Result.COMPLETED),
@@ -122,6 +125,7 @@ def get_result(dispatch_id, wait: Optional[bool], status_only: Optional[bool]):
                     "id": dispatch_id,
                     "status": lattice_record.status,
                 }
+
                 if not status_only:
                     output["result"] = codecs.encode(
                         pickle.dumps(result_from(lattice_record)), "base64"
@@ -132,12 +136,10 @@ def get_result(dispatch_id, wait: Optional[bool], status_only: Optional[bool]):
             if wait:
                 continue
             response = JSONResponse(
-                (
-                    {
-                        "message": "Result not ready to read yet. Please wait for a couple of seconds."
-                    }
-                ),
-                503,
+                status_code=503,
+                content={
+                    "message": "Result not ready to read yet. Please wait for a couple of seconds."
+                },
             )
             response.retry_after = 2
             return response
