@@ -326,6 +326,12 @@ def start(
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
 
+    set_config(
+        {
+            "user_interface.port": port,
+            "dispatcher.port": port,
+        }
+    )
     if not no_cluster:
         set_config(
             {
