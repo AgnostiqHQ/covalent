@@ -77,18 +77,15 @@ async def test_cluster_size_cli(test_cluster, admin_worker_addr, event_loop):
 
 
 @pytest.mark.asyncio
-async def test_cluster_status_cli(admin_worker_addr, event_loop):
+async def test_cluster_status_cli(test_cluster, admin_worker_addr, event_loop):
     """
     Assert cluster status CLI for default number of workers in the cluster
     """
     asyncio.set_event_loop(event_loop)
     response = await _get_cluster_status(admin_worker_addr)
-    print(type(response))
-    expected = {}
-    expected["scheduler"] = "running"
+    expected = {"scheduler": "running"}
     for i in range(dask.system.CPU_COUNT):
         expected[f"worker-{i}"] = "running"
-
     assert expected == response
 
 

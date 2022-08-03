@@ -204,7 +204,7 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
-    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    update_config_mock = mocker.patch("covalent_dispatcher._cli.service.update_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
@@ -220,7 +220,7 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
 
     if ignore_migrations or not is_migration_pending:
         graceful_start_mock.assert_called_once()
-        set_config_mock.assert_called()
+        assert update_config_mock.call_count == 2
     else:
         assert MIGRATION_COMMAND_MSG in res.output
         assert MIGRATION_WARNING_MSG in res.output
