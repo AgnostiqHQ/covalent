@@ -339,7 +339,12 @@ def start(
         )
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
-
+    set_config(
+        {
+            "user_interface.port": port,
+            "dispatcher.port": port,
+        }
+    )
     # Wait until the server actually starts listening on the port
     server_listening = False
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
