@@ -24,8 +24,9 @@ import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._workflow.electron import Electron
 from covalent._workflow.transport import TransportableObject, _TransportGraph
-
 from covalent.executor.executor_plugins.local import LocalExecutor
+
+
 @ct.electron
 def task_1(a):
     import time
