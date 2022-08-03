@@ -23,13 +23,14 @@ from os import path
 from pathlib import Path
 from typing import BinaryIO, Dict, Generator, Optional
 
-from alembic import command
 from alembic.config import Config
 from alembic.environment import EnvironmentContext
 from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
+
+from alembic import command
 
 from .._shared_files.config import get_config
 from . import models
