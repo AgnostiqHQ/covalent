@@ -176,13 +176,7 @@ def _graceful_start(
     dev_mode_flag = "--develop" if develop else ""
     port = _next_available_port(port)
     update_config({"user_interface": {"port": port}, "dispatcher": {"port": port}})
-
-    if not no_cluster:
-        launch_str = (
-            f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster >> {logfile} 2>&1"
-        )
-    else:
-        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
+    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
 
