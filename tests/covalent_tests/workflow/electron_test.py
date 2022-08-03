@@ -25,7 +25,7 @@ from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._workflow.electron import Electron
 from covalent._workflow.transport import TransportableObject, _TransportGraph
 
-
+from covalent.executor.executor_plugins.local import LocalExecutor
 @ct.electron
 def task_1(a):
     import time
@@ -129,7 +129,7 @@ def test_metadata_in_electron_list():
 
     calldep = ct.DepsCall(identity, args=[5], retval_keyword="y")
 
-    @ct.electron(call_before=[calldep])
+    @ct.electron(call_before=[calldep],executor=LocalExecutor())
     def task(x, y=0):
         return (x, y)
 
