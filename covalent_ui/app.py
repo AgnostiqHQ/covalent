@@ -76,10 +76,7 @@ def handle_draw_request():
 def list_results():
     with DispatchDB() as db:
         res = db.get()
-    if not res:
-        return jsonify([])
-    else:
-        return jsonify([simplejson.loads(r[1]) for r in res])
+    return jsonify([simplejson.loads(r[1]) for r in res]) if res else jsonify([])
 
 
 @app.route("/api/dev/results/<dispatch_id>")
@@ -133,11 +130,9 @@ def fetch_file(dispatch_id):
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve(path):
-    if path != "" and os.path.exists(app.static_folder + "/" + path):
-        # static file
+    if path != "" and os.path.exists(f"{app.static_folder}/{path}"):
         return send_from_directory(app.static_folder, path)
     else:
-        # handle all other routes inside web app
         return send_from_directory(app.static_folder, "index.html")
 
 
@@ -157,17 +152,12 @@ if __name__ == "__main__":
     args, unknown = ap.parse_known_args()
 
     # port to be specified by cli
-    if args.port:
-        port = int(args.port)
-    else:
-        port = int(get_config("dispatcher.port"))
-
-    debug = True if args.develop is True else False
-    # reload = True if args.develop is True else False
+    port = int(args.port) if args.port else int(get_config("dispatcher.port"))
+    debug = args.develop == "True"
     reload = False
 
     # Start dask if no-cluster flag is not specified (covalent stop auto terminates all child processes of this)
-    if not args.no_cluster:
+    if args.no_cluster == "False":
         dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log)
         dask_cluster.start()
 

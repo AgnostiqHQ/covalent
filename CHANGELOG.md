@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- CLI app dask starting bug
+- graceful start logic in cli service.py.
+
 ### Removed
 
 - Overwriting dispatcher config values with defaults every time the Covalent server is stopped and started.

@@ -37,7 +37,7 @@ from distributed.core import connect, rpc
 
 from covalent._data_store.datastore import DataStore
 from covalent._shared_files.config import _config_manager as cm
-from covalent._shared_files.config import get_config, set_config
+from covalent._shared_files.config import get_config, set_config, update_config
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
@@ -174,19 +174,9 @@ def _graceful_start(
 
     pypath = f"PYTHONPATH={UI_SRVDIR}/../tests:$PYTHONPATH" if develop else ""
     dev_mode_flag = "--develop" if develop else ""
-    no_cluster_flag = "--no-cluster"
     port = _next_available_port(port)
-    set_config(
-        {
-            "user_interface.port": port,
-            "dispatcher.port": port,
-        }
-    )
-    if no_cluster_flag in sys.argv:
-        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
-    else:
-        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
-
+    update_config({"user_interface": {"port": port}, "dispatcher": {"port": port}})
+    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
 
@@ -302,7 +292,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     default=False,
     help="Start the server without Dask",
 )
-@click.argument("no-cluster", required=False)
 @click.pass_context
 def start(
     ctx: click.Context,
@@ -324,14 +313,9 @@ def start(
         click.echo(MIGRATION_COMMAND_MSG)
         return ctx.exit(1)
 
-    set_config(
-        {
-            "user_interface.port": port,
-            "dispatcher.port": port,
-        }
-    )
+    update_config({"user_interface": {"port": port}, "dispatcher": {"port": port}})
     if not no_cluster:
-        set_config(
+        update_config(
             {
                 "dask": {
                     "mem_per_worker": mem_per_worker or "auto",
