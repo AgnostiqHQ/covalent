@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed 
+
+- Overwriting config address issue.
+
 ## [0.161.1] - 2022-08-03
 
 ### Authors
