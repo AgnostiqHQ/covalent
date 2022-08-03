@@ -176,6 +176,12 @@ def _graceful_start(
     dev_mode_flag = "--develop" if develop else ""
     no_cluster_flag = "--no-cluster"
     port = _next_available_port(port)
+    set_config(
+        {
+            "user_interface.port": port,
+            "dispatcher.port": port,
+        }
+    )
     if no_cluster_flag in sys.argv:
         launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
     else:
@@ -302,7 +308,7 @@ def start(
     ctx: click.Context,
     port: int,
     develop: bool,
-    no_cluster: str,
+    no_cluster: bool,
     mem_per_worker: int,
     threads_per_worker: int,
     workers: int,
@@ -311,6 +317,7 @@ def start(
     """
     Start the Covalent server.
     """
+
     db = DataStore.factory()
     if db.is_migration_pending and not ignore_migrations:
         click.secho(MIGRATION_WARNING_MSG, fg="yellow")
@@ -318,6 +325,17 @@ def start(
         return ctx.exit(1)
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
+
+    if not no_cluster:
+        set_config(
+            {
+                "dask": {
+                    "mem_per_worker": mem_per_worker or "auto",
+                    "threads_per_worker": threads_per_worker or 1,
+                    "num_workers": workers or dask.system.CPU_COUNT,
+                },
+            }
+        )
 
     # Wait until the server actually starts listening on the port
     server_listening = False
