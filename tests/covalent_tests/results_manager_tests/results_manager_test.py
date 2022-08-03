@@ -20,12 +20,16 @@
 
 """Tests for results manager."""
 
+from http.client import HTTPMessage
 from unittest import result
+from unittest.mock import ANY, Mock, call
 
 import pytest
+import urllib3
 
 from covalent._data_store.models import Lattice
-from covalent._results_manager.results_manager import result_from
+from covalent._results_manager.results_manager import _get_result_from_dispatcher, result_from
+from covalent._shared_files.config import get_config
 
 
 @pytest.fixture
@@ -60,3 +64,75 @@ def test_result_from(lattice_record, mocker):
     mock_load_file = mocker.patch("covalent._results_manager.results_manager.load_file")
     result_from(lattice_record)
     mock_load_file.assert_called()
+
+
+def test_get_result_from_dispatcher(mocker):
+    getconn_mock = mocker.patch("urllib3.connectionpool.HTTPConnectionPool._get_conn")
+    headers = HTTPMessage()
+    headers.add_header("Retry-After", "2")
+    getconn_mock.return_value.getresponse.side_effect = [Mock(status=503, msg=headers)]
+    dispatch_id = "9d1b308b-4763-4990-ae7f-6a6e36d35893"
+    dispatcher = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+    _get_result_from_dispatcher(dispatch_id, wait=True, dispatcher=dispatcher, status_only=False)
+    assert getconn_mock.return_value.request.mock_calls == [
+        call(
+            "GET",
+            f"http://{dispatcher}/api/result/{dispatch_id}?wait=True&status_only=False",
+            body=None,
+            headers=ANY,
+        ),
+        call(
+            "GET",
+            f"http://{dispatcher}/api/result/{dispatch_id}?wait=True&status_only=False",
+            body=None,
+            headers=ANY,
+        ),
+        call(
+            "GET",
+            f"http://{dispatcher}/api/result/{dispatch_id}?wait=True&status_only=False",
+            body=None,
+            headers=ANY,
+        ),
+        call(
+            "GET",
+            f"http://{dispatcher}/api/result/{dispatch_id}?wait=True&status_only=False",
+            body=None,
+            headers=ANY,
+        ),
+        call(
+            "GET",
+            f"http://{dispatcher}/api/result/{dispatch_id}?wait=True&status_only=False",
+            body=None,
+            headers=ANY,
+        ),
+        call(
+            "GET",
+            f"http://{dispatcher}/api/result/{dispatch_id}?wait=True&status_only=False",
+            body=None,
+            headers=ANY,
+        ),
+        call(
+            "GET",
+            f"http://{dispatcher}/api/result/{dispatch_id}?wait=True&status_only=False",
+            body=None,
+            headers=ANY,
+        ),
+        call(
+            "GET",
+            f"http://{dispatcher}/api/result/{dispatch_id}?wait=True&status_only=False",
+            body=None,
+            headers=ANY,
+        ),
+        call(
+            "GET",
+            f"http://{dispatcher}/api/result/{dispatch_id}?wait=True&status_only=False",
+            body=None,
+            headers=ANY,
+        ),
+        call(
+            "GET",
+            f"http://{dispatcher}/api/result/{dispatch_id}?wait=True&status_only=False",
+            body=None,
+            headers=ANY,
+        ),
+    ]
