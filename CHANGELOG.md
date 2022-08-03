@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.161.1] - 2022-08-03
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Poojith U Rao <106616820+poojithurao@users.noreply.github.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
 ### Fixed
 
 - When a list was passed to an electron, the generated electron list
