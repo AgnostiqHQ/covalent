@@ -25,8 +25,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
-import cloudpickle
-import cloudpickle as pickle
 from sqlalchemy import and_, update
 
 from .._data_store import DataStore, DataStoreNotInitializedError, models, workflow_db
@@ -56,18 +54,20 @@ log_stack_info = logger.log_stack_info
 
 LATTICE_FUNCTION_FILENAME = "function.pkl"
 LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
-LATTICE_EXECUTOR_FILENAME = "executor.pkl"
+LATTICE_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
+LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME = "workflow_executor_data.pkl"
 LATTICE_ERROR_FILENAME = "error.log"
 LATTICE_INPUTS_FILENAME = "inputs.pkl"
+LATTICE_NAMED_ARGS_FILENAME = "named_args.pkl"
+LATTICE_NAMED_KWARGS_FILENAME = "named_kwargs.pkl"
 LATTICE_RESULTS_FILENAME = "results.pkl"
 LATTICE_TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 LATTICE_STORAGE_TYPE = "local"
 
 ELECTRON_FUNCTION_FILENAME = "function.pkl"
 ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
-ELECTRON_KEY_FILENAME = "key.pkl"
 ELECTRON_VALUE_FILENAME = "value.pkl"
-ELECTRON_EXECUTOR_FILENAME = "executor.pkl"
+ELECTRON_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
 ELECTRON_STDOUT_FILENAME = "stdout.log"
 ELECTRON_STDERR_FILENAME = "stderr.log"
 ELECTRON_INFO_FILENAME = "info.log"
@@ -594,7 +594,7 @@ Node Outputs
             None
         """
 
-        app_log.warning("Inside update node")
+        app_log.debug("Inside update node")
 
         electron_kwargs = {}
         node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
@@ -656,7 +656,7 @@ Node Outputs
                 .values(updated_at=datetime.now(timezone.utc), **electron_kwargs)
             )
             session.commit()
-        app_log.warning("Inside update node - SUCCESS")
+        app_log.debug("Inside update node - SUCCESS")
 
     def _initialize_results_dir(self):
         """Create the results directory."""
@@ -685,9 +685,15 @@ Node Outputs
         for filename, data in [
             (LATTICE_FUNCTION_FILENAME, self.lattice.workflow_function),
             (LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
-            (LATTICE_EXECUTOR_FILENAME, self.lattice.metadata["executor"]),
+            (LATTICE_EXECUTOR_DATA_FILENAME, self.lattice.metadata["executor_data"]),
+            (
+                LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
+                self.lattice.metadata["workflow_executor_data"],
+            ),
             (LATTICE_ERROR_FILENAME, self.error),
             (LATTICE_INPUTS_FILENAME, self.inputs),
+            (LATTICE_NAMED_ARGS_FILENAME, self.lattice.named_args),
+            (LATTICE_NAMED_KWARGS_FILENAME, self.lattice.named_kwargs),
             (LATTICE_RESULTS_FILENAME, self._result),
             (LATTICE_TRANSPORT_GRAPH_FILENAME, self._lattice.transport_graph),
         ]:
@@ -706,9 +712,14 @@ Node Outputs
                 "storage_type": LATTICE_STORAGE_TYPE,
                 "function_filename": LATTICE_FUNCTION_FILENAME,
                 "function_string_filename": LATTICE_FUNCTION_STRING_FILENAME,
-                "executor_filename": LATTICE_EXECUTOR_FILENAME,
+                "executor": self.lattice.metadata["executor"],
+                "executor_data_filename": LATTICE_EXECUTOR_DATA_FILENAME,
+                "workflow_executor": self.lattice.metadata["workflow_executor"],
+                "workflow_executor_data_filename": LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
                 "error_filename": LATTICE_ERROR_FILENAME,
                 "inputs_filename": LATTICE_INPUTS_FILENAME,
+                "named_args_filename": LATTICE_NAMED_ARGS_FILENAME,
+                "named_kwargs_filename": LATTICE_NAMED_KWARGS_FILENAME,
                 "results_filename": LATTICE_RESULTS_FILENAME,
                 "transport_graph_filename": LATTICE_TRANSPORT_GRAPH_FILENAME,
                 "created_at": datetime.now(timezone.utc),
@@ -746,10 +757,6 @@ Node Outputs
                 attribute_name = tg.get_node_value(node_key=node_id, value_key="name")
 
                 try:
-                    node_key = tg.get_node_value(node_key=node_id, value_key="key")
-                except KeyError:
-                    node_key = None
-                try:
                     function_string = tg.get_node_value(node_id, "function_string")
                 except KeyError:
                     function_string = None
@@ -776,6 +783,7 @@ Node Outputs
                 if not isinstance(node_output, TransportableObject):
                     node_output = TransportableObject(node_output)
 
+                executor = tg.get_node_value(node_id, "metadata")["executor"]
                 started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
                 completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
 
@@ -784,8 +792,8 @@ Node Outputs
                     (ELECTRON_FUNCTION_STRING_FILENAME, function_string),
                     (ELECTRON_VALUE_FILENAME, node_value),
                     (
-                        ELECTRON_EXECUTOR_FILENAME,
-                        tg.get_node_value(node_id, "metadata")["executor"],
+                        ELECTRON_EXECUTOR_DATA_FILENAME,
+                        tg.get_node_value(node_id, "metadata")["executor_data"],
                     ),
                     (ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
                     (
@@ -800,7 +808,6 @@ Node Outputs
                     (ELECTRON_STDERR_FILENAME, node_stderr),
                     (ELECTRON_INFO_FILENAME, node_info),
                     (ELECTRON_RESULTS_FILENAME, node_output),
-                    (ELECTRON_KEY_FILENAME, node_key),
                 ]:
                     store_file(node_path, filename, data)
 
@@ -828,11 +835,10 @@ Node Outputs
                         "storage_path": str(node_path),
                         "function_filename": ELECTRON_FUNCTION_FILENAME,
                         "function_string_filename": ELECTRON_FUNCTION_STRING_FILENAME,
-                        "executor_filename": ELECTRON_EXECUTOR_FILENAME,
+                        "executor": executor,
+                        "executor_data_filename": ELECTRON_EXECUTOR_DATA_FILENAME,
                         "results_filename": ELECTRON_RESULTS_FILENAME,
                         "value_filename": ELECTRON_VALUE_FILENAME,
-                        "attribute_name": attribute_name,
-                        "key_filename": ELECTRON_KEY_FILENAME,
                         "stdout_filename": ELECTRON_STDOUT_FILENAME,
                         "stderr_filename": ELECTRON_STDERR_FILENAME,
                         "info_filename": ELECTRON_INFO_FILENAME,
