@@ -177,7 +177,7 @@ def _graceful_start(
     port = _next_available_port(port)
     update_config({"user_interface": {"port": port}, "dispatcher": {"port": port}})
 
-    if no_cluster:
+    if not no_cluster:
         launch_str = (
             f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster >> {logfile} 2>&1"
         )
