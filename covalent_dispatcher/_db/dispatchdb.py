@@ -187,20 +187,3 @@ class DispatchDB:
         """Return the DataStore instance to write records."""
 
         return DataStore(db_URL=f"sqlite+pysqlite:///{self._dbpath}", initialize_db=initialize_db)
-
-    def save_db(
-        self, result_object: Result, write_source: bool = False, initialize_db: bool = False
-    ):
-
-        try:
-            # set echo=True only if covalent is started in debug /develop mode `covalent start -d`
-            # `initialize_db` flag can be removed as its redundant (sqlalchemy does check if the tables are
-            # created or not before inserting/updating data)
-            result_object.persist(self._get_data_store(initialize_db))
-
-            if write_source:
-                pass
-                # result_object._write_dispatch_to_python_file()
-        except Exception as e:
-            app_log.exception(f"Exception occured while saving to DB: {e}.")
-            raise

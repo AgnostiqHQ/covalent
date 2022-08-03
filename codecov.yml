@@ -17,3 +17,17 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+
+flags:
+  SDK:
+    paths:
+      - covalent/**
+    carryforward: true
+  Dispatcher:
+    paths:
+      - covalent_dispatcher/**
+    carryforward: true
+
+comment:
+  layout: "reach, diff, flags"
+  show_carryforward_flags: true

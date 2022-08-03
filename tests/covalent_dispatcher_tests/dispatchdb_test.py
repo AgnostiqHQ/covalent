@@ -41,13 +41,3 @@ def identity(a):
 def check(a, b):
     result1 = add(a=a, b=b)
     return identity(a=result1)
-
-
-def test_save_db(mocker):
-    """Test the db save method."""
-
-    with DispatchDB(":memory:") as db:
-        res = Result(check, "/home/test/results", "asdf")
-        persist_mock = mocker.patch("covalent._results_manager.result.Result.persist")
-        db.save_db(result_object=res)
-        persist_mock.assert_called_once()
