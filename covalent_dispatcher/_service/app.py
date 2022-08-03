@@ -104,41 +104,35 @@ def get_result(dispatch_id) -> Response:
     status_only = args.get("status_only", default=False, type=lambda v: v.lower() == "true")
 
     with workflow_db.session() as session:
-            lattice_record = (
-                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+        status = lattice_record.status if lattice_record else None
+        if not lattice_record:
+            return (
+                jsonify({"message": f"The requested dispatch ID {dispatch_id} was not found."}),
+                404,
             )
-            status = lattice_record.status if lattice_record else None
-            if not lattice_record:
-                    return (
-                        jsonify(
-                            {"message": f"The requested dispatch ID {dispatch_id} was not found."}
-                        ),
-                        404,
-                    )
-            if not wait or status in [
-                    str(Result.COMPLETED),
-                    str(Result.FAILED),
-                    str(Result.CANCELLED),
-                    str(Result.POSTPROCESSING_FAILED),
-                    str(Result.PENDING_POSTPROCESSING),
-                ]:
-                    output = {
-                        "id": dispatch_id,
-                        "status": lattice_record.status,
-                    }
-                    if not status_only:
-                        output["result"] = codecs.encode(
-                            pickle.dumps(result_from(lattice_record)), "base64"
-                        ).decode()
-                    return jsonify(output)
+        if not wait or status in [
+            str(Result.COMPLETED),
+            str(Result.FAILED),
+            str(Result.CANCELLED),
+            str(Result.POSTPROCESSING_FAILED),
+            str(Result.PENDING_POSTPROCESSING),
+        ]:
+            output = {
+                "id": dispatch_id,
+                "status": lattice_record.status,
+            }
+            if not status_only:
+                output["result"] = codecs.encode(
+                    pickle.dumps(result_from(lattice_record)), "base64"
+                ).decode()
+            return jsonify(output)
 
-            response = make_response(
-                    jsonify(
-                        {
-                            "message": "Result not ready to read yet. Please wait for a couple of seconds."
-                        }
-                    ),
-                    503,
-                )
-            response.retry_after = 2
-            return response
+        response = make_response(
+            jsonify(
+                {"message": "Result not ready to read yet. Please wait for a couple of seconds."}
+            ),
+            503,
+        )
+        response.retry_after = 2
+        return response
