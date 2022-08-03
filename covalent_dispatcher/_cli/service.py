@@ -321,7 +321,7 @@ def start(
         return ctx.exit(1)
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
-    no_cluster_flag = "--no-cluster"
+    # no_cluster_flag = "--no-cluster"
     set_config(
         {
             "user_interface.address": "localhost",
