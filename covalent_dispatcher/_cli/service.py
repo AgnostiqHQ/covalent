@@ -321,7 +321,6 @@ def start(
         click.echo(MIGRATION_COMMAND_MSG)
         return ctx.exit(1)
 
-    port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     no_cluster_flag = "--no-cluster"
     set_config(
         {
@@ -340,6 +339,8 @@ def start(
                 },
             }
         )
+
+    port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
 
     # Wait until the server actually starts listening on the port
     server_listening = False
