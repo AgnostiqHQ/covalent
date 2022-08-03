@@ -148,7 +148,7 @@ def _graceful_start(
     pidfile: str,
     logfile: str,
     port: int,
-    no_cluster: str,
+    no_cluster: bool,
     develop: bool = False,
 ) -> int:
     """
