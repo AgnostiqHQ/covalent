@@ -120,17 +120,15 @@ def test_injected_inputs_are_not_in_tg():
     assert list(g.edges) == [(1, 0, 0)]
 
 
-
 def test_metadata_in_electron_list():
     """Test if metadata of the created electron list apart from executor is set to default values"""
-
 
     def identity(y):
         return y
 
     calldep = ct.DepsCall(identity, args=[5], retval_keyword="y")
 
-    @ct.electron(call_before=[calldep],executor=LocalExecutor())
+    @ct.electron(call_before=[calldep], executor=LocalExecutor())
     def task(x, y=0):
         return (x, y)
 
