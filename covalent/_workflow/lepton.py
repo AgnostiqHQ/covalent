@@ -129,7 +129,11 @@ class Lepton(Electron):
 
             # pre-file transfer hook to create any necessary temporary files
             internal_call_before_deps.append(
-                DepsCall(_file_transfer_pre_hook_, retval_keyword=RESERVED_RETVAL_KEY__FILES)
+                DepsCall(
+                    _file_transfer_pre_hook_,
+                    retval_keyword=RESERVED_RETVAL_KEY__FILES,
+                    override_reserved_retval_keys=True,
+                )
             )
 
             if file_transfer.order == Order.AFTER:

@@ -50,7 +50,21 @@ class DepsCall(Deps):
 
     """
 
-    def __init__(self, func=None, args=[], kwargs={}, *, retval_keyword=""):
+    def __init__(
+        self,
+        func=None,
+        args=[],
+        kwargs={},
+        *,
+        retval_keyword="",
+        override_reserved_retval_keys=False,
+    ):
+
+        if not override_reserved_retval_keys and retval_keyword in [RESERVED_RETVAL_KEY__FILES]:
+            raise Exception(
+                f"The retval_keyword for the specified DepsCall uses the reserved value '{retval_keyword}' please re-name to use another return value keyword."
+            )
+
         super().__init__(
             apply_fn=func, apply_args=args, apply_kwargs=kwargs, retval_keyword=retval_keyword
         )
