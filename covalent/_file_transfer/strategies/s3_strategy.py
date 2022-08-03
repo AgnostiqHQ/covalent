@@ -13,26 +13,37 @@ from covalent._file_transfer.strategies.transfer_strategy_base import FileTransf
 class S3(FileTransferStrategy):
 
     """
-    Implements Base FileTransferStrategy class to use HTTP to download files from public URLs.
+    Implements Base FileTransferStrategy class to upload/download files from S3 Bucket.
     """
 
     def __init__(
         self,
-        aws_access_key_id: str = os.getenv("AWS_ACCESS_KEY_ID") or None,
-        aws_secret_access_key: str = os.getenv("AWS_SECRET_ACCESS_KEY") or None,
-        aws_session_token: str = os.getenv("AWS_SESSION_TOKEN") or None,
-        region_name: str = os.getenv("AWS_REGION") or None,
+            credentials: str = os.environ.get("AWS_SHARED_CREDENTIALS_FILE") or os.path.join(os.environ["HOME"], ".aws/credentials"),
+            profile: str = os.environ.get("AWS_PROFILE") or None,
+            region_name: str = os.getenv("AWS_REGION") or None,
     ):
-
-        self.aws_access_key_id = aws_access_key_id
-        self.aws_secret_access_key = aws_secret_access_key
-        self.aws_session_token = aws_session_token
+        
+        self.credentials = credentials
+        self.profile = profile
         self.region_name = region_name
 
         try:
             import boto3
         except ImportError:
             raise ImportError("Using S3 strategy requires boto3 from AWS installed on your system.")
+
+        os.environ["AWS_SHARED_CREDENTIALS_FILE"] = self.credentials
+        if self.profile is not None:
+            os.environ["AWS_PROFILE"] = self.profile
+
+        # AWS Account Retrieval
+        sts = boto3.client("sts")
+        identity = sts.get_caller_identity()
+        account = identity.get("Account")
+
+        if account is None:
+            app_log.warning(identity)
+            raise Exception("Incorrect AWS account credentials")
 
 
     # return callable to download here implies 'from' is a remote source
@@ -42,11 +53,9 @@ class S3(FileTransferStrategy):
         bucket_name = furl(from_file.uri).origin[5:]
 
         def callable():
+            import boto3
             s3 = boto3.client(
                 "s3",
-                aws_access_key_id=self.aws_access_key_id,
-                aws_secret_access_key=self.aws_secret_access_key,
-                aws_session_token=self.aws_session_token,
                 region_name=self.region_name,
             )
             s3.download_file(bucket_name, from_filepath, to_filepath)
@@ -61,11 +70,9 @@ class S3(FileTransferStrategy):
         bucket_name = furl(to_file.uri).origin[5:]
 
         def callable():
+            import boto3
             s3 = boto3.client(
                 "s3",
-                aws_access_key_id=self.aws_access_key_id,
-                aws_secret_access_key=self.aws_secret_access_key,
-                aws_session_token=self.aws_session_token,
                 region_name=self.region_name,
             )
             s3.upload_file(from_filepath, bucket_name, to_filepath)
