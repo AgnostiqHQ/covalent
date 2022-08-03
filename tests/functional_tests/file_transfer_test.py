@@ -23,22 +23,29 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from time import sleep
 from unittest.mock import Mock
 
 import pytest
 
 import covalent as ct
 import covalent._results_manager.results_manager as rm
+from covalent._file_transfer.enums import Order
 from covalent._file_transfer.strategies.rsync_strategy import Rsync
 from covalent._results_manager.result import Result
 from covalent_dispatcher._core.execution import _dispatch_sublattice
 
 
-def test_local_file_transfer(tmp_path: Path):
+@pytest.mark.parametrize(
+    "is_before",
+    [(True), (False)],
+)
+def test_local_file_transfer(tmp_path: Path, is_before):
     """
     Test to check if electron is able to transfer file from source to destination path
     """
 
+    order = Order.BEFORE if is_before else Order.AFTER
     MOCK_CONTENTS = "hello"
 
     source_file = tmp_path / Path("source.txt")
@@ -46,20 +53,20 @@ def test_local_file_transfer(tmp_path: Path):
 
     source_file.write_text(MOCK_CONTENTS)
 
-    @ct.electron(files=[ct.fs.FileTransfer(str(source_file), str(dest_file))])
-    def test_transfer():
+    @ct.electron(files=[ct.fs.FileTransfer(str(source_file), str(dest_file), order=order)])
+    def test_transfer_me(files=[]):
         pass
 
     @ct.lattice
     def workflow():
-        return test_transfer()
+        return test_transfer_me()
 
     dispatch_id = ct.dispatch(workflow)()
 
     workflow_result = rm.get_result(dispatch_id, wait=True)
+
     rm._delete_result(dispatch_id)
 
-    assert dest_file.is_file()
     assert dest_file.read_text() == MOCK_CONTENTS
 
     dest_file.unlink()
