@@ -18,12 +18,9 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import os
 import tempfile
-from unittest.mock import patch
 
 import pytest
-import toml
 
 from covalent._shared_files.config import _ConfigManager, get_config, reload_config, set_config
 from covalent._shared_files.defaults import _DEFAULT_CONFIG
@@ -55,6 +52,9 @@ def test_config_manager_init_write_update_config(
 ):
     """Test the init method for the config manager."""
 
+    class MockPath:
+        pass
+
     config_keys = [
         "sdk.log_dir",
         "sdk.executor_dir",
@@ -62,6 +62,7 @@ def test_config_manager_init_write_update_config(
         "dispatcher.results_dir",
         "dispatcher.log_dir",
         "user_interface.log_dir",
+        "dispatcher.db_path",
     ]
 
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -75,8 +76,7 @@ def test_config_manager_init_write_update_config(
         get_mock = mocker.patch(
             "covalent._shared_files.config._ConfigManager.get", side_effect=config_keys
         )
-        path_mock = mocker.patch("pathlib.Path.__init__", return_value=None)
-
+        path_mock = mocker.patch("covalent._shared_files.config.Path.__init__", return_value=None)
         mocker.patch("os.path.exists", return_value=path_exists)
 
         cm = _ConfigManager()

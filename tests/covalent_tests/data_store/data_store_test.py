@@ -30,4 +30,4 @@ def test_datastore_init():
     """Test data store initialization method."""
 
     ds = DataStore(db_URL=None)
-    assert ds.db_URL == "sqlite+pysqlite:///" + get_config("user_interface.dispatch_db")
+    assert ds.db_URL == "sqlite+pysqlite:///" + get_config("dispatcher.db_path")
