@@ -311,7 +311,6 @@ def start(
     """
     Start the Covalent server.
     """
-
     db = DataStore.factory()
     if db.is_migration_pending and not ignore_migrations:
         click.secho(MIGRATION_WARNING_MSG, fg="yellow")
