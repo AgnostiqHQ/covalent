@@ -176,12 +176,6 @@ def _graceful_start(
     dev_mode_flag = "--develop" if develop else ""
     no_cluster_flag = "--no-cluster"
     port = _next_available_port(port)
-    set_config(
-        {
-            "user_interface.port": port,
-            "dispatcher.port": port,
-        }
-    )
     if no_cluster_flag in sys.argv:
         launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
     else:
