@@ -469,7 +469,8 @@ class Electron:
                 return TransportableObject.deserialize_dict(collection)
 
         new_metadata=_DEFAULT_CONSTRAINT_VALUES.copy()
-        # new_metadata["executor"]=self.metadata["executor"]
+        if "executor" in self.metadata:
+            new_metadata["executor"]=self.metadata["executor"]
 
         node_id = graph.add_node(
             name=prefix,
