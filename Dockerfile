@@ -43,6 +43,10 @@ RUN cd /app \
 
 FROM python:3.8-slim-bullseye AS prod
 
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends rsync \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/.venv/ /app/.venv
 
 EXPOSE 8080
