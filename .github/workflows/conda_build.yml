@@ -56,10 +56,10 @@ jobs:
         run: |
           $CONDA/bin/activate buildenv
           conda env list
-          conda build --override-channels --output-folder ./ --python ${{ matrix.python-version }} .
+          conda build --override-channels --python ${{ matrix.python-version }} .
 
       - name: Install package
-        run: conda install --override-channels -c local ./noarch/covalent-0.163.0-py_0.tar.bz2
+        run: conda install --override-channels -c local covalent
 
       - name: Test package
         run: covalent --version
