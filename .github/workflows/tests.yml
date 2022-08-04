@@ -95,26 +95,43 @@ jobs:
             - 'tests/covalent_ui_tests/**'
             ui_frontend:
             - 'covalent_ui/webapp/**'
+            build:
+            - 'MANIFEST.in'
+            - 'requirements.txt'
+            - 'setup.py'
             
       - name: Set up Python
-        if: matrix.os == 'macos-latest'
+        if: >
+          matrix.os == 'macos-latest'
+          && (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.sdk == 'true'
+          || steps.working-directory.outputs.dispatcher == 'true'
+          || steps.working-directory.outputs.build == 'true')
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install Python dependencies
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.sdk == 'true'
+          || steps.working-directory.outputs.dispatcher == 'true'
+          || steps.working-directory.outputs.build == 'true'
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
 
       - name: Install rsync on Ubuntu
         if: >
-          matrix.container == 'python:3.8-buster'
+          (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.sdk == 'true'
+          || steps.working-directory.outputs.dispatcher == 'true')
+          && (matrix.container == 'python:3.8-buster'
           || matrix.container == 'python:3.8-bullseye'
           || matrix.container == 'python:3.9-buster'
           || matrix.container == 'python:3.9-bullseye'
           || matrix.container == 'python:3.10-buster'
-          || matrix.container == 'python:3.10-bullseye'
+          || matrix.container == 'python:3.10-bullseye')
         run: apt-get update && apt-get install -y rsync
 
       - name: Install NPM and Yarn on Ubuntu
@@ -158,11 +175,15 @@ jobs:
             yarn build
 
       - name: Build distribution
-        if: github.event_name != 'pull_request'
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.build == 'true'
         run: python setup.py sdist
 
       - name: Validate distribution
-        if: github.event_name != 'pull_request'
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.build == 'true'
         run: |
           VERSION="$(cat ./VERSION)"
           cd dist
@@ -175,9 +196,17 @@ jobs:
           rm -rf covalent-${VERSION}/
 
       - name: Install Covalent
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.sdk == 'true'
+          || steps.working-directory.outputs.dispatcher == 'true'
+          || steps.working-directory.outputs.build == 'true'
         run: pip install -e .
 
       - name: Start Covalent dispatcher server
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.build == 'true'
         run: covalent start --ignore-migrations
                
       - name: Run SDK tests and measure coverage

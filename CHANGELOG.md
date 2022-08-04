@@ -11,12 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `rsync` dependency in `Dockerfile`
 
+### Removed
+
+- `Makefile` which was previously improperly committed
+
 ### Operations
 
 - Functional tests are run only on `develop`
 - `tests.yml` can be run manually provided a commit SHA
+- `tests.yml` uses a `build` filter to conditionally install and build Covalent if build files are modified
 - `docker.yml` is now only for dev work, and is manually triggered given an SHA
-- `release.yml` is enhanced to push stable and pre-releases to a public ECR repo
+- `release.yml` is enhanced to push stable and pre-release images to a public ECR repo
 
 ## [0.161.2] - 2022-08-04
 
