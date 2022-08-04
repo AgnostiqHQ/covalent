@@ -525,7 +525,7 @@ def test_start_config_mem_per_worker(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 4
+    assert set_config_mock.call_count == 6
     graceful_start_mock.assert_called_once()
 
 
@@ -551,7 +551,7 @@ def test_start_config_threads_per_worker(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 4
+    assert set_config_mock.call_count == 6
     graceful_start_mock.assert_called_once()
 
 
@@ -577,7 +577,7 @@ def test_start_config_num_workers(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 4
+    assert set_config_mock.call_count == 6
     graceful_start_mock.assert_called_once()
 
 
@@ -603,7 +603,7 @@ def test_start_all_dask_config(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 6
+    assert set_config_mock.call_count == 8
     graceful_start_mock.assert_called_once()
 
 
@@ -629,7 +629,7 @@ def test_start_dask_config_options_workers_and_mem_per_worker(mocker, monkeypatc
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 5
+    assert set_config_mock.call_count == 7
     graceful_start_mock.assert_called_once()
 
 
@@ -655,7 +655,7 @@ def test_start_dask_config_options_workers_and_threads_per_worker(mocker, monkey
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 5
+    assert set_config_mock.call_count == 7
     graceful_start_mock.assert_called_once()
 
 
@@ -681,5 +681,5 @@ def test_start_dask_config_options_workers_and_threads_per_worker(mocker, monkey
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 5
+    assert set_config_mock.call_count == 7
     graceful_start_mock.assert_called_once()
