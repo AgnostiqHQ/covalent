@@ -307,6 +307,7 @@ def start(
     """
     if develop:
         set_config({"sdk.log_level": "debug"})
+
     db = DataStore.factory()
     if db.is_migration_pending and not ignore_migrations:
         click.secho(MIGRATION_WARNING_MSG, fg="yellow")
@@ -337,6 +338,8 @@ def start(
             sock.close()
         except OSError:
             server_listening = True
+
+    DataStore(initialize_db=True)
 
 
 @click.command()
