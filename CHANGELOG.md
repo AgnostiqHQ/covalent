@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Use `update_config` to modify dask configuration from the cluster process
+- Simplify `set_config` logic for dask configuration options on `covalent start`
+- Removed default values from click options for dask configuration related values
+
+### Added
+
+- Configured default dask configuration options in `defaults.py`
+
 ### Fixed 
 
 - Overwriting config address issue.
