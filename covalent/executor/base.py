@@ -34,6 +34,8 @@ from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
 import cloudpickle as pickle
 
+from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
+
 from .._shared_files import logger
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
@@ -65,8 +67,19 @@ def wrapper_fn(
         cb_args = serialized_args.get_deserialized()
         cb_kwargs = serialized_kwargs.get_deserialized()
         retval = cb_fn(*cb_args, **cb_kwargs)
-        if retval_key:
-            cb_retvals[retval_key] = retval
+
+        # we always store cb_kwargs dict values as arrays to factor in non-unique values
+        if retval_key and retval_key in cb_retvals:
+            cb_retvals[retval_key].append(retval)
+        elif retval_key:
+            cb_retvals[retval_key] = [retval]
+
+    # if cb_retvals key only contains one item this means it is a unique (non-repeated) retval key
+    # so we only return the first element however if it is a 'files' kwarg we always return as a list
+    cb_retvals = {
+        key: value[0] if len(value) == 1 and key != RESERVED_RETVAL_KEY__FILES else value
+        for key, value in cb_retvals.items()
+    }
 
     fn = function.get_deserialized()
 
