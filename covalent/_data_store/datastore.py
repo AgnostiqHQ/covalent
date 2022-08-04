@@ -60,10 +60,10 @@ class DataStore:
         return DataStore(echo=False)
 
     def get_alembic_config(self, logging_enabled: bool = True):
-        alembic_ini_path = Path(
-            path.join(__file__, "./../../../covalent_migrations/alembic.ini")
-        ).resolve()
-        alembic_config = Config(alembic_ini_path)
+        alembic_ini_path = Path(path.join(__file__, "./../../../covalent_migrations/alembic.ini"))
+        migrations_folder = alembic_ini_path / Path("..")
+        alembic_config = Config(str(alembic_ini_path.resolve()))
+        alembic_config.set_main_option("script_location", str(migrations_folder.resolve()))
         alembic_config.attributes["configure_logger"] = logging_enabled
         alembic_config.set_main_option("sqlalchemy.url", self.db_URL)
         return alembic_config
