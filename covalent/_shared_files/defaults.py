@@ -56,6 +56,8 @@ _DEFAULT_CONFIG = {
         "results_dir": os.environ.get("COVALENT_RESULTS_DIR", "results"),
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
+        "db_path": (os.environ.get("XDG_DATA_HOME"))
+        or (os.environ["HOME"] + "/.local/share") + "/covalent/dispatcher_db.sqlite",
     },
     "dask": {
         "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
@@ -64,8 +66,6 @@ _DEFAULT_CONFIG = {
         + "/covalent",
     },
     "workflow_data": {
-        "db_path": (os.environ.get("XDG_DATA_HOME"))
-        or (os.environ["HOME"] + "/.local/share") + "/covalent/workflow_db.sqlite",
         "storage_type": "local",
         "base_dir": (os.environ.get("XDG_DATA_HOME"))
         or (os.environ["HOME"] + "/.local/share") + "/covalent/workflow_data",
@@ -76,8 +76,6 @@ _DEFAULT_CONFIG = {
         "dev_port": 49009,
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
-        "dispatch_db": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
-        + "/covalent/dispatch_db.sqlite",
     },
 }
 

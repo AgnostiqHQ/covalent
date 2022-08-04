@@ -68,11 +68,11 @@ def alembic(ctx: click.Context, alembic_args) -> None:
     """
     try:
         alembic_args = list(alembic_args)
-        settings_file_path = Path(
-            path.join(__file__, "./../../../../covalent_migrations/alembic.ini")
-        ).resolve()
-        alembic_command = ["alembic", "-c", settings_file_path] + alembic_args
-        p = Popen(alembic_command, stdout=PIPE, stderr=PIPE)
+        migrations_folder_path = Path(path.join(__file__, "./../../../../covalent_migrations/"))
+        project_root_path = migrations_folder_path / Path("..")
+        settings_file_path = migrations_folder_path / Path("alembic.ini")
+        alembic_command = ["alembic", "-c", str(settings_file_path.resolve())] + alembic_args
+        p = Popen(alembic_command, stdout=PIPE, stderr=PIPE, cwd=str(project_root_path.resolve()))
         output, error = p.communicate()
         if error:
             click.echo(error.decode("utf-8").strip())

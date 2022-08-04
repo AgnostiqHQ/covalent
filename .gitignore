@@ -54,6 +54,7 @@
 !.readthedocs.yaml
 !.secrets.baseline
 !alembic.ini
+!codecov.yml
 !Dockerfile
 !MANIFEST.in
 !Makefile
