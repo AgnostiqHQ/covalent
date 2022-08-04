@@ -33,12 +33,12 @@ variable "ami_name" {
 }
 
 variable "sha_tag" {
-  type = string
+  type    = string
   default = ""
 }
 
 locals {
-  ami_name = var.sha_tag == "" ? var.ami_name : concat(var.ami_name, ["-", var.sha_tag])
+  ami_name     = var.sha_tag == "" ? var.ami_name : join("-", [var.ami_name, var.sha_tag])
   covalent_pip = var.sha_tag == "" ? "--pre covalent" : "git+https://github.com/AgnostiqHQ/covalent.git@${var.sha_tag}"
 }
 
@@ -59,6 +59,13 @@ source "amazon-ebs" "ubuntu" {
   }
 
   ssh_username = "ubuntu"
+
+  tags = {
+    OS_Version    = "Ubuntu 20.04"
+    Release       = "${var.sha_tag == "" ? "latest" : var.sha_tag}"
+    Base_AMI_Name = "{{ .SourceAMIName }}"
+    Extra         = "{{ .SourceAMITags.TagName }}"
+  }
 }
 
 build {
@@ -70,8 +77,9 @@ build {
   provisioner "shell" {
     inline = [
       "sudo apt-get update",
-      "sudo apt-get install -y python3-pip rsync",
-      "sudo pip install ${local.covalent_pip}"
+      "sudo apt-get upgrade -y -f python3-pip",
+      "sudo apt-get install -y rsync git",
+      "sudo pip3 install --ignore-installed ${local.covalent_pip}"
     ]
   }
 }
