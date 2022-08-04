@@ -253,8 +253,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     required=False,
     is_flag=False,
     type=str,
-    # default="auto",
-    show_default=True,
     help="""Memory limit per worker in (GB).
               Provide strings like 1gb/1GB or 0 for no limits""".replace(
         "\n", ""
@@ -265,8 +263,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     "--workers",
     required=False,
     is_flag=False,
-    # default=-1,
-    show_default=True,
     type=int,
     help="Number of workers to start covalent with.",
 )
@@ -275,8 +271,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     "--threads-per-worker",
     required=False,
     is_flag=False,
-    # default=1,
-    show_default=True,
     type=int,
     help="Number of CPU threads per worker.",
 )
@@ -328,54 +322,12 @@ def start(
     )
 
     if not no_cluster:
-        if not mem_per_worker:
-            set_config(
-                {
-                    "dask": {
-                        "mem_per_worker": mem_per_worker,
-                    },
-                }
-            )
-        elif "mem_per_worker" not in get_config("dask"):
-            set_config(
-                {
-                    "dask": {
-                        "mem_per_worker": "auto",
-                    },
-                }
-            )
-        if not threads_per_worker:
-            set_config(
-                {
-                    "dask": {
-                        "threads_per_worker": threads_per_worker,
-                    },
-                }
-            )
-        elif "mem_per_worker" not in get_config("dask"):
-            set_config(
-                {
-                    "dask": {
-                        "threads_per_worker": 1,
-                    },
-                }
-            )
-        if not workers:
-            set_config(
-                {
-                    "dask": {
-                        "num_workers": workers,
-                    },
-                }
-            )
-        elif "num_workers" not in get_config("dask"):
-            set_config(
-                {
-                    "dask": {
-                        "num_workers": dask.system.CPU_COUNT,
-                    },
-                }
-            )
+        if mem_per_worker:
+            set_config("dask.mem_per_worker", mem_per_worker)
+        if threads_per_worker:
+            set_config("dask.threads_per_worker", threads_per_worker)
+        if workers:
+            set_config("dask.num_workers", workers)
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     set_config(
@@ -564,14 +516,13 @@ def cluster(
     """
     Inspect and manage the Dask cluster's configuration.
     """
+    assert _is_server_running()
     # addr of the admin server for the Dask cluster process
     # started with covalent
     loop = asyncio.get_event_loop()
     admin_host = get_config("dask.admin_host")
     admin_port = get_config("dask.admin_port")
     admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
-
-    assert _is_server_running()
 
     if status:
         click.echo(loop.run_until_complete(_get_cluster_status(admin_server_addr)))

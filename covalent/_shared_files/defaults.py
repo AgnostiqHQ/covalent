@@ -22,6 +22,7 @@
 
 import os
 from configparser import ConfigParser
+
 import dask.system
 
 prefix_separator = ":"
