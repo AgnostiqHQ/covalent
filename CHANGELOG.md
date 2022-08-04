@@ -23,6 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docker.yml` is now only for dev work, and is manually triggered given an SHA
 - `release.yml` is enhanced to push stable and pre-release images to a public ECR repo
 
+## [0.162.0] - 2022-08-04
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Updated Base executor to support non-unique `retval_key`s, particularly for use in File Transfer where we may have several CallDeps with the reserved `retval_key` of value `files`.
+
 ## [0.161.2] - 2022-08-04
 
 ### Authors

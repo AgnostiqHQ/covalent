@@ -23,6 +23,8 @@
 import os
 from pathlib import Path
 
+import pytest
+
 import covalent as ct
 from covalent import DepsBash, DepsCall, DepsPip
 from covalent._file_transfer.enums import Order
@@ -97,3 +99,29 @@ def test_bash_decorator():
     source_file.unlink()
     dest_file.unlink()
     dest_file2.unlink()
+
+
+def test_call_dep_retvals_in_lepton():
+    """
+    Test DepsCall retval_keyword behavior in electrons which currently is to raise an error if any retval_key is added.
+    """
+
+    def call_dep_hook():
+        return 123
+
+    @ct.leptons.bash(
+        executor="local",
+        display_name="file_transfer_lepton",
+        call_before=[ct.DepsCall(call_dep_hook, retval_keyword="call_dep_hook")],
+    )
+    def file_transfer(call_dep_hook=None):
+        return f"echo {call_dep_hook} > {str(echofile)}"
+
+    @ct.lattice
+    def ft_workflow():
+        return file_transfer()
+
+    with pytest.raises(Exception):
+        dispatch_id = ct.dispatch(ft_workflow)()
+        ct.get_result(dispatch_id, wait=True)
+        rm._delete_result(dispatch_id)
