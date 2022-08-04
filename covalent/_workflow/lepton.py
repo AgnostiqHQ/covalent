@@ -28,7 +28,7 @@ from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from .depsbash import DepsBash
-from .depscall import DepsCall
+from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
 from .electron import Electron
 
@@ -123,12 +123,23 @@ class Lepton(Electron):
         # Syncing behavior of file transfer with an electron
         internal_call_before_deps = []
         internal_call_after_deps = []
+
         for file_transfer in files:
-            _callback_ = file_transfer.cp()
+            _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
+
+            # pre-file transfer hook to create any necessary temporary files
+            internal_call_before_deps.append(
+                DepsCall(
+                    _file_transfer_pre_hook_,
+                    retval_keyword=RESERVED_RETVAL_KEY__FILES,
+                    override_reserved_retval_keys=True,
+                )
+            )
+
             if file_transfer.order == Order.AFTER:
-                internal_call_after_deps.append(DepsCall(_callback_))
+                internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
             else:
-                internal_call_before_deps.append(DepsCall(_callback_))
+                internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
 
         # Copied from electron.py
         deps = {}
@@ -151,6 +162,16 @@ class Lepton(Electron):
 
         call_before = internal_call_before_deps + call_before
         call_after = internal_call_after_deps + call_after
+
+        # Leptons do not currently support retval_keyword(s) from DepsCall
+        for cd in call_after + call_before:
+            return_value_keyword = cd.retval_keyword
+            if return_value_keyword in [RESERVED_RETVAL_KEY__FILES]:
+                cd.retval_keyword = None
+            elif return_value_keyword:
+                raise Exception(
+                    "DepsCall retval_keyword(s) are not currently supported for Leptons, please remove the retval_keyword arg from DepsCall for the workflow to be constructed successfully."
+                )
 
         # Should be synced with electron
         constraints = {
@@ -400,16 +421,6 @@ def bash(
     if isinstance(deps_bash, list) or isinstance(deps_bash, str):
         deps["bash"] = DepsBash(commands=deps_bash)
 
-    internal_call_before_deps = []
-    internal_call_after_deps = []
-
-    for file_transfer in files:
-        _callback_ = file_transfer.cp()
-        if file_transfer.order == Order.AFTER:
-            internal_call_after_deps.append(DepsCall(_callback_))
-        else:
-            internal_call_before_deps.append(DepsCall(_callback_))
-
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
     if isinstance(deps_pip, list):
@@ -420,9 +431,6 @@ def bash(
 
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
-
-    call_before = internal_call_before_deps + call_before
-    call_after = internal_call_after_deps + call_after
 
     def decorator_bash_lepton(func=None):
         @wraps(func)
