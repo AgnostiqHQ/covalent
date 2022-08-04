@@ -38,15 +38,10 @@ from .._data_store.models import Lattice
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .result import Result
-from .utils import _db_path
-from .write_result_to_db import MissingLatticeRecordError
+from .write_result_to_db import MissingLatticeRecordError, load_file
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-def get_data_store() -> DataStore:
-    return DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
 
 
 def get_result(dispatch_id: str, wait: bool = False) -> Result:
@@ -69,45 +64,62 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
         )
         result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
 
-    except MissingLatticeRecordError as e:
+    except MissingLatticeRecordError as ex:
         app_log.warning(
-            f"Dispatch ID {dispatch_id} was not found in the database. Either the Dispatch ID is incorrect or wait a couple of seconds before trying again."
+            f"Dispatch ID {dispatch_id} was not found in the database. Incorrect dispatch id."
         )
 
-        time.sleep(0.01)
-        return get_result(dispatch_id, wait)
+        raise ex
 
     return result_object
 
 
 def result_from(lattice_record: Lattice) -> Result:
-    with open(
-        os.path.join(lattice_record.storage_path, lattice_record.function_filename), "rb"
-    ) as f:
-        function = pickle.loads(f.read())
-    with open(
-        os.path.join(lattice_record.storage_path, lattice_record.executor_filename), "rb"
-    ) as f:
-        executor = pickle.loads(f.read())
-    with open(
-        os.path.join(lattice_record.storage_path, lattice_record.inputs_filename), "rb"
-    ) as f:
-        inputs = pickle.loads(f.read())
-    with open(os.path.join(lattice_record.storage_path, lattice_record.error_filename), "rb") as f:
-        error = pickle.loads(f.read())
-    with open(
-        os.path.join(lattice_record.storage_path, lattice_record.transport_graph_filename), "rb"
-    ) as f:
-        transport_graph = pickle.loads(f.read())
-    with open(
-        os.path.join(lattice_record.storage_path, lattice_record.results_filename), "rb"
-    ) as f:
-        output = pickle.loads(f.read())
+    """Re-hydrate result object from the lattice record."""
+
+    function = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.function_filename
+    )
+    executor_data = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.executor_data_filename
+    )
+    workflow_executor_data = load_file(
+        storage_path=lattice_record.storage_path,
+        filename=lattice_record.workflow_executor_data_filename,
+    )
+    inputs = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.inputs_filename
+    )
+    named_args = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.named_args_filename
+    )
+    named_kwargs = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.named_kwargs_filename
+    )
+    error = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.error_filename
+    )
+    transport_graph = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.transport_graph_filename
+    )
+    output = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.results_filename
+    )
+
+    executor = lattice_record.executor
+    workflow_executor = lattice_record.workflow_executor
 
     attributes = {
-        "metadata": {"executor": executor},
+        "metadata": {
+            "executor": executor,
+            "executor_data": executor_data,
+            "workflow_executor": workflow_executor,
+            "workflow_executor_data": workflow_executor_data,
+        },
         "args": inputs["args"],
         "kwargs": inputs["kwargs"],
+        "named_args": named_args,
+        "named_kwargs": named_kwargs,
         "transport_graph": transport_graph,
         "workflow_function": function,
     }
@@ -158,7 +170,10 @@ def _get_result_from_dispatcher(
     http = requests.Session()
     http.mount("http://", adapter)
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
-    response = http.get(url, params={"wait": wait, "status_only": status_only}, timeout=1)
+    response = http.get(
+        url,
+        params={"wait": wait, "status_only": status_only},
+    )
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()

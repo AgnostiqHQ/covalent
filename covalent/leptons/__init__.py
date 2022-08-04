@@ -18,27 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from sqlalchemy import select
+"""Lepton wrappers."""
 
-from .._data_store import DataStore, models
-from .._results_manager.result import Result
-from .._shared_files.config import get_config
-
-
-def save_result(data_store: DataStore, result_object: Result):
-    dispatch_id = result_object.dispatch_id
-
-    update = False
-    stmt = select(models.Lattice.dispatch_id).where(models.Lattice.dispatch_id == dispatch_id)
-    with data_store.begin_session() as ds:
-        row = ds.db_session.execute(stmt).first()
-    if row:
-        update = True
-
-    metadata = {"dispatch_id": dispatch_id}
-    with data_store.begin_session(metadata) as session:
-        result_object.persist(session, update)
-
-
-def load_result(data_store: DataStore, dispatch_id: str) -> Result:
-    raise NotImplementedError
+from .._workflow.lepton import bash

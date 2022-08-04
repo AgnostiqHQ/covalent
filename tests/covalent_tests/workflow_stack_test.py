@@ -27,16 +27,8 @@ import pytest
 
 import covalent as ct
 import covalent._results_manager.results_manager as rm
-from covalent._data_store.datastore import DataStore
 from covalent._results_manager.result import Result
-from covalent._results_manager.utils import _db_path
-from covalent._workflow.electron import Electron
 from covalent_dispatcher._core.execution import _dispatch_sublattice
-
-
-@pytest.fixture
-def db():
-    return DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}", initialize_db=True)
 
 
 @ct.electron
@@ -111,7 +103,7 @@ def test_electron_takes_nested_iterables():
     rm._delete_result(dispatch_id)
 
 
-def test_sublatticing(db):
+def test_sublatticing():
     """
     Test to check whether an electron can be sublatticed
     and used inside of a bigger lattice.
@@ -125,13 +117,12 @@ def test_sublatticing(db):
         return identity(a=res_1)
 
     dispatch_id = ct.dispatch(workflow)(a=1, b=2)
-
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
-    assert workflow_result.error is None
+    assert workflow_result.error == ""
     assert workflow_result.status == str(Result.COMPLETED)
     assert workflow_result.result == 3
-    assert workflow_result.get_node_result(db, 0)["sublattice_result"].result == 3
+    assert workflow_result.get_node_result(node_id=0)["sublattice_result"].result == 3
 
 
 @pytest.mark.asyncio
@@ -290,7 +281,7 @@ def test_electron_deps_call_before():
     dispatch_id = ct.dispatch(workflow)(file_path=tmp_path)
     res = ct.get_result(dispatch_id, wait=True)
 
-    assert res.error is None
+    assert res.error == ""
 
     assert res.result == (True, "Hello")
 
@@ -317,6 +308,30 @@ def test_electron_deps_inject_calldep_retval():
 
     rm._delete_result(dispatch_id)
     assert result_object.result == (2, 5)
+
+
+def test_electron_deps_inject_non_unique_calldep_retvals():
+    def identity(y):
+        return y
+
+    calldep_one = ct.DepsCall(identity, args=[1], retval_keyword="y")
+    calldep_two = ct.DepsCall(identity, args=[2], retval_keyword="y")
+    calldep_three = ct.DepsCall(identity, args=[3], retval_keyword="y")
+
+    @ct.electron(call_before=[calldep_one, calldep_two, calldep_three])
+    def task(y=[]):
+        return y
+
+    @ct.lattice
+    def workflow():
+        return task()
+
+    dispatch_id = ct.dispatch(workflow)()
+
+    result_object = ct.get_result(dispatch_id, wait=True)
+
+    rm._delete_result(dispatch_id)
+    assert result_object.result == [1, 2, 3]
 
 
 def test_electron_deps_pip():
@@ -628,7 +643,7 @@ def test_all_parameter_types_in_lattice():
     assert result.result == (10, (3, 4), {"d": 6, "e": 7})
 
 
-def test_client_workflow_executor(db):
+def test_client_workflow_executor():
     """
     Test setting `workflow_executor="client"`
     """
@@ -649,7 +664,7 @@ def test_client_workflow_executor(db):
 
     assert workflow_result.status == str(Result.PENDING_POSTPROCESSING)
     assert workflow_result.result is None
-    workflow_result.persist(db)
+    workflow_result.persist()
 
     assert workflow_result.post_process() == 15
 
@@ -686,7 +701,7 @@ def test_two_iterations_float():
     assert [0, 1, 2, 3, 4, 5, 6] == list(add_half_quarter.transport_graph._graph.nodes)
 
 
-def test_wait_for(db):
+def test_wait_for():
     """Test whether wait_for functionality executes as expected"""
 
     @ct.electron
@@ -710,28 +725,32 @@ def test_wait_for(db):
         res_1a = task_1a(2)
         res_1b = task_1b(2)
         res_2 = task_2(res_1a, 3)
-        res_3 = task_3(5).wait_for([res_1a, res_1b])
+        res_3 = ct.wait(task_3(5), [res_1a, res_1b])
 
         return task_2(res_2, res_3)
 
     dispatch_id = ct.dispatch(workflow)()
     result = ct.get_result(dispatch_id, wait=True)
-    result.persist(db)
+    result.persist()
 
     assert result.status == str(Result.COMPLETED)
     assert (
-        result.get_node_result(db=db, node_id=6)["start_time"]
-        > result.get_node_result(db=db, node_id=0)["end_time"]
+        result.get_node_result(node_id=6)["start_time"]
+        > result.get_node_result(node_id=0)["end_time"]
     )
     assert (
-        result.get_node_result(db=db, node_id=6)["start_time"]
-        > result.get_node_result(db=db, node_id=2)["end_time"]
+        result.get_node_result(node_id=6)["start_time"]
+        > result.get_node_result(node_id=2)["end_time"]
     )
     assert result.result == 1500
     rm._delete_result(dispatch_id)
 
+    # Check that workflow function returns the same result when called directly
 
-def test_electron_getitem(db):
+    assert workflow() == 1500
+
+
+def test_electron_getitem():
     """Test electron __getitem__, both with raw keys and with electron keys"""
 
     @ct.electron

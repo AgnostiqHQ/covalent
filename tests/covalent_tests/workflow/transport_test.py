@@ -349,34 +349,6 @@ def test_transport_graph_deserialize(workflow_transport_graph):
     assert transportable_obj.get_deserialized()(x=3) == 9
 
 
-def test_transport_graph_sort_edges_based_on_insertion_order(transport_graph):
-    """Test the transport graph sorting edges based on insertion order"""
-    tg = transport_graph
-    tg.add_node(
-        name="triangle",
-        kwargs={"x": 2},
-        function=subtask,
-        metadata={"mock_field": "mock_value_node_0"},
-    )
-    tg.add_node(
-        name="square",
-        kwargs={"x": 2},
-        function=subtask,
-        metadata={"mock_field": "mock_value_node_1"},
-    )
-    tg.add_node(
-        name="rectangle",
-        kwargs={"x": 2},
-        function=subtask,
-        metadata={"mock_field": "mock_value_node_2"},
-    )
-    tg.add_edge(x=2, y=1, edge_name="apples")
-    tg.add_edge(x=0, y=1, edge_name="oranges")
-
-    tg.sort_edges_based_on_insertion_order()
-    assert list(tg.get_dependencies(node_key=1)) == [2, 0]
-
-
 def test_transport_graph_json_serialization():
     """Test the transport graph JSON serialization method"""
 

@@ -21,35 +21,33 @@
 from contextlib import contextmanager
 from os import path
 from pathlib import Path
-from typing import BinaryIO, Dict, Generator, List, Optional, Union
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from typing import BinaryIO, Dict, Generator, Optional
 
 from alembic import command
 from alembic.config import Config
+from alembic.environment import EnvironmentContext
+from alembic.migration import MigrationContext
+from alembic.script import ScriptDirectory
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
 from .._shared_files.config import get_config
 from . import models
 from .storage_backends import LocalStorageBackend, StorageBackend
-
-default_backend_map = {"local": LocalStorageBackend(base_dir=get_config("workflow_data.base_dir"))}
 
 
 class DataStore:
     def __init__(
         self,
         db_URL: Optional[str] = None,
-        storage_backend_map: Dict[str, StorageBackend] = default_backend_map,
         initialize_db: bool = False,
         **kwargs,
     ):
         if db_URL:
             self.db_URL = db_URL
         else:
-            self.db_URL = "sqlite+pysqlite:///" + get_config("user_interface.dispatch_db")
+            self.db_URL = "sqlite+pysqlite:///" + get_config("dispatcher.db_path")
 
-        self.storage_backend_map = storage_backend_map
         self.engine = create_engine(self.db_URL, **kwargs)
         self.Session = sessionmaker(self.engine)
 
@@ -57,33 +55,47 @@ class DataStore:
         if initialize_db:
             models.Base.metadata.create_all(self.engine)
 
-    def run_migrations(self):
+    @staticmethod
+    def factory():
+        return DataStore(echo=False)
 
-        alembic_ini_path = Path(path.join(__file__, "./../../../alembic.ini")).resolve()
-        alembic_config = Config(alembic_ini_path)
-        alembic_config.attributes["configure_logger"] = False
+    def get_alembic_config(self, logging_enabled: bool = True):
+        alembic_ini_path = Path(path.join(__file__, "./../../../covalent_migrations/alembic.ini"))
+        migrations_folder = alembic_ini_path / Path("..")
+        alembic_config = Config(str(alembic_ini_path.resolve()))
+        alembic_config.set_main_option("script_location", str(migrations_folder.resolve()))
+        alembic_config.attributes["configure_logger"] = logging_enabled
         alembic_config.set_main_option("sqlalchemy.url", self.db_URL)
+        return alembic_config
+
+    def run_migrations(self, logging_enabled: bool = True):
+        alembic_config = self.get_alembic_config(logging_enabled=logging_enabled)
         command.upgrade(alembic_config, "head")
+
+    def current_revision(self):
+        alembic_config = self.get_alembic_config(logging_enabled=False)
+        script = ScriptDirectory.from_config(alembic_config)
+        with EnvironmentContext(alembic_config, script) as env_ctx:
+            migration_ctx = MigrationContext.configure(
+                self.engine.connect(), environment_context=env_ctx
+            )
+            current_rev = migration_ctx.get_current_revision()
+            return current_rev
+
+    def current_head(self):
+        alembic_config = self.get_alembic_config(logging_enabled=False)
+        script = ScriptDirectory.from_config(alembic_config)
+        current_head = script.get_current_head()
+        return current_head
+
+    @property
+    def is_migration_pending(self):
+        return self.current_head() != self.current_revision()
 
     @contextmanager
     def session(self) -> Generator[Session, None, None]:
         with self.Session.begin() as session:
             yield session
-
-
-class DevDataStore(DataStore):
-    def __init__(
-        self,
-        db_URL: Optional[str] = None,
-        initialize_db: bool = False,
-        storage_backend_map: Dict[str, StorageBackend] = default_backend_map,
-        **kwargs,
-    ):
-        if not db_URL:
-            db_path = get_config("user_interface.dispatch_db")
-            sqlite = ".sqlite"
-            db_URL = f"sqlite+pysqlite:///{db_path.split(sqlite)[0]}_dev{sqlite}"
-        super().__init__(db_URL, storage_backend_map, initialize_db, **kwargs)
 
 
 class DataStoreSession:
@@ -108,7 +120,4 @@ class DataStoreNotInitializedError(Exception):
         super().__init__(self.message)
 
 
-# we can switch this to any class instance that has a db_URL property that points to the db
-# which we want to run migrations against - this command also creates the db without tables
-# via create_engine()
-workflow_db = DataStore(echo=True)
+workflow_db = DataStore.factory()

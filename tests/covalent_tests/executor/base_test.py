@@ -20,16 +20,24 @@
 
 """Tests for the Covalent executor base module."""
 
+import io
 import os
 import tempfile
+from contextlib import redirect_stdout
 from functools import partial
 
 from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
+from covalent.executor.base import BaseAsyncExecutor
 
 
 class MockExecutor(BaseExecutor):
-    def run(self, function, args, kwargs):
+    def run(self, function, args, kwargs, task_metadata):
+        return function(*args, **kwargs)
+
+
+class MockAsyncExecutor(BaseAsyncExecutor):
+    async def run(self, function, args, kwargs, task_metadata):
         return function(*args, **kwargs)
 
 
@@ -157,6 +165,27 @@ def test_wrapper_fn_calldep_retval_injection():
     assert output.get_deserialized() == 7
 
 
+def test_wrapper_fn_calldep_non_unique_retval_keys_injection():
+    """Test injecting calldep return values into main task"""
+
+    def f(x=0, y=[]):
+        return x + sum(y)
+
+    def identity(y):
+        return y
+
+    serialized_fn = TransportableObject(f)
+    calldep_one = DepsCall(identity, args=[1], retval_keyword="y")
+    calldep_two = DepsCall(identity, args=[2], retval_keyword="y")
+    call_before = [calldep_one.apply(), calldep_two.apply()]
+    args = []
+    kwargs = {"x": TransportableObject(3)}
+
+    output = wrapper_fn(serialized_fn, call_before, [], *args, **kwargs)
+
+    assert output.get_deserialized() == 6
+
+
 def test_base_executor_subclassing():
     """Test that executors must implement run"""
 
@@ -234,3 +263,71 @@ def test_base_executor_execute_conda(mocker):
 
     assert result.get_deserialized() == 5
     mock_conda_exec.assert_called_once()
+
+
+def test_base_executor_passes_task_metadata(mocker):
+    def f(x, y):
+        return x, y
+
+    def fake_run(function, args, kwargs, task_metadata):
+        return task_metadata
+
+    me = MockExecutor()
+    me.run = fake_run
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    metadata, stdout, stderr = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+    task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
+    assert metadata == task_metadata
+
+
+def test_base_async_executor_passes_task_metadata(mocker):
+    import asyncio
+
+    def f(x, y):
+        return x, y
+
+    async def fake_run(function, args, kwargs, task_metadata):
+        return task_metadata
+
+    me = MockAsyncExecutor()
+    me.run = fake_run
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    awaitable = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    metadata, stdout, stderr = asyncio.run(awaitable)
+    task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
+    assert metadata == task_metadata

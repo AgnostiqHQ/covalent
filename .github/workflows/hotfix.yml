@@ -125,7 +125,7 @@ jobs:
           terminal_commit=1
           IFS='-' read -ra describe_tag <<< "$latest_tag"
           if [[ ${#describe_tag[1]} -gt 0 ]] ; then
-            version="${describe_tag[1]}-$((${describe_tag[1]}+1))"
+            version="${describe_tag[0]}-$((${describe_tag[1]}+1))"
           else
             version="${describe_tag[0]}-1"
           fi
@@ -150,7 +150,6 @@ jobs:
           git checkout -b "hotfix-$VERSION"
           IFS=',' read -ra commit_shas <<< "${{ github.event.inputs.commit_shas }}"
           git cherry-pick -X ours ${commit_shas[@]}
-          git reset --soft "v${{ github.event.inputs.stable_version }}"
           git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
           git push -u origin "hotfix-$VERSION"
       - name: Increment version

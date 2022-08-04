@@ -18,26 +18,16 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Unit tests for the DispatchDB."""
+flags:
+  SDK:
+    paths:
+      - covalent/**
+    carryforward: true
+  Dispatcher:
+    paths:
+      - covalent_dispatcher/**
+    carryforward: true
 
-import simplejson
-
-import covalent as ct
-from covalent._results_manager.result import Result
-from covalent_dispatcher._db.dispatchdb import DispatchDB
-
-
-@ct.electron
-def add(a, b):
-    return a + b
-
-
-@ct.electron
-def identity(a):
-    return a
-
-
-@ct.lattice
-def check(a, b):
-    result1 = add(a=a, b=b)
-    return identity(a=result1)
+comment:
+  layout: "reach, diff, flags"
+  show_carryforward_flags: true

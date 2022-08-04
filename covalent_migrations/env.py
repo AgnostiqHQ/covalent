@@ -1,9 +1,9 @@
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from alembic import context
-from covalent._data_store.datastore import workflow_db
+from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Base
 
 # this is the Alembic Config object, which provides
@@ -35,7 +35,8 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = workflow_db.db_URL
+    db = DataStore.factory()
+    url = db.db_URL
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -55,7 +56,8 @@ def run_migrations_online() -> None:
 
     """
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = workflow_db.db_URL
+    db = DataStore.factory()
+    configuration["sqlalchemy.url"] = db.db_URL
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",

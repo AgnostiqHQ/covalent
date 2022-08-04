@@ -25,25 +25,21 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
-import cloudpickle
-import cloudpickle as pickle
-import networkx as nx
-import yaml
 from sqlalchemy import and_, update
-from sqlalchemy.orm import Session
 
-from .._data_store import DataStore, DataStoreNotInitializedError, models
+from .._data_store import DataStore, DataStoreNotInitializedError, models, workflow_db
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.transport import TransportableObject
-from .utils import _db_path, convert_to_lattice_function_call
 from .write_result_to_db import (
     get_electron_type,
     insert_electron_dependency_data,
     insert_electrons_data,
     insert_lattices_data,
+    load_file,
+    store_file,
     update_electrons_data,
     update_lattice_completed_electron_num,
     update_lattices_data,
@@ -58,18 +54,20 @@ log_stack_info = logger.log_stack_info
 
 LATTICE_FUNCTION_FILENAME = "function.pkl"
 LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
-LATTICE_EXECUTOR_FILENAME = "executor.pkl"
+LATTICE_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
+LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME = "workflow_executor_data.pkl"
 LATTICE_ERROR_FILENAME = "error.log"
 LATTICE_INPUTS_FILENAME = "inputs.pkl"
+LATTICE_NAMED_ARGS_FILENAME = "named_args.pkl"
+LATTICE_NAMED_KWARGS_FILENAME = "named_kwargs.pkl"
 LATTICE_RESULTS_FILENAME = "results.pkl"
 LATTICE_TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 LATTICE_STORAGE_TYPE = "local"
 
 ELECTRON_FUNCTION_FILENAME = "function.pkl"
 ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
-ELECTRON_KEY_FILENAME = "key.pkl"
 ELECTRON_VALUE_FILENAME = "value.pkl"
-ELECTRON_EXECUTOR_FILENAME = "executor.pkl"
+ELECTRON_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
 ELECTRON_STDOUT_FILENAME = "stdout.log"
 ELECTRON_STDERR_FILENAME = "stderr.log"
 ELECTRON_INFO_FILENAME = "info.log"
@@ -162,9 +160,7 @@ Node Outputs
 ------------
 """
 
-        node_outputs = self.get_all_node_outputs(
-            DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
-        )
+        node_outputs = self.get_all_node_outputs()
         for k, v in node_outputs.items():
             show_result_str += f"{k}: {v.object_string}\n"
 
@@ -283,7 +279,7 @@ Node Outputs
 
             self.lattice.transport_graph.set_node_value(node_id, "stderr", None)
 
-    def get_node_result(self, db: DataStore, node_id: int) -> dict:
+    def get_node_result(self, node_id: int) -> dict:
         """Return the result of a particular node.
 
         Args:
@@ -303,37 +299,22 @@ Node Outputs
                             - stderr: The stderr of the node execution.
         """
 
-        # return {
-        #     "node_id": node_id,
-        #     "node_name": self.lattice.transport_graph.get_node_value(node_id, "node_name"),
-        #     "start_time": self.lattice.transport_graph.get_node_value(node_id, "start_time"),
-        #     "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
-        #     "status": self.lattice.transport_graph.get_node_value(node_id, "status"),
-        #     "output": self.lattice.transport_graph.get_node_value(node_id, "output"),
-        #     "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
-        #     "sublattice_result": self.lattice.transport_graph.get_node_value(
-        #         node_id, "sublattice_result"
-        #     ),
-        #     "stdout": self.lattice.transport_graph.get_node_value(node_id, "stdout"),
-        #     "stderr": self.lattice.transport_graph.get_node_value(node_id, "stderr"),
-        # }
-
         return {
             "node_id": node_id,
-            "node_name": self._get_node_name(db, node_id),
+            "node_name": self._get_node_name(node_id),
             "start_time": self.lattice.transport_graph.get_node_value(node_id, "start_time"),
             "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
-            "status": self._get_node_status(db, node_id),
-            "output": self._get_node_output(db, node_id),
+            "status": self._get_node_status(node_id),
+            "output": self._get_node_output(node_id),
             "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
             "sublattice_result": self.lattice.transport_graph.get_node_value(
                 node_id, "sublattice_result"
             ),
             "stdout": self.lattice.transport_graph.get_node_value(node_id, "stdout"),
-            "stderr": self._get_node_error(db, node_id),
+            "stderr": self._get_node_error(node_id),
         }
 
-    def get_all_node_outputs(self, db: DataStore) -> dict:
+    def get_all_node_outputs(self) -> dict:
         """
         Return output of every node execution.
 
@@ -343,7 +324,7 @@ Node Outputs
         Returns:
             node_outputs: A dictionary containing the output of every node execution.
         """
-        with Session(db.engine) as session:
+        with workflow_db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -360,11 +341,11 @@ Node Outputs
             for electron in electron_records:
                 node_id = electron.transport_graph_node_id
                 all_node_outputs[
-                    f"{self._get_node_name(db, node_id)}({node_id})"
-                ] = self._get_node_output(db, node_id)
+                    f"{self._get_node_name(node_id=node_id)}({node_id})"
+                ] = self._get_node_output(node_id=node_id)
             return all_node_outputs
 
-    def get_all_node_results(self, db: DataStore) -> List[Dict]:
+    def get_all_node_results(self) -> List[Dict]:
         """
         Get all the node results.
 
@@ -374,7 +355,7 @@ Node Outputs
         Returns:
             node_results: A list of dictionaries containing the result of every node execution.
         """
-        with Session(db.engine) as session:
+        with workflow_db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -388,16 +369,14 @@ Node Outputs
                 .all()
             )
             return [
-                self.get_node_result(db, electron.transport_graph_node_id)
+                self.get_node_result(node_id=electron.transport_graph_node_id)
                 for electron in electron_records
             ]
 
     def post_process(self):
 
         # Copied from server-side _post_process()
-        node_outputs = self.get_all_node_outputs(
-            DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}")
-        )
+        node_outputs = self.get_all_node_outputs()
         ordered_node_outputs = []
         for i, item in enumerate(node_outputs.items()):
             key, val = item
@@ -414,7 +393,7 @@ Node Outputs
             lattice.post_processing = False
         return result
 
-    def _get_node_name(self, db: DataStore, node_id: int) -> str:
+    def _get_node_name(self, node_id: int) -> str:
         """
         Returns the name of the node with given node id.
 
@@ -425,7 +404,7 @@ Node Outputs
             The name of said node.
         """
 
-        with Session(db.engine) as session:
+        with workflow_db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -445,7 +424,7 @@ Node Outputs
                 .name
             )
 
-    def _get_node_status(self, db: DataStore, node_id: int) -> "Status":
+    def _get_node_status(self, node_id: int) -> "Status":
         """
         Returns the status of a node.
 
@@ -456,7 +435,7 @@ Node Outputs
             The status of said node.
         """
 
-        with Session(db.engine) as session:
+        with workflow_db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -475,7 +454,7 @@ Node Outputs
                 .status
             )
 
-    def _get_node_output(self, db: DataStore, node_id: int) -> Any:
+    def _get_node_output(self, node_id: int) -> Any:
         """
         Return the output of a node.
 
@@ -487,7 +466,7 @@ Node Outputs
                     Will return None if error occured in execution.
         """
 
-        with Session(db.engine) as session:
+        with workflow_db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -507,10 +486,11 @@ Node Outputs
                 )
                 .first()
             )
-            with open(os.path.join(electron.storage_path, electron.results_filename), "rb") as f:
-                return pickle.load(f)
+            return load_file(
+                storage_path=electron.storage_path, filename=electron.results_filename
+            )
 
-    def _get_node_value(self, db: DataStore, node_id: int) -> Any:
+    def _get_node_value(self, node_id: int) -> Any:
         """
         Return the output of a node.
 
@@ -522,7 +502,7 @@ Node Outputs
                     Will return None if error occured in execution.
         """
 
-        with Session(db.engine) as session:
+        with workflow_db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -542,10 +522,9 @@ Node Outputs
                 )
                 .first()
             )
-            with open(os.path.join(electron.storage_path, electron.value_filename), "rb") as f:
-                return pickle.load(f)
+            return load_file(storage_path=electron.storage_path, filename=electron.value_filename)
 
-    def _get_node_error(self, db: DataStore, node_id: int) -> Any:
+    def _get_node_error(self, node_id: int) -> Any:
         """
         Return the error of a node.
 
@@ -557,7 +536,7 @@ Node Outputs
                    Will return None if no error occured in execution.
         """
 
-        with Session(db.engine) as session:
+        with workflow_db.session() as session:
 
             lattice_id = (
                 session.query(models.Lattice)
@@ -577,13 +556,10 @@ Node Outputs
                 )
                 .first()
             )
-
-            with open(os.path.join(electron.storage_path, electron.stderr_filename), "rb") as f:
-                return pickle.load(f)
+            return load_file(storage_path=electron.storage_path, filename=electron.stderr_filename)
 
     def _update_node(
         self,
-        db: DataStore,
         node_id: int,
         node_name: str = None,
         start_time: "datetime" = None,
@@ -615,7 +591,7 @@ Node Outputs
             None
         """
 
-        app_log.warning("Inside update node")
+        app_log.debug("Inside update node")
 
         electron_kwargs = {}
         node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
@@ -640,8 +616,7 @@ Node Outputs
 
         if output is not None:
             self.lattice.transport_graph.set_node_value(node_id, "output", output)
-            with open(node_path / ELECTRON_RESULTS_FILENAME, "wb") as f:
-                cloudpickle.dump(output, f)
+            store_file(node_path, ELECTRON_RESULTS_FILENAME, output)
 
         if error is not None:
             self.lattice.transport_graph.set_node_value(node_id, "error", error)
@@ -653,18 +628,16 @@ Node Outputs
 
         if stdout is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
-            with open(node_path / ELECTRON_STDOUT_FILENAME, "wb") as f:
-                cloudpickle.dump(stdout, f)
+            store_file(node_path, ELECTRON_STDOUT_FILENAME, stdout)
 
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
-            with open(node_path / ELECTRON_STDERR_FILENAME, "wb") as f:
-                cloudpickle.dump(stderr, f)
+            store_file(node_path, ELECTRON_STDERR_FILENAME, stderr)
 
         if str(status) == "COMPLETED":
-            update_lattice_completed_electron_num(db, self.dispatch_id)
+            update_lattice_completed_electron_num(self.dispatch_id)
 
-        with Session(db.engine) as session:
+        with workflow_db.session() as session:
             lattice_id = (
                 session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
@@ -680,7 +653,7 @@ Node Outputs
                 .values(updated_at=datetime.now(timezone.utc), **electron_kwargs)
             )
             session.commit()
-        app_log.warning("Inside update node - SUCCESS")
+        app_log.debug("Inside update node - SUCCESS")
 
     def _initialize_results_dir(self):
         """Create the results directory."""
@@ -688,10 +661,10 @@ Node Outputs
         result_folder_path = os.path.join(self.results_dir, f"{self.dispatch_id}")
         Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
-    def upsert_lattice_data(self, db: DataStore):
+    def upsert_lattice_data(self):
         """Update lattice data"""
 
-        with Session(db.engine) as session:
+        with workflow_db.session() as session:
             lattice_exists = (
                 session.query(models.Lattice)
                 .where(models.Lattice.dispatch_id == self.dispatch_id)
@@ -699,32 +672,30 @@ Node Outputs
                 is not None
             )
 
+        try:
+            workflow_func_string = self.lattice.workflow_function_string
+        except AttributeError:
+            workflow_func_string = None
+
         # Store all lattice info that belongs in filenames in the results directory
         data_storage_path = Path(self.results_dir) / self.dispatch_id
-        with open(data_storage_path / LATTICE_FUNCTION_FILENAME, "wb") as f:
-            cloudpickle.dump(self.lattice.workflow_function, f)
+        for filename, data in [
+            (LATTICE_FUNCTION_FILENAME, self.lattice.workflow_function),
+            (LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
+            (LATTICE_EXECUTOR_DATA_FILENAME, self.lattice.metadata["executor_data"]),
+            (
+                LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
+                self.lattice.metadata["workflow_executor_data"],
+            ),
+            (LATTICE_ERROR_FILENAME, self.error),
+            (LATTICE_INPUTS_FILENAME, self.inputs),
+            (LATTICE_NAMED_ARGS_FILENAME, self.lattice.named_args),
+            (LATTICE_NAMED_KWARGS_FILENAME, self.lattice.named_kwargs),
+            (LATTICE_RESULTS_FILENAME, self._result),
+            (LATTICE_TRANSPORT_GRAPH_FILENAME, self._lattice.transport_graph),
+        ]:
 
-        with open(data_storage_path / LATTICE_FUNCTION_STRING_FILENAME, "wb") as f:
-            try:
-                cloudpickle.dump(self.lattice.workflow_function_string, f)
-            except AttributeError as e:
-                app_log.warning(f"{e}")
-                cloudpickle.dump(None, f)
-
-        with open(data_storage_path / LATTICE_EXECUTOR_FILENAME, "wb") as f:
-            cloudpickle.dump(self.lattice.metadata["executor"], f)
-
-        with open(data_storage_path / LATTICE_ERROR_FILENAME, "wb") as f:
-            cloudpickle.dump(self.error, f)
-
-        with open(data_storage_path / LATTICE_INPUTS_FILENAME, "wb") as f:
-            cloudpickle.dump(self.inputs, f)
-
-        with open(data_storage_path / LATTICE_RESULTS_FILENAME, "wb") as f:
-            cloudpickle.dump(self._result, f)
-
-        with open(data_storage_path / LATTICE_TRANSPORT_GRAPH_FILENAME, "wb") as f:
-            cloudpickle.dump(self._lattice.transport_graph, f)
+            store_file(data_storage_path, filename, data)
 
         # Write lattice records to Database
         if not lattice_exists:
@@ -738,9 +709,14 @@ Node Outputs
                 "storage_type": LATTICE_STORAGE_TYPE,
                 "function_filename": LATTICE_FUNCTION_FILENAME,
                 "function_string_filename": LATTICE_FUNCTION_STRING_FILENAME,
-                "executor_filename": LATTICE_EXECUTOR_FILENAME,
+                "executor": self.lattice.metadata["executor"],
+                "executor_data_filename": LATTICE_EXECUTOR_DATA_FILENAME,
+                "workflow_executor": self.lattice.metadata["workflow_executor"],
+                "workflow_executor_data_filename": LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
                 "error_filename": LATTICE_ERROR_FILENAME,
                 "inputs_filename": LATTICE_INPUTS_FILENAME,
+                "named_args_filename": LATTICE_NAMED_ARGS_FILENAME,
+                "named_kwargs_filename": LATTICE_NAMED_KWARGS_FILENAME,
                 "results_filename": LATTICE_RESULTS_FILENAME,
                 "transport_graph_filename": LATTICE_TRANSPORT_GRAPH_FILENAME,
                 "created_at": datetime.now(timezone.utc),
@@ -748,26 +724,28 @@ Node Outputs
                 "started_at": self.start_time,
                 "completed_at": self.end_time,
             }
-            insert_lattices_data(db=db, **lattice_record_kwarg)
+            insert_lattices_data(**lattice_record_kwarg)
 
         else:
             lattice_record_kwarg = {
                 "dispatch_id": self.dispatch_id,
                 "status": str(self.status),
+                "electron_num": self._num_nodes,
                 "updated_at": datetime.now(timezone.utc),
                 "started_at": self.start_time,
                 "completed_at": self.end_time,
             }
-            update_lattices_data(db=db, **lattice_record_kwarg)
+            update_lattices_data(**lattice_record_kwarg)
 
-    def upsert_electron_data(self, db: DataStore):
+    def upsert_electron_data(self):
         """Update electron data"""
 
         tg = self.lattice.transport_graph
         dirty_nodes = set(tg.dirty_nodes)
         tg.dirty_nodes.clear()  # Ensure that dirty nodes list is reset once the data is updated
-
-        with Session(db.engine) as session:
+        app_log.debug("upsert_electron_data session begin")
+        with workflow_db.session() as session:
+            app_log.debug("upsert_electron_data session success")
             for node_id in dirty_nodes:
 
                 node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
@@ -778,75 +756,59 @@ Node Outputs
                 attribute_name = tg.get_node_value(node_key=node_id, value_key="name")
 
                 try:
-                    node_key = tg.get_node_value(node_key=node_id, value_key="key")
+                    function_string = tg.get_node_value(node_id, "function_string")
                 except KeyError:
-                    node_key = None
+                    function_string = None
+                try:
+                    node_value = tg.get_node_value(node_id, "value")
+                except KeyError:
+                    node_value = None
+                try:
+                    node_stdout = tg.get_node_value(node_id, "stdout")
+                except KeyError:
+                    node_stdout = None
+                try:
+                    node_stderr = tg.get_node_value(node_id, "stderr")
+                except KeyError:
+                    node_stderr = None
+                try:
+                    node_info = tg.get_node_value(node_id, "info")
+                except KeyError:
+                    node_info = None
+                try:
+                    node_output = tg.get_node_value(node_id, "output")
+                except KeyError:
+                    node_output = TransportableObject(None)
+                if not isinstance(node_output, TransportableObject):
+                    node_output = TransportableObject(node_output)
 
+                executor = tg.get_node_value(node_id, "metadata")["executor"]
                 started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
                 completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
 
-                # Write all electron data to the appropriate filepaths
-                with open(node_path / ELECTRON_FUNCTION_FILENAME, "wb") as f:
-                    cloudpickle.dump(tg.get_node_value(node_id, "function"), f)
-
-                with open(node_path / ELECTRON_FUNCTION_STRING_FILENAME, "wb") as f:
-                    try:
-                        function_string = tg.get_node_value(node_id, "function_string")
-                    except KeyError:
-                        function_string = None
-                    cloudpickle.dump(function_string, f)
-
-                with open(node_path / ELECTRON_VALUE_FILENAME, "wb") as f:
-                    try:
-                        node_value = tg.get_node_value(node_id, "value")
-                    except KeyError:
-                        node_value = None
-                    cloudpickle.dump(node_value, f)
-
-                with open(node_path / ELECTRON_EXECUTOR_FILENAME, "wb") as f:
-                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["executor"], f)
-
-                with open(node_path / ELECTRON_DEPS_FILENAME, "wb") as f:
-                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["deps"], f)
-
-                with open(node_path / ELECTRON_CALL_BEFORE_FILENAME, "wb") as f:
-                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["call_before"], f)
-
-                with open(node_path / ELECTRON_CALL_AFTER_FILENAME, "wb") as f:
-                    cloudpickle.dump(tg.get_node_value(node_id, "metadata")["call_after"], f)
-
-                with open(node_path / ELECTRON_STDOUT_FILENAME, "wb") as f:
-                    try:
-                        node_stdout = tg.get_node_value(node_id, "stdout")
-                    except KeyError:
-                        node_stdout = None
-                    cloudpickle.dump(node_stdout, f)
-
-                with open(node_path / ELECTRON_STDERR_FILENAME, "wb") as f:
-                    try:
-                        node_stderr = tg.get_node_value(node_id, "stderr")
-                    except KeyError:
-                        node_stderr = None
-                    cloudpickle.dump(node_stderr, f)
-
-                with open(node_path / ELECTRON_INFO_FILENAME, "wb") as f:
-                    try:
-                        node_info = tg.get_node_value(node_id, "info")
-                    except KeyError:
-                        node_info = None
-                    cloudpickle.dump(node_info, f)
-
-                with open(node_path / ELECTRON_RESULTS_FILENAME, "wb") as f:
-                    try:
-                        node_output = tg.get_node_value(node_id, "output")
-                    except KeyError:
-                        node_output = TransportableObject(None)
-                    if not isinstance(node_output, TransportableObject):
-                        node_output = TransportableObject(node_output)
-                    cloudpickle.dump(node_output, f)
-
-                with open(node_path / ELECTRON_KEY_FILENAME, "wb") as f:
-                    cloudpickle.dump(node_key, f)
+                for filename, data in [
+                    (ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
+                    (ELECTRON_FUNCTION_STRING_FILENAME, function_string),
+                    (ELECTRON_VALUE_FILENAME, node_value),
+                    (
+                        ELECTRON_EXECUTOR_DATA_FILENAME,
+                        tg.get_node_value(node_id, "metadata")["executor_data"],
+                    ),
+                    (ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
+                    (
+                        ELECTRON_CALL_BEFORE_FILENAME,
+                        tg.get_node_value(node_id, "metadata")["call_before"],
+                    ),
+                    (
+                        ELECTRON_CALL_AFTER_FILENAME,
+                        tg.get_node_value(node_id, "metadata")["call_after"],
+                    ),
+                    (ELECTRON_STDOUT_FILENAME, node_stdout),
+                    (ELECTRON_STDERR_FILENAME, node_stderr),
+                    (ELECTRON_INFO_FILENAME, node_info),
+                    (ELECTRON_RESULTS_FILENAME, node_output),
+                ]:
+                    store_file(node_path, filename, data)
 
                 electron_exists = (
                     session.query(models.Electron, models.Lattice)
@@ -872,11 +834,10 @@ Node Outputs
                         "storage_path": str(node_path),
                         "function_filename": ELECTRON_FUNCTION_FILENAME,
                         "function_string_filename": ELECTRON_FUNCTION_STRING_FILENAME,
-                        "executor_filename": ELECTRON_EXECUTOR_FILENAME,
+                        "executor": executor,
+                        "executor_data_filename": ELECTRON_EXECUTOR_DATA_FILENAME,
                         "results_filename": ELECTRON_RESULTS_FILENAME,
                         "value_filename": ELECTRON_VALUE_FILENAME,
-                        "attribute_name": attribute_name,
-                        "key_filename": ELECTRON_KEY_FILENAME,
                         "stdout_filename": ELECTRON_STDOUT_FILENAME,
                         "stderr_filename": ELECTRON_STDERR_FILENAME,
                         "info_filename": ELECTRON_INFO_FILENAME,
@@ -888,7 +849,7 @@ Node Outputs
                         "started_at": started_at,
                         "completed_at": completed_at,
                     }
-                    insert_electrons_data(db=db, **electron_record_kwarg)
+                    insert_electrons_data(**electron_record_kwarg)
 
                 else:
                     electron_record_kwarg = {
@@ -899,13 +860,13 @@ Node Outputs
                         "updated_at": datetime.now(timezone.utc),
                         "completed_at": completed_at,
                     }
-                    update_electrons_data(db=db, **electron_record_kwarg)
+                    update_electrons_data(**electron_record_kwarg)
 
-    def insert_electron_dependency_data(self, db: DataStore):
+    def insert_electron_dependency_data(self):
         """Update electron dependency data"""
 
         # Insert electron dependency records if they don't exist
-        with Session(db.engine) as session:
+        with workflow_db.session() as session:
             electron_dependencies_exist = (
                 session.query(models.ElectronDependency, models.Electron, models.Lattice)
                 .where(
@@ -916,24 +877,21 @@ Node Outputs
                 .first()
                 is not None
             )
-
+        app_log.debug("electron_dependencies_exist is " + str(electron_dependencies_exist))
         if not electron_dependencies_exist:
-            insert_electron_dependency_data(
-                db=db, dispatch_id=self.dispatch_id, lattice=self.lattice
-            )
+            insert_electron_dependency_data(dispatch_id=self.dispatch_id, lattice=self.lattice)
 
-    def persist(self, db: DataStore) -> None:
+    def persist(self) -> None:
         """Save Result object to a DataStoreSession. Changes are queued until
         committed by the caller."""
 
         self._initialize_results_dir()
-
-        if not db:
-            raise DataStoreNotInitializedError
-
-        self.upsert_lattice_data(db)
-        self.upsert_electron_data(db)
-        self.insert_electron_dependency_data(db)
+        app_log.debug("upsert start")
+        self.upsert_lattice_data()
+        self.upsert_electron_data()
+        app_log.debug("upsert complete")
+        self.insert_electron_dependency_data()
+        app_log.debug("persis complete")
 
     def _convert_to_electron_result(self) -> Any:
         """

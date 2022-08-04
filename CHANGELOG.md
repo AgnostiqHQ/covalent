@@ -11,6 +11,313 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Conda package is built and tested on a nightly schedule
 - Conda deployment step is added to `release.yml`
+## [0.163.0] - 2022-08-04
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Added
+
+- Added `rsync` dependency in `Dockerfile`
+
+### Removed
+
+- `Makefile` which was previously improperly committed
+
+### Operations
+
+- Functional tests are run only on `develop`
+- `tests.yml` can be run manually provided a commit SHA
+- `tests.yml` uses a `build` filter to conditionally install and build Covalent if build files are modified
+- `docker.yml` is now only for dev work, and is manually triggered given an SHA
+- `release.yml` is enhanced to push stable and pre-release images to a public ECR repo
+
+## [0.162.0] - 2022-08-04
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Updated Base executor to support non-unique `retval_key`s, particularly for use in File Transfer where we may have several CallDeps with the reserved `retval_key` of value `files`.
+
+## [0.161.2] - 2022-08-04
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Fixed
+
+- Updated `covalent db migrations` to overwrite `alembic.ini` `script_location` with absolute path to migrations folder
+- Updated `covalent db alembic [args]` command to use project root as `cwd` for alembic subprocess  
+
+## [0.161.1] - 2022-08-03
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Poojith U Rao <106616820+poojithurao@users.noreply.github.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- When a list was passed to an electron, the generated electron list
+  had metadata copied from the electron. This was resulting in
+  call_before and call_after functions being called by the electron
+  list as well. The metadata (apart from executor) is now set to
+  default values for the electron list.
+
+## [0.161.0] - 2022-08-03
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- Replaced `Session(DispatchDB()._get_data_store().engine)` with `workflow_db.session()`
+
+### Removed
+
+- `DevDataStore` class from `datastore.py`
+- workflows manager
+
+## [0.160.1] - 2022-08-02
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Fixed
+
+- `script_location` key not found issue when installing with pip (second attempt)
+
+### Docs
+
+- Remove migration guide reference from README
+
+### Operations
+
+- Explicitly check `release == true` in tests.yml
+
+## [0.160.0] - 2022-08-02
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- `Executor.run()` now accepts a `task_metadata` dictionary. Current
+  keys consist of `dispatch_id` and `node_id`.
+
+## [0.159.0] - 2022-08-02
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- Database schema has been updated to v11
+
+### Operations
+
+- `paths-filter` will only be run on PRs, i.e on workflow runs, the whole test suite will be run.
+- Removed retry action from running on `pytest` steps since they instead use `pytest` retries.
+- `codecov.yml` added to enable carry-forward flags
+- UI front-end is only built for pull requests when the source changes
+- Packaging is only validated on the `develop` branch
+
+## [0.158.0] - 2022-07-29
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- Construct the result object in the dispatcher `entry_point.py` module in order to avoid the Missing Latticed Id error so frequently.
+- Update the sleep statement length to 0.1 seconds in the results.manager.
+
+## [0.157.1] - 2022-07-29
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+### Fixed
+
+- Pass non-kwargs to electrons in the correct order during dispatch.
+
+## [0.157.0] - 2022-07-28
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Expose a public `wait()` function compatible with both calling and dispatching lattices
+
+### Docs
+
+- Updated the RTD on `wait_for()` to use the static `wait()` function
+
+### Operations
+
+- pre-commit autoupdate
+
+### Docs
+
+- Changed the custom executor how-to to be shorter and more concise.
+
+## [0.156.0] - 2022-07-27
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- Bash decorator is introduced
+- Lepton commands can be specified as a list of strings rather than strings alone.
+
+## [0.155.1] - 2022-07-26
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Fixed
+
+- `script_location` key not found issue when running alembic programatically
+
+### Operations
+
+- Fixed syntax errors in `stale.yml` and in `hotfix.yml`
+- `docker.yml` triggered after version bump in `develop` instead of before
+- Enhanced `tests.yml` to upload coverage reports by domain
+
+## [0.155.0] - 2022-07-26
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Exposing `alembic {args}` cli commands through: `covalent db alembic {args}`
+
+## [0.154.0] - 2022-07-25
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Added methods to programatically fetch information from Alembic without needing subprocess
+
+## [0.153.1] - 2022-07-25
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Fixed
+
+- Stdout and stderr are now captured when using the dask executor.
+
+
+### Tests
+
+- Fixed Dask cluster CLI tests
+
+## [0.153.0] - 2022-07-25
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Added
+
+- Helper function to load and save files corresponding to the DB filenames.
+
+### Changed
+
+- Files with .txt, .log extensions are stored as strings.
+- Get result web request timeout to 2 seconds.
+
+## [0.152.0] - 2022-07-25
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Changed
+
+- Pass default DataStore object to node value retrieval method in the Results object.
 
 ## [0.151.1] - 2022-07-22
 
@@ -92,6 +399,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Added workflow to stale and close pull requests
+
 
 ### Docs
 
