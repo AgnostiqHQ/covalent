@@ -22,7 +22,7 @@ class S3(FileTransferStrategy):
             profile: str = os.environ.get("AWS_PROFILE") or None,
             region_name: str = os.getenv("AWS_REGION") or None,
     ):
-        
+
         self.credentials = credentials
         self.profile = profile
         self.region_name = region_name

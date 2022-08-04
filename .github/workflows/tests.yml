@@ -73,9 +73,11 @@ jobs:
             dispatcher:
             - 'covalent_dispatcher/**'
             ui_backend:
-            - 'covalent_ui/**'
+            - 'covalent_ui/*.py'
             ui_backend_tests:
             - 'tests/covalent_ui_tests/**'
+            ui_frontend:
+            - 'covalent_ui/webapp/**'
             
       - name: Set up Python
         if: matrix.os == 'macos-latest'
@@ -88,7 +90,7 @@ jobs:
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
 
-      - name: Install NPM and Yarn on Ubuntu
+      - name: Install rsync on Ubuntu
         if: >
           matrix.container == 'python:3.8-buster'
           || matrix.container == 'python:3.8-bullseye'
@@ -96,14 +98,29 @@ jobs:
           || matrix.container == 'python:3.9-bullseye'
           || matrix.container == 'python:3.10-buster'
           || matrix.container == 'python:3.10-bullseye'
+        run: apt-get update && apt-get install -y rsync
+
+      - name: Install NPM and Yarn on Ubuntu
+        if: >
+          (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_frontend == 'true')
+          && (matrix.container == 'python:3.8-buster'
+          || matrix.container == 'python:3.8-bullseye'
+          || matrix.container == 'python:3.9-buster'
+          || matrix.container == 'python:3.9-bullseye'
+          || matrix.container == 'python:3.10-buster'
+          || matrix.container == 'python:3.10-bullseye')
         run: |
-          apt-get update && apt-get install -y curl rsync
+          apt-get install -y curl
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
           apt-get install -y nodejs
           npm install -g yarn
 
       - name: Install NPM and Yarn on CentOS
-        if: matrix.container.image == 'centos/python-38-centos7'
+        if: >
+          (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_frontend == 'true')
+           && matrix.container.image == 'centos/python-38-centos7'
         run: |
           yum remove -y npm nodejs
           curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
@@ -111,6 +128,9 @@ jobs:
           npm install -g yarn
 
       - name: Build webapp
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_frontend == 'true'
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
@@ -121,15 +141,18 @@ jobs:
             yarn build
 
       - name: Build distribution
+        if: github.event_name != 'pull_request'
         run: python setup.py sdist
 
       - name: Validate distribution
+        if: github.event_name != 'pull_request'
         run: |
           VERSION="$(cat ./VERSION)"
           cd dist
           tar xzf covalent-${VERSION}.tar.gz
           diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
           diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x README.md -r covalent-${VERSION}/covalent_migrations ../covalent_migrations
           diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
           diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf covalent-${VERSION}/
@@ -173,17 +196,19 @@ jobs:
       - name: Run UI backend tests and measure coverage
         id: ui_tests
         if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.ui_backend == 'true'
+          false
+          && (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_backend == 'true')
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
       
       - name: Generate UI backend coverage report
         continue-on-error: true
         if: > 
-          github.event_name != 'pull_request'
+          false
+          && (github.event_name != 'pull_request'
           || (steps.working-directory.outputs.ui_backend_tests == 'true'
               && steps.working-directory.outputs.ui_backend == 'true'
-              && steps.ui_tests.outputs.exit_code == 0)
+              && steps.ui_tests.outputs.exit_code == 0))
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Upload SDK report to Codecov
@@ -222,7 +247,7 @@ jobs:
 
       - name: Upload UI backend report to Codecov
         if: >
-          'false'
+          false
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
           && (github.event_name != 'pull_request'
@@ -306,9 +331,7 @@ jobs:
 
   release:
     needs: tests
-    if: >
-      github.ref == 'refs/heads/develop'
-      && needs.tests.outputs.release
+    if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
     uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
     secrets: inherit
     with:

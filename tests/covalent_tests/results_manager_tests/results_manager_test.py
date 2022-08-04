@@ -41,7 +41,7 @@ def lattice_record():
         storage_path="mock_storage_path",
         function_filename="mock_function_filename",
         function_string_filename="mock_function_string_filename",
-        executor_filename="mock_executor_filename",
+        executor_data_filename="mock_executor_data_filename",
         error_filename="mock_error_filename",
         inputs_filename="mock_inputs_filename",
         results_filename="mock_results_filename",

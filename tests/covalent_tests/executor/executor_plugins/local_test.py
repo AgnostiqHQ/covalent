@@ -92,4 +92,5 @@ def test_local_executor_run():
     le = LocalExecutor()
     args = [5]
     kwargs = {}
-    assert le.run(f, args, kwargs) == 25
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    assert le.run(f, args, kwargs, task_metadata) == 25
