@@ -26,6 +26,8 @@ import tempfile
 from contextlib import redirect_stdout
 from functools import partial
 
+import pytest
+
 from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
 from covalent.executor.base import BaseAsyncExecutor, _AbstractBaseExecutor
@@ -37,6 +39,15 @@ class MockExecutor(BaseExecutor):
 
 
 class MockAsyncExecutor(BaseAsyncExecutor):
+    async def poll_file(self, path, starting_pos):
+        try:
+            with open(path, "r") as f:
+                f.seek(starting_pos)
+                contents = f.read()
+        except:
+            contents = ""
+        return contents
+
     async def run(self, function, args, kwargs, task_metadata):
         return function(*args, **kwargs)
 
@@ -369,3 +380,26 @@ def test_async_write_streams_to_file(mocker):
         with open(tmp_file.name) as f:
             lines = f.readlines()
         assert lines[0] == "absolute"
+
+@pytest.mark.asyncio
+async def test_create_file_monitor():
+    """Test file monitor"""
+    me = MockAsyncExecutor()
+
+    f = tempfile.NamedTemporaryFile("a", delete=False)
+    tmp_path = f.name
+    with f:
+        f.write("Hello")
+
+    monitored_file = me.create_file_monitor(tmp_path)
+    contents = await monitored_file.__anext__()
+    assert contents == "Hello"
+    with open(tmp_path, "a") as f:
+        f.write("World")
+    contents = await monitored_file.__anext__()
+    assert contents == "World"
+
+    with open(tmp_path, "r") as f:
+        assert f.read() == "HelloWorld"
+
+    os.unlink(tmp_path)
