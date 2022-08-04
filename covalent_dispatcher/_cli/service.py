@@ -253,7 +253,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     required=False,
     is_flag=False,
     type=str,
-    default="auto",
+    # default="auto",
     show_default=True,
     help="""Memory limit per worker in (GB).
               Provide strings like 1gb/1GB or 0 for no limits""".replace(
@@ -265,7 +265,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     "--workers",
     required=False,
     is_flag=False,
-    default=dask.system.CPU_COUNT,
+    # default=-1,
     show_default=True,
     type=int,
     help="Number of workers to start covalent with.",
@@ -275,7 +275,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     "--threads-per-worker",
     required=False,
     is_flag=False,
-    default=1,
+    # default=1,
     show_default=True,
     type=int,
     help="Number of CPU threads per worker.",
@@ -320,23 +320,62 @@ def start(
         click.echo(MIGRATION_COMMAND_MSG)
         return ctx.exit(1)
 
-    no_cluster_flag = "--no-cluster"
     set_config(
         {
             "user_interface.port": port,
             "dispatcher.port": port,
         }
     )
-    if no_cluster_flag not in sys.argv:
-        set_config(
-            {
-                "dask": {
-                    "mem_per_worker": mem_per_worker or "auto",
-                    "threads_per_worker": threads_per_worker or 1,
-                    "num_workers": workers or dask.system.CPU_COUNT,
-                },
-            }
-        )
+
+    if not no_cluster:
+        if not mem_per_worker:
+            set_config(
+                {
+                    "dask": {
+                        "mem_per_worker": mem_per_worker,
+                    },
+                }
+            )
+        elif "mem_per_worker" not in get_config("dask"):
+            set_config(
+                {
+                    "dask": {
+                        "mem_per_worker": "auto",
+                    },
+                }
+            )
+        if not threads_per_worker:
+            set_config(
+                {
+                    "dask": {
+                        "threads_per_worker": threads_per_worker,
+                    },
+                }
+            )
+        elif "mem_per_worker" not in get_config("dask"):
+            set_config(
+                {
+                    "dask": {
+                        "threads_per_worker": 1,
+                    },
+                }
+            )
+        if not workers:
+            set_config(
+                {
+                    "dask": {
+                        "num_workers": workers,
+                    },
+                }
+            )
+        elif "num_workers" not in get_config("dask"):
+            set_config(
+                {
+                    "dask": {
+                        "num_workers": dask.system.CPU_COUNT,
+                    },
+                }
+            )
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     set_config(
