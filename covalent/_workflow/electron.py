@@ -43,7 +43,7 @@ from .._shared_files.defaults import (
 )
 from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
-from .depscall import DepsCall
+from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
 from .lattice import Lattice
 from .transport import TransportableObject
@@ -573,11 +573,21 @@ def electron(
     internal_call_after_deps = []
 
     for file_transfer in files:
-        _callback_ = file_transfer.cp()
+        _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
+
+        # pre-file transfer hook to create any necessary temporary files
+        internal_call_before_deps.append(
+            DepsCall(
+                _file_transfer_pre_hook_,
+                retval_keyword=RESERVED_RETVAL_KEY__FILES,
+                override_reserved_retval_keys=True,
+            )
+        )
+
         if file_transfer.order == Order.AFTER:
-            internal_call_after_deps.append(DepsCall(_callback_))
+            internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
         else:
-            internal_call_before_deps.append(DepsCall(_callback_))
+            internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
 
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
