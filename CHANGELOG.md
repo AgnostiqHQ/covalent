@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Packer template for AWS AMI
+
+### Operations
+
+- AWS AMI can be manually built using `packer.yml`
+
 ## [0.161.2] - 2022-08-04
 
 ### Authors
