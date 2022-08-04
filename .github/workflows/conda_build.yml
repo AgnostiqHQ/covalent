@@ -59,7 +59,7 @@ jobs:
           conda build --override-channels --output-folder ./ --python ${{ matrix.python-version }} .
 
       - name: Install package
-        run: conda install --override-channels -c local covalent
+        run: conda install --override-channels -c local ./noarch/covalent-0.163.0-py_0.tar.bz2
 
       - name: Test package
         run: covalent --version
