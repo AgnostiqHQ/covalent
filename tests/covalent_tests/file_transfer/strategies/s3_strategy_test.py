@@ -26,7 +26,7 @@ class TestS3Strategy:
         to_file = File(self.MOCK_LOCAL_FILEPATH)
 
         bucket_name = furl(from_file.uri).origin[5:]
-        
+
         S3().download(from_file, to_file)()
 
         boto3_client_mock().download_file.assert_called_with(
