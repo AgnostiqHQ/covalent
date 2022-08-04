@@ -55,6 +55,7 @@
 !.secrets.baseline
 !alembic.ini
 !codecov.yml
+!covalent.pkr.hcl
 !Dockerfile
 !MANIFEST.in
 !Makefile

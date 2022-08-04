@@ -1,0 +1,56 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: packer
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: 'SHA used to build the AMI'
+        type: string
+        required: true
+      region:
+        description: 'Region where the AMI is uploaded'
+        type: string
+        default: 'us-east-1'
+        required: true
+
+jobs:
+  packer:
+    runs-on: ubuntu-latest
+    container: hashicorp/packer:1.8
+    steps:
+      - name: Check out SHA
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: github.event.inputs.commit_sha
+
+      - name: Packer validate
+        run: packer validate -var 'sha_tag=${{ github.event.inputs.commit_sha }}' .
+
+      - name: Packer build
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ github.event.inputs.region }}
+        run: packer build -var 'sha_tag=${{ github.event.inputs.commit_sha }}' covalent.pkr.hcl
