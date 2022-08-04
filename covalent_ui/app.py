@@ -23,6 +23,8 @@ import argparse
 
 import socketio
 import uvicorn
+from fastapi import Request
+from fastapi.templating import Jinja2Templates
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
@@ -37,6 +39,15 @@ STATIC_FILES = {"": WEBAPP_PATH, "/": f"{WEBAPP_PATH}/index.html"}
 # Log configuration
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+
+templates = Jinja2Templates(directory=WEBAPP_PATH)
+
+
+@fastapi_app.get("/{rest_of_path}")
+def get_home(request: Request, rest_of_path: str):
+    return templates.TemplateResponse("index.html", {"request": request})
+
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
