@@ -227,9 +227,9 @@ jobs:
             persist-credentials: false
             fetch-depth: 0
         - name: Install Conda dependencies
-        run: |
-          conda install conda-build conda-verify anaconda-client
-          conda config --apend channels conda-forge
+          run: |
+            conda install conda-build conda-verify anaconda-client
+            conda config --apend channels conda-forge
         - name: Build package
           run: |
             $CONDA/bin/activate buildenv
