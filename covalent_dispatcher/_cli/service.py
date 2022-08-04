@@ -314,12 +314,8 @@ def start(
         click.echo(MIGRATION_COMMAND_MSG)
         return ctx.exit(1)
 
-    set_config(
-        {
-            "user_interface.port": port,
-            "dispatcher.port": port,
-        }
-    )
+    set_config("user_interface.port", port)
+    set_config("dispatcher.port", port)
 
     if not no_cluster:
         if mem_per_worker:
@@ -330,12 +326,9 @@ def start(
             set_config("dask.num_workers", workers)
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
-    set_config(
-        {
-            "user_interface.port": port,
-            "dispatcher.port": port,
-        }
-    )
+    set_config("user_interface.port", port)
+    set_config("dispatcher.port", port)
+
     # Wait until the server actually starts listening on the port
     server_listening = False
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
