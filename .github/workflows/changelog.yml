@@ -21,15 +21,8 @@
 name: changelog
 
 on:
-  push:
-    branches:
-      - develop
-    paths-ignore:
-      - "CHANGELOG.md"
-      - "VERSION"
-      - ".github/actions/changelog/package.json"
-      - ".github/actions/changelog/package-lock.json"
-      - ".github/actions/changelog/dist/**"
+  schedule:
+    - cron: "5 5 * * *"
 
 jobs:
   changelog:
@@ -72,13 +65,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update version number
         id: changelog
+        continue-on-error: true
         uses: ./.github/actions/changelog
         with:
           changelog-path: CHANGELOG.md
           version-path: VERSION
           commits-json: ${{toJSON(fromJSON(steps.commits.outputs.data).commits)}}
       - name: Commit
-        if: ${{ steps.changelog.outputs.message != 'noop' }}
+        if: >
+          steps.changelog.outcome == 'success'
+          && steps.changelog.outputs.message != 'noop'
         uses: EndBug/add-and-commit@v9
         with:
           author_name: CovalentOpsBot
