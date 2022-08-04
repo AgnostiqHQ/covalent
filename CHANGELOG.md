@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated Base executor to support non-unique `retval_key`s, particularly for use in File Transfer where we may have several CallDeps with the reserved `retval_key` of value `files`.
 
+## [0.161.2] - 2022-08-04
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Fixed
+
+- Updated `covalent db migrations` to overwrite `alembic.ini` `script_location` with absolute path to migrations folder
+- Updated `covalent db alembic [args]` command to use project root as `cwd` for alembic subprocess  
+
 ## [0.161.1] - 2022-08-03
 
 ### Authors
