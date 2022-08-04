@@ -165,6 +165,27 @@ def test_wrapper_fn_calldep_retval_injection():
     assert output.get_deserialized() == 7
 
 
+def test_wrapper_fn_calldep_non_unique_retval_keys_injection():
+    """Test injecting calldep return values into main task"""
+
+    def f(x=0, y=[]):
+        return x + sum(y)
+
+    def identity(y):
+        return y
+
+    serialized_fn = TransportableObject(f)
+    calldep_one = DepsCall(identity, args=[1], retval_keyword="y")
+    calldep_two = DepsCall(identity, args=[2], retval_keyword="y")
+    call_before = [calldep_one.apply(), calldep_two.apply()]
+    args = []
+    kwargs = {"x": TransportableObject(3)}
+
+    output = wrapper_fn(serialized_fn, call_before, [], *args, **kwargs)
+
+    assert output.get_deserialized() == 6
+
+
 def test_base_executor_subclassing():
     """Test that executors must implement run"""
 

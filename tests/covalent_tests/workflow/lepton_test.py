@@ -185,30 +185,36 @@ def test_local_file_transfer_support(is_from_file_remote, is_to_file_remote, ord
     call_before_deps = mock_lepton_with_files.get_metadata("call_before")
     call_after_deps = mock_lepton_with_files.get_metadata("call_after")
 
+    pre_hook_call_dep, file_transfer_call_dep = mock_file_transfer.cp()
+
     if mock_file_transfer.order == "before":
-        # No file transfer should be done after executing the lepton
-        assert call_after_deps == []
+        # There should be two call before call deps: pre hook + file transfer
+        assert len(call_before_deps) == 2
+        assert len(call_after_deps) == 0
+
+        assert inspect.getsource(
+            call_before_deps[0].apply_fn.get_deserialized()
+        ) == inspect.getsource(pre_hook_call_dep)
+        assert inspect.getsource(
+            call_before_deps[1].apply_fn.get_deserialized()
+        ) == inspect.getsource(file_transfer_call_dep)
 
     if mock_file_transfer.order == "after":
-        # No file transfer should be done before executing the lepton
-        assert call_before_deps == []
+        # There should be one call before call deps: pre hook
+        assert len(call_before_deps) == 1
+        # There should be one call after call deps: file transfer
+        assert len(call_after_deps) == 1
 
-    # The defined file transfer strategies should not be mutated by the lepton
-    for call in call_before_deps:
-        assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(
-            mock_file_transfer.cp()
-        )
-    for call in call_after_deps:
-        assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(
-            mock_file_transfer.cp()
-        )
+        assert inspect.getsource(
+            call_before_deps[0].apply_fn.get_deserialized()
+        ) == inspect.getsource(pre_hook_call_dep)
+        assert inspect.getsource(
+            call_after_deps[0].apply_fn.get_deserialized()
+        ) == inspect.getsource(file_transfer_call_dep)
 
 
-@pytest.mark.parametrize(
-    "is_from_file_remote, is_to_file_remote", [(False, True), (True, False), (True, True)]
-)
 @pytest.mark.parametrize("order", (Order.BEFORE, Order.AFTER))
-def test_http_file_transfer(is_from_file_remote, is_to_file_remote, order):
+def test_http_file_transfer(order):
     """
     Test for http file transfer
     """
@@ -231,22 +237,31 @@ def test_http_file_transfer(is_from_file_remote, is_to_file_remote, order):
     call_before = mock_lepton_with_files.get_metadata("call_before")
     call_after = mock_lepton_with_files.get_metadata("call_after")
 
+    pre_hook_call_dep, file_transfer_call_dep = mock_file_download.cp()
+
     if mock_file_download.order == "before":
-        # No file transfer should be done after executing the lepton
-        assert call_after == []
+        # There should be two call before call deps: pre hook + file transfer
+        assert len(call_before) == 2
+        assert len(call_after) == 0
+
+        assert inspect.getsource(call_before[0].apply_fn.get_deserialized()) == inspect.getsource(
+            pre_hook_call_dep
+        )
+        assert inspect.getsource(call_before[1].apply_fn.get_deserialized()) == inspect.getsource(
+            file_transfer_call_dep
+        )
 
     if mock_file_download.order == "after":
-        # No file transfer should be done before executing the lepton
-        assert call_before == []
+        # There should be one call before call deps: pre hook
+        assert len(call_before) == 1
+        # There should be one call after call deps: file transfer
+        assert len(call_after) == 1
 
-    # The defined file transfer strategies should not be mutated by the lepton
-    for call in call_before:
-        assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(
-            mock_file_download.cp()
+        assert inspect.getsource(call_before[0].apply_fn.get_deserialized()) == inspect.getsource(
+            pre_hook_call_dep
         )
-    for call in call_after:
-        assert inspect.getsource(call.apply_fn.get_deserialized()) == inspect.getsource(
-            mock_file_download.cp()
+        assert inspect.getsource(call_after[0].apply_fn.get_deserialized()) == inspect.getsource(
+            file_transfer_call_dep
         )
 
 
