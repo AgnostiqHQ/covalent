@@ -204,3 +204,70 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v2
+        if: github.event.inputs.stable_version
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: "v${{ github.event.inputs.stable_version }}"
+      - name: Check out master
+        uses: actions/checkout@v2
+        if: inputs.prerelease
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Generate tag
+        run: |
+          aws --version
+          docker info
+          TAG="$(cat ./VERSION)"
+          if aws ecr describe-images \
+            --repository-name covalent
+            --image-ids imageTag=$TAG &>/dev/null ; then
+            SHORT_SHA="${GITHUB_SHA::8}"
+            TAG=$TAG-$SHORT_SHA
+          fi
+          echo "TAG: $TAG"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Build and push image
+        id: docker-build-push
+        run: |
+          docker build -t covalent .
+          docker tag covalent:latest public.ecr.aws/covalent/covalent:latest
+          docker tag covalent:latest public.ecr.aws/covalent/covalent:$TAG
+          if [ "${{ github.events.inputs.test_release }}" = false ] ; then
+            docker push -a public.ecr.aws/covalent/covalent
+          fi
+           
+      - name: Update stable tag
+        if: >
+          github.event.inputs.stable_version
+          && steps.docker-build-push.outcome == 'success'
+          && ${{ !github.event.inputs.test_release }}
+          && contains(env.PAUL_BLART, github.actor)
+        run: |
+          docker tag covalent:latest public.ecr.aws/covalent/covalent:stable
+          docker push public.ecr.aws/covalent/covalent:stable

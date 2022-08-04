@@ -25,6 +25,12 @@ on:
   workflow_run:
     workflows: [changelog]
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Commit SHA used for testing"
+        type: string
+        required: true
 
 jobs:
   tests:
@@ -59,9 +65,20 @@ jobs:
       release: ${{ steps.push.outputs.release }}
     steps:
       - name: Check out head
+        if: github.event_name != 'workflow_dispatch'
         uses: actions/checkout@v3
         with:
           persist-credentials: false
+
+      - name: Check out SHA
+        if: >
+          github.event_name == 'workflow_dispatch' 
+          && github.event.inputs.commit_sha
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: github.event.inputs.commit_sha
 
       - uses: dorny/paths-filter@v2
         if: github.event_name == 'pull_request'
@@ -188,9 +205,11 @@ jobs:
         run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
+        if: github.event_name != 'pull_request'
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
       
       - name: Generate functional test coverage report
+        if: github.event_name != 'pull_request'
         run: coverage xml -o functional_tests_coverage.xml
 
       - name: Run UI backend tests and measure coverage
@@ -215,6 +234,7 @@ jobs:
         if: >
           matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
           && (github.event_name != 'pull_request'
               || steps.working-directory.outputs.sdk == 'true')
         uses: codecov/codecov-action@v3
@@ -227,6 +247,7 @@ jobs:
         if: >
           matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
           && (github.event_name != 'pull_request'
               || steps.working-directory.outputs.dispatcher == 'true')
         uses: codecov/codecov-action@v3
@@ -239,6 +260,8 @@ jobs:
         if: >
           matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'pull_request'
+          && github.event_name != 'workflow_dispatch'
         uses: codecov/codecov-action@v3
         with:
           files: ./functional_tests_coverage.xml
@@ -250,6 +273,7 @@ jobs:
           false
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
           && (github.event_name != 'pull_request'
               || (steps.working-directory.outputs.ui_backend == 'true'
                   && steps.ui_tests.outputs.exit_code == 0))
@@ -266,6 +290,7 @@ jobs:
           github.ref == 'refs/heads/develop'
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
         with:
           semver_only: true
 
@@ -275,20 +300,21 @@ jobs:
           github.ref == 'refs/heads/develop'
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
         run: |
           MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
           VERSION="$(cat ./VERSION)"
           release=false
           if [ "$MASTER_VERSION" = "$VERSION" ] ; then
             echo "$VERSION has been previously released."
-          elif dpkg --compare-versions $VERSION 'gt' '0.71.0' ; then
+          elif dpkg --compare-versions $VERSION 'gt' '0.110.2' ; then
             git config user.name "CovalentOpsBot"
             git config user.email "covalentopsbot@users.noreply.github.com"
             git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
             git push origin HEAD:master
             release=true
           else
-            echo "We cannot release versions less than 0.71.0."
+            echo "We cannot release versions less than 0.110.2."
           fi
           echo "RELEASE=$release" >> $GITHUB_ENV
           echo "::set-output name=release::$release"
@@ -298,6 +324,7 @@ jobs:
           github.ref == 'refs/heads/develop'
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
         run: |
           VERSION="$(cat ./VERSION)"
           SLACK_MSG=":rocket: Version $VERSION is now available."
@@ -308,6 +335,7 @@ jobs:
           github.ref == 'refs/heads/develop'
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
           && env.RELEASE == 'true'
         uses: rtCamp/action-slack-notify@v2
         env:
@@ -319,6 +347,7 @@ jobs:
       - name: Alert Slack
         if: >
           github.ref == 'ref/heads/develop'
+          && github.event_name != 'workflow_dispatch'
           && failure()
         uses: rtCamp/action-slack-notify@v2
         env:
