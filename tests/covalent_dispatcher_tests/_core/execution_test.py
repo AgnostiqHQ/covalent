@@ -50,36 +50,6 @@ from covalent_dispatcher._core.execution import (
 TEST_RESULTS_DIR = "/tmp/results"
 
 
-@ct.electron
-def a(x):
-    return x, x**2
-
-
-@ct.lattice
-def p(x):
-    result, b = a(x=x)
-    for _ in range(1):
-        result, b = a(x=result)
-    return b, result
-
-
-@pytest.fixture
-def sublattice_workflow():
-    @ct.electron
-    @ct.lattice
-    def sublattice(x):
-        res = a(x)
-        return res
-
-    @ct.lattice
-    def parent_workflow(x):
-        res = sublattice(x)
-        return res
-
-    parent_workflow.build_graph(x=1)
-    return parent_workflow
-
-
 def get_mock_result() -> Result:
     """Construct a mock result object corresponding to a lattice."""
 

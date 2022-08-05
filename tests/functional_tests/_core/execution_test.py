@@ -28,6 +28,36 @@ import covalent as ct
 from covalent_dispatcher._core.execution import _run_task
 
 
+@ct.electron
+def a(x):
+    return x, x**2
+
+
+@ct.lattice
+def p(x):
+    result, b = a(x=x)
+    for _ in range(1):
+        result, b = a(x=result)
+    return b, result
+
+
+@pytest.fixture
+def sublattice_workflow():
+    @ct.electron
+    @ct.lattice
+    def sublattice(x):
+        res = a(x)
+        return res
+
+    @ct.lattice
+    def parent_workflow(x):
+        res = sublattice(x)
+        return res
+
+    parent_workflow.build_graph(x=1)
+    return parent_workflow
+
+
 @pytest.mark.asyncio
 async def test_run_task(mocker, sublattice_workflow):
     """Note: This is not a full unit test for the _run_task method. Rather, this is intended to test the diff introduced to write the sublattice electron id in the Database."""
