@@ -20,18 +20,22 @@
 
 import covalent as ct
 from covalent._workflow.lattice import Lattice
+from covalent.executor import LocalExecutor
+
+le = LocalExecutor(log_stdout="/tmp/stdout.log")
 
 
 def test_lattice_json_serialization():
-    @ct.electron(executor="local", deps_bash=ct.DepsBash("yum install gcc"))
+    @ct.electron(executor="le", deps_bash=ct.DepsBash("yum install gcc"))
     def f(x):
         return x * x
 
-    @ct.lattice
+    @ct.lattice(executor="le")
     def workflow(x):
         return f(x)
 
     workflow.build_graph(5)
+    workflow.cova_imports = set("dummy_module")
 
     json_workflow = workflow.serialize_to_json()
 
