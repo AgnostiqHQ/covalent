@@ -57,6 +57,7 @@ jobs:
       - name: Build package
         run: |
           conda init bash
+          source $HOME/.bashrc
           conda activate buildenv
           conda env list
           conda build --python ${{ matrix.python-version }} .
