@@ -26,83 +26,26 @@ import covalent as ct
 from covalent._results_manager.results_manager import _delete_result, get_result
 
 
-@ct.electron
-def identity(x):
-    return x
-
-
-@ct.lattice
-def arithmetic_test_1(a, operand):
-    a = identity(x=a)
-
-    if operand == "+":
-        return a + 1
-    elif operand == "-":
-        return a - 1
-    elif operand == "*":
-        return a * 1
-    elif operand == "/":
-        return a / 1
-
-
-@ct.lattice
-def arithmetic_test_1_rev(a, operand):
-    a = identity(x=a)
-
-    if operand == "+":
-        return 1 + a
-    elif operand == "-":
-        return 1 - a
-    elif operand == "*":
-        return 1 * a
-    elif operand == "/":
-        return 1 / a
-
-
-@ct.lattice
-def arithmetic_test_2(a, b, operand):
-    a = identity(x=a)
-    b = identity(x=b)
-
-    if operand == "+":
-        return a + b
-    elif operand == "-":
-        return a - b
-    elif operand == "*":
-        return a * b
-    elif operand == "/":
-        return a / b
-
-
-@ct.lattice
-def type_conversion_test_numbers(a, type_to):
-    res = identity(x=a)
-    if type_to == "int":
-        return isinstance(int(res), int)
-    elif type_to == "float":
-        return isinstance(float(res), float)
-    elif type_to == "complex":
-        return isinstance(complex(res), complex)
-
-
-@ct.lattice
-def type_conversion_test_iterables(a, type_to):
-    res = identity(x=a)
-    if type_to == "list":
-        return isinstance(list(res), list)
-    elif type_to == "tuple":
-        return isinstance(tuple(res), tuple)
-
-
-@ct.lattice
-def type_conversion_test_dict(a):
-    res = identity(x=a)
-    return isinstance(dict(res), dict)
-
-
 @pytest.mark.parametrize("test_operand,expected", [("+", 3), ("-", 1), ("*", 2), ("/", 2.0)])
 def test_arithmetic_1(test_operand, expected):
     """Test arithmetic operations"""
+
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.lattice
+    def arithmetic_test_1(a, operand):
+        a = identity(x=a)
+
+        if operand == "+":
+            return a + 1
+        elif operand == "-":
+            return a - 1
+        elif operand == "*":
+            return a * 1
+        elif operand == "/":
+            return a / 1
 
     dispatch_id = ct.dispatch(arithmetic_test_1)(a=2, operand=test_operand)
 
@@ -115,6 +58,23 @@ def test_arithmetic_1(test_operand, expected):
 @pytest.mark.parametrize("test_operand,expected", [("+", 3), ("-", -1), ("*", 2), ("/", 0.5)])
 def test_arithmetic_1_rev(test_operand, expected):
     """Test reverse arithmetic operations"""
+
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.lattice
+    def arithmetic_test_1_rev(a, operand):
+        a = identity(x=a)
+
+        if operand == "+":
+            return 1 + a
+        elif operand == "-":
+            return 1 - a
+        elif operand == "*":
+            return 1 * a
+        elif operand == "/":
+            return 1 / a
 
     dispatch_id = ct.dispatch(arithmetic_test_1_rev)(a=2, operand=test_operand)
 
@@ -130,6 +90,24 @@ def test_arithmetic_1_rev(test_operand, expected):
 def test_arithmetic_2(test_b, test_operand, expected):
     """Test arithmetic operations"""
 
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.lattice
+    def arithmetic_test_2(a, b, operand):
+        a = identity(x=a)
+        b = identity(x=b)
+
+        if operand == "+":
+            return a + b
+        elif operand == "-":
+            return a - b
+        elif operand == "*":
+            return a * b
+        elif operand == "/":
+            return a / b
+
     dispatch_id = ct.dispatch(arithmetic_test_2)(a=2, b=test_b, operand=test_operand)
 
     res = get_result(dispatch_id, wait=True)
@@ -143,6 +121,20 @@ def test_arithmetic_2(test_b, test_operand, expected):
 def test_type_conversion_numbers(test_type_to):
     """Test type conversion for number types"""
 
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.lattice
+    def type_conversion_test_numbers(a, type_to):
+        res = identity(x=a)
+        if type_to == "int":
+            return isinstance(int(res), int)
+        elif type_to == "float":
+            return isinstance(float(res), float)
+        elif type_to == "complex":
+            return isinstance(complex(res), complex)
+
     dispatch_id = ct.dispatch(type_conversion_test_numbers)(a=2, type_to=test_type_to)
 
     res = get_result(dispatch_id, wait=True)
@@ -155,6 +147,18 @@ def test_type_conversion_numbers(test_type_to):
 def test_type_conversion_iterables(test_type_to):
     """Test type conversion for iterables"""
 
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.lattice
+    def type_conversion_test_iterables(a, type_to):
+        res = identity(x=a)
+        if type_to == "list":
+            return isinstance(list(res), list)
+        elif type_to == "tuple":
+            return isinstance(tuple(res), tuple)
+
     dispatch_id = ct.dispatch(type_conversion_test_iterables)(a=[2], type_to=test_type_to)
 
     res = get_result(dispatch_id, wait=True)
@@ -165,6 +169,15 @@ def test_type_conversion_iterables(test_type_to):
 
 def test_type_conversion_dict():
     """Test type conversion for dictionary"""
+
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.lattice
+    def type_conversion_test_dict(a):
+        res = identity(x=a)
+        return isinstance(dict(res), dict)
 
     dispatch_id = ct.dispatch(type_conversion_test_dict)(a={"x": 2})
 
