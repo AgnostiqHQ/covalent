@@ -70,6 +70,15 @@ def get_sample_result_object():
 
 def compare_nodes_and_edges(tg_orig: _TransportGraph, tg_new: _TransportGraph):
     """Convenience function for comparing a legacy transport graph with a processed one."""
+
+    # Check metadata
+    for n in tg_new._graph.nodes:
+        metadata = tg_new._graph.nodes[n]["metadata"]
+        assert "deps" in metadata
+        assert "call_before" in metadata
+        assert "call_after" in metadata
+
+    # Check other node attributes
     task_node = tg_new._graph.nodes[0]
     orig_output = tg_orig._graph.nodes[0]["output"]
 
@@ -210,6 +219,7 @@ def test_process_transport_graph():
     tg = ro.lattice.transport_graph
     tg_new = process_transport_graph(tg)
     compare_nodes_and_edges(tg, tg_new)
+    assert "dirty_nodes" in tg_new.__dict__
 
 
 def test_process_transport_graph_is_idempotent():
@@ -237,6 +247,12 @@ def test_process_lattice():
     assert lattice.metadata["executor_data"]["short_name"] == "local"
     assert lattice.metadata["workflow_executor"] == "local"
     assert lattice.metadata["workflow_executor_data"] == {}
+    assert lattice.metadata["deps"] == {}
+    assert lattice.metadata["call_before"] == []
+    assert lattice.metadata["call_after"] == []
+
+
+2
 
 
 def test_process_result_object():
@@ -247,6 +263,7 @@ def test_process_result_object():
     assert ro_new._inputs["args"] == ro_new.lattice.args
     assert ro_new._inputs["kwargs"] == ro_new.lattice.kwargs
     assert isinstance(ro_new._result, TransportableObject)
+    assert "dirty_nodes" in ro_new.lattice.transport_graph.__dict__
 
 
 def test_migrate_pickled_result_object(mocker):

@@ -53,6 +53,12 @@ def process_node(node: dict) -> dict:
 
     if "metadata" in node:
         node["metadata"] = encode_metadata(node["metadata"])
+        if "deps" not in node["metadata"]:
+            node["metadata"]["deps"] = {}
+        if "call_before" not in node["metadata"]:
+            node["metadata"]["call_before"] = []
+        if "call_after" not in node["metadata"]:
+            node["metadata"]["call_after"] = []
 
     node_name = node["name"]
 
@@ -151,8 +157,12 @@ def process_lattice(lattice: Lattice) -> Lattice:
 
     metadata = encode_metadata(metadata)
     lattice.metadata = metadata
+    lattice.metadata["deps"] = {}
+    lattice.metadata["call_before"] = []
+    lattice.metadata["call_after"] = []
 
     lattice.transport_graph = process_transport_graph(lattice.transport_graph)
+    lattice.transport_graph.lattice_metadata = lattice.metadata
     print("Processed transport graph")
 
     return lattice
@@ -177,6 +187,9 @@ def process_result_object(result_object: Result) -> Result:
         result_object._inputs["kwargs"] = result_object.lattice.kwargs
 
     result_object._result = TransportableObject.make_transportable(result_object._result)
+    tg = result_object.lattice.transport_graph
+    for n in tg._graph.nodes:
+        tg.dirty_nodes.append(n)
 
     return result_object
 
