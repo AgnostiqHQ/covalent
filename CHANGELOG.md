@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.164.0] - 2022-08-05
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+
 ### Changed
 
 - Use `update_config` to modify dask configuration from the cluster process
