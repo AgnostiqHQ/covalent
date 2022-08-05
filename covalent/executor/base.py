@@ -32,6 +32,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
+import aiofiles
 import cloudpickle as pickle
 
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
@@ -103,7 +104,63 @@ def wrapper_fn(
     return TransportableObject(output)
 
 
-class BaseExecutor(ABC):
+class _AbstractBaseExecutor(ABC):
+    """
+    Private class that contains attributes and methods common to both
+    BaseExecutor and BaseAsyncExecutor
+    """
+
+    def __init__(
+        self,
+        log_stdout: str = "",
+        log_stderr: str = "",
+    ) -> None:
+        self.log_stdout = log_stdout
+        self.log_stderr = log_stderr
+
+    def get_dispatch_context(self, dispatch_info: DispatchInfo) -> ContextManager[DispatchInfo]:
+        """
+        Start a context manager that will be used to
+        access the dispatch info for the executor.
+
+        Args:
+            dispatch_info: The dispatch info to be used inside current context.
+
+        Returns:
+            A context manager object that handles the dispatch info.
+        """
+
+        return active_dispatch_info_manager.claim(dispatch_info)
+
+    def short_name(self):
+        module = self.__module__
+        return self.__module__.split("/")[-1].split(".")[-1]
+
+    def to_dict(self) -> dict:
+        """Return a JSON-serializable dictionary representation of self"""
+        return {
+            "type": str(self.__class__),
+            "short_name": self.short_name(),
+            "attributes": self.__dict__.copy(),
+        }
+
+    def from_dict(self, object_dict: dict) -> "BaseExecutor":
+        """Rehydrate a dictionary representation
+
+        Args:
+            object_dict: a dictionary representation returned by `to_dict`
+
+        Returns:
+            self
+
+        Instance attributes will be overwritten.
+        """
+        if object_dict:
+            self.__dict__ = object_dict["attributes"]
+        return self
+
+
+class BaseExecutor(_AbstractBaseExecutor):
     """
     Base executor class to be used for defining any executor
     plugin. Subclassing this class will allow you to define
@@ -130,26 +187,12 @@ class BaseExecutor(ABC):
         cache_dir: str = "",
         current_env_on_conda_fail: bool = False,
     ) -> None:
-        self.log_stdout = log_stdout
-        self.log_stderr = log_stderr
+
+        super().__init__(log_stdout, log_stderr)
         self.conda_env = conda_env
         self.cache_dir = cache_dir
         self.current_env_on_conda_fail = current_env_on_conda_fail
         self.current_env = ""
-
-    def get_dispatch_context(self, dispatch_info: DispatchInfo) -> ContextManager[DispatchInfo]:
-        """
-        Start a context manager that will be used to
-        access the dispatch info for the executor.
-
-        Args:
-            dispatch_info: The dispatch info to be used inside current context.
-
-        Returns:
-            A context manager object that handles the dispatch info.
-        """
-
-        return active_dispatch_info_manager.claim(dispatch_info)
 
     def write_streams_to_file(
         self,
@@ -181,35 +224,6 @@ class BaseExecutor(ABC):
 
                 with open(filepath, "a") as f:
                     f.write(ss)
-            else:
-                print(ss)
-
-    def short_name(self):
-        module = self.__module__
-        return self.__module__.split("/")[-1].split(".")[-1]
-
-    def to_dict(self) -> dict:
-        """Return a JSON-serializable dictionary representation of self"""
-        return {
-            "type": str(self.__class__),
-            "short_name": self.short_name(),
-            "attributes": self.__dict__.copy(),
-        }
-
-    def from_dict(self, object_dict: dict) -> "BaseExecutor":
-        """Rehydrate a dictionary representation
-
-        Args:
-            object_dict: a dictionary representation returned by `to_dict`
-
-        Returns:
-            self
-
-        Instance attributes will be overwritten.
-        """
-        if object_dict:
-            self.__dict__ = object_dict["attributes"]
-        return self
 
     def execute(
         self,
@@ -486,7 +500,52 @@ class BaseExecutor(ABC):
         return True
 
 
-class BaseAsyncExecutor(BaseExecutor):
+class BaseAsyncExecutor(_AbstractBaseExecutor):
+    def __init__(
+        self,
+        log_stdout: str = "",
+        log_stderr: str = "",
+        conda_env: str = "",
+        cache_dir: str = "",
+        current_env_on_conda_fail: bool = False,
+    ) -> None:
+
+        super().__init__(log_stdout, log_stderr)
+
+    async def write_streams_to_file(
+        self,
+        stream_strings: Iterable[str],
+        filepaths: Iterable[str],
+        dispatch_id: str,
+        results_dir: str,
+    ) -> None:
+
+        """
+        Write the contents of stdout and stderr to respective files.
+
+        Args:
+            stream_strings: The stream_strings to be written to files.
+            filepaths: The filepaths to be used for writing the streams.
+            dispatch_id: The ID of the dispatch which initiated the request.
+            results_dir: The location of the results directory.
+
+        This uses aiofiles to avoid blocking the event loop.
+        """
+
+        for ss, filepath in zip(stream_strings, filepaths):
+            if filepath:
+                # If it is a relative path, attach to results dir
+                if not Path(filepath).expanduser().is_absolute():
+                    filepath = os.path.join(results_dir, dispatch_id, filepath)
+
+                filename = Path(filepath)
+                filename = filename.expanduser()
+                filename.parent.mkdir(parents=True, exist_ok=True)
+                filename.touch(exist_ok=True)
+
+                async with aiofiles.open(filepath, "a") as f:
+                    await f.write(ss)
+
     async def execute(
         self,
         function: Callable,
@@ -506,7 +565,7 @@ class BaseAsyncExecutor(BaseExecutor):
         with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
             result = await self.run(function, args, kwargs, task_metadata)
 
-        self.write_streams_to_file(
+        await self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
             (self.log_stdout, self.log_stderr),
             dispatch_id,
