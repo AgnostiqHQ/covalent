@@ -309,7 +309,9 @@ jobs:
         if: >
           matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
-          && github.event_name != 'pull_request'
+          && (github.event_name != 'pull_request'
+              || steps.working-directory.outputs.actions == 'true'
+              || steps.working-directory.outputs.tests == 'true')
           && github.event_name != 'workflow_dispatch'
         uses: codecov/codecov-action@v3
         with:

@@ -35,7 +35,6 @@ def start_dask_cluster():
     return cluster.scheduler_address
 
 
-# @pytest.mark.skip(reason="No way of installing Dask executor plugin yet")
 def test_dask_executor():
     from covalent.executor import DaskExecutor
 

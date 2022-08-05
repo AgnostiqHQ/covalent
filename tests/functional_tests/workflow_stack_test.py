@@ -98,7 +98,6 @@ def test_electron_takes_nested_iterables():
     rm._delete_result(dispatch_id)
 
 
-@pytest.mark.skip(reason="Sublatticing is broken")
 def test_sublatticing():
     """
     Test to check whether an electron can be sublatticed
@@ -128,7 +127,6 @@ def test_sublatticing():
     assert workflow_result.get_node_result(node_id=0)["sublattice_result"].result == 3
 
 
-@pytest.mark.skip(reason="Sublatticing is broken")
 @pytest.mark.asyncio
 async def test_internal_sublattice_dispatch():
     """Test dispatcher's out-of-process _dispatch_sublattice using a workflow executor"""
