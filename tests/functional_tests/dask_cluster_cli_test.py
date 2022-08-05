@@ -181,7 +181,7 @@ async def test_cluster_scale_up_down(admin_worker_addr, event_loop):
         await _cluster_scale(admin_worker_addr, target_cluster_size)
 
         # Having to wait here for the time it takes to create a new dask worker
-        asyncio.sleep(4)
+        await asyncio.sleep(4)
 
         cluster_size = await _get_cluster_size(admin_worker_addr)
         assert cluster_size == target_cluster_size
@@ -191,7 +191,7 @@ async def test_cluster_scale_up_down(admin_worker_addr, event_loop):
         # Scale cluster back down
         await _cluster_scale(admin_worker_addr, DEFAULT_N_WORKERS)
 
-        asyncio.sleep(4)
+        await asyncio.sleep(4)
 
         cluster_size = await _get_cluster_size(admin_worker_addr)
         assert cluster_size == DEFAULT_N_WORKERS
