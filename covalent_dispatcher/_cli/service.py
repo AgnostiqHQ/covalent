@@ -38,6 +38,7 @@ from distributed.core import connect, rpc
 from covalent._data_store.datastore import DataStore
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
+from covalent.utils.migrate import migrate_pickled_result_object
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
@@ -418,6 +419,17 @@ def logs() -> None:
         f.close()
     else:
         click.echo(f"{UI_LOGFILE} not found!. Server possibly purged!")
+
+
+@click.command()
+@click.argument("result_pickle_path")
+def migrate_legacy_result_object(result_pickle_path) -> None:
+    """Migrate a legacy pickled Result object to the DataStore
+
+    Example: `covalent migrate_legacy_result_object result.pkl`
+    """
+
+    migrate_pickled_result_object(result_pickle_path)
 
 
 # Cluster CLI handlers (client side wrappers for the async handlers exposed
