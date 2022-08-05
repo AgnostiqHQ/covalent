@@ -31,51 +31,46 @@ from covalent._file_transfer.enums import Order
 from covalent._results_manager import results_manager as rm
 
 
-def call_hook():
-    return None
-
-
-deps_bash = DepsBash(["whoami"])
-deps_pip = DepsPip(packages=["cloudpickle==2.0.0"])
-call_before = DepsCall(call_hook)
-call_after = DepsCall(call_hook)
-source_file = Path("/tmp/src.txt")
-dest_file = Path("/tmp/dest.txt")
-dest_file2 = Path("/tmp/dest2.txt")
-
-echofile = Path("/tmp/debug.txt")
-echofile2 = Path("/tmp/debug2.txt")
-
-
-@ct.leptons.bash(
-    executor="local",
-    display_name="debug",
-    call_before=call_before,
-    call_after=call_after,
-    deps_bash=deps_bash,
-    deps_pip=deps_pip,
-    files=[ct.fs.FileTransfer(str(source_file), str(dest_file), order=Order.BEFORE)],
-)
-def task(x):
-    return f"echo {x} > {str(echofile)}"
-
-
-def task2(x):
-    return f"echo {x} > {str(echofile2)}"
-
-
-@ct.lattice
-def workflow():
-    task(5)
-
-    ct.leptons.bash(
-        task2,
-        files=[ct.fs.FileTransfer(str(source_file), str(dest_file2), order=Order.AFTER)],
-        deps_pip=["cloudpickle==2.0.0"],
-    )(3)
-
-
 def test_bash_decorator():
+    def call_hook():
+        return None
+
+    deps_bash = DepsBash(["whoami"])
+    deps_pip = DepsPip(packages=["cloudpickle==2.0.0"])
+    call_before = DepsCall(call_hook)
+    call_after = DepsCall(call_hook)
+    source_file = Path("/tmp/src.txt")
+    dest_file = Path("/tmp/dest.txt")
+    dest_file2 = Path("/tmp/dest2.txt")
+
+    echofile = Path("/tmp/debug.txt")
+    echofile2 = Path("/tmp/debug2.txt")
+
+    @ct.leptons.bash(
+        executor="local",
+        display_name="debug",
+        call_before=call_before,
+        call_after=call_after,
+        deps_bash=deps_bash,
+        deps_pip=deps_pip,
+        files=[ct.fs.FileTransfer(str(source_file), str(dest_file), order=Order.BEFORE)],
+    )
+    def task(x):
+        return f"echo {x} > {str(echofile)}"
+
+    def task2(x):
+        return f"echo {x} > {str(echofile2)}"
+
+    @ct.lattice
+    def workflow():
+        task(5)
+
+        ct.leptons.bash(
+            task2,
+            files=[ct.fs.FileTransfer(str(source_file), str(dest_file2), order=Order.AFTER)],
+            deps_pip=["cloudpickle==2.0.0"],
+        )(3)
+
     source_file.touch()
 
     dispatch_id = ct.dispatch(workflow)()
@@ -105,6 +100,8 @@ def test_call_dep_retvals_in_lepton():
     """
     Test DepsCall retval_keyword behavior in electrons which currently is to raise an error if any retval_key is added.
     """
+
+    echofile = Path("/tmp/debug.txt")
 
     def call_dep_hook():
         return 123
