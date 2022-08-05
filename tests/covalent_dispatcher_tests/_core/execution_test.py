@@ -32,6 +32,8 @@ import cloudpickle as pickle
 import pytest
 
 import covalent as ct
+from covalent._data_store import models
+from covalent._data_store.datastore import DataStore
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
@@ -48,6 +50,16 @@ from covalent_dispatcher._core.execution import (
 )
 
 TEST_RESULTS_DIR = "/tmp/results"
+
+
+@pytest.fixture
+def test_db():
+    """Instantiate and return an in-memory database."""
+
+    return DataStore(
+        db_URL="sqlite+pysqlite:///:memory:",
+        initialize_db=True,
+    )
 
 
 def get_mock_result() -> Result:
@@ -155,7 +167,7 @@ def test_post_process():
     assert execution_result == compute_energy()
 
 
-def test_result_post_process():
+def test_result_post_process(mocker, test_db):
     """Test client-side post-processing of results."""
 
     import covalent as ct
@@ -217,7 +229,10 @@ def test_result_post_process():
 
     res._status = Result.PENDING_POSTPROCESSING
     res._dispatch_id = "MOCK"
+
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
     res.persist()
+
     execution_result = res.post_process()
 
     assert execution_result == compute_energy()
@@ -532,7 +547,6 @@ def test_run_workflow_with_failing_nonleaf(mocker):
     @ct.electron
     def failing_task(x):
         assert False
-        return x
 
     @ct.lattice
     def workflow(x):
@@ -553,6 +567,8 @@ def test_run_workflow_with_failing_nonleaf(mocker):
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
+
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
     result_object.persist()
     result_object = run_workflow(result_object, tasks_pool)
 
@@ -586,6 +602,7 @@ def test_run_workflow_with_failing_leaf(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
     result_object.persist()
 
     result_object = run_workflow(result_object, tasks_pool)
@@ -622,6 +639,7 @@ def test_run_workflow_does_not_deserialize(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
     result_object.persist()
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
@@ -632,7 +650,7 @@ def test_run_workflow_does_not_deserialize(mocker):
     assert result_object.status == Result.COMPLETED
 
 
-def test_run_workflow_with_client_side_postprocess():
+def test_run_workflow_with_client_side_postprocess(mocker):
     """Check that run_workflow handles "client" workflow_executor for
     postprocessing"""
 
@@ -645,13 +663,14 @@ def test_run_workflow_with_client_side_postprocess():
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
     result_object.persist()
 
     result_object = run_workflow(result_object, tasks_pool)
     assert result_object.status == Result.PENDING_POSTPROCESSING
 
 
-def test_run_workflow_with_failed_postprocess():
+def test_run_workflow_with_failed_postprocess(mocker):
     """Check that run_workflow handles postprocessing failures"""
 
     from concurrent.futures import ThreadPoolExecutor
@@ -662,11 +681,11 @@ def test_run_workflow_with_failed_postprocess():
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
     result_object.persist()
 
     def failing_workflow(x):
         assert False
-        return 1
 
     result_object.lattice.set_metadata("workflow_executor", "bogus")
     result_object = run_workflow(result_object, tasks_pool)
