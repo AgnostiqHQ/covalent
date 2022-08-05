@@ -20,16 +20,7 @@
 
 """Electrons Schema """
 
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-    func,
-)
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func
 
 from covalent_ui.api.v1.database.config.db import Base
 
