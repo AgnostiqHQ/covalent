@@ -21,8 +21,8 @@
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from covalent._data_store.datastore import DataStore
 
-from covalent_dispatcher._db.dispatchdb import DispatchDB
 
-engine = DispatchDB()._get_data_store(initialize_db=True).engine
+engine = DataStore(initialize_db=True).engine
 Base = declarative_base()
