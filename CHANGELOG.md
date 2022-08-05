@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher/_service/app.py`
+- Unit tests written for Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher_tests/_service/app.test.py`
+- Web apis of `covalent_ui` refactored to adhere to v11 schema
+
 ## [0.163.0] - 2022-08-04
 
 ### Authors
