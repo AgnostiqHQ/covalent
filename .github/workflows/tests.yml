@@ -99,6 +99,10 @@ jobs:
             - 'MANIFEST.in'
             - 'requirements.txt'
             - 'setup.py'
+            actions:
+            - '.github/workflows/*.yml'
+            tests:
+            - 'tests/**'
             
       - name: Set up Python
         if: >
@@ -106,7 +110,9 @@ jobs:
           && (github.event_name != 'pull_request'
           || steps.working-directory.outputs.sdk == 'true'
           || steps.working-directory.outputs.dispatcher == 'true'
-          || steps.working-directory.outputs.build == 'true')
+          || steps.working-directory.outputs.build == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true')
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
@@ -117,6 +123,8 @@ jobs:
           || steps.working-directory.outputs.sdk == 'true'
           || steps.working-directory.outputs.dispatcher == 'true'
           || steps.working-directory.outputs.build == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
@@ -125,7 +133,9 @@ jobs:
         if: >
           (github.event_name != 'pull_request'
           || steps.working-directory.outputs.sdk == 'true'
-          || steps.working-directory.outputs.dispatcher == 'true')
+          || steps.working-directory.outputs.dispatcher == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true')
           && (matrix.container == 'python:3.8-buster'
           || matrix.container == 'python:3.8-bullseye'
           || matrix.container == 'python:3.9-buster'
@@ -201,12 +211,16 @@ jobs:
           || steps.working-directory.outputs.sdk == 'true'
           || steps.working-directory.outputs.dispatcher == 'true'
           || steps.working-directory.outputs.build == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
         run: pip install -e .
 
       - name: Start Covalent dispatcher server
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.build == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
         run: covalent start --ignore-migrations
                
       - name: Run SDK tests and measure coverage
@@ -234,11 +248,17 @@ jobs:
         run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
-        if: github.event_name != 'pull_request'
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
       
       - name: Generate functional test coverage report
-        if: github.event_name != 'pull_request'
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
         run: coverage xml -o functional_tests_coverage.xml
 
       - name: Run UI backend tests and measure coverage
@@ -289,7 +309,9 @@ jobs:
         if: >
           matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
-          && github.event_name != 'pull_request'
+          && (github.event_name != 'pull_request'
+              || steps.working-directory.outputs.actions == 'true'
+              || steps.working-directory.outputs.tests == 'true')
           && github.event_name != 'workflow_dispatch'
         uses: codecov/codecov-action@v3
         with:

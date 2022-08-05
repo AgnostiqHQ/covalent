@@ -56,7 +56,7 @@ from .data import TEST_RESULTS_DIR, get_mock_result, get_mock_result_2, get_mock
 )
 def test_dispatcher_flow(mock_result, expected_res, expected_node_outputs):
     """Integration test that given a results object, plans and executes the workflow on the
-    default local executor.
+    default executor.
     """
 
     workflow_pool = ThreadPoolExecutor()
