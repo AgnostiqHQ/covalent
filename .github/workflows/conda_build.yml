@@ -65,6 +65,6 @@ jobs:
       - name: Install package
         run: |
           echo ${{ matrix.python-version }}
-          conda install -n buildenv --use-local covalent
+          conda install --use-local covalent
       - name: Test package
         run: covalent --version
