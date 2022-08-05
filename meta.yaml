@@ -29,7 +29,6 @@ source:
     folder: covalent
 
 build:
-  noarch: python
   script:
     - (cd ./covalent/covalent_ui/webapp && npm install && yarn build)
     - pip install ./covalent
