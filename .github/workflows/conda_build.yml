@@ -57,6 +57,8 @@ jobs:
       - name: Build package
         run: |
           conda env list
+          conda activate buildenv
+          conda env list
           conda build --python ${{ matrix.python-version }} .
 
       - name: Install package
