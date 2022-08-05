@@ -39,8 +39,6 @@ STATIC_FILES = {"": WEBAPP_PATH, "/": f"{WEBAPP_PATH}/index.html"}
 # Log configuration
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
 templates = Jinja2Templates(directory=WEBAPP_PATH)
 
 
