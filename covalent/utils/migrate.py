@@ -1,3 +1,28 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+"""Utils for migrating legacy (0.110-era) result object to a modern result object."""
+
+import pickle
+from pathlib import Path
+
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._shared_files.defaults import (
@@ -154,3 +179,20 @@ def process_result_object(result_object: Result) -> Result:
     result_object._result = TransportableObject.make_transportable(result_object._result)
 
     return result_object
+
+
+def migrate_pickled_result_object(path: str) -> None:
+    """Save legacy (0.110.2) result pickle file to a DataStore.
+
+    This first transforms certain legacy properties of the result
+    object and then persists the result object to the datastore.
+
+    Args:
+        path: path of the `result.pkl` file
+    """
+
+    with open(path, "rb") as f:
+        result_object = pickle.load(f)
+
+    process_result_object(result_object)
+    result_object.persist()

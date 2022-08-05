@@ -40,6 +40,7 @@ from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject, _TransportGraph
 from covalent.executor import LocalExecutor
 from covalent.utils.migrate import (
+    migrate_pickled_result_object,
     process_lattice,
     process_node,
     process_result_object,
@@ -146,6 +147,8 @@ def compare_nodes_and_edges(tg_orig: _TransportGraph, tg_new: _TransportGraph):
 
 
 def test_process_legacy_node():
+    """Test process_node"""
+
     ro = get_sample_result_object()
     ro_orig = get_sample_result_object()
     tg = ro.lattice.transport_graph
@@ -200,6 +203,8 @@ def test_process_legacy_node():
 
 
 def test_process_transport_graph():
+    """Test process_transport_graph"""
+
     ro = get_sample_result_object()
 
     tg = ro.lattice.transport_graph
@@ -220,6 +225,8 @@ def test_process_transport_graph_is_idempotent():
 
 
 def test_process_lattice():
+    """Test process_lattice"""
+
     ro = get_sample_result_object()
     ro_orig = get_sample_result_object()
     lattice = process_lattice(ro._lattice)
@@ -232,12 +239,22 @@ def test_process_lattice():
     assert lattice.metadata["workflow_executor_data"] == {}
 
 
-#    compare_nodes_and_edges(ro_orig.lattice.transport_graph, lattice.transport_graph)
+def test_process_result_object():
+    """Test process_result_object"""
 
-
-def test_process_transport_graph():
     ro = get_sample_result_object()
     ro_new = process_result_object(ro)
     assert ro_new._inputs["args"] == ro_new.lattice.args
     assert ro_new._inputs["kwargs"] == ro_new.lattice.kwargs
     assert isinstance(ro_new._result, TransportableObject)
+
+
+def test_migrate_pickled_result_object(mocker):
+    """Test migrate_pickled_result_object"""
+
+    mock_process_ro = mocker.patch("covalent.utils.migrate.process_result_object")
+    mock_persist = mocker.patch("covalent._results_manager.Result.persist")
+
+    migrate_pickled_result_object(result_pkl)
+    mock_process_ro.assert_called_once()
+    mock_persist.assert_called_once()
