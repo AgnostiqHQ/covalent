@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from datetime import datetime, timezone
+from datetime import timezone
 
 from sqlalchemy.sql import func
 

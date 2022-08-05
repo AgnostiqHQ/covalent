@@ -19,10 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Electrons Schema """
-import enum
 
 from sqlalchemy import (
-    BigInteger,
     Boolean,
     Column,
     DateTime,
