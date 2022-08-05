@@ -426,7 +426,7 @@ def logs() -> None:
 def migrate_legacy_result_object(result_pickle_path) -> None:
     """Migrate a legacy pickled Result object to the DataStore
 
-    Example: `covalent migrate_legacy_result_object result.pkl`
+    Example: `covalent migrate-legacy-result-object result.pkl`
     """
 
     migrate_pickled_result_object(result_pickle_path)
