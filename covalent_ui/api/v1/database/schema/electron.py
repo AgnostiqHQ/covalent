@@ -19,19 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Electrons Schema """
-import enum
 
-from sqlalchemy import (
-    BigInteger,
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-    func,
-)
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func
 
 from covalent_ui.api.v1.database.config.db import Base
 

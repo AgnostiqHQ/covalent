@@ -20,7 +20,7 @@
 
 """Lattice Data Layer"""
 
-from datetime import datetime, timezone
+from datetime import timezone
 from uuid import UUID
 
 from sqlalchemy.orm import Session
