@@ -110,14 +110,6 @@ class _AbstractBaseExecutor(ABC):
     BaseExecutor and BaseAsyncExecutor
     """
 
-    def __init__(
-        self,
-        log_stdout: str = "",
-        log_stderr: str = "",
-    ) -> None:
-        self.log_stdout = log_stdout
-        self.log_stderr = log_stderr
-
     def get_dispatch_context(self, dispatch_info: DispatchInfo) -> ContextManager[DispatchInfo]:
         """
         Start a context manager that will be used to
@@ -186,9 +178,12 @@ class BaseExecutor(_AbstractBaseExecutor):
         conda_env: str = "",
         cache_dir: str = "",
         current_env_on_conda_fail: bool = False,
+        *args,
+        **kwargs,
     ) -> None:
 
-        super().__init__(log_stdout, log_stderr)
+        self.log_stdout = log_stdout
+        self.log_stderr = log_stderr
         self.conda_env = conda_env
         self.cache_dir = cache_dir
         self.current_env_on_conda_fail = current_env_on_conda_fail
@@ -505,12 +500,12 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
         self,
         log_stdout: str = "",
         log_stderr: str = "",
-        conda_env: str = "",
-        cache_dir: str = "",
-        current_env_on_conda_fail: bool = False,
+        *args,
+        **kwargs,
     ) -> None:
 
-        super().__init__(log_stdout, log_stderr)
+        self.log_stdout = log_stdout
+        self.log_stderr = log_stderr
 
     async def write_streams_to_file(
         self,

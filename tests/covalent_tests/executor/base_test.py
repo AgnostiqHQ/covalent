@@ -369,9 +369,3 @@ def test_async_write_streams_to_file(mocker):
         with open(tmp_file.name) as f:
             lines = f.readlines()
         assert lines[0] == "absolute"
-
-
-def test_abstract_base_executor_init():
-    be = _AbstractBaseExecutor(log_stdout="/tmp/stdout.log", log_stderr="/tmp/stderr.log")
-    assert be.log_stdout == "/tmp/stdout.log"
-    assert be.log_stderr == "/tmp/stderr.log"
