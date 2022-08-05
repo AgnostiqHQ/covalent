@@ -46,7 +46,6 @@ jobs:
 
       - name: Install Conda dependencies
         run: |
-          conda --version
           conda install conda-build conda-verify anaconda-client
           conda config --append channels conda-forge
 
@@ -55,8 +54,8 @@ jobs:
 
       - name: Build package
         run: |
-          conda init bash
-          conda activate buildenv
+          $CONDA/bin/conda activate buildenv
+          $CONDA/bin/conda env list
           conda env list
           conda build --python ${{ matrix.python-version }} .
 
