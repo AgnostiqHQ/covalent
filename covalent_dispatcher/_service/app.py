@@ -28,14 +28,16 @@ import cloudpickle as pickle
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
+
 import covalent_dispatcher as dispatcher
-from covalent._data_store.datastore import workflow_db
 from covalent._data_store.models import Lattice
 from covalent._results_manager.result import Result
 from covalent._results_manager.results_manager import result_from
 from covalent._shared_files import logger
 
 from .._db.dispatchdb import DispatchDB
+from sqlalchemy.orm import Session
+from covalent_ui.api.v1.database.config.db import engine
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -104,7 +106,7 @@ def get_result(dispatch_id: str, wait: Optional[bool] = True, status_only: Optio
     app_log.warning("get result")
     app_log.warning("wait is " + str(wait))
     while True:
-        with workflow_db.session() as session:
+        with Session(engine) as session:
             lattice_record = (
                 session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
             )
