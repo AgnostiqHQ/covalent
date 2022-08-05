@@ -49,27 +49,22 @@ jobs:
           auto-activate-base: true
           python-version: ${{ matrix.python-version }}
           activate-environment: buildenv
+      - name: Install Conda dependencies
+        run: |
+          conda --version
+          conda env list
+          conda install conda-build conda-verify anaconda-client
+          conda config --append channels conda-forge
       - name: Check out head
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-      - name: Install Conda dependencies
-        run: |
-          conda --version
-          conda install conda-build conda-verify anaconda-client
-          conda config --append channels conda-forge
-
       - name: Build package
         run: |
-          conda env list
-          conda activate buildenv
-          conda env list
-          conda build --python ${{ matrix.python-version }} .
-
+          conda build --override-channels -c cova --python ${{ matrix.python-version }} .
       - name: Install package
         run: |
           echo ${{ matrix.python-version }}
-          conda install --use-local covalent
-
+          conda install --override-channels --use-local -c cova covalent
       - name: Test package
         run: covalent --version
