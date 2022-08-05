@@ -39,26 +39,23 @@ jobs:
           - "3.9"
           - "3.10"
     steps:
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          activate-environment: buildenv
       - name: Check out head
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-
       - name: Install Conda dependencies
         run: |
           conda --version
           conda install conda-build conda-verify anaconda-client
           conda config --append channels conda-forge
 
-      - name: Create Conda environment
-        run: conda create --name buildenv python=${{ matrix.python-version }}
-
       - name: Build package
         run: |
-          $CONDA/bin/conda init bash
-          source $HOME/.bashrc
-          $CONDA/bin/conda activate buildenv
-          $CONDA/bin/conda env list
           conda env list
           conda build --python ${{ matrix.python-version }} .
 
