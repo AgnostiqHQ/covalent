@@ -148,7 +148,7 @@ def _graceful_start(
     pidfile: str,
     logfile: str,
     port: int,
-    no_cluster: str,
+    no_cluster: bool,
     develop: bool = False,
 ) -> int:
     """
@@ -253,8 +253,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     required=False,
     is_flag=False,
     type=str,
-    default="auto",
-    show_default=True,
     help="""Memory limit per worker in (GB).
               Provide strings like 1gb/1GB or 0 for no limits""".replace(
         "\n", ""
@@ -265,8 +263,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     "--workers",
     required=False,
     is_flag=False,
-    default=dask.system.CPU_COUNT,
-    show_default=True,
     type=int,
     help="Number of workers to start covalent with.",
 )
@@ -275,8 +271,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     "--threads-per-worker",
     required=False,
     is_flag=False,
-    default=1,
-    show_default=True,
     type=int,
     help="Number of CPU threads per worker.",
 )
@@ -302,8 +296,8 @@ def start(
     ctx: click.Context,
     port: int,
     develop: bool,
-    no_cluster: str,
-    mem_per_worker: int,
+    no_cluster: bool,
+    mem_per_worker: str,
     threads_per_worker: int,
     workers: int,
     ignore_migrations: bool,
@@ -320,21 +314,20 @@ def start(
         click.echo(MIGRATION_COMMAND_MSG)
         return ctx.exit(1)
 
+    set_config("user_interface.port", port)
+    set_config("dispatcher.port", port)
+
+    if not no_cluster:
+        if mem_per_worker:
+            set_config("dask.mem_per_worker", mem_per_worker)
+        if threads_per_worker:
+            set_config("dask.threads_per_worker", threads_per_worker)
+        if workers:
+            set_config("dask.num_workers", workers)
+
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
-    no_cluster_flag = "--no-cluster"
-    set_config(
-        {
-            "user_interface.address": "localhost",
-            "user_interface.port": port,
-            "dispatcher.address": "localhost",
-            "dispatcher.port": port,
-            "dask": {
-                "mem_per_worker": mem_per_worker or "auto",
-                "threads_per_worker": threads_per_worker or 1,
-                "num_workers": workers or dask.system.CPU_COUNT,
-            },
-        }
-    )
+    set_config("user_interface.port", port)
+    set_config("dispatcher.port", port)
 
     # Wait until the server actually starts listening on the port
     server_listening = False
@@ -516,14 +509,13 @@ def cluster(
     """
     Inspect and manage the Dask cluster's configuration.
     """
+    assert _is_server_running()
     # addr of the admin server for the Dask cluster process
     # started with covalent
     loop = asyncio.get_event_loop()
     admin_host = get_config("dask.admin_host")
     admin_port = get_config("dask.admin_port")
     admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
-
-    assert _is_server_running()
 
     if status:
         click.echo(loop.run_until_complete(_get_cluster_status(admin_server_addr)))

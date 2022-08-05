@@ -23,6 +23,8 @@
 import os
 from configparser import ConfigParser
 
+import dask.system
+
 prefix_separator = ":"
 
 parameter_prefix = f"{prefix_separator}parameter{prefix_separator}"
@@ -64,6 +66,9 @@ _DEFAULT_CONFIG = {
         + "/covalent",
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
+        "mem_per_worker": "auto",
+        "threads_per_worker": 1,
+        "num_workers": dask.system.CPU_COUNT,
     },
     "workflow_data": {
         "storage_type": "local",
