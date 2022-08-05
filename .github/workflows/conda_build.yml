@@ -61,10 +61,10 @@ jobs:
           persist-credentials: false
       - name: Build package
         run: |
-          conda build --override-channels -c cova --python ${{ matrix.python-version }} .
+          conda build --override-channels --output-folder ./ --python ${{ matrix.python-version }} .
       - name: Install package
         run: |
           echo ${{ matrix.python-version }}
-          conda install --override-channels --use-local -c cova covalent
+          conda install --override-channels -c local covalent
       - name: Test package
         run: covalent --version
