@@ -32,9 +32,7 @@ import cloudpickle as pickle
 import pytest
 
 import covalent as ct
-from covalent._data_store.datastore import DataStore
 from covalent._results_manager import Result
-from covalent._results_manager.utils import _db_path
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
     _gather_deps,
@@ -45,11 +43,7 @@ from covalent_dispatcher._core.execution import (
     _initialize_deps_and_queue,
     _plan_workflow,
     _post_process,
-    _postprocess_workflow,
-    _run_planned_workflow,
-    _run_task,
     _update_node_result,
-    generate_node_result,
     run_workflow,
 )
 
@@ -391,47 +385,6 @@ def test_gather_deps():
     before, after = _gather_deps(result_object, 0)
     assert len(before) == 1
     assert len(after) == 1
-
-
-@pytest.mark.asyncio
-async def test_run_task(mocker, sublattice_workflow):
-    """Note: This is not a full unit test for the _run_task method. Rather, this is intended to test the diff introduced to write the sublattice electron id in the Database."""
-
-    # class MockResult:
-    #     dispatch_id = "test"
-
-    # def mock_func():
-    #     return MockResult()
-    # class MockSerializedCallable:
-    #     def get_deserialized(self):
-    #         return mock_func
-
-    from concurrent.futures import ThreadPoolExecutor
-
-    tasks_pool = ThreadPoolExecutor()
-
-    write_sublattice_electron_id_mock = mocker.patch(
-        "covalent_dispatcher._core.execution.write_sublattice_electron_id"
-    )
-    ct.dispatch(sublattice_workflow)(1)
-
-    await _run_task(
-        node_id=1,
-        dispatch_id="parent_dispatch_id",
-        results_dir="/tmp",
-        inputs={"args": [], "kwargs": {"x": ct.TransportableObject(1)}},
-        serialized_callable=sublattice_workflow.transport_graph.get_node_value(
-            0,
-            "function",
-        ),
-        selected_executor=["local", {}],
-        call_before=[],
-        call_after=[],
-        node_name=":sublattice:sublattice",
-        tasks_pool=tasks_pool,
-        workflow_executor=["local", {}],
-    )
-    write_sublattice_electron_id_mock.assert_called_once()
 
 
 @pytest.mark.asyncio

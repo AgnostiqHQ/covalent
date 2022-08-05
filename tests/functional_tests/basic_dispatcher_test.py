@@ -22,7 +22,6 @@ from pathlib import Path
 
 import covalent as ct
 from covalent._results_manager import results_manager as rm
-from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 the_executor = ct.executor.LocalExecutor(
     log_stdout="/tmp/log_stdout.txt", log_stderr="/tmp/log_stderr.txt"

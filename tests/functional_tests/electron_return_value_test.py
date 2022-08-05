@@ -24,7 +24,6 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager.results_manager import _delete_result, get_result
-from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 
 @ct.electron

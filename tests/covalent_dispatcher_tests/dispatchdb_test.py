@@ -20,11 +20,7 @@
 
 """Unit tests for the DispatchDB."""
 
-import simplejson
-
 import covalent as ct
-from covalent._results_manager.result import Result
-from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 
 @ct.electron

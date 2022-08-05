@@ -23,8 +23,6 @@ Integration test for choosing Conda environments within an executor.
 """
 
 import covalent as ct
-import covalent._results_manager.results_manager as rm
-from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 
 def test_using_current_env() -> None:
