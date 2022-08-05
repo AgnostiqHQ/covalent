@@ -56,10 +56,12 @@ jobs:
         run: |
           $CONDA/bin/activate buildenv
           conda env list
-          conda build --override-channels -c cova --python ${{ matrix.python-version }} .
+          conda build --python ${{ matrix.python-version }} .
 
       - name: Install package
-        run: conda install --override-channels --use-local -c cova covalent
+        run: |
+          echo ${{ matrix.python-version }}
+          conda install --use-local covalent
 
       - name: Test package
         run: covalent --version
