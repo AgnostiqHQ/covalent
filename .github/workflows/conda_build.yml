@@ -55,10 +55,13 @@ jobs:
         run: conda create --name buildenv python=${{ matrix.python-version }}
       - name: Build package
         run: |
+          conda init bash
           $CONDA/bin/activate buildenv
           $CONDA/bin/conda env list
-          $CONDA/bin/conda activate buildenv
+          conda activate buildenv
           $CONDA/bin/conda env list
+          conda env list
+      - name: Test env
           conda env list
       #   conda build --python ${{ matrix.python-version }} .
       # - name: Install package
