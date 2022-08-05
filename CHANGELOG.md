@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Fixed randomly failing lattice json serialization test
+
 ## [0.164.0] - 2022-08-05
 
 ### Authors
