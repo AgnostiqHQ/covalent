@@ -45,7 +45,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-activate-base: true
-          activate-environment: ""
+          activate-environment: "base"
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
       - name: Check out head
@@ -68,7 +68,6 @@ jobs:
           conda build --python ${{ matrix.python-version }} .
       - name: Install package
         run: |
-          echo ${{ matrix.python-version }}
           conda install --use-local covalent
       - name: Test package
         run: covalent --version
