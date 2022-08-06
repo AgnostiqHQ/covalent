@@ -58,8 +58,9 @@ jobs:
           conda env list
           conda install conda-build conda-verify anaconda-client
           conda config --append channels conda-forge
-      - name: Activate conda environment
+      - name: Create & activate conda environment
         run: |
+          conda create --name buildenv python=${{ matrix.python-version }}
           conda activate buildenv
           conda env list
       - name: Build package
