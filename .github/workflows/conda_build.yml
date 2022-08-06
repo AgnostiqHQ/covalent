@@ -42,31 +42,32 @@ jobs:
           - "3.9"
           - "3.10"
     steps:
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: true
+          use-only-tar-bz2: true 
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
       - name: Check out head
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-
       - name: Install Conda dependencies
         run: |
+          conda --version
+          conda env list
           conda install conda-build conda-verify anaconda-client
           conda config --append channels conda-forge
-      - name: Create Conda environment
-        run: conda create --name buildenv python=${{ matrix.python-version }}
+      - name: Activate conda environment
+        run: |
+          conda activate buildenv
+          conda env list
       - name: Build package
         run: |
-          conda init bash
-          $CONDA/bin/activate buildenv
-          $CONDA/bin/conda env list
-          conda activate buildenv
-          $CONDA/bin/conda env list
-          conda env list
-      - name: Test env
-          conda env list
-      #   conda build --python ${{ matrix.python-version }} .
-      # - name: Install package
-      #   run: |
-      #     echo ${{ matrix.python-version }}
-      #     conda install --use-local covalent
-      # - name: Test package
-      #   run: covalent --version
+          conda build --python ${{ matrix.python-version }} .
+      - name: Install package
+        run: |
+          echo ${{ matrix.python-version }}
+          conda install --use-local covalent
+      - name: Test package
+        run: covalent --version
