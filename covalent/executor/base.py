@@ -372,13 +372,14 @@ class BaseExecutor(ABC):
         shell_commands += f'with open("{temp_filename}", "rb") as f:\n'
         shell_commands += "    fn = pickle.load(f)\n\n"
 
-        shell_commands += f'os.remove("{temp_filename}")\n\n'
-
         shell_commands += f"result = fn(*{args}, **{kwargs})\n\n"
 
         shell_commands += f'with open("{result_filename}", "wb") as f:\n'
         shell_commands += "    pickle.dump(result, f)\n"
         shell_commands += "EOF\n"
+
+        # Remove the temp file
+        os.remove(temp_filename)
 
         # Run the script and unpickle the result
         with tempfile.NamedTemporaryFile(dir=cache_dir, mode="w") as f:

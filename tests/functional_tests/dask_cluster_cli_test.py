@@ -19,12 +19,13 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import asyncio
-import time
+import contextlib
 
 import dask.system
 import pytest
 from dask.distributed import LocalCluster
 from distributed.comm import parse_address, unparse_address
+from distributed.deploy.utils import nprocesses_nthreads
 
 from covalent_dispatcher._cli.cli import cluster
 from covalent_dispatcher._cli.service import (
@@ -37,6 +38,8 @@ from covalent_dispatcher._cli.service import (
     _get_cluster_status,
 )
 from covalent_dispatcher._service.app_dask import DaskAdminWorker
+
+DEFAULT_N_WORKERS, _ = nprocesses_nthreads()
 
 
 @pytest.fixture(scope="module")
@@ -83,10 +86,8 @@ async def test_cluster_status_cli(admin_worker_addr, event_loop):
     """
     asyncio.set_event_loop(event_loop)
     response = await _get_cluster_status(admin_worker_addr)
-    print(type(response))
-    expected = {}
-    expected["scheduler"] = "running"
-    for i in range(dask.system.CPU_COUNT):
+    expected = {"scheduler": "running"}
+    for i in range(DEFAULT_N_WORKERS):
         expected[f"worker-{i}"] = "running"
 
     assert expected == response
@@ -117,7 +118,7 @@ async def test_cluster_info_cli(admin_worker_addr, event_loop):
     ]
     response = await _get_cluster_info(admin_worker_addr)
     assert list(response.keys()) == expected_keys
-    assert len(response["workers"]) == dask.system.CPU_COUNT
+    assert len(response["workers"]) == DEFAULT_N_WORKERS
 
     # Check the keys match for each worker in the cluster
     for _, value in response["workers"].items():
@@ -136,7 +137,7 @@ async def test_cluster_address_cli(admin_worker_addr, event_loop):
     response = await _get_cluster_address(admin_worker_addr)
 
     assert list(response.keys()) == ["scheduler", "workers"]
-    assert len(response["workers"]) == dask.system.CPU_COUNT
+    assert len(response["workers"]) == DEFAULT_N_WORKERS
 
     scheduler_addr = parse_address(response["scheduler"])
     scheduler_addr_protocol = scheduler_addr[0]
@@ -173,26 +174,27 @@ async def test_cluster_scale_up_down(admin_worker_addr, event_loop):
     Test scaling up/down by one worker
     """
     asyncio.set_event_loop(event_loop)
+    target_cluster_size = DEFAULT_N_WORKERS + 1
 
-    target_cluster_size = dask.system.CPU_COUNT + 1
-    try:
+    with contextlib.suppress(TimeoutError):
+
         await _cluster_scale(admin_worker_addr, target_cluster_size)
 
         # Having to wait here for the time it takes to create a new dask worker
-        time.sleep(4)
+        await asyncio.sleep(4)
+
         cluster_size = await _get_cluster_size(admin_worker_addr)
         assert cluster_size == target_cluster_size
-    except TimeoutError:
-        pass
 
-    # Scale cluster back down
-    try:
-        await _cluster_scale(admin_worker_addr, dask.system.CPU_COUNT)
-        time.sleep(4)
+    with contextlib.suppress(TimeoutError):
+
+        # Scale cluster back down
+        await _cluster_scale(admin_worker_addr, DEFAULT_N_WORKERS)
+
+        await asyncio.sleep(4)
+
         cluster_size = await _get_cluster_size(admin_worker_addr)
-        assert cluster_size == dask.system.CPU_COUNT
-    except TimeoutError:
-        pass
+        assert cluster_size == DEFAULT_N_WORKERS
 
 
 @pytest.mark.asyncio

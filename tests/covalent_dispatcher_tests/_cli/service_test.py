@@ -501,3 +501,185 @@ def test_cluster_scale_cli(mocker):
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
     click_echo_mock.assert_called_once()
+
+
+def test_start_config_mem_per_worker(mocker, monkeypatch):
+    """Test setting mem_per_worker"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --mem-per-worker 1GB"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 6
+    graceful_start_mock.assert_called_once()
+
+
+def test_start_config_threads_per_worker(mocker, monkeypatch):
+    """Test setting threads_per_worker"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --threads-per-worker 1"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 6
+    graceful_start_mock.assert_called_once()
+
+
+def test_start_config_num_workers(mocker, monkeypatch):
+    """Test setting workers"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --workers 1"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 6
+    graceful_start_mock.assert_called_once()
+
+
+def test_start_all_dask_config(mocker, monkeypatch):
+    """Test setting all dask configuration options"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --mem-per-worker 1GB --threads-per-worker 1 --workers 1"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 8
+    graceful_start_mock.assert_called_once()
+
+
+def test_start_dask_config_options_workers_and_mem_per_worker(mocker, monkeypatch):
+    """Test setting workers and mem-per-worker"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --mem-per-worker 1GB --workers 1"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 7
+    graceful_start_mock.assert_called_once()
+
+
+def test_start_dask_config_options_workers_and_threads_per_worker(mocker, monkeypatch):
+    """Test setting workers, threads-per-worker"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --threads-per-worker 1 --workers 1"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 7
+    graceful_start_mock.assert_called_once()
+
+
+def test_start_dask_config_options_workers_and_threads_per_worker(mocker, monkeypatch):
+    """Test setting mem-per-worker and threads-per-worker"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --mem-per-worker 1GB --threads-per-worker 1"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 7
+    graceful_start_mock.assert_called_once()
