@@ -35,7 +35,7 @@ def test_lattice_json_serialization():
         return f(x)
 
     workflow.build_graph(5)
-    workflow.cova_imports = set("dummy_module")
+    workflow.cova_imports = set({"dummy_module"})
 
     json_workflow = workflow.serialize_to_json()
 
