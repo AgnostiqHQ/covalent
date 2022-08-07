@@ -454,3 +454,13 @@ def test_base_executor_run_exception(mocker):
     except RuntimeError as ex:
         assert async_me.tasks_left == 0
         async_me.cleanup.times_called == 1
+
+
+def test_executor_clone_sets_instance_id():
+    """Check that `clone()` sets instance_id correctly"""
+
+    me = MockExecutor()
+    me_2 = me.clone()
+    assert me.instance_id == 0
+    shared_me_2 = me.get_shared_instance().clone()
+    assert shared_me_2.instance_id == id(shared_me_2)

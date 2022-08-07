@@ -31,7 +31,7 @@ import tempfile
 from abc import ABC, abstractmethod
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
-from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
+from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple, Union
 
 import aiofiles
 import cloudpickle as pickle
@@ -111,6 +111,23 @@ class _AbstractBaseExecutor(ABC):
     BaseExecutor and BaseAsyncExecutor
     """
 
+    def __init__(self):
+        self.instance_id = 0
+
+    def clone(self):
+        new_exec = copy.deepcopy(self)
+        if new_exec.instance_id > 0:
+            new_exec.instance_id = id(new_exec)
+        return new_exec
+
+    def get_shared_instance(self) -> "_AbstractBaseExecutor":
+        shared_exec = self.clone()
+        shared_exec.instance_id = id(shared_exec)
+        return shared_exec
+
+    def is_shared_instance(self) -> bool:
+        return self.instance_id > 0
+
     def get_dispatch_context(self, dispatch_info: DispatchInfo) -> ContextManager[DispatchInfo]:
         """
         Start a context manager that will be used to
@@ -183,27 +200,17 @@ class BaseExecutor(_AbstractBaseExecutor):
         **kwargs,
     ) -> None:
 
+        super().__init__()
+
         self.log_stdout = log_stdout
         self.log_stderr = log_stderr
         self.conda_env = conda_env
         self.cache_dir = cache_dir
         self.current_env_on_conda_fail = current_env_on_conda_fail
         self.current_env = ""
-        self.instance_id = 0
 
-        # Maybe better to make setup() idempotent
         self.warmed_up = False
         self.tasks_left = 1
-
-    def clone(self):
-        new_exec = copy.deepcopy(self)
-        new_exec.instance_id = id(new_exec)
-        return new_exec
-
-    def get_shared_instance(self) -> "BaseExecutor":
-        shared_exec = self.clone()
-        shared_exec.instance_id = id(shared_exec)
-        return shared_exec
 
     def write_streams_to_file(
         self,
@@ -541,8 +548,13 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
         **kwargs,
     ) -> None:
 
+        super().__init__()
+
         self.log_stdout = log_stdout
         self.log_stderr = log_stderr
+
+        self.warmed_up = False
+        self.tasks_left = 1
 
     async def write_streams_to_file(
         self,
