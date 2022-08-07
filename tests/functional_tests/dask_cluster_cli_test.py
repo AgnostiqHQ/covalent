@@ -21,7 +21,6 @@
 import asyncio
 import contextlib
 
-import dask.system
 import pytest
 from dask.distributed import LocalCluster
 from distributed.comm import parse_address, unparse_address
