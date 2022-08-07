@@ -71,6 +71,6 @@ jobs:
           conda search -c ./ --override-channels  
       - name: Install package
         run: |
-          conda install --override-channels -c ./
+          conda install --override-channels -c ./ covalent
       - name: Test package
         run: covalent --version
