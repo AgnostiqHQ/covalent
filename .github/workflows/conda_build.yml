@@ -45,9 +45,10 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-activate-base: true
-          activate-environment: "base"
+          activate-environment: "buildenv"
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
+          channels: conda-forge
       - name: Check out head
         uses: actions/checkout@v3
         with:
@@ -57,7 +58,6 @@ jobs:
           conda --version
           conda env list
           conda install conda-build conda-verify anaconda-client
-          conda config --append channels conda-forge
       - name: Create & activate conda environment
         run: |
           conda create --name buildenv python=${{ matrix.python-version }}
@@ -65,9 +65,12 @@ jobs:
           conda env list
       - name: Build package
         run: |
-          conda build --python ${{ matrix.python-version }} .
+          conda build --output-folder ./ --python ${{ matrix.python-version }} .
+          conda search -c ./ --override-channels  
+          conda index
+          conda search -c ./ --override-channels  
       - name: Install package
         run: |
-          conda install --use-local covalent
+          conda install --override-channels -c ./
       - name: Test package
         run: covalent --version
