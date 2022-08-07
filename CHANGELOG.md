@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.166.0] - 2022-08-07
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+
+
 ### Tests
 
 - Update dask cli test to match Covalent Dask cluster configuration
