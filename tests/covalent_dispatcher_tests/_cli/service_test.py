@@ -342,14 +342,15 @@ def test_purge_abort(hard, mocker):
 
     config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
 
-    mock_dir_calls = []
-    for dirs in [
-        "sdk.log_dir",
-        "dispatcher.cache_dir",
-        "dispatcher.log_dir",
-        "user_interface.log_dir",
-    ]:
-        mock_dir_calls.append(mock.call(dirs))
+    mock_dir_calls = [
+        mock.call(dirs)
+        for dirs in [
+            "sdk.log_dir",
+            "dispatcher.cache_dir",
+            "dispatcher.log_dir",
+            "user_interface.log_dir",
+        ]
+    ]
 
     config_mock.assert_has_calls(mock_dir_calls)
 

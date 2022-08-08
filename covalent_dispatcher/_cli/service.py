@@ -400,6 +400,7 @@ def purge(hard: bool, yes: bool) -> None:
         get_config("sdk.log_dir"),
         get_config("dispatcher.log_dir"),
         get_config("user_interface.log_dir"),
+        os.path.dirname(cm.config_file),
     }
 
     if hard:
@@ -407,7 +408,7 @@ def purge(hard: bool, yes: bool) -> None:
 
     if not yes:
 
-        click.secho(f"{'!'.join(['*'] * 21)} WARNING {'!'.join(['*'] * 21)}", fg="yellow")
+        click.secho(f"{''.join(['*'] * 21)} WARNING {''.join(['*'] * 21)}", fg="yellow")
 
         click.echo("Purging will perform the following operations: ")
 
@@ -436,9 +437,6 @@ def purge(hard: bool, yes: bool) -> None:
                 os.remove(rem_path)
 
         click.echo(f"Removed {rem_path}.")
-
-    # Remove the config directory
-    cm.purge_config()
 
     click.echo("Covalent server files have been purged.")
 
