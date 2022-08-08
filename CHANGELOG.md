@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Adding a `covalent config` convenience CLI to quickly view retrive the covalent configuration
+
 ## [0.168.0] - 2022-08-08
 
 ### Authors
