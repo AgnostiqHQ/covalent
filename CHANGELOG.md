@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Trigger webapp build if `build==true`
+
 ## [0.167.0] - 2022-08-08
 
 ### Authors

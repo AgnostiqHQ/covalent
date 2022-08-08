@@ -175,6 +175,7 @@ jobs:
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.ui_frontend == 'true'
+          || steps.working-directory.outputs.build == 'true'
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
@@ -202,16 +203,6 @@ jobs:
           diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
           diff -x README.md -r covalent-${VERSION}/covalent_migrations ../covalent_migrations
           diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
-          rm -rf covalent-${VERSION}/
-
-      - name: Validate webapp
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.ui_frontend == 'true'
-        run: |
-          VERSION="$(cat ./VERSION)"
-          cd dist
-          tar xzf covalent-${VERSION}.tar.gz
           diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf covalent-${VERSION}/
 
