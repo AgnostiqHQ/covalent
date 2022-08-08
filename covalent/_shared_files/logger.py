@@ -36,7 +36,8 @@ app_log.setLevel(log_level)
 
 # Set the format
 stream_formatter = logging.Formatter(
-    "%(filename)s: " + "Line " "%(lineno)s in %(funcName)s:\n" + "%(levelname)s - %(message)s"
+    "[%(asctime)s] " + "[%(levelname)s] " + "%(filename)s: " + "Line "
+    "%(lineno)s in %(funcName)s: " + "%(message)s"
 )
 
 stream_handler = logging.StreamHandler()
@@ -68,8 +69,8 @@ if log_to_file:
     file_handler = logging.handlers.RotatingFileHandler(log_file)
     file_handler.setLevel(log_level)
     file_formatter = logging.Formatter(
-        "%(asctime)s - " + "%(filename)s: " + "Line "
-        "%(lineno)s in %(funcName)s:\n" + "%(levelname)s - %(message)s",
+        "[%(asctime)s]: " + "%(filename)s: " + "Line "
+        "%(lineno)s in %(funcName)s:" + "%(levelname)s - %(message)s",
         "%Y-%m-%d %H:%M:%S UTC",
     )
     file_handler.setFormatter(file_formatter)

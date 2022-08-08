@@ -1,8 +1,8 @@
 include VERSION
 include requirements.txt
-include covalent/VERSION
 recursive-include covalent/executor/executor_plugins/ *
 recursive-include covalent_dispatcher/_service/ *
+recursive-include covalent_migrations/ *
 recursive-exclude covalent_ui/webapp/ *
 recursive-include covalent_ui/webapp/build/ *
 recursive-exclude tests/ *

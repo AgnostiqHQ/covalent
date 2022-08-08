@@ -13,7 +13,12 @@ Orchestration
 - :doc:`How to add an electron to lattice <./orchestration/add_electron_to_lattice>`
 - :doc:`How to visualize the lattice <./orchestration/visualize_lattice>`
 - :doc:`How to add constraints to lattices <./orchestration/add_constraints_to_lattice>`
+- :doc:`How to perform file transfers during workflows <./orchestration/file_transfers_for_workflows>`
 - :doc:`How to construct leptons using C code <./orchestration/construct_c_task>`
+- :doc:`How to wait for execution of another electron <./orchestration/wait_for_another_electron>`
+- :doc:`How to add pip dependencies to an electron <./orchestration/add_pip_dependencies_to_electron>`
+- :doc:`How to add bash dependencies to an electron <./orchestration/add_bash_dependencies_to_electron>`
+- :doc:`How to add callable function dependencies to an electron <./orchestration/add_callable_dependencies_to_electron>`
 ..
   - :doc:`How to construct a lepton <./orchestration/construct_lepton>`
   - :doc:`How to construct leptons using Bash code or commands <./orchestration/construct_bash_task>`

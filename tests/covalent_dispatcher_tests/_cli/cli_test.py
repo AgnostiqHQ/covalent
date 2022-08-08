@@ -33,10 +33,15 @@ def test_cli(mocker):
 
     runner = CliRunner()
     response = runner.invoke(cli, "--version")
+
+    with open("VERSION", "r") as f:
+        current_version = f.readline()
+
     assert (
         ("python" in response.output.lower())
         and ("agnostiq" in response.output.lower())
         and ("copyright" in response.output.lower())
+        and (current_version in response.output.lower())
     )
 
     response = runner.invoke(cli)
@@ -47,4 +52,13 @@ def test_cli_commands():
     """Test the list of commands associated with Covalent CLI."""
 
     ctx = click.Context
-    assert cli.list_commands(ctx) == ["logs", "purge", "restart", "start", "status", "stop"]
+    assert cli.list_commands(ctx) == [
+        "cluster",
+        "db",
+        "logs",
+        "purge",
+        "restart",
+        "start",
+        "status",
+        "stop",
+    ]

@@ -24,7 +24,8 @@
 
 import click
 
-from .service import logs, purge, restart, start, status, stop
+from .groups import db
+from .service import cluster, logs, purge, restart, start, status, stop
 
 
 # Main entrypoint
@@ -36,12 +37,12 @@ def cli(ctx: click.Context, version: bool) -> None:
     Covalent CLI tool used to manage the servers.
     """
     if version:
-        from covalent import __version__
+        from importlib import metadata
 
         click.echo("covalent:  Covalent Workflow CLI Tool")
         click.echo("Copyright (C) 2021 Agnostiq Inc.")
         click.echo("Built using Python 3.8 (Platform: x86_64-linux)")
-        click.echo(f"Release version {__version__}")
+        click.echo(f"Release version {metadata.version('covalent')}")
     elif ctx.invoked_subcommand is None:
         # Display the help menu if no command was provided
         ctx = click.get_current_context()
@@ -55,6 +56,8 @@ cli.add_command(restart)
 cli.add_command(status)
 cli.add_command(purge)
 cli.add_command(logs)
+cli.add_command(cluster)
+cli.add_command(db)
 
 if __name__ == "__main__":
     cli()

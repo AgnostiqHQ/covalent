@@ -21,16 +21,29 @@
 """Result object."""
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
-import cloudpickle as pickle
-import yaml
+from sqlalchemy import and_, update
 
+from .._data_store import DataStore, DataStoreNotInitializedError, models, workflow_db
 from .._shared_files import logger
+from .._shared_files.context_managers import active_lattice_manager
+from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
-from .utils import convert_to_lattice_function_call
+from .._workflow.transport import TransportableObject
+from .write_result_to_db import (
+    get_electron_type,
+    insert_electron_dependency_data,
+    insert_electrons_data,
+    insert_lattices_data,
+    load_file,
+    store_file,
+    update_electrons_data,
+    update_lattice_completed_electron_num,
+    update_lattices_data,
+)
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import Status
@@ -38,6 +51,31 @@ if TYPE_CHECKING:
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+LATTICE_FUNCTION_FILENAME = "function.pkl"
+LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
+LATTICE_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
+LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME = "workflow_executor_data.pkl"
+LATTICE_ERROR_FILENAME = "error.log"
+LATTICE_INPUTS_FILENAME = "inputs.pkl"
+LATTICE_NAMED_ARGS_FILENAME = "named_args.pkl"
+LATTICE_NAMED_KWARGS_FILENAME = "named_kwargs.pkl"
+LATTICE_RESULTS_FILENAME = "results.pkl"
+LATTICE_TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
+LATTICE_STORAGE_TYPE = "local"
+
+ELECTRON_FUNCTION_FILENAME = "function.pkl"
+ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
+ELECTRON_VALUE_FILENAME = "value.pkl"
+ELECTRON_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
+ELECTRON_STDOUT_FILENAME = "stdout.log"
+ELECTRON_STDERR_FILENAME = "stderr.log"
+ELECTRON_INFO_FILENAME = "info.log"
+ELECTRON_RESULTS_FILENAME = "results.pkl"
+ELECTRON_DEPS_FILENAME = "deps.pkl"
+ELECTRON_CALL_BEFORE_FILENAME = "call_before.pkl"
+ELECTRON_CALL_AFTER_FILENAME = "call_after.pkl"
+ELECTRON_STORAGE_TYPE = "local"
 
 
 class Result:
@@ -66,6 +104,9 @@ class Result:
 
     NEW_OBJ = RESULT_STATUS.NEW_OBJECT
     COMPLETED = RESULT_STATUS.COMPLETED
+    POSTPROCESSING = RESULT_STATUS.POSTPROCESSING
+    PENDING_POSTPROCESSING = RESULT_STATUS.PENDING_POSTPROCESSING
+    POSTPROCESSING_FAILED = RESULT_STATUS.POSTPROCESSING_FAILED
     RUNNING = RESULT_STATUS.RUNNING
     FAILED = RESULT_STATUS.FAILED
     CANCELLED = RESULT_STATUS.CANCELLED
@@ -82,7 +123,9 @@ class Result:
 
         self._status = Result.NEW_OBJ
 
-        self._result = None
+        self._result = TransportableObject(None)
+
+        self._num_nodes = -1
 
         self._inputs = {"args": [], "kwargs": {}}
         if lattice.args:
@@ -93,12 +136,18 @@ class Result:
         self._error = None
 
     def __str__(self):
+        """String representation of the result object"""
+
+        arg_str_repr = [e.object_string for e in self.inputs["args"]]
+        kwarg_str_repr = {key: value.object_string for key, value in self.inputs["kwargs"].items()}
+
         show_result_str = f"""
 Lattice Result
 ==============
 status: {self._status}
 result: {self.result}
-inputs: {self.inputs}
+input args: {arg_str_repr}
+input kwargs: {kwarg_str_repr}
 error: {self.error}
 
 start_time: {self.start_time}
@@ -113,7 +162,7 @@ Node Outputs
 
         node_outputs = self.get_all_node_outputs()
         for k, v in node_outputs.items():
-            show_result_str += f"{k}: {v}\n"
+            show_result_str += f"{k}: {v.object_string}\n"
 
         return show_result_str
 
@@ -166,12 +215,19 @@ Node Outputs
         return self._status
 
     @property
+    def encoded_result(self) -> TransportableObject:
+        """
+        Encoded final result of current dispatch
+        """
+        return self._result
+
+    @property
     def result(self) -> Union[int, float, list, dict]:
         """
         Final result of current dispatch.
         """
 
-        return self._result
+        return self._result.get_deserialized()
 
     @property
     def inputs(self) -> dict:
@@ -203,9 +259,7 @@ Node Outputs
 
         self._num_nodes = self.lattice.transport_graph.get_internal_graph_copy().number_of_nodes()
         for node_id in range(self._num_nodes):
-            node_name = (
-                self.lattice.transport_graph.get_node_value(node_id, "name") + f"({node_id})"
-            )
+            node_name = self.lattice.transport_graph.get_node_value(node_id, "name")
 
             self.lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
 
@@ -247,17 +301,17 @@ Node Outputs
 
         return {
             "node_id": node_id,
-            "node_name": self.lattice.transport_graph.get_node_value(node_id, "node_name"),
+            "node_name": self._get_node_name(node_id),
             "start_time": self.lattice.transport_graph.get_node_value(node_id, "start_time"),
             "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
-            "status": self.lattice.transport_graph.get_node_value(node_id, "status"),
-            "output": self.lattice.transport_graph.get_node_value(node_id, "output"),
+            "status": self._get_node_status(node_id),
+            "output": self._get_node_output(node_id),
             "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
             "sublattice_result": self.lattice.transport_graph.get_node_value(
                 node_id, "sublattice_result"
             ),
             "stdout": self.lattice.transport_graph.get_node_value(node_id, "stdout"),
-            "stderr": self.lattice.transport_graph.get_node_value(node_id, "stderr"),
+            "stderr": self._get_node_error(node_id),
         }
 
     def get_all_node_outputs(self) -> dict:
@@ -270,11 +324,26 @@ Node Outputs
         Returns:
             node_outputs: A dictionary containing the output of every node execution.
         """
+        with workflow_db.session() as session:
 
-        return {
-            self._get_node_name(node_id): self._get_node_output(node_id)
-            for node_id in range(self._num_nodes)
-        }
+            lattice_id = (
+                session.query(models.Lattice)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
+                .id
+            )
+            electron_records = (
+                session.query(models.Electron)
+                .where(models.Electron.parent_lattice_id == lattice_id)
+                .all()
+            )
+            all_node_outputs = {}
+            for electron in electron_records:
+                node_id = electron.transport_graph_node_id
+                all_node_outputs[
+                    f"{self._get_node_name(node_id=node_id)}({node_id})"
+                ] = self._get_node_output(node_id=node_id)
+            return all_node_outputs
 
     def get_all_node_results(self) -> List[Dict]:
         """
@@ -286,8 +355,43 @@ Node Outputs
         Returns:
             node_results: A list of dictionaries containing the result of every node execution.
         """
+        with workflow_db.session() as session:
 
-        return [self.get_node_result(i) for i in range(self._num_nodes)]
+            lattice_id = (
+                session.query(models.Lattice)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
+                .id
+            )
+            electron_records = (
+                session.query(models.Electron)
+                .where(models.Electron.parent_lattice_id == lattice_id)
+                .all()
+            )
+            return [
+                self.get_node_result(node_id=electron.transport_graph_node_id)
+                for electron in electron_records
+            ]
+
+    def post_process(self):
+
+        # Copied from server-side _post_process()
+        node_outputs = self.get_all_node_outputs()
+        ordered_node_outputs = []
+        for i, item in enumerate(node_outputs.items()):
+            key, val = item
+            if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
+                ordered_node_outputs.append((i, val))
+
+        lattice = self._lattice
+
+        with active_lattice_manager.claim(lattice):
+            lattice.post_processing = True
+            lattice.electron_outputs = ordered_node_outputs
+            workflow_function = lattice.workflow_function.get_deserialized()
+            result = workflow_function(*lattice.args, **lattice.kwargs)
+            lattice.post_processing = False
+        return result
 
     def _get_node_name(self, node_id: int) -> str:
         """
@@ -297,10 +401,28 @@ Node Outputs
             node_id: The node id.
 
         Returns:
-            node_name: The name of said node.
+            The name of said node.
         """
 
-        return self.lattice.transport_graph.get_node_value(node_id, "node_name")
+        with workflow_db.session() as session:
+
+            lattice_id = (
+                session.query(models.Lattice)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
+                .id
+            )
+            return (
+                session.query(models.Electron)
+                .where(
+                    and_(
+                        models.Electron.parent_lattice_id == lattice_id,
+                        models.Electron.transport_graph_node_id == node_id,
+                    )
+                )
+                .first()
+                .name
+            )
 
     def _get_node_status(self, node_id: int) -> "Status":
         """
@@ -310,10 +432,27 @@ Node Outputs
             node_id: The node id.
 
         Returns:
-            status: The status of said node.
+            The status of said node.
         """
 
-        return self.lattice.transport_graph.get_node_value(node_id, "status")
+        with workflow_db.session() as session:
+
+            lattice_id = (
+                session.query(models.Lattice)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
+            ).id
+            return (
+                session.query(models.Electron)
+                .where(
+                    and_(
+                        models.Electron.parent_lattice_id == lattice_id,
+                        models.Electron.transport_graph_node_id == node_id,
+                    )
+                )
+                .first()
+                .status
+            )
 
     def _get_node_output(self, node_id: int) -> Any:
         """
@@ -327,7 +466,63 @@ Node Outputs
                     Will return None if error occured in execution.
         """
 
-        return self.lattice.transport_graph.get_node_value(node_id, "output")
+        with workflow_db.session() as session:
+
+            lattice_id = (
+                session.query(models.Lattice)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
+                .id
+            )
+            electron = (
+                session.query(models.Electron)
+                .where(
+                    (
+                        and_(
+                            models.Electron.parent_lattice_id == lattice_id,
+                            models.Electron.transport_graph_node_id == node_id,
+                        )
+                    )
+                )
+                .first()
+            )
+            return load_file(
+                storage_path=electron.storage_path, filename=electron.results_filename
+            )
+
+    def _get_node_value(self, node_id: int) -> Any:
+        """
+        Return the output of a node.
+
+        Args:
+            node_id: The node id.
+
+        Returns:
+            output: The output of said node.
+                    Will return None if error occured in execution.
+        """
+
+        with workflow_db.session() as session:
+
+            lattice_id = (
+                session.query(models.Lattice)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
+                .id
+            )
+            electron = (
+                session.query(models.Electron)
+                .where(
+                    (
+                        and_(
+                            models.Electron.parent_lattice_id == lattice_id,
+                            models.Electron.transport_graph_node_id == node_id,
+                        )
+                    )
+                )
+                .first()
+            )
+            return load_file(storage_path=electron.storage_path, filename=electron.value_filename)
 
     def _get_node_error(self, node_id: int) -> Any:
         """
@@ -341,7 +536,27 @@ Node Outputs
                    Will return None if no error occured in execution.
         """
 
-        return self.lattice.transport_graph.get_node_value(node_id, "error")
+        with workflow_db.session() as session:
+
+            lattice_id = (
+                session.query(models.Lattice)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
+                .id
+            )
+            electron = (
+                session.query(models.Electron)
+                .where(
+                    (
+                        and_(
+                            models.Electron.parent_lattice_id == lattice_id,
+                            models.Electron.transport_graph_node_id == node_id,
+                        )
+                    )
+                )
+                .first()
+            )
+            return load_file(storage_path=electron.storage_path, filename=electron.stderr_filename)
 
     def _update_node(
         self,
@@ -376,20 +591,32 @@ Node Outputs
             None
         """
 
+        app_log.debug("Inside update node")
+
+        electron_kwargs = {}
+        node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
+        if not node_path.exists():
+            node_path.mkdir()
+
         if node_name is not None:
             self.lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
+            electron_kwargs["name"] = node_name
 
         if start_time is not None:
             self.lattice.transport_graph.set_node_value(node_id, "start_time", start_time)
+            electron_kwargs["started_at"] = start_time
 
         if end_time is not None:
             self.lattice.transport_graph.set_node_value(node_id, "end_time", end_time)
+            electron_kwargs["completed_at"] = end_time
 
         if status is not None:
             self.lattice.transport_graph.set_node_value(node_id, "status", status)
+            electron_kwargs["status"] = str(status)
 
         if output is not None:
             self.lattice.transport_graph.set_node_value(node_id, "output", output)
+            store_file(node_path, ELECTRON_RESULTS_FILENAME, output)
 
         if error is not None:
             self.lattice.transport_graph.set_node_value(node_id, "error", error)
@@ -401,47 +628,270 @@ Node Outputs
 
         if stdout is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
+            store_file(node_path, ELECTRON_STDOUT_FILENAME, stdout)
 
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
+            store_file(node_path, ELECTRON_STDERR_FILENAME, stderr)
 
-    def save(self, directory: str = None, write_source: bool = False) -> None:
-        """
-        Save the result object to a file.
+        if str(status) == "COMPLETED":
+            update_lattice_completed_electron_num(self.dispatch_id)
 
-        Args:
-            directory: The directory to save the result object to.
-                       If not specified, the result object will be saved to the
-                       `self.results_dir` directory.
+        with workflow_db.session() as session:
+            lattice_id = (
+                session.query(models.Lattice)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .all()[0]
+                .id
+            )
+            session.execute(
+                update(models.Electron)
+                .where(
+                    models.Electron.parent_lattice_id == lattice_id,
+                    models.Electron.transport_graph_node_id == node_id,
+                )
+                .values(updated_at=datetime.now(timezone.utc), **electron_kwargs)
+            )
+            session.commit()
+        app_log.debug("Inside update node - SUCCESS")
 
-        Returns:
-            None
-        """
+    def _initialize_results_dir(self):
+        """Create the results directory."""
 
-        directory = directory or self.results_dir
-
-        result_folder_path = os.path.join(directory, f"{self.dispatch_id}")
+        result_folder_path = os.path.join(self.results_dir, f"{self.dispatch_id}")
         Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
-        result_info = {
-            "dispatch_id": self.dispatch_id,
-            "result_status": self.status,
-            "start_time": self.start_time.strftime("%Y-%m-%d %H:%M")
-            if self.start_time
-            else self.start_time,
-            "end_time": self.end_time.strftime("%Y-%m-%d %H:%M")
-            if self.end_time
-            else self.end_time,
-        }
+    def upsert_lattice_data(self):
+        """Update lattice data"""
 
-        with open(os.path.join(result_folder_path, "result.pkl"), "wb") as f:
-            f.write(pickle.dumps(self))
+        with workflow_db.session() as session:
+            lattice_exists = (
+                session.query(models.Lattice)
+                .where(models.Lattice.dispatch_id == self.dispatch_id)
+                .first()
+                is not None
+            )
 
-        with open(os.path.join(result_folder_path, "result_info.yaml"), "w") as f:
-            yaml.dump(result_info, f)
+        try:
+            workflow_func_string = self.lattice.workflow_function_string
+        except AttributeError:
+            workflow_func_string = None
 
-        if write_source:
-            self._write_dispatch_to_python_file()
+        # Store all lattice info that belongs in filenames in the results directory
+        data_storage_path = Path(self.results_dir) / self.dispatch_id
+        for filename, data in [
+            (LATTICE_FUNCTION_FILENAME, self.lattice.workflow_function),
+            (LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
+            (LATTICE_EXECUTOR_DATA_FILENAME, self.lattice.metadata["executor_data"]),
+            (
+                LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
+                self.lattice.metadata["workflow_executor_data"],
+            ),
+            (LATTICE_ERROR_FILENAME, self.error),
+            (LATTICE_INPUTS_FILENAME, self.inputs),
+            (LATTICE_NAMED_ARGS_FILENAME, self.lattice.named_args),
+            (LATTICE_NAMED_KWARGS_FILENAME, self.lattice.named_kwargs),
+            (LATTICE_RESULTS_FILENAME, self._result),
+            (LATTICE_TRANSPORT_GRAPH_FILENAME, self._lattice.transport_graph),
+        ]:
+
+            store_file(data_storage_path, filename, data)
+
+        # Write lattice records to Database
+        if not lattice_exists:
+            lattice_record_kwarg = {
+                "dispatch_id": self.dispatch_id,
+                "status": str(self.status),
+                "name": self.lattice.__name__,
+                "electron_num": self._num_nodes,
+                "completed_electron_num": 0,  # None of the nodes have been executed or completed yet.
+                "storage_path": str(data_storage_path),
+                "storage_type": LATTICE_STORAGE_TYPE,
+                "function_filename": LATTICE_FUNCTION_FILENAME,
+                "function_string_filename": LATTICE_FUNCTION_STRING_FILENAME,
+                "executor": self.lattice.metadata["executor"],
+                "executor_data_filename": LATTICE_EXECUTOR_DATA_FILENAME,
+                "workflow_executor": self.lattice.metadata["workflow_executor"],
+                "workflow_executor_data_filename": LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
+                "error_filename": LATTICE_ERROR_FILENAME,
+                "inputs_filename": LATTICE_INPUTS_FILENAME,
+                "named_args_filename": LATTICE_NAMED_ARGS_FILENAME,
+                "named_kwargs_filename": LATTICE_NAMED_KWARGS_FILENAME,
+                "results_filename": LATTICE_RESULTS_FILENAME,
+                "transport_graph_filename": LATTICE_TRANSPORT_GRAPH_FILENAME,
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc),
+                "started_at": self.start_time,
+                "completed_at": self.end_time,
+            }
+            insert_lattices_data(**lattice_record_kwarg)
+
+        else:
+            lattice_record_kwarg = {
+                "dispatch_id": self.dispatch_id,
+                "status": str(self.status),
+                "electron_num": self._num_nodes,
+                "updated_at": datetime.now(timezone.utc),
+                "started_at": self.start_time,
+                "completed_at": self.end_time,
+            }
+            update_lattices_data(**lattice_record_kwarg)
+
+    def upsert_electron_data(self):
+        """Update electron data"""
+
+        tg = self.lattice.transport_graph
+        dirty_nodes = set(tg.dirty_nodes)
+        tg.dirty_nodes.clear()  # Ensure that dirty nodes list is reset once the data is updated
+        app_log.debug("upsert_electron_data session begin")
+        with workflow_db.session() as session:
+            app_log.debug("upsert_electron_data session success")
+            for node_id in dirty_nodes:
+
+                node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
+
+                if not node_path.exists():
+                    node_path.mkdir()
+
+                attribute_name = tg.get_node_value(node_key=node_id, value_key="name")
+
+                try:
+                    function_string = tg.get_node_value(node_id, "function_string")
+                except KeyError:
+                    function_string = None
+                try:
+                    node_value = tg.get_node_value(node_id, "value")
+                except KeyError:
+                    node_value = None
+                try:
+                    node_stdout = tg.get_node_value(node_id, "stdout")
+                except KeyError:
+                    node_stdout = None
+                try:
+                    node_stderr = tg.get_node_value(node_id, "stderr")
+                except KeyError:
+                    node_stderr = None
+                try:
+                    node_info = tg.get_node_value(node_id, "info")
+                except KeyError:
+                    node_info = None
+                try:
+                    node_output = tg.get_node_value(node_id, "output")
+                except KeyError:
+                    node_output = TransportableObject(None)
+                if not isinstance(node_output, TransportableObject):
+                    node_output = TransportableObject(node_output)
+
+                executor = tg.get_node_value(node_id, "metadata")["executor"]
+                started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
+                completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
+
+                for filename, data in [
+                    (ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
+                    (ELECTRON_FUNCTION_STRING_FILENAME, function_string),
+                    (ELECTRON_VALUE_FILENAME, node_value),
+                    (
+                        ELECTRON_EXECUTOR_DATA_FILENAME,
+                        tg.get_node_value(node_id, "metadata")["executor_data"],
+                    ),
+                    (ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
+                    (
+                        ELECTRON_CALL_BEFORE_FILENAME,
+                        tg.get_node_value(node_id, "metadata")["call_before"],
+                    ),
+                    (
+                        ELECTRON_CALL_AFTER_FILENAME,
+                        tg.get_node_value(node_id, "metadata")["call_after"],
+                    ),
+                    (ELECTRON_STDOUT_FILENAME, node_stdout),
+                    (ELECTRON_STDERR_FILENAME, node_stderr),
+                    (ELECTRON_INFO_FILENAME, node_info),
+                    (ELECTRON_RESULTS_FILENAME, node_output),
+                ]:
+                    store_file(node_path, filename, data)
+
+                electron_exists = (
+                    session.query(models.Electron, models.Lattice)
+                    .where(
+                        models.Electron.parent_lattice_id == models.Lattice.id,
+                        models.Lattice.dispatch_id == self.dispatch_id,
+                        models.Electron.transport_graph_node_id == node_id,
+                    )
+                    .first()
+                    is not None
+                )
+
+                if not electron_exists:
+                    electron_record_kwarg = {
+                        "parent_dispatch_id": self.dispatch_id,
+                        "transport_graph_node_id": node_id,
+                        "type": get_electron_type(
+                            tg.get_node_value(node_key=node_id, value_key="name")
+                        ),
+                        "name": tg.get_node_value(node_key=node_id, value_key="name"),
+                        "status": str(tg.get_node_value(node_key=node_id, value_key="status")),
+                        "storage_type": ELECTRON_STORAGE_TYPE,
+                        "storage_path": str(node_path),
+                        "function_filename": ELECTRON_FUNCTION_FILENAME,
+                        "function_string_filename": ELECTRON_FUNCTION_STRING_FILENAME,
+                        "executor": executor,
+                        "executor_data_filename": ELECTRON_EXECUTOR_DATA_FILENAME,
+                        "results_filename": ELECTRON_RESULTS_FILENAME,
+                        "value_filename": ELECTRON_VALUE_FILENAME,
+                        "stdout_filename": ELECTRON_STDOUT_FILENAME,
+                        "stderr_filename": ELECTRON_STDERR_FILENAME,
+                        "info_filename": ELECTRON_INFO_FILENAME,
+                        "deps_filename": ELECTRON_DEPS_FILENAME,
+                        "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
+                        "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
+                        "created_at": datetime.now(timezone.utc),
+                        "updated_at": datetime.now(timezone.utc),
+                        "started_at": started_at,
+                        "completed_at": completed_at,
+                    }
+                    insert_electrons_data(**electron_record_kwarg)
+
+                else:
+                    electron_record_kwarg = {
+                        "parent_dispatch_id": self.dispatch_id,
+                        "transport_graph_node_id": node_id,
+                        "status": str(tg.get_node_value(node_key=node_id, value_key="status")),
+                        "started_at": started_at,
+                        "updated_at": datetime.now(timezone.utc),
+                        "completed_at": completed_at,
+                    }
+                    update_electrons_data(**electron_record_kwarg)
+
+    def insert_electron_dependency_data(self):
+        """Update electron dependency data"""
+
+        # Insert electron dependency records if they don't exist
+        with workflow_db.session() as session:
+            electron_dependencies_exist = (
+                session.query(models.ElectronDependency, models.Electron, models.Lattice)
+                .where(
+                    models.Electron.id == models.ElectronDependency.electron_id,
+                    models.Electron.parent_lattice_id == models.Lattice.id,
+                    models.Lattice.dispatch_id == self.dispatch_id,
+                )
+                .first()
+                is not None
+            )
+        app_log.debug("electron_dependencies_exist is " + str(electron_dependencies_exist))
+        if not electron_dependencies_exist:
+            insert_electron_dependency_data(dispatch_id=self.dispatch_id, lattice=self.lattice)
+
+    def persist(self) -> None:
+        """Save Result object to a DataStoreSession. Changes are queued until
+        committed by the caller."""
+
+        self._initialize_results_dir()
+        app_log.debug("upsert start")
+        self.upsert_lattice_data()
+        self.upsert_electron_data()
+        app_log.debug("upsert complete")
+        self.insert_electron_dependency_data()
+        app_log.debug("persis complete")
 
     def _convert_to_electron_result(self) -> Any:
         """
@@ -454,79 +904,7 @@ Node Outputs
             result: The final output of the dispatch.
         """
 
-        return self.result
-
-    def _write_dispatch_to_python_file(self, directory: str = None) -> None:
-        """
-        Writes the source code of user function definitions to a python file.
-
-        Args:
-            directory: The directory to write the source file to.
-
-        Returns:
-            None
-        """
-
-        directory = directory or self.results_dir
-
-        import pkg_resources
-
-        dispatch_function = f"# File created by Covalent using version {pkg_resources.get_distribution('cova').version}\n"
-        dispatch_function += f"# Dispatch ID: {self.dispatch_id}\n"
-        dispatch_function += f"# Workflow status: {self.status}\n"
-        dispatch_function += f"# Workflow start time: {self.start_time}\n"
-        dispatch_function += f"# Workflow end time: {self.end_time}" + "\n"
-
-        dispatch_function += "# Covalent result -"
-        result_string_lines = str(self.result).split("\n")
-        if len(result_string_lines) == 1:
-            dispatch_function += f" {self.result}\n\n"
-        else:
-            dispatch_function += "\n"
-            for line in result_string_lines:
-                dispatch_function += f"# {line}\n"
-            dispatch_function += "\n"
-
-        # add imports
-        dispatch_function += self.lattice.lattice_imports + "\n" * 2
-
-        directory = directory or self.results_dir
-        result_folder_path = os.path.join(directory, f"{self.dispatch_id}")
-        Path(result_folder_path).mkdir(parents=True, exist_ok=True)
-
-        # Accumulate the tasks and workflow in a string
-        topo_sorted_graph = self.lattice.transport_graph.get_topologically_sorted_graph()
-        functions_added = []
-        for level in topo_sorted_graph:
-            for nodes in level:
-                function = self.lattice.transport_graph.get_node_value(
-                    nodes, value_key="function"
-                ).get_deserialized()
-                if function is not None and function.__name__ not in functions_added:
-
-                    function_str = self.lattice.transport_graph.get_node_value(
-                        nodes, value_key="function_string"
-                    )
-                    function_str = _filter_cova_decorators(
-                        function_str,
-                        self.lattice.cova_imports,
-                    )
-                    dispatch_function += function_str
-                    functions_added.append(function.__name__)
-
-        lattice_function_str = convert_to_lattice_function_call(
-            self.lattice.workflow_function_string,
-            self.lattice.workflow_function.__name__,
-            self.inputs,
-        )
-        lattice_function_str = _filter_cova_decorators(
-            lattice_function_str,
-            self.lattice.cova_imports,
-        )
-        dispatch_function += lattice_function_str
-
-        with open(os.path.join(result_folder_path, "dispatch_source.py"), "w") as f:
-            f.write(dispatch_function)
+        return self._result
 
 
 def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:

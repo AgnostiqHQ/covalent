@@ -1,0 +1,56 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: stale
+
+on:
+  schedule:
+    - cron: "4 5 * * *"
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stale PRs in review
+        uses: actions/stale@v5
+        with:
+          repo-token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          days-before-pr-stale: 3
+          days-before-pr-close: 2
+          stale-pr-message: 'This pull request is stale because it has been in review for at least three days. It will be closed in two more days.'
+          close-pr-message: 'This pull request was closed because it has been in review for at least five days. Consider breaking up your code into smaller changes to facilitate faster reviews.'
+          ignore-pr-updates: true
+          except-draft-pr: true
+          exempt-pr-labels: 'stale-exempt'
+          days-before-issue-stale: -1
+          days-before-issue-close: -1
+
+      - name: Stale PRs in any state
+        uses: actions/stale@v5
+        with:
+          repo-token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          days-before-pr-stale: 15
+          days-before-pr-close: 5
+          stale-pr-message: 'This pull request is stale because it has been open for at least 15 days. It will be closed in five more days.'
+          close-pr-message: 'This pull request was closed because it has been open for at least 20 days.'
+          ignore-pr-updates: true
+          exempt-pr-labels: 'stale-exempt'
+          days-before-issue-stale: -1
+          days-before-issue-close: -1

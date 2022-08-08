@@ -20,54 +20,49 @@
 
 from pathlib import Path
 
+import pytest
+
 import covalent as ct
 from covalent._results_manager import results_manager as rm
-from covalent_dispatcher._db.dispatchdb import DispatchDB
-
-the_executor = ct.executor.LocalExecutor(
-    log_stdout="/tmp/log_stdout.txt", log_stderr="/tmp/log_stderr.txt"
-)
-
-
-@ct.electron(executor=the_executor)
-def passthrough_a(input):
-    print("passthrough_a")
-    return f"a{input}"
-
-
-@ct.electron(executor=the_executor)
-def concatenator(input_a, input_b):
-    print("concatenator")
-    return f"{input_a}{input_b}"
-
-
-@ct.electron(executor=the_executor)
-def concatenator_dict(input_a, input_b):
-    print("concatenator")
-    return {"input": f"{input_a}{input_b}"}
-
-
-@ct.electron(executor=the_executor)
-def passthrough_b(input):
-    print("passthrough_b")
-    return f"b{input}"
-
-
-@ct.lattice
-def workflow(name):
-    a = passthrough_a(input=name)
-    b = passthrough_b(input=name)
-    return concatenator(input_a=a, input_b=b)
-
-
-@ct.lattice
-def bad_workflow(name):
-    a = passthrough_a(input=name)
-    raise Exception(f"byebye {input}")
 
 
 def test_dispatcher_functional():
     # Dispatch after starting the dispatcher server.
+
+    the_executor = ct.executor.LocalExecutor(
+        log_stdout="/tmp/log_stdout.txt", log_stderr="/tmp/log_stderr.txt"
+    )
+
+    @ct.electron(executor=the_executor)
+    def passthrough_a(input):
+        print("passthrough_a")
+        return f"a{input}"
+
+    @ct.electron(executor=the_executor)
+    def concatenator(input_a, input_b):
+        print("concatenator")
+        return f"{input_a}{input_b}"
+
+    @ct.electron(executor=the_executor)
+    def concatenator_dict(input_a, input_b):
+        print("concatenator")
+        return {"input": f"{input_a}{input_b}"}
+
+    @ct.electron(executor=the_executor)
+    def passthrough_b(input):
+        print("passthrough_b")
+        return f"b{input}"
+
+    @ct.lattice
+    def workflow(name):
+        a = passthrough_a(input=name)
+        b = passthrough_b(input=name)
+        return concatenator(input_a=a, input_b=b)
+
+    @ct.lattice
+    def bad_workflow(name):
+        a = passthrough_a(input=name)
+        raise RuntimeError(f"byebye {input}")
 
     dispatch_id = ct.dispatch(workflow)(name="q")
     output = ct.get_result(dispatch_id, wait=True).result
@@ -81,19 +76,16 @@ def test_dispatcher_functional():
         output = "failed"
 
     rm._delete_result(dispatch_id)
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
-
     assert output == "failed"
 
     Path(the_executor.log_stdout).unlink(missing_ok=True)
     Path(the_executor.log_stderr).unlink(missing_ok=True)
 
 
+@pytest.mark.skip(reason="results_dir is no longer used. This test should be removed soon.")
 def test_results_dir_in_sublattice():
     # Test that a "non-standard" results_dir in a sublattice works.
 
-    @ct.electron
     def square(x):
         return x * x
 
@@ -104,12 +96,13 @@ def test_results_dir_in_sublattice():
         return ct.electron(lattice_square)(x=y)
 
     dispatch_id = ct.dispatch(outer_lattice)(y=5)
-    output = ct.get_result(dispatch_id, wait=True).result
+    result_object = ct.get_result(dispatch_id, wait=True)
+    output = result_object.result
 
     rm._delete_result(dispatch_id, results_dir="/tmp/results")
 
-    with DispatchDB() as db:
-        db.delete([dispatch_id])
+    assert result_object.error == ""
+    assert result_object.status == str(result_object.COMPLETED)
 
     assert output == 25
 

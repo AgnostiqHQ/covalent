@@ -41,7 +41,7 @@ cd covalent_ui
 python app.py -p <port>
 ```
 
--   Open `http://0.0.0.0:<port>` in your browser.
+-   Open `http://localhost:<port>` in your browser.
 -   Dispatch workflows to explore them in the UI.
 
 ## Frontend development

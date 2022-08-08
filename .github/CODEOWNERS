@@ -20,11 +20,25 @@
 
 # CODEOWNERS
 
-# By default code is owned by the Agnostiq engineering team.
-*		@AgnostiqHQ/aq-engineers
+# Core code, docs, and tests are owned by the Agnostiq engineering team.
+/covalent/		@AgnostiqHQ/aq-engineers
+/covalent_dispatcher/	@AgnostiqHQ/aq-engineers
+/doc/			@santoshkumarradha
+/tests/			@AgnostiqHQ/aq-engineers
+.flake8			@AgnostiqHQ/aq-engineers
+.gitignore		@AgnostiqHQ/aq-engineers
+.pre-commit-config.yaml	@AgnostiqHQ/aq-engineers
+.prettierrc 		@AgnostiqHQ/aq-engineers
+.pylintrc 		@AgnostiqHQ/aq-engineers
+.readthedocs.yaml 	@AgnostiqHQ/aq-engineers
+.wci.yaml 		@AgnostiqHQ/aq-engineers
+CODE_OF_CONDUCT.md 	@AgnostiqHQ/aq-engineers
+CONTRIBUTING.md 	@AgnostiqHQ/aq-engineers
+README.md 		@AgnostiqHQ/aq-engineers
+pyproject.toml 		@AgnostiqHQ/aq-engineers
 
 # Covalent UI is owned by collaborators from Psiog.
-/covalent_ui/ @mshkanth @Prasy12
+/covalent_ui/**/*.js 		@mshkanth @Prasy12
 
 # Modifying these requires additional approval.
 Dockerfile		@AgnostiqHQ/aq-managers
@@ -34,4 +48,4 @@ MANIFEST.in		@AgnostiqHQ/aq-managers
 meta.yaml		@AgnostiqHQ/aq-managers
 **/requirements.txt	@AgnostiqHQ/aq-managers
 setup.py		@AgnostiqHQ/aq-managers
-docker-compose.yml		@AgnostiqHQ/aq-managers
+Makefile 		@AgnostiqHQ/aq-managers

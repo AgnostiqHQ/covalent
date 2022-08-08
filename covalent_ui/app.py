@@ -17,28 +17,23 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+from __future__ import annotations
 
 import argparse
 import os
 import signal
 import sys
-from datetime import datetime
 from distutils.log import debug
 from logging import Logger
 from logging.handlers import DEFAULT_TCP_LOGGING_PORT
-from multiprocessing import Process
 from pathlib import Path
 
-import dask.config
-import networkx as nx
 import simplejson
 import tailer
-from dask.distributed import LocalCluster
 from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
-from covalent._results_manager import Result
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config, set_config, update_config
@@ -46,34 +41,13 @@ from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
-
-# Configure dask to not allow daemon workers
-dask.config.set({"distributed.worker.daemon": False})
+from covalent_dispatcher._service.app_dask import DaskCluster
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-class DaskCluster(Process):
-    def __init__(self, logger: Logger):
-        super(DaskCluster, self).__init__()
-        self.logger = logger
-        self.daemon = False
-        self.name = "DaskClusterProcess"
-
-    def run(self):
-        cluster = LocalCluster()
-        scheduler_address = cluster.scheduler_address
-        dashboard_link = cluster.dashboard_link
-        set_config(
-            {"dask": {"scheduler_address": scheduler_address, "dashboard_link": dashboard_link}}
-        )
-
-        # Halt the process here until its terminated
-        signal.pause()
 
 
 app = Flask(__name__, static_folder=WEBAPP_PATH)
@@ -110,8 +84,7 @@ def list_results():
 
 @app.route("/api/dev/results/<dispatch_id>")
 def fetch_result_dev(dispatch_id):
-    results_dir = request.args["resultsDir"]
-    result = rm.get_result(dispatch_id, results_dir=results_dir)
+    result = rm.get_result(dispatch_id)
 
     jsonified_result = encode_result(result)
 
@@ -195,8 +168,8 @@ if __name__ == "__main__":
 
     # Start dask if no-cluster flag is not specified (covalent stop auto terminates all child processes of this)
     if not args.no_cluster:
-        dask_cluster = DaskCluster(app_log)
+        dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log)
         dask_cluster.start()
 
     # Start covalent main app
-    socketio.run(app, debug=debug, host="0.0.0.0", port=port, use_reloader=reload)
+    socketio.run(app, debug=debug, host="localhost", port=port, use_reloader=reload)

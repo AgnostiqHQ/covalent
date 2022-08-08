@@ -1,0 +1,15 @@
+{
+  "name": "changelog",
+  "version": "0.110.2",
+  "description": "Parse the new information in the CHANGELOG and update the CHANGELOG and VERSION files accordingly",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Scott Wyman Neagle <scott@agnostiq.ai> (http://covalent.xyz)",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "@actions/core": "^1.9.0"
+  }
+}

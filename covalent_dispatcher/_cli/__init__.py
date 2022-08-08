@@ -19,5 +19,4 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Import CLI tool functionalities."""
-
 from .service import _is_server_running

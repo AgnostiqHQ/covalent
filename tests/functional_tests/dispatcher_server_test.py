@@ -20,30 +20,26 @@
 
 import covalent as ct
 import covalent._results_manager.results_manager as rm
-from covalent_dispatcher._db.dispatchdb import DispatchDB
-
-
-@ct.electron
-def identity(x):
-    return x
-
-
-@ct.electron
-def add(x, y):
-    import random
-    import time
-
-    time.sleep(random.choice([1, 2]))
-    return x + y
-
-
-@ct.lattice
-def pipeline(a, b):
-    res_1 = add(x=a, y=b)
-    return identity(x=res_1)
 
 
 def test_dispatcher_server():
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.electron
+    def add(x, y):
+        import random
+        import time
+
+        time.sleep(random.choice([1, 2]))
+        return x + y
+
+    @ct.lattice
+    def pipeline(a, b):
+        res_1 = add(x=a, y=b)
+        return identity(x=res_1)
+
     # After the dispatcher server has been started, you can run the following
     dispatch_id = ct.dispatch(pipeline)(a=2, b=1)
     assert dispatch_id is not None
@@ -55,9 +51,7 @@ def test_dispatcher_server():
     assert result.start_time is not None
     assert result.end_time is not None
     assert result.end_time > result.start_time
-    assert result.status == ct.status.COMPLETED
+    assert result.status == str(ct.status.COMPLETED)
     assert result.result == 3
 
     rm._delete_result(dispatch_id)
-    with DispatchDB() as db:
-        db.delete([dispatch_id])

@@ -13,7 +13,7 @@ const result = {
     kwargs: { initial_height: '3', distance: '1.1' },
     metadata: {
       backend: '<LocalExecutor>',
-      dispatcher: '0.0.0.0:48008',
+      dispatcher: 'localhost:48008',
       results_dir: '/home/valentin/code/agnostiq/examples/results',
       executor: {
         log_stdout: '/tmp/results/log_stdout.txt',

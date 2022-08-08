@@ -191,10 +191,10 @@ For more examples, please refer to the [Covalent tutorials](https://covalent.rea
 Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager:
 
 ```console
-pip install cova
+pip install covalent
 ```
 
-Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for more details on setting up. For a full list of supported platforms, consult the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html). Read [this guide](https://covalent.readthedocs.io/en/latest/getting_started/#migration-guide-from-0-3x) if you are migrating from `cova` version `0.3x`.
+Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for more details on setting up. For a full list of supported platforms, consult the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html).
 
 ## 🔧 How it Works
 

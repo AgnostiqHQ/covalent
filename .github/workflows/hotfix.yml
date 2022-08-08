@@ -23,6 +23,15 @@ name: hotfix
 on:
   issue_comment:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      stable_version:
+        description: "Stable version number, e.g. 0.110.2"
+        type: string
+        required: true
+      commit_shas:
+        description: "Comma-separated string of SHAs to apply."
+        required: true
 
 jobs:
   hotfix:
@@ -97,3 +106,67 @@ jobs:
           message: env.MESSAGE
           pr_number: github.event.issue.number
           GITHUB_TOKEN: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+
+  hotfix-sha:
+    if: >
+      github.event.inputs.stable_version
+      && github.event.inputs.commit_shas
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: "v${{ github.event.inputs.stable_version }}"
+      - name: Ensure release is a terminal commit
+        run: |
+          latest_tag=$(git describe)
+          terminal_commit=1
+          IFS='-' read -ra describe_tag <<< "$latest_tag"
+          if [[ ${#describe_tag[1]} -gt 0 ]] ; then
+            version="${describe_tag[0]}-$((${describe_tag[1]}+1))"
+          else
+            version="${describe_tag[0]}-1"
+          fi
+          if [[ $(git tag -l "$version") ]] ; then
+            echo "Cannot create a hotfix using this stable version. $version already exists."
+            exit 1
+          fi
+          echo "VERSION=$version" >> $GITHUB_ENV
+      - name: Validate SHAs
+        run: |
+          IFS=',' read -ra commit_shas <<< "${{ github.event.inputs.commit_shas }}"
+          for sha in ${commit_shas[@]} ; do
+            if [[ ! $(git rev-parse --quiet --verify ${sha}^{commit}) ]] ; then
+              echo "Commit not found: ${sha}."
+              exit 2
+            fi
+          done
+      - name: Apply commits to hotfix branch
+        run: |
+          git config user.name "CovalentOpsBot"
+          git config user.email "covalentopsbot@users.noreply.github.com"
+          git checkout -b "hotfix-$VERSION"
+          IFS=',' read -ra commit_shas <<< "${{ github.event.inputs.commit_shas }}"
+          git cherry-pick -X ours ${commit_shas[@]}
+          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
+          git push -u origin "hotfix-$VERSION"
+      - name: Increment version
+        run: echo ${VERSION:1} > ./VERSION
+      - name: Commit
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: CovalentOpsBot
+          author_email: covalentopsbot@users.noreply.github.com
+          message: "The new version will be ${{ env.VERSION }}"
+      - name: Squash commits
+        run: |
+          git reset --soft "v${{ github.event.inputs.stable_version }}"
+      - name: Commit
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: CovalentOpsBot
+          author_email: covalentopsbot@users.noreply.github.com
+          message: "Applying hotfix ${{ env.VERSION }}"
+          push: "--force"
