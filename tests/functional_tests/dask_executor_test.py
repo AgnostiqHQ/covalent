@@ -35,7 +35,6 @@ def start_dask_cluster():
     return cluster.scheduler_address
 
 
-@pytest.mark.skip(reason="No way of installing Dask executor plugin yet")
 def test_dask_executor():
     from covalent.executor import DaskExecutor
 
@@ -72,11 +71,9 @@ def test_dask_executor():
     dispatch_id = dispatcher(n=n)
     print(f"Dispatching with dispatch_id: {dispatch_id}")
 
-    time.sleep(10)
-
-    result = ct.get_result(dispatch_id=dispatch_id)
+    result = ct.get_result(dispatch_id=dispatch_id, wait=True)
 
     time_taken = (result.end_time - result.start_time).total_seconds()
     print(f"Time taken: {time_taken}")
 
-    assert result.status == Result.COMPLETED
+    assert result.status == str(Result.COMPLETED)
