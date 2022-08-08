@@ -12,6 +12,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Conda package is built and tested on a nightly schedule
 - Conda deployment step is added to `release.yml`
 
+## [0.166.0] - 2022-08-07
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+
+
+### Tests
+
+- Update dask cli test to match Covalent Dask cluster configuration
+
+
+### Changed
+
+- Remove newline from log stream formatter for better log statment output
+- Jsonify covalent cluster cli outputs
+
+## [0.165.0] - 2022-08-06
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Make `BaseExecutor` and `BaseAsyncExecutor` class siblings, not parent and child.
+
+### Operations
+
+- Only validate webapp if the webapp was built
+
 ### Tests
 
 - Fixed randomly failing lattice json serialization test

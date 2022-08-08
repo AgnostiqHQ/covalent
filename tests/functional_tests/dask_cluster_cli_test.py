@@ -25,7 +25,6 @@ import dask.system
 import pytest
 from dask.distributed import LocalCluster
 from distributed.comm import parse_address, unparse_address
-from distributed.deploy.utils import nprocesses_nthreads
 
 from covalent_dispatcher._cli.cli import cluster
 from covalent_dispatcher._cli.service import (
@@ -39,12 +38,18 @@ from covalent_dispatcher._cli.service import (
 )
 from covalent_dispatcher._service.app_dask import DaskAdminWorker
 
-DEFAULT_N_WORKERS, _ = nprocesses_nthreads()
+DEFAULT_THREADS_PER_WORKERS = 1
+DEFAULT_N_WORKERS = dask.system.CPU_COUNT
+DEFAULT_MEM_PER_WORKER = "auto"
 
 
 @pytest.fixture(scope="module")
 def test_cluster():
-    cluster = LocalCluster()
+    cluster = LocalCluster(
+        n_workers=DEFAULT_N_WORKERS,
+        threads_per_worker=DEFAULT_THREADS_PER_WORKERS,
+        **{"memory_limit": DEFAULT_MEM_PER_WORKER},
+    )
     yield cluster
     cluster.close()
 

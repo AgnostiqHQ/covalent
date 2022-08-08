@@ -21,11 +21,11 @@
 """Covalent CLI Tool - Service Management."""
 
 import asyncio
+import json
 import os
 import shutil
 import socket
 import sys
-import time
 from subprocess import DEVNULL, Popen
 from typing import Optional
 
@@ -477,7 +477,6 @@ async def _get_cluster_logs(uri):
     """
     Retrive the cluster logs from the scheduler directly
     """
-    click.echo("Calling logs handler")
     comm = await connect(uri, timeout=2)
     await comm.write({"op": "cluster_logs"})
     cluster_logs = await comm.read()
@@ -518,23 +517,53 @@ def cluster(
     admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
 
     if status:
-        click.echo(loop.run_until_complete(_get_cluster_status(admin_server_addr)))
+        click.echo(
+            json.dumps(
+                loop.run_until_complete(_get_cluster_status(admin_server_addr)),
+                sort_keys=True,
+                indent=4,
+            )
+        )
         return
     if info:
-        click.echo(loop.run_until_complete(_get_cluster_info(admin_server_addr)))
+        click.echo(
+            json.dumps(
+                loop.run_until_complete(_get_cluster_info(admin_server_addr)),
+                sort_keys=True,
+                indent=4,
+            )
+        )
         return
     if address:
-        click.echo(loop.run_until_complete(_get_cluster_address(admin_server_addr)))
+        click.echo(
+            json.dumps(
+                loop.run_until_complete(_get_cluster_address(admin_server_addr)),
+                sort_keys=True,
+                indent=4,
+            )
+        )
         return
     if size:
-        click.echo(loop.run_until_complete(_get_cluster_size(admin_server_addr)))
+        click.echo(
+            json.dumps(
+                loop.run_until_complete(_get_cluster_size(admin_server_addr)),
+                sort_keys=True,
+                indent=4,
+            )
+        )
         return
     if restart:
         loop.run_until_complete(_cluster_restart(admin_server_addr))
         click.echo("Cluster restarted")
         return
     if logs:
-        click.echo(loop.run_until_complete(_get_cluster_logs(admin_server_addr)))
+        click.echo(
+            json.dumps(
+                loop.run_until_complete(_get_cluster_logs(admin_server_addr)),
+                sort_keys=True,
+                indent=4,
+            )
+        )
         return
     if scale:
         loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
