@@ -388,11 +388,11 @@ def status() -> None:
 
 
 @click.command()
-@click.option("-h", "--hard", is_flag=True, help="Perform a hard purge, deleting the DB as well")
+@click.option("-H", "--hard", is_flag=True, help="Perform a hard purge, deleting the DB as well")
 @click.option("-y", "--yes", is_flag=True, help="Approve without showing the warning")
 def purge(hard: bool, yes: bool) -> None:
     """
-    Shutdown server and delete the cache and config settings.
+    Shuts down the server, deletes the cache, the logs, the config settings and if desired, the database.
     """
 
     removal_list = {
@@ -409,9 +409,6 @@ def purge(hard: bool, yes: bool) -> None:
 
         click.secho(f"{'!'.join(['*'] * 21)} WARNING {'!'.join(['*'] * 21)}", fg="yellow")
 
-        if hard:
-            click.secho("Please make sure you are OK WITH THE DATABASE BEING DELETED.", fg="red")
-
         click.echo("Purging will perform the following operations: ")
 
         click.echo("1. Stop the covalent server if running.")
@@ -421,6 +418,9 @@ def purge(hard: bool, yes: bool) -> None:
                 click.echo(f"{i}. {rem_path} file will be DELETED")
             else:
                 click.echo(f"{i}. {rem_path} directory will be DELETED")
+
+        if hard:
+            click.secho("Please make sure you are OK WITH THE DATABASE BEING DELETED.", fg="red")
 
         click.confirm("\nWould you still like to proceed?", abort=True)
 

@@ -293,7 +293,8 @@ def test_is_server_running(mocker):
     assert not _is_server_running()
 
 
-def test_purge(mocker):
+@pytest.mark.parametrize("hard", [False, True])
+def test_purge_proceed(hard, mocker):
     """Test the 'covalent purge' CLI command."""
 
     from covalent_dispatcher._cli.service import UI_PIDFILE, get_config
@@ -302,18 +303,57 @@ def test_purge(mocker):
     graceful_shutdown_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
     shutil_rmtree_mock = mocker.patch("covalent_dispatcher._cli.service.shutil.rmtree")
     purge_config_mock = mocker.patch("covalent_dispatcher._cli.service.cm.purge_config")
-    result = runner.invoke(purge)
-    graceful_shutdown_mock.assert_has_calls([mock.call(UI_PIDFILE)])
-    shutil_rmtree_mock.assert_has_calls(
-        [
-            mock.call(get_config("sdk.log_dir"), ignore_errors=True),
-            mock.call(get_config("dispatcher.cache_dir"), ignore_errors=True),
-            mock.call(get_config("dispatcher.log_dir"), ignore_errors=True),
-            mock.call(get_config("user_interface.log_dir"), ignore_errors=True),
+
+    mock_rem_dirs = [
+        mock.call(get_config(dir_name), ignore_errors=True)
+        for dir_name in [
+            "sdk.log_dir",
+            "dispatcher.cache_dir",
+            "dispatcher.log_dir",
+            "user_interface.log_dir",
         ]
-    )
+    ]
+
+    if hard:
+        result = runner.invoke(purge, input="y", args="--hard")
+        os_remove_mock = mocker.patch("covalent_dispatcher._cli.service.os.remove")
+        os_remove_mock.assert_has_calls([mock.call(get_config("dispatcher.db_path"))])
+    else:
+        result = runner.invoke(purge, input="y")
+
+    graceful_shutdown_mock.assert_has_calls([mock.call(UI_PIDFILE)])
+
+    shutil_rmtree_mock.assert_has_calls(mock_rem_dirs)
+
     purge_config_mock.assert_called_once()
     assert result.output == "Covalent server files have been purged.\n"
+
+
+@pytest.mark.parametrize("hard", [False, True])
+def test_purge_abort(hard, mocker):
+    """Test the 'covalent purge' CLI command."""
+
+    runner = CliRunner()
+
+    if hard:
+        result = runner.invoke(purge, input="n", args="--hard")
+    else:
+        result = runner.invoke(purge, input="n")
+
+    config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
+
+    mock_dir_calls = []
+    for dirs in [
+        "sdk.log_dir",
+        "dispatcher.cache_dir",
+        "dispatcher.log_dir",
+        "user_interface.log_dir",
+    ]:
+        mock_dir_calls.append(mock.call(dirs))
+
+    config_mock.assert_has_calls(mock_dir_calls)
+
+    assert result.output == "Aborted!\n"
 
 
 @pytest.mark.parametrize("workers", [1, 2, 3, 4])
