@@ -117,4 +117,5 @@ class DaskExecutor(BaseAsyncExecutor):
         print(worker_stdout, end="", file=sys.stdout)
         print(worker_stderr, end="", file=sys.stderr)
 
+        # FIX: need to get stdout and stderr from dask worker and print them
         return result
