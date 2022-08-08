@@ -101,7 +101,9 @@ def db_path() -> str:
 
 
 @router.get("/result/{dispatch_id}")
-def get_result(dispatch_id: str, wait: Optional[bool] = True, status_only: Optional[bool] = True):
+def get_result(
+    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
+):
     app_log.warning("get result")
     app_log.warning("wait is " + str(wait))
     while True:

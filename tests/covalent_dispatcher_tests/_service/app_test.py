@@ -21,6 +21,7 @@
 """Unit tests for the FastAPI app."""
 
 import json
+import os
 from datetime import datetime
 
 import pytest
@@ -59,6 +60,16 @@ def test_db():
     )
 
 
+@pytest.fixture
+def test_db_file():
+    """Instantiate and return a database."""
+
+    return DataStore(
+        db_URL="sqlite+pysqlite:////tmp/testdb.sqlite",
+        initialize_db=True,
+    )
+
+
 class MockDataStore:
     def __init__(self, lattice, dbpath):
         engine = create_engine("sqlite+pysqlite:///" + str(dbpath / "workflow_db.sqlite"))
@@ -93,7 +104,7 @@ def test_db_path(mocker, app, client):
     assert result == dbpath
 
 
-def test_get_result(mocker, app, client, test_db, tmp_path):
+def test_get_result(mocker, app, client, test_db_file, tmp_path):
     lattice = Lattice(
         status=str(Result.COMPLETED),
         dispatch_id=DISPATCH_ID,
@@ -104,19 +115,21 @@ def test_get_result(mocker, app, client, test_db, tmp_path):
         electron_num=0,
         completed_electron_num=0,
     )
-    with test_db.session() as session:
+
+    with test_db_file.session() as session:
         session.add(lattice)
         session.commit()
 
     mocker.patch("covalent_dispatcher._service.app.result_from", return_value={})
-    mocker.patch("covalent_dispatcher._service.app.engine", test_db.engine)
+    mocker.patch("covalent_dispatcher._service.app.engine", test_db_file.engine)
     response = client.get(f"/api/result/{DISPATCH_ID}")
     result = response.json()
     assert result["id"] == DISPATCH_ID
     assert result["status"] == str(Result.COMPLETED)
+    os.remove("/tmp/testdb.sqlite")
 
 
-def test_get_result_503(mocker, app, client, test_db, tmp_path):
+def test_get_result_503(mocker, app, client, test_db_file, tmp_path):
     lattice = Lattice(
         status=str(Result.COMPLETED),
         dispatch_id=DISPATCH_ID,
@@ -127,13 +140,14 @@ def test_get_result_503(mocker, app, client, test_db, tmp_path):
         electron_num=0,
         completed_electron_num=0,
     )
-    with test_db.session() as session:
+    with test_db_file.session() as session:
         session.add(lattice)
         session.commit()
     mocker.patch("covalent_dispatcher._service.app.result_from", side_effect=FileNotFoundError())
-    mocker.patch("covalent_dispatcher._service.app.engine", test_db.engine)
+    mocker.patch("covalent_dispatcher._service.app.engine", test_db_file.engine)
     response = client.get(f"/api/result/{DISPATCH_ID}")
     assert response.status_code == 503
+    os.remove("/tmp/testdb.sqlite")
 
 
 def test_get_result_dispatch_id_not_found(mocker, app, client, tmp_path):
