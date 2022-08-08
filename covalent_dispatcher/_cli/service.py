@@ -573,5 +573,6 @@ def cluster(
 
 @click.command()
 def config() -> None:
+    """Print Covalent's configuration to stdout"""
     cm.read_config()
     click.echo(json.dumps(cm.config_data, sort_keys=True, indent=4))
