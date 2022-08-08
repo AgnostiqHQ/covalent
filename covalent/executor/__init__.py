@@ -130,6 +130,10 @@ class _ExecutorManager:
             else False
         )
 
+    def nonzero_plugin_classes(self, plugin_class):
+        """Retrun true if any plugin classes are present"""
+        return True if len(plugin_class) else False
+
     def _populate_executor_map_from_module(self, the_module: Any) -> None:
         """
         Populate the executor map from a module.
@@ -161,7 +165,7 @@ class _ExecutorManager:
         )
         plugin_class = [c for c in module_classes if c.__name__ == executor_name]
 
-        if len(plugin_class):
+        if self.nonzero_plugin_classes(plugin_class):
             plugin_class = plugin_class[0]
             short_name = the_module.__name__.split("/")[-1].split(".")[-1]
             self.executor_plugins_map[short_name] = plugin_class
