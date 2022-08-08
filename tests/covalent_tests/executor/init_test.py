@@ -135,3 +135,20 @@ def test_warning_when_plugin_name_is_invalid(mocker):
     em._populate_executor_map_from_module(the_module)
 
     app_log_mock.warning.assert_called_once()
+
+
+def test_zero_plugin_class_case(mocker):
+    """Test else block when no plugin classes were found"""
+    em = _ExecutorManager()
+    the_module = MagicMock()
+    the_module.__name__ = "test_module"
+    em._is_plugin_name_valid = MagicMock(return_value=True)
+    em.nonzero_plugin_classes = MagicMock(return_value=False)
+    app_log_mock = mocker.patch("covalent.executor.app_log")
+
+    mocker.patch("covalent.executor.inspect.getmembers")
+
+    em._populate_executor_map_from_module(the_module)
+
+    em.nonzero_plugin_classes.assert_called_once()
+    app_log_mock.warning.assert_called_once()
