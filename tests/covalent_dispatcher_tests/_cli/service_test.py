@@ -40,6 +40,7 @@ from covalent_dispatcher._cli.service import (
     _read_pid,
     _rm_pid_file,
     cluster,
+    config,
     purge,
     restart,
     start,
@@ -219,8 +220,9 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
     res = runner.invoke(start, cli_args)
 
     if ignore_migrations or not is_migration_pending:
-        graceful_start_mock.assert_called()
-        set_config_mock.assert_called()
+        graceful_start_mock.assert_called_once()
+        assert set_config_mock.call_count == 2
+        # set_config_mock.assert_called_once()
     else:
         assert MIGRATION_COMMAND_MSG in res.output
         assert MIGRATION_WARNING_MSG in res.output
@@ -357,6 +359,22 @@ def test_purge_abort(hard, mocker):
     assert result.output == "Aborted!\n"
 
 
+def test_config(mocker):
+    """Test covalent config cli"""
+    from covalent._shared_files.config import _config_manager as cm
+
+    cfg_read_config_mock = mocker.patch("covalent_dispatcher._cli.service.cm.read_config")
+    json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
+    click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
+
+    runner = CliRunner()
+    runner.invoke(config)
+
+    cfg_read_config_mock.assert_called_once()
+    json_dumps_mock.assert_called_once()
+    click_echo_mock.assert_called_once()
+
+
 @pytest.mark.parametrize("workers", [1, 2, 3, 4])
 def test_cluster_size(mocker, workers):
     """
@@ -403,6 +421,7 @@ def test_cluster_info(mocker):
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_info_cli_mock = mocker.patch("covalent_dispatcher._cli.service._get_cluster_info")
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
+    json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
 
     runner = CliRunner()
     _ = runner.invoke(cluster, "--info")
@@ -411,6 +430,7 @@ def test_cluster_info(mocker):
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_info_cli_mock.assert_called_once()
+    json_dumps_mock.assert_called_once()
     click_echo_mock.assert_called_once()
 
 
@@ -425,18 +445,24 @@ def test_cluster_status_cli(mocker):
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_status_cli_mock = mocker.patch("covalent_dispatcher._cli.service._get_cluster_status")
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
+    json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
 
     runner = CliRunner()
     _ = runner.invoke(cluster, "--status")
 
+    is_server_running_mock.assert_called_once()
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_status_cli_mock.assert_called_once()
+    json_dumps_mock.assert_called_once()
     click_echo_mock.assert_called_once()
 
 
@@ -455,6 +481,7 @@ def test_cluster_address_cli(mocker):
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_cli_mock = mocker.patch("covalent_dispatcher._cli.service._get_cluster_address")
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
+    json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
 
     runner = CliRunner()
     _ = runner.invoke(cluster, "--address")
@@ -464,6 +491,7 @@ def test_cluster_address_cli(mocker):
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
     click_echo_mock.assert_called_once()
+    json_dumps_mock.assert_called_once()
 
 
 def test_cluster_logs_cli(mocker):
@@ -481,6 +509,7 @@ def test_cluster_logs_cli(mocker):
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_cli_mock = mocker.patch("covalent_dispatcher._cli.service._get_cluster_logs")
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
+    json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
 
     runner = CliRunner()
     _ = runner.invoke(cluster, "--logs")
@@ -490,6 +519,7 @@ def test_cluster_logs_cli(mocker):
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
     click_echo_mock.assert_called_once()
+    json_dumps_mock.assert_called_once()
 
 
 def test_cluster_restart_cli(mocker):
