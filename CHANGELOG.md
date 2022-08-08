@@ -12,6 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Conda package is built and tested on a nightly schedule
 - Conda deployment step is added to `release.yml`
 
+## [0.168.0] - 2022-08-08
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- Adding `setup/teardown` methods as placeholders for any executor specific setup and teardown tasks
+
 ## [0.167.0] - 2022-08-08
 
 ### Authors
