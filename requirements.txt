@@ -1,3 +1,4 @@
+aiofiles==0.8.0
 alembic==1.8.0
 cloudpickle==2.0.0
 dask[distributed]==2022.6.0
