@@ -220,8 +220,9 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
     res = runner.invoke(start, cli_args)
 
     if ignore_migrations or not is_migration_pending:
-        graceful_start_mock.assert_called()
-        set_config_mock.assert_called()
+        graceful_start_mock.assert_called_once()
+        assert set_config_mock.call_count == 2
+        # set_config_mock.assert_called_once()
     else:
         assert MIGRATION_COMMAND_MSG in res.output
         assert MIGRATION_WARNING_MSG in res.output

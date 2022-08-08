@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Temporarily allow executor plugin variable name to be either in uppercase or lowercase
+
 ## [0.169.0] - 2022-08-08
 
 ### Authors
