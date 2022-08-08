@@ -1,12 +1,12 @@
+import sys
+from unittest.mock import MagicMock
+
 import pytest
 from furl import furl
 
 from covalent._file_transfer import File
 from covalent._file_transfer.strategies.s3_strategy import S3
 
-from unittest.mock import MagicMock
-
-import sys
 
 class TestS3Strategy:
 
