@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Check for both upper case and lower case module level declarations for the executor plugin names
+- Removed support for exporting additional classes from a executor plugin
 
 ## [0.168.0] - 2022-08-08
 
