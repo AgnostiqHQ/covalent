@@ -21,11 +21,8 @@
 name: conda
 
 on:
-  # TODO: remove this line
-  push:
-    branches: [conda-release]
-#  schedule:
-#    - cron: "02 4 * * *"
+ schedule:
+   - cron: "02 4 * * *"
       
 
 jobs:
