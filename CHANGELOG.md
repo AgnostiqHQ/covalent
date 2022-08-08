@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Temporarily allow executor plugin variable name to be either in uppercase or lowercase
 
+### Added
+
+- Adding a `covalent config` convenience CLI to quickly view retrive the covalent configuration
+
 ## [0.168.0] - 2022-08-08
 
 ### Authors
