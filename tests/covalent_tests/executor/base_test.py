@@ -25,6 +25,7 @@ import os
 import tempfile
 from contextlib import redirect_stdout
 from functools import partial
+from unittest.mock import AsyncMock, MagicMock
 
 from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
@@ -32,16 +33,25 @@ from covalent.executor.base import BaseAsyncExecutor, _AbstractBaseExecutor
 
 
 class MockExecutor(BaseExecutor):
+    def setup(self, task_metadata):
+        pass
+
     def run(self, function, args, kwargs, task_metadata):
         return function(*args, **kwargs)
 
+    def teardown(self, task_metadata):
+        pass
+
 
 class MockAsyncExecutor(BaseAsyncExecutor):
+    async def setup(self, task_metadata):
+        pass
+
     async def run(self, function, args, kwargs, task_metadata):
         return function(*args, **kwargs)
 
-    def teardown(self):
-        return
+    async def teardown(self, task_metadata):
+        pass
 
 
 def test_write_streams_to_file(mocker):
@@ -372,3 +382,79 @@ def test_async_write_streams_to_file(mocker):
         with open(tmp_file.name) as f:
             lines = f.readlines()
         assert lines[0] == "absolute"
+
+
+def test_executor_setup_teardown_method(mocker):
+    me = MockExecutor()
+    me.setup = MagicMock()
+    me.teardown = MagicMock()
+
+    def f(x, y):
+        return x + y
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    task_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_id": node_id,
+        "results_dir": results_dir,
+    }
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    result, stdout, stderr = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    assert result.get_deserialized() == 5
+    me.setup.assert_called_once_with(task_metadata=task_metadata)
+    me.teardown.assert_called_once_with(task_metadata=task_metadata)
+
+
+def test_async_executor_setup_teardown(mocker):
+    import asyncio
+
+    def f(x, y):
+        return x, y
+
+    me = MockAsyncExecutor()
+    me.setup = AsyncMock()
+    me.run = AsyncMock()
+    me.teardown = AsyncMock()
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    awaitable = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    asyncio.run(awaitable)
+    task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
+    me.run.assert_called_once_with(assembled_callable, args, kwargs, task_metadata)
+    me.setup.assert_called_once_with(task_metadata=task_metadata)
+    me.teardown.assert_called_once_with(task_metadata=task_metadata)
