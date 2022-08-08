@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Venkat Bala <venkat@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 
+
 ### Added
 
 - Adding a `covalent config` convenience CLI to quickly view retrive the covalent configuration
