@@ -137,7 +137,7 @@ def test_warning_when_plugin_name_is_invalid(mocker):
     app_log_mock.warning.assert_called_once()
 
 
-def test_zero_plugin_class_case(mocker):
+def test_zero_plugin_class_else_case(mocker):
     """Test else block when no plugin classes were found"""
     em = _ExecutorManager()
     the_module = MagicMock()
