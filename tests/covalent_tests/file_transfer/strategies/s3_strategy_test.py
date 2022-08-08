@@ -13,6 +13,21 @@ class TestS3Strategy:
     MOCK_LOCAL_FILEPATH = "/Users/user/data.csv"
     MOCK_REMOTE_FILEPATH = "s3://covalent-tmp/data.csv"
 
+    def test_init(self, mocker):
+        # test S3 init fails due to not having boto3
+        with pytest.raises(ImportError):
+            strategy = S3()
+
+        boto3_mock = MagicMock()
+        sys.modules["boto3"] = boto3_mock
+
+        boto3_client_mock = mocker.patch("boto3.client")
+        boto3_client_mock().get_caller_identity().get.return_value = None
+
+        # test failure resolution of aws credentials
+        with pytest.raises(Exception):
+            strategy = S3()
+
     def test_download(self, mocker):
         # validate boto3.client('s3').download_file is called with appropriate arguments
 
