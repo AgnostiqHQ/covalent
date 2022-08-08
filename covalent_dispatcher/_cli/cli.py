@@ -25,8 +25,7 @@
 import click
 
 from .groups import db
-from .service import cluster, logs, purge, restart, start, status, stop
-
+from .service import cluster, logs, purge, restart, start, status, stop, config
 
 # Main entrypoint
 @click.group(invoke_without_command=True)
@@ -58,6 +57,7 @@ cli.add_command(purge)
 cli.add_command(logs)
 cli.add_command(cluster)
 cli.add_command(db)
+cli.add_command(config)
 
 if __name__ == "__main__":
     cli()
