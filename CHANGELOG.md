@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Add `setup/teardown` methods as placeholders for any executor specific setup and teardown tasks
+
 ## [0.166.0] - 2022-08-07
 
 ### Authors
