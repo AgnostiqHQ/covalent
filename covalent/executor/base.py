@@ -275,7 +275,9 @@ class BaseExecutor(_AbstractBaseExecutor):
                 )
 
             else:
+                self.setup(task_metadata=task_metadata)
                 result = self.run(function, args, kwargs, task_metadata)
+                self.teardown(task_metadata=task_metadata)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
@@ -285,6 +287,10 @@ class BaseExecutor(_AbstractBaseExecutor):
         )
 
         return (result, stdout.getvalue(), stderr.getvalue())
+
+    def setup(self, task_metadata: Dict) -> Any:
+        """Placeholder to run any executor specific tasks"""
+        pass
 
     @abstractmethod
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
@@ -303,8 +309,8 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         raise NotImplementedError
 
-    def teardown(self) -> Any:
-        """[Optional] Method to run any executor specific cleanup/teardown actions"""
+    def teardown(self, task_metadata: Dict) -> Any:
+        """Placeholder to run nay executor specific cleanup/teardown actions"""
         pass
 
     def execute_in_conda_env(
@@ -562,7 +568,9 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
         }
 
         with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
+            await self.setup(task_metadata=task_metadata)
             result = await self.run(function, args, kwargs, task_metadata)
+            await self.teardown(task_metadata=task_metadata)
 
         await self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
@@ -573,11 +581,11 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
 
         return (result, stdout.getvalue(), stderr.getvalue())
 
-    async def setup(self):
+    async def setup(self, task_metadata: Dict):
         """Executor specific setup method"""
         pass
 
-    async def teardown(self):
+    async def teardown(self, task_metadata: Dict):
         """Executor specific teardown method"""
         pass
 
