@@ -58,6 +58,8 @@ jobs:
           conda --version
           conda env list
           conda install conda-build conda-verify anaconda-client
+          conda config --append channels conda-forge
+          conda config --show channels
       # - name: Create & activate conda environment
       #   run: |
       #     conda create --name buildenv python=${{ matrix.python-version }}
@@ -65,12 +67,14 @@ jobs:
       #     conda env list
       - name: Build package
         run: |
-          conda build --override-channels --output-folder ./ --python ${{ matrix.python-version }} .
-          conda search -c ./ --override-channels  
-          conda index
-          conda search -c ./ --override-channels  
+          mkdir covalent-channel
+          conda build --output-folder ./covalent-channel/ --python ${{ matrix.python-version }} .
       - name: Install package
         run: |
-          conda install --override-channels -c ./ covalent
+          ls -lha ./covalent-channel/
+          conda search -c ./covalent-channel/ --override-channels  
+          conda index ./covalent-channel/
+          conda search -c ./covalent-channel/ --override-channels  
+          conda install covalent -c ./covalent-channel
       - name: Test package
         run: covalent --version
