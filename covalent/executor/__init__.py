@@ -119,6 +119,17 @@ class _ExecutorManager:
             app_log.error(message)
             raise TypeError
 
+    def _is_plugin_name_valid(self, the_module):
+        """Assert if the plugin variable name is valid"""
+        return (
+            True
+            if (
+                hasattr(the_module, "EXECUTOR_PLUGIN_NAME")
+                or hasattr(the_module, "executor_plugin_name")
+            )
+            else False
+        )
+
     def _populate_executor_map_from_module(self, the_module: Any) -> None:
         """
         Populate the executor map from a module.
@@ -131,10 +142,7 @@ class _ExecutorManager:
             None
         """
 
-        if not (
-            hasattr(the_module, "EXECUTOR_PLUGIN_NAME")
-            or hasattr(the_module, "executor_plugin_name")
-        ):
+        if not self._is_plugin_name_valid(the_module):
             message = f"{the_module.__name__} does not seem to have a well-defined plugin class.\n"
             message += f"Specify the plugin class with 'EXECUTOR_PLUGIN_NAME = <plugin class name>' in the {the_module.__name__} module."
             app_log.warning(message)
@@ -157,13 +165,6 @@ class _ExecutorManager:
             plugin_class = plugin_class[0]
             short_name = the_module.__name__.split("/")[-1].split(".")[-1]
             self.executor_plugins_map[short_name] = plugin_class
-
-            # Check if the module has defined any additional exports
-            plugin_class_exports = []
-            if hasattr(the_module, "EXPORTS"):
-                plugin_class_exports = [c for c in the_module.EXPORTS]
-                if len(plugin_class_exports):
-                    self.executor_plugins_exports_map[short_name] = plugin_class_exports
 
             if hasattr(the_module, "_EXECUTOR_PLUGIN_DEFAULTS"):
                 default_params = {
@@ -255,9 +256,3 @@ _executor_manager = _ExecutorManager()
 for name in _executor_manager.executor_plugins_map:
     plugin_class = _executor_manager.executor_plugins_map[name]
     globals()[plugin_class.__name__] = plugin_class
-    try:
-        plugin_exports = _executor_manager.executor_plugins_exports_map[name]
-        for plugin_export in plugin_exports:
-            globals()[plugin_export.__name__] = plugin_export
-    except KeyError:
-        pass

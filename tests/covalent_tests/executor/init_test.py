@@ -20,6 +20,8 @@
 
 """Tests for Covalent executor init file."""
 
+from unittest.mock import MagicMock
+
 import pytest
 
 from covalent.executor import BaseExecutor, _executor_manager, _ExecutorManager
@@ -120,3 +122,16 @@ def test_load_installed_plugins(mocker):
     em = _ExecutorManager()
     em._load_installed_plugins()
     populate_executor_map_from_module_mock.assert_called()
+
+
+def test_warning_when_plugin_name_is_invalid(mocker):
+    """Test executor plugin name validator"""
+    em = _ExecutorManager()
+    the_module = MagicMock()
+    the_module.__name__ = "test_module"
+    em._is_plugin_name_valid = MagicMock(return_value=False)
+    app_log_mock = mocker.patch("covalent.executor.app_log")
+
+    em._populate_executor_map_from_module(the_module)
+
+    app_log_mock.warning.assert_called_once()
