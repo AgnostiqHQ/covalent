@@ -23,10 +23,10 @@ import argparse
 import os
 from distutils.log import debug
 from pathlib import Path
-import websockets
 
 import simplejson
 import tailer
+import websockets
 from flask import Flask, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
