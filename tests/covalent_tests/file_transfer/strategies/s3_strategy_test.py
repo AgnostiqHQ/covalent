@@ -47,7 +47,6 @@ class TestS3Strategy:
 
         bucket_name = furl(to_file.uri).origin[5:]
 
-
         S3().upload(from_file, to_file)()
 
         boto3_client_mock().upload_file.assert_called_with(

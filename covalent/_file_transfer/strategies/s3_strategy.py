@@ -18,9 +18,10 @@ class S3(FileTransferStrategy):
 
     def __init__(
         self,
-            credentials: str = os.environ.get("AWS_SHARED_CREDENTIALS_FILE") or os.path.join(os.environ["HOME"], ".aws/credentials"),
-            profile: str = os.environ.get("AWS_PROFILE") or None,
-            region_name: str = os.getenv("AWS_REGION") or None,
+        credentials: str = os.environ.get("AWS_SHARED_CREDENTIALS_FILE")
+        or os.path.join(os.environ["HOME"], ".aws/credentials"),
+        profile: str = os.environ.get("AWS_PROFILE") or None,
+        region_name: str = os.getenv("AWS_REGION") or None,
     ):
 
         self.credentials = credentials
@@ -30,7 +31,9 @@ class S3(FileTransferStrategy):
         try:
             import boto3
         except ImportError:
-            raise ImportError("Using S3 strategy requires boto3 from AWS installed on your system.")
+            raise ImportError(
+                "Using S3 strategy requires boto3 from AWS installed on your system."
+            )
 
         os.environ["AWS_SHARED_CREDENTIALS_FILE"] = self.credentials
         if self.profile is not None:
@@ -42,9 +45,7 @@ class S3(FileTransferStrategy):
         account = identity.get("Account")
 
         if account is None:
-            app_log.warning(identity)
             raise Exception("Incorrect AWS account credentials")
-
 
     # return callable to download here implies 'from' is a remote source
     def download(self, from_file: File, to_file: File = File()) -> File:
@@ -54,6 +55,7 @@ class S3(FileTransferStrategy):
 
         def callable():
             import boto3
+
             s3 = boto3.client(
                 "s3",
                 region_name=self.region_name,
@@ -71,6 +73,7 @@ class S3(FileTransferStrategy):
 
         def callable():
             import boto3
+
             s3 = boto3.client(
                 "s3",
                 region_name=self.region_name,
