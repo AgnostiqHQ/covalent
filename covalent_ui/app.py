@@ -21,12 +21,9 @@ from __future__ import annotations
 
 import argparse
 import os
-import signal
-import sys
 from distutils.log import debug
-from logging import Logger
-from logging.handlers import DEFAULT_TCP_LOGGING_PORT
 from pathlib import Path
+import websockets
 
 import simplejson
 import tailer
@@ -36,12 +33,11 @@ from flask_socketio import SocketIO
 
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files import logger
-from covalent._shared_files.config import get_config, set_config, update_config
-from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
-from covalent._shared_files.util_classes import Status
+from covalent._shared_files.config import get_config
 from covalent_dispatcher._db.dispatchdb import DispatchDB, encode_result
 from covalent_dispatcher._service.app import bp
 from covalent_dispatcher._service.app_dask import DaskCluster
+from covalent_dispatcher._service.app_resource_tracker import ResourceTracker
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
@@ -170,6 +166,9 @@ if __name__ == "__main__":
     if not args.no_cluster:
         dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log)
         dask_cluster.start()
+
+    resource_tracker = ResourceTracker(os.getpid(), update_interval=1, logger=app_log)
+    resource_tracker.start()
 
     # Start covalent main app
     socketio.run(app, debug=debug, host="localhost", port=port, use_reloader=reload)
