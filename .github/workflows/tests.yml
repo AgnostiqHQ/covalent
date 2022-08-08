@@ -163,6 +163,7 @@ jobs:
       - name: Install NPM and Yarn on CentOS
         if: >
           (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.build == 'true'
           || steps.working-directory.outputs.ui_frontend == 'true')
            && matrix.container.image == 'centos/python-38-centos7'
         run: |
