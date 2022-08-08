@@ -242,10 +242,10 @@ jobs:
             conda build --output-folder ./covalent-channel/ --python ${{ matrix.python-version }} .
         - name: Convert package
           run: |
+            conda convert --platform all ./covalent-channel/linux-64/*.tar.bz2
             conda search -c ./covalent-channel/ --override-channels  
             conda index ./covalent-channel/
             conda config --show channels
-            conda convert --platform all ./covalent-channel/linux-64/*.tar.bz2
         - name: Upload pre-release
           if: inputs.prerelease
           run: anaconda upload -t ${{ secrets.ANACONDA_TOKEN }} upload -u agnostiq -l beta --skip-existing ./covalent-channel/{linux,osx,win}-*/*.tar.bz2
