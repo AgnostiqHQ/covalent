@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Check for both upper case and lower case module level declarations for the executor plugin names
 ## [0.168.0] - 2022-08-08
 
 ### Authors
