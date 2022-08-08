@@ -45,7 +45,7 @@ from covalent_dispatcher._cli.service import (
     restart,
     start,
     status,
-    stop
+    stop,
 )
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
@@ -331,7 +331,6 @@ def test_config(mocker):
     cfg_read_config_mock.assert_called_once()
     json_dumps_mock.assert_called_once()
     click_echo_mock.assert_called_once()
-
 
 
 @pytest.mark.parametrize("workers", [1, 2, 3, 4])

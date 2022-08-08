@@ -61,5 +61,5 @@ def test_cli_commands():
         "restart",
         "start",
         "status",
-        "stop"
+        "stop",
     ]

@@ -25,7 +25,8 @@
 import click
 
 from .groups import db
-from .service import cluster, logs, purge, restart, start, status, stop, config
+from .service import cluster, config, logs, purge, restart, start, status, stop
+
 
 # Main entrypoint
 @click.group(invoke_without_command=True)
