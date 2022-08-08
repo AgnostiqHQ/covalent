@@ -632,6 +632,21 @@ The following will describe an Rsync file transfer operation over SSH to downloa
     ct.fs.FileTransfer(from_remote_file, to_local_file, strategy=strategy)
 
 
+S3
+~~~~~~~~~~~~
+.. warning:: AWS Python SDK must be installed on an electron’s backend execution environment. It can be installed using :code:`pip install boto3`
+
+If one of the files is a S3 bucket location (s3://repository-name/file-path) S3 strategy will be used. For accessing the S3 bucket necessary credentials (aws_access_key_id, aws_secret_access_key, aws_session_token, region_name) can be passed to it. In case they are not provided default values described in the environment will be used.
+
+The following will perform an S3 file transfer operation to download a remote file and place in the specified local filepath::
+
+    import covalent as ct
+
+    strategy = ct.fs_strategies.S3(aws_access_key_id = '...', aws_secret_access_key = '...', aws_session_token = '...', region_name = '...')
+
+    ct.fs.FileTransfer('s3://covalent-tmp/temp.txt','/home/ubuntu/temp.txt',strategy = strategy)
+
+
 ~~~~~~
 TransferFromRemote
 ~~~~~~
