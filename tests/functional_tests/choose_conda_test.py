@@ -18,26 +18,36 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Unit tests for the DispatchDB."""
-
-import simplejson
+"""
+Integration test for choosing Conda environments within an executor.
+"""
 
 import covalent as ct
-from covalent._results_manager.result import Result
-from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 
-@ct.electron
-def add(a, b):
-    return a + b
+def test_using_current_env() -> None:
+    """Test that the Conda environment can be specified in the executor
+    initialization and used in a simple electron."""
 
+    tmp_executor = ct.executor.LocalExecutor()
+    has_conda = tmp_executor.get_conda_path()
+    if not has_conda:
+        return
 
-@ct.electron
-def identity(a):
-    return a
+    tmp_executor.get_conda_envs()
+    conda_env = tmp_executor.current_env
 
+    executor = ct.executor.LocalExecutor(conda_env=conda_env, current_env_on_conda_fail=True)
 
-@ct.lattice
-def check(a, b):
-    result1 = add(a=a, b=b)
-    return identity(a=result1)
+    @ct.electron(executor=executor)
+    def passthrough(x):
+        return x
+
+    @ct.lattice()
+    def workflow(y):
+        return passthrough(x=y)
+
+    dispatch_id = ct.dispatch(workflow)(y="input")
+    result = ct.get_result(dispatch_id, wait=True)
+
+    assert result.result == "input"

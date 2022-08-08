@@ -25,6 +25,12 @@ on:
   workflow_run:
     workflows: [changelog]
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Commit SHA used for testing"
+        type: string
+        required: true
 
 jobs:
   tests:
@@ -59,9 +65,20 @@ jobs:
       release: ${{ steps.push.outputs.release }}
     steps:
       - name: Check out head
+        if: github.event_name != 'workflow_dispatch'
         uses: actions/checkout@v3
         with:
           persist-credentials: false
+
+      - name: Check out SHA
+        if: >
+          github.event_name == 'workflow_dispatch'
+          && github.event.inputs.commit_sha
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: github.event.inputs.commit_sha
 
       - uses: dorny/paths-filter@v2
         if: github.event_name == 'pull_request'
@@ -78,26 +95,53 @@ jobs:
             - 'tests/covalent_ui_tests/**'
             ui_frontend:
             - 'covalent_ui/webapp/**'
-            
+            build:
+            - 'MANIFEST.in'
+            - 'requirements.txt'
+            - 'setup.py'
+            actions:
+            - '.github/workflows/*.yml'
+            tests:
+            - 'tests/**'
+
       - name: Set up Python
-        if: matrix.os == 'macos-latest'
+        if: >
+          matrix.os == 'macos-latest'
+          && (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.sdk == 'true'
+          || steps.working-directory.outputs.dispatcher == 'true'
+          || steps.working-directory.outputs.build == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true')
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install Python dependencies
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.sdk == 'true'
+          || steps.working-directory.outputs.dispatcher == 'true'
+          || steps.working-directory.outputs.build == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
 
       - name: Install rsync on Ubuntu
         if: >
-          matrix.container == 'python:3.8-buster'
+          (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.sdk == 'true'
+          || steps.working-directory.outputs.dispatcher == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true')
+          && (matrix.container == 'python:3.8-buster'
           || matrix.container == 'python:3.8-bullseye'
           || matrix.container == 'python:3.9-buster'
           || matrix.container == 'python:3.9-bullseye'
           || matrix.container == 'python:3.10-buster'
-          || matrix.container == 'python:3.10-bullseye'
+          || matrix.container == 'python:3.10-bullseye')
         run: apt-get update && apt-get install -y rsync
 
       - name: Install NPM and Yarn on Ubuntu
@@ -141,11 +185,15 @@ jobs:
             yarn build
 
       - name: Build distribution
-        if: github.event_name != 'pull_request'
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.build == 'true'
         run: python setup.py sdist
 
       - name: Validate distribution
-        if: github.event_name != 'pull_request'
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.build == 'true'
         run: |
           VERSION="$(cat ./VERSION)"
           cd dist
@@ -154,21 +202,43 @@ jobs:
           diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
           diff -x README.md -r covalent-${VERSION}/covalent_migrations ../covalent_migrations
           diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
+          rm -rf covalent-${VERSION}/
+
+      - name: Validate webapp
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_frontend == 'true'
+        run: |
+          VERSION="$(cat ./VERSION)"
+          cd dist
+          tar xzf covalent-${VERSION}.tar.gz
           diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf covalent-${VERSION}/
 
       - name: Install Covalent
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.sdk == 'true'
+          || steps.working-directory.outputs.dispatcher == 'true'
+          || steps.working-directory.outputs.build == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
         run: pip install -e .
 
       - name: Start Covalent dispatcher server
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.build == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
         run: covalent start --ignore-migrations
-               
+
       - name: Run SDK tests and measure coverage
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.sdk == 'true'
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
-            
+
       - name: Generate SDK coverage report
         if: >
           github.event_name != 'pull_request'
@@ -180,7 +250,7 @@ jobs:
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.dispatcher == 'true'
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
-      
+
       - name: Generate dispatcher coverage report
         if: >
           github.event_name != 'pull_request'
@@ -188,9 +258,17 @@ jobs:
         run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
-      
+
       - name: Generate functional test coverage report
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
         run: coverage xml -o functional_tests_coverage.xml
 
       - name: Run UI backend tests and measure coverage
@@ -200,10 +278,10 @@ jobs:
           && (github.event_name != 'pull_request'
           || steps.working-directory.outputs.ui_backend == 'true')
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
-      
+
       - name: Generate UI backend coverage report
         continue-on-error: true
-        if: > 
+        if: >
           false
           && (github.event_name != 'pull_request'
           || (steps.working-directory.outputs.ui_backend_tests == 'true'
@@ -215,6 +293,7 @@ jobs:
         if: >
           matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
           && (github.event_name != 'pull_request'
               || steps.working-directory.outputs.sdk == 'true')
         uses: codecov/codecov-action@v3
@@ -227,6 +306,7 @@ jobs:
         if: >
           matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
           && (github.event_name != 'pull_request'
               || steps.working-directory.outputs.dispatcher == 'true')
         uses: codecov/codecov-action@v3
@@ -239,6 +319,10 @@ jobs:
         if: >
           matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && (github.event_name != 'pull_request'
+              || steps.working-directory.outputs.actions == 'true'
+              || steps.working-directory.outputs.tests == 'true')
+          && github.event_name != 'workflow_dispatch'
         uses: codecov/codecov-action@v3
         with:
           files: ./functional_tests_coverage.xml
@@ -250,6 +334,7 @@ jobs:
           false
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
           && (github.event_name != 'pull_request'
               || (steps.working-directory.outputs.ui_backend == 'true'
                   && steps.ui_tests.outputs.exit_code == 0))
@@ -266,6 +351,7 @@ jobs:
           github.ref == 'refs/heads/develop'
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
         with:
           semver_only: true
 
@@ -275,20 +361,21 @@ jobs:
           github.ref == 'refs/heads/develop'
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
         run: |
           MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
           VERSION="$(cat ./VERSION)"
           release=false
           if [ "$MASTER_VERSION" = "$VERSION" ] ; then
             echo "$VERSION has been previously released."
-          elif dpkg --compare-versions $VERSION 'gt' '0.71.0' ; then
+          elif dpkg --compare-versions $VERSION 'gt' '0.110.2' ; then
             git config user.name "CovalentOpsBot"
             git config user.email "covalentopsbot@users.noreply.github.com"
             git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
             git push origin HEAD:master
             release=true
           else
-            echo "We cannot release versions less than 0.71.0."
+            echo "We cannot release versions less than 0.110.2."
           fi
           echo "RELEASE=$release" >> $GITHUB_ENV
           echo "::set-output name=release::$release"
@@ -298,6 +385,7 @@ jobs:
           github.ref == 'refs/heads/develop'
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
         run: |
           VERSION="$(cat ./VERSION)"
           SLACK_MSG=":rocket: Version $VERSION is now available."
@@ -308,6 +396,7 @@ jobs:
           github.ref == 'refs/heads/develop'
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
           && env.RELEASE == 'true'
         uses: rtCamp/action-slack-notify@v2
         env:
@@ -319,6 +408,7 @@ jobs:
       - name: Alert Slack
         if: >
           github.ref == 'ref/heads/develop'
+          && github.event_name != 'workflow_dispatch'
           && failure()
         uses: rtCamp/action-slack-notify@v2
         env:

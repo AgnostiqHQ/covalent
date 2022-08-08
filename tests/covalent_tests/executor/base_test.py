@@ -28,7 +28,7 @@ from functools import partial
 
 from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
-from covalent.executor.base import BaseAsyncExecutor
+from covalent.executor.base import BaseAsyncExecutor, _AbstractBaseExecutor
 
 
 class MockExecutor(BaseExecutor):
@@ -163,6 +163,27 @@ def test_wrapper_fn_calldep_retval_injection():
     output = wrapper_fn(serialized_fn, call_before, [], *args, **kwargs)
 
     assert output.get_deserialized() == 7
+
+
+def test_wrapper_fn_calldep_non_unique_retval_keys_injection():
+    """Test injecting calldep return values into main task"""
+
+    def f(x=0, y=[]):
+        return x + sum(y)
+
+    def identity(y):
+        return y
+
+    serialized_fn = TransportableObject(f)
+    calldep_one = DepsCall(identity, args=[1], retval_keyword="y")
+    calldep_two = DepsCall(identity, args=[2], retval_keyword="y")
+    call_before = [calldep_one.apply(), calldep_two.apply()]
+    args = []
+    kwargs = {"x": TransportableObject(3)}
+
+    output = wrapper_fn(serialized_fn, call_before, [], *args, **kwargs)
+
+    assert output.get_deserialized() == 6
 
 
 def test_base_executor_subclassing():
@@ -310,3 +331,41 @@ def test_base_async_executor_passes_task_metadata(mocker):
     metadata, stdout, stderr = asyncio.run(awaitable)
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
     assert metadata == task_metadata
+
+
+def test_async_write_streams_to_file(mocker):
+    """Test write log streams to file method in BaseAsyncExecutor via LocalExecutor."""
+
+    import asyncio
+
+    me = MockAsyncExecutor()
+
+    # Case 1 - Check that relative log files that are written to are constructed in the results directory that is explicitly passed as an argument.
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_file = "relative.log"
+        write_awaitable = me.write_streams_to_file(
+            stream_strings=["relative"], filepaths=[tmp_file], dispatch_id="", results_dir=tmp_dir
+        )
+        asyncio.run(write_awaitable)
+        assert "relative.log" in os.listdir(tmp_dir)
+
+        with open(f"{tmp_dir}/relative.log") as f:
+            lines = f.readlines()
+        assert lines[0] == "relative"
+
+    # Case 2 - Check that absolute log files that are written to are constructed in the results directory that is explicitly passed as an argument.
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_file = tempfile.NamedTemporaryFile()
+        write_awaitable = me.write_streams_to_file(
+            stream_strings=["absolute"],
+            filepaths=[tmp_file.name],
+            dispatch_id="",
+            results_dir=tmp_dir,
+        )
+        asyncio.run(write_awaitable)
+
+        assert os.path.isfile(tmp_file.name)
+
+        with open(tmp_file.name) as f:
+            lines = f.readlines()
+        assert lines[0] == "absolute"

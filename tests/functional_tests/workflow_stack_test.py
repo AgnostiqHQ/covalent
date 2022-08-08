@@ -31,43 +31,17 @@ from covalent._results_manager.result import Result
 from covalent_dispatcher._core.execution import _dispatch_sublattice
 
 
-@ct.electron
-def add(a, b):
-    return a + b
-
-
-@ct.electron
-def identity(a):
-    return a
-
-
-@ct.lattice
-def check(a, b):
-    result1 = add(a=a, b=b)
-    return identity(a=result1)
-
-
-@ct.lattice
-def check_alt(a, b):
-    result1 = add(a=a, b=b)
-    return identity(a=result1)
-
-
-@ct.electron
-def collect(l_electrons):
-    return l_electrons
-
-
 def construct_temp_cache_dir():
-    try:
-        os.mkdir("/tmp/covalent")
-    except FileExistsError:
-        pass
+    os.makedirs("/tmp/covalent", exist_ok=True)
 
 
 def test_electron_components():
     """Test to see if electron preserves the fact that it works as same function after addition
     of electron"""
+
+    @ct.electron
+    def add(a, b):
+        return a + b
 
     assert add(1, 2) == 3
 
@@ -77,6 +51,19 @@ def test_check_nodes():
     TODO:ultimately we might want to check if the graph's certain attributes are equal to each
     other"""
 
+    @ct.electron
+    def identity(a):
+        return a
+
+    @ct.electron
+    def add(a, b):
+        return a + b
+
+    @ct.lattice
+    def check(a, b):
+        result1 = add(a=a, b=b)
+        return identity(a=result1)
+
     check.build_graph(a=1, b=2)
     assert [0, 1, 2, 3] == list(check.transport_graph._graph.nodes)
 
@@ -85,6 +72,14 @@ def test_electron_takes_nested_iterables():
     """
     Test to check whether electron can take in nested dicts and lists
     """
+
+    @ct.electron
+    def identity(a):
+        return a
+
+    @ct.electron
+    def collect(l_electrons):
+        return l_electrons
 
     @ct.lattice
     def workflow():
@@ -109,6 +104,13 @@ def test_sublatticing():
     and used inside of a bigger lattice.
     """
 
+    def add(a, b):
+        return a + b
+
+    @ct.electron
+    def identity(a):
+        return a
+
     sublattice_add = ct.lattice(add)
 
     @ct.lattice
@@ -128,6 +130,11 @@ def test_sublatticing():
 @pytest.mark.asyncio
 async def test_internal_sublattice_dispatch():
     """Test dispatcher's out-of-process _dispatch_sublattice using a workflow executor"""
+
+    @ct.electron
+    def add(a, b):
+        return a + b
+
     thread_pool = ThreadPoolExecutor()
     sublattice_add = ct.TransportableObject(ct.lattice(add))
     inputs = {}
@@ -310,6 +317,30 @@ def test_electron_deps_inject_calldep_retval():
     assert result_object.result == (2, 5)
 
 
+def test_electron_deps_inject_non_unique_calldep_retvals():
+    def identity(y):
+        return y
+
+    calldep_one = ct.DepsCall(identity, args=[1], retval_keyword="y")
+    calldep_two = ct.DepsCall(identity, args=[2], retval_keyword="y")
+    calldep_three = ct.DepsCall(identity, args=[3], retval_keyword="y")
+
+    @ct.electron(call_before=[calldep_one, calldep_two, calldep_three])
+    def task(y=[]):
+        return y
+
+    @ct.lattice
+    def workflow():
+        return task()
+
+    dispatch_id = ct.dispatch(workflow)()
+
+    result_object = ct.get_result(dispatch_id, wait=True)
+
+    rm._delete_result(dispatch_id)
+    assert result_object.result == [1, 2, 3]
+
+
 def test_electron_deps_pip():
 
     import subprocess
@@ -434,7 +465,6 @@ def test_positional_args_integration():
     assert workflow_result.result == 15
 
 
-@pytest.mark.skip(reason="Need to implement stdout/stderr redirection from dask workers")
 def test_stdout_stderr_redirection():
     """
     Test whether stdout and stderr are redirected correctly.
@@ -455,14 +485,14 @@ def test_stdout_stderr_redirection():
 
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
-    rm._delete_result(dispatch_id)
-
     node_results = workflow_result.get_all_node_results()
     stdout = [nr["stdout"] for nr in node_results if nr["stdout"]][0]
     stderr = [nr["stderr"] for nr in node_results if nr["stderr"]][0]
 
     assert stdout == "1\n"
     assert stderr == "2\n"
+
+    rm._delete_result(dispatch_id)
 
 
 def test_decorated_function():
@@ -499,7 +529,6 @@ def test_leaf_electron_failure():
     @ct.electron
     def failing_task():
         assert False
-        return 1
 
     @ct.lattice
     def workflow():
@@ -520,7 +549,6 @@ def test_intermediate_electron_failure():
     @ct.electron
     def failing_task(x):
         assert False
-        return x
 
     @ct.lattice
     def workflow(x):

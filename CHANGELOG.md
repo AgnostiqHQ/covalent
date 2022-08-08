@@ -15,6 +15,125 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Flask route logic to return 503 when the result is not ready
 
 
+## [0.166.0] - 2022-08-07
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+
+
+### Tests
+
+- Update dask cli test to match Covalent Dask cluster configuration
+
+
+### Changed
+
+- Remove newline from log stream formatter for better log statment output
+- Jsonify covalent cluster cli outputs
+
+## [0.165.0] - 2022-08-06
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Make `BaseExecutor` and `BaseAsyncExecutor` class siblings, not parent and child.
+
+### Operations
+
+- Only validate webapp if the webapp was built
+
+### Tests
+
+- Fixed randomly failing lattice json serialization test
+
+## [0.164.0] - 2022-08-05
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+
+### Changed
+
+- Use `update_config` to modify dask configuration from the cluster process
+- Simplify `set_config` logic for dask configuration options on `covalent start`
+- Removed default values from click options for dask configuration related values
+
+### Added
+
+- Configured default dask configuration options in `defaults.py`
+
+### Fixed 
+
+- Overwriting config address issue.
+
+### Tests
+
+- Moved misplaced functional/integration tests from the unit tests folder to their respective folders.
+- All of the unit tests now use test DB instead of hitting a live DB.
+- Updated `tests.yml` so that functional tests are run whenever tests get changed or github actions are changed.
+- Several broken tests were also fixed.
+
+## [0.163.0] - 2022-08-04
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Added
+
+- Added `rsync` dependency in `Dockerfile`
+
+### Removed
+
+- `Makefile` which was previously improperly committed
+
+### Operations
+
+- Functional tests are run only on `develop`
+- `tests.yml` can be run manually provided a commit SHA
+- `tests.yml` uses a `build` filter to conditionally install and build Covalent if build files are modified
+- `docker.yml` is now only for dev work, and is manually triggered given an SHA
+- `release.yml` is enhanced to push stable and pre-release images to a public ECR repo
+
+## [0.162.0] - 2022-08-04
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Updated Base executor to support non-unique `retval_key`s, particularly for use in File Transfer where we may have several CallDeps with the reserved `retval_key` of value `files`.
+
+## [0.161.2] - 2022-08-04
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Fixed
+
+- Updated `covalent db migrations` to overwrite `alembic.ini` `script_location` with absolute path to migrations folder
+- Updated `covalent db alembic [args]` command to use project root as `cwd` for alembic subprocess  
+
 ## [0.161.1] - 2022-08-03
 
 ### Authors
