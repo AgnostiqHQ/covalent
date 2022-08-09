@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.170.1] - 2022-08-09
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+
+
 ### Fixed
 
 - Remove `attr` import added inadvertently
