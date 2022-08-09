@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Fix `start` cli test, update `set_config` call count
+
 ## [0.170.0] - 2022-08-08
 
 ### Authors
