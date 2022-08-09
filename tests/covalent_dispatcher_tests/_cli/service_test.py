@@ -303,32 +303,13 @@ def test_purge_proceed(hard, mocker):
 
     runner = CliRunner()
     graceful_shutdown_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
-    shutil_rmtree_mock = mocker.patch("covalent_dispatcher._cli.service.shutil.rmtree")
-    purge_config_mock = mocker.patch("covalent_dispatcher._cli.service.cm.purge_config")
-
-    mock_rem_dirs = [
-        mock.call(get_config(dir_name), ignore_errors=True)
-        for dir_name in [
-            "sdk.log_dir",
-            "dispatcher.cache_dir",
-            "dispatcher.log_dir",
-            "user_interface.log_dir",
-        ]
-    ]
 
     if hard:
-        result = runner.invoke(purge, input="y", args="--hard")
-        os_remove_mock = mocker.patch("covalent_dispatcher._cli.service.os.remove")
-        os_remove_mock.assert_has_calls([mock.call(get_config("dispatcher.db_path"))])
+        result = runner.invoke(purge, args="--hard", input="y")
     else:
         result = runner.invoke(purge, input="y")
 
     graceful_shutdown_mock.assert_has_calls([mock.call(UI_PIDFILE)])
-
-    shutil_rmtree_mock.assert_has_calls(mock_rem_dirs)
-
-    purge_config_mock.assert_called_once()
-    assert result.output == "Covalent server files have been purged.\n"
 
 
 @pytest.mark.parametrize("hard", [False, True])
