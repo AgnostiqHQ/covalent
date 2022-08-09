@@ -572,13 +572,18 @@ Furhermore Folders can also be used in file transfer operations::
 
 By default only folder contents are transfered to the destination folder however one can specify to also include the folder in the transfer with :code:`Folder('filepath', include_folder=True)`
 
-To use File Transfers in a covalent workflow a list of :code:`FileTransfer` instances must be specified in an electron's decorator using the :code:`files` keyword argument::
+To use File Transfers in a covalent workflow a list of :code:`FileTransfer` instances must be specified in an electron's decorator using the :code:`files` keyword argument.
+
+Furthermore, a `files` keyword argument also gets injected into the python function decorated by an electron when supplying :code:`FileTransfer` instances in an electron's arguments.
+This `files` kwarg contains a reference to the files corresponding to the source & destination filepaths in a supplied  :code:`FileTransfer` instance in the same order as the file transfers are specified::
+
 
     import covalent as ct
     @ct.electron(
         files=[ct.fs.FileTransfer('/home/ubuntu/src_file', '/home/ubuntu/dest_file')]
     )
-    def my_task():
+    def my_task(files=[]):
+        from_file, to_file = files[0]
         # we can read the destination filepath as the above file transfer is performed prior to electron execution
         with open('/home/ubuntu/dest_file', 'r') as f:
             return f.read()
@@ -590,6 +595,7 @@ To use File Transfers in a covalent workflow a list of :code:`FileTransfer` inst
     # Dispatch the workflow
     dispatch_id = ct.dispatch(file_transfer_workflow)()
 
+.. warning:: As discussed in the next section the `files` keyword argument in the electron decorated python function must always be specified when using :code:`FileTransfer` for the workflow to be constructed successfully.
 
 ~~~~~~
 Strategies
