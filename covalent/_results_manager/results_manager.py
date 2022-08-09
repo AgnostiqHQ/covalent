@@ -27,6 +27,7 @@ from typing import Dict, List, Optional, Union
 
 import cloudpickle as pickle
 import requests
+import wait
 from requests.adapters import HTTPAdapter
 from sqlalchemy.orm import Session
 
@@ -44,13 +45,13 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def get_result(dispatch_id: str, wait: bool = False) -> Result:
+def get_result(dispatch_id: str, wait: bool or wait.Wait = False) -> Result:
     """
     Get the results of a dispatch from a file.
 
     Args:
         dispatch_id: The dispatch id of the result.
-        wait: Whether to wait for the result to be completed/failed, default is False.
+        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait a short amount of time for a result. To wait longer, you may pass `ct.wait.LONG`, `ct.wait.VERY_LONG`, or `ct.wait.EXTREME`. For finer grained control, you may pass, for example, `ct.wait.Wait(50)`, where 50 is the number of times the server will be polled.
 
     Returns:
         The result from the file.
@@ -146,7 +147,7 @@ def result_from(lattice_record: Lattice) -> Result:
 
 def _get_result_from_dispatcher(
     dispatch_id: str,
-    wait: bool = False,
+    wait: bool or wait.Wait = False,
     dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
     status_only: bool = False,
 ) -> Dict:
@@ -156,7 +157,7 @@ def _get_result_from_dispatcher(
 
     Args:
         dispatch_id: The dispatch id of the result.
-        wait: Whether to wait for the result to be completed/failed, default is False.
+        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait a short amount of time for a result. To wait longer, you may pass `ct.wait.LONG`, `ct.wait.VERY_LONG`, or `ct.wait.EXTREME`. For finer grained control, you may pass, for example, `ct.wait.Wait(50)`, where 50 is the number of times the server will be polled.
         status_only: If true, only returns result status, not the full result object, default is False.
         dispatcher: Dispatcher server address, defaults to the address set in covalent.config.
 
@@ -166,13 +167,16 @@ def _get_result_from_dispatcher(
     Raises:
         MissingLatticeRecordError: If the result is not found.
     """
-    adapter = HTTPAdapter(max_retries=5)
+    retries = 5
+    if wait and wait > retries:
+        retries = wait
+    adapter = HTTPAdapter(max_retries=retries)
     http = requests.Session()
     http.mount("http://", adapter)
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
     response = http.get(
         url,
-        params={"wait": wait, "status_only": status_only},
+        params={"wait": bool(wait), "status_only": status_only},
     )
     if response.status_code == 404:
         raise MissingLatticeRecordError
