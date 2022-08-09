@@ -35,6 +35,7 @@ Execution
 - :doc:`How to synchronize lattices <./execution/synchronize_lattice>`
 - :doc:`How to choose an executor for a subtask <./execution/choosing_executors>`
 - :doc:`How to customize the executor <./execution/creating_custom_executors>`
+- :doc:`How to execute a workflow using the AWS Lambda executor <./execution/using_awslambda_executor>`
 ..
   - :doc:`How to cancel a running workflow <./execution/cancel_dispatch>`
 
