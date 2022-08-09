@@ -12,6 +12,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher/_service/app.py`
 - Unit tests written for Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher_tests/_service/app.test.py`
 - Web apis of `covalent_ui` refactored to adhere to v11 DB schema
+- Electron graph mini map has been moved next to controls on the GUI.
+- Lattice status and count of completed & total electrons has been moved to the top of the graph on the GUI.
+- Some of the Flask APIs earlier consumed by the GUI have been deprecated & removed from the code base.
+- APIs exposed by the web app back end have been re-factored to adhere to the new DB schema v10
+
+### Added
+
+- Added count of dispatches by status on the dispatch list section of the GUI.
+- APIs that the GUI consumes have been re-written using FastAPI. This includes re-factoring of older APIs and adding of new APIs.
+
+## [0.170.0] - 2022-08-08
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Changed
+
+- Temporarily allow executor plugin variable name to be either in uppercase or lowercase
+
+## [0.169.0] - 2022-08-08
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- Adding a `covalent config` convenience CLI to quickly view retrive the covalent configuration
+
+## [0.168.0] - 2022-08-08
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- Adding `setup/teardown` methods as placeholders for any executor specific setup and teardown tasks
+
+## [0.167.0] - 2022-08-08
+
+### Authors
+
+- Poojith U Rao <106616820+poojithurao@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- S3 File transfer strategy
+
+### Fixed
+
+- Adding maximum number of retries and timeout parameter to the get result http call.
 
 ## [0.166.0] - 2022-08-07
 
@@ -221,18 +285,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `codecov.yml` added to enable carry-forward flags
 - UI front-end is only built for pull requests when the source changes
 - Packaging is only validated on the `develop` branch
-
-### Added
-
-- Added count of dispatches by status on the dispatch list section of the GUI.
-- APIs that the GUI consumes have been re-written using FastAPI. This includes re-factoring of older APIs and adding of new APIs.
-
-### Changed
-
-- Electron graph mini map has been moved next to controls on the GUI.
-- Lattice status and count of completed & total electrons has been moved to the top of the graph on the GUI.
-- Some of the Flask APIs earlier consumed by the GUI have been deprecated & removed from the code base.
-- APIs exposed by the web app back end have been re-factored to adhere to the new DB schema v10
 
 ## [0.158.0] - 2022-07-29
 

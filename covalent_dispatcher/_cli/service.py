@@ -569,3 +569,10 @@ def cluster(
         loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
         click.echo(f"Cluster scaled to have {scale} workers")
         return
+
+
+@click.command()
+def config() -> None:
+    """Print Covalent's configuration to stdout"""
+    cm.read_config()
+    click.echo(json.dumps(cm.config_data, sort_keys=True, indent=4))
