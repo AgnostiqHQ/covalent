@@ -294,7 +294,6 @@ const ResultsTableToolbar = ({
 
 const StyledTable = styled(Table)(({ theme }) => ({
   // stripe every odd body row except on select and hover
-  // stripe every odd body row except on select and hover
   // [`& .MuiTableBody-root .MuiTableRow-root:nth-of-type(odd):not(.Mui-selected):not(:hover)`]:
   //   {
   //     backgroundColor: theme.palette.background.paper,
