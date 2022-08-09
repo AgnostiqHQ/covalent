@@ -40,6 +40,7 @@ from covalent_dispatcher._cli.service import (
     _read_pid,
     _rm_pid_file,
     cluster,
+    config,
     purge,
     restart,
     start,
@@ -219,8 +220,9 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
     res = runner.invoke(start, cli_args)
 
     if ignore_migrations or not is_migration_pending:
-        graceful_start_mock.assert_called()
-        set_config_mock.assert_called()
+        graceful_start_mock.assert_called_once()
+        assert set_config_mock.call_count == 5
+        # set_config_mock.assert_called_once()
     else:
         assert MIGRATION_COMMAND_MSG in res.output
         assert MIGRATION_WARNING_MSG in res.output
@@ -314,6 +316,22 @@ def test_purge(mocker):
     )
     purge_config_mock.assert_called_once()
     assert result.output == "Covalent server files have been purged.\n"
+
+
+def test_config(mocker):
+    """Test covalent config cli"""
+    from covalent._shared_files.config import _config_manager as cm
+
+    cfg_read_config_mock = mocker.patch("covalent_dispatcher._cli.service.cm.read_config")
+    json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
+    click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
+
+    runner = CliRunner()
+    runner.invoke(config)
+
+    cfg_read_config_mock.assert_called_once()
+    json_dumps_mock.assert_called_once()
+    click_echo_mock.assert_called_once()
 
 
 @pytest.mark.parametrize("workers", [1, 2, 3, 4])

@@ -15,6 +15,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Flask route logic to return 503 when the result is not ready
 
 
+### Tests
+
+- Fix `start` cli test, update `set_config` call count
+
+## [0.170.0] - 2022-08-08
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Changed
+
+- Temporarily allow executor plugin variable name to be either in uppercase or lowercase
+
+## [0.169.0] - 2022-08-08
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- Adding a `covalent config` convenience CLI to quickly view retrive the covalent configuration
+
+## [0.168.0] - 2022-08-08
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- Adding `setup/teardown` methods as placeholders for any executor specific setup and teardown tasks
+
+## [0.167.0] - 2022-08-08
+
+### Authors
+
+- Poojith U Rao <106616820+poojithurao@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- S3 File transfer strategy
+
+### Fixed
+
+- Adding maximum number of retries and timeout parameter to the get result http call.
+
 ## [0.166.0] - 2022-08-07
 
 ### Authors
