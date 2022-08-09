@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Remove `attr` import added inadvertently
+
 ### Tests
 
 - Fix `start` cli test, update `set_config` call count
