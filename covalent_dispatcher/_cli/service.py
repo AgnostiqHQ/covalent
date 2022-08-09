@@ -388,11 +388,19 @@ def status() -> None:
 
 
 @click.command()
-@click.option("-H", "--hard", is_flag=True, help="Perform a hard purge, deleting the DB as well")
-@click.option("-y", "--yes", is_flag=True, help="Approve without showing the warning")
+@click.option(
+    "-H",
+    "--hard",
+    is_flag=True,
+    show_default=True,
+    help="Perform a hard purge, deleting the DB as well",
+)
+@click.option(
+    "-y", "--yes", is_flag=True, show_default=True, help="Approve without showing the warning"
+)
 def purge(hard: bool, yes: bool) -> None:
     """
-    Shuts down the server, deletes the cache, the logs, the config settings and if desired, the database.
+    Purge Covalent from this system. This command is for developers.
     """
 
     removal_list = {
@@ -416,14 +424,14 @@ def purge(hard: bool, yes: bool) -> None:
 
         for i, rem_path in enumerate(removal_list, start=2):
             if os.path.isfile(rem_path):
-                click.echo(f"{i}. {rem_path} file will be DELETED")
+                click.echo(f"{i}. {rem_path} file will be deleted.")
             else:
-                click.echo(f"{i}. {rem_path} directory will be DELETED")
+                click.echo(f"{i}. {rem_path} directory will be deleted.")
 
         if hard:
-            click.secho("Please make sure you are OK WITH THE DATABASE BEING DELETED.", fg="red")
+            click.secho("WARNING: All user data will be deleted.", fg="red")
 
-        click.confirm("\nWould you still like to proceed?", abort=True)
+        click.confirm("\nWould you like to proceed?", abort=True)
 
     # Shutdown covalent server
     _graceful_shutdown(UI_PIDFILE)
@@ -453,7 +461,7 @@ def logs() -> None:
                 click.echo(line.rstrip("\n"))
                 line = f.readline()
     else:
-        click.echo(f"{UI_LOGFILE} not found!. Server possibly purged!")
+        click.echo(f"{UI_LOGFILE} not found. Restart the server to create a new log file.")
 
 
 # Cluster CLI handlers (client side wrappers for the async handlers exposed
