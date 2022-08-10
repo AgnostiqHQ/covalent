@@ -29,6 +29,7 @@ import urllib3
 from requests.exceptions import HTTPError
 
 from covalent._data_store.models import Lattice
+from covalent._results_manager import wait
 from covalent._results_manager.results_manager import _get_result_from_dispatcher, result_from
 from covalent._shared_files.config import get_config
 
@@ -70,21 +71,24 @@ def test_result_from(lattice_record, mocker):
 def test_get_result_from_dispatcher(mocker):
     retries = 10
     getconn_mock = mocker.patch("urllib3.connectionpool.HTTPConnectionPool._get_conn")
+    mocker.patch("requests.Response.json", return_value=True)
     headers = HTTPMessage()
     headers.add_header("Retry-After", "2")
-    getconn_mock.return_value.getresponse.side_effect = [Mock(status=503, msg=headers)] * retries
+
+    mock_response = [Mock(status=503, msg=headers)] * (retries - 1)
+    mock_response.append(Mock(status=200, msg=HTTPMessage()))
+    getconn_mock.return_value.getresponse.side_effect = mock_response
     dispatch_id = "9d1b308b-4763-4990-ae7f-6a6e36d35893"
     dispatcher = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-    with pytest.raises(HTTPError):
-        _get_result_from_dispatcher(
-            dispatch_id, wait=True, dispatcher=dispatcher, status_only=False
-        )
+    _get_result_from_dispatcher(
+        dispatch_id, wait=wait.LONG, dispatcher=dispatcher, status_only=False
+    )
     assert (
         getconn_mock.return_value.request.mock_calls
         == [
             call(
                 "GET",
-                f"http://{dispatcher}/api/result/{dispatch_id}?wait=True&status_only=False",
+                f"/api/result/{dispatch_id}?wait=True&status_only=False",
                 body=None,
                 headers=ANY,
             ),

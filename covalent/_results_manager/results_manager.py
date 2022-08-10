@@ -27,7 +27,6 @@ from typing import Dict, List, Optional, Union
 
 import cloudpickle as pickle
 import requests
-import wait
 from requests.adapters import HTTPAdapter
 from sqlalchemy.orm import Session
 from urllib3.util import Retry
@@ -39,6 +38,7 @@ from .._data_store.datastore import DataStore
 from .._data_store.models import Lattice
 from .._shared_files import logger
 from .._shared_files.config import get_config
+from . import wait
 from .result import Result
 from .write_result_to_db import MissingLatticeRecordError, load_file
 
@@ -169,15 +169,15 @@ def _get_result_from_dispatcher(
         MissingLatticeRecordError: If the result is not found.
     """
     retries = 5
-    if wait and wait > retries:
-        retries = wait
+    if wait and int(wait) > retries:
+        retries = int(wait)
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
     response = http.get(
         url,
-        params={"wait": bool(wait), "status_only": status_only},
+        params={"wait": bool(int(wait)), "status_only": status_only},
     )
     if response.status_code == 404:
         raise MissingLatticeRecordError
