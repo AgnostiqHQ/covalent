@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Re-structured the docs
+- Adding the RTD for the `AWSBatchExecutor`
 
 ## [0.170.1] - 2022-08-09
 
