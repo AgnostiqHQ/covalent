@@ -107,10 +107,10 @@ def get_result(
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
         status = lattice_record.status if lattice_record else None
         if not lattice_record:
-            return (
-                jsonify({"message": f"The requested dispatch ID {dispatch_id} was not found."}),
-                404,
-            )
+            return JSONResponse(
+                    status_code=404,
+                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+                )
         if not wait or status in [
             str(Result.COMPLETED),
             str(Result.FAILED),
@@ -126,13 +126,13 @@ def get_result(
                 output["result"] = codecs.encode(
                     pickle.dumps(result_from(lattice_record)), "base64"
                 ).decode()
-            return jsonify(output)
+            return output
 
-        response = make_response(
-            jsonify(
-                {"message": "Result not ready to read yet. Please wait for a couple of seconds."}
-            ),
-            503,
-        )
+        response = JSONResponse(
+                status_code=503,
+                content={
+                    "message": "Result not ready to read yet. Please wait for a couple of seconds."
+                },
+            )
         response.retry_after = 2
         return response
