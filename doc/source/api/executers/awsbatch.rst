@@ -3,6 +3,8 @@
 🔌 AWS Batch Executor
 """""""""""""""""""""""""""
 
+.. image:: AWS_Batch.jpg
+
 With this executor, users can execute tasks (electrons) or entire lattices using the AWS Batch compute service.
 This executor plugin is well suited for compute/memory intensive tasks such as training machine learning models,
 hyperparameter optimization, deep learning etc. With this executor, the compute backend is the Amazon EC2 service,
@@ -14,83 +16,85 @@ configured so that the executor has the necessary permissions to interact with t
 
 The following JSON policy document lists the necessary IAM permissions required by the executor
 
-.. code:: json
+.. dropdown:: AWS Batch IAM policy
 
-    {
-    "Version": "2012-10-17",
-    "Statement": [
+    .. code:: json
+
         {
-            "Sid": "BatchJobMgmt",
-            "Effect": "Allow",
-            "Action": [
-                "batch:TerminateJob",
-                "batch:DescribeJobs",
-                "batch:SubmitJob",
-                "batch:RegisterJobDefinition"
-            ],
-            "Resource": "*"
-        },
-        {
-            "Sid": "ECRAuth",
-            "Effect": "Allow",
-            "Action": [
-                "ecr:GetAuthorizationToken"
-            ],
-            "Resource": "*"
-        },
-        {
-            "Sid": "ECRUpload",
-            "Effect": "Allow",
-            "Action": [
-                "ecr:GetDownloadUrlForLayer",
-                "ecr:BatchGetImage",
-                "ecr:BatchCheckLayerAvailability",
-                "ecr:InitiateLayerUpload",
-                "ecr:UploadLayerPart",
-                "ecr:CompleteLayerUpload",
-                "ecr:PutImage"
-            ],
-            "Resource": [
-                "arn:aws:ecr:<region>:<account>:repository/<ecr_repo_name>"
-            ]
-        },
-        {
-            "Sid": "IAMRoles",
-            "Effect": "Allow",
-            "Action": [
-                "iam:GetRole",
-                "iam:PassRole"
-            ],
-            "Resource": [
-                "arn:aws:iam::<account>:role/CovalentBatchJobRole",
-                "arn:aws:iam::<account>:role/ecsTaskExecutionRole"
-            ]
-        },
-        {
-            "Sid": "ObjectStore",
-            "Effect": "Allow",
-            "Action": [
-                "s3:ListBucket",
-                "s3:PutObject",
-                "s3:GetObject"
-            ],
-            "Resource": [
-                "arn:aws:s3:::<s3_resource_bucket>/*",
-                "arn:aws:s3:::<s3_resource_bucket>"
-            ]
-        },
-        {
-            "Sid": "LogRead",
-            "Effect": "Allow",
-            "Action": [
-                "logs:GetLogEvents"
-            ],
-            "Resource": [
-                "arn:aws:logs:<region>:<account>:log-group:<cloudwatch_log_group_name>:log-stream:*"
-            ]
-        }
-    ]
-}
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "BatchJobMgmt",
+                "Effect": "Allow",
+                "Action": [
+                    "batch:TerminateJob",
+                    "batch:DescribeJobs",
+                    "batch:SubmitJob",
+                    "batch:RegisterJobDefinition"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Sid": "ECRAuth",
+                "Effect": "Allow",
+                "Action": [
+                    "ecr:GetAuthorizationToken"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Sid": "ECRUpload",
+                "Effect": "Allow",
+                "Action": [
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:BatchGetImage",
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:InitiateLayerUpload",
+                    "ecr:UploadLayerPart",
+                    "ecr:CompleteLayerUpload",
+                    "ecr:PutImage"
+                ],
+                "Resource": [
+                    "arn:aws:ecr:<region>:<account>:repository/<ecr_repo_name>"
+                ]
+            },
+            {
+                "Sid": "IAMRoles",
+                "Effect": "Allow",
+                "Action": [
+                    "iam:GetRole",
+                    "iam:PassRole"
+                ],
+                "Resource": [
+                    "arn:aws:iam::<account>:role/CovalentBatchJobRole",
+                    "arn:aws:iam::<account>:role/ecsTaskExecutionRole"
+                ]
+            },
+            {
+                "Sid": "ObjectStore",
+                "Effect": "Allow",
+                "Action": [
+                    "s3:ListBucket",
+                    "s3:PutObject",
+                    "s3:GetObject"
+                ],
+                "Resource": [
+                    "arn:aws:s3:::<s3_resource_bucket>/*",
+                    "arn:aws:s3:::<s3_resource_bucket>"
+                ]
+            },
+            {
+                "Sid": "LogRead",
+                "Effect": "Allow",
+                "Action": [
+                    "logs:GetLogEvents"
+                ],
+                "Resource": [
+                    "arn:aws:logs:<region>:<account>:log-group:<cloudwatch_log_group_name>:log-stream:*"
+                ]
+            }
+        ]
+    }
 
 
 This executor builds a docker image locally on the user's machine with the function to be exected baked inside the image
