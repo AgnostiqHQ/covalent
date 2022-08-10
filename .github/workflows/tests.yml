@@ -266,7 +266,7 @@ jobs:
 
       - name: Print covalent logs
         if: always()
-        run: covalent logs | grep -C 10 shutdown
+        run: covalent logs
 
       - name: Generate functional test coverage report
         if: >
