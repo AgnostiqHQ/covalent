@@ -392,11 +392,10 @@ def status() -> None:
     "-H",
     "--hard",
     is_flag=True,
-    show_default=True,
-    help="Perform a hard purge, deleting the DB as well",
+    help="Perform a hard purge, deleting the DB as well. [default: False]",
 )
 @click.option(
-    "-y", "--yes", is_flag=True, show_default=True, help="Approve without showing the warning"
+    "-y", "--yes", is_flag=True, help="Approve without showing the warning. [default: False]"
 )
 def purge(hard: bool, yes: bool) -> None:
     """
