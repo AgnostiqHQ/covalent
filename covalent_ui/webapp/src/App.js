@@ -29,10 +29,10 @@ import {
   useLocation
 } from 'react-router-dom'
 import './App.css'
-import Dashboard from './components/Dashboard'
+import Dashboard from './components/dashboard/Dashboard'
 import socket from './utils/socket'
-import { fetchResult } from './redux/resultsSlice'
 import { setLattice } from './redux/latticePreviewSlice'
+import { socketAPI } from './redux/commonSlice'
 import theme from './utils/theme'
 import { ReactFlowProvider } from 'react-flow-renderer'
 import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
@@ -42,31 +42,25 @@ import { differenceInSeconds } from 'date-fns'
 const App = () => {
   const dispatch = useDispatch()
   const pathName = useLocation();
+
   useEffect(() => {
     let lastCalledOn = null;
     var onUpdate = (update) => {
       let canCallAPI = false;
-      if (lastCalledOn) {
+      if (pathName.pathname === '/' || (pathName.pathname !== '/' && pathName.pathname === `/${update.result.dispatch_id}`)) {
         let currentTime = new Date()
         let compareTime = new Date(lastCalledOn)
         const diffInSec = differenceInSeconds(currentTime, compareTime)
-        if (diffInSec >= 3) {
-          if (pathName.pathname === '/' || (pathName.pathname !== '/' && pathName.pathname === `/${update.result.dispatch_id}`)) {
-            canCallAPI = true;
-          }
+        if (diffInSec >= 3 || update.result.status !== 'RUNNING') {
+          canCallAPI = true;
         } else {
           canCallAPI = false;
         }
-      } else {
-        canCallAPI = true;
       }
-      if (canCallAPI || update.result.status === 'COMPLETED') {
+      if (canCallAPI) {
         lastCalledOn = new Date();
         dispatch(
-          fetchResult({
-            dispatchId: update.result.dispatch_id,
-            resultsDir: update.result.results_dir,
-          })
+          socketAPI()
         )
       }
     }
@@ -76,6 +70,8 @@ const App = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathName])
+
+
   useEffect(() => {
     const onDrawRequest = (request) => {
       dispatch(setLattice(request.payload))
