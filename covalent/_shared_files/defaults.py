@@ -23,6 +23,8 @@
 import os
 from configparser import ConfigParser
 
+import dask.system
+
 prefix_separator = ":"
 
 parameter_prefix = f"{prefix_separator}parameter{prefix_separator}"
@@ -49,34 +51,35 @@ _DEFAULT_CONFIG = {
         + "/covalent/executor_plugins",
     },
     "dispatcher": {
-        "address": "0.0.0.0",
+        "address": "localhost",
         "port": 48008,
         "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
         "results_dir": os.environ.get("COVALENT_RESULTS_DIR", "results"),
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
+        "db_path": (os.environ.get("XDG_DATA_HOME"))
+        or (os.environ["HOME"] + "/.local/share") + "/covalent/dispatcher_db.sqlite",
     },
     "dask": {
         "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
+        "mem_per_worker": "auto",
+        "threads_per_worker": 1,
+        "num_workers": dask.system.CPU_COUNT,
     },
     "workflow_data": {
-        "db_path": (os.environ.get("XDG_DATA_HOME"))
-        or (os.environ["HOME"] + "/.local/share") + "/covalent/workflow_db.sqlite",
         "storage_type": "local",
         "base_dir": (os.environ.get("XDG_DATA_HOME"))
         or (os.environ["HOME"] + "/.local/share") + "/covalent/workflow_data",
     },
     "user_interface": {
-        "address": "0.0.0.0",
+        "address": "localhost",
         "port": 48008,
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
-        "dispatch_db": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
-        + "/covalent/dispatch_db.sqlite",
     },
 }
 
@@ -112,6 +115,7 @@ _DEFAULT_CONSTRAINT_VALUES = set_executor()
 _DEFAULT_CONSTRAINT_VALUES["deps"] = {}
 _DEFAULT_CONSTRAINT_VALUES["call_before"] = []
 _DEFAULT_CONSTRAINT_VALUES["call_after"] = []
+_DEFAULT_CONSTRAINT_VALUES["workflow_executor"] = _DEFAULT_CONSTRAINT_VALUES["executor"]
 
 _DEFAULT_CONSTRAINTS_DEPRECATED = {
     "schedule": False,
@@ -126,3 +130,5 @@ _DEFAULT_CONSTRAINTS_DEPRECATED = {
     "budget": 0,
     "conda_env": "",
 }
+
+WAIT_EDGE_NAME = "!waiting_edge"

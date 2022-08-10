@@ -37,9 +37,9 @@ Covalent is a Pythonic distributed workflow tool used to prototype and run high 
 - run software in heterogeneous compute environments, including in hybrid-cloud and hybrid-quantum configurations
 - understand where time and money is spent across a project
 
-|
+.. |
 
-.. raw:: html
+.. .. raw:: html
 
    <div style="position: relative; padding-bottom: 56.25%; padding-top: 30px; height: 0; overflow: hidden; margin-bottom: -15px">
 

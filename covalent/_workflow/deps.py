@@ -34,12 +34,13 @@ class Deps(ABC):
 
     """
 
-    def __init__(self, apply_fn=None, apply_args=[], apply_kwargs={}):
+    def __init__(self, apply_fn=None, apply_args=[], apply_kwargs={}, *, retval_keyword=""):
         self.apply_fn = TransportableObject(apply_fn)
         self.apply_args = TransportableObject(apply_args)
         self.apply_kwargs = TransportableObject(apply_kwargs)
+        self.retval_keyword = retval_keyword
 
-    def apply(self) -> Tuple[TransportableObject, TransportableObject, TransportableObject]:
+    def apply(self) -> Tuple[TransportableObject, TransportableObject, TransportableObject, str]:
         """
         Encapsulates the exact function and args/kwargs to be executed in the backend environment.
 
@@ -49,4 +50,15 @@ class Deps(ABC):
         Returns:
             A tuple of transportable objects containing the function and optional args/kwargs
         """
-        return (self.apply_fn, self.apply_args, self.apply_kwargs)
+        return (self.apply_fn, self.apply_args, self.apply_kwargs, self.retval_keyword)
+
+    def short_name(self):
+        return self.__module__.split("/")[-1].split(".")[-1]
+
+    @abstractmethod
+    def to_dict(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def from_dict(self, object_dict):
+        raise NotImplementedError

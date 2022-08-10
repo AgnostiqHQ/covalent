@@ -23,7 +23,7 @@
 import inspect
 import operator
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Union
 
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
@@ -31,20 +31,22 @@ from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     _DEFAULT_CONSTRAINT_VALUES,
-    arg_prefix,
+    WAIT_EDGE_NAME,
     attr_prefix,
     electron_dict_prefix,
     electron_list_prefix,
     generator_prefix,
     parameter_prefix,
+    prefix_separator,
     sublattice_prefix,
     subscript_prefix,
 )
 from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
-from .depscall import DepsCall
+from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
 from .lattice import Lattice
+from .transport import TransportableObject
 
 consumable_constraints = ["budget", "time_limit"]
 
@@ -225,25 +227,22 @@ class Electron:
         for i in range(expected_unpack_values):
             if active_lattice := active_lattice_manager.get_active_lattice():
                 try:
-                    node_name = generator_prefix + self.function.__name__ + "()" + f"[{i}]"
+                    node_name = prefix_separator + self.function.__name__ + "()" + f"[{i}]"
 
                 except AttributeError:
                     # The case when nested iter calls are made on the same electron
-                    node_name = generator_prefix + active_lattice.transport_graph.get_node_value(
+                    node_name = prefix_separator + active_lattice.transport_graph.get_node_value(
                         self.node_id, "name"
                     )
                     node_name += f"[{i}]"
 
-                node_id = active_lattice.transport_graph.add_node(
-                    name=node_name,
-                    function=None,
-                    metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                    key=i,
-                )
+                def get_item(e, key):
+                    return e[key]
 
-                active_lattice.transport_graph.add_edge(self.node_id, node_id, f"[{i}]")
+                get_item.__name__ = node_name
 
-                yield Electron(function=None, node_id=node_id, metadata=None)
+                get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
+                yield get_item_electron(self, i)
 
     def __getattr__(self, attr: str) -> "Electron":
         # This is to handle the cases where magic functions are attempted
@@ -260,49 +259,27 @@ class Electron:
             )
 
         if active_lattice := active_lattice_manager.get_active_lattice():
-            try:
-                node_name = attr_prefix + self.function.__name__ + "." + attr
-            except AttributeError:
-                node_name = attr_prefix + active_lattice.transport_graph.get_node_value(
-                    self.node_id, "name"
-                )
-                node_name += f".{attr}"
 
-            node_id = active_lattice.transport_graph.add_node(
-                name=node_name,
-                function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                attribute_name=attr,
-            )
+            def get_attr(e, attr):
+                return getattr(e, attr)
 
-            active_lattice.transport_graph.add_edge(self.node_id, node_id, f".{attr}")
-
-            return Electron(function=None, node_id=node_id, metadata=None)
+            get_attr.__name__ = prefix_separator + self.function.__name__ + ".__getattr__"
+            get_attr_electron = Electron(function=get_attr, metadata=self.metadata.copy())
+            return get_attr_electron(self, attr)
 
         return super().__getattr__(attr)
 
     def __getitem__(self, key: Union[int, str]) -> "Electron":
 
         if active_lattice := active_lattice_manager.get_active_lattice():
-            try:
-                node_name = subscript_prefix + self.function.__name__ + "()" + f"[{key}]"
-            except AttributeError:
-                # Nested subscripting calls are made on the same electron
-                node_name = subscript_prefix + active_lattice.transport_graph.get_node_value(
-                    self.node_id, "name"
-                )
-                node_name += f"[{key}]"
 
-            node_id = active_lattice.transport_graph.add_node(
-                name=node_name,
-                function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                key=key,
-            )
+            def get_item(e, key):
+                return e[key]
 
-            active_lattice.transport_graph.add_edge(self.node_id, node_id, f"[{key}]")
+            get_item.__name__ = prefix_separator + self.function.__name__ + ".__getitem__"
 
-            return Electron(function=None, node_id=node_id, metadata=None)
+            get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
+            return get_item_electron(self, key)
 
         raise StopIteration
 
@@ -327,7 +304,16 @@ class Electron:
             return self.function(*args, **kwargs)
 
         if active_lattice.post_processing:
-            return active_lattice.electron_outputs.pop(0)
+
+            # This is to resolve `wait_for` calls during post processing time
+            id, output = active_lattice.electron_outputs[0]
+
+            for _, _, attr in active_lattice.transport_graph._graph.in_edges(id, data=True):
+                if attr.get("wait_for"):
+                    return Electron(function=None, metadata=None, node_id=id)
+
+            active_lattice.electron_outputs.pop(0)
+            return output.get_deserialized()
 
         # Setting metadata for default values according to lattice's metadata
         # If metadata is default, then set it to lattice's default
@@ -361,7 +347,16 @@ class Electron:
                 )
 
             # For keyword arguments
+            # Filter out kwargs to be injected by call_before calldeps at execution
+            call_before = self.metadata["call_before"]
+            retval_keywords = {item.retval_keyword: None for item in call_before}
             for key, value in named_kwargs.items():
+                if key in retval_keywords:
+                    app_log.debug(
+                        f"kwarg {key} for function {self.function.__name__} to be injected at runtime"
+                    )
+                    continue
+
                 self.connect_node_with_others(
                     self.node_id, key, value, "kwarg", None, active_lattice.transport_graph
                 )
@@ -407,9 +402,9 @@ class Electron:
         elif isinstance(param_value, list):
             list_node = self.add_collection_node_to_graph(transport_graph, electron_list_prefix)
 
-            for v in param_value:
+            for index, v in enumerate(param_value):
                 self.connect_node_with_others(
-                    list_node, param_name, v, "kwarg", None, transport_graph
+                    list_node, param_name, v, "kwarg", index, transport_graph
                 )
 
             transport_graph.add_edge(
@@ -436,11 +431,12 @@ class Electron:
 
         else:
 
+            encoded_param_value = TransportableObject.make_transportable(param_value)
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
                 metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-                value=param_value,
+                value=encoded_param_value,
             )
             transport_graph.add_edge(
                 parameter_node,
@@ -464,18 +460,58 @@ class Electron:
             node_id: Node id of the added node
         """
 
-        @electron
-        def to_electron_collection(**x):
-            return list(x.values())[0]
+        new_metadata = _DEFAULT_CONSTRAINT_VALUES.copy()
+        if "executor" in self.metadata:
+            new_metadata["executor"] = self.metadata["executor"]
 
         node_id = graph.add_node(
             name=prefix,
-            function=to_electron_collection,
-            metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
-            function_string=get_serialized_function_str(to_electron_collection),
+            function=to_decoded_electron_collection,
+            metadata=new_metadata,
+            function_string=get_serialized_function_str(to_decoded_electron_collection),
         )
 
         return node_id
+
+    def wait_for(self, electrons: Union["Electron", Iterable["Electron"]]):
+        """
+        Waits for the given electrons to complete before executing this one.
+        Adds the necessary edges between this and those electrons without explicitly
+        connecting their inputs/outputs.
+
+        Useful when execution of this electron relies on a side-effect from the another one.
+
+        Args:
+            electrons: Electron(s) which will be waited for to complete execution
+                       before starting execution for this one
+
+        Returns:
+            Electron
+        """
+
+        active_lattice = active_lattice_manager.get_active_lattice()
+
+        if active_lattice.post_processing:
+            return active_lattice.electron_outputs.pop(0)[1]
+
+        # Just using list(electrons) will not work since we are overriding the __iter__
+        # method for an Electron which results in it essentially disappearing, thus using
+        # [electrons] to create the list if there's a single electron
+        electrons = [electrons] if isinstance(electrons, Electron) else list(electrons)
+
+        for el in electrons:
+            active_lattice.transport_graph.add_edge(
+                el.node_id,
+                self.node_id,
+                edge_name=WAIT_EDGE_NAME,
+                wait_for=True,
+            )
+
+        return Electron(
+            self.function,
+            metadata=self.metadata,
+            node_id=self.node_id,
+        )
 
 
 def electron(
@@ -499,7 +535,7 @@ def electron(
 
     Keyword Args:
         backend: DEPRECATED: Same as `executor`.
-        executor: Alternative executor object to be used by the electron execution. If not passed, the local
+        executor: Alternative executor object to be used by the electron execution. If not passed, the dask
             executor is used by default.
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
@@ -529,11 +565,21 @@ def electron(
     internal_call_after_deps = []
 
     for file_transfer in files:
-        _callback_ = file_transfer.cp()
+        _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
+
+        # pre-file transfer hook to create any necessary temporary files
+        internal_call_before_deps.append(
+            DepsCall(
+                _file_transfer_pre_hook_,
+                retval_keyword=RESERVED_RETVAL_KEY__FILES,
+                override_reserved_retval_keys=True,
+            )
+        )
+
         if file_transfer.order == Order.AFTER:
-            internal_call_after_deps.append(DepsCall(_callback_))
+            internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
         else:
-            internal_call_before_deps.append(DepsCall(_callback_))
+            internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
 
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
@@ -571,3 +617,36 @@ def electron(
         return decorator_electron
     else:  # decorator is called without arguments
         return decorator_electron(_func)
+
+
+def wait(child, parents):
+    """Instructs Covalent that an electron should wait for some other
+    tasks to complete before it is dispatched.
+
+    Args:
+        child: the dependent electron
+        parents: Electron(s) which must complete before `waiting_electron` starts
+
+    Returns:
+        waiting_electron
+
+    Useful when execution of an electron relies on a side-effect
+    from another one.
+
+    """
+    active_lattice = active_lattice_manager.get_active_lattice()
+
+    if active_lattice:
+        return child.wait_for(parents)
+    else:
+        return child
+
+
+@electron
+def to_decoded_electron_collection(**x):
+    """Interchanges order of serialize -> collection"""
+    collection = list(x.values())[0]
+    if isinstance(collection, list):
+        return TransportableObject.deserialize_list(collection)
+    elif isinstance(collection, dict):
+        return TransportableObject.deserialize_dict(collection)

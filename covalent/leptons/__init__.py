@@ -17,3 +17,7 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+
+"""Lepton wrappers."""
+
+from .._workflow.lepton import bash

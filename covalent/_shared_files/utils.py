@@ -106,9 +106,9 @@ def get_serialized_function_str(function):
 
     input_function = function
     # If a Lattice or electron object was passed as the function input, we need the
-    # underlying function describing the lattice.
+    # (deserialized) underlying function describing the lattice.
     while hasattr(input_function, "workflow_function"):
-        input_function = input_function.workflow_function
+        input_function = input_function.workflow_function.get_deserialized()
 
     try:
         # function_str is the string representation of one function, with decorators, if any.
@@ -197,3 +197,7 @@ def get_named_params(func, args, kwargs):
                     named_kwargs[key] = value
 
     return (named_args, named_kwargs)
+
+
+# Dictionary to map Dask clients to their scheduler addresses
+_address_client_mapper = {}

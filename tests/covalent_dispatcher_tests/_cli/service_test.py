@@ -21,13 +21,17 @@
 """Tests for Covalent command line interface (CLI) Tool."""
 
 import tempfile
+from unittest.mock import Mock
 
 import mock
 import pytest
 from click.testing import CliRunner
 from psutil import pid_exists
 
+from covalent._data_store.datastore import DataStore
 from covalent_dispatcher._cli.service import (
+    MIGRATION_COMMAND_MSG,
+    MIGRATION_WARNING_MSG,
     _graceful_shutdown,
     _graceful_start,
     _is_server_running,
@@ -36,6 +40,8 @@ from covalent_dispatcher._cli.service import (
     _read_pid,
     _rm_pid_file,
     cluster,
+    config,
+    migrate_legacy_result_object,
     purge,
     restart,
     start,
@@ -44,7 +50,7 @@ from covalent_dispatcher._cli.service import (
 )
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
-RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://0.0.0.0:42.\n"
+RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://localhost:42.\n"
 
 
 def test_read_pid_nonexistent_file():
@@ -184,7 +190,11 @@ def test_graceful_shutdown_stopped_server(mocker):
     assert not process_mock.called
 
 
-def test_start(mocker, monkeypatch):
+@pytest.mark.parametrize(
+    "is_migration_pending, ignore_migrations",
+    [(True, True), (True, False), (False, False), (False, True)],
+)
+def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
     """Test the start CLI command."""
 
     runner = CliRunner()
@@ -193,14 +203,31 @@ def test_start(mocker, monkeypatch):
     graceful_start_mock = mocker.patch(
         "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
     )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
 
-    runner.invoke(start, f"--port {port_val} -d")
-    graceful_start_mock.assert_called_once()
-    set_config_mock.assert_called_once()
+    db_mock.is_migration_pending = is_migration_pending
+
+    cli_args = f"--port {port_val} -d"
+
+    if ignore_migrations:
+        cli_args = f"{cli_args} --ignore-migrations"
+
+    res = runner.invoke(start, cli_args)
+
+    if ignore_migrations or not is_migration_pending:
+        graceful_start_mock.assert_called_once()
+        assert set_config_mock.call_count == 5
+        # set_config_mock.assert_called_once()
+    else:
+        assert MIGRATION_COMMAND_MSG in res.output
+        assert MIGRATION_WARNING_MSG in res.output
+        assert res.exit_code == 1
 
 
 def test_stop(mocker, monkeypatch):
@@ -292,6 +319,30 @@ def test_purge(mocker):
     assert result.output == "Covalent server files have been purged.\n"
 
 
+def test_config(mocker):
+    """Test covalent config cli"""
+    from covalent._shared_files.config import _config_manager as cm
+
+    cfg_read_config_mock = mocker.patch("covalent_dispatcher._cli.service.cm.read_config")
+    json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
+    click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
+
+    runner = CliRunner()
+    runner.invoke(config)
+
+    cfg_read_config_mock.assert_called_once()
+    json_dumps_mock.assert_called_once()
+    click_echo_mock.assert_called_once()
+
+
+def test_migrate_legacy_result_object(mocker):
+    """test the `covalent migrate_legacy_result_object` command."""
+    runner = CliRunner()
+    migrate_mock = mocker.patch("covalent_dispatcher._cli.service.migrate_pickled_result_object")
+    runner.invoke(migrate_legacy_result_object, "result.pkl")
+    migrate_mock.assert_called_once()
+
+
 @pytest.mark.parametrize("workers", [1, 2, 3, 4])
 def test_cluster_size(mocker, workers):
     """
@@ -338,6 +389,7 @@ def test_cluster_info(mocker):
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_info_cli_mock = mocker.patch("covalent_dispatcher._cli.service._get_cluster_info")
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
+    json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
 
     runner = CliRunner()
     _ = runner.invoke(cluster, "--info")
@@ -346,6 +398,7 @@ def test_cluster_info(mocker):
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_info_cli_mock.assert_called_once()
+    json_dumps_mock.assert_called_once()
     click_echo_mock.assert_called_once()
 
 
@@ -360,18 +413,24 @@ def test_cluster_status_cli(mocker):
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_status_cli_mock = mocker.patch("covalent_dispatcher._cli.service._get_cluster_status")
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
+    json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
 
     runner = CliRunner()
     _ = runner.invoke(cluster, "--status")
 
+    is_server_running_mock.assert_called_once()
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_status_cli_mock.assert_called_once()
+    json_dumps_mock.assert_called_once()
     click_echo_mock.assert_called_once()
 
 
@@ -390,6 +449,7 @@ def test_cluster_address_cli(mocker):
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_cli_mock = mocker.patch("covalent_dispatcher._cli.service._get_cluster_address")
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
+    json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
 
     runner = CliRunner()
     _ = runner.invoke(cluster, "--address")
@@ -399,6 +459,7 @@ def test_cluster_address_cli(mocker):
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
     click_echo_mock.assert_called_once()
+    json_dumps_mock.assert_called_once()
 
 
 def test_cluster_logs_cli(mocker):
@@ -416,6 +477,7 @@ def test_cluster_logs_cli(mocker):
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_cli_mock = mocker.patch("covalent_dispatcher._cli.service._get_cluster_logs")
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
+    json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
 
     runner = CliRunner()
     _ = runner.invoke(cluster, "--logs")
@@ -425,6 +487,7 @@ def test_cluster_logs_cli(mocker):
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
     click_echo_mock.assert_called_once()
+    json_dumps_mock.assert_called_once()
 
 
 def test_cluster_restart_cli(mocker):
@@ -477,3 +540,185 @@ def test_cluster_scale_cli(mocker):
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
     click_echo_mock.assert_called_once()
+
+
+def test_start_config_mem_per_worker(mocker, monkeypatch):
+    """Test setting mem_per_worker"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --mem-per-worker 1GB"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 6
+    graceful_start_mock.assert_called_once()
+
+
+def test_start_config_threads_per_worker(mocker, monkeypatch):
+    """Test setting threads_per_worker"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --threads-per-worker 1"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 6
+    graceful_start_mock.assert_called_once()
+
+
+def test_start_config_num_workers(mocker, monkeypatch):
+    """Test setting workers"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --workers 1"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 6
+    graceful_start_mock.assert_called_once()
+
+
+def test_start_all_dask_config(mocker, monkeypatch):
+    """Test setting all dask configuration options"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --mem-per-worker 1GB --threads-per-worker 1 --workers 1"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 8
+    graceful_start_mock.assert_called_once()
+
+
+def test_start_dask_config_options_workers_and_mem_per_worker(mocker, monkeypatch):
+    """Test setting workers and mem-per-worker"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --mem-per-worker 1GB --workers 1"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 7
+    graceful_start_mock.assert_called_once()
+
+
+def test_start_dask_config_options_workers_and_threads_per_worker(mocker, monkeypatch):
+    """Test setting workers, threads-per-worker"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --threads-per-worker 1 --workers 1"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 7
+    graceful_start_mock.assert_called_once()
+
+
+def test_start_dask_config_options_workers_and_threads_per_worker(mocker, monkeypatch):
+    """Test setting mem-per-worker and threads-per-worker"""
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --mem-per-worker 1GB --threads-per-worker 1"
+
+    res = runner.invoke(start, cli_args)
+
+    assert set_config_mock.call_count == 7
+    graceful_start_mock.assert_called_once()

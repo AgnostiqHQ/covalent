@@ -24,27 +24,36 @@ from covalent._dispatcher_plugins.local import LocalDispatcher
 dispatcher = LocalDispatcher()
 
 
-@ct.electron
-def add(a, b):
-    return a + b
-
-
-@ct.lattice
-def workflow(x, y):
-    res = add(x, y)
-    return add(res, y)
-
-
 def test_local_dispatcher_dispatch():
     """Tests whether the local dispatcher can dispatch a workflow successfully."""
 
+    @ct.electron
+    def add(a, b):
+        return a + b
+
+    @ct.lattice
+    def workflow(x, y):
+        res = add(x, y)
+        return add(res, y)
+
     dispatch_id = dispatcher.dispatch(workflow)(1, 2)
+    result = ct.get_result(dispatch_id, wait=True)
+    assert result.result == 5
 
     assert isinstance(dispatch_id, str)
 
 
 def test_local_dispatcher_dispatch_sync():
     """Tests whether the local dispatcher can synchronously dispatch a workflow successfully."""
+
+    @ct.electron
+    def add(a, b):
+        return a + b
+
+    @ct.lattice
+    def workflow(x, y):
+        res = add(x, y)
+        return add(res, y)
 
     result = dispatcher.dispatch_sync(workflow)(1, 2)
     assert result.result == 5

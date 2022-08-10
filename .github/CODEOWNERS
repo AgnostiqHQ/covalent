@@ -23,7 +23,7 @@
 # Core code, docs, and tests are owned by the Agnostiq engineering team.
 /covalent/		@AgnostiqHQ/aq-engineers
 /covalent_dispatcher/	@AgnostiqHQ/aq-engineers
-/doc/			@AgnostiqHQ/aq-engineers
+/doc/			@santoshkumarradha
 /tests/			@AgnostiqHQ/aq-engineers
 .flake8			@AgnostiqHQ/aq-engineers
 .gitignore		@AgnostiqHQ/aq-engineers
@@ -38,7 +38,7 @@ README.md 		@AgnostiqHQ/aq-engineers
 pyproject.toml 		@AgnostiqHQ/aq-engineers
 
 # Covalent UI is owned by collaborators from Psiog.
-/covalent_ui/ 		@mshkanth @Prasy12
+/covalent_ui/**/*.js 		@mshkanth @Prasy12
 
 # Modifying these requires additional approval.
 Dockerfile		@AgnostiqHQ/aq-managers

@@ -20,3 +20,8 @@
 
 from .http_strategy import HTTP
 from .rsync_strategy import Rsync
+
+try:
+    from .s3_strategy import S3
+except:
+    pass

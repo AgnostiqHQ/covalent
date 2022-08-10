@@ -18,15 +18,23 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import codecs
 from concurrent.futures import ThreadPoolExecutor
 
 import cloudpickle as pickle
-from flask import Blueprint, Response, jsonify, request
+from flask import Blueprint, Response, jsonify, make_response, request
 
 import covalent_dispatcher as dispatcher
+from covalent._data_store.datastore import workflow_db
+from covalent._data_store.models import Lattice
+from covalent._results_manager.result import Result
+from covalent._results_manager.results_manager import result_from
+from covalent._shared_files import logger
 
 from .._db.dispatchdb import DispatchDB
 
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 bp = Blueprint("dispatcher", __name__, url_prefix="/api")
 
 
@@ -54,9 +62,9 @@ def submit() -> Response:
                      returned as a Flask Response object.
     """
 
-    data = request.get_data()
-    result_object = pickle.loads(data)
-    dispatch_id = dispatcher.run_dispatcher(result_object, workflow_pool, tasks_pool)
+    json_lattice = request.get_data()
+
+    dispatch_id = dispatcher.run_dispatcher(json_lattice, workflow_pool, tasks_pool)
 
     return jsonify(dispatch_id)
 
@@ -85,3 +93,56 @@ def cancel() -> Response:
 def db_path() -> Response:
     db_path = DispatchDB()._dbpath
     return jsonify(db_path)
+
+
+@bp.route("/result/<dispatch_id>", methods=["GET"])
+def get_result(dispatch_id) -> Response:
+    app_log.warning("get result")
+    args = request.args
+    wait = args.get("wait", default=False, type=lambda v: v.lower() == "true")
+    app_log.warning("wait is " + str(wait))
+    status_only = args.get("status_only", default=False, type=lambda v: v.lower() == "true")
+    while True:
+        with workflow_db.session() as session:
+            lattice_record = (
+                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+            )
+            status = lattice_record.status if lattice_record else None
+            try:
+                if not lattice_record:
+                    return (
+                        jsonify(
+                            {"message": f"The requested dispatch ID {dispatch_id} was not found."}
+                        ),
+                        404,
+                    )
+                elif not wait or status in [
+                    str(Result.COMPLETED),
+                    str(Result.FAILED),
+                    str(Result.CANCELLED),
+                    str(Result.POSTPROCESSING_FAILED),
+                    str(Result.PENDING_POSTPROCESSING),
+                ]:
+                    output = {
+                        "id": dispatch_id,
+                        "status": lattice_record.status,
+                    }
+                    if not status_only:
+                        output["result"] = codecs.encode(
+                            pickle.dumps(result_from(lattice_record)), "base64"
+                        ).decode()
+                    return jsonify(output)
+
+            except (FileNotFoundError, EOFError):
+                if wait:
+                    continue
+                response = make_response(
+                    jsonify(
+                        {
+                            "message": "Result not ready to read yet. Please wait for a couple of seconds."
+                        }
+                    ),
+                    503,
+                )
+                response.retry_after = 2
+                return response

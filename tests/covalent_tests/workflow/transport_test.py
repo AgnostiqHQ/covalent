@@ -26,8 +26,9 @@ import cloudpickle
 import networkx as nx
 import pytest
 
+import covalent as ct
 from covalent._shared_files.defaults import parameter_prefix
-from covalent._workflow.transport import TransportableObject, _TransportGraph
+from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 
 
 def subtask(x):
@@ -81,6 +82,33 @@ def test_transportable_object_python_version(transportable_object):
     assert to.python_version == platform.python_version()
 
 
+def test_transportable_object_json_property(transportable_object):
+    """Test that TO stores a json rep of json-serializable objects"""
+
+    import json
+
+    jsonable_obj = {"a": 1, "b": 2}
+    t = TransportableObject(jsonable_obj)
+    assert t.json == json.dumps(jsonable_obj)
+
+    new_t = TransportableObject(t)
+    assert new_t.json == ""
+
+
+def test_transportable_object_eq(transportable_object):
+    """Test the __eq__ magic method of TransportableObject"""
+
+    to = transportable_object
+    to_new = TransportableObject(None)
+    to_new.__dict__ = to.__dict__.copy()
+    assert to.__eq__(to_new)
+
+    to_new.python_version = "3.5.1"
+    assert not to.__eq__(to_new)
+
+    assert not to.__eq__({})
+
+
 def test_transportable_object_get_serialized(transportable_object):
     """Test serialized transportable object retrieval."""
 
@@ -95,6 +123,38 @@ def test_transportable_object_get_deserialized(transportable_object):
     assert to.get_deserialized()(x=2) == subtask(x=2)
 
 
+def test_transportable_object_from_dict(transportable_object):
+    to = transportable_object
+
+    object_dict = to.to_dict()
+
+    to_new = TransportableObject.from_dict(object_dict)
+    assert to == to_new
+
+
+def test_transportable_object_serialize_to_json(transportable_object):
+    import json
+
+    to = transportable_object
+    assert json.dumps(to.to_dict()) == to.serialize_to_json()
+
+
+def test_transportable_object_deserialize_from_json(transportable_object):
+    import json
+
+    to = transportable_object
+    json_string = to.serialize_to_json()
+    deserialized_to = TransportableObject.deserialize_from_json(json_string)
+    assert to.__dict__ == deserialized_to.__dict__
+
+
+def test_transportable_object_make_transportable_idempotent(transportable_object):
+    """Test that `make_transportable` is idempotent"""
+
+    to = transportable_object
+    assert TransportableObject.make_transportable(to) == to
+
+
 def test_transportable_object_serialize_deserialize(transportable_object):
     """Test that the transportable object is unchanged after serialization and deserialization."""
 
@@ -104,6 +164,38 @@ def test_transportable_object_serialize_deserialize(transportable_object):
 
     assert new_to.get_deserialized()(x=3) == subtask(x=3)
     assert new_to.python_version == to.python_version
+
+
+def test_transportable_object_deserialize_list(transportable_object):
+
+    deserialized = [1, 2, {"a": 3, "b": [4, 5]}]
+    serialized_list = [
+        TransportableObject.make_transportable(1),
+        TransportableObject.make_transportable(2),
+        {
+            "a": TransportableObject.make_transportable(3),
+            "b": [
+                TransportableObject.make_transportable(4),
+                TransportableObject.make_transportable(5),
+            ],
+        },
+    ]
+
+    assert TransportableObject.deserialize_list(serialized_list) == deserialized
+
+
+def test_transportable_object_deserialize_dict(transportable_object):
+
+    deserialized = {"a": 1, "b": [2, {"c": 3}]}
+    serialized_dict = {
+        "a": TransportableObject.make_transportable(1),
+        "b": [
+            TransportableObject.make_transportable(2),
+            {"c": TransportableObject.make_transportable(3)},
+        ],
+    }
+
+    assert TransportableObject.deserialize_dict(serialized_dict) == deserialized
 
 
 def test_transport_graph_initialization():
@@ -257,29 +349,83 @@ def test_transport_graph_deserialize(workflow_transport_graph):
     assert transportable_obj.get_deserialized()(x=3) == 9
 
 
-def test_transport_graph_sort_edges_based_on_insertion_order(transport_graph):
-    """Test the transport graph sorting edges based on insertion order"""
-    tg = transport_graph
-    tg.add_node(
-        name="triangle",
-        kwargs={"x": 2},
-        function=subtask,
-        metadata={"mock_field": "mock_value_node_0"},
-    )
-    tg.add_node(
-        name="square",
-        kwargs={"x": 2},
-        function=subtask,
-        metadata={"mock_field": "mock_value_node_1"},
-    )
-    tg.add_node(
-        name="rectangle",
-        kwargs={"x": 2},
-        function=subtask,
-        metadata={"mock_field": "mock_value_node_2"},
-    )
-    tg.add_edge(x=2, y=1, edge_name="apples")
-    tg.add_edge(x=0, y=1, edge_name="oranges")
+def test_transport_graph_json_serialization():
+    """Test the transport graph JSON serialization method"""
 
-    tg.sort_edges_based_on_insertion_order()
-    assert list(tg.get_dependencies(node_key=1)) == [2, 0]
+    import json
+
+    @ct.electron(executor="local", deps_bash=ct.DepsBash("yum install gcc"))
+    def f(x):
+        return x * x
+
+    @ct.lattice
+    def workflow(x):
+        return f(x)
+
+    workflow.build_graph(5)
+    workflow_tg = workflow.transport_graph
+
+    json_graph = workflow_tg.serialize_to_json()
+
+    tg = _TransportGraph()
+    tg.deserialize_from_json(json_graph)
+
+    assert list(workflow_tg._graph.nodes) == list(tg._graph.nodes)
+
+    for node in tg._graph.nodes:
+        for k, v in tg._graph.nodes[node].items():
+            if k == "metadata":
+                continue
+            assert v == workflow_tg.get_node_value(node, k)
+
+    # Check that Serialize(Deserialize(Serialize)) == Serialize
+    assert json_graph == tg.serialize_to_json()
+
+    json_graph_metadata_only = workflow_tg.serialize_to_json(metadata_only=True)
+
+    # Check node information is filtered out when metadata_only is True
+    serialized_data = json.loads(json_graph_metadata_only)
+    for _ in range(len(serialized_data["nodes"])):
+        assert len(serialized_data["nodes"][0]) == 1
+        assert "metadata" in serialized_data["nodes"][0]
+
+    # Check link field "edge_name" is filtered out when metadata_only is True
+    assert "edge_name" not in serialized_data["links"][0]
+
+
+def test_metadata_json_serialization():
+    import json
+
+    @ct.electron(executor="local", deps_bash=ct.DepsBash("yum install gcc"))
+    def f(x):
+        return x * x
+
+    @ct.lattice
+    def workflow(x):
+        return f(x)
+
+    workflow.build_graph(5)
+    workflow_tg = workflow.transport_graph
+    metadata = workflow_tg.get_node_value(0, "metadata")
+
+    json_metadata = json.dumps(encode_metadata(metadata))
+
+    new_metadata = json.loads(json_metadata)
+
+    # Check that each metadata type implements its own JSON-serialization
+    for k in metadata:
+        if k == "executor":
+            continue
+        if k == "deps":
+            for dep_type in metadata[k]:
+                if dep_type == "bash":
+                    continue
+                else:
+                    assert metadata[k][dep_type] == new_metadata[k][dep_type]
+        else:
+            metadata[k] == new_metadata[k]
+
+    assert new_metadata["executor"] == "local"
+
+    new_bash_dep = ct.DepsBash().from_dict(new_metadata["deps"]["bash"])
+    assert new_bash_dep.__dict__ == metadata["deps"]["bash"].__dict__

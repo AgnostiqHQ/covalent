@@ -180,6 +180,55 @@ The following design pattern for deploying multiple experiments using the :code:
 
 This ensures that the independent experiments are performed in parallel rather than sequentially.
 
+Waiting for other electrons
+----------------------
+
+Covalent normally infers the dependencies between electrons from
+their inputs and ouputs. Sometimes the user might want to wait for a
+task's execution before executing another task even when the output of
+one is not the input of another. The `wait()` function can be
+handy in those cases.
+
+.. code-block:: python
+    :linenos:
+
+    @ct.electron
+    def task_1a(a):
+        return a ** 2
+
+    @ct.electron
+    def task_1b(a):
+        return a ** 3
+
+    @ct.electron
+    def task_1c(a):
+        return a ** 4
+
+    @ct.electron
+    def task_2(x, y):
+        return x * y
+
+    @ct.electron
+    def task_3(b):
+        return b ** 3
+
+    @ct.lattice
+    def workflow():
+        res_1a = task_1a(2)
+        res_1b = task_1b(2)
+        res_1c = task_1c(2)
+        res_2 = task_2(res_1a, 3)
+        res_3 = task_3(5)
+	ct.wait(child=res_3, parents=[res_1a, res_1b, res_1c])
+
+        return task_2(res_2, res_3)
+        ...
+
+    res = ct.dispatch_sync(workflow)()
+
+The `wait()` statement instructs Covalent to wait for `task_1a`, `task_1b`, and `task_1c` to finish before dispatching `task_3`.
+
+
 Best Practices
 --------------
 
@@ -377,7 +426,7 @@ See the how-to guide on customizing the local executor :doc:`How to customize th
     class CustomExecutor(BaseExecutor):
         ...
 
-A variety of interesting executors are coming soon!
+Refer the how-to guide on building custom executors :doc:`How to create a custom executor <../../how_to/execution/creating_custom_executors>` for more details.
 
 .. _Workflow status polling:
 
@@ -581,6 +630,21 @@ The following will describe an Rsync file transfer operation over SSH to downloa
     from_remote_file = File('/home/admin/my_file', is_remote=True)
     to_local_file = File('/home/ubuntu/my_file')
     ct.fs.FileTransfer(from_remote_file, to_local_file, strategy=strategy)
+
+
+S3
+~~~~~~~~~~~~
+.. warning:: AWS Python SDK must be installed on an electron’s backend execution environment. It can be installed using :code:`pip install boto3`
+
+If one of the files is a S3 bucket location (s3://repository-name/file-path) S3 strategy will be used. For accessing the S3 bucket necessary credentials (aws_access_key_id, aws_secret_access_key, aws_session_token, region_name) can be passed to it. In case they are not provided default values described in the environment will be used.
+
+The following will perform an S3 file transfer operation to download a remote file and place in the specified local filepath::
+
+    import covalent as ct
+
+    strategy = ct.fs_strategies.S3(aws_access_key_id = '...', aws_secret_access_key = '...', aws_session_token = '...', region_name = '...')
+
+    ct.fs.FileTransfer('s3://covalent-tmp/temp.txt','/home/ubuntu/temp.txt',strategy = strategy)
 
 
 ~~~~~~

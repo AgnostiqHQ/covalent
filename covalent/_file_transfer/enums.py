@@ -31,3 +31,9 @@ SchemeToStrategyMap = {
     "ftp": FileTransferStrategyTypes.FTP,
     "globus": FileTransferStrategyTypes.GLOBUS,
 }
+
+
+class FtCallDepReturnValue(str, enum.Enum):
+    TO = "to"
+    FROM = "from"
+    FROM_TO = "from_to"
