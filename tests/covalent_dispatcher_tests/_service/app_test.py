@@ -121,7 +121,7 @@ def test_get_result(mocker, app, client, test_db_file, tmp_path):
         session.commit()
 
     mocker.patch("covalent_dispatcher._service.app.result_from", return_value={})
-    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
     response = client.get(f"/api/result/{DISPATCH_ID}")
     result = response.json()
     assert result["id"] == DISPATCH_ID
@@ -144,7 +144,7 @@ def test_get_result_503(mocker, app, client, test_db_file, tmp_path):
         session.add(lattice)
         session.commit()
     mocker.patch("covalent_dispatcher._service.app.result_from", side_effect=FileNotFoundError())
-    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
     response = client.get(f"/api/result/{DISPATCH_ID}?wait=True&status_only=True")
     assert response.status_code == 503
     os.remove("/tmp/testdb.sqlite")
