@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 
 import socketio
 import uvicorn
@@ -31,6 +32,13 @@ from covalent._shared_files.config import get_config
 from covalent_dispatcher._service.app_dask import DaskCluster
 from covalent_ui.api.main import app as fastapi_app
 from covalent_ui.api.main import sio
+
+# read env vars configuring server
+COVALENT_SERVER_IFACE_ANY = os.getenv("COVALENT_SERVER_IFACE_ANY", "False").lower() in (
+    "true",
+    "1",
+    "t",
+)
 
 WEBHOOK_PATH = "/api/webhook"
 WEBAPP_PATH = "webapp/build"
@@ -72,6 +80,8 @@ if __name__ == "__main__":
     else:
         port = int(get_config("dispatcher.port"))
 
+    host = "localhost" if not COVALENT_SERVER_IFACE_ANY else "0.0.0.0"
+
     DEBUG = True if args.develop is True else False
     # reload = True if args.develop is True else False
     RELOAD = False
@@ -82,4 +92,4 @@ if __name__ == "__main__":
         dask_cluster.start()
 
     # Start covalent main app
-    uvicorn.run("app:fastapi_app", host="localhost", port=port, debug=DEBUG, reload=RELOAD)
+    uvicorn.run("app:fastapi_app", host=host, port=port, debug=DEBUG, reload=RELOAD)
