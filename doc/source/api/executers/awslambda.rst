@@ -3,6 +3,8 @@
 🔌 AWS Lambda Executor
 """""""""""""""""""""""""""
 
+.. image:: AWS_Lambda.jpg
+
 With this executor, users can execute tasks (electrons) or entire lattices using the AWS Lambda serverless compute service. It is appropriate
 to use this plugin for electrons that are expected to be short lived and low in compute intensity. This plugin can also be used
 for workflows with several short lived embarassingly parallel tasks aka. horizontal workflows.
@@ -12,7 +14,7 @@ uses the S3 and the AWS lambda service to execute tasks thus the IAM roles and p
 the executor has permissions to interact with the two. The following JSON policy document shows the necessary IAM
 permissions required for the executor to properly run tasks using the AWS Lambda compute service
 
-.. dropdown::
+.. dropdown:: IAM Policy
 
     .. code:: json
 
@@ -91,28 +93,30 @@ the lambda function must have the necessary IAM permissions in order to do so. B
 user has already provisioned a IAM role named `CovalentLambdaExecutionRole` that has the `AWSLambdaExecute` policy attached to it.
 The policy document is summarized here for convenience
 
-.. code:: json
+.. dropdown:: Covalent Lambda Execution Role Policy
 
-    {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Action": [
-                    "logs:*"
-                ],
-                "Resource": "arn:aws:logs:*:*:*"
-            },
-            {
-                "Effect": "Allow",
-                "Action": [
-                    "s3:GetObject",
-                    "s3:PutObject"
-                ],
-                "Resource": "arn:aws:s3:::*"
-            }
-        ]
-    }
+    .. code:: json
+
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "logs:*"
+                    ],
+                    "Resource": "arn:aws:logs:*:*:*"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "s3:GetObject",
+                        "s3:PutObject"
+                    ],
+                    "Resource": "arn:aws:s3:::*"
+                }
+            ]
+        }
 
 
 To use this plugin with Covalent, simply install it using `pip`:
