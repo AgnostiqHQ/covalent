@@ -30,6 +30,7 @@ import requests
 import wait
 from requests.adapters import HTTPAdapter
 from sqlalchemy.orm import Session
+from urllib3.util import Retry
 
 from covalent._workflow.transport import TransportableObject
 
@@ -170,7 +171,7 @@ def _get_result_from_dispatcher(
     retries = 5
     if wait and wait > retries:
         retries = wait
-    adapter = HTTPAdapter(max_retries=retries)
+    adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
@@ -254,15 +255,15 @@ def sync(
     """
 
     if isinstance(dispatch_id, str):
-        _get_result_from_dispatcher(dispatch_id, wait=True, status_only=True)
+        _get_result_from_dispatcher(dispatch_id, wait=wait.EXTREME, status_only=True)
     elif isinstance(dispatch_id, list):
         for d in dispatch_id:
-            _get_result_from_dispatcher(d, wait=True, status_only=True)
+            _get_result_from_dispatcher(d, wait=wait.EXTREME, status_only=True)
     else:
         with Session(db.engine) as session:
             dispatch_id = session.query(Lattice.dispatch_id).all()
         for d in dispatch_id:
-            _get_result_from_dispatcher(d, wait=True, status_only=True)
+            _get_result_from_dispatcher(d, wait=wait.EXTREME, status_only=True)
 
 
 def cancel(
