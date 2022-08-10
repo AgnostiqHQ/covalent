@@ -5,9 +5,9 @@
 
 This executor interfaces Covalent with `AWS Braket Hybrid Jobs <https://docs.aws.amazon.com/braket/latest/developerguide/braket-jobs.html/>`_ service by
 containerizing tasks using Docker and dispatching them to be executed on AWS Braket. This executor is a suitable choice
-for workflow containing tasks that require a mix of classical and quantum compute resources. In order for 
-workflows to be deployable, users must have AWS credentials allowing access to Braket, S3, ECR, and 
-some other services. Users will need additional permissions to provision or manage cloud 
+for workflow containing tasks that require a mix of classical and quantum compute resources. In order for
+workflows to be deployable, users must have AWS credentials allowing access to Braket, S3, ECR, and
+some other services. Users will need additional permissions to provision or manage cloud
 infrastructure used by this plugin.
 
 Since this is a cloud executor, proper IAM credentials, permissions and roles must be configured prior to using this executor.
