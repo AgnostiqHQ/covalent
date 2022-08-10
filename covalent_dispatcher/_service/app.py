@@ -43,6 +43,8 @@ log_stack_info = logger.log_stack_info
 
 router: APIRouter = APIRouter()
 
+app_log.warning("Imported app.py")
+
 
 @router.on_event("startup")
 def start_pools():
@@ -51,6 +53,8 @@ def start_pools():
 
     workflow_pool = ThreadPoolExecutor()
     tasks_pool = ThreadPoolExecutor()
+
+    app_log.warning("Started workflow and tasks pools")
 
 
 @router.post("/submit")
@@ -70,12 +74,14 @@ async def submit(request: Request) -> UUID:
     data = await request.json()
     data = json.dumps(data).encode("utf-8")
     if not workflow_pool:
+        app_log.warning("In submit: workflow_pool not defined")
         return JSONResponse(
             status_code=503,
             content={"message": "workflow_pool not started"},
         )
 
     if not tasks_pool:
+        app_log.warning("In submit: tasks_pool not defined")
         return JSONResponse(
             status_code=503,
             content={"message": "tasks_pool not started"},
