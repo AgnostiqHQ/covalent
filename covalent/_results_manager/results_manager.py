@@ -261,9 +261,9 @@ def sync(
             _get_result_from_dispatcher(d, wait=wait.EXTREME, status_only=True)
     else:
         with Session(db.engine) as session:
-            dispatch_id = session.query(Lattice.dispatch_id).all()
-        for d in dispatch_id:
-            _get_result_from_dispatcher(d, wait=wait.EXTREME, status_only=True)
+            rows = session.query(Lattice).all()
+        for row in rows:
+            _get_result_from_dispatcher(row.dispatch_id, wait=wait.EXTREME, status_only=True)
 
 
 def cancel(

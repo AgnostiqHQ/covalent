@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Flask route logic to return 503 when the result is not ready
 
+### Tests
+
+- results_manager tests
 
 ## [0.170.1] - 2022-08-09
 
