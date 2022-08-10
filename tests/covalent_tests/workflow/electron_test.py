@@ -54,6 +54,16 @@ def workflow():
     return task_2(res_2, res_3)
 
 
+@ct.lattice
+def workflow_2():
+    res_1 = task_1(2)
+    res_2 = task_2(res_1, 3)
+    res_3 = task_3(res_1)
+    ct.wait(res_3, [res_1])
+
+    return res_3
+
+
 def test_wait_for_building():
     """Test to check whether the graph is built correctly with `wait_for`."""
 
@@ -75,6 +85,21 @@ def test_wait_for_post_processing():
             (6, TransportableObject(1500)),
         ]
         assert workflow.workflow_function.get_deserialized()() == 1500
+
+
+def test_wait_for_post_processing_when_returning_waiting_electron():
+    """Test to check post processing with `wait` works fine when returning
+    an electron with incoming wait_for edges"""
+
+    workflow_2.build_graph()
+    with active_lattice_manager.claim(workflow_2):
+        workflow_2.post_processing = True
+        workflow_2.electron_outputs = [
+            (0, TransportableObject(4)),
+            (2, TransportableObject(12)),
+            (4, TransportableObject(64)),
+        ]
+        assert workflow_2.workflow_function.get_deserialized()() == 64
 
 
 def test_collection_node_helper_electron():
