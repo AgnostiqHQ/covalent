@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - results_manager tests
 
+### Fixed
+
+- Fixed postprocessing workflows that return an electron with an incoming wait_for edge
+
 ## [0.173.0] - 2022-08-10
 
 ### Authors
