@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added count of dispatches by status on the dispatch list section of the GUI.
 - APIs that the GUI consumes have been re-written using FastAPI. This includes re-factoring of older APIs and adding of new APIs.
+- Added COVALENT_SERVER_IFACE_ANY flag for uvicorn to start with 0.0.0.0
 
 ### Tests
 
