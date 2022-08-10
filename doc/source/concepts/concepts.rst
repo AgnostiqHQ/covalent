@@ -574,8 +574,8 @@ By default only folder contents are transfered to the destination folder however
 
 To use File Transfers in a covalent workflow a list of :code:`FileTransfer` instances must be specified in an electron's decorator using the :code:`files` keyword argument.
 
-Furthermore, a `files` keyword argument also gets injected into the python function decorated by an electron when supplying :code:`FileTransfer` instances in an electron's arguments.
-This `files` kwarg contains a reference to the files corresponding to the source & destination filepaths in a supplied  :code:`FileTransfer` instance in the same order as the file transfers are specified::
+Furthermore, a :code:`files` keyword argument also gets injected into the python function decorated by an electron when supplying :code:`FileTransfer` instances in an electron's arguments.
+This :code:`files` kwarg contains a reference to the files corresponding to the source & destination filepaths in a supplied  :code:`FileTransfer` instance in the same order as the file transfers are specified::
 
 
     import covalent as ct
@@ -595,7 +595,7 @@ This `files` kwarg contains a reference to the files corresponding to the source
     # Dispatch the workflow
     dispatch_id = ct.dispatch(file_transfer_workflow)()
 
-.. warning:: As discussed in the next section the `files` keyword argument in the electron decorated python function must always be specified when using :code:`FileTransfer` for the workflow to be constructed successfully.
+.. warning:: As discussed in the next section the :code:`files` keyword argument in the electron decorated python function must always be specified when using :code:`FileTransfer` for the workflow to be constructed successfully.
 
 ~~~~~~
 Strategies
