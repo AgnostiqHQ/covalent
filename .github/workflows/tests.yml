@@ -237,7 +237,7 @@ jobs:
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.sdk == 'true'
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vv tests/covalent_tests --cov=covalent --cov-config=.coveragerc
 
       - name: Generate SDK coverage report
         if: >
@@ -249,7 +249,7 @@ jobs:
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.dispatcher == 'true'
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vv tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
 
       - name: Generate dispatcher coverage report
         if: >
@@ -262,7 +262,7 @@ jobs:
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.actions == 'true'
           || steps.working-directory.outputs.tests == 'true'
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vv tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
 
       - name: Generate functional test coverage report
         if: >
@@ -277,7 +277,7 @@ jobs:
           false
           && (github.event_name != 'pull_request'
           || steps.working-directory.outputs.ui_backend == 'true')
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vv tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
 
       - name: Generate UI backend coverage report
         continue-on-error: true
