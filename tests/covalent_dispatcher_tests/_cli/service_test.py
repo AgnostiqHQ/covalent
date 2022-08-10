@@ -334,6 +334,7 @@ def test_config(mocker):
     json_dumps_mock.assert_called_once()
     click_echo_mock.assert_called_once()
 
+
 def test_migrate_legacy_result_object(mocker):
     """test the `covalent migrate_legacy_result_object` command."""
     runner = CliRunner()
