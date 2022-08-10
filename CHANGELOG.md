@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Modify the `covalent logs` CLI handler to read logs line by line
+
 ## [0.177.0] - 2022-08-11
 
 ### Authors
