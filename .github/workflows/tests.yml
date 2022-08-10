@@ -264,6 +264,10 @@ jobs:
           || steps.working-directory.outputs.tests == 'true'
         run: PYTHONPATH=$PWD/ pytest -vv tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
 
+      - name: Print covalent logs
+        if: always()
+        run: covalent logs
+
       - name: Generate functional test coverage report
         if: >
           github.event_name != 'pull_request'
