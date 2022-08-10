@@ -13,6 +13,6 @@ To use this plugin with Covalent, simply install it using `pip`:
     pip install covalent-awslambda-plugin
 
 
-This executor takes in few input arguments in order to be used properly in a workflow. The input arguments to this executor are the following
-
-#. `credentials`: Path to the AWS credentials file (default: `~/.aws/credentials`)
+.. autoclass:: covalent.executor.AWSLambdaExecutor
+    :members:
+    :inherited-members:
