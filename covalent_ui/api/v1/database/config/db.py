@@ -19,10 +19,8 @@
 
 """DB Config"""
 
-from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-
 from covalent._data_store.datastore import DataStore
 
-engine = DataStore(initialize_db=True).engine
+engine = DataStore().engine
 Base = declarative_base()
