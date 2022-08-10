@@ -1,7 +1,9 @@
 
 import os
+
 import boto3
 import cloudpickle as pickle
+
 
 def lambda_handler(event, context):
     os.environ['HOME'] = "/tmp"
