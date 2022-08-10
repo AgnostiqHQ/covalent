@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Dummy entry
 - Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher/_service/app.py`
 - Unit tests written for Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher_tests/_service/app.test.py`
 - Web apis of `covalent_ui` refactored to adhere to v11 DB schema
@@ -18,10 +17,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Some of the Flask APIs earlier consumed by the GUI have been deprecated & removed from the code base.
 - APIs exposed by the web app back end have been re-factored to adhere to the new DB schema v10
 
+## [0.171.0] - 2022-08-10
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
 ### Added
 
-- Added count of dispatches by status on the dispatch list section of the GUI.
-- APIs that the GUI consumes have been re-written using FastAPI. This includes re-factoring of older APIs and adding of new APIs.
+- Added `covalent migrate_legacy_result_object` command to save pickled Result objects to the DataStore
 
 ## [0.170.1] - 2022-08-09
 
