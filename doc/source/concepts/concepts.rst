@@ -528,6 +528,11 @@ A file can be instantiated as show below::
 
    (Advanced) File objects can also support additional arguments such as the :code:`is_remote` flag which should only be used when using the :code:`FileTransfer` class directly to specify a file that resides on a remote host (for usage with Rsync via SSH).
 
+A :code:`File` object's filepath can be accessed using::
+
+    import covalent as ct
+    file = ct.fs.File('/home/ubuntu/my_dir')
+    print(file.filepath)
 
 ~~~~~~
 Folders
@@ -562,6 +567,19 @@ Under the hood covalent will create File objects corresponding to each filepath,
     source_file = ct.fs.File('/home/ubuntu/src_file')
     dest_file = ct.fs.File('/home/ubuntu/dest_file')
     ft = ct.fs.FileTransfer(source_file, dest_file, order=ct.fs.Order.BEFORE)
+
+If a provided file argument is `None` or a :code:`File` without a specified filepath then a temporary file will be created (with a corresponding filepath located in `/tmp`)::
+
+    temp_file = ct.fs.File() # with location temp_file.filepath
+    ct.fs.FileTransfer(source_file,temp_file)
+
+The following are equivalent statements::
+
+    ct.fs.FileTransfer(source_file)
+    ct.fs.FileTransfer(source_file, ct.fs.File())
+    ct.fs.FileTransfer(from_file=source_file, to_file=None)
+
+:code:`File` objects corresponding to a file transfer can be accessed by using either :code:`ct.fs.FileTransfer().from_file` or :code:`ct.fs.FileTransfer().to_file`.
 
 Furhermore Folders can also be used in file transfer operations::
 
