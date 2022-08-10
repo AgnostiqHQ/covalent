@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.173.0] - 2022-08-10
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
 ### Added
 
 - `--hard` and `--yes` flags added to `covalent purge` for hard purging (also deletes the databse) and autoapproving respectively.
