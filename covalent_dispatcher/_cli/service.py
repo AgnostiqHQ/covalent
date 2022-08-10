@@ -455,9 +455,9 @@ def logs() -> None:
     Show Covalent server logs.
     """
     if os.path.exists(UI_LOGFILE):
-        with open(UI_LOGFILE, 'r') as logfile:
+        with open(UI_LOGFILE, "r") as logfile:
             for line in logfile:
-                click.echo(line.rstrip('\n'))
+                click.echo(line.rstrip("\n"))
     else:
         click.echo(f"{UI_LOGFILE} not found. Restart the server to create a new log file.")
 
