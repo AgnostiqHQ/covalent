@@ -146,7 +146,7 @@ def test_get_result_503(mocker, app, client, test_db_file, tmp_path):
     mocker.patch("covalent_dispatcher._service.app.result_from", side_effect=FileNotFoundError())
     mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db)
     response = client.get(
-        f"/api/result/{DISPATCH_ID}", wait=True, status_only=True}
+        f"/api/result/{DISPATCH_ID}", wait=True, status_only=True
     )
     assert response.status_code == 503
     os.remove("/tmp/testdb.sqlite")
