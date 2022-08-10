@@ -231,7 +231,7 @@ jobs:
           || steps.working-directory.outputs.build == 'true'
           || steps.working-directory.outputs.actions == 'true'
           || steps.working-directory.outputs.tests == 'true'
-        run: covalent start --develop --ignore-migrations
+        run: covalent start --ignore-migrations
 
       - name: Run SDK tests and measure coverage
         if: >
