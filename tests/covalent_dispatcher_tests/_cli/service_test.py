@@ -299,33 +299,11 @@ def test_is_server_running(mocker):
 def test_purge_proceed(hard, mocker):
     """Test the 'covalent purge' CLI command."""
 
-    from covalent_dispatcher._cli.service import UI_PIDFILE, get_config
-
-    runner = CliRunner()
-    graceful_shutdown_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
-
-    if hard:
-        result = runner.invoke(purge, args="--hard", input="y")
-    else:
-        result = runner.invoke(purge, input="y")
-
-    graceful_shutdown_mock.assert_has_calls([mock.call(UI_PIDFILE)])
-
-
-@pytest.mark.parametrize("hard", [False, True])
-def test_purge_abort(hard, mocker):
-    """Test the 'covalent purge' CLI command."""
+    from covalent_dispatcher._cli.service import UI_PIDFILE, cm
 
     runner = CliRunner()
 
-    if hard:
-        result = runner.invoke(purge, input="n", args="--hard")
-    else:
-        result = runner.invoke(purge, input="n")
-
-    config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
-
-    mock_dir_calls = [
+    dir_list = [
         mock.call(dirs)
         for dirs in [
             "sdk.log_dir",
@@ -335,9 +313,94 @@ def test_purge_abort(hard, mocker):
         ]
     ]
 
-    config_mock.assert_has_calls(mock_dir_calls)
+    def get_config_side_effect(conf_name):
+        return "file" if conf_name == "dispatcher.db_path" else "dir"
 
-    assert result.output == "Aborted!\n"
+    get_config_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.get_config", side_effect=get_config_side_effect
+    )
+    os_path_dirname_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.os.path.dirname", return_value="dir"
+    )
+
+    def isdir_side_effect(path):
+        return path == "dir"
+
+    os_path_isdir_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.os.path.isdir", side_effect=isdir_side_effect
+    )
+
+    graceful_shutdown_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
+    shutil_rmtree_mock = mocker.patch("covalent_dispatcher._cli.service.shutil.rmtree")
+    os_remove_mock = mocker.patch("covalent_dispatcher._cli.service.os.remove")
+
+    if hard:
+        result = runner.invoke(purge, args="--hard", input="y")
+
+        dir_list.append(mock.call("dispatcher.db_path"))
+        os_path_isdir_mock.assert_has_calls([mock.call("file"), mock.call("file")], any_order=True)
+        os_remove_mock.assert_called_with("file")
+    else:
+        result = runner.invoke(purge, input="y")
+
+    get_config_mock.assert_has_calls(dir_list, any_order=True)
+    os_path_dirname_mock.assert_called_with(cm.config_file)
+    os_path_isdir_mock.assert_has_calls([mock.call("dir"), mock.call("dir")], any_order=True)
+
+    graceful_shutdown_mock.assert_called_with(UI_PIDFILE)
+
+    shutil_rmtree_mock.assert_has_calls([mock.call("dir", ignore_errors=True)])
+
+    assert "Covalent server files have been purged.\n" in result.output
+
+
+@pytest.mark.parametrize("hard", [False, True])
+def test_purge_abort(hard, mocker):
+    """Test the 'covalent purge' CLI command."""
+
+    from covalent_dispatcher._cli.service import cm
+
+    runner = CliRunner()
+
+    dir_list = [
+        mock.call(dirs)
+        for dirs in [
+            "sdk.log_dir",
+            "dispatcher.cache_dir",
+            "dispatcher.log_dir",
+            "user_interface.log_dir",
+        ]
+    ]
+
+    def get_config_side_effect(conf_name):
+        return "file" if conf_name == "dispatcher.db_path" else "dir"
+
+    get_config_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.get_config", side_effect=get_config_side_effect
+    )
+    os_path_dirname_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.os.path.dirname", return_value="dir"
+    )
+
+    def isdir_side_effect(path):
+        return path == "dir"
+
+    os_path_isdir_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.os.path.isdir", side_effect=isdir_side_effect
+    )
+
+    if hard:
+        result = runner.invoke(purge, input="n", args="--hard")
+        dir_list.append(mock.call("dispatcher.db_path"))
+        os_path_isdir_mock.assert_has_calls([mock.call("file")])
+    else:
+        result = runner.invoke(purge, input="n")
+
+    get_config_mock.assert_has_calls(dir_list, any_order=True)
+    os_path_dirname_mock.assert_called_with(cm.config_file)
+    os_path_isdir_mock.assert_has_calls([mock.call("dir")])
+
+    assert "Aborted!\n" in result.output
 
 
 def test_config(mocker):

@@ -405,7 +405,7 @@ def purge(hard: bool, yes: bool) -> None:
 
     removal_list = {
         get_config("sdk.log_dir"),
-        get_config("sdk.log_dir"),
+        get_config("dispatcher.cache_dir"),
         get_config("dispatcher.log_dir"),
         get_config("user_interface.log_dir"),
         os.path.dirname(cm.config_file),
@@ -423,10 +423,10 @@ def purge(hard: bool, yes: bool) -> None:
         click.echo("1. Stop the covalent server if running.")
 
         for i, rem_path in enumerate(removal_list, start=2):
-            if os.path.isfile(rem_path):
-                click.echo(f"{i}. {rem_path} file will be deleted.")
-            else:
+            if os.path.isdir(rem_path):
                 click.echo(f"{i}. {rem_path} directory will be deleted.")
+            else:
+                click.echo(f"{i}. {rem_path} file will be deleted.")
 
         if hard:
             click.secho("WARNING: All user data will be deleted.", fg="red")
