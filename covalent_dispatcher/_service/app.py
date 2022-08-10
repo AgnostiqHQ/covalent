@@ -109,9 +109,9 @@ def get_result(
         status = lattice_record.status if lattice_record else None
         if not lattice_record:
             return JSONResponse(
-                    status_code=404,
-                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-                )
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
         if not wait or status in [
             str(Result.COMPLETED),
             str(Result.FAILED),
@@ -130,10 +130,10 @@ def get_result(
             return output
 
         response = JSONResponse(
-                status_code=503,
-                content={
-                    "message": "Result not ready to read yet. Please wait for a couple of seconds."
-                },
-            )
+            status_code=503,
+            content={
+                "message": "Result not ready to read yet. Please wait for a couple of seconds."
+            },
+        )
         response.retry_after = 2
         return response
