@@ -469,6 +469,9 @@ def test_cluster_size(mocker, workers):
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_size_mock = mocker.patch(
@@ -478,6 +481,8 @@ def test_cluster_size(mocker, workers):
     runner = CliRunner()
     response = runner.invoke(cluster, "--size")
 
+    is_server_running_mock.assert_called_once()
+    assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
@@ -496,6 +501,9 @@ def test_cluster_info(mocker):
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_info_cli_mock = mocker.patch("covalent_dispatcher._cli.service._get_cluster_info")
@@ -505,6 +513,8 @@ def test_cluster_info(mocker):
     runner = CliRunner()
     _ = runner.invoke(cluster, "--info")
 
+    is_server_running_mock.assert_called_once()
+    assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
@@ -537,6 +547,7 @@ def test_cluster_status_cli(mocker):
     _ = runner.invoke(cluster, "--status")
 
     is_server_running_mock.assert_called_once()
+    assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
@@ -556,6 +567,9 @@ def test_cluster_address_cli(mocker):
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_cli_mock = mocker.patch("covalent_dispatcher._cli.service._get_cluster_address")
@@ -565,6 +579,8 @@ def test_cluster_address_cli(mocker):
     runner = CliRunner()
     _ = runner.invoke(cluster, "--address")
 
+    is_server_running_mock.assert_called_once()
+    assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
@@ -584,6 +600,9 @@ def test_cluster_logs_cli(mocker):
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_cli_mock = mocker.patch("covalent_dispatcher._cli.service._get_cluster_logs")
@@ -593,6 +612,8 @@ def test_cluster_logs_cli(mocker):
     runner = CliRunner()
     _ = runner.invoke(cluster, "--logs")
 
+    is_server_running_mock.assert_called_once()
+    assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
@@ -612,6 +633,9 @@ def test_cluster_restart_cli(mocker):
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_cli_mock = mocker.patch("covalent_dispatcher._cli.service._cluster_restart")
@@ -620,6 +644,8 @@ def test_cluster_restart_cli(mocker):
     runner = CliRunner()
     _ = runner.invoke(cluster, "--restart")
 
+    is_server_running_mock.assert_called_once()
+    assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
@@ -638,6 +664,9 @@ def test_cluster_scale_cli(mocker):
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_config_mock = mocker.patch("covalent_dispatcher._cli.service.get_config")
     unparse_addr_mock = mocker.patch("covalent_dispatcher._cli.service.unparse_address")
     cluster_cli_mock = mocker.patch("covalent_dispatcher._cli.service._cluster_scale")
@@ -646,6 +675,8 @@ def test_cluster_scale_cli(mocker):
     runner = CliRunner()
     _ = runner.invoke(cluster, "--scale 1")
 
+    is_server_running_mock.assert_called_once()
+    assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
