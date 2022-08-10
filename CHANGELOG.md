@@ -8,8 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [UNRELEASED]
 ### Added
 
-- Added `covalent migrate_legacy_result_object` command to save
-  pickled Result objects to the DataStore
+- Added `covalent migrate_legacy_result_object` command to save pickled Result objects to the DataStore
 
 ## [0.170.1] - 2022-08-09
 
