@@ -454,7 +454,9 @@ def logs() -> None:
     """
     Show Covalent server logs.
     """
-    if os.path.exists(UI_LOGFILE):
+    from pathlib import Path
+
+    if Path(UI_LOGFILE).is_file():
         with open(UI_LOGFILE, "r") as f:
             line = f.readline()
             while line:

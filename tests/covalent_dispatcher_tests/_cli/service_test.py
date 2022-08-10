@@ -41,6 +41,7 @@ from covalent_dispatcher._cli.service import (
     _rm_pid_file,
     cluster,
     config,
+    logs,
     migrate_legacy_result_object,
     purge,
     restart,
@@ -402,6 +403,33 @@ def test_purge_abort(hard, mocker):
     os_path_isdir_mock.assert_has_calls([mock.call("dir")])
 
     assert "Aborted!\n" in result.output
+
+
+@pytest.mark.parametrize("exists", [False, True])
+def test_logs(exists, mocker):
+    """Test covalent logs command"""
+
+    from covalent_dispatcher._cli.service import UI_LOGFILE
+
+    runner = CliRunner()
+
+    mocker.patch("pathlib.Path.is_file", return_value=exists)
+
+    if not exists:
+        result = runner.invoke(logs)
+        assert (
+            result.output
+            == f"{UI_LOGFILE} not found. Restart the server to create a new log file.\n"
+        )
+    # else:
+    # mock_open = mocker.patch("covalent_dispatcher._cli.service.open", mock.mock_open(read_data="testing"))
+    # with mock_open as m:
+    #     result = runner.invoke(logs)
+
+    # m.assert_called_once_with(UI_LOGFILE)
+    # # assert result == "testing"
+    # print(result)
+    # assert False
 
 
 def test_config(mocker):
