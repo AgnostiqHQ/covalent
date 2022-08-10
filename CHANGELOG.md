@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.172.0] - 2022-08-10
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: manjunath.poilath <manjunath.poilath@psiog.com>
+- Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: M Shrikanth <shrikanth.mohan@psiog.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
 ### Changed
 
 - Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher/_service/app.py`
