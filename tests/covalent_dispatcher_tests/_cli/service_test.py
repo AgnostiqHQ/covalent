@@ -41,6 +41,7 @@ from covalent_dispatcher._cli.service import (
     _rm_pid_file,
     cluster,
     config,
+    migrate_legacy_result_object,
     purge,
     restart,
     start,
@@ -221,7 +222,7 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
 
     if ignore_migrations or not is_migration_pending:
         graceful_start_mock.assert_called_once()
-        assert set_config_mock.call_count == 2
+        assert set_config_mock.call_count == 5
         # set_config_mock.assert_called_once()
     else:
         assert MIGRATION_COMMAND_MSG in res.output
@@ -417,6 +418,14 @@ def test_config(mocker):
     cfg_read_config_mock.assert_called_once()
     json_dumps_mock.assert_called_once()
     click_echo_mock.assert_called_once()
+
+
+def test_migrate_legacy_result_object(mocker):
+    """test the `covalent migrate_legacy_result_object` command."""
+    runner = CliRunner()
+    migrate_mock = mocker.patch("covalent_dispatcher._cli.service.migrate_pickled_result_object")
+    runner.invoke(migrate_legacy_result_object, "result.pkl")
+    migrate_mock.assert_called_once()
 
 
 @pytest.mark.parametrize("workers", [1, 2, 3, 4])
