@@ -13,3 +13,4 @@ Covalent offers various forms of plugins, first set of which are executor Plugin
    api/executers/dask
    api/executers/ssh
    api/executers/slurm
+   api/executers/awslambda.rst
