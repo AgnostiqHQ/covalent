@@ -293,31 +293,31 @@ jobs:
               && steps.ui_tests.outputs.exit_code == 0))
         run: coverage xml -o ui_backend_coverage.xml
 
-      # - name: Upload SDK report to Codecov
-      #   if: >
-      #     matrix.os == 'ubuntu-latest'
-      #     && matrix.container == 'python:3.8-buster'
-      #     && github.event_name != 'workflow_dispatch'
-      #     && (github.event_name != 'pull_request'
-      #         || steps.working-directory.outputs.sdk == 'true')
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     files: ./sdk_coverage.xml
-      #     flags: SDK
-      #     name: "SDK Unit Tests"
+      - name: Upload SDK report to Codecov
+        if: >
+          matrix.os == 'ubuntu-latest'
+          && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
+          && (github.event_name != 'pull_request'
+              || steps.working-directory.outputs.sdk == 'true')
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./sdk_coverage.xml
+          flags: SDK
+          name: "SDK Unit Tests"
 
-      # - name: Upload Dispatcher report to Codecov
-      #   if: >
-      #     matrix.os == 'ubuntu-latest'
-      #     && matrix.container == 'python:3.8-buster'
-      #     && github.event_name != 'workflow_dispatch'
-      #     && (github.event_name != 'pull_request'
-      #         || steps.working-directory.outputs.dispatcher == 'true')
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     files: ./dispatcher_coverage.xml
-      #     flags: Dispatcher
-      #     name: "Dispatcher Unit Tests"
+      - name: Upload Dispatcher report to Codecov
+        if: >
+          matrix.os == 'ubuntu-latest'
+          && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
+          && (github.event_name != 'pull_request'
+              || steps.working-directory.outputs.dispatcher == 'true')
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./dispatcher_coverage.xml
+          flags: Dispatcher
+          name: "Dispatcher Unit Tests"
 
       - name: Upload Functional report to Codecov
         if: >

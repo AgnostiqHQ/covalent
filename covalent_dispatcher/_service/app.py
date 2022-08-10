@@ -43,9 +43,6 @@ log_stack_info = logger.log_stack_info
 
 router: APIRouter = APIRouter()
 
-# workflow_pool = None
-# tasks_pool = None
-
 
 @router.on_event("startup")
 def start_pools():
@@ -72,19 +69,6 @@ async def submit(request: Request) -> UUID:
     """
     data = await request.json()
     data = json.dumps(data).encode("utf-8")
-
-    # if not workflow_pool:
-    #     response = JSONResponse(
-    #         status_code=503,
-    #         content={"message": "Workflow pool has not started"},
-    #     )
-    #     return response
-    # if not tasks_pool:
-    #     response = JSONResponse(
-    #         status_code=503,
-    #         content={"message": "Tasks pool has not started"},
-    #     )
-    #     return response
 
     dispatch_id = dispatcher.run_dispatcher(data, workflow_pool, tasks_pool)
     return dispatch_id
