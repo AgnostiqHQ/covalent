@@ -23,6 +23,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - APIs that the GUI consumes have been re-written using FastAPI. This includes re-factoring of older APIs and adding of new APIs.
 - Added COVALENT_SERVER_IFACE_ANY flag for uvicorn to start with 0.0.0.0
 
+### Docs
+
+- ReadTheDocs landing page has been improved
+
+## [0.171.0] - 2022-08-10
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+### Added
+
+- Added `covalent migrate_legacy_result_object` command to save pickled Result objects to the DataStore
+
 ## [0.170.1] - 2022-08-09
 
 ### Authors

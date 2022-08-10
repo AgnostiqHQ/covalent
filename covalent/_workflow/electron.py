@@ -460,14 +460,6 @@ class Electron:
             node_id: Node id of the added node
         """
 
-        @electron
-        def to_decoded_electron_collection(**x):
-            collection = list(x.values())[0]
-            if isinstance(collection, list):
-                return TransportableObject.deserialize_list(collection)
-            elif isinstance(collection, dict):
-                return TransportableObject.deserialize_dict(collection)
-
         new_metadata = _DEFAULT_CONSTRAINT_VALUES.copy()
         if "executor" in self.metadata:
             new_metadata["executor"] = self.metadata["executor"]
@@ -648,3 +640,13 @@ def wait(child, parents):
         return child.wait_for(parents)
     else:
         return child
+
+
+@electron
+def to_decoded_electron_collection(**x):
+    """Interchanges order of serialize -> collection"""
+    collection = list(x.values())[0]
+    if isinstance(collection, list):
+        return TransportableObject.deserialize_list(collection)
+    elif isinstance(collection, dict):
+        return TransportableObject.deserialize_dict(collection)
