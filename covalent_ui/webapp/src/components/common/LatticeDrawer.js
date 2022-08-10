@@ -21,14 +21,12 @@
  */
 
 import { Drawer } from '@mui/material'
-// import { useDispatch, useSelector } from 'react-redux'
-
-// import { toggleLatticeDrawer } from '../../redux/commonSlice'
 import { navDrawerWidth } from './NavDrawer'
 
 export const latticeDrawerWidth = 400
 
 const drawerPaperStyles = (theme) => ({
+  py: 2,
   width: latticeDrawerWidth,
   boxSizing: 'border-box',
   border: 'none',
@@ -40,16 +38,10 @@ const drawerPaperStyles = (theme) => ({
   '&:not(:hover)::-webkit-scrollbar': {
     backgroundColor: 'inherit',
   },
-  // accomodate nav drawer (temporary design)
   ml: `${navDrawerWidth}px`,
 })
 
 const LatticeDrawer = ({ children }) => {
-  // const dispatch = useDispatch()
-  // const latticeDrawerOpen = useSelector(
-  //   (state) => state.common.latticeDrawerOpen
-  // )
-
   return (
     <>
       {/* Desktop */}

@@ -34,10 +34,7 @@ const ParameterTooltip = styled(({ className, ...props }) => (
 }))
 
 const ParameterNode = ({
-  id,
   data,
-  type,
-  selected,
   sourcePosition,
   targetPosition,
   isConnectable

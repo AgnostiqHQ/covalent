@@ -20,7 +20,9 @@
 
 """Covalent CLI Tool - Service Management."""
 
+
 import asyncio
+import contextlib
 import json
 import os
 import shutil
@@ -44,8 +46,8 @@ UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
 
-MIGRATION_COMMAND_MSG = '   (use "covalent db migrate" to run database migrations)'
 MIGRATION_WARNING_MSG = "There have been changes applied to the database."
+MIGRATION_COMMAND_MSG = '   (use "covalent db migrate" to run database migrations)'
 
 
 def _read_pid(filename: str) -> int:
@@ -153,7 +155,7 @@ def _graceful_start(
     develop: bool = False,
 ) -> int:
     """
-    Gracefully start a Flask app.
+    Gracefully start a Fast API app.
 
     Args:
         server_root: Directory where app.py is located.
@@ -387,20 +389,62 @@ def status() -> None:
 
 
 @click.command()
-def purge() -> None:
+@click.option(
+    "-H",
+    "--hard",
+    is_flag=True,
+    help="Perform a hard purge, deleting the DB as well. [default: False]",
+)
+@click.option(
+    "-y", "--yes", is_flag=True, help="Approve without showing the warning. [default: False]"
+)
+def purge(hard: bool, yes: bool) -> None:
     """
-    Shutdown server and delete the cache and config settings.
+    Purge Covalent from this system. This command is for developers.
     """
 
-    # Shutdown server.
+    removal_list = {
+        get_config("sdk.log_dir"),
+        get_config("dispatcher.cache_dir"),
+        get_config("dispatcher.log_dir"),
+        get_config("user_interface.log_dir"),
+        os.path.dirname(cm.config_file),
+    }
+
+    if hard:
+        removal_list.add(get_config("dispatcher.db_path"))
+
+    if not yes:
+
+        click.secho(f"{''.join(['*'] * 21)} WARNING {''.join(['*'] * 21)}", fg="yellow")
+
+        click.echo("Purging will perform the following operations: ")
+
+        click.echo("1. Stop the covalent server if running.")
+
+        for i, rem_path in enumerate(removal_list, start=2):
+            if os.path.isdir(rem_path):
+                click.echo(f"{i}. {rem_path} directory will be deleted.")
+            else:
+                click.echo(f"{i}. {rem_path} file will be deleted.")
+
+        if hard:
+            click.secho("WARNING: All user data will be deleted.", fg="red")
+
+        click.confirm("\nWould you like to proceed?", abort=True)
+
+    # Shutdown covalent server
     _graceful_shutdown(UI_PIDFILE)
 
-    shutil.rmtree(get_config("sdk.log_dir"), ignore_errors=True)
-    shutil.rmtree(get_config("dispatcher.cache_dir"), ignore_errors=True)
-    shutil.rmtree(get_config("dispatcher.log_dir"), ignore_errors=True)
-    shutil.rmtree(get_config("user_interface.log_dir"), ignore_errors=True)
+    # Remove all directories and files
+    for rem_path in removal_list:
+        if os.path.isdir(rem_path):
+            shutil.rmtree(rem_path, ignore_errors=True)
+        else:
+            with contextlib.suppress(FileNotFoundError):
+                os.remove(rem_path)
 
-    cm.purge_config()
+        click.echo(f"Removed {rem_path}.")
 
     click.echo("Covalent server files have been purged.")
 
@@ -410,15 +454,16 @@ def logs() -> None:
     """
     Show Covalent server logs.
     """
-    if os.path.exists(UI_LOGFILE):
-        f = open(UI_LOGFILE, "r")
-        line = f.readline()
-        while line:
-            click.echo(line.rstrip("\n"))
+    from pathlib import Path
+
+    if Path(UI_LOGFILE).is_file():
+        with open(UI_LOGFILE, "r") as f:
             line = f.readline()
-        f.close()
+            while line:
+                click.echo(line.rstrip("\n"))
+                line = f.readline()
     else:
-        click.echo(f"{UI_LOGFILE} not found!. Server possibly purged!")
+        click.echo(f"{UI_LOGFILE} not found. Restart the server to create a new log file.")
 
 
 @click.command()
