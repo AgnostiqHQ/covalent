@@ -177,9 +177,9 @@ def _graceful_start(
     no_cluster_flag = "--no-cluster"
     port = _next_available_port(port)
     if no_cluster_flag in sys.argv:
-        launch_str = f"{pypath} python3 app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
+        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
     else:
-        launch_str = f"{pypath} python3 app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
+        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
