@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - results_manager tests
 
+### Docs
+
+- ReadTheDocs landing page has been improved
+
 ## [0.171.0] - 2022-08-10
 
 ### Authors
