@@ -29,7 +29,6 @@ import os
 from typing import Any, Dict, List, Union
 
 import pkg_resources
-from attr import has
 
 from .._shared_files import logger
 from .._shared_files.config import get_config, update_config

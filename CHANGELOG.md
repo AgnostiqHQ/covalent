@@ -23,6 +23,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - APIs that the GUI consumes have been re-written using FastAPI. This includes re-factoring of older APIs and adding of new APIs.
 - Added COVALENT_SERVER_IFACE_ANY flag for uvicorn to start with 0.0.0.0
 
+## [0.170.1] - 2022-08-09
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+
+### Fixed
+
+- Remove `attr` import added inadvertently
+
 ### Tests
 
 - Fix `start` cli test, update `set_config` call count
