@@ -82,4 +82,4 @@ if __name__ == "__main__":
         dask_cluster.start()
 
     # Start covalent main app
-    uvicorn.run("app:fastapi_app", host="localhost", port=port, debug=DEBUG, reload=RELOAD)
+    uvicorn.run("app:fastapi_app", host="localhost", port=port, debug=True, reload=True)
