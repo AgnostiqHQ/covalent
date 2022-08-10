@@ -12,9 +12,11 @@ uses the S3 and the AWS lambda service to execute tasks thus the IAM roles and p
 the executor has permissions to interact with the two. The following JSON policy document shows the necessary IAM
 permissions required for the executor to properly run tasks using the AWS Lambda compute service
 
-.. code:: json
+.. dropdown::
 
-    {
+    .. code:: json
+
+        {
         "Version": "2012-10-17",
         "Statement": [
             {
@@ -76,7 +78,7 @@ permissions required for the executor to properly run tasks using the AWS Lambda
                 "Resource": "arn:aws:logs:*:*:log-group:/aws/lambda/*"
             }
         ]
-    }
+        }
 
 
 where `<bucket-name>` is the name of S3 bucket to be used by the executor to store temporary files generated during task
