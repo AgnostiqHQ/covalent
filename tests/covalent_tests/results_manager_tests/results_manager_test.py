@@ -25,8 +25,6 @@ from unittest import result
 from unittest.mock import ANY, Mock, call
 
 import pytest
-import urllib3
-from requests.exceptions import HTTPError
 
 from covalent._data_store.models import Lattice
 from covalent._results_manager import wait
