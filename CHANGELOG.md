@@ -15,6 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Flask route logic to return 503 when the result is not ready
 
 
+## [0.170.1] - 2022-08-09
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+
+
+### Fixed
+
+- Remove `attr` import added inadvertently
+
 ### Tests
 
 - Fix `start` cli test, update `set_config` call count
