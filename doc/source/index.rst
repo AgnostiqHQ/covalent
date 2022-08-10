@@ -24,7 +24,7 @@ COVALENT DOCUMENTATION
    <img alt="Supported Platforms Badge" src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blueviolet">
    </center>
 
-.. image:: _static/covalent_platform.png
+.. image:: _static/covalent_platform.svg
    :align: center
 
 Covalent is a Pythonic distributed workflow tool used to prototype and run high performance classical and quantum software. Covalent can be used to...
