@@ -18,6 +18,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - results_manager tests
 
+## [0.173.0] - 2022-08-10
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+### Added
+
+- `--hard` and `--yes` flags added to `covalent purge` for hard purging (also deletes the databse) and autoapproving respectively.
+
+### Changed
+
+- `covalent purge` now shows the user a prompt informing them what dirs and files will be deleted.
+- Improved shown messages in some commands.
+
+### Tests
+
+- Updated tests to reflect above changes.
+
 ## [0.172.0] - 2022-08-10
 
 ### Authors
