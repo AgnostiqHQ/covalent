@@ -2,11 +2,12 @@
 
 ## Setup
 
--   Activate conda environment and install required packages:
+-   Clone the repo
+-   Install the dependencies
 
 ```shell
-conda activate <covalent-env>
-pip install -r requirement.txt
+cd /covalent
+pip install -e .
 ```
 
 -   Install `node` (v16 or later) and `npm`:
@@ -34,11 +35,16 @@ yarn install
 yarn build
 ```
 
-## Run server
+## Run web app
 
 ```shell
+yarn start
+```
+## Run server
+Recomended python version is 3.8
+```shell
 cd covalent_ui
-python app.py -p <port>
+python app.py
 ```
 
 -   Open `http://localhost:<port>` in your browser.

@@ -153,7 +153,7 @@ def _graceful_start(
     develop: bool = False,
 ) -> int:
     """
-    Gracefully start a Flask app.
+    Gracefully start a Fast API app.
 
     Args:
         server_root: Directory where app.py is located.

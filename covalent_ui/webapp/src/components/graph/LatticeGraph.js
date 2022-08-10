@@ -19,8 +19,6 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-
-
 import { useEffect, useRef, useState } from 'react'
 import ReactFlow, { MiniMap } from 'react-flow-renderer'
 import ElectronNode from './ElectronNode'
@@ -74,47 +72,47 @@ const LatticeGraph = ({
   }
 
   useEffect(() => {
-   marginSet();
+    marginSet()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitView, marginLeft, marginRight, graph, direction,elements, showParams])
-
+  }, [fitView, marginLeft, marginRight, graph, direction, elements, showParams])
 
   // handle resizing
   const resizing = () => {
-    const resizeHandler =
-      () => fitView({ duration: 250, marginLeft, marginRight })
+    const resizeHandler = () =>
+      fitView({ duration: 250, marginLeft, marginRight })
     window.addEventListener('resize', resizeHandler)
     return () => {
       window.removeEventListener('resize', resizeHandler)
     }
   }
   useEffect(() => {
-    resizing();
+    resizing()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [marginRight, marginLeft, fitView,elements])
+  }, [marginRight, marginLeft, fitView, elements])
 
   // layouting
   useEffect(() => {
     if (algorithm === 'oldLayout') {
       setElements(layout(graph, direction, showParams,hideLabels))
-
     } else {
-      assignNodePositions(graph, direction, showParams, algorithm,hideLabels).then((els) => {
-        setElements(els);
-      }).catch((error) => console.log('Error'))
+      assignNodePositions(graph, direction, showParams, algorithm,hideLabels)
+        .then((els) => {
+          setElements(els)
+        })
+        .catch((error) => console.log(error))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph, direction, showParams, algorithm,hideLabels])
 
   // menu for layout
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
-  const handleClick = event => {
-    setAnchorEl(event.currentTarget);
-  };
+  const [anchorEl, setAnchorEl] = useState(null)
+  const open = Boolean(anchorEl)
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget)
+  }
   const handleClose = () => {
-    setAnchorEl(null);
-  };
+    setAnchorEl(null)
+  }
 
   const handleChangeAlgorithm = (event) => {
     setAnchorEl(null);
@@ -129,7 +127,6 @@ const LatticeGraph = ({
 
   return (
     <>
-      {/* {loader && <PageLoading/>} */}
       {elements?.length > 0 && (
         <ReactFlow
           nodeTypes={{ electron: ElectronNode, parameter: ParameterNode }}
@@ -176,7 +173,15 @@ const LatticeGraph = ({
           />
           {showMinimap && (
             <MiniMap
-              style={{ backgroundColor: theme.palette.background.default }}
+              style={{
+                backgroundColor: theme.palette.background.default,
+                position: 'absolute',
+                bottom: 12,
+                left: 513,
+                zIndex: 5,
+                height: 150,
+                width: 300,
+              }}
               maskColor={theme.palette.background.paper}
               nodeColor={(node) => statusColor(node.data.status)}
             />
