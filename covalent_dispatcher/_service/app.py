@@ -43,6 +43,9 @@ log_stack_info = logger.log_stack_info
 
 router: APIRouter = APIRouter()
 
+workflow_pool = None
+tasks_pool = None
+
 
 @router.on_event("startup")
 def start_pools():
