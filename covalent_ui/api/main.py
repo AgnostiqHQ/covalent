@@ -43,12 +43,12 @@ socket_origins = [f"http://{address}:{port}", f"http://{address}:{socket_port}"]
 app_log = logger.app_log
 
 app = FastAPI()
-sio = socketio.AsyncServer(cors_allowed_origins=socket_origins, async_mode="asgi")
+# sio = socketio.AsyncServer(cors_allowed_origins=socket_origins, async_mode="asgi")
 
 
-@sio.on("message")
-async def chat_message(sid, data):
-    await sio.emit("draw-request", "hi ")
+# @sio.on("message")
+# async def chat_message(sid, data):
+#     await sio.emit("draw-request", "hi ")
 
 
 app.include_router(routes.routes)
@@ -80,11 +80,11 @@ async def http_exception_handler(request, exc: HTTPException):
 
 @app.post(WEBHOOK_PATH)
 async def handle_result_update(result_update: dict):
-    await sio.emit("result-update", result_update)
+    # await sio.emit("result-update", result_update)
     return {"ok": True}
 
 
 @app.post("/api/draw")
 async def handle_draw_request(draw_request: dict):
-    await sio.emit("draw_request", draw_request)
+    # await sio.emit("draw_request", draw_request)
     return {"ok": True}
