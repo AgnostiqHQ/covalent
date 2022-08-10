@@ -1,4 +1,4 @@
-.. _awslambda_executor:
+.. _awsbatch_executor:
 
 🔌 AWS Batch Executor
 """""""""""""""""""""""""""
