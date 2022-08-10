@@ -20,7 +20,7 @@ Plugins
    dask
    ssh
    slurm
-   awslambda
+   awsbatch
 
 Base executor
 *************
