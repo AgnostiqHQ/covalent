@@ -342,8 +342,6 @@ def start(
         except OSError:
             server_listening = True
 
-    DataStore(initialize_db=True)
-
 
 @click.command()
 def stop() -> None:

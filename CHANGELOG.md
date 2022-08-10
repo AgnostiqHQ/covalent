@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Fixing migrations issue that may arise due to `DataStore(initialize_db=True)` statement in `covalent start`
+
 ## [0.173.0] - 2022-08-10
 
 ### Authors
