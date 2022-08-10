@@ -305,12 +305,7 @@ class Electron:
 
         if active_lattice.post_processing:
 
-            # This is to resolve `wait_for` calls during post processing time
             id, output = active_lattice.electron_outputs[0]
-
-            for _, _, attr in active_lattice.transport_graph._graph.in_edges(id, data=True):
-                if attr.get("wait_for"):
-                    return Electron(function=None, metadata=None, node_id=id)
 
             active_lattice.electron_outputs.pop(0)
             return output.get_deserialized()
@@ -491,9 +486,6 @@ class Electron:
 
         active_lattice = active_lattice_manager.get_active_lattice()
 
-        if active_lattice.post_processing:
-            return active_lattice.electron_outputs.pop(0)[1]
-
         # Just using list(electrons) will not work since we are overriding the __iter__
         # method for an Electron which results in it essentially disappearing, thus using
         # [electrons] to create the list if there's a single electron
@@ -636,7 +628,7 @@ def wait(child, parents):
     """
     active_lattice = active_lattice_manager.get_active_lattice()
 
-    if active_lattice:
+    if active_lattice and not active_lattice.post_processing:
         return child.wait_for(parents)
     else:
         return child

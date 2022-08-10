@@ -49,7 +49,7 @@ def task_3(b):
 def workflow():
     res_1 = task_1(2)
     res_2 = task_2(res_1, 3)
-    res_3 = task_3(5).wait_for(res_1)
+    res_3 = ct.wait(task_3(5), res_1)
 
     return task_2(res_2, res_3)
 
@@ -63,7 +63,7 @@ def test_wait_for_building():
 
 
 def test_wait_for_post_processing():
-    """Test to check post processing with `wait_for` works fine."""
+    """Test to check post processing with `wait` works fine."""
 
     workflow.build_graph()
     with active_lattice_manager.claim(workflow):
