@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher/_service/app.py`
+- Unit tests written for Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher_tests/_service/app.test.py`
+- Web apis of `covalent_ui` refactored to adhere to v11 DB schema
+- Electron graph mini map has been moved next to controls on the GUI.
+- Lattice status and count of completed & total electrons has been moved to the top of the graph on the GUI.
+- Some of the Flask APIs earlier consumed by the GUI have been deprecated & removed from the code base.
+- APIs exposed by the web app back end have been re-factored to adhere to the new DB schema v10
+
+### Added
+
+- Added count of dispatches by status on the dispatch list section of the GUI.
+- APIs that the GUI consumes have been re-written using FastAPI. This includes re-factoring of older APIs and adding of new APIs.
+- Added COVALENT_SERVER_IFACE_ANY flag for uvicorn to start with 0.0.0.0
+
 ### Docs
 
 - ReadTheDocs landing page has been improved
@@ -27,7 +43,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Authors
 
 - Venkat Bala <venkat@agnostiq.ai>
-
 
 ### Fixed
 
@@ -361,6 +376,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Changed the custom executor how-to to be shorter and more concise.
+
+
 
 ## [0.156.0] - 2022-07-27
 
