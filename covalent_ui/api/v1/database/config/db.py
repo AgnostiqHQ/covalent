@@ -20,6 +20,7 @@
 """DB Config"""
 
 from sqlalchemy.ext.declarative import declarative_base
+
 from covalent._data_store.datastore import DataStore
 
 engine = DataStore().engine
