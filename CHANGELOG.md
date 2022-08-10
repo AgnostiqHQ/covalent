@@ -18,6 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - results_manager tests
 
+## [0.171.0] - 2022-08-10
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+### Added
+
+- Added `covalent migrate_legacy_result_object` command to save pickled Result objects to the DataStore
+
 ## [0.170.1] - 2022-08-09
 
 ### Authors
