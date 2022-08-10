@@ -69,6 +69,17 @@ async def submit(request: Request) -> UUID:
     """
     data = await request.json()
     data = json.dumps(data).encode("utf-8")
+    if not workflow_pool:
+        return JSONResponse(
+            status_code=503,
+            content={"message": "workflow_pool not started"},
+        )
+
+    if not tasks_pool:
+        return JSONResponse(
+            status_code=503,
+            content={"message": "tasks_pool not started"},
+        )
 
     dispatch_id = dispatcher.run_dispatcher(data, workflow_pool, tasks_pool)
     return dispatch_id
