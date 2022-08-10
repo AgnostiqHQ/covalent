@@ -184,6 +184,6 @@ Alternatively, users can also instantiate the executor class explicity with thei
     ef my_custom_hybrid_task():
         # Task definition goes here
 
-.. autoclass:: covalent.executor.AWSBraketExecutor
+.. autoclass:: covalent.executor.BraketExecutor
     :members:
     :inherited-members:
