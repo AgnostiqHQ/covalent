@@ -22,7 +22,7 @@
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._workflow.electron import Electron
+from covalent._workflow.electron import Electron, to_decoded_electron_collection
 from covalent._workflow.transport import TransportableObject, _TransportGraph
 from covalent.executor.executor_plugins.local import LocalExecutor
 
@@ -75,6 +75,20 @@ def test_wait_for_post_processing():
             (6, TransportableObject(1500)),
         ]
         assert workflow.workflow_function.get_deserialized()() == 1500
+
+
+def test_collection_node_helper_electron():
+    """Unit test for `to_decoded_electron_collection`"""
+
+    list_collection = [
+        TransportableObject.make_transportable(1),
+        TransportableObject.make_transportable(2),
+    ]
+
+    dict_collection = {"a": list_collection[0], "b": list_collection[1]}
+    assert to_decoded_electron_collection(x=list_collection) == [1, 2]
+
+    assert to_decoded_electron_collection(x=dict_collection) == {"a": 1, "b": 2}
 
 
 def test_electron_add_collection_node():
