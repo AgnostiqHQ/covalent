@@ -93,4 +93,3 @@ if __name__ == "__main__":
 
     # Start covalent main app
     uvicorn.run("app:fastapi_app", host=host, port=port, debug=DEBUG, reload=RELOAD)
-
