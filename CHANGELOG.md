@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Adding tests to update patch coverage for the `covalent logs` cli
+
 ### Changed
 
 - Modify the `covalent logs` CLI handler to read logs line by line
