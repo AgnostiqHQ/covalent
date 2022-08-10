@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `covalent purge` now shows the user a prompt informing them what dirs and files will be deleted.
-- Improved messages in some commands.
+- Improved shown messages in some commands.
 
 ### Tests
 
