@@ -421,15 +421,13 @@ def test_logs(exists, mocker):
             result.output
             == f"{UI_LOGFILE} not found. Restart the server to create a new log file.\n"
         )
-    # else:
-    # mock_open = mocker.patch("covalent_dispatcher._cli.service.open", mock.mock_open(read_data="testing"))
-    # with mock_open as m:
-    #     result = runner.invoke(logs)
+    else:
+        m_open = mock.mock_open(read_data="testing")
+        with mock.patch("covalent_dispatcher._cli.service.open", m_open):
+            result = runner.invoke(logs)
 
-    # m.assert_called_once_with(UI_LOGFILE)
-    # # assert result == "testing"
-    # print(result)
-    # assert False
+        m_open.assert_called_once_with(UI_LOGFILE, "r")
+        assert result.output == "testing\n"
 
 
 def test_config(mocker):
