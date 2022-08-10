@@ -144,45 +144,45 @@ jobs:
           || matrix.container == 'python:3.10-bullseye')
         run: apt-get update && apt-get install -y rsync
 
-      # - name: Install NPM and Yarn on Ubuntu
-      #   if: >
-      #     (github.event_name != 'pull_request'
-      #     || steps.working-directory.outputs.ui_frontend == 'true')
-      #     && (matrix.container == 'python:3.8-buster'
-      #     || matrix.container == 'python:3.8-bullseye'
-      #     || matrix.container == 'python:3.9-buster'
-      #     || matrix.container == 'python:3.9-bullseye'
-      #     || matrix.container == 'python:3.10-buster'
-      #     || matrix.container == 'python:3.10-bullseye')
-      #   run: |
-      #     apt-get install -y curl
-      #     curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
-      #     apt-get install -y nodejs
-      #     npm install -g yarn
+      - name: Install NPM and Yarn on Ubuntu
+        if: >
+          (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_frontend == 'true')
+          && (matrix.container == 'python:3.8-buster'
+          || matrix.container == 'python:3.8-bullseye'
+          || matrix.container == 'python:3.9-buster'
+          || matrix.container == 'python:3.9-bullseye'
+          || matrix.container == 'python:3.10-buster'
+          || matrix.container == 'python:3.10-bullseye')
+        run: |
+          apt-get install -y curl
+          curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+          apt-get install -y nodejs
+          npm install -g yarn
 
-      # - name: Install NPM and Yarn on CentOS
-      #   if: >
-      #     (github.event_name != 'pull_request'
-      #     || steps.working-directory.outputs.ui_frontend == 'true')
-      #      && matrix.container.image == 'centos/python-38-centos7'
-      #   run: |
-      #     yum remove -y npm nodejs
-      #     curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
-      #     yum install -y npm nodejs
-      #     npm install -g yarn
+      - name: Install NPM and Yarn on CentOS
+        if: >
+          (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_frontend == 'true')
+           && matrix.container.image == 'centos/python-38-centos7'
+        run: |
+          yum remove -y npm nodejs
+          curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
+          yum install -y npm nodejs
+          npm install -g yarn
 
-      # - name: Build webapp
-      #   if: >
-      #     github.event_name != 'pull_request'
-      #     || steps.working-directory.outputs.ui_frontend == 'true'
-      #   uses: nick-fields/retry@v2
-      #   with:
-      #     timeout_minutes: 10
-      #     max_attempts: 2
-      #     command: |
-      #       cd ./covalent_ui/webapp
-      #       yarn install
-      #       yarn build
+      - name: Build webapp
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_frontend == 'true'
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 2
+          command: |
+            cd ./covalent_ui/webapp
+            yarn install
+            yarn build
 
       - name: Build distribution
         if: >
@@ -190,30 +190,30 @@ jobs:
           || steps.working-directory.outputs.build == 'true'
         run: python setup.py sdist
 
-      # - name: Validate distribution
-      #   if: >
-      #     github.event_name != 'pull_request'
-      #     || steps.working-directory.outputs.build == 'true'
-      #   run: |
-      #     VERSION="$(cat ./VERSION)"
-      #     cd dist
-      #     tar xzf covalent-${VERSION}.tar.gz
-      #     diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
-      #     diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
-      #     diff -x README.md -r covalent-${VERSION}/covalent_migrations ../covalent_migrations
-      #     diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
-      #     rm -rf covalent-${VERSION}/
+      - name: Validate distribution
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.build == 'true'
+        run: |
+          VERSION="$(cat ./VERSION)"
+          cd dist
+          tar xzf covalent-${VERSION}.tar.gz
+          diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
+          diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x README.md -r covalent-${VERSION}/covalent_migrations ../covalent_migrations
+          diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
+          rm -rf covalent-${VERSION}/
 
-      # - name: Validate webapp
-      #   if: >
-      #     github.event_name != 'pull_request'
-      #     || steps.working-directory.outputs.ui_frontend == 'true'
-      #   run: |
-      #     VERSION="$(cat ./VERSION)"
-      #     cd dist
-      #     tar xzf covalent-${VERSION}.tar.gz
-      #     diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
-      #     rm -rf covalent-${VERSION}/
+      - name: Validate webapp
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_frontend == 'true'
+        run: |
+          VERSION="$(cat ./VERSION)"
+          cd dist
+          tar xzf covalent-${VERSION}.tar.gz
+          diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
+          rm -rf covalent-${VERSION}/
 
       - name: Install Covalent
         if: >
