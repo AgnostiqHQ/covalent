@@ -63,12 +63,12 @@ def send_update(result: Result) -> None:
     )
 
     app_log.debug("Moving to Fast API soon - stay tuned!!")
-    # try:
-    #     # ignore response
-    #     requests.post(get_ui_url(ui_server.WEBHOOK_PATH), data=result_update, timeout=1)
-    # except requests.exceptions.RequestException:
-    #     # catch all requests-related exceptions
-    #     app_log.debug("Unable to send result update to UI server.")
+    try:
+        # ignore response
+        requests.post(get_ui_url(ui_server.WEBHOOK_PATH), data=result_update, timeout=1)
+    except requests.exceptions.RequestException:
+        # catch all requests-related exceptions
+        app_log.debug("Unable to send result update to UI server.")
 
 
 def send_draw_request(lattice) -> None:

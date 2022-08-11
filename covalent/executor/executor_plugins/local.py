@@ -37,7 +37,7 @@ from covalent._workflow.transport import TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
 
 # The plugin class name must be given by the executor_plugin_name attribute:
-executor_plugin_name = "LocalExecutor"
+EXECUTOR_PLUGIN_NAME = "LocalExecutor"
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info

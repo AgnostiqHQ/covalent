@@ -330,6 +330,10 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         return (result, stdout.getvalue(), stderr.getvalue())
 
+    def setup(self, task_metadata: Dict) -> Any:
+        """Placeholder to run any executor specific tasks"""
+        pass
+
     @abstractmethod
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
         """Abstract method to run a function in the executor.
@@ -346,6 +350,10 @@ class BaseExecutor(_AbstractBaseExecutor):
         """
 
         raise NotImplementedError
+
+    def teardown(self, task_metadata: Dict) -> Any:
+        """Placeholder to run nay executor specific cleanup/teardown actions"""
+        pass
 
     def execute_in_conda_env(
         self,
@@ -590,10 +598,10 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
                 async with aiofiles.open(filepath, "a") as f:
                     await f.write(ss)
 
-    async def setup(self):
+    async def setup(self, task_metadata: Dict):
         pass
 
-    async def teardown(self):
+    async def teardown(self, task_metadata: Dict):
         pass
 
     async def execute(
@@ -613,7 +621,7 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
         }
 
         if not self.warmed_up:
-            await self.setup()
+            await self.setup(task_metadata=task_metadata)
             self.warmed_up = True
 
         try:
@@ -624,12 +632,12 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
 
             self.tasks_left -= 1
             if self.tasks_left < 1:
-                await self.teardown()
+                await self.teardown(task_metadata=task_metadata)
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
             self.tasks_left -= 1
             if self.tasks_left < 1:
-                await self.teardown()
+                await self.teardown(task_metadata=task_metadata)
             raise ex
 
         await self.write_streams_to_file(
