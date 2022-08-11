@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `covalent db` cli command to API section of RTD
 
+### Changed
+
+- Changed return value for TransferFromRemote and TransferToRemote (download/upload) operations to be consistent and always return filepath tuples
+
+### Docs
+
+- Updated docs with File Transfer return value changes and `files` kwarg injections
+
 ### Fixed
 
 - Fixed postprocessing workflows that return an electron with an incoming wait_for edge

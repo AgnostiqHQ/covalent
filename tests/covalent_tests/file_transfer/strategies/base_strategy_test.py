@@ -64,9 +64,4 @@ class TestBaseFileTransferStrategy:
         ft = FileTransfer(from_file, to_file, strategy=strategy)
         pre_transfer_hook_callable, file_transfer_callable = ft.cp()
         return_value = pre_transfer_hook_callable()
-        if not is_to_remote and not is_from_remote:
-            assert return_value == (from_file.filepath, to_file.filepath)
-        elif is_to_remote:
-            assert return_value == from_file.filepath
-        elif is_from_remote:
-            assert return_value == to_file.filepath
+        assert return_value == (from_file.filepath, to_file.filepath)
