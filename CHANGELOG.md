@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `covalent db` cli command to API section of RTD
 
+## [0.174.0] - 2022-08-11
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
 ### Changed
 
 - Changed return value for TransferFromRemote and TransferToRemote (download/upload) operations to be consistent and always return filepath tuples
