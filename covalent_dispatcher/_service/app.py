@@ -30,11 +30,11 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 import covalent_dispatcher as dispatcher
+from covalent._data_store.datastore import workflow_db
 from covalent._data_store.models import Lattice
 from covalent._results_manager.result import Result
 from covalent._results_manager.results_manager import result_from
 from covalent._shared_files import logger
-from covalent_ui.api.v1.database.config.db import engine
 
 from .._db.dispatchdb import DispatchDB
 
@@ -104,45 +104,36 @@ def db_path() -> str:
 def get_result(
     dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
 ):
-    app_log.warning("get result")
-    app_log.warning("wait is " + str(wait))
-    while True:
-        with Session(engine) as session:
-            lattice_record = (
-                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-            )
+    with workflow_db.session() as session:
+        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
         status = lattice_record.status if lattice_record else None
-        try:
-            if not lattice_record:
-                return JSONResponse(
-                    status_code=404,
-                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-                )
-            elif not wait or status in [
-                str(Result.COMPLETED),
-                str(Result.FAILED),
-                str(Result.CANCELLED),
-                str(Result.POSTPROCESSING_FAILED),
-                str(Result.PENDING_POSTPROCESSING),
-            ]:
-                output = {
-                    "id": dispatch_id,
-                    "status": lattice_record.status,
-                }
-                if not status_only:
-                    output["result"] = codecs.encode(
-                        pickle.dumps(result_from(lattice_record)), "base64"
-                    ).decode()
-                return output
-
-        except (FileNotFoundError, EOFError):
-            if wait:
-                continue
-            response = JSONResponse(
-                status_code=503,
-                content={
-                    "message": "Result not ready to read yet. Please wait for a couple of seconds."
-                },
+        if not lattice_record:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
             )
-            response.retry_after = 2
-            return response
+        if not wait or status in [
+            str(Result.COMPLETED),
+            str(Result.FAILED),
+            str(Result.CANCELLED),
+            str(Result.POSTPROCESSING_FAILED),
+            str(Result.PENDING_POSTPROCESSING),
+        ]:
+            output = {
+                "id": dispatch_id,
+                "status": lattice_record.status,
+            }
+            if not status_only:
+                output["result"] = codecs.encode(
+                    pickle.dumps(result_from(lattice_record)), "base64"
+                ).decode()
+            return output
+
+        response = JSONResponse(
+            status_code=503,
+            content={
+                "message": "Result not ready to read yet. Please wait for a couple of seconds."
+            },
+            headers={"Retry-After": "2"},
+        )
+        return response
