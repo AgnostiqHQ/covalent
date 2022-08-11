@@ -17,9 +17,9 @@ configured so that the executor has the necessary permissions to interact with t
 The following IAM policy can be use to properly configure the required IAM role for this executor
 
 .. dropdown:: AWS Braket IAM policy
-    
+
     .. code:: json
-        
+
         {
         "Version": "2012-10-17",
         "Statement": [
