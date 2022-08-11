@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Adding RTD for `AWS Braket` executor
+- Adding dropdown menu for the IAM policy
+
 ## [0.177.0] - 2022-08-11
 
 ### Authors

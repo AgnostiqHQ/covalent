@@ -16,96 +16,97 @@ configured so that the executor has the necessary permissions to interact with t
 
 The following IAM policy can be use to properly configure the required IAM role for this executor
 
-.. code:: json
-
-    {
-    "Version": "2012-10-17",
-    "Statement": [
+.. dropdown:: AWS Braket IAM policy
+    .. code:: json
+        
         {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": "cloudwatch:PutMetricData",
-            "Resource": "*",
-            "Condition": {
-                "StringEquals": {
-                    "cloudwatch:namespace": "/aws/braket"
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "VisualEditor0",
+                "Effect": "Allow",
+                "Action": "cloudwatch:PutMetricData",
+                "Resource": "*",
+                "Condition": {
+                    "StringEquals": {
+                        "cloudwatch:namespace": "/aws/braket"
+                    }
                 }
-            }
-        },
-        {
-            "Sid": "VisualEditor1",
-            "Effect": "Allow",
-            "Action": "iam:PassRole",
-            "Resource": "arn:aws:iam::<account id>:role/CovalentBraketJobsExecutionRole",
-            "Condition": {
-                "StringLike": {
-                    "iam:PassedToService": "braket.amazonaws.com"
+            },
+            {
+                "Sid": "VisualEditor1",
+                "Effect": "Allow",
+                "Action": "iam:PassRole",
+                "Resource": "arn:aws:iam::<account id>:role/CovalentBraketJobsExecutionRole",
+                "Condition": {
+                    "StringLike": {
+                        "iam:PassedToService": "braket.amazonaws.com"
+                    }
                 }
+            },
+            {
+                "Sid": "VisualEditor2",
+                "Effect": "Allow",
+                "Action": [
+                    "braket:CreateJob",
+                    "braket:GetJob",
+                    "braket:SearchDevices",
+                    "braket:SearchJobs",
+                    "braket:CreateQuantumTask",
+                    "ecr:GetAuthorizationToken",
+                    "iam:ListRoles",
+                    "braket:ListTagsForResource",
+                    "braket:UntagResource",
+                    "braket:TagResource",
+                    "braket:GetDevice",
+                    "braket:GetQuantumTask",
+                    "braket:CancelQuantumTask",
+                    "braket:SearchQuantumTasks",
+                    "braket:CancelJob"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Sid": "VisualEditor3",
+                "Effect": "Allow",
+                "Action": [
+                    "s3:PutBucketPublicAccessBlock",
+                    "logs:DescribeLogStreams",
+                    "ecr:GetDownloadUrlForLayer",
+                    "logs:StartQuery",
+                    "s3:CreateBucket",
+                    "s3:ListBucket",
+                    "logs:CreateLogGroup",
+                    "logs:PutLogEvents",
+                    "s3:PutObject",
+                    "s3:GetObject",
+                    "logs:CreateLogStream",
+                    "logs:GetLogEvents",
+                    "ecr:BatchGetImage",
+                    "s3:PutBucketPolicy",
+                    "ecr:BatchCheckLayerAvailability"
+                ],
+                "Resource": [
+                    "arn:aws:s3:::amazon-braket-covalent-job-resources",
+                    "arn:aws:s3:::amazon-braket-covalent-job-resources/*",
+                    "arn:aws:logs:*:*:log-group:/aws/braket*",
+                    "arn:aws:ecr:*:<account id>:repository/covalent-braket-job-images"
+                ]
+            },
+            {
+                "Sid": "VisualEditor4",
+                "Effect": "Allow",
+                "Action": "logs:GetQueryResults",
+                "Resource": "arn:aws:logs:*:*:log-group:*"
+            },
+            {
+                "Sid": "VisualEditor5",
+                "Effect": "Allow",
+                "Action": "logs:StopQuery",
+                "Resource": "arn:aws:logs:*:*:log-group:/aws/braket*"
             }
-        },
-        {
-            "Sid": "VisualEditor2",
-            "Effect": "Allow",
-            "Action": [
-                "braket:CreateJob",
-                "braket:GetJob",
-                "braket:SearchDevices",
-                "braket:SearchJobs",
-                "braket:CreateQuantumTask",
-                "ecr:GetAuthorizationToken",
-                "iam:ListRoles",
-                "braket:ListTagsForResource",
-                "braket:UntagResource",
-                "braket:TagResource",
-                "braket:GetDevice",
-                "braket:GetQuantumTask",
-                "braket:CancelQuantumTask",
-                "braket:SearchQuantumTasks",
-                "braket:CancelJob"
-            ],
-            "Resource": "*"
-        },
-        {
-            "Sid": "VisualEditor3",
-            "Effect": "Allow",
-            "Action": [
-                "s3:PutBucketPublicAccessBlock",
-                "logs:DescribeLogStreams",
-                "ecr:GetDownloadUrlForLayer",
-                "logs:StartQuery",
-                "s3:CreateBucket",
-                "s3:ListBucket",
-                "logs:CreateLogGroup",
-                "logs:PutLogEvents",
-                "s3:PutObject",
-                "s3:GetObject",
-                "logs:CreateLogStream",
-                "logs:GetLogEvents",
-                "ecr:BatchGetImage",
-                "s3:PutBucketPolicy",
-                "ecr:BatchCheckLayerAvailability"
-            ],
-            "Resource": [
-                "arn:aws:s3:::amazon-braket-covalent-job-resources",
-                "arn:aws:s3:::amazon-braket-covalent-job-resources/*",
-                "arn:aws:logs:*:*:log-group:/aws/braket*",
-                "arn:aws:ecr:*:<account id>:repository/covalent-braket-job-images"
-            ]
-        },
-        {
-            "Sid": "VisualEditor4",
-            "Effect": "Allow",
-            "Action": "logs:GetQueryResults",
-            "Resource": "arn:aws:logs:*:*:log-group:*"
-        },
-        {
-            "Sid": "VisualEditor5",
-            "Effect": "Allow",
-            "Action": "logs:StopQuery",
-            "Resource": "arn:aws:logs:*:*:log-group:/aws/braket*"
-        }
-    ]
-}
+        ]
+    }
 
 
 This executor uses `Docker <https://www.docker.com/>`_ to build an image containing the function code to be executed on Braket locally
