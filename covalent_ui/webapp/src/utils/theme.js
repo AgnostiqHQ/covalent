@@ -29,7 +29,6 @@ const LinkBehavior = React.forwardRef(({ href, ...props }, ref) => {
   return <RouterLink ref={ref} to={href} {...props} />
 })
 
-
 const defaultTheme = createTheme({
   typography: {
     fontFamily: '"DM Sans", "Helvetica", "Arial", sans-serif',
@@ -41,7 +40,7 @@ const defaultTheme = createTheme({
       main: '#6D7CFF',
       dark: '#5552FF',
       blue04: '#6473FF',
-      white:'#ffff',
+      white: '#ffff',
     },
     secondary: {
       light: '#DAC3FF',
@@ -55,7 +54,8 @@ const defaultTheme = createTheme({
       coveBlack02: '#303067',
       coveBlack03: '#1C1C46',
       graphCanvas: '#464646',
-      darkblackbg:'#101820'
+      darkblackbg: '#101820',
+      buttonBg: '#10102C',
     },
     error: {
       main: '#FF6464',
@@ -70,8 +70,8 @@ const defaultTheme = createTheme({
       main: '#dac3ff',
     },
     text: {
-      primary: '#F1F1F6',
-      secondary: '#CBCBD7',
+      primary: '#CBCBD7',
+      secondary: '#F1F1F6',
       tertiary: '#86869A',
     },
   },
@@ -125,6 +125,15 @@ const theme = createTheme(defaultTheme, {
         LinkComponent: LinkBehavior,
       },
     },
+    MuiSnackbarContent: {
+      styleOverrides: {
+        root: {
+          color: '#FAFAFA',
+          backgroundColor: '#1c1c46',
+          border: '1px solid #99daff',
+        },
+      },
+    },
     MuiCssBaseline: {
       styleOverrides: {
         body: {
@@ -132,26 +141,32 @@ const theme = createTheme(defaultTheme, {
         },
       },
     },
-    // MuiTabs: {
-    //   styleOverrides: {
-    //     root: {
-    //       '& .MuiTabs-indicator': {
-    //         backgroundColor: defaultTheme.palette.text.primary,
-    //         height: 1,
-    //       },
-    //     },
-    //   },
-    // },
-    // MuiTab: {
-    //   styleOverrides: {
-    //     root: {
-    //       textTransform: 'none',
-    //       '&.Mui-selected': {
-    //         color: defaultTheme.palette.text.primary,
-    //       },
-    //     },
-    //   },
-    // },
+    MuiTooltip: {
+      defaultProps: {
+        // The props to apply
+        arrow: true,
+      },
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: '#1C1C46',
+          color: '#FAFAFA',
+        },
+        arrow: {
+          color: '#1C1C46',
+        },
+      },
+    },
+    MuiPaginationItem: {
+      styleOverrides: {
+        root: {
+          '&.Mui-selected': {
+            backgroundColor: '#1C1C46',
+            color: '#fafafa',
+            border: '1px solid #AEB6FF',
+          },
+        },
+      },
+    },
   },
 })
 

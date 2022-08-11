@@ -41,7 +41,7 @@ from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor.base import BaseAsyncExecutor
 
 # The plugin class name must be given by the executor_plugin_name attribute:
-executor_plugin_name = "DaskExecutor"
+EXECUTOR_PLUGIN_NAME = "DaskExecutor"
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info

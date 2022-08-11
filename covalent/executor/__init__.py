@@ -72,6 +72,7 @@ class _ExecutorManager:
 
         # Dictionary mapping executor name to executor class
         self.executor_plugins_map: Dict[str, Any] = {}
+        self.executor_plugins_exports_map: Dict[str, Any] = {}
 
         # Load plugins that are part of the covalent path:
         pkg_plugins_path = os.path.join(os.path.dirname(__file__), "executor_plugins")
@@ -117,10 +118,25 @@ class _ExecutorManager:
             app_log.error(message)
             raise TypeError
 
+    def _is_plugin_name_valid(self, the_module):
+        """Assert if the plugin variable name is valid"""
+        return (
+            True
+            if (
+                hasattr(the_module, "EXECUTOR_PLUGIN_NAME")
+                or hasattr(the_module, "executor_plugin_name")
+            )
+            else False
+        )
+
+    def nonzero_plugin_classes(self, plugin_class):
+        """Retrun true if any plugin classes are present"""
+        return True if len(plugin_class) else False
+
     def _populate_executor_map_from_module(self, the_module: Any) -> None:
         """
         Populate the executor map from a module.
-        Also checks whether `executor_plugin_name` is defined in the module.
+        Also checks whether `EXECUTOR_PLUGIN_NAME` is defined in the module.
 
         Args:
             the_module: The module to populate the executor map from.
@@ -129,9 +145,9 @@ class _ExecutorManager:
             None
         """
 
-        if not hasattr(the_module, "executor_plugin_name"):
+        if not self._is_plugin_name_valid(the_module):
             message = f"{the_module.__name__} does not seem to have a well-defined plugin class.\n"
-            message += f"Specify the plugin class with 'executor_plugin_name = <plugin class name>' in the {the_module.__name__} module."
+            message += f"Specify the plugin class with 'EXECUTOR_PLUGIN_NAME = <plugin class name>' in the {the_module.__name__} module."
             app_log.warning(message)
             return
 
@@ -139,11 +155,16 @@ class _ExecutorManager:
         all_classes = inspect.getmembers(the_module, inspect.isclass)
         # Classes that are defined in the module:
         module_classes = [c[1] for c in all_classes if c[1].__module__ == the_module.__name__]
-        # The module should have a global attribute named executor_plugin_name
+        # The module should have a global attribute named EXECUTOR_PLUGIN_NAME
         # which is set to the class name defining the plugin.
-        plugin_class = [c for c in module_classes if c.__name__ == the_module.executor_plugin_name]
+        executor_name = (
+            the_module.executor_plugin_name
+            if hasattr(the_module, "executor_plugin_name")
+            else the_module.EXECUTOR_PLUGIN_NAME
+        )
+        plugin_class = [c for c in module_classes if c.__name__ == executor_name]
 
-        if len(plugin_class):
+        if self.nonzero_plugin_classes(plugin_class):
             plugin_class = plugin_class[0]
             short_name = the_module.__name__.split("/")[-1].split(".")[-1]
             self.executor_plugins_map[short_name] = plugin_class
@@ -156,7 +177,14 @@ class _ExecutorManager:
 
         else:
             # The requested plugin (the_module.module_name) was not found in the module.
-            message = f"Requested executor plugin {the_module.executor_plugin_name} was not found in {the_module.__name__}"
+            executor_name = (
+                the_module.executor_plugin_name
+                if hasattr(the_module, "executor_plugin_name")
+                else the_module.EXECUTOR_PLUGIN_NAME
+            )
+            message = (
+                f"Requested executor plugin {executor_name} was not found in {the_module.__name__}"
+            )
             app_log.warning(message)
 
     def _load_installed_plugins(self) -> None:
