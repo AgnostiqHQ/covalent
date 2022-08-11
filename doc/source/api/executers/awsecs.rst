@@ -21,6 +21,7 @@ If omitted, these IAM role names default ``ecsTaskExecutionRole`` and ``Covalent
 The IAM policy attached to the ``ecsTaskExecutionRole`` is the following
 
 .. dropdown:: ECS Task Execution Role IAM Policy
+
     .. code:: json
 
         {
@@ -45,8 +46,9 @@ These policies allow the service to download container images from ECR so that t
 cluster. The policy attached to the ``CovalentFargateTaskRole`` is as follows
 
 .. dropdown:: AWS Fargate Task Role IAM Policy
-    .. code:: json
 
+    .. code:: json
+        
         {
         "Version": "2012-10-17",
         "Statement": [
