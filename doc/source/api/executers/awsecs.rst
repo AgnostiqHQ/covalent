@@ -22,7 +22,7 @@ The IAM policy attached to the ``ecsTaskExecutionRole`` is the following
 
 .. dropdown:: ECS Task Execution Role IAM Policy
     .. code:: json
-    
+
         {
         "Version": "2012-10-17",
         "Statement": [
