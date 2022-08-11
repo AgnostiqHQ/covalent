@@ -33,7 +33,11 @@ API.interceptors.response.use(
   // catch statusCode != 200 responses and format error
   (error) => {
     if (error.response) {
-      return Promise.reject(error.response.data)
+      const errorData = {
+        ...error.response.data,
+        status: error.response.status
+      }
+      return Promise.reject(errorData)
     }
     return Promise.reject({ message: error.message })
   }

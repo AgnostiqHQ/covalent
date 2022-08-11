@@ -35,6 +35,8 @@ on:
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
+    env:
+      COVALENT_SERVER_IFACE_ANY: true
     strategy:
       fail-fast: false
       matrix:
@@ -399,8 +401,7 @@ jobs:
 
       - name: Alert Slack
         if: >
-          github.ref == 'ref/heads/develop'
-          && github.event_name != 'workflow_dispatch'
+          github.event_name == 'workflow_run'
           && failure()
         uses: rtCamp/action-slack-notify@v2
         env:
