@@ -20,96 +20,142 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
- import _ from 'lodash'
- import { isValid, format, parseISO } from 'date-fns'
- import theme from './theme'
- import { SvgIcon} from '@mui/material'
- import { ReactComponent as ActivitySvg } from '../assets/status/activity.svg'
- import { ReactComponent as CheckSvg } from '../assets/status/checkmark.svg'
- import { ReactComponent as ErrorSvg } from '../assets/status/error.svg'
- import { ReactComponent as CancelSvg } from '../assets/status/stop.svg'
- import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
+import _ from 'lodash'
+import { isValid, format, parseISO } from 'date-fns'
+import theme from './theme'
+import { SvgIcon } from '@mui/material'
+import { ReactComponent as ActivitySvg } from '../assets/status/activity.svg'
+import { ReactComponent as CheckSvg } from '../assets/status/checkmark.svg'
+import { ReactComponent as ErrorSvg } from '../assets/status/error.svg'
+import { ReactComponent as CancelSvg } from '../assets/status/stop.svg'
+import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
 
- export const formatDate = (date) => {
-   if (_.isString(date)) {
-     date = parseISO(date)
-   }
-   return isValid(date) ? format(date, 'MMM dd, HH:mm:ss') : '-'
- }
+export const secondsToHms = (ms) => {
+  let time = ''
+  const sec = Math.floor(ms / 1000)
+  const days = Math.floor(sec / (3600 * 24))
+  const hours = Math.floor(sec / 3600)
+  const minutes = ('0' + (Math.floor(sec / 60) % 60)).slice(-2)
+  if (ms < 1000) {
+    time = '< 1sec'
+  } else if (sec > 0 && sec < 60) {
+    time = '< 1min'
+  } else if (sec > 60 && sec < 3600) {
+    time = `${Math.round(minutes)}m`
+  } else if (sec > 3600 && sec < 86400) {
+    time = `${Math.round(hours)}h ${Math.round(minutes)}m`
+  } else if (sec > 86400 && sec < 172800) {
+    time = '> 1 day'
+  } else if (sec > 172800) {
+    time = `${Math.round(days)} days`
+  }
+  return time
+}
 
- export const truncateMiddle = (s, start, end, omission = '…') => {
-   if (!s) {
-     return ''
-   }
-   const len = s.length
-   if ((start === 0 && end === 0) || start + end >= len) {
-     return s
-   }
-   if (!end) {
-     return s.slice(0, start) + omission
-   }
-   return s.slice(0, start) + omission + s.slice(-end)
- }
+export const formatDate = (date) => {
+  if (_.isString(date)) {
+    date = parseISO(date)
+  }
+  return isValid(date) ? format(date, 'MMM dd, HH:mm:ss') : '-'
+}
 
- export const isParameter = (node) => _.startsWith(node.name, ':parameter:')
+export const truncateMiddle = (s, start, end, omission = '…') => {
+  if (!s) {
+    return ''
+  }
+  const len = s.length
+  if ((start === 0 && end === 0) || start + end >= len) {
+    return s
+  }
+  if (!end) {
+    return s.slice(0, start) + omission
+  }
+  return s.slice(0, start) + omission + s.slice(-end)
+}
 
- export const displayStatus = (status) => _.startCase(_.lowerCase(status))
+export const isParameter = (node) => _.startsWith(node.name, ':parameter:')
 
- export const statusColor = (status) => {
-   return {
-     RUNNING: theme.palette.running.main,
-     NEW_OBJECT: theme.palette.running.main,
-     COMPLETED: theme.palette.success.main,
-     FAILED: theme.palette.error.main,
-     CANCELLED:theme.palette.error.main
-   }[status]
- }
+export const displayStatus = (status) => _.startCase(_.lowerCase(status))
 
- export const statusLabel = (status) => {
-   return (
-     {
-       RUNNING: 'Running',
-       NEW_OBJECT: 'Pending',
-       COMPLETED: 'Completed',
-       FAILED: 'Failed',
-       CANCELLED: 'Cancelled',
-     }[status] || status
-   )
- }
+export const statusColor = (status) => {
+  return {
+    RUNNING: theme.palette.running.main,
+    NEW_OBJECT: theme.palette.running.main,
+    COMPLETED: theme.palette.success.main,
+    POSTPROCESSING: theme.palette.success.main,
+    PENDING_POSTPROCESSING: theme.palette.success.main,
+    POSTPROCESSING_FAILED: theme.palette.success.main,
+    FAILED: theme.palette.error.main,
+    CANCELLED: theme.palette.error.main,
+  }[status]
+}
 
- export const statusIcon = (status) => {
-   switch (status) {
-     case 'RUNNING':
-       return (
-         <SvgIcon sx={{ fontSize: '16', mr: 0.5 }}>
-           <LoaderSvg />
-         </SvgIcon>
-       )
-     case 'NEW_OBJECT':
-       return (
-         <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
-           <ActivitySvg />
-         </SvgIcon>
-       )
-     case 'COMPLETED':
-       return (
-         <SvgIcon sx={{ fontSize: '16', mr: 0.5 }}>
-           <CheckSvg />
-         </SvgIcon>
-       )
-     case 'FAILED':
-       return (
-         <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
-           <ErrorSvg />
-         </SvgIcon>
-       )
-     case 'CANCELLED':
-       return (
-         <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
-           <CancelSvg />
-         </SvgIcon>
-       )
-     default:
-       return null
-   }
- }
+export const statusLabel = (status) => {
+  return (
+    {
+      RUNNING: 'Running',
+      NEW_OBJECT: 'Pending',
+      COMPLETED: 'Completed',
+      FAILED: 'Failed',
+      CANCELLED: 'Cancelled',
+      POSTPROCESSING: 'Completed',
+      PENDING_POSTPROCESSING: 'Completed',
+      POSTPROCESSING_FAILED: 'Completed',
+    }[status] || status
+  )
+}
+
+export const statusIcon = (status) => {
+  switch (status) {
+    case 'RUNNING':
+      return (
+        <SvgIcon sx={{ fontSize: '16', mr: 0.5 }}>
+          <LoaderSvg />
+        </SvgIcon>
+      )
+    case 'NEW_OBJECT':
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <ActivitySvg />
+        </SvgIcon>
+      )
+    case 'COMPLETED':
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <CheckSvg />
+        </SvgIcon>
+      )
+    case 'POSTPROCESSING':
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <CheckSvg />
+        </SvgIcon>
+      )
+    case 'PENDING_POSTPROCESSING':
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <CheckSvg />
+        </SvgIcon>
+      )
+    case 'POSTPROCESSING_FAILED':
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <CheckSvg />
+        </SvgIcon>
+      )
+    case 'FAILED':
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <ErrorSvg />
+        </SvgIcon>
+      )
+    case 'CANCELLED':
+      return (
+        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+          <CancelSvg />
+        </SvgIcon>
+      )
+    default:
+      return null
+  }
+}

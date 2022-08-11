@@ -19,95 +19,165 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-
-import _ from 'lodash'
-import { Divider, Paper, Tooltip, Typography } from '@mui/material'
-import { useSelector } from 'react-redux'
-
-import { formatDate, truncateMiddle } from '../../utils/misc'
+import { Divider, Paper, Tooltip, Typography, Skeleton } from '@mui/material'
+import { useSelector, useDispatch } from 'react-redux'
+import React, { useEffect } from 'react'
+import { formatDate, truncateMiddle, secondsToHms } from '../../utils/misc'
 import CopyButton from '../common/CopyButton'
-import Runtime from '../dispatches/Runtime'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
 import InputSection from '../common/InputSection'
 import ExecutorSection from '../common/ExecutorSection'
+import {
+  latticeResults,
+  latticeFunctionString,
+  latticeInput,
+  latticeExecutorDetail,
+} from '../../redux/latticeSlice'
+import Runtime from '../dispatches/Runtime'
 
-const LatticeDispatchOverview = ({ dispatchId }) => {
-  const result = useSelector((state) => state.results.cache[dispatchId])
+const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
+  const result = latDetails
+  const dispatch = useDispatch()
+  const drawerInput = useSelector((state) => state.latticeResults.latticeInput)
+  const drawerInputListFetching = useSelector(
+    (state) => state.latticeResults.latticeInputList.isFetching
+  )
+  const drawerResult = useSelector(
+    (state) => state.latticeResults.latticeResult
+  )
+  const drawerResultListFetching = useSelector(
+    (state) => state.latticeResults.latticeResultsList.isFetching
+  )
+  const drawerFunctionString = useSelector(
+    (state) => state.latticeResults.latticeFunctionString
+  )
+  const drawerFunctionStringListFetching = useSelector(
+    (state) => state.latticeResults.latticeFunctionStringList.isFetching
+  )
+  const drawerExecutorDetail = useSelector(
+    (state) => state.latticeResults.latticeExecutorDetail
+  )
+  const drawerExecutorDetailListFetching = useSelector(
+    (state) => state.latticeResults.latticeExecutorDetailList.isFetching
+  )
+  const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
-  const src = _.get(result, 'lattice.function_string', '# source unavailable')
-  const showResult = result.status === 'COMPLETED'
+  useEffect(() => {
+    dispatch(latticeResults({ dispatchId, params: 'result' }))
+    dispatch(latticeFunctionString({ dispatchId, params: 'function_string' }))
+    dispatch(latticeInput({ dispatchId, params: 'inputs' }))
+    dispatch(latticeExecutorDetail({ dispatchId, params: 'executor' }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [callSocketApi])
 
-  const hasStarted = !!result.start_time
-  const hasEnded = !!result.end_time
+  const hasStarted = !!result.started_at
+  const hasEnded = !!result.ended_at
 
   return (
     <>
       {/* Description */}
-      {result.lattice.doc && (
-        <>
-          <Heading>Description</Heading>
-          <Typography fontSize="body2.fontSize">
-            {result.lattice.doc}
-          </Typography>
-        </>
-      )}
-
+      {result.lattice !== undefined &&
+        (isFetching ? (
+          <Skeleton />
+        ) : (
+          <>
+            <Heading>Description</Heading>
+            <Typography fontSize="body2.fontSize">
+              {result.lattice.doc}
+            </Typography>
+          </>
+        ))}
       {/* Start/end times */}
       {hasStarted && (
         <>
           <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-          <Typography fontSize="body2.fontSize">
-            {formatDate(result.start_time)}
-            {hasEnded && ` - ${formatDate(result.end_time)}`}
-          </Typography>
+          {isFetching ? (
+            <Skeleton />
+          ) : (
+            <Typography fontSize="body2.fontSize">
+              {formatDate(result.started_at)}
+              {hasEnded && ` - ${formatDate(result.ended_at)}`}
+            </Typography>
+          )}
         </>
       )}
 
       {/* Runtime */}
       <Heading>Runtime</Heading>
-      <Runtime
-        sx={{ fontSize: 'body2.fontSize' }}
-        startTime={result.start_time}
-        endTime={result.end_time}
-      />
+      {isFetching ? (
+        <Skeleton />
+      ) : result.status === 'RUNNING' ? (
+        <Runtime startTime={result.started_at} endTime={result.ended_at} />
+      ) : (
+        secondsToHms(result.runtime)
+      )}
 
       {/* Directory */}
       <Heading>Directory</Heading>
-      <Typography sx={{ overflowWrap: 'anywhere', fontSize: 'body2.fontSize' }}>
-        <Tooltip title={result.results_dir} enterDelay={500}>
-          <span>{truncateMiddle(result.results_dir, 15, 25)}</span>
-        </Tooltip>
-        <CopyButton
-          content={result.results_dir}
-          size="small"
-          title="Copy results directory"
-        />
-      </Typography>
+      {isFetching ? (
+        <Skeleton />
+      ) : (
+        <Typography
+          sx={{ overflowWrap: 'anywhere', fontSize: 'body2.fontSize' }}
+        >
+          <Tooltip title={result.directory} enterDelay={500}>
+            <span>{truncateMiddle(result.directory, 15, 20)}</span>
+          </Tooltip>
+          <CopyButton
+            isBorderPresent
+            content={result.directory}
+            size="small"
+            title="Copy results directory"
+          />
+        </Typography>
+      )}
 
       {/* Input */}
-      <InputSection inputs={_.get(result, 'lattice.inputs')} />
+      <InputSection
+        isFetching={
+          drawerInputListFetching && Object.keys(drawerInput).length === 0
+        }
+        inputs={drawerInput.data}
+      />
 
       {/* Result */}
-      {showResult && (
+      {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
         <>
           <Heading>Result</Heading>
-          <Paper elevation={0}>
-            <SyntaxHighlighter language="python" src={result.result} />
-          </Paper>
+          {drawerResultListFetching ? (
+            <Skeleton height={60} style={{ mt: 1 }} />
+          ) : (
+            <Paper elevation={0}>
+              <SyntaxHighlighter language="python" src={drawerResult.data} />
+            </Paper>
+          )}
         </>
       )}
 
       {/* Executor */}
-      <ExecutorSection metadata={_.get(result, 'lattice.metadata')} />
+      <ExecutorSection
+        isFetching={
+          Object.keys(drawerExecutorDetail).length === 0 &&
+          drawerExecutorDetailListFetching
+        }
+        metadata={drawerExecutorDetail}
+      />
 
       <Divider sx={{ my: 3 }} />
 
       {/* Source */}
+
       <Heading />
-      <Paper elevation={0}>
-        <SyntaxHighlighter src={src} />
-      </Paper>
+
+      {Object.keys(drawerFunctionString).length === 0 &&
+      drawerFunctionStringListFetching ? (
+        <Skeleton height={100} />
+      ) : (
+        <Paper elevation={0}>
+          <SyntaxHighlighter src={drawerFunctionString.data} />
+        </Paper>
+      )}
     </>
   )
 }
