@@ -124,10 +124,10 @@ class ExecutorCache:
             if executor is None:
                 continue
             if isinstance(executor, BaseAsyncExecutor):
-                await executor.cleanup()
+                await executor.teardown()
             else:
                 loop = asyncio.get_running_loop()
-                await loop.run_in_executor(None, executor.cleanup)
+                await loop.run_in_executor(None, executor.teardown)
 
 
 # This is to be run out-of-process

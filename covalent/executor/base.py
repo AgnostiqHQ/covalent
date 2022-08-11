@@ -246,7 +246,7 @@ class BaseExecutor(_AbstractBaseExecutor):
     def setup(self):
         pass
 
-    def cleanup(self):
+    def teardown(self):
         pass
 
     def execute(
@@ -313,11 +313,11 @@ class BaseExecutor(_AbstractBaseExecutor):
 
                     self.tasks_left -= 1
                     if self.tasks_left < 1:
-                        self.cleanup()
+                        self.teardown()
                 except Exception as ex:
                     self.tasks_left -= 1
                     if self.tasks_left < 1:
-                        self.cleanup()
+                        self.teardown()
 
                     raise ex
 
@@ -593,7 +593,7 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
     async def setup(self):
         pass
 
-    async def cleanup(self):
+    async def teardown(self):
         pass
 
     async def execute(
@@ -624,12 +624,12 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
 
             self.tasks_left -= 1
             if self.tasks_left < 1:
-                await self.cleanup()
+                await self.teardown()
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
             self.tasks_left -= 1
             if self.tasks_left < 1:
-                await self.cleanup()
+                await self.teardown()
             raise ex
 
         await self.write_streams_to_file(

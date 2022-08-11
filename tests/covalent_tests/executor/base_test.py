@@ -409,8 +409,8 @@ def test_base_executor_run_exception(mocker):
     me = MockExecutor()
     async_me = MockAsyncExecutor()
 
-    me.cleanup = MockCleanup()
-    async_me.cleanup = MockAsyncCleanup()
+    me.teardown = MockCleanup()
+    async_me.teardown = MockAsyncCleanup()
 
     function = TransportableObject(f)
     args = []
@@ -436,7 +436,7 @@ def test_base_executor_run_exception(mocker):
 
     except RuntimeError as ex:
         assert me.tasks_left == 0
-        me.cleanup.times_called == 1
+        me.teardown.times_called == 1
 
     # BaseAsyncExecutor
     try:
@@ -453,7 +453,7 @@ def test_base_executor_run_exception(mocker):
 
     except RuntimeError as ex:
         assert async_me.tasks_left == 0
-        async_me.cleanup.times_called == 1
+        async_me.teardown.times_called == 1
 
 
 def test_executor_clone_sets_instance_id():

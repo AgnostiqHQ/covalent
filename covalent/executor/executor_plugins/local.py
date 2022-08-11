@@ -59,7 +59,7 @@ class LocalExecutor(BaseExecutor):
     def setup(self):
         app_log.debug(f"Local executor {self.instance_id}: provisioning resources")
 
-    def cleanup(self):
+    def teardown(self):
         app_log.debug(f"Local executor {self.instance_id}: relinquishing resources")
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
