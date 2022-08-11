@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Removed
+
+- `Lattice.check_consumables()`, `_TransportGraph.get_topologically_sorted_graph()`
+
 ### Operations
 
 - Trigger Slack alert for failed tests on `workflow_run`
