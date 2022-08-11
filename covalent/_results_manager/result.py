@@ -33,6 +33,7 @@ from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.transport import TransportableObject
+from .nodeinfomanager import AsyncNodeInfoManager
 from .write_result_to_db import (
     get_electron_type,
     insert_electron_dependency_data,
