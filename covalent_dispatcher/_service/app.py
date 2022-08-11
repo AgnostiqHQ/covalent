@@ -134,6 +134,6 @@ def get_result(
             content={
                 "message": "Result not ready to read yet. Please wait for a couple of seconds."
             },
+            headers={"Retry-After": "2"},
         )
-        response.retry_after = 2
         return response
