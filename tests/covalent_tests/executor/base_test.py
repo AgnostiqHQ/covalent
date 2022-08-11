@@ -485,14 +485,14 @@ def test_base_executor_run_exception(mocker):
         def __init__(self):
             self.times_called = 0
 
-        def __call__(self):
+        def __call__(self, task_metadata):
             self.times_called += 1
 
     class MockAsyncCleanup:
         def __init__(self):
             self.times_called = 0
 
-        async def __call__(self):
+        async def __call__(self, task_metadata):
             self.times_called += 1
 
     me = MockExecutor()

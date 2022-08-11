@@ -243,10 +243,10 @@ class BaseExecutor(_AbstractBaseExecutor):
                 with open(filepath, "a") as f:
                     f.write(ss)
 
-    def setup(self):
+    def setup(self, task_metadata: Dict):
         pass
 
-    def teardown(self):
+    def teardown(self, task_metadata: Dict):
         pass
 
     def execute(
@@ -277,18 +277,18 @@ class BaseExecutor(_AbstractBaseExecutor):
             output: The result of the function execution.
         """
 
-        if not self.warmed_up:
-            self.setup()
-            self.warmed_up = True
-
-        dispatch_info = DispatchInfo(dispatch_id)
-        fn_version = function.args[0].python_version
-
         task_metadata = {
             "dispatch_id": dispatch_id,
             "node_id": node_id,
             "results_dir": results_dir,
         }
+
+        if not self.warmed_up:
+            self.setup(task_metadata=task_metadata)
+            self.warmed_up = True
+
+        dispatch_info = DispatchInfo(dispatch_id)
+        fn_version = function.args[0].python_version
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
             io.StringIO()
@@ -313,11 +313,11 @@ class BaseExecutor(_AbstractBaseExecutor):
 
                     self.tasks_left -= 1
                     if self.tasks_left < 1:
-                        self.teardown()
+                        self.teardown(task_metadata=task_metadata)
                 except Exception as ex:
                     self.tasks_left -= 1
                     if self.tasks_left < 1:
-                        self.teardown()
+                        self.teardown(task_metadata=task_metadata)
 
                     raise ex
 
@@ -329,10 +329,6 @@ class BaseExecutor(_AbstractBaseExecutor):
         )
 
         return (result, stdout.getvalue(), stderr.getvalue())
-
-    def setup(self, task_metadata: Dict) -> Any:
-        """Placeholder to run any executor specific tasks"""
-        pass
 
     @abstractmethod
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
@@ -350,10 +346,6 @@ class BaseExecutor(_AbstractBaseExecutor):
         """
 
         raise NotImplementedError
-
-    def teardown(self, task_metadata: Dict) -> Any:
-        """Placeholder to run nay executor specific cleanup/teardown actions"""
-        pass
 
     def execute_in_conda_env(
         self,
