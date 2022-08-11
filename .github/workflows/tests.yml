@@ -35,6 +35,8 @@ on:
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
+    env:
+      COVALENT_SERVER_IFACE_ANY: true
     strategy:
       fail-fast: false
       matrix:

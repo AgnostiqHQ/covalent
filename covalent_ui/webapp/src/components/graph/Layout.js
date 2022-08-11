@@ -27,7 +27,7 @@ import { isNode } from 'react-flow-renderer'
 import { isParameter } from '../../utils/misc'
 import theme from '../../utils/theme'
 
-const layout = (graph, direction, showParams = true,hideLabels) => {
+const layout = (graph, direction,showParams = true,hideLabels) => {
   const elements = mapGraphToElements(graph, direction, showParams,hideLabels)
   assignNodePositions(elements, direction)
 
