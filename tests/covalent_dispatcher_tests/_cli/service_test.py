@@ -414,7 +414,7 @@ def test_logs(exists, mocker):
 
     runner = CliRunner()
 
-    mocker.patch("pathlib.Path.is_file", return_value=exists)
+    mocker.patch("covalent_dispatcher._cli.service.os.path.exists", return_value=exists)
 
     if not exists:
         result = runner.invoke(logs)
