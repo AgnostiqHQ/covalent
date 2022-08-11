@@ -248,19 +248,24 @@ jobs:
           echo "TAG=$TAG" >> $GITHUB_ENV
       - name: Build and push image
         id: docker-build-push
+        if: >
+          inputs.prerelease
+          && ${{ !github.events.inputs.stable_version }}
         run: |
           docker build -t covalent .
           docker tag covalent:latest public.ecr.aws/covalent/covalent:latest
           docker tag covalent:latest public.ecr.aws/covalent/covalent:$TAG
-          if [ "${{ github.events.inputs.test_release }}" = false ] ; then
+          if [ "${{ github.events.inputs.test_release }}" == false ] ; then
             docker push -a public.ecr.aws/covalent/covalent
           fi
       - name: Update stable tag
         if: >
           github.event.inputs.stable_version
+          && !inputs.prerelease
           && steps.docker-build-push.outcome == 'success'
           && ${{ !github.event.inputs.test_release }}
           && contains(env.PAUL_BLART, github.actor)
         run: |
-          docker tag covalent:latest public.ecr.aws/covalent/covalent:stable
+          docker build -t covalent .
+          docker tag covalent:$TAG public.ecr.aws/covalent/covalent:stable
           docker push public.ecr.aws/covalent/covalent:stable
