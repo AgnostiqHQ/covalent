@@ -22,8 +22,9 @@
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._workflow.electron import Electron
+from covalent._workflow.electron import Electron, to_decoded_electron_collection
 from covalent._workflow.transport import TransportableObject, _TransportGraph
+from covalent.executor.executor_plugins.local import LocalExecutor
 
 
 @ct.electron
@@ -48,9 +49,19 @@ def task_3(b):
 def workflow():
     res_1 = task_1(2)
     res_2 = task_2(res_1, 3)
-    res_3 = task_3(5).wait_for(res_1)
+    res_3 = ct.wait(task_3(5), res_1)
 
     return task_2(res_2, res_3)
+
+
+@ct.lattice
+def workflow_2():
+    res_1 = task_1(2)
+    res_2 = task_2(res_1, 3)
+    res_3 = task_3(res_1)
+    ct.wait(res_3, [res_1])
+
+    return res_3
 
 
 def test_wait_for_building():
@@ -62,7 +73,7 @@ def test_wait_for_building():
 
 
 def test_wait_for_post_processing():
-    """Test to check post processing with `wait_for` works fine."""
+    """Test to check post processing with `wait` works fine."""
 
     workflow.build_graph()
     with active_lattice_manager.claim(workflow):
@@ -74,6 +85,35 @@ def test_wait_for_post_processing():
             (6, TransportableObject(1500)),
         ]
         assert workflow.workflow_function.get_deserialized()() == 1500
+
+
+def test_wait_for_post_processing_when_returning_waiting_electron():
+    """Test to check post processing with `wait` works fine when returning
+    an electron with incoming wait_for edges"""
+
+    workflow_2.build_graph()
+    with active_lattice_manager.claim(workflow_2):
+        workflow_2.post_processing = True
+        workflow_2.electron_outputs = [
+            (0, TransportableObject(4)),
+            (2, TransportableObject(12)),
+            (4, TransportableObject(64)),
+        ]
+        assert workflow_2.workflow_function.get_deserialized()() == 64
+
+
+def test_collection_node_helper_electron():
+    """Unit test for `to_decoded_electron_collection`"""
+
+    list_collection = [
+        TransportableObject.make_transportable(1),
+        TransportableObject.make_transportable(2),
+    ]
+
+    dict_collection = {"a": list_collection[0], "b": list_collection[1]}
+    assert to_decoded_electron_collection(x=list_collection) == [1, 2]
+
+    assert to_decoded_electron_collection(x=dict_collection) == {"a": 1, "b": 2}
 
 
 def test_electron_add_collection_node():
@@ -117,3 +157,30 @@ def test_injected_inputs_are_not_in_tg():
 
     assert list(g.nodes) == [0, 1]
     assert list(g.edges) == [(1, 0, 0)]
+
+
+def test_metadata_in_electron_list():
+    """Test if metadata of the created electron list apart from executor is set to default values"""
+
+    def identity(y):
+        return y
+
+    calldep = ct.DepsCall(identity, args=[5], retval_keyword="y")
+
+    @ct.electron(call_before=[calldep], executor=LocalExecutor())
+    def task(x, y=0):
+        return (x, y)
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph([2])
+
+    task_metadata = workflow.transport_graph.get_node_value(0, "metadata")
+    e_list_metadata = workflow.transport_graph.get_node_value(1, "metadata")
+
+    assert list(e_list_metadata["call_before"]) == []
+    assert list(e_list_metadata["call_after"]) == []
+
+    assert e_list_metadata["executor"] == task_metadata["executor"]

@@ -32,9 +32,9 @@ import cloudpickle as pickle
 import pytest
 
 import covalent as ct
+from covalent._data_store import models
 from covalent._data_store.datastore import DataStore
 from covalent._results_manager import Result
-from covalent._results_manager.utils import _db_path
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
     _gather_deps,
@@ -45,45 +45,21 @@ from covalent_dispatcher._core.execution import (
     _initialize_deps_and_queue,
     _plan_workflow,
     _post_process,
-    _postprocess_workflow,
-    _run_planned_workflow,
-    _run_task,
     _update_node_result,
-    generate_node_result,
     run_workflow,
 )
 
 TEST_RESULTS_DIR = "/tmp/results"
 
 
-@ct.electron
-def a(x):
-    return x, x**2
-
-
-@ct.lattice
-def p(x):
-    result, b = a(x=x)
-    for _ in range(1):
-        result, b = a(x=result)
-    return b, result
-
-
 @pytest.fixture
-def sublattice_workflow():
-    @ct.electron
-    @ct.lattice
-    def sublattice(x):
-        res = a(x)
-        return res
+def test_db():
+    """Instantiate and return an in-memory database."""
 
-    @ct.lattice
-    def parent_workflow(x):
-        res = sublattice(x)
-        return res
-
-    parent_workflow.build_graph(x=1)
-    return parent_workflow
+    return DataStore(
+        db_URL="sqlite+pysqlite:///:memory:",
+        initialize_db=True,
+    )
 
 
 def get_mock_result() -> Result:
@@ -191,7 +167,7 @@ def test_post_process():
     assert execution_result == compute_energy()
 
 
-def test_result_post_process():
+def test_result_post_process(mocker, test_db):
     """Test client-side post-processing of results."""
 
     import covalent as ct
@@ -227,6 +203,8 @@ def test_result_post_process():
 
     compute_energy.build_graph()
 
+    compute_energy = Lattice.deserialize_from_json(compute_energy.serialize_to_json())
+
     node_outputs = {
         "construct_n_molecule(0)": 1,
         ":parameter:1(1)": 1,
@@ -251,7 +229,10 @@ def test_result_post_process():
 
     res._status = Result.PENDING_POSTPROCESSING
     res._dispatch_id = "MOCK"
-    res.persist(DataStore(db_URL=f"sqlite+pysqlite:///{_db_path()}", initialize_db=True))
+
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    res.persist()
+
     execution_result = res.post_process()
 
     assert execution_result == compute_energy()
@@ -389,47 +370,6 @@ def test_gather_deps():
     before, after = _gather_deps(result_object, 0)
     assert len(before) == 1
     assert len(after) == 1
-
-
-@pytest.mark.asyncio
-async def test_run_task(mocker, sublattice_workflow):
-    """Note: This is not a full unit test for the _run_task method. Rather, this is intended to test the diff introduced to write the sublattice electron id in the Database."""
-
-    # class MockResult:
-    #     dispatch_id = "test"
-
-    # def mock_func():
-    #     return MockResult()
-    # class MockSerializedCallable:
-    #     def get_deserialized(self):
-    #         return mock_func
-
-    from concurrent.futures import ThreadPoolExecutor
-
-    tasks_pool = ThreadPoolExecutor()
-
-    write_sublattice_electron_id_mock = mocker.patch(
-        "covalent_dispatcher._core.execution.write_sublattice_electron_id"
-    )
-    ct.dispatch(sublattice_workflow)(1)
-
-    await _run_task(
-        node_id=1,
-        dispatch_id="parent_dispatch_id",
-        results_dir="/tmp",
-        inputs={"args": [], "kwargs": {"x": ct.TransportableObject(1)}},
-        serialized_callable=sublattice_workflow.transport_graph.get_node_value(
-            0,
-            "function",
-        ),
-        selected_executor=["local", {}],
-        call_before=[],
-        call_after=[],
-        node_name=":sublattice:sublattice",
-        tasks_pool=tasks_pool,
-        workflow_executor=["local", {}],
-    )
-    write_sublattice_electron_id_mock.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -607,7 +547,6 @@ def test_run_workflow_with_failing_nonleaf(mocker):
     @ct.electron
     def failing_task(x):
         assert False
-        return x
 
     @ct.lattice
     def workflow(x):
@@ -618,7 +557,6 @@ def test_run_workflow_with_failing_nonleaf(mocker):
     from concurrent.futures import ThreadPoolExecutor
 
     from covalent._workflow.lattice import Lattice
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
 
     workflow.build_graph(5)
 
@@ -630,8 +568,8 @@ def test_run_workflow_with_failing_nonleaf(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    DispatchDB().save_db(result_object)
-
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    result_object.persist()
     result_object = run_workflow(result_object, tasks_pool)
 
     assert result_object.status == Result.FAILED
@@ -653,7 +591,6 @@ def test_run_workflow_with_failing_leaf(mocker):
     from concurrent.futures import ThreadPoolExecutor
 
     from covalent._workflow.lattice import Lattice
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
 
     workflow.build_graph(5)
 
@@ -665,7 +602,8 @@ def test_run_workflow_with_failing_leaf(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    DispatchDB().save_db(result_object)
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    result_object.persist()
 
     result_object = run_workflow(result_object, tasks_pool)
 
@@ -679,7 +617,6 @@ def test_run_workflow_does_not_deserialize(mocker):
     from concurrent.futures import ThreadPoolExecutor
 
     from covalent._workflow.lattice import Lattice
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
 
     @ct.electron(executor="dask")
     def task(x):
@@ -702,7 +639,8 @@ def test_run_workflow_does_not_deserialize(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    DispatchDB().save_db(result_object)
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    result_object.persist()
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
 
@@ -712,14 +650,11 @@ def test_run_workflow_does_not_deserialize(mocker):
     assert result_object.status == Result.COMPLETED
 
 
-def test_run_workflow_with_client_side_postprocess():
+def test_run_workflow_with_client_side_postprocess(mocker):
     """Check that run_workflow handles "client" workflow_executor for
     postprocessing"""
 
     from concurrent.futures import ThreadPoolExecutor
-
-    from covalent._workflow.lattice import Lattice
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
 
     dispatch_id = "asdf"
     tasks_pool = ThreadPoolExecutor()
@@ -728,19 +663,17 @@ def test_run_workflow_with_client_side_postprocess():
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    DispatchDB().save_db(result_object)
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    result_object.persist()
 
     result_object = run_workflow(result_object, tasks_pool)
     assert result_object.status == Result.PENDING_POSTPROCESSING
 
 
-def test_run_workflow_with_failed_postprocess():
+def test_run_workflow_with_failed_postprocess(mocker):
     """Check that run_workflow handles postprocessing failures"""
 
     from concurrent.futures import ThreadPoolExecutor
-
-    from covalent._workflow.lattice import Lattice
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
 
     dispatch_id = "asdf"
     tasks_pool = ThreadPoolExecutor()
@@ -748,11 +681,11 @@ def test_run_workflow_with_failed_postprocess():
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    DispatchDB().save_db(result_object)
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    result_object.persist()
 
     def failing_workflow(x):
         assert False
-        return 1
 
     result_object.lattice.set_metadata("workflow_executor", "bogus")
     result_object = run_workflow(result_object, tasks_pool)

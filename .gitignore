@@ -71,3 +71,10 @@
 !LICENSE
 !README.md
 !VERSION
+
+
+
+# Ignore .sonarwork files
+covalent_ui/api/.scannerwork/.sonar_lock
+covalent_ui/api/.scannerwork/report-task.txt
+covalent_ui/api/sonar.sh

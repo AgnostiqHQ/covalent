@@ -15,30 +15,40 @@
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
 # Relief from the License may be granted by purchasing a commercial license.
 
-from sqlalchemy import select
+"""Electron Dependency Request and Respone Model"""
 
-from .._data_store import DataStore, models
-from .._results_manager.result import Result
-from .._shared_files.config import get_config
+from typing import List
 
+from pydantic import BaseModel
 
-def save_result(data_store: DataStore, result_object: Result):
-    dispatch_id = result_object.dispatch_id
-
-    update = False
-    stmt = select(models.Lattice.dispatch_id).where(models.Lattice.dispatch_id == dispatch_id)
-    with data_store.begin_session() as ds:
-        row = ds.db_session.execute(stmt).first()
-    if row:
-        update = True
-
-    metadata = {"dispatch_id": dispatch_id}
-    with data_store.begin_session(metadata) as session:
-        result_object.persist(session, update)
+from covalent_ui.api.v1.utils.status import Status
 
 
-def load_result(data_store: DataStore, dispatch_id: str) -> Result:
-    raise NotImplementedError
+class LinkModule(BaseModel):
+    """Link Module Validation"""
+
+    id: int
+    electron_id: int
+    parent_electron_id: int
+    edge_name: str
+    parameter_type: str
+    created_at: str
+
+
+class NodeModule(BaseModel):
+    """Node Module Validation"""
+
+    id: int
+    name: str
+    start_time: str
+    end_time: str
+    status: Status
+
+
+class GraphResponseModel(BaseModel):
+    """Graph Response Validation"""
+
+    node: List[NodeModule]
+    links: List[LinkModule]

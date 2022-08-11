@@ -20,12 +20,14 @@
 
 """Covalent CLI Tool - Service Management."""
 
+
 import asyncio
+import contextlib
+import json
 import os
 import shutil
 import socket
 import sys
-import time
 from subprocess import DEVNULL, Popen
 from typing import Optional
 
@@ -38,13 +40,14 @@ from distributed.core import connect, rpc
 from covalent._data_store.datastore import DataStore
 from covalent._shared_files.config import _config_manager as cm
 from covalent._shared_files.config import get_config, set_config
+from covalent.utils.migrate import migrate_pickled_result_object
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
 
-MIGRATION_COMMAND_MSG = '   (use "covalent db migrate" to run database migrations)'
 MIGRATION_WARNING_MSG = "There have been changes applied to the database."
+MIGRATION_COMMAND_MSG = '   (use "covalent db migrate" to run database migrations)'
 
 
 def _read_pid(filename: str) -> int:
@@ -148,11 +151,11 @@ def _graceful_start(
     pidfile: str,
     logfile: str,
     port: int,
-    no_cluster: str,
+    no_cluster: bool,
     develop: bool = False,
 ) -> int:
     """
-    Gracefully start a Flask app.
+    Gracefully start a Fast API app.
 
     Args:
         server_root: Directory where app.py is located.
@@ -253,8 +256,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     required=False,
     is_flag=False,
     type=str,
-    default="auto",
-    show_default=True,
     help="""Memory limit per worker in (GB).
               Provide strings like 1gb/1GB or 0 for no limits""".replace(
         "\n", ""
@@ -265,8 +266,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     "--workers",
     required=False,
     is_flag=False,
-    default=dask.system.CPU_COUNT,
-    show_default=True,
     type=int,
     help="Number of workers to start covalent with.",
 )
@@ -275,8 +274,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     "--threads-per-worker",
     required=False,
     is_flag=False,
-    default=1,
-    show_default=True,
     type=int,
     help="Number of CPU threads per worker.",
 )
@@ -302,8 +299,8 @@ def start(
     ctx: click.Context,
     port: int,
     develop: bool,
-    no_cluster: str,
-    mem_per_worker: int,
+    no_cluster: bool,
+    mem_per_worker: str,
     threads_per_worker: int,
     workers: int,
     ignore_migrations: bool,
@@ -311,6 +308,8 @@ def start(
     """
     Start the Covalent server.
     """
+    if develop:
+        set_config({"sdk.log_level": "debug"})
 
     db = DataStore.factory()
     if db.is_migration_pending and not ignore_migrations:
@@ -318,21 +317,20 @@ def start(
         click.echo(MIGRATION_COMMAND_MSG)
         return ctx.exit(1)
 
+    set_config("user_interface.port", port)
+    set_config("dispatcher.port", port)
+
+    if not no_cluster:
+        if mem_per_worker:
+            set_config("dask.mem_per_worker", mem_per_worker)
+        if threads_per_worker:
+            set_config("dask.threads_per_worker", threads_per_worker)
+        if workers:
+            set_config("dask.num_workers", workers)
+
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
-    no_cluster_flag = "--no-cluster"
-    set_config(
-        {
-            "user_interface.address": "localhost",
-            "user_interface.port": port,
-            "dispatcher.address": "localhost",
-            "dispatcher.port": port,
-            "dask": {
-                "mem_per_worker": mem_per_worker or "auto",
-                "threads_per_worker": threads_per_worker or 1,
-                "num_workers": workers or dask.system.CPU_COUNT,
-            },
-        }
-    )
+    set_config("user_interface.port", port)
+    set_config("dispatcher.port", port)
 
     # Wait until the server actually starts listening on the port
     server_listening = False
@@ -391,20 +389,62 @@ def status() -> None:
 
 
 @click.command()
-def purge() -> None:
+@click.option(
+    "-H",
+    "--hard",
+    is_flag=True,
+    help="Perform a hard purge, deleting the DB as well. [default: False]",
+)
+@click.option(
+    "-y", "--yes", is_flag=True, help="Approve without showing the warning. [default: False]"
+)
+def purge(hard: bool, yes: bool) -> None:
     """
-    Shutdown server and delete the cache and config settings.
+    Purge Covalent from this system. This command is for developers.
     """
 
-    # Shutdown server.
+    removal_list = {
+        get_config("sdk.log_dir"),
+        get_config("dispatcher.cache_dir"),
+        get_config("dispatcher.log_dir"),
+        get_config("user_interface.log_dir"),
+        os.path.dirname(cm.config_file),
+    }
+
+    if hard:
+        removal_list.add(get_config("dispatcher.db_path"))
+
+    if not yes:
+
+        click.secho(f"{''.join(['*'] * 21)} WARNING {''.join(['*'] * 21)}", fg="yellow")
+
+        click.echo("Purging will perform the following operations: ")
+
+        click.echo("1. Stop the covalent server if running.")
+
+        for i, rem_path in enumerate(removal_list, start=2):
+            if os.path.isdir(rem_path):
+                click.echo(f"{i}. {rem_path} directory will be deleted.")
+            else:
+                click.echo(f"{i}. {rem_path} file will be deleted.")
+
+        if hard:
+            click.secho("WARNING: All user data will be deleted.", fg="red")
+
+        click.confirm("\nWould you like to proceed?", abort=True)
+
+    # Shutdown covalent server
     _graceful_shutdown(UI_PIDFILE)
 
-    shutil.rmtree(get_config("sdk.log_dir"), ignore_errors=True)
-    shutil.rmtree(get_config("dispatcher.cache_dir"), ignore_errors=True)
-    shutil.rmtree(get_config("dispatcher.log_dir"), ignore_errors=True)
-    shutil.rmtree(get_config("user_interface.log_dir"), ignore_errors=True)
+    # Remove all directories and files
+    for rem_path in removal_list:
+        if os.path.isdir(rem_path):
+            shutil.rmtree(rem_path, ignore_errors=True)
+        else:
+            with contextlib.suppress(FileNotFoundError):
+                os.remove(rem_path)
 
-    cm.purge_config()
+        click.echo(f"Removed {rem_path}.")
 
     click.echo("Covalent server files have been purged.")
 
@@ -414,15 +454,27 @@ def logs() -> None:
     """
     Show Covalent server logs.
     """
-    if os.path.exists(UI_LOGFILE):
-        f = open(UI_LOGFILE, "r")
-        line = f.readline()
-        while line:
-            click.echo(line.rstrip("\n"))
+    from pathlib import Path
+
+    if Path(UI_LOGFILE).is_file():
+        with open(UI_LOGFILE, "r") as f:
             line = f.readline()
-        f.close()
+            while line:
+                click.echo(line.rstrip("\n"))
+                line = f.readline()
     else:
-        click.echo(f"{UI_LOGFILE} not found!. Server possibly purged!")
+        click.echo(f"{UI_LOGFILE} not found. Restart the server to create a new log file.")
+
+
+@click.command()
+@click.argument("result_pickle_path")
+def migrate_legacy_result_object(result_pickle_path) -> None:
+    """Migrate a legacy pickled Result object to the DataStore
+
+    Example: `covalent migrate-legacy-result-object result.pkl`
+    """
+
+    migrate_pickled_result_object(result_pickle_path)
 
 
 # Cluster CLI handlers (client side wrappers for the async handlers exposed
@@ -482,7 +534,6 @@ async def _get_cluster_logs(uri):
     """
     Retrive the cluster logs from the scheduler directly
     """
-    click.echo("Calling logs handler")
     comm = await connect(uri, timeout=2)
     await comm.write({"op": "cluster_logs"})
     cluster_logs = await comm.read()
@@ -514,6 +565,7 @@ def cluster(
     """
     Inspect and manage the Dask cluster's configuration.
     """
+    assert _is_server_running()
     # addr of the admin server for the Dask cluster process
     # started with covalent
     loop = asyncio.get_event_loop()
@@ -521,28 +573,63 @@ def cluster(
     admin_port = get_config("dask.admin_port")
     admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
 
-    assert _is_server_running()
-
     if status:
-        click.echo(loop.run_until_complete(_get_cluster_status(admin_server_addr)))
+        click.echo(
+            json.dumps(
+                loop.run_until_complete(_get_cluster_status(admin_server_addr)),
+                sort_keys=True,
+                indent=4,
+            )
+        )
         return
     if info:
-        click.echo(loop.run_until_complete(_get_cluster_info(admin_server_addr)))
+        click.echo(
+            json.dumps(
+                loop.run_until_complete(_get_cluster_info(admin_server_addr)),
+                sort_keys=True,
+                indent=4,
+            )
+        )
         return
     if address:
-        click.echo(loop.run_until_complete(_get_cluster_address(admin_server_addr)))
+        click.echo(
+            json.dumps(
+                loop.run_until_complete(_get_cluster_address(admin_server_addr)),
+                sort_keys=True,
+                indent=4,
+            )
+        )
         return
     if size:
-        click.echo(loop.run_until_complete(_get_cluster_size(admin_server_addr)))
+        click.echo(
+            json.dumps(
+                loop.run_until_complete(_get_cluster_size(admin_server_addr)),
+                sort_keys=True,
+                indent=4,
+            )
+        )
         return
     if restart:
         loop.run_until_complete(_cluster_restart(admin_server_addr))
         click.echo("Cluster restarted")
         return
     if logs:
-        click.echo(loop.run_until_complete(_get_cluster_logs(admin_server_addr)))
+        click.echo(
+            json.dumps(
+                loop.run_until_complete(_get_cluster_logs(admin_server_addr)),
+                sort_keys=True,
+                indent=4,
+            )
+        )
         return
     if scale:
         loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
         click.echo(f"Cluster scaled to have {scale} workers")
         return
+
+
+@click.command()
+def config() -> None:
+    """Print Covalent's configuration to stdout"""
+    cm.read_config()
+    click.echo(json.dumps(cm.config_data, sort_keys=True, indent=4))

@@ -27,11 +27,8 @@ from concurrent.futures import ThreadPoolExecutor
 import pytest
 
 import covalent_dispatcher as dispatcher
-from covalent._data_store.datastore import DataStore
 from covalent._results_manager import results_manager as rm
-from covalent._results_manager.utils import _db_path
 from covalent._shared_files.defaults import parameter_prefix
-from covalent_dispatcher._db.dispatchdb import DispatchDB
 
 from .data import TEST_RESULTS_DIR, get_mock_result, get_mock_result_2, get_mock_result_3
 
@@ -59,7 +56,7 @@ from .data import TEST_RESULTS_DIR, get_mock_result, get_mock_result_2, get_mock
 )
 def test_dispatcher_flow(mock_result, expected_res, expected_node_outputs):
     """Integration test that given a results object, plans and executes the workflow on the
-    default local executor.
+    default executor.
     """
 
     workflow_pool = ThreadPoolExecutor()
