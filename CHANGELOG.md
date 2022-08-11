@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Removed
+
+- `Lattice.check_consumables()`, `_TransportGraph.get_topologically_sorted_graph()`
+
 ## [0.175.0] - 2022-08-11
 
 ### Authors
@@ -15,10 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Casey Jao <casey@agnostiq.ai>
 
-
-### Removed
-
-- `Lattice.check_consumables()`, `_TransportGraph.get_topologically_sorted_graph()`
 
 ### Operations
 
