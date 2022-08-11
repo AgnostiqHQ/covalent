@@ -54,8 +54,10 @@ def test_cli_commands():
     ctx = click.Context
     assert cli.list_commands(ctx) == [
         "cluster",
+        "config",
         "db",
         "logs",
+        "migrate-legacy-result-object",
         "purge",
         "restart",
         "start",
