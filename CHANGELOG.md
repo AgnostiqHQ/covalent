@@ -18,6 +18,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - results_manager tests
 
+## [0.174.0] - 2022-08-11
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+
+- Changed return value for TransferFromRemote and TransferToRemote (download/upload) operations to be consistent and always return filepath tuples
+
+### Docs
+
+- Updated docs with File Transfer return value changes and `files` kwarg injections
+
 ### Fixed
 
 - Fixed postprocessing workflows that return an electron with an incoming wait_for edge
