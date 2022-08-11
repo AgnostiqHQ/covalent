@@ -7,18 +7,161 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.177.0] - 2022-08-11
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+### Removed
+
+- `while True` in `app.get_result`
+
+### Changed
+
+- Flask route logic to return 503 when the result is not ready
+
+### Tests
+
+- results_manager tests
+
+### Operations
+
+- Fix conditional checks for `pre-release` and `stable` Covalent docker image builds
+
+## [0.176.0] - 2022-08-11
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Operations
+
+- Update precommit yaml.
+
+### Removed
+
+- `Lattice.check_consumables()`, `_TransportGraph.get_topologically_sorted_graph()`
+
+### Operations
+
+- Trigger webapp build if `build==true`
+
+## [0.175.0] - 2022-08-11
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Operations
+
+- Trigger Slack alert for failed tests on `workflow_run`
+
+## [0.174.0] - 2022-08-11
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+
+- Changed return value for TransferFromRemote and TransferToRemote (download/upload) operations to be consistent and always return filepath tuples
+
 ### Docs
 
-- Re-structured the docs
-- Adding the RTD for the `AWSBatchExecutor`
-- Adding RTD for the `ECSExecutor`
+- Updated docs with File Transfer return value changes and `files` kwarg injections
+
+### Fixed
+
+- Fixed postprocessing workflows that return an electron with an incoming wait_for edge
+
+## [0.173.0] - 2022-08-10
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+### Added
+
+- `--hard` and `--yes` flags added to `covalent purge` for hard purging (also deletes the databse) and autoapproving respectively.
+
+### Changed
+
+- `covalent purge` now shows the user a prompt informing them what dirs and files will be deleted.
+- Improved shown messages in some commands.
+
+### Tests
+
+- Updated tests to reflect above changes.
+
+## [0.172.0] - 2022-08-10
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: manjunath.poilath <manjunath.poilath@psiog.com>
+- Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: M Shrikanth <shrikanth.mohan@psiog.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+
+- Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher/_service/app.py`
+- Unit tests written for Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher_tests/_service/app.test.py`
+- Web apis of `covalent_ui` refactored to adhere to v11 DB schema
+- Electron graph mini map has been moved next to controls on the GUI.
+- Lattice status and count of completed & total electrons has been moved to the top of the graph on the GUI.
+- Some of the Flask APIs earlier consumed by the GUI have been deprecated & removed from the code base.
+- APIs exposed by the web app back end have been re-factored to adhere to the new DB schema v10
+
+### Added
+
+- Added count of dispatches by status on the dispatch list section of the GUI.
+- APIs that the GUI consumes have been re-written using FastAPI. This includes re-factoring of older APIs and adding of new APIs.
+- Added COVALENT_SERVER_IFACE_ANY flag for uvicorn to start with 0.0.0.0
+
+### Docs
+
+- ReadTheDocs landing page has been improved
+
+## [0.171.0] - 2022-08-10
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+### Added
+
+- Added `covalent migrate_legacy_result_object` command to save pickled Result objects to the DataStore
 
 ## [0.170.1] - 2022-08-09
 
 ### Authors
 
 - Venkat Bala <venkat@agnostiq.ai>
-
 
 ### Fixed
 
@@ -352,6 +495,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Changed the custom executor how-to to be shorter and more concise.
+
+
 
 ## [0.156.0] - 2022-07-27
 
