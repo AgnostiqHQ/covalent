@@ -183,7 +183,7 @@ def test_local_file_transfer_transfer_from(tmp_path: Path, mocker):
     workflow_result = rm.get_result(dispatch_id, wait=True)
     rm._delete_result(dispatch_id)
 
-    assert workflow_result.result == [ft.to_file.filepath]
+    assert workflow_result.result == [(ft.from_file.filepath, ft.to_file.filepath)]
 
     source_file.unlink()
 
@@ -220,6 +220,6 @@ def test_local_file_transfer_transfer_to(tmp_path: Path, mocker):
     workflow_result = rm.get_result(dispatch_id, wait=True)
     rm._delete_result(dispatch_id)
 
-    assert workflow_result.result == [ft.from_file.filepath]
+    assert workflow_result.result == [(ft.from_file.filepath, ft.to_file.filepath)]
 
     dest_file.unlink()
