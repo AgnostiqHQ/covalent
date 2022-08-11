@@ -48,9 +48,7 @@ const ElectronTooltip = styled(({ className, ...props }) => (
 }))
 
 const ElectronNode = ({
-  id,
   data,
-  type,
   selected,
   sourcePosition,
   targetPosition,
@@ -68,7 +66,7 @@ const ElectronNode = ({
           alignItems: 'center',
           px: 1,
           py: 0.5,
-          borderRadius: 1,
+          borderRadius: '16px',
           // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
           color: !selected ? NODE_TEXT_COLOR : '#FAFAFA',
           borderColor: color,
@@ -92,13 +90,13 @@ const ElectronNode = ({
             case 'RUNNING':
               return (
                 <SvgIcon
-                  sx={{ mt: 0.5, mr: 0.5, fontSize: 14, fill: color }}>
+                  sx={{ mt: 0.1, mr: 0.5, fontSize: 10, fill: color }}>
                   <LoaderSvg />
                 </SvgIcon>
               )
             case 'COMPLETED':
               return (
-                <SvgIcon sx={{ mr: 0.5, fontSize: 12, fill: color }}>
+                <SvgIcon sx={{ mr: 0.1, fontSize: 14, fill: color,mt:0.6 }}>
                   <CheckSvg />
                 </SvgIcon>
               )

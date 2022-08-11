@@ -1,0 +1,5 @@
+dispatch_id: 652dc473-fa37-4846-85f3-b314204fd432
+end_time: 2022-08-04 18:49
+result_status: !!python/object:covalent._shared_files.util_classes.Status
+  STATUS: COMPLETED
+start_time: 2022-08-04 18:49

@@ -167,6 +167,9 @@ setup_info = {
         "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
     },
     "install_requires": required,
+    "extras_require": {
+        "aws": ["boto3==1.20.48"],
+    },
     "classifiers": [
         "Development Status :: 4 - Beta",
         "Environment :: Console",
