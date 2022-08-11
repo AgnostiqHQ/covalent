@@ -27,17 +27,15 @@ import { useStoreActions, useStoreState } from 'react-flow-renderer'
 
 import LatticeMain from '../graph/LatticeGraph'
 import NotFound from '../NotFound'
-import NodeDrawer, { nodeDrawerWidth } from '../common/NodeDrawer'
+import NodeDrawer, { nodeDrawerWidth } from './NodePreviewDrawer'
 import { useEffect } from 'react'
 import { graphBgColor } from '../../utils/theme'
 import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
-// import MobileAppBar from '../common/MobileAppBar'
 import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
 import PreviewDrawerContents from './PreviewDrawerContents'
 
 const LatticePreviewLayout = () => {
   const lattice = useSelector((state) => state.latticePreview.lattice)
-
   const selectedElectron = useStoreState((state) => {
     const nodeId = _.get(
       _.find(state.selectedElements, { type: 'electron' }),

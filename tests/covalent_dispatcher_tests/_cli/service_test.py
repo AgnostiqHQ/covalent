@@ -41,6 +41,8 @@ from covalent_dispatcher._cli.service import (
     _rm_pid_file,
     cluster,
     config,
+    logs,
+    migrate_legacy_result_object,
     purge,
     restart,
     start,
@@ -221,7 +223,7 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
 
     if ignore_migrations or not is_migration_pending:
         graceful_start_mock.assert_called_once()
-        assert set_config_mock.call_count == 2
+        assert set_config_mock.call_count == 5
         # set_config_mock.assert_called_once()
     else:
         assert MIGRATION_COMMAND_MSG in res.output
@@ -295,27 +297,137 @@ def test_is_server_running(mocker):
     assert not _is_server_running()
 
 
-def test_purge(mocker):
+@pytest.mark.parametrize("hard", [False, True])
+def test_purge_proceed(hard, mocker):
     """Test the 'covalent purge' CLI command."""
 
-    from covalent_dispatcher._cli.service import UI_PIDFILE, get_config
+    from covalent_dispatcher._cli.service import UI_PIDFILE, cm
 
     runner = CliRunner()
+
+    dir_list = [
+        mock.call(dirs)
+        for dirs in [
+            "sdk.log_dir",
+            "dispatcher.cache_dir",
+            "dispatcher.log_dir",
+            "user_interface.log_dir",
+        ]
+    ]
+
+    def get_config_side_effect(conf_name):
+        return "file" if conf_name == "dispatcher.db_path" else "dir"
+
+    get_config_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.get_config", side_effect=get_config_side_effect
+    )
+    os_path_dirname_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.os.path.dirname", return_value="dir"
+    )
+
+    def isdir_side_effect(path):
+        return path == "dir"
+
+    os_path_isdir_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.os.path.isdir", side_effect=isdir_side_effect
+    )
+
     graceful_shutdown_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
     shutil_rmtree_mock = mocker.patch("covalent_dispatcher._cli.service.shutil.rmtree")
-    purge_config_mock = mocker.patch("covalent_dispatcher._cli.service.cm.purge_config")
-    result = runner.invoke(purge)
-    graceful_shutdown_mock.assert_has_calls([mock.call(UI_PIDFILE)])
-    shutil_rmtree_mock.assert_has_calls(
-        [
-            mock.call(get_config("sdk.log_dir"), ignore_errors=True),
-            mock.call(get_config("dispatcher.cache_dir"), ignore_errors=True),
-            mock.call(get_config("dispatcher.log_dir"), ignore_errors=True),
-            mock.call(get_config("user_interface.log_dir"), ignore_errors=True),
+    os_remove_mock = mocker.patch("covalent_dispatcher._cli.service.os.remove")
+
+    if hard:
+        result = runner.invoke(purge, args="--hard", input="y")
+
+        dir_list.append(mock.call("dispatcher.db_path"))
+        os_path_isdir_mock.assert_has_calls([mock.call("file"), mock.call("file")], any_order=True)
+        os_remove_mock.assert_called_with("file")
+    else:
+        result = runner.invoke(purge, input="y")
+
+    get_config_mock.assert_has_calls(dir_list, any_order=True)
+    os_path_dirname_mock.assert_called_with(cm.config_file)
+    os_path_isdir_mock.assert_has_calls([mock.call("dir"), mock.call("dir")], any_order=True)
+
+    graceful_shutdown_mock.assert_called_with(UI_PIDFILE)
+
+    shutil_rmtree_mock.assert_has_calls([mock.call("dir", ignore_errors=True)])
+
+    assert "Covalent server files have been purged.\n" in result.output
+
+
+@pytest.mark.parametrize("hard", [False, True])
+def test_purge_abort(hard, mocker):
+    """Test the 'covalent purge' CLI command."""
+
+    from covalent_dispatcher._cli.service import cm
+
+    runner = CliRunner()
+
+    dir_list = [
+        mock.call(dirs)
+        for dirs in [
+            "sdk.log_dir",
+            "dispatcher.cache_dir",
+            "dispatcher.log_dir",
+            "user_interface.log_dir",
         ]
+    ]
+
+    def get_config_side_effect(conf_name):
+        return "file" if conf_name == "dispatcher.db_path" else "dir"
+
+    get_config_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.get_config", side_effect=get_config_side_effect
     )
-    purge_config_mock.assert_called_once()
-    assert result.output == "Covalent server files have been purged.\n"
+    os_path_dirname_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.os.path.dirname", return_value="dir"
+    )
+
+    def isdir_side_effect(path):
+        return path == "dir"
+
+    os_path_isdir_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.os.path.isdir", side_effect=isdir_side_effect
+    )
+
+    if hard:
+        result = runner.invoke(purge, input="n", args="--hard")
+        dir_list.append(mock.call("dispatcher.db_path"))
+        os_path_isdir_mock.assert_has_calls([mock.call("file")])
+    else:
+        result = runner.invoke(purge, input="n")
+
+    get_config_mock.assert_has_calls(dir_list, any_order=True)
+    os_path_dirname_mock.assert_called_with(cm.config_file)
+    os_path_isdir_mock.assert_has_calls([mock.call("dir")])
+
+    assert "Aborted!\n" in result.output
+
+
+@pytest.mark.parametrize("exists", [False, True])
+def test_logs(exists, mocker):
+    """Test covalent logs command"""
+
+    from covalent_dispatcher._cli.service import UI_LOGFILE
+
+    runner = CliRunner()
+
+    mocker.patch("pathlib.Path.is_file", return_value=exists)
+
+    if not exists:
+        result = runner.invoke(logs)
+        assert (
+            result.output
+            == f"{UI_LOGFILE} not found. Restart the server to create a new log file.\n"
+        )
+    else:
+        m_open = mock.mock_open(read_data="testing")
+        with mock.patch("covalent_dispatcher._cli.service.open", m_open):
+            result = runner.invoke(logs)
+
+        m_open.assert_called_once_with(UI_LOGFILE, "r")
+        assert result.output == "testing\n"
 
 
 def test_config(mocker):
@@ -332,6 +444,14 @@ def test_config(mocker):
     cfg_read_config_mock.assert_called_once()
     json_dumps_mock.assert_called_once()
     click_echo_mock.assert_called_once()
+
+
+def test_migrate_legacy_result_object(mocker):
+    """test the `covalent migrate_legacy_result_object` command."""
+    runner = CliRunner()
+    migrate_mock = mocker.patch("covalent_dispatcher._cli.service.migrate_pickled_result_object")
+    runner.invoke(migrate_legacy_result_object, "result.pkl")
+    migrate_mock.assert_called_once()
 
 
 @pytest.mark.parametrize("workers", [1, 2, 3, 4])

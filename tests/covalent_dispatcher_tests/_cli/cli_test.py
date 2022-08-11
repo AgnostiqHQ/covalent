@@ -57,6 +57,7 @@ def test_cli_commands():
         "config",
         "db",
         "logs",
+        "migrate-legacy-result-object",
         "purge",
         "restart",
         "start",

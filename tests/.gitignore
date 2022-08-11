@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+
 # Ignore results folders
 results/**
 result_*
@@ -113,3 +114,7 @@ dask-worker-space/**
 
 # Logs
 *.log
+
+# Allow sample results_dir and pickles
+!covalent_tests/utils/sample_results_dir/**
+
