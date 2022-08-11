@@ -20,6 +20,7 @@
 
 """This module contains all the functions required to save the decomposed result object in the database."""
 
+import json
 import os
 from datetime import datetime as dt
 from datetime import timezone
@@ -386,6 +387,10 @@ def store_file(storage_path: str, filename: str, data: Any = None) -> None:
     if filename.endswith(".pkl"):
         with open(Path(storage_path) / filename, "wb") as f:
             cloudpickle.dump(data, f)
+
+    elif filename.endswith(".json"):
+        with open(Path(storage_path) / filename, "w") as f:
+            json.dump(data, f)
 
     elif filename.endswith(".log") or filename.endswith(".txt"):
         if data is None:

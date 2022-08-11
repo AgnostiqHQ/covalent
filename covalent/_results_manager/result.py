@@ -70,7 +70,7 @@ ELECTRON_VALUE_FILENAME = "value.pkl"
 ELECTRON_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
 ELECTRON_STDOUT_FILENAME = "stdout.log"
 ELECTRON_STDERR_FILENAME = "stderr.log"
-ELECTRON_INFO_FILENAME = "info.log"
+ELECTRON_INFO_FILENAME = "info.json"
 ELECTRON_RESULTS_FILENAME = "results.pkl"
 ELECTRON_DEPS_FILENAME = "deps.pkl"
 ELECTRON_CALL_BEFORE_FILENAME = "call_before.pkl"
@@ -278,6 +278,8 @@ Node Outputs
             self.lattice.transport_graph.set_node_value(node_id, "stdout", None)
 
             self.lattice.transport_graph.set_node_value(node_id, "stderr", None)
+
+            self.lattice.transport_graph.set_node_value(node_id, "info", {})
 
     def get_node_result(self, node_id: int) -> dict:
         """Return the result of a particular node.
@@ -570,6 +572,7 @@ Node Outputs
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
+        info: dict = None,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -633,6 +636,10 @@ Node Outputs
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
             store_file(node_path, ELECTRON_STDERR_FILENAME, stderr)
+
+        if info is not None:
+            self.lattice.transport_graph.set_node_value(node_id, "info", info)
+            store_file(node_path, ELECTRON_INFO_FILENAME, stderr)
 
         if str(status) == "COMPLETED":
             update_lattice_completed_electron_num(self.dispatch_id)
