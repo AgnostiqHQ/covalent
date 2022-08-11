@@ -1,6 +1,9 @@
 import subprocess
 
+import pytest
+
 import covalent as ct
+from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 
 
 def test_deps_bash_init():
@@ -63,6 +66,37 @@ def test_call_deps_init():
     args = dep.apply_args.get_deserialized()
     assert args == [5]
     assert g(*args) == f(*args)
+
+
+def test_call_deps_failure_when_using_reserved_retval_keys():
+    def f(x):
+        return x * x
+
+    # test using reserved retval_keyword failure case
+    with pytest.raises(Exception):
+        dep = ct.DepsCall(f, args=[5], retval_keyword=RESERVED_RETVAL_KEY__FILES)
+
+    # equivalent as above
+    with pytest.raises(Exception):
+        dep = ct.DepsCall(
+            f,
+            args=[5],
+            retval_keyword=RESERVED_RETVAL_KEY__FILES,
+            override_reserved_retval_keys=False,
+        )
+
+    # test overriding the check to ensure DepsCall instantiation does NOT fail
+    try:
+        dep = ct.DepsCall(
+            f,
+            args=[5],
+            retval_keyword=RESERVED_RETVAL_KEY__FILES,
+            override_reserved_retval_keys=True,
+        )
+    except Exception:
+        pytest.fail(
+            "DepsCall instantiation should not fail when using reserved retval_keyword when override_reserved_retval_keys is enabled."
+        )
 
 
 def test_call_deps_apply():

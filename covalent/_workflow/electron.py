@@ -43,7 +43,7 @@ from .._shared_files.defaults import (
 )
 from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
-from .depscall import DepsCall
+from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
 from .lattice import Lattice
 from .transport import TransportableObject
@@ -305,12 +305,7 @@ class Electron:
 
         if active_lattice.post_processing:
 
-            # This is to resolve `wait_for` calls during post processing time
             id, output = active_lattice.electron_outputs[0]
-
-            for _, _, attr in active_lattice.transport_graph._graph.in_edges(id, data=True):
-                if attr.get("wait_for"):
-                    return Electron(function=None, metadata=None, node_id=id)
 
             active_lattice.electron_outputs.pop(0)
             return output.get_deserialized()
@@ -460,18 +455,14 @@ class Electron:
             node_id: Node id of the added node
         """
 
-        @electron
-        def to_decoded_electron_collection(**x):
-            collection = list(x.values())[0]
-            if isinstance(collection, list):
-                return TransportableObject.deserialize_list(collection)
-            elif isinstance(collection, dict):
-                return TransportableObject.deserialize_dict(collection)
+        new_metadata = _DEFAULT_CONSTRAINT_VALUES.copy()
+        if "executor" in self.metadata:
+            new_metadata["executor"] = self.metadata["executor"]
 
         node_id = graph.add_node(
             name=prefix,
             function=to_decoded_electron_collection,
-            metadata=self.metadata.copy(),
+            metadata=new_metadata,
             function_string=get_serialized_function_str(to_decoded_electron_collection),
         )
 
@@ -494,9 +485,6 @@ class Electron:
         """
 
         active_lattice = active_lattice_manager.get_active_lattice()
-
-        if active_lattice.post_processing:
-            return active_lattice.electron_outputs.pop(0)[1]
 
         # Just using list(electrons) will not work since we are overriding the __iter__
         # method for an Electron which results in it essentially disappearing, thus using
@@ -569,11 +557,21 @@ def electron(
     internal_call_after_deps = []
 
     for file_transfer in files:
-        _callback_ = file_transfer.cp()
+        _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
+
+        # pre-file transfer hook to create any necessary temporary files
+        internal_call_before_deps.append(
+            DepsCall(
+                _file_transfer_pre_hook_,
+                retval_keyword=RESERVED_RETVAL_KEY__FILES,
+                override_reserved_retval_keys=True,
+            )
+        )
+
         if file_transfer.order == Order.AFTER:
-            internal_call_after_deps.append(DepsCall(_callback_))
+            internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
         else:
-            internal_call_before_deps.append(DepsCall(_callback_))
+            internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
 
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
@@ -630,7 +628,17 @@ def wait(child, parents):
     """
     active_lattice = active_lattice_manager.get_active_lattice()
 
-    if active_lattice:
+    if active_lattice and not active_lattice.post_processing:
         return child.wait_for(parents)
     else:
         return child
+
+
+@electron
+def to_decoded_electron_collection(**x):
+    """Interchanges order of serialize -> collection"""
+    collection = list(x.values())[0]
+    if isinstance(collection, list):
+        return TransportableObject.deserialize_list(collection)
+    elif isinstance(collection, dict):
+        return TransportableObject.deserialize_dict(collection)

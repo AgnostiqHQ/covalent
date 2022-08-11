@@ -200,5 +200,5 @@ This Command Line Interface (CLI) tool is used to manage Covalent server.
 
 .. click:: covalent_dispatcher._cli.cli:cli
     :prog: covalent
-    :commands: start,stop,restart,status,purge,logs,db
+    :commands: start,stop,restart,status,purge,logs,db,migrate-legacy-result-object
     :nested: full

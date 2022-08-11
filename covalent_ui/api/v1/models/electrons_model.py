@@ -18,36 +18,41 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Unit tests for the DispatchDB."""
+"""Request and response models for Electrons"""
 
-import simplejson
+from enum import Enum
 
-import covalent as ct
-from covalent._results_manager.result import Result
-from covalent_dispatcher._db.dispatchdb import DispatchDB
+from pydantic import BaseModel
 
-
-@ct.electron
-def add(a, b):
-    return a + b
+from covalent_ui.api.v1.utils.status import Status
 
 
-@ct.electron
-def identity(a):
-    return a
+class ElectronResponseModel(BaseModel):
+    """Electron Response Validation"""
+
+    id: int
+    parent_lattice_id: int
+    transport_graph_node_id: int
+    type: str
+    name: str
+    status: Status
+    executor: str
+    created_at: str
+    started_at: str
+    completed_at: str
+    updated_at: str
 
 
-@ct.lattice
-def check(a, b):
-    result1 = add(a=a, b=b)
-    return identity(a=result1)
-
-
-def test_save_db(mocker):
-    """Test the db save method."""
-
-    with DispatchDB(":memory:") as db:
-        res = Result(check, "/home/test/results", "asdf")
-        persist_mock = mocker.patch("covalent._results_manager.result.Result.persist")
-        db.save_db(result_object=res)
-        persist_mock.assert_called_once()
+class FileOutput(str, Enum):
+    FUNCTION_STRING = "function_string"
+    FUNCTION = "function"
+    EXECUTOR = "executor"
+    RESULT = "result"
+    VALUE = "value"
+    KEY = "key"
+    STDOUT = "stdout"
+    DEPS = "deps"
+    CALL_BEFORE = "call_before"
+    CALL_AFTER = "call_after"
+    ERROR = "error"
+    INFO = "info"

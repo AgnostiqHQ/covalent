@@ -21,7 +21,14 @@
  */
 
 import React from 'react'
-import { Drawer, Link, List, ListItemButton, Tooltip ,SvgIcon} from '@mui/material'
+import {
+  Drawer,
+  Link,
+  List,
+  ListItemButton,
+  Tooltip,
+  SvgIcon,
+} from '@mui/material'
 
 import { ReactComponent as Logo } from '../../assets/covalent-logo.svg'
 import { ReactComponent as DispatchList } from '../../assets/dashboard.svg'
@@ -35,7 +42,7 @@ const NavDrawer = () => {
     <Drawer
       variant="permanent"
       anchor="left"
-      className='side-drawernav'
+      className="side-drawernav"
       sx={{
         width: navDrawerWidth,
         flexShrink: 0,
@@ -48,11 +55,16 @@ const NavDrawer = () => {
       }}
     >
       <List>
-        <ListItemButton sx={{ my: 6 }} component={Link} to="/">
+        <ListItemButton sx={{ my: 2.5,mb:6 }} component={Link} to="/">
           <Logo style={{ margin: 'auto' }} />
         </ListItemButton>
 
-        <LinkButton title="Dispatch list" path="/" icon={DispatchList} />
+        <LinkButton
+          title="Dispatch list"
+          path="/"
+          icon={DispatchList}
+          margintop={8}
+        />
 
         <LinkButton
           title="Lattice draw preview"
@@ -64,29 +76,44 @@ const NavDrawer = () => {
   )
 }
 
-const LinkButton = ({ title, icon, path }) => {
+const LinkButton = ({ title, icon, path, margintop }) => {
   const selected = useMatch(path)
 
   return (
     <Tooltip
-       title={title}
-       placement="right"
-       arrow
-       enterDelay={500}
-       enterNextDelay={750}
-     >
-       <ListItemButton component={Link} to={path} selected={!!selected}>
-         {!!selected ?
-         <SvgIcon sx={{ mx: 'auto',border:"1px solid #998AFF",
-         width: "30px",height: "30px",
-         padding: "5px 0px 0px 3px",
-         borderRadius: "6px" ,my:2}} component={icon} />
-         :
-         <SvgIcon sx={{ mx: 'auto',my:2,marginLeft:'4px'}} component={icon} />
-        }
-       </ListItemButton>
-     </Tooltip>
+      title={title}
+      placement="right"
+      arrow
+      enterDelay={500}
+      enterNextDelay={750}
+    >
+      <ListItemButton
+        sx={{ mt: margintop }}
+        component={Link}
+        to={path}
+        selected={!!selected}
+      >
+        {!!selected ? (
+          <SvgIcon
+            sx={{
+              mx: 'auto',
+              border: '1px solid #998AFF',
+              width: '30px',
+              height: '30px',
+              padding: '5px 0px 0px 3px',
+              borderRadius: '6px',
+              my: 2,
+            }}
+            component={icon}
+          />
+        ) : (
+          <SvgIcon
+            sx={{ mx: 'auto', my: 2, marginLeft: '4px' }}
+            component={icon}
+          />
+        )}
+      </ListItemButton>
+    </Tooltip>
   )
 }
-
 export default NavDrawer
