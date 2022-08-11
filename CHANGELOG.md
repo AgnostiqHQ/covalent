@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Adding RTD for `AWS Braket` executor
 - Adding dropdown menu for the IAM policy
+- Delete RTD for other cloud executor to keep changes atomic
 
 ## [0.177.0] - 2022-08-11
 
