@@ -22,11 +22,11 @@
 
 import { useState } from 'react'
 import copy from 'copy-to-clipboard'
-import { IconButton, Tooltip } from '@mui/material'
+import { IconButton, Tooltip, Grid } from '@mui/material'
 import { CheckRounded } from '@mui/icons-material'
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import { ReactComponent as CopyIcon } from '../../assets/copy.svg'
 
-const CopyButton = ({ content, title = 'Copy', ...props }) => {
+const CopyButton = ({ content, isBorderPresent, title = 'Copy', ...props }) => {
   const [copied, setCopied] = useState(false)
 
   return (
@@ -37,14 +37,30 @@ const CopyButton = ({ content, title = 'Copy', ...props }) => {
           setCopied(true)
           setTimeout(() => setCopied(false), 1200)
         }}
+        disableRipple
         sx={{ color: 'text.tertiary' }}
         {...props}
       >
-        {copied ? (
-          <CheckRounded fontSize="inherit" />
-        ) : (
-          <ContentCopyIcon fontSize="inherit" />
-        )}
+        <Grid
+          sx={{
+            border: isBorderPresent ? '1px solid #303067' : null,
+            borderRadius: '8px',
+            width: '32px',
+            height: '32px',
+          }}
+          container
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+        >
+          {copied ? (
+            <CheckRounded fontSize="inherit" />
+          ) : (
+            <CopyIcon
+              style={{ margin: 'auto', width: '16px', height: '16px' }}
+            />
+          )}
+        </Grid>
       </IconButton>
     </Tooltip>
   )
