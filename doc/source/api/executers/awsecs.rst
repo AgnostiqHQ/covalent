@@ -48,7 +48,7 @@ cluster. The policy attached to the ``CovalentFargateTaskRole`` is as follows
 .. dropdown:: AWS Fargate Task Role IAM Policy
 
     .. code:: json
-        
+
         {
         "Version": "2012-10-17",
         "Statement": [
