@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - results_manager tests
 
+### Operations
+
+- Fix conditional checks for `pre-release` and `stable` Covalent docker image builds
+
 ## [0.176.0] - 2022-08-11
 
 ### Authors
