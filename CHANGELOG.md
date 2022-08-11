@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Adding dropdowns to IAM policy documents
+
 ## [0.177.0] - 2022-08-11
 
 ### Authors
