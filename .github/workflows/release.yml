@@ -267,5 +267,5 @@ jobs:
           && contains(env.PAUL_BLART, github.actor)
         run: |
           docker build -t covalent .
-          docker tag covalent:latest public.ecr.aws/covalent/covalent:stable
+          docker tag covalent:$TAG public.ecr.aws/covalent/covalent:stable
           docker push public.ecr.aws/covalent/covalent:stable
