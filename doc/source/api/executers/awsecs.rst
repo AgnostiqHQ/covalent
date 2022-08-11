@@ -20,55 +20,57 @@ The executor uses multiple IAM roles configured with different policies each dur
 If omitted, these IAM role names default ``ecsTaskExecutionRole`` and ``CovalentFargateTaskRole`` respectively.
 The IAM policy attached to the ``ecsTaskExecutionRole`` is the following
 
-.. code:: json
-
-    {
-    "Version": "2012-10-17",
-    "Statement": [
+.. dropdown:: ECS Task Execution Role IAM Policy
+    .. code:: json
+    
         {
-            "Effect": "Allow",
-            "Action": [
-                "ecr:GetAuthorizationToken",
-                "ecr:BatchCheckLayerAvailability",
-                "ecr:GetDownloadUrlForLayer",
-                "ecr:BatchGetImage",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "ecr:GetAuthorizationToken",
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:BatchGetImage",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                ],
+                "Resource": "*"
+            }
+        ]
+    }
 
 These policies allow the service to download container images from ECR so that the tasks can be executed on a ECS
-cluster. The policy attached to the ``CovalentFargetTaskRole`` is as follows
+cluster. The policy attached to the ``CovalentFargateTaskRole`` is as follows
 
-.. code:: json
+.. dropdown:: AWS Fargate Task Role IAM Policy
+    .. code:: json
 
-    {
-    "Version": "2012-10-17",
-    "Statement": [
         {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": "braket:*",
-            "Resource": "*"
-        },
-        {
-            "Sid": "VisualEditor1",
-            "Effect": "Allow",
-            "Action": [
-                "s3:PutObject",
-                "s3:GetObject",
-                "s3:ListBucket"
-            ],
-            "Resource": [
-                "arn:aws:s3:::covalent-fargate-task-resources/*",
-                "arn:aws:s3:::covalent-fargate-task-resources"
-            ]
-        }
-    ]
-}
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "VisualEditor0",
+                "Effect": "Allow",
+                "Action": "braket:*",
+                "Resource": "*"
+            },
+            {
+                "Sid": "VisualEditor1",
+                "Effect": "Allow",
+                "Action": [
+                    "s3:PutObject",
+                    "s3:GetObject",
+                    "s3:ListBucket"
+                ],
+                "Resource": [
+                    "arn:aws:s3:::covalent-fargate-task-resources/*",
+                    "arn:aws:s3:::covalent-fargate-task-resources"
+                ]
+            }
+        ]
+    }
 
 User's can provide their custom IAM roles/policies as long as they respect the permissions listed in the above documents.
 The executor also requires a proper networking setup so that the containers can be properly launched into their respective
