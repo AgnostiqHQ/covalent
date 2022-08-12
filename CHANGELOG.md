@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Conda package is built and tested on a nightly schedule
+- Conda deployment step is added to `release.yml`
+
 ## [0.177.0] - 2022-08-11
 
 ### Authors
