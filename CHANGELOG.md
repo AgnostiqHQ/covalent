@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Dispatch workflows as asyncio tasks instead of in a thread pool
+- Dispatch workflows as asyncio tasks on the FastAPI event loop instead of in separate threads
 
 ### Fixed
 
