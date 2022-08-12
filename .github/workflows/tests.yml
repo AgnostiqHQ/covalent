@@ -41,6 +41,10 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
+        backend: >
+          github.event_name != 'pull_request'
+          && ['local', 'dask']
+          || []
         container:
           - python:3.8-buster
           - python:3.8-bullseye
@@ -50,6 +54,7 @@ jobs:
           - python:3.10-bullseye
           - image: "centos/python-38-centos7"
             options: "--user root"
+
         experimental: [false]
         include:
           - os: macos-latest
@@ -225,7 +230,18 @@ jobs:
           || steps.working-directory.outputs.build == 'true'
           || steps.working-directory.outputs.actions == 'true'
           || steps.working-directory.outputs.tests == 'true'
-        run: covalent start --ignore-migrations
+        run: |
+          if [ "${{ steps.working-directory.outputs.build }}" == 'true' ] ||
+             [ "${{ steps.working-directory.outputs.actions }}" == 'true' ] ||
+             [ "${{ steps.working-directory.outputs.tests }}" == 'true' ] ||
+             [ "${{ matrix.backend }}" == 'dask' ] ; then
+            covalent start --ignore-migrations
+          elif [ "${{ matrix.backend }}" == 'local' ] ; then
+            covalent start --ignore-migrations --no-cluster
+          else
+            echo "Invalid backend specified in test matrix."
+            exit 1
+          fi
 
       - name: Run SDK tests and measure coverage
         if: >
