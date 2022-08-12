@@ -376,7 +376,6 @@ def test_gather_deps():
 async def test_update_failed_node(mocker):
     """Check that update_node_result correctly invokes _handle_failed_node"""
 
-    lock = Lock()
     tasks_queue = Queue()
     pending_deps = {}
 
@@ -388,7 +387,7 @@ async def test_update_failed_node(mocker):
     mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
 
     node_result = {"node_id": 0, "status": Result.FAILED}
-    await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+    await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
 
     mock_fail_handler.assert_called_once_with(
         result_object, node_result, pending_deps, tasks_queue
@@ -399,7 +398,6 @@ async def test_update_failed_node(mocker):
 async def test_update_cancelled_node(mocker):
     """Check that update_node_result correctly invokes _handle_cancelled_node"""
 
-    lock = Lock()
     tasks_queue = Queue()
     pending_deps = {}
 
@@ -413,7 +411,7 @@ async def test_update_cancelled_node(mocker):
     mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
 
     node_result = {"node_id": 0, "status": Result.CANCELLED}
-    await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+    await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
 
     mock_cancel_handler.assert_called_once_with(
         result_object, node_result, pending_deps, tasks_queue
@@ -424,7 +422,6 @@ async def test_update_cancelled_node(mocker):
 async def test_update_completed_node(mocker):
     """Check that update_node_result correctly invokes _handle_completed_node"""
 
-    lock = Lock()
     tasks_queue = Queue()
     pending_deps = {}
 
@@ -438,7 +435,7 @@ async def test_update_completed_node(mocker):
     mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
 
     node_result = {"node_id": 0, "status": Result.COMPLETED}
-    await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+    await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
 
     mock_completed_handler.assert_called_once_with(
         result_object, node_result, pending_deps, tasks_queue
@@ -606,7 +603,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
     assert result_object.status == Result.FAILED
 
 
-def test_run_workflow_does_not_deserialize(mocker):
+async def test_run_workflow_does_not_deserialize(mocker):
     """Check that dispatcher does not deserialize user data when using
     out-of-process `workflow_executor`"""
 
@@ -643,7 +640,7 @@ def test_run_workflow_does_not_deserialize(mocker):
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
 
-    result_object = asyncio.run(run_workflow(result_object))
+    result_object = await run_workflow(result_object)
 
     mock_to_deserialize.assert_not_called()
     assert result_object.status == Result.COMPLETED
