@@ -1,0 +1,14 @@
+[
+    {
+      "name": "Ubuntu 18.04 / Python 3.8 / Dask",
+      "os": "ubuntu-latest",
+      "container": "python:3.8-buster",
+      "backend": "dask",
+      "experimental": "false",
+      "trigger": [
+        "pull_request",
+        "workflow_run",
+        "workflow_dispatch"
+      ]
+    }
+  ]
