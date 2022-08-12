@@ -42,7 +42,7 @@
  import SyntaxHighlighter from '../common/SyntaxHighlighter'
  import Heading from '../common/Heading'
  import ErrorCard from '../common/ErrorCard'
- import ExecutorSection from '../common/ExecutorSection'
+ import ExecutorSection from './ExecutorSection'
 
  export const nodeDrawerWidth = 360
 
@@ -124,7 +124,7 @@
            )}
 
            {/* Executor */}
-           <ExecutorSection preview metadata={_.get(preview, 'lattice.metadata')} sx={(theme) =>({ bgcolor: theme.palette.background.darkblackbg })}/>
+           <ExecutorSection metadata={_.get(preview, 'lattice.metadata')} sx={(theme) =>({ bgcolor: theme.palette.background.darkblackbg })}/>
 
            <Divider sx={{ my: 2 }} />
 
