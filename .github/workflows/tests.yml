@@ -39,6 +39,11 @@ jobs:
     outputs:
       matrix: ${{ steps.filter-matrix.outputs.matrix }}
     steps:
+      - name: Check out head
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
       - name: Filter test matrix
         id: filter-matrix
         run: |
@@ -231,6 +236,7 @@ jobs:
           fi
 
       - name: Run SDK tests and measure coverage
+        id: sdk_tests
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.sdk == 'true'
@@ -243,6 +249,7 @@ jobs:
         run: coverage xml -o sdk_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
+        id: dispatcher_tests
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.dispatcher == 'true'
@@ -255,6 +262,7 @@ jobs:
         run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
+        id: functional_tests
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.actions == 'true'
@@ -285,6 +293,14 @@ jobs:
               && steps.working-directory.outputs.ui_backend == 'true'
               && steps.ui_tests.outputs.exit_code == 0))
         run: coverage xml -o ui_backend_coverage.xml
+
+      - name: Dump Covalent logs
+        if: >
+          steps.sdk_tests.outcome != 'success'
+          || steps.dispatcher_tests.outcome != 'success'
+          || steps.functional_tests.outcome != 'success'
+          || steps.ui_tests.outcome != 'success'
+        run: covalent logs
 
       - name: Upload SDK report to Codecov
         if: >
