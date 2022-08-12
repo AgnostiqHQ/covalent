@@ -20,33 +20,24 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import {
-  AppBar,
-  Container,
-  Link,
-  Paper,
-  Toolbar,
-  Typography,
-} from '@mui/material'
+ import { screen } from '@testing-library/react'
+ import App from '../DispatchLayout'
+ import React from 'react'
+ import { render } from '@testing-library/react'
+ 
+ describe('Dispatch layout contents', () => {
 
-import { ReactComponent as Logo } from '../assets/covalent-full-logo.svg'
+   test('Not found is rendered', () => {
+     render(<App />)
+     const linkElement = screen.getByTestId('notfound')
+     expect(linkElement).toBeInTheDocument()
+   })
 
-const NotFound = ({ text = 'Page not found.', children }) => {
-  return (
-    <Container data-testid="notfound">
-      <AppBar position="static" color="transparent">
-        <Toolbar disableGutters sx={{ my: 2 }}>
-          <Link href="/">
-            <Logo />
-          </Link>
-        </Toolbar>
-      </AppBar>
+   test('Not found text rendered', () => {
+    render(<App text = 'Page not found.'/>)
+    const linkElement = screen.getByTestId('notfound')
+    expect(linkElement).toBeInTheDocument()
+  })
 
-      <Paper elevation={4} sx={{ p: 2 }}>
-        {children || <Typography variant="h5">{text}</Typography>}
-      </Paper>
-    </Container>
-  )
-}
-
-export default NotFound
+ })
+ 

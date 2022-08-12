@@ -22,9 +22,9 @@
 
 import _ from 'lodash'
 import { Light } from 'react-syntax-highlighter'
-import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python'
-import yaml from 'react-syntax-highlighter/dist/esm/languages/hljs/yaml'
-import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json'
+import python from 'react-syntax-highlighter/dist/cjs/languages/hljs/python'
+import yaml from 'react-syntax-highlighter/dist/cjs/languages/hljs/yaml'
+import json from 'react-syntax-highlighter/dist/cjs/languages/hljs/json'
 import style from 'react-syntax-highlighter/dist/cjs/styles/hljs/androidstudio'
 Light.registerLanguage('python', python)
 Light.registerLanguage('yaml', yaml)
