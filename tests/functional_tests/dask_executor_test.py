@@ -67,7 +67,7 @@ def test_dask_executor():
 
     dispatcher = ct.dispatch(workflow)
 
-    n = 3
+    n = 10
     dispatch_id = dispatcher(n=n)
     print(f"Dispatching with dispatch_id: {dispatch_id}")
 
