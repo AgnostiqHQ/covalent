@@ -51,6 +51,8 @@ class FileHandler:
                     kwargs_array = {}
 
                     if bool(unpickled_object):
+                        if "type" in unpickled_object:
+                            return str(unpickled_object)
                         for obj in unpickled_object["args"]:
                             args_array.append(obj.object_string)
 
