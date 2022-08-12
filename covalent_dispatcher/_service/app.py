@@ -20,7 +20,6 @@
 
 import codecs
 import json
-from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 from uuid import UUID
 
@@ -44,15 +43,6 @@ log_stack_info = logger.log_stack_info
 router: APIRouter = APIRouter()
 
 
-@router.on_event("startup")
-def start_pools():
-    global workflow_pool
-    global tasks_pool
-
-    workflow_pool = ThreadPoolExecutor()
-    tasks_pool = ThreadPoolExecutor()
-
-
 @router.post("/submit")
 async def submit(request: Request) -> UUID:
     """
@@ -70,7 +60,7 @@ async def submit(request: Request) -> UUID:
     data = await request.json()
     data = json.dumps(data).encode("utf-8")
 
-    dispatch_id = dispatcher.run_dispatcher(data, workflow_pool, tasks_pool)
+    dispatch_id = await dispatcher.run_dispatcher(data)
     return dispatch_id
 
 

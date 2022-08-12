@@ -20,6 +20,7 @@
 
 import json
 
+import aiohttp
 import requests
 
 import covalent_ui.app as ui_server
@@ -40,7 +41,7 @@ def get_ui_url(path):
     return f"{baseUrl}{path}"
 
 
-def send_update(result: Result) -> None:
+async def send_update(result: Result) -> None:
     """
     Signal UI server about a result update. Note that the server will expect the
     updated result to have been saved to the results directory prior to the
@@ -65,10 +66,15 @@ def send_update(result: Result) -> None:
     app_log.debug("Moving to Fast API soon - stay tuned!!")
     try:
         # ignore response
-        requests.post(get_ui_url(ui_server.WEBHOOK_PATH), data=result_update, timeout=1)
-    except requests.exceptions.RequestException:
+        timeout = aiohttp.ClientTimeout(total=1)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.post(
+                get_ui_url(ui_server.WEBHOOK_PATH), data=result_update
+            ) as resp:
+                pass
+    except Exception as ex:
         # catch all requests-related exceptions
-        app_log.debug("Unable to send result update to UI server.")
+        app_log.debug(f"Unable to send result update to UI server: {ex}")
 
 
 def send_draw_request(lattice) -> None:
