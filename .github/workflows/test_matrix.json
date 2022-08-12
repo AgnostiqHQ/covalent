@@ -4,7 +4,7 @@
       "os": "ubuntu-latest",
       "container": "python:3.8-buster",
       "backend": "dask",
-      "experimental": "false",
+      "experimental": false,
       "trigger": [
         "pull_request",
         "workflow_run",
