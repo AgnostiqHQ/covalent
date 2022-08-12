@@ -42,7 +42,7 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         backend: >
-          github.event_name != 'pull_request'
+          ${{ github.event_name }} != 'pull_request'
           && ['local', 'dask']
           || []
         container:
