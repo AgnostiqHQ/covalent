@@ -67,11 +67,11 @@ def test_dask_executor():
 
     dispatcher = ct.dispatch(workflow)
 
-    n = 10
+    n = 3
     dispatch_id = dispatcher(n=n)
     print(f"Dispatching with dispatch_id: {dispatch_id}")
 
-    result = ct.get_result(dispatch_id=dispatch_id, wait=True)
+    result = ct.get_result(dispatch_id=dispatch_id, wait=ct.WAIT.LONG)
 
     time_taken = (result.end_time - result.start_time).total_seconds()
     print(f"Time taken: {time_taken}")

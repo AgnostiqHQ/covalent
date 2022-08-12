@@ -67,7 +67,7 @@ def get_mock_result() -> Result:
 
     import sys
 
-    @ct.electron
+    @ct.electron(executor="local")
     def task(x):
         print(f"stdout: {x}")
         print("Error!", file=sys.stderr)
@@ -541,7 +541,8 @@ async def test_initialize_deps_and_queue(mocker):
     assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
 
 
-def test_run_workflow_with_failing_nonleaf(mocker):
+@pytest.mark.asyncio
+async def test_run_workflow_with_failing_nonleaf(mocker):
     """Test running workflow with a failing intermediate node"""
 
     @ct.electron
@@ -554,15 +555,12 @@ def test_run_workflow_with_failing_nonleaf(mocker):
         res2 = failing_task(res1)
         return res2
 
-    from concurrent.futures import ThreadPoolExecutor
-
     from covalent._workflow.lattice import Lattice
 
     workflow.build_graph(5)
 
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
-    tasks_pool = ThreadPoolExecutor()
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
@@ -570,12 +568,13 @@ def test_run_workflow_with_failing_nonleaf(mocker):
 
     mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
     result_object.persist()
-    result_object = run_workflow(result_object, tasks_pool)
+    result_object = await run_workflow(result_object)
 
     assert result_object.status == Result.FAILED
 
 
-def test_run_workflow_with_failing_leaf(mocker):
+@pytest.mark.asyncio
+async def test_run_workflow_with_failing_leaf(mocker):
     """Test running workflow with a failing leaf node"""
 
     @ct.electron
@@ -588,15 +587,12 @@ def test_run_workflow_with_failing_leaf(mocker):
         res1 = failing_task(x)
         return res1
 
-    from concurrent.futures import ThreadPoolExecutor
-
     from covalent._workflow.lattice import Lattice
 
     workflow.build_graph(5)
 
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
-    tasks_pool = ThreadPoolExecutor()
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
@@ -605,7 +601,7 @@ def test_run_workflow_with_failing_leaf(mocker):
     mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
     result_object.persist()
 
-    result_object = run_workflow(result_object, tasks_pool)
+    result_object = await run_workflow(result_object)
 
     assert result_object.status == Result.FAILED
 
@@ -614,26 +610,29 @@ def test_run_workflow_does_not_deserialize(mocker):
     """Check that dispatcher does not deserialize user data when using
     out-of-process `workflow_executor`"""
 
-    from concurrent.futures import ThreadPoolExecutor
+    from dask.distributed import LocalCluster
 
     from covalent._workflow.lattice import Lattice
+    from covalent.executor import DaskExecutor
 
-    @ct.electron(executor="dask")
+    lc = LocalCluster()
+    dask_exec = DaskExecutor(lc.scheduler_address)
+
+    @ct.electron(executor=dask_exec)
     def task(x):
         return x
 
-    @ct.lattice(executor="dask", workflow_executor="dask")
+    @ct.lattice(executor=dask_exec, workflow_executor=dask_exec)
     def workflow(x):
         # Exercise both sublatticing and postprocessing
-        sublattice_task = ct.lattice(task, workflow_executor="dask")
-        res1 = ct.electron(sublattice_task(x), executor="dask")
+        sublattice_task = ct.lattice(task, workflow_executor=dask_exec)
+        res1 = ct.electron(sublattice_task(x), executor=dask_exec)
         return res1
 
     workflow.build_graph(5)
 
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
-    tasks_pool = ThreadPoolExecutor()
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
@@ -644,20 +643,20 @@ def test_run_workflow_does_not_deserialize(mocker):
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
 
-    result_object = run_workflow(result_object, tasks_pool)
+    result_object = asyncio.run(run_workflow(result_object))
 
     mock_to_deserialize.assert_not_called()
     assert result_object.status == Result.COMPLETED
 
 
-def test_run_workflow_with_client_side_postprocess(mocker):
+@pytest.mark.asyncio
+async def test_run_workflow_with_client_side_postprocess(mocker):
     """Check that run_workflow handles "client" workflow_executor for
     postprocessing"""
 
-    from concurrent.futures import ThreadPoolExecutor
+    import asyncio
 
     dispatch_id = "asdf"
-    tasks_pool = ThreadPoolExecutor()
     result_object = get_mock_result()
     result_object.lattice.set_metadata("workflow_executor", "client")
     result_object._dispatch_id = dispatch_id
@@ -666,17 +665,15 @@ def test_run_workflow_with_client_side_postprocess(mocker):
     mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
     result_object.persist()
 
-    result_object = run_workflow(result_object, tasks_pool)
+    result_object = await run_workflow(result_object)
     assert result_object.status == Result.PENDING_POSTPROCESSING
 
 
-def test_run_workflow_with_failed_postprocess(mocker):
+@pytest.mark.asyncio
+async def test_run_workflow_with_failed_postprocess(mocker):
     """Check that run_workflow handles postprocessing failures"""
 
-    from concurrent.futures import ThreadPoolExecutor
-
     dispatch_id = "asdf"
-    tasks_pool = ThreadPoolExecutor()
     result_object = get_mock_result()
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
@@ -688,13 +685,13 @@ def test_run_workflow_with_failed_postprocess(mocker):
         assert False
 
     result_object.lattice.set_metadata("workflow_executor", "bogus")
-    result_object = run_workflow(result_object, tasks_pool)
+    result_object = await run_workflow(result_object)
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
 
     result_object.lattice.workflow_function = ct.TransportableObject(failing_workflow)
-    result_object.lattice.set_metadata("workflow_executor", "dask")
+    result_object.lattice.set_metadata("workflow_executor", "local")
 
-    result_object = run_workflow(result_object, tasks_pool)
+    result_object = await run_workflow(result_object)
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
