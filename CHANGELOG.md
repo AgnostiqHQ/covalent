@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Deconflict wait enum with `ct.wait` function; `wait` -> `WAIT`
 
+### Operations
+
+- Install yarn and npm on Ubuntu whenever the webapp needs to be built
+
 ## [0.177.0] - 2022-08-11
 
 ### Authors
