@@ -69,9 +69,11 @@ async def send_update(result: Result) -> None:
         timeout = aiohttp.ClientTimeout(total=1)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.post(
-                get_ui_url(ui_server.WEBHOOK_PATH), data=result_update
+                get_ui_url(ui_server.WEBHOOK_PATH), json=json.loads(result_update)
             ) as resp:
-                pass
+                status = resp.status
+                text = await resp.text()
+                app_log.debug(f"send_update received response {status}, {text}")
     except Exception as ex:
         # catch all requests-related exceptions
         app_log.debug(f"Unable to send result update to UI server: {ex}")
