@@ -37,30 +37,45 @@ const ResultProgress = (props) => {
   const { status, totalElectronsCompleted, totalElectrons } = props.result
   return (
     <Tooltip title={statusLabel(status)} placement="right">
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Box sx={{ width: '100%', mr: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center',width:'120px' }}>
+        <Box data-testid="resultProgress" sx={{ width: '50%', mr: 1 }}>
           <LinearProgress
             variant="determinate"
             color={STATUS_COLORS[status.toUpperCase()]}
             value={(totalElectronsCompleted * 100) / totalElectrons}
           />
         </Box>
-        <Box sx={{ minWidth: 35 }}>
-          <Typography variant="body2"
+        <Box sx={{ width: '50%' }}>
+          <Typography
+            variant="body2"
             color={STATUS_COLORS[status.toUpperCase()]}
           >
             <Typography variant="body2">
-              <Box component="div" display="inline"
-                sx={{ color: `${STATUS_COLORS[status.toUpperCase()]}.main`, fontSize: '1rem' }}>{totalElectronsCompleted}</Box>
-              <Box component="div" display="inline"
+              <Box
+                component="div"
+                display="inline"
                 sx={{
-                  color: totalElectrons === totalElectronsCompleted ? `${STATUS_COLORS[status.toUpperCase()]}.main` : '',
-                  fontSize: '1rem'
-                }
-                }>/{totalElectrons}</Box>
+                  color: `${STATUS_COLORS[status.toUpperCase()]}.main`,
+                  fontSize: '1rem',
+                }}
+              >
+                {totalElectronsCompleted}
+              </Box>
+              <Box
+                component="div"
+                display="inline"
+                sx={{
+                  color:
+                    totalElectrons === totalElectronsCompleted
+                      ? `${STATUS_COLORS[status.toUpperCase()]}.main`
+                      : '',
+                  fontSize: '1rem',
+                }}
+              >
+                /{totalElectrons}
+              </Box>
             </Typography>
           </Typography>
-
         </Box>
       </Box>
     </Tooltip>

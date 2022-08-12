@@ -20,16 +20,13 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { Typography } from '@mui/material'
+import { render, screen } from '@testing-library/react'
+import App from '../SyntaxHighlighter'
 
-const Heading = (props) => (
-  <Typography
-    data-testid="heading"
-    color="text.secondary"
-    fontSize="caption.fontSize"
-    sx={{ mt: 3, mb: 0.5 }}
-    {...props}
-  />
-)
-
-export default Heading
+describe('syntax highlighter', () => {
+  test('renders syntax highlighter', () => {
+    render(<App />)
+    const linkElement = screen.getByTestId('syntax')
+    expect(linkElement).toBeInTheDocument()
+  })
+})

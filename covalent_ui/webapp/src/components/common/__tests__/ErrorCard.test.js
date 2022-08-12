@@ -20,16 +20,25 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { Typography } from '@mui/material'
+import { render, screen } from '@testing-library/react'
+import App from '../ErrorCard'
 
-const Heading = (props) => (
-  <Typography
-    data-testid="heading"
-    color="text.secondary"
-    fontSize="caption.fontSize"
-    sx={{ mt: 3, mb: 0.5 }}
-    {...props}
-  />
-)
+const errorCardCases = ['errorCard', 'electronIcon']
 
-export default Heading
+describe('error card', () => {
+  test.each(errorCardCases)('render %p', (firstArg) => {
+    render(<App error="this is a error" showElectron />)
+    const element = screen.getByTestId(firstArg)
+    expect(element).toBeInTheDocument()
+  })
+
+  test('renders error message', () => {
+    render(<App error="this is a error" showElectron />)
+    const linkElement = screen.getByText('this is a error')
+    expect(linkElement).toBeInTheDocument()
+  })
+
+  test('if error null', () => {
+    render(<App />)
+  })
+})

@@ -46,6 +46,11 @@
       "react-app/jest"
     ]
   },
+  "jest": {
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(react-syntax-highlighter)/)"
+    ]
+  },
   "browserslist": {
     "production": [
       ">0.2%",

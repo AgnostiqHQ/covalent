@@ -20,16 +20,16 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { Typography } from '@mui/material'
+import { render, screen } from '@testing-library/react'
+import App from '../Heading'
 
-const Heading = (props) => (
-  <Typography
-    data-testid="heading"
-    color="text.secondary"
-    fontSize="caption.fontSize"
-    sx={{ mt: 3, mb: 0.5 }}
-    {...props}
-  />
-)
-
-export default Heading
+test('renders heading', () => {
+  render(<App> Executor: Ram</App>)
+  const linkElement = screen.getByTestId('heading')
+  expect(linkElement).toBeInTheDocument()
+})
+test('renders heading title', () => {
+  render(<App> Executor: Ram</App>)
+  const linkElement = screen.getByText('Executor: Ram')
+  expect(linkElement).toBeInTheDocument()
+})

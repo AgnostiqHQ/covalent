@@ -19,17 +19,25 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
+import React from 'react'
+import { render, screen } from '@testing-library/react'
+import App from '../SortDispatch'
+import theme from '../../../utils/theme'
+import ThemeProvider from '@mui/system/ThemeProvider'
 
-import { Typography } from '@mui/material'
+function reduxRender(rederedComponent) {
+  return render(<ThemeProvider theme={theme}>{rederedComponent}</ThemeProvider>)
+}
 
-const Heading = (props) => (
-  <Typography
-    data-testid="heading"
-    color="text.secondary"
-    fontSize="caption.fontSize"
-    sx={{ mt: 3, mb: 0.5 }}
-    {...props}
-  />
-)
+const sortDispatchCases = [
+  ['All', 'category'],
+  [4, 'count'],
+]
 
-export default Heading
+describe('sort dispatch', () => {
+  test.each(sortDispatchCases)('render %p in %p section', (firstArg) => {
+    reduxRender(<App title="All" count={4} isFetching={false} />)
+    const element = screen.getByText(firstArg)
+    expect(element).toBeInTheDocument()
+  })
+})

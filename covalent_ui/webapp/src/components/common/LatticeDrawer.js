@@ -46,6 +46,7 @@ const LatticeDrawer = ({ children }) => {
     <>
       {/* Desktop */}
       <Drawer
+        data-testid="latticeDrawer"
         variant="permanent"
         sx={(theme) => ({
           // display: { xs: 'none', md: 'block' },

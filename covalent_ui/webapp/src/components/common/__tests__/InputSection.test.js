@@ -20,16 +20,28 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { Typography } from '@mui/material'
+import { render, screen } from '@testing-library/react'
+import App from '../InputSection'
 
-const Heading = (props) => (
-  <Typography
-    data-testid="heading"
-    color="text.secondary"
-    fontSize="caption.fontSize"
-    sx={{ mt: 3, mb: 0.5 }}
-    {...props}
-  />
-)
+const data = { args: [], kwargs: { n: '15', serial: 'True', parallel: 'True' } }
 
-export default Heading
+test('renders input section', () => {
+  render(<App inputs="input" preview />)
+  const linkElement = screen.getByTestId('inputSection')
+  expect(linkElement).toBeInTheDocument()
+})
+
+const inputSectionCases = [
+  ['input', 'Input'],
+  ['code', 'args:'],
+]
+
+test.each(inputSectionCases)('render %p data', (firstArgs, secongArgs) => {
+  render(<App inputs={data} preview />)
+  const element = screen.getByText(secongArgs)
+  expect(element).toBeInTheDocument()
+})
+
+test('renders preview section', () => {
+  render(<App preview />)
+})

@@ -19,17 +19,15 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
+import React from 'react'
+import { render, screen } from '../../../testHelpers/testUtils'
+import App from '../MobileAppBar'
 
-import { Typography } from '@mui/material'
-
-const Heading = (props) => (
-  <Typography
-    data-testid="heading"
-    color="text.secondary"
-    fontSize="caption.fontSize"
-    sx={{ mt: 3, mb: 0.5 }}
-    {...props}
-  />
-)
-
-export default Heading
+describe('mobile appbar', () => {
+  test('renders Lattice Drawer section', () => {
+    // eslint-disable-next-line no-undef
+    render(<App />)
+    const linkElement = screen.getByTestId('mobile appbar')
+    expect(linkElement).toBeInTheDocument()
+  })
+})

@@ -20,16 +20,11 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { Typography } from '@mui/material'
+import { render, screen } from '@testing-library/react'
+import App from '../LatticeDrawer'
 
-const Heading = (props) => (
-  <Typography
-    data-testid="heading"
-    color="text.secondary"
-    fontSize="caption.fontSize"
-    sx={{ mt: 3, mb: 0.5 }}
-    {...props}
-  />
-)
-
-export default Heading
+test('renders Lattice Drawer section', () => {
+  render(<App inputs="lattice" />)
+  const linkElement = screen.getByTestId('latticeDrawer')
+  expect(linkElement).toBeInTheDocument()
+})

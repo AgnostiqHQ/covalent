@@ -20,34 +20,33 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
-
+import { screen } from '@testing-library/react'
+import App from '../Dashboard'
+import { BrowserRouter } from 'react-router-dom'
 import React from 'react'
+import { Provider } from 'react-redux'
+import { render } from '@testing-library/react'
+import reducers from '../../../redux/reducers'
+import { configureStore } from '@reduxjs/toolkit'
+import theme from '../../../utils/theme'
+import ThemeProvider from '@mui/system/ThemeProvider'
 
-function PrimaryButton({ handler, title, bgColor, hoverColor }) {
-  return (
-    <Button
-      data-testid="primarybutton"
-      sx={{
-        '&:hover': {
-          backgroundColor: hoverColor,
-          color: '#FFFFFF',
-          borderRadius: '25px',
-        },
-        display: 'flex',
-        justifyContent: 'center',
-        borderRadius: '25px',
-        backgroundColor: bgColor,
-        textTransform: 'capitalize',
-      }}
-      onClick={handler}
-    >
-      <Typography color="textPrimary" variant="subtitle2">
-        {title}
-      </Typography>
-    </Button>
+function mockRender(rederedComponent) {
+  const store = configureStore({
+    reducer: reducers,
+  })
+  return render(
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <BrowserRouter>{rederedComponent}</BrowserRouter>
+      </ThemeProvider>
+    </Provider>
   )
 }
-
-export default PrimaryButton
+describe('dashboard', () => {
+  test('renders dashboard', () => {
+    mockRender(<App />)
+    const linkElement = screen.getByTestId('dashboard')
+    expect(linkElement).toBeInTheDocument()
+  })
+})

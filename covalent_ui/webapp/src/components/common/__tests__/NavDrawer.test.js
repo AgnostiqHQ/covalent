@@ -20,34 +20,31 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import _ from 'lodash'
-import { Light } from 'react-syntax-highlighter'
-import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python'
-import yaml from 'react-syntax-highlighter/dist/esm/languages/hljs/yaml'
-import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json'
-import style from 'react-syntax-highlighter/dist/cjs/styles/hljs/androidstudio'
-Light.registerLanguage('python', python)
-Light.registerLanguage('yaml', yaml)
-Light.registerLanguage('json', json)
+import { render, screen } from '@testing-library/react'
+import App from '../NavDrawer'
+import { BrowserRouter } from 'react-router-dom'
 
-const SyntaxHighlighter = ({ src, ...props }) => {
+const MockApp = () => {
   return (
-    <Light
-      data-testid='syntax'
-      language="python"
-      style={style}
-      customStyle={{
-        margin: 0,
-        padding: 10,
-        maxHeight: 240,
-        fontSize: 12,
-        backgroundColor: 'transparent',
-      }}
-      {...props}
-    >
-      {_.trim(src, '"" \n')}
-    </Light>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   )
 }
 
-export default SyntaxHighlighter
+const navDrawerCases = ['navDrawer', 'covalentLogo']
+const navDrawerCases2 = ['Dispatch list', 'Lattice draw preview']
+
+describe('navDrawer', () => {
+  test.each(navDrawerCases)('render %p', (firstArg) => {
+    render(<MockApp />)
+    const element = screen.getByTestId(firstArg)
+    expect(element).toBeInTheDocument()
+  })
+
+  test.each(navDrawerCases2)('render %p', (firstArg) => {
+    render(<MockApp />)
+    const element = screen.getByLabelText(firstArg)
+    expect(element).toBeInTheDocument()
+  })
+})

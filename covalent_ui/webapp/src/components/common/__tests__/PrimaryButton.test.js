@@ -20,16 +20,18 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { Typography } from '@mui/material'
+import { render, screen } from '@testing-library/react'
+import App from '../PrimaryButton'
 
-const Heading = (props) => (
-  <Typography
-    data-testid="heading"
-    color="text.secondary"
-    fontSize="caption.fontSize"
-    sx={{ mt: 3, mb: 0.5 }}
-    {...props}
-  />
-)
-
-export default Heading
+describe('primary button', () => {
+  test('renders primary button', () => {
+    render(<App title="delete" />)
+    const linkElement = screen.getByTestId('primarybutton')
+    expect(linkElement).toBeInTheDocument()
+  })
+  test('renders primary button title', () => {
+    render(<App title="delete" />)
+    const linkElement = screen.getByText('delete')
+    expect(linkElement).toBeInTheDocument()
+  })
+})

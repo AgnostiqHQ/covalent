@@ -19,17 +19,32 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
+import React from 'react'
+import { render, screen } from '@testing-library/react'
+import App from '../ResultProgress'
 
-import { Typography } from '@mui/material'
+const result = {
+  dispatchId: '788a2b4b-8cf0-4e2f-8591-b7135032dcde',
+  endTime: '2022-08-05T17:47:55',
+  error: undefined,
+  latticeName: 'workflow',
+  resultsDir: undefined,
+  runTime: 0,
+  startTime: '2022-08-05T17:47:55',
+  status: 'COMPLETED',
+  totalElectrons: 7,
+  totalElectronsCompleted: 7,
+}
 
-const Heading = (props) => (
-  <Typography
-    data-testid="heading"
-    color="text.secondary"
-    fontSize="caption.fontSize"
-    sx={{ mt: 3, mb: 0.5 }}
-    {...props}
-  />
-)
-
-export default Heading
+describe('Result progress', () => {
+  test('renders result progress section', () => {
+    render(<App result={result} />)
+    const linkElement = screen.getByTestId('resultProgress')
+    expect(linkElement).toBeInTheDocument()
+  })
+  test('renders result  status', () => {
+    render(<App result={result} />)
+    const linkElement = screen.getByText('7')
+    expect(linkElement).toBeInTheDocument()
+  })
+})
