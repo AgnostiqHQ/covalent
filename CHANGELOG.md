@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Dispatch workflows as asyncio tasks instead of in a thread pool
+
+### Fixed
+
+- Deconflict wait enum with `ct.wait` function; `wait` -> `WAIT`
+
 ## [0.177.0] - 2022-08-11
 
 ### Authors
