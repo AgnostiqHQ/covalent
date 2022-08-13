@@ -30,7 +30,6 @@ from datetime import datetime, timezone
 from functools import partial
 from typing import Any, Dict, List, Tuple
 
-import uvloop
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
