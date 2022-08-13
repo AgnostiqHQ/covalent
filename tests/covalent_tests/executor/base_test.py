@@ -464,3 +464,24 @@ async def test_create_file_monitor():
         assert f.read() == "HelloWorld"
 
     os.unlink(tmp_path)
+
+
+@pytest.mark.asyncio
+async def test_update_executor_info():
+    """Test updating executor info log"""
+
+    import json
+
+    me = MockAsyncExecutor(log_info="info.log")
+    path = "/var/log/profile.log"
+    chunk = "Hello"
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    await me.update_executor_info(dispatch_id, results_dir, path, chunk)
+
+    log_file_path = "/tmp/asdf/info.log"
+
+    with open(log_file_path, "r") as f:
+        contents = f.read()
+    os.unlink(log_file_path)
+    assert contents == "/var/log/profile.log: Hello"

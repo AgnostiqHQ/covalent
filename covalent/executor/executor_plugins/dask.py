@@ -51,6 +51,7 @@ log_stack_info = logger.log_stack_info
 _EXECUTOR_PLUGIN_DEFAULTS = {
     "log_stdout": "stdout.log",
     "log_stderr": "stderr.log",
+    "log_info": "info.log",
     "cache_dir": os.path.join(
         os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
     ),
@@ -74,6 +75,7 @@ class DaskExecutor(BaseAsyncExecutor):
         scheduler_address: str = "",
         log_stdout: str = "stdout.log",
         log_stderr: str = "stderr.log",
+        log_info: str = "info.log",
         conda_env: str = "",
         cache_dir: str = "",
         current_env_on_conda_fail: bool = False,
@@ -92,7 +94,9 @@ class DaskExecutor(BaseAsyncExecutor):
                     "No dask scheduler address found in config. Address must be set manually."
                 )
 
-        super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
+        super().__init__(
+            log_stdout, log_stderr, log_info, conda_env, cache_dir, current_env_on_conda_fail
+        )
 
         self.scheduler_address = scheduler_address
 

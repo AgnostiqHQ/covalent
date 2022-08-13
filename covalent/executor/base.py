@@ -510,12 +510,14 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
         self,
         log_stdout: str = "",
         log_stderr: str = "",
+        log_info: str = "",
         *args,
         **kwargs,
     ) -> None:
 
         self.log_stdout = log_stdout
         self.log_stderr = log_stderr
+        self.log_info = log_info
 
     async def write_streams_to_file(
         self,
@@ -570,10 +572,19 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
             app_log.debug(f"create_file_monitor: read {bytes_read} bytes from {path}")
             yield contents
 
-    async def update_node_info(self, path, chunk):
+    # Signature will change soon
+    async def update_node_info(self, dispatch_id: str, results_dir: str, path, chunk):
         app_log.debug(f"update_node_info: {path}: {chunk}")
+        # TODO
 
-    async def start_watching_file(self, path: str, msg_queue: asyncio.Queue):
+    async def update_executor_info(self, dispatch_id: str, results_dir: str, path, chunk):
+        if chunk:
+            contents = f"{path}: {chunk}"
+            await self.write_streams_to_file([contents], [self.log_info], dispatch_id, results_dir)
+
+    async def start_watching_file(
+        self, dispatch_id: str, results_dir: str, path: str, msg_queue: asyncio.Queue
+    ):
         app_log.debug(f"Starting to watch file {path}")
         monitored_file = self.create_file_monitor(path)
         msg = await msg_queue.get()
@@ -582,8 +593,8 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
             app_log.debug("start_watching_file: cancelled")
             return
         async for chunk in monitored_file:
-            # Append retrieved file contents to node's info field
-            await self.update_node_info(path, chunk)
+            await self.update_node_info(dispatch_id, results_dir, path, chunk)
+            await self.update_executor_info(dispatch_id, results_dir, path, chunk)
             msg = await msg_queue.get()
             if msg != "get":
                 app_log.debug("start_watching_file: cancelled")
@@ -591,11 +602,18 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
 
     # Poll file according to a timer
     async def watch_file_periodically(
-        self, path: str, msg_queue: asyncio.Queue, pollfreq: int = 1
+        self,
+        dispatch_id: str,
+        results_dir: str,
+        path: str,
+        msg_queue: asyncio.Queue,
+        pollfreq: int = 1,
     ):
         app_log.debug("Starting file watching timer")
         watcher_queue = asyncio.Queue()
-        fut = asyncio.create_task(self.start_watching_file(path, watcher_queue))
+        fut = asyncio.create_task(
+            self.start_watching_file(dispatch_id, results_dir, path, watcher_queue)
+        )
         app_log.debug("Started file watching timer")
         while True:
             try:
@@ -633,7 +651,9 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
         msg_queue = asyncio.Queue()
         file_watch_futures = []
         for path in files_to_monitor:
-            fut = asyncio.create_task(self.watch_file_periodically(path, msg_queue))
+            fut = asyncio.create_task(
+                self.watch_file_periodically(dispatch_id, results_dir, path, msg_queue)
+            )
             file_watch_futures.append(fut)
 
         task_metadata = {
