@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Conda package is built and tested on a nightly schedule
+- Conda deployment step is added to `release.yml`
 - Install yarn and npm on Ubuntu whenever the webapp needs to be built
 
 ## [0.177.0] - 2022-08-11
