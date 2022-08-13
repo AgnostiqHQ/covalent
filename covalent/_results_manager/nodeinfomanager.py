@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -42,7 +43,7 @@ class AsyncNodeInfoManager:
 
     def update_node_info(self, monitored_file_path, datastore_uri):
         node_info: dict = self.tg.get_node_value(self.node_id, "info")
-        node_info[monitored_file_path] = datastore_uri
+        node_info[monitored_file_path] = str(datastore_uri)
 
         # Marks the node as dirty so that it will be included with
         # the next datastore write
@@ -51,14 +52,19 @@ class AsyncNodeInfoManager:
     @asynccontextmanager
     async def get_file_handle(self, monitored_file_path: str):
         node_path = Path(self.results_dir) / self.dispatch_id / f"node_{self.node_id}"
-        monitored_files_dir = Path(self.results_dir) / Path("monitored_files")
+        monitored_files_dir = Path(self.results_dir) / node_path / Path("monitored_files")
         if not monitored_files_dir.exists():
             monitored_files_dir.mkdir(parents=True)
 
-        # Should check that this is indeed a child of monitored_file_dir
-        datastore_uri = monitored_files_dir / monitored_file_path
+        object_name = str(uuid.uuid4())
+        metadata_name = object_name + ".meta"
 
+        datastore_uri = monitored_files_dir / object_name
+        metadata_uri = monitored_files_dir / metadata_name
         self.update_node_info(monitored_file_path, datastore_uri)
+
+        async with aiofiles.open(metadata_uri, "w") as f:
+            await f.write(monitored_file_path)
 
         async with aiofiles.open(datastore_uri, "a") as f:
             yield f

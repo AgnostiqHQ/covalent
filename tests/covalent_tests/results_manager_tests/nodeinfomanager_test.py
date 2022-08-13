@@ -49,7 +49,8 @@ async def test_get_file_handle():
     result_object = Result(received_lattice, "/tmp", "asdf")
 
     result_object._initialize_nodes()
-    nm = AsyncNodeInfoManager(result_object.lattice.transport_graph, "/tmp", "asdf", 0)
+    tg = result_object.lattice.transport_graph
+    nm = AsyncNodeInfoManager(tg, "/tmp", "asdf", 0)
 
     f = NamedTemporaryFile(delete=True)
 
@@ -60,11 +61,15 @@ async def test_get_file_handle():
     async with nm.get_file_handle(monitored_file) as f:
         await f.write("Hello\n")
 
-    datastore_uri = Path("/tmp/asdf/node_0/monitored_files") / monitored_file
+    node_info = tg.get_node_value(0, "info")
+    datastore_uri = node_info[monitored_file]
+    metadata_uri = datastore_uri + ".meta"
+
     with open(datastore_uri, "r") as f:
         assert f.read() == "Hello\n"
 
-    node_info = result_object.lattice.transport_graph.get_node_value(0, "info")
-    assert node_info[monitored_file] == datastore_uri
+    with open(metadata_uri, "r") as f:
+        assert f.readline() == monitored_file
 
     os.unlink(datastore_uri)
+    os.unlink(metadata_uri)
