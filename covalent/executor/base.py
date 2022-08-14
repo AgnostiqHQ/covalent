@@ -559,14 +559,14 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
 
     # The user overrides this method to retrieve the contents of a
     # remote file starting at the specified position (in bytes).
-    async def poll_file(self, path: str, starting_pos: int) -> str:
+    async def poll_file(self, path: str, starting_pos: int, size: int = -1) -> str:
         raise NotImplementedError
 
     # Async generator
-    async def create_file_monitor(self, path) -> Generator:
+    async def create_file_monitor(self, path: str, chunksize: int = -1) -> Generator:
         bytes_read = 0
         while True:
-            contents = await self.poll_file(path, bytes_read)
+            contents = await self.poll_file(path, bytes_read, chunksize)
             bytes_read += len(contents)
 
             app_log.debug(f"create_file_monitor: read {bytes_read} bytes from {path}")
@@ -582,23 +582,30 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
             contents = f"{path}: {chunk}"
             await self.write_streams_to_file([contents], [self.log_info], dispatch_id, results_dir)
 
+    async def pull_monitored_file(self, monitored_file, dispatch_id, results_dir, path):
+        async for chunk in monitored_file:
+            if not chunk:
+                break
+            await self.update_node_info(dispatch_id, results_dir, path, chunk)
+            await self.update_executor_info(dispatch_id, results_dir, path, chunk)
+
     async def start_watching_file(
         self, dispatch_id: str, results_dir: str, path: str, msg_queue: asyncio.Queue
     ):
         app_log.debug(f"Starting to watch file {path}")
         monitored_file = self.create_file_monitor(path)
         msg = await msg_queue.get()
-
+        watching = True
         if msg != "get":
             app_log.debug("start_watching_file: cancelled")
-            return
-        async for chunk in monitored_file:
-            await self.update_node_info(dispatch_id, results_dir, path, chunk)
-            await self.update_executor_info(dispatch_id, results_dir, path, chunk)
+            watching = False
+
+        while watching:
+            await self.pull_monitored_file(monitored_file, dispatch_id, results_dir, path)
             msg = await msg_queue.get()
             if msg != "get":
                 app_log.debug("start_watching_file: cancelled")
-                return
+                watching = False
 
     # Poll file according to a timer
     async def watch_file_periodically(

@@ -103,19 +103,19 @@ class DaskExecutor(BaseAsyncExecutor):
     def get_files_to_monitor(self, dispatch_id: str, node_id: str):
         return ["/tmp/stdout.log"]
 
-    def poll_file_sync(self, path, starting_pos):
+    def poll_file_sync(self, path, starting_pos, size):
         app_log.debug(f"Polling {path} starting at {starting_pos}")
         try:
             with open(path, "r") as f:
                 f.seek(starting_pos)
-                contents = f.read()
+                contents = f.read(size)
         except:
             contents = ""
         return contents
 
-    async def poll_file(self, path, starting_pos):
+    async def poll_file(self, path, starting_pos, size):
         loop = asyncio.get_running_loop()
-        poll_file_runnable = partial(self.poll_file_sync, path, starting_pos)
+        poll_file_runnable = partial(self.poll_file_sync, path, starting_pos, size)
         fut = loop.run_in_executor(None, poll_file_runnable)
         return await fut
 

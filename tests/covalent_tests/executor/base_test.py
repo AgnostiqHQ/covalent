@@ -46,11 +46,11 @@ class MockExecutor(BaseExecutor):
 
 
 class MockAsyncExecutor(BaseAsyncExecutor):
-    async def poll_file(self, path, starting_pos):
+    async def poll_file(self, path, starting_pos, size):
         try:
             with open(path, "r") as f:
                 f.seek(starting_pos)
-                contents = f.read()
+                contents = f.read(size)
         except:
             contents = ""
         return contents
