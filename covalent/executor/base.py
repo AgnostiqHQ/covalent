@@ -556,7 +556,7 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
 
     # Compute list of files to monitor based on dispatch id and node id
     def get_files_to_monitor(self, dispatch_id: str, node_id: str) -> List[str]:
-        raise NotImplementedError
+        return []
 
     # The user overrides this method to retrieve the contents of a
     # remote file starting at the specified position (in bytes).
