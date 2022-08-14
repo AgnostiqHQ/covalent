@@ -41,6 +41,7 @@ from .._shared_files import logger
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
 from .._workflow.transport import TransportableObject
+from .utils.filemonitor import AsyncFileMonitor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -562,85 +563,6 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
     async def poll_file(self, path: str, starting_pos: int, size: int = -1) -> str:
         raise NotImplementedError
 
-    # Async generator
-    async def create_file_monitor(self, path: str, chunksize: int = -1) -> Generator:
-        bytes_read = 0
-        while True:
-            contents = await self.poll_file(path, bytes_read, chunksize)
-            bytes_read += len(contents)
-
-            app_log.debug(f"create_file_monitor: read {bytes_read} bytes from {path}")
-            yield contents
-
-    # Signature will change soon
-    async def update_node_info(self, dispatch_id: str, results_dir: str, path, chunk):
-        app_log.debug(f"update_node_info: {path}: {chunk}")
-        # TODO
-
-    async def update_executor_info(self, dispatch_id: str, results_dir: str, path, chunk):
-        if chunk:
-            contents = f"{path}: {chunk}"
-            await self.write_streams_to_file([contents], [self.log_info], dispatch_id, results_dir)
-
-    async def pull_monitored_file(self, monitored_file, dispatch_id, results_dir, path):
-        async for chunk in monitored_file:
-            if not chunk:
-                break
-            await self.update_node_info(dispatch_id, results_dir, path, chunk)
-            await self.update_executor_info(dispatch_id, results_dir, path, chunk)
-
-    async def start_watching_file(
-        self, dispatch_id: str, results_dir: str, path: str, msg_queue: asyncio.Queue
-    ):
-        app_log.debug(f"Starting to watch file {path}")
-        monitored_file = self.create_file_monitor(path)
-        msg = await msg_queue.get()
-        watching = True
-        if msg != "get":
-            app_log.debug("start_watching_file: cancelled")
-            watching = False
-
-        while watching:
-            await self.pull_monitored_file(monitored_file, dispatch_id, results_dir, path)
-            msg = await msg_queue.get()
-            if msg != "get":
-                app_log.debug("start_watching_file: cancelled")
-                watching = False
-
-    # Poll file according to a timer
-    async def watch_file_periodically(
-        self,
-        dispatch_id: str,
-        results_dir: str,
-        path: str,
-        msg_queue: asyncio.Queue,
-        pollfreq: int = 1,
-    ):
-        app_log.debug("Starting file watching timer")
-        watcher_queue = asyncio.Queue()
-        fut = asyncio.create_task(
-            self.start_watching_file(dispatch_id, results_dir, path, watcher_queue)
-        )
-        app_log.debug("Started file watching timer")
-        while True:
-            try:
-                app_log.debug("watch_file_periodically: Checking for messages")
-                msg = msg_queue.get_nowait()
-
-                app_log.debug(f"watch_file_periodically: Received message {msg}")
-                await watcher_queue.put("cancel")
-                break
-            except asyncio.QueueEmpty:
-                app_log.debug("watch_file_periodically: no messages")
-                pass
-
-            app_log.debug(f"watch_file_periodically: polling {path}")
-            await watcher_queue.put("get")
-            await asyncio.sleep(pollfreq)
-
-        app_log.debug("watch_file_periodically: cancelled")
-        await fut
-
     async def execute(
         self,
         function: Callable,
@@ -651,17 +573,16 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
         node_id: int = -1,
     ) -> Any:
 
-        # Install file polling timers; in a push-based model we'd run start_watching_file directly
         files_to_monitor = self.get_files_to_monitor(dispatch_id, node_id)
 
         app_log.debug(f"{node_id}: Monitoring files {files_to_monitor}")
-        msg_queue = asyncio.Queue()
-        file_watch_futures = []
+        file_monitors = []
+
+        # Start file monitors
         for path in files_to_monitor:
-            fut = asyncio.create_task(
-                self.watch_file_periodically(dispatch_id, results_dir, path, msg_queue)
-            )
-            file_watch_futures.append(fut)
+            filemon = AsyncFileMonitor(self, path, results_dir, dispatch_id, node_id)
+            filemon.start()
+            file_monitors.append(filemon)
 
         task_metadata = {
             "dispatch_id": dispatch_id,
@@ -682,10 +603,9 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
         )
         # Cancel polling timers
 
-        await msg_queue.put("cancel")
         app_log.debug("Execute: cancelled polling timers")
-        for fut in file_watch_futures:
-            await fut
+        for filemon in file_monitors:
+            await filemon.cancel()
 
         return (result, stdout.getvalue(), stderr.getvalue())
 
