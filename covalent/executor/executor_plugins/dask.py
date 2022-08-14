@@ -79,6 +79,7 @@ class DaskExecutor(BaseAsyncExecutor):
         conda_env: str = "",
         cache_dir: str = "",
         current_env_on_conda_fail: bool = False,
+        files_to_monitor: List[str] = [],
     ) -> None:
         if not cache_dir:
             cache_dir = os.path.join(
@@ -99,9 +100,10 @@ class DaskExecutor(BaseAsyncExecutor):
         )
 
         self.scheduler_address = scheduler_address
+        self.global_files_to_monitor = files_to_monitor
 
     def get_files_to_monitor(self, dispatch_id: str, node_id: str):
-        return ["/tmp/stdout.log"]
+        return self.global_files_to_monitor
 
     def poll_file_sync(self, path, starting_pos, size):
         app_log.debug(f"Polling {path} starting at {starting_pos}")
