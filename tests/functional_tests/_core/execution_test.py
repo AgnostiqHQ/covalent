@@ -71,10 +71,6 @@ async def test_run_task(mocker, sublattice_workflow):
     #     def get_deserialized(self):
     #         return mock_func
 
-    from concurrent.futures import ThreadPoolExecutor
-
-    tasks_pool = ThreadPoolExecutor()
-
     write_sublattice_electron_id_mock = mocker.patch(
         "covalent_dispatcher._core.execution.write_sublattice_electron_id"
     )
@@ -94,7 +90,6 @@ async def test_run_task(mocker, sublattice_workflow):
         call_before=[],
         call_after=[],
         node_name=":sublattice:sublattice",
-        tasks_pool=tasks_pool,
         workflow_executor=["local", {}],
     )
 
