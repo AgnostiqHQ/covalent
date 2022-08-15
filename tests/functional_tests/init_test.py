@@ -23,7 +23,6 @@ Tests for self-contained entry point for the dispatcher
 """
 
 import time
-from concurrent.futures import ThreadPoolExecutor
 
 import covalent
 import covalent_dispatcher as dispatcher
@@ -36,17 +35,12 @@ def test_run_dispatcher():
     Test run_dispatcher by passing a result object for a lattice and check if no exception is raised.
     """
 
-    workflow_pool = ThreadPoolExecutor()
-    task_pool = ThreadPoolExecutor()
+    import asyncio
 
     try:
-        dispatch_id = dispatcher.run_dispatcher(
-            json_lattice=get_mock_result().lattice.serialize_to_json(),
-            workflow_pool=workflow_pool,
-            tasks_pool=task_pool,
+        awaitable = dispatcher.run_dispatcher(
+            json_lattice=get_mock_result().lattice.serialize_to_json()
         )
+        dispatch_id = asyncio.run(awaitable)
     except Exception as e:
         assert False, f"Exception raised: {e}"
-
-    workflow_pool.shutdown()
-    task_pool.shutdown()

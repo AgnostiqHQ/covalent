@@ -7,10 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Dispatch workflows as asyncio tasks on the FastAPI event loop instead of in separate threads
+
+### Fixed
+
+- Deconflict wait enum with `ct.wait` function; `wait` -> `WAIT`
+
 ### Operations
 
 - Conda package is built and tested on a nightly schedule
 - Conda deployment step is added to `release.yml`
+- Install yarn and npm on Ubuntu whenever the webapp needs to be built
 
 ## [0.177.0] - 2022-08-11
 
