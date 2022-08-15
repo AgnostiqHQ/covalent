@@ -866,7 +866,7 @@ def test_get_executor_instance():
         node_name=node_name,
         selected_executor=selected_executor,
         executor_cache=cache,
-        increment_task_count=False,
+        unplanned_task=False,
     )
 
     assert executor_instance.short_name() == "local"
@@ -886,7 +886,7 @@ def test_get_executor_instance():
         node_name=node_name,
         selected_executor=selected_executor,
         executor_cache=cache,
-        increment_task_count=False,
+        unplanned_task=False,
     )
 
     assert executor_instance.short_name() == "local"
@@ -906,7 +906,7 @@ def test_get_executor_instance():
         node_name=node_name,
         selected_executor=selected_executor,
         executor_cache=cache,
-        increment_task_count=False,
+        unplanned_task=False,
     )
 
     exec_id = shared_instance.instance_id
@@ -927,7 +927,7 @@ def test_get_executor_instance():
         node_name=node_name,
         selected_executor=selected_executor,
         executor_cache=cache,
-        increment_task_count=False,
+        unplanned_task=False,
     )
 
     assert new_shared_instance is shared_instance
@@ -941,7 +941,7 @@ def test_get_executor_instance():
         node_name=node_name,
         selected_executor=selected_executor,
         executor_cache=cache,
-        increment_task_count=True,
+        unplanned_task=True,
     )
 
     task_count += 1

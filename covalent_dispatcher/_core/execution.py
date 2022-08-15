@@ -305,7 +305,7 @@ async def _dispatch_sublattice(
             tasks_pool=tasks_pool,
             workflow_executor=workflow_executor,
             executor_cache=executor_cache,
-            increment_task_count=True,
+            unplanned_task=True,
         )
     )
 
@@ -319,7 +319,7 @@ def _get_executor_instance(
     node_name: str,
     selected_executor: List,
     executor_cache: ExecutorCache,
-    increment_task_count,
+    unplanned_task,
 ):
 
     # Instantiate the executor from its JSON description
@@ -351,7 +351,7 @@ def _get_executor_instance(
 
         # Check if we are using a shared instance for an un-planned
         # task
-        if increment_task_count and executor_id > 0:
+        if unplanned_task and executor_id > 0:
             executor.tasks_left += 1
 
     except Exception as ex:
@@ -374,7 +374,7 @@ async def _run_task(
     tasks_pool: ThreadPoolExecutor,
     workflow_executor: Any,
     executor_cache: ExecutorCache,
-    increment_task_count: bool,
+    unplanned_task: bool,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -399,7 +399,7 @@ async def _run_task(
         node_name=node_name,
         selected_executor=selected_executor,
         executor_cache=executor_cache,
-        increment_task_count=increment_task_count,
+        unplanned_task=unplanned_task,
     )
 
     # run the task on the executor and register any failures
@@ -674,7 +674,7 @@ async def _postprocess_workflow(
                 tasks_pool=thread_pool,
                 workflow_executor=post_processor,
                 executor_cache=executor_cache,
-                increment_task_count=False,
+                unplanned_task=False,
             )
         )
         pp_start_time = datetime.now(timezone.utc)
@@ -853,7 +853,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
             tasks_pool=thread_pool,
             workflow_executor=post_processor,
             executor_cache=exec_cache,
-            increment_task_count=False,
+            unplanned_task=False,
         )
 
         # Add the task generated for the node to the list of tasks
