@@ -22,8 +22,8 @@
 Self-contained entry point for the dispatcher
 """
 
+import asyncio
 import uuid
-from concurrent.futures import ThreadPoolExecutor
 
 from covalent._results_manager.result import Result
 from covalent._shared_files import logger
@@ -48,9 +48,7 @@ def get_unique_id() -> str:
     return str(uuid.uuid4())
 
 
-def run_dispatcher(
-    json_lattice: str, workflow_pool: ThreadPoolExecutor, tasks_pool: ThreadPoolExecutor
-) -> str:
+async def run_dispatcher(json_lattice: str):
     """
     Run the dispatcher from the lattice asynchronously using Dask.
     Assign a new dispatch id to the result object and return it.
@@ -79,7 +77,8 @@ def run_dispatcher(
 
     app_log.debug("Result object retrieved.")
 
-    futures[dispatch_id] = workflow_pool.submit(run_workflow, result_object, tasks_pool)
+    futures[dispatch_id] = asyncio.create_task(run_workflow(result_object))
+
     app_log.debug("Submitted lattice JSON to run_workflow.")
 
     return dispatch_id
