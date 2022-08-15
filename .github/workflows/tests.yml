@@ -146,7 +146,8 @@ jobs:
       - name: Install NPM and Yarn on Ubuntu
         if: >
           (github.event_name != 'pull_request'
-          || steps.working-directory.outputs.ui_frontend == 'true')
+          || steps.working-directory.outputs.ui_frontend == 'true'
+          || steps.working-directory.outputs.build == 'true')
           && (matrix.container == 'python:3.8-buster'
           || matrix.container == 'python:3.8-bullseye'
           || matrix.container == 'python:3.9-buster'
