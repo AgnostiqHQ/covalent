@@ -80,6 +80,7 @@ v0.177.0 and Newer
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.10</td>
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 223 122);">SEMI-STABLE</td>
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Beta testing.</td>
         <tr style="background-color: white;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Fedora 35</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
