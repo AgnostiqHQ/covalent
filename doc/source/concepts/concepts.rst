@@ -8,4 +8,4 @@ The Concepts section helps you learn about the parts of the Covalent workflow an
 
 * :doc:`Components<components>`: Concepts for building a Covalent workflow.
 
-* :doc:`Workflow<workflow>`: How to excecute a Covalent workflow, track its progress and see the results.
+* :doc:`Workflow<workflow>`: How to execute a Covalent workflow, track its progress and see the results.
