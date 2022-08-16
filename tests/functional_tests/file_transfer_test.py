@@ -21,7 +21,6 @@
 """Workflow stack testing of File Transfer operations."""
 
 import os
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from time import sleep
 from unittest.mock import Mock

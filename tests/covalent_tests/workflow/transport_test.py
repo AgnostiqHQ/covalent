@@ -242,13 +242,6 @@ def test_transport_graph_transport_graph_reset(workflow_transport_graph):
     assert list(wtg._graph.edges) == []
 
 
-def test_transport_graph_get_topologically_sorted_graph(workflow_transport_graph):
-    """Test the topological graph sort method in the transport graph."""
-
-    wtg = workflow_transport_graph
-    assert wtg.get_topologically_sorted_graph() == [[0, 1]]
-
-
 def test_transport_graph_get_and_set_node_values(workflow_transport_graph):
     """Test the transport graph node value setting and querying methods."""
 

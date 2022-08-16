@@ -1,5 +1,3 @@
-# Copyright 2021 Agnostiq Inc.
-#
 # This file is part of Covalent.
 #
 # Licensed under the GNU Affero General Public License 3.0 (the "License").
@@ -18,29 +16,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""
-Tests for self-contained entry point for the dispatcher
-"""
-
-import time
-
-import covalent
-import covalent_dispatcher as dispatcher
-
-from .data import get_mock_result
+import sys
+from dataclasses import dataclass
 
 
-def test_run_dispatcher():
-    """
-    Test run_dispatcher by passing a result object for a lattice and check if no exception is raised.
-    """
+@dataclass
+class Wait:
+    RETRIES: int
 
-    import asyncio
+    def __int__(self) -> int:
+        return self.RETRIES
 
-    try:
-        awaitable = dispatcher.run_dispatcher(
-            json_lattice=get_mock_result().lattice.serialize_to_json()
-        )
-        dispatch_id = asyncio.run(awaitable)
-    except Exception as e:
-        assert False, f"Exception raised: {e}"
+
+LONG = Wait(3000)
+VERY_LONG = Wait(60000)
+EXTREME = Wait(sys.maxsize)

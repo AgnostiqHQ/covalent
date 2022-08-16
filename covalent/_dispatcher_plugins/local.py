@@ -25,6 +25,7 @@ from typing import Callable
 import cloudpickle as pickle
 import requests
 
+from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
@@ -128,7 +129,7 @@ class LocalDispatcher(BaseDispatcher):
 
             return get_result(
                 LocalDispatcher.dispatch(lattice, dispatcher_addr)(*args, **kwargs),
-                wait=True,
+                wait=wait.EXTREME,
             )
 
         return wrapper
