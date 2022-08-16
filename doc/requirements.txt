@@ -1,4 +1,5 @@
 autodocsumm==0.2.6
+covalent-braket-plugin==0.2.0rc0
 covalent-slurm-plugin
 covalent-ssh-plugin
 docutils
