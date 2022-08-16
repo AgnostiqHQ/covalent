@@ -9,6 +9,12 @@ With this executor, users can execute tasks (electrons) or entire lattices using
 to use this plugin for electrons that are expected to be short lived and low in compute intensity. This plugin can also be used
 for workflows with several short lived embarassingly parallel tasks aka. horizontal workflows.
 
+To use this plugin with Covalent, simply install it using `pip`:
+
+.. code:: shell
+
+    pip install covalent-awslambda-plugin==0.3.0rc0
+
 Since this is a cloud executor, proper IAM credentials, permissions and roles must be configured prior to using this executor. This executor
 uses the S3 and the AWS lambda service to execute tasks thus the IAM roles and policies must be configured so that
 the executor has permissions to interact with the two. The following JSON policy document shows the necessary IAM
@@ -118,12 +124,6 @@ The policy document is summarized here for convenience
             ]
         }
 
-
-To use this plugin with Covalent, simply install it using `pip`:
-
-.. code:: shell
-
-    pip install covalent-awslambda-plugin
 
 
 The following snippet shows how users may modify their Covalent `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ to provide
