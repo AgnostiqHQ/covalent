@@ -24,6 +24,7 @@ import uuid
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
 
+from covalent._results_manager.results_manager import get_result
 from covalent_ui.api.v1.data_layer.electron_dal import Electrons
 from covalent_ui.api.v1.database.config.db import engine
 from covalent_ui.api.v1.models.electrons_model import FileOutput
@@ -32,7 +33,8 @@ from covalent_ui.api.v1.models.lattices_model import (
     ElectronFileResponse,
     ElectronResponse,
 )
-from covalent_ui.api.v1.utils.file_handle import FileHandler
+from covalent_ui.api.v1.utils.executor_handler import get_task_inputs
+from covalent_ui.api.v1.utils.file_handle import FileHandler, validate_data
 
 routes: APIRouter = APIRouter()
 
@@ -75,8 +77,23 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
         )
 
 
+def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
+
+    result_object = get_result(dispatch_id=str(dispatch_id), wait=False)
+    with Session(engine) as session:
+        electron = Electrons(session)
+        result = electron.get_electrons_id(dispatch_id, electron_id)
+        inputs = get_task_inputs(
+            node_id=electron_id, node_name=result.name, result_object=result_object
+        )
+        return validate_data(inputs)
+
+
 @routes.get("/{dispatch_id}/electron/{electron_id}/details/{name}")
 def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput):
+
+    if name == "inputs":
+        return get_electron_inputs(dispatch_id=dispatch_id, electron_id=electron_id)
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
