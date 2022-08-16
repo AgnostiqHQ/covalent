@@ -1,0 +1,63 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: Prepare Release Candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease_version:
+        description: "Pre-release version being prepared for stable release, e.g., 0.177.0"
+        type: string
+        required: true
+
+jobs:
+  prep-rc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out pre-release
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          ref: "v${{ inputs.prerelease_version }}"
+
+      - name: Ensure the pre-release has not already been prepared
+        run: |
+          RELEASE_CANDIDATE="v${{ inputs.prerelease_version }}-rc.0"
+          echo "RELEASE_CANDIDATE=$RELEASE_CANDIDATE" >> $GITHUB_ENV
+          if [ $(git tag -l $RELEASE_CANDIDATE) -ne 0 ] ; then
+            echo "This pre-release has already been prepared for stable release."
+            exit 1
+          fi
+
+      - name: Update tag
+        run: |
+          git config user.name "CovalentOpsBot"
+          git config user.email "covalentopsbot@users.noreply.github.com"
+          git tag -a ${{ env.RELEASE_CANDIDATE }}
+          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
+          git push origin ${{ env.RELEASE_CANDIDATE }}
+
+      - name: Create release branch
+        run: |
+          git config user.name "CovalentOpsBot"
+          git config user.email "covalentopsbot@users.noreply.github.com"
+          git checkout -b release-${{ inputs.prerelease_version }}
+          git push -u origin release-${{ inputs.prerelease_version }}
