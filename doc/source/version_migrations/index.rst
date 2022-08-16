@@ -18,9 +18,8 @@ By running the following commands you can verify your covalent python as well as
 
    $ pip show covalent | grep Version
    Version: 0.110.2
-   $ covalent purge
+   $ covalent stop
    Covalent server has stopped.
-   Covalent server files have been purged.
 
 You can install the new version of covalent by using pip.
 
