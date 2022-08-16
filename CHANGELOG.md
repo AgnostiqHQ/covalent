@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Removed
+
+- Removed `ct.wait.LONG` etc. constants from covalent's init
+
+### Changed
+
+- `wait` in `_get_result_from_dispatcher` will now use `_results_manager.wait.EXTREME` if `True` has been passed to it.
+
 ### Operations
 
 - Prettierified release.yml
