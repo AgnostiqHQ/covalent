@@ -7,9 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Removed
+
+- Removed `ct.wait.LONG` etc. constants from covalent's init
+
 ### Changed
 
-- Updating for PR creation
+- `wait` in `_get_result_from_dispatcher` will now use `_results_manager.wait.EXTREME` if `True` has been passed to it.
+
+### Docs
+
+- Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
+
+### Docs
+
+- Disabling how-to guide for executing an electron with a specified Conda environment.
 
 ### Docs
 
