@@ -158,7 +158,12 @@ to its constructor
     def task(x, y):
         return x + y
 
-In this scenario, the parameters which are not set explicity are then read from the configuration file.
+In this scenario, the parameters which are not set explicity are then read from the configuration file. This executor
+plugin can be installed via pip as follows
+
+.. code:: bash
+
+    pip install covalent-awsbatch-plugin==0.8.1rc0
 
 
 .. autoclass:: covalent.executor.AWSBatchExecutor
