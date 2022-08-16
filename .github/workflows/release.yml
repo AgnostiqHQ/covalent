@@ -316,7 +316,7 @@ jobs:
           password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Build and push pre-release
         if: >
-          github.event_name == 'workflow_call' 
+          github.event_name == 'workflow_call'
           && github.events.inputs.pre_release == 'true'
         uses: docker/build-push-action@v2
         with:
