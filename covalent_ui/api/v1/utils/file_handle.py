@@ -27,6 +27,45 @@ import cloudpickle as pickle
 from covalent._workflow.transport import TransportableObject, _TransportGraph
 
 
+def validate_data(unpickled_object):
+    """Validate unpickled object"""
+    if isinstance(unpickled_object, list):
+        if not (unpickled_object):
+            return ""
+        else:
+            list_str = ""
+            for obj in unpickled_object:
+                list_str += obj
+            return list_str
+    if isinstance(unpickled_object, dict):
+        args_array = []
+        kwargs_array = {}
+
+        if bool(unpickled_object):
+            if "type" in unpickled_object:
+                return unpickled_object
+            for obj in unpickled_object["args"]:
+                args_array.append(obj.object_string)
+
+            for obj in unpickled_object["kwargs"]:
+                kwargs_array[obj] = unpickled_object["kwargs"][obj].object_string
+
+            return json.dumps({"args": args_array, "kwargs": kwargs_array})
+        else:
+            return None
+    elif isinstance(unpickled_object, str):
+        return (
+            unpickled_object if (unpickled_object != "" or unpickled_object is not None) else None
+        )
+    elif isinstance(unpickled_object, TransportableObject):
+        res = unpickled_object.object_string
+        return json.dumps(res)
+    elif isinstance(unpickled_object, _TransportGraph):
+        return str(unpickled_object.__dict__)
+    else:
+        return unpickled_object
+
+
 class FileHandler:
     """File read"""
 
@@ -38,43 +77,7 @@ class FileHandler:
             with open(self.location + "/" + path, "rb") as read_file:
                 unpickled_object = pickle.load(read_file)
                 read_file.close()
-                if isinstance(unpickled_object, list):
-                    if not (unpickled_object):
-                        return ""
-                    else:
-                        list_str = ""
-                        for obj in unpickled_object:
-                            list_str += obj
-                        return list_str
-                if isinstance(unpickled_object, dict):
-                    args_array = []
-                    kwargs_array = {}
-
-                    if bool(unpickled_object):
-                        if "type" in unpickled_object:
-                            return unpickled_object
-                        for obj in unpickled_object["args"]:
-                            args_array.append(obj.object_string)
-
-                        for obj in unpickled_object["kwargs"]:
-                            kwargs_array[obj] = unpickled_object["kwargs"][obj].object_string
-
-                        return json.dumps({"args": args_array, "kwargs": kwargs_array})
-                    else:
-                        return None
-                elif isinstance(unpickled_object, str):
-                    return (
-                        unpickled_object
-                        if (unpickled_object != "" or unpickled_object is not None)
-                        else None
-                    )
-                elif isinstance(unpickled_object, TransportableObject):
-                    res = unpickled_object.object_string
-                    return json.dumps(res)
-                elif isinstance(unpickled_object, _TransportGraph):
-                    return str(unpickled_object.__dict__)
-                else:
-                    return unpickled_object
+                return validate_data(unpickled_object)
         except EOFError:
             return None
         except Exception:
