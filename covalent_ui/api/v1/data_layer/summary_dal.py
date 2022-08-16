@@ -133,7 +133,13 @@ class Summary:
         query2 = self.db_con.query(
             (func.count(Lattice.id))
             .filter(
-                Lattice.status == "COMPLETED",
+                # Lattice.status == "COMPLETED",
+                or_(
+                    Lattice.status == "COMPLETED",
+                    Lattice.status == "POSTPROCESSING",
+                    Lattice.status == "POSTPROCESSING_FAILED",
+                    Lattice.status == "PENDING_POSTPROCESSING",
+                ),
                 Lattice.is_active.is_not(False),
                 Lattice.electron_id.is_(None),
             )
