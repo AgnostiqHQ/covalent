@@ -117,4 +117,3 @@ dask-worker-space/**
 
 # Allow sample results_dir and pickles
 !covalent_tests/utils/sample_results_dir/**
-
