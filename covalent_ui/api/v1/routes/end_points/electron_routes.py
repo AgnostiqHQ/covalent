@@ -93,7 +93,8 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
 def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput):
 
     if name == "inputs":
-        return get_electron_inputs(dispatch_id=dispatch_id, electron_id=electron_id)
+        response = get_electron_inputs(dispatch_id=dispatch_id, electron_id=electron_id)
+        return ElectronFileResponse(data=response)
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
