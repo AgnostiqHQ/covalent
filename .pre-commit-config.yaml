@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-exclude: ".git|.tox|CHANGELOG.md|VERSION"
+exclude: ^(.git/|.tox/|CHANGELOG.md|VERSION)
 default_stages: [commit]
 fail_fast: true
 
@@ -57,7 +57,7 @@ repos:
           )$
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.7.1
+    rev: v2.6.2
     hooks:
       - id: prettier
         types: [yaml]
@@ -65,16 +65,6 @@ repos:
           (?x)^(
               meta.yaml|
           )$
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.7.1
-    hooks:
-      - id: prettier
-        types: [yaml]
-        exclude: |
-          (?x)^(
-              meta.yaml|
-          )$
-
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.3.0
     hooks:
