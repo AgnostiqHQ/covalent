@@ -123,17 +123,25 @@ class Summary:
         """
         query1 = self.db_con.query(
             (func.count(Lattice.id))
-            .filter(Lattice.status == "RUNNING", Lattice.is_active.is_not(False))
+            .filter(
+                Lattice.status == "RUNNING",
+                Lattice.is_active.is_not(False),
+                Lattice.electron_id.is_(None),
+            )
             .label("total_jobs_running")
         ).first()
         query2 = self.db_con.query(
             (func.count(Lattice.id))
-            .filter(Lattice.status == "COMPLETED", Lattice.is_active.is_not(False))
+            .filter(
+                Lattice.status == "COMPLETED",
+                Lattice.is_active.is_not(False),
+                Lattice.electron_id.is_(None),
+            )
             .label("total_jobs_done")
         ).first()
         query3 = (
             self.db_con.query(Lattice.status)
-            .filter(Lattice.is_active.is_not(False))
+            .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
             .order_by(Lattice.updated_at.desc())
             .first()
         )
@@ -147,16 +155,22 @@ class Summary:
                     * 1000
                 ).label("run_time")
             )
-            .filter(Lattice.is_active.is_not(False))
+            .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
             .first()
         )
         query5 = self.db_con.query(
             (func.count(Lattice.id))
-            .filter(Lattice.status == "FAILED", Lattice.is_active.is_not(False))
+            .filter(
+                Lattice.status == "FAILED",
+                Lattice.is_active.is_not(False),
+                Lattice.electron_id.is_(None),
+            )
             .label("total_failed")
         ).first()
         query6 = self.db_con.query(
-            (func.count(Lattice.id)).filter(Lattice.is_active.is_not(False)).label("total_jobs")
+            (func.count(Lattice.id))
+            .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
+            .label("total_jobs")
         ).first()
         if query4 is None:
             query4 = 0
