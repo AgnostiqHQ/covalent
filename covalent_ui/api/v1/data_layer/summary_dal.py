@@ -83,7 +83,6 @@ class Summary:
                     Lattice.name.ilike(f"%{search}%"),
                     Lattice.dispatch_id.ilike(f"%{search}%"),
                 ),
-                Lattice.electron_id.is_(None),
                 Lattice.is_active.is_not(False),
             )
             .order_by(
@@ -103,7 +102,6 @@ class Summary:
                     Lattice.name.ilike(f"%{search}%"),
                     Lattice.dispatch_id.ilike(f"%{search}%"),
                 ),
-                Lattice.electron_id.is_(None),
                 Lattice.is_active.is_not(False),
             )
             .first()
