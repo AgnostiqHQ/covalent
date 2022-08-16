@@ -22,6 +22,7 @@
 
 import os
 import tempfile
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -54,7 +55,7 @@ class MockAsyncExecutor(BaseAsyncExecutor):
 
 @pytest.mark.asyncio
 async def test_file_monitor_contents_generator():
-    """Test file monitor"""
+    """Test `generate_file_contents` (default chunksize)"""
     me = MockAsyncExecutor()
 
     f = tempfile.NamedTemporaryFile("a", delete=False)
@@ -79,6 +80,30 @@ async def test_file_monitor_contents_generator():
 
 
 @pytest.mark.asyncio
+async def test_file_monitor_contents_generator_with_chunksize():
+    """Test `generate_file_contents` (chunksize = 1)"""
+    me = MockAsyncExecutor()
+
+    f = tempfile.NamedTemporaryFile("a", delete=False)
+    tmp_path = f.name
+    with f:
+        f.write("Hi")
+
+    filemon = AsyncFileMonitor(me, tmp_path, "/tmp/results", "asdf", 0)
+
+    monitored_file = filemon.generate_file_contents(tmp_path, 1)
+    contents = await monitored_file.__anext__()
+    assert contents == "H"
+    contents = await monitored_file.__anext__()
+    assert contents == "i"
+
+    contents = await monitored_file.__anext__()
+    assert contents == ""
+
+    os.unlink(tmp_path)
+
+
+@pytest.mark.asyncio
 async def test_file_monitor_update_executor_info():
     """Test updating executor info log"""
 
@@ -98,3 +123,140 @@ async def test_file_monitor_update_executor_info():
         contents = f.read()
     os.unlink(log_file_path)
     assert contents == "/var/log/profile.log: Hello"
+
+
+@pytest.mark.asyncio
+async def test_file_monitor_get():
+    """Test updating executor info log"""
+
+    import json
+
+    me = MockAsyncExecutor(log_info="info.log")
+    chunk = "Hello"
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+
+    f = tempfile.NamedTemporaryFile("w", delete=False)
+    tmp_path = f.name
+    with f:
+        f.write(chunk)
+
+    filemon = AsyncFileMonitor(me, tmp_path, results_dir, dispatch_id, 0)
+    filemon.monitored_file = filemon.generate_file_contents(tmp_path)
+    filemon.update_node_info = AsyncMock()
+    filemon.update_executor_info = AsyncMock()
+
+    transferred_size = await filemon.get()
+    assert transferred_size == len(chunk)
+    filemon.update_node_info.assert_awaited_with(chunk)
+    filemon.update_executor_info.assert_awaited_with(chunk)
+
+    # Test get works with finite chunksize
+    filemon.monitored_file = filemon.generate_file_contents(tmp_path, 1)
+    transferred_size = await filemon.get()
+    assert transferred_size == len(chunk)
+
+    os.unlink(tmp_path)
+
+
+@pytest.mark.asyncio
+async def test_file_monitor_watch_file():
+    """Test `watch_file()`, in particular its handling of messages"""
+
+    from asyncio import Queue, create_task
+
+    me = MockAsyncExecutor(log_info="info.log")
+    chunk = "Hello"
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+
+    f = tempfile.NamedTemporaryFile("w", delete=False)
+    tmp_path = f.name
+    with f:
+        f.write(chunk)
+
+    msg_queue = Queue()
+
+    filemon = AsyncFileMonitor(me, tmp_path, results_dir, dispatch_id, 0)
+    filemon.monitored_file = filemon.generate_file_contents(tmp_path)
+    filemon.get = AsyncMock()
+
+    fut = create_task(filemon.watch_file(msg_queue))
+    await msg_queue.put("cancel")
+    await fut
+    filemon.get.assert_not_awaited()
+
+    filemon.monitored_file = filemon.generate_file_contents(tmp_path)
+    filemon.get = AsyncMock()
+    fut = create_task(filemon.watch_file(msg_queue))
+    await msg_queue.put("get")
+    await msg_queue.put("get")
+    await msg_queue.put("cancel")
+    await fut
+    os.unlink(tmp_path)
+
+    assert filemon.get.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_file_monitor_watch_file_periodically():
+    """Test `watch_file_periodically()`, in particular its handling of messages"""
+
+    from asyncio import Queue, create_task, sleep
+
+    me = MockAsyncExecutor(log_info="info.log")
+    chunk = "Hello"
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+
+    f = tempfile.NamedTemporaryFile("w", delete=False)
+    tmp_path = f.name
+    with f:
+        f.write(chunk)
+
+    msg_queue = Queue()
+
+    filemon = AsyncFileMonitor(me, tmp_path, results_dir, dispatch_id, 0)
+    filemon.monitored_file = filemon.generate_file_contents(tmp_path)
+    filemon.get = AsyncMock()
+
+    fut = create_task(filemon.watch_file_periodically(msg_queue, 0.5))
+    await sleep(1.1)
+    await msg_queue.put("cancel")
+
+    await fut
+    os.unlink(tmp_path)
+    assert filemon.get.await_count == 3
+
+
+@pytest.mark.asyncio
+async def test_file_monitor_start():
+    """Test `start()`"""
+
+    me = MockAsyncExecutor(log_info="info.log")
+    tmp_path = "/var/log/profile.log"
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    filemon = AsyncFileMonitor(me, tmp_path, results_dir, dispatch_id, 0)
+    filemon.watch_file_periodically = AsyncMock()
+    fut = filemon.start()
+    await fut
+    filemon.watch_file_periodically.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_file_monitor_cancel():
+    """Test `cancel()`"""
+
+    me = MockAsyncExecutor(log_info="info.log")
+    tmp_path = "/var/log/profile.log"
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    filemon = AsyncFileMonitor(me, tmp_path, results_dir, dispatch_id, 0)
+    filemon.watch_file_periodically = AsyncMock()
+    filemon.msg_queue.put = AsyncMock()
+
+    filemon.watch_future = AsyncMock()()
+    await filemon.cancel()
+    filemon.msg_queue.put.assert_awaited_with("cancel")
+    assert filemon.watch_future is None
