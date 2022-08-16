@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Updated pip, bash and callable deps how-to guides
+
 ## [0.180.0] - 2022-08-16
 
 ### Authors
