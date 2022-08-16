@@ -7,18 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-
 ### Docs
 
 - Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
-
-### Docs
-
 - Disabling how-to guide for executing an electron with a specified Conda environment.
-
-### Docs
-
 - Fixed "How To" for Python leptons
+- Updated short release notes
 
 ## [0.179.0] - 2022-08-16
 
