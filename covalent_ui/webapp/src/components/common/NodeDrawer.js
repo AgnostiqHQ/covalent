@@ -84,9 +84,9 @@
    const electronDetailIsFetching = useSelector(
      (state) => state.electronResults.electronDetailsList.isFetching
    )
-   // const electronInputResultIsFetching = useSelector(
-   //   (state) => state.electronResults.electronInputList.isFetching
-   // )
+   const electronInputResultIsFetching = useSelector(
+     (state) => state.electronResults.electronInputList.isFetching
+   )
    const electronResultDataIsFetching = useSelector(
      (state) => state.electronResults.electronResultList.isFetching
    )
@@ -250,7 +250,7 @@
            {electronInputResult && (<InputSection
              inputs={electronInputResult.data}
              sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
-             isFetching={!electronInputResult}
+             isFetching={electronInputResultIsFetching}
            />)}
  
            {/* Result */}

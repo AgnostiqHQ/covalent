@@ -30,9 +30,9 @@ const ExecutorSection = ({ isFetching, metadata, ...props }) => {
   const executorType = _.get(metadata, 'executor_name')
   const executor_details = _.get(metadata, 'executor_details')
   const executor_params = executor_details && {
-    log_stdout: executor_details?.attributes?.log_stdout,
-    log_stderr: executor_details?.attributes?.log_stderr,
-    scheduler_address: executor_details?.attributes?.scheduler_address
+    log_stdout: executor_details?.attributes?.log_stdout || 'N/A',
+    log_stderr: executor_details?.attributes?.log_stderr || 'N/A',
+    scheduler_address: executor_details?.attributes?.scheduler_address || 'N/A'
   }
   const src = executor_details && _.join(
     _.map(executor_params, (value, key) => `${key}: ${value}`),
