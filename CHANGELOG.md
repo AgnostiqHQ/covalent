@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `covalent db` cli command to API section of RTD
 
+### Operations
+
+- Prettierified release.yml
+- Cleaned up pre-commit-config.yml
+
 ### Docs
 
 - Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
