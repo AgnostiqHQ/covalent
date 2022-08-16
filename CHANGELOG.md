@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Added version migration guide section in RTD
+
+### Docs
+
 - Updated compatibility matrix
 - Updated pip, bash and callable deps how-to guides
 
