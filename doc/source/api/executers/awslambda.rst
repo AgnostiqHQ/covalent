@@ -13,7 +13,7 @@ To use this plugin with Covalent, simply install it using `pip`:
 
 .. code:: shell
 
-    pip install covalent-awslambda-plugin==0.3.0rc0
+    pip install covalent-awslambda-plugin==0.3.2rc0
 
 Since this is a cloud executor, proper IAM credentials, permissions and roles must be configured prior to using this executor. This executor
 uses the S3 and the AWS lambda service to execute tasks thus the IAM roles and policies must be configured so that
