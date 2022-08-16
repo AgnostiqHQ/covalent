@@ -1,4 +1,5 @@
 autodocsumm==0.2.6
+covalent-awsbatch-plugin==0.8.1rc0
 covalent-slurm-plugin
 covalent-ssh-plugin
 docutils
@@ -28,4 +29,3 @@ sphinxcontrib-htmlhelp==2.0.0
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
-covalent-awsbatch-plugin==0.8.1rc0
