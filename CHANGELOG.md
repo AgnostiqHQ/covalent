@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## Docs
+
+- Add `AWSLambdaExecutor` RTD
+- Update `api.rst` to include `cluster` CLI command option
+
 ### Docs
 
-- Update `api.rst` to include `cluster` CLI command option
+- Fixed "How To" for Python leptons
 
 ## [0.179.0] - 2022-08-16
 
