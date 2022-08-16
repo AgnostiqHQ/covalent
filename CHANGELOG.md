@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Disabling how-to guide on executing an electron with a specified Conda environment.
+
 ## [0.179.0] - 2022-08-16
 
 ### Authors
