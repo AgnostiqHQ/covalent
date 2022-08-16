@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-exclude: ".git|.tox|CHANGELOG.md|VERSION"
+exclude: ^(.git/|.tox/|CHANGELOG.md|VERSION)
 default_stages: [commit]
 fail_fast: true
 
