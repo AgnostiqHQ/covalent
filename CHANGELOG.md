@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Removed `How to synchronize lattices` section from RTD
+
+### Docs
+
 - Fixed "How To" for Python leptons
 
 ## [0.179.0] - 2022-08-16
