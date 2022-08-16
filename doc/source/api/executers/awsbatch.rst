@@ -14,7 +14,7 @@ This executor plugin can be installed via pip as follows
 
 .. code:: bash
 
-    pip install covalent-awsbatch-plugin==0.8.1rc0
+    pip install covalent-awsbatch-plugin==0.9.0rc0
 
 Since this is a cloud executor, proper IAM credentials, permissions and roles must be configured prior to using this executor.
 This executor uses different AWS services (S3, ECR and Batch) to successfully run a task. To this end the IAM roles and policies must be
