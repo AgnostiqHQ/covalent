@@ -22,8 +22,6 @@
 Integration test for the dispatcher.
 """
 
-from concurrent.futures import ThreadPoolExecutor
-
 import pytest
 
 import covalent_dispatcher as dispatcher
@@ -59,18 +57,13 @@ def test_dispatcher_flow(mock_result, expected_res, expected_node_outputs):
     default executor.
     """
 
-    workflow_pool = ThreadPoolExecutor()
-    task_pool = ThreadPoolExecutor()
+    import asyncio
 
     mock_result_object = mock_result()
     serialized_lattice = mock_result_object.lattice.serialize_to_json()
 
-    dispatch_id = dispatcher.run_dispatcher(
-        json_lattice=serialized_lattice, workflow_pool=workflow_pool, tasks_pool=task_pool
-    )
+    awaitable = dispatcher.run_dispatcher(json_lattice=serialized_lattice)
+    dispatch_id = asyncio.run(awaitable)
     rm._delete_result(
         dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR, remove_parent_directory=True
     )
-
-    workflow_pool.shutdown()
-    task_pool.shutdown()

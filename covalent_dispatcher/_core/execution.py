@@ -26,13 +26,10 @@ import asyncio
 import json
 import traceback
 from asyncio import Queue
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import partial
-from threading import Lock
 from typing import Any, Dict, List, Tuple
 
-import uvloop
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
@@ -265,7 +262,6 @@ async def _dispatch_sublattice(
     results_dir: str,
     inputs: Dict,
     serialized_callable: Any,
-    tasks_pool: ThreadPoolExecutor,
     workflow_executor: Any,
     executor_cache: ExecutorCache,
 ) -> str:
@@ -302,7 +298,6 @@ async def _dispatch_sublattice(
             call_before=[],
             call_after=[],
             inputs=sub_dispatch_inputs,
-            tasks_pool=tasks_pool,
             workflow_executor=workflow_executor,
             executor_cache=executor_cache,
             unplanned_task=True,
@@ -371,7 +366,6 @@ async def _run_task(
     call_before: List,
     call_after: List,
     node_name: str,
-    tasks_pool: ThreadPoolExecutor,
     workflow_executor: Any,
     executor_cache: ExecutorCache,
     unplanned_task: bool,
@@ -411,7 +405,6 @@ async def _run_task(
                 results_dir=results_dir,
                 inputs=inputs,
                 serialized_callable=serialized_callable,
-                tasks_pool=tasks_pool,
                 workflow_executor=workflow_executor,
                 executor_cache=executor_cache,
             )
@@ -425,7 +418,7 @@ async def _run_task(
             )
             # Read the result object directly from the server
 
-            sublattice_result = futures[sub_dispatch_id].result()
+            sublattice_result = await futures[sub_dispatch_id]
 
             if not sublattice_result:
                 raise RuntimeError("Sublattice execution failed")
@@ -467,7 +460,7 @@ async def _run_task(
                 output, stdout, stderr = await execute_callable()
             else:
                 loop = asyncio.get_running_loop()
-                output, stdout, stderr = await loop.run_in_executor(tasks_pool, execute_callable)
+                output, stdout, stderr = await loop.run_in_executor(None, execute_callable)
 
             end_time = datetime.now(timezone.utc)
 
@@ -556,7 +549,7 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
     result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data()
-    result_webhook.send_update(result_object)
+    await result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
 
 
@@ -565,39 +558,38 @@ async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks
     result_object._end_time = datetime.now(timezone.utc)
     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data()
-    result_webhook.send_update(result_object)
+    await result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
 
 
-async def _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue):
-    with lock:
-        app_log.warning("Updating node result (run_planned_workflow).")
-        result_object._update_node(**node_result)
-        result_webhook.send_update(result_object)
+async def _update_node_result(result_object, node_result, pending_deps, tasks_queue):
+    app_log.warning("Updating node result (run_planned_workflow).")
+    result_object._update_node(**node_result)
+    await result_webhook.send_update(result_object)
 
-        node_status = node_result["status"]
-        if node_status == Result.COMPLETED:
-            await _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
-            return
+    node_status = node_result["status"]
+    if node_status == Result.COMPLETED:
+        await _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
+        return
 
-        if node_status == Result.FAILED:
-            await _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
-            return
+    if node_status == Result.FAILED:
+        await _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
+        return
 
-        if node_status == Result.CANCELLED:
-            await _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
-            return
+    if node_status == Result.CANCELLED:
+        await _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
+        return
 
-        if node_status == Result.RUNNING:
-            return
+    if node_status == Result.RUNNING:
+        return
 
 
-async def _run_task_and_update(run_task_callable, lock, result_object, pending_deps, tasks_queue):
+async def _run_task_and_update(run_task_callable, result_object, pending_deps, tasks_queue):
     node_result = await run_task_callable()
 
     # NOTE: This is a blocking operation because of db writes and needs special handling when
     # we switch to an event loop for processing tasks
-    await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+    await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
     return node_result
 
 
@@ -621,9 +613,7 @@ async def _initialize_deps_and_queue(
     return num_tasks
 
 
-async def _postprocess_workflow(
-    result_object: Result, thread_pool: ThreadPoolExecutor, executor_cache: ExecutorCache
-) -> Result:
+async def _postprocess_workflow(result_object: Result, executor_cache: ExecutorCache) -> Result:
     """
     Postprocesses a workflow with a completed computational graph
 
@@ -649,7 +639,7 @@ async def _postprocess_workflow(
         result_object._status = Result.PENDING_POSTPROCESSING
         result_object._end_time = datetime.now(timezone.utc)
         result_object.upsert_lattice_data()
-        result_webhook.send_update(result_object)
+        await result_webhook.send_update(result_object)
         return result_object
 
     post_processing_inputs = {}
@@ -671,7 +661,6 @@ async def _postprocess_workflow(
                 call_before=[],
                 call_after=[],
                 inputs=post_processing_inputs,
-                tasks_pool=thread_pool,
                 workflow_executor=post_processor,
                 executor_cache=executor_cache,
                 unplanned_task=False,
@@ -689,7 +678,7 @@ async def _postprocess_workflow(
         result_object._error = "Post-processing failed"
         result_object._end_time = datetime.now(timezone.utc)
         result_object.upsert_lattice_data()
-        result_webhook.send_update(result_object)
+        await result_webhook.send_update(result_object)
 
         return result_object
 
@@ -700,7 +689,7 @@ async def _postprocess_workflow(
         result_object._error = f"Post-processing failed: {err}"
         result_object._end_time = datetime.now(timezone.utc)
         result_object.upsert_lattice_data()
-        result_webhook.send_update(result_object)
+        await result_webhook.send_update(result_object)
 
         return result_object
 
@@ -717,7 +706,7 @@ async def _postprocess_workflow(
     return result_object
 
 
-async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolExecutor) -> Result:
+async def _run_planned_workflow(result_object: Result) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -739,7 +728,6 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
 
     tasks_queue = Queue()
     pending_deps = {}
-    lock = Lock()
     task_futures: list = []
 
     app_log.debug(
@@ -799,7 +787,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
                 "status": Result.COMPLETED,
                 "output": output,
             }
-            await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+            await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
             app_log.debug("8A: Update node success (run_planned_workflow).")
 
             continue
@@ -834,7 +822,7 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
             start_time=start_time,
             status=Result.RUNNING,
         )
-        await _update_node_result(lock, result_object, node_result, pending_deps, tasks_queue)
+        await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
         app_log.debug("7: Updating nodes after deps (run_planned_workflow)")
 
         app_log.debug(f"Submitting task {node_id} to executor")
@@ -850,7 +838,6 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
             call_before=call_before,
             call_after=call_after,
             inputs=task_input,
-            tasks_pool=thread_pool,
             workflow_executor=post_processor,
             executor_cache=exec_cache,
             unplanned_task=False,
@@ -860,7 +847,6 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
         future = asyncio.create_task(
             _run_task_and_update(
                 run_task_callable=run_task_callable,
-                lock=lock,
                 result_object=result_object,
                 pending_deps=pending_deps,
                 tasks_queue=tasks_queue,
@@ -881,10 +867,10 @@ async def _run_planned_workflow(result_object: Result, thread_pool: ThreadPoolEx
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
-    result_object = await _postprocess_workflow(result_object, thread_pool, exec_cache)
+    result_object = await _postprocess_workflow(result_object, exec_cache)
 
     result_object.persist()
-    result_webhook.send_update(result_object)
+    await result_webhook.send_update(result_object)
 
     return result_object
 
@@ -911,7 +897,7 @@ def _plan_workflow(result_object: Result) -> None:
         pass
 
 
-def run_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Result:
+async def run_workflow(result_object: Result) -> Result:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -933,8 +919,7 @@ def run_workflow(result_object: Result, tasks_pool: ThreadPoolExecutor) -> Resul
 
     try:
         _plan_workflow(result_object)
-        uvloop.install()
-        result_object = asyncio.run(_run_planned_workflow(result_object, tasks_pool))
+        result_object = await _run_planned_workflow(result_object)
 
     except Exception as ex:
         app_log.error(f"Exception during _run_planned_workflow: {ex}")
