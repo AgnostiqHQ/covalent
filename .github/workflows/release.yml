@@ -316,7 +316,9 @@ jobs:
           password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Build and push pre-release
         if: >
-          github.event_name == 'workflow_call'
+          inputs.prerelease
+          && ${{ !github.events.inputs.stable_version }}
+          && github.event_name == 'workflow_call'
           && github.events.inputs.prerelease == 'true'
         uses: docker/build-push-action@v2
         with:
@@ -331,6 +333,7 @@ jobs:
       - name: Tag stable release
         if: >
           github.event_name == 'workflow_dispatch'
+          && github.event.inputs.stable_version
           && !github.events.inputs.test_release
           && contains(env.PAUL_BLART, github.actor)
         run: |
