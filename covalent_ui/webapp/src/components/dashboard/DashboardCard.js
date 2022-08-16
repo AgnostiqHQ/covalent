@@ -114,7 +114,7 @@ const DashboardCard = () => {
         />
         <DashboardDivider />
         <DashBoardCardItems
-          content={secondsToHms(dashboardStats.total_dispatcher_duration)}
+          content={dashboardStats?.total_dispatcher_duration ? secondsToHms(dashboardStats.total_dispatcher_duration) : 'N/A'}
           desc="Total dispatcher duration"
           align="flex-end"
           isSkeletonPresent={!dashboardStats}
