@@ -21,9 +21,8 @@
 name: conda
 
 on:
- schedule:
-   - cron: "02 4 * * *"
-
+  schedule:
+    - cron: "02 4 * * *"
 
 jobs:
   conda:

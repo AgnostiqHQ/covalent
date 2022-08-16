@@ -48,12 +48,12 @@ jobs:
         run: anybadge -l "version" -v $VERSION -c navy -f badges/version.svg
       - name: Generate platform badge
         run: anybadge -l "platform" -v "linux-64" -c gray -f badges/platform.svg
-#      - name: Run linter
-#        run: |
-#          pylint covalent covalent_dispatcher --output-format=text --exit-zero | tee pylint.txt
-#          SCORE=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt)
-#          echo "Pylint score was $SCORE"
-#          anybadge -l "pylint" -v $SCORE -f badges/pylint.svg 2=red 4=orange 7=yellow 9=green
+      #      - name: Run linter
+      #        run: |
+      #          pylint covalent covalent_dispatcher --output-format=text --exit-zero | tee pylint.txt
+      #          SCORE=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt)
+      #          echo "Pylint score was $SCORE"
+      #          anybadge -l "pylint" -v $SCORE -f badges/pylint.svg 2=red 4=orange 7=yellow 9=green
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:

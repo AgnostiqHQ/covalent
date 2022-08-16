@@ -39,21 +39,21 @@ jobs:
           - "javascript"
           - "python"
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
-      with:
-        languages: ${{ matrix.language }}
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
-    - name: Alert Slack
-      if: failure()
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_CHANNEL: "covalent"
-        SLACK_USERNAME: "CovalentOpsBot"
-        SLACK_MESSAGE: "The codeql.yml workflow is failing!"
-        SLACK_COLOR: ${{ job.status }}
-        SLACK_TITLE: ":warning:  Attention Required  :warning:"
-        SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: ${{ matrix.language }}
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
+      - name: Alert Slack
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "covalent"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: "The codeql.yml workflow is failing!"
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ":warning:  Attention Required  :warning:"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
