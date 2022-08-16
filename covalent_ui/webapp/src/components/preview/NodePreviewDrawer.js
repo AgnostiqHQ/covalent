@@ -42,7 +42,7 @@ import InputSection from '../common/InputSection'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
 import ErrorCard from '../common/ErrorCard'
-import ExecutorSection from '../common/ExecutorSection'
+import ExecutorSection from './ExecutorSection'
 
 export const nodeDrawerWidth = 360
 
