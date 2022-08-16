@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove AWS Lambda and Batch RTDs to keep changes atomic
 - Adding dropdowns to IAM policy documents
 
+## [0.179.0] - 2022-08-16
+
+### Authors
+
+
+
+### Changed
+
+- Changed terser package version on webapp yarn-lock file.
+
 ## [0.178.0] - 2022-08-15
 
 ### Authors

@@ -10,6 +10,12 @@ This executor plugin is well suited for low to medium compute intensive electron
 services offers very quick spin up times, this executor is a good fit for workflows with a large number of independent tasks that can
 be dispatched simultaneously.
 
+This plugin can be installed via pip as follows
+
+.. code:: bash
+
+    pip install covalent-ecs-plugin==0.6.2rc0
+
 Since this is a cloud executor, proper IAM credentials, permissions and roles must be configured prior to using this executor.
 This executor uses different AWS services (S3, ECR and ECS Fargate) to successfully run a task. To this end the IAM roles and policies must be
 properly configured so that the executor has all the necessary permissions to interact with the different AWS services.
