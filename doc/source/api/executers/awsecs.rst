@@ -98,8 +98,7 @@ This executor plugin can be installed via ``pip``
 
 .. code:: bash
 
-    pip install covalent-ecs-plugin
-
+    pip install covalent-ecs-plugin==0.7.0rc0
 
 Users can configure this executor by providing their custom configuration values in Covalent's `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ as follows
 
