@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Disabling how-to guide on executing an electron with a specified Conda environment.
+- Disabling how-to guide for executing an electron with a specified Conda environment.
+
+### Docs
+
+- Fixed "How To" for Python leptons
 
 ## [0.179.0] - 2022-08-16
 
