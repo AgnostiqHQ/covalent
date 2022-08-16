@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
 
+### Docs
+
+- Fixed "How To" for Python leptons
+
 ## [0.179.0] - 2022-08-16
 
 ### Authors
