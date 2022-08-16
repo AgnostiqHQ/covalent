@@ -38,21 +38,21 @@ from .._data_store.datastore import DataStore
 from .._data_store.models import Lattice
 from .._shared_files import logger
 from .._shared_files.config import get_config
-from . import wait
 from .result import Result
+from .wait import EXTREME
 from .write_result_to_db import MissingLatticeRecordError, load_file
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def get_result(dispatch_id: str, wait: bool or wait.Wait = False) -> Result:
+def get_result(dispatch_id: str, wait: bool = False) -> Result:
     """
     Get the results of a dispatch from a file.
 
     Args:
         dispatch_id: The dispatch id of the result.
-        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait a short amount of time for a result. To wait longer, you may pass `ct.wait.LONG`, `ct.wait.VERY_LONG`, or `ct.wait.EXTREME`. For finer grained control, you may pass, for example, `ct.wait.Wait(50)`, where 50 is the number of times the server will be polled.
+        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
 
     Returns:
         The result from the file.
@@ -148,7 +148,7 @@ def result_from(lattice_record: Lattice) -> Result:
 
 def _get_result_from_dispatcher(
     dispatch_id: str,
-    wait: bool or wait.Wait = False,
+    wait: bool = False,
     dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
     status_only: bool = False,
 ) -> Dict:
@@ -158,7 +158,7 @@ def _get_result_from_dispatcher(
 
     Args:
         dispatch_id: The dispatch id of the result.
-        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait a short amount of time for a result. To wait longer, you may pass `ct.wait.LONG`, `ct.wait.VERY_LONG`, or `ct.wait.EXTREME`. For finer grained control, you may pass, for example, `ct.wait.Wait(50)`, where 50 is the number of times the server will be polled.
+        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
         status_only: If true, only returns result status, not the full result object, default is False.
         dispatcher: Dispatcher server address, defaults to the address set in covalent.config.
 
@@ -168,9 +168,9 @@ def _get_result_from_dispatcher(
     Raises:
         MissingLatticeRecordError: If the result is not found.
     """
-    retries = 5
-    if wait and int(wait) > retries:
-        retries = int(wait)
+
+    retries = int(EXTREME) if wait else 5
+
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
@@ -255,15 +255,15 @@ def sync(
     """
 
     if isinstance(dispatch_id, str):
-        _get_result_from_dispatcher(dispatch_id, wait=wait.EXTREME, status_only=True)
+        _get_result_from_dispatcher(dispatch_id, wait=True, status_only=True)
     elif isinstance(dispatch_id, list):
         for d in dispatch_id:
-            _get_result_from_dispatcher(d, wait=wait.EXTREME, status_only=True)
+            _get_result_from_dispatcher(d, wait=True, status_only=True)
     else:
         with Session(db.engine) as session:
             rows = session.query(Lattice).all()
         for row in rows:
-            _get_result_from_dispatcher(row.dispatch_id, wait=wait.EXTREME, status_only=True)
+            _get_result_from_dispatcher(row.dispatch_id, wait=True, status_only=True)
 
 
 def cancel(
