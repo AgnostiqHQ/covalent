@@ -1,7 +1,7 @@
 autodocsumm==0.2.6
+covalent-awslambda-plugin==0.3.0rc0
 covalent-slurm-plugin
 covalent-ssh-plugin
-covalent-awslambda-plugin==0.3.0rc0
 docutils
 furo>=2022.6.21
 ipython>=8.4.0
