@@ -421,4 +421,4 @@ def test_metadata_json_serialization():
     assert new_metadata["executor"] == "local"
 
     new_bash_dep = ct.DepsBash().from_dict(new_metadata["deps"]["bash"])
-    assert new_bash_dep.__dict__ == metadata["deps"]["bash"].__dict__
+    assert new_bash_dep.__dict__ == metadata["deps"]["bash"]["attributes"]
