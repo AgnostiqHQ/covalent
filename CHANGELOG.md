@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.179.0] - 2022-08-16
+
+### Authors
+
+
+
 ### Changed
 
 - Changed terser package version on webapp yarn-lock file.
