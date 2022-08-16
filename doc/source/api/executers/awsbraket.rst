@@ -16,7 +16,7 @@ This plugin can be installed via pip as follows
 
 .. code:: bash
 
-    pip install covalent-braket-plugin==0.2.0rc0
+    pip install covalent-braket-plugin==0.3.0rc0
 
 Since this is a cloud executor, proper IAM credentials, permissions and roles must be configured prior to using this executor.
 This executor uses different AWS services (S3, ECR and Braket) to successfully run a task. To this end the IAM roles and policies must be
