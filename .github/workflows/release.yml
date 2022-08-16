@@ -243,7 +243,7 @@ jobs:
       - name: Convert package
         run: |
           conda convert --platform all ./covalent-channel/linux-64/*.tar.bz2
-          conda search -c ./covalent-channel/ --override-channels  
+          conda search -c ./covalent-channel/ --override-channels
           conda index ./covalent-channel/
           conda config --show channels
       - name: Upload pre-release
