@@ -10,6 +10,12 @@ This executor plugin is well suited for compute/memory intensive tasks such as t
 hyperparameter optimization, deep learning etc. With this executor, the compute backend is the Amazon EC2 service,
 with instances optimized for compute and memory intensive operations.
 
+This executor plugin can be installed via pip as follows
+
+.. code:: bash
+
+    pip install covalent-awsbatch-plugin==0.8.1rc0
+
 Since this is a cloud executor, proper IAM credentials, permissions and roles must be configured prior to using this executor.
 This executor uses different AWS services (S3, ECR and Batch) to successfully run a task. To this end the IAM roles and policies must be
 configured so that the executor has the necessary permissions to interact with these.
@@ -158,12 +164,8 @@ to its constructor
     def task(x, y):
         return x + y
 
-In this scenario, the parameters which are not set explicity are then read from the configuration file. This executor
-plugin can be installed via pip as follows
+In this scenario, the parameters which are not set explicity are then read from the configuration file.
 
-.. code:: bash
-
-    pip install covalent-awsbatch-plugin==0.8.1rc0
 
 
 .. autoclass:: covalent.executor.AWSBatchExecutor
