@@ -417,6 +417,6 @@ jobs:
     needs: tests
     if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
     uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
-    secrets: inherit
+    secrets: inherit # pragma: allowlist secret
     with:
       prerelease: true

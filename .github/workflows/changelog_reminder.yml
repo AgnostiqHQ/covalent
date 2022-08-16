@@ -1,15 +1,15 @@
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
-# 
-# Licensed under the GNU Affero General Public License 3.0 (the "License"). 
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
 # A copy of the License may be obtained with this software package or at
 #
 #      https://www.gnu.org/licenses/agpl-3.0.en.html
 #
-# Use of this file is prohibited except in compliance with the License. Any 
-# modifications or derivative works of this file must retain this copyright 
-# notice, and modified files must contain a notice indicating that they have 
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
 # been altered from the originals.
 #
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
@@ -18,8 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-on:
-  pull_request_target
+on: pull_request_target
 
 name: Changelog Reminder
 
@@ -28,16 +27,16 @@ jobs:
     name: Changelog Reminder
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/checkout@master
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
-    - name: Changelog Reminder
-      uses: peterjgrainger/action-changelog-reminder@v1.3.0
-      with:
-        changelog_regex: 'CHANGELOG.md'
-        customPrMessage: |
-          Hello. You may have forgotten to update the changelog!
-          Please edit [`CHANGELOG.md`](/AgnostiqHQ/covalent/blob/master/CHANGELOG.md) with a one-to-two sentence description of the change in the UNRELEASED section. You may include a small working example for new features.
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Changelog Reminder
+        uses: peterjgrainger/action-changelog-reminder@v1.3.0
+        with:
+          changelog_regex: "CHANGELOG.md"
+          customPrMessage: |
+            Hello. You may have forgotten to update the changelog!
+            Please edit [`CHANGELOG.md`](/AgnostiqHQ/covalent/blob/master/CHANGELOG.md) with a one-to-two sentence description of the change in the UNRELEASED section. You may include a small working example for new features.
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

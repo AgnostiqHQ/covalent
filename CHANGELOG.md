@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `wait` in `_get_result_from_dispatcher` will now use `_results_manager.wait.EXTREME` if `True` has been passed to it.
 
+### Operations
+
+- Prettierified release.yml
+- Cleaned up pre-commit-config.yml
+
 ### Docs
 
 - Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
