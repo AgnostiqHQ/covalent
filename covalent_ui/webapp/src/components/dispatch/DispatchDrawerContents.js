@@ -56,9 +56,6 @@ const DispatchDrawerContents = () => {
   const drawerLatticeDetailsFetching = useSelector(
     (state) => state.latticeResults.latticeDetailsResults.isFetching
   )
-  const drawerLatticeErrorFetching = useSelector(
-    (state) => state.latticeResults.latticeErrorList.isFetching
-  )
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
   useEffect(() => {
@@ -88,7 +85,7 @@ const DispatchDrawerContents = () => {
           component={TreeSvg}
           sx={{ verticalAlign: 'middle', marginTop: 1 }}
         />
-        {drawerLatticeDetailsFetching ? (
+        {!dispatchId ? (
           <Skeleton width={200} />
         ) : (
           <Tooltip title={dispatchId} placement="top">
@@ -114,7 +111,7 @@ const DispatchDrawerContents = () => {
         />
       </Box>
       {drawerLatticeDetails.status === 'FAILED' &&
-        (drawerLatticeErrorFetching ? (
+        (!drawerLatticeError ? (
           <Skeleton height={300} />
         ) : (
           <ErrorCard showElectron error={drawerLatticeError.data} />
