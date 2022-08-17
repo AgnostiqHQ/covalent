@@ -18,14 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update RTD for `AWS ECS` executor
 - Remove AWS Lambda and Batch RTDs to keep changes atomic
 - Adding dropdowns to IAM policy documents
-
-### Docs
-
 - Updated compatibility matrix
 - Updated pip, bash and callable deps how-to guides
 
 ### Operations
 
+- NPM install on CentOS done explicitly
 - `-y` flag for `conda install`
 
 ## [0.180.0] - 2022-08-16
