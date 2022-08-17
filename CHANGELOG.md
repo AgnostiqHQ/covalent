@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed "How to synchronize lattices" section from RTD
 
+### Operations
+
+- Use conda skeleton action for build and upload
+
 ## [0.182.1] - 2022-08-17
 
 ### Authors
