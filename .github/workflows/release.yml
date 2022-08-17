@@ -317,9 +317,8 @@ jobs:
       - name: Build and push pre-release
         if: >
           inputs.prerelease
-          && ${{ !github.events.inputs.stable_version }}
+          && !github.events.inputs.stable_version
           && github.event_name == 'workflow_call'
-          && github.events.inputs.prerelease == 'true'
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
