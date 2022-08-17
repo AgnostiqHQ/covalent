@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Added `covalent db` cli command to API section of RTD
+
 ## [0.182.1] - 2022-08-17
 
 ### Authors
@@ -55,7 +59,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Added `covalent db` cli command to API section of RTD
 - Updated short release notes
 
 ## [0.181.0] - 2022-08-17
