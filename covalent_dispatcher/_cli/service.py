@@ -532,7 +532,7 @@ async def _get_cluster_size(uri) -> int:
 
 async def _get_cluster_logs(uri):
     """
-    Retrive the cluster logs from the scheduler directly
+    Retrieve the cluster logs from the scheduler directly
     """
     comm = await connect(uri, timeout=2)
     await comm.write({"op": "cluster_logs"})
@@ -543,7 +543,7 @@ async def _get_cluster_logs(uri):
 
 @click.command()
 @click.option("--status", is_flag=True, help="Show Dask cluster status")
-@click.option("--info", is_flag=True, help="Retrive Dask cluster info")
+@click.option("--info", is_flag=True, help="Retrieve Dask cluster info")
 @click.option(
     "--address", is_flag=True, help="Fetch connection information of the cluster scheduler/workers"
 )
