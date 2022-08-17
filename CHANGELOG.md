@@ -10,11 +10,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Added `covalent db` cli command to API section of RTD
+
+## [0.181.0] - 2022-08-17
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+
+
+### Changed
+
+- Lazy loading mechanism on the GUI.
+
+### Fixed
+
+- Displaying electron executor and inputs information on the GUI.
+- Animated spinner for running statuses on the GUI.
+
+## Docs
+
+- Add `AWSLambdaExecutor` RTD
+- Update `api.rst` to include `cluster` CLI command option
+- Added version migration guide section in RTD
+- Update RTD for `AWS ECS` executor
+- Remove AWS Lambda and Batch RTDs to keep changes atomic
+- Adding dropdowns to IAM policy documents
 - Updated compatibility matrix
 - Updated pip, bash and callable deps how-to guides
 
 ### Operations
 
+- NPM install on CentOS done explicitly
 - `-y` flag for `conda install`
 
 ## [0.180.0] - 2022-08-16
@@ -576,8 +613,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Changed the custom executor how-to to be shorter and more concise.
-
-
+- Re-structured the docs
 
 ## [0.156.0] - 2022-07-27
 
