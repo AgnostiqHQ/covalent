@@ -10,10 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Added `covalent db` cli command to API section of RTD
+- Fixed RTD downloads badge image to point to `covalent` rather than `cova`
 
 ### Operations
 
 - Use conda skeleton action for build and upload
+
+### Docs
+
+- Updating WCI yaml with new file transfer protocols
 
 ## [0.182.1] - 2022-08-17
 
