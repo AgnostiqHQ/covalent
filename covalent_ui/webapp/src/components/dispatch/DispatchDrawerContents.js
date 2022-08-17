@@ -41,6 +41,7 @@ import { ChevronLeft } from '@mui/icons-material'
 import CopyButton from '../common/CopyButton'
 import { truncateMiddle } from '../../utils/misc'
 import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
+import { isDemo } from '../../utils/demo/setup'
 
 const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
@@ -48,10 +49,10 @@ const DispatchDrawerContents = () => {
   const [tab, setTab] = useState('overview')
 
   const drawerLatticeDetails = useSelector(
-    (state) => state.latticeResults.latticeDetails
+    (state) => state.latticeResults.latticeResultsData[dispatchId].latticeDetails
   )
   const drawerLatticeError = useSelector(
-    (state) => state.latticeResults.latticeError
+    (state) => state.latticeResults.latticeResultsData[dispatchId].latticeError
   )
   const drawerLatticeDetailsFetching = useSelector(
     (state) => state.latticeResults.latticeDetailsResults.isFetching
@@ -62,8 +63,10 @@ const DispatchDrawerContents = () => {
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
   useEffect(() => {
+    if (!isDemo) {
     dispatch(latticeError({ dispatchId, params: 'error' }))
     dispatch(latticeDetails({ dispatchId }))
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
 

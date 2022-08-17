@@ -48,6 +48,7 @@ import SyntaxHighlighter from './SyntaxHighlighter'
 import Heading from '../common/Heading'
 import ErrorCard from './ErrorCard'
 import ExecutorSection from './ExecutorSection'
+import InputSection from './InputSection'
 import {
   electronDetails,
   electronResult,
@@ -55,49 +56,50 @@ import {
   electronFunctionString,
   electronError,
 } from '../../redux/electronSlice'
+import { isDemo } from '../../utils/demo/setup'
 
 export const nodeDrawerWidth = 360
 
 const NodeDrawer = ({ node, dispatchId }) => {
   const dispatch = useDispatch()
-  const electronId = node !== undefined && node.node_id
+  const electronId = node !== undefined && node.id
   const electronDetail = useSelector(
-    (state) => state.electronResults.electronList
+    (state) => state.latticeResults.latticeResultsData[dispatchId].electron[electronId].electronDetails
   )
-  // const electronInputResult = useSelector(
-  //   (state) => state.electronResults.electronInput
-  // )
+  const electronInputResult = useSelector(
+    (state) => state.latticeResults.latticeResultsData[dispatchId].electron[electronId].electronInput
+  )
   const electronResultData = useSelector(
-    (state) => state.electronResults.electronResult
+    (state) => state.latticeResults.latticeResultsData[dispatchId].electron[electronId].electronResult
   )
   const electronExecutorResult = useSelector(
-    (state) => state.electronResults.electronExecutor
+    (state) => state.latticeResults.latticeResultsData[dispatchId].electron[electronId].electronExecutor
   )
   const electronFunctionResult = useSelector(
-    (state) => state.electronResults.electronFunctionString
+    (state) => state.latticeResults.latticeResultsData[dispatchId].electron[electronId].electronFunctionString
   )
   const electronErrorData = useSelector(
-    (state) => state.electronResults.electronError
+    (state) => state.latticeResults.latticeResultsData[dispatchId].electron[electronId].electronError
   )
   const electronDetailIsFetching = useSelector(
-    (state) => state.electronResults.electronDetailsList.isFetching
+    (state) => state.latticeResults.latticeResultsList.isFetching
   )
   // const electronInputResultIsFetching = useSelector(
   //   (state) => state.electronResults.electronInputList.isFetching
   // )
   const electronResultDataIsFetching = useSelector(
-    (state) => state.electronResults.electronResultList.isFetching
+    (state) => state.latticeResults.latticeResultsList.isFetching
   )
   const electronExecutorResultIsFetching = useSelector(
-    (state) => state.electronResults.electronExecutorList.isFetching
+    (state) => state.latticeResults.latticeResultsList.isFetching
   )
   const electronFunctionResultIsFetching = useSelector(
-    (state) => state.electronResults.electronFunctionStringList.isFetching
+    (state) => state.latticeResults.latticeResultsList.isFetching
   )
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
   useEffect(() => {
-    if (!!node) {
+    if (!!node && !isDemo) {
       dispatch(electronDetails({ electronId, dispatchId }))
       // dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
       dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
@@ -191,7 +193,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
             </>
           )}
 
-          <ErrorCard error={electronErrorData.data} />
+          {electronErrorData && <ErrorCard error={electronErrorData.data} />}
 
           {/* Description */}
           {electronDetail.doc &&
@@ -245,14 +247,13 @@ const NodeDrawer = ({ node, dispatchId }) => {
           )}
 
           {/* Input */}
-          {/* <InputSection
+          {electronInputResult && (<InputSection
             inputs={electronInputResult.data}
             sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
-            isFetching={electronInputResultIsFetching}
-          /> */}
+          />)}
 
           {/* Result */}
-          {electronDetail.status === 'COMPLETED' && (
+          {electronDetail.status === 'COMPLETED' && electronResultData && (
             <>
               <Heading>Result</Heading>
               {electronResultDataIsFetching ? (

@@ -34,6 +34,7 @@ import { statusLabel, secondsToHms } from '../../utils/misc'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchDashboardOverview } from '../../redux/dashboardSlice'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
+import { isDemo } from '../../utils/demo/setup'
 
 const DashboardCard = () => {
   const dispatch = useDispatch()
@@ -60,7 +61,7 @@ const DashboardCard = () => {
   }
 
   useEffect(() => {
-    fetchDashboardOverviewResult()
+    if (!isDemo) fetchDashboardOverviewResult()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDeleted, callSocketApi])
 

@@ -26,11 +26,15 @@ import React from 'react'
 import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'
 
-const ExecutorSection = ({ isFetching, metadata, preview, ...props }) => {
+const ExecutorSection = ({ isFetching, metadata, ...props }) => {
   const executorType = _.get(metadata, 'executor_name')
-  const executorParams = _.omitBy(_.get(metadata, preview ? 'executor' : 'executor_details'), (v) => v === '')
+  const executor_params = {
+    log_stdout: "stdout.log",
+    log_stderr: "stderr.log",
+    scheduler_address: "tcp://127.0.0.1:35271",
+  }
   const src = _.join(
-    _.map(executorParams, (value, key) => `${key}: ${value}`),
+    _.map(executor_params, (value, key) => `${key}: ${value}`),
     '\n'
   )
   return (
@@ -38,11 +42,9 @@ const ExecutorSection = ({ isFetching, metadata, preview, ...props }) => {
       <Heading>
         Executor: <strong>{executorType}</strong>
       </Heading>
-      {src && (
-        <Paper elevation={0} {...props}>
-          <SyntaxHighlighter language="yaml" src={src} />
-        </Paper>
-      )}
+      <Paper elevation={0} {...props}>
+        <SyntaxHighlighter language="yaml" src={src} />
+      </Paper>
     </>
   )
 }

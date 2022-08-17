@@ -22,17 +22,18 @@
 
 import React from 'react'
 import { useSelector } from 'react-redux'
+import { useParams } from 'react-router-dom'
 import { Box, Typography, Skeleton } from '@mui/material'
 import { statusIcon, statusColor, statusLabel } from '../../utils/misc'
 
 const DispatchTopBar = () => {
+  const { dispatchId } = useParams()
   const drawerLatticeDetails = useSelector(
-    (state) => state.latticeResults.latticeDetails
+    (state) => state.latticeResults.latticeResultsData[dispatchId].latticeDetails
   )
   const drawerLatticeDetailsFetching = useSelector(
     (state) => state.latticeResults.latticeDetailsResults.isFetching
   )
-
   return (
     <>
       <Box

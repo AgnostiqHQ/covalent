@@ -35,39 +35,39 @@ import {
   latticeExecutorDetail,
 } from '../../redux/latticeSlice'
 import Runtime from '../dispatches/Runtime'
+import { isDemo } from '../../utils/demo/setup'
 
 const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
   const result = latDetails
   const dispatch = useDispatch()
-  const drawerInput = useSelector((state) => state.latticeResults.latticeInput)
+  const drawerInput = useSelector((state) => state.latticeResults.latticeResultsData[dispatchId].latticeInput)
   const drawerInputListFetching = useSelector(
     (state) => state.latticeResults.latticeInputList.isFetching
   )
   const drawerResult = useSelector(
-    (state) => state.latticeResults.latticeResult
+    (state) => state.latticeResults.latticeResultsData[dispatchId].latticeResult
   )
   const drawerResultListFetching = useSelector(
     (state) => state.latticeResults.latticeResultsList.isFetching
   )
   const drawerFunctionString = useSelector(
-    (state) => state.latticeResults.latticeFunctionString
+    (state) => state.latticeResults.latticeResultsData[dispatchId].latticeFunctionString
   )
   const drawerFunctionStringListFetching = useSelector(
     (state) => state.latticeResults.latticeFunctionStringList.isFetching
   )
   const drawerExecutorDetail = useSelector(
-    (state) => state.latticeResults.latticeExecutorDetail
-  )
-  const drawerExecutorDetailListFetching = useSelector(
-    (state) => state.latticeResults.latticeExecutorDetailList.isFetching
+    (state) => state.latticeResults.latticeResultsData[dispatchId].latticeExecutor
   )
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
   useEffect(() => {
-    dispatch(latticeResults({ dispatchId, params: 'result' }))
-    dispatch(latticeFunctionString({ dispatchId, params: 'function_string' }))
-    dispatch(latticeInput({ dispatchId, params: 'inputs' }))
-    dispatch(latticeExecutorDetail({ dispatchId, params: 'executor' }))
+    if (!isDemo) {
+      dispatch(latticeResults({ dispatchId, params: 'result' }))
+      dispatch(latticeFunctionString({ dispatchId, params: 'function_string' }))
+      dispatch(latticeInput({ dispatchId, params: 'inputs' }))
+      dispatch(latticeExecutorDetail({ dispatchId, params: 'executor' }))
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
 
@@ -134,12 +134,12 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       )}
 
       {/* Input */}
-      <InputSection
+      {drawerInput && (<InputSection
         isFetching={
           drawerInputListFetching && Object.keys(drawerInput).length === 0
         }
         inputs={drawerInput.data}
-      />
+      />)}
 
       {/* Result */}
       {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
@@ -157,10 +157,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
 
       {/* Executor */}
       <ExecutorSection
-        isFetching={
-          Object.keys(drawerExecutorDetail).length === 0 &&
-          drawerExecutorDetailListFetching
-        }
+        isFetching={false}
         metadata={drawerExecutorDetail}
       />
 
@@ -171,7 +168,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       <Heading />
 
       {Object.keys(drawerFunctionString).length === 0 &&
-      drawerFunctionStringListFetching ? (
+        drawerFunctionStringListFetching ? (
         <Skeleton height={100} />
       ) : (
         <Paper elevation={0}>

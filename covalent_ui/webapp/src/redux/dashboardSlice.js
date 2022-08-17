@@ -20,8 +20,8 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-
+import { createSlice, createAsyncThunk, current } from '@reduxjs/toolkit'
+import _ from 'lodash'
 import api from '../utils/api'
 
 const initialState = {
@@ -66,8 +66,26 @@ export const dashboardSlice = createSlice({
   name: 'dashboard',
   initialState,
   reducers: {
-    dispatchesDeleted(state) {
-      state.dispatchesDeleted = !state.dispatchesDeleted
+    dispatchesDeleted(state, { payload: dispatchIds }) {
+      const filteredData = current(state.dashboardList);
+      const finalArray = filteredData.filter(object1 => {
+        return !dispatchIds.some(object2 => {
+          return object1.dispatch_id === object2;
+        });
+      });
+      state.dashboardList = finalArray
+      state.totalDispatches = finalArray.length
+      const lastStatusArray = _.orderBy(finalArray, ['started_at'], ['desc']);
+      const lastStatus = lastStatusArray.length ? lastStatusArray[0].status : 'N/A'
+      const dashOverview = {
+        "total_jobs": finalArray.length,
+        "total_jobs_running": finalArray.filter(e => e.status === 'RUNNING').length,
+        "total_jobs_completed": finalArray.filter(e => e.status === 'COMPLETED').length,
+        "total_jobs_failed": finalArray.filter(e => e.status === 'FAILED').length,
+        "latest_running_task_status": finalArray.length ? lastStatus : "N/A",
+        "total_dispatcher_duration": finalArray.length ? finalArray?.map(obj => obj.runtime).reduce((partialSum, a) => partialSum + a, 0) : 'N/A'
+      }
+      state.dashboardOverview = dashOverview
     },
   },
   extraReducers: (builder) => {

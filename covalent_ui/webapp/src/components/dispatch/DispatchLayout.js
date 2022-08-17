@@ -29,7 +29,6 @@ import { useParams } from 'react-router-dom'
 import LatticeGraph from '../graph/LatticeGraph'
 import NotFound from '../NotFound'
 import NodeDrawer from '../common/NodeDrawer'
-import PageLoading from '../common/PageLoading'
 import { graphBgColor } from '../../utils/theme'
 import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
 import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
@@ -38,16 +37,18 @@ import { resetLatticeState } from '../../redux/latticeSlice'
 import { resetElectronState } from '../../redux/electronSlice'
 import DispatchTopBar from './DispatchTopBar'
 import DispatchDrawerContents from './DispatchDrawerContents'
+import { isDemo } from '../../utils/demo/setup'
 
 export function DispatchLayout() {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
-  const graph_result = useSelector((state) => state.graphResults.graphList)
+  const graph_result = useSelector((state) => state.graphResults[dispatchId].graph)
   const latDetailError = useSelector((state) => state.latticeResults.latticeDetailsResults.error)
+
   // check if socket message is received and call API
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
   useEffect(() => {
-    dispatch(graphResults({ dispatchId }))
+    if (!isDemo) dispatch(graphResults({ dispatchId }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
 
@@ -55,9 +56,11 @@ export function DispatchLayout() {
   // reset store values to initial state when moved to another page
   useEffect(() => {
     return () => {
-      dispatch(resetGraphState());
-      dispatch(resetLatticeState());
-      dispatch(resetElectronState());
+      if (!isDemo) {
+        dispatch(resetGraphState());
+        dispatch(resetLatticeState());
+        dispatch(resetElectronState());
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -83,7 +86,7 @@ export function DispatchLayout() {
   }, [dispatchId, setSelectedElements])
 
   // dispatch id not found
-  if(latDetailError !== null && latDetailError.status === 400){
+  if (latDetailError !== null && latDetailError.status === 400) {
     return <NotFound text="Lattice dispatch not found." />
   }
 
@@ -109,14 +112,12 @@ export function DispatchLayout() {
       <LatticeDrawer>
         <DispatchDrawerContents />
       </LatticeDrawer>
-      {Object.keys(graph_result).length !== 0 ? (
+      {selectedElectron && (
         <NodeDrawer
           node={selectedElectron}
           graph={graph_result}
           dispatchId={dispatchId}
         />
-      ) : (
-        <PageLoading />
       )}
     </>
   )
