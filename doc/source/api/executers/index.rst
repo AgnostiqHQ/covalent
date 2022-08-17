@@ -21,6 +21,8 @@ Plugins
    ssh
    slurm
    awsbraket
+   awslambda
+   awsecs
 
 Base executor
 *************
