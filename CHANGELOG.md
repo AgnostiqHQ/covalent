@@ -11,15 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `AWSLambdaExecutor` RTD
 - Update `api.rst` to include `cluster` CLI command option
-
-### Docs
-
 - Added version migration guide section in RTD
 - Update RTD for `AWS ECS` executor
 - Remove AWS Lambda and Batch RTDs to keep changes atomic
 - Adding dropdowns to IAM policy documents
 - Updated compatibility matrix
 - Updated pip, bash and callable deps how-to guides
+- Updated short release notes
 
 ### Operations
 
@@ -57,7 +55,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
 - Disabling how-to guide for executing an electron with a specified Conda environment.
 - Fixed "How To" for Python leptons
-- Updated short release notes
 
 ## [0.179.0] - 2022-08-16
 
