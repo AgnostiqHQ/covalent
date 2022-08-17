@@ -92,4 +92,4 @@ jobs:
       ${{ (needs.changelog.outputs.action == 'true' || needs.changelog.outputs.index == 'true')
       && needs.changelog.outputs.dist == 'false' }}
     uses: ./.github/workflows/action_build.yml
-    secrets: inherit
+    secrets: inherit # pragma: allowlist secret

@@ -65,7 +65,7 @@ exclude_patterns = ["_build", "**.ipynb_checkpoints"]
 nbsphinx_execute = "never"
 highlight_language = "python"
 html_scaled_image_link = False
-add_module_names = False
+add_module_names = True
 
 templates_path = ["_templates"]
 
