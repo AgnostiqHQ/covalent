@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Use conda skeleton action for build and upload
 
+### Docs
+
+- Updating WCI yaml with new file transfer protocols
+
 ## [0.182.1] - 2022-08-17
 
 ### Authors
@@ -98,8 +102,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding dropdowns to IAM policy documents
 - Updated compatibility matrix
 - Updated pip, bash and callable deps how-to guides
-- Updating WCI yaml with new file transfer protocols
-
 
 ### Operations
 
