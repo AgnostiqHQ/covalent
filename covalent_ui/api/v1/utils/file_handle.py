@@ -44,12 +44,14 @@ def validate_data(unpickled_object):
             if "type" in unpickled_object:
                 return unpickled_object
             for obj in unpickled_object["args"]:
-                args_array.append(obj.object_string) \
-                    if obj != None else None
+                args_array.append(obj.object_string) if obj != None else None
 
             for obj in unpickled_object["kwargs"]:
-                kwargs_array[obj] = unpickled_object["kwargs"][obj].object_string \
-                if unpickled_object["kwargs"][obj] != None else None
+                kwargs_array[obj] = (
+                    unpickled_object["kwargs"][obj].object_string
+                    if unpickled_object["kwargs"][obj] != None
+                    else None
+                )
 
             return json.dumps({"args": args_array, "kwargs": kwargs_array})
         else:
