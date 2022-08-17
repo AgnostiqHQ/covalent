@@ -20,6 +20,7 @@ Plugins
    dask
    ssh
    slurm
+   awsbraket
    awslambda
    awsecs
 
