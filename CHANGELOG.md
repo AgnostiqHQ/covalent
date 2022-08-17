@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.182.1] - 2022-08-17
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+
+### Fixed
+
+- lattice.draw() fix on the GUI.
+
+## [0.182.0] - 2022-08-17
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Added
+
+- Update RTD for `AWS Batch` executor
+- Removed `AWS Lambda` executor RTD from this branch in order to keep changes atomic
+
+### Changed
+
+- Synced with latest develop
+
+### Docs
+
+- Adding RTD for `AWS Braket` executor
+- Adding dropdown menu for the IAM policy
+- Delete RTD for other cloud executor to keep changes atomic
+- Renamed `executers` folder to `executors`
+
 ### Docs
 
 - Added `covalent db` cli command to API section of RTD
@@ -86,6 +132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
 - Disabling how-to guide for executing an electron with a specified Conda environment.
 - Fixed "How To" for Python leptons
+>>>>>>> 540a1b3952389da58cbb0380c9a847db049d965e
 
 ## [0.179.0] - 2022-08-16
 
