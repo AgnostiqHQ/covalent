@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Updated custom executor RTD to show a simpler example
+
 ## [0.182.1] - 2022-08-17
 
 ### Authors
