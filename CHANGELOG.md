@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Added `covalent db` cli command to API section of RTD
+- Updated short release notes
 
 ## [0.181.0] - 2022-08-17
 
@@ -83,13 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
-
-### Docs
-
 - Disabling how-to guide for executing an electron with a specified Conda environment.
-
-### Docs
-
 - Fixed "How To" for Python leptons
 
 ## [0.179.0] - 2022-08-16
