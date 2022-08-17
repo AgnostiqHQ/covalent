@@ -35,7 +35,7 @@
  } from '@mui/material'
  import { useStoreActions } from 'react-flow-renderer'
  import { alpha } from '@mui/material/styles'
- 
+
  import {
    formatDate,
    statusColor,
@@ -57,9 +57,9 @@
    electronError,
    electronInput
  } from '../../redux/electronSlice'
- 
+
  export const nodeDrawerWidth = 360
- 
+
  const NodeDrawer = ({ node, dispatchId }) => {
    const dispatch = useDispatch()
    const electronId = node !== undefined && node.node_id
@@ -97,7 +97,7 @@
      (state) => state.electronResults.electronFunctionStringList.isFetching
    )
    const callSocketApi = useSelector((state) => state.common.callSocketApi)
- 
+
    useEffect(() => {
      if (!!node) {
        dispatch(electronDetails({ electronId, dispatchId }))
@@ -123,10 +123,10 @@
    const handleClose = () => {
      setSelectedElements([])
    }
- 
+
    const hasStarted = !!_.get(electronDetail, 'started_at')
    const hasEnded = !!_.get(electronDetail, 'ended_at')
- 
+
    return (
      <Drawer
        sx={(theme) => ({
@@ -161,14 +161,14 @@
                  {electronDetail.name}
                </Typography>
              )}
- 
+
              <Box>
                <IconButton onClick={handleClose}>
                  <Close />
                </IconButton>
              </Box>
            </Box>
- 
+
            {/* Status */}
            {electronDetail.status && (
              <>
@@ -192,9 +192,9 @@
                )}
              </>
            )}
- 
+
            <ErrorCard error={electronErrorData.data} />
- 
+
            {/* Description */}
            {electronDetail.doc &&
              (electronDetailIsFetching ? (
@@ -207,9 +207,9 @@
                  </Typography>
                </>
              ))}
- 
+
            {/* Start/end times */}
- 
+
            {hasStarted && (
              <>
                <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
@@ -223,9 +223,9 @@
                )}
              </>
            )}
- 
+
            {/* Runtime */}
- 
+
            {electronDetail.status && electronDetail.status !== 'NEW_OBJECT' && (
              <>
                <Heading>Runtime</Heading>
@@ -245,14 +245,14 @@
                )}
              </>
            )}
- 
+
            {/* Input */}
            {electronInputResult && (<InputSection
              inputs={electronInputResult.data}
              sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
              isFetching={electronInputResultIsFetching}
            />)}
- 
+
            {/* Result */}
            {electronDetail.status === 'COMPLETED' && (
              <>
@@ -274,18 +274,18 @@
                )}
              </>
            )}
- 
+
            {/* Executor */}
            <ExecutorSection
              metadata={electronExecutorResult}
              sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
              isFetching={electronExecutorResultIsFetching}
            />
- 
+
            <Divider sx={{ my: 2 }} />
- 
+
            {/* Source */}
- 
+
            {electronFunctionResultIsFetching ? (
              <Skeleton sx={{ height: '100px' }} />
            ) : (
@@ -306,6 +306,5 @@
      </Drawer>
    )
  }
- 
+
  export default NodeDrawer
- 
