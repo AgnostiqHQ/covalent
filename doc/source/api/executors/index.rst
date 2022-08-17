@@ -23,6 +23,7 @@ Plugins
    awsbraket
    awslambda
    awsecs
+   awsbatch
 
 Base executor
 *************
