@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update release workflow
 
+## [0.182.1] - 2022-08-17
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+
+### Fixed
+
+- lattice.draw() fix on the GUI.
+
 ## [0.182.0] - 2022-08-17
 
 ### Authors
@@ -38,7 +56,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding dropdown menu for the IAM policy
 - Delete RTD for other cloud executor to keep changes atomic
 - Renamed `executers` folder to `executors`
-
 
 ### Docs
 
