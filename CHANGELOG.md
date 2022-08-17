@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated compatibility matrix
 - Updated pip, bash and callable deps how-to guides
 
+### Operations
+
+- `-y` flag for `conda install`
+
 ## [0.180.0] - 2022-08-16
 
 ### Authors
