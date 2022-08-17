@@ -539,6 +539,9 @@ def electron(
         :obj:`Electron <covalent._workflow.electron.Electron>` : Electron object inside which the decorated function exists.
     """
 
+    with open("testing.txt", "a") as f:
+        f.write(f"{executor}\n")
+
     if backend:
         app_log.warning(
             "backend is deprecated and will be removed in a future release. Please use executor keyword instead.",
