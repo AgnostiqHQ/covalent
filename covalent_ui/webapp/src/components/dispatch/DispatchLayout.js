@@ -85,6 +85,13 @@ export function DispatchLayout() {
     setSelectedElements([])
   }, [dispatchId, setSelectedElements])
 
+  useEffect(() => {
+    return () => {
+      setSelectedElements([])
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // dispatch id not found
   if (latDetailError !== null && latDetailError.status === 400) {
     return <NotFound text="Lattice dispatch not found." />

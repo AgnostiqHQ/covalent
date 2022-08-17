@@ -1615,7 +1615,7 @@ latticeDetailsDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"].electron[17].elec
     "runtime": 50
 }
 latticeDetailsDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"].electron[17].electronResult = null
-latticeDetailsDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"].electron[14].electronExecutor = {
+latticeDetailsDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"].electron[17].electronExecutor = {
     "executor_name": "local",
     "executor_details": null
 }
