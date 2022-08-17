@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Fixed RTD downloads badge image to point to `covalent` rather than `cova`
+
 ### Operations
 
 - Use conda skeleton action for build and upload
