@@ -19,7 +19,6 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-
 import _ from 'lodash'
 import { useSelector } from 'react-redux'
 import { Close } from '@mui/icons-material'
@@ -43,7 +42,7 @@ import InputSection from '../common/InputSection'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
 import ErrorCard from '../common/ErrorCard'
-import ExecutorSection from '../common/ExecutorSection'
+import ExecutorSection from './ExecutorSection'
 
 export const nodeDrawerWidth = 360
 
@@ -57,7 +56,6 @@ const NodeDrawer = ({ node }) => {
   }
 
   const src = _.get(node, 'function_string', '# source unavailable')
-
   return (
     <Drawer
       sx={(theme) => ({
@@ -139,5 +137,4 @@ const NodeDrawer = ({ node }) => {
     </Drawer>
   )
 }
-
 export default NodeDrawer

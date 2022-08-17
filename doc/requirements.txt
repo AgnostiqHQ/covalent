@@ -1,4 +1,5 @@
 autodocsumm==0.2.6
+covalent-awslambda-plugin==0.3.2rc0
 covalent-ecs-plugin==0.7.0rc0
 covalent-slurm-plugin
 covalent-ssh-plugin

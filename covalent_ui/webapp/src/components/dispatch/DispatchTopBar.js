@@ -29,10 +29,6 @@ const DispatchTopBar = () => {
   const drawerLatticeDetails = useSelector(
     (state) => state.latticeResults.latticeDetails
   )
-  const drawerLatticeDetailsFetching = useSelector(
-    (state) => state.latticeResults.latticeDetailsResults.isFetching
-  )
-
   return (
     <>
       <Box
@@ -56,7 +52,7 @@ const DispatchTopBar = () => {
           <LatticeStatusCard
             dispatchId={drawerLatticeDetails.dispatch_id}
             latDetails={drawerLatticeDetails}
-            isFetching={drawerLatticeDetailsFetching}
+            isFetching={!drawerLatticeDetails}
           />
         </Box>
       </Box>
