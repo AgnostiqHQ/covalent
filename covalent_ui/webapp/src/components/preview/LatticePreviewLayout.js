@@ -24,7 +24,6 @@ import _ from 'lodash'
 import { Box, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { useStoreActions, useStoreState } from 'react-flow-renderer'
-
 import LatticeMain from '../graph/LatticeGraph'
 import NotFound from '../NotFound'
 import NodeDrawer, { nodeDrawerWidth } from './NodePreviewDrawer'

@@ -7,13 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Lazy loading mechanism on the GUI.
+
+### Fixed
+
+- Displaying electron executor and inputs information on the GUI.
+- Animated spinner for running statuses on the GUI.
+
 ## Docs
 
 - Add `AWSLambdaExecutor` RTD
 - Update `api.rst` to include `cluster` CLI command option
-
-### Docs
-
 - Added version migration guide section in RTD
 - Update RTD for `AWS ECS` executor
 - Remove AWS Lambda and Batch RTDs to keep changes atomic
