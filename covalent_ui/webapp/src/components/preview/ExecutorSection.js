@@ -28,21 +28,17 @@ import SyntaxHighlighter from '../common/SyntaxHighlighter'
 
 const ExecutorSection = ({ isFetching, metadata, ...props }) => {
     const executorType = _.get(metadata, 'executor_name')
-    const executor_details = {
-        log_stdout: 'stdout.log',
-        log_stderr:'stderr.log',
-        scheduler_address: 'tcp://127.0.0.1:44579'
-      }
-      const src = _.join(
-        _.map(executor_details, (value, key) => `${key}: ${value}`),
+    const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
+    const src = _.join(
+        _.map(executorParams, (value, key) => `${key}: ${value}`),
         '\n'
-      )
+    )
     return (
         <>
             <Heading>
                 Executor: <strong>{executorType}</strong>
             </Heading>
-            {executor_details && (
+            {src && (
                 <Paper elevation={0} {...props}>
                     <SyntaxHighlighter language='json' src={src} />
                 </Paper>

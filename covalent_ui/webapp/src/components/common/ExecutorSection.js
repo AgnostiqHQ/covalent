@@ -29,21 +29,18 @@ import SyntaxHighlighter from './SyntaxHighlighter'
 const ExecutorSection = ({ isFetching, metadata, ...props }) => {
   const executorType = _.get(metadata, 'executor_name')
   const executor_details = _.get(metadata, 'executor_details')
-  const executor_params = executor_details && {
-    log_stdout: executor_details?.attributes?.log_stdout || 'N/A',
-    log_stderr: executor_details?.attributes?.log_stderr || 'N/A',
-    scheduler_address: executor_details?.attributes?.scheduler_address || 'N/A'
-  }
   const src = executor_details && _.join(
-    _.map(executor_params, (value, key) => `${key}: ${value}`),
+    _.map(executor_details?.attributes, (value, key) => `${key}: ${value}`),
     '\n'
   )
   return (
     <>
-      <Heading>
-        Executor: <strong>{executorType}</strong>
-      </Heading>
-      {executor_details && (
+      {!isFetching && (
+        <Heading>
+          Executor: <strong>{executorType}</strong>
+        </Heading>
+      )}
+      {executor_details && !isFetching && (
         <Paper elevation={0} {...props}>
           <SyntaxHighlighter language="yaml" src={src} />
         </Paper>

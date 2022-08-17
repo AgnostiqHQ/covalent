@@ -40,15 +40,16 @@ def validate_data(unpickled_object):
     if isinstance(unpickled_object, dict):
         args_array = []
         kwargs_array = {}
-
         if bool(unpickled_object):
             if "type" in unpickled_object:
                 return unpickled_object
             for obj in unpickled_object["args"]:
-                args_array.append(obj.object_string)
+                args_array.append(obj.object_string) \
+                    if obj != None else None
 
             for obj in unpickled_object["kwargs"]:
-                kwargs_array[obj] = unpickled_object["kwargs"][obj].object_string
+                kwargs_array[obj] = unpickled_object["kwargs"][obj].object_string \
+                if unpickled_object["kwargs"][obj] != None else None
 
             return json.dumps({"args": args_array, "kwargs": kwargs_array})
         else:
@@ -77,6 +78,7 @@ class FileHandler:
             with open(self.location + "/" + path, "rb") as read_file:
                 unpickled_object = pickle.load(read_file)
                 read_file.close()
+
                 return validate_data(unpickled_object)
         except EOFError:
             return None
