@@ -7,6 +7,118 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## Docs
+
+- Add `AWSLambdaExecutor` RTD
+- Update `api.rst` to include `cluster` CLI command option
+
+### Docs
+
+- Added version migration guide section in RTD
+- Update RTD for `AWS ECS` executor
+- Remove AWS Lambda and Batch RTDs to keep changes atomic
+- Adding dropdowns to IAM policy documents
+- Updated compatibility matrix
+- Updated pip, bash and callable deps how-to guides
+
+### Operations
+
+- NPM install on CentOS done explicitly
+- `-y` flag for `conda install`
+
+## [0.180.0] - 2022-08-16
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+### Removed
+
+- Removed `ct.wait.LONG` etc. constants from covalent's init
+
+### Changed
+
+- `wait` in `_get_result_from_dispatcher` will now use `_results_manager.wait.EXTREME` if `True` has been passed to it.
+
+### Operations
+
+- Prettierified release.yml
+- Cleaned up pre-commit-config.yml
+
+### Docs
+
+- Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
+
+### Docs
+
+- Disabling how-to guide for executing an electron with a specified Conda environment.
+
+### Docs
+
+- Fixed "How To" for Python leptons
+
+## [0.179.0] - 2022-08-16
+
+### Authors
+
+
+
+### Changed
+
+- Changed terser package version on webapp yarn-lock file.
+
+## [0.178.0] - 2022-08-15
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Dispatch workflows as asyncio tasks on the FastAPI event loop instead of in separate threads
+
+### Fixed
+
+- Deconflict wait enum with `ct.wait` function; `wait` -> `WAIT`
+
+### Operations
+
+- Conda package is built and tested on a nightly schedule
+- Conda deployment step is added to `release.yml`
+- Install yarn and npm on Ubuntu whenever the webapp needs to be built
+
+## [0.177.0] - 2022-08-11
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+### Removed
+
+- `while True` in `app.get_result`
+
+### Changed
+
+- Flask route logic to return 503 when the result is not ready
+
+### Tests
+
+- results_manager tests
+
 ### Operations
 
 - Fix conditional checks for `pre-release` and `stable` Covalent docker image builds
@@ -473,8 +585,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Changed the custom executor how-to to be shorter and more concise.
-
-
+- Re-structured the docs
 
 ## [0.156.0] - 2022-07-27
 

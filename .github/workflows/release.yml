@@ -203,6 +203,68 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+  conda:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+    steps:
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: true
+          activate-environment: "buildenv"
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge
+      - name: Check out release tag
+        uses: actions/checkout@v2
+        if: github.event.inputs.stable_version
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: "v${{ github.event.inputs.stable_version }}"
+      - name: Check out master
+        uses: actions/checkout@v2
+        if: inputs.prerelease
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Install Conda dependencies
+        run: |
+          conda install -y conda-build conda-verify anaconda-client
+      - name: Build package
+        run: |
+          mkdir covalent-channel
+          conda build --output-folder ./covalent-channel/ --python ${{ matrix.python-version }} .
+      - name: Convert package
+        run: |
+          conda convert --platform all ./covalent-channel/linux-64/*.tar.bz2
+          conda search -c ./covalent-channel/ --override-channels
+          conda index ./covalent-channel/
+          conda config --show channels
+      - name: Upload pre-release
+        if: inputs.prerelease
+        run: anaconda upload -t ${{ secrets.ANACONDA_TOKEN }} upload -u agnostiq -l beta --skip-existing ./covalent-channel/{linux,osx,win}-*/*.tar.bz2
+      - name: Upload stable release
+        if: >
+          github.event.inputs.stable_version \
+          && ${{ !github.event.inputs.test_release }} \
+          && ${{ contains(env.PAUL_BLART, github.actor) }}
+        run: anaconda upload -t ${{ secrets.ANACONDA_TOKEN }} upload -u agnostiq ./covalent-channel/{linux,osx,win}-*/*.tar.bz2
+      - name: Alert Slack
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "covalent"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ":warning:  Attention Required  :warning:"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
   docker:
     runs-on: ubuntu-latest
     steps:
