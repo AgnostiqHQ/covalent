@@ -127,17 +127,15 @@ def test_sync(lattice_record, mocker, tmp_path):
     dispatch_id = "9d1b308b-4763-4990-ae7f-6a6e36d35893"
     sync(db, dispatch_id)
     mock_get_result_from_dispatcher.assert_called_once_with(
-        dispatch_id, wait=wait.EXTREME, status_only=True
+        dispatch_id, wait=True, status_only=True
     )
     mock_get_result_from_dispatcher.reset_mock()
     dispatch_ids = ["f34671d1-48f2-41ce-89d9-9a8cb5c60e5d", "02dfd929-d96b-4ad1-8411-a818ce465169"]
     sync(db, dispatch_ids)
     for dispatch_id in dispatch_ids:
-        mock_get_result_from_dispatcher.assert_any_call(
-            dispatch_id, wait=wait.EXTREME, status_only=True
-        )
+        mock_get_result_from_dispatcher.assert_any_call(dispatch_id, wait=True, status_only=True)
     mock_get_result_from_dispatcher.reset_mock()
     sync(db)
     mock_get_result_from_dispatcher.assert_called_once_with(
-        DISPATCH_ID, wait=wait.EXTREME, status_only=True
+        DISPATCH_ID, wait=True, status_only=True
     )
