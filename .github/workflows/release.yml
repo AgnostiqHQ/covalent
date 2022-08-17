@@ -235,7 +235,7 @@ jobs:
           fetch-depth: 0
       - name: Install Conda dependencies
         run: |
-          conda install conda-build conda-verify anaconda-client
+          conda install -y conda-build conda-verify anaconda-client
       - name: Build package
         run: |
           mkdir covalent-channel
