@@ -16,20 +16,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Displaying electron executor and inputs information on the GUI.
 - Animated spinner for running statuses on the GUI.
 
-### Docs
+## Docs
 
+- Add `AWSLambdaExecutor` RTD
+- Update `api.rst` to include `cluster` CLI command option
+- Added version migration guide section in RTD
 - Update RTD for `AWS ECS` executor
 - Remove AWS Lambda and Batch RTDs to keep changes atomic
 - Adding dropdowns to IAM policy documents
-
-
-### Docs
-
 - Updated compatibility matrix
 - Updated pip, bash and callable deps how-to guides
 
 ### Operations
 
+- NPM install on CentOS done explicitly
 - `-y` flag for `conda install`
 
 ## [0.180.0] - 2022-08-16
@@ -591,8 +591,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Changed the custom executor how-to to be shorter and more concise.
-
-
+- Re-structured the docs
 
 ## [0.156.0] - 2022-07-27
 
