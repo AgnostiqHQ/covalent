@@ -15,7 +15,7 @@ Covalent API
    dispatcher
    results
    leptons
-   executers/index
+   executors/index
    deps
    data_transfers
    config

@@ -20,8 +20,10 @@ Plugins
    dask
    ssh
    slurm
+   awsbraket
    awslambda
    awsecs
+   awsbatch
 
 Base executor
 *************
