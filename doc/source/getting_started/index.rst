@@ -7,10 +7,10 @@ Covalent is developed using Python 3.8 on Linux and macOS.  See the :doc:`Compat
 Installation
 ############
 
-Upgrading covalent versions
-~~~~~~~~~~~~~~~~~~~~
+Upgrading Covalent
+~~~~~~~~~~~~~~~~~~
 
-If you are upgrading covalent versions, please refer to our :doc:`version migration guide <./../version_migrations/index>` if you wish to preserve your data and/or avoid any issues that may arise when upgrading.
+If you are upgrading Covalent from the previous stable release, please refer to the :doc:`migration guide <./../version_migrations/index>` if you wish to preserve your data and/or avoid any issues that may arise when upgrading.
 
 Installation Methods
 ~~~~~~~~~~~~~~~~~~~~

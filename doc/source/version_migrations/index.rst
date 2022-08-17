@@ -2,17 +2,17 @@
 Version Migration Guide
 ===============
 
-Why migrate?
+Why Migrate?
 ############
 
-We always recommend using the latest version of covalent in order to get the latest improvements to our UI as well as potential speedups in workflow execution.
+We always recommend using the latest version of Covalent in order to get the latest improvements to our UI, use the latest features, and to take advantage of speedups in workflow execution.
 
-Migration Guide to 0.177.0
+Migrating to 0.177.0
 ############
 
-If you are currently using covalent version 0.110.2 you can upgrade to covalent version 0.177.0 or later as follows.
+If you are currently using Covalent v0.110.2 you can upgrade to covalent v0.177.0 or later as follows.
 
-By running the following commands you can verify your covalent python as well as stop covalent and purge any config files present.
+First identify the currently installed version and then stop the server.
 
 .. code:: bash
 
@@ -21,7 +21,7 @@ By running the following commands you can verify your covalent python as well as
    $ covalent stop
    Covalent server has stopped.
 
-You can install the new version of covalent by using pip.
+You can install the new version of Covalent using pip.
 
 .. code:: bash
 
@@ -38,9 +38,9 @@ You can install the new version of covalent by using pip.
    Covalent server has started at http://localhost:48008
 
 
-You should then be able to use our data migration tool to migrate any workflows you may want to port over to the new version of covalent.
+You should then be able to use our data migration tool to migrate any workflows you may want to port over to the new version of Covalent.
 
-For example for a workflow with dispatch id :code:`e0ba03a2-fdc0-474e-9997-7fa8e82932c5`
+For example, for a workflow with dispatch id :code:`e0ba03a2-fdc0-474e-9997-7fa8e82932c5`
 
 .. code:: bash
 
