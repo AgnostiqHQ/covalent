@@ -137,5 +137,4 @@ const NodeDrawer = ({ node }) => {
     </Drawer>
   )
 }
-
 export default NodeDrawer

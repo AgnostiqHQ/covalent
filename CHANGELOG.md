@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- lattice.draw() fix on the GUI.
+
 ## [0.182.0] - 2022-08-17
 
 ### Authors
@@ -34,7 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding dropdown menu for the IAM policy
 - Delete RTD for other cloud executor to keep changes atomic
 - Renamed `executers` folder to `executors`
-
 
 ### Docs
 
@@ -114,6 +117,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
 - Disabling how-to guide for executing an electron with a specified Conda environment.
 - Fixed "How To" for Python leptons
+>>>>>>> 540a1b3952389da58cbb0380c9a847db049d965e
 
 ## [0.179.0] - 2022-08-16
 
