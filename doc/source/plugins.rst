@@ -1,4 +1,4 @@
-.. include:: ../api/executers/
+.. include:: ../api/executors/
 
 ***************
 🔗 Plugins

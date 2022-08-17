@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update RTD for `AWS Batch` executor
 - Removed `AWS Lambda` executor RTD from this branch in order to keep changes atomic
 
+### Changed
+
+- Synced with latest develop
+
 ### Docs
 
 - Adding RTD for `AWS Braket` executor
