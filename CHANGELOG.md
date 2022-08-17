@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- NPM install on CentOS done explicitly
+
 ### Docs
 
 - Update RTD for `AWS ECS` executor
