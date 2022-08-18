@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Modify the `covalent logs` CLI handler to read logs line by line
 
+### Operations
+
+- Adding a `wait` input for the Conda action
+
 ## [0.182.2] - 2022-08-18
 
 ### Authors
