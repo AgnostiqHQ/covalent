@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- CLI `service.py` tests to run without the server needing to be started.
+
 ### Docs
 
 - Added `covalent db` cli command to API section of RTD
