@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `covalent db` cli command to API section of RTD
 
+### Docs
+
+- Fixed RTD downloads badge image to point to `covalent` rather than `cova`
+
+### Operations
+
+- Use conda skeleton action for build and upload
+
+### Docs
+
+- Updating WCI yaml with new file transfer protocols
+
 ## [0.182.1] - 2022-08-17
 
 ### Authors
@@ -139,7 +151,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
 - Disabling how-to guide for executing an electron with a specified Conda environment.
 - Fixed "How To" for Python leptons
->>>>>>> 540a1b3952389da58cbb0380c9a847db049d965e
 
 ## [0.179.0] - 2022-08-16
 
