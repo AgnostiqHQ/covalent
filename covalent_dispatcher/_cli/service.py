@@ -454,14 +454,10 @@ def logs() -> None:
     """
     Show Covalent server logs.
     """
-    from pathlib import Path
-
-    if Path(UI_LOGFILE).is_file():
-        with open(UI_LOGFILE, "r") as f:
-            line = f.readline()
-            while line:
+    if os.path.exists(UI_LOGFILE):
+        with open(UI_LOGFILE, "r") as logfile:
+            for line in logfile:
                 click.echo(line.rstrip("\n"))
-                line = f.readline()
     else:
         click.echo(f"{UI_LOGFILE} not found. Restart the server to create a new log file.")
 
