@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.182.2] - 2022-08-18
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
 ### Fixed
 
 - CLI `service.py` tests to run without the server needing to be started.
