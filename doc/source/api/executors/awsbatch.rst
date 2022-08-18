@@ -108,7 +108,7 @@ along with its arguments and keyword arguments. The executor requires that `Dock
 properly installed and configured on the user's machine prior to using this executor in workflows. The executor the uploads
 the built docker image to the elastic container registry provided by the user. Following this, the executor registers a AWS batch job RegisterJobDefinition
 that contains links the the ECR repo hosting the built image. Finally the job is submitted to AWS batch for execution.
-The output of the job is stored in the S3 bucket provided by the user and the result is retrived from there post execution.
+The output of the job is stored in the S3 bucket provided by the user and the result is retrieved from there post execution.
 
 The following snippet shows how a user might configure their Covalent `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_
 to provide override the default executor values

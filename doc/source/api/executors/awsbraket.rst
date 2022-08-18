@@ -121,7 +121,7 @@ The following IAM policy can be use to properly configure the required IAM role 
 This executor uses `Docker <https://www.docker.com/>`_ to build an image containing the function code to be executed on Braket locally
 on the user's machine and uploads it to the provided container registry. Following the image update, a ``braket job`` is created
 with the image as a template. The job uploads the result to the S3 bucket specified by the user which the executor then
-parses to retrive the result object.
+parses to retrieve the result object.
 
 This executor plugin can be installed locally via ``pip``
 
