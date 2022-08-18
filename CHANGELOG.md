@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.183.0] - 2022-08-18
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Venkat Bala <venkat@agnostiq.ai>
+
+
 ### Added
 
 - Adding tests to update patch coverage for the `covalent logs` cli
