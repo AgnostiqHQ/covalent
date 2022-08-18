@@ -26,7 +26,6 @@ from unittest.mock import Mock
 import mock
 import pytest
 from click.testing import CliRunner
-from psutil import pid_exists
 
 from covalent._data_store.datastore import DataStore
 from covalent_dispatcher._cli.service import (
@@ -459,6 +458,9 @@ def test_cluster_size(mocker, workers):
     click = mock.Mock()
     click.echo = lambda: workers
 
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
@@ -477,6 +479,7 @@ def test_cluster_size(mocker, workers):
     is_server_running_mock.assert_called_once()
     assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
+    is_server_running_mock.assert_called_once()
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_size_mock.assert_called_once()
@@ -491,6 +494,9 @@ def test_cluster_info(mocker):
     loop = mock.Mock()
     loop.run_until_complete.return_value = lambda: ""
 
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
@@ -509,6 +515,7 @@ def test_cluster_info(mocker):
     is_server_running_mock.assert_called_once()
     assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
+    is_server_running_mock.assert_called_once()
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_info_cli_mock.assert_called_once()
@@ -557,6 +564,9 @@ def test_cluster_address_cli(mocker):
     loop = mock.Mock()
     loop.run_until_complete.return_value = lambda: ""
 
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
@@ -575,6 +585,7 @@ def test_cluster_address_cli(mocker):
     is_server_running_mock.assert_called_once()
     assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
+    is_server_running_mock.assert_called_once()
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
@@ -590,6 +601,9 @@ def test_cluster_logs_cli(mocker):
     loop = mock.Mock()
     loop.run_until_complete.return_value = lambda: ""
 
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
@@ -608,6 +622,7 @@ def test_cluster_logs_cli(mocker):
     is_server_running_mock.assert_called_once()
     assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
+    is_server_running_mock.assert_called_once()
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
@@ -623,6 +638,9 @@ def test_cluster_restart_cli(mocker):
     loop = mock.Mock()
     loop.run_until_complete.return_value = lambda: ""
 
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
@@ -640,6 +658,7 @@ def test_cluster_restart_cli(mocker):
     is_server_running_mock.assert_called_once()
     assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
+    is_server_running_mock.assert_called_once()
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
@@ -654,6 +673,9 @@ def test_cluster_scale_cli(mocker):
     loop = mock.Mock()
     loop.run_until_complete.return_value = lambda: ""
 
+    is_server_running_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._is_server_running", return_value=True
+    )
     get_event_loop_mock = mocker.patch(
         "covalent_dispatcher._cli.service.asyncio.get_event_loop", return_value=loop
     )
@@ -671,6 +693,7 @@ def test_cluster_scale_cli(mocker):
     is_server_running_mock.assert_called_once()
     assert is_server_running_mock.return_value
     assert get_config_mock.call_count == 2
+    is_server_running_mock.assert_called_once()
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
