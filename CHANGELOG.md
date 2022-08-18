@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Removed "How to synchronize lattices" section from RTD
+
 ## [0.183.0] - 2022-08-18
 
 ### Authors
