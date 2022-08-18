@@ -230,6 +230,7 @@ jobs:
           access_token: ${{ secrets.ANACONDA_TOKEN }}
           package_version: ${{ needs.pypi.outputs.version }}
           stable: ${{ env.STABLE }}
+          wait: true
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
