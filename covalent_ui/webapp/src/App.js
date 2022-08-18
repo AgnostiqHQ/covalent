@@ -74,9 +74,9 @@ const App = () => {
     const onDrawRequest = (request) => {
       dispatch(setLattice(request.payload))
     }
-    socket.on('draw-request', onDrawRequest)
+    socket.on('draw_request', onDrawRequest)
     return () => {
-      socket.off('draw-request', onDrawRequest)
+      socket.off('draw_request', onDrawRequest)
     }
   })
   return (
