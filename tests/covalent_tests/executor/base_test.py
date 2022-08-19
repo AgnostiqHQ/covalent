@@ -27,6 +27,8 @@ from contextlib import redirect_stdout
 from functools import partial
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
+
 from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
 from covalent.executor.base import BaseAsyncExecutor, _AbstractBaseExecutor
@@ -243,6 +245,38 @@ def test_base_executor_execute(mocker):
     assert result.get_deserialized() == 5
 
 
+@pytest.mark.asyncio
+async def test_base_async_executor_execute(mocker):
+    """Test the execute method"""
+
+    def f(x, y):
+        return x + y
+
+    me = MockAsyncExecutor()
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    result, stdout, stderr = await me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    assert result.get_deserialized() == 5
+
+
 def test_base_executor_execute_conda(mocker):
     """Test the execute method with a condaenv"""
 
@@ -388,6 +422,7 @@ def test_executor_setup_teardown_method(mocker):
     me = MockExecutor()
     me.setup = MagicMock()
     me.teardown = MagicMock()
+    me.tasks_left = 2
 
     def f(x, y):
         return x + y
@@ -421,6 +456,21 @@ def test_executor_setup_teardown_method(mocker):
     assert result.get_deserialized() == 5
     me.setup.assert_called_once_with(task_metadata=task_metadata)
     me.teardown.assert_called_once_with(task_metadata=task_metadata)
+    assert me.tasks_left == 1
+
+    me.setup = MagicMock()
+    me.teardown = MagicMock()
+
+    result, stdout, stderr = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+    me.teardown.assert_called_once_with(task_metadata={})
+    assert me.tasks_left == 0
 
 
 def test_async_executor_setup_teardown(mocker):
@@ -433,6 +483,7 @@ def test_async_executor_setup_teardown(mocker):
     me.setup = AsyncMock()
     me.run = AsyncMock()
     me.teardown = AsyncMock()
+    me.tasks_left = 2
     function = TransportableObject(f)
     args = [TransportableObject(2)]
     kwargs = {"y": TransportableObject(3)}
@@ -458,6 +509,23 @@ def test_async_executor_setup_teardown(mocker):
     me.run.assert_called_once_with(assembled_callable, args, kwargs, task_metadata)
     me.setup.assert_called_once_with(task_metadata=task_metadata)
     me.teardown.assert_called_once_with(task_metadata=task_metadata)
+    assert me.tasks_left == 1
+
+    me.setup = AsyncMock()
+    me.teardown = AsyncMock()
+
+    awaitable = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+    asyncio.run(awaitable)
+
+    me.teardown.assert_awaited_once_with(task_metadata={})
+    assert me.tasks_left == 0
 
 
 def test_get_shared_instance():
