@@ -7,6 +7,192 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Updating conditional logic for the different steps in `release` workflow
+- Dependabot update
+
+### Docs
+
+- Removed "How to synchronize lattices" section from RTD
+
+## [0.183.0] - 2022-08-18
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Adding tests to update patch coverage for the `covalent logs` cli
+
+### Changed
+
+- Modify the `covalent logs` CLI handler to read logs line by line
+
+### Operations
+
+- Update release workflow
+- Adding a `wait` input for the Conda action
+
+## [0.182.2] - 2022-08-18
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Fixed
+
+- CLI `service.py` tests to run without the server needing to be started.
+
+### Docs
+
+- Added `covalent db` cli command to API section of RTD
+
+### Docs
+
+- Fixed RTD downloads badge image to point to `covalent` rather than `cova`
+
+### Operations
+
+- Use conda skeleton action for build and upload
+
+### Docs
+
+- Updating WCI yaml with new file transfer protocols
+
+## [0.182.1] - 2022-08-17
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+
+### Fixed
+
+- lattice.draw() fix on the GUI.
+
+## [0.182.0] - 2022-08-17
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Added
+
+- Update RTD for `AWS Batch` executor
+- Removed `AWS Lambda` executor RTD from this branch in order to keep changes atomic
+
+### Changed
+
+- Synced with latest develop
+
+### Docs
+
+- Adding RTD for `AWS Braket` executor
+- Adding dropdown menu for the IAM policy
+- Delete RTD for other cloud executor to keep changes atomic
+- Renamed `executers` folder to `executors`
+
+### Docs
+
+- Updated short release notes
+
+## [0.181.0] - 2022-08-17
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+
+
+### Changed
+
+- Lazy loading mechanism on the GUI.
+
+### Fixed
+
+- Displaying electron executor and inputs information on the GUI.
+- Animated spinner for running statuses on the GUI.
+
+## Docs
+
+- Add `AWSLambdaExecutor` RTD
+- Update `api.rst` to include `cluster` CLI command option
+- Added version migration guide section in RTD
+- Update RTD for `AWS ECS` executor
+- Remove AWS Lambda and Batch RTDs to keep changes atomic
+- Adding dropdowns to IAM policy documents
+- Updated compatibility matrix
+- Updated pip, bash and callable deps how-to guides
+
+### Operations
+
+- NPM install on CentOS done explicitly
+- `-y` flag for `conda install`
+
+## [0.180.0] - 2022-08-16
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+### Removed
+
+- Removed `ct.wait.LONG` etc. constants from covalent's init
+
+### Changed
+
+- `wait` in `_get_result_from_dispatcher` will now use `_results_manager.wait.EXTREME` if `True` has been passed to it.
+
+### Operations
+
+- Prettierified release.yml
+- Cleaned up pre-commit-config.yml
+
+### Docs
+
+- Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
+- Disabling how-to guide for executing an electron with a specified Conda environment.
+- Fixed "How To" for Python leptons
+
 ## [0.179.0] - 2022-08-16
 
 ### Authors
@@ -528,8 +714,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Changed the custom executor how-to to be shorter and more concise.
-
-
+- Re-structured the docs
 
 ## [0.156.0] - 2022-07-27
 

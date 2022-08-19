@@ -107,7 +107,7 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
                 executor_name = lattice_data["executor"]
                 executor_data = handler.read_from_pickle(lattice_data["executor_data_filename"])
                 return LatticeExecutorResponse(
-                    executor_name=executor_name, executor_data=executor_data
+                    executor_name=executor_name, executor_details=executor_data
                 )
             elif name == "workflow_executor":
                 executor_name = lattice_data["workflow_executor"]

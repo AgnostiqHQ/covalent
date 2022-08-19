@@ -50,14 +50,14 @@ class LatticeExecutorResponse(BaseModel):
     """Lattices File Response Model"""
 
     executor_name: str = None
-    executor_details: str = None
+    executor_details: dict = None
 
 
 class LatticeWorkflowExecutorResponse(BaseModel):
     """Lattices File Response Model"""
 
     workflow_executor_name: str = None
-    workflow_executor_details: str = None
+    workflow_executor_details: dict = None
 
 
 class GraphResponse(BaseModel):
@@ -92,7 +92,7 @@ class ElectronExecutorResponse(BaseModel):
     """Lattices File Response Model"""
 
     executor_name: str = None
-    executor_details: str = None
+    executor_details: dict = None
 
 
 class ElectronErrorResponse(BaseModel):

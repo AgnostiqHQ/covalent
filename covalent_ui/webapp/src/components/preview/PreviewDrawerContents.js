@@ -32,7 +32,7 @@ import { useSelector } from 'react-redux'
 import Heading from '../common/Heading'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import InputSection from '../common/InputSection'
-import ExecutorSection from '../common/ExecutorSection'
+import ExecutorSection from './ExecutorSection'
 
 const PreviewDrawerContents = () => {
   const preview = useSelector((state) => state.latticePreview.lattice)
