@@ -1,0 +1,12 @@
+ase==3.22.1
+ase-notebook==0.3.2
+ipython==8.4.0
+pennylane==0.25.1
+pennylane-sf==0.20.1
+pytz==2022.01
+qiskit==0.36.0
+qiskit-machine-learning==0.3.1
+scikit-learn==1.0.2
+tensorflow==2.9.1
+torch==1.12.1
+torchvision==0.13.1
