@@ -20,9 +20,9 @@
 //  * Relief from the License may be granted by purchasing a commercial license.
 //  */
 
-import { fireEvent, render, screen } from '@testing-library/react'
-// import {screen} from '@testing-library/dom'
-import { LayoutOptions } from '../LayoutOptions'
+import { fireEvent, screen, render } from '@testing-library/react'
+// import {render} from '@testing-library/dom'
+import ParameterNode from '../ParameterNode'
 import { BrowserRouter } from 'react-router-dom'
 import React from 'react'
 import { Provider } from 'react-redux'
@@ -30,9 +30,8 @@ import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
 import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
-import { HelmetProvider } from 'react-helmet-async'
+import { Helmet, HelmetProvider } from 'react-helmet-async'
 import { ReactFlowProvider } from 'react-flow-renderer'
-
 
 function reduxRender(rederedComponent) {
   const store = configureStore({
@@ -51,29 +50,15 @@ function reduxRender(rederedComponent) {
   )
 }
 
-describe('layout options', () => {
-  const options = [
-    'Layered',
-    'Tree',
-    'Force',
-    'Rectangular',
-    'Box',
-    'Old Layout'
-  ]
-  test('render layout options', () => {
-    reduxRender(<LayoutOptions />)
-    const layoutOption = screen.getByTestId('layoutoption')
-    expect(layoutOption).toBeInTheDocument()
-  })
+describe('parameter node', () => {
+  const data = {
+    fullName: "identity", label: "identity", status: "COMPLETED"
+  }
 
-  test.each(options)('render %p sort section', (firstArg) => {
-    const handleChangeAlgorithm = jest.fn()
-    reduxRender(
-      <LayoutOptions open={open} />
-    )
-    const elementLink = screen.getByTestId('lay__tit')
-    fireEvent.click(elementLink)
-    expect(screen.getByText(firstArg)).toBeDefined()
+  test('render parameter nodes', async () => {
+    reduxRender(<ParameterNode data={data} />)
+    const layoutOption = screen.getByTestId('para__typo')
+    expect(screen.getByTestId('parameternode')).toBeDefined()
   })
 
 })

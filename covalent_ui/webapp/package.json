@@ -38,7 +38,8 @@
     "build": "react-scripts build",
     "build-demo": "REACT_APP_DEMO=true BUILD_PATH=build-demo react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "testcov": "CI=true react-scripts test --coverage --collectCoverageFrom=src/components/**/*js"
   },
   "eslintConfig": {
     "extends": [

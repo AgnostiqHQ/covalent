@@ -29,34 +29,40 @@ const DispatchTopBar = () => {
   const drawerLatticeDetails = useSelector(
     (state) => state.latticeResults.latticeDetails
   )
+  const drawerLatticeDetailsFetching = useSelector(
+    (state) => state.latticeResults.latticeDetailsResults.isFetching
+  )
+
   return (
     <>
-      <Box
-      data-testid="topbar"
-        sx={{
-          position: 'absolute',
-          top: 0,
-          width: '100%',
-          height: '55px',
-          justifyContent: 'center',
-          zIndex: 95,
-          display: 'flex',
-          alignItems: 'center',
-          mt: 0,
-          paddingLeft: '27%',
-          ml: 0,
-          backgroundColor: (theme) => theme.palette.background.default,
-        }}
-      >
-        {/* status */}
-        <Box>
-          <LatticeStatusCard
-            dispatchId={drawerLatticeDetails.dispatch_id}
-            latDetails={drawerLatticeDetails}
-            isFetching={!drawerLatticeDetails}
-          />
+      <div>
+        <Box
+          data-testid="topbar"
+          sx={{
+            position: 'absolute',
+            top: 0,
+            width: '100%',
+            height: '55px',
+            justifyContent: 'center',
+            zIndex: 95,
+            display: 'flex',
+            alignItems: 'center',
+            mt: 0,
+            paddingLeft: '27%',
+            ml: 0,
+            backgroundColor: (theme) => theme.palette.background.default,
+          }}
+        >
+          {/* status */}
+          <Box>
+            <LatticeStatusCard
+              dispatchId={drawerLatticeDetails.dispatch_id}
+              latDetails={drawerLatticeDetails}
+              isFetching={drawerLatticeDetailsFetching}
+            />
+          </Box>
         </Box>
-      </Box>
+      </div>
     </>
   )
 }
@@ -65,7 +71,7 @@ export default DispatchTopBar
 
 const LatticeStatusCard = ({ latDetails, isFetching }) => {
   return (
-    <Box sx={{ my: 0, pt: 1 }}>
+    <Box sx={{ my: 0, pt: 1 }} data-testid="topbarcard">
       <Box
         sx={{
           display: 'flex',
@@ -101,7 +107,7 @@ const LatticeStatusCard = ({ latDetails, isFetching }) => {
               }}
             >
               {/* {statusIcon(latDetails.status)}
-              &nbsp; */}
+               &nbsp; */}
               {statusLabel(latDetails.status)}
             </Box>
           )}

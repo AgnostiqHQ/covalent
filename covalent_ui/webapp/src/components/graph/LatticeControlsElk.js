@@ -20,157 +20,158 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
- import { useZoomPanHelper } from 'react-flow-renderer'
- import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material'
- import {
-   Add as PlusIcon,
-   ArrowBack,
-   ArrowDownward,
-   ArrowForward,
-   ArrowUpward,
-   Fullscreen,
-   LockOpenOutlined,
-   LockOutlined,
-   MapOutlined,
-   Remove as MinusIcon
- } from '@mui/icons-material'
- import useFitViewHelper from './ReactFlowHooks'
- import DashboardIcon from '@mui/icons-material/Dashboard';
- import LabelOffIcon from '@mui/icons-material/LabelOff';
- import LabelIcon from '@mui/icons-material/Label';
- import * as React from 'react';
- import { LayoutOptions } from './LayoutOptions';
- import ScreenshotIcon from '@mui/icons-material/Screenshot';
- 
- const LatticeControls = ({
-   marginLeft = 0,
-   marginRight = 0,
-   showParams,
-   toggleParams,
-   showMinimap,
-   toggleMinimap,
-   direction,
-   setDirection,
-   algorithm,
-   handleChangeAlgorithm,
-   nodesDraggable,
-   toggleNodesDraggable,
-   open,
-   handleClick,
-   anchorEl,
-   handleClose,
-   handleHideLabels,
-   hideLabels,
-   pdfPrint
- }) => {
-   const { zoomIn, zoomOut } = useZoomPanHelper()
-   const { fitView } = useFitViewHelper()
-   return (
-     <ToggleButtonGroup
-       orientation="vertical"
-       size="small"
-       sx={{
-         position: 'absolute',
-         bottom: 12,
-         left: 12 + marginLeft,
-         zIndex: 5,
-         bgcolor: 'background.paper',
-         opacity: 0.7,
-       }}
-     >
-       <ToggleButton value="" onClick={pdfPrint}>
-         <ScreenshotIcon />
-       </ToggleButton>
+import { useZoomPanHelper } from 'react-flow-renderer'
+import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material'
+import {
+  Add as PlusIcon,
+  ArrowBack,
+  ArrowDownward,
+  ArrowForward,
+  ArrowUpward,
+  Fullscreen,
+  LockOpenOutlined,
+  LockOutlined,
+  MapOutlined,
+  Remove as MinusIcon
+} from '@mui/icons-material'
+import useFitViewHelper from './ReactFlowHooks'
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import LabelOffIcon from '@mui/icons-material/LabelOff';
+import LabelIcon from '@mui/icons-material/Label';
+import * as React from 'react';
+import { LayoutOptions } from './LayoutOptions';
+import ScreenshotIcon from '@mui/icons-material/Screenshot';
 
-       <Hint title="Zoom in">
-         <ToggleButton value="" onClick={() => zoomIn(300)}>
-           <PlusIcon />
-         </ToggleButton>
-       </Hint>
+const LatticeControls = ({
+  marginLeft = 0,
+  marginRight = 0,
+  showParams,
+  toggleParams,
+  showMinimap,
+  toggleMinimap,
+  direction,
+  setDirection,
+  algorithm,
+  handleChangeAlgorithm,
+  nodesDraggable,
+  toggleNodesDraggable,
+  open,
+  handleClick,
+  anchorEl,
+  handleClose,
+  handleHideLabels,
+  hideLabels,
+  pdfPrint
+}) => {
+  const { zoomIn, zoomOut } = useZoomPanHelper()
+  const { fitView } = useFitViewHelper()
+  return (
+    <ToggleButtonGroup
+      orientation="vertical"
+      size="small"
+      sx={{
+        position: 'absolute',
+        bottom: 12,
+        left: 12 + marginLeft,
+        zIndex: 5,
+        bgcolor: 'background.paper',
+        opacity: 0.7,
+      }}
+    >
+      <ToggleButton value="" onClick={pdfPrint}>
+        <ScreenshotIcon />
+      </ToggleButton>
 
-       <Hint title="Zoom out">
-         <ToggleButton value="" onClick={() => zoomOut(300)}>
-           <MinusIcon />
-         </ToggleButton>
-       </Hint>
+      <Hint title="Zoom in">
+        <ToggleButton value="" onClick={() => zoomIn(300)}>
+          <PlusIcon />
+        </ToggleButton>
+      </Hint>
 
-       <Hint title="Fit to screen">
-         <ToggleButton
-           value=""
-           onClick={() => {
-             fitView({ duration: 300, marginLeft, marginRight })
-           }}
-         >
-           <Fullscreen />
-         </ToggleButton>
-       </Hint>
-       <Hint title="Toggle minimap">
-         <ToggleButton onClick={toggleMinimap} value="" selected={showMinimap}>
-           <MapOutlined />
-         </ToggleButton>
-       </Hint>
-       <Hint title="Change layout">
-         <ToggleButton onClick={(e) => handleClick(e)} value="">
-           <DashboardIcon />
-         </ToggleButton>
-       </Hint>
+      <Hint title="Zoom out">
+        <ToggleButton value="" onClick={() => zoomOut(300)}>
+          <MinusIcon />
+        </ToggleButton>
+      </Hint>
 
-       <LayoutOptions
-         algorithm={algorithm}
-         open={open}
-         anchorEl={anchorEl}
-         handleClick={handleClick}
-         handleClose={handleClose}
-         handleChangeAlgorithm={handleChangeAlgorithm}
-       />
+      <Hint title="Fit to screen">
+        <ToggleButton
+          value=""
+          onClick={() => {
+            fitView({ duration: 300, marginLeft, marginRight })
+          }}
+        >
+          <Fullscreen />
+        </ToggleButton>
+      </Hint>
+      <Hint title="Toggle minimap">
+        <ToggleButton onClick={toggleMinimap} value="" selected={showMinimap}>
+          <MapOutlined />
+        </ToggleButton>
+      </Hint>
+      <Hint title="Change layout">
+        <ToggleButton data-testid="tooglebuttonclick" onClick={(e) => handleClick(e)} value="">
+          <DashboardIcon />
+        </ToggleButton>
+      </Hint>
 
-       <Hint title="Change orientation">
-         <ToggleButton
-           onClick={() => {
-             switch (direction) {
-               case 'UP':
-                 return setDirection('RIGHT')
-               case 'DOWN':
-                 return setDirection('LEFT')
-               case 'LEFT':
-                 return setDirection('UP')
-               case 'RIGHT':
-                 return setDirection('DOWN')
-               default:
-             }
-           }}
-           value=""
-         >
-           {
-             {
-               DOWN: <ArrowDownward />,
-               UP: <ArrowUpward />,
-               RIGHT: <ArrowForward />,
-               LEFT: <ArrowBack />,
-             }[direction]
-           }
-         </ToggleButton>
-       </Hint>
+      <LayoutOptions
+        algorithm={algorithm}
+        open={open}
+        anchorEl={anchorEl}
+        handleClick={handleClick}
+        handleClose={handleClose}
+        handleChangeAlgorithm={handleChangeAlgorithm}
+      />
 
-       <Hint title={hideLabels ? 'Show labels' : 'Hide labels'}>
-         <ToggleButton value="" onClick={() => handleHideLabels()}>
-           {hideLabels ? <LabelOffIcon /> : <LabelIcon />}
-         </ToggleButton>
-       </Hint>
-       <Hint title="Toggle parameters">
-         <ToggleButton onClick={toggleParams} value="" selected={showParams}>
-           P
-         </ToggleButton>
-       </Hint>
-       <Hint title="Toggle draggable nodes">
-         <ToggleButton onClick={toggleNodesDraggable} value="">
-           {nodesDraggable ? <LockOpenOutlined /> : <LockOutlined />}
-         </ToggleButton>
-       </Hint>
-     </ToggleButtonGroup>
-   )
- }
- 
- const Hint = (props) => <Tooltip arrow placement="right" {...props} />
- 
- export default LatticeControls
+      <Hint title="Change orientation">
+        <ToggleButton
+          data-testid="changeorientation"
+          onClick={() => {
+            switch (direction) {
+              case 'UP':
+                return setDirection('RIGHT')
+              case 'DOWN':
+                return setDirection('LEFT')
+              case 'LEFT':
+                return setDirection('UP')
+              case 'RIGHT':
+                return setDirection('DOWN')
+              default:
+            }
+          }}
+          value=""
+        >
+          {
+            {
+              DOWN: <ArrowDownward />,
+              UP: <ArrowUpward />,
+              RIGHT: <ArrowForward />,
+              LEFT: <ArrowBack />,
+            }[direction]
+          }
+        </ToggleButton>
+      </Hint>
+
+      <Hint data-testid="handlelabelhide" title={hideLabels ? 'Show labels' : 'Hide labels'}>
+        <ToggleButton value="" onClick={() => handleHideLabels()}>
+          {hideLabels ? <LabelOffIcon /> : <LabelIcon />}
+        </ToggleButton>
+      </Hint>
+      <Hint title="Toggle parameters">
+        <ToggleButton data-testid="toggleparams" onClick={toggleParams} value="" selected={showParams}>
+          P
+        </ToggleButton>
+      </Hint>
+      <Hint title="Toggle draggable nodes">
+        <ToggleButton data-testid="toggledragablenode" onClick={toggleNodesDraggable} value="">
+          {nodesDraggable ? <LockOpenOutlined /> : <LockOutlined />}
+        </ToggleButton>
+      </Hint>
+    </ToggleButtonGroup>
+  )
+}
+
+const Hint = (props) => <Tooltip arrow placement="right" {...props} />
+
+export default LatticeControls

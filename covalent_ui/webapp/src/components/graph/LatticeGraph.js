@@ -93,16 +93,16 @@ const LatticeGraph = ({
   // layouting
   useEffect(() => {
     if (algorithm === 'oldLayout') {
-      setElements(layout(graph, direction, showParams,hideLabels))
+      setElements(layout(graph, direction, showParams, hideLabels))
     } else {
-      assignNodePositions(graph, direction, showParams, algorithm,hideLabels)
+      assignNodePositions(graph, direction, showParams, algorithm, hideLabels)
         .then((els) => {
           setElements(els)
         })
         .catch((error) => console.log(error))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [graph, direction, showParams, algorithm,hideLabels])
+  }, [graph, direction, showParams, algorithm, hideLabels])
 
   // menu for layout
   const [anchorEl, setAnchorEl] = useState(null)
@@ -120,7 +120,7 @@ const LatticeGraph = ({
   };
 
   const handleHideLabels = () => {
-    const value= !hideLabels
+    const value = !hideLabels
     setHideLabels(value);
   };
 
@@ -130,6 +130,7 @@ const LatticeGraph = ({
       {elements?.length > 0 && (
         <ReactFlow
           nodeTypes={{ electron: ElectronNode, parameter: ParameterNode }}
+          data-testid="lattice__graph"
           edgeTypes={{ directed: DirectedEdge }}
           nodesDraggable={nodesDraggable}
           nodesConnectable={false}

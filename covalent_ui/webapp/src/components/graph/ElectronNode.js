@@ -54,12 +54,13 @@ const ElectronNode = ({
   targetPosition,
   isConnectable,
 }) => {
-  const color = statusColor(data.status)
-  const hasBorder = data.status !== 'NEW_OBJECT'
+  const color = statusColor(data?.status)
+  const hasBorder = data?.status !== 'NEW_OBJECT'
 
   return (
-    <ElectronTooltip title={data.fullName} arrow placement="bottom-end">
+    <ElectronTooltip title={data?.fullName} arrow placement="bottom-end">
       <Paper
+        data-testid="electronNode"
         elevation={!selected ? 1 : 5}
         sx={{
           display: 'flex',
@@ -75,12 +76,13 @@ const ElectronNode = ({
         }}
       >
         <Handle
+          data-testid="handleelectronNode"
           type="target"
           position={targetPosition}
           isConnectable={isConnectable}
         />
         {(() => {
-          switch (data.status) {
+          switch (data?.status) {
             case 'NEW_OBJECT':
               return (
                 <SvgIcon sx={{ mt: 0.5, mr: 0.5, fontSize: 14, fill: color }}>
@@ -96,7 +98,7 @@ const ElectronNode = ({
               )
             case 'COMPLETED':
               return (
-                <SvgIcon sx={{ mr: 0.1, fontSize: 14, fill: color,mt:0.6 }}>
+                <SvgIcon sx={{ mr: 0.1, fontSize: 14, fill: color, mt: 0.6 }}>
                   <CheckSvg />
                 </SvgIcon>
               )
@@ -117,8 +119,9 @@ const ElectronNode = ({
           }
         })()}
 
-        <Typography sx={{ fontSize: 12 }}>{data.label}</Typography>
+        <Typography sx={{ fontSize: 12 }}>{data?.label}</Typography>
         <Handle
+          data-testid="sourcehandleelectronNode"
           type="source"
           position={sourcePosition}
           isConnectable={isConnectable}

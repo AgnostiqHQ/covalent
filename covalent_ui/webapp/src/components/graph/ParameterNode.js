@@ -20,8 +20,8 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
- import _ from 'lodash'
-import { Typography,Tooltip,  tooltipClasses} from '@mui/material'
+import _ from 'lodash'
+import { Typography, Tooltip, tooltipClasses } from '@mui/material'
 import { Handle } from 'react-flow-renderer'
 import { styled } from '@mui/material/styles'
 
@@ -40,25 +40,28 @@ const ParameterNode = ({
   isConnectable
 }) => {
   return (
+
     <ParameterTooltip title={_.truncate(data.fullName, { length: 70 })} arrow placement="bottom-end">
-     <Typography
-      component="div"
-      sx={(theme) => ({
-        px: 2,
-        py: 0.5,
-        borderRadius: 3,
-        color: 'text.disabled',
-        bgcolor: theme.palette.background.paper,
-        fontSize: 12,
-      })}
-    >
-      {data.label}
-      <Handle
-        type="source"
-        position={sourcePosition}
-        isConnectable={isConnectable}
-      />
-    </Typography>
+      <Typography
+        data-testid="para__typo"
+        component="div"
+        sx={(theme) => ({
+          px: 2,
+          py: 0.5,
+          borderRadius: 3,
+          color: 'text.disabled',
+          bgcolor: theme.palette.background.paper,
+          fontSize: 12,
+        })}
+      >
+        {data.label}
+        <Handle
+          data-testid="parameternode"
+          type="source"
+          position={sourcePosition}
+          isConnectable={isConnectable}
+        />
+      </Typography>
     </ParameterTooltip>
 
   )

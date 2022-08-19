@@ -20,33 +20,26 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import {
-  AppBar,
-  Container,
-  Link,
-  Paper,
-  Toolbar,
-  Typography,
-} from '@mui/material'
+import '@testing-library/jest-dom'
+import { render, screen } from '@testing-library/react'
+import App from '../NotFound'
 
-import { ReactComponent as Logo } from '../assets/covalent-full-logo.svg'
+describe('page not found component render', () => {
+  test('page not found text check', () => {
+    const component = render(<App />);
+    const linkElement = component.getByText(/Page not found./i);
+    expect(linkElement).toBeInTheDocument();
+  })
 
-const NotFound = ({ text = 'Page not found.', children }) => {
-  return (
-    <Container>
-      <AppBar position="static" color="transparent">
-        <Toolbar disableGutters sx={{ my: 2 }}>
-          <Link href="/">
-            <Logo data-testid="logo" />
-          </Link>
-        </Toolbar>
-      </AppBar>
+  test('page not found logo', () => {
+    render(<App />)
+    const element = screen.getByTestId('logo')
+    expect(element).toBeInTheDocument()
+  })
 
-      <Paper elevation={4} sx={{ p: 2 }}>
-        {children || <Typography data-testid="message" variant="h5">{text}</Typography>}
-      </Paper>
-    </Container>
-  )
-}
-
-export default NotFound
+  test('page not found message check', () => {
+    render(<App />)
+    const element = screen.getByTestId('message')
+    expect(element).toBeInTheDocument()
+  })
+})

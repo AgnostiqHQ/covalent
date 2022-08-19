@@ -56,6 +56,9 @@ const DispatchDrawerContents = () => {
   const drawerLatticeDetailsFetching = useSelector(
     (state) => state.latticeResults.latticeDetailsResults.isFetching
   )
+  const drawerLatticeErrorFetching = useSelector(
+    (state) => state.latticeResults.latticeErrorList.isFetching
+  )
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
   useEffect(() => {
@@ -65,10 +68,11 @@ const DispatchDrawerContents = () => {
   }, [callSocketApi])
 
   return (
-    <Box sx={{ px: 3 }}>
-      <Box sx={{ m: 0, p: 0, display: 'flex', alignItems: 'center' }} data-testid="backbtn">
+    <Box sx={{ px: 3 }} data-testid="latticedispatchoverview">
+      <Box sx={{ m: 0, p: 0, display: 'flex', alignItems: 'center' }}
+        data-testid="backbtn">
         <IconButton
-        data-testid="backbtn"
+          data-testid="backbtn"
           href="/"
           sx={{
             color: 'text.disabled',
@@ -86,7 +90,7 @@ const DispatchDrawerContents = () => {
           component={TreeSvg}
           sx={{ verticalAlign: 'middle', marginTop: 1 }}
         />
-        {!dispatchId ? (
+        {drawerLatticeDetailsFetching ? (
           <Skeleton width={200} />
         ) : (
           <Tooltip title={dispatchId} placement="top">
@@ -105,6 +109,7 @@ const DispatchDrawerContents = () => {
         )}
 
         <CopyButton
+          data-testid="copydispatchId"
           content={dispatchId}
           size="small"
           title="Copy dispatch Id"
@@ -112,7 +117,7 @@ const DispatchDrawerContents = () => {
         />
       </Box>
       {drawerLatticeDetails.status === 'FAILED' &&
-        (!drawerLatticeError ? (
+        (drawerLatticeErrorFetching ? (
           <Skeleton height={300} />
         ) : (
           <ErrorCard showElectron error={drawerLatticeError.data} />
