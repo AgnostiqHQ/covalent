@@ -27,6 +27,7 @@ import asyncio
 from asyncio import Queue
 from threading import Lock
 from typing import Dict, List
+from unittest.mock import AsyncMock, MagicMock
 
 import cloudpickle as pickle
 import pytest
@@ -805,6 +806,28 @@ def test_executor_cache_initialize():
     assert cache.tasks_per_instance[id_2] == 1
 
 
+@pytest.mark.asyncio
+async def test_executor_cache_finalize():
+    """Test `ExecutorCache.finalize()`"""
+
+    from covalent.executor import DaskExecutor, LocalExecutor
+
+    le = LocalExecutor().get_shared_instance()
+    de = DaskExecutor("tcp://127.0.0.1:30000").get_shared_instance()
+
+    le.teardown = MagicMock()
+    de.teardown = AsyncMock()
+
+    cache = ExecutorCache()
+    cache.id_instance_map[le.instance_id] = le
+    cache.id_instance_map[de.instance_id] = de
+
+    await cache.finalize_executors()
+
+    le.teardown.assert_called_once()
+    de.teardown.assert_awaited_once()
+
+
 def test_get_executor_instance():
     """Test _get_executor_instance"""
 
@@ -907,6 +930,7 @@ def test_get_executor_instance():
     assert shared_instance.short_name() == "local"
     assert shared_instance.is_shared_instance()
     assert cache.id_instance_map[exec_id] == shared_instance
+    assert shared_instance.tasks_left == cache.tasks_per_instance[exec_id]
 
     # shared instance -- retrieve from cache
     node_id = 4
