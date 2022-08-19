@@ -9,6 +9,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Removed "How to synchronize lattices" section from RTD
+
+## [0.183.0] - 2022-08-18
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Adding tests to update patch coverage for the `covalent logs` cli
+
+### Changed
+
+- Modify the `covalent logs` CLI handler to read logs line by line
+
+### Operations
+
+- Adding a `wait` input for the Conda action
+
+## [0.182.2] - 2022-08-18
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Fixed
+
+- CLI `service.py` tests to run without the server needing to be started.
+
+### Docs
+
+- Added `covalent db` cli command to API section of RTD
+
+### Docs
+
 - Fixed RTD downloads badge image to point to `covalent` rather than `cova`
 
 ### Operations
