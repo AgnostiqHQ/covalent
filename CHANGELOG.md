@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs 
+
+- Added db schema migration error guide in RTD
+
 ### Docs
 
 - Removed "How to synchronize lattices" section from RTD
