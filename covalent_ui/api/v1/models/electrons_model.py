@@ -56,3 +56,4 @@ class FileOutput(str, Enum):
     CALL_AFTER = "call_after"
     ERROR = "error"
     INFO = "info"
+    INPUTS = "inputs"
