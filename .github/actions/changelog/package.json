@@ -10,6 +10,6 @@
   "author": "Scott Wyman Neagle <scott@agnostiq.ai> (http://covalent.xyz)",
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "@actions/core": "^1.9.0"
+    "@actions/core": "^1.9.1"
   }
 }
