@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Updating conditional logic for the different steps in `release` workflow
+- Dependabot update
 
 ### Docs
 
