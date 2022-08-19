@@ -243,10 +243,11 @@ class BaseExecutor(_AbstractBaseExecutor):
                 with open(filepath, "a") as f:
                     f.write(ss)
 
-    def setup(self, task_metadata: Dict):
+    def setup(self, task_metadata: Dict = {}):
         pass
 
-    def teardown(self, task_metadata: Dict):
+    def teardown(self, task_metadata: Dict = {}):
+        # Relinquish all resources if called without task_metadata
         pass
 
     def execute(
@@ -313,10 +314,14 @@ class BaseExecutor(_AbstractBaseExecutor):
 
                     self.tasks_left -= 1
                     if self.tasks_left < 1:
+                        self.teardown(task_metadata={})
+                    else:
                         self.teardown(task_metadata=task_metadata)
                 except Exception as ex:
                     self.tasks_left -= 1
                     if self.tasks_left < 1:
+                        self.teardown(task_metadata={})
+                    else:
                         self.teardown(task_metadata=task_metadata)
 
                     raise ex
@@ -590,10 +595,11 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
                 async with aiofiles.open(filepath, "a") as f:
                     await f.write(ss)
 
-    async def setup(self, task_metadata: Dict):
+    async def setup(self, task_metadata: Dict = {}):
         pass
 
-    async def teardown(self, task_metadata: Dict):
+    async def teardown(self, task_metadata: Dict = {}):
+        # Relinquish all resources if called without task_metadata
         pass
 
     async def execute(
@@ -624,11 +630,15 @@ class BaseAsyncExecutor(_AbstractBaseExecutor):
 
             self.tasks_left -= 1
             if self.tasks_left < 1:
+                await self.teardown(task_metadata={})
+            else:
                 await self.teardown(task_metadata=task_metadata)
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
             self.tasks_left -= 1
             if self.tasks_left < 1:
+                await self.teardown(task_metadata={})
+            else:
                 await self.teardown(task_metadata=task_metadata)
             raise ex
 
