@@ -309,6 +309,7 @@ jobs:
         if: >
           github.event_name == 'workflow_dispatch'
           && github.event.inputs.stable_version
+          && !inputs.prerelease
           && !github.events.inputs.test_release
           && contains(env.PAUL_BLART, github.actor)
         run: |
