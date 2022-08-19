@@ -56,7 +56,7 @@ class MockAsyncExecutor(BaseAsyncExecutor):
         return contents
 
     def get_files_to_monitor(self, dispatch_id, node_id):
-        return []
+        return ["/var/log/syslog", "/var/log/dmesg.log"]
 
     async def setup(self, task_metadata):
         pass
@@ -440,3 +440,39 @@ def test_async_executor_setup_teardown(mocker):
     me.run.assert_called_once_with(assembled_callable, args, kwargs, task_metadata)
     me.setup.assert_called_once_with(task_metadata=task_metadata)
     me.teardown.assert_called_once_with(task_metadata=task_metadata)
+
+
+def test_async_executor_filemon_lifecycles(mocker):
+    mock_filemon_start = mocker.patch("covalent.executor.utils.filemonitor.AsyncFileMonitor.start")
+    mock_filemon_cancel = mocker.patch(
+        "covalent.executor.utils.filemonitor.AsyncFileMonitor.cancel"
+    )
+    import asyncio
+
+    def f(x, y):
+        return x, y
+
+    me = MockAsyncExecutor()
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    awaitable = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    asyncio.run(awaitable)
+    assert mock_filemon_start.call_count == 2
+    assert mock_filemon_cancel.await_count == 2
