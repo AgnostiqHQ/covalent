@@ -57,7 +57,7 @@ class DaskAdminWorker(Thread):
 
     async def _get_cluster_logs(self):
         """
-        Retrive cluster logs from the scheduler
+        Retrieve cluster logs from the scheduler
         """
         cluster_logs = []
         async with rpc(self.cluster.scheduler_address) as r:
@@ -89,14 +89,14 @@ class DaskAdminWorker(Thread):
 
     async def _get_cluster_info(self):
         """
-        Retrive cluster info from the scheduler
+        Retrieve cluster info from the scheduler
         """
         async with rpc(self.cluster.scheduler_address) as r:
             return await r.identity()
 
     async def _get_cluster_status(self):
         """
-        Retrive status of the scheduler and all workers part of the cluster
+        Retrieve status of the scheduler and all workers part of the cluster
         """
         proc_status = {}
         async with rpc(self.cluster.scheduler_address) as r:
@@ -113,7 +113,7 @@ class DaskAdminWorker(Thread):
 
     async def _get_cluster_addresses(self):
         """
-        Retrive the scheduler and worker addresses that are part of the cluster
+        Retrieve the scheduler and worker addresses that are part of the cluster
         """
         addresses = {}
         async with rpc(self.cluster.scheduler_address) as r:

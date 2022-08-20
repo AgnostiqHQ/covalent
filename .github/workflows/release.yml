@@ -121,6 +121,8 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
   pypi:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.validate.outputs.version }}
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
@@ -183,6 +185,7 @@ jobs:
           diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
           diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf covalent-${VERSION}/
+          echo "::set-output name=version::$VERSION"
       - name: Upload Distribution
         if: >
           steps.pre-build.outcome == 'success'
@@ -204,6 +207,7 @@ jobs:
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
   conda:
+    needs: pypi
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -213,48 +217,20 @@ jobs:
           - "3.9"
           - "3.10"
     steps:
-      - uses: conda-incubator/setup-miniconda@v2
+      - name: Check for stable release
+        if: github.event.inputs.stable_version && !inputs.prerelease
+        run: echo "STABLE=true" >> $GITHUB_ENV
+      - name: Conda skeleton publish
+        uses: AgnostiqHQ/conda-skeleton-publish@main
+        if: ${{ !github.event.inputs.test_release }}
         with:
-          auto-activate-base: true
-          activate-environment: "buildenv"
-          auto-update-conda: true
-          python-version: ${{ matrix.python-version }}
-          channels: conda-forge
-      - name: Check out release tag
-        uses: actions/checkout@v2
-        if: github.event.inputs.stable_version
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-          ref: "v${{ github.event.inputs.stable_version }}"
-      - name: Check out master
-        uses: actions/checkout@v2
-        if: inputs.prerelease
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      - name: Install Conda dependencies
-        run: |
-          conda install conda-build conda-verify anaconda-client
-      - name: Build package
-        run: |
-          mkdir covalent-channel
-          conda build --output-folder ./covalent-channel/ --python ${{ matrix.python-version }} .
-      - name: Convert package
-        run: |
-          conda convert --platform all ./covalent-channel/linux-64/*.tar.bz2
-          conda search -c ./covalent-channel/ --override-channels
-          conda index ./covalent-channel/
-          conda config --show channels
-      - name: Upload pre-release
-        if: inputs.prerelease
-        run: anaconda upload -t ${{ secrets.ANACONDA_TOKEN }} upload -u agnostiq -l beta --skip-existing ./covalent-channel/{linux,osx,win}-*/*.tar.bz2
-      - name: Upload stable release
-        if: >
-          github.event.inputs.stable_version \
-          && ${{ !github.event.inputs.test_release }} \
-          && ${{ contains(env.PAUL_BLART, github.actor) }}
-        run: anaconda upload -t ${{ secrets.ANACONDA_TOKEN }} upload -u agnostiq ./covalent-channel/{linux,osx,win}-*/*.tar.bz2
+          pypi_package: "covalent"
+          python_version: ${{ matrix.python-version }}
+          upload_channel: "agnostiq"
+          access_token: ${{ secrets.ANACONDA_TOKEN }}
+          package_version: ${{ needs.pypi.outputs.version }}
+          stable: ${{ env.STABLE }}
+          wait: true
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
@@ -308,26 +284,34 @@ jobs:
           fi
           echo "TAG: $TAG"
           echo "TAG=$TAG" >> $GITHUB_ENV
-      - name: Build and push image
-        id: docker-build-push
+      - name: Login to Public Registry
+        uses: docker/login-action@v1
+        with:
+          registry: public.ecr.aws
+          username: ${{ secrets.AWS_KEY_ID }}
+          password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Build and push pre-release
         if: >
           inputs.prerelease
-          && ${{ !github.events.inputs.stable_version }}
-        run: |
-          docker build -t covalent .
-          docker tag covalent:latest public.ecr.aws/covalent/covalent:latest
-          docker tag covalent:latest public.ecr.aws/covalent/covalent:$TAG
-          if [ "${{ github.events.inputs.test_release }}" == false ] ; then
-            docker push -a public.ecr.aws/covalent/covalent
-          fi
-      - name: Update stable tag
+          && !github.events.inputs.stable_version
+          && github.event_name == 'workflow_call'
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          platforms: all
+          push: true
+          tags: |
+            public.ecr.aws/covalent/covalent:latest
+            public.ecr.aws/covalent/covalent:${{ env.TAG }}
+      - name: Tag stable release
         if: >
-          github.event.inputs.stable_version
+          github.event_name == 'workflow_dispatch'
+          && github.event.inputs.stable_version
           && !inputs.prerelease
-          && steps.docker-build-push.outcome == 'success'
-          && ${{ !github.event.inputs.test_release }}
+          && !github.events.inputs.test_release
           && contains(env.PAUL_BLART, github.actor)
         run: |
-          docker build -t covalent .
-          docker tag covalent:$TAG public.ecr.aws/covalent/covalent:stable
-          docker push public.ecr.aws/covalent/covalent:stable
+          MANIFEST=$(aws ecr batch-get-image --repository-name covalent --image-ids imageTag=${{ github.events.inputs.stable_version }} --output json | jq --raw-output --join-output '.images[0].imageManifest')
+          aws ecr put-image --repository-name covalent --image-tag stable --image-manifest "$MANIFEST"
