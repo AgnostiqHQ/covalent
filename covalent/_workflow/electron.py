@@ -430,7 +430,7 @@ class Electron:
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                metadata=encode_metadata(_DEFAULT_CONSTRAINT_VALUES.copy()),
                 value=encoded_param_value,
             )
             transport_graph.add_edge(
