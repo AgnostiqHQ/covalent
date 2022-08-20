@@ -32,6 +32,7 @@ import pytest
 from covalent import DepsBash, TransportableObject
 from covalent._file_transfer.file_transfer import HTTP, File, FileTransfer, Order
 from covalent._workflow.lepton import Lepton, bash
+from covalent._workflow.transport import encode_metadata
 from covalent.executor import LocalExecutor
 
 test_py_module = """
@@ -507,3 +508,17 @@ def test_shell_wrapper(
         return
 
     assert result == expected_return
+
+
+def test_lepton_constructor_serializes_metadata():
+
+    le = LocalExecutor()
+    bashdep = DepsBash(["yum install gcc"])
+    lep = Lepton(
+        "python",
+        library_name="test_module",
+        function_name="test_fn",
+        executor=le,
+        deps_bash=bashdep,
+    )
+    assert lep.metadata == encode_metadata(lep.metadata)
