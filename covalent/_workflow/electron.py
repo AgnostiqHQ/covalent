@@ -455,9 +455,10 @@ class Electron:
             node_id: Node id of the added node
         """
 
-        new_metadata = _DEFAULT_CONSTRAINT_VALUES.copy()
+        new_metadata = encode_metadata(_DEFAULT_CONSTRAINT_VALUES.copy())
         if "executor" in self.metadata:
             new_metadata["executor"] = self.metadata["executor"]
+            new_metadata["executor_data"] = self.metadata["executor_data"]
 
         node_id = graph.add_node(
             name=prefix,
