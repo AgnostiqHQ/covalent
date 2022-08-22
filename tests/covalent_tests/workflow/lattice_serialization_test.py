@@ -20,9 +20,31 @@
 
 import covalent as ct
 from covalent._workflow.lattice import Lattice
+from covalent._workflow.transport import encode_metadata
 from covalent.executor import LocalExecutor
 
 le = LocalExecutor(log_stdout="/tmp/stdout.log")
+
+
+def test_lattice_metadata_is_serialized_early():
+    """Test that lattice metadata is serialized by the decorator"""
+
+    def identity(y):
+        return y
+
+    calldep = ct.DepsCall(identity, args=[5], retval_keyword="y")
+
+    @ct.lattice(
+        executor=LocalExecutor(),
+        workflow_executor=LocalExecutor(),
+        call_before=[calldep],
+        call_after=[calldep],
+    )
+    def workflow(x):
+        return 1
+
+    metadata = workflow.metadata
+    assert metadata == encode_metadata(metadata)
 
 
 def test_lattice_json_serialization():
