@@ -46,7 +46,7 @@ from .depsbash import DepsBash
 from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
 from .lattice import Lattice
-from .transport import TransportableObject
+from .transport import TransportableObject, encode_metadata
 
 consumable_constraints = ["budget", "time_limit"]
 
@@ -344,7 +344,7 @@ class Electron:
             # For keyword arguments
             # Filter out kwargs to be injected by call_before calldeps at execution
             call_before = self.metadata["call_before"]
-            retval_keywords = {item.retval_keyword: None for item in call_before}
+            retval_keywords = {item["attributes"]["retval_keyword"]: None for item in call_before}
             for key, value in named_kwargs.items():
                 if key in retval_keywords:
                     app_log.debug(
@@ -430,7 +430,7 @@ class Electron:
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
-                metadata=_DEFAULT_CONSTRAINT_VALUES.copy(),
+                metadata=encode_metadata(_DEFAULT_CONSTRAINT_VALUES.copy()),
                 value=encoded_param_value,
             )
             transport_graph.add_edge(
@@ -455,9 +455,10 @@ class Electron:
             node_id: Node id of the added node
         """
 
-        new_metadata = _DEFAULT_CONSTRAINT_VALUES.copy()
+        new_metadata = encode_metadata(_DEFAULT_CONSTRAINT_VALUES.copy())
         if "executor" in self.metadata:
             new_metadata["executor"] = self.metadata["executor"]
+            new_metadata["executor_data"] = self.metadata["executor_data"]
 
         node_id = graph.add_node(
             name=prefix,
@@ -593,6 +594,8 @@ def electron(
         "call_before": call_before,
         "call_after": call_after,
     }
+
+    constraints = encode_metadata(constraints)
 
     def decorator_electron(func=None):
         @wraps(func)
