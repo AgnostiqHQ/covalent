@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.184.0] - 2022-08-22
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+
+
 ### Changed
 
 - Electron metadata is serialized earlier during workflow construction
