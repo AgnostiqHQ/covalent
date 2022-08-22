@@ -60,7 +60,6 @@ jobs:
       release: ${{ steps.push.outputs.release }}
     steps:
       - name: Check out head
-        if: github.event_name != 'workflow_dispatch'
         uses: actions/checkout@v3
         with:
           persist-credentials: false
