@@ -74,3 +74,45 @@ jobs:
         uses: actions/checkout@v3
         with:
           persist-credentials: false
+
+      - name: Install Python dependencies
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.sdk == 'true'
+          || steps.working-directory.outputs.dispatcher == 'true'
+          || steps.working-directory.outputs.build == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
+        run: |
+          pip install --no-cache-dir -r ./requirements.txt
+          pip install --no-cache-dir -r ./tests/requirements.txt
+
+      - name: Install Covalent
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.sdk == 'true'
+          || steps.working-directory.outputs.dispatcher == 'true'
+          || steps.working-directory.outputs.build == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
+        run: pip install -e .
+
+      - name: Start Covalent dispatcher server
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.build == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+          || steps.working-directory.outputs.tests == 'true'
+        run: covalent start --ignore-migrations
+
+      - name: Run stress test notebook
+        run: jupyter --nbconvert notebook --execute tests/stress_tests/tests.ipynb
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Deploy static site to S3 bucket
+        run: aws s3 sync ./covalent_ui/webapp/build-demo/ ${{ secrets.S3_STATIC }} --delete
