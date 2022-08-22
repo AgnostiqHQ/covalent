@@ -17,11 +17,11 @@ Beginner
    * - Topic
      - Title
    * - Machine learning
-     - :doc:`MNIST classifier<./machine_learning/mnist_classifier>`
+     - :doc:`MNIST classifier<./0_ClassicalMachineLearning/mnist_classififer/source>`
    * - Machine learning
-     - :doc:`Using Covalent with PennyLane for hybrid computation<./machine_learning/pennylane_hybrid>`
+     - :doc:`Using Covalent with PennyLane for hybrid computation<./1_QuantumMachineLearning/pennylane_hybrid/source>`
    * - Machine learning
-     - :doc:`Linear and convolutional autoencoders<./machine_learning/autoencoders>`
+     - :doc:`Linear and convolutional autoencoders<./0_ClassicalMachineLearning/autoencoders/source>`
 
 ~~~~~~~~
 Advanced
@@ -44,7 +44,7 @@ Advanced
    * - Machine Learning
      - :doc:`Quantum Ensemble Classification<./machine_learning/Ensemble_pennylane>`
    * - Astronomy
-     - :doc:`Tracking stars in the night sky<./astronomy/star_tracker>`
+     - :doc:`Tracking stars in the night sky<./2_Astronomy/star_tracker/source>`
    * - Quantum Gravity
      - :doc:`Classifying discrete spacetimes by dimension<./quantum_gravity/spacetime_classification>`
 
