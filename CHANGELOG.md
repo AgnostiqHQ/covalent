@@ -56,6 +56,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Benchmark workflow.
+
+### Added
+
 - Adding `load_tests` subdirectory to tests to facilitate execution of Covalent benchmarks during nightly runs
 - Added `locust` requirements to tests `requirements.txt`
 
