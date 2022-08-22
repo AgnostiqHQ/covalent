@@ -2,10 +2,10 @@
 Database Migration Errors
 ===============
 
-How to approach failed db schema migrations
+How to approach failed database schema migrations
 ############
 
-When upgrading covalent version from 0.177.0 to a newer version we may require running database migrations, however in some edge cases migrations may fail to run as a result of having existing data that violates SQL database constraints and/or other reasons specific to the type of schema updates that may occur.
+When upgrading Covalent versions from 0.177.0 to a newer version we may require running database migrations, however in some edge cases migrations may fail to run as a result of having existing data that violates SQL database constraints and/or other reasons specific to the type of schema updates that may occur.
 
 For example the following migration causes an issue due to existing data in the database.
 

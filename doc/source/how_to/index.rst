@@ -58,7 +58,7 @@ Configuration
 
 Database
 **************
-- :doc:`What to do when encountering db migration errors <./db/migration_error>`
+- :doc:`What to do when encountering database migration errors <./db/migration_error>`
 
 ----------------------------------
 
