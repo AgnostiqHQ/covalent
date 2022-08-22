@@ -1,0 +1,66 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: benchmarks
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  benchmarks:
+    runs-on: ${{ matrix.os }}
+    env:
+      COVALENT_SERVER_IFACE_ANY: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]
+        container:
+          - python:3.8-buster
+          - python:3.8-bullseye
+          - python:3.9-buster
+          - python:3.9-bullseye
+          - python:3.10-buster
+          - python:3.10-bullseye
+          - image: "centos/python-38-centos7"
+            options: "--user root"
+        experimental: [false]
+        include:
+          - os: macos-latest
+            python-version: "3.8"
+            experimental: false
+          - os: macos-latest
+            python-version: "3.9"
+            experimental: false
+          - os: macos-latest
+            python-version: "3.10"
+            experimental: false
+    container: ${{ matrix.container }}
+    continue-on-error: ${{ matrix.experimental }}
+    outputs:
+      release: ${{ steps.push.outputs.release }}
+    steps:
+      - name: Check out head
+        if: github.event_name != 'workflow_dispatch'
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
