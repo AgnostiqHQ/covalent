@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Function's `__doc__` and `__name__` storage in dict for transportable object fixed.
+- Function's `__doc__` and `__name__` storage in dict/json for transportable object fixed.
 
 ## [0.184.0] - 2022-08-22
 
