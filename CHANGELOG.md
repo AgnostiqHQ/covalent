@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Docs
 
-- Added RTD for the AWS EC2 executor plugin
+- Added RTD and header for the AWS EC2 executor plugin.
 
 ## [0.184.0] - 2022-08-22
 
