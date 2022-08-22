@@ -64,6 +64,12 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Set up Python
+        if: matrix.os == 'macos-latest'
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - name: Install test requirements
         run: |
           pip install --no-cache-dir -r ./requirements.txt
