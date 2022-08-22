@@ -56,7 +56,6 @@ const ElectronNode = ({
 }) => {
   const color = statusColor(data?.status)
   const hasBorder = data?.status !== 'NEW_OBJECT'
-
   return (
     <ElectronTooltip title={data?.fullName} arrow placement="bottom-end">
       <Paper
@@ -85,32 +84,33 @@ const ElectronNode = ({
           switch (data?.status) {
             case 'NEW_OBJECT':
               return (
-                <SvgIcon sx={{ mt: 0.5, mr: 0.5, fontSize: 14, fill: color }}>
+                <SvgIcon data-testid="atom" sx={{ mt: 0.5, mr: 0.5, fontSize: 14, fill: color }}>
                   <AtomSvg />
                 </SvgIcon>
               )
             case 'RUNNING':
               return (
                 <SvgIcon
+                  data-testid="loader"
                   sx={{ mt: 0.1, mr: 0.5, fontSize: 10, fill: color }}>
                   <LoaderSvg />
                 </SvgIcon>
               )
             case 'COMPLETED':
               return (
-                <SvgIcon sx={{ mr: 0.1, fontSize: 14, fill: color, mt: 0.6 }}>
+                <SvgIcon data-testid="check" sx={{ mr: 0.1, fontSize: 14, fill: color, mt: 0.6 }}>
                   <CheckSvg />
                 </SvgIcon>
               )
             case 'FAILED':
               return (
-                <SvgIcon sx={{ mt: 0.8, fontSize: 14, fill: color }}>
+                <SvgIcon data-testid="error" sx={{ mt: 0.8, fontSize: 14, fill: color }}>
                   <ErrorSvg />
                 </SvgIcon>
               )
             case 'CANCELLED':
               return (
-                <SvgIcon sx={{ mt: 0.8, fontSize: 14, fill: color }}>
+                <SvgIcon data-testid="cancel" sx={{ mt: 0.8, fontSize: 14, fill: color }}>
                   <CancelSvg />
                 </SvgIcon>
               )

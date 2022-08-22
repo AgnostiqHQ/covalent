@@ -53,7 +53,7 @@ function reduxRender(rederedComponent) {
 
 describe('electronNode file Rendered', () => {
   const data = {
-    fullName: "identity", label: "identity", status: "COMPLETED"
+    fullName: "identity", label: "identity", status: "COMPLETED",
   }
 
   test('renders electronNode', async () => {
@@ -122,18 +122,52 @@ describe('electronNode file Rendered', () => {
     expect(linkElement).toBeInTheDocument()
   })
 
-  test('renders sourcehandle connectable rendered', async () => {
-    reduxRender(<App isConnectable={false} />)
-    const linkElement = screen.getByTestId('sourcehandleelectronNode')
-    expect(linkElement).toBeInTheDocument()
-  })
-
 })
 
 describe("status switch cases", () => {
-  it("should return NEW_OBJECT", () => {
-    reduxRender(<App />)
-    const linkElement = screen.findAllByText('NEW_OBJECT')
-    expect("NEW_OBJECT").toBe("NEW_OBJECT");
+  const data = {
+    status: "COMPLETED"
+  }
+
+  const data1 = {
+    status: "NEW_OBJECT"
+  }
+
+  const data2 = {
+    status: "RUNNING"
+  }
+
+  const data3 = {
+    status: "CANCELLED"
+  }
+
+  const data4 = {
+    status: "FAILED"
+  }
+
+  it("should return completed svg", () => {
+    reduxRender(<App data={data} />)
+    expect(screen.getByTestId('check')).toBeInTheDocument();
   });
+
+  it("should return new object svg", () => {
+    reduxRender(<App data={data1} />)
+    expect(screen.getByTestId('atom')).toBeInTheDocument();
+  });
+
+  it("should return new object svg", () => {
+    reduxRender(<App data={data2} />)
+    expect(screen.getByTestId('loader')).toBeInTheDocument();
+  });
+
+  it("should return cancel svg", () => {
+    reduxRender(<App data={data3} />)
+    expect(screen.getByTestId('cancel')).toBeInTheDocument();
+  });
+
+  it("should return error svg", () => {
+    reduxRender(<App data={data4} />)
+    expect(screen.getByTestId('error')).toBeInTheDocument();
+  });
+
 });

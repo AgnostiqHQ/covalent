@@ -50,11 +50,11 @@ import { HelmetProvider } from 'react-helmet-async'
 const onSubmit = jest.fn();
 
 function reduxRender(rederedComponent) {
-    const store = configureStore({
-      reducer: reducers,
-    })
-    return render(
-      <Provider store={store}>
+  const store = configureStore({
+    reducer: reducers,
+  })
+  return render(
+    <Provider store={store}>
       <HelmetProvider>
         <ReactFlowProvider>
           <ThemeProvider theme={theme}>
@@ -63,12 +63,12 @@ function reduxRender(rederedComponent) {
         </ReactFlowProvider>
       </HelmetProvider>
     </Provider>
-    )
-  }
+  )
+}
 
 describe('lattice toggle buttons', () => {
   test('renders toggle for zoom-in button', async () => {
-    reduxRender(<App openDialogBox={true} title={'Zoom in'}/>)
+    reduxRender(<App openDialogBox={true} title={'Zoom in'} />)
     const linkElement = screen.getByTestId('AddIcon')
     fireEvent.click(screen.getByTestId('AddIcon'))
     await waitFor(() => screen.getByLabelText('Zoom in'))
@@ -77,7 +77,7 @@ describe('lattice toggle buttons', () => {
   })
 
   test('renders zoom out button', async () => {
-    reduxRender(<App openDialogBox={true} title={'Zoom out'}/>)
+    reduxRender(<App openDialogBox={true} title={'Zoom out'} />)
     const linkElement = screen.getByTestId('RemoveIcon')
     fireEvent.click(screen.getByTestId('RemoveIcon'))
     await waitFor(() => screen.getByLabelText('Zoom out'))
@@ -87,7 +87,7 @@ describe('lattice toggle buttons', () => {
 
   test('renders fit to screen button', async () => {
     // const handleClick = jest.fn()
-    reduxRender(<App openDialogBox={true} title={'Fit to screen'}/>)
+    reduxRender(<App openDialogBox={true} title={'Fit to screen'} />)
     const linkElement = screen.getByTestId('FullscreenIcon')
     fireEvent.click(screen.getByTestId('FullscreenIcon'))
     await waitFor(() => screen.getByLabelText('Fit to screen'))
@@ -96,16 +96,16 @@ describe('lattice toggle buttons', () => {
   })
 
   test('renders toggle minimap button', async () => {
-    reduxRender(<App openDialogBox={true} title={'Toggle minimap'}/>)
+    reduxRender(<App openDialogBox={true} title={'Toggle minimap'} />)
     const linkElement = screen.getByTestId('MapOutlinedIcon')
     fireEvent.click(screen.getByTestId('MapOutlinedIcon'))
     await waitFor(() => screen.getByLabelText('Toggle minimap'))
     expect(screen.getByLabelText('Toggle minimap')).toBeInTheDocument('Toggle minimap')
     expect(linkElement).toBeVisible();
   })
-    
+
   test('renders toggle draggable nodes button', async () => {
-    reduxRender(<App openDialogBox={true} title={'Change orientation'}/>)
+    reduxRender(<App openDialogBox={true} title={'Change orientation'} />)
     const linkElement = screen.getByLabelText('Change orientation')
     fireEvent.click(screen.getByLabelText('Change orientation'))
     await waitFor(() => screen.getByLabelText('Change orientation'))
@@ -114,16 +114,16 @@ describe('lattice toggle buttons', () => {
   })
 
   test('renders toggle draggable nodes button', async () => {
-    reduxRender(<App openDialogBox={true} title={'Toggle draggable nodes'}/>)
+    reduxRender(<App openDialogBox={true} title={'Toggle draggable nodes'} />)
     const linkElement = screen.getByTestId('LockOutlinedIcon')
     fireEvent.click(screen.getByTestId('LockOutlinedIcon'))
     await waitFor(() => screen.getByLabelText('Toggle draggable nodes'))
     expect(screen.getByLabelText('Toggle draggable nodes')).toBeInTheDocument('Toggle draggable nodes')
     expect(linkElement).toBeVisible();
   })
-    
-    test('renders toggle parameters nodes button', async () => {
-    reduxRender(<App openDialogBox={true} title={'Toggle parameters'}/>)
+
+  test('renders toggle parameters nodes button', async () => {
+    reduxRender(<App openDialogBox={true} title={'Toggle parameters'} />)
     const linkElement = screen.getByLabelText('Toggle parameters')
     fireEvent.click(screen.getByLabelText('Toggle parameters'))
     await waitFor(() => screen.getByLabelText('Toggle parameters'))

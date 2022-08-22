@@ -82,6 +82,19 @@ describe('lattice toggle buttons', () => {
     expect(linkElement).toBeVisible();
   })
 
+  test('renders hide labels nodes button', async () => {
+    const handleHideLabels = jest.fn()
+    reduxRender(<App openDialogBox={true} title={'hideLabels'} handleHideLabels={handleHideLabels} />)
+    const linkElement = screen.getByTestId('LabelIcon')
+    fireEvent.click(linkElement)
+    await waitFor(() => screen.getByLabelText('Hide labels'))
+    expect(handleHideLabels).toBeDefined();
+    expect(screen.getByLabelText('Hide labels')).toBeInTheDocument(
+      'Hide labels'
+    )
+    expect(linkElement).toBeVisible()
+  })
+
   test('renders Layout option button', async () => {
     const handleClick = jest.fn()
     reduxRender(<App openDialogBox={true} title={'Change layout'} />)
@@ -188,4 +201,51 @@ describe('lattice toggle buttons', () => {
     fireEvent.click(linkElement);
   });
 
+  const direction = [
+    "DOWN"
+  ]
+
+  const direction1 = [
+    "UP"
+  ]
+
+  const direction2 = [
+    "LEFT"
+  ]
+
+  const direction3 = [
+    "RIGHT"
+  ]
+
+  test('renders down button for change orientation', async () => {
+    reduxRender(<App direction={direction} />)
+    const linkElement = screen.getByTestId('changeorientation')
+    fireEvent.click(linkElement)
+    const elementLink = screen.getByTestId('ArrowDownwardIcon');
+    expect(elementLink).toBeInTheDocument('')
+  })
+
+  test('renders up button for change orientation', async () => {
+    reduxRender(<App direction={direction1} />)
+    const linkElement = screen.getByTestId('changeorientation')
+    fireEvent.click(linkElement)
+    const elementLink = screen.getByTestId('ArrowUpwardIcon');
+    expect(elementLink).toBeInTheDocument('')
+  })
+
+  test('renders left button for change orientation', async () => {
+    reduxRender(<App direction={direction2} />)
+    const linkElement = screen.getByTestId('changeorientation')
+    fireEvent.click(linkElement)
+    const elementLink = screen.getByTestId('ArrowBackIcon');
+    expect(elementLink).toBeInTheDocument('')
+  })
+
+  test('renders right button for change orientation', async () => {
+    reduxRender(<App direction={direction3} />)
+    const linkElement = screen.getByTestId('changeorientation')
+    fireEvent.click(linkElement)
+    const elementLink = screen.getByTestId('ArrowForwardIcon');
+    expect(elementLink).toBeInTheDocument()
+  })
 })
