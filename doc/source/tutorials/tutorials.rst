@@ -17,7 +17,7 @@ Beginner
    * - Topic
      - Title
    * - Machine learning
-     - :doc:`MNIST classifier<./0_ClassicalMachineLearning/mnist_classifier/source>`
+     - :doc:`MNIST classifier<./0_ClassicalMachineLearning/mnist_images/source>`
    * - Machine learning
      - :doc:`Using Covalent with PennyLane for hybrid computation<./1_QuantumMachineLearning/pennylane_hybrid/source>`
    * - Machine learning
