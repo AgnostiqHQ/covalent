@@ -59,7 +59,7 @@ or use a class object that makes use of a custom AWS user profile to deploy a sp
 
     @ct.electron(executor=executor)
     def my_custom_task(x, y):
-        return x + y 
+        return x + y
 
 
 
