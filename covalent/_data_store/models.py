@@ -39,6 +39,11 @@ class Lattice(Base):
     # name of the lattice function
     name = Column(Text, nullable=False)
 
+    # name of the dispatch
+    # Initial value will be same as the above lattice name value
+    # User would be able to edit this dispatch name
+    dispatch_name = Column(Text, nullable=False)
+
     # Workflow status
     status = Column(String(24), nullable=False)
 

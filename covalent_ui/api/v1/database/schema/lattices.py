@@ -62,6 +62,8 @@ class Lattice(Base):
     # name of the lattice function
     name = Column(Text, nullable=False)
 
+    dispatch_name = Column(Text, nullable=False)
+
     # Workflow status
     status = Column(String(24), nullable=False)
 

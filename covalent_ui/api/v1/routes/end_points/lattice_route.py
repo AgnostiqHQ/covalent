@@ -139,3 +139,20 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
                     }
                 ],
             )
+
+
+@routes.get("/{dispatch_id}/change_name")
+def change_name(dispatch_id: uuid.UUID, new_dispatch_name: str):
+    """Edit Dispatch Name
+
+    Args:
+        dispatch_id: To fetch lattice data with the provided dispatch id
+        new_dispatch_name: User input for the new dispatch name
+
+    Returns:
+        Returns success if the PUT request is complete
+    """
+    with Session(engine) as session:
+        electron = Lattices(session)
+        electron.change_dispatch_name(dispatch_id)
+        pass

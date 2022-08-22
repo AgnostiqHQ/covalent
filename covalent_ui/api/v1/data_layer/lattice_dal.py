@@ -21,6 +21,7 @@
 """Lattice Data Layer"""
 
 from datetime import timezone
+from turtle import update
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -129,3 +130,20 @@ class Lattices:
             .first()
         )
         return data[0]
+
+    def change_dispatch_name(self, dispatch_id: UUID, dispatch_name: str):
+        """
+        Modify the existing dispatch_name
+        Args:
+            dispatch_id: UUID of dispatch
+            dispatch_name: New Dispatch Name
+        Returns:
+            Returns a boolean value
+        """
+        self.db_con.query(Lattice).filter(Lattice.dispatch_id == str(dispatch_id)).update(
+            {"dispatch_name": dispatch_name}
+        )
+
+        self.db_con.commit()
+
+        return True

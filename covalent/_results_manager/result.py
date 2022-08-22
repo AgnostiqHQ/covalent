@@ -703,8 +703,10 @@ Node Outputs
                 "dispatch_id": self.dispatch_id,
                 "status": str(self.status),
                 "name": self.lattice.__name__,
+                "dispatch_name": self.lattice.__name__,
                 "electron_num": self._num_nodes,
-                "completed_electron_num": 0,  # None of the nodes have been executed or completed yet.
+                # None of the nodes have been executed or completed yet.
+                "completed_electron_num": 0,
                 "storage_path": str(data_storage_path),
                 "storage_type": LATTICE_STORAGE_TYPE,
                 "function_filename": LATTICE_FUNCTION_FILENAME,
