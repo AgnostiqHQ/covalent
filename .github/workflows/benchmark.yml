@@ -64,12 +64,13 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install Covalent
-        run: pip install -e .
-
       - name: Install test requirements
         run: |
+          pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
+
+      - name: Install Covalent
+        run: pip install -e .
 
       - name: Start Covalent dispatcher server
         run: covalent start -d --ignore-migrations
