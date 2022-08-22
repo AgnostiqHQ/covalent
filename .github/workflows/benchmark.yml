@@ -22,18 +22,8 @@ name: benchmarks
 
 on:
   pull_request:
-  workflow_run:
-    workflows: [changelog]
-    types: [completed]
-  workflow_dispatch:
-    inputs:
-      commit_sha:
-        description: "Commit SHA used for testing"
-        type: string
-        required: true
-  push:
-    branches:
-      - develop
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
   benchmarks:
@@ -75,35 +65,15 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install Python dependencies
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.sdk == 'true'
-          || steps.working-directory.outputs.dispatcher == 'true'
-          || steps.working-directory.outputs.build == 'true'
-          || steps.working-directory.outputs.actions == 'true'
-          || steps.working-directory.outputs.tests == 'true'
-        run: |
-          pip install --no-cache-dir -r ./requirements.txt
-          pip install --no-cache-dir -r ./tests/requirements.txt
-
       - name: Install Covalent
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.sdk == 'true'
-          || steps.working-directory.outputs.dispatcher == 'true'
-          || steps.working-directory.outputs.build == 'true'
-          || steps.working-directory.outputs.actions == 'true'
-          || steps.working-directory.outputs.tests == 'true'
         run: pip install -e .
 
+      - name: Install test requirements
+        run: |
+          pip install --no-cache-dir -r ./tests/requirements.txt
+
       - name: Start Covalent dispatcher server
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.build == 'true'
-          || steps.working-directory.outputs.actions == 'true'
-          || steps.working-directory.outputs.tests == 'true'
-        run: covalent start --ignore-migrations
+        run: covalent start -d --ignore-migrations
 
       - name: Run stress test notebook
         run: jupyter --nbconvert notebook --execute tests/stress_tests/tests.ipynb
@@ -114,5 +84,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Deploy static site to S3 bucket
-        run: aws s3 sync ./covalent_ui/webapp/build-demo/ ${{ secrets.S3_STATIC }} --delete
+
+      # - name: Deploy static site to S3 bucket
+      #   run: aws s3 sync ./covalent_ui/webapp/build-demo/ ${{ secrets.S3_STATIC }} --delete
