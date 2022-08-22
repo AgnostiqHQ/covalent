@@ -21,6 +21,16 @@
 name: benchmarks
 
 on:
+  pull_request:
+  workflow_run:
+    workflows: [changelog]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Commit SHA used for testing"
+        type: string
+        required: true
   push:
     branches:
       - develop
