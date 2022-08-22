@@ -11,6 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added db schema migration error guide in RTD
 
+## [0.184.0] - 2022-08-22
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Electron metadata is serialized earlier during workflow construction
+  to reduce unexpected executor pip requirements.
+  
+### Operations
+
+- Updating conditional logic for the different steps in `release` workflow
+- Dependabot update
+
 ### Docs
 
 - Removed "How to synchronize lattices" section from RTD
@@ -33,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Update release workflow
 - Adding a `wait` input for the Conda action
 
 ## [0.182.2] - 2022-08-18
