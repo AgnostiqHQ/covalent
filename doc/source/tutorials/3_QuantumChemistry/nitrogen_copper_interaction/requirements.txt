@@ -1,0 +1,3 @@
+ase==3.22.1
+ase-notebook==0.3.2
+covalent
