@@ -63,6 +63,7 @@ class DispatchSummaryRequest(BaseModel):
     sort_by: Optional[SortBy] = SortBy.STARTED
     search: Optional[str] = ""
     direction: Optional[SortDirection] = SortDirection.DESCENDING
+    filter: Optional[Status] = Status.ALL
 
 
 class DispatchModule(BaseModel):

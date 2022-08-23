@@ -35,6 +35,7 @@ from covalent_ui.api.v1.models.dispatch_model import (
     SortBy,
     SortDirection,
 )
+from covalent_ui.api.v1.utils.status import Status
 
 routes: APIRouter = APIRouter()
 
@@ -46,6 +47,7 @@ def get_all_dispatches(
     sort_by: Optional[SortBy] = SortBy.RUNTIME,
     search: Optional[str] = "",
     sort_direction: Optional[SortDirection] = SortDirection.DESCENDING,
+    status_filter: Optional[Status] = Status.ALL,
 ):
     """Get All Dispatches
 
@@ -57,7 +59,7 @@ def get_all_dispatches(
     """
     with Session(engine) as session:
         summary = Summary(session)
-        return summary.get_summary(count, offset, sort_by, search, sort_direction)
+        return summary.get_summary(count, offset, sort_by, search, sort_direction, status_filter)
 
 
 @routes.get("/overview", response_model=DispatchDashBoardResponse)

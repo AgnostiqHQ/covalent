@@ -35,6 +35,7 @@ from covalent_ui.api.v1.models.dispatch_model import (
     DispatchResponse,
     SortDirection,
 )
+from covalent_ui.api.v1.utils.status import Status
 
 
 class Summary:
@@ -43,7 +44,9 @@ class Summary:
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
 
-    def get_summary(self, count, offset, sort_by, search, sort_direction) -> List[Lattice]:
+    def get_summary(
+        self, count, offset, sort_by, search, sort_direction, status_filter
+    ) -> List[Lattice]:
         """
         Get summary of top most lattices
         Args:
@@ -55,6 +58,17 @@ class Summary:
         Return:
             List of top most Lattices and count
         """
+        filters = []
+        if status_filter == Status.ALL:
+            filters = [status.value for status in Status]
+        elif status_filter == Status.COMPLETED:
+            filters.append(Status.COMPLETED.value)
+            filters.append(Status.POSTPROCESSING.value)
+            filters.append(Status.POSTPROCESSING_FAILED.value)
+            filters.append(Status.PENDING_POSTPROCESSING.value)
+        else:
+            filters = [status_filter.value]
+
         data = (
             self.db_con.query(
                 Lattice.dispatch_id.label("dispatch_id"),
@@ -83,6 +97,7 @@ class Summary:
                     Lattice.name.ilike(f"%{search}%"),
                     Lattice.dispatch_id.ilike(f"%{search}%"),
                 ),
+                Lattice.status.in_(filters),
                 Lattice.is_active.is_not(False),
                 Lattice.electron_id.is_(None),
             )
@@ -103,6 +118,7 @@ class Summary:
                     Lattice.name.ilike(f"%{search}%"),
                     Lattice.dispatch_id.ilike(f"%{search}%"),
                 ),
+                Lattice.status.in_(filters),
                 Lattice.is_active.is_not(False),
                 Lattice.electron_id.is_(None),
             )
