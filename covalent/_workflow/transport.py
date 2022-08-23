@@ -56,7 +56,7 @@ class TransportableObject:
         except TypeError as ex:
             self._json = ""
 
-        self.attrs = {"doc": getattr(obj, "doc", ""), "name": getattr(obj, "name", "")}
+        self.attrs = {"doc": getattr(obj, "__doc__", ""), "name": getattr(obj, "__name__", "")}
 
     def __eq__(self, obj) -> bool:
         if not isinstance(obj, TransportableObject):
