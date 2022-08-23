@@ -102,7 +102,7 @@ jobs:
         run: covalent start -d --ignore-migrations
 
       - name: Run stress tests
-        run: jupyter nbconvert --to notebook --execute tests/stress_tests/tests.ipynb
+        run: jupyter nbconvert --to notebook --execute tests/stress_tests/stress.ipynb
 
       - name: Run Locust load tests
         run: |
