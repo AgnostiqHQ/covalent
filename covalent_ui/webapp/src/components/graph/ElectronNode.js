@@ -93,7 +93,7 @@ const ElectronNode = ({
                 isConnectable={isConnectable}
               />
               <Typography sx={{ fontSize: '0.625rem' }}>
-                {truncateMiddle(data.executor, 6,0)}
+                {truncateMiddle(data.executor, 6, 0)}
               </Typography>
               <Handle
                 type="source"
@@ -198,11 +198,13 @@ const ElectronNode = ({
             <Paper
               elevation={!selected ? 1 : 5}
               sx={{
+                position: 'absolute',
+                top: 39,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '16px',
-                width: '25%',
+                width: '33%',
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
                 color: (theme) => theme.palette.text.tertiary,
               }}
