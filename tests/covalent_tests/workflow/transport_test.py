@@ -39,7 +39,7 @@ def subtask(x):
 
 
 def subtask_2(x):
-    """Workflow subtask."""
+    """Workflow subtask 2."""
 
     return x
 
@@ -131,6 +131,15 @@ def test_transportable_object_from_dict(transportable_object):
 
     to_new = TransportableObject.from_dict(object_dict)
     assert to == to_new
+
+
+def test_transportable_object_to_dict_attributes(transportable_object):
+    """Test attributes from `to_dict` contain correct name and docstrings"""
+
+    tr_dict = transportable_object.to_dict()
+
+    assert tr_dict["attributes"]["attrs"]["doc"] == subtask.__doc__
+    assert tr_dict["attributes"]["attrs"]["name"] == subtask.__name__
 
 
 def test_transportable_object_serialize_to_json(transportable_object):
