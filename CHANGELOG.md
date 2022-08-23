@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated custom executor RTD to show a simpler example
 
+### Operations
+
+- pre-commit autoupdate
+
 ## [0.184.1] - 2022-08-23
 
 ### Authors
