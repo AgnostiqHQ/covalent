@@ -106,6 +106,7 @@ jobs:
 
       - name: Run Locust load tests
         run: |
+          pip install --upgrade Werkzeug
           PYTHONPATH=$(pwd) python -m locust \
             --user ${{ inputs.load_test_users }} \
             --spawn-rate ${{ inputs.load_test_user_spawn_rate }} \
