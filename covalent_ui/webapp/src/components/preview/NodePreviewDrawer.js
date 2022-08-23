@@ -30,9 +30,7 @@ import {
   Paper,
   Typography,
 } from '@mui/material'
-import { useStoreActions } from 'react-flow-renderer'
 import { alpha } from '@mui/material/styles'
-
 import {
   statusColor,
   statusIcon,
@@ -46,13 +44,10 @@ import ExecutorSection from './ExecutorSection'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node }) => {
+const NodeDrawer = ({ node,setSelectedElectron }) => {
   const preview = useSelector((state) => state.latticePreview.lattice)   // unselect on close
-  const setSelectedElements = useStoreActions(
-    (actions) => actions.setSelectedElements
-  )
   const handleClose = () => {
-    setSelectedElements([])
+    setSelectedElectron(null)
   }
 
   const src = _.get(node, 'function_string', '# source unavailable')

@@ -23,37 +23,31 @@
 import _ from 'lodash'
 import { Box, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
-import { useStoreActions, useStoreState } from 'react-flow-renderer'
+import { useStoreApi } from 'react-flow-renderer'
 import LatticeMain from '../graph/LatticeGraph'
 import NotFound from '../NotFound'
 import NodeDrawer, { nodeDrawerWidth } from './NodePreviewDrawer'
-import { useEffect } from 'react'
+import { useState } from 'react'
 import { graphBgColor } from '../../utils/theme'
 import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
 import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
 import PreviewDrawerContents from './PreviewDrawerContents'
 
 const LatticePreviewLayout = () => {
+  const [selectedElectron, setSelectedElectron] = useState(null);
   const lattice = useSelector((state) => state.latticePreview.lattice)
-  const selectedElectron = useStoreState((state) => {
-    const nodeId = _.get(
-      _.find(state.selectedElements, { type: 'electron' }),
-      'id'
-    )
-    return _.find(
+  const store = useStoreApi()
+  const onClickNode = () => {
+    const { nodeInternals } = store.getState()
+    const nodes = Array.from(nodeInternals.values())
+    const selectedNode = nodes.filter(e => e.selected === true)
+    const nodeId = selectedNode && selectedNode[0]?.id
+    const selected = _.find(
       _.get(lattice, 'graph.nodes'),
       (node) => nodeId === String(_.get(node, 'id'))
     )
-  })
-
-  const setSelectedElements = useStoreActions(
-    (actions) => actions.setSelectedElements
-  )
-
-  // unselect on change of lattice
-  useEffect(() => {
-    setSelectedElements([])
-  }, [lattice, setSelectedElements])
+    setSelectedElectron(selected)
+  }
 
   if (!lattice) {
     return (
@@ -81,6 +75,7 @@ const LatticePreviewLayout = () => {
         <LatticeMain
           graph={lattice.graph}
           hasSelectedNode={!!selectedElectron}
+          onClickNode={onClickNode}
           marginLeft={latticeDrawerWidth + navDrawerWidth}
           marginRight={!!selectedElectron ? nodeDrawerWidth : 0}
         />
@@ -93,7 +88,7 @@ const LatticePreviewLayout = () => {
         <PreviewDrawerContents />
       </LatticeDrawer>
 
-      <NodeDrawer node={selectedElectron} />
+      <NodeDrawer node={selectedElectron} setSelectedElectron={setSelectedElectron} />
     </>
   )
 }

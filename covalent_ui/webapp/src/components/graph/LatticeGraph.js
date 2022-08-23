@@ -19,8 +19,8 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-import { useEffect, useRef, useState } from 'react'
-import ReactFlow, { MiniMap } from 'react-flow-renderer'
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react'
+import ReactFlow, { MiniMap, applyEdgeChanges, applyNodeChanges } from 'react-flow-renderer'
 import ElectronNode from './ElectronNode'
 import ParameterNode from './ParameterNode'
 import DirectedEdge from './DirectedEdge'
@@ -43,18 +43,20 @@ function usePrevious(value) {
 const LatticeGraph = ({
   graph,
   hasSelectedNode,
+  onClickNode,
   marginLeft = 0,
   marginRight = 0
 }) => {
   const { fitView } = useFitViewHelper()
-
-  const [elements, setElements] = useState([])
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
   const [direction, setDirection] = useState('DOWN')
   const [showMinimap, setShowMinimap] = useState(false)
   const [showParams, setShowParams] = useState(false)
   const [nodesDraggable, setNodesDraggable] = useState(false)
   const [algorithm, setAlgorithm] = useState('layered')
   const [hideLabels, setHideLabels] = useState(false)
+
 
   // set Margin
   const prevMarginRight = usePrevious(marginRight)
@@ -74,7 +76,8 @@ const LatticeGraph = ({
   useEffect(() => {
     marginSet()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitView, marginLeft, marginRight, graph, direction, elements, showParams])
+  }, [fitView, marginLeft, marginRight, graph, direction, showParams])
+
 
   // handle resizing
   const resizing = () => {
@@ -88,21 +91,28 @@ const LatticeGraph = ({
   useEffect(() => {
     resizing()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [marginRight, marginLeft, fitView, elements])
+  }, [marginRight, marginLeft, fitView])
 
   // layouting
   useEffect(() => {
     if (algorithm === 'oldLayout') {
-      setElements(layout(graph, direction, showParams,hideLabels))
+      const els = layout(graph, direction, showParams, hideLabels)
+      const initialNodes = els && els.filter((e) => e.type !== 'directed')
+      const initialEdges = els && els.filter((e) => e.type === 'directed')
+      setNodes(initialNodes)
+      setEdges(initialEdges)
     } else {
-      assignNodePositions(graph, direction, showParams, algorithm,hideLabels)
+      assignNodePositions(graph, direction, showParams, algorithm, hideLabels)
         .then((els) => {
-          setElements(els)
+          const initialNodes = els && els.filter((e) => e.type !== 'directed')
+          const initialEdges = els && els.filter((e) => e.type === 'directed')
+          setNodes(initialNodes)
+          setEdges(initialEdges)
         })
         .catch((error) => console.log(error))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [graph, direction, showParams, algorithm,hideLabels])
+  }, [graph, direction, showParams, algorithm, hideLabels])
 
   // menu for layout
   const [anchorEl, setAnchorEl] = useState(null)
@@ -120,25 +130,41 @@ const LatticeGraph = ({
   };
 
   const handleHideLabels = () => {
-    const value= !hideLabels
+    const value = !hideLabels
     setHideLabels(value);
   };
 
+  const onNodesChange = useCallback(
+    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    [setNodes]
+  );
+  const onEdgesChange = useCallback(
+    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    [setEdges]
+  );
 
+
+  const nodeTypes = useMemo(() => ({ electron: ElectronNode, parameter: ParameterNode }), []);
+  const edgeTypes = useMemo(() => ({ directed: DirectedEdge }), []);
   return (
     <>
-      {elements?.length > 0 && (
+      {nodes?.length > 0 && (
         <ReactFlow
-          nodeTypes={{ electron: ElectronNode, parameter: ParameterNode }}
-          edgeTypes={{ directed: DirectedEdge }}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           nodesDraggable={nodesDraggable}
           nodesConnectable={false}
-          elements={elements}
+          nodes={nodes}
+          edges={edges}
           defaultZoom={1}
           minZoom={0}
           maxZoom={3}
+          fitView
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
           // prevent selection when nothing is selected to prevent fitView
           selectNodesOnDrag={hasSelectedNode}
+          onNodeClick={(e) => onClickNode(e)}
         >
           {/* <Background
          variant="dots"

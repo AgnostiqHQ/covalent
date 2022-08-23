@@ -20,7 +20,7 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { useZoomPanHelper } from 'react-flow-renderer'
+import { useReactFlow } from 'react-flow-renderer'
 import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material'
 import {
   Add as PlusIcon,
@@ -61,7 +61,7 @@ const LatticeControls = ({
   handleHideLabels,
   hideLabels
 }) => {
-  const { zoomIn, zoomOut } = useZoomPanHelper()
+  const { zoomIn, zoomOut } = useReactFlow()
   const { fitView } = useFitViewHelper()
   return (
 

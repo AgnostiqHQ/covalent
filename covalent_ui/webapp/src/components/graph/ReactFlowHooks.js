@@ -22,12 +22,12 @@
 
 import { useMemo } from 'react'
 import { zoomIdentity } from 'd3-zoom'
-import { getRectOfNodes, useStoreState, useStore } from 'react-flow-renderer'
+import { getRectOfNodes, useStoreApi } from 'react-flow-renderer'
 
 const DEFAULT_PADDING = 0.1
 
 const initialFitViewHelper = {
-  fitView: ({ padding = DEFAULT_PADDING, includeHiddenNodes = false }) => {},
+  fitView: ({ padding = DEFAULT_PADDING, includeHiddenNodes = false }) => { },
 }
 
 const getTransition = (selection, duration = 0) => {
@@ -63,10 +63,8 @@ const getTransformForBounds = (
  * Customized fitView helper that supports margins.
  */
 const useFitViewHelper = () => {
-  const store = useStore()
-  const d3Zoom = useStoreState((s) => s.d3Zoom)
-  const d3Selection = useStoreState((s) => s.d3Selection)
-
+  const store = useStoreApi()
+  const { d3Zoom, d3Selection } = store.getState()
   const fitViewHelperFunctions = useMemo(() => {
     if (d3Selection && d3Zoom) {
       return {
@@ -79,8 +77,8 @@ const useFitViewHelper = () => {
             marginRight: 0,
           }
         ) => {
-          const { nodes, width, height, minZoom, maxZoom } = store.getState()
-
+          const { nodeInternals, width, height, minZoom, maxZoom } = store.getState()
+          const nodes = Array.from(nodeInternals.values())
           if (!nodes.length) {
             return
           }
