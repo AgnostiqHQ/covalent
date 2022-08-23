@@ -23,7 +23,7 @@
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._workflow.electron import Electron, to_decoded_electron_collection
-from covalent._workflow.transport import TransportableObject, _TransportGraph
+from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
 
@@ -184,3 +184,32 @@ def test_metadata_in_electron_list():
     assert list(e_list_metadata["call_after"]) == []
 
     assert e_list_metadata["executor"] == task_metadata["executor"]
+
+
+def test_electron_metadata_is_serialized_early():
+    """Test that electron metadata is JSON-serialized before it is
+    stored in the graph.
+
+    This checks that `constraints` are already serialized before being
+    passed to the `decorator_electron` closure.
+
+    """
+
+    def identity(y):
+        return y
+
+    calldep = ct.DepsCall(identity, args=[5], retval_keyword="y")
+
+    @ct.electron(call_before=[calldep], executor=LocalExecutor())
+    def task(x):
+        return x
+
+    @ct.lattice(workflow_executor=LocalExecutor())
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph(2)
+    node_0_metadata = workflow.transport_graph.get_node_value(0, "metadata")
+    assert node_0_metadata == encode_metadata(node_0_metadata)
+    node_1_metadata = workflow.transport_graph.get_node_value(1, "metadata")
+    assert node_1_metadata == encode_metadata(node_1_metadata)

@@ -31,6 +31,7 @@ from .depsbash import DepsBash
 from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
 from .electron import Electron
+from .transport import encode_metadata
 
 if TYPE_CHECKING:  # pragma: no cover
     from ..executor import BaseExecutor
@@ -180,6 +181,8 @@ class Lepton(Electron):
             "call_before": call_before,
             "call_after": call_after,
         }
+
+        constraints = encode_metadata(constraints)
 
         # Assign the wrapper below as the task's callable function
         super().__init__(self.wrap_task())

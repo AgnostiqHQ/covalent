@@ -29,6 +29,7 @@ import pytest
 import covalent as ct
 from covalent._shared_files.defaults import parameter_prefix
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
+from covalent.executor import LocalExecutor
 
 
 def subtask(x):
@@ -38,7 +39,7 @@ def subtask(x):
 
 
 def subtask_2(x):
-    """Workflow subtask."""
+    """Workflow subtask 2."""
 
     return x
 
@@ -130,6 +131,15 @@ def test_transportable_object_from_dict(transportable_object):
 
     to_new = TransportableObject.from_dict(object_dict)
     assert to == to_new
+
+
+def test_transportable_object_to_dict_attributes(transportable_object):
+    """Test attributes from `to_dict` contain correct name and docstrings"""
+
+    tr_dict = transportable_object.to_dict()
+
+    assert tr_dict["attributes"]["attrs"]["doc"] == subtask.__doc__
+    assert tr_dict["attributes"]["attrs"]["name"] == subtask.__name__
 
 
 def test_transportable_object_serialize_to_json(transportable_object):
@@ -386,39 +396,32 @@ def test_transport_graph_json_serialization():
     assert "edge_name" not in serialized_data["links"][0]
 
 
-def test_metadata_json_serialization():
+def test_encode_metadata():
+    """Test function to JSON-serialize electron metadata"""
+
     import json
 
-    @ct.electron(executor="local", deps_bash=ct.DepsBash("yum install gcc"))
-    def f(x):
-        return x * x
-
-    @ct.lattice
-    def workflow(x):
-        return f(x)
-
-    workflow.build_graph(5)
-    workflow_tg = workflow.transport_graph
-    metadata = workflow_tg.get_node_value(0, "metadata")
+    le = LocalExecutor()
+    metadata = {}
+    metadata["executor"] = le
+    metadata["workflow_executor"] = "local"
+    metadata["deps"] = {}
+    metadata["deps"]["bash"] = ct.DepsBash("yum install gcc")
+    metadata["deps"]["pip"] = ct.DepsPip(["sklearn"])
+    metadata["call_before"] = []
+    metadata["call_after"] = []
 
     json_metadata = json.dumps(encode_metadata(metadata))
 
     new_metadata = json.loads(json_metadata)
 
-    # Check that each metadata type implements its own JSON-serialization
-    for k in metadata:
-        if k == "executor":
-            continue
-        if k == "deps":
-            for dep_type in metadata[k]:
-                if dep_type == "bash":
-                    continue
-                else:
-                    assert metadata[k][dep_type] == new_metadata[k][dep_type]
-        else:
-            metadata[k] == new_metadata[k]
-
     assert new_metadata["executor"] == "local"
+    assert new_metadata["executor_data"] == le.to_dict()
+    assert new_metadata["workflow_executor"] == "local"
+    assert new_metadata["workflow_executor_data"] == {}
 
-    new_bash_dep = ct.DepsBash().from_dict(new_metadata["deps"]["bash"])
-    assert new_bash_dep.__dict__ == metadata["deps"]["bash"].__dict__
+    assert ct.DepsBash("yum install gcc").to_dict() == new_metadata["deps"]["bash"]
+    assert ct.DepsPip(["sklearn"]).to_dict() == new_metadata["deps"]["pip"]
+
+    # Check idempotence
+    assert encode_metadata(metadata) == encode_metadata(encode_metadata(metadata))
