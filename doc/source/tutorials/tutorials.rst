@@ -17,11 +17,11 @@ Beginner
    * - Topic
      - Title
    * - Machine learning
-     - :doc:`MNIST classifier<./machine_learning/mnist_classifier>`
+     - :doc:`MNIST classifier<./0_ClassicalMachineLearning/mnist_images/source>`
    * - Machine learning
-     - :doc:`Using Covalent with PennyLane for hybrid computation<./machine_learning/pennylane_hybrid>`
+     - :doc:`Using Covalent with PennyLane for hybrid computation<./1_QuantumMachineLearning/pennylane_hybrid/source>`
    * - Machine learning
-     - :doc:`Linear and convolutional autoencoders<./machine_learning/autoencoders>`
+     - :doc:`Linear and convolutional autoencoders<./0_ClassicalMachineLearning/autoencoders/source>`
 
 ~~~~~~~~
 Advanced
@@ -34,19 +34,19 @@ Advanced
    * - Topic
      - Title
    * - Quantum Chemistry
-     - :doc:`Simulating the Nitrogen-Copper interaction<./quantum_chemistry/nitrogen_copper_interaction>`
+     - :doc:`Simulating the Nitrogen-Copper interaction<./3_QuantumChemistry/nitrogen_copper_interaction/source>`
    * - Machine Learning
-     - :doc:`Classical and quantum support vector machines<./machine_learning/classical_quantum_svm>`
+     - :doc:`Classical and quantum support vector machines<./1_QuantumMachineLearning/classical_quantum_svm/source>`
    * - Machine Learning
-     - :doc:`Training quantum embedding kernels for classification<./machine_learning/quantum_embedding_kernel>`
+     - :doc:`Training quantum embedding kernels for classification<./1_QuantumMachineLearning/quantum_embedding_kernel/source>`
    * - Quantum Optimization
-     - :doc:`Using QAOA to Solve the Max-Cut Problem<./machine_learning/qaoa_maxcut>`
+     - :doc:`Using QAOA to Solve the Max-Cut Problem<./1_QuantumMachineLearning/qaoa_maxcut/source>`
    * - Machine Learning
-     - :doc:`Quantum Ensemble Classification<./machine_learning/Ensemble_pennylane>`
+     - :doc:`Quantum Ensemble Classification<./1_QuantumMachineLearning/pennylane_ensemble_classification/source>`
    * - Astronomy
-     - :doc:`Tracking stars in the night sky<./astronomy/star_tracker>`
+     - :doc:`Tracking stars in the night sky<./2_Astronomy/star_tracker/source>`
    * - Quantum Gravity
-     - :doc:`Classifying discrete spacetimes by dimension<./quantum_gravity/spacetime_classification>`
+     - :doc:`Classifying discrete spacetimes by dimension<./4_QuantumGravity/spacetime_classification/source>`
 
 ---------------------------------
 

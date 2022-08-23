@@ -11,6 +11,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added db schema migration error guide in RTD
 
+### Docs
+
+- Added RTD and header for the AWS EC2 executor plugin.
+
+### Docs
+
+- Refactored tutorials for better organization
+
+## [0.185.0] - 2022-08-23
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Adding `load_tests` subdirectory to tests to facilitate execution of Covalent benchmarks during nightly runs
+- Added `locust` requirements to tests `requirements.txt`
+
+## [0.184.2] - 2022-08-23
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Fixed
+
+- Switched the `render_as_batch` flag in the alembic env context so that `ALTER` commands are supported in SQLite migrations.
+
+### Docs
+
+- Updated custom executor RTD to show a simpler example
+
+### Operations
+
+- pre-commit autoupdate
+
+## [0.184.1] - 2022-08-23
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+### Fixed
+
+- Function's `__doc__` and `__name__` storage in dict/json for transportable object fixed.
+
+### Tests
+
+- Added unit test for the above fix.
+
 ## [0.184.0] - 2022-08-22
 
 ### Authors
