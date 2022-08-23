@@ -106,17 +106,18 @@ jobs:
 
       - name: Run Locust load tests
         run: |
+          users=$(python -c 'import os; print(os.cpu_count())')
           PYTHONPATH=$(pwd) python -m locust \
-            --user ${{ inputs.load_test_users }} \
-            --spawn-rate ${{ inputs.load_test_user_spawn_rate }} \
-            --run-time ${{ inputs.load_test_duration }} \
-            --csv=${{ inputs.load_test_result_filename }} \
+            --user ${users} \
+            --spawn-rate 3 \
+            --run-time 10m \
+            --csv=load_test_results \
             --headless \
             -f ./load_tests/locustfiles
         working-directory: ./tests
 
-      - name: Create tests result archive
-        run: tar -zcf ${{ inputs.result_archive_name }} ${{ inputs.load_test_result_filename }}
+      #- name: Create tests result archive
+      #  run: tar -zcf ${{ inputs.result_archive_name }} ${{ inputs.load_test_result_filename }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
