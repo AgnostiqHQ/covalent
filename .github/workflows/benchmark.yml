@@ -22,6 +22,28 @@ name: benchmarks
 
 on:
   pull_request:
+  workflow_call:
+    inputs:
+      load_test_users:
+        required: false
+        type: number
+        default: 1
+      load_test_user_spawn_rate:
+        required: false
+        type: number
+        default: 1
+      load_test_duration:
+        required: false
+        type: string
+        default: "1m"
+      load_test_result_filename:
+        required: false
+        default: "load_test_results"
+        type: string
+      result_archive_name:
+        required: false
+        default: "results.tar.gz"
+        type: string
 
 jobs:
   benchmarks:
@@ -82,7 +104,17 @@ jobs:
       - name: Run stress tests
         run: jupyter nbconvert --to notebook --execute tests/stress_tests/tests.ipynb
 
-      - name: Run Loadtests
+      - name: Run Locust load tests
+        run: |
+          PYTHONPATH=$(pwd) python -m locust \
+            --user ${{ inputs.load_test_users }} \
+            --spawn-rate ${{ inputs.load_test_user_spawn_rate }} \
+            --run-time ${{ inputs.load_test_duration }} \
+            --csv=${{ inputs.load_test_result_filename }} \
+            --headless
+
+      - name: Create tests result archive
+        run: tar -zcf ${{ inputs.result_archive_name }} ${{ inputs.load_test_result_filename }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
