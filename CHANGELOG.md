@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Updated custom executor RTD to show a simpler example
+
 ## [0.184.1] - 2022-08-23
 
 ### Authors
@@ -47,8 +51,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot update
 
 ### Docs
-
-- Updated custom executor RTD to show a simpler example
 
 - Removed "How to synchronize lattices" section from RTD
 
