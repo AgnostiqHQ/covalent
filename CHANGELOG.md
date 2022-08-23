@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.184.2] - 2022-08-23
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
 ### Fixed
 
 - Switched the `render_as_batch` flag in the alembic env context so that `ALTER` commands are supported in SQLite migrations.
