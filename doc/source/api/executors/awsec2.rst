@@ -1,7 +1,9 @@
-.. _ec2_executor:
+.. _awsec2_executor:
 
-🔌 EC2 Executor
+🔌 AWS EC2 Executor
 """""""""""""""""""""""""""
+
+.. image:: AWS_EC2.jpg
 
 This executor plugin interfaces Covalent with an EC2 instance over SSH. This plugin is appropriate for executing workflow tasks on an instance that has been auto-provisioned and configured by the plugin.
 
