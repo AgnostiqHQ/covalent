@@ -22,8 +22,6 @@ name: benchmarks
 
 on:
   pull_request:
-  schedule:
-    - cron: "0 0 * * *"
 
 jobs:
   benchmarks:
@@ -72,7 +70,6 @@ jobs:
 
       - name: Install test requirements
         run: |
-          pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
           pip install --no-cache-dir jupyter
 
@@ -82,8 +79,10 @@ jobs:
       - name: Start Covalent dispatcher server
         run: covalent start -d --ignore-migrations
 
-      - name: Run stress test notebook
-        run: jupyter --nbconvert notebook --execute tests/stress_tests/tests.ipynb
+      - name: Run stress tests
+        run: jupyter nbconvert --to notebook --execute tests/stress_tests/tests.ipynb
+
+      - name: Run Loadtests
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
