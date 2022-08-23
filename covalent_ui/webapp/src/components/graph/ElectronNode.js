@@ -109,7 +109,7 @@ const ElectronNode = ({
               <>
                 <Typography color="inherit">name : {data.fullName}</Typography>
                 <Typography color="inherit">
-                  executor_label : {data.executor}
+                  executor : {data.executor}
                 </Typography>
                 <Typography color="inherit">
                   node_id : {data.node_id}
