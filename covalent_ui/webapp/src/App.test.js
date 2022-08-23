@@ -32,7 +32,7 @@ import theme from './utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
 import DispatchLayout from './components/dispatch/DispatchLayout'
 
-function reduxRender(rederedComponent) {
+function reduxRender(renderedComponent) {
   const store = configureStore({
     reducer: reducers,
   })
@@ -40,7 +40,7 @@ function reduxRender(rederedComponent) {
   return render(
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <BrowserRouter>{rederedComponent}</BrowserRouter>
+        <BrowserRouter>{renderedComponent}</BrowserRouter>
       </ThemeProvider>
     </Provider>
   )

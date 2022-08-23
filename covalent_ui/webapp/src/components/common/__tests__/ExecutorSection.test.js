@@ -23,7 +23,14 @@
 import { render, screen } from '@testing-library/react'
 import App from '../ExecutorSection'
 
-const metadata = { executor_name: 'dask', executor_details: null }
+const metadata = {
+  executor_name: 'dask', executor_details: {
+    attributes:{
+      log_stdout: 'log_stdout.txt',
+      log_stderr: 'log_stderr.txt'
+    }
+  }
+}
 describe('executor section', () => {
   test('renders Executor section', () => {
     render(<App metadata={metadata} />)
@@ -33,6 +40,11 @@ describe('executor section', () => {
   test('renders Executor type', () => {
     render(<App metadata={metadata} />)
     const linkElement = screen.getByText('Executor:')
+    expect(linkElement).toBeInTheDocument()
+  })
+  test('renders Executor details ', () => {
+    render(<App metadata={metadata} />)
+    const linkElement = screen.getByText(/log_stdout.txt/i)
     expect(linkElement).toBeInTheDocument()
   })
   test('renders preview section', () => {

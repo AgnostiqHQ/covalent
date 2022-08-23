@@ -30,21 +30,21 @@
  import { configureStore } from '@reduxjs/toolkit'
  import theme from '../../../utils/theme'
  import ThemeProvider from '@mui/system/ThemeProvider'
- 
- function reduxRender(rederedComponent) {
+
+ function reduxRender(renderedComponent) {
    const store = configureStore({
      reducer: reducers,
    })
-   
+
    return render(
      <Provider store={store}>
        <ThemeProvider theme={theme}>
-         <BrowserRouter>{rederedComponent}</BrowserRouter>
+         <BrowserRouter>{renderedComponent}</BrowserRouter>
        </ThemeProvider>
      </Provider>
    )
  }
- 
+
  describe('Dispatch TopBar', () => {
   const latDetails = {
     directory: "/home/prasannavenkatesh/Desktop/workflows/results/4be2f8f9-528d-4006-9e13-0ddf84172c98",
@@ -81,4 +81,3 @@
     expect(linkElement).toBeInTheDocument()
   })
  })
- 

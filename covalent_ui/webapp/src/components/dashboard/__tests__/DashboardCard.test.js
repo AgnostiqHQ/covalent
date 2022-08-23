@@ -31,14 +31,14 @@ import { configureStore } from '@reduxjs/toolkit'
 import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
 
-function mockRender(rederedComponent) {
+function mockRender(renderedComponent) {
   const store = configureStore({
     reducer: reducers,
   })
   return render(
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <BrowserRouter>{rederedComponent}</BrowserRouter>
+        <BrowserRouter>{renderedComponent}</BrowserRouter>
       </ThemeProvider>
     </Provider>
   )

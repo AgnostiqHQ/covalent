@@ -19,25 +19,20 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-import React from 'react'
+
 import { render, screen } from '@testing-library/react'
-import App from '../SortDispatch'
-import theme from '../../../utils/theme'
-import ThemeProvider from '@mui/system/ThemeProvider'
-
-function reduxRender(renderedComponent) {
-  return render(<ThemeProvider theme={theme}>{renderedComponent}</ThemeProvider>)
+import App from '../LogOutput'
+const latOutput = {
+    head: 'Header',
+    message:'Covalent'
 }
-
-const sortDispatchCases = [
-  ['All', 'category'],
-  [4, 'count'],
-]
-
-describe('sort dispatch', () => {
-  test.each(sortDispatchCases)('render %p in %p section', (firstArg) => {
-    reduxRender(<App title="All" count={4} isFetching={false} />)
-    const element = screen.getByText(firstArg)
-    expect(element).toBeInTheDocument()
-  })
+test('renders heading', () => {
+    render(<App latOutput={latOutput} />)
+    const linkElement = screen.getByText('Header')
+    expect(linkElement).toBeInTheDocument()
+})
+test('renders heading title', () => {
+    render(<App latOutput={latOutput} />)
+    const linkElement = screen.getByText('Covalent')
+    expect(linkElement).toBeInTheDocument()
 })

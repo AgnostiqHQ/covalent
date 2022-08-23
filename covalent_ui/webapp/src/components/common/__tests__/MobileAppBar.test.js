@@ -20,14 +20,47 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import React from 'react'
-import { render, screen } from '../../../testHelpers/testUtils'
+import { render, screen, fireEvent } from '../../../testHelpers/testUtils'
 import App from '../MobileAppBar'
+import { BrowserRouter } from 'react-router-dom'
+import { Provider } from 'react-redux'
+import reducers from '../../../redux/reducers'
+import { configureStore } from '@reduxjs/toolkit'
+import theme from '../../../utils/theme'
+import ThemeProvider from '@mui/system/ThemeProvider'
+import * as redux from "react-redux";
+
+function mockRender(renderedComponent) {
+  const store = configureStore({
+    reducer: reducers,
+  })
+  return render(
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <BrowserRouter>{renderedComponent}</BrowserRouter>
+      </ThemeProvider>
+    </Provider>
+  )
+}
+
 
 describe('mobile appbar', () => {
   test('renders Lattice Drawer section', () => {
     // eslint-disable-next-line no-undef
-    render(<App />)
+    mockRender(<App />)
     const linkElement = screen.getByTestId('mobile appbar')
     expect(linkElement).toBeInTheDocument()
+  })
+  test('renders Lattice Drawer section', () => {
+    const useDispatchSpy = jest.spyOn(redux, 'useDispatch');
+    const mockDispatchFn = jest.fn()
+    useDispatchSpy.mockReturnValue(mockDispatchFn);
+    // eslint-disable-next-line no-undef
+    mockRender(<App />)
+    const linkElement = screen.getByRole('button')
+    expect(linkElement).toBeInTheDocument()
+    fireEvent.click(linkElement)
+    expect(mockDispatchFn).toBeCalled();
+    useDispatchSpy.mockClear();
   })
 })

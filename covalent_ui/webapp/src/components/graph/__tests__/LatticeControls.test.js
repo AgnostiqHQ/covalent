@@ -49,7 +49,7 @@ import { HelmetProvider } from 'react-helmet-async'
 
 const onSubmit = jest.fn();
 
-function reduxRender(rederedComponent) {
+function reduxRender(renderedComponent) {
   const store = configureStore({
     reducer: reducers,
   })
@@ -58,7 +58,7 @@ function reduxRender(rederedComponent) {
       <HelmetProvider>
         <ReactFlowProvider>
           <ThemeProvider theme={theme}>
-            <BrowserRouter>{rederedComponent}</BrowserRouter>
+            <BrowserRouter>{renderedComponent}</BrowserRouter>
           </ThemeProvider>
         </ReactFlowProvider>
       </HelmetProvider>
