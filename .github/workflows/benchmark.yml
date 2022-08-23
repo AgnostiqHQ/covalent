@@ -90,30 +90,30 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install Covalent
+        run: pip install -e .
+
       - name: Install test requirements
         run: |
           pip install --no-cache-dir -r ./tests/requirements.txt
           pip install --no-cache-dir jupyter
 
-      - name: Install Covalent
-        run: pip install -e .
-
       - name: Start Covalent dispatcher server
-        run: covalent start -d --ignore-migrations
+        run: covalent start --ignore-migrations
 
       #- name: Run stress tests
       #  run: jupyter nbconvert --to notebook --execute tests/stress_tests/stress.ipynb
 
       - name: Run Locust load tests
         run: |
-          pip install --upgrade Werkzeug
           PYTHONPATH=$(pwd) python -m locust \
             --user ${{ inputs.load_test_users }} \
             --spawn-rate ${{ inputs.load_test_user_spawn_rate }} \
             --run-time ${{ inputs.load_test_duration }} \
             --csv=${{ inputs.load_test_result_filename }} \
             --headless \
-            -f tests/load_tests/locustfiles
+            -f ./tests/load_tests/locustfiles
+        working-directory: ./tests
 
       - name: Create tests result archive
         run: tar -zcf ${{ inputs.result_archive_name }} ${{ inputs.load_test_result_filename }}
