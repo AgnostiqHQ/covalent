@@ -112,7 +112,7 @@ jobs:
             --run-time ${{ inputs.load_test_duration }} \
             --csv=${{ inputs.load_test_result_filename }} \
             --headless \
-            -f ./tests/load_tests/locustfiles
+            -f ./load_tests/locustfiles
         working-directory: ./tests
 
       - name: Create tests result archive
