@@ -194,6 +194,24 @@ class Summary:
             .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
             .label("total_jobs")
         ).first()
+        query7 = self.db_con.query(
+            (func.count(Lattice.id))
+            .filter(
+                Lattice.status == "CANCELLED",
+                Lattice.is_active.is_not(False),
+                Lattice.electron_id.is_(None),
+            )
+            .label("total_jobs_running")
+        ).first()
+        query8 = self.db_con.query(
+            (func.count(Lattice.id))
+            .filter(
+                Lattice.status == "NEW_OBJECT",
+                Lattice.is_active.is_not(False),
+                Lattice.electron_id.is_(None),
+            )
+            .label("total_jobs_running")
+        ).first()
         if query4 is None:
             query4 = 0
         return DispatchDashBoardResponse(
@@ -202,6 +220,8 @@ class Summary:
             latest_running_task_status=query3[0] if query3 is not None else None,
             total_dispatcher_duration=query4[0] if query4 is not None else 0,
             total_jobs_failed=query5[0],
+            total_jobs_cancelled=query7[0],
+            total_jobs_new_object=query8[0],
             total_jobs=query6[0],
         )
 
