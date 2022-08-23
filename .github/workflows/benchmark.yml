@@ -101,8 +101,8 @@ jobs:
       - name: Start Covalent dispatcher server
         run: covalent start -d --ignore-migrations
 
-      - name: Run stress tests
-        run: jupyter nbconvert --to notebook --execute tests/stress_tests/stress.ipynb
+      #- name: Run stress tests
+      #  run: jupyter nbconvert --to notebook --execute tests/stress_tests/stress.ipynb
 
       - name: Run Locust load tests
         run: |
@@ -111,7 +111,8 @@ jobs:
             --spawn-rate ${{ inputs.load_test_user_spawn_rate }} \
             --run-time ${{ inputs.load_test_duration }} \
             --csv=${{ inputs.load_test_result_filename }} \
-            --headless
+            --headless \
+            -f tests/load_tests/locustfiles
 
       - name: Create tests result archive
         run: tar -zcf ${{ inputs.result_archive_name }} ${{ inputs.load_test_result_filename }}
