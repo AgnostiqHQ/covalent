@@ -388,6 +388,8 @@ def lattice(
         "call_after": call_after,
     }
 
+    constraints = encode_metadata(constraints)
+
     def decorator_lattice(func=None):
         @wraps(func)
         def wrapper_lattice(*args, **kwargs):
