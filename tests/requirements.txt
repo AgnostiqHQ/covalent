@@ -1,6 +1,7 @@
 detect-secrets==1.2.0 # Not available on Conda's channels that we have.
 flake8==3.9.2
 isort==5.7.0
+Jinja2>=3.0
 locust==2.11.0
 mock==4.0.3
 nbconvert==6.3.0
@@ -11,3 +12,4 @@ pytest-asyncio==0.19.0
 pytest-cov==2.12.0
 pytest-mock==3.6.1
 pytest-rerunfailures==10.2
+pyzmq>=23.0
