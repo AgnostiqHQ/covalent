@@ -21,9 +21,11 @@
  */
 
  import _ from 'lodash'
-import { Typography,Tooltip,  tooltipClasses} from '@mui/material'
+import { Typography,Tooltip,  tooltipClasses, Grid,Paper} from '@mui/material'
 import { Handle } from 'react-flow-renderer'
 import { styled } from '@mui/material/styles'
+import {nodeLabelIcon ,truncateMiddle} from '../../utils/misc'
+
 
 const ParameterTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -39,27 +41,121 @@ const ParameterNode = ({
   targetPosition,
   isConnectable
 }) => {
+  console.log(data)
   return (
-    <ParameterTooltip title={_.truncate(data.fullName, { length: 70 })} arrow placement="bottom-end">
-     <Typography
-      component="div"
-      sx={(theme) => ({
-        px: 2,
-        py: 0.5,
-        borderRadius: 3,
-        color: 'text.disabled',
-        bgcolor: theme.palette.background.paper,
-        fontSize: 12,
-      })}
-    >
-      {data.label}
-      <Handle
-        type="source"
-        position={sourcePosition}
-        isConnectable={isConnectable}
-      />
-    </Typography>
-    </ParameterTooltip>
+    <Grid sx={{ display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',}}>
+      {!data.hideLabels?<ParameterTooltip title={_.truncate(data.executor, { length: 70 })} arrow placement="bottom-end">
+     <Paper
+              sx={{
+                position:"absolute",
+                top:-16,
+                zIndex:-100,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '5px 5px 0px 0px',
+                width: '60%',
+                overflow: 'hidden',
+                background: (theme) => theme.palette.background.executorBg,
+                // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
+                color: (theme) => theme.palette.text.tertiary,
+                borderColor: (theme) => theme.palette.primary.highlightBlue,
+                borderStyle: 'solid',
+              }}
+            >
+              <Handle
+                type="target"
+                position={targetPosition}
+                isConnectable={isConnectable}
+              />
+              <Typography sx={{ fontSize: '0.625rem' }}>
+                {truncateMiddle(data.executor, 4, 0)}
+              </Typography>
+              <Handle
+                type="source"
+                position={sourcePosition}
+                isConnectable={isConnectable}
+              />
+            </Paper>
+     </ParameterTooltip>:null}
+     
+    <ParameterTooltip title={ data.hideLabels ? (
+              <>
+                <Typography color="inherit">name : {data.fullName}</Typography>
+                <Typography color="inherit">
+                  executor : {data.executor}
+                </Typography>
+                <Typography color="inherit">
+                  node_id : {data.node_id}
+                </Typography>
+              </>
+            ) : (
+              data.fullName
+            )} arrow placement="bottom-end">
+      <Grid   sx={(theme) => ({
+       px: 1,
+       borderRadius: '100px',
+       color: 'text.disabled',
+       bgcolor: theme.palette.background.paper,
+       fontSize: 12,
+       display:'flex',
+       alignItems:'center',
+       justifyItems:'space-between',
+     })}>
+     { nodeLabelIcon(data.nodeType)}
+     <Handle
+       type="source"
+       position={sourcePosition}
+       isConnectable={isConnectable}
+     />
+    <Typography
+     component="div"
+   
+   >
+     {data.label}
+     <Handle
+       type="source"
+       position={sourcePosition}
+       isConnectable={isConnectable}
+     />
+   </Typography>
+      </Grid>
+   </ParameterTooltip>
+   {!data.hideLabels? <ParameterTooltip title={_.truncate(data.node_id, { length: 70 })} arrow placement="bottom-end">
+   <Paper      
+              sx={{
+                position: 'absolute',
+                top: 34,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '16px',
+                width: '45%',
+                // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
+                color: (theme) => theme.palette.text.tertiary,
+              }}
+            >
+              <Handle
+                type="target"
+                position={targetPosition}
+                isConnectable={isConnectable}
+              />
+              <Typography sx={{ fontSize: '0.625rem' }}>
+                {data.node_id}
+              </Typography>
+              <Handle
+                type="source"
+                position={sourcePosition}
+                isConnectable={isConnectable}
+              />
+            </Paper>
+   </ParameterTooltip>:null}
+  
+    </Grid>
+    
 
   )
 }
