@@ -62,26 +62,16 @@ jobs:
   push_to_master:
     name: Push to Master
     runs-on: ubuntu-latest
-    needs: [changelog, tests]
+    needs: [changelog]
     steps:
       - name: Get latest release
         id: get-latest-tag
-        if: >
-          github.ref == 'refs/heads/develop'
-          && matrix.os == 'ubuntu-latest'
-          && matrix.container == 'python:3.8-buster'
-          && github.event_name != 'workflow_dispatch'
         run: |
           latest_tag=$(git describe --abbrev=0)
           echo "::set-output name=tag::${latest_tag}"
 
       - name: Push to master
         id: push
-        if: >
-          github.ref == 'refs/heads/develop'
-          && matrix.os == 'ubuntu-latest'
-          && matrix.container == 'python:3.8-buster'
-          && github.event_name != 'workflow_dispatch'
         run: |
           MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
           VERSION="$(cat ./VERSION)"
