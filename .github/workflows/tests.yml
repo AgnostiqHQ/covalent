@@ -57,6 +57,7 @@ jobs:
     name: ${{ matrix.name }}
     strategy:
       matrix: ${{fromJson(needs.build_test_matrix.outputs.matrix)}}
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
       COVALENT_SERVER_IFACE_ANY: true
@@ -231,9 +232,9 @@ jobs:
           || steps.working-directory.outputs.actions == 'true'
           || steps.working-directory.outputs.tests == 'true'
         run: |
-          if [ "${{ matrix.backend }}" == 'dask' ] ; then
+          if [ "${{ matrix.backend }}" = 'dask' ] ; then
             covalent start --ignore-migrations
-          elif [ "${{ matrix.backend }}" == 'local' ] ; then
+          elif [ "${{ matrix.backend }}" = 'local' ] ; then
             covalent start --ignore-migrations --no-cluster
           else
             echo "Invalid backend specified in test matrix."
