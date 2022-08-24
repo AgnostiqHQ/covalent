@@ -25,8 +25,8 @@ import ELK from 'elkjs/lib/elk.bundled.js'
 import { isNode } from 'react-flow-renderer'
 import { isParameter } from '../../utils/misc'
 
-const layoutElk = (graph, direction, showParams = true, hideLabels) => {
-  const elements = mapGraphToElements(graph, direction, showParams, hideLabels)
+const layoutElk = (graph, direction, showParams = true, hideLabels, preview) => {
+  const elements = mapGraphToElements(graph, direction, showParams, hideLabels, preview)
   return elements
 }
 
@@ -43,7 +43,7 @@ const filterGraph = (graph, nodePredicate) => {
 /**
  * Map Covalent graph nodes and links to ReactFlow graph elements.
  */
-const mapGraphToElements = (graph, direction, showParams, hideLabels) => {
+const mapGraphToElements = (graph, direction, showParams, hideLabels, preview) => {
   if (!showParams) {
     graph = filterGraph(graph, (node) => !isParameter(node))
   }
@@ -63,8 +63,8 @@ const mapGraphToElements = (graph, direction, showParams, hideLabels) => {
           ? _.truncate(name, { length: 0 })
           : _.truncate(name, { length: 70 }),
         status: node.status,
-        executor: node.executor_label,
-        node_id: node.node_id,
+        executor: preview ? node?.metadata.executor_name : node.executor_label,
+        node_id: preview ? node.id : node.node_id,
         hideLabels: hideLabels,
       },
       targetPosition: handlePositions.target,
@@ -91,9 +91,10 @@ const assignNodePositions = async (
   direction,
   showParams,
   algorithm,
-  hideLabels
+  hideLabels,
+  preview
 ) => {
-  const elements = layoutElk(graph, direction, showParams, hideLabels)
+  const elements = layoutElk(graph, direction, showParams, hideLabels, preview)
   const nodes = []
   const edges = []
   const DEFAULT_HEIGHT = 75
@@ -101,27 +102,27 @@ const assignNodePositions = async (
   const elk =
     algorithm === 'layered'
       ? new ELK({
-          defaultLayoutOptions: {
-            'elk.algorithm': algorithm,
-            'elk.direction': direction,
-            'elk.edgeRouting': 'POLYLINE',
-            'elk.layered.nodePlacement.strategy': 'SIMPLE',
-            'elk.spacing.edgeEdge': hideLabels ? 10 : 0,
-            'elk.spacing.nodeNode': hideLabels ? 60 : 20,
-            'elk.spacing.edgeNode': hideLabels ? 60 : 40,
-            'elk.spacing.edgeLabel': 10,
-          },
-        })
+        defaultLayoutOptions: {
+          'elk.algorithm': algorithm,
+          'elk.direction': direction,
+          'elk.edgeRouting': 'POLYLINE',
+          'elk.layered.nodePlacement.strategy': 'SIMPLE',
+          'elk.spacing.edgeEdge': hideLabels ? 10 : 0,
+          'elk.spacing.nodeNode': hideLabels ? 60 : 20,
+          'elk.spacing.edgeNode': hideLabels ? 60 : 40,
+          'elk.spacing.edgeLabel': 10,
+        },
+      })
       : new ELK({
-          defaultLayoutOptions: {
-            'elk.algorithm': algorithm,
-            'elk.direction': direction,
-            'elk.spacing.nodeNode': 60,
-            'elk.spacing.edgeEdge': hideLabels ? 10 : 0,
-            'elk.spacing.edgeNode': hideLabels ? 60 : 80,
-            'elk.layered.spacing.nodeNodeBetweenLayers': 60,
-          },
-        })
+        defaultLayoutOptions: {
+          'elk.algorithm': algorithm,
+          'elk.direction': direction,
+          'elk.spacing.nodeNode': 60,
+          'elk.spacing.edgeEdge': hideLabels ? 10 : 0,
+          'elk.spacing.edgeNode': hideLabels ? 60 : 80,
+          'elk.layered.spacing.nodeNodeBetweenLayers': 60,
+        },
+      })
   _.each(elements, (el) => {
     if (isNode(el)) {
       nodes.push({
