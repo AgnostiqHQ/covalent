@@ -34,6 +34,7 @@ import {
   MapOutlined,
   Remove as MinusIcon
 } from '@mui/icons-material'
+import ScreenshotIcon from '@mui/icons-material/Screenshot';
 import useFitViewHelper from './ReactFlowHooks'
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LabelOffIcon from '@mui/icons-material/LabelOff';
@@ -59,7 +60,8 @@ const LatticeControls = ({
   anchorEl,
   handleClose,
   handleHideLabels,
-  hideLabels
+  hideLabels,
+  toggleScreenShot
 }) => {
   const { zoomIn, zoomOut } = useZoomPanHelper()
   const { fitView } = useFitViewHelper()
@@ -77,6 +79,11 @@ const LatticeControls = ({
         opacity: 0.7,
       }}
     >
+      <Hint title="Screenshot">
+        <ToggleButton onClick={toggleScreenShot} value="">
+          <ScreenshotIcon />
+        </ToggleButton>
+      </Hint>
       <Hint title="Zoom in">
         <ToggleButton value="" onClick={() => zoomIn(300)}>
           <PlusIcon />
