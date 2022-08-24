@@ -41,7 +41,6 @@ const ParameterNode = ({
   targetPosition,
   isConnectable
 }) => {
-  console.log(data)
   return (
     <Grid sx={{ display: 'flex',
     flexDirection: 'column',
@@ -57,7 +56,7 @@ const ParameterNode = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '5px 5px 0px 0px',
-                minWidth: '25%',
+                minWidth: '30%',
                 overflow: 'hidden',
                 background: (theme) => theme.palette.background.executorBg,
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
@@ -133,7 +132,7 @@ const ParameterNode = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '16px',
-                minWidth: '10%',
+                minWidth: '20%',
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
                 color: (theme) => theme.palette.text.tertiary,
               }}
