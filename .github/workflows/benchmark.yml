@@ -51,7 +51,6 @@ jobs:
 
       - name: Run Locust load tests
         run: |
-          pip install werkzeug==2.2.2
           users=$(python -c 'import os; print(os.cpu_count())')
           PYTHONPATH=$(pwd) python -m locust \
             --user ${users} \
