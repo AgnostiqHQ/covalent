@@ -57,7 +57,7 @@ const ParameterNode = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '5px 5px 0px 0px',
-                width: '60%',
+                minWidth: '25%',
                 overflow: 'hidden',
                 background: (theme) => theme.palette.background.executorBg,
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
@@ -133,7 +133,7 @@ const ParameterNode = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '16px',
-                width: '45%',
+                minWidth: '10%',
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
                 color: (theme) => theme.palette.text.tertiary,
               }}

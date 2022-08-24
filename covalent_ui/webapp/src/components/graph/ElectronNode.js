@@ -77,7 +77,7 @@ const ElectronNode = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '5px 5px 0px 0px',
-                width: '50%',
+                minWidth: '25%',
                 overflow: 'hidden',
                 background: (theme) => theme.palette.background.executorBg,
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
@@ -206,7 +206,7 @@ const ElectronNode = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '16px',
-                width: '33%',
+                minWidth: '10%',
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
                 color: (theme) => theme.palette.text.tertiary,
               }}
