@@ -21,7 +21,7 @@
  */
 
 import { useZoomPanHelper } from 'react-flow-renderer'
-import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material'
+import { ToggleButton, ToggleButtonGroup, Tooltip, SvgIcon } from '@mui/material'
 import {
   Add as PlusIcon,
   ArrowBack,
@@ -34,13 +34,13 @@ import {
   MapOutlined,
   Remove as MinusIcon
 } from '@mui/icons-material'
-import ScreenshotIcon from '@mui/icons-material/Screenshot';
 import useFitViewHelper from './ReactFlowHooks'
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LabelOffIcon from '@mui/icons-material/LabelOff';
 import LabelIcon from '@mui/icons-material/Label';
 import * as React from 'react';
 import { LayoutOptions } from './LayoutOptions';
+import { ReactComponent as ScreenshotIcon } from '../../assets/screenshot.svg'
 
 const LatticeControls = ({
   marginLeft = 0,
@@ -80,7 +80,7 @@ const LatticeControls = ({
       }}
     >
       <Hint title="Screenshot">
-        <ToggleButton onClick={toggleScreenShot} value="">
+        <ToggleButton onClick={toggleScreenShot} value="" sx={{height:'40px',color:'white'}}>
           <ScreenshotIcon />
         </ToggleButton>
       </Hint>
