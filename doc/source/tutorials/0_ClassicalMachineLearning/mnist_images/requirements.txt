@@ -1,0 +1,3 @@
+covalent
+pytorch==1.21.1
+torchvision==0.13.1
