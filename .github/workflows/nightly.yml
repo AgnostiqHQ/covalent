@@ -59,8 +59,8 @@ jobs:
         uses: ./.github/workflows/changelog.yml@develop
 
   # Get the latest release and push it to master
-  update_main:
-    name: update_main
+  push_to_master:
+    name: Push to Master
     runs-on: ubuntu-latest
     needs: [changelog, tests]
     steps:
@@ -88,23 +88,21 @@ jobs:
           release=false
           if [ "$MASTER_VERSION" = "$VERSION" ] ; then
             echo "$VERSION has been previously released."
-          elif dpkg --compare-versions $VERSION 'gt' '0.110.2' ; then
+          elif dpkg --compare-versions $VERSION 'gt' '0.177.0' ; then
             git config user.name "CovalentOpsBot"
             git config user.email "covalentopsbot@users.noreply.github.com"
             git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
             git push origin HEAD:master
             release=true
           else
-            echo "We cannot release versions less than 0.110.2."
+            echo "We cannot release versions less than 0.177.0."
           fi
           echo "RELEASE=$release" >> $GITHUB_ENV
           echo "::set-output name=release::$release"
 
-  # Create a pre-release
   release:
     name: create_release
-    needs: [update_main, changelog, tests]
-    if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
+    needs: [push_to_master]
     uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
     secrets: inherit # pragma: allowlist secret
     with:
