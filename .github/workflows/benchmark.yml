@@ -23,72 +23,17 @@ name: benchmarks
 on:
   pull_request:
   workflow_call:
-    inputs:
-      load_test_users:
-        required: false
-        type: number
-        default: 1
-      load_test_user_spawn_rate:
-        required: false
-        type: number
-        default: 1
-      load_test_duration:
-        required: false
-        type: string
-        default: "1m"
-      load_test_result_filename:
-        required: false
-        default: "load_test_results"
-        type: string
-      result_archive_name:
-        required: false
-        default: "results.tar.gz"
-        type: string
 
 jobs:
   benchmarks:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     env:
       COVALENT_SERVER_IFACE_ANY: true
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-latest"]
-        container:
-          - python:3.8-buster
-          - python:3.8-bullseye
-          - python:3.9-buster
-          - python:3.9-bullseye
-          - python:3.10-buster
-          - python:3.10-bullseye
-          - image: "centos/python-38-centos7"
-            options: "--user root"
-        experimental: [false]
-        include:
-          - os: macos-latest
-            python-version: "3.8"
-            experimental: false
-          - os: macos-latest
-            python-version: "3.9"
-            experimental: false
-          - os: macos-latest
-            python-version: "3.10"
-            experimental: false
-    container: ${{ matrix.container }}
-    continue-on-error: ${{ matrix.experimental }}
-    outputs:
-      release: ${{ steps.push.outputs.release }}
     steps:
       - name: Check out head
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-
-      - name: Set up Python
-        if: matrix.os == 'macos-latest'
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
 
       - name: Install Covalent
         run: pip install -e .
@@ -117,7 +62,7 @@ jobs:
         working-directory: ./tests
 
       #- name: Create tests result archive
-      #  run: tar -zcf ${{ inputs.result_archive_name }} ${{ inputs.load_test_result_filename }}
+      #  run: tar -zcvf ${{ GITHUB_SHA }}.tar.gz stress_tests_performance_metrics.csv load_test_results*.csv
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
