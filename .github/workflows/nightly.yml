@@ -27,7 +27,7 @@ on:
 jobs:
   # Run license.yml
   license:
-    name: license_check
+    name: License Scanner
     runs-on: ubuntu-latest
     steps:
       - name: Run License workflow
@@ -35,7 +35,7 @@ jobs:
 
   # Run tests.yml
   tests:
-    name: run_tests
+    name: Unit and Functional Tests
     runs-on: ubuntu-latest
     steps:
       - name: Run Covalent's unit/functional test stack
@@ -43,7 +43,7 @@ jobs:
 
   # Run benchmark.yml (stress and load tests and tutorials)
   benchmarks:
-    name: run_benchmarks
+    name: Benchmarks
     runs-on: ubuntu-latest
     steps:
       - name: Run Covalent stress and load tests
@@ -51,7 +51,7 @@ jobs:
 
   # Run changelog.yml
   changelog:
-    name: changelog
+    name: Assign Version
     runs-on: ubuntu-latest
     needs: [license, tests]
     steps:
