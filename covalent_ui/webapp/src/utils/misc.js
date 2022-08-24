@@ -109,49 +109,49 @@ export const statusIcon = (status) => {
   switch (status) {
     case 'RUNNING':
       return (
-        <SvgIcon sx={{ fontSize: '16', mr: 0.5 }}>
+        <SvgIcon sx={{ mr: 0.5 }}>
           <LoaderSvg />
         </SvgIcon>
       )
     case 'NEW_OBJECT':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{  mt: 1 }}>
           <ActivitySvg />
         </SvgIcon>
       )
     case 'COMPLETED':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{  mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
     case 'POSTPROCESSING':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{  mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
     case 'PENDING_POSTPROCESSING':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{  mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
     case 'POSTPROCESSING_FAILED':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{  mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
     case 'FAILED':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <ErrorSvg />
         </SvgIcon>
       )
     case 'CANCELLED':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <CancelSvg />
         </SvgIcon>
       )

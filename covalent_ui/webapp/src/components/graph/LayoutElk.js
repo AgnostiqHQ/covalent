@@ -126,7 +126,7 @@ const assignNodePositions = async (
     if (isNode(el)) {
       nodes.push({
         id: el.id,
-        width: _.size(el.data.label) * 10,
+        width: _.size(el.data.label) * 15,
         height: DEFAULT_HEIGHT,
       })
     } else {

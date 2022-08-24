@@ -125,6 +125,7 @@ const ElectronNode = ({
           <Paper
             elevation={!selected ? 1 : 5}
             sx={{
+              height: '34px',
               display: 'flex',
               alignItems: 'center',
               px: 1,
@@ -155,7 +156,7 @@ const ElectronNode = ({
                 case 'RUNNING':
                   return (
                     <SvgIcon
-                      sx={{ mt: 0.1, mr: 0.5, fontSize: 10, fill: color }}
+                      sx={{ mt: 0.1, mr: 0.5, fontSize: 16, fill: color }}
                     >
                       <LoaderSvg />
                     </SvgIcon>
@@ -163,20 +164,20 @@ const ElectronNode = ({
                 case 'COMPLETED':
                   return (
                     <SvgIcon
-                      sx={{ mr: 0.1, fontSize: 14, fill: color, mt: 0.6 }}
+                      sx={{ ml: 1, fill: color, mt: 1 }}
                     >
                       <CheckSvg />
                     </SvgIcon>
                   )
                 case 'FAILED':
                   return (
-                    <SvgIcon sx={{ mt: 0.8, fontSize: 14, fill: color }}>
+                    <SvgIcon sx={{ mt: 1, ml: 1, fill: color }}>
                       <ErrorSvg />
                     </SvgIcon>
                   )
                 case 'CANCELLED':
                   return (
-                    <SvgIcon sx={{ mt: 0.8, fontSize: 14, fill: color }}>
+                    <SvgIcon sx={{ mt: 0.8, fill: color }}>
                       <CancelSvg />
                     </SvgIcon>
                   )
@@ -185,7 +186,7 @@ const ElectronNode = ({
               }
             })()}
 
-            <Typography sx={{ fontSize: 12 }}>{data.label}</Typography>
+            <Typography sx={{ fontSize: 14,mb:0.3 }}>{data.label}</Typography>
             <Handle
               type="source"
               position={sourcePosition}
@@ -199,7 +200,7 @@ const ElectronNode = ({
               elevation={!selected ? 1 : 5}
               sx={{
                 position: 'absolute',
-                top: 39,
+                top: 48,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
