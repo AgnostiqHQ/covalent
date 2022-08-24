@@ -22,9 +22,7 @@ name: tests
 
 on:
   pull_request:
-  workflow_run:
-    workflows: [changelog]
-    types: [completed]
+  workflow_call:
   workflow_dispatch:
     inputs:
       commit_sha:
@@ -375,7 +373,7 @@ jobs:
 
       - name: Alert Slack
         if: >
-          github.event_name == 'workflow_run'
+          github.event_name == 'workflow_call'
           && failure()
         uses: rtCamp/action-slack-notify@v2
         env:
