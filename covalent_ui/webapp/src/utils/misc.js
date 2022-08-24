@@ -29,6 +29,9 @@ import { ReactComponent as CheckSvg } from '../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../assets/status/error.svg'
 import { ReactComponent as CancelSvg } from '../assets/status/stop.svg'
 import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
+import { ReactComponent as FunctionSvg } from '../assets/nodeType/fuction.svg'
+import { ReactComponent as ParameterSvg } from '../assets/nodeType/parameter.svg'
+import { ReactComponent as SubLattice } from '../assets/nodeType/sublattice.svg'
 
 export const secondsToHms = (ms) => {
   let time = ''
@@ -153,6 +156,37 @@ export const statusIcon = (status) => {
       return (
         <SvgIcon sx={{ mt: 1 }}>
           <CancelSvg />
+        </SvgIcon>
+      )
+    default:
+      return null
+  }
+}
+
+export const nodeLabelIcon = (type) => {
+  switch (type) {
+    case 'function':
+      return (
+        <SvgIcon sx={{mt:0.8}}>
+          <FunctionSvg />
+        </SvgIcon>
+      )
+    case 'electron_list':
+      return (
+        <SvgIcon sx={{mt:0.8}}>
+          <FunctionSvg /> 
+        </SvgIcon>
+      )
+    case 'parameter':
+      return (
+        <SvgIcon sx={{mt:1.5}}>
+          <ParameterSvg />
+        </SvgIcon>
+      )
+    case "sublattice":
+      return (
+        <SvgIcon  sx={{mt:0.8}}>
+          <SubLattice />
         </SvgIcon>
       )
     default:

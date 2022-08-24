@@ -35,7 +35,7 @@ import { ReactComponent as AtomSvg } from '../../assets/status/activity.svg'
 import { ReactComponent as CheckSvg } from '../../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../../assets/status/error.svg'
 import { ReactComponent as CancelSvg } from '../../assets/status/stop.svg'
-import { statusColor, truncateMiddle } from '../../utils/misc'
+import { statusColor, truncateMiddle, nodeLabelIcon } from '../../utils/misc'
 import { ReactComponent as LoaderSvg } from '../../assets/loader.svg'
 
 export const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
@@ -130,7 +130,7 @@ const ElectronNode = ({
               alignItems: 'center',
               px: 1,
               py: 0.5,
-              borderRadius: '16px',
+              borderRadius: '100px',
               // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
               color: !selected ? NODE_TEXT_COLOR : '#FAFAFA',
               borderColor: color,
@@ -143,6 +143,7 @@ const ElectronNode = ({
               position={targetPosition}
               isConnectable={isConnectable}
             />
+           { nodeLabelIcon(data.nodeType)}
             {(() => {
               switch (data.status) {
                 case 'NEW_OBJECT':
@@ -164,14 +165,14 @@ const ElectronNode = ({
                 case 'COMPLETED':
                   return (
                     <SvgIcon
-                      sx={{ ml: 1, fill: color, mt: 1 }}
+                      sx={{  fill: color, mt: 1 }}
                     >
                       <CheckSvg />
                     </SvgIcon>
                   )
                 case 'FAILED':
                   return (
-                    <SvgIcon sx={{ mt: 1, ml: 1, fill: color }}>
+                    <SvgIcon sx={{ mt: 1, fill: color }}>
                       <ErrorSvg />
                     </SvgIcon>
                   )

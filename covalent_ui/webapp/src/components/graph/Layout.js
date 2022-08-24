@@ -70,6 +70,7 @@ const mapGraphToElements = (graph, direction, showParams, hideLabels) => {
         executor: node.executor_label,
         node_id: node.node_id,
         hideLabels: hideLabels,
+        nodeType:node.type
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,

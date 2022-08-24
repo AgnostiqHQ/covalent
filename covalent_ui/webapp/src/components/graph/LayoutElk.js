@@ -51,7 +51,6 @@ const mapGraphToElements = (graph, direction, showParams, hideLabels, preview) =
   const nodes = _.map(graph.nodes, (node) => {
     const handlePositions = getHandlePositions(direction)
     const isParam = isParameter(node)
-
     const name = isParam ? _.trim(node.name, ':parameter:') : node.name
 
     return {
@@ -66,6 +65,7 @@ const mapGraphToElements = (graph, direction, showParams, hideLabels, preview) =
         executor: preview ? node?.metadata.executor_name : node.executor_label,
         node_id: preview ? node.id : node.node_id,
         hideLabels: hideLabels,
+        nodeType:node.type
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,
