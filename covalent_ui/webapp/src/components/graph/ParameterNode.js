@@ -81,7 +81,7 @@ const ParameterNode = ({
               />
             </Paper>
      </ParameterTooltip>:null}
-     
+
     <ParameterTooltip title={ data.hideLabels ? (
               <>
                 <Typography color="inherit">name : {data.fullName}</Typography>
@@ -113,7 +113,7 @@ const ParameterNode = ({
      />
     <Typography
      component="div"
-   
+
    >
      {data.label}
      <Handle
@@ -125,10 +125,10 @@ const ParameterNode = ({
       </Grid>
    </ParameterTooltip>
    {!data.hideLabels? <ParameterTooltip title={_.truncate(data.node_id, { length: 70 })} arrow placement="bottom-end">
-   <Paper      
+   <Paper
               sx={{
                 position: 'absolute',
-                top: 34,
+                top: data.preview?20:34,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -153,9 +153,9 @@ const ParameterNode = ({
               />
             </Paper>
    </ParameterTooltip>:null}
-  
+
     </Grid>
-    
+
 
   )
 }

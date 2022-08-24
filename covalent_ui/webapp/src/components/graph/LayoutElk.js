@@ -65,7 +65,8 @@ const mapGraphToElements = (graph, direction, showParams, hideLabels, preview) =
         executor: preview ? node?.metadata.executor_name : node.executor_label,
         node_id: preview ? node.id : node.node_id,
         hideLabels: hideLabels,
-        nodeType:node.type
+        nodeType:node.type,
+        preview
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,
