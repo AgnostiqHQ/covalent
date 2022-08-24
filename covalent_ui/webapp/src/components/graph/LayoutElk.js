@@ -107,10 +107,11 @@ const assignNodePositions = async (
           'elk.direction': direction,
           'elk.edgeRouting': 'POLYLINE',
           'elk.layered.nodePlacement.strategy': 'SIMPLE',
-          'elk.spacing.edgeEdge': hideLabels ? 10 : 0,
-          'elk.spacing.nodeNode': hideLabels ? 60 : 20,
+          'elk.spacing.edgeEdge': hideLabels ? 10 : 20,
+          'elk.spacing.nodeNode': hideLabels ? 60 : 40,
           'elk.spacing.edgeNode': hideLabels ? 60 : 40,
           'elk.spacing.edgeLabel': 10,
+          'elk.layered.spacing.nodeNodeBetweenLayers': 80,
         },
       })
       : new ELK({
@@ -120,7 +121,6 @@ const assignNodePositions = async (
           'elk.spacing.nodeNode': 60,
           'elk.spacing.edgeEdge': hideLabels ? 10 : 0,
           'elk.spacing.edgeNode': hideLabels ? 60 : 80,
-          'elk.layered.spacing.nodeNodeBetweenLayers': 60,
         },
       })
   _.each(elements, (el) => {
