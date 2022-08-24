@@ -46,10 +46,10 @@ const LatticeGraph = ({
   graph,
   hasSelectedNode,
   marginLeft = 0,
-  marginRight = 0
+  marginRight = 0,
+  dispatchId
 }) => {
   const { fitView } = useFitViewHelper()
-
   const [elements, setElements] = useState([])
   const [direction, setDirection] = useState('DOWN')
   const [showMinimap, setShowMinimap] = useState(false)
@@ -144,7 +144,7 @@ const LatticeGraph = ({
     quality: 10.0,
   });
 
-  const download = (image, { name = "covalent-img", extension = "jpg" } = {}) => {
+  const download = (image, { name = dispatchId, extension = "jpg" } = {}) => {
     const a = document.createElement("a");
     a.href = image;
     a.download = createFileName(extension, name);

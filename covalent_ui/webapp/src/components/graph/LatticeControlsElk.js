@@ -79,11 +79,6 @@ const LatticeControls = ({
         opacity: 0.7,
       }}
     >
-      <Hint title="Screenshot">
-        <ToggleButton onClick={toggleScreenShot} value="" sx={{height:'40px',color:'white'}}>
-          <ScreenshotIcon />
-        </ToggleButton>
-      </Hint>
       <Hint title="Zoom in">
         <ToggleButton value="" onClick={() => zoomIn(300)}>
           <PlusIcon />
@@ -93,6 +88,17 @@ const LatticeControls = ({
       <Hint title="Zoom out">
         <ToggleButton value="" onClick={() => zoomOut(300)}>
           <MinusIcon />
+        </ToggleButton>
+      </Hint>
+      <Hint title="Screenshot">
+        <ToggleButton
+          onClick={() => {
+            fitView({ duration: 300, marginLeft, marginRight })
+            setTimeout(() => toggleScreenShot(), 1000)
+          }}
+          value=""
+          sx={{ height: '40px', color: 'white' }}>
+          <ScreenshotIcon />
         </ToggleButton>
       </Hint>
 
