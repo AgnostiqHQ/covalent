@@ -1,0 +1,2 @@
+covalent
+pennylane==0.25.1
