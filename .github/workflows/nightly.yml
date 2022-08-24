@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run License workflow
-        uses: ./.github/workflows/license
+        uses: ./.github/workflows/license.yml@develop
 
   # Run tests.yml
   tests:
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Covalent's unit/functional test stack
-        uses: ./.github/workflows/tests
+        uses: ./.github/workflows/tests.yml@develop
 
   # Run benchmark.yml (stress and load tests and tutorials)
   benchmarks:
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Covalent stress and load tests
-        uses: ./.github/workflows/benchmark.yml
+        uses: ./.github/workflows/benchmark.yml@develop
 
   # Run changelog.yml
   changelog:
@@ -56,7 +56,7 @@ jobs:
     needs: [license, tests]
     steps:
       - name: Parse changelog and update VERSION
-        uses: ./.github/workflows/changelog
+        uses: ./.github/workflows/changelog.yml@develop
 
   # Get the latest release and push it to master
   update_main:
@@ -65,15 +65,15 @@ jobs:
     needs: [changelog, tests]
     steps:
       - name: Get latest release
-        uses: actions-ecosystem/action-get-latest-tag@v1
         id: get-latest-tag
         if: >
           github.ref == 'refs/heads/develop'
           && matrix.os == 'ubuntu-latest'
           && matrix.container == 'python:3.8-buster'
           && github.event_name != 'workflow_dispatch'
-        with:
-          semver_only: true
+        run: |
+          latest_tag=$(git describe --abbrev=0)
+          echo "::set-output name=tag::${latest_tag}"
 
       - name: Push to master
         id: push
