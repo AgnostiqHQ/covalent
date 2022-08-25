@@ -78,7 +78,7 @@ jobs:
         working-directory: ./tests
 
       - name: Create tests result archive
-        run: tar -zcvf $GITHUB_SHA.tar.gz metrics*.log loadtest_results*.csv
+        run: tar -zcvf ${{ env.GITHUB_SHA }}.tar.gz metrics*.log loadtest_results*.csv
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -88,4 +88,4 @@ jobs:
           aws-region: us-east-1
 
       - name: Upload benchmark results to S3
-        run: aws s3 cp ${{ GITHUB_SHA }}.tar.gz s3://${{ secrets.BENCHMARK_BUCKET }}/$GITHUB_SHA.tar.gz
+        run: aws s3 cp ${{ env.GITHUB_SHA }}.tar.gz s3://${{ secrets.BENCHMARK_BUCKET }}/${{ env.GITHUB_SHA }}.tar.gz
