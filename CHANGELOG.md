@@ -17,6 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added RTD and header for the AWS EC2 executor plugin.
 - Refactored tutorials for better organization
 
+### Added
+
+- Added executor label, node id and node type to graph node UI
+
+### Changed
+
+- Runtime has been modified to be more precise on the lattice and electron sidebar
+
 ## [0.185.0] - 2022-08-23
 
 ### Authors
