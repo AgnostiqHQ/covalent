@@ -101,11 +101,10 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       <Heading>Runtime</Heading>
       {!hasStarted ? (
         <Skeleton />
-      ) : result.status === 'RUNNING' ? (
-        <Runtime startTime={result.started_at} endTime={result.ended_at} />
-      ) : (
-        secondsToHms(result.runtime)
-      )}
+      ) :
+        (
+          <Runtime startTime={result.started_at} endTime={result.ended_at} />
+        )}
 
       {/* Directory */}
       <Heading>Directory</Heading>
@@ -164,7 +163,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       <Heading />
 
       {Object.keys(drawerFunctionString).length === 0 &&
-      drawerFunctionStringListFetching ? (
+        drawerFunctionStringListFetching ? (
         <Skeleton height={100} />
       ) : (
         <Paper elevation={0}>

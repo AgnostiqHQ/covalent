@@ -69,7 +69,7 @@ const ElectronNode = ({
         }}
       >
         {' '}
-        {!data.hideLabels ? (
+        {!data.hideLabels && data.executor ? (
           <ElectronTooltip title={data.executor} arrow placement="bottom-end">
             <Paper
               sx={{
@@ -143,7 +143,7 @@ const ElectronNode = ({
               position={targetPosition}
               isConnectable={isConnectable}
             />
-           { nodeLabelIcon(data.nodeType)}
+            {nodeLabelIcon(data.nodeType)}
             {(() => {
               switch (data.status) {
                 case 'NEW_OBJECT':
@@ -165,7 +165,7 @@ const ElectronNode = ({
                 case 'COMPLETED':
                   return (
                     <SvgIcon
-                      sx={{  fill: color, mt: 1 }}
+                      sx={{ fill: color, mt: 1 }}
                     >
                       <CheckSvg />
                     </SvgIcon>
@@ -187,7 +187,7 @@ const ElectronNode = ({
               }
             })()}
 
-            <Typography sx={{ fontSize: 14,mb:0.3 }}>{data.label}</Typography>
+            <Typography sx={{ fontSize: 14, mb: 0.3 }}>{data.label}</Typography>
             <Handle
               type="source"
               position={sourcePosition}
@@ -201,7 +201,7 @@ const ElectronNode = ({
               elevation={!selected ? 1 : 5}
               sx={{
                 position: 'absolute',
-                top: 48,
+                top: data.executor ? 48 : 35,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
