@@ -64,7 +64,7 @@ jobs:
           PYTHONPATH=$(pwd) python -m locust \
             --user ${users} \
             --spawn-rate 3 \
-            --run-time 1m \
+            --run-time 10m \
             --csv=loadtest_results \
             --headless \
             -f ./load_tests/locustfiles
