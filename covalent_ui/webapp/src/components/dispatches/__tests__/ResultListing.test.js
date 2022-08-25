@@ -28,7 +28,6 @@ import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
 import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
-import * as reactRedux from 'react-redux'
 
 function mockRender(renderedComponent) {
   const store = configureStore({
@@ -52,7 +51,6 @@ describe('Result Listing', () => {
     mockRender(<App />)
     const linkElement = screen.getByText('All')
     expect(linkElement).toBeInTheDocument()
-    screen.debug()
   })
   test.each(resultListCases)('render %p sort section', (firstArg) => {
     mockRender(<App />)

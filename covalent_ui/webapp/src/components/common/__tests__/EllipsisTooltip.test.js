@@ -28,6 +28,5 @@ describe('tooltip', () => {
     render(<App />)
     const linkElement = screen.getByTestId('toolTip')
     expect(linkElement).toBeInTheDocument()
-    screen.debug()
   })
 })

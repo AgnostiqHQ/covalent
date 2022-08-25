@@ -45,7 +45,7 @@ describe('executor section', () => {
   })
   test('renders Executor details', () => {
     render(<App metadata={metadata} />)
-    const linkElement = screen.getByText(/log_stdout.txt/i)
+    const linkElement = screen.getByText(/dask/i)
     expect(linkElement).toBeInTheDocument()
   })
   test('renders preview section', () => {

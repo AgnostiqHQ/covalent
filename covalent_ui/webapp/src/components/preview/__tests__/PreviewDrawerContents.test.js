@@ -19,15 +19,14 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
+
+import App from '../PreviewDrawerContents'
 import React from 'react'
-import { render, screen, fireEvent } from '../../../testHelpers/testUtils'
-import App from '../MobileAppBar'
+import { render, screen } from '../../../testHelpers/testUtils'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
-import theme from '../../../utils/theme'
-import ThemeProvider from '@mui/system/ThemeProvider'
 import * as redux from 'react-redux'
 
 function mockRender(renderedComponent) {
@@ -36,30 +35,43 @@ function mockRender(renderedComponent) {
   })
   return render(
     <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <BrowserRouter>{renderedComponent}</BrowserRouter>
-      </ThemeProvider>
+      <BrowserRouter>{renderedComponent}</BrowserRouter>
     </Provider>
   )
 }
 
-describe('mobile appbar', () => {
-  test('renders MobileAppBar section', () => {
-    // eslint-disable-next-line no-undef
+const previewCases = [
+  ['previewdrawer', 'Status'],
+  ['Description', 'covalent'],
+  ['status', 'Status'],
+  ['Executor', 'dask'],
+  ['Input', 'args:'],
+  ['Syntax highlighter', '# source unavailable'],
+]
+describe('preview drawer section', () => {
+  test.each(previewCases)('renders  %p section', (firstArgs, secongArgs) => {
+    const spy = jest.spyOn(redux, 'useSelector')
+    spy.mockReturnValue({
+      lattice: {
+        doc: 'covalent',
+        inputs: {
+          args: [],
+          kwargs: { n: '15', serial: 'True', parallel: 'True' },
+        },
+        metadata: {
+          executor_name: 'dask',
+          executor_details: {
+            attributes: {
+              log_stdout: 'log_stdout.txt',
+              log_stderr: 'log_stderr.txt',
+            },
+          },
+        },
+        src: '',
+      },
+    })
     mockRender(<App />)
-    const linkElement = screen.getByTestId('mobile appbar')
+    const linkElement = screen.getByText(secongArgs)
     expect(linkElement).toBeInTheDocument()
-  })
-  test('renders button', () => {
-    const useDispatchSpy = jest.spyOn(redux, 'useDispatch')
-    const mockDispatchFn = jest.fn()
-    useDispatchSpy.mockReturnValue(mockDispatchFn)
-    // eslint-disable-next-line no-undef
-    mockRender(<App />)
-    const linkElement = screen.getByRole('button')
-    expect(linkElement).toBeInTheDocument()
-    fireEvent.click(linkElement)
-    expect(mockDispatchFn).toBeCalled()
-    useDispatchSpy.mockClear()
   })
 })

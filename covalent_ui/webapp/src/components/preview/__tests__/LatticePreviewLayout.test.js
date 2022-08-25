@@ -19,16 +19,15 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
+
+import App from '../LatticePreviewLayout'
 import React from 'react'
-import { render, screen, fireEvent } from '../../../testHelpers/testUtils'
-import App from '../MobileAppBar'
+import { render, screen } from '../../../testHelpers/testUtils'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
-import theme from '../../../utils/theme'
-import ThemeProvider from '@mui/system/ThemeProvider'
-import * as redux from 'react-redux'
+import { ReactFlowProvider } from 'react-flow-renderer'
 
 function mockRender(renderedComponent) {
   const store = configureStore({
@@ -36,30 +35,29 @@ function mockRender(renderedComponent) {
   })
   return render(
     <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <BrowserRouter>{renderedComponent}</BrowserRouter>
-      </ThemeProvider>
+      <ReactFlowProvider>
+          <BrowserRouter>{renderedComponent}</BrowserRouter>
+      </ReactFlowProvider>
     </Provider>
   )
 }
 
-describe('mobile appbar', () => {
-  test('renders MobileAppBar section', () => {
-    // eslint-disable-next-line no-undef
+describe('lattice preview layout section', () => {
+  test('renders lattice preview layout', () => {
     mockRender(<App />)
-    const linkElement = screen.getByTestId('mobile appbar')
+    const linkElement = screen.getByTestId('logo')
     expect(linkElement).toBeInTheDocument()
   })
-  test('renders button', () => {
-    const useDispatchSpy = jest.spyOn(redux, 'useDispatch')
-    const mockDispatchFn = jest.fn()
-    useDispatchSpy.mockReturnValue(mockDispatchFn)
-    // eslint-disable-next-line no-undef
+
+  test('renders logo', () => {
     mockRender(<App />)
-    const linkElement = screen.getByRole('button')
+    const linkElement = screen.getByTestId('logo')
     expect(linkElement).toBeInTheDocument()
-    fireEvent.click(linkElement)
-    expect(mockDispatchFn).toBeCalled()
-    useDispatchSpy.mockClear()
+  })
+
+  test('renders layout not found', () => {
+    mockRender(<App />)
+    const linkElement = screen.getByText('Lattice preview not found.')
+    expect(linkElement).toBeInTheDocument()
   })
 })

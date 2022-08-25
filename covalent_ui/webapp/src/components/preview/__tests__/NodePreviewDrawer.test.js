@@ -19,16 +19,15 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
+
+import App from '../NodePreviewDrawer.js'
 import React from 'react'
-import { render, screen, fireEvent } from '../../../testHelpers/testUtils'
-import App from '../MobileAppBar'
+import { render, screen } from '../../../testHelpers/testUtils'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
-import theme from '../../../utils/theme'
-import ThemeProvider from '@mui/system/ThemeProvider'
-import * as redux from 'react-redux'
+import { ReactFlowProvider } from 'react-flow-renderer'
 
 function mockRender(renderedComponent) {
   const store = configureStore({
@@ -36,30 +35,41 @@ function mockRender(renderedComponent) {
   })
   return render(
     <Provider store={store}>
-      <ThemeProvider theme={theme}>
+      <ReactFlowProvider>
         <BrowserRouter>{renderedComponent}</BrowserRouter>
-      </ThemeProvider>
+      </ReactFlowProvider>
     </Provider>
   )
 }
 
-describe('mobile appbar', () => {
-  test('renders MobileAppBar section', () => {
-    // eslint-disable-next-line no-undef
-    mockRender(<App />)
-    const linkElement = screen.getByTestId('mobile appbar')
+const node = {
+  completed_at: '2022-08-25T04:24:10.006856',
+  executor_label: 'dask',
+  id: 606,
+  name: 'combine',
+  node_id: 68,
+  started_at: '2022-08-25T04:24:09.902067',
+  status: 'COMPLETED',
+  type: 'function',
+}
+
+const previewCases = [
+  ['statusLabel', 'Completed'],
+  ['status', 'Status'],
+  ['Executor', 'Executor:'],
+  ['Syntax highlighter', '# source unavailable'],
+]
+
+describe('lattice node preview drawer section', () => {
+  test('renders nodeDrawer section', () => {
+    mockRender(<App node={node} />)
+    const linkElement = screen.getByText(/combine/i)
     expect(linkElement).toBeInTheDocument()
   })
-  test('renders button', () => {
-    const useDispatchSpy = jest.spyOn(redux, 'useDispatch')
-    const mockDispatchFn = jest.fn()
-    useDispatchSpy.mockReturnValue(mockDispatchFn)
-    // eslint-disable-next-line no-undef
-    mockRender(<App />)
-    const linkElement = screen.getByRole('button')
+
+  test.each(previewCases)('renders %p', (firstArgs, secondArgs) => {
+    mockRender(<App node={node} />)
+    const linkElement = screen.getByText(secondArgs)
     expect(linkElement).toBeInTheDocument()
-    fireEvent.click(linkElement)
-    expect(mockDispatchFn).toBeCalled()
-    useDispatchSpy.mockClear()
   })
 })

@@ -27,7 +27,7 @@ import '@testing-library/jest-dom'
 
 const dialogboxCases = ['dialogbox', 'dialogIcon', 'closeIcon']
 describe('dialog box', () => {
-    test.each(dialogboxCases)('render %p', (firstArg) => {
+  test.each(dialogboxCases)('render %p', (firstArg) => {
     render(<App openDialogBox={true} />)
     const element = screen.getByTestId(firstArg)
     expect(element).toBeInTheDocument()
@@ -53,6 +53,4 @@ describe('dialog box', () => {
     const linkElement = screen.getAllByTestId('primarybutton')
     expect(linkElement[0]).toBeInTheDocument()
   })
-
-  // ONLY THE CLOSE BUTTON FUNCTIONALITY TEST IS PENDING //
 })
