@@ -174,7 +174,7 @@ export const nodeLabelIcon = (type) => {
     case 'electron_list':
       return (
         <SvgIcon sx={{mt:0.8}}>
-          <FunctionSvg /> 
+          <FunctionSvg />
         </SvgIcon>
       )
     case 'parameter':
