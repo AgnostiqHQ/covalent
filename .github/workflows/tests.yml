@@ -306,7 +306,8 @@ jobs:
           || steps.dispatcher_tests.outcome != 'success'
           || steps.functional_tests.outcome != 'success'
           || steps.ui_tests.outcome != 'success'
-        run: covalent logs
+        run: |
+          cat ~/.cache/covalent/covalent_ui.log
 
       - name: Upload SDK report to Codecov
         if: >
