@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Build test matrix by parsing configs from json
 - Dump covalent logs if any of the tests step fail
+- Use `cat` to dump logs
 
 ### Docs
 
