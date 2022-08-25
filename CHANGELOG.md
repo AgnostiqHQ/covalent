@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.186.0] - 2022-08-25
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+
+
 
 ### Operations
 
