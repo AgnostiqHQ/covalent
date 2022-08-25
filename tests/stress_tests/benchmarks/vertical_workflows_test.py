@@ -49,5 +49,3 @@ def test_benchmark_fully_vertical_multiply_workflow(benchmark, iteration):
     logger.debug(result.dict())
 
     assert status == "COMPLETED"
-
-    assert result.status == "COMPLETED"
