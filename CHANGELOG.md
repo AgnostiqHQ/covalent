@@ -11,11 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Fix conditional logic around dumping of `covalent` logs to stdout in test workflows
-
-### Operations
-
 - Build test matrix by parsing configs from json
 - Dump covalent logs if any of the tests step fail
+- changed-files action uses the proper sha in version.yml
 
 ### Docs
 

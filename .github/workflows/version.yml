@@ -39,6 +39,7 @@ jobs:
         id: changed-version-file
         uses: tj-actions/changed-files@v18.4
         with:
+          sha: ${{ github.event.pull_request.head.sha }}
           files: |
             VERSION
       - name: Fail if version changed
