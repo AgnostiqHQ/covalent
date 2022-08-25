@@ -33,34 +33,34 @@ on:
         required: true
 
 jobs:
+  build_test_matrix:
+    name: Build Test Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.filter-matrix.outputs.matrix }}
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Filter test matrix
+        id: filter-matrix
+        run: |
+          matrix=$(jq --arg trigger "${{ github.event_name }}" 'map(. | select(.trigger | index($trigger)))' .github/workflows/test_matrix.json)
+          echo "Test matrix:"
+          echo "$matrix" | jq
+          echo ::set-output name=matrix::{\"include\":$(echo $matrix)}
+
   tests:
+    needs: build_test_matrix
+    name: ${{ matrix.name }}
+    strategy:
+      matrix: ${{fromJson(needs.build_test_matrix.outputs.matrix)}}
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
       COVALENT_SERVER_IFACE_ANY: true
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-latest"]
-        container:
-          - python:3.8-buster
-          - python:3.8-bullseye
-          - python:3.9-buster
-          - python:3.9-bullseye
-          - python:3.10-buster
-          - python:3.10-bullseye
-          - image: "centos/python-38-centos7"
-            options: "--user root"
-        experimental: [false]
-        include:
-          - os: macos-latest
-            python-version: "3.8"
-            experimental: false
-          - os: macos-latest
-            python-version: "3.9"
-            experimental: false
-          - os: macos-latest
-            python-version: "3.10"
-            experimental: false
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
     outputs:
@@ -231,9 +231,18 @@ jobs:
           || steps.working-directory.outputs.build == 'true'
           || steps.working-directory.outputs.actions == 'true'
           || steps.working-directory.outputs.tests == 'true'
-        run: covalent start --ignore-migrations
+        run: |
+          if [ "${{ matrix.backend }}" = 'dask' ] ; then
+            covalent start --ignore-migrations
+          elif [ "${{ matrix.backend }}" = 'local' ] ; then
+            covalent start --ignore-migrations --no-cluster
+          else
+            echo "Invalid backend specified in test matrix."
+            exit 1
+          fi
 
       - name: Run SDK tests and measure coverage
+        id: sdk_tests
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.sdk == 'true'
@@ -246,6 +255,7 @@ jobs:
         run: coverage xml -o sdk_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
+        id: dispatcher_tests
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.dispatcher == 'true'
@@ -258,6 +268,7 @@ jobs:
         run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
+        id: functional_tests
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.actions == 'true'
@@ -288,6 +299,14 @@ jobs:
               && steps.working-directory.outputs.ui_backend == 'true'
               && steps.ui_tests.outputs.exit_code == 0))
         run: coverage xml -o ui_backend_coverage.xml
+
+      - name: Dump Covalent logs
+        if: >
+          steps.sdk_tests.outcome != 'success'
+          || steps.dispatcher_tests.outcome != 'success'
+          || steps.functional_tests.outcome != 'success'
+          || steps.ui_tests.outcome != 'success'
+        run: covalent logs
 
       - name: Upload SDK report to Codecov
         if: >
