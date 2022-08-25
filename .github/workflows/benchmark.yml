@@ -77,7 +77,9 @@ jobs:
         working-directory: ./tests
 
       - name: Create tests result archive
-        run: tar -zcvf ${{ env.GITHUB_SHA }}.tar.gz metrics*.log loadtest_results*.csv
+        run: |
+          ls -la
+          tar -zcvf ${{ env.GITHUB_SHA }}.tar.gz metrics*.log loadtest_results*.csv
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
