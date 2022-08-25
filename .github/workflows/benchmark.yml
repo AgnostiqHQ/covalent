@@ -21,13 +21,7 @@
 name: benchmarks
 
 on:
-  pull_request:
   workflow_call:
-    inputs:
-      s3_bucket_name:
-        description: S3 bucket name to upload the nightly benchmark results
-        required: True
-        type: string
 
 jobs:
   benchmarks:
