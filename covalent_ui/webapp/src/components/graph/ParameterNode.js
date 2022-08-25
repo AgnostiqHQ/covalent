@@ -65,6 +65,7 @@ const ParameterNode = ({
             color: (theme) => theme.palette.text.tertiary,
             borderColor: (theme) => theme.palette.primary.highlightBlue,
             borderStyle: 'solid',
+            borderWidth : 1,
           }}
         >
           <Handle

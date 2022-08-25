@@ -41,7 +41,6 @@ import {
   statusColor,
   statusIcon,
   statusLabel,
-  secondsToHms,
 } from '../../utils/misc'
 import Runtime from '../dispatches/Runtime'
 import SyntaxHighlighter from './SyntaxHighlighter'

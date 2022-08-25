@@ -22,7 +22,7 @@
 import { Divider, Paper, Tooltip, Typography, Skeleton } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import React, { useEffect } from 'react'
-import { formatDate, truncateMiddle, secondsToHms } from '../../utils/misc'
+import { formatDate, truncateMiddle } from '../../utils/misc'
 import CopyButton from '../common/CopyButton'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
