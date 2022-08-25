@@ -308,7 +308,7 @@ jobs:
           steps.sdk_tests.outcome == 'failed'
           || steps.dispatcher_tests.outcome == 'failed'
           || steps.functional_tests.outcome == 'failed'
-          || steps.ui_tests.outcome != 'failed' )
+          || steps.ui_tests.outcome == 'failed' )
         run: covalent logs
 
       - name: Upload SDK report to Codecov
