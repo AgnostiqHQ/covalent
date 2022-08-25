@@ -21,7 +21,7 @@
  */
 
 import { useZoomPanHelper } from 'react-flow-renderer'
-import { ToggleButton, ToggleButtonGroup, Tooltip, SvgIcon } from '@mui/material'
+import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material'
 import {
   Add as PlusIcon,
   ArrowBack,
