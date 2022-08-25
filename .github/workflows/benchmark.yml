@@ -57,8 +57,7 @@ jobs:
       - name: Start Covalent dispatcher server
         run: |
           covalent purge -Hy
-          covalent db migrate
-          PYTHONPATH=$PYTHONPATH:$(pwd)/tests/stress_tests covalent start
+          PYTHONPATH=$PYTHONPATH:$(pwd)/tests/stress_tests covalent start --ignore-migrations
 
       - name: Run stress benchmarks
         run: |
