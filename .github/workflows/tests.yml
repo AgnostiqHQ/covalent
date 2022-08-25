@@ -231,6 +231,7 @@ jobs:
           || steps.working-directory.outputs.build == 'true'
           || steps.working-directory.outputs.actions == 'true'
           || steps.working-directory.outputs.tests == 'true'
+        id: covalent_start
         run: |
           if [ "${{ matrix.backend }}" = 'dask' ] ; then
             covalent start --ignore-migrations
@@ -302,12 +303,13 @@ jobs:
 
       - name: Dump Covalent logs
         if: >
+          steps.covalent_start.outcome == 'success'
+          && (
           steps.sdk_tests.outcome != 'success'
           || steps.dispatcher_tests.outcome != 'success'
           || steps.functional_tests.outcome != 'success'
-          || steps.ui_tests.outcome != 'success'
-        run: |
-          cat ~/.cache/covalent/covalent_ui.log
+          || steps.ui_tests.outcome != 'success' )
+        run: covalent logs
 
       - name: Upload SDK report to Codecov
         if: >
