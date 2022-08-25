@@ -92,10 +92,7 @@ const LatticeControls = ({
       </Hint>
       <Hint title="Screenshot">
         <ToggleButton
-          onClick={() => {
-            fitView({ duration: 300, marginLeft, marginRight })
-            setTimeout(() => toggleScreenShot(), 1000)
-          }}
+          onClick={toggleScreenShot}
           value=""
           sx={{ height: '40px', color: 'white' }}>
           <ScreenshotIcon />
