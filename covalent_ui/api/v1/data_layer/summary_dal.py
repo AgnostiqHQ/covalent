@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from sqlite3 import InterfaceError
 from typing import List
 
-from sqlalchemy import update
+from sqlalchemy import case, update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func, or_
 
@@ -59,6 +59,7 @@ class Summary:
             List of top most Lattices and count
         """
         filters = []
+        result = None
         if status_filter == Status.ALL:
             filters = [status.value for status in Status]
         elif status_filter == Status.COMPLETED:
@@ -69,47 +70,59 @@ class Summary:
         else:
             filters = [status_filter.value]
 
-        data = (
-            self.db_con.query(
-                Lattice.dispatch_id.label("dispatch_id"),
-                Lattice.name.label("lattice_name"),
+        data = self.db_con.query(
+            Lattice.dispatch_id.label("dispatch_id"),
+            Lattice.name.label("lattice_name"),
+            (
                 (
-                    (
-                        func.strftime(
-                            "%s",
-                            func.IFNULL(Lattice.completed_at, func.datetime.now(timezone.utc)),
-                        )
-                        - func.strftime("%s", Lattice.started_at)
+                    func.strftime(
+                        "%s",
+                        func.IFNULL(Lattice.completed_at, func.datetime.now(timezone.utc)),
                     )
-                    * 1000
-                ).label("runtime"),
-                Lattice.electron_num.label("total_electrons"),
-                Lattice.completed_electron_num.label("total_electrons_completed"),
-                func.datetime(Lattice.started_at, "localtime").label("started_at"),
-                func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label(
-                    "ended_at"
-                ),
-                Lattice.status.label("status"),
-                func.datetime(Lattice.updated_at, "localtime").label("updated_at"),
+                    - func.strftime("%s", Lattice.started_at)
+                )
+                * 1000
+            ).label("runtime"),
+            Lattice.electron_num.label("total_electrons"),
+            Lattice.completed_electron_num.label("total_electrons_completed"),
+            func.datetime(Lattice.started_at, "localtime").label("started_at"),
+            func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label("ended_at"),
+            Lattice.status.label("status"),
+            func.datetime(Lattice.updated_at, "localtime").label("updated_at"),
+        ).filter(
+            or_(
+                Lattice.name.ilike(f"%{search}%"),
+                Lattice.dispatch_id.ilike(f"%{search}%"),
+            ),
+            Lattice.status.in_(filters),
+            Lattice.is_active.is_not(False),
+            Lattice.electron_id.is_(None),
+        )
+
+        if sort_by.value == "status":
+            case_status = case(
+                [
+                    (Lattice.status == Status.NEW_OBJECT.value, 0),
+                    (Lattice.status == Status.RUNNING.value, 1),
+                    (Lattice.status == Status.COMPLETED.value, 2),
+                    (Lattice.status == Status.POSTPROCESSING.value, 3),
+                    (Lattice.status == Status.POSTPROCESSING_FAILED.value, 4),
+                    (Lattice.status == Status.PENDING_POSTPROCESSING.value, 5),
+                    (Lattice.status == Status.FAILED.value, 6),
+                    (Lattice.status == Status.CANCELLED.value, 7),
+                ]
             )
-            .filter(
-                or_(
-                    Lattice.name.ilike(f"%{search}%"),
-                    Lattice.dispatch_id.ilike(f"%{search}%"),
-                ),
-                Lattice.status.in_(filters),
-                Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
+            data = data.order_by(
+                desc(case_status) if sort_direction == SortDirection.DESCENDING else case_status
             )
-            .order_by(
+        else:
+            data = data.order_by(
                 desc(sort_by.value)
                 if sort_direction == SortDirection.DESCENDING
                 else sort_by.value
             )
-            .offset(offset)
-            .limit(count)
-            .all()
-        )
+
+        result = data.offset(offset).limit(count).all()
 
         counter = (
             self.db_con.query(func.count(Lattice.id))
@@ -124,7 +137,7 @@ class Summary:
             )
             .first()
         )
-        return DispatchResponse(items=data, total_count=counter[0])
+        return DispatchResponse(items=result, total_count=counter[0])
 
     def get_summary_overview(self) -> Lattice:
         """
