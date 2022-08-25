@@ -61,7 +61,7 @@ jobs:
 
       - name: Run stress benchmarks
         run: |
-          rm *.log
+          rm -rf *.log
           python -m pytest -vv tests/stress_tests/benchmarks
 
       - name: Run Locust load tests
