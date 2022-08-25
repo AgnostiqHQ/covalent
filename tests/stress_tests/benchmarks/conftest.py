@@ -48,8 +48,7 @@ def benchmark():
     logger = logging.getLogger("metricsLogger")
     logger.setLevel(logging.DEBUG)
 
-    now = datetime.strftime(datetime.utcnow(), "%H-%M-%S")
-    fileHandler = logging.FileHandler(f"metrics-{now}.log")
+    fileHandler = logging.FileHandler("metrics.log")
     fileHandler.setFormatter(logging.DEBUG)
 
     formatter = logging.Formatter("%(asctime)s-%(name)s-%(levelname)s-%(message)s")
