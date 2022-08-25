@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Adding `benchmark.yml` workflow
+
 ## [0.186.0] - 2022-08-25
 
 ### Authors
