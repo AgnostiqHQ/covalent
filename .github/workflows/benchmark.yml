@@ -23,6 +23,11 @@ name: benchmarks
 on:
   pull_request:
   workflow_call:
+    inputs:
+      s3_bucket_name:
+        description: S3 bucket name to upload the nightly benchmark results
+        required: True
+        type: string
 
 jobs:
   benchmarks:
@@ -48,11 +53,17 @@ jobs:
           pip install --no-cache-dir -r ./tests/requirements.txt
           pip install --no-cache-dir jupyter
 
+      # PYTHONPATH is needed to avoid the occasional POSTPROCESSING_FAILED error
       - name: Start Covalent dispatcher server
-        run: covalent start --ignore-migrations
+        run: |
+          covalent purge -Hy
+          covalent db migrate
+          PYTHONPATH=$PYTHONPATH:$(pwd)/tests/stress_tests covalent start
 
-      #- name: Run stress tests
-      #  run: jupyter nbconvert --to notebook --execute tests/stress_tests/stress.ipynb
+      - name: Run stress benchmarks
+        run: |
+          rm *.log
+          python -m pytest -vv tests/stress_tests/benchmarks
 
       - name: Run Locust load tests
         run: |
@@ -60,14 +71,14 @@ jobs:
           PYTHONPATH=$(pwd) python -m locust \
             --user ${users} \
             --spawn-rate 3 \
-            --run-time 10m \
-            --csv=load_test_results \
+            --run-time 1m \
+            --csv=loadtest_results \
             --headless \
             -f ./load_tests/locustfiles
         working-directory: ./tests
 
-      #- name: Create tests result archive
-      #  run: tar -zcvf ${{ GITHUB_SHA }}.tar.gz stress_tests_performance_metrics.csv load_test_results*.csv
+      - name: Create tests result archive
+        run: tar -zcvf $GITHUB_SHA.tar.gz metrics*.log loadtest_results*.csv
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -76,5 +87,5 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # - name: Deploy static site to S3 bucket
-      #   run: aws s3 sync ./covalent_ui/webapp/build-demo/ ${{ secrets.S3_STATIC }} --delete
+      - name: Upload benchmark results to S3
+        run: aws s3 cp ${{ GITHUB_SHA }}.tar.gz s3://${{ secrets.BENCHMARK_BUCKET }}/$GITHUB_SHA.tar.gz
