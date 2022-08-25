@@ -65,9 +65,17 @@ jobs:
     needs: [changelog]
     steps:
       - name: Get latest release
+        id: query-tags
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: "https://api.github.com/repos/AgnostiqHQ/covalent/tags"
+          method: "GET"
+
+      - name: Parse latest tag
         id: get-latest-tag
         run: |
-          latest_tag=$(git describe --abbrev=0)
+          # This assumes that the response from the API is sorted in decreasing order (thus the first element is the latest tag)
+          latest_tag=${{ fromJSON(steps.query-tags.outputs.response)[0].name }}
           echo "::set-output name=tag::${latest_tag}"
 
       - name: Push to master
