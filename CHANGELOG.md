@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+
+### Operations
+
+- Fix conditional logic around dumping of `covalent` logs to stdout in test workflows
+
 ### Operations
 
 - Build test matrix by parsing configs from json
