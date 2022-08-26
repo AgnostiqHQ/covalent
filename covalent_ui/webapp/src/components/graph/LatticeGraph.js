@@ -44,6 +44,7 @@ function usePrevious(value) {
 
 const LatticeGraph = ({
   graph,
+  preview,
   hasSelectedNode,
   marginLeft = 0,
   marginRight = 0,
@@ -96,9 +97,9 @@ const LatticeGraph = ({
   // layouting
   useEffect(() => {
     if (algorithm === 'oldLayout') {
-      setElements(layout(graph, direction, showParams, hideLabels))
+      setElements(layout(graph, direction, showParams,hideLabels,preview))
     } else {
-      assignNodePositions(graph, direction, showParams, algorithm, hideLabels)
+      assignNodePositions(graph, direction, showParams, algorithm,hideLabels,preview)
         .then((els) => {
           setElements(els)
         })

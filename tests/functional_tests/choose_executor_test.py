@@ -28,37 +28,36 @@ import covalent as ct
 def test_using_executor_names():
     """Test that all loaded executors can be used in a simple electron."""
 
-    for executor_name in ["local", "dask"]:
+    executor_name = "local"
 
-        @ct.electron(executor=executor_name)
-        def passthrough(x):
-            return x
+    @ct.electron(executor=executor_name)
+    def passthrough(x):
+        return x
 
-        @ct.lattice()
-        def workflow(y):
-            return passthrough(x=y)
+    @ct.lattice()
+    def workflow(y):
+        return passthrough(x=y)
 
-        dispatch_id = ct.dispatch(workflow)(y="input")
-        output = ct.get_result(dispatch_id, wait=True)
+    dispatch_id = ct.dispatch(workflow)(y="input")
+    output = ct.get_result(dispatch_id, wait=True)
 
-        assert output.result == "input"
+    assert output.result == "input"
 
 
-@pytest.mark.skip(reason="Trying to pickle _asyncio.Task even though there is no such object")
 def test_using_executor_classes():
     """Test creating executor objects and using them in a simple electron."""
 
-    for executor in [ct.executor.LocalExecutor(), ct.executor.DaskExecutor()]:
+    executor = ct.executor.LocalExecutor()
 
-        @ct.electron(executor=executor)
-        def passthrough(x):
-            return x
+    @ct.electron(executor=executor)
+    def passthrough(x):
+        return x
 
-        @ct.lattice
-        def workflow(y):
-            return passthrough(x=y)
+    @ct.lattice
+    def workflow(y):
+        return passthrough(x=y)
 
-        dispatch_id = ct.dispatch(workflow)(y="input")
-        output = ct.get_result(dispatch_id, wait=True)
+    dispatch_id = ct.dispatch(workflow)(y="input")
+    output = ct.get_result(dispatch_id, wait=True)
 
-        assert output.result == "input"
+    assert output.result == "input"
