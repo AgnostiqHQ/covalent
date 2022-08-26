@@ -96,7 +96,6 @@ class Summary:
             ),
             Lattice.status.in_(filters),
             Lattice.is_active.is_not(False),
-            Lattice.electron_id.is_(None),
         )
 
         if sort_by.value == "status":
@@ -133,7 +132,6 @@ class Summary:
                 ),
                 Lattice.status.in_(filters),
                 Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
             )
             .first()
         )
@@ -150,19 +148,19 @@ class Summary:
             Latest running task status,
             Total dispatcher duration
         """
-        query1 = self.db_con.query(
+
+        total_jobs_running = self.db_con.query(
             (func.count(Lattice.id))
             .filter(
                 Lattice.status == "RUNNING",
                 Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
             )
             .label("total_jobs_running")
         ).first()
-        query2 = self.db_con.query(
+
+        total_jobs_done = self.db_con.query(
             (func.count(Lattice.id))
             .filter(
-                # Lattice.status == "COMPLETED",
                 or_(
                     Lattice.status == "COMPLETED",
                     Lattice.status == "POSTPROCESSING",
@@ -170,17 +168,18 @@ class Summary:
                     Lattice.status == "PENDING_POSTPROCESSING",
                 ),
                 Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
             )
             .label("total_jobs_done")
         ).first()
-        query3 = (
+
+        last_ran_job_status = (
             self.db_con.query(Lattice.status)
-            .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
+            .filter(Lattice.is_active.is_not(False))
             .order_by(Lattice.updated_at.desc())
             .first()
         )
-        query4 = (
+
+        run_time = (
             self.db_con.query(
                 (
                     func.sum(
@@ -190,52 +189,53 @@ class Summary:
                     * 1000
                 ).label("run_time")
             )
-            .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
+            .filter(Lattice.is_active.is_not(False))
             .first()
         )
-        query5 = self.db_con.query(
+
+        total_failed = self.db_con.query(
             (func.count(Lattice.id))
             .filter(
                 Lattice.status == "FAILED",
                 Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
             )
-            .label("total_failed")
+            .label("total_jobs_failed")
         ).first()
-        query6 = self.db_con.query(
-            (func.count(Lattice.id))
-            .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
-            .label("total_jobs")
+
+        total_jobs = self.db_con.query(
+            (func.count(Lattice.id)).filter(Lattice.is_active.is_not(False)).label("total_jobs")
         ).first()
-        query7 = self.db_con.query(
+
+        total_jobs_cancelled = self.db_con.query(
             (func.count(Lattice.id))
             .filter(
                 Lattice.status == "CANCELLED",
                 Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
             )
-            .label("total_jobs_running")
+            .label("total_jobs_cancelled")
         ).first()
-        query8 = self.db_con.query(
+
+        total_jobs_new_object = self.db_con.query(
             (func.count(Lattice.id))
             .filter(
                 Lattice.status == "NEW_OBJECT",
                 Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
             )
-            .label("total_jobs_running")
+            .label("total_jobs_new_object")
         ).first()
-        if query4 is None:
-            query4 = 0
+
+        run_time = 0 if run_time is None else run_time
         return DispatchDashBoardResponse(
-            total_jobs_running=query1[0],
-            total_jobs_completed=query2[0],
-            latest_running_task_status=query3[0] if query3 is not None else None,
-            total_dispatcher_duration=query4[0] if query4 is not None else 0,
-            total_jobs_failed=query5[0],
-            total_jobs_cancelled=query7[0],
-            total_jobs_new_object=query8[0],
-            total_jobs=query6[0],
+            total_jobs_running=total_jobs_running[0],
+            total_jobs_completed=total_jobs_done[0],
+            latest_running_task_status=last_ran_job_status[0]
+            if last_ran_job_status is not None
+            else None,
+            total_dispatcher_duration=run_time[0] if run_time is not None else 0,
+            total_jobs_failed=total_failed[0],
+            total_jobs_cancelled=total_jobs_cancelled[0],
+            total_jobs_new_object=total_jobs_new_object[0],
+            total_jobs=total_jobs[0],
         )
 
     def delete_dispatches(self, req: DeleteDispatchesRequest) -> Lattice:
