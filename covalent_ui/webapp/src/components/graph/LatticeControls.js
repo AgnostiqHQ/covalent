@@ -35,9 +35,9 @@
    Remove as MinusIcon,
  } from '@mui/icons-material'
  import useFitViewHelper from './ReactFlowHooks'
- 
- 
- 
+
+
+
  const LatticeControls = ({
    marginLeft = 0,
    marginRight = 0,
@@ -52,7 +52,7 @@
  }) => {
    const { zoomIn, zoomOut } = useZoomPanHelper()
    const { fitView } = useFitViewHelper()
- 
+
    return (
      <ToggleButtonGroup
        orientation="vertical"
@@ -71,13 +71,13 @@
            <PlusIcon />
          </ToggleButton>
        </Hint>
- 
+
        <Hint title="Zoom out">
          <ToggleButton value="" onClick={() => zoomOut(300)}>
            <MinusIcon />
          </ToggleButton>
        </Hint>
- 
+
        <Hint title="Fit to screen">
          <ToggleButton
            value=""
@@ -88,18 +88,18 @@
            <Fullscreen />
          </ToggleButton>
        </Hint>
- 
+
        <Hint title="Toggle parameters">
          <ToggleButton onClick={toggleParams} value="" selected={showParams}>
          </ToggleButton>
        </Hint>
- 
+
        <Hint title="Toggle minimap">
          <ToggleButton onClick={toggleMinimap} value="" selected={showMinimap}>
            <MapOutlined />
          </ToggleButton>
        </Hint>
- 
+
        <Hint title="Change orientation">
          <ToggleButton
            onClick={() => {
@@ -127,7 +127,7 @@
            }
          </ToggleButton>
        </Hint>
- 
+
        <Hint title="Toggle draggable nodes">
          <ToggleButton onClick={toggleNodesDraggable} value="">
            {nodesDraggable ? <LockOpenOutlined /> : <LockOutlined />}
@@ -136,7 +136,7 @@
      </ToggleButtonGroup>
    )
  }
- 
+
  const Hint = (props) => <Tooltip arrow placement="right" {...props} />
- 
+
  export default LatticeControls
