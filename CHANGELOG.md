@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Front-end test coverage measured and reported in CI
 - Added reusable version action
+- Added a workflow which checks for missing or extra requirements
 
 ## [0.187.0] - 2022-08-28
 
