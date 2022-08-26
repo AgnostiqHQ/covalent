@@ -90,7 +90,7 @@ const LatticeControls = ({
           <MinusIcon />
         </ToggleButton>
       </Hint>
-      <Hint title="Screenshot">
+      <Hint title="Download Screenshot">
         <ToggleButton
           onClick={toggleScreenShot}
           value=""

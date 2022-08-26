@@ -148,9 +148,7 @@ const ElectronNode = ({
               switch (data.status) {
                 case 'NEW_OBJECT':
                   return (
-                    <SvgIcon
-                      sx={{ mt: 0.5, mr: 0.5, fontSize: 14, fill: color }}
-                    >
+                    <SvgIcon sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
                       <AtomSvg />
                     </SvgIcon>
                   )
@@ -164,21 +162,19 @@ const ElectronNode = ({
                   )
                 case 'COMPLETED':
                   return (
-                    <SvgIcon
-                      sx={{ fill: color, mt: 1 }}
-                    >
+                    <SvgIcon sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
                       <CheckSvg />
                     </SvgIcon>
                   )
                 case 'FAILED':
                   return (
-                    <SvgIcon sx={{ mt: 1, fill: color }}>
+                    <SvgIcon sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
                       <ErrorSvg />
                     </SvgIcon>
                   )
                 case 'CANCELLED':
                   return (
-                    <SvgIcon sx={{ mt: 0.8, fill: color }}>
+                    <SvgIcon sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
                       <CancelSvg />
                     </SvgIcon>
                   )

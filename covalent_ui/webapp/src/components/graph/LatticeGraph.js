@@ -135,7 +135,7 @@ const LatticeGraph = ({
       takeScreenShot(ref_chart.current).then(download);
       setScreen(false);
     }
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen]);
 
 
@@ -143,7 +143,7 @@ const LatticeGraph = ({
 
   const [image, takeScreenShot] = useScreenshot({
     type: "image/jpeg",
-    quality: 10.0,
+    quality: 1.0,
   });
 
   const download = (image, { name = dispatchId, extension = "jpg" } = {}) => {
