@@ -11,19 +11,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `test_using_executor_names` and `test_internal_sublattice_dispatch` tests to also work with `--no-cluster` option.
 
+## [0.186.0] - 2022-08-25
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+
 ### Operations
 
 - Fix conditional logic around dumping of `covalent` logs to stdout in test workflows
-
-### Operations
-
 - Build test matrix by parsing configs from json
 - Dump covalent logs if any of the tests step fail
+- changed-files action uses the proper sha in version.yml
 
 ### Docs
 
 - Added RTD and header for the AWS EC2 executor plugin.
 - Refactored tutorials for better organization
+
+### Added
+
+- Added executor label, node id and node type to graph node UI
+
+### Changed
+
+- Runtime has been modified to be more precise on the lattice and electron sidebar
 
 ## [0.185.0] - 2022-08-23
 
