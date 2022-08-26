@@ -60,56 +60,7 @@
   }
 
   test('Dispatch drawer contents is rendered', () => {
-    reduxRender(<App />)
-    const linkElement = screen.getByTestId('dispatchoverview')
-    expect(linkElement).toBeInTheDocument()
-  })
-
-  test('Dispatch drawer data is rendered', () => {
-    reduxRender(<App result={result}/>)
-    const linkElement = screen.getByTestId('dispatchoverview')
-    expect(linkElement).toBeInTheDocument()
-  })
-
-  test('run time rendered', () => {
-    reduxRender(<App startTime={result.started_at}
-      endTime={result.ended_at}/>)
-    const linkElement = screen.getByTestId('dispatchoverview')
-    expect(linkElement).toBeInTheDocument()
-  })
-
-  test('directory tooltip rendered', () => {
-    reduxRender(<App title={result.directory} />)
-    const linkElement = screen.getByTestId('dispatchoverview')
-    expect(linkElement).toBeInTheDocument()
-  })
-
-  test('directory copybutton rendered', () => {
-    reduxRender(<App content={result.directory} />)
-    const linkElement = screen.getByTestId('dispatchoverview')
-    expect(linkElement).toBeInTheDocument()
-  })
-
-  test('input section rendered', () => {
-    reduxRender(<App isFetching={false} inputs="input-data"/>)
-    const linkElement = screen.getByTestId('dispatchoverview')
-    expect(linkElement).toBeInTheDocument()
-  })
-
-  test('result section rendered', () => {
-    reduxRender(<App src="x=0"/>)
-    const linkElement = screen.getByTestId('dispatchoverview')
-    expect(linkElement).toBeInTheDocument()
-  })
-
-  test('executor section rendered', () => {
-    reduxRender(<App isFetching={false} metadata="function x=0"/>)
-    const linkElement = screen.getByTestId('dispatchoverview')
-    expect(linkElement).toBeInTheDocument()
-  })
-
-  test('functionto string rendered', () => {
-    reduxRender(<App src="function x=0"/>)
+    reduxRender(<App latDetails={result} />)
     const linkElement = screen.getByTestId('dispatchoverview')
     expect(linkElement).toBeInTheDocument()
   })

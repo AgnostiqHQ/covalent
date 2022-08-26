@@ -57,7 +57,7 @@ describe('electronNode file Rendered', () => {
   }
 
   test('renders electronNode', async () => {
-    reduxRender(<App />)
+    reduxRender(<App data={data} />)
     const linkElement = screen.getByTestId('electronNode')
     expect(linkElement).toBeInTheDocument()
   })
@@ -69,55 +69,55 @@ describe('electronNode file Rendered', () => {
   })
 
   test('renders electronNode NODE_TEXT_COLOR', async () => {
-    reduxRender(<App NODE_TEXT_COLOR='rgba(250, 250, 250, 0.6)' />)
+    reduxRender(<App data={data} NODE_TEXT_COLOR='rgba(250, 250, 250, 0.6)' />)
     const linkElement = screen.getByTestId('electronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders electronNode hasBorder', async () => {
-    reduxRender(<App hasBorder='Completed' />)
+    reduxRender(<App data={data} hasBorder='Completed' />)
     const linkElement = screen.getByTestId('electronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders electronNode color', async () => {
-    reduxRender(<App color='Completed' />)
+    reduxRender(<App data={data} color='Completed' />)
     const linkElement = screen.getByTestId('electronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders handle electronNode', async () => {
-    reduxRender(<App />)
+    reduxRender(<App data={data} />)
     const linkElement = screen.getByTestId('handleelectronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders handle position checked', async () => {
-    reduxRender(<App position='top' />)
+    reduxRender(<App data={data} position='top' />)
     const linkElement = screen.getByTestId('handleelectronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders handle isConnectable checked', async () => {
-    reduxRender(<App isConnectable={false} />)
+    reduxRender(<App data={data} isConnectable={false} />)
     const linkElement = screen.getByTestId('handleelectronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders sourcehandle rendered', async () => {
-    reduxRender(<App />)
+    reduxRender(<App data={data} />)
     const linkElement = screen.getByTestId('sourcehandleelectronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders sourcehandle position rendered', async () => {
-    reduxRender(<App position='bottom' />)
+    reduxRender(<App data={data} position='bottom' />)
     const linkElement = screen.getByTestId('sourcehandleelectronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders sourcehandle connectable rendered', async () => {
-    reduxRender(<App isConnectable={false} />)
+    reduxRender(<App data={data} isConnectable={false} />)
     const linkElement = screen.getByTestId('sourcehandleelectronNode')
     expect(linkElement).toBeInTheDocument()
   })
