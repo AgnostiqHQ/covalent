@@ -22,7 +22,7 @@
 import { Divider, Paper, Tooltip, Typography, Skeleton } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import React, { useEffect } from 'react'
-import { formatDate, truncateMiddle, secondsToHms } from '../../utils/misc'
+import { formatDate, truncateMiddle } from '../../utils/misc'
 import CopyButton from '../common/CopyButton'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
@@ -106,11 +106,10 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       <Heading>Runtime</Heading>
       {isFetching ? (
         <Skeleton />
-      ) : result?.status === 'RUNNING' ? (
-        <Runtime startTime={result.started_at} endTime={result?.ended_at} />
-      ) : (
-        secondsToHms(result?.runtime)
-      )}
+      ) :
+        (
+          <Runtime startTime={result.started_at} endTime={result.ended_at} />
+        )}
 
       {/* Directory */}
       <Heading>Directory</Heading>

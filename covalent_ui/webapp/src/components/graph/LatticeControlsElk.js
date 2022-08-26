@@ -40,7 +40,6 @@ import LabelOffIcon from '@mui/icons-material/LabelOff';
 import LabelIcon from '@mui/icons-material/Label';
 import * as React from 'react';
 import { LayoutOptions } from './LayoutOptions';
-import ScreenshotIcon from '@mui/icons-material/Screenshot';
 
 const LatticeControls = ({
   marginLeft = 0,
@@ -60,8 +59,7 @@ const LatticeControls = ({
   anchorEl,
   handleClose,
   handleHideLabels,
-  hideLabels,
-  pdfPrint
+  hideLabels
 }) => {
   const { zoomIn, zoomOut } = useZoomPanHelper()
   const { fitView } = useFitViewHelper()
@@ -78,10 +76,6 @@ const LatticeControls = ({
         opacity: 0.7,
       }}
     >
-      <ToggleButton value="" onClick={pdfPrint}>
-        <ScreenshotIcon />
-      </ToggleButton>
-
       <Hint title="Zoom in">
         <ToggleButton value="" onClick={() => zoomIn(300)}>
           <PlusIcon />

@@ -33,7 +33,6 @@ from covalent_ui.api.v1.models.lattices_model import (
     ElectronFileResponse,
     ElectronResponse,
 )
-from covalent_ui.api.v1.utils.executor_handler import get_task_inputs
 from covalent_ui.api.v1.utils.file_handle import FileHandler, validate_data
 
 routes: APIRouter = APIRouter()
@@ -78,6 +77,7 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
 
 
 def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
+    from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 
     result_object = get_result(dispatch_id=str(dispatch_id), wait=False)
     with Session(engine) as session:
