@@ -79,6 +79,7 @@ const LatticePreviewLayout = () => {
         }}
       >
         <LatticeMain
+          preview
           graph={lattice.graph}
           hasSelectedNode={!!selectedElectron}
           marginLeft={latticeDrawerWidth + navDrawerWidth}
