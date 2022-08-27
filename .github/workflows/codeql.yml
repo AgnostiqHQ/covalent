@@ -36,11 +36,23 @@ jobs:
       fail-fast: false
       matrix:
         language:
-          - "javascript"
-          - "python"
+          - python
+        repo:
+          - covalent
+          - covalent-ssh-plugin
+          - covalent-slurm-plugin
+          - covalent-ecs-plugin
+          - covalent-awsbatch-plugin
+          - covalent-awslambda-plugin
+          - covalent-braket-plugin
+        include:
+          - repo: covalent
+            language: javascript
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          repository: AgnostiqHQ/${{ matrix.repo }}
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
         with:
