@@ -30,6 +30,7 @@ runs:
         fetch-depth: 0
         ref: ${{ inputs.head_ref }}
     - name: Check git history
+      shell: bash
       run: |
         if git merge-base --is-ancestor $GITHUB_SHA origin/${{ inputs.base_ref }} ; then
           echo "BASE_COMMIT_HISTORY=$GITHUB_SHA" >> $GITHUB_ENV
@@ -45,11 +46,13 @@ runs:
       if: >
         steps.changed-version-file.outputs.any_changed == 'true'
         && inputs.head_ref != env.BASE_COMMIT_HISTORY
+      shell: bash
       run: |
         echo "Version changes are prohibited in pull requests."
         exit 1
     - name: Read head version
       if: inputs.head_ref != env.DEVELOP_COMMIT_HISTORY
+      shell: bash
       run: |
         HEAD_VERSION="$(cat ${{ inputs.version-path }})"
         echo "HEAD_VERSION=$HEAD_VERSION" >> $GITHUB_ENV
