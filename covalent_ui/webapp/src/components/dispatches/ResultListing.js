@@ -240,22 +240,22 @@ const ResultsTableToolbar = ({
         <SortDispatch
           title="All"
           count={allDispatches}
-          isFetching={dashboardOverviewFetching}
+          isFetching={!dashboardOverviewFetching}
         />
         <SortDispatch
           title="Running"
           count={runningDispatches}
-          isFetching={dashboardOverviewFetching}
+          isFetching={!dashboardOverviewFetching}
         />
         <SortDispatch
           title="Completed"
           count={completedDispatches}
-          isFetching={dashboardOverviewFetching}
+          isFetching={!dashboardOverviewFetching}
         />
         <SortDispatch
           title="Failed"
           count={failedDispatches}
-          isFetching={dashboardOverviewFetching}
+          isFetching={!dashboardOverviewFetching}
         />
       </Grid>
       <Input
@@ -301,9 +301,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-    {
-      fontSize: '1rem',
-    },
+  {
+    fontSize: '1rem',
+  },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -394,7 +394,7 @@ const ResultListing = () => {
   })
 
   const dashboardOverviewFetching = useSelector(
-    (state) => state.dashboard.fetchDashboardOverview.isFetching
+    (state) => state.dashboard.dashboardOverview
   )
 
   const allDispatches = useSelector(
@@ -415,6 +415,7 @@ const ResultListing = () => {
   const isFetching = useSelector(
     (state) => state.dashboard.fetchDashboardList.isFetching
   )
+
   // check if socket message is received and call API
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
   const dashboardListAPI = () => {
@@ -453,6 +454,7 @@ const ResultListing = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isError])
+
 
   useEffect(() => {
     if (offset === 0) setPage(1)
@@ -547,7 +549,7 @@ const ResultListing = () => {
           setOpenDialogBox={setOpenDialogBox}
           dashboardOverviewFetching={dashboardOverviewFetching}
         />
-        {!isFetching && (
+        {dashboardListView && (
           <Grid>
             <TableContainer>
               <StyledTable>
@@ -597,8 +599,8 @@ const ResultListing = () => {
                         </TableCell>
 
                         <TableCell>
-                          <OverflowTip value={result.latticeName}/>
-                          </TableCell>
+                          <OverflowTip value={result.latticeName} />
+                        </TableCell>
                         {result.status === 'RUNNING' ? (
                           <TableCell>
                             <Runtime

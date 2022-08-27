@@ -29,6 +29,7 @@ import cloudpickle as pickle
 import requests
 from requests.adapters import HTTPAdapter
 from sqlalchemy.orm import Session
+from urllib3.util import Retry
 
 from covalent._workflow.transport import TransportableObject
 
@@ -38,6 +39,7 @@ from .._data_store.models import Lattice
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .result import Result
+from .wait import EXTREME
 from .write_result_to_db import MissingLatticeRecordError, load_file
 
 app_log = logger.app_log
@@ -50,7 +52,7 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
 
     Args:
         dispatch_id: The dispatch id of the result.
-        wait: Whether to wait for the result to be completed/failed, default is False.
+        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
 
     Returns:
         The result from the file.
@@ -156,7 +158,7 @@ def _get_result_from_dispatcher(
 
     Args:
         dispatch_id: The dispatch id of the result.
-        wait: Whether to wait for the result to be completed/failed, default is False.
+        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
         status_only: If true, only returns result status, not the full result object, default is False.
         dispatcher: Dispatcher server address, defaults to the address set in covalent.config.
 
@@ -166,13 +168,16 @@ def _get_result_from_dispatcher(
     Raises:
         MissingLatticeRecordError: If the result is not found.
     """
-    adapter = HTTPAdapter(max_retries=5)
+
+    retries = int(EXTREME) if wait else 5
+
+    adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
     response = http.get(
         url,
-        params={"wait": wait, "status_only": status_only},
+        params={"wait": bool(int(wait)), "status_only": status_only},
     )
     if response.status_code == 404:
         raise MissingLatticeRecordError
@@ -256,9 +261,9 @@ def sync(
             _get_result_from_dispatcher(d, wait=True, status_only=True)
     else:
         with Session(db.engine) as session:
-            dispatch_id = session.query(Lattice.dispatch_id).all()
-        for d in dispatch_id:
-            _get_result_from_dispatcher(d, wait=True, status_only=True)
+            rows = session.query(Lattice).all()
+        for row in rows:
+            _get_result_from_dispatcher(row.dispatch_id, wait=True, status_only=True)
 
 
 def cancel(

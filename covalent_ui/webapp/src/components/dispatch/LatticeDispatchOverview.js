@@ -22,7 +22,7 @@
 import { Divider, Paper, Tooltip, Typography, Skeleton } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import React, { useEffect } from 'react'
-import { formatDate, truncateMiddle, secondsToHms } from '../../utils/misc'
+import { formatDate, truncateMiddle } from '../../utils/misc'
 import CopyButton from '../common/CopyButton'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
@@ -46,9 +46,6 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
   const drawerResult = useSelector(
     (state) => state.latticeResults.latticeResult
   )
-  const drawerResultListFetching = useSelector(
-    (state) => state.latticeResults.latticeResultsList.isFetching
-  )
   const drawerFunctionString = useSelector(
     (state) => state.latticeResults.latticeFunctionString
   )
@@ -57,9 +54,6 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
   )
   const drawerExecutorDetail = useSelector(
     (state) => state.latticeResults.latticeExecutorDetail
-  )
-  const drawerExecutorDetailListFetching = useSelector(
-    (state) => state.latticeResults.latticeExecutorDetailList.isFetching
   )
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
@@ -92,7 +86,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       {hasStarted && (
         <>
           <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-          {isFetching ? (
+          {isFetching && !hasStarted ? (
             <Skeleton />
           ) : (
             <Typography fontSize="body2.fontSize">
@@ -105,17 +99,16 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
 
       {/* Runtime */}
       <Heading>Runtime</Heading>
-      {isFetching ? (
+      {!hasStarted ? (
         <Skeleton />
-      ) : result.status === 'RUNNING' ? (
-        <Runtime startTime={result.started_at} endTime={result.ended_at} />
-      ) : (
-        secondsToHms(result.runtime)
-      )}
+      ) :
+        (
+          <Runtime startTime={result.started_at} endTime={result.ended_at} />
+        )}
 
       {/* Directory */}
       <Heading>Directory</Heading>
-      {isFetching ? (
+      {isFetching && !result ? (
         <Skeleton />
       ) : (
         <Typography
@@ -145,7 +138,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
         <>
           <Heading>Result</Heading>
-          {drawerResultListFetching ? (
+          {Object.keys(drawerResult).length === 0 ? (
             <Skeleton height={60} style={{ mt: 1 }} />
           ) : (
             <Paper elevation={0}>
@@ -158,8 +151,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       {/* Executor */}
       <ExecutorSection
         isFetching={
-          Object.keys(drawerExecutorDetail).length === 0 &&
-          drawerExecutorDetailListFetching
+          Object.keys(drawerExecutorDetail).length === 0
         }
         metadata={drawerExecutorDetail}
       />
@@ -171,7 +163,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       <Heading />
 
       {Object.keys(drawerFunctionString).length === 0 &&
-      drawerFunctionStringListFetching ? (
+        drawerFunctionStringListFetching ? (
         <Skeleton height={100} />
       ) : (
         <Paper elevation={0}>

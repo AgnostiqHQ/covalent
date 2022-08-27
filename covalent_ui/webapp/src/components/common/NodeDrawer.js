@@ -41,12 +41,12 @@ import {
   statusColor,
   statusIcon,
   statusLabel,
-  secondsToHms,
 } from '../../utils/misc'
 import Runtime from '../dispatches/Runtime'
 import SyntaxHighlighter from './SyntaxHighlighter'
 import Heading from '../common/Heading'
 import ErrorCard from './ErrorCard'
+import InputSection from './InputSection'
 import ExecutorSection from './ExecutorSection'
 import {
   electronDetails,
@@ -54,6 +54,7 @@ import {
   electronExecutor,
   electronFunctionString,
   electronError,
+  electronInput
 } from '../../redux/electronSlice'
 
 export const nodeDrawerWidth = 360
@@ -64,9 +65,9 @@ const NodeDrawer = ({ node, dispatchId }) => {
   const electronDetail = useSelector(
     (state) => state.electronResults.electronList
   )
-  // const electronInputResult = useSelector(
-  //   (state) => state.electronResults.electronInput
-  // )
+  const electronInputResult = useSelector(
+    (state) => state.electronResults.electronInput
+  )
   const electronResultData = useSelector(
     (state) => state.electronResults.electronResult
   )
@@ -82,9 +83,9 @@ const NodeDrawer = ({ node, dispatchId }) => {
   const electronDetailIsFetching = useSelector(
     (state) => state.electronResults.electronDetailsList.isFetching
   )
-  // const electronInputResultIsFetching = useSelector(
-  //   (state) => state.electronResults.electronInputList.isFetching
-  // )
+  const electronInputResultIsFetching = useSelector(
+    (state) => state.electronResults.electronInputList.isFetching
+  )
   const electronResultDataIsFetching = useSelector(
     (state) => state.electronResults.electronResultList.isFetching
   )
@@ -99,7 +100,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
   useEffect(() => {
     if (!!node) {
       dispatch(electronDetails({ electronId, dispatchId }))
-      // dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
+      dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
       dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
       dispatch(
         electronExecutor({ dispatchId, electronId, params: 'executor' })
@@ -229,7 +230,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
               <Heading>Runtime</Heading>
               {electronDetailIsFetching ? (
                 <Skeleton />
-              ) : electronDetail.status === 'RUNNING' ? (
+              ) : (
                 <Runtime
                   sx={(theme) => ({
                     color: theme.palette.text.tertiary,
@@ -238,18 +239,17 @@ const NodeDrawer = ({ node, dispatchId }) => {
                   startTime={electronDetail.started_at}
                   endTime={electronDetail.ended_at}
                 />
-              ) : (
-                secondsToHms(electronDetail.runtime)
-              )}
+              )
+              }
             </>
           )}
 
           {/* Input */}
-          {/* <InputSection
+          {electronInputResult && (<InputSection
             inputs={electronInputResult.data}
             sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
             isFetching={electronInputResultIsFetching}
-          /> */}
+          />)}
 
           {/* Result */}
           {electronDetail.status === 'COMPLETED' && (
