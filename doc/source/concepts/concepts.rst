@@ -9,3 +9,5 @@ The Concepts section helps you learn about the parts of the Covalent workflow an
 * :doc:`Components<components>`: Concepts for building a Covalent workflow.
 
 * :doc:`Workflow<workflow>`: How to execute a Covalent workflow, track its progress and see the results.
+
+* :doc:`File Transferw<filetransferw>`: How to transfer files from and to remote or local filesystems.
