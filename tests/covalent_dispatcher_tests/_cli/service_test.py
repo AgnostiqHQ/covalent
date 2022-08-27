@@ -432,7 +432,7 @@ def test_logs(exists, mocker):
 
 def test_config(mocker):
     """Test covalent config cli"""
-    from covalent._shared_files.config import _config_manager as cm
+    from covalent._shared_files.config import ConfigManager as cm
 
     cfg_read_config_mock = mocker.patch("covalent_dispatcher._cli.service.cm.read_config")
     json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")

@@ -38,13 +38,14 @@ from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
 from covalent._data_store.datastore import DataStore
-from covalent._shared_files.config import _config_manager as cm
-from covalent._shared_files.config import get_config, set_config
+from covalent._shared_files.config import ConfigManager, get_config, set_config
 from covalent.utils.migrate import migrate_pickled_result_object
+
+cm = ConfigManager()
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
-UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
+UI_SRVDIR = f"{os.path.dirname(os.path.abspath(__file__))}/../../covalent_ui"
 
 MIGRATION_WARNING_MSG = "There have been changes applied to the database."
 MIGRATION_COMMAND_MSG = '   (use "covalent db migrate" to run database migrations)'
@@ -141,9 +142,7 @@ def _is_server_running() -> bool:
     Returns:
         status: Status of whether the server is running.
     """
-    if _read_pid(UI_PIDFILE) == -1:
-        return False
-    return True
+    return _read_pid(UI_PIDFILE) != -1
 
 
 def _graceful_start(
@@ -204,11 +203,9 @@ def _terminate_child_processes(pid: int) -> None:
         None
     """
     for child_proc in psutil.Process(pid).children(recursive=True):
-        try:
+        with contextlib.suppress(psutil.NoSuchProcess):
             child_proc.kill()
             child_proc.wait()
-        except psutil.NoSuchProcess:
-            pass
 
 
 def _graceful_shutdown(pidfile: str) -> None:
@@ -227,12 +224,9 @@ def _graceful_shutdown(pidfile: str) -> None:
         proc = psutil.Process(pid)
         _terminate_child_processes(pid)
 
-        try:
+        with contextlib.suppress(psutil.NoSuchProcess):
             proc.terminate()
             proc.wait()
-        except psutil.NoSuchProcess:
-            pass
-
         click.echo("Covalent server has stopped.")
 
     else:
@@ -327,6 +321,10 @@ def start(
             set_config("dask.threads_per_worker", threads_per_worker)
         if workers:
             set_config("dask.num_workers", workers)
+
+        set_config("sdk.no_cluster", False)
+    else:
+        set_config("sdk.no_cluster", True)
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     set_config("user_interface.port", port)

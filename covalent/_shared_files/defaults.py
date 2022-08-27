@@ -39,6 +39,12 @@ arg_prefix = f"{prefix_separator}arg{prefix_separator}"
 # Default configuration settings
 _DEFAULT_CONFIG = {
     "sdk": {
+        "config_file": (
+            os.environ.get("COVALENT_CONFIG_DIR")
+            or os.environ.get("XDG_CONFIG_DIR")
+            or os.environ["HOME"] + "/.config"
+        )
+        + "/covalent/covalent.conf",
         "log_dir": (
             os.environ.get("COVALENT_LOGDIR")
             or (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
@@ -85,51 +91,27 @@ _DEFAULT_CONFIG = {
 }
 
 
-def set_executor() -> dict:
-    """Sets the executor based on whether Dask service is running.
+def get_executor() -> dict:
+    """
+    Gets the executor based on whether Dask service is running.
 
     Returns:
         "dask" as the executor if Dask is running and "local" if Dask is not running.
     """
-    config_dir = (
-        os.environ.get("COVALENT_CONFIG_DIR")
-        or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
-    ) + "/covalent"
     config_parser = ConfigParser()
-    config_file = f"{config_dir}/covalent.conf"
+    config_file = _DEFAULT_CONFIG["sdk"]["config_file"]
     config_parser.read(config_file)
-
-    try:
-        executor = (
-            {"executor": "dask"}
-            if config_parser["dask"]["scheduler_address"]
-            else {"executor": "local"}
-        )
-    except KeyError:
-        executor = {"executor": "local"}
-    return executor
+    return {"executor": "local"} if config_parser["sdk"]["no_cluster"] else {"executor": "dask"}
 
 
 # Going forward we may only want to return the executor field of DEFAULT_CONSTRAINT_VALUES
 # The rest of those parameters will now be in this dictionary
-_DEFAULT_CONSTRAINT_VALUES = set_executor()
-_DEFAULT_CONSTRAINT_VALUES["deps"] = {}
-_DEFAULT_CONSTRAINT_VALUES["call_before"] = []
-_DEFAULT_CONSTRAINT_VALUES["call_after"] = []
-_DEFAULT_CONSTRAINT_VALUES["workflow_executor"] = _DEFAULT_CONSTRAINT_VALUES["executor"]
-
-_DEFAULT_CONSTRAINTS_DEPRECATED = {
-    "schedule": False,
-    "num_cpu": 1,
-    "cpu_feature_set": [],
-    "num_gpu": 0,
-    "gpu_type": "",
-    "gpu_compute_capability": [],
-    "memory": "1G",
-    "executor": "local",
-    "time_limit": "00-00:00:00",
-    "budget": 0,
-    "conda_env": "",
+_DEFAULT_CONSTRAINT_VALUES = {
+    "executor": get_executor(),
+    "deps": {},
+    "call_before": [],
+    "call_after": [],
+    "workflow_executor": get_executor(),
 }
 
 WAIT_EDGE_NAME = "!waiting_edge"

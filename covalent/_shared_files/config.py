@@ -31,35 +31,34 @@ import toml
 """Configuration manager."""
 
 
-class _ConfigManager:
-    """Configuration manager class object.
+class ConfigManager:
+    """
+    Configuration manager class object.
 
     This class is used to manage an in-memory copy of a TOML configuration file.
     """
 
     def __init__(self) -> None:
-        config_dir = (
-            os.environ.get("COVALENT_CONFIG_DIR")
-            or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
-        ) + "/covalent"
-        self.config_file = f"{config_dir}/covalent.conf"
+
+        from .defaults import _DEFAULT_CONFIG
+
+        self.config_file = _DEFAULT_CONFIG["sdk"]["config_file"]
 
         self.generate_default_config()
         if os.path.exists(self.config_file):
             # Update config with user configuration file:
             self.update_config()
         else:
-            Path(config_dir).mkdir(parents=True, exist_ok=True)
-
+            Path(self.config_file).parent.mkdir(parents=True, exist_ok=True)
             self.write_config()
 
-        Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.db_path")).parent.mkdir(parents=True, exist_ok=True)
+            Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
+            Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
+            Path(self.get("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
+            Path(self.get("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
+            Path(self.get("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
+            Path(self.get("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
+            Path(self.get("dispatcher.db_path")).parent.mkdir(parents=True, exist_ok=True)
 
     def generate_default_config(self) -> None:
         """
@@ -116,6 +115,7 @@ class _ConfigManager:
             if new_entries:
                 update_nested_dict(self.config_data, new_entries, override_existing)
 
+        # Writing it back to the file
         self.write_config()
 
     def read_config(self) -> None:
@@ -197,9 +197,6 @@ class _ConfigManager:
             data[keys[-1]] = value
 
 
-_config_manager = _ConfigManager()
-
-
 def set_config(new_config: Union[Dict, str], new_value: Any = None) -> None:
     """
     Update the configuration.
@@ -214,16 +211,17 @@ def set_config(new_config: Union[Dict, str], new_value: Any = None) -> None:
     Returns:
         None
     """
+    cm = ConfigManager()
 
     if isinstance(new_config, str):
-        _config_manager.set(new_config, new_value)
+        cm.set(new_config, new_value)
     else:
         for key, value in new_config.items():
-            _config_manager.set(key, value)
-    _config_manager.write_config()
+            cm.set(key, value)
+    cm.write_config()
 
 
-def get_config(entries: Union[str, List] = []) -> Union[Dict, Union[str, int]]:
+def get_config(entries: Union[str, List] = None) -> Union[Dict, Union[str, int]]:
     """
     Return a configuration setting.
 
@@ -239,18 +237,21 @@ def get_config(entries: Union[str, List] = []) -> Union[Dict, Union[str, int]]:
                 settings.
     """
 
+    entries = entries or []
+    cm = ConfigManager()
+
     if isinstance(entries, List) and len(entries) == 0:
         # If no arguments are passed, return the full configuration as a dict
-        return _config_manager.config_data
+        return cm.config_data
     elif isinstance(entries, List) and len(entries) == 1:
         # If the argument is a single key in a List, return the corresponding value
-        return _config_manager.get(entries[0])
+        return cm.get(entries[0])
     elif isinstance(entries, str):
         # If the argument is a string key, return the corresponding value
-        return _config_manager.get(entries)
+        return cm.get(entries)
     else:
         # If a set of keys are passed, return a corresponding dict of key-value pairs
-        values = [_config_manager.get(entry) for entry in entries]
+        values = [cm.get(entry) for entry in entries]
         return dict(zip(entries, values))
 
 
@@ -264,8 +265,8 @@ def reload_config() -> None:
     Returns:
         None
     """
-
-    _config_manager.read_config()
+    cm = ConfigManager()
+    cm.read_config()
 
 
 def update_config(new_entries: Optional[Dict] = None, override_existing: bool = True) -> None:
@@ -282,5 +283,5 @@ def update_config(new_entries: Optional[Dict] = None, override_existing: bool = 
     Returns:
         None
     """
-
-    _config_manager.update_config(new_entries, override_existing)
+    cm = ConfigManager()
+    cm.update_config(new_entries, override_existing)
