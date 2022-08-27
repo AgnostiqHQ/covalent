@@ -32,6 +32,3 @@ Users interact with Covalent in 5 main ways:
 * :ref:`Electron Dependencies<Workflow electron dependencies>`
 
 * :ref:`File Transfers<File transfer>`
-
-..
-  Under the hood Covalent brings up a set of :doc:`microservices <../api/microservices>` to orchestrate workflows.
