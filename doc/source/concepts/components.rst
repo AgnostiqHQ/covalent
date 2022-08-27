@@ -38,7 +38,6 @@ Covalent's design ensures that a function decorated as an electron can still be 
 
 .. note:: When an electron is invoked by another electron, it is executed as a normal Python function.
 
-
 .. _Lattice:
 
 ~~~~~~~~~~~~~~
@@ -267,7 +266,8 @@ Note that while the lattice construction has some minor restrictions, as indicat
 
 
 
-Other useful components:
+Other related documentation:
 
 * :doc:`Sublattice<sublattice>`: A lattice transformed into an electron using an electron decorator after applying the lattice decorator.
 * :doc:`Transport graphs<transportGraph>`: A directed acyclic graph with the dependency of the tasks.
+* :doc:`Electron dependencies <electronDependencies>`:  One can specify different types of dependencies in an electron which will be installed or executed in the electron's backend execution environment.
