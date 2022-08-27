@@ -55,6 +55,7 @@ _DEFAULT_CONFIG = {
         "executor_dir": os.environ.get("COVALENT_EXECUTOR_DIR")
         or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
         + "/covalent/executor_plugins",
+        "no_cluster": "its all a joke",
     },
     "dispatcher": {
         "address": "localhost",
@@ -101,17 +102,17 @@ def get_executor() -> dict:
     config_parser = ConfigParser()
     config_file = _DEFAULT_CONFIG["sdk"]["config_file"]
     config_parser.read(config_file)
-    return {"executor": "local"} if config_parser["sdk"]["no_cluster"] else {"executor": "dask"}
+    return "local" if config_parser["sdk"]["no_cluster"] else "dask"
 
 
 # Going forward we may only want to return the executor field of DEFAULT_CONSTRAINT_VALUES
 # The rest of those parameters will now be in this dictionary
 _DEFAULT_CONSTRAINT_VALUES = {
-    "executor": get_executor(),
+    "executor": "local",  # get_executor(),
     "deps": {},
     "call_before": [],
     "call_after": [],
-    "workflow_executor": get_executor(),
+    "workflow_executor": "local",  # get_executor(),
 }
 
 WAIT_EDGE_NAME = "!waiting_edge"

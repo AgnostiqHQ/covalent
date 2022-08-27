@@ -287,7 +287,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     default=False,
     help="Start the server without Dask",
 )
-@click.argument("no-cluster", required=False)
 @click.pass_context
 def start(
     ctx: click.Context,
@@ -322,9 +321,9 @@ def start(
         if workers:
             set_config("dask.num_workers", workers)
 
-        set_config("sdk.no_cluster", False)
+        set_config("sdk.no_cluster", "false")
     else:
-        set_config("sdk.no_cluster", True)
+        set_config("sdk.no_cluster", "true")
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
     set_config("user_interface.port", port)

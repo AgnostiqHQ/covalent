@@ -198,11 +198,15 @@ class _ExecutorManager:
         Returns:
             None
         """
+        import contextlib
+
+        from pkg_resources import VersionConflict
 
         entry_points = pkg_resources.iter_entry_points("covalent.executor.executor_plugins")
         for entry in entry_points:
-            the_module = entry.load()
-            self._populate_executor_map_from_module(the_module)
+            with contextlib.suppress(VersionConflict):
+                the_module = entry.load()
+                self._populate_executor_map_from_module(the_module)
 
     def _load_executors(self, executor_dir: str) -> None:
         """

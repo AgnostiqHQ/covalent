@@ -18,7 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import copy
 import os
 import shutil
 from functools import reduce
@@ -74,7 +73,7 @@ class ConfigManager:
         from .defaults import _DEFAULT_CONFIG
 
         # self.config_data may be modified later, and we don't want it to affect _DEFAULT_CONFIG
-        self.config_data = copy.deepcopy(_DEFAULT_CONFIG)
+        self.config_data = _DEFAULT_CONFIG.copy()
 
     def update_config(
         self, new_entries: Optional[Dict] = None, override_existing: bool = True
