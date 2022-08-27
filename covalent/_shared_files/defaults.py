@@ -21,7 +21,9 @@
 """Create custom sentinels and defaults for Covalent"""
 
 import os
-from configparser import ConfigParser
+from builtins import list
+from dataclasses import dataclass, field
+from typing import Dict, List
 
 import dask.system
 
@@ -35,6 +37,8 @@ generator_prefix = f"{prefix_separator}generated{prefix_separator}"
 sublattice_prefix = f"{prefix_separator}sublattice{prefix_separator}"
 attr_prefix = f"{prefix_separator}attribute{prefix_separator}"
 arg_prefix = f"{prefix_separator}arg{prefix_separator}"
+
+WAIT_EDGE_NAME = "!waiting_edge"
 
 # Default configuration settings
 _DEFAULT_CONFIG = {
@@ -55,7 +59,7 @@ _DEFAULT_CONFIG = {
         "executor_dir": os.environ.get("COVALENT_EXECUTOR_DIR")
         or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
         + "/covalent/executor_plugins",
-        "no_cluster": "its all a joke",
+        "no_cluster": "false",
     },
     "dispatcher": {
         "address": "localhost",
@@ -99,20 +103,15 @@ def get_executor() -> dict:
     Returns:
         "dask" as the executor if Dask is running and "local" if Dask is not running.
     """
-    config_parser = ConfigParser()
-    config_file = _DEFAULT_CONFIG["sdk"]["config_file"]
-    config_parser.read(config_file)
-    return "local" if config_parser["sdk"]["no_cluster"] else "dask"
+    from config import get_config
+
+    return "local" if get_config("sdk.no_cluster") else "dask"
 
 
-# Going forward we may only want to return the executor field of DEFAULT_CONSTRAINT_VALUES
-# The rest of those parameters will now be in this dictionary
-_DEFAULT_CONSTRAINT_VALUES = {
-    "executor": "local",  # get_executor(),
-    "deps": {},
-    "call_before": [],
-    "call_after": [],
-    "workflow_executor": "local",  # get_executor(),
-}
-
-WAIT_EDGE_NAME = "!waiting_edge"
+@dataclass
+class DefaultMetadataValues:
+    executor: str = field(default_factory=get_executor)
+    deps: Dict = field(default_factory=dict)
+    call_before: List = field(default_factory=list)
+    call_after: List = field(default_factory=list)
+    workflow_executor: str = field(default_factory=get_executor)

@@ -120,18 +120,16 @@ class _ExecutorManager:
 
     def _is_plugin_name_valid(self, the_module):
         """Assert if the plugin variable name is valid"""
-        return (
-            True
-            if (
-                hasattr(the_module, "EXECUTOR_PLUGIN_NAME")
-                or hasattr(the_module, "executor_plugin_name")
-            )
-            else False
+
+        return bool(
+            hasattr(the_module, "EXECUTOR_PLUGIN_NAME")
+            or hasattr(the_module, "executor_plugin_name")
         )
 
     def nonzero_plugin_classes(self, plugin_class):
         """Retrun true if any plugin classes are present"""
-        return True if len(plugin_class) else False
+
+        return bool(len(plugin_class))
 
     def _populate_executor_map_from_module(self, the_module: Any) -> None:
         """
