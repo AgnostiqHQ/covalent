@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `test_using_executor_names` and `test_internal_sublattice_dispatch` tests to also work with `--no-cluster` option.
 
+### Added
+
+- Added test cases for front-end react components.
+
 ## [0.186.0] - 2022-08-25
 
 ### Authors
