@@ -3,7 +3,7 @@ flake8==3.9.2
 isort==5.7.0
 locust==2.11.0
 mock==4.0.3
-nbconvert==6.3.0
+nbconvert==6.5.1
 pennylane==0.16.0
 pre-commit==2.13.0
 pytest==6.2.5
