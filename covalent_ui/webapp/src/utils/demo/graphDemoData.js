@@ -48,6 +48,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                     '# @ct.electron\ndef get_RA(target_list):\n    RA = []\n    for target_name in target_list:\n        response = requests.get(\n            "http://simbad.u-strasbg.fr/simbad/sim-id?output.format=votable&Ident=%s&output.params=ra,dec"\n            % target_name\n        )\n        star_info = response.text\n        RA.append(\n            star_info[star_info.index("<TR><TD>") + 8 : star_info.index("</TD><TD>")]\n        )\n    RA_degs = []\n    for source in RA:\n        hour = float(source.split(" ")[0])\n        minute = float(source.split(" ")[1])\n        second = float(source.split(" ")[2])\n        RA_degs.append(((hour + minute / 60 + second / 3600) * 15))\n    return RA_degs\n\n\n',
                 id: 0,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -69,6 +70,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                 function_string: '# to_electron_collection was not inspectable\n\n',
                 id: 1,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -89,6 +91,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                 },
                 id: 2,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -109,6 +112,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                 },
                 id: 3,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -131,6 +135,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                     '# @ct.electron\ndef get_dec(target_list):\n    dec = []\n    for target_name in target_list:\n        response = requests.get(\n            "http://simbad.u-strasbg.fr/simbad/sim-id?output.format=votable&Ident=%s&output.params=ra,dec"\n            % target_name\n        )\n        star_info = response.text\n        dec.append(\n            star_info[star_info.index("</TD><TD>") + 9 : star_info.index("</TD></TR>")]\n        )\n    dec_degs = []\n    for source in dec:\n        degree = float(source.split(" ")[0])\n        arcmin = float(source.split(" ")[1])\n        arcsec = float(source.split(" ")[2])\n        if degree < 0:\n            dec_degs.append(degree - arcmin / 60 - arcsec / 3600)\n        else:\n            dec_degs.append(degree + arcmin / 60 + arcsec / 3600)\n    return dec_degs\n\n\n',
                 id: 4,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -152,6 +157,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                 function_string: '# to_electron_collection was not inspectable\n\n',
                 id: 5,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -172,6 +178,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                 },
                 id: 6,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -192,6 +199,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                 },
                 id: 7,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -214,6 +222,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                     '# @ct.electron\ndef convert_to_utc(time_zone):\n    start_time = 0\n    end_time = 24.016\n    now = datetime.now(pytz.timezone(time_zone))\n    offset = now.utcoffset().total_seconds() / 60 / 60\n    utc_timerange = np.arange(start_time - offset, end_time - offset, 0.016)\n    return utc_timerange\n\n\n',
                 id: 8,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -234,6 +243,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                 },
                 id: 9,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -256,6 +266,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                     '# @ct.electron\ndef days_since_J2000(region):\n    f_date = date(2000, 1, 1)\n    year = get_date(time_zone=region)[0]\n    month = get_date(time_zone=region)[1]\n    day = get_date(time_zone=region)[2]\n    l_date = date(year, month, day)\n    delta = l_date - f_date\n    return delta.days\n\n\n',
                 id: 10,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -276,6 +287,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                 },
                 id: 11,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -300,6 +312,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                     '# @ct.electron\ndef local_sidereal_time(d, long, T):\n    LST = 100.46 + 0.985647 * (d + T / 24) + long + 15 * T\n    return LST\n\n\n',
                 id: 12,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -320,6 +333,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                 },
                 id: 13,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -343,6 +357,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                     '# @ct.electron\ndef hour_angle(LST, RA):\n    LST_list = []\n    for source in RA:\n        LST_list.append(np.asarray([value - source for value in LST]))\n    return LST_list\n\n\n',
                 id: 14,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -367,6 +382,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                     '# @ct.electron\ndef altitude_of_target(dec, lat, ha):\n    alt_list = []\n    lat = lat * 0.0174533\n    for i in range(len(dec)):\n        dec_i = dec[i] * 0.0174533\n        ha_i = ha[i] * 0.0174533\n        alt = np.arcsin(\n            np.sin(dec_i) * np.sin(lat) + np.cos(dec_i) * np.cos(lat) * np.cos(ha_i)\n        )\n        alt_list.append(alt * 57.2958)\n    return alt_list\n\n\n',
                 id: 15,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -387,6 +403,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                 },
                 id: 16,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -412,6 +429,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                     '# @ct.electron\ndef get_azimuth(dec, lat, ha, alt):\n    az_list = []\n    lat = round(lat * 0.0174533, 2)\n    for i in range(len(dec)):\n        azimuth = []\n        dec_i = round(dec[i] * 0.0174533, 2)\n        ha_i = ha[i] * 0.0174533\n        alt_i = alt[i] * 0.0174533\n        a = np.arccos(\n            (np.sin(dec_i) - np.sin(alt_i) * np.sin(lat))\n            / (np.cos(alt_i) * np.cos(lat))\n        )\n        for q in range(len(ha_i)):\n            if np.sin(ha_i[q]) < 0:\n                azimuth.append(a[q] * 57.2958)\n            else:\n                azimuth.append(360 - (a[q] * 57.2958))\n        az_list.append(np.array(azimuth))\n    return az_list\n\n\n',
                 id: 17,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -432,6 +450,7 @@ graphDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {
                 },
                 id: 18,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
         ],
@@ -576,6 +595,7 @@ graphDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"] = {
                 },
                 id: 0,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:1.1',
@@ -611,6 +631,7 @@ graphDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"] = {
                 stderr: null,
                 id: 1,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy',
@@ -645,6 +666,7 @@ graphDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"] = {
                 },
                 id: 2,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'construct_cu_slab',
@@ -678,6 +700,7 @@ graphDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"] = {
                 },
                 id: 3,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:(4, 4, 2)',
@@ -713,6 +736,7 @@ graphDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"] = {
                 stderr: null,
                 id: 4,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:10.0',
@@ -748,6 +772,7 @@ graphDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"] = {
                 stderr: null,
                 id: 5,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy',
@@ -783,6 +808,7 @@ graphDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"] = {
                 },
                 id: 6,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'get_relaxed_slab',
@@ -820,6 +846,7 @@ graphDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"] = {
                 },
                 id: 7,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:3',
@@ -855,6 +882,7 @@ graphDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"] = {
                 stderr: null,
                 id: 8,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy',
@@ -890,6 +918,7 @@ graphDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"] = {
                 },
                 id: 9,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy_+_compute_system_energy',
@@ -1010,6 +1039,7 @@ graphDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"] = {
                 },
                 id: 0,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:1.1',
@@ -1045,6 +1075,7 @@ graphDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"] = {
                 stderr: null,
                 id: 1,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy',
@@ -1079,6 +1110,7 @@ graphDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"] = {
                 },
                 id: 2,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'construct_cu_slab',
@@ -1112,6 +1144,7 @@ graphDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"] = {
                 },
                 id: 3,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:(4, 4, 2)',
@@ -1147,6 +1180,7 @@ graphDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"] = {
                 stderr: null,
                 id: 4,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:10.0',
@@ -1182,6 +1216,7 @@ graphDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"] = {
                 stderr: null,
                 id: 5,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy',
@@ -1217,6 +1252,7 @@ graphDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"] = {
                 },
                 id: 6,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'get_relaxed_slab',
@@ -1254,6 +1290,7 @@ graphDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"] = {
                 },
                 id: 7,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:3',
@@ -1289,6 +1326,7 @@ graphDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"] = {
                 stderr: null,
                 id: 8,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy',
@@ -1324,6 +1362,7 @@ graphDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"] = {
                 },
                 id: 9,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy_+_compute_system_energy',
@@ -1444,6 +1483,7 @@ graphDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"] = {
                 },
                 id: 0,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:1.1',
@@ -1479,6 +1519,7 @@ graphDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"] = {
                 stderr: null,
                 id: 1,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy',
@@ -1513,6 +1554,7 @@ graphDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"] = {
                 },
                 id: 2,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'construct_cu_slab',
@@ -1546,6 +1588,7 @@ graphDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"] = {
                 },
                 id: 3,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:(4, 4, 2)',
@@ -1581,6 +1624,7 @@ graphDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"] = {
                 stderr: null,
                 id: 4,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:10.0',
@@ -1616,6 +1660,7 @@ graphDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"] = {
                 stderr: null,
                 id: 5,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy',
@@ -1651,6 +1696,7 @@ graphDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"] = {
                 },
                 id: 6,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'get_relaxed_slab',
@@ -1688,6 +1734,7 @@ graphDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"] = {
                 },
                 id: 7,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:3',
@@ -1723,6 +1770,7 @@ graphDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"] = {
                 stderr: null,
                 id: 8,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy',
@@ -1758,6 +1806,7 @@ graphDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"] = {
                 },
                 id: 9,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy_+_compute_system_energy',
@@ -1878,6 +1927,7 @@ graphDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"] = {
                 },
                 id: 0,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:1.1',
@@ -1913,6 +1963,7 @@ graphDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"] = {
                 stderr: null,
                 id: 1,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy',
@@ -1947,6 +1998,7 @@ graphDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"] = {
                 },
                 id: 2,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'construct_cu_slab',
@@ -1980,6 +2032,7 @@ graphDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"] = {
                 },
                 id: 3,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:(4, 4, 2)',
@@ -2015,6 +2068,7 @@ graphDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"] = {
                 stderr: null,
                 id: 4,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:10.0',
@@ -2050,6 +2104,7 @@ graphDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"] = {
                 stderr: null,
                 id: 5,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy',
@@ -2085,6 +2140,7 @@ graphDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"] = {
                 },
                 id: 6,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'get_relaxed_slab',
@@ -2122,6 +2178,7 @@ graphDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"] = {
                 },
                 id: 7,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: ':parameter:3',
@@ -2157,6 +2214,7 @@ graphDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"] = {
                 stderr: null,
                 id: 8,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy',
@@ -2192,6 +2250,7 @@ graphDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"] = {
                 },
                 id: 9,
                 doc: null,
+executor_label:'dask',
             },
             {
                 name: 'compute_system_energy_+_compute_system_energy',
@@ -2302,6 +2361,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                     '# @ct.electron\ndef get_RA(target_list):\n    RA = []\n    for target_name in target_list:\n        response = requests.get(\n            "http://simbad.u-strasbg.fr/simbad/sim-id?output.format=votable&Ident=%s&output.params=ra,dec"\n            % target_name\n        )\n        star_info = response.text\n        RA.append(\n            star_info[star_info.index("<TR><TD>") + 8 : star_info.index("</TD><TD>")]\n        )\n    RA_degs = []\n    for source in RA:\n        hour = float(source.split(" ")[0])\n        minute = float(source.split(" ")[1])\n        second = float(source.split(" ")[2])\n        RA_degs.append(((hour + minute / 60 + second / 3600) * 15))\n    return RA_degs\n\n\n',
                 id: 0,
                 doc: null,
+executor_label:'dask',
                 status: 'FAILED'
             },
             {
@@ -2323,6 +2383,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                 function_string: '# to_electron_collection was not inspectable\n\n',
                 id: 1,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2343,6 +2404,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                 },
                 id: 2,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2363,6 +2425,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                 },
                 id: 3,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2385,6 +2448,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                     '# @ct.electron\ndef get_dec(target_list):\n    dec = []\n    for target_name in target_list:\n        response = requests.get(\n            "http://simbad.u-strasbg.fr/simbad/sim-id?output.format=votable&Ident=%s&output.params=ra,dec"\n            % target_name\n        )\n        star_info = response.text\n        dec.append(\n            star_info[star_info.index("</TD><TD>") + 9 : star_info.index("</TD></TR>")]\n        )\n    dec_degs = []\n    for source in dec:\n        degree = float(source.split(" ")[0])\n        arcmin = float(source.split(" ")[1])\n        arcsec = float(source.split(" ")[2])\n        if degree < 0:\n            dec_degs.append(degree - arcmin / 60 - arcsec / 3600)\n        else:\n            dec_degs.append(degree + arcmin / 60 + arcsec / 3600)\n    return dec_degs\n\n\n',
                 id: 4,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2406,6 +2470,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                 function_string: '# to_electron_collection was not inspectable\n\n',
                 id: 5,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2426,6 +2491,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                 },
                 id: 6,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2446,6 +2512,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                 },
                 id: 7,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2468,6 +2535,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                     '# @ct.electron\ndef convert_to_utc(time_zone):\n    start_time = 0\n    end_time = 24.016\n    now = datetime.now(pytz.timezone(time_zone))\n    offset = now.utcoffset().total_seconds() / 60 / 60\n    utc_timerange = np.arange(start_time - offset, end_time - offset, 0.016)\n    return utc_timerange\n\n\n',
                 id: 8,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2488,6 +2556,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                 },
                 id: 9,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2510,6 +2579,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                     '# @ct.electron\ndef days_since_J2000(region):\n    f_date = date(2000, 1, 1)\n    year = get_date(time_zone=region)[0]\n    month = get_date(time_zone=region)[1]\n    day = get_date(time_zone=region)[2]\n    l_date = date(year, month, day)\n    delta = l_date - f_date\n    return delta.days\n\n\n',
                 id: 10,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2530,6 +2600,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                 },
                 id: 11,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2554,6 +2625,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                     '# @ct.electron\ndef local_sidereal_time(d, long, T):\n    LST = 100.46 + 0.985647 * (d + T / 24) + long + 15 * T\n    return LST\n\n\n',
                 id: 12,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2574,6 +2646,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                 },
                 id: 13,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2597,6 +2670,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                     '# @ct.electron\ndef hour_angle(LST, RA):\n    LST_list = []\n    for source in RA:\n        LST_list.append(np.asarray([value - source for value in LST]))\n    return LST_list\n\n\n',
                 id: 14,
                 doc: null,
+executor_label:'dask',
                 status: 'PENDING'
             },
             {
@@ -2621,6 +2695,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                     '# @ct.electron\ndef altitude_of_target(dec, lat, ha):\n    alt_list = []\n    lat = lat * 0.0174533\n    for i in range(len(dec)):\n        dec_i = dec[i] * 0.0174533\n        ha_i = ha[i] * 0.0174533\n        alt = np.arcsin(\n            np.sin(dec_i) * np.sin(lat) + np.cos(dec_i) * np.cos(lat) * np.cos(ha_i)\n        )\n        alt_list.append(alt * 57.2958)\n    return alt_list\n\n\n',
                 id: 15,
                 doc: null,
+executor_label:'dask',
                 status: 'PENDING'
             },
             {
@@ -2641,6 +2716,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                 },
                 id: 16,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
@@ -2666,6 +2742,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                     '# @ct.electron\ndef get_azimuth(dec, lat, ha, alt):\n    az_list = []\n    lat = round(lat * 0.0174533, 2)\n    for i in range(len(dec)):\n        azimuth = []\n        dec_i = round(dec[i] * 0.0174533, 2)\n        ha_i = ha[i] * 0.0174533\n        alt_i = alt[i] * 0.0174533\n        a = np.arccos(\n            (np.sin(dec_i) - np.sin(alt_i) * np.sin(lat))\n            / (np.cos(alt_i) * np.cos(lat))\n        )\n        for q in range(len(ha_i)):\n            if np.sin(ha_i[q]) < 0:\n                azimuth.append(a[q] * 57.2958)\n            else:\n                azimuth.append(360 - (a[q] * 57.2958))\n        az_list.append(np.array(azimuth))\n    return az_list\n\n\n',
                 id: 17,
                 doc: null,
+executor_label:'dask',
                 status: 'PENDING'
             },
             {
@@ -2686,6 +2763,7 @@ graphDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"] = {
                 },
                 id: 18,
                 doc: null,
+executor_label:'dask',
                 status: 'COMPLETED'
             },
         ],

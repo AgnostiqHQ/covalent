@@ -244,22 +244,23 @@ const ResultsTableToolbar = ({
         <SortDispatch
           title="All"
           count={allDispatches}
-          isFetching={dashboardOverviewFetching}
+          isFetching={!dashboardOverviewFetching}
+          data-testid="sortDispatch"
         />
         <SortDispatch
           title="Running"
           count={runningDispatches}
-          isFetching={dashboardOverviewFetching}
+          isFetching={!dashboardOverviewFetching}
         />
         <SortDispatch
           title="Completed"
           count={completedDispatches}
-          isFetching={dashboardOverviewFetching}
+          isFetching={!dashboardOverviewFetching}
         />
         <SortDispatch
           title="Failed"
           count={failedDispatches}
-          isFetching={dashboardOverviewFetching}
+          isFetching={!dashboardOverviewFetching}
         />
       </Grid>
       <Input
@@ -401,7 +402,7 @@ const ResultListing = () => {
 
 
   const dashboardOverviewFetching = useSelector(
-    (state) => state.dashboard.fetchDashboardOverview.isFetching
+    (state) => state.dashboard.dashboardOverview
   )
 
   const allDispatches = useSelector(
@@ -422,6 +423,7 @@ const ResultListing = () => {
   const isFetching = useSelector(
     (state) => state.dashboard.fetchDashboardList.isFetching
   )
+
   // check if socket message is received and call API
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
   const dashboardListAPI = () => {
@@ -611,7 +613,7 @@ const ResultListing = () => {
           setOpenDialogBox={setOpenDialogBox}
           dashboardOverviewFetching={dashboardOverviewFetching}
         />
-        {!isFetching && (
+        {dashboardListView && (
           <Grid>
             <TableContainer>
               <StyledTable>

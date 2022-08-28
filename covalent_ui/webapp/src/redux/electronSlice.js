@@ -25,12 +25,12 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import api from '../utils/api'
 
 const initialState = {
-  electronList:{},
-  electronResult:{},
-  electronFunctionString:{},
-  electronInput:{},
-  electronError:{},
-  electronExecutor:{},
+  electronList: {},
+  electronResult: {},
+  electronFunctionString: {},
+  electronInput: {},
+  electronError: {},
+  electronExecutor: {},
   electronDetailsList: { isFetching: false, error: null },
   electronResultList: { isFetching: false, error: null },
   electronFunctionStringList: { isFetching: false, error: null },
@@ -41,37 +41,37 @@ const initialState = {
 
 export const electronDetails = createAsyncThunk(
   'electronResults/electronDetails',
-  ({electronId,dispatchId}, thunkAPI) =>
-  api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}`).catch(thunkAPI.rejectWithValue)
+  ({ electronId, dispatchId }, thunkAPI) =>
+    api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronResult = createAsyncThunk(
-    'electronResults/electronResult',
-    ({dispatchId,electronId,params}, thunkAPI) =>
+  'electronResults/electronResult',
+  ({ dispatchId, electronId, params }, thunkAPI) =>
     api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronFunctionString = createAsyncThunk(
-    'electronResults/electronFunctionString',
-    ({dispatchId,electronId,params}, thunkAPI) =>
+  'electronResults/electronFunctionString',
+  ({ dispatchId, electronId, params }, thunkAPI) =>
     api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronInput = createAsyncThunk(
-    'electronResults/electronInput',
-    ({dispatchId,electronId,params}, thunkAPI) =>
+  'electronResults/electronInput',
+  ({ dispatchId, electronId, params }, thunkAPI) =>
     api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronError = createAsyncThunk(
-    'electronResults/electronError',
-    ({dispatchId,electronId,params}, thunkAPI) =>
+  'electronResults/electronError',
+  ({ dispatchId, electronId, params }, thunkAPI) =>
     api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronExecutor = createAsyncThunk(
-    'electronResults/electronExecutor',
-    ({dispatchId,electronId,params}, thunkAPI) =>
+  'electronResults/electronExecutor',
+  ({ dispatchId, electronId, params }, thunkAPI) =>
     api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
 )
 
@@ -85,8 +85,8 @@ export const electronSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-       // electron Details
-       .addCase(electronDetails.fulfilled, (state, { payload }) => {
+      // electron Details
+      .addCase(electronDetails.fulfilled, (state, { payload }) => {
         state.electronDetailsList.isFetching = false
         state.electronList = payload
       })
@@ -113,8 +113,8 @@ export const electronSlice = createSlice({
         state.electronResultList.error = payload
       })
 
-       // electron function to string
-       .addCase(electronFunctionString.fulfilled, (state, { payload }) => {
+      // electron function to string
+      .addCase(electronFunctionString.fulfilled, (state, { payload }) => {
         state.electronFunctionStringList.isFetching = false
         state.electronFunctionString = payload
       })

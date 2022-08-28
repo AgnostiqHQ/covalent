@@ -44,10 +44,6 @@ const DashboardCard = () => {
   const dashboardStats = useSelector(
     (state) => state.dashboard.dashboardOverview
   )
-  const isFetching = useSelector(
-    (state) => state.dashboard.fetchDashboardOverview.isFetching
-  )
-
   const isError = useSelector(
     (state) => state.dashboard.fetchDashboardOverview.error
   )
@@ -71,7 +67,7 @@ const DashboardCard = () => {
   }, [isError])
 
   return (
-    <Paper elevation={0} sx={{ p: 3, mb: 2, borderRadius: '8px' }}>
+    <Paper data-testid="dashboardCard" elevation={0} sx={{ p: 3, mb: 2, borderRadius: '8px' }}>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Typography fontSize="h5.fontSize" sx={{ color: '#FFFFFF' }}>
           Dispatch list
@@ -99,14 +95,14 @@ const DashboardCard = () => {
           content={dashboardStats.total_jobs_running}
           desc="Total jobs running"
           align="center"
-          isSkeletonPresent={isFetching}
+          isSkeletonPresent={!dashboardStats}
         />
         <DashboardDivider />
         <DashBoardCardItems
           content={dashboardStats.total_jobs_completed}
           desc="Total jobs done"
           align="center"
-          isSkeletonPresent={isFetching}
+          isSkeletonPresent={!dashboardStats}
         />
         <DashboardDivider />
         <DashBoardCardItems
@@ -115,14 +111,14 @@ const DashboardCard = () => {
           }
           desc="Latest running task status"
           align="center"
-          isSkeletonPresent={isFetching}
+          isSkeletonPresent={!dashboardStats}
         />
         <DashboardDivider />
         <DashBoardCardItems
-          content={secondsToHms(dashboardStats.total_dispatcher_duration)}
+          content={dashboardStats?.total_dispatcher_duration ? secondsToHms(dashboardStats.total_dispatcher_duration) : 'N/A'}
           desc="Total dispatcher duration"
           align="flex-end"
-          isSkeletonPresent={isFetching}
+          isSkeletonPresent={!dashboardStats}
         />
       </Box>
     </Paper>

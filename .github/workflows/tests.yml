@@ -33,34 +33,34 @@ on:
         required: true
 
 jobs:
+  build_test_matrix:
+    name: Build Test Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.filter-matrix.outputs.matrix }}
+    steps:
+      - name: Check out head
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Filter test matrix
+        id: filter-matrix
+        run: |
+          matrix=$(jq --arg trigger "${{ github.event_name }}" 'map(. | select(.trigger | index($trigger)))' .github/workflows/test_matrix.json)
+          echo "Test matrix:"
+          echo "$matrix" | jq
+          echo ::set-output name=matrix::{\"include\":$(echo $matrix)}
+
   tests:
+    needs: build_test_matrix
+    name: ${{ matrix.name }}
+    strategy:
+      matrix: ${{fromJson(needs.build_test_matrix.outputs.matrix)}}
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
       COVALENT_SERVER_IFACE_ANY: true
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-latest"]
-        container:
-          - python:3.8-buster
-          - python:3.8-bullseye
-          - python:3.9-buster
-          - python:3.9-bullseye
-          - python:3.10-buster
-          - python:3.10-bullseye
-          - image: "centos/python-38-centos7"
-            options: "--user root"
-        experimental: [false]
-        include:
-          - os: macos-latest
-            python-version: "3.8"
-            experimental: false
-          - os: macos-latest
-            python-version: "3.9"
-            experimental: false
-          - os: macos-latest
-            python-version: "3.10"
-            experimental: false
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
     outputs:
@@ -149,7 +149,8 @@ jobs:
       - name: Install NPM and Yarn on Ubuntu
         if: >
           (github.event_name != 'pull_request'
-          || steps.working-directory.outputs.ui_frontend == 'true')
+          || steps.working-directory.outputs.ui_frontend == 'true'
+          || steps.working-directory.outputs.build == 'true')
           && (matrix.container == 'python:3.8-buster'
           || matrix.container == 'python:3.8-bullseye'
           || matrix.container == 'python:3.9-buster'
@@ -165,18 +166,25 @@ jobs:
       - name: Install NPM and Yarn on CentOS
         if: >
           (github.event_name != 'pull_request'
+          || steps.working-directory.outputs.build == 'true'
           || steps.working-directory.outputs.ui_frontend == 'true')
            && matrix.container.image == 'centos/python-38-centos7'
         run: |
           yum remove -y npm nodejs
-          curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
-          yum install -y npm nodejs
+          NODE_VERSION="16.17.0"
+          wget https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz
+          xz -d node-v$NODE_VERSION-linux-x64.tar.xz
+          tar xvf node-v$NODE_VERSION-linux-x64.tar
+          mv node-v$NODE_VERSION-linux-x64 /usr/local/nodejs
+          echo export PATH=$PATH:'/usr/local/nodejs/bin' >> /etc/profile
+          source /etc/profile
           npm install -g yarn
 
       - name: Build webapp
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.ui_frontend == 'true'
+          || steps.working-directory.outputs.build == 'true'
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
@@ -204,16 +212,6 @@ jobs:
           diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
           diff -x README.md -r covalent-${VERSION}/covalent_migrations ../covalent_migrations
           diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
-          rm -rf covalent-${VERSION}/
-
-      - name: Validate webapp
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.ui_frontend == 'true'
-        run: |
-          VERSION="$(cat ./VERSION)"
-          cd dist
-          tar xzf covalent-${VERSION}.tar.gz
           diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf covalent-${VERSION}/
 
@@ -233,9 +231,19 @@ jobs:
           || steps.working-directory.outputs.build == 'true'
           || steps.working-directory.outputs.actions == 'true'
           || steps.working-directory.outputs.tests == 'true'
-        run: covalent start --ignore-migrations
+        id: covalent_start
+        run: |
+          if [ "${{ matrix.backend }}" = 'dask' ] ; then
+            covalent start --ignore-migrations
+          elif [ "${{ matrix.backend }}" = 'local' ] ; then
+            covalent start --ignore-migrations --no-cluster
+          else
+            echo "Invalid backend specified in test matrix."
+            exit 1
+          fi
 
       - name: Run SDK tests and measure coverage
+        id: sdk_tests
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.sdk == 'true'
@@ -248,6 +256,7 @@ jobs:
         run: coverage xml -o sdk_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
+        id: dispatcher_tests
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.dispatcher == 'true'
@@ -260,6 +269,7 @@ jobs:
         run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
+        id: functional_tests
         if: >
           github.event_name != 'pull_request'
           || steps.working-directory.outputs.actions == 'true'
@@ -290,6 +300,16 @@ jobs:
               && steps.working-directory.outputs.ui_backend == 'true'
               && steps.ui_tests.outputs.exit_code == 0))
         run: coverage xml -o ui_backend_coverage.xml
+
+      - name: Dump Covalent logs
+        if: >
+          steps.covalent_start.outcome == 'success'
+          && (
+          steps.sdk_tests.outcome == 'failed'
+          || steps.dispatcher_tests.outcome == 'failed'
+          || steps.functional_tests.outcome == 'failed'
+          || steps.ui_tests.outcome == 'failed' )
+        run: covalent logs
 
       - name: Upload SDK report to Codecov
         if: >
@@ -409,8 +429,7 @@ jobs:
 
       - name: Alert Slack
         if: >
-          github.ref == 'ref/heads/develop'
-          && github.event_name != 'workflow_dispatch'
+          github.event_name == 'workflow_run'
           && failure()
         uses: rtCamp/action-slack-notify@v2
         env:
@@ -425,6 +444,6 @@ jobs:
     needs: tests
     if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
     uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
-    secrets: inherit
+    secrets: inherit # pragma: allowlist secret
     with:
       prerelease: true

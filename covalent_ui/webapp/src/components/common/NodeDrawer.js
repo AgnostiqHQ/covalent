@@ -41,20 +41,20 @@ import {
   statusColor,
   statusIcon,
   statusLabel,
-  secondsToHms,
 } from '../../utils/misc'
 import Runtime from '../dispatches/Runtime'
 import SyntaxHighlighter from './SyntaxHighlighter'
 import Heading from '../common/Heading'
 import ErrorCard from './ErrorCard'
-import ExecutorSection from './ExecutorSection'
 import InputSection from './InputSection'
+import ExecutorSection from './ExecutorSection'
 import {
   electronDetails,
   electronResult,
   electronExecutor,
   electronFunctionString,
   electronError,
+  electronInput
 } from '../../redux/electronSlice'
 import { isDemo } from '../../utils/demo/setup'
 
@@ -84,9 +84,9 @@ const NodeDrawer = ({ node, dispatchId }) => {
   const electronDetailIsFetching = useSelector(
     (state) => state.latticeResults.latticeResultsList.isFetching
   )
-  // const electronInputResultIsFetching = useSelector(
-  //   (state) => state.electronResults.electronInputList.isFetching
-  // )
+  const electronInputResultIsFetching = useSelector(
+    (state) => state.electronResults.electronInputList.isFetching
+  )
   const electronResultDataIsFetching = useSelector(
     (state) => state.latticeResults.latticeResultsList.isFetching
   )
@@ -101,7 +101,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
   useEffect(() => {
     if (!!node && !isDemo) {
       dispatch(electronDetails({ electronId, dispatchId }))
-      // dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
+      dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
       dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
       dispatch(
         electronExecutor({ dispatchId, electronId, params: 'executor' })
@@ -143,6 +143,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
       variant="persistent"
       open={!!node}
       onClose={handleClose}
+      data-testid="nodeDrawer"
     >
       {!!node && (
         <>
@@ -231,7 +232,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
               <Heading>Runtime</Heading>
               {electronDetailIsFetching ? (
                 <Skeleton />
-              ) : electronDetail.status === 'RUNNING' ? (
+              ) : (
                 <Runtime
                   sx={(theme) => ({
                     color: theme.palette.text.tertiary,
@@ -240,9 +241,8 @@ const NodeDrawer = ({ node, dispatchId }) => {
                   startTime={electronDetail.started_at}
                   endTime={electronDetail.ended_at}
                 />
-              ) : (
-                secondsToHms(electronDetail.runtime)
-              )}
+              )
+              }
             </>
           )}
 

@@ -21,7 +21,6 @@
 """Workflow stack testing of TransportGraph, Lattice and Electron classes."""
 
 import os
-from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
@@ -135,19 +134,17 @@ async def test_internal_sublattice_dispatch():
     def add(a, b):
         return a + b
 
-    thread_pool = ThreadPoolExecutor()
     sublattice_add = ct.TransportableObject(ct.lattice(add))
     inputs = {}
     inputs["args"] = []
     inputs["kwargs"] = {"a": ct.TransportableObject(1), "b": ct.TransportableObject(2)}
-    workflow_executor = ["dask", {}]
+    workflow_executor = ["local", {}]
     dispatch_id = "asdf"
     sub_dispatch_id = await _dispatch_sublattice(
         dispatch_id,
         "/tmp",
         inputs=inputs,
         serialized_callable=sublattice_add,
-        tasks_pool=thread_pool,
         workflow_executor=workflow_executor,
     )
 
@@ -160,7 +157,6 @@ async def test_internal_sublattice_dispatch():
             "/tmp",
             inputs=inputs,
             serialized_callable=sublattice_add,
-            tasks_pool=thread_pool,
             workflow_executor=["client", {}],
         )
 
@@ -175,7 +171,6 @@ async def test_internal_sublattice_dispatch():
             "/tmp",
             inputs=inputs,
             serialized_callable=sublattice_add,
-            tasks_pool=thread_pool,
             workflow_executor=["bogus_executor", {}],
         )
 

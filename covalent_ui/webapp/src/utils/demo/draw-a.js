@@ -29,7 +29,7 @@ const latticePreview = {
       name: 'final_calc',
       kwargs: {},
       metadata: {
-        backend: 'local',
+        executor_name: 'local',
         results_dir: '/home/valentin/code/agnostiq/examples/results',
       },
     },
@@ -41,7 +41,7 @@ const latticePreview = {
             target_list: "['sirius', 'trappist-1']",
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -62,7 +62,7 @@ const latticePreview = {
             target_list: "['sirius', 'trappist-1']",
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -82,7 +82,7 @@ const latticePreview = {
             target_list: 'sirius',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -101,7 +101,7 @@ const latticePreview = {
             target_list: 'trappist-1',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -120,7 +120,7 @@ const latticePreview = {
             target_list: "['sirius', 'trappist-1']",
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -141,7 +141,7 @@ const latticePreview = {
             target_list: "['sirius', 'trappist-1']",
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -161,7 +161,7 @@ const latticePreview = {
             target_list: 'sirius',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -180,7 +180,7 @@ const latticePreview = {
             target_list: 'trappist-1',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -199,7 +199,7 @@ const latticePreview = {
             time_zone: 'America/Los_Angeles',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -220,7 +220,7 @@ const latticePreview = {
             time_zone: 'America/Los_Angeles',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -239,7 +239,7 @@ const latticePreview = {
             region: 'America/Los_Angeles',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -260,7 +260,7 @@ const latticePreview = {
             region: 'America/Los_Angeles',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -281,7 +281,7 @@ const latticePreview = {
             T: '<covalent._workflow.electron.Electron object at 0x7f839d9a8100>',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -302,7 +302,7 @@ const latticePreview = {
             long: '-123.1207',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -322,7 +322,7 @@ const latticePreview = {
             RA: '<covalent._workflow.electron.Electron object at 0x7f839da53d00>',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -345,7 +345,7 @@ const latticePreview = {
             ha: '<covalent._workflow.electron.Electron object at 0x7f839d9c3b80>',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -366,7 +366,7 @@ const latticePreview = {
             lat: '49.2827',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -388,7 +388,7 @@ const latticePreview = {
             alt: '<covalent._workflow.electron.Electron object at 0x7f839d9b5610>',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',
@@ -409,7 +409,7 @@ const latticePreview = {
             lat: '49.2827',
           },
           metadata: {
-            backend: 'local',
+            executor_name: 'local',
             executor: {
               log_stdout: 'stdout.log',
               log_stderr: 'stderr.log',

@@ -22,7 +22,7 @@
 import { Divider, Paper, Tooltip, Typography, Skeleton } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import React, { useEffect } from 'react'
-import { formatDate, truncateMiddle, secondsToHms } from '../../utils/misc'
+import { formatDate, truncateMiddle } from '../../utils/misc'
 import CopyButton from '../common/CopyButton'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
@@ -70,21 +70,20 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
-
-  const hasStarted = !!result.started_at
-  const hasEnded = !!result.ended_at
+  const hasStarted = !!result?.started_at
+  const hasEnded = !!result?.ended_at
 
   return (
-    <>
+    <div data-testid="dispatchoverview">
       {/* Description */}
-      {result.lattice !== undefined &&
+      {result?.lattice !== undefined &&
         (isFetching ? (
           <Skeleton />
         ) : (
           <>
             <Heading>Description</Heading>
             <Typography fontSize="body2.fontSize">
-              {result.lattice.doc}
+              {result?.lattice.doc}
             </Typography>
           </>
         ))}
@@ -96,8 +95,8 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
             <Skeleton />
           ) : (
             <Typography fontSize="body2.fontSize">
-              {formatDate(result.started_at)}
-              {hasEnded && ` - ${formatDate(result.ended_at)}`}
+              {formatDate(result?.started_at)}
+              {hasEnded && ` - ${formatDate(result?.ended_at)}`}
             </Typography>
           )}
         </>
@@ -107,11 +106,10 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       <Heading>Runtime</Heading>
       {isFetching ? (
         <Skeleton />
-      ) : result.status === 'RUNNING' ? (
-        <Runtime startTime={result.started_at} endTime={result.ended_at} />
-      ) : (
-        secondsToHms(result.runtime)
-      )}
+      ) :
+        (
+          <Runtime startTime={result.started_at} endTime={result.ended_at} />
+        )}
 
       {/* Directory */}
       <Heading>Directory</Heading>
@@ -121,12 +119,12 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
         <Typography
           sx={{ overflowWrap: 'anywhere', fontSize: 'body2.fontSize' }}
         >
-          <Tooltip title={result.directory} enterDelay={500}>
-            <span>{truncateMiddle(result.directory, 15, 20)}</span>
+          <Tooltip title={result?.directory} enterDelay={500}>
+            <span>{truncateMiddle(result?.directory, 15, 20)}</span>
           </Tooltip>
           <CopyButton
             isBorderPresent
-            content={result.directory}
+            content={result?.directory}
             size="small"
             title="Copy results directory"
           />
@@ -175,7 +173,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
           <SyntaxHighlighter src={drawerFunctionString.data} />
         </Paper>
       )}
-    </>
+    </div>
   )
 }
 
