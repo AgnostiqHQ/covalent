@@ -364,10 +364,18 @@ def restart(ctx, port: bool, develop: bool) -> None:
     """
     Restart the server.
     """
-    port = port or get_config("user_interface.port")
+
+    configuration = {
+        "port": port or get_config("user_interface.port"),
+        "develop": develop or (get_config("sdk.log_level") == "debug"),
+        "no_cluster": get_config("user_interface.port"),
+        "mem_per_worker": get_config("dask.mem_per_worker"),
+        "threads_per_worker": get_config("dask.threads_per_worker"),
+        "workers": set_config("dask.num_workers"),
+    }
 
     ctx.invoke(stop)
-    ctx.invoke(start, port=port, develop=develop)
+    ctx.invoke(start, **configuration)
 
 
 @click.command()
