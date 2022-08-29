@@ -6,7 +6,7 @@ Dispatch summary
 
 **Total jobs running**
 
-Shows how many dispatches are being running.
+Shows the total number of dispatches that are running.
 
 **Total jobs done**
 
@@ -18,4 +18,4 @@ Shows the status of the dispatch which was the last to completed or running or f
 
 **Total dispatcher duration**
 
-Shows total time taken to run all the dispatches. It goes from minutes,hours,days with reference to total runtime of all dispatches
+Shows total time taken to run all the dispatches. It goes from minutes,hours,days with reference to total runtime of all dispatches.
