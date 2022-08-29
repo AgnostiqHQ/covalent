@@ -20,25 +20,16 @@
 
 """Testing results_dir migration script"""
 
-import os
 import pickle
 from pathlib import Path
 
-import covalent as ct
 from covalent._results_manager import Result
 from covalent._shared_files.defaults import (
     attr_prefix,
-    electron_dict_prefix,
-    electron_list_prefix,
     generator_prefix,
-    parameter_prefix,
-    prefix_separator,
-    sublattice_prefix,
     subscript_prefix,
 )
-from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject, _TransportGraph
-from covalent.executor import LocalExecutor
 from covalent.utils.migrate import (
     migrate_pickled_result_object,
     process_lattice,
@@ -223,7 +214,6 @@ def test_process_transport_graph():
 
 
 def test_process_transport_graph_is_idempotent():
-    import copy
 
     ro = get_sample_result_object()
     tg = ro.lattice.transport_graph

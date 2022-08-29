@@ -1,11 +1,7 @@
-import uuid
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import Optional, Union
 
-from furl import furl
 
 from covalent._file_transfer.enums import (
-    FileSchemes,
     FileTransferStrategyTypes,
     FtCallDepReturnValue,
     Order,

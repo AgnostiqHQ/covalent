@@ -56,7 +56,6 @@ def test_bash_deps_serialize():
 
 
 def test_call_deps_init():
-    from covalent._workflow.transport import TransportableObject
 
     def f(x):
         return x * x
@@ -100,7 +99,6 @@ def test_call_deps_failure_when_using_reserved_retval_keys():
 
 
 def test_call_deps_apply():
-    from covalent._workflow.transport import TransportableObject
 
     def f(x):
         return x * x

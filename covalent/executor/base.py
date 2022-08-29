@@ -22,7 +22,6 @@
 Class that defines the base executor template.
 """
 
-import asyncio
 import io
 import os
 import subprocess

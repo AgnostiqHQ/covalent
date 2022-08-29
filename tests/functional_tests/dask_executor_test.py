@@ -18,9 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import time
 
-import pytest
 
 import covalent as ct
 from covalent._results_manager import Result

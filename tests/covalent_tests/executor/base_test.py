@@ -20,16 +20,14 @@
 
 """Tests for the Covalent executor base module."""
 
-import io
 import os
 import tempfile
-from contextlib import redirect_stdout
 from functools import partial
 from unittest.mock import AsyncMock, MagicMock
 
 from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
-from covalent.executor.base import BaseAsyncExecutor, _AbstractBaseExecutor
+from covalent.executor.base import BaseAsyncExecutor
 
 
 class MockExecutor(BaseExecutor):

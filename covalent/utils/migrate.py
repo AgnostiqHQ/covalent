@@ -21,9 +21,7 @@
 """Utils for migrating legacy (0.110-era) result object to a modern result object."""
 
 import pickle
-from pathlib import Path
 
-import covalent as ct
 from covalent._results_manager import Result
 from covalent._shared_files.defaults import (
     attr_prefix,
@@ -31,8 +29,6 @@ from covalent._shared_files.defaults import (
     electron_list_prefix,
     generator_prefix,
     parameter_prefix,
-    prefix_separator,
-    sublattice_prefix,
     subscript_prefix,
 )
 from covalent._shared_files.utils import get_named_params
