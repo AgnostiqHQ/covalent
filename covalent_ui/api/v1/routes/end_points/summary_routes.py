@@ -78,7 +78,7 @@ def get_dashboard_details():
 
 
 @routes.post("/delete", response_model=DeleteDispatchesResponse)
-def delete_dispatches(req: DeleteDispatchesRequest):
+def delete_dispatches(req: Optional[DeleteDispatchesRequest]):
     """Delete one or more Dispatches
 
     Args:

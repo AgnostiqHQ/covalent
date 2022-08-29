@@ -25,7 +25,9 @@ from typing import List
 from sqlalchemy import case, update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func, or_
+from sqlalchemy.util import immutabledict
 
+from covalent._data_store.models import ElectronDependency
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.models.dispatch_model import (
@@ -58,17 +60,9 @@ class Summary:
         Return:
             List of top most Lattices and count
         """
-        filters = []
         result = None
-        if status_filter == Status.ALL:
-            filters = [status.value for status in Status]
-        elif status_filter == Status.COMPLETED:
-            filters.append(Status.COMPLETED.value)
-            filters.append(Status.POSTPROCESSING.value)
-            filters.append(Status.POSTPROCESSING_FAILED.value)
-            filters.append(Status.PENDING_POSTPROCESSING.value)
-        else:
-            filters = [status_filter.value]
+
+        status_filters = self.get_filters(status_filter)
 
         data = self.db_con.query(
             Lattice.dispatch_id.label("dispatch_id"),
@@ -94,7 +88,7 @@ class Summary:
                 Lattice.name.ilike(f"%{search}%"),
                 Lattice.dispatch_id.ilike(f"%{search}%"),
             ),
-            Lattice.status.in_(filters),
+            Lattice.status.in_(status_filters),
             Lattice.is_active.is_not(False),
         )
 
@@ -130,7 +124,7 @@ class Summary:
                     Lattice.name.ilike(f"%{search}%"),
                     Lattice.dispatch_id.ilike(f"%{search}%"),
                 ),
-                Lattice.status.in_(filters),
+                Lattice.status.in_(status_filters),
                 Lattice.is_active.is_not(False),
             )
             .first()
@@ -238,7 +232,7 @@ class Summary:
             total_jobs=total_jobs[0],
         )
 
-    def delete_dispatches(self, req: DeleteDispatchesRequest) -> Lattice:
+    def delete_dispatches(self, data: DeleteDispatchesRequest):
         """
         Delete dispatches
         Args:
@@ -246,46 +240,82 @@ class Summary:
         Return:
             list of status(i.e whether given dispatch id is deleted successfully or failed)
         """
+        filter_dispatches = None
+        if data.delete_all:
+            status_filters = self.get_filters(data.status_filter)
+            filter_data = (
+                self.db_con.query(Lattice.dispatch_id)
+                .filter(Lattice.status.in_(status_filters), Lattice.is_active.is_not(False))
+                .all()
+            )
+            filter_dispatches = [value for value, in filter_data]
+        else:
+            filter_dispatches = data.dispatches
         success = []
         failure = []
-        for dispatch_id in req.dispatches:
-            try:
-                lattice_id = (
-                    self.db_con.query(Lattice.id)
-                    .filter(
-                        Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False)
-                    )
-                    .first()
-                )
-                if lattice_id is not None:
-                    query1 = (
-                        update(Electron)
-                        .where(Electron.parent_lattice_id == lattice_id[0])
-                        .values(
-                            {
-                                Electron.updated_at: datetime.now(timezone.utc),
-                                Electron.is_active: False,
-                            }
+        if len(filter_dispatches) >= 1:
+            for dispatch_id in filter_dispatches:
+                try:
+                    lattice_id = (
+                        self.db_con.query(Lattice.id)
+                        .filter(
+                            Lattice.dispatch_id == str(dispatch_id),
+                            Lattice.is_active.is_not(False),
                         )
+                        .first()
                     )
-                    query2 = (
-                        update(Lattice)
-                        .where(Lattice.id == lattice_id[0])
-                        .values(
-                            {
-                                Lattice.updated_at: datetime.now(timezone.utc),
-                                Lattice.is_active: False,
-                            }
+                    if lattice_id is not None:
+                        electron_ids = (
+                            self.db_con.query(Electron.id)
+                            .filter(
+                                Electron.parent_lattice_id == lattice_id[0],
+                                Electron.is_active.is_not(False),
+                            )
+                            .scalar_subquery()
                         )
-                    )
-                    self.db_con.execute(query1)
-                    self.db_con.execute(query2)
-                    self.db_con.commit()
-                    success.append(dispatch_id)
-                else:
+
+                        update_electron_dependency = (
+                            update(ElectronDependency)
+                            .where(ElectronDependency.parent_electron_id.in_(electron_ids))
+                            .values(
+                                {
+                                    ElectronDependency.updated_at: datetime.now(timezone.utc),
+                                    ElectronDependency.is_active: False,
+                                }
+                            )
+                        )
+                        update_electron = (
+                            update(Electron)
+                            .where(Electron.parent_lattice_id == lattice_id[0])
+                            .values(
+                                {
+                                    Electron.updated_at: datetime.now(timezone.utc),
+                                    Electron.is_active: False,
+                                }
+                            )
+                        )
+                        update_lattice = (
+                            update(Lattice)
+                            .where(Lattice.id == lattice_id[0])
+                            .values(
+                                {
+                                    Lattice.updated_at: datetime.now(timezone.utc),
+                                    Lattice.is_active: False,
+                                }
+                            )
+                        )
+                        self.db_con.execute(
+                            update_electron_dependency,
+                            execution_options=immutabledict({"synchronize_session": "fetch"}),
+                        )
+                        self.db_con.execute(update_electron)
+                        self.db_con.execute(update_lattice)
+                        self.db_con.commit()
+                        success.append(dispatch_id)
+                    else:
+                        failure.append(dispatch_id)
+                except InterfaceError:
                     failure.append(dispatch_id)
-            except InterfaceError:
-                failure.append(dispatch_id)
         if (len(failure) == 0 and len(success) == 0) or (len(failure) > 0 and len(success) == 0):
             message = "No dispatches were deleted"
         elif len(failure) > 0 and len(success) > 0:
@@ -297,3 +327,17 @@ class Summary:
             failure_items=failure,
             message=message,
         )
+
+    def get_filters(self, status_filter: Status):
+        filters = []
+        if status_filter == Status.ALL:
+            filters = [status.value for status in Status]
+        elif status_filter == Status.COMPLETED:
+            filters.append(Status.COMPLETED.value)
+            filters.append(Status.POSTPROCESSING.value)
+            filters.append(Status.POSTPROCESSING_FAILED.value)
+            filters.append(Status.PENDING_POSTPROCESSING.value)
+        else:
+            filters = [status_filter.value]
+
+        return filters
