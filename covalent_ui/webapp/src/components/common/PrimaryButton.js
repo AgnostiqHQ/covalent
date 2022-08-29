@@ -28,6 +28,7 @@ import React from 'react'
 function PrimaryButton({ handler, title, bgColor, hoverColor }) {
   return (
     <Button
+      data-testid="primarybutton"
       sx={{
         '&:hover': {
           backgroundColor: hoverColor,
@@ -41,7 +42,6 @@ function PrimaryButton({ handler, title, bgColor, hoverColor }) {
         textTransform: 'capitalize',
       }}
       onClick={handler}
-      data-testid="actionButton"
     >
       <Typography color="textPrimary" variant="subtitle2">
         {title}
