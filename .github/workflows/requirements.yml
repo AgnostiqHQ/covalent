@@ -36,6 +36,9 @@ jobs:
         with:
           python-version: 3.8
 
+      - name: Install covalent
+        run: python -m pip install .
+
       - name: Install packages
         run: python -m pip install pip-check-reqs
 
