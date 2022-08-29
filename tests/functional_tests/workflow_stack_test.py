@@ -138,7 +138,7 @@ async def test_internal_sublattice_dispatch():
     inputs = {}
     inputs["args"] = []
     inputs["kwargs"] = {"a": ct.TransportableObject(1), "b": ct.TransportableObject(2)}
-    workflow_executor = ["dask", {}]
+    workflow_executor = ["local", {}]
     dispatch_id = "asdf"
     sub_dispatch_id = await _dispatch_sublattice(
         dispatch_id,
