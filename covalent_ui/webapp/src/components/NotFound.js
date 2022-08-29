@@ -37,13 +37,13 @@ const NotFound = ({ text = 'Page not found.', children }) => {
       <AppBar position="static" color="transparent">
         <Toolbar disableGutters sx={{ my: 2 }}>
           <Link href="/">
-            <Logo />
+            <Logo data-testid="logo" />
           </Link>
         </Toolbar>
       </AppBar>
 
       <Paper elevation={4} sx={{ p: 2 }}>
-        {children || <Typography variant="h5">{text}</Typography>}
+        {children || <Typography data-testid="message" variant="h5">{text}</Typography>}
       </Paper>
     </Container>
   )

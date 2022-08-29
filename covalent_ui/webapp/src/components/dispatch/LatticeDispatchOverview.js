@@ -46,6 +46,9 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
   const drawerResult = useSelector(
     (state) => state.latticeResults.latticeResult
   )
+  const drawerResultListFetching = useSelector(
+    (state) => state.latticeResults.latticeResultsList.isFetching
+  )
   const drawerFunctionString = useSelector(
     (state) => state.latticeResults.latticeFunctionString
   )
@@ -54,6 +57,9 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
   )
   const drawerExecutorDetail = useSelector(
     (state) => state.latticeResults.latticeExecutorDetail
+  )
+  const drawerExecutorDetailListFetching = useSelector(
+    (state) => state.latticeResults.latticeExecutorDetailList.isFetching
   )
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
@@ -64,21 +70,20 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
     dispatch(latticeExecutorDetail({ dispatchId, params: 'executor' }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
-
-  const hasStarted = !!result.started_at
-  const hasEnded = !!result.ended_at
+  const hasStarted = !!result?.started_at
+  const hasEnded = !!result?.ended_at
 
   return (
-    <>
+    <div data-testid="dispatchoverview">
       {/* Description */}
-      {result.lattice !== undefined &&
+      {result?.lattice !== undefined &&
         (isFetching ? (
           <Skeleton />
         ) : (
           <>
             <Heading>Description</Heading>
             <Typography fontSize="body2.fontSize">
-              {result.lattice.doc}
+              {result?.lattice.doc}
             </Typography>
           </>
         ))}
@@ -86,12 +91,12 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       {hasStarted && (
         <>
           <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-          {isFetching && !hasStarted ? (
+          {isFetching ? (
             <Skeleton />
           ) : (
             <Typography fontSize="body2.fontSize">
-              {formatDate(result.started_at)}
-              {hasEnded && ` - ${formatDate(result.ended_at)}`}
+              {formatDate(result?.started_at)}
+              {hasEnded && ` - ${formatDate(result?.ended_at)}`}
             </Typography>
           )}
         </>
@@ -99,7 +104,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
 
       {/* Runtime */}
       <Heading>Runtime</Heading>
-      {!hasStarted ? (
+      {isFetching ? (
         <Skeleton />
       ) :
         (
@@ -108,18 +113,18 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
 
       {/* Directory */}
       <Heading>Directory</Heading>
-      {isFetching && !result ? (
+      {isFetching ? (
         <Skeleton />
       ) : (
         <Typography
           sx={{ overflowWrap: 'anywhere', fontSize: 'body2.fontSize' }}
         >
-          <Tooltip title={result.directory} enterDelay={500}>
-            <span>{truncateMiddle(result.directory, 15, 20)}</span>
+          <Tooltip title={result?.directory} enterDelay={500}>
+            <span>{truncateMiddle(result?.directory, 15, 20)}</span>
           </Tooltip>
           <CopyButton
             isBorderPresent
-            content={result.directory}
+            content={result?.directory}
             size="small"
             title="Copy results directory"
           />
@@ -138,7 +143,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
         <>
           <Heading>Result</Heading>
-          {Object.keys(drawerResult).length === 0 ? (
+          {drawerResultListFetching ? (
             <Skeleton height={60} style={{ mt: 1 }} />
           ) : (
             <Paper elevation={0}>
@@ -151,7 +156,8 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       {/* Executor */}
       <ExecutorSection
         isFetching={
-          Object.keys(drawerExecutorDetail).length === 0
+          Object.keys(drawerExecutorDetail).length === 0 &&
+          drawerExecutorDetailListFetching
         }
         metadata={drawerExecutorDetail}
       />
@@ -170,7 +176,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
           <SyntaxHighlighter src={drawerFunctionString.data} />
         </Paper>
       )}
-    </>
+    </div>
   )
 }
 

@@ -89,7 +89,6 @@ const LatticePreviewLayout = () => {
 
       {/* <MobileAppBar /> */}
       <NavDrawer />
-
       <LatticeDrawer>
         <PreviewDrawerContents />
       </LatticeDrawer>
