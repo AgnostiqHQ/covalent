@@ -27,52 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out head
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 0
-      - name: Check git history
-        run: |
-          if git merge-base --is-ancestor $GITHUB_SHA origin/develop; then
-            echo "DEVELOP_COMMIT_HISTORY=$GITHUB_SHA" >> $GITHUB_ENV
-          fi
-      - name: Check for version change
-        id: changed-version-file
-        uses: tj-actions/changed-files@v18.4
-        with:
-          sha: ${{ github.event.pull_request.head.sha }}
-          files: |
-            VERSION
-      - name: Fail if version changed
-        if: ${{ steps.changed-version-file.outputs.any_changed == 'true' && github.sha != env.DEVELOP_COMMIT_HISTORY }}
-        run: |
-          echo "Version changes are prohibited in pull requests."
-          exit 10
-      - name: Read head version
-        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
-        run: |
-          HEAD_VERSION="$(cat ./VERSION)"
-          echo "HEAD_VERSION=$HEAD_VERSION" >> $GITHUB_ENV
-      - name: Validate changelog entry
-        if: ${{ github.sha != env.DEVELOP_COMMIT_HISTORY }}
-        run: |
-          git diff --name-only $GITHUB_BASE_REF | grep CHANGELOG
-          unreleased_header_line=8
-          if [[ $(sed "${unreleased_header_line}q;d" CHANGELOG.md) != "## [UNRELEASED]" ]] ; then
-            echo 'Removing the [UNRELEASED] header is prohibited in pull requests.'
-            exit 4
-          fi
-          latest_release=$(sed -n "/\[[0-9]\+\.[0-9]\+\.[0-9]\+\]/=" CHANGELOG.md | head -n 1)
-          IFS='[]' read -ra changelog_version <<< $(sed "${latest_release}q;d" CHANGELOG.md)
-          if [[ "${changelog_version[1]}" != $HEAD_VERSION ]] ; then
-            echo 'The most recent CHANGELOG release does not match the VERSION'.
-            exit 3
-          fi
-          #Check that the lines in the diff are between unreleased_header_line and latest_release
-          IFS='@-+,' read -ra LINES <<< "$(git diff $GITHUB_BASE_REF -- CHANGELOG.md | sed '5q;d')"
-          start_head="$(( LINES[5] + 3 ))"
-          lines_head="$(( LINES[6] - 6 ))"
-          if [[ $start_head -lt $unreleased_header_line ]] ||
-             [[ $((start_head + lines_head)) -gt $latest_release ]] ; then
-            echo 'Changes outside the UNRELEASED block are prohibited in pull requests.'
-            exit 6
-          fi
+        uses: actions/checkout@v3
+      - name: Validate Version
+        uses: ./.github/actions/version
