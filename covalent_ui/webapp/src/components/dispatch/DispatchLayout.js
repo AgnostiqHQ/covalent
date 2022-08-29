@@ -83,7 +83,7 @@ export function DispatchLayout() {
   }, [dispatchId, setSelectedElements])
 
   // dispatch id not found
-  if(latDetailError !== null && latDetailError.status === 400){
+  if (latDetailError !== null && latDetailError.status === 400) {
     return <NotFound text="Lattice dispatch not found." />
   }
 

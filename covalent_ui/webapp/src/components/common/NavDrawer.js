@@ -40,6 +40,7 @@ export const navDrawerWidth = 60
 const NavDrawer = () => {
   return (
     <Drawer
+      data-testid="navDrawer"
       variant="permanent"
       anchor="left"
       className="side-drawernav"
@@ -55,8 +56,8 @@ const NavDrawer = () => {
       }}
     >
       <List>
-        <ListItemButton sx={{ my: 2.5,mb:6 }} component={Link} to="/">
-          <Logo style={{ margin: 'auto' }} />
+        <ListItemButton sx={{ my: 2.5, mb: 6 }} component={Link} to="/">
+          <Logo data-testid="covalentLogo" style={{ margin: 'auto' }} />
         </ListItemButton>
 
         <LinkButton
