@@ -72,8 +72,8 @@
 !README.md
 !VERSION
 
-# Ignore stress test metadata
-tests/stress_tests/.ipynb_checkpoints/
+# Ignore notebook checkpoints
+**/.ipynb_checkpoints
 
 # Ignore .sonarwork files
 covalent_ui/api/.scannerwork/.sonar_lock
