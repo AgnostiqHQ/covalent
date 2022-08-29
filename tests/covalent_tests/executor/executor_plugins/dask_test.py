@@ -23,7 +23,6 @@
 import asyncio
 
 
-
 def test_dask_executor_init(mocker):
     """Test dask executor constructor"""
 

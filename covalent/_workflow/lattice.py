@@ -29,7 +29,6 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
-
 import covalent_ui.result_webhook as result_webhook
 
 from .._data_store import DataStoreSession
@@ -37,10 +36,7 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
-from .._shared_files.utils import (
-    get_named_params,
-    get_serialized_function_str,
-)
+from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
@@ -50,10 +46,7 @@ if TYPE_CHECKING:
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
 
-from .._shared_files.utils import (
-    get_imports,
-    get_serialized_function_str,
-)
+from .._shared_files.utils import get_imports, get_serialized_function_str
 
 consumable_constraints = []
 

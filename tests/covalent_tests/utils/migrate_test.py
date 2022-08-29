@@ -24,11 +24,7 @@ import pickle
 from pathlib import Path
 
 from covalent._results_manager import Result
-from covalent._shared_files.defaults import (
-    attr_prefix,
-    generator_prefix,
-    subscript_prefix,
-)
+from covalent._shared_files.defaults import attr_prefix, generator_prefix, subscript_prefix
 from covalent._workflow.transport import TransportableObject, _TransportGraph
 from covalent.utils.migrate import (
     migrate_pickled_result_object,

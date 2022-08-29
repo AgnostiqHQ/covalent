@@ -1,11 +1,6 @@
 from typing import Optional, Union
 
-
-from covalent._file_transfer.enums import (
-    FileTransferStrategyTypes,
-    FtCallDepReturnValue,
-    Order,
-)
+from covalent._file_transfer.enums import FileTransferStrategyTypes, FtCallDepReturnValue, Order
 from covalent._file_transfer.file import File
 from covalent._file_transfer.strategies.http_strategy import HTTP
 from covalent._file_transfer.strategies.rsync_strategy import Rsync

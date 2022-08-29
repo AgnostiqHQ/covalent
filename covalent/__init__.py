@@ -22,7 +22,6 @@
 
 from importlib import metadata
 
-
 __all__ = [s for s in dir() if not s.startswith("_")]
 
 for _s in dir():
