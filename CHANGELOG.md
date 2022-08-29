@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 
+
 ### Tests
 
 - Fixed `test_using_executor_names` and `test_internal_sublattice_dispatch` tests to also work with `--no-cluster` option.
