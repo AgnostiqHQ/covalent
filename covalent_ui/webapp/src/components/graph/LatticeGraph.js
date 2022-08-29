@@ -31,7 +31,7 @@ import theme from '../../utils/theme'
 import { statusColor } from '../../utils/misc'
 import useFitViewHelper from './ReactFlowHooks'
 import { useScreenshot, createFileName } from "use-react-screenshot"
-import covalentLogo from '../../assets/Frame.svg'
+import covalentLogo from '../../assets/frame.png'
 
 // https://reactjs.org/docs/hooks-faq.html#how-to-get-the-previous-props-or-state
 function usePrevious(value) {
@@ -97,9 +97,9 @@ const LatticeGraph = ({
   // layouting
   useEffect(() => {
     if (algorithm === 'oldLayout') {
-      setElements(layout(graph, direction, showParams,hideLabels,preview))
+      setElements(layout(graph, direction, showParams, hideLabels, preview))
     } else {
-      assignNodePositions(graph, direction, showParams, algorithm,hideLabels,preview)
+      assignNodePositions(graph, direction, showParams, algorithm, hideLabels, preview)
         .then((els) => {
           setElements(els)
         })
