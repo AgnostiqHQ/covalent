@@ -22,7 +22,7 @@ Shows the local 24 hours machine time of a dispatch, when it gets started.
 
 **Ended**
 
-Shows the local 24 hours machine time of a dispatch as soon as it is finished. It shows a hypen when the dispatch is in running state and updates when it finishes.
+Shows the local 24 hours machine time of a dispatch as soon as it is finished. It shows a hyphen when the dispatch is in running state and updates when it finishes.
 
 **Status**
 

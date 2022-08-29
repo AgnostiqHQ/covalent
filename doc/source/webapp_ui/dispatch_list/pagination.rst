@@ -19,6 +19,6 @@ Pagination divides dispatches into discrete pages of maximum 10 records per page
    :align: center
    :width: 5000px
 
-- User can navigate to next page by clicking |next| and similarly can navigate back by clicking by |previous| buttons
+- User can navigate to next page by clicking |next| and similarly can navigate back by clicking |previous| buttons
 - User can also click |skip last| to jump to last and |skip first| to jump to first page from current page
 - User can also navigate into a particular page by clicking on the page number directly
