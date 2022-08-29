@@ -301,6 +301,16 @@ jobs:
               && steps.ui_tests.outputs.exit_code == 0))
         run: coverage xml -o ui_backend_coverage.xml
 
+      - name: Run UI frontend tests and measure coverage
+        id: ui_frontend_tests
+        if: >
+          github.event_name != 'pull_request'
+          || steps.working-directory.outputs.ui_frontend == 'true'
+          || steps.working-directory.outputs.actions == 'true'
+        run: |
+          cd covalent_ui/webapp
+          npm test -- --coverage --watchAll=false
+
       - name: Dump Covalent logs
         if: >
           steps.covalent_start.outcome == 'success'
@@ -308,7 +318,8 @@ jobs:
           steps.sdk_tests.outcome == 'failed'
           || steps.dispatcher_tests.outcome == 'failed'
           || steps.functional_tests.outcome == 'failed'
-          || steps.ui_tests.outcome == 'failed' )
+          || steps.ui_tests.outcome == 'failed'
+          || steps.ui_frontend_tests.outcome == 'failed')
         run: covalent logs
 
       - name: Upload SDK report to Codecov
@@ -365,6 +376,20 @@ jobs:
           files: ./ui_backend_coverage.xml
           flags: UI_Backend
           name: "UI Backend Unit Tests"
+
+      - name: Upload UI frontend report to Codecov
+        if: >
+          matrix.os == 'ubuntu-latest'
+          && matrix.container == 'python:3.8-buster'
+          && github.event_name != 'workflow_dispatch'
+          && (github.event_name != 'pull_request'
+              || (steps.working-directory.outputs.ui_frontend == 'true'
+                  && steps.ui_frontend_tests.outputs.exit_code == 0))
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./covalent_ui/webapp/coverage/clover.xml
+          flags: UI_Frontend
+          name: "UI Frontend Unit Tests"
 
       - name: Get latest release
         uses: actions-ecosystem/action-get-latest-tag@v1
