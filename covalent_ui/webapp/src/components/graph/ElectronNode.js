@@ -21,6 +21,7 @@
  */
 
 import {
+  Grid,
   Paper,
   SvgIcon,
   Tooltip,
@@ -34,7 +35,7 @@ import { ReactComponent as AtomSvg } from '../../assets/status/activity.svg'
 import { ReactComponent as CheckSvg } from '../../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../../assets/status/error.svg'
 import { ReactComponent as CancelSvg } from '../../assets/status/stop.svg'
-import { statusColor } from '../../utils/misc'
+import { statusColor, truncateMiddle, nodeLabelIcon } from '../../utils/misc'
 import { ReactComponent as LoaderSvg } from '../../assets/loader.svg'
 
 export const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
@@ -44,6 +45,7 @@ const ElectronTooltip = styled(({ className, ...props }) => (
 ))(() => ({
   [`& .${tooltipClasses.tooltip}`]: {
     // customize tooltip
+    maxWidth: 500,
   },
 }))
 
@@ -56,75 +58,183 @@ const ElectronNode = ({
 }) => {
   const color = statusColor(data.status)
   const hasBorder = data.status !== 'NEW_OBJECT'
-
   return (
-    <ElectronTooltip title={data.fullName} arrow placement="bottom-end">
-      <Paper
-        elevation={!selected ? 1 : 5}
+    <>
+      <Grid
         sx={{
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          px: 1,
-          py: 0.5,
-          borderRadius: '16px',
-          // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-          color: !selected ? NODE_TEXT_COLOR : '#FAFAFA',
-          borderColor: color,
-          borderStyle: 'solid',
-          borderWidth: hasBorder ? 1 : 0,
+          justifyContent: 'center',
         }}
       >
-        <Handle
-          type="target"
-          position={targetPosition}
-          isConnectable={isConnectable}
-        />
-        {(() => {
-          switch (data.status) {
-            case 'NEW_OBJECT':
-              return (
-                <SvgIcon sx={{ mt: 0.5, mr: 0.5, fontSize: 14, fill: color }}>
-                  <AtomSvg />
-                </SvgIcon>
-              )
-            case 'RUNNING':
-              return (
-                <SvgIcon
-                  sx={{ mt: 0.1, mr: 0.5, fontSize: 10, fill: color }}>
-                  <LoaderSvg />
-                </SvgIcon>
-              )
-            case 'COMPLETED':
-              return (
-                <SvgIcon sx={{ mr: 0.1, fontSize: 14, fill: color,mt:0.6 }}>
-                  <CheckSvg />
-                </SvgIcon>
-              )
-            case 'FAILED':
-              return (
-                <SvgIcon sx={{ mt: 0.8, fontSize: 14, fill: color }}>
-                  <ErrorSvg />
-                </SvgIcon>
-              )
-            case 'CANCELLED':
-              return (
-                <SvgIcon sx={{ mt: 0.8, fontSize: 14, fill: color }}>
-                  <CancelSvg />
-                </SvgIcon>
-              )
-            default:
-              return null
+        {' '}
+        {!data.hideLabels && data.executor ? (
+          <ElectronTooltip title={data.executor} arrow placement="bottom-end">
+            <Paper
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '5px 5px 0px 0px',
+                minWidth: '30%',
+                overflow: 'hidden',
+                background: (theme) => theme.palette.background.executorBg,
+                // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
+                color: (theme) => theme.palette.text.tertiary,
+                borderColor: (theme) => theme.palette.primary.highlightBlue,
+                borderStyle: 'solid',
+                borderWidth: hasBorder ? 1 : 0,
+              }}
+            >
+              <Handle
+                type="target"
+                position={targetPosition}
+                isConnectable={isConnectable}
+              />
+              <Typography sx={{ fontSize: '0.625rem' }}>
+                {truncateMiddle(data.executor, 6, 0)}
+              </Typography>
+              <Handle
+                type="source"
+                position={sourcePosition}
+                isConnectable={isConnectable}
+              />
+            </Paper>
+          </ElectronTooltip>
+        ) : null}
+        <ElectronTooltip
+          title={
+            data.hideLabels ? (
+              <>
+                <Typography color="inherit">name : {data.fullName}</Typography>
+                <Typography color="inherit">
+                  executor : {data.executor}
+                </Typography>
+                <Typography color="inherit">
+                  node_id : {data.node_id}
+                </Typography>
+              </>
+            ) : (
+              data.fullName
+            )
           }
-        })()}
+          arrow
+          placement="bottom-end"
+        >
+          <Paper
+          data-testid="electronNode"
+            elevation={!selected ? 1 : 5}
+            sx={{
+              height: '34px',
+              display: 'flex',
+              alignItems: 'center',
+              px: 1,
+              py: 0.5,
+              borderRadius: '100px',
+              // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
+              color: !selected ? NODE_TEXT_COLOR : '#FAFAFA',
+              borderColor: color,
+              borderStyle: 'solid',
+              borderWidth: hasBorder ? 1 : 0,
+            }}
+          >
+            <Handle
+              type="target"
+              position={targetPosition}
+              isConnectable={isConnectable}
+              data-testid='handleelectronNode'
+            />
+            {nodeLabelIcon(data.nodeType)}
+            {(() => {
+              switch (data.status) {
+                case 'NEW_OBJECT':
+                  return (
+                    <SvgIcon
+                    data-testid="atom"
+                      sx={{ mt: 0.5, mr: 0.5, fontSize: 14, fill: color }}
+                    >
+                      <AtomSvg />
+                    </SvgIcon>
+                  )
+                case 'RUNNING':
+                  return (
+                    <SvgIcon
+                    data-testid="loader"
+                      sx={{ mt: 0.1, mr: 0.5, fontSize: 16, fill: color }}
+                    >
+                      <LoaderSvg />
+                    </SvgIcon>
+                  )
+                case 'COMPLETED':
+                  return (
+                    <SvgIcon
+                    data-testid="check"
+                      sx={{ fill: color, mt: 1 }}
+                    >
+                      <CheckSvg />
+                    </SvgIcon>
+                  )
+                case 'FAILED':
+                  return (
+                    <SvgIcon data-testid="error" sx={{ mt: 1, fill: color }}>
+                      <ErrorSvg />
+                    </SvgIcon>
+                  )
+                case 'CANCELLED':
+                  return (
+                    <SvgIcon data-testid="cancel" sx={{ mt: 0.8, fill: color }}>
+                      <CancelSvg />
+                    </SvgIcon>
+                  )
+                default:
+                  return null
+              }
+            })()}
 
-        <Typography sx={{ fontSize: 12 }}>{data.label}</Typography>
-        <Handle
-          type="source"
-          position={sourcePosition}
-          isConnectable={isConnectable}
-        />
-      </Paper>
-    </ElectronTooltip>
+            <Typography sx={{ fontSize: 14, mb: 0.3 }}>{data.label}</Typography>
+            <Handle
+            data-testid="sourcehandleelectronNode"
+              type="source"
+              position={sourcePosition}
+              isConnectable={isConnectable}
+            />
+          </Paper>
+        </ElectronTooltip>
+        {!data.hideLabels ? (
+          <ElectronTooltip title={data.node_id} arrow placement="bottom-end">
+            <Paper
+              elevation={!selected ? 1 : 5}
+              sx={{
+                position: 'absolute',
+                top: data.executor ? 48 : 35,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '16px',
+                minWidth: '20%',
+                // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
+                color: (theme) => theme.palette.text.tertiary,
+              }}
+            >
+              <Handle
+                type="target"
+                position={targetPosition}
+                isConnectable={isConnectable}
+              />
+              <Typography sx={{ fontSize: '0.625rem' }}>
+                {data.node_id}
+              </Typography>
+              <Handle
+                type="source"
+                position={sourcePosition}
+                isConnectable={isConnectable}
+              />
+            </Paper>
+          </ElectronTooltip>
+        ) : null}
+      </Grid>
+    </>
   )
 }
 

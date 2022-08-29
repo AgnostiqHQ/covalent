@@ -40,7 +40,7 @@ const InputSection = ({ isFetching, inputs, preview, ...props }) => {
       ) : (
         inputSrc && (
           <>
-            <Heading>Input</Heading>
+            <Heading data-testid='inputSection'>Input</Heading>
             <Paper elevation={0} {...props}>
               <SyntaxHighlighter language="json" src={inputSrc} />
             </Paper>
