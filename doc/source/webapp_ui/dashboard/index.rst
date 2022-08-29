@@ -4,7 +4,6 @@ Dispatch Summary
 .. image:: ../images/dispatch_summary_banner.png
    :align: center
 
-
 **Total jobs running**
 
 Shows how many dispatches are being running.
