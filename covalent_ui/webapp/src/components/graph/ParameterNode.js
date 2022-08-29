@@ -115,10 +115,11 @@ const ParameterNode = ({
           />
           <Typography
             component="div"
-
+            data-testid="para__typo"
           >
             {data.label}
             <Handle
+            data-testid="parameternode"
               type="source"
               position={sourcePosition}
               isConnectable={isConnectable}
