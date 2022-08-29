@@ -1,5 +1,5 @@
 ==============================
-Dispatch Summary
+Dispatch summary
 ==============================
 .. image:: ../images/dispatch_summary_banner.png
    :align: center
@@ -12,9 +12,9 @@ Shows how many dispatches are being running.
 
 Shows how many dispatches have been completed.
 
-**Last running task status**
+**Latest running task status**
 
-Shows the status of the dispatch which was the last to completed or running or fail amoung all the dispatches.
+Shows the status of the dispatch which was the last to completed or running or fail among all the dispatches.
 
 **Total dispatcher duration**
 

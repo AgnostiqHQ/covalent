@@ -6,11 +6,11 @@ List of all dispatches with appropriate metadata
 
 **Dispatch ID**
 
-Displays the unique dispatch id as a dispatch is dispatched.
+Shows the unique dispatch id for a workflow.
 
 **Lattice**
 
-Displays name of parrent lattice.
+Shows the name of parent lattice.
 
 **Runtime**
 
@@ -18,12 +18,12 @@ Shows live run time of a dispatch. It goes from minutes,hours,days.
 
 **Started**
 
-Shows the local 24 hours machine time of a dispatch when gets started.
+Shows the local 24 hours machine time of a dispatch, when it gets started.
 
 **Ended**
 
-Shows the local 24 hours machine time of a dispatch as soon as it gets ended. It shows a hypen untill a dispatch ends and updates when a dispatch ends. End time of a dispatch is based on when a dispatch gets completed or failed or cancelled.
+Shows the local 24 hours machine time of a dispatch as soon as it is finished. It shows a hypen when the dispatch is in running state and updates when it finishes.
 
 **Status**
 
-Shows the status of a dispatch. Current statuses are Running, Failed, Completed.
+Shows the status of a dispatch. The available statuses are Running, Failed and Completed.
