@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Adding `benchmark.yml` workflow
 
+### Tests
+
+- Adding scripts in `tests/stress_tests/benchmarks`
+
 ## [0.186.0] - 2022-08-25
 
 ### Authors
