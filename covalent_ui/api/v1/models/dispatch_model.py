@@ -107,11 +107,16 @@ class DispatchResponse(BaseModel):
 
 
 class DeleteDispatchesRequest(BaseModel):
-    """Dashboard metadate model"""
+    """Dashboard delete request model"""
 
     dispatches: Optional[List[UUID]] = None
+
+
+class DeleteAllDispatchesRequest(BaseModel):
+    """Dashboard delete all request model"""
+
     status_filter: Optional[Status] = Status.ALL
-    delete_all: Optional[bool] = False
+    search_string: Optional[str] = ""
 
 
 class DeleteDispatchesResponse(BaseModel):

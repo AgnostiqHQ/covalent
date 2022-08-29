@@ -29,6 +29,7 @@ from sqlalchemy.orm import Session
 from covalent_ui.api.v1.data_layer.summary_dal import Summary
 from covalent_ui.api.v1.database.config.db import engine
 from covalent_ui.api.v1.models.dispatch_model import (
+    DeleteAllDispatchesRequest,
     DeleteDispatchesRequest,
     DeleteDispatchesResponse,
     DispatchDashBoardResponse,
@@ -92,3 +93,20 @@ def delete_dispatches(req: Optional[DeleteDispatchesRequest]):
     with Session(engine) as session:
         summary = Summary(session)
         return summary.delete_dispatches(req)
+
+
+@routes.post("/delete-all", response_model=DeleteDispatchesResponse)
+def delete_all_dispatches(req: Optional[DeleteAllDispatchesRequest]):
+    """Delete one or more Dispatches
+
+    Args:
+        req: Dispatch Dispatch Request
+
+    Returns:
+        List of deleted dispatches if success
+        List of deleted dispatches if fails
+    """
+
+    with Session(engine) as session:
+        summary = Summary(session)
+        return summary.delete_all_dispatches(req)
