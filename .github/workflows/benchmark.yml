@@ -22,6 +22,12 @@ name: benchmark
 
 on:
   workflow_call:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Commit SHA used for testing"
+        type: string
+        required: true
 
 jobs:
   benchmarks:
