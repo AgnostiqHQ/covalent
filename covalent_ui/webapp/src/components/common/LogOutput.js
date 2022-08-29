@@ -27,9 +27,7 @@ const MAX_LINES = 80
 
 
 export const LogOutput = ({latOutput}) => {
-
-let result = latOutput.replaceAll("'", '"');
-const outputResult = JSON.parse(result)
+const outputResult = latOutput
 return (
     <div>
       <Heading>{outputResult.head}</Heading>

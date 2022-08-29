@@ -25,6 +25,7 @@ import { CircularProgress } from '@mui/material'
 const PageLoading = () => {
   return (
     <CircularProgress
+      data-testid="pageLoader"
       disableShrink
       sx={{
         position: 'fixed',

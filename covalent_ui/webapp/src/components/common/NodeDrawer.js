@@ -142,6 +142,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
       variant="persistent"
       open={!!node}
       onClose={handleClose}
+      data-testid="nodeDrawer"
     >
       {!!node && (
         <>

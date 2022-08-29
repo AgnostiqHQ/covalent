@@ -161,6 +161,7 @@ const LatticeGraph = ({
           <>
             <ReactFlow
               ref={ref_chart}
+              data-testid="lattice__graph"
               nodeTypes={{ electron: ElectronNode, parameter: ParameterNode }}
               edgeTypes={{ directed: DirectedEdge }}
               nodesDraggable={nodesDraggable}

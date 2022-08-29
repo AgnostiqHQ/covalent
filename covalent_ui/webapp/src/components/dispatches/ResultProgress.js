@@ -37,8 +37,8 @@ const ResultProgress = (props) => {
   const { status, totalElectronsCompleted, totalElectrons } = props.result
   return (
     <Tooltip title={statusLabel(status)} placement="right">
-      <Box sx={{ display: 'flex', alignItems: 'center', width: '120px' }}>
-        <Box sx={{ width: '50%', mr: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center',width:'120px' }}>
+        <Box data-testid="resultProgress" sx={{ width: '50%', mr: 1 }}>
           <LinearProgress
             variant="determinate"
             color={STATUS_COLORS[status.toUpperCase()]}

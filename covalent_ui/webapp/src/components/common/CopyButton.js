@@ -30,7 +30,11 @@ const CopyButton = ({ content, isBorderPresent, title = 'Copy', ...props }) => {
   const [copied, setCopied] = useState(false)
 
   return (
-    <Tooltip title={copied ? 'Copied!' : title} placement="right">
+    <Tooltip
+      title={copied ? 'Copied!' : title}
+      placement="right"
+      data-testid="copyButton"
+    >
       <IconButton
         onClick={() => {
           copy(content)
@@ -54,10 +58,11 @@ const CopyButton = ({ content, isBorderPresent, title = 'Copy', ...props }) => {
           alignItems="center"
         >
           {copied ? (
-            <CheckRounded fontSize="inherit" />
+            <CheckRounded fontSize="inherit" data-testid="copiedIcon" />
           ) : (
             <CopyIcon
               style={{ margin: 'auto', width: '16px', height: '16px' }}
+              data-testid="copyIcon"
             />
           )}
         </Grid>

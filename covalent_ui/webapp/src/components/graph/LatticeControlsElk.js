@@ -66,7 +66,6 @@ const LatticeControls = ({
   const { zoomIn, zoomOut } = useZoomPanHelper()
   const { fitView } = useFitViewHelper()
   return (
-
     <ToggleButtonGroup
       orientation="vertical"
       size="small"
@@ -115,20 +114,23 @@ const LatticeControls = ({
         </ToggleButton>
       </Hint>
       <Hint title="Change layout">
-        <ToggleButton onClick={(e) => handleClick(e)} value="">
+        <ToggleButton data-testid="tooglebuttonclick" onClick={(e) => handleClick(e)} value="">
           <DashboardIcon />
         </ToggleButton>
       </Hint>
+
       <LayoutOptions
         algorithm={algorithm}
         open={open}
         anchorEl={anchorEl}
         handleClick={handleClick}
         handleClose={handleClose}
-        handleChangeAlgorithm={handleChangeAlgorithm} />
+        handleChangeAlgorithm={handleChangeAlgorithm}
+      />
 
       <Hint title="Change orientation">
         <ToggleButton
+          data-testid="changeorientation"
           onClick={() => {
             switch (direction) {
               case 'UP':
@@ -155,18 +157,18 @@ const LatticeControls = ({
         </ToggleButton>
       </Hint>
 
-      <Hint title={hideLabels ? "Show labels" : "Hide labels"}>
+      <Hint data-testid="handlelabelhide" title={hideLabels ? 'Show labels' : 'Hide labels'}>
         <ToggleButton value="" onClick={() => handleHideLabels()}>
           {hideLabels ? <LabelOffIcon /> : <LabelIcon />}
         </ToggleButton>
       </Hint>
       <Hint title="Toggle parameters">
-        <ToggleButton onClick={toggleParams} value="" selected={showParams}>
+        <ToggleButton data-testid="toggleparams" onClick={toggleParams} value="" selected={showParams}>
           P
         </ToggleButton>
       </Hint>
       <Hint title="Toggle draggable nodes">
-        <ToggleButton onClick={toggleNodesDraggable} value="">
+        <ToggleButton data-testid="toggledragablenode" onClick={toggleNodesDraggable} value="">
           {nodesDraggable ? <LockOpenOutlined /> : <LockOutlined />}
         </ToggleButton>
       </Hint>
