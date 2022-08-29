@@ -64,7 +64,11 @@ const Runtime = ({ startTime, endTime, sx }) => {
 
 const RuntimeConst = ({ startTime, endTime, sx }) => {
   const diffMs = differenceInMilliseconds(startTime, endTime)
-  return <Typography sx={sx}>{humanize(diffMs)}</Typography>
+  return (
+    <Typography data-testid="runTime" sx={sx}>
+      {humanize(diffMs)}
+    </Typography>
+  )
 }
 
 const RuntimeTicker = ({ startTime, sx }) => {

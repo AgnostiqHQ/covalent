@@ -50,40 +50,47 @@ export function LayoutOptions(props) {
     },
     {
       optionName: 'Old Layout',
-      optionValue: 'oldLayout',
+      optionValue: 'oldlayout',
     },
   ]
   return (
-    <Menu
-      variant="menu"
-      anchorEl={anchorEl}
-      open={open}
-      onClose={handleClose}
-      keepMounted={false}
-      getContentAnchorEl={null}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-      PaperProps={{
-        style: {
-          transform: 'translateX(-5px) translateY(5px)',
-        },
-      }}
-    >
-      {options.map((option) => (
-        <MenuItem
-          sx={{
-            fontSize: '0.875rem',
-            '&.Mui-selected': {
-              backgroundColor: '#1C1C46',
-            },
-          }}
-          selected={algorithm === option.optionValue}
-          key={option.optionName}
-          onClick={() => handleChangeAlgorithm(option.optionValue)}
-        >
-          {option.optionName}
-        </MenuItem>
-      ))}
-    </Menu>
+
+    <div data-testid="layoutoption" title="lay__out_menu">
+      <Menu
+        data-testid='lay__tit'
+        variant="menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        keepMounted={false}
+        getContentAnchorEl={null}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        PaperProps={{
+          style: {
+            transform: 'translateX(-5px) translateY(5px)',
+          },
+        }}
+      >
+
+        {options.map((option) => (
+          <MenuItem
+            data-testid='layout__opt_menu'
+            sx={{
+              fontSize: '0.875rem',
+              '&.Mui-selected': {
+                backgroundColor: '#1C1C46',
+              },
+            }}
+            selected={algorithm === option.optionValue}
+            key={option.optionName}
+            onClick={() => handleChangeAlgorithm(option.optionValue)}
+          >
+            {option.optionName}
+          </MenuItem>
+        ))}
+
+      </Menu>
+    </div>
   )
 }

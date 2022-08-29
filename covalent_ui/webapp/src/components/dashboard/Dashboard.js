@@ -28,7 +28,7 @@ import DashboardCard from './DashboardCard'
 
 const Dashboard = () => {
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex' }} data-testid="dashboard">
       <NavDrawer />
       <Container maxWidth="xl" sx={{ mb: 4, mt: 7.5 }}>
         <DashboardCard />
