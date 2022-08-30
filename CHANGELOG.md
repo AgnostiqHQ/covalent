@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created a prototype of a production Dockerfile
 - The old Dockerfile has been moved to Dockerfile.dev
 
+### Docs
+
+- Added read the docs for user interface
+- Added db schema migration error guide in RTD
+- Removed `get_data_store` from quantum chemistry tutorial #1046
+
 ### Operations
 
 - Added reusable version action
@@ -24,7 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-
 
 ### Tests
 
