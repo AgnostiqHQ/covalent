@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Benchmark workflow.
+- Benchmark workflow
+
 ### Operations
 
 - Adding `benchmark.yml` workflow
