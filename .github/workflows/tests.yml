@@ -84,79 +84,80 @@ jobs:
 
       - uses: dorny/paths-filter@v2
         if: github.event_name == 'pull_request'
-        id: working-directory
+        id: modified-files
         with:
           filters: |
             sdk:
             - 'covalent/**'
+            - 'tests/covalent_tests/**'
             dispatcher:
             - 'covalent_dispatcher/**'
+            - 'tests/covalent_dispatcher_tests/**'
             ui_backend:
             - 'covalent_ui/*.py'
-            ui_backend_tests:
-            - 'tests/covalent_ui_tests/**'
             ui_frontend:
             - 'covalent_ui/webapp/**'
             build:
             - 'MANIFEST.in'
-            - 'requirements.txt'
+            - '**/requirements.txt'
             - 'setup.py'
             actions:
-            - '.github/workflows/*.yml'
-            tests:
-            - 'tests/**'
+            - '.github/workflows/*'
+            - '.github/actions/**'
+
+      - name: Generate environment variables
+        run: MASTER_CONFIG=0
+          if [ ${{ matrix.os }} = 'ubuntu-latest' ] \
+          && [ ${{ matrix.container }} = 'python:3.8-bullseye' ] \
+          && [ ${{ matrix.backend }} = 'dask' ] ; then
+          MASTER_CONFIG=1
+          fi
+          NEED_PYTHON=0
+          if [ ${{ steps.modified-files.outputs.sdk }} = 'true' ] \
+          || [ ${{ steps.modified-files.outputs.dispatcher }} = 'true' ] \
+          || [ ${{ steps.modified-files.outputs.ui_backend }} = 'true' ] ; then
+          NEED_PYTHON=1
+          fi
+          NEED_FRONTEND=0
+          if [ ${{ steps.modified-files.outputs.ui_frontend }} = 'true' ] ; then
+          NEED_FRONTEND=1
+          fi
+          BUILD_AND_RUN_ALL=0
+          if [ ${{ github.event_name != 'pull_request' }} ] \
+          || [ ${{ steps.modified-files.outputs.build = 'true' }} ] \
+          || [ ${{ steps.modified-files.outputs.actions = 'true' }} ] ; then
+          BUILD_AND_RUN_ALL=1
+          fi
+          echo "MASTER_CONFIG=$MASTER_CONFIG" >> $GITHUB_ENV
+          echo "NEED_PYTHON=$NEED_PYTHON" >> $GITHUB_ENV
+          echo "NEED_FRONTEND=$NEED_FRONTEND" >> $GITHUB_ENV
+          echo "BUILD_AND_RUN_ALL=$BUILD_AND_RUN_ALL" >> $GITHUB_ENV
 
       - name: Set up Python
         if: >
           matrix.os == 'macos-latest'
-          && (github.event_name != 'pull_request'
-          || steps.working-directory.outputs.sdk == 'true'
-          || steps.working-directory.outputs.dispatcher == 'true'
-          || steps.working-directory.outputs.build == 'true'
-          || steps.working-directory.outputs.actions == 'true'
-          || steps.working-directory.outputs.tests == 'true')
+          && (env.NEED_PYTHON || env.BUILD_AND_RUN_ALL)
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install Python dependencies
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.sdk == 'true'
-          || steps.working-directory.outputs.dispatcher == 'true'
-          || steps.working-directory.outputs.build == 'true'
-          || steps.working-directory.outputs.actions == 'true'
-          || steps.working-directory.outputs.tests == 'true'
+        id: install-python-deps
+        if: env.NEED_PYTHON || env.BUILD_AND_RUN_ALL
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
 
       - name: Install rsync on Ubuntu
         if: >
-          (github.event_name != 'pull_request'
-          || steps.working-directory.outputs.sdk == 'true'
-          || steps.working-directory.outputs.dispatcher == 'true'
-          || steps.working-directory.outputs.actions == 'true'
-          || steps.working-directory.outputs.tests == 'true')
-          && (matrix.container == 'python:3.8-buster'
-          || matrix.container == 'python:3.8-bullseye'
-          || matrix.container == 'python:3.9-buster'
-          || matrix.container == 'python:3.9-bullseye'
-          || matrix.container == 'python:3.10-buster'
-          || matrix.container == 'python:3.10-bullseye')
+          (env.NEED_PYTHON || env.BUILD_AND_RUN_ALL)
+          && contains(fromJson('["buster", "bullseye"]'), matrix.container)
         run: apt-get update && apt-get install -y rsync
 
       - name: Install NPM and Yarn on Ubuntu
         if: >
-          (github.event_name != 'pull_request'
-          || steps.working-directory.outputs.ui_frontend == 'true'
-          || steps.working-directory.outputs.build == 'true')
-          && (matrix.container == 'python:3.8-buster'
-          || matrix.container == 'python:3.8-bullseye'
-          || matrix.container == 'python:3.9-buster'
-          || matrix.container == 'python:3.9-bullseye'
-          || matrix.container == 'python:3.10-buster'
-          || matrix.container == 'python:3.10-bullseye')
+          (env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL)
+          && contains(fromJson('["buster", "bullseye"]'), matrix.container)
         run: |
           apt-get install -y curl
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
@@ -165,10 +166,8 @@ jobs:
 
       - name: Install NPM and Yarn on CentOS
         if: >
-          (github.event_name != 'pull_request'
-          || steps.working-directory.outputs.build == 'true'
-          || steps.working-directory.outputs.ui_frontend == 'true')
-           && matrix.container.image == 'centos/python-38-centos7'
+          (env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL)
+          && matrix.container.image == 'centos/python-38-centos7'
         run: |
           yum remove -y npm nodejs
           NODE_VERSION="16.17.0"
@@ -181,10 +180,7 @@ jobs:
           npm install -g yarn
 
       - name: Build webapp
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.ui_frontend == 'true'
-          || steps.working-directory.outputs.build == 'true'
+        if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
@@ -195,15 +191,12 @@ jobs:
             yarn build
 
       - name: Build distribution
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.build == 'true'
+        id: build-dist
+        if: env.NEED_PYTHON || env.BUILD_AND_RUN_ALL
         run: python setup.py sdist
 
       - name: Validate distribution
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.build == 'true'
+        if: github.event_name != 'pull_request' || steps.modified-files.outputs.build
         run: |
           VERSION="$(cat ./VERSION)"
           cd dist
@@ -216,21 +209,11 @@ jobs:
           rm -rf covalent-${VERSION}/
 
       - name: Install Covalent
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.sdk == 'true'
-          || steps.working-directory.outputs.dispatcher == 'true'
-          || steps.working-directory.outputs.build == 'true'
-          || steps.working-directory.outputs.actions == 'true'
-          || steps.working-directory.outputs.tests == 'true'
-        run: pip install -e .
+        if: steps.build-dist.outcome == 'success'
+        run: pip install dist/covalent-${VERSION}.tar.gz
 
       - name: Start Covalent dispatcher server
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.build == 'true'
-          || steps.working-directory.outputs.actions == 'true'
-          || steps.working-directory.outputs.tests == 'true'
+        if: env.BUILD_AND_RUN_ALL
         id: covalent_start
         run: |
           if [ "${{ matrix.backend }}" = 'dask' ] ; then
@@ -243,70 +226,57 @@ jobs:
           fi
 
       - name: Run SDK tests and measure coverage
-        id: sdk_tests
+        id: sdk-tests
         if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.sdk == 'true'
+          steps.modified-files.outputs.sdk == 'true'
+          || env.BUILD_AND_RUN_ALL
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
 
       - name: Generate SDK coverage report
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.sdk == 'true'
+        id: sdk-coverage
+        if: steps.sdk-tests.outcome == 'success'
         run: coverage xml -o sdk_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
-        id: dispatcher_tests
+        id: dispatcher-tests
         if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.dispatcher == 'true'
+          steps.modified-files.outputs.dispatcher == 'true'
+          || env.BUILD_AND_RUN_ALL
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
 
       - name: Generate dispatcher coverage report
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.dispatcher == 'true'
+        id: dispatcher-coverage
+        if: steps.dispatcher-tests.outcome == 'success'
         run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
-        id: functional_tests
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.actions == 'true'
-          || steps.working-directory.outputs.tests == 'true'
+        id: functional-tests
+        if: env.BUILD_AND_RUN_ALL
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
 
       - name: Generate functional test coverage report
-        if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.actions == 'true'
-          || steps.working-directory.outputs.tests == 'true'
+        id: functional-coverage
+        if: steps.functional-tests.outcome == 'success'
         run: coverage xml -o functional_tests_coverage.xml
 
       - name: Run UI backend tests and measure coverage
-        id: ui_tests
+        id: ui-backend-tests
         if: >
           false
-          && (github.event_name != 'pull_request'
-          || steps.working-directory.outputs.ui_backend == 'true')
+          && (steps.modified-files.outputs.ui_backend == 'true'
+          || env.BUILD_AND_RUN_ALL)
         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
 
       - name: Generate UI backend coverage report
-        continue-on-error: true
-        if: >
-          false
-          && (github.event_name != 'pull_request'
-          || (steps.working-directory.outputs.ui_backend_tests == 'true'
-              && steps.working-directory.outputs.ui_backend == 'true'
-              && steps.ui_tests.outputs.exit_code == 0))
+        id: ui-backend-coverage
+        if: steps.ui-backend-tests.outcome == 'success'
         run: coverage xml -o ui_backend_coverage.xml
 
       - name: Run UI frontend tests and measure coverage
-        id: ui_frontend_tests
+        id: ui-frontend-tests
         if: >
-          github.event_name != 'pull_request'
-          || steps.working-directory.outputs.ui_frontend == 'true'
-          || steps.working-directory.outputs.actions == 'true'
+          steps.modified-files.outputs.ui_frontend == 'true'
+          || env.BUILD_AND_RUN_ALL
         run: |
           cd covalent_ui/webapp
           npm test -- --coverage --watchAll=false
@@ -314,21 +284,19 @@ jobs:
       - name: Dump Covalent logs
         if: >
           steps.covalent_start.outcome == 'success'
-          && (
-          steps.sdk_tests.outcome == 'failed'
-          || steps.dispatcher_tests.outcome == 'failed'
-          || steps.functional_tests.outcome == 'failed'
-          || steps.ui_tests.outcome == 'failed'
-          || steps.ui_frontend_tests.outcome == 'failed')
+          && (steps.sdk-tests.outcome == 'failed'
+          || steps.dispatcher-tests.outcome == 'failed'
+          || steps.functional-tests.outcome == 'failed'
+          || steps.ui-backend-tests.outcome == 'failed'
+          || steps.ui-frontend-tests.outcome == 'failed')
         run: covalent logs
 
       - name: Upload SDK report to Codecov
         if: >
-          matrix.os == 'ubuntu-latest'
-          && matrix.container == 'python:3.8-buster'
+          env.MASTER_CONFIG
           && github.event_name != 'workflow_dispatch'
-          && (github.event_name != 'pull_request'
-              || steps.working-directory.outputs.sdk == 'true')
+          && (github.event_name == 'workflow_run'
+          || steps.sdk-coverage.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
           files: ./sdk_coverage.xml
@@ -337,11 +305,10 @@ jobs:
 
       - name: Upload Dispatcher report to Codecov
         if: >
-          matrix.os == 'ubuntu-latest'
-          && matrix.container == 'python:3.8-buster'
+          env.MASTER_CONFIG
           && github.event_name != 'workflow_dispatch'
-          && (github.event_name != 'pull_request'
-              || steps.working-directory.outputs.dispatcher == 'true')
+          && (github.event_name == 'workflow_run'
+          || steps.dispatcher-coverage.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
           files: ./dispatcher_coverage.xml
@@ -350,12 +317,9 @@ jobs:
 
       - name: Upload Functional report to Codecov
         if: >
-          matrix.os == 'ubuntu-latest'
-          && matrix.container == 'python:3.8-buster'
-          && (github.event_name != 'pull_request'
-              || steps.working-directory.outputs.actions == 'true'
-              || steps.working-directory.outputs.tests == 'true')
+          env.MASTER_CONFIG
           && github.event_name != 'workflow_dispatch'
+          && steps.functional-coverage.outcome == 'success'
         uses: codecov/codecov-action@v3
         with:
           files: ./functional_tests_coverage.xml
@@ -365,12 +329,10 @@ jobs:
       - name: Upload UI backend report to Codecov
         if: >
           false
-          && matrix.os == 'ubuntu-latest'
-          && matrix.container == 'python:3.8-buster'
+          && env.MASTER_CONFIG
           && github.event_name != 'workflow_dispatch'
-          && (github.event_name != 'pull_request'
-              || (steps.working-directory.outputs.ui_backend == 'true'
-                  && steps.ui_tests.outputs.exit_code == 0))
+          && (github.event_name == 'workflow_run'
+          || steps.ui-backend-coverage.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
           files: ./ui_backend_coverage.xml
@@ -379,12 +341,10 @@ jobs:
 
       - name: Upload UI frontend report to Codecov
         if: >
-          matrix.os == 'ubuntu-latest'
-          && matrix.container == 'python:3.8-buster'
+          env.MASTER_CONFIG
           && github.event_name != 'workflow_dispatch'
-          && (github.event_name != 'pull_request'
-              || (steps.working-directory.outputs.ui_frontend == 'true'
-                  && steps.ui_frontend_tests.outputs.exit_code == 0))
+          && (github.event_name == 'workflow_run'
+          || steps.ui-frontend-tests.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
           files: ./covalent_ui/webapp/coverage/clover.xml
@@ -396,9 +356,8 @@ jobs:
         id: get-latest-tag
         if: >
           github.ref == 'refs/heads/develop'
-          && matrix.os == 'ubuntu-latest'
-          && matrix.container == 'python:3.8-buster'
-          && github.event_name != 'workflow_dispatch'
+          && env.MASTER_CONFIG
+          && github.event_name == 'workflow_run'
         with:
           semver_only: true
 
@@ -406,9 +365,8 @@ jobs:
         id: push
         if: >
           github.ref == 'refs/heads/develop'
-          && matrix.os == 'ubuntu-latest'
-          && matrix.container == 'python:3.8-buster'
-          && github.event_name != 'workflow_dispatch'
+          && env.MASTER_CONFIG
+          && github.event_name == 'workflow_run'
         run: |
           MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
           VERSION="$(cat ./VERSION)"
@@ -430,21 +388,15 @@ jobs:
       - name: Format Slack message
         if: >
           github.ref == 'refs/heads/develop'
-          && matrix.os == 'ubuntu-latest'
-          && matrix.container == 'python:3.8-buster'
-          && github.event_name != 'workflow_dispatch'
+          && env.MASTER_CONFIG
+          && github.event_name == 'workflow_run'
         run: |
           VERSION="$(cat ./VERSION)"
           SLACK_MSG=":rocket: Version $VERSION is now available."
           echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
 
       - name: Notify Slack
-        if: >
-          github.ref == 'refs/heads/develop'
-          && matrix.os == 'ubuntu-latest'
-          && matrix.container == 'python:3.8-buster'
-          && github.event_name != 'workflow_dispatch'
-          && env.RELEASE == 'true'
+        if: steps.push.outcome == 'success' && env.RELEASE == 'true'
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent-ci"
