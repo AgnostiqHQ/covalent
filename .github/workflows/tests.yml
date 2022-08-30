@@ -97,6 +97,8 @@ jobs:
             - 'covalent_ui/*.py'
             ui_frontend:
             - 'covalent_ui/webapp/**'
+            functional_tests:
+            - 'tests/functional_tests/**'
             build:
             - 'MANIFEST.in'
             - '**/requirements.txt'
@@ -125,6 +127,7 @@ jobs:
           fi
           BUILD_AND_RUN_ALL=0
           if [ ${{ github.event_name }} != 'pull_request' ] \
+            || [ ${{ steps.modified-files.outputs.functional_tests }} == 'true' ] \
             || [ ${{ steps.modified-files.outputs.build }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.actions }} = 'true' ] ; then
             BUILD_AND_RUN_ALL=1
