@@ -20,6 +20,7 @@
 
 import os
 import shutil
+from dataclasses import asdict
 from functools import reduce
 from operator import getitem
 from pathlib import Path
@@ -39,9 +40,11 @@ class ConfigManager:
 
     def __init__(self) -> None:
 
-        from .defaults import _DEFAULT_CONFIG
+        from .defaults import DefaultConfig
 
-        self.config_file = _DEFAULT_CONFIG["sdk"]["config_file"]
+        DEFAULT_CONFIG = asdict(DefaultConfig())
+
+        self.config_file = DEFAULT_CONFIG["sdk"]["config_file"]
 
         self.generate_default_config()
         if os.path.exists(self.config_file):
@@ -51,13 +54,13 @@ class ConfigManager:
             Path(self.config_file).parent.mkdir(parents=True, exist_ok=True)
             self.write_config()
 
-            Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
-            Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
-            Path(self.get("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
-            Path(self.get("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
-            Path(self.get("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
-            Path(self.get("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
-            Path(self.get("dispatcher.db_path")).parent.mkdir(parents=True, exist_ok=True)
+        Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
+        Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
+        Path(self.get("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
+        Path(self.get("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
+        Path(self.get("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
+        Path(self.get("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
+        Path(self.get("dispatcher.db_path")).parent.mkdir(parents=True, exist_ok=True)
 
     def generate_default_config(self) -> None:
         """
@@ -70,10 +73,9 @@ class ConfigManager:
             None
         """
 
-        from .defaults import _DEFAULT_CONFIG
+        from .defaults import DefaultConfig
 
-        # self.config_data may be modified later, and we don't want it to affect _DEFAULT_CONFIG
-        self.config_data = _DEFAULT_CONFIG.copy()
+        self.config_data = asdict(DefaultConfig())
 
     def update_config(
         self, new_entries: Optional[Dict] = None, override_existing: bool = True

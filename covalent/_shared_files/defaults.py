@@ -40,9 +40,9 @@ arg_prefix = f"{prefix_separator}arg{prefix_separator}"
 
 WAIT_EDGE_NAME = "!waiting_edge"
 
-# Default configuration settings
-_DEFAULT_CONFIG = {
-    "sdk": {
+
+def get_default_sdk_config():
+    return {
         "config_file": (
             os.environ.get("COVALENT_CONFIG_DIR")
             or os.environ.get("XDG_CONFIG_DIR")
@@ -60,8 +60,11 @@ _DEFAULT_CONFIG = {
         or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
         + "/covalent/executor_plugins",
         "no_cluster": "false",
-    },
-    "dispatcher": {
+    }
+
+
+def get_default_dispatcher_config():
+    return {
         "address": "localhost",
         "port": 48008,
         "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
@@ -71,8 +74,11 @@ _DEFAULT_CONFIG = {
         + "/covalent",
         "db_path": (os.environ.get("XDG_DATA_HOME"))
         or (os.environ["HOME"] + "/.local/share") + "/covalent/dispatcher_db.sqlite",
-    },
-    "dask": {
+    }
+
+
+def get_default_dask_config():
+    return {
         "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
@@ -80,23 +86,28 @@ _DEFAULT_CONFIG = {
         "mem_per_worker": "auto",
         "threads_per_worker": 1,
         "num_workers": dask.system.CPU_COUNT,
-    },
-    "workflow_data": {
+    }
+
+
+def get_default_workflow_data_config():
+    return {
         "storage_type": "local",
         "base_dir": (os.environ.get("XDG_DATA_HOME"))
         or (os.environ["HOME"] + "/.local/share") + "/covalent/workflow_data",
-    },
-    "user_interface": {
+    }
+
+
+def get_default_ui_config():
+    return {
         "address": "localhost",
         "port": 48008,
         "dev_port": 49009,
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
-    },
-}
+    }
 
 
-def get_executor() -> dict:
+def get_default_executor() -> dict:
     """
     Gets the executor based on whether Dask service is running.
 
@@ -108,10 +119,20 @@ def get_executor() -> dict:
     return "local" if get_config("sdk.no_cluster") else "dask"
 
 
+# Default configuration settings
+@dataclass
+class DefaultConfig:
+    sdk: Dict = field(default_factory=get_default_sdk_config)
+    dispatcher: Dict = field(default_factory=get_default_dispatcher_config)
+    dask: Dict = field(default_factory=get_default_dask_config)
+    workflow_data: Dict = field(default_factory=get_default_workflow_data_config)
+    user_interface: Dict = field(default_factory=get_default_ui_config)
+
+
 @dataclass
 class DefaultMetadataValues:
-    executor: str = field(default_factory=get_executor)
+    executor: str = field(default_factory=get_default_executor)
     deps: Dict = field(default_factory=dict)
     call_before: List = field(default_factory=list)
     call_after: List = field(default_factory=list)
-    workflow_executor: str = field(default_factory=get_executor)
+    workflow_executor: str = field(default_factory=get_default_executor)

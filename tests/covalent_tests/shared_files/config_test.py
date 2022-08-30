@@ -19,15 +19,18 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import tempfile
+from dataclasses import asdict
 
 import pytest
 
 from covalent._shared_files.config import ConfigManager, get_config, reload_config, set_config
-from covalent._shared_files.defaults import _DEFAULT_CONFIG
+from covalent._shared_files.defaults import DefaultConfig
+
+DEFAULT_CONFIG = asdict(DefaultConfig())
 
 
 @pytest.mark.parametrize(
-    "dir_env,conf_dir",
+    "dir_env, conf_dir",
     [
         ("COVALENT_CONFIG_DIR", "covalent/covalent.conf"),
         ("XDG_CONFIG_DIR", "covalent/covalent.conf"),
@@ -44,16 +47,13 @@ def test_config_manager_init_directory_setting(monkeypatch, dir_env, conf_dir):
 
 
 @pytest.mark.parametrize(
-    "path_exists,write_config_called,update_config_called",
+    "path_exists, write_config_called, update_config_called",
     [(False, True, False), (True, False, True)],
 )
 def test_config_manager_init_write_update_config(
     mocker, monkeypatch, path_exists, write_config_called, update_config_called
 ):
     """Test the init method for the config manager."""
-
-    class MockPath:
-        pass
 
     config_keys = [
         "sdk.log_dir",
@@ -68,13 +68,13 @@ def test_config_manager_init_write_update_config(
     with tempfile.TemporaryDirectory() as tmp_dir:
         monkeypatch.setenv("COVALENT_CONFIG_DIR", tmp_dir)
         update_config_mock = mocker.patch(
-            "covalent._shared_files.config._ConfigManager.update_config"
+            "covalent._shared_files.config.ConfigManager.update_config"
         )
         write_config_mock = mocker.patch(
-            "covalent._shared_files.config._ConfigManager.write_config"
+            "covalent._shared_files.config.ConfigManager.write_config"
         )
         get_mock = mocker.patch(
-            "covalent._shared_files.config._ConfigManager.get", side_effect=config_keys
+            "covalent._shared_files.config.ConfigManager.get", side_effect=config_keys
         )
         path_mock = mocker.patch("covalent._shared_files.config.Path.__init__", return_value=None)
         mocker.patch("os.path.exists", return_value=path_exists)
@@ -96,9 +96,11 @@ def test_set_config_str_key(mocker):
 
     cm_set_mock = mocker.patch("covalent._shared_files.config.ConfigManager.set")
     cm_write_config = mocker.patch("covalent._shared_files.config.ConfigManager.write_config")
+
     set_config("mock_section.mock_variable", "mock_value")
+
     cm_set_mock.assert_called_once_with("mock_section.mock_variable", "mock_value")
-    cm_write_config.assert_called_once_with()
+    cm_write_config.call_count == 2
 
 
 def test_set_config_dict_key(mocker):
@@ -106,9 +108,11 @@ def test_set_config_dict_key(mocker):
 
     cm_set_mock = mocker.patch("covalent._shared_files.config.ConfigManager.set")
     cm_write_config = mocker.patch("covalent._shared_files.config.ConfigManager.write_config")
+
     set_config({"mock_section.mock_variable": "mock_value"})
+
     cm_set_mock.assert_called_once_with("mock_section.mock_variable", "mock_value")
-    cm_write_config.assert_called_once_with()
+    cm_write_config.call_count == 2
 
 
 def test_generate_default_config(mocker):
@@ -118,8 +122,8 @@ def test_generate_default_config(mocker):
     cm_deepcopy_mock = mocker.patch("covalent._shared_files.config.copy.deepcopy", return_value={})
 
     cm.generate_default_config()
-    cm_deepcopy_mock.assert_called_once_with(_DEFAULT_CONFIG)
-    assert cm.config_data == _DEFAULT_CONFIG
+    cm_deepcopy_mock.assert_called_once_with(DEFAULT_CONFIG)
+    assert cm.config_data == DEFAULT_CONFIG
 
 
 def test_read_config(mocker):
@@ -148,8 +152,8 @@ def test_generate_default_config():
 
     cm = ConfigManager()
     cm.generate_default_config()
-    assert cm.config_data == _DEFAULT_CONFIG
-    assert cm.config_data is not _DEFAULT_CONFIG
+    assert cm.config_data == DEFAULT_CONFIG
+    assert cm.config_data is not DEFAULT_CONFIG
 
 
 def test_reload_config(mocker):
