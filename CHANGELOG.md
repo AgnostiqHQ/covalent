@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Added
-
-- Benchmark workflow
-
 ### Docs 
 
 - Added db schema migration error guide in RTD
