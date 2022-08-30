@@ -59,11 +59,8 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./tests/requirements.txt
 
-      # PYTHONPATH is needed to avoid the occasional POSTPROCESSING_FAILED error
       - name: Start Covalent dispatcher server
-        run: |
-          covalent purge -Hy
-          PYTHONPATH=$PYTHONPATH:$(pwd)/tests/stress_tests covalent start --ignore-migrations
+        run: covalent start -d --ignore-migrations
 
       - name: Run stress benchmarks
         run: |
