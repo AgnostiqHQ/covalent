@@ -149,37 +149,6 @@ jobs:
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
 
-      - name: Install rsync on Ubuntu
-        if: >
-          (env.NEED_PYTHON || env.BUILD_AND_RUN_ALL)
-          && contains(fromJson('["buster", "bullseye"]'), matrix.container)
-        run: apt-get update && apt-get install -y rsync
-
-      - name: Install NPM and Yarn on Ubuntu
-        if: >
-          (env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL)
-          && contains(fromJson('["*buster", "*bullseye"]'), matrix.container)
-        run: |
-          apt-get install -y curl
-          curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
-          apt-get install -y nodejs
-          npm install -g yarn
-
-      - name: Install NPM and Yarn on CentOS
-        if: >
-          (env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL)
-          && matrix.container.image == 'centos/python-38-centos7'
-        run: |
-          yum remove -y npm nodejs
-          NODE_VERSION="16.17.0"
-          wget https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz
-          xz -d node-v$NODE_VERSION-linux-x64.tar.xz
-          tar xvf node-v$NODE_VERSION-linux-x64.tar
-          mv node-v$NODE_VERSION-linux-x64 /usr/local/nodejs
-          echo export PATH=$PATH:'/usr/local/nodejs/bin' >> /etc/profile
-          source /etc/profile
-          npm install -g yarn
-
       - name: Build webapp
         if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
         uses: nick-fields/retry@v2
