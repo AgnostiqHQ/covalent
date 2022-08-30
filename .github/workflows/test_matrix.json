@@ -2,7 +2,7 @@
   {
     "name": "Ubuntu 18.04 / Python 3.8 / Dask",
     "os": "ubuntu-latest",
-    "container": "python:3.8-buster",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py38:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
@@ -14,7 +14,7 @@
   {
     "name": "Ubuntu 18.04 / Python 3.8 / Local",
     "os": "ubuntu-latest",
-    "container": "python:3.8-buster",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py38:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
@@ -25,7 +25,7 @@
   {
     "name": "Ubuntu 18.04 / Python 3.9 / Dask",
     "os": "ubuntu-latest",
-    "container": "python:3.9-buster",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py39:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
@@ -37,7 +37,7 @@
   {
     "name": "Ubuntu 18.04 / Python 3.9 / Local",
     "os": "ubuntu-latest",
-    "container": "python:3.9-buster",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py39:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
@@ -48,7 +48,7 @@
   {
     "name": "Ubuntu 18.04 / Python 3.10 / Dask",
     "os": "ubuntu-latest",
-    "container": "python:3.10-buster",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py310:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
@@ -60,7 +60,7 @@
   {
     "name": "Ubuntu 18.04 / Python 3.10 / Local",
     "os": "ubuntu-latest",
-    "container": "python:3.10-buster",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py310:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
@@ -71,7 +71,7 @@
   {
     "name": "Ubuntu 20.04 / Python 3.8 / Dask",
     "os": "ubuntu-latest",
-    "container": "python:3.8-bullseye",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py38:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
@@ -83,7 +83,7 @@
   {
     "name": "Ubuntu 20.04 / Python 3.8 / Local",
     "os": "ubuntu-latest",
-    "container": "python:3.8-bullseye",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py38:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
@@ -94,7 +94,7 @@
   {
     "name": "Ubuntu 20.04 / Python 3.9 / Dask",
     "os": "ubuntu-latest",
-    "container": "python:3.9-bullseye",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py39:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
@@ -106,7 +106,7 @@
   {
     "name": "Ubuntu 20.04 / Python 3.9 / Local",
     "os": "ubuntu-latest",
-    "container": "python:3.9-bullseye",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py39:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
@@ -117,7 +117,7 @@
   {
     "name": "Ubuntu 20.04 / Python 3.10 / Dask",
     "os": "ubuntu-latest",
-    "container": "python:3.10-bullseye",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py310:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
@@ -129,7 +129,7 @@
   {
     "name": "Ubuntu 20.04 / Python 3.10 / Local",
     "os": "ubuntu-latest",
-    "container": "python:3.10-bullseye",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py310:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
@@ -141,7 +141,7 @@
     "name": "CentOS 7 / Python 3.8 / Dask",
     "os": "ubuntu-latest",
     "container": {
-      "image": "centos/python-38-centos7",
+      "image": "ghcr.io/agnostiqhq/covalent-dev/centos7-py38:latest",
       "options": "--user root"
     },
     "backend": "dask",
@@ -156,7 +156,7 @@
     "name": "CentOS 7 / Python 3.8 / Local",
     "os": "ubuntu-latest",
     "container": {
-      "image": "centos/python-38-centos7",
+      "image": "ghcr.io/agnostiqhq/covalent-dev/centos7-py38:latest",
       "options": "--user root"
     },
     "backend": "local",
