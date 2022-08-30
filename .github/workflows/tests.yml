@@ -106,27 +106,28 @@ jobs:
             - '.github/actions/**'
 
       - name: Generate environment variables
-        run: RECOMMENDED_PLATFORM=0
+        run: |
+          RECOMMENDED_PLATFORM=0
           if [ ${{ matrix.os }} = 'ubuntu-latest' ] \
-          && [ ${{ matrix.container }} = 'python:3.8-bullseye' ] \
-          && [ ${{ matrix.backend }} = 'dask' ] ; then
-          RECOMMENDED_PLATFORM=1
+            && [ ${{ matrix.container }} = 'python:3.8-bullseye' ] \
+            && [ ${{ matrix.backend }} = 'dask' ] ; then
+            RECOMMENDED_PLATFORM=1
           fi
           NEED_PYTHON=0
           if [ ${{ steps.modified-files.outputs.sdk }} = 'true' ] \
-          || [ ${{ steps.modified-files.outputs.dispatcher }} = 'true' ] \
-          || [ ${{ steps.modified-files.outputs.ui_backend }} = 'true' ] ; then
-          NEED_PYTHON=1
+            || [ ${{ steps.modified-files.outputs.dispatcher }} = 'true' ] \
+            || [ ${{ steps.modified-files.outputs.ui_backend }} = 'true' ] ; then
+            NEED_PYTHON=1
           fi
           NEED_FRONTEND=0
           if [ ${{ steps.modified-files.outputs.ui_frontend }} = 'true' ] ; then
-          NEED_FRONTEND=1
+            NEED_FRONTEND=1
           fi
           BUILD_AND_RUN_ALL=0
           if [ ${{ github.event_name != 'pull_request' }} ] \
-          || [ ${{ steps.modified-files.outputs.build = 'true' }} ] \
-          || [ ${{ steps.modified-files.outputs.actions = 'true' }} ] ; then
-          BUILD_AND_RUN_ALL=1
+            || [ ${{ steps.modified-files.outputs.build = 'true' }} ] \
+            || [ ${{ steps.modified-files.outputs.actions = 'true' }} ] ; then
+            BUILD_AND_RUN_ALL=1
           fi
           echo "RECOMMENDED_PLATFORM=$RECOMMENDED_PLATFORM" >> $GITHUB_ENV
           echo "NEED_PYTHON=$NEED_PYTHON" >> $GITHUB_ENV
