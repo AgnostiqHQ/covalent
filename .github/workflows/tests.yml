@@ -106,11 +106,11 @@ jobs:
             - '.github/actions/**'
 
       - name: Generate environment variables
-        run: MASTER_CONFIG=0
+        run: RECOMMENDED_PLATFORM=0
           if [ ${{ matrix.os }} = 'ubuntu-latest' ] \
           && [ ${{ matrix.container }} = 'python:3.8-bullseye' ] \
           && [ ${{ matrix.backend }} = 'dask' ] ; then
-          MASTER_CONFIG=1
+          RECOMMENDED_PLATFORM=1
           fi
           NEED_PYTHON=0
           if [ ${{ steps.modified-files.outputs.sdk }} = 'true' ] \
@@ -128,7 +128,7 @@ jobs:
           || [ ${{ steps.modified-files.outputs.actions = 'true' }} ] ; then
           BUILD_AND_RUN_ALL=1
           fi
-          echo "MASTER_CONFIG=$MASTER_CONFIG" >> $GITHUB_ENV
+          echo "RECOMMENDED_PLATFORM=$RECOMMENDED_PLATFORM" >> $GITHUB_ENV
           echo "NEED_PYTHON=$NEED_PYTHON" >> $GITHUB_ENV
           echo "NEED_FRONTEND=$NEED_FRONTEND" >> $GITHUB_ENV
           echo "BUILD_AND_RUN_ALL=$BUILD_AND_RUN_ALL" >> $GITHUB_ENV
@@ -293,7 +293,7 @@ jobs:
 
       - name: Upload SDK report to Codecov
         if: >
-          env.MASTER_CONFIG
+          env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'workflow_run'
           || steps.sdk-coverage.outcome == 'success')
@@ -305,7 +305,7 @@ jobs:
 
       - name: Upload Dispatcher report to Codecov
         if: >
-          env.MASTER_CONFIG
+          env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'workflow_run'
           || steps.dispatcher-coverage.outcome == 'success')
@@ -317,7 +317,7 @@ jobs:
 
       - name: Upload Functional report to Codecov
         if: >
-          env.MASTER_CONFIG
+          env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
           && steps.functional-coverage.outcome == 'success'
         uses: codecov/codecov-action@v3
@@ -329,7 +329,7 @@ jobs:
       - name: Upload UI backend report to Codecov
         if: >
           false
-          && env.MASTER_CONFIG
+          && env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'workflow_run'
           || steps.ui-backend-coverage.outcome == 'success')
@@ -341,7 +341,7 @@ jobs:
 
       - name: Upload UI frontend report to Codecov
         if: >
-          env.MASTER_CONFIG
+          env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'workflow_run'
           || steps.ui-frontend-tests.outcome == 'success')
@@ -356,7 +356,7 @@ jobs:
         id: get-latest-tag
         if: >
           github.ref == 'refs/heads/develop'
-          && env.MASTER_CONFIG
+          && env.RECOMMENDED_PLATFORM
           && github.event_name == 'workflow_run'
         with:
           semver_only: true
@@ -365,7 +365,7 @@ jobs:
         id: push
         if: >
           github.ref == 'refs/heads/develop'
-          && env.MASTER_CONFIG
+          && env.RECOMMENDED_PLATFORM
           && github.event_name == 'workflow_run'
         run: |
           MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
@@ -388,7 +388,7 @@ jobs:
       - name: Format Slack message
         if: >
           github.ref == 'refs/heads/develop'
-          && env.MASTER_CONFIG
+          && env.RECOMMENDED_PLATFORM
           && github.event_name == 'workflow_run'
         run: |
           VERSION="$(cat ./VERSION)"
