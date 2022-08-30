@@ -18,72 +18,71 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-name: benchmarks
+name: benchmark
 
 on:
-  pull_request:
-  schedule:
-    - cron: "0 0 * * *"
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Commit SHA used for testing"
+        type: string
+        required: true
 
 jobs:
   benchmarks:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     env:
       COVALENT_SERVER_IFACE_ANY: true
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-latest"]
-        container:
-          - python:3.8-buster
-          - python:3.8-bullseye
-          - python:3.9-buster
-          - python:3.9-bullseye
-          - python:3.10-buster
-          - python:3.10-bullseye
-          - image: "centos/python-38-centos7"
-            options: "--user root"
-        experimental: [false]
-        include:
-          - os: macos-latest
-            python-version: "3.8"
-            experimental: false
-          - os: macos-latest
-            python-version: "3.9"
-            experimental: false
-          - os: macos-latest
-            python-version: "3.10"
-            experimental: false
-    container: ${{ matrix.container }}
-    continue-on-error: ${{ matrix.experimental }}
-    outputs:
-      release: ${{ steps.push.outputs.release }}
     steps:
       - name: Check out head
+        if: github.event_name == 'workflow_call'
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-
-      - name: Set up Python
-        if: matrix.os == 'macos-latest'
-        uses: actions/setup-python@v2
+      - name: Check out SHA
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v3
         with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install test requirements
-        run: |
-          pip install --no-cache-dir -r ./requirements.txt
-          pip install --no-cache-dir -r ./tests/requirements.txt
-          pip install --no-cache-dir jupyter
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{ inputs.commit_sha }}
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
 
       - name: Install Covalent
         run: pip install -e .
 
-      - name: Start Covalent dispatcher server
-        run: covalent start -d --ignore-migrations
+      - name: Install test requirements
+        run: |
+          pip install --no-cache-dir -r ./tests/requirements.txt
 
-      - name: Run stress test notebook
-        run: jupyter --nbconvert notebook --execute tests/stress_tests/tests.ipynb
+      # PYTHONPATH is needed to avoid the occasional POSTPROCESSING_FAILED error
+      - name: Start Covalent dispatcher server
+        run: |
+          covalent purge -Hy
+          PYTHONPATH=$PYTHONPATH:$(pwd)/tests/stress_tests covalent start --ignore-migrations
+
+      - name: Run stress benchmarks
+        run: |
+          python -m pytest -vv tests/stress_tests/benchmarks
+
+      - name: Run Locust load tests
+        run: >
+          python -m locust
+          --user $(python -c 'import os; print(os.cpu_count())')
+          --spawn-rate 3
+          --run-time 10m
+          --csv=loadtest_results
+          --headless
+          -f ./load_tests/locustfiles
+        working-directory: ./tests
+
+      - name: Create tests result archive
+        run: |
+          tar -zcvf $GITHUB_SHA.tar.gz metrics*.log ./tests/loadtest_results*.csv
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -92,5 +91,5 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # - name: Deploy static site to S3 bucket
-      #   run: aws s3 sync ./covalent_ui/webapp/build-demo/ ${{ secrets.S3_STATIC }} --delete
+      - name: Upload benchmark results to S3
+        run: aws s3 cp $GITHUB_SHA.tar.gz s3://${{ secrets.BENCHMARK_BUCKET }}/$GITHUB_SHA.tar.gz
