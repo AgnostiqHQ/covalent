@@ -223,7 +223,7 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
 
     if ignore_migrations or not is_migration_pending:
         graceful_start_mock.assert_called_once()
-        assert set_config_mock.call_count == 5
+        assert set_config_mock.call_count == 6
         # set_config_mock.assert_called_once()
     else:
         assert MIGRATION_COMMAND_MSG in res.output
@@ -722,7 +722,7 @@ def test_start_config_mem_per_worker(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 6
+    assert set_config_mock.call_count == 7
     graceful_start_mock.assert_called_once()
 
 
@@ -748,7 +748,7 @@ def test_start_config_threads_per_worker(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 6
+    assert set_config_mock.call_count == 7
     graceful_start_mock.assert_called_once()
 
 
@@ -774,7 +774,7 @@ def test_start_config_num_workers(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 6
+    assert set_config_mock.call_count == 7
     graceful_start_mock.assert_called_once()
 
 
@@ -800,7 +800,7 @@ def test_start_all_dask_config(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 8
+    assert set_config_mock.call_count == 9
     graceful_start_mock.assert_called_once()
 
 
@@ -826,7 +826,7 @@ def test_start_dask_config_options_workers_and_mem_per_worker(mocker, monkeypatc
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 7
+    assert set_config_mock.call_count == 8
     graceful_start_mock.assert_called_once()
 
 
@@ -852,11 +852,11 @@ def test_start_dask_config_options_workers_and_threads_per_worker(mocker, monkey
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 7
+    assert set_config_mock.call_count == 8
     graceful_start_mock.assert_called_once()
 
 
-def test_start_dask_config_options_workers_and_threads_per_worker(mocker, monkeypatch):
+def test_start_dask_config_options_mem_per_workers_and_threads_per_worker(mocker, monkeypatch):
     """Test setting mem-per-worker and threads-per-worker"""
     runner = CliRunner()
     port_val = 42
@@ -878,5 +878,5 @@ def test_start_dask_config_options_workers_and_threads_per_worker(mocker, monkey
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 7
+    assert set_config_mock.call_count == 8
     graceful_start_mock.assert_called_once()
