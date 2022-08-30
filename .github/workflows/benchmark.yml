@@ -59,7 +59,6 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./tests/requirements.txt
 
-      # PYTHONPATH is needed to avoid the occasional POSTPROCESSING_FAILED error
       - name: Start Covalent dispatcher server
         run: covalent start -d --ignore-migrations
 
