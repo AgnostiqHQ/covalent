@@ -141,6 +141,7 @@ const LatticeGraph = ({
 
   const ref_chart = createRef(null);
 
+  // eslint-disable-next-line no-unused-vars
   const [image, takeScreenShot] = useScreenshot({
     type: "image/jpeg",
     quality: 1.0,
