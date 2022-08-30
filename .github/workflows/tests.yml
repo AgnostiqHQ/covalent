@@ -158,7 +158,7 @@ jobs:
       - name: Install NPM and Yarn on Ubuntu
         if: >
           (env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL)
-          && contains(fromJson('["buster", "bullseye"]'), matrix.container)
+          && contains(fromJson('["*buster", "*bullseye"]'), matrix.container)
         run: |
           apt-get install -y curl
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
@@ -197,7 +197,7 @@ jobs:
         run: python setup.py sdist
 
       - name: Validate distribution
-        if: github.event_name != 'pull_request' || steps.modified-files.outputs.build
+        if: env.BUILD_AND_RUN_ALL
         run: |
           VERSION="$(cat ./VERSION)"
           cd dist
