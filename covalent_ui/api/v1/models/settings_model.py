@@ -18,25 +18,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Routes"""
+"""Settings request and response model"""
 
-from fastapi import APIRouter
-
-from covalent_dispatcher._service import app
-from covalent_ui.api.v1.routes.end_points import (
-    electron_routes,
-    graph_route,
-    lattice_route,
-    settings_routes,
-    summary_routes,
-)
-
-routes = APIRouter()
+from pydantic import BaseModel
 
 
-routes.include_router(summary_routes.routes, prefix="/api/v1/dispatches", tags=["Dispatches"])
-routes.include_router(lattice_route.routes, prefix="/api/v1/dispatches", tags=["Dispatches"])
-routes.include_router(graph_route.routes, prefix="/api/v1/dispatches", tags=["Graph"])
-routes.include_router(electron_routes.routes, prefix="/api/v1/dispatches", tags=["Electrons"])
-routes.include_router(app.router, prefix="/api", tags=["Dispatcher"])
-routes.include_router(settings_routes.routes, prefix="/api/v1", tags=["Settings"])
+class GetSettingsResponseModel(BaseModel):
+    """Get Settings response model"""
+
+    data: dict = None
+
+
+class UpdateSettingsResponseModel(BaseModel):
+    """Update Settings response model"""
+
+    data: str
