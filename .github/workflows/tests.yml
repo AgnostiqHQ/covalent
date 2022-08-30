@@ -124,9 +124,9 @@ jobs:
             NEED_FRONTEND=1
           fi
           BUILD_AND_RUN_ALL=0
-          if [ ${{ github.event_name != 'pull_request' }} ] \
-            || [ ${{ steps.modified-files.outputs.build = 'true' }} ] \
-            || [ ${{ steps.modified-files.outputs.actions = 'true' }} ] ; then
+          if [ ${{ github.event_name }} != 'pull_request' ] \
+            || [ ${{ steps.modified-files.outputs.build }} = 'true' ] \
+            || [ ${{ steps.modified-files.outputs.actions }} = 'true' ] ; then
             BUILD_AND_RUN_ALL=1
           fi
           echo "RECOMMENDED_PLATFORM=$RECOMMENDED_PLATFORM" >> $GITHUB_ENV
