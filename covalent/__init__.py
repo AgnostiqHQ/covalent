@@ -22,6 +22,25 @@
 
 from importlib import metadata
 
+from . import _file_transfer as fs  # nopycln: import
+from . import executor, leptons  # nopycln: import
+from ._dispatcher_plugins import local_dispatch as dispatch  # nopycln: import
+from ._dispatcher_plugins import local_dispatch_sync as dispatch_sync  # nopycln: import
+from ._file_transfer import strategies as fs_strategies  # nopycln: import
+from ._results_manager.results_manager import cancel, get_result, sync  # nopycln: import
+from ._shared_files.config import get_config, reload_config, set_config  # nopycln: import
+from ._shared_files.util_classes import RESULT_STATUS as status  # nopycln: import
+from ._workflow import (  # nopycln: import
+    DepsBash,
+    DepsCall,
+    DepsPip,
+    Lepton,
+    TransportableObject,
+    electron,
+    lattice,
+)
+from ._workflow.electron import wait  # nopycln: import
+
 __all__ = [s for s in dir() if not s.startswith("_")]
 
 for _s in dir():
