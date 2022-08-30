@@ -73,6 +73,7 @@ const LatticePreviewLayout = () => {
         }}
       >
         <LatticeMain
+          preview
           graph={lattice.graph}
           hasSelectedNode={!!selectedElectron}
           onClickNode={onClickNode}
@@ -83,7 +84,6 @@ const LatticePreviewLayout = () => {
 
       {/* <MobileAppBar /> */}
       <NavDrawer />
-
       <LatticeDrawer>
         <PreviewDrawerContents />
       </LatticeDrawer>

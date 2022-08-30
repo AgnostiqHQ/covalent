@@ -67,6 +67,7 @@ const NodeDrawer = ({ node,setSelectedElectron }) => {
       variant="persistent"
       open={!!node}
       onClose={handleClose}
+      data-testid="nodeDrawer"
     >
       {!!node && (
         <>
@@ -113,18 +114,27 @@ const NodeDrawer = ({ node,setSelectedElectron }) => {
           {node.doc && (
             <>
               <Heading>Description</Heading>
-              <Typography fontSize="body2.fontSize" color='text.tertiary'>{node.doc}</Typography>
+              <Typography fontSize="body2.fontSize" color="text.tertiary">
+                {node.doc}
+              </Typography>
             </>
           )}
           <InputSection preview inputs={node.kwargs} />
           {/* Executor */}
-          <ExecutorSection preview metadata={_.get(preview, 'lattice.metadata')} sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })} />
+          <ExecutorSection
+            preview
+            metadata={_.get(preview, 'lattice.metadata')}
+            sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
+          />
 
           <Divider sx={{ my: 2 }} />
 
           {/* Source */}
           <Heading />
-          <Paper elevation={0} sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}>
+          <Paper
+            elevation={0}
+            sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
+          >
             <SyntaxHighlighter src={src} />
           </Paper>
         </>

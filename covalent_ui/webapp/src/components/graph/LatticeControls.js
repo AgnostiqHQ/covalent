@@ -36,106 +36,106 @@ import {
 } from '@mui/icons-material'
 import useFitViewHelper from './ReactFlowHooks'
 
+
 const LatticeControls = ({
-  marginLeft = 0,
-  marginRight = 0,
-  showParams,
-  toggleParams,
-  showMinimap,
-  toggleMinimap,
-  direction,
-  setDirection,
-  nodesDraggable,
-  toggleNodesDraggable,
-}) => {
-  const { zoomIn, zoomOut } = useReactFlow()
-  const { fitView } = useFitViewHelper()
+   marginLeft = 0,
+   marginRight = 0,
+   showParams,
+   toggleParams,
+   showMinimap,
+   toggleMinimap,
+   direction,
+   setDirection,
+   nodesDraggable,
+   toggleNodesDraggable,
+ }) => {
+   const { zoomIn, zoomOut } = useReactFlow()
+   const { fitView } = useFitViewHelper()
 
-  return (
-    <ToggleButtonGroup
-      orientation="vertical"
-      size="small"
-      sx={{
-        position: 'absolute',
-        bottom: 12,
-        left: 12 + marginLeft,
-        zIndex: 5,
-        bgcolor: 'background.paper',
-        opacity: 0.7,
-      }}
-    >
-      <Hint title="Zoom in">
-        <ToggleButton value="" onClick={() => zoomIn(300)}>
-          <PlusIcon />
-        </ToggleButton>
-      </Hint>
+   return (
+     <ToggleButtonGroup
+       orientation="vertical"
+       size="small"
+       sx={{
+         position: 'absolute',
+         bottom: 12,
+         left: 12 + marginLeft,
+         zIndex: 5,
+         bgcolor: 'background.paper',
+         opacity: 0.7,
+       }}
+     >
+       <Hint title="Zoom in">
+         <ToggleButton value="" onClick={() => zoomIn(300)}>
+           <PlusIcon />
+         </ToggleButton>
+       </Hint>
 
-      <Hint title="Zoom out">
-        <ToggleButton value="" onClick={() => zoomOut(300)}>
-          <MinusIcon />
-        </ToggleButton>
-      </Hint>
+       <Hint title="Zoom out">
+         <ToggleButton value="" onClick={() => zoomOut(300)}>
+           <MinusIcon />
+         </ToggleButton>
+       </Hint>
 
-      <Hint title="Fit to screen">
-        <ToggleButton
-          value=""
-          onClick={() => {
-            fitView({ duration: 300, marginLeft, marginRight })
-          }}
-        >
-          <Fullscreen />
-        </ToggleButton>
-      </Hint>
+       <Hint title="Fit to screen">
+         <ToggleButton
+           value=""
+           onClick={() => {
+             fitView({ duration: 300, marginLeft, marginRight })
+           }}
+         >
+           <Fullscreen />
+         </ToggleButton>
+       </Hint>
 
-      <Hint title="Toggle parameters">
-        <ToggleButton onClick={toggleParams} value="" selected={showParams}>
-          P
-        </ToggleButton>
-      </Hint>
+       <Hint title="Toggle parameters">
+         <ToggleButton onClick={toggleParams} value="" selected={showParams}>
+         </ToggleButton>
+       </Hint>
 
-      <Hint title="Toggle minimap">
-        <ToggleButton onClick={toggleMinimap} value="" selected={showMinimap}>
-          <MapOutlined />
-        </ToggleButton>
-      </Hint>
+       <Hint title="Toggle minimap">
+         <ToggleButton onClick={toggleMinimap} value="" selected={showMinimap}>
+           <MapOutlined />
+         </ToggleButton>
+       </Hint>
 
-      <Hint title="Change orientation">
-        <ToggleButton
-          onClick={() => {
-            switch (direction) {
-              case 'TB':
-                return setDirection('BT')
-              case 'BT':
-                return setDirection('LR')
-              case 'LR':
-                return setDirection('RL')
-              case 'RL':
-                return setDirection('TB')
-              default:
-            }
-          }}
-          value=""
-        >
-          {
-            {
-              TB: <ArrowDownward />,
-              BT: <ArrowUpward />,
-              LR: <ArrowForward />,
-              RL: <ArrowBack />,
-            }[direction]
-          }
-        </ToggleButton>
-      </Hint>
+       <Hint title="Change orientation">
+         <ToggleButton
+           onClick={() => {
+             switch (direction) {
+               case 'TB':
+                 return setDirection('BT')
+               case 'BT':
+                 return setDirection('LR')
+               case 'LR':
+                 return setDirection('RL')
+               case 'RL':
+                 return setDirection('TB')
+               default:
+             }
+           }}
+           value=""
+         >
+           {
+             {
+               TB: <ArrowDownward />,
+               BT: <ArrowUpward />,
+               LR: <ArrowForward />,
+               RL: <ArrowBack />,
+             }[direction]
+           }
+         </ToggleButton>
+       </Hint>
 
-      <Hint title="Toggle draggable nodes">
-        <ToggleButton onClick={toggleNodesDraggable} value="">
-          {nodesDraggable ? <LockOpenOutlined /> : <LockOutlined />}
-        </ToggleButton>
-      </Hint>
-    </ToggleButtonGroup>
-  )
-}
+       <Hint title="Toggle draggable nodes">
+         <ToggleButton onClick={toggleNodesDraggable} value="">
+           {nodesDraggable ? <LockOpenOutlined /> : <LockOutlined />}
+         </ToggleButton>
+       </Hint>
+     </ToggleButtonGroup>
+   )
+ }
 
-const Hint = (props) => <Tooltip arrow placement="right" {...props} />
+ const Hint = (props) => <Tooltip arrow placement="right" {...props} />
 
-export default LatticeControls
+ export default LatticeControls

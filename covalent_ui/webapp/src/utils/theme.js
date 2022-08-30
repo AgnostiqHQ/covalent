@@ -41,6 +41,7 @@ const defaultTheme = createTheme({
       dark: '#5552FF',
       blue04: '#6473FF',
       white: '#ffff',
+      highlightBlue: '#1B2632',
     },
     secondary: {
       light: '#DAC3FF',
@@ -56,6 +57,7 @@ const defaultTheme = createTheme({
       graphCanvas: '#464646',
       darkblackbg: '#101820',
       buttonBg: '#10102C',
+      executorBg: '#1E1E2E',
     },
     error: {
       main: '#FF6464',

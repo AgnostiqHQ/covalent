@@ -40,7 +40,6 @@ import {
   statusColor,
   statusIcon,
   statusLabel,
-  secondsToHms,
 } from '../../utils/misc'
 import Runtime from '../dispatches/Runtime'
 import SyntaxHighlighter from './SyntaxHighlighter'
@@ -139,6 +138,7 @@ const NodeDrawer = ({ node, dispatchId, setSelectedElectron }) => {
       variant="persistent"
       open={!!node}
       onClose={handleClose}
+      data-testid="nodeDrawer"
     >
       {!!node && (
         <>
@@ -227,7 +227,7 @@ const NodeDrawer = ({ node, dispatchId, setSelectedElectron }) => {
               <Heading>Runtime</Heading>
               {electronDetailIsFetching ? (
                 <Skeleton />
-              ) : electronDetail.status === 'RUNNING' ? (
+              ) : (
                 <Runtime
                   sx={(theme) => ({
                     color: theme.palette.text.tertiary,
@@ -236,9 +236,8 @@ const NodeDrawer = ({ node, dispatchId, setSelectedElectron }) => {
                   startTime={electronDetail.started_at}
                   endTime={electronDetail.ended_at}
                 />
-              ) : (
-                secondsToHms(electronDetail.runtime)
-              )}
+              )
+              }
             </>
           )}
 

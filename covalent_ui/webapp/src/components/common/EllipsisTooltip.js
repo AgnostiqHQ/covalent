@@ -25,6 +25,7 @@ const OverflowTip = props => {
 
     return (
         <Tooltip
+            data-testid="toolTip"
             title={props.value}
             interactive
             disableHoverListener={!hoverStatus}

@@ -27,7 +27,6 @@ from sqlalchemy.orm import Session
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.electron_dependency import ElectronDependency
 from covalent_ui.api.v1.database.schema.lattices import Lattice
-from covalent_ui.api.v1.models.lattices_model import GraphResponse
 
 
 class Graph:
@@ -56,6 +55,7 @@ class Graph:
                 Electron.completed_at,
                 Electron.status,
                 Electron.type,
+                Electron.executor.label("executor_label"),
             )
             .filter(
                 Electron.parent_lattice_id == Lattice.id, Lattice.dispatch_id == str(dispatch_id)
@@ -132,4 +132,4 @@ class Graph:
         nodes = self.check_error(data=data)
         data = self.get_links(dispatch_id=dispatch_id)
         links = self.check_error(data=data)
-        return GraphResponse(dispatch_id=str(dispatch_id), graph={"nodes": nodes, "links": links})
+        return {"dispatch_id": str(dispatch_id), "nodes": nodes, "links": links}

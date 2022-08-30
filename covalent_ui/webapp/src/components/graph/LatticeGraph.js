@@ -42,6 +42,7 @@ function usePrevious(value) {
 
 const LatticeGraph = ({
   graph,
+  preview,
   hasSelectedNode,
   onClickNode,
   marginLeft = 0,
@@ -152,6 +153,7 @@ const LatticeGraph = ({
         <ReactFlow
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
+          data-testid="lattice__graph"
           nodesDraggable={nodesDraggable}
           nodesConnectable={false}
           nodes={nodes}
