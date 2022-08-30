@@ -11,14 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added read the docs for user interface
 - Added db schema migration error guide in RTD
+- Removed `get_data_store` from quantum chemistry tutorial #1046
 
 ### Operations
 
 - Added reusable version action
-
-### Docs
-
-- Removed `get_data_store` from quantum chemistry tutorial #1046
 
 ## [0.187.0] - 2022-08-28
 
