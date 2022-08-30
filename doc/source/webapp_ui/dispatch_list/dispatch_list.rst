@@ -1,29 +1,29 @@
 ===================================================
-List of all dispatches with appropriate metadata
+Workflow Dispatch List
 ===================================================
 .. image:: ../images/dispatches_with_appropriate_metadata.png
    :align: center
 
 **Dispatch ID**
 
-Shows the unique dispatch id for a workflow.
+Shows the unique dispatch ID for a workflow invocation.
 
 **Lattice**
 
-Shows the name of parent lattice.
+Shows the name of lattice function.
 
 **Runtime**
 
-Shows live run time of a dispatch. It goes from minutes,hours,days.
+Shows live runtime of a workflow dispatch.
 
 **Started**
 
-Shows the local 24 hours machine time of a dispatch, when it gets started.
+Shows the local time when a dispatch started.
 
 **Ended**
 
-Shows the local 24 hours machine time of a dispatch as soon as it is finished. It shows a hyphen when the dispatch is in running state and updates when it finishes.
+Shows the local time when a dispatch completed or failed. A hyphen is displayed while the dispatch is in the Running state.
 
 **Status**
 
-Shows the status of a dispatch. The available statuses are Running, Failed and Completed.
+Shows the status of a dispatch. The available statuses are Pending, Running, Failed, and Completed.
