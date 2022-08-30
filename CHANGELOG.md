@@ -14,11 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Adding `benchmark.yml` workflow
+- Added reusable version action
 
 ### Tests
 
 - Adding scripts in `tests/stress_tests/benchmarks`
-- Added reusable version action
 
 ## [0.187.0] - 2022-08-28
 
