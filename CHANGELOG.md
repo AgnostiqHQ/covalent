@@ -11,11 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added db schema migration error guide in RTD
 
-### Docs
+### Operations
+
+- Added reusable version action
+
+## [0.187.0] - 2022-08-28
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+>>>>>>> b4862bfce496c1c4b20cc826626e9bcd8ab609ad
 
 ### Tests
 
 - Fixed `test_using_executor_names` and `test_internal_sublattice_dispatch` tests to also work with `--no-cluster` option.
+
+### Added
+
+- Added test cases for front-end react components.
 
 ## [0.186.0] - 2022-08-25
 
