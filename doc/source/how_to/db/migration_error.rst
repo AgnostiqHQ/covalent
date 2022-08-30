@@ -5,9 +5,9 @@ Database Migration Errors
 How to approach failed database schema migrations
 ############
 
-When upgrading Covalent versions from 0.177.0 to a newer version we may require running database migrations, however in some edge cases migrations may fail to run as a result of having existing data that violates SQL database constraints and/or other reasons specific to the type of schema updates that may occur.
+When upgrading Covalent versions from 0.177.0 to a newer version, users may need to run database migrations. In some edge cases, migrations may fail to run as a result of having existing data that violates SQL database constraints, or for other reasons specific to the type of schema updates that may occur.
 
-For example the following migration causes an issue due to existing data in the database.
+For example, the following migration causes an issue due to existing data in the database.
 
 .. code:: bash
 
@@ -24,11 +24,11 @@ For example the following migration causes an issue due to existing data in the 
 
 .. warning:: Ensure that you back up your database before attempting to alter it's data as follows :code:`cp ~/.local/share/covalent/dispatcher_db.sqlite /some/safe/location/dispatcher_db.sqlite` it may be worth opening an issue in the covalent repo to get additional guidance from maintainers about the specific migration issue in question.
 
-There may be table alterations that fail as a result of some existing data in the database violating some SQL constraint. In the above example that shows the migration error electron_id is now intended to not have NULL values however NULL values may be present in our database.
+There may be table alterations that fail as a result of some existing data in the database violating SQL constraints. In the above example that shows the migration error, :code:`electron_id` is now intended to not have NULL values however NULL values may be present in our database.
 In order to avoid the migration issue we must remove any data that violates this constraint manually in the SQLlite database which resides in :code:`~/.local/share/covalent/dispatcher_db.sqlite`.
-Doing so requires advanced knowledge of covalent as is not recommended unless you are fully aquainted with how covalent works as it may cause unexpected behavior.
+Doing this requires advanced knowledge of Covalent. It is not recommended unless you are fully acquainted with how Covalent works, since it may cause unexpected behavior.
 
-Lastly, if unable to solve the issue in this manner you may need to delete the database and re-run the migrations as follows.
+Lastly, if you are unable to solve the issue in this manner, you may need to delete the database and re-run the migrations as follows.
 
 .. warning:: This will cause all of your workflow data to be deleted unless a backup of the database was created.
 
@@ -46,4 +46,4 @@ Lastly, if unable to solve the issue in this manner you may need to delete the d
     INFO  [alembic.runtime.migration] Running upgrade 9b9d58f02985 -> 9f1271ef662a, v11+ updates
     Migrations are up to date.
 
-At which point you may start covalent as before with :code:`covalent start`
+At this point you may start Covalent as before with :code:`covalent start`
