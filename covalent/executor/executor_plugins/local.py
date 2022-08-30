@@ -29,7 +29,7 @@ from typing import Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import logger
-from covalent.executor import BaseExecutor
+from covalent.executor import BaseExecutor, wrapper_fn  # nopycln: import
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "LocalExecutor"
