@@ -46,10 +46,10 @@ jobs:
         run: pip-extra-reqs -r werkzeug covalent covalent_dispatcher covalent_ui
 
       - name: Check missing SDK requirements
-        run: pip-missing-reqs --ignore-module=covalent_ui.* --ignore-module=boto3 --ignore-file=covalent/executor/executor_plugins/* covalent
+        run: pip-missing-reqs --ignore-module=covalent_ui.* --ignore-module=covalent.* covalent
 
       - name: Check missing dispatcher requirements
-        run: pip-missing-reqs --ignore-module=covalent.* --ignore-module=covalent_ui.* --ignore-module=distributed.* --ignore-file=covalent_dispatcher/_service/app.py covalent_dispatcher
+        run: pip-missing-reqs --ignore-module=covalent_ui.* --ignore-module=covalent.* --ignore-module=covalent_dispatcher --ignore-module=distributed.* --ignore-module=click covalent_dispatcher
 
       - name: Check missing UI backend requirements
-        run: pip-missing-reqs --ignore-module=covalent_ui.* --ignore-module=covalent.* --ignore-module=covalent_dispatcher.* covalent_ui
+        run: pip-missing-reqs --ignore-module=covalent_ui.* --ignore-module=covalent.* --ignore-module=covalent_dispatcher.* --ignore-module=pydantic.* covalent_ui
