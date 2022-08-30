@@ -180,7 +180,7 @@ jobs:
 
       - name: Install Covalent
         if: steps.build-dist.outcome == 'success'
-        run: pip install dist/covalent-${VERSION}.tar.gz
+        run: pip install dist/covalent-*.tar.gz
 
       - name: Start Covalent dispatcher server
         if: env.BUILD_AND_RUN_ALL
