@@ -51,7 +51,7 @@ jobs:
           --ignore-module=covalent_ui.*
           --ignore-module=covalent.*
           --ignore-module=urllib3.*
-          --ignore-module=setuptools.*
+          --ignore-module=pkg_resources
           covalent
 
       - name: Check missing dispatcher requirements
