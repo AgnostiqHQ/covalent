@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Adding missing `requirements.txt` for certain tutorial
+- Fixing package version errors in tutorial `requirements.txt`
+
 ## [0.188.0] - 2022-08-31
 
 ### Authors
