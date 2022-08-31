@@ -7,19 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Docs
-
-- Added read the docs for user interface
-- Added db schema migration error guide in RTD
-
 ### Operations
 
 - Adding `benchmark.yml` workflow
-- Added reusable version action
 
 ### Tests
 
 - Adding scripts in `tests/stress_tests/benchmarks`
+
+## [0.188.0] - 2022-08-31
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+
+
+### Added
+
+- Created a prototype of a production Dockerfile
+- The old Dockerfile has been moved to Dockerfile.dev
+
+### Docs
+
+- Added read the docs for user interface
+- Added db schema migration error guide in RTD
+- Removed `get_data_store` from quantum chemistry tutorial #1046
+
+### Operations
+
+- Front-end test coverage measured and reported in CI
+- Added reusable version action
 
 ## [0.187.0] - 2022-08-28
 
@@ -29,8 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-
->>>>>>> b4862bfce496c1c4b20cc826626e9bcd8ab609ad
 
 ### Tests
 
