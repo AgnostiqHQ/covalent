@@ -2,7 +2,7 @@ import os
 from subprocess import PIPE, CalledProcessError, Popen
 from typing import Optional
 
-from .._file_transfer import File
+from .. import File
 from .transfer_strategy_base import FileTransferStrategy
 
 

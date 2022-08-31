@@ -1,6 +1,6 @@
 import urllib.request
 
-from .._file_transfer import File
+from .. import File
 from .transfer_strategy_base import FileTransferStrategy
 
 
