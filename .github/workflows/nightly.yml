@@ -94,7 +94,7 @@ jobs:
           echo "::set-output name=release::$release"
 
   release:
-    name: create_release
+    name: Create Release
     needs: [push_to_master]
     uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
     secrets: inherit # pragma: allowlist secret
@@ -102,7 +102,7 @@ jobs:
       prerelease: true
 
   notify:
-    name: slack_notifications
+    name: Alert Slack
     needs: [release]
     runs-on: ubuntu-latest
     steps:
