@@ -49,9 +49,9 @@ jobs:
         run: >
           pip-missing-reqs
           --ignore-module=covalent_ui.*
-          --ignore-module=covalent.*
           --ignore-module=urllib3.*
           --ignore-module=pkg_resources
+          --ignore-file=covalent/executor/**
           covalent
 
       - name: Check missing dispatcher requirements
@@ -61,7 +61,6 @@ jobs:
           --ignore-module=covalent.*
           --ignore-module=covalent_dispatcher
           --ignore-module=distributed.*
-          --ignore-module=click
           covalent_dispatcher
 
       - name: Check missing UI backend requirements
@@ -70,5 +69,4 @@ jobs:
           --ignore-module=covalent_ui.*
           --ignore-module=covalent.*
           --ignore-module=covalent_dispatcher.*
-          --ignore-module=pydantic.*
           covalent_ui

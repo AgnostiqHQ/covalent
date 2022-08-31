@@ -1,7 +1,7 @@
 import urllib.request
 
-from covalent._file_transfer import File
-from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
+from .._file_transfer import File
+from .transfer_strategy_base import FileTransferStrategy
 
 
 class HTTP(FileTransferStrategy):

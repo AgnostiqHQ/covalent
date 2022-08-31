@@ -22,8 +22,8 @@
 
 import pickle
 
-from covalent._results_manager import Result
-from covalent._shared_files.defaults import (
+from .._results_manager import Result
+from .._shared_files.defaults import (
     attr_prefix,
     electron_dict_prefix,
     electron_list_prefix,
@@ -31,10 +31,10 @@ from covalent._shared_files.defaults import (
     parameter_prefix,
     subscript_prefix,
 )
-from covalent._shared_files.utils import get_named_params
-from covalent._workflow.electron import to_decoded_electron_collection
-from covalent._workflow.lattice import Lattice
-from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
+from .._shared_files.utils import get_named_params
+from .._workflow.electron import to_decoded_electron_collection
+from .._workflow.lattice import Lattice
+from .._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 
 
 def process_node(node: dict) -> dict:

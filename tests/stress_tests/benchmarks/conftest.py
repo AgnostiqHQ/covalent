@@ -1,6 +1,5 @@
 import logging
 import time
-from datetime import datetime
 
 import pytest
 

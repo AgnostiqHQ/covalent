@@ -4,11 +4,7 @@ from typing import Optional
 
 from furl import furl
 
-from covalent._file_transfer.enums import (
-    FileSchemes,
-    FileTransferStrategyTypes,
-    SchemeToStrategyMap,
-)
+from .enums import FileSchemes, FileTransferStrategyTypes, SchemeToStrategyMap
 
 
 class File:

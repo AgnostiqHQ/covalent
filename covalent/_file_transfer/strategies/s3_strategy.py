@@ -2,8 +2,8 @@ import os
 
 from furl import furl
 
-from covalent._file_transfer import File
-from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
+from .. import File
+from .transfer_strategy_base import FileTransferStrategy
 
 
 class S3(FileTransferStrategy):

@@ -30,13 +30,12 @@ from requests.adapters import HTTPAdapter
 from sqlalchemy.orm import Session
 from urllib3.util import Retry
 
-from covalent._workflow.transport import TransportableObject
-
 from .. import _workflow as ct
 from .._data_store.datastore import DataStore
 from .._data_store.models import Lattice
 from .._shared_files import logger
 from .._shared_files.config import get_config
+from .._workflow.transport import TransportableObject
 from .result import Result
 from .wait import EXTREME
 from .write_result_to_db import MissingLatticeRecordError, load_file

@@ -50,7 +50,7 @@ export function LayoutOptions(props) {
     },
     {
       optionName: 'Old Layout',
-      optionValue: 'oldlayout',
+      optionValue: 'oldLayout',
     },
   ]
   return (
