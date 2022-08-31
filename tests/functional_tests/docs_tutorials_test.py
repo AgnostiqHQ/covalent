@@ -36,7 +36,7 @@ tutorial_requirements = glob.glob(rootdir + tutorial_dir + "requirements.txt", r
 expected_return_values = [0] * len(notebooks)
 
 
-@pytest.mark.skipf(
+@pytest.mark.skipif(
     os.environ.get("RUN_TUTORIALS") != "TRUE",
     reason="Required RUN_TUTORIALS env variable to be set to TRUE",
 )
