@@ -40,6 +40,7 @@ import LabelOffIcon from '@mui/icons-material/LabelOff';
 import LabelIcon from '@mui/icons-material/Label';
 import * as React from 'react';
 import { LayoutOptions } from './LayoutOptions';
+import { ReactComponent as ScreenshotIcon } from '../../assets/screenshot.svg'
 
 const LatticeControls = ({
   marginLeft = 0,
@@ -59,7 +60,8 @@ const LatticeControls = ({
   anchorEl,
   handleClose,
   handleHideLabels,
-  hideLabels
+  hideLabels,
+  toggleScreenShot
 }) => {
   const { zoomIn, zoomOut } = useZoomPanHelper()
   const { fitView } = useFitViewHelper()
@@ -85,6 +87,14 @@ const LatticeControls = ({
       <Hint title="Zoom out">
         <ToggleButton value="" onClick={() => zoomOut(300)}>
           <MinusIcon />
+        </ToggleButton>
+      </Hint>
+      <Hint title="Download Screenshot">
+        <ToggleButton
+          onClick={toggleScreenShot}
+          value=""
+          sx={{ height: '40px', color: 'white' }}>
+          <ScreenshotIcon />
         </ToggleButton>
       </Hint>
 
