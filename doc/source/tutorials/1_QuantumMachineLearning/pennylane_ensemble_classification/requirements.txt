@@ -1,5 +1,4 @@
 covalent
-matplotlib==3.5.1
-numpy==1.23.2
+scikit-learn==1.0.2
 torch==1.12.1
 torchvision==0.13.1
