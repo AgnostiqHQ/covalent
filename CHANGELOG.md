@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.189.0] - 2022-08-31
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+
+
+### Added
+
+- Added capability to take screenshot of the graph with covalent logo on the GUI.
+
 ### Operations
 - Added a workflow which checks for missing or extra requirements
 - Added pycln to pre-commit hooks #867
