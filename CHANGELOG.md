@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Changed the environment switches in tests.yml to be `true`/empty instead of 1/0
+
 - Adding `benchmark.yml` workflow
 
 ### Tests

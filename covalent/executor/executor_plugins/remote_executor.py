@@ -48,7 +48,7 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 class RemoteExecutor(AsyncBaseExecutor):
     """
     Async executor class that provides abstract methods for managing task execution on a remote machine.
-    
+
     Attributes:
         poll_freq: Number of seconds to wait between polling for task status after a task has been submitted.
         remote_cache: Location where pickled inputs/outputs are stored.
@@ -60,107 +60,106 @@ class RemoteExecutor(AsyncBaseExecutor):
         poll_freq: int = 60,
         remote_cache: str = "",
         credentials_file: str = "",
-        **kwargs,   
+        **kwargs,
     ) -> None:
-        
+
         super().__init__(**kwargs)
-        
+
         self.poll_freq = poll_freq
         self.remote_cache = remote_cache
         self.credentials_file = credentials_file
-        
-           
+
+
     @abstractmethod
     async def _validate_credentials(self) -> bool:
         """
         Abstract method to validate user credentials.
-        
+
         Args:
             credentials_file: Location where credentials can be found.
-            
+
         Return:
             bool: True if the user credentials are valid and false if otherwise.
         """
-        
+
         pass
-    
+
     @abstractmethod
     async def _upload_task(self) -> None:
-        
+
         """
         Abstract method that uploads the pickled function to the remote cache.
         """
-        
+
         pass
-    
-    
+
+
     @abstractmethod
     async def submit_task(self, task_metadata: Dict) -> Any:
-        
+
         """
         Abstract method that invokes the task on the remote backend.
-        
+
         Args:
             task_metadata: Dictionary of metadata for the task. Current keys are
-                          `dispatch_id` and `node_id`.    
+                          `dispatch_id` and `node_id`.
         Return:
             task_uuid: Task UUID defined on the remote backend.
         """
-        
+
         pass
-    
-    
+
+
     @abstractmethod
-    async def get_status(self) -> Any: 
+    async def get_status(self) -> Any:
         """
         Abstract method that returns the status of an electron by querying the remote backend.
         """
-        
+
         pass
-    
-    
+
+
     @abstractmethod
     async def _poll_task(self) -> Any:
         """
         Abstract method that polls the remote backend until the status of a workflow's execution
         is either COMPLETED or FAILED.
         """
-        
+
         pass
-    
-    
+
+
     @abstractmethod
     async def query_result(self) -> Any:
         """
         Abstract method that retrieves the pickled result from the remote cache.
         """
-        
-        
+
+
     @abstractmethod
     async def cancel(self) -> bool:
         """
         Abstract method that sends a cancellation request to the remote backend.
         """
         pass
-    
+
     async def run_async_subprocess(self, cmd) -> Any:
-        
+
         """
         Invokes an async subprocess to run a command.
         """
-        
+
         proc = await asyncio.create_subprocess_shell(
             cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        
+
         stdout, stderr = await proc.communicate()
-        
+
         if stdout:
             app_log.debug(stdout)
-            
+
         if stderr:
             app_log.debug(stderr)
-        
-        
+
