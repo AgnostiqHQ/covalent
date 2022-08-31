@@ -26,8 +26,8 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 import asyncio
-from typing import Any, Dict
 from abc import abstractmethod
+from typing import Any, Dict
 
 from covalent._shared_files import logger
 from covalent.executor.base import BaseAsyncExecutor
