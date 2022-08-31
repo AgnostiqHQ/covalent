@@ -109,28 +109,24 @@ jobs:
 
       - name: Generate environment variables
         run: |
-          RECOMMENDED_PLATFORM=0
           if [ ${{ matrix.os }} = 'ubuntu-latest' ] \
             && [ ${{ matrix.container }} = 'python:3.8-bullseye' ] \
             && [ ${{ matrix.backend }} = 'dask' ] ; then
-            RECOMMENDED_PLATFORM=1
+            RECOMMENDED_PLATFORM=true
           fi
-          NEED_PYTHON=0
           if [ ${{ steps.modified-files.outputs.sdk }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.dispatcher }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.ui_backend }} = 'true' ] ; then
-            NEED_PYTHON=1
+            NEED_PYTHON=true
           fi
-          NEED_FRONTEND=0
           if [ ${{ steps.modified-files.outputs.ui_frontend }} = 'true' ] ; then
-            NEED_FRONTEND=1
+            NEED_FRONTEND=true
           fi
-          BUILD_AND_RUN_ALL=0
           if [ ${{ github.event_name }} != 'pull_request' ] \
             || [ ${{ steps.modified-files.outputs.functional_tests }} == 'true' ] \
             || [ ${{ steps.modified-files.outputs.build }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.actions }} = 'true' ] ; then
-            BUILD_AND_RUN_ALL=1
+            BUILD_AND_RUN_ALL=true
           fi
           echo "RECOMMENDED_PLATFORM=$RECOMMENDED_PLATFORM" >> $GITHUB_ENV
           echo "NEED_PYTHON=$NEED_PYTHON" >> $GITHUB_ENV
