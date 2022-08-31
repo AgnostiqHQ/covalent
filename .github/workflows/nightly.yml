@@ -25,7 +25,6 @@ on:
     - cron: "0 0 * * *"
 
 jobs:
-  # Run license.yml
   license:
     name: License Scanner
     runs-on: ubuntu-latest
@@ -33,7 +32,6 @@ jobs:
       - name: Run License workflow
         uses: ./.github/workflows/license.yml@develop
 
-  # Run tests.yml
   tests:
     name: Unit and Functional Tests
     runs-on: ubuntu-latest
@@ -41,7 +39,6 @@ jobs:
       - name: Run Covalent's unit/functional test stack
         uses: ./.github/workflows/tests.yml@develop
 
-  # Run benchmark.yml (stress and load tests and tutorials)
   benchmarks:
     name: Benchmarks
     runs-on: ubuntu-latest
@@ -49,7 +46,6 @@ jobs:
       - name: Run Covalent stress and load tests
         uses: ./.github/workflows/benchmark.yml@develop
 
-  # Run changelog.yml
   changelog:
     name: Assign Version
     runs-on: ubuntu-latest
@@ -105,3 +101,24 @@ jobs:
     secrets: inherit # pragma: allowlist secret
     with:
       prerelease: true
+
+  notify:
+    name: slack_notifications
+    needs: [release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Format Slack message
+        if: >
+          github.ref == 'refs/heads/develop'
+        run: |
+          VERSION="$(cat ./VERSION)"
+          SLACK_MSG=":rocket: Version $VERSION is now available."
+          echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
+
+      - name: Notify Slack
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "covalent-ci"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: ${{ env.SLACK_MSG }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

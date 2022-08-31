@@ -318,59 +318,6 @@ jobs:
           flags: UI_Frontend
           name: "UI Frontend Unit Tests"
 
-      - name: Get latest release
-        uses: actions-ecosystem/action-get-latest-tag@v1
-        id: get-latest-tag
-        if: >
-          github.ref == 'refs/heads/develop'
-          && env.RECOMMENDED_PLATFORM
-          && github.event_name == 'workflow_run'
-        with:
-          semver_only: true
-
-      - name: Push to master
-        id: push
-        if: >
-          github.ref == 'refs/heads/develop'
-          && env.RECOMMENDED_PLATFORM
-          && github.event_name == 'workflow_run'
-        run: |
-          MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
-          VERSION="$(cat ./VERSION)"
-          release=false
-          if [ "$MASTER_VERSION" = "$VERSION" ] ; then
-            echo "$VERSION has been previously released."
-          elif dpkg --compare-versions $VERSION 'gt' '0.110.2' ; then
-            git config user.name "CovalentOpsBot"
-            git config user.email "covalentopsbot@users.noreply.github.com"
-            git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
-            git push origin HEAD:master
-            release=true
-          else
-            echo "We cannot release versions less than 0.110.2."
-          fi
-          echo "RELEASE=$release" >> $GITHUB_ENV
-          echo "::set-output name=release::$release"
-
-      - name: Format Slack message
-        if: >
-          github.ref == 'refs/heads/develop'
-          && env.RECOMMENDED_PLATFORM
-          && github.event_name == 'workflow_run'
-        run: |
-          VERSION="$(cat ./VERSION)"
-          SLACK_MSG=":rocket: Version $VERSION is now available."
-          echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
-
-      - name: Notify Slack
-        if: steps.push.outcome == 'success' && env.RELEASE == 'true'
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: "covalent-ci"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: ${{ env.SLACK_MSG }}
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-
       - name: Alert Slack
         if: >
           github.event_name == 'workflow_call'
@@ -383,11 +330,3 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
-
-  release:
-    needs: tests
-    if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
-    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
-    secrets: inherit # pragma: allowlist secret
-    with:
-      prerelease: true
