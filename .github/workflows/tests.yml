@@ -225,7 +225,7 @@ jobs:
       - name: Run functional tests and measure coverage
         id: functional-tests
         if: env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --ignore=tests/functional_tests/doc_tutorials_test.py --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
 
       - name: Generate functional test coverage report
         id: functional-coverage
