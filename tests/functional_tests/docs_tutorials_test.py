@@ -37,7 +37,7 @@ expected_return_values = [0] * len(notebooks)
 
 
 @pytest.mark.skipf(
-    os.environ.get("RUN_TUTORIALS") == "FALSE",
+    os.environ.get("RUN_TUTORIALS") == "" or os.environ.get("RUN_TUTORIALS") == "FALSE",
     reason="Required RUN_TUTORIALS env variable to be set to TRUE",
 )
 @pytest.mark.parametrize(
