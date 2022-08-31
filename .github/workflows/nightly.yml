@@ -54,7 +54,6 @@ jobs:
       - name: Parse changelog and update VERSION
         uses: ./.github/workflows/changelog.yml@develop
 
-  # Get the latest release and push it to master
   push_to_master:
     name: Push to Master
     runs-on: ubuntu-latest
