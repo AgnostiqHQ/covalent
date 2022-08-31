@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Changed the environment switches in tests.yml to be `true`/empty instead of 1/0
 
+- Adding `benchmark.yml` workflow
+
+### Tests
+
+- Adding scripts in `tests/stress_tests/benchmarks`
+
 ## [0.188.0] - 2022-08-31
 
 ### Authors
@@ -98,7 +104,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sankalp Sanand <sankalp@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 - Venkat Bala <venkat@agnostiq.ai>
-
 
 ### Added
 

@@ -72,7 +72,8 @@
 !README.md
 !VERSION
 
-
+# Ignore notebook checkpoints
+**/.ipynb_checkpoints
 
 # Ignore .sonarwork files
 covalent_ui/api/.scannerwork/.sonar_lock
