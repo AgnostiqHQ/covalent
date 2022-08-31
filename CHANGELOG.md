@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Created a prototype of a production Dockerfile
+- The old Dockerfile has been moved to Dockerfile.dev
+
 ### Docs
 
 - Added read the docs for user interface
