@@ -55,7 +55,7 @@ jobs:
           python-version: "3.8"
 
       - name: Install Covalent
-        run: pip install -e .
+        run: python setup.py sdist && pip install dist/*.tar.gz
 
       - name: Install test requirements
         run: pip install --no-cache-dir -r ./tests/requirements.txt
