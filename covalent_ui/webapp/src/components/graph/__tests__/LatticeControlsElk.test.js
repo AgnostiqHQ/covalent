@@ -20,21 +20,20 @@
 //  * Relief from the License may be granted by purchasing a commercial license.
 //  */
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
 import App from '../LatticeControlsElk'
 import "@testing-library/jest-dom";
-import React from 'react'
+import React, { useState } from 'react'
 import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
 import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
 import { BrowserRouter } from 'react-router-dom'
-
 import { ReactFlowProvider } from 'react-flow-renderer'
 import { HelmetProvider } from 'react-helmet-async'
-
-const onSubmit = jest.fn();
+import { act, renderHook } from '@testing-library/react-hooks'
+import '@testing-library/jest-dom'
 
 function reduxRender(renderedComponent) {
   const store = configureStore({
@@ -73,7 +72,6 @@ describe('lattice toggle buttons', () => {
   })
 
   test('renders fit to screen button', async () => {
-    // const handleClick = jest.fn()
     reduxRender(<App openDialogBox={true} title={'Fit to screen'} />)
     const linkElement = screen.getByTestId('FullscreenIcon')
     fireEvent.click(linkElement)
@@ -217,15 +215,47 @@ describe('lattice toggle buttons', () => {
     "RIGHT"
   ]
 
-  test('renders down button for change orientation', async () => {
-    reduxRender(<App direction={direction} />)
+  afterEach(cleanup)
+
+  it("render the change orientation left button", () => {
+    const { result } = renderHook(() => <App direction={direction1} />)
+    act(() => { result.current.props })
+    expect(result.current.props.direction).toBe(direction1)
+  })
+
+  it("render the change orientation up button", () => {
+    const { result } = renderHook(() => <App direction={direction2} />)
+    act(() => { result.current.props })
+    expect(result.current.props.direction).toBe(direction2)
+  })
+
+  it("render the change orientation right button", () => {
+    const { result } = renderHook(() => <App direction={direction3} />)
+    act(() => { result.current.props })
+    expect(result.current.props.direction).toBe(direction3)
+  })
+
+  it("render the change orientation down button", () => {
+    const { result } = renderHook(() => <App direction={direction} />)
+    act(() => { result.current.props })
+    expect(result.current.props.direction).toBe(direction)
+  })
+
+  test('render lattice orientation', () => {
+    const setStateMock = jest.fn({ useState });
+    const useStateMock = (useState) => [useState, setStateMock];
+    jest.spyOn(React, 'useState').mockImplementation(useStateMock);
+    const continer = reduxRender(<App direction={direction} />)
     const linkElement = screen.getByTestId('changeorientation')
     fireEvent.click(linkElement)
     const elementLink = screen.getByTestId('ArrowDownwardIcon');
-    expect(elementLink).toBeInTheDocument('')
   })
 
   test('renders up button for change orientation', async () => {
+    const setStateMock = jest.fn();
+    const useStateMock = (useState) => [useState, setStateMock];
+    jest.spyOn(React, 'useState').mockImplementation(useStateMock);
+
     reduxRender(<App direction={direction1} />)
     const linkElement = screen.getByTestId('changeorientation')
     fireEvent.click(linkElement)
@@ -234,6 +264,10 @@ describe('lattice toggle buttons', () => {
   })
 
   test('renders left button for change orientation', async () => {
+    const setStateMock = jest.fn();
+    const useStateMock = (useState) => [useState, setStateMock];
+    jest.spyOn(React, 'useState').mockImplementation(useStateMock);
+
     reduxRender(<App direction={direction2} />)
     const linkElement = screen.getByTestId('changeorientation')
     fireEvent.click(linkElement)
@@ -242,6 +276,10 @@ describe('lattice toggle buttons', () => {
   })
 
   test('renders right button for change orientation', async () => {
+    const setStateMock = jest.fn();
+    const useStateMock = (useState) => [useState, setStateMock];
+    jest.spyOn(React, 'useState').mockImplementation(useStateMock);
+
     reduxRender(<App direction={direction3} />)
     const linkElement = screen.getByTestId('changeorientation')
     fireEvent.click(linkElement)

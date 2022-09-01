@@ -113,6 +113,7 @@ export function DispatchLayout() {
           graph={graph_result}
           hasSelectedNode={!!selectedElectron}
           marginLeft={latticeDrawerWidth + navDrawerWidth}
+          dispatchId={dispatchId}
         />)}
       </Box>
       <NavDrawer />

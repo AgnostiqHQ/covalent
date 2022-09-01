@@ -108,7 +108,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
         <Skeleton />
       ) :
         (
-          <Runtime startTime={result.started_at} endTime={result.ended_at} />
+          <Runtime startTime={result?.started_at} endTime={result?.ended_at} />
         )}
 
       {/* Directory */}

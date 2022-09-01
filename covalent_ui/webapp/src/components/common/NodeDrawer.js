@@ -156,14 +156,14 @@ const NodeDrawer = ({ node, dispatchId }) => {
             }}
           >
             {electronDetailIsFetching ? (
-              <Skeleton width={150} />
+              <Skeleton data-testid="node__box_skl" width={150} />
             ) : (
               <Typography sx={{ color: '#A5A6F6', overflowWrap: 'anywhere' }}>
                 {electronDetail.name}
               </Typography>
             )}
 
-            <Box>
+            <Box data-testid="node__dra_close">
               <IconButton onClick={handleClose}>
                 <Close />
               </IconButton>
@@ -175,7 +175,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
             <>
               <Heading>Status</Heading>
               {electronDetailIsFetching ? (
-                <Skeleton width={150} />
+                <Skeleton data-testid="node__status_skl" width={150} />
               ) : (
                 <Box
                   sx={{
@@ -199,7 +199,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
           {/* Description */}
           {electronDetail.doc &&
             (electronDetailIsFetching ? (
-              <Skeleton />
+              <Skeleton data-testid="node__desc_skl" />
             ) : (
               <>
                 <Heading>Description</Heading>
@@ -215,7 +215,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
             <>
               <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
               {electronDetailIsFetching ? (
-                <Skeleton />
+                <Skeleton data-testid="node__start_time" />
               ) : (
                 <Typography fontSize="body2.fontSize" color="text.tertiary">
                   {formatDate(electronDetail.started_at)}
@@ -231,7 +231,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
             <>
               <Heading>Runtime</Heading>
               {electronDetailIsFetching ? (
-                <Skeleton />
+                <Skeleton data-testid="node__run_skeleton" />
               ) : (
                 <Runtime
                   sx={(theme) => ({
@@ -249,6 +249,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
           {/* Input */}
           {electronInputResult && (<InputSection
             inputs={electronInputResult.data}
+            data-testid="node__input_sec"
             sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
           />)}
 
@@ -257,15 +258,17 @@ const NodeDrawer = ({ node, dispatchId }) => {
             <>
               <Heading>Result</Heading>
               {electronResultDataIsFetching ? (
-                <Skeleton sx={{ height: '80px' }} />
+                <Skeleton data-testid="node__result_skl" sx={{ height: '80px' }} />
               ) : (
                 <Paper
+                  data-testid="node__paper"
                   elevation={0}
                   sx={(theme) => ({
                     bgcolor: theme.palette.background.darkblackbg,
                   })}
                 >
                   <SyntaxHighlighter
+                    data-testid="node__syntax_light"
                     language="python"
                     src={electronResultData.data}
                   />

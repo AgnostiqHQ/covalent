@@ -63,7 +63,7 @@ const mapGraphToElements = (graph, direction, showParams, hideLabels, preview) =
           : _.truncate(name, { length: 70 }),
         status: node.status,
         executor: preview ? node?.metadata.executor_name : node.executor_label,
-        node_id: String(node.id),
+        node_id: node.id,
         hideLabels: hideLabels,
         nodeType:node.type,
         preview
