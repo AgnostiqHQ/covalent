@@ -20,6 +20,8 @@
 
 """Settings request and response model"""
 
+import enum
+
 from pydantic import BaseModel
 
 
@@ -33,3 +35,13 @@ class UpdateSettingsResponseModel(BaseModel):
     """Update Settings response model"""
 
     data: str
+
+
+class Validators(enum.Enum):
+    """Validate settings overwrite"""
+
+    SDK = "sdk"
+    DISPATCHER = "dispatcher"
+    DASK = "dask"
+    WORKFLOW_DATA = "workflow_data"
+    USER_INTERFACE = "user_interface"
