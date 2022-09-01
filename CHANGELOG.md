@@ -11,6 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Implementation of RemoteExecutor
 
+## [0.190.0] - 2022-09-01
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+
+
+### Changed
+
+- Renamed `BaseAsyncExecutor` and its references to `AsyncBaseExecutor`.
+
 ## [0.189.0] - 2022-08-31
 
 ### Authors
