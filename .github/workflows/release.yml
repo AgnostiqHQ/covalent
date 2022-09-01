@@ -47,7 +47,6 @@ env:
     '"wjcunningham7",'
     '"santoshkumarradha"]'
 
-
 jobs:
   github:
     runs-on: ubuntu-latest
@@ -122,6 +121,8 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
   pypi:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.validate.outputs.version }}
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
@@ -180,9 +181,11 @@ jobs:
           tar xzf covalent-${VERSION}.tar.gz
           diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
           diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x README.md -r covalent-${VERSION}/covalent_migrations ../covalent_migrations
           diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
           diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf covalent-${VERSION}/
+          echo "::set-output name=version::$VERSION"
       - name: Upload Distribution
         if: >
           steps.pre-build.outcome == 'success'
@@ -203,3 +206,112 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+  conda:
+    needs: pypi
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+    steps:
+      - name: Check for stable release
+        if: github.event.inputs.stable_version && !inputs.prerelease
+        run: echo "STABLE=true" >> $GITHUB_ENV
+      - name: Conda skeleton publish
+        uses: AgnostiqHQ/conda-skeleton-publish@main
+        if: ${{ !github.event.inputs.test_release }}
+        with:
+          pypi_package: "covalent"
+          python_version: ${{ matrix.python-version }}
+          upload_channel: "agnostiq"
+          access_token: ${{ secrets.ANACONDA_TOKEN }}
+          package_version: ${{ needs.pypi.outputs.version }}
+          stable: ${{ env.STABLE }}
+          wait: true
+      - name: Alert Slack
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "covalent"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ":warning:  Attention Required  :warning:"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v2
+        if: github.event.inputs.stable_version
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: "v${{ github.event.inputs.stable_version }}"
+      - name: Check out master
+        uses: actions/checkout@v2
+        if: inputs.prerelease
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@master
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Generate tag
+        run: |
+          aws --version
+          docker info
+          TAG="$(cat ./VERSION)"
+          if aws ecr describe-images \
+            --repository-name covalent
+            --image-ids imageTag=$TAG &>/dev/null ; then
+            SHORT_SHA="${GITHUB_SHA::8}"
+            TAG=$TAG-$SHORT_SHA
+          fi
+          echo "TAG: $TAG"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+      - name: Login to Public Registry
+        uses: docker/login-action@v1
+        with:
+          registry: public.ecr.aws
+          username: ${{ secrets.AWS_KEY_ID }}
+          password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Build and push pre-release
+        if: >
+          inputs.prerelease
+          && !github.events.inputs.stable_version
+          && github.event_name == 'workflow_call'
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile.dev
+          platforms: all
+          push: true
+          tags: |
+            public.ecr.aws/covalent/covalent:latest
+            public.ecr.aws/covalent/covalent:${{ env.TAG }}
+      - name: Tag stable release
+        if: >
+          github.event_name == 'workflow_dispatch'
+          && github.event.inputs.stable_version
+          && !inputs.prerelease
+          && !github.events.inputs.test_release
+          && contains(env.PAUL_BLART, github.actor)
+        run: |
+          MANIFEST=$(aws ecr batch-get-image --repository-name covalent --image-ids imageTag=${{ github.events.inputs.stable_version }} --output json | jq --raw-output --join-output '.images[0].imageManifest')
+          aws ecr put-image --repository-name covalent --image-tag stable --image-manifest "$MANIFEST"

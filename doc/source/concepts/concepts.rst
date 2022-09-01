@@ -183,7 +183,11 @@ This ensures that the independent experiments are performed in parallel rather t
 Waiting for other electrons
 ----------------------
 
-Sometimes the user might want to wait for a task's execution before executing another task even when the output of one is not the input of another. For those cases a `wait_for()` function is there which is called on the dependent electron and takes as input the depending electrons,
+Covalent normally infers the dependencies between electrons from
+their inputs and ouputs. Sometimes the user might want to wait for a
+task's execution before executing another task even when the output of
+one is not the input of another. The `wait()` function can be
+handy in those cases.
 
 .. code-block:: python
     :linenos:
@@ -214,14 +218,15 @@ Sometimes the user might want to wait for a task's execution before executing an
         res_1b = task_1b(2)
         res_1c = task_1c(2)
         res_2 = task_2(res_1a, 3)
-        res_3 = task_3(5).wait_for([res_1a, res_1b, res_1c])
+        res_3 = task_3(5)
+	ct.wait(child=res_3, parents=[res_1a, res_1b, res_1c])
 
         return task_2(res_2, res_3)
         ...
 
     res = ct.dispatch_sync(workflow)()
 
-This means that even though `task_3`'s input does not depend on anything, it's execution will still wait until all the tasks passed in `wait_for` have completed execution.
+The `wait()` statement instructs Covalent to wait for `task_1a`, `task_1b`, and `task_1c` to finish before dispatching `task_3`.
 
 
 Best Practices
@@ -421,7 +426,7 @@ See the how-to guide on customizing the local executor :doc:`How to customize th
     class CustomExecutor(BaseExecutor):
         ...
 
-A variety of interesting executors are coming soon!
+Refer the how-to guide on building custom executors :doc:`How to create a custom executor <../../how_to/execution/creating_custom_executors>` for more details.
 
 .. _Workflow status polling:
 
@@ -523,6 +528,11 @@ A file can be instantiated as show below::
 
    (Advanced) File objects can also support additional arguments such as the :code:`is_remote` flag which should only be used when using the :code:`FileTransfer` class directly to specify a file that resides on a remote host (for usage with Rsync via SSH).
 
+A :code:`File` object's filepath can be accessed using::
+
+    import covalent as ct
+    file = ct.fs.File('/home/ubuntu/my_dir')
+    print(file.filepath)
 
 ~~~~~~
 Folders
@@ -558,6 +568,19 @@ Under the hood covalent will create File objects corresponding to each filepath,
     dest_file = ct.fs.File('/home/ubuntu/dest_file')
     ft = ct.fs.FileTransfer(source_file, dest_file, order=ct.fs.Order.BEFORE)
 
+If a provided file argument is `None` or a :code:`File` without a specified filepath then a temporary file will be created (with a corresponding filepath located in `/tmp`)::
+
+    temp_file = ct.fs.File() # with location temp_file.filepath
+    ct.fs.FileTransfer(source_file,temp_file)
+
+The following are equivalent statements::
+
+    ct.fs.FileTransfer(source_file)
+    ct.fs.FileTransfer(source_file, ct.fs.File())
+    ct.fs.FileTransfer(from_file=source_file, to_file=None)
+
+:code:`File` objects corresponding to a file transfer can be accessed by using either :code:`ct.fs.FileTransfer().from_file` or :code:`ct.fs.FileTransfer().to_file`.
+
 Furhermore Folders can also be used in file transfer operations::
 
     import covalent as ct
@@ -567,13 +590,18 @@ Furhermore Folders can also be used in file transfer operations::
 
 By default only folder contents are transfered to the destination folder however one can specify to also include the folder in the transfer with :code:`Folder('filepath', include_folder=True)`
 
-To use File Transfers in a covalent workflow a list of :code:`FileTransfer` instances must be specified in an electron's decorator using the :code:`files` keyword argument::
+To use File Transfers in a covalent workflow a list of :code:`FileTransfer` instances must be specified in an electron's decorator using the :code:`files` keyword argument.
+
+Furthermore, a :code:`files` keyword argument also gets injected into the python function decorated by an electron when supplying :code:`FileTransfer` instances in an electron's arguments.
+This :code:`files` kwarg contains a reference to the files corresponding to the source & destination filepaths in a supplied  :code:`FileTransfer` instance in the same order as the file transfers are specified::
+
 
     import covalent as ct
     @ct.electron(
         files=[ct.fs.FileTransfer('/home/ubuntu/src_file', '/home/ubuntu/dest_file')]
     )
-    def my_task():
+    def my_task(files=[]):
+        from_file, to_file = files[0]
         # we can read the destination filepath as the above file transfer is performed prior to electron execution
         with open('/home/ubuntu/dest_file', 'r') as f:
             return f.read()
@@ -585,6 +613,7 @@ To use File Transfers in a covalent workflow a list of :code:`FileTransfer` inst
     # Dispatch the workflow
     dispatch_id = ct.dispatch(file_transfer_workflow)()
 
+.. warning:: As discussed in the next section the :code:`files` keyword argument in the electron decorated python function must always be specified when using :code:`FileTransfer` for the workflow to be constructed successfully.
 
 ~~~~~~
 Strategies
@@ -625,6 +654,21 @@ The following will describe an Rsync file transfer operation over SSH to downloa
     from_remote_file = File('/home/admin/my_file', is_remote=True)
     to_local_file = File('/home/ubuntu/my_file')
     ct.fs.FileTransfer(from_remote_file, to_local_file, strategy=strategy)
+
+
+S3
+~~~~~~~~~~~~
+.. warning:: AWS Python SDK must be installed on an electron’s backend execution environment. It can be installed using :code:`pip install boto3`
+
+If one of the files is a S3 bucket location (s3://repository-name/file-path) S3 strategy will be used. For accessing the S3 bucket necessary credentials (aws_access_key_id, aws_secret_access_key, aws_session_token, region_name) can be passed to it. In case they are not provided default values described in the environment will be used.
+
+The following will perform an S3 file transfer operation to download a remote file and place in the specified local filepath::
+
+    import covalent as ct
+
+    strategy = ct.fs_strategies.S3(aws_access_key_id = '...', aws_secret_access_key = '...', aws_session_token = '...', region_name = '...')
+
+    ct.fs.FileTransfer('s3://covalent-tmp/temp.txt','/home/ubuntu/temp.txt',strategy = strategy)
 
 
 ~~~~~~

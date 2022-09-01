@@ -20,71 +20,128 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useState, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import {
   Box,
-  CircularProgress,
-  IconButton,
   styled,
   Tab,
+  Skeleton,
+  IconButton,
   Tooltip,
   Typography,
-  SvgIcon
+  SvgIcon,
 } from '@mui/material'
-import { ChevronLeft } from '@mui/icons-material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
-import CopyButton from '../common/CopyButton'
-import { selectResultProgress } from '../dispatches/ResultProgress'
 import LatticeDispatchOverview from './LatticeDispatchOverview'
-import { statusIcon, truncateMiddle } from '../../utils/misc'
-import { LatticeOutput } from '../common/LogOutput'
 import ErrorCard from '../common/ErrorCard'
+import { latticeDetails, latticeError } from '../../redux/latticeSlice'
+import { ChevronLeft } from '@mui/icons-material'
+import CopyButton from '../common/CopyButton'
+import { truncateMiddle } from '../../utils/misc'
 import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
 
 const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
+  const dispatch = useDispatch()
   const [tab, setTab] = useState('overview')
 
+  const drawerLatticeDetails = useSelector(
+    (state) => state.latticeResults.latticeDetails
+  )
+  const drawerLatticeError = useSelector(
+    (state) => state.latticeResults.latticeError
+  )
+  const drawerLatticeDetailsFetching = useSelector(
+    (state) => state.latticeResults.latticeDetailsResults.isFetching
+  )
+  const drawerLatticeErrorFetching = useSelector(
+    (state) => state.latticeResults.latticeErrorList.isFetching
+  )
+  const callSocketApi = useSelector((state) => state.common.callSocketApi)
+
+  useEffect(() => {
+    dispatch(latticeError({ dispatchId, params: 'error' }))
+    dispatch(latticeDetails({ dispatchId }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [callSocketApi])
+
   return (
-    <Box sx={{ p: 3 }}>
-      {/* dispatch id */}
-      <IconButton href="/" sx={{ color: 'text.disabled', mr: 1 }}>
-        <ChevronLeft />
-      </IconButton>
+    <Box sx={{ px: 3 }} data-testid="latticedispatchoverview">
+      <Box sx={{ m: 0, p: 0, display: 'flex', alignItems: 'center' }}
+        data-testid="backbtn">
+        <IconButton
+          data-testid="backbtn"
+          href="/"
+          sx={{
+            color: 'text.disabled',
+            mr: 1,
+            backgroundColor: (theme) => theme.palette.background.buttonBg,
+            borderRadius: '10px',
+            width: '32px',
+            height: '32px',
+          }}
+        >
+          <ChevronLeft />
+        </IconButton>
 
-      <SvgIcon component={TreeSvg} sx={{verticalAlign:"middle",marginTop:1}}/>
+        <SvgIcon
+          component={TreeSvg}
+          sx={{ verticalAlign: 'middle', marginTop: 1 }}
+        />
+        {drawerLatticeDetailsFetching ? (
+          <Skeleton width={200} />
+        ) : (
+          <Tooltip title={dispatchId} placement="top">
+            <Typography
+              component="span"
+              sx={{
+                mx: 1,
+                verticalAlign: 'middle',
+                fontSize: '1 rem',
+                color: (theme) => theme.palette.text.secondary,
+              }}
+            >
+              {truncateMiddle(dispatchId, 8, 13)}
+            </Typography>
+          </Tooltip>
+        )}
 
-      <Tooltip title={dispatchId} placement="top">
-        <Typography component="span" sx={{ mx: 1 ,verticalAlign:"middle"}}>
-          {truncateMiddle(dispatchId, 8, 13)}
-        </Typography>
-      </Tooltip>
-
-      <CopyButton content={dispatchId} size="small" title="Copy dispatch Id" />
-
-      {/* status */}
-      <LatticeStatusCard dispatchId={dispatchId} />
+        <CopyButton
+          data-testid="copydispatchId"
+          content={dispatchId}
+          size="small"
+          title="Copy dispatch Id"
+          isBorderPresent
+        />
+      </Box>
+      {drawerLatticeDetails.status === 'FAILED' &&
+        (drawerLatticeErrorFetching ? (
+          <Skeleton height={300} />
+        ) : (
+          <ErrorCard showElectron error={drawerLatticeError.data} />
+        ))}
 
       {/* tabs */}
+      {/* {latOutput !== null && */}
       <TabContext value={tab}>
         <CustomTabList
           variant="fullWidth"
           onChange={(e, newTab) => setTab(newTab)}
         >
           <Tab label="Overview" value="overview" />
-          <Tab label="Output" value="output" />
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
-          <LatticeDispatchOverview dispatchId={dispatchId} />
-        </TabPanel>
-
-        <TabPanel value="output" sx={{ px: 0, py: 1 }}>
-          <LatticeOutput dispatchId={dispatchId} />
+          <LatticeDispatchOverview
+            dispatchId={dispatchId}
+            latDetails={drawerLatticeDetails}
+            isFetching={drawerLatticeDetailsFetching}
+          />
         </TabPanel>
       </TabContext>
+      {/* } */}
     </Box>
   )
 }
@@ -101,90 +158,5 @@ const CustomTabList = styled(TabList)(({ theme }) => ({
     backgroundColor: theme.palette.text.primary,
   },
 }))
-
-const LatticeStatusCard = ({ dispatchId }) => {
-  const { completed, total, status, label, color, error } = useSelector(
-    (state) => selectResultProgress(state, dispatchId)
-  )
-
-  return (
-    <Box sx={{ my: 2 }}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-          }}
-        >
-          {/* left column */}
-          <Box sx={{ borderRight: '1px solid #303067' }}>
-            <Typography color="text.secondary" fontSize="body2.fontSize">
-              Status
-            </Typography>
-
-            <Box
-              sx={{
-                color: `${color}.main`,
-                display: 'flex',
-                fontSize: '1.125rem',
-                alignItems: 'center',
-                py: 1,
-              }}
-            >
-              {statusIcon(status)}
-              &nbsp;
-              {label}
-            </Box>
-          </Box>
-
-          {/* right column */}
-          <Box sx={{ justifySelf: 'end' }}>
-            <Typography color="text.secondary" fontSize="body2.fontSize">
-              Progress
-            </Typography>
-
-            {/* electron progress */}
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                py: 1,
-              }}
-            >
-              <Typography fontSize="body2.fontSize">
-                <Box
-                  component="span"
-                  sx={{
-                    color: status === 'COMPLETED' ? 'inherit' : `${color}.main`,
-                  }}
-                >
-                  {completed}
-                </Box>
-                &nbsp;/ {total}
-              </Typography>
-
-              <Box sx={{ ml: 2, position: 'relative' }}>
-                <CircularProgress
-                  variant="determinate"
-                  sx={(theme) => ({
-                    color: theme.palette.secondary.main,
-                  })}
-                  size="2rem"
-                  value={100}
-                />
-                <CircularProgress
-                  sx={{ position: 'absolute', left: 0 }}
-                  variant="determinate"
-                  color={color}
-                  size="2rem"
-                  value={(completed * 100) / total}
-                />
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-      <ErrorCard showElectron error={error} />
-    </Box>
-  )
-}
 
 export default DispatchDrawerContents

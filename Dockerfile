@@ -18,24 +18,49 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-FROM python:3.8-slim-buster
+# syntax=docker/dockerfile:1
+FROM python:3.8-slim-bullseye AS build
 
 RUN apt-get update \
-  && apt-get install -y curl gcc \
-  && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
-  && apt-get install -y nodejs \
-  && npm install --global yarn \
+  && apt-get install -y --no-install-recommends rsync wget \
   && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /opt/covalent
-COPY . /opt/covalent
-RUN pip install --no-cache-dir --use-feature=in-tree-build /opt/covalent
-RUN cd /opt/covalent/covalent_ui/webapp \
-  && yarn install  \
-  && yarn build
+RUN python -m venv --copies /covalent/.venv \
+  && . /covalent/.venv/bin/activate \
+  && pip install --upgrade pip \
+  && pip install covalent==0.177.0
 
-WORKDIR /opt/covalent
+FROM python:3.8-slim-bullseye AS prod
+LABEL org.label-schema.name="Covalent Server"
+LABEL org.label-schema.vendor="Agnostiq"
+LABEL org.label-schema.url="https://covalent.xyz"
+LABEL org.label-schema.vcs-url="https://github.com/AgnostiqHQ/covalent"
+LABEL org.label-schema.vcs-ref="f2e85397ea4609df274a38b03e6e17dcbae6bc52" # pragma: allowlist secret
+LABEL org.label-schema.version="0.177.0"
+LABEL org.label-schema.docker.cmd="docker run -it -p 8080:8080 -d covalent:latest"
+LABEL org.label-schema.schema-version=1.0
 
+COPY --from=build /usr/bin/rsync /usr/bin/rsync
+COPY --from=build /usr/lib/x86_64-linux-gnu/libpopt.so.0 /usr/lib/x86_64-linux-gnu/libpopt.so.0
+
+COPY --from=build /usr/bin/wget /usr/bin/wget
+COPY --from=build /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0 /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0
+COPY --from=build /usr/lib/x86_64-linux-gnu/libpsl.so.5 /usr/lib/x86_64-linux-gnu/libpsl.so.5
+
+COPY --from=build /covalent/.venv/ /covalent/.venv
+
+RUN useradd -ms /bin/bash ubuntu \
+  && chown ubuntu:users /covalent
+
+WORKDIR /covalent
+USER ubuntu
+
+ENV COVALENT_SERVER_IFACE_ANY=1
+ENV PATH=/covalent/.venv/bin:$PATH
 EXPOSE 8080
-ENTRYPOINT [ "python" ]
-CMD ["/opt/covalent/covalent_ui/app.py", "--port", "8080"]
+HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:8080 || exit 1
+
+RUN covalent config \
+  && sed -i 's|^results_dir.*$|results_dir = "/covalent/results"|' /home/ubuntu/.config/covalent/covalent.conf
+
+CMD covalent start --ignore-migrations --port 8080 && bash

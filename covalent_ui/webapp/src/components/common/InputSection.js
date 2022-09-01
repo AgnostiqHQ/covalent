@@ -21,42 +21,31 @@
  */
 
 import _ from 'lodash'
-import { Paper } from '@mui/material'
+import { Paper, Skeleton } from '@mui/material'
 
 import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'
 
-const InputSection = ({ inputs, node, graph , ...props}) => {
-  // check kwargs (legacy format)
-  if (!inputs) {
-    inputs = _.get(node, 'kwargs')
-  }
-  // construct arguments list from graph
-  if (!inputs && graph) {
-    inputs = _.chain(graph.links)
-      .filter(({ target }) => target === node.id)
-      .keyBy('edge_name')
-      .mapValues(({ source }) =>
-        _.get(_.find(graph.nodes, { id: source }), 'output')
-      )
-      .value()
-  }
-
-  if (_.isEmpty(inputs)) {
-    return null
-  }
-
-  const inputSrc = _.join(
-    _.map(inputs, (value, key) => `${key}=${value}`),
-    ', '
-  )
-
+const InputSection = ({ isFetching, inputs, preview, ...props }) => {
+  const inputSrc = preview
+    ? _.join(
+      _.map(inputs, (value, key) => `${key}: ${value}`),
+      '\n'
+    )
+    : inputs
   return (
     <>
-      <Heading>Input</Heading>
-      <Paper elevation={0} {...props}>
-        <SyntaxHighlighter language="python" src={inputSrc} />
-      </Paper>
+      {isFetching ? (
+        <Skeleton sx={{ height: '80px' }} />
+      ) : (
+        inputSrc && (
+          <>
+            <Heading data-testid='inputSection'>Input</Heading>
+            <Paper elevation={0} {...props}>
+              <SyntaxHighlighter language="json" src={inputSrc} />
+            </Paper>
+          </>)
+      )}
     </>
   )
 }

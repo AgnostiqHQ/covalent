@@ -3,6 +3,9 @@
 .. raw:: html
 
    <style>
+   a[href="#covalent-documentation"] {
+     position: absolute;
+   }
    h1 {
      text-align: center;
    }
@@ -12,17 +15,35 @@
 COVALENT DOCUMENTATION
 ======================
 
-|
-
-.. image:: _static/covalent_ui_rtd.png
-   :align: center
-|
-
-Covalent is a Pythonic workflow tool used to execute tasks on advanced computing hardware. Users can decorate their existing Python functions as electrons (tasks) or lattices (workflows) and then run these functions locally or dispatch them to various classical and quantum backends according to the hardware requirements. After submitting a workflow, users can navigate to the Covalent UI to view a variety of information about it, such as the status, errors, the workflow's dependency graph, and metadata, among other things. Covalent is designed to make it easy for users to keep track of their computationally heavy experiments by providing a simple and intuitive framework to store, modify, and re-analyze computational experiments. Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers as well as emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent.
-
-|
-
 .. raw:: html
+
+   <center>
+   <a href="https://pypi.org/project/covalent/"><img alt="Downloads per Month Badge" src="https://img.shields.io/pypi/dm/covalent"></a>
+   <a href="https://www.gnu.org/licenses/agpl-3.0.en.html"><img alt="AGPL License Badge" src="https://img.shields.io/badge/License-AGPL_v3-lightgray.svg"></a>
+   <a href="https://github.com/AgnostiqHQ/covalent/releases/latest"><img alt="Latest Release Badge" src="https://img.shields.io/github/v/release/AgnostiqHQ/covalent"></a>
+   <img alt="Supported Platforms Badge" src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blueviolet">
+   </center>
+
+|
+
+.. image:: _static/covalent_platform.svg
+   :align: center
+
+|
+
+Covalent is a Pythonic distributed workflow tool used to prototype and run high performance classical and quantum software. Covalent can be used to...
+
+- rapidly iterate prototypes and exploratory research models
+- construct complex workflows consisting of tasks written in a variety of languages
+- automate, manage, and share reproducible experiments
+- build data pipelines across distributed infrastructure
+- visualize data and task dependencies in an interactive user interface
+- run software in heterogeneous compute environments, including in hybrid-cloud and hybrid-quantum configurations
+- understand where time and money is spent across a project
+
+.. |
+
+.. .. raw:: html
 
    <div style="position: relative; padding-bottom: 56.25%; padding-top: 30px; height: 0; overflow: hidden; margin-bottom: -15px">
 
@@ -99,6 +120,18 @@ Check out the :doc:`Getting Started <./getting_started/index>` page to learn how
       :text: Go To API Reference
       :classes: btn-outline-primary btn-block stretched-link
 
+Recent Changes
+##############
+
+The latest release of Covalent includes two new feature sets and three major enhancements. True to its modular nature, Covalent now allows users to define custom pre- and post-hooks to electrons to facilitate various use cases from setting up remote environments (using `DepsPip`) to running custom functions. We also now support data/file transfers between remote electrons in a very modular way, including `Rsync`, `HTTP`, and `S3` protocols. As part of the enhancements, Covalent now internally uses an SQL database instead of storing results in a serialized format, which has resulted in impressive speedups and stability across the platform.  We have further made the Covalent server leaner by not requiring it to have any dependencies of electrons installed.  Covalent now only requires that your electron’s software dependencies exist on the client (the machine submitting the workflows) and backend (hardware running the tasks).
+
+Summary of major features/enhancements
+
+- Pre- and post-hooks to setup the software environment and to run other custom functions
+- Data transfer/management between electrons
+- Robust database for storing and managing results
+- User interface enhancements
+
 Join the Community
 ##################
 
@@ -106,14 +139,16 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
    :hidden:
 
    Getting Started <getting_started/index>
    Concepts <concepts/concepts>
    Tutorials <tutorials/tutorials>
    How-To Guides <how_to/index>
-   API Documentation <api/api>
+   User Interface <webapp_ui/index>
+   🔌 Plugins <plugins>
+   API Documentation <api/index>
 
 
 .. toctree::

@@ -1,7 +1,13 @@
 autodocsumm==0.2.6
+covalent-awsbatch-plugin==0.9.0rc0
+covalent-awslambda-plugin==0.3.2rc0
+covalent-braket-plugin==0.3.0rc0
+covalent-ecs-plugin==0.7.0rc0
+covalent-slurm-plugin
+covalent-ssh-plugin
 docutils
-furo==2022.4.7
-ipython
+furo>=2022.6.21
+ipython>=8.4.0
 ipython_genutils==0.2.0
 ipython_genutils==0.2.0
 jinja2<3.1.0

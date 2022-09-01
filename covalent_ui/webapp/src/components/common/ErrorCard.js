@@ -31,11 +31,13 @@ const ErrorCard = ({ showElectron = false, error }) => {
 
   return (
     <Box
+    data-testid="errorCard"
       sx={{
         fontSize: 'body2.fontSize',
         display: 'flex',
         alignItems: 'center',
-        my: 2,
+        mt: 2,
+        mb: 2,
         px: 2,
         py: 1,
         border: '0.5px solid rgba(227, 80, 80, 0.5)',
@@ -46,7 +48,7 @@ const ErrorCard = ({ showElectron = false, error }) => {
       }}
     >
       {showElectron && (
-        <SvgIcon sx={{ fontSize: 'inherit', mr: 1.5 }}>
+        <SvgIcon data-testid='electronIcon' sx={{ fontSize: 'inherit', mr: 1.5 }}>
           <AtomSvg />
         </SvgIcon>
       )}

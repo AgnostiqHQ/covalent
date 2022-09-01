@@ -7,13 +7,1409 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## [0.129.0] - 2022-07-12
+## [0.189.0] - 2022-08-31
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+
+
+### Added
+
+- Added capability to take screenshot of the graph with covalent logo on the GUI.
+
+### Operations
+
+- Changed the environment switches in tests.yml to be `true`/empty instead of 1/0
+
+- Adding `benchmark.yml` workflow
+
+### Tests
+
+- Adding scripts in `tests/stress_tests/benchmarks`
+
+## [0.188.0] - 2022-08-31
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+
+
+### Added
+
+- Created a prototype of a production Dockerfile
+- The old Dockerfile has been moved to Dockerfile.dev
+
+### Docs
+
+- Added read the docs for user interface
+- Added db schema migration error guide in RTD
+- Removed `get_data_store` from quantum chemistry tutorial #1046
+
+### Operations
+
+- Front-end test coverage measured and reported in CI
+- Added reusable version action
+
+## [0.187.0] - 2022-08-28
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+### Tests
+
+- Fixed `test_using_executor_names` and `test_internal_sublattice_dispatch` tests to also work with `--no-cluster` option.
+
+### Added
+
+- Added test cases for front-end react components.
+
+## [0.186.0] - 2022-08-25
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+
+### Operations
+
+- Fix conditional logic around dumping of `covalent` logs to stdout in test workflows
+- Build test matrix by parsing configs from json
+- Dump covalent logs if any of the tests step fail
+- changed-files action uses the proper sha in version.yml
+
+### Docs
+
+- Added RTD and header for the AWS EC2 executor plugin.
+- Refactored tutorials for better organization
+
+### Added
+
+- Added executor label, node id and node type to graph node UI
+
+### Changed
+
+- Runtime has been modified to be more precise on the lattice and electron sidebar
+
+## [0.185.0] - 2022-08-23
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+
+### Added
+
+- Adding `load_tests` subdirectory to tests to facilitate execution of Covalent benchmarks during nightly runs
+- Added `locust` requirements to tests `requirements.txt`
+
+## [0.184.2] - 2022-08-23
 
 ### Authors
 
 - Sankalp Sanand <sankalp@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 
+
+### Fixed
+
+- Switched the `render_as_batch` flag in the alembic env context so that `ALTER` commands are supported in SQLite migrations.
+
+### Docs
+
+- Updated custom executor RTD to show a simpler example
+
+### Operations
+
+- pre-commit autoupdate
+
+## [0.184.1] - 2022-08-23
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+### Fixed
+
+- Function's `__doc__` and `__name__` storage in dict/json for transportable object fixed.
+
+### Tests
+
+- Added unit test for the above fix.
+
+## [0.184.0] - 2022-08-22
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Electron metadata is serialized earlier during workflow construction
+  to reduce unexpected executor pip requirements.
+  
+### Operations
+
+- Updating conditional logic for the different steps in `release` workflow
+- Dependabot update
+
+### Docs
+
+- Removed "How to synchronize lattices" section from RTD
+
+## [0.183.0] - 2022-08-18
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Adding tests to update patch coverage for the `covalent logs` cli
+
+### Changed
+
+- Modify the `covalent logs` CLI handler to read logs line by line
+
+### Operations
+
+- Update release workflow
+- Adding a `wait` input for the Conda action
+
+## [0.182.2] - 2022-08-18
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Fixed
+
+- CLI `service.py` tests to run without the server needing to be started.
+
+### Docs
+
+- Added `covalent db` cli command to API section of RTD
+
+### Docs
+
+- Fixed RTD downloads badge image to point to `covalent` rather than `cova`
+
+### Operations
+
+- Use conda skeleton action for build and upload
+
+### Docs
+
+- Updating WCI yaml with new file transfer protocols
+
+## [0.182.1] - 2022-08-17
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+
+### Fixed
+
+- lattice.draw() fix on the GUI.
+
+## [0.182.0] - 2022-08-17
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Added
+
+- Update RTD for `AWS Batch` executor
+- Removed `AWS Lambda` executor RTD from this branch in order to keep changes atomic
+
+### Changed
+
+- Synced with latest develop
+
+### Docs
+
+- Adding RTD for `AWS Braket` executor
+- Adding dropdown menu for the IAM policy
+- Delete RTD for other cloud executor to keep changes atomic
+- Renamed `executers` folder to `executors`
+
+### Docs
+
+- Updated short release notes
+
+## [0.181.0] - 2022-08-17
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+
+
+### Changed
+
+- Lazy loading mechanism on the GUI.
+
+### Fixed
+
+- Displaying electron executor and inputs information on the GUI.
+- Animated spinner for running statuses on the GUI.
+
+## Docs
+
+- Add `AWSLambdaExecutor` RTD
+- Update `api.rst` to include `cluster` CLI command option
+- Added version migration guide section in RTD
+- Update RTD for `AWS ECS` executor
+- Remove AWS Lambda and Batch RTDs to keep changes atomic
+- Adding dropdowns to IAM policy documents
+- Updated compatibility matrix
+- Updated pip, bash and callable deps how-to guides
+
+### Operations
+
+- NPM install on CentOS done explicitly
+- `-y` flag for `conda install`
+
+## [0.180.0] - 2022-08-16
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+### Removed
+
+- Removed `ct.wait.LONG` etc. constants from covalent's init
+
+### Changed
+
+- `wait` in `_get_result_from_dispatcher` will now use `_results_manager.wait.EXTREME` if `True` has been passed to it.
+
+### Operations
+
+- Prettierified release.yml
+- Cleaned up pre-commit-config.yml
+
+### Docs
+
+- Updated Bash Lepton tutorial to conform with the latest Lepton interface changes
+- Disabling how-to guide for executing an electron with a specified Conda environment.
+- Fixed "How To" for Python leptons
+
+## [0.179.0] - 2022-08-16
+
+### Authors
+
+
+
+### Changed
+
+- Changed terser package version on webapp yarn-lock file.
+
+## [0.178.0] - 2022-08-15
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Dispatch workflows as asyncio tasks on the FastAPI event loop instead of in separate threads
+
+### Fixed
+
+- Deconflict wait enum with `ct.wait` function; `wait` -> `WAIT`
+
+### Operations
+
+- Conda package is built and tested on a nightly schedule
+- Conda deployment step is added to `release.yml`
+- Install yarn and npm on Ubuntu whenever the webapp needs to be built
+
+## [0.177.0] - 2022-08-11
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+### Removed
+
+- `while True` in `app.get_result`
+
+### Changed
+
+- Flask route logic to return 503 when the result is not ready
+
+### Tests
+
+- results_manager tests
+
+### Operations
+
+- Fix conditional checks for `pre-release` and `stable` Covalent docker image builds
+
+## [0.176.0] - 2022-08-11
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Operations
+
+- Update precommit yaml.
+
+### Removed
+
+- `Lattice.check_consumables()`, `_TransportGraph.get_topologically_sorted_graph()`
+
+### Operations
+
+- Trigger webapp build if `build==true`
+
+## [0.175.0] - 2022-08-11
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Operations
+
+- Trigger Slack alert for failed tests on `workflow_run`
+
+## [0.174.0] - 2022-08-11
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+
+- Changed return value for TransferFromRemote and TransferToRemote (download/upload) operations to be consistent and always return filepath tuples
+
+### Docs
+
+- Updated docs with File Transfer return value changes and `files` kwarg injections
+
+### Fixed
+
+- Fixed postprocessing workflows that return an electron with an incoming wait_for edge
+
+## [0.173.0] - 2022-08-10
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+### Added
+
+- `--hard` and `--yes` flags added to `covalent purge` for hard purging (also deletes the databse) and autoapproving respectively.
+
+### Changed
+
+- `covalent purge` now shows the user a prompt informing them what dirs and files will be deleted.
+- Improved shown messages in some commands.
+
+### Tests
+
+- Updated tests to reflect above changes.
+
+## [0.172.0] - 2022-08-10
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: manjunath.poilath <manjunath.poilath@psiog.com>
+- Co-authored-by: Kamalesh-suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: M Shrikanth <shrikanth.mohan@psiog.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+
+- Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher/_service/app.py`
+- Unit tests written for Covalent dispatcher flask web apis ported to FastAPI in `covalent_dispatcher_tests/_service/app.test.py`
+- Web apis of `covalent_ui` refactored to adhere to v11 DB schema
+- Electron graph mini map has been moved next to controls on the GUI.
+- Lattice status and count of completed & total electrons has been moved to the top of the graph on the GUI.
+- Some of the Flask APIs earlier consumed by the GUI have been deprecated & removed from the code base.
+- APIs exposed by the web app back end have been re-factored to adhere to the new DB schema v10
+
+### Added
+
+- Added count of dispatches by status on the dispatch list section of the GUI.
+- APIs that the GUI consumes have been re-written using FastAPI. This includes re-factoring of older APIs and adding of new APIs.
+- Added COVALENT_SERVER_IFACE_ANY flag for uvicorn to start with 0.0.0.0
+
+### Docs
+
+- ReadTheDocs landing page has been improved
+
+## [0.171.0] - 2022-08-10
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+### Added
+
+- Added `covalent migrate_legacy_result_object` command to save pickled Result objects to the DataStore
+
+## [0.170.1] - 2022-08-09
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+
+### Fixed
+
+- Remove `attr` import added inadvertently
+
+### Tests
+
+- Fix `start` cli test, update `set_config` call count
+
+## [0.170.0] - 2022-08-08
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Changed
+
+- Temporarily allow executor plugin variable name to be either in uppercase or lowercase
+
+## [0.169.0] - 2022-08-08
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- Adding a `covalent config` convenience CLI to quickly view retrive the covalent configuration
+
+## [0.168.0] - 2022-08-08
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- Adding `setup/teardown` methods as placeholders for any executor specific setup and teardown tasks
+
+## [0.167.0] - 2022-08-08
+
+### Authors
+
+- Poojith U Rao <106616820+poojithurao@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- S3 File transfer strategy
+
+### Fixed
+
+- Adding maximum number of retries and timeout parameter to the get result http call.
+
+## [0.166.0] - 2022-08-07
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+
+
+### Tests
+
+- Update dask cli test to match Covalent Dask cluster configuration
+
+
+### Changed
+
+- Remove newline from log stream formatter for better log statment output
+- Jsonify covalent cluster cli outputs
+
+## [0.165.0] - 2022-08-06
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Make `BaseExecutor` and `BaseAsyncExecutor` class siblings, not parent and child.
+
+### Operations
+
+- Only validate webapp if the webapp was built
+
+### Tests
+
+- Fixed randomly failing lattice json serialization test
+
+## [0.164.0] - 2022-08-05
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+
+### Changed
+
+- Use `update_config` to modify dask configuration from the cluster process
+- Simplify `set_config` logic for dask configuration options on `covalent start`
+- Removed default values from click options for dask configuration related values
+
+### Added
+
+- Configured default dask configuration options in `defaults.py`
+
+### Fixed 
+
+- Overwriting config address issue.
+
+### Tests
+
+- Moved misplaced functional/integration tests from the unit tests folder to their respective folders.
+- All of the unit tests now use test DB instead of hitting a live DB.
+- Updated `tests.yml` so that functional tests are run whenever tests get changed or github actions are changed.
+- Several broken tests were also fixed.
+
+## [0.163.0] - 2022-08-04
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Added
+
+- Added `rsync` dependency in `Dockerfile`
+
+### Removed
+
+- `Makefile` which was previously improperly committed
+
+### Operations
+
+- Functional tests are run only on `develop`
+- `tests.yml` can be run manually provided a commit SHA
+- `tests.yml` uses a `build` filter to conditionally install and build Covalent if build files are modified
+- `docker.yml` is now only for dev work, and is manually triggered given an SHA
+- `release.yml` is enhanced to push stable and pre-release images to a public ECR repo
+
+## [0.162.0] - 2022-08-04
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Updated Base executor to support non-unique `retval_key`s, particularly for use in File Transfer where we may have several CallDeps with the reserved `retval_key` of value `files`.
+
+## [0.161.2] - 2022-08-04
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Fixed
+
+- Updated `covalent db migrations` to overwrite `alembic.ini` `script_location` with absolute path to migrations folder
+- Updated `covalent db alembic [args]` command to use project root as `cwd` for alembic subprocess  
+
+## [0.161.1] - 2022-08-03
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Poojith U Rao <106616820+poojithurao@users.noreply.github.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- When a list was passed to an electron, the generated electron list
+  had metadata copied from the electron. This was resulting in
+  call_before and call_after functions being called by the electron
+  list as well. The metadata (apart from executor) is now set to
+  default values for the electron list.
+
+## [0.161.0] - 2022-08-03
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- Replaced `Session(DispatchDB()._get_data_store().engine)` with `workflow_db.session()`
+
+### Removed
+
+- `DevDataStore` class from `datastore.py`
+- workflows manager
+
+## [0.160.1] - 2022-08-02
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Fixed
+
+- `script_location` key not found issue when installing with pip (second attempt)
+
+### Docs
+
+- Remove migration guide reference from README
+
+### Operations
+
+- Explicitly check `release == true` in tests.yml
+
+## [0.160.0] - 2022-08-02
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- `Executor.run()` now accepts a `task_metadata` dictionary. Current
+  keys consist of `dispatch_id` and `node_id`.
+
+## [0.159.0] - 2022-08-02
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- Database schema has been updated to v11
+
+### Operations
+
+- `paths-filter` will only be run on PRs, i.e on workflow runs, the whole test suite will be run.
+- Removed retry action from running on `pytest` steps since they instead use `pytest` retries.
+- `codecov.yml` added to enable carry-forward flags
+- UI front-end is only built for pull requests when the source changes
+- Packaging is only validated on the `develop` branch
+
+## [0.158.0] - 2022-07-29
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- Construct the result object in the dispatcher `entry_point.py` module in order to avoid the Missing Latticed Id error so frequently.
+- Update the sleep statement length to 0.1 seconds in the results.manager.
+
+## [0.157.1] - 2022-07-29
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+### Fixed
+
+- Pass non-kwargs to electrons in the correct order during dispatch.
+
+## [0.157.0] - 2022-07-28
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Expose a public `wait()` function compatible with both calling and dispatching lattices
+
+### Docs
+
+- Updated the RTD on `wait_for()` to use the static `wait()` function
+
+### Operations
+
+- pre-commit autoupdate
+
+### Docs
+
+- Changed the custom executor how-to to be shorter and more concise.
+- Re-structured the docs
+
+## [0.156.0] - 2022-07-27
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- Bash decorator is introduced
+- Lepton commands can be specified as a list of strings rather than strings alone.
+
+## [0.155.1] - 2022-07-26
+
+### Authors
+
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Fixed
+
+- `script_location` key not found issue when running alembic programatically
+
+### Operations
+
+- Fixed syntax errors in `stale.yml` and in `hotfix.yml`
+- `docker.yml` triggered after version bump in `develop` instead of before
+- Enhanced `tests.yml` to upload coverage reports by domain
+
+## [0.155.0] - 2022-07-26
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Exposing `alembic {args}` cli commands through: `covalent db alembic {args}`
+
+## [0.154.0] - 2022-07-25
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Added methods to programatically fetch information from Alembic without needing subprocess
+
+## [0.153.1] - 2022-07-25
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Fixed
+
+- Stdout and stderr are now captured when using the dask executor.
+
+
+### Tests
+
+- Fixed Dask cluster CLI tests
+
+## [0.153.0] - 2022-07-25
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Added
+
+- Helper function to load and save files corresponding to the DB filenames.
+
+### Changed
+
+- Files with .txt, .log extensions are stored as strings.
+- Get result web request timeout to 2 seconds.
+
+## [0.152.0] - 2022-07-25
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Changed
+
+- Pass default DataStore object to node value retrieval method in the Results object.
+
+## [0.151.1] - 2022-07-22
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Fixed
+
+- Adding maximum number of retries and timeout parameter to the get result http call.
+- Disabling result_webhook for now.
+
+## [0.151.0] - 2022-07-22
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+### Added
+
+- `BaseAsyncExecutor` has been added which can be inherited by new async-aware executors.
+
+### Changed
+
+- Since tasks were basically submitting the functions to a Dask cluster by default, they have been converted into asyncio `Tasks` instead which support a far larger number of concurrent tasks than previously used `ThreadPool`.
+
+- `tasks_pool` will still be used to schedule tasks which use non-async executors.
+
+- Executor's `executor` will now receive a callable instead of a serialized function. This allows deserializing the function where it is going to be executed while providing a simplified `execute` at the same time.
+
+- `uvloop` is being used instead of the default event loop of `asyncio` for better performance.
+
+- Tests have also been updated to reflect above changes.
+
+### Operations
+
+- Made Santosh the sole owner of `/docs`
+
+## [0.150.0] - 2022-07-22
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Added
+
+- Initialize database tables when the covalent server is started.
+
+## [0.149.0] - 2022-07-21
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Removed
+
+- `result.save()`
+- `result._write_dispatch_to_python_file()`
+
+## [0.148.0] - 2022-07-21
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+
+- Changed DataStore default db path to correspond to dispatch db config path
+
+### Operations
+
+- Added workflow to stale and close pull requests
+
+
+### Docs
+
+- Fixed `get_metadata` calls in examples to remove `results_dir` argument
+- Removed YouTube video temporarily
+
+## [0.147.0] - 2022-07-21
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Simplified interface for custom executors. All the boilerplate has
+  been moved to `BaseExecutor`.
+
+## [0.146.0] - 2022-07-20
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+
+### Added
+
+- Ensure that transportable objects are rendered correctly when printing the result object.
+
+### Tests
+
+- Check that user data is not unpickled by the Covalent server process
+
+## [0.145.0] - 2022-07-20
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Removed
+
+- `entry_point.get_result()`
+
+### Changed
+
+- get_result to query an HTTP endpoint instead of a DB session
+
+## [0.144.0] - 2022-07-20
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Set up alembic migrations & added migration guide (`alembic/README.md`)
+
+## [0.143.0] - 2022-07-19
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Changed
+
+- Installation will fail if `cova` is installed while trying to install `covalent`.
+
+## [0.142.0] - 2022-07-19
+
+### Authors
+
+- Poojith U Rao <106616820+poojithurao@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Anna Hughes <annagwen42@gmail.com>
+- Co-authored-by: Poojith <poojith@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Added
+
+- `electron_num`, `completed_electron_num` fields to the Lattice table.
+
+## [0.141.0] - 2022-07-19
+
+### Authors
+
+- Poojith U Rao <106616820+poojithurao@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Anna Hughes <annagwen42@gmail.com>
+- Co-authored-by: Poojith <poojith@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Changed
+
+- Deprecate topological sort in favor of inspect in-degree of nodes until they are zero before dispatching task
+- Use deepcopy to generate a copy of the metadata dictionary before saving result object to the database
+
+### Docs
+
+- Adding incomplete pennylane kernel tutorial
+- Adding quantum ensemble tutorial
+
+## [0.140.0] - 2022-07-19
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Fields `deps_filename`, `call_before_filename` and `call_after_filename` to the `Electron` table.
+- Re-write the deps / call before and after file contents when inserting / updating electron record in the database.
+
+### Changed
+
+- Modify the test and implementation logic of inserting the electron record with these new fields.
+- Field `key` to `key_filename` in `Electron` table.
+
+## [0.139.1] - 2022-07-19
+
+### Authors
+
+- Divyanshu Singh <55018955+divshacker@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <wymnea@protonmail.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
+
+
+### Fixed
+
+- Fixes Reverse IP problem. All References to `0.0.0.0` are changed to `localhost` . More details can be found [here](https://github.com/AgnostiqHQ/covalent/issues/202)
+
+## [0.139.0] - 2022-07-19
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+
+### Added
+
+- Columns `is_active` in the lattice, eLectron and Electron dependency tables.
+
+### Docs
+
+- Adding a RTD tutorial/steps on creating a custom executor
+
+## [0.138.0] - 2022-07-19
+
+### Authors
+
+- Anna Hughes <annagwen42@gmail.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Docker build workflow
+
+### Changed
+
+- Dockerfile uses multi-stage build
+
+### Docs
+
+- New tutorial demonstrating how to solve the MaxCut Problem with QAOA and Covalent
+
+## [0.137.0] - 2022-07-19
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Ability to hide/show labels on the graph
+- Graph layout with elk configurations
+
+### Changed
+
+- Changed API socket calls interval for graph optimization.
+
+### Tests
+
+- Disabled several dask functional tests
+
+## [0.136.0] - 2022-07-18
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- Result.save() has been deprecated in favor of Result.persist() and querying the database directly.
+
+## [0.135.0] - 2022-07-18
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Operations
+
+- Psiog is only codeowner of js files
+- Fix in changelog action to handle null author when a bot is committing
+
+### Added
+
+- Support injecting return values of calldeps into electrons during workflow execution
+
+## [0.134.0] - 2022-07-15
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+
+### Changed
+
+- Covalent server can now process workflows without having their deps installed
+
+## [0.133.0] - 2022-07-15
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+
+
+### Removed
+
+- Removed the deprecated function `draw_inline` as well as the `matplotlib` dependency.
+
+### Operations
+
+- Fixing the retry block for tests
+
+## [0.132.0] - 2022-07-14
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+
+
+### Added
+
+- Bash lepton support reintroduced with some UX modifications to the Lepton class. Leptons which use scripting languages can be specified as either (1) a command run in the shell/console or (2) a call to a function in a library/script. Leptons which use compiled languages must specify a library and a function name.
+- The keyword argument `display_name` can be used to override the name appearing in the UI. Particularly useful when the lepton is a command.
+- All arguments except for language are now keyword arguments.
+- Keyword arguments passed to a Bash lepton are understood to define environment variables within the shell.
+- Non-keyword arguments fill in `$1`, `$2`, etc.
+- Named outputs enumerate variables within the shell which will be returned to the user. These can be either `Lepton.OUTPUT` or `Lepton.INPUT_OUTPUT` types.
+
+### Added
+
+- New fields to the decomposed result object Database: 
+
+## [0.131.0] - 2022-07-13
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Fixed
+
+- `covalent --version` now looks for `covalent` metadata instead of `cova`
+
+### Tests
+
+- Updated the cli test to include whether the correct version number is shown when `covalent --version` is run
+
+### Added
+
+- Method to write electron id corresponding to sublattices in `execution.py` when running `_run_task`.
+
+## [0.130.0] - 2022-07-12
+
+### Authors
+
+- Venkat Bala <venkat@agnostiq.ai>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+
+### Changed
+
+- Ignoring tests for `cancel_dispatch` and `construct_bash`
+- Create a dummy requirements.txt file for pip deps tests
+- Fix version of `Werkzeug` package to avoid running into ValueError (unexpected kwarg `as_tuple`)
+- Update `customization` how to test by specifying the section header `sdk`
+
+## [0.129.0] - 2022-07-12
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 
 ### Added
 
@@ -43,7 +1439,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-
 
 ### Added
 
@@ -104,6 +1499,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Updated RTD concepts, how-to-guides, and api docs with electron dependencies.
+
+### Operations
+
+- Separate out running tests and uploading coverage report to circumvent bug in
+  retry action
 
 ## [0.124.0] - 2022-07-07
 

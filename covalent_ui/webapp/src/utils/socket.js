@@ -20,33 +20,33 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import io from 'socket.io-client'
+ import io from 'socket.io-client'
 
-import { isDemo } from './demo/setup'
+ import { isDemo } from './demo/setup'
 
-/**
- * Establishes socket connection.
- */
-const connect = () => {
-  if (isDemo) {
-    return {
-      on() {},
-      off() {},
-    }
-  }
+ /**
+  * Establishes socket connection.
+  */
+ const connect = () => {
+   if (isDemo) {
+     return {
+       on() {},
+       off() {},
+     }
+   }
 
-  const socket = io(process.env.REACT_APP_API_URL, {
-    // required for CORS
-    withCredentials: true,
-  })
+   const socket = io(process.env.REACT_APP_SOCKET_URL, {
+     // required for CORS
+     withCredentials: true,
+   })
 
-  socket.on('connect', () => {
-    console.debug(`socket ${socket.id} connected: ${socket.connected}`)
-  })
+   socket.on('connect', () => {
+     console.debug(`socket ${socket.id} connected: ${socket.connected}`)
+   })
 
-  return socket
-}
+   return socket
+ }
 
-const socket = connect()
+ const socket = connect()
 
-export default socket
+ export default socket

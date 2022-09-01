@@ -16,12 +16,13 @@ Beginner
 
    * - Topic
      - Title
-   * - Machine Learning
-     - :doc:`MNIST classifier<./machine_learning/mnist_classifier>`
-   * - Machine Learning
-     - :doc:`Linear and convolutional autoencoders<./machine_learning/autoencoders>`
-   * - Quantum Machine Learning
-     - :doc:`Using Covalent with PennyLane for hybrid computation<./machine_learning/pennylane_hybrid>`
+
+   * - Machine learning
+     - :doc:`MNIST classifier<./0_ClassicalMachineLearning/mnist_images/source>`
+   * - Machine learning
+     - :doc:`Using Covalent with PennyLane for hybrid computation<./1_QuantumMachineLearning/pennylane_hybrid/source>`
+   * - Machine learning
+     - :doc:`Linear and convolutional autoencoders<./0_ClassicalMachineLearning/autoencoders/source>`
 
 ~~~~~~~~~~~~
 Intermediate
@@ -34,12 +35,11 @@ Intermediate
    * - Topic
      - Title
    * - Machine Learning
-     - :doc:`Iris classification<./machine_learning/Covalent_pennylane_Iris_classification>`
+     - :doc:`Iris classification<./1_QuantumMachineLearning/pennylane_ensemble_classification/source>`
    * - Machine Learning
-     - :doc:`Variational parity classification<./machine_learning/Covalent_pennylane_Parity_classifier>`
+     - :doc:`Variational parity classification<./1_QuantumMachineLearning/pennylane_parity_classifier/source>`
    * - Machine Learning
      - :doc:`Modeling time series for sales forecasting<./machine_learning/dnn_comparison>`
-
 
 ~~~~~~~~
 Advanced
@@ -52,16 +52,24 @@ Advanced
    * - Topic
      - Title
    * - Quantum Chemistry
-     - :doc:`Simulating the Nitrogen-Copper interaction<./quantum_chemistry/nitrogen_copper_interaction>`
+     - :doc:`Simulating the Nitrogen-Copper interaction<./3_QuantumChemistry/nitrogen_copper_interaction/source>`
    * - Machine Learning
-     - :doc:`Classical and quantum support vector machines<./machine_learning/classical_quantum_svm>`
+     - :doc:`Classical and quantum support vector machines<./1_QuantumMachineLearning/classical_quantum_svm/source>`
    * - Machine Learning
-     - :doc:`Training quantum embedding kernels for classification<./machine_learning/quantum_embedding_kernel>`
+     - :doc:`Training quantum embedding kernels for classification<./1_QuantumMachineLearning/quantum_embedding_kernel/source>`
+   * - Quantum Optimization
+     - :doc:`Using QAOA to Solve the Max-Cut Problem<./1_QuantumMachineLearning/qaoa_maxcut/source>`
+   * - Machine Learning
+     - :doc:`Quantum Ensemble Classification<./1_QuantumMachineLearning/pennylane_ensemble_classification/source>`
    * - Astronomy
-     - :doc:`Tracking stars in the night sky<./astronomy/star_tracker>`
+     - :doc:`Tracking stars in the night sky<./2_Astronomy/star_tracker/source>`
    * - Quantum Gravity
-     - :doc:`Classifying discrete spacetimes by dimension<./quantum_gravity/spacetime_classification>`
+     - :doc:`Classifying discrete spacetimes by dimension<./4_QuantumGravity/spacetime_classification/source>`
 
 ---------------------------------
 
 Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.  To get started, check out the :doc:`guide <tutorial_guide>`.
+
+.. Hidden tutorials:
+   * - Machine Learning
+     - :doc:`Comparison of kernel-based and variational circuit learning algorithms<./machine_learning/Kernel_pennylane>`

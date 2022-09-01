@@ -31,12 +31,12 @@ Execution
 - :doc:`How to execute an individual electron <./execution/execute_individual_electron>`
 - :doc:`How to execute multiple lattices <./execution/execute_multiple_lattices>`
 - :doc:`How to execute a lattice as an electron inside another lattice <./execution/execute_sublattice>`
-- :doc:`How to execute an electron in a Conda environment <./execution/choosing_conda_environments>`
-- :doc:`How to synchronize lattices <./execution/synchronize_lattice>`
 - :doc:`How to choose an executor for a subtask <./execution/choosing_executors>`
 - :doc:`How to customize the executor <./execution/creating_custom_executors>`
 ..
   - :doc:`How to cancel a running workflow <./execution/cancel_dispatch>`
+..
+  - :doc:`How to execute an electron in a Conda environment <./execution/choosing_conda_environments>`
 
 Status
 *******************
@@ -55,6 +55,10 @@ Collection
 Configuration
 **************
 - :doc:`How to customize the configuration <./config/customization>`
+
+Database
+**************
+- :doc:`What to do when encountering database migration errors <./db/migration_error>`
 
 ----------------------------------
 

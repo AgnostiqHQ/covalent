@@ -15,9 +15,9 @@ body:
       # in easier.  The type is 'textarea' rather than three separate 'input's
       # to make the resulting issue body less noisy with headings.
       value: |
-        - **Covalent version**: 
-        - **Python version**: 
-        - **Operating system**: 
+        - **Covalent version**:
+        - **Python version**:
+        - **Operating system**:
     validations:
       required: true
 

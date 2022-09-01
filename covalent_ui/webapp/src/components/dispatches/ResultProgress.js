@@ -21,87 +21,61 @@
  */
 
 import { Box, LinearProgress, Tooltip, Typography } from '@mui/material'
-import { createSelector } from '@reduxjs/toolkit'
-import _ from 'lodash'
-import { useSelector } from 'react-redux'
-
-import { isParameter } from '../../utils/misc'
+import { statusLabel } from '../../utils/misc'
 
 const STATUS_COLORS = {
   RUNNING: 'running',
   COMPLETED: 'success',
   FAILED: 'error',
   CANCELLED: 'error',
+  POSTPROCESSING: 'success',
+  PENDING_POSTPROCESSING: 'success',
+  POSTPROCESSING_FAILED: 'success',
 }
 
-export const selectResultProgress = createSelector(
-  (state, dispatchId) => state.results.cache[dispatchId],
-  (result) => {
-    return _.reduce(
-      _.get(result, 'graph.nodes'),
-      (progress, node) => {
-        if (!isParameter(node)) {
-          progress.total++
-          progress.completed += node.status === 'COMPLETED' ? 1 : 0
-          // record first electron error
-          if (node.error && !progress.error) {
-            progress.error = `${node.name}: ${node.error}`
-          }
-        }
-        return progress
-      },
-      {
-        total: 0,
-        completed: 0,
-        status: result.status,
-        label: _.startCase(_.lowerCase(result.status)),
-        color: STATUS_COLORS[result.status],
-        error: result.error,
-      }
-    )
-  }
-)
-
-const ResultProgress = ({ dispatchId }) => {
-  const { completed, total, status, color } = useSelector((state) =>
-    selectResultProgress(state, dispatchId)
-  )
-
+const ResultProgress = (props) => {
+  const { status, totalElectronsCompleted, totalElectrons } = props.result
   return (
-    <Tooltip title={status} placement="right">
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Box sx={{ width: '100%', mr: 1 }}>
+    <Tooltip title={statusLabel(status)} placement="right">
+      <Box sx={{ display: 'flex', alignItems: 'center',width:'120px' }}>
+        <Box data-testid="resultProgress" sx={{ width: '50%', mr: 1 }}>
           <LinearProgress
             variant="determinate"
-            color={color}
-            value={(completed * 100) / total}
+            color={STATUS_COLORS[status.toUpperCase()]}
+            value={(totalElectronsCompleted * 100) / totalElectrons}
           />
         </Box>
-
-        <Box sx={{ minWidth: 35 }}>
-          <Typography variant="body2" color={color}>
-            {completed === total ?
-          <Box
-              sx={{
-                color: `${color}.main`,
-                display: 'flex',
-                fontSize: '1rem',
-                alignItems: 'center',
-                py: 1,
-              }}
-            >
-              {completed}/{total}
-            </Box>
-            :
+        <Box sx={{ width: '50%' }}>
+          <Typography
+            variant="body2"
+            color={STATUS_COLORS[status.toUpperCase()]}
+          >
             <Typography variant="body2">
-              <Box component="div" display="inline"
-              sx={{color: `${color}.main`,fontSize: '1rem'}}>{completed}</Box>
-              <Box component="div" display="inline"
-              sx={{fontSize: '1rem'}}>/{total}</Box>
+              <Box
+                component="div"
+                display="inline"
+                sx={{
+                  color: `${STATUS_COLORS[status.toUpperCase()]}.main`,
+                  fontSize: '1rem',
+                }}
+              >
+                {totalElectronsCompleted}
+              </Box>
+              <Box
+                component="div"
+                display="inline"
+                sx={{
+                  color:
+                    totalElectrons === totalElectronsCompleted
+                      ? `${STATUS_COLORS[status.toUpperCase()]}.main`
+                      : '',
+                  fontSize: '1rem',
+                }}
+              >
+                /{totalElectrons}
+              </Box>
             </Typography>
-            }
           </Typography>
-
         </Box>
       </Box>
     </Tooltip>

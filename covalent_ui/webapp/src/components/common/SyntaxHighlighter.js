@@ -22,15 +22,18 @@
 
 import _ from 'lodash'
 import { Light } from 'react-syntax-highlighter'
-import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python'
-import yaml from 'react-syntax-highlighter/dist/esm/languages/hljs/yaml'
+import python from 'react-syntax-highlighter/dist/cjs/languages/hljs/python'
+import yaml from 'react-syntax-highlighter/dist/cjs/languages/hljs/yaml'
+import json from 'react-syntax-highlighter/dist/cjs/languages/hljs/json'
 import style from 'react-syntax-highlighter/dist/cjs/styles/hljs/androidstudio'
 Light.registerLanguage('python', python)
 Light.registerLanguage('yaml', yaml)
+Light.registerLanguage('json', json)
 
 const SyntaxHighlighter = ({ src, ...props }) => {
   return (
     <Light
+      data-testid='syntax'
       language="python"
       style={style}
       customStyle={{
@@ -42,7 +45,7 @@ const SyntaxHighlighter = ({ src, ...props }) => {
       }}
       {...props}
     >
-      {_.trim(src, '\n')}
+      {_.trim(src, '"" \n')}
     </Light>
   )
 }

@@ -4,7 +4,12 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 from furl import furl
 
-from covalent._file_transfer.enums import FileSchemes, FileTransferStrategyTypes, Order
+from covalent._file_transfer.enums import (
+    FileSchemes,
+    FileTransferStrategyTypes,
+    FtCallDepReturnValue,
+    Order,
+)
 from covalent._file_transfer.file import File
 from covalent._file_transfer.strategies.http_strategy import HTTP
 from covalent._file_transfer.strategies.rsync_strategy import Rsync
@@ -69,17 +74,27 @@ class FileTransfer:
             )
 
     def cp(self):
+
+        file_transfer_call_dep = None
+        return_value_type = FtCallDepReturnValue.FROM_TO
+
         # local -> local or remote -> remote
         if (not self.from_file.is_remote and not self.to_file.is_remote) or (
             self.from_file.is_remote and self.to_file.is_remote
         ):
-            return self.strategy.cp(self.from_file, self.to_file)
+            file_transfer_call_dep = self.strategy.cp(self.from_file, self.to_file)
         # local -> remote
         if not self.from_file.is_remote and self.to_file.is_remote:
-            return self.strategy.upload(self.from_file, self.to_file)
+            file_transfer_call_dep = self.strategy.upload(self.from_file, self.to_file)
         # remote -> local
         if self.from_file.is_remote and not self.to_file.is_remote:
-            return self.strategy.download(self.from_file, self.to_file)
+            file_transfer_call_dep = self.strategy.download(self.from_file, self.to_file)
+
+        pre_transfer_hook_call_dep = self.strategy.pre_transfer_hook(
+            self.from_file, self.to_file, return_value_type=return_value_type
+        )
+
+        return (pre_transfer_hook_call_dep, file_transfer_call_dep)
 
 
 # Factories

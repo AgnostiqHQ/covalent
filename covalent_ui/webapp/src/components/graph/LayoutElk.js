@@ -25,8 +25,8 @@ import ELK from 'elkjs/lib/elk.bundled.js'
 import { isNode } from 'react-flow-renderer'
 import { isParameter } from '../../utils/misc'
 
-const layoutElk = (graph, direction, showParams = true) => {
-  const elements = mapGraphToElements(graph, direction, showParams)
+const layoutElk = (graph, direction, showParams = true, hideLabels, preview) => {
+  const elements = mapGraphToElements(graph, direction, showParams, hideLabels, preview)
   return elements
 }
 
@@ -43,7 +43,7 @@ const filterGraph = (graph, nodePredicate) => {
 /**
  * Map Covalent graph nodes and links to ReactFlow graph elements.
  */
-const mapGraphToElements = (graph, direction, showParams) => {
+const mapGraphToElements = (graph, direction, showParams, hideLabels, preview) => {
   if (!showParams) {
     graph = filterGraph(graph, (node) => !isParameter(node))
   }
@@ -51,7 +51,6 @@ const mapGraphToElements = (graph, direction, showParams) => {
   const nodes = _.map(graph.nodes, (node) => {
     const handlePositions = getHandlePositions(direction)
     const isParam = isParameter(node)
-
     const name = isParam ? _.trim(node.name, ':parameter:') : node.name
 
     return {
@@ -59,8 +58,15 @@ const mapGraphToElements = (graph, direction, showParams) => {
       type: isParam ? 'parameter' : 'electron',
       data: {
         fullName: name,
-        label: _.truncate(name, { length: 70 }),
+        label: hideLabels
+          ? _.truncate(name, { length: 0 })
+          : _.truncate(name, { length: 70 }),
         status: node.status,
+        executor: preview ? node?.metadata.executor_name : node.executor_label,
+        node_id: preview ? node.id : node.node_id,
+        hideLabels: hideLabels,
+        nodeType:node.type,
+        preview
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,
@@ -81,32 +87,55 @@ const mapGraphToElements = (graph, direction, showParams) => {
   return [...nodes, ...edges]
 }
 
-const assignNodePositions = async (graph, direction,showParams,algorithm) => {
-  const elements=layoutElk(graph,direction,showParams);
-  const DEFAULT_WIDTH = 75
-const DEFAULT_HEIGHT = 75
-  const nodes= [];
-  const edges= [];
-  const elk = new ELK({
-    defaultLayoutOptions: {
-      'elk.algorithm': algorithm,
-      'elk.direction': direction,
-      'elk.spacing.nodeNode': '40',
-      'elk.layered.spacing.nodeNodeBetweenLayers': '40'
-    }
-  })
+const assignNodePositions = async (
+  graph,
+  direction,
+  showParams,
+  algorithm,
+  hideLabels,
+  preview
+) => {
+  const elements = layoutElk(graph, direction, showParams, hideLabels, preview)
+  const nodes = []
+  const edges = []
+  const DEFAULT_HEIGHT = 75
+
+  const elk =
+    algorithm === 'layered'
+      ? new ELK({
+        defaultLayoutOptions: {
+          'elk.algorithm': algorithm,
+          'elk.direction': direction,
+          'elk.edgeRouting': 'POLYLINE',
+          'elk.layered.nodePlacement.strategy': 'SIMPLE',
+          'elk.spacing.edgeEdge': hideLabels ? 10 : 20,
+          'elk.spacing.nodeNode': hideLabels ? 60 : 40,
+          'elk.spacing.edgeNode': hideLabels ? 60 : 40,
+          'elk.spacing.edgeLabel': 10,
+          'elk.layered.spacing.nodeNodeBetweenLayers': 80,
+        },
+      })
+      : new ELK({
+        defaultLayoutOptions: {
+          'elk.algorithm': algorithm,
+          'elk.direction': direction,
+          'elk.spacing.nodeNode': 60,
+          'elk.spacing.edgeEdge': hideLabels ? 10 : 0,
+          'elk.spacing.edgeNode': hideLabels ? 60 : 80,
+        },
+      })
   _.each(elements, (el) => {
     if (isNode(el)) {
       nodes.push({
         id: el.id,
-        width: el.__rf?.width ?? DEFAULT_WIDTH,
-        height: el.__rf?.height ?? DEFAULT_HEIGHT
+        width: _.size(el.data.label) * 15,
+        height: DEFAULT_HEIGHT,
       })
     } else {
       edges.push({
         id: el.id,
         target: el.target,
-        source: el.source
+        source: el.source,
       })
     }
   })
@@ -114,15 +143,15 @@ const DEFAULT_HEIGHT = 75
   const newGraph = await elk.layout({
     id: 'root',
     children: nodes,
-    edges: edges
+    edges: edges,
   })
   return elements.map((el) => {
     if (isNode(el)) {
       const node = newGraph?.children?.find((n) => n.id === el.id)
       if (node?.x && node?.y && node?.width && node?.height) {
         el.position = {
-          x: node.x ,
-          y: node.y
+          x: node.x,
+          y: node.y,
         }
       }
     }
@@ -137,7 +166,7 @@ const DEFAULT_HEIGHT = 75
  *
  * @returns { source: <position>, target: <position> }
  */
- const getHandlePositions = (direction) => {
+const getHandlePositions = (direction) => {
   switch (direction) {
     case 'DOWN':
       return { source: 'bottom', target: 'top' }

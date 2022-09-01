@@ -22,26 +22,25 @@
 
 import _ from 'lodash'
 import { Paper } from '@mui/material'
-
+import React from 'react'
 import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'
 
-const ExecutorSection = ({ metadata , ...props}) => {
+const ExecutorSection = ({ isFetching, metadata, ...props }) => {
   const executorType = _.get(metadata, 'executor_name')
-  const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
-  const src = _.join(
-    _.map(executorParams, (value, key) => `${key}: ${value}`),
+  const executor_details = _.get(metadata, 'executor_details')
+  const src = executor_details && _.join(
+    _.map(executor_details?.attributes, (value, key) => `${key}: ${value}`),
     '\n'
   )
-
   return (
     <>
-      {!_.isEmpty(executorType)}
-      <Heading>
-        Executor: <strong>{executorType}</strong>
-      </Heading>
-
-      {!_.isEmpty(executorParams) && (
+      {!isFetching && (
+        <Heading data-testid="executorSection">
+          Executor: <strong>{executorType}</strong>
+        </Heading>
+      )}
+      {executor_details && !isFetching && (
         <Paper elevation={0} {...props}>
           <SyntaxHighlighter language="yaml" src={src} />
         </Paper>

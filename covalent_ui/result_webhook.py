@@ -20,13 +20,13 @@
 
 import json
 
+import aiohttp
 import requests
 
 import covalent_ui.app as ui_server
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.utils import get_named_params
 from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
 
 DEFAULT_PORT = get_config("user_interface.port")
@@ -41,7 +41,7 @@ def get_ui_url(path):
     return f"{baseUrl}{path}"
 
 
-def send_update(result: Result) -> None:
+async def send_update(result: Result) -> None:
     """
     Signal UI server about a result update. Note that the server will expect the
     updated result to have been saved to the results directory prior to the
@@ -63,12 +63,20 @@ def send_update(result: Result) -> None:
         },
     )
 
+    app_log.debug("Moving to Fast API soon - stay tuned!!")
     try:
         # ignore response
-        requests.post(get_ui_url(ui_server.WEBHOOK_PATH), data=result_update)
-    except requests.exceptions.RequestException:
+        timeout = aiohttp.ClientTimeout(total=1)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.post(
+                get_ui_url(ui_server.WEBHOOK_PATH), json=json.loads(result_update)
+            ) as resp:
+                status = resp.status
+                text = await resp.text()
+                app_log.debug(f"send_update received response {status}, {text}")
+    except Exception as ex:
         # catch all requests-related exceptions
-        app_log.warning("Unable to send result update to UI server.")
+        app_log.debug(f"Unable to send result update to UI server: {ex}")
 
 
 def send_draw_request(lattice) -> None:
@@ -83,9 +91,8 @@ def send_draw_request(lattice) -> None:
 
     graph = lattice.transport_graph.get_internal_graph_copy()
 
-    ((named_args, named_kwargs),) = (
-        get_named_params(lattice.workflow_function, lattice.args, lattice.kwargs),
-    )
+    named_args = {k: v.object_string for k, v in lattice.named_args.items()}
+    named_kwargs = {k: v.object_string for k, v in lattice.named_kwargs.items()}
 
     draw_request = json.dumps(
         {

@@ -7,6 +7,11 @@ Covalent is developed using Python 3.8 on Linux and macOS.  See the :doc:`Compat
 Installation
 ############
 
+Upgrading Covalent
+~~~~~~~~~~~~~~~~~~
+
+If you are upgrading Covalent from the previous stable release, please refer to the :doc:`migration guide <./../version_migrations/index>` if you wish to preserve your data and/or avoid any issues that may arise when upgrading.
+
 Installation Methods
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -102,14 +107,14 @@ Start the Covalent server:
 .. code:: console
 
    $ covalent start
-   Covalent server has started at http://0.0.0.0:48008
+   Covalent server has started at http://localhost:48008
 
 Optionally, confirm the server is running:
 
 .. code:: console
 
    $ covalent status
-   Covalent server is running at http://0.0.0.0:48008.
+   Covalent server is running at http://localhost:48008.
 
 Now, navigate to the Covalent UI by entering the address into your web browser.  This is where dispatched jobs will appear.
 
@@ -141,17 +146,13 @@ Let's look at a simple example to get started with Covalent. Before starting, en
    # Dispatch the workflow
    dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
 
-Navigate to the Covalent UI at `<http://0.0.0.0:48008>`_ to see your workflow in the queue:
+Navigate to the Covalent UI at `<http://localhost:48008>`_ to see your workflow in the queue:
 
 |
 
 .. image:: hello_covalent_queue.png
    :align: center
 
-|
-
-.. warning::
-   In some browsers and operating systems, the address `0.0.0.0` does not resolve to localhost. If you experience issues, try instead navigating to `<http://localhost:48008>`_.
 
 Click on the dispatch ID to view the workflow graph:
 
