@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Implementation of RemoteExecutor
+
 ## [0.190.0] - 2022-09-01
 
 ### Authors
