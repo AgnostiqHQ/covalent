@@ -104,7 +104,7 @@ const LatticeControls = ({
         </ToggleButton>
       </Hint>
       <Hint title="Change layout">
-        <ToggleButton data-testid="tooglebuttonclick" onClick={(e) => handleClick(e)} value="">
+        <ToggleButton data-testid="tooglebuttonclick" onClick={(e) => handleClick(e,marginLeft,marginRight)} value="">
           <DashboardIcon />
         </ToggleButton>
       </Hint>
@@ -124,13 +124,13 @@ const LatticeControls = ({
           onClick={() => {
             switch (direction) {
               case 'UP':
-                return setDirection('RIGHT')
+                return setDirection('RIGHT',marginLeft,marginRight)
               case 'DOWN':
-                return setDirection('LEFT')
+                return setDirection('LEFT',marginLeft,marginRight)
               case 'LEFT':
-                return setDirection('UP')
+                return setDirection('UP',marginLeft,marginRight)
               case 'RIGHT':
-                return setDirection('DOWN')
+                return setDirection('DOWN',marginLeft,marginRight)
               default:
             }
           }}
@@ -148,7 +148,7 @@ const LatticeControls = ({
       </Hint>
 
       <Hint data-testid="handlelabelhide" title={hideLabels ? 'Show labels' : 'Hide labels'}>
-        <ToggleButton value="" onClick={() => handleHideLabels()}>
+        <ToggleButton value="" onClick={() => handleHideLabels(marginLeft,marginRight)}>
           {hideLabels ? <LabelOffIcon /> : <LabelIcon />}
         </ToggleButton>
       </Hint>

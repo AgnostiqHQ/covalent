@@ -46,7 +46,8 @@ const LatticeGraph = ({
   hasSelectedNode,
   onClickNode,
   marginLeft = 0,
-  marginRight = 0
+  marginRight = 0,
+  setSelectedElectron
 }) => {
   const { fitView } = useFitViewHelper()
   const [nodes, setNodes] = useState([]);
@@ -57,6 +58,9 @@ const LatticeGraph = ({
   const [nodesDraggable, setNodesDraggable] = useState(false)
   const [algorithm, setAlgorithm] = useState('layered')
   const [hideLabels, setHideLabels] = useState(false)
+  const [fitMarginLeft, setFitMarginLeft] = useState()
+  const [fitMarginRight, setFitMarginRight] = useState()
+
 
 
   // set Margin
@@ -92,7 +96,7 @@ const LatticeGraph = ({
   useEffect(() => {
     resizing()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [marginRight, marginLeft, fitView])
+  }, [marginRight, marginLeft])
 
   // layouting
   useEffect(() => {
@@ -102,6 +106,7 @@ const LatticeGraph = ({
       const initialEdges = els && els.filter((e) => e.type === 'directed')
       setNodes(initialNodes)
       setEdges(initialEdges)
+      setTimeout(() => fitView({ marginLeft: fitMarginLeft, marginRight: fitMarginRight, duration: 300 }), 300)
     } else {
       assignNodePositions(graph, direction, showParams, algorithm, hideLabels)
         .then((els) => {
@@ -109,7 +114,7 @@ const LatticeGraph = ({
           const initialEdges = els && els.filter((e) => e.type === 'directed')
           setNodes(initialNodes)
           setEdges(initialEdges)
-        })
+        }).then(() => fitView({ marginLeft: fitMarginLeft, marginRight: fitMarginRight, duration: 300 }))
         .catch((error) => console.log(error))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -118,8 +123,15 @@ const LatticeGraph = ({
   // menu for layout
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
-  const handleClick = (event) => {
+  const handleClick = (event, marginLeft, marginRight) => {
     setAnchorEl(event.currentTarget)
+    setFitMarginLeft(marginLeft)
+    setFitMarginRight(marginRight)
+  }
+  const handleOrientationChange = (direction, marginLeft, marginRight) => {
+    setDirection(direction)
+    setFitMarginLeft(marginLeft)
+    setFitMarginRight(marginRight)
   }
   const handleClose = () => {
     setAnchorEl(null)
@@ -130,9 +142,11 @@ const LatticeGraph = ({
     setAlgorithm(event);
   };
 
-  const handleHideLabels = () => {
+  const handleHideLabels = (marginLeft, marginRight) => {
     const value = !hideLabels
     setHideLabels(value);
+    setFitMarginLeft(marginLeft)
+    setFitMarginRight(marginRight)
   };
 
   const onNodesChange = useCallback(
@@ -158,15 +172,16 @@ const LatticeGraph = ({
           nodesConnectable={false}
           nodes={nodes}
           edges={edges}
-          defaultZoom={1}
+          defaultZoom={0.5}
           minZoom={0}
-          maxZoom={3}
+          maxZoom={1.5}
           fitView
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           // prevent selection when nothing is selected to prevent fitView
           selectNodesOnDrag={hasSelectedNode}
           onNodeClick={(e) => onClickNode(e)}
+          onPaneClick={e=>setSelectedElectron(null)}
         >
           {/* <Background
          variant="dots"
@@ -191,7 +206,7 @@ const LatticeGraph = ({
             handleClick={handleClick}
             handleClose={handleClose}
             direction={direction}
-            setDirection={setDirection}
+            setDirection={handleOrientationChange}
             algorithm={algorithm}
             handleHideLabels={handleHideLabels}
             hideLabels={hideLabels}

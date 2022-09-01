@@ -97,6 +97,7 @@ export function DispatchLayout() {
           hasSelectedNode={!!selectedElectron}
           onClickNode={onClickNode}
           marginLeft={latticeDrawerWidth + navDrawerWidth}
+          setSelectedElectron={setSelectedElectron}
         />)}
       </Box>
       <NavDrawer />
