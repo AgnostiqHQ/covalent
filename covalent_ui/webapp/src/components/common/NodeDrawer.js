@@ -84,10 +84,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
   const electronDetailIsFetching = useSelector(
     (state) => state.latticeResults.latticeResultsList.isFetching
   )
-  const electronInputResultIsFetching = useSelector(
-    (state) => state.electronResults.electronInputList.isFetching
-  )
-  const electronResultDataIsFetching = useSelector(
+   const electronResultDataIsFetching = useSelector(
     (state) => state.latticeResults.latticeResultsList.isFetching
   )
   const electronExecutorResultIsFetching = useSelector(
