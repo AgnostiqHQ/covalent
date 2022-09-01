@@ -84,7 +84,6 @@ class RemoteExecutor(AsyncBaseExecutor):
 
     @abstractmethod
     async def _upload_task(self) -> None:
-
         """
         Abstract method that uploads the pickled function to the remote cache.
         """
@@ -93,7 +92,6 @@ class RemoteExecutor(AsyncBaseExecutor):
 
     @abstractmethod
     async def submit_task(self, task_metadata: Dict) -> Any:
-
         """
         Abstract method that invokes the task on the remote backend.
 
@@ -137,7 +135,6 @@ class RemoteExecutor(AsyncBaseExecutor):
         pass
 
     async def run_async_subprocess(self, cmd) -> Any:
-
         """
         Invokes an async subprocess to run a command.
         """
