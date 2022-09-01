@@ -22,37 +22,45 @@
 FROM python:3.8-slim-bullseye AS build
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends curl gcc \
-  && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
-  && apt-get install -y nodejs \
-  && npm install --global yarn \
+  && apt-get install -y --no-install-recommends rsync wget \
   && rm -rf /var/lib/apt/lists/*
 
-COPY . /app/
-RUN cd /app \
-  && python -m venv --copies /app/.venv \
-  && . /app/.venv/bin/activate \
+RUN python -m venv --copies /covalent/.venv \
+  && . /covalent/.venv/bin/activate \
   && pip install --upgrade pip \
-  && pip install --no-cache-dir -r /app/requirements.txt \
-  && cd /app/covalent_ui/webapp \
-  && yarn install --network-timeout 100000 \
-  && yarn build --network-timeout 100000 \
-  && cd ../../ \
-  && python setup.py sdist \
-  && pip install dist/covalent*.tar.gz
+  && pip install covalent==0.177.0
 
 FROM python:3.8-slim-bullseye AS prod
+LABEL org.label-schema.name="Covalent Server"
+LABEL org.label-schema.vendor="Agnostiq"
+LABEL org.label-schema.url="https://covalent.xyz"
+LABEL org.label-schema.vcs-url="https://github.com/AgnostiqHQ/covalent"
+LABEL org.label-schema.vcs-ref="f2e85397ea4609df274a38b03e6e17dcbae6bc52" # pragma: allowlist secret
+LABEL org.label-schema.version="0.177.0"
+LABEL org.label-schema.docker.cmd="docker run -it -p 8080:8080 -d covalent:latest"
+LABEL org.label-schema.schema-version=1.0
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends rsync \
-  && rm -rf /var/lib/apt/lists/*
+COPY --from=build /usr/bin/rsync /usr/bin/rsync
+COPY --from=build /usr/lib/x86_64-linux-gnu/libpopt.so.0 /usr/lib/x86_64-linux-gnu/libpopt.so.0
 
-COPY --from=build /app/.venv/ /app/.venv
+COPY --from=build /usr/bin/wget /usr/bin/wget
+COPY --from=build /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0 /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0
+COPY --from=build /usr/lib/x86_64-linux-gnu/libpsl.so.5 /usr/lib/x86_64-linux-gnu/libpsl.so.5
 
+COPY --from=build /covalent/.venv/ /covalent/.venv
+
+RUN useradd -ms /bin/bash ubuntu \
+  && chown ubuntu:users /covalent
+
+WORKDIR /covalent
+USER ubuntu
+
+ENV COVALENT_SERVER_IFACE_ANY=1
+ENV PATH=/covalent/.venv/bin:$PATH
 EXPOSE 8080
-ENTRYPOINT [ \
-  "/app/.venv/bin/python", \
-  "/app/.venv/lib/python3.8/site-packages/covalent_ui/app.py", \
-  "--port", \
-  "8080" \
-]
+HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:8080 || exit 1
+
+RUN covalent config \
+  && sed -i 's|^results_dir.*$|results_dir = "/covalent/results"|' /home/ubuntu/.config/covalent/covalent.conf
+
+CMD covalent start --ignore-migrations --port 8080 && bash

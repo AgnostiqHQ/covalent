@@ -19,7 +19,7 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-import { useEffect, useRef, useState, useMemo, useCallback } from 'react'
+import { useEffect, useRef, useState, useMemo, useCallback, createRef } from 'react'
 import ReactFlow, { MiniMap, applyEdgeChanges, applyNodeChanges } from 'react-flow-renderer'
 import ElectronNode from './ElectronNode'
 import ParameterNode from './ParameterNode'
@@ -30,6 +30,8 @@ import LatticeControls from './LatticeControlsElk'
 import theme from '../../utils/theme'
 import { statusColor } from '../../utils/misc'
 import useFitViewHelper from './ReactFlowHooks'
+import { useScreenshot, createFileName } from "use-react-screenshot"
+import covalentLogo from '../../assets/frame.png'
 
 // https://reactjs.org/docs/hooks-faq.html#how-to-get-the-previous-props-or-state
 function usePrevious(value) {
@@ -47,7 +49,8 @@ const LatticeGraph = ({
   onClickNode,
   marginLeft = 0,
   marginRight = 0,
-  setSelectedElectron
+  setSelectedElectron,
+  dispatchId
 }) => {
   const { fitView } = useFitViewHelper()
   const [nodes, setNodes] = useState([]);
@@ -60,8 +63,7 @@ const LatticeGraph = ({
   const [hideLabels, setHideLabels] = useState(false)
   const [fitMarginLeft, setFitMarginLeft] = useState()
   const [fitMarginRight, setFitMarginRight] = useState()
-
-
+  const [screen, setScreen] = useState(false);
 
   // set Margin
   const prevMarginRight = usePrevious(marginRight)
@@ -158,38 +160,65 @@ const LatticeGraph = ({
     [setEdges]
   );
 
+  /*<--------ScreenShot-------->*/
+
+  useEffect(() => {
+    if (screen) {
+      takeScreenShot(ref_chart.current).then(download);
+      setScreen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen]);
+
+
+  const ref_chart = createRef(null);
+
+  // eslint-disable-next-line no-unused-vars
+  const [image, takeScreenShot] = useScreenshot({
+    type: "image/jpeg",
+    quality: 1.0,
+  });
+
+  const download = (image, { name = dispatchId, extension = "jpg" } = {}) => {
+    const a = document.createElement("a");
+    a.href = image;
+    a.download = createFileName(extension, name);
+    a.click();
+  };
 
   const nodeTypes = useMemo(() => ({ electron: ElectronNode, parameter: ParameterNode }), []);
   const edgeTypes = useMemo(() => ({ directed: DirectedEdge }), []);
   return (
     <>
       {nodes?.length > 0 && (
-        <ReactFlow
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          data-testid="lattice__graph"
-          nodesDraggable={nodesDraggable}
-          nodesConnectable={false}
-          nodes={nodes}
-          edges={edges}
-          defaultZoom={0.5}
-          minZoom={0}
-          maxZoom={1.5}
-          fitView
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          // prevent selection when nothing is selected to prevent fitView
-          selectNodesOnDrag={hasSelectedNode}
-          onNodeClick={(e) => onClickNode(e)}
-          onPaneClick={e=>setSelectedElectron(null)}
-        >
-          {/* <Background
-         variant="dots"
-         color={lighten(theme.palette.background.paper, 0.05)}
-         gap={12}
-         size={1}
-       /> */}
-
+        <>
+          <ReactFlow
+            ref={ref_chart}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            data-testid="lattice__graph"
+            nodesDraggable={nodesDraggable}
+            nodesConnectable={false}
+            nodes={nodes}
+            edges={edges}
+            defaultZoom={0.5}
+            minZoom={0}
+            maxZoom={1.5}
+            fitView
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            // prevent selection when nothing is selected to prevent fitView
+            selectNodesOnDrag={hasSelectedNode}
+            onNodeClick={(e) => onClickNode(e)}
+            onPaneClick={e => setSelectedElectron(null)}
+          >
+            {screen &&
+              <div>
+                <img style={{ position: 'absolute', zIndex: '2', right: '20px', bottom: '25px' }}
+                  src={covalentLogo} alt='covalentLogo' />
+              </div>
+            }
+          </ReactFlow>
           <LatticeControls
             marginLeft={marginLeft}
             marginRight={marginRight}
@@ -200,6 +229,10 @@ const LatticeGraph = ({
             showMinimap={showMinimap}
             toggleMinimap={() => {
               setShowMinimap(!showMinimap)
+            }}
+            toggleScreenShot={() => {
+              setScreen(true)
+
             }}
             open={open}
             anchorEl={anchorEl}
@@ -229,7 +262,7 @@ const LatticeGraph = ({
               nodeColor={(node) => statusColor(node.data.status)}
             />
           )}
-        </ReactFlow>
+        </>
       )}
     </>
   )
