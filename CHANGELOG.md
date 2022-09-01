@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Renamed `BaseAsyncExecutor` and its references to `AsyncBaseExecutor`.
+
 ## [0.189.0] - 2022-08-31
 
 ### Authors
