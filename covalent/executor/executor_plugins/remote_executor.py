@@ -71,7 +71,6 @@ class RemoteExecutor(AsyncBaseExecutor):
         self.remote_cache = remote_cache
         self.credentials_file = credentials_file
 
-
     @abstractmethod
     async def _validate_credentials(self) -> bool:
         """
@@ -95,7 +94,6 @@ class RemoteExecutor(AsyncBaseExecutor):
 
         pass
 
-
     @abstractmethod
     async def submit_task(self, task_metadata: Dict) -> Any:
 
@@ -111,7 +109,6 @@ class RemoteExecutor(AsyncBaseExecutor):
 
         pass
 
-
     @abstractmethod
     async def get_status(self) -> Any:
         """
@@ -119,7 +116,6 @@ class RemoteExecutor(AsyncBaseExecutor):
         """
 
         pass
-
 
     @abstractmethod
     async def _poll_task(self) -> Any:
@@ -130,13 +126,11 @@ class RemoteExecutor(AsyncBaseExecutor):
 
         pass
 
-
     @abstractmethod
     async def query_result(self) -> Any:
         """
         Abstract method that retrieves the pickled result from the remote cache.
         """
-
 
     @abstractmethod
     async def cancel(self) -> bool:
@@ -152,9 +146,7 @@ class RemoteExecutor(AsyncBaseExecutor):
         """
 
         proc = await asyncio.create_subprocess_shell(
-            cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
 
         stdout, stderr = await proc.communicate()
