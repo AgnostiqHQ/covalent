@@ -19,10 +19,12 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """
-Module for defining a Dask executor that submits the input python function in a dask cluster
-and waits for execution to finish then returns the result.
+This is a plugin executor module that is loaded at runtime by defining its default attributes in _EXECUTOR_PLUGIN_DEFAULTS
+and optionally overriding the attributes in its constructor.
 
-This is a plugin executor module; it is loaded if found and properly structured.
+This module contains a RemoteExecutor class that provides a template for defining and implementing other remote executors.
+Executor classes that inherit from the RemoteExecutor class execute tasks by connecting with a remote environment
+via SSH or Slurm or interfacing with compute services in various cloud environments such as AWS, Azure, and GCP.
 """
 
 import asyncio
@@ -30,7 +32,7 @@ from abc import abstractmethod
 from typing import Any, Dict
 
 from covalent._shared_files import logger
-from covalent.executor.base import BaseAsyncExecutor
+from covalent.executor.base import AsyncBaseExecutor
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "RemoteExecutor"
@@ -57,7 +59,7 @@ class RemoteExecutor(AsyncBaseExecutor):
 
     def __init__(
         self,
-        poll_freq: int = 60,
+        poll_freq: int = 15,
         remote_cache: str = "",
         credentials_file: str = "",
         **kwargs,
