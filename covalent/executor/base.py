@@ -107,7 +107,7 @@ def wrapper_fn(
 class _AbstractBaseExecutor(ABC):
     """
     Private class that contains attributes and methods common to both
-    BaseExecutor and BaseAsyncExecutor
+    BaseExecutor and AsyncBaseExecutor
     """
 
     def get_dispatch_context(self, dispatch_info: DispatchInfo) -> ContextManager[DispatchInfo]:
@@ -505,7 +505,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         return True
 
 
-class BaseAsyncExecutor(_AbstractBaseExecutor):
+class AsyncBaseExecutor(_AbstractBaseExecutor):
     def __init__(
         self,
         log_stdout: str = "",

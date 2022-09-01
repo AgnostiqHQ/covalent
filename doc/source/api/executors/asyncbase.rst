@@ -3,6 +3,6 @@
 Asynchronous Base Executor Class
 """""""""""""""""""""""""""
 
-.. autoclass:: covalent.executor.base.BaseAsyncExecutor
+.. autoclass:: covalent.executor.base.AsyncBaseExecutor
     :members:
     :inherited-members:
