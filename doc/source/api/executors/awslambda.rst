@@ -11,7 +11,7 @@ for workflows with several short lived embarassingly parallel tasks aka. horizon
 
 .. note::
     Due to the isolated nature of AWS Lambda, the packages available on that environment are limited. This means that only the modules that
-    come with python out-of-the-box are accessible to your function. Similarly, not all `Deps` are supported either.
+    come with python out-of-the-box are accessible to your function. `Deps` are also limited in a similar fashion.
 
 To use this plugin with Covalent, simply install it using `pip`:
 
