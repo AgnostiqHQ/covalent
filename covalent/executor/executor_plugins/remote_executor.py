@@ -75,10 +75,7 @@ class RemoteExecutor(AsyncBaseExecutor):
     async def _validate_credentials(self) -> bool:
         """
         Abstract method to validate user credentials.
-
-        Args:
-            credentials_file: Location where credentials can be found.
-
+        
         Return:
             bool: True if the user credentials are valid and false if otherwise.
         """
