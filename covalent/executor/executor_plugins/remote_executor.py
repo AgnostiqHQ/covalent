@@ -22,9 +22,9 @@
 This is a plugin executor module that is loaded at runtime by defining its default attributes in _EXECUTOR_PLUGIN_DEFAULTS
 and optionally overriding the attributes in its constructor.
 
-This module contains a RemoteExecutor class that provides a template for defining and implementing other remote executors.
-Executor classes that inherit from the RemoteExecutor class execute tasks by connecting with a remote environment
-via SSH or Slurm or interfacing with compute services in various cloud environments such as AWS, Azure, and GCP.
+This module contains a RemoteExecutor class that provides abstract methods for implementing other remote executors.
+Executor classes that inherit from the RemoteExecutor class can perform task execution by connecting with a remote environment
+via SSH or Slurm or by interfacing with compute services in various cloud environments such as AWS, Azure, and GCP.
 """
 
 import asyncio
