@@ -6,16 +6,16 @@ Dispatch summary
 
 **Total jobs running**
 
-Shows the total number of dispatches that are running.
+Shows the total number of workflow dispatches that are currently running.
 
 **Total jobs done**
 
-Shows how many dispatches have been completed.
+Shows the number of workflow dispatches that have completed.
 
 **Latest running task status**
 
-Shows the status of the dispatch which was the last to completed or running or fail among all the dispatches.
+Shows the status of the most recent workflow dispatch, either Running, Completed, or Failed.
 
 **Total dispatcher duration**
 
-Shows total time taken to run all the dispatches. It goes from minutes,hours,days with reference to total runtime of all dispatches.
+Shows total time consumed by all processed workflow dispatches.
