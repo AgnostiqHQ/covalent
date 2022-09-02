@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Modified how `no_cluster` is passed to `app.py` from the CLI
+
 ## [0.191.0] - 2022-09-01
 
 ### Authors
