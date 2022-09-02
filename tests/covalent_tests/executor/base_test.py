@@ -29,7 +29,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
-from covalent.executor.base import BaseAsyncExecutor, _AbstractBaseExecutor
+from covalent.executor.base import AsyncBaseExecutor, _AbstractBaseExecutor
 
 
 class MockExecutor(BaseExecutor):
@@ -43,7 +43,7 @@ class MockExecutor(BaseExecutor):
         pass
 
 
-class MockAsyncExecutor(BaseAsyncExecutor):
+class MockAsyncExecutor(AsyncBaseExecutor):
     async def setup(self, task_metadata):
         pass
 
@@ -347,7 +347,7 @@ def test_base_async_executor_passes_task_metadata(mocker):
 
 
 def test_async_write_streams_to_file(mocker):
-    """Test write log streams to file method in BaseAsyncExecutor via LocalExecutor."""
+    """Test write log streams to file method in AsyncBaseExecutor via LocalExecutor."""
 
     import asyncio
 
