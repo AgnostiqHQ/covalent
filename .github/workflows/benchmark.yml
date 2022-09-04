@@ -29,6 +29,9 @@ on:
         type: string
         required: true
 
+permissions:
+  id-token: write
+
 jobs:
   benchmarks:
     runs-on: ubuntu-latest
