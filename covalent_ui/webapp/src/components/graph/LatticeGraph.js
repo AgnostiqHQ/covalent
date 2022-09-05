@@ -49,8 +49,7 @@ const LatticeGraph = ({
   hasSelectedNode,
   marginLeft = 0,
   marginRight = 0,
-  dispatchId,
-  selectedNode
+  dispatchId
 }) => {
   const { fitView } = useFitViewHelper()
   const [elements, setElements] = useState([])
@@ -212,8 +211,8 @@ const LatticeGraph = ({
   }
 
   useEffect(() => {
-    resetNodeStyles()
-  }, [selectedNode])
+    if(!hasSelectedNode) resetNodeStyles()
+  }, [hasSelectedNode])
 
 
 
