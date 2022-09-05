@@ -24,6 +24,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from covalent._data_store.datastore import DataStore
 
 Base = declarative_base()
+engine = DataStore().engine
 
 
 def init_db(db_path: str = None):

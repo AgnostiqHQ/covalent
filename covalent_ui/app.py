@@ -30,7 +30,8 @@ from covalent._shared_files.config import get_config
 from covalent_dispatcher._service.app_dask import DaskCluster
 from covalent_ui.api.main import app as fastapi_app
 from covalent_ui.api.main import sio
-from covalent_ui.api.v1.database.config.db import init_db
+
+# from covalent_ui.api.v1.database.config.db import init_db
 
 # read env vars configuring server
 COVALENT_SERVER_IFACE_ANY = os.getenv("COVALENT_SERVER_IFACE_ANY", "False").lower() in (
@@ -47,11 +48,6 @@ STATIC_FILES = {"": WEBAPP_PATH, "/": f"{WEBAPP_PATH}/index.html"}
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 templates = Jinja2Templates(directory=WEBAPP_PATH)
-
-
-@fastapi_app.on_event("startup")
-def init():
-    init_db()
 
 
 @fastapi_app.get("/{rest_of_path}")

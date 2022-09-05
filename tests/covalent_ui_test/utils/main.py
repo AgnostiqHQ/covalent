@@ -1,6 +1,6 @@
 import os
 
-from covalent_ui.api.v1.database.config.db import init_db
+import covalent_ui.api.v1.database.config as config
 from covalent_ui.app import fastapi_app
 
 
@@ -11,4 +11,4 @@ def init():
     mock_path = (
         "sqlite+pysqlite:///" + os.environ["HOME"] + "/.local/share/covalent/mock_db.sqlite"
     )
-    init_db(db_path=mock_path)
+    config.db.init_db(db_path=mock_path)
