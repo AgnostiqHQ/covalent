@@ -20,7 +20,7 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import { useEffect, useRef, useState, createRef } from 'react'
-import ReactFlow, { MiniMap, getIncomers, getOutgoers, isEdge, isNode } from 'react-flow-renderer'
+import ReactFlow, { MiniMap, getIncomers, getOutgoers, isEdge } from 'react-flow-renderer'
 import ElectronNode from './ElectronNode'
 import { NODE_TEXT_COLOR } from './ElectronNode'
 import ParameterNode from './ParameterNode'
@@ -156,7 +156,7 @@ const LatticeGraph = ({
     a.click();
   };
 
-  // highlight links of selected nodes 
+  // highlight links of selected nodes
   const getAllIncomers = (node, elements) => {
     return getIncomers(node, elements).reduce(
       (memo, incomer) => [...memo, incomer, ...getAllIncomers(incomer, elements)],
@@ -183,7 +183,7 @@ const LatticeGraph = ({
           if (isEdge(elem)) {
             if (selection) {
               const animated =
-              (outgoerIds.includes(elem.target) && (outgoerIds.includes(elem.source) || node.id === elem.source)) || 
+              (outgoerIds.includes(elem.target) && (outgoerIds.includes(elem.source) || node.id === elem.source)) ||
                 (incomerIds.includes(elem.source) && (incomerIds.includes(elem.target) || node.id === elem.target))
               elem.animated = animated
               elem.style = {

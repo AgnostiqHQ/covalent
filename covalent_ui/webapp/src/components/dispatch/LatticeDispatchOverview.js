@@ -140,7 +140,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
         inputs={drawerInput.data}
       />
       )}
-      
+
 
       {/* Result */}
       {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
@@ -165,7 +165,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
         }
         metadata={drawerExecutorDetail}
       />
-      )}      
+      )}
 
       <Divider sx={{ my: 3 }} />
 
