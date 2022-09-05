@@ -193,7 +193,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
             </>
           )}
 
-          <ErrorCard error={electronErrorData.data} />
+          {electronErrorData && <ErrorCard error={electronErrorData.data} />}
 
           {/* Description */}
           {electronDetail.doc &&
@@ -278,11 +278,13 @@ const NodeDrawer = ({ node, dispatchId }) => {
           )}
 
           {/* Executor */}
-          <ExecutorSection
-            metadata={electronExecutorResult}
-            sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
-            isFetching={electronExecutorResultIsFetching}
-          />
+          {electronExecutorResult && (
+            <ExecutorSection
+              metadata={electronExecutorResult}
+              sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
+              isFetching={electronExecutorResultIsFetching}
+            />
+          )}
 
           <Divider sx={{ my: 2 }} />
 
