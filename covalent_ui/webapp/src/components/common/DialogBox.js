@@ -78,7 +78,7 @@ export default function DialogBox({
             <SvgIcon
               data-testid="dialogIcon"
               component={icon}
-              style={{ fontSize: '30px' }}
+              style={{ fontSize: '25px' }}
             />
             <Typography
               sx={{
@@ -90,7 +90,7 @@ export default function DialogBox({
               variant="subtitle2"
               data-testid="messageTitle"
             >
-              {title} {totalItems} {totalItems === 1 ? 'item' : 'items'}
+              {title} {totalItems} {totalItems === 1 ? 'item ?' : 'items ?'}
             </Typography>
           </Grid>
 
