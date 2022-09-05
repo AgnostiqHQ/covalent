@@ -131,7 +131,7 @@ const ParameterNode = ({
         <Paper
           sx={{
             position: 'absolute',
-            top: data.preview ? 20 : 34,
+            top: 20,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
