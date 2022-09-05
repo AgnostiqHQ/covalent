@@ -59,7 +59,7 @@ import {
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node, dispatchId }) => {
+const NodeDrawer = ({ node, dispatchId,setSelectedNode }) => {
   const dispatch = useDispatch()
   const electronId = node !== undefined && node.node_id
   const electronDetail = useSelector(
@@ -120,6 +120,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
     (actions) => actions.setSelectedElements
   )
   const handleClose = () => {
+    setSelectedNode(false)
     setSelectedElements([])
   }
 

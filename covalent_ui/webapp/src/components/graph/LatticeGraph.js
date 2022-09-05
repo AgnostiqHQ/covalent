@@ -20,8 +20,9 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import { useEffect, useRef, useState, createRef } from 'react'
-import ReactFlow, { MiniMap } from 'react-flow-renderer'
+import ReactFlow, { MiniMap, getIncomers, getOutgoers, isEdge, isNode } from 'react-flow-renderer'
 import ElectronNode from './ElectronNode'
+import { NODE_TEXT_COLOR } from './ElectronNode'
 import ParameterNode from './ParameterNode'
 import DirectedEdge from './DirectedEdge'
 import layout from './Layout'
@@ -48,7 +49,8 @@ const LatticeGraph = ({
   hasSelectedNode,
   marginLeft = 0,
   marginRight = 0,
-  dispatchId
+  dispatchId,
+  selectedNode
 }) => {
   const { fitView } = useFitViewHelper()
   const [elements, setElements] = useState([])
@@ -154,6 +156,78 @@ const LatticeGraph = ({
     a.click();
   };
 
+  // highlight links of selected nodes 
+  const getAllIncomers = (node, elements) => {
+    return getIncomers(node, elements).reduce(
+      (memo, incomer) => [...memo, incomer, ...getAllIncomers(incomer, elements)],
+      []
+    )
+  }
+
+  const getAllOutgoers = (node, elements) => {
+    return getOutgoers(node, elements).reduce(
+      (memo, outgoer) => [...memo, outgoer, ...getAllOutgoers(outgoer, elements)],
+      []
+    )
+  }
+
+  const highlightPath = (node, elements, selection) => {
+    if (node && elements) {
+      const allIncomers = getAllIncomers(node, elements)
+      const allOutgoers = getAllOutgoers(node, elements)
+
+      setElements((prevElements) => {
+        return prevElements?.map((elem) => {
+          const incomerIds = allIncomers.map((i) => i.id)
+          const outgoerIds = allOutgoers.map((o) => o.id)
+          if (isEdge(elem)) {
+            if (selection) {
+              const animated =
+              (outgoerIds.includes(elem.target) && (outgoerIds.includes(elem.source) || node.id === elem.source)) || 
+                (incomerIds.includes(elem.source) && (incomerIds.includes(elem.target) || node.id === elem.target))
+              elem.animated = animated
+              elem.style = {
+                ...elem.style,
+                stroke: animated ? '#6473FF' : '#303067'
+              }
+              elem.labelStyle = animated ? { fill: '#6473FF' } : { fill: NODE_TEXT_COLOR }
+            } else {
+              elem.animated = false
+              elem.style = {
+                ...elem.style,
+                stroke: '#303067',
+              }
+            }
+          }
+
+          return elem
+        })
+      })
+    }
+  }
+
+  useEffect(()=>{
+    resetNodeStyles()
+  },[selectedNode])
+
+
+
+  const resetNodeStyles = () => {
+    setElements((prevElements) => {
+      return prevElements?.map((elem) => {
+        if (isEdge(elem)) {
+          elem.animated = false
+          elem.labelStyle = { fill: NODE_TEXT_COLOR }
+          elem.style = {
+            ...elem.style,
+            stroke: '#303067'
+          }
+        }
+        return elem
+      })
+    })
+  }
+
   return (
     <>
       {
@@ -171,7 +245,14 @@ const LatticeGraph = ({
               defaultZoom={1}
               minZoom={0}
               maxZoom={3}
+              onSelectionChange={(selectedElements) => {
+                const node = selectedElements?.[0]
+                highlightPath(node, elements, true)
+              }}
               selectNodesOnDrag={hasSelectedNode}
+              onPaneClick={() => {
+                resetNodeStyles()
+              }}
             >
               {screen &&
                 <div>
