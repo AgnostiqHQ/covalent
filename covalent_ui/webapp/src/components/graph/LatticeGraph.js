@@ -61,6 +61,7 @@ const LatticeGraph = ({
   const [algorithm, setAlgorithm] = useState('layered')
   const [hideLabels, setHideLabels] = useState(false)
   const [screen, setScreen] = useState(false);
+  const [highlighted, setHighlighted] = useState(false);
 
   // set Margin
   const prevMarginRight = usePrevious(marginRight)
@@ -78,9 +79,14 @@ const LatticeGraph = ({
   }
 
   useEffect(() => {
-    marginSet()
+    if (!highlighted) marginSet()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitView, marginLeft, marginRight, graph, direction, elements, showParams])
+  }, [fitView, marginLeft, marginRight, graph, elements, highlighted])
+
+  useEffect(() => {
+    setHighlighted(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [direction, showParams, algorithm, hideLabels])
 
   // handle resizing
   const resizing = () => {
@@ -175,7 +181,7 @@ const LatticeGraph = ({
     if (node && elements) {
       const allIncomers = getAllIncomers(node, elements)
       const allOutgoers = getAllOutgoers(node, elements)
-
+      setHighlighted(true)
       setElements((prevElements) => {
         return prevElements?.map((elem) => {
           const incomerIds = allIncomers.map((i) => i.id)
@@ -183,7 +189,7 @@ const LatticeGraph = ({
           if (isEdge(elem)) {
             if (selection) {
               const animated =
-              (outgoerIds.includes(elem.target) && (outgoerIds.includes(elem.source) || node.id === elem.source)) ||
+                (outgoerIds.includes(elem.target) && (outgoerIds.includes(elem.source) || node.id === elem.source)) ||
                 (incomerIds.includes(elem.source) && (incomerIds.includes(elem.target) || node.id === elem.target))
               elem.animated = animated
               elem.style = {
@@ -206,9 +212,9 @@ const LatticeGraph = ({
     }
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     resetNodeStyles()
-  },[selectedNode])
+  }, [selectedNode])
 
 
 
@@ -256,7 +262,7 @@ const LatticeGraph = ({
             >
               {screen &&
                 <div>
-                  <img style={{ position: 'absolute', zIndex: '2', right: '20px', bottom: '25px' }}
+                  <img style={{ position: 'absolute', zIndex: '2', paddingRight: '1px', bottom: '25px' }}
                     src={covalentLogo} alt='covalentLogo' />
                 </div>
               }

@@ -66,6 +66,7 @@ const ParameterNode = ({
             borderColor: (theme) => theme.palette.primary.highlightBlue,
             borderStyle: 'solid',
             borderWidth : 1,
+            cursor:'default'
           }}
         >
           <Handle
@@ -106,6 +107,7 @@ const ParameterNode = ({
           display: 'flex',
           alignItems: 'center',
           justifyItems: 'space-between',
+          cursor:'default'
         })}>
           {nodeLabelIcon(data.nodeType)}
           <Handle
@@ -139,6 +141,7 @@ const ParameterNode = ({
             minWidth: '20%',
             // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
             color: (theme) => theme.palette.text.tertiary,
+            cursor:'default'
           }}
         >
           <Handle
