@@ -21,7 +21,7 @@
  */
 
 import _ from 'lodash'
-import React, { useEffect,useState } from 'react'
+import React, { useEffect } from 'react'
 import { Box } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { useStoreActions, useStoreState } from 'react-flow-renderer'
@@ -41,7 +41,6 @@ import DispatchDrawerContents from './DispatchDrawerContents'
 
 export function DispatchLayout() {
   const { dispatchId } = useParams()
-  const [selectedNode, setSelectedNode] = useState()
   const dispatch = useDispatch()
   const graph_result = useSelector((state) => state.graphResults.graphList)
   const latDetailError = useSelector((state) => state.latticeResults.latticeDetailsResults.error)
@@ -105,8 +104,6 @@ export function DispatchLayout() {
           hasSelectedNode={!!selectedElectron}
           marginLeft={latticeDrawerWidth + navDrawerWidth}
           dispatchId={dispatchId}
-          selectedNode={selectedNode}
-          setSelectedNode={setSelectedNode}
         />)}
       </Box>
       <NavDrawer />
@@ -118,8 +115,6 @@ export function DispatchLayout() {
           node={selectedElectron}
           graph={graph_result}
           dispatchId={dispatchId}
-          selectedNode={selectedNode}
-          setSelectedNode={setSelectedNode}
         />
       ) : (
         <PageLoading />

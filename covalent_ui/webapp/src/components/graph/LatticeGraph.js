@@ -49,8 +49,7 @@ const LatticeGraph = ({
   hasSelectedNode,
   marginLeft = 0,
   marginRight = 0,
-  dispatchId,
-  selectedNode
+  dispatchId
 }) => {
   const { fitView } = useFitViewHelper()
   const [elements, setElements] = useState([])
@@ -191,7 +190,6 @@ const LatticeGraph = ({
               const animated =
                 (outgoerIds.includes(elem.target) && (outgoerIds.includes(elem.source) || node.id === elem.source)) ||
                 (incomerIds.includes(elem.source) && (incomerIds.includes(elem.target) || node.id === elem.target))
-              elem.animated = animated
               elem.style = {
                 ...elem.style,
                 stroke: animated ? '#6473FF' : '#303067'
@@ -213,8 +211,8 @@ const LatticeGraph = ({
   }
 
   useEffect(() => {
-    resetNodeStyles()
-  }, [selectedNode])
+    if(!hasSelectedNode) resetNodeStyles()
+  }, [hasSelectedNode])
 
 
 
@@ -248,9 +246,9 @@ const LatticeGraph = ({
               nodesDraggable={nodesDraggable}
               nodesConnectable={false}
               elements={elements}
-              defaultZoom={1}
+              defaultZoom={0.5}
               minZoom={0}
-              maxZoom={3}
+              maxZoom={1.5}
               onSelectionChange={(selectedElements) => {
                 const node = selectedElements?.[0]
                 highlightPath(node, elements, true)
