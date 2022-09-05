@@ -24,8 +24,8 @@ import uuid
 from fastapi import APIRouter
 from sqlalchemy.orm import Session
 
+import covalent_ui.api.v1.database.config.db as db
 from covalent_ui.api.v1.data_layer.graph_dal import Graph
-from covalent_ui.api.v1.database.config.db import engine
 from covalent_ui.api.v1.models.lattices_model import GraphResponse
 
 routes: APIRouter = APIRouter()
@@ -42,7 +42,7 @@ def get_graph(dispatch_id: uuid.UUID):
         Returns the lattice data with the dispatch id provided
     """
 
-    with Session(engine) as session:
+    with Session(db.engine) as session:
 
         graph = Graph(session)
         graph_data = graph.get_graph(dispatch_id)

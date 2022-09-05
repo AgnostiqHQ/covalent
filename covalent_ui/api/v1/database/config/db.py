@@ -23,5 +23,14 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from covalent._data_store.datastore import DataStore
 
-engine = DataStore().engine
 Base = declarative_base()
+
+
+def init_db(db_path: str = None):
+
+    global engine
+    engine = (
+        DataStore(db_URL=db_path, initialize_db=True).engine
+        if db_path is not None
+        else DataStore().engine
+    )
