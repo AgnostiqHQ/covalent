@@ -38,7 +38,7 @@ export default function DialogBox({
   message,
 }) {
   const handleClose = () => setOpenDialogBox(false)
-
+  
   return (
     <Modal
       open={openDialogBox}
@@ -112,7 +112,7 @@ export default function DialogBox({
             variant="subtitle2"
             data-testid="message"
           >
-            {message} {totalItems} {totalItems === 1 ? 'item' : 'items'} ?
+            {message} {totalItems} {totalItems === 1 ? 'item' : totalItems === 0 || totalItems===undefined ? '' : 'items'} ?
           </Typography>
         </Grid>
         <Grid

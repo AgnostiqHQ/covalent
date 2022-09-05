@@ -143,6 +143,7 @@ const ResultsTableHead = ({
   completedDispatches,
   failedDispatches,
   cancelledDispatches,
+  setSelected
 }) => {
   const open = Boolean(anchorEl)
   const handleClick = (event) => {
@@ -153,6 +154,7 @@ const ResultsTableHead = ({
   }
 
   const handleAllDelete = (filter, count) => {
+    setSelected([]);
     setOpenDialogBoxAll(true)
     setDeleteFilter(filter)
     setDeleteCount(count)
