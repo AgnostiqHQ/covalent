@@ -22,42 +22,36 @@ name: nightly
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 4 * * *"
 
 jobs:
   license:
     name: License Scanner
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run License workflow
-        uses: ./.github/workflows/license.yml@develop
+    uses: ./.github/workflows/license.yml@develop
 
   tests:
     name: Unit and Functional Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run Covalent's unit/functional test stack
-        uses: ./.github/workflows/tests.yml@develop
+    uses: ./.github/workflows/tests.yml@develop
+    secrets: inherit # pragma: allowlist secret
 
   benchmarks:
     name: Benchmarks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run Covalent stress and load tests
-        uses: ./.github/workflows/benchmark.yml@develop
+    uses: ./.github/workflows/benchmark.yml@develop
+    secrets: inherit # pragma: allowlist secret
 
   changelog:
     name: Assign Version
-    runs-on: ubuntu-latest
-    needs: [license, tests]
-    steps:
-      - name: Parse changelog and update VERSION
-        uses: ./.github/workflows/changelog.yml@develop
+    needs:
+      - license
+      - tests
+    uses: ./.github/workflows/changelog.yml@develop
+    secrets: inherit # pragma: allowlist secret
 
   push_to_master:
     name: Push to Master
     runs-on: ubuntu-latest
-    needs: [changelog]
+    needs:
+      - changelog
     steps:
       - name: Get latest release
         id: query-tags
@@ -95,20 +89,20 @@ jobs:
 
   release:
     name: Create Release
-    needs: [push_to_master]
-    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
-    secrets: inherit # pragma: allowlist secret
+    needs:
+      - push_to_master
+    uses: ./.github/workflows/release.yml@develop
     with:
       prerelease: true
+    secrets: inherit # pragma: allowlist secret
 
   notify:
-    name: Alert Slack
-    needs: [release]
+    name: Notify Slack
+    needs:
+      - release
     runs-on: ubuntu-latest
     steps:
       - name: Format Slack message
-        if: >
-          github.ref == 'refs/heads/develop'
         run: |
           VERSION="$(cat ./VERSION)"
           SLACK_MSG=":rocket: Version $VERSION is now available."
