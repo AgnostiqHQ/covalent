@@ -29,7 +29,7 @@ import pytest
 
 from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
-from covalent.executor.base import AsyncBaseExecutor, _AbstractBaseExecutor
+from covalent.executor.base import AsyncBaseExecutor
 
 
 class MockExecutor(BaseExecutor):
