@@ -661,7 +661,7 @@ Node Outputs
         result_folder_path = os.path.join(self.results_dir, f"{self.dispatch_id}")
         Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
-    def upsert_lattice_data(self):
+    def upsert_lattice_data(self, electron_id: int = None):
         """Update lattice data"""
 
         with workflow_db.session() as session:
@@ -701,6 +701,7 @@ Node Outputs
         if not lattice_exists:
             lattice_record_kwarg = {
                 "dispatch_id": self.dispatch_id,
+                "electron_id": electron_id,
                 "status": str(self.status),
                 "name": self.lattice.__name__,
                 "electron_num": self._num_nodes,
@@ -881,13 +882,18 @@ Node Outputs
         if not electron_dependencies_exist:
             insert_electron_dependency_data(dispatch_id=self.dispatch_id, lattice=self.lattice)
 
-    def persist(self) -> None:
+    def persist(self, electron_id: int = None) -> None:
         """Save Result object to a DataStoreSession. Changes are queued until
-        committed by the caller."""
+        committed by the caller.
+
+        Args:
+            electron_id: (hack) DB-generated id for the parent electron
+                if the workflow is actually a subworkflow
+        """
 
         self._initialize_results_dir()
         app_log.debug("upsert start")
-        self.upsert_lattice_data()
+        self.upsert_lattice_data(electron_id=electron_id)
         self.upsert_electron_data()
         app_log.debug("upsert complete")
         self.insert_electron_dependency_data()
