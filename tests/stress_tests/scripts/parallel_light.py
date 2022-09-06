@@ -3,7 +3,6 @@
 # e e e ...
 
 import os
-import sys
 import time
 
 import yaml
