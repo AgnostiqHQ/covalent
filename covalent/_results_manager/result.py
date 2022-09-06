@@ -87,6 +87,7 @@ class Result:
         results_dir: Directory where the result will be stored.
                      It'll be in the format of "<results_dir>/<dispatch_id>/".
         dispatch_id: Dispatch id assigned to this dispatch.
+        root_dispatch_id: Dispatch id of the root lattice in a hierarchy of sublattice workflows.
         status: Status of the result. It'll be one of the following:
                 - Result.NEW_OBJ: When it is a new result object.
                 - Result.COMPLETED: When processing of all the nodes has completed successfully.
@@ -120,6 +121,8 @@ class Result:
 
         self._lattice = lattice
         self._dispatch_id = dispatch_id
+
+        self._root_dispatch_id = dispatch_id
 
         self._status = Result.NEW_OBJ
 
@@ -205,6 +208,14 @@ Node Outputs
         """
 
         return self._dispatch_id
+
+    @property
+    def root_dispatch_id(self) -> str:
+        """
+        Dispatch id of the root dispatch
+        """
+
+        return self._root_dispatch_id
 
     @property
     def status(self) -> Status:
