@@ -24,17 +24,12 @@ Module for defining a local executor that directly invokes the input python func
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
-import io
 import os
-import subprocess
-from contextlib import redirect_stderr, redirect_stdout
-from typing import Any, Callable, Dict, List
+from typing import Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import logger
-from covalent._shared_files.util_classes import DispatchInfo
-from covalent._workflow.transport import TransportableObject
-from covalent.executor import BaseExecutor, wrapper_fn
+from covalent.executor import BaseExecutor, wrapper_fn  # nopycln: import
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "LocalExecutor"

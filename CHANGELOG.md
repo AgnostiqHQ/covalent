@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Added a workflow which checks for missing or extra requirements
+- Added pycln to pre-commit hooks #867
+
+### Removed
+
+- PyYAML
+- tailer
+
 ## [0.193.0] - 2022-09-06
 
 ### Authors

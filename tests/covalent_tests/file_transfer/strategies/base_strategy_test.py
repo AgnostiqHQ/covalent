@@ -1,11 +1,9 @@
-from pathlib import Path
-from unittest.mock import Mock, call
+from unittest.mock import Mock
 
 import pytest
 
 from covalent._file_transfer import File
 from covalent._file_transfer.file_transfer import FileTransfer
-from covalent._file_transfer.strategies.rsync_strategy import Rsync
 from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
 
 

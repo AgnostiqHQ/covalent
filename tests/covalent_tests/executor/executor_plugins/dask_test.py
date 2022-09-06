@@ -22,8 +22,6 @@
 
 import asyncio
 
-import pytest
-
 
 def test_dask_executor_init(mocker):
     """Test dask executor constructor"""
