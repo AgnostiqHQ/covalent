@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- `import covalent` no longer pulls in the server components
+
 ## [0.192.0] - 2022-09-02
 
 ### Authors
