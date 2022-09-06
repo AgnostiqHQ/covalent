@@ -122,6 +122,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Fixed `tests.yml` where `RECOMMENDED_PLATFORM` was not properly set
+- Adding `nightly.yml` workflow for nightly CI
+- Updated triggers to `tests` and `changelog` workflows
 
 ## [0.194.0] - 2022-09-06
 
