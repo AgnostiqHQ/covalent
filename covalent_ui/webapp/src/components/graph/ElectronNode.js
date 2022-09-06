@@ -244,7 +244,7 @@ const ElectronNode = ({
               elevation={!selected ? 1 : 5}
               sx={{
                 position: 'absolute',
-                top: data.executor ? 48 : 35,
+                top: data.executor ? 48 : 30,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
