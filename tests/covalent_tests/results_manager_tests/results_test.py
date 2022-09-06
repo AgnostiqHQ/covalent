@@ -233,6 +233,32 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
     teardown_temp_results_dir(dispatch_id="dispatch_1")
 
 
+def test_result_persist_subworkflow_1(test_db, result_1, mocker):
+    """Test the persist method for the Result object when passed an electron_id"""
+
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    result_1.persist(electron_id=2)
+
+    # Query lattice / electron / electron dependency
+    with test_db.session() as session:
+        lattice_row = session.query(Lattice).first()
+        electron_rows = session.query(Electron).all()
+        electron_dependency_rows = session.query(ElectronDependency).all()
+
+        # Check that lattice record is as expected
+        assert lattice_row.dispatch_id == "dispatch_1"
+        assert isinstance(lattice_row.created_at, dt)
+        assert lattice_row.started_at is None
+        assert isinstance(lattice_row.updated_at, dt) and isinstance(lattice_row.created_at, dt)
+        assert lattice_row.completed_at is None
+        assert lattice_row.status == "NEW_OBJECT"
+        assert lattice_row.name == "workflow_1"
+        assert lattice_row.electron_id == 2
+        assert lattice_row.executor == "local"
+        assert lattice_row.workflow_executor == "local"
+
+
 def test_get_node_error(test_db, result_1, mocker):
     """Test result method to get the node error."""
 
