@@ -81,7 +81,7 @@ const ElectronNode = ({
                 overflow: 'hidden',
                 background: (theme) => theme.palette.background.executorBg,
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) => theme.palette.text.tertiary,
+                color: (theme) => !selected ?theme.palette.text.tertiary:theme.palette.text.primary,
                 borderColor: (theme) => theme.palette.primary.highlightBlue,
                 borderStyle: 'solid',
                 borderWidth: hasBorder ? 1 : 0,
@@ -251,7 +251,7 @@ const ElectronNode = ({
                 borderRadius: '16px',
                 minWidth: '20%',
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) => theme.palette.text.tertiary,
+                color: (theme) => !selected ?theme.palette.text.tertiary:theme.palette.text.primary,
               }}
             >
               <Handle
