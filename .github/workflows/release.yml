@@ -299,7 +299,7 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          file: ./Dockerfile
+          file: ./Dockerfile.dev
           platforms: all
           push: true
           tags: |

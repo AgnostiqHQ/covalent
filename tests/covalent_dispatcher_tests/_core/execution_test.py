@@ -25,14 +25,12 @@ Tests for the core functionality of the dispatcher.
 
 import asyncio
 from asyncio import Queue
-from threading import Lock
 from typing import Dict, List
 
 import cloudpickle as pickle
 import pytest
 
 import covalent as ct
-from covalent._data_store import models
 from covalent._data_store.datastore import DataStore
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice

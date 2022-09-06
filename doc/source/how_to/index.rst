@@ -56,6 +56,10 @@ Configuration
 **************
 - :doc:`How to customize the configuration <./config/customization>`
 
+Database
+**************
+- :doc:`What to do when encountering database migration errors <./db/migration_error>`
+
 ----------------------------------
 
 Is anything missing? Contribute a guide on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.

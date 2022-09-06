@@ -29,11 +29,9 @@ from typing import Any
 import cloudpickle
 import networkx as nx
 from sqlalchemy import update
-from sqlalchemy.orm import Session
 
-from covalent._data_store.datastore import DataStore, workflow_db
-from covalent._data_store.models import Electron, ElectronDependency, Lattice
-
+from .._data_store.datastore import workflow_db
+from .._data_store.models import Electron, ElectronDependency, Lattice
 from .._shared_files import logger
 from .._shared_files.defaults import (
     arg_prefix,
