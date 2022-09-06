@@ -54,7 +54,7 @@ from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
-from covalent.executor.base import BaseAsyncExecutor, wrapper_fn
+from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 from covalent_ui import result_webhook
 
 from ..entry_point import futures
@@ -339,7 +339,7 @@ async def _run_task(
                 node_id=node_id,
             )
 
-            if isinstance(executor, BaseAsyncExecutor):
+            if isinstance(executor, AsyncBaseExecutor):
                 output, stdout, stderr = await execute_callable()
             else:
                 loop = asyncio.get_running_loop()
