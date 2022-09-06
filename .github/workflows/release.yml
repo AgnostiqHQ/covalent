@@ -326,4 +326,18 @@ jobs:
           url: "https://api.github.com/repos/AgnostiqHQ/covalent-aws-plugins/dispatches"
           method: "POST"
           customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"event_type": "docker-build", "client_payload": { "covalent_base_image": "public.ecr.aws/covalent/covalent:${{ env.TAG }}", "tag": "${{ env.TAG }}" }'
+          data: '{"event_type": "prerelease", "client_payload": { "covalent_base_image": "public.ecr.aws/covalent/covalent:${{ env.TAG }}", "tag": "${{ env.TAG }}" }'
+
+      - name: Trigger Covalent AWS executor stable image build
+        if: >
+          github.event_name == 'workflow_dispatch'
+          && github.event.inputs.stable_version
+          && !inputs.prerelease
+          && !github.events.inputs.test_release
+          && contains(env.PAUL_BLART, github.actor)
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: "https://api.github.com/repos/AgnostiqHQ/covalent-aws-plugins/dispatches"
+          method: "POST"
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: '{"event_type": "stable", "client_payload": { "covalent_base_image": "public.ecr.aws/covalent/covalent:stable", "tag": "stable" }'
