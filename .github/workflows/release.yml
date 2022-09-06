@@ -305,16 +305,6 @@ jobs:
           tags: |
             public.ecr.aws/covalent/covalent:latest
             public.ecr.aws/covalent/covalent:${{ env.TAG }}
-      - name: Tag stable release
-        if: >
-          github.event_name == 'workflow_dispatch'
-          && github.event.inputs.stable_version
-          && !inputs.prerelease
-          && !github.events.inputs.test_release
-          && contains(env.PAUL_BLART, github.actor)
-        run: |
-          MANIFEST=$(aws ecr batch-get-image --repository-name covalent --image-ids imageTag=${{ github.events.inputs.stable_version }} --output json | jq --raw-output --join-output '.images[0].imageManifest')
-          aws ecr put-image --repository-name covalent --image-tag stable --image-manifest "$MANIFEST"
 
       - name: Trigger Covalent AWS executor image build
         if: >
@@ -327,6 +317,17 @@ jobs:
           method: "POST"
           customHeaders: '{"Content-Type": "application/json"}'
           data: '{"event_type": "prerelease", "client_payload": { "covalent_base_image": "public.ecr.aws/covalent/covalent:${{ env.TAG }}", "tag": "${{ env.TAG }}" }'
+
+      - name: Tag stable release
+        if: >
+          github.event_name == 'workflow_dispatch'
+          && github.event.inputs.stable_version
+          && !inputs.prerelease
+          && !github.events.inputs.test_release
+          && contains(env.PAUL_BLART, github.actor)
+        run: |
+          MANIFEST=$(aws ecr batch-get-image --repository-name covalent --image-ids imageTag=${{ github.events.inputs.stable_version }} --output json | jq --raw-output --join-output '.images[0].imageManifest')
+          aws ecr put-image --repository-name covalent --image-tag stable --image-manifest "$MANIFEST"
 
       - name: Trigger Covalent AWS executor stable image build
         if: >
