@@ -22,7 +22,7 @@
 
 from typing import Dict, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from covalent._shared_files.config import _ConfigManager as settings
 from covalent_ui.api.v1.models.settings_model import (
@@ -64,15 +64,6 @@ def post_settings(new_entries: Optional[Dict] = None, override_existing: bool = 
         settings updated successfully when updated.
     """
     if len([validator.value for validator in Validators if validator.value in new_entries]) != 0:
-        raise HTTPException(
-            status_code=400,
-            detail=[
-                {
-                    "loc": ["path", "settings"],
-                    "msg": "Field cannot be updated",
-                    "type": None,
-                }
-            ],
-        )
+        return UpdateSettingsResponseModel(data="Field cannot be updated")
     settings().update_config(new_entries, override_existing)
     return UpdateSettingsResponseModel(data="settings updated successfully")

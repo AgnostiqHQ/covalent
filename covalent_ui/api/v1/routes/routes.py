@@ -33,10 +33,11 @@ from covalent_ui.api.v1.routes.end_points import (
 
 routes = APIRouter()
 
+dispatch_prefix = "/api/v1/dispatches"
 
-routes.include_router(summary_routes.routes, prefix="/api/v1/dispatches", tags=["Dispatches"])
-routes.include_router(lattice_route.routes, prefix="/api/v1/dispatches", tags=["Dispatches"])
-routes.include_router(graph_route.routes, prefix="/api/v1/dispatches", tags=["Graph"])
-routes.include_router(electron_routes.routes, prefix="/api/v1/dispatches", tags=["Electrons"])
+routes.include_router(summary_routes.routes, prefix=dispatch_prefix, tags=["Dispatches"])
+routes.include_router(lattice_route.routes, prefix=dispatch_prefix, tags=["Dispatches"])
+routes.include_router(graph_route.routes, prefix=dispatch_prefix, tags=["Graph"])
+routes.include_router(electron_routes.routes, prefix=dispatch_prefix, tags=["Electrons"])
 routes.include_router(app.router, prefix="/api", tags=["Dispatcher"])
 routes.include_router(settings_routes.routes, prefix="/api/v1", tags=["Settings"])
