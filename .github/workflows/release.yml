@@ -323,7 +323,7 @@ jobs:
           && github.event_name == 'workflow_call'
         uses: fjogeleit/http-request-action@v1
         with:
-          url: 'https://api.github.com/repos/AgnostiqHQ/covalent-aws-plugins/dispatches'
-          method: 'POST'
+          url: "https://api.github.com/repos/AgnostiqHQ/covalent-aws-plugins/dispatches"
+          method: "POST"
           customHeaders: '{"Content-Type": "application/json"}'
           data: '{"event_type": "docker-build", "client_payload": { "covalent_base_image": "public.ecr.aws/covalent/covalent:${{ env.TAG }}", "tag": "${{ env.TAG }}" }'
