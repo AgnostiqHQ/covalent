@@ -26,6 +26,7 @@ Tests for the core functionality of the dispatcher.
 import asyncio
 from asyncio import Queue
 from typing import Dict, List
+from unittest.mock import MagicMock
 
 import cloudpickle as pickle
 import pytest
@@ -33,8 +34,11 @@ import pytest
 import covalent as ct
 from covalent._data_store.datastore import DataStore
 from covalent._results_manager import Result
+from covalent._shared_files.defaults import sublattice_prefix
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
+    _build_sublattice_graph,
+    _dispatch_sync_sublattice,
     _gather_deps,
     _get_task_inputs,
     _handle_cancelled_node,
@@ -43,7 +47,9 @@ from covalent_dispatcher._core.execution import (
     _initialize_deps_and_queue,
     _plan_workflow,
     _post_process,
+    _run_task,
     _update_node_result,
+    initialize_result_object,
     run_workflow,
 )
 
@@ -690,3 +696,176 @@ async def test_run_workflow_with_failed_postprocess(mocker):
     result_object = await run_workflow(result_object)
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
+
+
+def test_build_sublattice_graph():
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    json_lattice = _build_sublattice_graph(workflow, 1)
+    lattice = Lattice.deserialize_from_json(json_lattice)
+
+    assert list(lattice.transport_graph._graph.nodes) == [0, 1]
+
+
+def test_initialize_result_object(mocker):
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    json_lattice = _build_sublattice_graph(workflow, 1)
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    result_object = get_mock_result()
+
+    mock_result_class = mocker.patch("covalent_dispatcher._core.execution.Result")
+    mock_result_instance = mock_result_class.return_value
+    mock_result_instance.persist = MagicMock()
+
+    sub_result_object = initialize_result_object(
+        json_lattice=json_lattice, parent_result_object=result_object, parent_electron_id=5
+    )
+
+    mock_result_instance.persist.assert_called_with(electron_id=5)
+    assert sub_result_object._root_dispatch_id == result_object.dispatch_id
+
+
+@pytest.mark.asyncio
+async def test_dispatch_sync_sublattice(mocker):
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+
+    @ct.electron(executor="local")
+    def task(x):
+        return x
+
+    @ct.lattice(executor="local")
+    def sub_workflow(x):
+        return task(x)
+
+    result_object = get_mock_result()
+
+    serialized_callable = ct.TransportableObject(sub_workflow)
+    inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}
+
+    sub_result = await _dispatch_sync_sublattice(
+        parent_result_object=result_object,
+        parent_electron_id=1,
+        inputs=inputs,
+        serialized_callable=serialized_callable,
+        workflow_executor=["local", {}],
+    )
+    assert sub_result.result == 2
+
+    # Check handling of invalid workflow executors
+
+    try:
+        sub_result = await _dispatch_sync_sublattice(
+            parent_result_object=result_object,
+            parent_electron_id=1,
+            inputs=inputs,
+            serialized_callable=serialized_callable,
+            workflow_executor=["client", {}],
+        )
+        assert False
+
+    except RuntimeError:
+        pass
+
+    try:
+        sub_result = await _dispatch_sync_sublattice(
+            parent_result_object=result_object,
+            parent_electron_id=1,
+            inputs=inputs,
+            serialized_callable=serialized_callable,
+            workflow_executor=["fake_executor", {}],
+        )
+        assert False
+
+    except ValueError:
+        pass
+
+
+@pytest.mark.asyncio
+async def test_run_task_sublattice_handling(test_db, mocker):
+
+    result_object = get_mock_result()
+    sub_result_object = get_mock_result()
+    sub_result_object._dispatch_id = "sublattice_workflow"
+    sub_result_object._result = ct.TransportableObject(5)
+    sub_result_object._status = Result.COMPLETED
+
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._core.execution.get_sublattice_electron_id", return_value=1)
+    mock_dispatch_sync = mocker.patch(
+        "covalent_dispatcher._core.execution._dispatch_sync_sublattice",
+        return_value=sub_result_object,
+    )
+
+    inputs = {"args": [], "kwargs": {}}
+
+    node_result = await _run_task(
+        node_id=1,
+        dispatch_id=result_object.dispatch_id,
+        results_dir=result_object.results_dir,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=["local", {}],
+        call_before=[],
+        call_after=[],
+        node_name=sublattice_prefix,
+        workflow_executor=["local", {}],
+        result_object=result_object,
+    )
+
+    mock_dispatch_sync.assert_awaited_once()
+    assert node_result["output"].get_deserialized() == 5
+
+    # Test failed sublattice workflows
+    sub_result_object._status = Result.FAILED
+    mock_dispatch_sync = mocker.patch(
+        "covalent_dispatcher._core.execution._dispatch_sync_sublattice",
+        return_value=sub_result_object,
+    )
+    node_result = await _run_task(
+        node_id=1,
+        dispatch_id=result_object.dispatch_id,
+        results_dir=result_object.results_dir,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=["local", {}],
+        call_before=[],
+        call_after=[],
+        node_name=sublattice_prefix,
+        workflow_executor=["local", {}],
+        result_object=result_object,
+    )
+
+    mock_dispatch_sync.assert_awaited_once()
+    assert node_result["status"] == Result.FAILED
+
+    mock_dispatch_sync = mocker.patch(
+        "covalent_dispatcher._core.execution._dispatch_sync_sublattice", return_value=None
+    )
+    node_result = await _run_task(
+        node_id=1,
+        dispatch_id=result_object.dispatch_id,
+        results_dir=result_object.results_dir,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=["local", {}],
+        call_before=[],
+        call_after=[],
+        node_name=sublattice_prefix,
+        workflow_executor=["local", {}],
+        result_object=result_object,
+    )
+
+    assert node_result["status"] == Result.FAILED
