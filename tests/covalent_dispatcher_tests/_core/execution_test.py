@@ -803,7 +803,9 @@ async def test_run_task_sublattice_handling(test_db, mocker):
     sub_result_object._status = Result.COMPLETED
 
     mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._core.execution.get_sublattice_electron_id", return_value=1)
+    mock_get_sublattice_electron_id = mocker.patch(
+        "covalent_dispatcher._core.execution.get_sublattice_electron_id", return_value=1
+    )
     mock_dispatch_sync = mocker.patch(
         "covalent_dispatcher._core.execution._dispatch_sync_sublattice",
         return_value=sub_result_object,
@@ -825,6 +827,7 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         result_object=result_object,
     )
 
+    mock_get_sublattice_electron_id.assert_called_once()
     mock_dispatch_sync.assert_awaited_once()
     assert node_result["output"].get_deserialized() == 5
 
