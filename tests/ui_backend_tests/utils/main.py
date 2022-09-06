@@ -6,8 +6,6 @@ from covalent_ui.app import fastapi_app
 
 @fastapi_app.on_event("startup")
 def init():
-    path = os.chdir("..")
-    print(path)
     mock_path = (
         "sqlite+pysqlite:///" + os.environ["HOME"] + "/.local/share/covalent/mock_db.sqlite"
     )

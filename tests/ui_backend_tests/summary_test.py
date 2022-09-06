@@ -2,7 +2,7 @@ import json
 from os.path import abspath, dirname
 
 import tests.covalent_ui_test.utils.main as main
-from tests.covalent_ui_test.utils.client_template import MethodType, TestClientTemplate
+from tests.covalent_ui_test.utils.client_template import MethodType, TestClient, TestClientTemplate
 
 object_test_template = TestClientTemplate()
 output_path = dirname(abspath(__file__)) + "/utils/summary_data.json"
@@ -20,3 +20,13 @@ def test_overview():
     if "response_data" in output_data["test_overview"]["case1"]:
         res_data = response.json()
         assert res_data == output_data["test_overview"]["case1"]["response_data"]
+
+
+def test_list():
+    response = object_test_template(
+        path="/api/v1/dispatches/list",
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        query_data=output_data["test_list"]["case1"]["request_data"]["query"],
+    )
+    assert response.status_code == output_data["test_list"]["case1"]["status_code"]

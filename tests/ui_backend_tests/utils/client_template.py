@@ -22,18 +22,31 @@ class TestClientTemplate:
     input_data: Dict
     header: str
 
+    def build_query(self, path, query):
+
+        path += "?"
+        for id, i in enumerate(query):
+            path += "&" if id != 0 else ""
+            path += f"{i}={query[i]}"
+        return path
+
     def __call__(
         self,
         path: str,
         app: FastAPI,
         method_type: MethodType,
-        input_data: Dict = None,
+        body_data: Dict = None,
+        query_data: Dict = None,
         header: str = None,
     ) -> Any:
-        self.path = path
+        self.path = (
+            path
+            if (query_data is None) or not (query_data)
+            else self.build_query(path=path, query=query_data)
+        )
         self.app = app
         self.method_type = method_type
-        self.input_data = input_data
+        self.body_data = body_data
         self.header = header
 
         return self.api_call_method()
@@ -42,6 +55,6 @@ class TestClientTemplate:
 
         with TestClient(self.app) as client:
             if self.method_type == MethodType.POST:
-                return client.post(self.path, data=self.input_data, headers=self.header)
+                return client.post(self.path, json=self.body_data, headers=self.header)
             else:
                 return client.get(self.path)
