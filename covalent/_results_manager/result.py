@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 from sqlalchemy import and_, update
 
-from .._data_store import DataStore, DataStoreNotInitializedError, models, workflow_db
+from .._data_store import models, workflow_db
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import prefix_separator, sublattice_prefix

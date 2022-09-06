@@ -1,6 +1,6 @@
 from typing import Optional
 
-from covalent._file_transfer.file import File
+from .file import File
 
 
 class Folder(File):
