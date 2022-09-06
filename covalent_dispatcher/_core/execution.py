@@ -37,9 +37,9 @@ from covalent._data_store.datastore import workflow_db
 from covalent._data_store.models import Lattice as Lattice_model
 from covalent._results_manager import Result
 from covalent._results_manager.write_result_to_db import (
+    get_sublattice_electron_id,
     update_lattices_data,
     write_lattice_error,
-    write_sublattice_electron_id,
 )
 from covalent._shared_files import logger
 from covalent._shared_files.context_managers import active_lattice_manager
@@ -57,15 +57,36 @@ from covalent.executor import _executor_manager
 from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 from covalent_ui import result_webhook
 
-from ..entry_point import futures
+from ..entry_point import get_unique_id
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
 # This is to be run out-of-process
-def _dispatch(fn, *args, **kwargs):
-    return dispatch(fn)(*args, **kwargs)
+def _build_sublattice_graph(sub: Lattice, *args, **kwargs):
+    sub.build_graph(*args, **kwargs)
+    return sub.serialize_to_json()
+
+
+# This should probably go in result.py once the circular import
+# problem is fixed (#1174).
+def initialize_result_object(
+    json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
+) -> Result:
+    dispatch_id = get_unique_id()
+    lattice = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lattice, lattice.metadata["results_dir"], dispatch_id)
+    if parent_result_object:
+        result_object._root_dispatch_id = parent_result_object._root_dispatch_id
+
+    result_object._initialize_nodes()
+    app_log.debug("2: Constructed result object and initialized nodes.")
+
+    result_object.persist(electron_id=parent_electron_id)
+    app_log.debug("Result object persisted.")
+
+    return result_object
 
 
 def generate_node_result(
@@ -193,14 +214,19 @@ def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
         return result
 
 
-async def _dispatch_sublattice(
-    dispatch_id: str,
-    results_dir: str,
+async def _dispatch_sync_sublattice(
+    parent_result_object: Result,
+    parent_electron_id: int,
     inputs: Dict,
     serialized_callable: Any,
     workflow_executor: Any,
 ) -> str:
     """Dispatch a sublattice using the workflow_executor."""
+
+    app_log.debug("Inside _dispatch_sync_sublattice")
+
+    dispatch_id = parent_result_object.dispatch_id
+    results_dir = parent_result_object.results_dir
 
     try:
         short_name, object_dict = workflow_executor
@@ -216,7 +242,7 @@ async def _dispatch_sublattice(
     for arg in inputs["args"]:
         sub_dispatch_inputs["args"].append(arg)
 
-    # Dispatch the sublattice workflow. This must be run
+    # Build the sublattice graph. This must be run
     # externally since it involves deserializing the
     # sublattice workflow function.
     fut = asyncio.create_task(
@@ -224,18 +250,26 @@ async def _dispatch_sublattice(
             node_id=-1,
             dispatch_id=dispatch_id,
             results_dir=results_dir,
-            serialized_callable=TransportableObject.make_transportable(_dispatch),
+            serialized_callable=TransportableObject.make_transportable(_build_sublattice_graph),
             selected_executor=workflow_executor,
-            node_name="dispatch_sublattice",
+            node_name="build_sublattice_graph",
             call_before=[],
             call_after=[],
             inputs=sub_dispatch_inputs,
             workflow_executor=workflow_executor,
+            result_object=None,
         )
     )
 
     res = await fut
-    return json.loads(res["output"].json)
+    json_sublattice = json.loads(res["output"].json)
+
+    sub_result_object = initialize_result_object(
+        json_sublattice, parent_result_object, parent_electron_id
+    )
+    app_log.debug(f"Sublattice dispatch id: {sub_result_object.dispatch_id}")
+
+    return await run_workflow(sub_result_object)
 
 
 async def _run_task(
@@ -249,6 +283,7 @@ async def _run_task(
     call_after: List,
     node_name: str,
     workflow_executor: Any,
+    result_object: Result,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -284,24 +319,19 @@ async def _run_task(
     try:
 
         if node_name.startswith(sublattice_prefix):
-            sub_dispatch_id = await _dispatch_sublattice(
-                dispatch_id=dispatch_id,
-                results_dir=results_dir,
+            sub_electron_id = get_sublattice_electron_id(
+                parent_dispatch_id=dispatch_id, sublattice_node_id=node_id
+            )
+
+            # Read the result object directly from the server
+
+            sublattice_result = await _dispatch_sync_sublattice(
+                parent_result_object=result_object,
+                parent_electron_id=sub_electron_id,
                 inputs=inputs,
                 serialized_callable=serialized_callable,
                 workflow_executor=workflow_executor,
             )
-
-            app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
-
-            write_sublattice_electron_id(
-                parent_dispatch_id=dispatch_id,
-                sublattice_node_id=node_id,
-                sublattice_dispatch_id=sub_dispatch_id,
-            )
-            # Read the result object directly from the server
-
-            sublattice_result = await futures[sub_dispatch_id]
 
             if not sublattice_result:
                 raise RuntimeError("Sublattice execution failed")
@@ -545,6 +575,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
                 call_after=[],
                 inputs=post_processing_inputs,
                 workflow_executor=post_processor,
+                result_object=None,
             )
         )
         pp_start_time = datetime.now(timezone.utc)
@@ -716,6 +747,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
             call_after=call_after,
             inputs=task_input,
             workflow_executor=post_processor,
+            result_object=result_object,
         )
 
         # Add the task generated for the node to the list of tasks

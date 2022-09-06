@@ -64,21 +64,14 @@ async def run_dispatcher(json_lattice: str):
     dispatch_id = get_unique_id()
     from covalent._workflow.lattice import Lattice
 
-    from ._core import run_workflow
+    from ._core import initialize_result_object, run_workflow
 
-    lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
-    result_object._dispatch_id = dispatch_id
-    result_object._initialize_nodes()
+    result_object = initialize_result_object(json_lattice)
 
-    app_log.debug("2: Constructed result object and initialized nodes.")
-    result_object.persist()
-
-    app_log.debug("Result object retrieved.")
-
+    dispatch_id = result_object.dispatch_id
     futures[dispatch_id] = asyncio.create_task(run_workflow(result_object))
 
-    app_log.debug("Submitted lattice JSON to run_workflow.")
+    app_log.debug("Submitted result object to run_workflow.")
 
     return dispatch_id
 
