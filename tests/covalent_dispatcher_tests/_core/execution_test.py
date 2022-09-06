@@ -746,7 +746,7 @@ async def test_dispatch_sync_sublattice(mocker):
     def task(x):
         return x
 
-    @ct.lattice(executor="local")
+    @ct.lattice(executor="local", workflow_executor="local")
     def sub_workflow(x):
         return task(x)
 
