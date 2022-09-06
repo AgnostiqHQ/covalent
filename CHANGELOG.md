@@ -119,12 +119,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Casey Jao <casey@agnostiq.ai>
 
-
-### Operations
-
-- Adding a step in `release.yml/docker` job to trigger the AWS executor base image build in the remote repo `covalent-aws-plugins`
-- Pass all the necessary inputs for the triggered workflow as part of the HTTP POST request body
-
 ### Operations
 
 - Added a workflow which checks for missing or extra requirements
