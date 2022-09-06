@@ -22,18 +22,14 @@
 Class that defines the base executor template.
 """
 
-import asyncio
 import io
 import os
-import subprocess
-import tempfile
 from abc import ABC, abstractmethod
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
 import aiofiles
-import cloudpickle as pickle
 
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 

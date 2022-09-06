@@ -20,22 +20,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import datetime
 from os import path
 from pathlib import Path
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
-import alembic
 import pytest
 from alembic.config import Config
 from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
-from pytest_mock import MockerFixture
 from sqlalchemy import select
 
 from covalent._data_store import models
 from covalent._data_store.datastore import DataStore
-from covalent._shared_files.config import get_config
 
 from .fixtures import workflow_fixture
 

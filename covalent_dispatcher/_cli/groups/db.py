@@ -20,7 +20,6 @@
 from os import path
 from pathlib import Path
 from subprocess import PIPE, Popen
-from typing import List
 
 import click
 
