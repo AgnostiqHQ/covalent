@@ -251,7 +251,13 @@ jobs:
           npm test -- --coverage --watchAll=false
 
       - name: Dump Covalent logs
-        if: steps.covalent_start.outcome == 'success'
+        if: >
+          steps.covalent_start.outcome == 'success'
+          && (steps.sdk-tests.outcome == 'failed'
+          || steps.dispatcher-tests.outcome == 'failed'
+          || steps.functional-tests.outcome == 'failed'
+          || steps.ui-backend-tests.outcome == 'failed'
+          || steps.ui-frontend-tests.outcome == 'failed')
         run: covalent logs
 
       - name: Upload SDK report to Codecov
