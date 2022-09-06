@@ -25,7 +25,6 @@ Self-contained entry point for the dispatcher
 import asyncio
 import uuid
 
-from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 
 app_log = logger.app_log
@@ -62,7 +61,6 @@ async def run_dispatcher(json_lattice: str):
     """
 
     dispatch_id = get_unique_id()
-    from covalent._workflow.lattice import Lattice
 
     from ._core import initialize_result_object, run_workflow
 

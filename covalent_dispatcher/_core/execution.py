@@ -32,7 +32,6 @@ from typing import Any, Dict, List, Tuple
 
 from sqlalchemy import update
 
-from covalent import dispatch
 from covalent._data_store.datastore import workflow_db
 from covalent._data_store.models import Lattice as Lattice_model
 from covalent._results_manager import Result
