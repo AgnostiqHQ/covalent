@@ -25,13 +25,14 @@ import shutil
 from datetime import datetime as dt
 from datetime import timezone
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
 import covalent as ct
 from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
-from covalent._results_manager.result import Result
+from covalent._results_manager.result import Result, initialize_result_object
 from covalent._results_manager.write_result_to_db import load_file
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
@@ -45,6 +46,32 @@ def teardown_temp_results_dir(dispatch_id: str) -> None:
     dir_path = f"{TEMP_RESULTS_DIR}/{dispatch_id}"
     if os.path.exists(dir_path):
         shutil.rmtree(dir_path)
+
+
+def get_mock_result() -> Result:
+    """Construct a mock result object corresponding to a lattice."""
+
+    import sys
+
+    @ct.electron(executor="local")
+    def task(x):
+        print(f"stdout: {x}")
+        print("Error!", file=sys.stderr)
+        return x
+
+    @ct.lattice(results_dir=TEMP_RESULTS_DIR)
+    def pipeline(x):
+        res1 = task(x)
+        res2 = task(res1)
+        return res2
+
+    pipeline.build_graph(x="absolute")
+    received_workflow = LatticeClass.deserialize_from_json(pipeline.serialize_to_json())
+    result_object = Result(
+        received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
+    )
+
+    return result_object
 
 
 @pytest.fixture
@@ -369,3 +396,31 @@ def test_result_root_dispatch_id(result_1):
     """Test the `root_dispatch_id` property`"""
 
     assert result_1.root_dispatch_id == result_1._root_dispatch_id
+
+
+def test_initialize_result_object(mocker):
+    """Test the `initialize_result_object` function"""
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph(1)
+    json_lattice = workflow.serialize_to_json()
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    result_object = get_mock_result()
+
+    mock_result_class = mocker.patch("covalent._results_manager.result.Result")
+    mock_result_instance = mock_result_class.return_value
+    mock_result_instance.persist = MagicMock()
+
+    sub_result_object = initialize_result_object(
+        json_lattice=json_lattice, parent_result_object=result_object, parent_electron_id=5
+    )
+
+    mock_result_instance.persist.assert_called_with(electron_id=5)
+    assert sub_result_object._root_dispatch_id == result_object.dispatch_id

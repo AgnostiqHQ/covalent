@@ -35,6 +35,7 @@ from sqlalchemy import update
 from covalent._data_store.datastore import workflow_db
 from covalent._data_store.models import Lattice as Lattice_model
 from covalent._results_manager import Result
+from covalent._results_manager.result import initialize_result_object
 from covalent._results_manager.write_result_to_db import (
     get_sublattice_electron_id,
     update_lattices_data,
@@ -56,8 +57,6 @@ from covalent.executor import _executor_manager
 from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 from covalent_ui import result_webhook
 
-from ..entry_point import get_unique_id
-
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
@@ -66,26 +65,6 @@ log_stack_info = logger.log_stack_info
 def _build_sublattice_graph(sub: Lattice, *args, **kwargs):
     sub.build_graph(*args, **kwargs)
     return sub.serialize_to_json()
-
-
-# This should probably go in result.py once the circular import
-# problem is fixed (#1174).
-def initialize_result_object(
-    json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
-) -> Result:
-    dispatch_id = get_unique_id()
-    lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"], dispatch_id)
-    if parent_result_object:
-        result_object._root_dispatch_id = parent_result_object._root_dispatch_id
-
-    result_object._initialize_nodes()
-    app_log.debug("2: Constructed result object and initialized nodes.")
-
-    result_object.persist(electron_id=parent_electron_id)
-    app_log.debug("Result object persisted.")
-
-    return result_object
 
 
 def generate_node_result(

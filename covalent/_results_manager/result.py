@@ -21,6 +21,7 @@
 """Result object."""
 
 import os
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
@@ -32,6 +33,7 @@ from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
+from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
 from .write_result_to_db import (
     get_electron_type,
@@ -47,7 +49,6 @@ from .write_result_to_db import (
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import Status
-    from .._workflow.lattice import Lattice
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -112,7 +113,7 @@ class Result:
     FAILED = RESULT_STATUS.FAILED
     CANCELLED = RESULT_STATUS.CANCELLED
 
-    def __init__(self, lattice: "Lattice", results_dir: str, dispatch_id: str = None) -> None:
+    def __init__(self, lattice: Lattice, results_dir: str, dispatch_id: str = None) -> None:
 
         self._start_time = None
         self._end_time = None
@@ -194,7 +195,7 @@ Node Outputs
         return self._results_dir
 
     @property
-    def lattice(self) -> "Lattice":
+    def lattice(self) -> Lattice:
         """
         "Lattice" object which was dispatched.
         """
@@ -953,3 +954,46 @@ def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str
                 in_decorator -= line.count(")")
 
     return "\n".join(function_lines) if has_cova_decorator else function_string
+
+
+def get_unique_id() -> str:
+    """
+    Get a unique ID.
+
+    Args:
+        None
+
+    Returns:
+        str: Unique ID
+    """
+
+    return str(uuid.uuid4())
+
+
+def initialize_result_object(
+    json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
+) -> Result:
+    """Convenience function for constructing a result object from a json-serialized lattice.
+
+    Args:
+        json_lattice: a JSON-serialized lattice
+        parent_result_object: the parent result object if json_lattice is a sublattice
+        parent_electron_id: the DB id of the parent electron (for sublattices)
+
+    Returns:
+        Result: result object
+    """
+
+    dispatch_id = get_unique_id()
+    lattice = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lattice, lattice.metadata["results_dir"], dispatch_id)
+    if parent_result_object:
+        result_object._root_dispatch_id = parent_result_object._root_dispatch_id
+
+    result_object._initialize_nodes()
+    app_log.debug("2: Constructed result object and initialized nodes.")
+
+    result_object.persist(electron_id=parent_electron_id)
+    app_log.debug("Result object persisted.")
+
+    return result_object

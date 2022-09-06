@@ -26,7 +26,6 @@ Tests for the core functionality of the dispatcher.
 import asyncio
 from asyncio import Queue
 from typing import Dict, List
-from unittest.mock import MagicMock
 
 import cloudpickle as pickle
 import pytest
@@ -49,7 +48,6 @@ from covalent_dispatcher._core.execution import (
     _post_process,
     _run_task,
     _update_node_result,
-    initialize_result_object,
     run_workflow,
 )
 
@@ -711,31 +709,6 @@ def test_build_sublattice_graph():
     lattice = Lattice.deserialize_from_json(json_lattice)
 
     assert list(lattice.transport_graph._graph.nodes) == [0, 1]
-
-
-def test_initialize_result_object(mocker):
-    @ct.electron
-    def task(x):
-        return x
-
-    @ct.lattice
-    def workflow(x):
-        return task(x)
-
-    json_lattice = _build_sublattice_graph(workflow, 1)
-    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
-    result_object = get_mock_result()
-
-    mock_result_class = mocker.patch("covalent_dispatcher._core.execution.Result")
-    mock_result_instance = mock_result_class.return_value
-    mock_result_instance.persist = MagicMock()
-
-    sub_result_object = initialize_result_object(
-        json_lattice=json_lattice, parent_result_object=result_object, parent_electron_id=5
-    )
-
-    mock_result_instance.persist.assert_called_with(electron_id=5)
-    assert sub_result_object._root_dispatch_id == result_object.dispatch_id
 
 
 @pytest.mark.asyncio

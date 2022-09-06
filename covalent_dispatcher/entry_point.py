@@ -23,28 +23,14 @@ Self-contained entry point for the dispatcher
 """
 
 import asyncio
-import uuid
 
+from covalent._results_manager.result import initialize_result_object
 from covalent._shared_files import logger
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 futures = {}
-
-
-def get_unique_id() -> str:
-    """
-    Get a unique ID.
-
-    Args:
-        None
-
-    Returns:
-        str: Unique ID
-    """
-
-    return str(uuid.uuid4())
 
 
 async def run_dispatcher(json_lattice: str):
@@ -60,9 +46,7 @@ async def run_dispatcher(json_lattice: str):
         dispatch_id: A string containing the dispatch id of current dispatch.
     """
 
-    dispatch_id = get_unique_id()
-
-    from ._core import initialize_result_object, run_workflow
+    from ._core import run_workflow
 
     result_object = initialize_result_object(json_lattice)
 
