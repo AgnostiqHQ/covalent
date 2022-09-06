@@ -1,0 +1,10 @@
+COVALENT_ROOT=/root/miniconda3/envs/covalent
+COVALENT_PYTHON="python3.8"
+COVALENT_CONFIG_DIR=/etc
+COVALENT_EXECUTOR_DIR=/etc/covalent/executor_plugins
+COVALENT_RESULTS_DIR=/var/lib/covalent/results
+COVALENT_DATABASE=/var/lib/covalent/dispatch.sqlite
+COVALENT_DATA_DIR=/var/lib/covalent/workflow_data
+COVALENT_LOGDIR=/var/log
+COVALENT_CACHE_DIR=/var/cache/covalent
+COVALENT_SVC_PORT=48080
