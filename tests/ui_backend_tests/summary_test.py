@@ -1,8 +1,8 @@
 import json
 from os.path import abspath, dirname
 
-import tests.covalent_ui_test.utils.main as main
-from tests.covalent_ui_test.utils.client_template import MethodType, TestClient, TestClientTemplate
+import tests.ui_backend_tests.utils.main as main
+from tests.ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
 
 object_test_template = TestClientTemplate()
 output_path = dirname(abspath(__file__)) + "/utils/summary_data.json"
