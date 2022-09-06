@@ -119,6 +119,7 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+
   pypi:
     runs-on: ubuntu-latest
     outputs:
@@ -206,6 +207,7 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+
   conda:
     needs: pypi
     runs-on: ubuntu-latest
@@ -241,6 +243,7 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+
   docker:
     runs-on: ubuntu-latest
     steps:
@@ -251,26 +254,32 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
           ref: "v${{ github.event.inputs.stable_version }}"
+
       - name: Check out master
         uses: actions/checkout@v2
         if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
         with:
-          platforms: all
+          platforms: [linux/amd64, linux/arm64]
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@master
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
+
       - name: Generate tag
         run: |
           aws --version
@@ -284,12 +293,14 @@ jobs:
           fi
           echo "TAG: $TAG"
           echo "TAG=$TAG" >> $GITHUB_ENV
+
       - name: Login to Public Registry
         uses: docker/login-action@v1
         with:
           registry: public.ecr.aws
           username: ${{ secrets.AWS_KEY_ID }}
           password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
       - name: Build and push pre-release
         if: >
           inputs.prerelease
@@ -306,17 +317,69 @@ jobs:
             public.ecr.aws/covalent/covalent:latest
             public.ecr.aws/covalent/covalent:${{ env.TAG }}
 
-      - name: Trigger Covalent AWS executor image build
+      - name: Download Covalent AWS executor Dockerfile
+        id: get_aws_executor_dockerfile
         if: >
           inputs.prerelease
           && !github.events.inputs.stable_version
           && github.event_name == 'workflow_call'
-        uses: fjogeleit/http-request-action@v1
+        run: |
+          url="https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/Dockerfile?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
+          wget $url -O Dockerfile.awsexecutor
+          status_code=$(wget --server-response $url 2>&1 | grep HTTP/ | awk '{print $2}')
+          echo "::set-output name=status::value=$status_code"
+
+      - name: Download covalent-aws-plugin VERSION file
+        id: get_aws_plugin_version
+        if: >
+          inputs.prerelease
+          && !github.events.inputs.stable_version
+          && github.event_name == 'workflow_call'
+        run: |
+          url="https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/VERSION?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
+          wget $url -O AWS_PLUGINS_VERSION
+          status_code=$(wget --server-response $url 2>&1 | grep HTTP/ | awk '{print $2}')
+          echo "::set-output name=status::value=$status_code"
+
+      - name: Generate AWS executor base image tag
+        if: >
+          inputs.prerelease
+          && !github.events.inputs.stable_version
+          && github.event_name == 'workflow_call'
+          && steps.get_aws_plugin_dockerfile.outputs.status_code == '200'
+          && steps.get_aws_plugin_version.outputs.status_code == '200'
+        run: |
+          aws --version
+          docker info
+          AWS_PLUGINS_TAG="$(cat ./AWS_PLUGINS_VERSION)"
+          if aws ecr describe-images \
+            --repository-name covalent-executor-base
+            --image-ids imageTag=$AWS_PLUGINS_TAG &>/dev/null ; then
+            SHORT_SHA="${GITHUB_SHA::8}"
+            AWS_PLUGINS_TAG=$AWS_PLUGINS_TAG-$SHORT_SHA
+          fi
+          echo "AWS_PLUGINS_TAG: $AWS_PLUGINS_TAG"
+          echo "AWS_PLUGINS_TAG=$AWS_PLUGINS_TAG" >> $GITHUB_ENV
+
+      - name: Build and push pre-release AWS executor image
+        if: >
+          inputs.prerelease
+          && !github.events.inputs.stable_version
+          && github.event_name == 'workflow_call'
+          && !github.events.inputs.test_release
+          && steps.get_aws_plugin_dockerfile.outputs.status_code == '200'
+          && steps.get_aws_plugin_version.outputs.status_code == '200'
         with:
-          url: "https://api.github.com/repos/AgnostiqHQ/covalent-aws-plugins/dispatches"
-          method: "POST"
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"event_type": "prerelease", "client_payload": { "covalent_base_image": "public.ecr.aws/covalent/covalent:${{ env.TAG }}", "tag": "${{ env.TAG }}" }'
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile.awsexecutor
+          platforms: [linux/amd64, linux/arm64]
+          build-args:
+            - COVALENT_BASE_IMAGE: public.ecr.aws/covalent/covalent:${{ env.TAG }}
+          push: true
+          tags: |
+            public.ecr.aws/covalent-executor-base/covalent:latest
+            public.ecr.aws/covalent-executor-base/covalent:${{ env.AWS_PLUGINS_TAG }}
 
       - name: Tag stable release
         if: >
@@ -329,16 +392,21 @@ jobs:
           MANIFEST=$(aws ecr batch-get-image --repository-name covalent --image-ids imageTag=${{ github.events.inputs.stable_version }} --output json | jq --raw-output --join-output '.images[0].imageManifest')
           aws ecr put-image --repository-name covalent --image-tag stable --image-manifest "$MANIFEST"
 
-      - name: Trigger Covalent AWS executor stable image build
+      - name: Build AWS executor table image
         if: >
-          github.event_name == 'workflow_dispatch'
-          && github.event.inputs.stable_version
-          && !inputs.prerelease
+          !inputs.prerelease
+          && github.events.inputs.stable_version
           && !github.events.inputs.test_release
           && contains(env.PAUL_BLART, github.actor)
-        uses: fjogeleit/http-request-action@v1
+        uses: docker/build-push-action@v2
         with:
-          url: "https://api.github.com/repos/AgnostiqHQ/covalent-aws-plugins/dispatches"
-          method: "POST"
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"event_type": "stable", "client_payload": { "covalent_base_image": "public.ecr.aws/covalent/covalent:stable", "tag": "stable" }'
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile.awsexecutor
+          platforms: [linux/amd64, linux/arm64]
+          build-args:
+            - COVALENT_BASE_IMAGE: public.ecr.aws/covalent/covalent:stable
+          push: true
+          tags: |
+            public.ecr.aws/covalent-executor-base/covalent:latest
+            public.ecr.aws/covalent-executor-base/covalent:stable
