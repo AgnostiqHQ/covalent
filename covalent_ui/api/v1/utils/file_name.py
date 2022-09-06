@@ -25,3 +25,10 @@ class FileName(Enum):
     """File names"""
 
     RESULTS = "result"
+
+
+class FileAttributes(Enum):
+    """File Attributes"""
+
+    DOC = "doc"
+    NAME = "name"

@@ -43,7 +43,7 @@ export const fetchDashboardList = createAsyncThunk(
   async (bodyParams, thunkAPI) =>
     await api
       .get(
-        `api/v1/dispatches/list?count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
+        `api/v1/dispatches/list?count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}&status_filter=${bodyParams.status_filter}`
       )
       .catch(thunkAPI.rejectWithValue)
 )
@@ -62,6 +62,14 @@ export const deleteDispatches = createAsyncThunk(
       .catch(thunkAPI.rejectWithValue)
 )
 
+export const deleteAllDispatches = createAsyncThunk(
+  'dashboard/deleteAllDispatches',
+  async (bodyParams, thunkAPI) =>
+    await api
+      .post('api/v1/dispatches/delete-all', bodyParams)
+      .catch(thunkAPI.rejectWithValue)
+)
+
 export const dashboardSlice = createSlice({
   name: 'dashboard',
   initialState,
@@ -73,6 +81,52 @@ export const dashboardSlice = createSlice({
           return object1.dispatch_id === object2;
         });
       });
+      state.dashboardList = finalArray
+      state.totalDispatches = finalArray.length
+      const lastStatusArray = _.orderBy(finalArray, ['started_at'], ['desc']);
+      const lastStatus = lastStatusArray.length ? lastStatusArray[0].status : 'N/A'
+      const dashOverview = {
+        "total_jobs": finalArray.length,
+        "total_jobs_running": finalArray.filter(e => e.status === 'RUNNING').length,
+        "total_jobs_completed": finalArray.filter(e => e.status === 'COMPLETED').length,
+        "total_jobs_failed": finalArray.filter(e => e.status === 'FAILED').length,
+        "latest_running_task_status": finalArray.length ? lastStatus : "N/A",
+        "total_dispatcher_duration": finalArray.length ? finalArray?.map(obj => obj.runtime).reduce((partialSum, a) => partialSum + a, 0) : 'N/A'
+      }
+      state.dashboardOverview = dashOverview
+    },
+    allDispatchesDelete(state, { payload }) {
+      const statusFilter = payload.status_filter;
+      let filteredData = [];
+      if (statusFilter === 'ALL') {
+        filteredData = [];
+      } else filteredData = current(state.dashboardList);
+      const finalArray = filteredData?.filter(e => e.status !== payload.status_filter)
+      state.dashboardList = finalArray
+      state.totalDispatches = finalArray.length
+      const lastStatusArray = _.orderBy(finalArray, ['started_at'], ['desc']);
+      const lastStatus = lastStatusArray.length ? lastStatusArray[0].status : 'N/A'
+      const dashOverview = {
+        "total_jobs": finalArray.length,
+        "total_jobs_running": finalArray.filter(e => e.status === 'RUNNING').length,
+        "total_jobs_completed": finalArray.filter(e => e.status === 'COMPLETED').length,
+        "total_jobs_failed": finalArray.filter(e => e.status === 'FAILED').length,
+        "latest_running_task_status": finalArray.length ? lastStatus : "N/A",
+        "total_dispatcher_duration": finalArray.length ? finalArray?.map(obj => obj.runtime).reduce((partialSum, a) => partialSum + a, 0) : 'N/A'
+      }
+      state.dashboardOverview = dashOverview
+    },
+    filterDispatches(state, { payload }) {
+      const statusFilter = payload
+      let filteredData = [];
+      let finalArray=[];
+      if (statusFilter === 'ALL') {
+        filteredData = current(state.dashboardList)
+        finalArray=filteredData
+      } else {
+        filteredData = current(state.dashboardList)
+        finalArray = filteredData?.filter(e => e.status === payload.status_filter)
+      }      
       state.dashboardList = finalArray
       state.totalDispatches = finalArray.length
       const lastStatusArray = _.orderBy(finalArray, ['started_at'], ['desc']);
@@ -136,7 +190,23 @@ export const dashboardSlice = createSlice({
         state.deleteResults.isDeleted = false
         state.deleteResults.error = payload
       })
+
+      //deleteAllResults
+      .addCase(deleteAllDispatches.fulfilled, (state, { meta }) => {
+        state.deleteResults.isFetching = false
+        state.deleteResults.isDeleted = true
+      })
+      .addCase(deleteAllDispatches.pending, (state, { payload }) => {
+        state.deleteResults.isFetching = true
+        state.deleteResults.isDeleted = false
+        state.deleteResults.error = null
+      })
+      .addCase(deleteAllDispatches.rejected, (state, { payload }) => {
+        state.deleteResults.isFetching = false
+        state.deleteResults.isDeleted = false
+        state.deleteResults.error = payload
+      })
   },
 })
 
-export const { dispatchesDeleted } = dashboardSlice.actions
+export const { dispatchesDeleted, allDispatchesDelete,filterDispatches } = dashboardSlice.actions

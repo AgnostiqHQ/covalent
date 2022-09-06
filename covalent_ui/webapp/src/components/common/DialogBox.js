@@ -38,7 +38,7 @@ export default function DialogBox({
   message,
 }) {
   const handleClose = () => setOpenDialogBox(false)
-
+  
   return (
     <Modal
       open={openDialogBox}
@@ -78,7 +78,7 @@ export default function DialogBox({
             <SvgIcon
               data-testid="dialogIcon"
               component={icon}
-              style={{ fontSize: '30px' }}
+              style={{ fontSize: '25px' }}
             />
             <Typography
               sx={{
@@ -90,7 +90,7 @@ export default function DialogBox({
               variant="subtitle2"
               data-testid="messageTitle"
             >
-              {title} {totalItems} {totalItems === 1 ? 'item' : 'items'}
+              {title} {totalItems} {totalItems === 1 ? 'item ?' : 'items ?'}
             </Typography>
           </Grid>
 
@@ -112,7 +112,7 @@ export default function DialogBox({
             variant="subtitle2"
             data-testid="message"
           >
-            {message} {totalItems} {totalItems === 1 ? 'item' : 'items'} ?
+            {message} {totalItems} {totalItems === 1 ? 'item' : totalItems === 0 || totalItems===undefined ? '' : 'items'} ?
           </Typography>
         </Grid>
         <Grid

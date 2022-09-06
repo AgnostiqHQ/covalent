@@ -58,7 +58,8 @@ import {
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 import {
   fetchDashboardList,
-  dispatchesDeleted
+  dispatchesDeleted,
+  allDispatchesDelete,
 } from '../../redux/dashboardSlice'
 import CopyButton from '../common/CopyButton'
 import { formatDate, secondsToHms } from '../../utils/misc'
@@ -70,6 +71,10 @@ import { ReactComponent as DeleteNewIcon } from '../../assets/delete.svg'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import Runtime from './Runtime'
 import OverflowTip from '../common/EllipsisTooltip'
+import { ReactComponent as SublatticeFailed } from '../../assets/sublattice/failed.svg'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 
 const headers = [
   {
@@ -120,11 +125,46 @@ const ResultsTableHead = ({
   onSort,
   onSelectAllClick,
   numSelected,
-  total
+  total,
+  anchorEl,
+  setAnchorEl,
+  totalRecords,
+  setOpenDialogBoxAll,
+  openDialogBoxAll,
+  filterValue,
+  searchValue,
+  dashboardListView,
+  handleAllDeleteDispatches,
+  setDeleteFilter,
+  deleteFilter,
+  setDeleteCount,
+  deleteCount,
+  allDispatches,
+  runningDispatches,
+  completedDispatches,
+  failedDispatches,
+  cancelledDispatches,
+  setSelected
 }) => {
   const createSortHandler = (property) => (event) => {
     onSort(event, property);
   };
+  const open = Boolean(anchorEl)
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget)
+  }
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
+
+  const handleAllDelete = (filter, count) => {
+    setSelected([]);
+    setOpenDialogBoxAll(true)
+    setDeleteFilter(filter)
+    setDeleteCount(count)
+    setAnchorEl(null)
+  }
+
   return (
     <TableHead>
       <TableRow>
@@ -134,15 +174,136 @@ const ResultsTableHead = ({
             borderColor: theme.palette.background.coveBlack03 + '!important',
           })}
         >
-          <Checkbox
-            disableRipple
-            indeterminate={numSelected > 0 && numSelected < total}
-            checked={numSelected > 0 && numSelected === total}
-            onClick={onSelectAllClick}
-            size="small"
-            sx={(theme) => ({
-              color: theme.palette.text.tertiary,
-            })}
+          <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+            <Checkbox
+              disableRipple
+              indeterminate={numSelected > 0 && numSelected < total}
+              checked={numSelected > 0 && numSelected === total}
+              onClick={onSelectAllClick}
+              // onClick={handleClick}
+              size="small"
+              sx={(theme) => ({
+                color: theme.palette.text.tertiary,
+              })}
+            />
+            {dashboardListView.length !== 0 ? (
+              <KeyboardArrowDownIcon
+                onClick={handleClick}
+                sx={{
+                  '&:hover': {
+                    cursor: 'pointer',
+                  },
+                }}
+              />
+            ) : null}
+          </Grid>
+
+          <Menu
+            sx={{
+              '.MuiMenuItem-divider': {
+                borderBottom: '1px solid',
+                borderBottomColor: (theme) => theme.palette.background.paper,
+              },
+              '.MuiMenuItem-root:hover': {
+                background: (theme) => theme.palette.background.paper,
+              },
+            }}
+            PaperProps={{
+              style: {
+                width: '184px',
+                paddingTop: '0px',
+                paddingBottom: '0px',
+                borderRadius: '16px',
+              },
+            }}
+            id="basic-menu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            autoFocus={false}
+            MenuListProps={{
+              'aria-labelledby': 'basic-button',
+              style: {
+                paddingTop: '0px',
+                paddingBottom: '0px',
+              },
+            }}
+          >
+            <MenuItem divider onClick={onSelectAllClick} onClose={handleClose}>
+              {/* {numSelected > 0 && numSelected === total
+                ? 'Unselect all'
+                : 'Select all records'} */}
+              All visible{' '}
+            </MenuItem>
+            {filterValue === 'ALL' ? (
+              <>
+                <MenuItem
+                  divider
+                  onClick={() => {
+                    handleAllDelete('ALL', allDispatches)
+                  }}
+                  onClose={handleClose}
+                >
+                  All
+                </MenuItem>
+              </>
+            ) : null}
+            {filterValue === 'COMPLETED' || filterValue === 'ALL' ? (
+              <MenuItem
+                divider
+                onClick={() => {
+                  handleAllDelete('COMPLETED', completedDispatches)
+                }}
+                onClose={handleClose}
+              >
+                Complete
+              </MenuItem>
+            ) : null}
+
+            {filterValue === 'RUNNING' || filterValue === 'ALL' ? (
+              <MenuItem
+                divider
+                onClick={() => {
+                  handleAllDelete('RUNNING', runningDispatches)
+                }}
+                onClose={handleClose}
+              >
+                Running
+              </MenuItem>
+            ) : null}
+            {filterValue === 'FAILED' || filterValue === 'ALL' ? (
+              <MenuItem
+                divider
+                onClick={() => {
+                  handleAllDelete('FAILED', failedDispatches)
+                }}
+                onClose={handleClose}
+              >
+                Failed
+              </MenuItem>
+            ) : null}
+            {filterValue === 'CANCELLED' || filterValue === 'ALL' ? (
+              <MenuItem
+                onClick={() => {
+                  handleAllDelete('CANCELLED', cancelledDispatches)
+                }}
+                onClose={handleClose}
+              >
+                Cancelled
+              </MenuItem>
+            ) : null}
+          </Menu>
+          <DialogBox
+            openDialogBox={openDialogBoxAll}
+            setOpenDialogBox={setOpenDialogBoxAll}
+            title="Delete"
+            handler={handleAllDeleteDispatches}
+            message={
+              searchValue
+                ? 'Are you sure you want to delete the dispatches that match the filter and search criteria'
+                : 'Are you sure you want to delete the dispatches that match the filter criteria'
+            }
+            icon={DeleteNewIcon}
           />
         </TableCell>
 
@@ -183,10 +344,15 @@ const ResultsTableToolbar = ({
   runningDispatches,
   completedDispatches,
   failedDispatches,
+  cancelledDispatches,
   allDispatches,
   openDialogBox,
   setOpenDialogBox,
   dashboardOverviewFetching,
+  setFilterValue,
+  filterValue,
+  setSelected,
+  setOffset,
 }) => {
   return (
     <Toolbar disableGutters sx={{ mb: 1 }}>
@@ -245,22 +411,47 @@ const ResultsTableToolbar = ({
           title="All"
           count={allDispatches}
           isFetching={!dashboardOverviewFetching}
-          data-testid="sortDispatch"
+          setFilterValue={setFilterValue}
+          isSelected={filterValue === 'ALL' ? true : false}
+          setSelected={setSelected}
+          setOffset={setOffset}
         />
         <SortDispatch
           title="Running"
           count={runningDispatches}
           isFetching={!dashboardOverviewFetching}
+          setFilterValue={setFilterValue}
+          isSelected={filterValue === 'RUNNING' ? true : false}
+          setSelected={setSelected}
+          setOffset={setOffset}
         />
         <SortDispatch
           title="Completed"
           count={completedDispatches}
           isFetching={!dashboardOverviewFetching}
+          setFilterValue={setFilterValue}
+          filterValue={filterValue}
+          isSelected={filterValue === 'COMPLETED' ? true : false}
+          setSelected={setSelected}
+          setOffset={setOffset}
         />
         <SortDispatch
           title="Failed"
           count={failedDispatches}
           isFetching={!dashboardOverviewFetching}
+          setFilterValue={setFilterValue}
+          isSelected={filterValue === 'FAILED' ? true : false}
+          setSelected={setSelected}
+          setOffset={setOffset}
+        />
+        <SortDispatch
+          title="Cancelled"
+          count={cancelledDispatches}
+          isFetching={!dashboardOverviewFetching}
+          setFilterValue={setFilterValue}
+          isSelected={filterValue === 'CANCELLED' ? true : false}
+          setSelected={setSelected}
+          setOffset={setOffset}
         />
       </Grid>
       <Input
@@ -368,17 +559,22 @@ const ResultListing = () => {
   const [selected, setSelected] = useState([])
   const [page, setPage] = useState(1)
   const [searchKey, setSearchKey] = useState('')
+  const [filterValue, setFilterValue] = useState('ALL')
+  const [deleteFilter, setDeleteFilter] = useState('ALL')
+  const [deleteCount, setDeleteCount] = useState(0)
   const [searchValue] = useDebounce(searchKey, 1000)
   const [sortColumn, setSortColumn] = useState('startTime')
   const [sortOrder, setSortOrder] = useState('desc')
   const [offset, setOffset] = useState(0)
   const [openDialogBox, setOpenDialogBox] = useState(false)
+  const [openDialogBoxAll, setOpenDialogBoxAll] = useState(false)
+  const [anchorEl, setAnchorEl] = useState(null)
+
   const isError = useSelector(
     (state) => state.dashboard.fetchDashboardList.error
   )
   const [openSnackbar, setOpenSnackbar] = useState(Boolean(isError))
   const [snackbarMessage, setSnackbarMessage] = useState(null)
-
   //check if any dispatches are deleted and call the API
   const isDeleted = false
 
@@ -398,9 +594,6 @@ const ResultListing = () => {
       totalElectronsCompleted: e.total_electrons_completed,
     }
   })
-
-
-
   const dashboardOverviewFetching = useSelector(
     (state) => state.dashboard.dashboardOverview
   )
@@ -416,6 +609,9 @@ const ResultListing = () => {
   )
   const failedDispatches = useSelector(
     (state) => state.dashboard.dashboardOverview.total_jobs_failed
+  )
+  const cancelledDispatches = useSelector(
+    (state) => state.dashboard.dashboardOverview.total_jobs_cancelled
   )
   // get total records form dispatches api for pagination
   const totalRecords = useSelector((state) => state.dashboard.totalDispatches)
@@ -433,6 +629,7 @@ const ResultListing = () => {
       sort_by: sortColumn,
       search: searchKey,
       direction: sortOrder,
+      status_filter: filterValue,
     }
     if (searchValue?.length === 0 || searchValue?.length >= 3) {
       dispatch(fetchDashboardList(bodyParams))
@@ -488,8 +685,15 @@ const ResultListing = () => {
   useEffect(() => {
     if (!isDemo) dashboardListAPI()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortColumn, sortOrder, page, searchValue, isDeleted, callSocketApi])
-
+  }, [
+    sortColumn,
+    sortOrder,
+    page,
+    searchValue,
+    isDeleted,
+    callSocketApi,
+    filterValue,
+  ])
   // check if there are any API errors and show a sncakbar
   useEffect(() => {
     if (isError) {
@@ -530,11 +734,14 @@ const ResultListing = () => {
   const handleSelectAllClick = () => {
     if (_.size(selected) < _.size(dashboardListView)) {
       setSelected(_.map(dashboardListView, 'dispatchId'))
+      setAnchorEl(null)
     } else {
       setSelected([])
+      setAnchorEl(null)
     }
   }
   const handleDeleteSelected = () => {
+    console.log("Deleted selected")
     dispatch(dispatchesDeleted(selected))
     setOpenSnackbar(true)
     setSnackbarMessage('Dispatches have been deleted successfully!')
@@ -578,6 +785,23 @@ const ResultListing = () => {
       : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
+  const handleAllDeleteDispatches = () => {
+    console.log("Deleted all")
+    dispatch(
+      allDispatchesDelete({
+        status_filter: deleteFilter,
+        search_string: searchValue,
+      })
+    )
+    setOpenSnackbar(true)
+    setSnackbarMessage('Dispatches have been deleted successfully!')
+    if (selected.length === dashboardListView.length) {
+      setOffset(0)
+    }
+    setSelected([])
+    setOpenDialogBoxAll(false)
+  }
+
   return (
     <>
       <Snackbar
@@ -609,9 +833,14 @@ const ResultListing = () => {
           runningDispatches={runningDispatches}
           completedDispatches={completedDispatches}
           failedDispatches={failedDispatches}
+          cancelledDispatches={cancelledDispatches}
           openDialogBox={openDialogBox}
           setOpenDialogBox={setOpenDialogBox}
           dashboardOverviewFetching={dashboardOverviewFetching}
+          setFilterValue={setFilterValue}
+          filterValue={filterValue}
+          setSelected={setSelected}
+          setOffset={setOffset}
         />
         {dashboardListView && (
           <Grid>
@@ -624,6 +853,26 @@ const ResultListing = () => {
                   total={_.size(dashboardListView)}
                   onSort={handleChangeSort}
                   onSelectAllClick={handleSelectAllClick}
+                  anchorEl={anchorEl}
+                  setAnchorEl={setAnchorEl}
+                  totalRecords={totalRecords}
+                  openDialogBoxAll={openDialogBoxAll}
+                  setOpenDialogBoxAll={setOpenDialogBoxAll}
+                  filterValue={filterValue}
+                  searchValue={searchValue}
+                  setOpenSnackbar={setOpenSnackbar}
+                  selected={setSnackbarMessage}
+                  dashboardListView={dashboardListView}
+                  setSelected={setSelected}
+                  handleAllDeleteDispatches={handleAllDeleteDispatches}
+                  setDeleteFilter={setDeleteFilter}
+                  deleteCount={deleteCount}
+                  setDeleteCount={setDeleteCount}
+                  allDispatches={allDispatches}
+                  runningDispatches={runningDispatches}
+                  completedDispatches={completedDispatches}
+                  failedDispatches={failedDispatches}
+                  cancelledDispatches={cancelledDispatches}
                 />
 
                 <TableBody>
@@ -645,6 +894,9 @@ const ResultListing = () => {
                         </TableCell>
 
                         <TableCell sx={{ paddingTop: '6px !important' }}>
+                          <SvgIcon sx={{ mt: 0.1, mr: 0.5, fontSize: 16 }}>
+                            <SublatticeFailed />
+                          </SvgIcon>
                           <Link
                             underline="none"
                             href={`/${result.dispatchId}`}

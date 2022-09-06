@@ -72,7 +72,6 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
   }, [callSocketApi])
   const hasStarted = !!result?.started_at
   const hasEnded = !!result?.ended_at
-
   return (
     <div data-testid="dispatchoverview">
       {/* Description */}
@@ -132,15 +131,18 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       )}
 
       {/* Input */}
-      {drawerInput && (<InputSection
-        isFetching={
-          drawerInputListFetching && Object.keys(drawerInput).length === 0
-        }
-        inputs={drawerInput.data}
-      />)}
+      {drawerInput && (
+        <InputSection
+          isFetching={
+            drawerInputListFetching && Object.keys(drawerInput).length === 0
+          }
+          inputs={drawerInput.data}
+        />
+      )}
+
 
       {/* Result */}
-      {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
+      {drawerResult && result.status === 'COMPLETED' && (
         <>
           <Heading>Result</Heading>
           {drawerResultListFetching ? (
@@ -154,10 +156,14 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       )}
 
       {/* Executor */}
-      <ExecutorSection
-        isFetching={false}
-        metadata={drawerExecutorDetail}
-      />
+      {drawerExecutorDetail && (
+        <ExecutorSection
+          isFetching={
+            Object.keys(drawerExecutorDetail).length === 0
+          }
+          metadata={drawerExecutorDetail}
+        />
+      )}
 
       <Divider sx={{ my: 3 }} />
 

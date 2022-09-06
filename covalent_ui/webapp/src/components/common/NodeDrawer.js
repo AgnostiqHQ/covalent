@@ -275,11 +275,13 @@ const NodeDrawer = ({ node, dispatchId }) => {
           )}
 
           {/* Executor */}
-          <ExecutorSection
-            metadata={electronExecutorResult}
-            sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
-            isFetching={electronExecutorResultIsFetching}
-          />
+          {electronExecutorResult && (
+            <ExecutorSection
+              metadata={electronExecutorResult}
+              sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
+              isFetching={electronExecutorResultIsFetching}
+            />
+          )}
 
           <Divider sx={{ my: 2 }} />
 

@@ -20,8 +20,9 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import { useEffect, useRef, useState, createRef } from 'react'
-import ReactFlow, { MiniMap } from 'react-flow-renderer'
+import ReactFlow, { MiniMap, getIncomers, getOutgoers, isEdge } from 'react-flow-renderer'
 import ElectronNode from './ElectronNode'
+import { NODE_TEXT_COLOR } from './ElectronNode'
 import ParameterNode from './ParameterNode'
 import DirectedEdge from './DirectedEdge'
 import layout from './Layout'
@@ -59,6 +60,7 @@ const LatticeGraph = ({
   const [algorithm, setAlgorithm] = useState('layered')
   const [hideLabels, setHideLabels] = useState(false)
   const [screen, setScreen] = useState(false);
+  const [highlighted, setHighlighted] = useState(false);
 
   // set Margin
   const prevMarginRight = usePrevious(marginRight)
@@ -76,9 +78,14 @@ const LatticeGraph = ({
   }
 
   useEffect(() => {
-    marginSet()
+    if (!highlighted) marginSet()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitView, marginLeft, marginRight, graph, direction, elements, showParams])
+  }, [fitView, marginLeft, marginRight, graph, elements, highlighted])
+
+  useEffect(() => {
+    setHighlighted(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [direction, showParams, algorithm, hideLabels])
 
   // handle resizing
   const resizing = () => {
@@ -154,6 +161,77 @@ const LatticeGraph = ({
     a.click();
   };
 
+  // highlight links of selected nodes
+  const getAllIncomers = (node, elements) => {
+    return getIncomers(node, elements).reduce(
+      (memo, incomer) => [...memo, incomer, ...getAllIncomers(incomer, elements)],
+      []
+    )
+  }
+
+  const getAllOutgoers = (node, elements) => {
+    return getOutgoers(node, elements).reduce(
+      (memo, outgoer) => [...memo, outgoer, ...getAllOutgoers(outgoer, elements)],
+      []
+    )
+  }
+
+  const highlightPath = (node, elements, selection) => {
+    if (node && elements) {
+      const allIncomers = getAllIncomers(node, elements)
+      const allOutgoers = getAllOutgoers(node, elements)
+      setHighlighted(true)
+      setElements((prevElements) => {
+        return prevElements?.map((elem) => {
+          const incomerIds = allIncomers.map((i) => i.id)
+          const outgoerIds = allOutgoers.map((o) => o.id)
+          if (isEdge(elem)) {
+            if (selection) {
+              const animated =
+                (outgoerIds.includes(elem.target) && (outgoerIds.includes(elem.source) || node.id === elem.source)) ||
+                (incomerIds.includes(elem.source) && (incomerIds.includes(elem.target) || node.id === elem.target))
+              elem.style = {
+                ...elem.style,
+                stroke: animated ? '#6473FF' : '#303067'
+              }
+              elem.labelStyle = animated ? { fill: '#6473FF' } : { fill: NODE_TEXT_COLOR }
+            } else {
+              elem.animated = false
+              elem.style = {
+                ...elem.style,
+                stroke: '#303067',
+              }
+            }
+          }
+
+          return elem
+        })
+      })
+    }
+  }
+
+  useEffect(() => {
+    if(!hasSelectedNode) resetNodeStyles()
+  }, [hasSelectedNode])
+
+
+
+  const resetNodeStyles = () => {
+    setElements((prevElements) => {
+      return prevElements?.map((elem) => {
+        if (isEdge(elem)) {
+          elem.animated = false
+          elem.labelStyle = { fill: NODE_TEXT_COLOR }
+          elem.style = {
+            ...elem.style,
+            stroke: '#303067'
+          }
+        }
+        return elem
+      })
+    })
+  }
+
   return (
     <>
       {
@@ -168,14 +246,21 @@ const LatticeGraph = ({
               nodesDraggable={nodesDraggable}
               nodesConnectable={false}
               elements={elements}
-              defaultZoom={1}
+              defaultZoom={0.5}
               minZoom={0}
-              maxZoom={3}
+              maxZoom={1.5}
+              onSelectionChange={(selectedElements) => {
+                const node = selectedElements?.[0]
+                highlightPath(node, elements, true)
+              }}
               selectNodesOnDrag={hasSelectedNode}
+              onPaneClick={() => {
+                resetNodeStyles()
+              }}
             >
               {screen &&
                 <div>
-                  <img style={{ position: 'absolute', zIndex: '2', right: '20px', bottom: '25px' }}
+                  <img style={{ position: 'absolute', zIndex: '2', paddingRight: '1px', bottom: '25px' }}
                     src={covalentLogo} alt='covalentLogo' />
                 </div>
               }
