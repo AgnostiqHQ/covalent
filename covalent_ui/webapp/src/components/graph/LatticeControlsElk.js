@@ -33,7 +33,6 @@ import {
   ArrowDownward,
   ArrowForward,
   ArrowUpward,
-  Fullscreen,
   LockOpenOutlined,
   LockOutlined,
   MapOutlined,
