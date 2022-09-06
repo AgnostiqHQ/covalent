@@ -143,7 +143,7 @@ const ResultsTableHead = ({
   completedDispatches,
   failedDispatches,
   cancelledDispatches,
-  setSelected
+  setSelected,
 }) => {
   const open = Boolean(anchorEl)
   const handleClick = (event) => {
@@ -154,7 +154,7 @@ const ResultsTableHead = ({
   }
 
   const handleAllDelete = (filter, count) => {
-    setSelected([]);
+    setSelected([])
     setOpenDialogBoxAll(true)
     setDeleteFilter(filter)
     setDeleteCount(count)
@@ -244,7 +244,8 @@ const ResultsTableHead = ({
                 </MenuItem>
               </>
             ) : null}
-            {filterValue === 'COMPLETED' || filterValue === 'ALL' ? (
+            {(filterValue === 'COMPLETED' || filterValue === 'ALL') &&
+            completedDispatches !== 0 ? (
               <MenuItem
                 divider
                 onClick={() => {
@@ -252,11 +253,12 @@ const ResultsTableHead = ({
                 }}
                 onClose={handleClose}
               >
-                Complete
+                Completed
               </MenuItem>
             ) : null}
 
-            {filterValue === 'RUNNING' || filterValue === 'ALL' ? (
+            {(filterValue === 'RUNNING' || filterValue === 'ALL') &&
+            runningDispatches !== 0 ? (
               <MenuItem
                 divider
                 onClick={() => {
@@ -267,7 +269,8 @@ const ResultsTableHead = ({
                 Running
               </MenuItem>
             ) : null}
-            {filterValue === 'FAILED' || filterValue === 'ALL' ? (
+            {(filterValue === 'FAILED' || filterValue === 'ALL') &&
+            failedDispatches !== 0 ? (
               <MenuItem
                 divider
                 onClick={() => {
@@ -278,7 +281,8 @@ const ResultsTableHead = ({
                 Failed
               </MenuItem>
             ) : null}
-            {filterValue === 'CANCELLED' || filterValue === 'ALL' ? (
+            {/* {(filterValue === 'CANCELLED' || filterValue === 'ALL') &&
+            cancelledDispatches !== 0 ? (
               <MenuItem
                 onClick={() => {
                   handleAllDelete('CANCELLED', cancelledDispatches)
@@ -287,7 +291,7 @@ const ResultsTableHead = ({
               >
                 Cancelled
               </MenuItem>
-            ) : null}
+            ) : null} */}
           </Menu>
           <DialogBox
             openDialogBox={openDialogBoxAll}
@@ -440,7 +444,7 @@ const ResultsTableToolbar = ({
           setSelected={setSelected}
           setOffset={setOffset}
         />
-        <SortDispatch
+        {/* <SortDispatch
           title="Cancelled"
           count={cancelledDispatches}
           isFetching={!dashboardOverviewFetching}
@@ -448,7 +452,7 @@ const ResultsTableToolbar = ({
           isSelected={filterValue === 'CANCELLED' ? true : false}
           setSelected={setSelected}
           setOffset={setOffset}
-        />
+        /> */}
       </Grid>
       <Input
         sx={{

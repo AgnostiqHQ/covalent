@@ -31,7 +31,7 @@ import {
 import { styled } from '@mui/material/styles'
 import { Handle } from 'react-flow-renderer'
 
-import { ReactComponent as AtomSvg } from '../../assets/status/activity.svg'
+import { ReactComponent as AtomSvg } from '../../assets/status/pending.svg'
 import { ReactComponent as CheckSvg } from '../../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../../assets/status/error.svg'
 import { ReactComponent as CancelSvg } from '../../assets/status/stop.svg'

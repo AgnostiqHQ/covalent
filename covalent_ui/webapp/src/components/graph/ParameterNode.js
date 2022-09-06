@@ -125,7 +125,7 @@ const ParameterNode = ({
             },
           })}
         >
-          {nodeLabelIcon(data.nodeType)}
+          <Grid sx={{ marginTop: '13px' }}>{nodeLabelIcon(data.nodeType)}</Grid>
           <Handle
             type="source"
             position={sourcePosition}
@@ -151,7 +151,7 @@ const ParameterNode = ({
           <Paper
             sx={{
               position: 'absolute',
-              top: 20,
+              top: 27,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
