@@ -31,7 +31,7 @@ import {
 import { styled } from '@mui/material/styles'
 import { Handle } from 'react-flow-renderer'
 
-import { ReactComponent as AtomSvg } from '../../assets/status/activity.svg'
+import { ReactComponent as AtomSvg } from '../../assets/status/pending.svg'
 import { ReactComponent as CheckSvg } from '../../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../../assets/status/error.svg'
 import { ReactComponent as CancelSvg } from '../../assets/status/stop.svg'
@@ -82,7 +82,7 @@ const ElectronNode = ({
                 overflow: 'hidden',
                 background: (theme) => theme.palette.background.executorBg,
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) => theme.palette.text.tertiary,
+                color: (theme) => !selected ?theme.palette.text.tertiary:theme.palette.text.primary,
                 borderColor: (theme) => theme.palette.primary.highlightBlue,
                 borderStyle: 'solid',
                 borderWidth: hasBorder ? 1 : 0,
@@ -252,7 +252,7 @@ const ElectronNode = ({
                 borderRadius: '16px',
                 minWidth: '20%',
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) => theme.palette.text.tertiary,
+                color: (theme) => !selected ?theme.palette.text.tertiary:theme.palette.text.primary,
               }}
             >
               <Handle
