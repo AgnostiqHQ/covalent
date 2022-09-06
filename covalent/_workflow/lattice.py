@@ -32,8 +32,6 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 import networkx as nx
 
-import covalent_ui.result_webhook as result_webhook
-
 from .._data_store import DataStoreSession, models
 from .._shared_files import logger
 from .._shared_files.config import get_config
@@ -259,6 +257,8 @@ class Lattice:
         Returns:
             None
         """
+
+        import covalent_ui.result_webhook as result_webhook
 
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
