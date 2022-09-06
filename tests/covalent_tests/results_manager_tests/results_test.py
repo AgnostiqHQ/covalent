@@ -363,3 +363,9 @@ def test_update_node(test_db, result_1, mocker):
         assert lattice_record.electron_num == 5
         assert lattice_record.completed_electron_num == 1
         assert lattice_record.updated_at is not None
+
+
+def test_result_root_dispatch_id(result_1):
+    """Test the `root_dispatch_id` property`"""
+
+    assert result_1.root_dispatch_id == result_1._root_dispatch_id
