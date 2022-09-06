@@ -39,48 +39,53 @@ arg_prefix = f"{prefix_separator}arg{prefix_separator}"
 # Default configuration settings
 _DEFAULT_CONFIG = {
     "sdk": {
-        "log_dir": (
-            os.environ.get("COVALENT_LOGDIR")
-            or (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
-        )
-        + "/covalent",
+        "log_dir": os.environ.get("COVALENT_LOGDIR")
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
         "log_level": os.environ.get("LOGLEVEL", "WARNING").lower(),
         "enable_logging": os.environ.get("COVALENT_LOG_TO_FILE", "false").lower(),
         "executor_dir": os.environ.get("COVALENT_EXECUTOR_DIR")
-        or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
-        + "/covalent/executor_plugins",
+        or (
+            (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
+            + "/covalent/executor_plugins"
+        ),
     },
     "dispatcher": {
         "address": "localhost",
-        "port": 48008,
-        "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
-        + "/covalent",
+        "port": os.environ.get("COVALENT_SVC_PORT") or 48008,
+        "cache_dir": os.environ.get("COVALENT_CACHE_DIR")
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
         "results_dir": os.environ.get("COVALENT_RESULTS_DIR", "results"),
-        "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
-        + "/covalent",
-        "db_path": (os.environ.get("XDG_DATA_HOME"))
-        or (os.environ["HOME"] + "/.local/share") + "/covalent/dispatcher_db.sqlite",
+        "log_dir": os.environ.get("COVALENT_LOGDIR")
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
+        "db_path": os.environ.get("COVALENT_DATABASE")
+        or (
+            (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
+            + "/covalent/dispatcher_db.sqlite"
+        ),
     },
     "dask": {
-        "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
-        + "/covalent",
-        "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
-        + "/covalent",
+        "cache_dir": os.environ.get("COVALENT_CACHE_DIR")
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
+        "log_dir": os.environ.get("COVALENT_LOGDIR")
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
         "mem_per_worker": "auto",
         "threads_per_worker": 1,
         "num_workers": dask.system.CPU_COUNT,
     },
     "workflow_data": {
         "storage_type": "local",
-        "base_dir": (os.environ.get("XDG_DATA_HOME"))
-        or (os.environ["HOME"] + "/.local/share") + "/covalent/workflow_data",
+        "base_dir": os.environ.get("COVALENT_DATA_DIR")
+        or (
+            (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
+            + "/covalent/workflow_data"
+        ),
     },
     "user_interface": {
         "address": "localhost",
-        "port": 48008,
+        "port": os.environ.get("COVALENT_SVC_PORT") or 48008,
         "dev_port": 49009,
-        "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
-        + "/covalent",
+        "log_dir": os.environ.get("COVALENT_LOGDIR")
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
     },
 }
 
