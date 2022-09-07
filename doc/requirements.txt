@@ -24,6 +24,7 @@ sphinx-gallery==0.9.0
 sphinx-inline-tabs==2021.3.28b7
 sphinx-panels==0.6.0
 sphinx-prompt==1.4.0
+sphinx-tags==0.1.5
 sphinx-togglebutton==0.2.3
 sphinxcontrib-apidoc==0.3.0
 sphinxcontrib-applehelp==1.0.2

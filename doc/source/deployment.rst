@@ -70,11 +70,41 @@ A popular method to serve Covalent is on AWS. Customers use AWS for its intuitiv
 Covalent Server on EC2
 **********************
 
+Covalent can be deployed as a service on Amazon EC2 using several methods. Since Covalent is provided as an Amazon Machine Image (AMI), it is straightforward to provision an instance pre-installed with the stable version of Covalent using the AWS Management Console. This is the recommended method for users with little or no cloud experience and who prefer to use graphical interfaces. Alternatively, users who wish to provision resources using the command line can do so directly with Terraform. Users who wish to customize the deployment may prefer this method. Finally, users can also leverage the Covalent CLI to manage deployments.
+
 Gathering Requirements
 ----------------------
 
+.. tabs::
+
+   .. group-tab:: AWS Console
+
+      Console instructions
+
+   .. group-tab:: Terraform
+
+      Terraform instructions
+
+   .. group-tab:: Covalent CLI
+
+      Covalent instructions
+
 Configuring the Deployment
 --------------------------
+
+.. tabs::
+
+   .. group-tab:: AWS Console
+
+      Console instructions
+
+   .. group-tab:: Terraform
+
+      Terraform instructions
+
+   .. group-tab:: Covalent CLI
+
+      Covalent instructions
 
 Server Deployment
 -----------------

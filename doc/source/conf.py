@@ -53,6 +53,7 @@ extensions = [
     "sphinx_click.ext",
     "sphinx_autodoc_typehints",
     "myst_parser",
+    "sphinx_tabs.tabs",
 ]
 
 # Sphinx variables
@@ -101,3 +102,5 @@ myst_enable_extensions = [
     "deflist",
 ]
 myst_heading_anchors = 3
+
+sphinx_tabs_disable_tab_closing = True
