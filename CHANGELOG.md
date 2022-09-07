@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Sublattices are now run completely internally, without any HTTP calls.
+- Lattice-level metadata is persisted atomically for sublattices.
+
 ## [0.195.0] - 2022-09-06
 
 ### Authors
