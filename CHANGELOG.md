@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+- Filter workflow dispatches by status on the GUI.
+- Delete all workflow dispatches present in the database from the GUI and add filter level deletion of workflow dispatches as well. 
+- Theme changes as part of latest wireframe.
+
+### Docs
+- Update user interface docs for filter and delete features.
+
 ## [0.195.0] - 2022-09-06
 
 ### Authors
