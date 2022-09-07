@@ -18,7 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import os
 import random
 
 import cloudpickle as pickle
@@ -26,7 +25,6 @@ from load_tests.workflows import add_multiply_workflow, horizontal_workflow, ide
 from locust import HttpUser, between, task
 
 import covalent as ct
-from covalent._results_manager import Result
 from tests.load_tests import workflows
 
 pickle.register_pickle_by_value(workflows)

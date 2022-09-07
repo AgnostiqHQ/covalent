@@ -23,7 +23,7 @@
 import inspect
 import os
 from contextlib import nullcontext
-from ctypes import POINTER, c_int32
+from ctypes import c_int32
 from subprocess import PIPE, Popen
 from tempfile import NamedTemporaryFile
 
@@ -31,7 +31,7 @@ import pytest
 
 from covalent import DepsBash, TransportableObject
 from covalent._file_transfer.file_transfer import HTTP, File, FileTransfer, Order
-from covalent._workflow.lepton import Lepton, bash
+from covalent._workflow.lepton import Lepton
 from covalent._workflow.transport import encode_metadata
 from covalent.executor import LocalExecutor
 

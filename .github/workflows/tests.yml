@@ -110,7 +110,7 @@ jobs:
       - name: Generate environment variables
         run: |
           if [ ${{ matrix.os }} = 'ubuntu-latest' ] \
-            && [ ${{ matrix.container }} = 'python:3.8-bullseye' ] \
+            && [ ${{ contains(matrix.container, 'ubuntu20-py38') }} ] \
             && [ ${{ matrix.backend }} = 'dask' ] ; then
             RECOMMENDED_PLATFORM=true
           fi
@@ -123,7 +123,7 @@ jobs:
             NEED_FRONTEND=true
           fi
           if [ ${{ github.event_name }} != 'pull_request' ] \
-            || [ ${{ steps.modified-files.outputs.functional_tests }} == 'true' ] \
+            || [ ${{ steps.modified-files.outputs.functional_tests }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.build }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.actions }} = 'true' ] ; then
             BUILD_AND_RUN_ALL=true
