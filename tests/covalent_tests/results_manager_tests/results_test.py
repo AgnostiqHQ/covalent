@@ -295,7 +295,8 @@ def test_result_persist_subworkflow_1(test_db, result_1, mocker):
 
 
 def test_result_persist_rehydrate(test_db, result_1, mocker):
-    """Test that persist followed by result_from preserves all attributes"""
+    """Test that persist followed by result_from preserves all result,
+    lattice, and transport graph attributes"""
 
     mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent._results_manager.result.workflow_db", test_db)
@@ -315,6 +316,19 @@ def test_result_persist_rehydrate(test_db, result_1, mocker):
         if key == "_lattice":
             continue
         assert result_1.__dict__[key] == result_2.__dict__[key]
+
+    tg_1 = result_1.lattice.transport_graph._graph
+    tg_2 = result_2.lattice.transport_graph._graph
+
+    assert tg_1.nodes == tg_2.nodes
+    for n in tg_1.nodes:
+        assert tg_1.nodes[n].keys() == tg_2.nodes[n].keys()
+        for k in tg_1.nodes[n]:
+            assert tg_1.nodes[n][k] == tg_2.nodes[n][k]
+
+    assert tg_1.edges == tg_2.edges
+    for e in tg_1.edges:
+        assert tg_1.edges[e] == tg_2.edges[e]
 
 
 def test_get_node_error(test_db, result_1, mocker):
