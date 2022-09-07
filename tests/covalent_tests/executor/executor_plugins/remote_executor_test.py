@@ -58,8 +58,8 @@ class MockRemoteExecutor(RemoteExecutor):
     async def query_result(self):
         pass
 
-    async def cancel_task(self):
-        pass
+    async def cancel(self):
+        return 'workflow cancel request succeeded'
 
 
 def test_remote_executor_init():
@@ -155,7 +155,7 @@ async def test_query_result():
 
 
 @pytest.mark.asyncio
-async def test_cancel_task():
+async def test_cancel():
     """Test sending cancel workflow request to remote backend"""
-    res = await MockRemoteExecutor().cancel_task()
-    assert res is None
+    res = await MockRemoteExecutor().cancel()
+    assert res == 'workflow cancel request succeeded'
