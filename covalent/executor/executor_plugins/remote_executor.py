@@ -121,6 +121,7 @@ class RemoteExecutor(AsyncBaseExecutor):
         """
         Abstract method that retrieves the pickled result from the remote cache.
         """
+        pass
 
     @abstractmethod
     async def cancel(self) -> bool:
