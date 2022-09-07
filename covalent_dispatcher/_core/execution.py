@@ -203,9 +203,6 @@ async def _dispatch_sync_sublattice(
 
     app_log.debug("Inside _dispatch_sync_sublattice")
 
-    dispatch_id = parent_result_object.dispatch_id
-    results_dir = parent_result_object.results_dir
-
     try:
         short_name, object_dict = workflow_executor
 
@@ -225,9 +222,8 @@ async def _dispatch_sync_sublattice(
     # sublattice workflow function.
     fut = asyncio.create_task(
         _run_task(
+            result_object=parent_result_object,
             node_id=-1,
-            dispatch_id=dispatch_id,
-            results_dir=results_dir,
             serialized_callable=TransportableObject.make_transportable(_build_sublattice_graph),
             selected_executor=workflow_executor,
             node_name="build_sublattice_graph",
@@ -235,7 +231,6 @@ async def _dispatch_sync_sublattice(
             call_after=[],
             inputs=sub_dispatch_inputs,
             workflow_executor=workflow_executor,
-            result_object=None,
         )
     )
 
@@ -251,9 +246,8 @@ async def _dispatch_sync_sublattice(
 
 
 async def _run_task(
+    result_object: Result,
     node_id: int,
-    dispatch_id: str,
-    results_dir: str,
     inputs: Dict,
     serialized_callable: Any,
     selected_executor: Any,
@@ -261,7 +255,6 @@ async def _run_task(
     call_after: List,
     node_name: str,
     workflow_executor: Any,
-    result_object: Result,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -279,6 +272,9 @@ async def _run_task(
     Returns:
         None
     """
+
+    dispatch_id = result_object.dispatch_id
+    results_dir = result_object.results_dir
 
     # Instantiate the executor from JSON
     try:
@@ -543,9 +539,8 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     try:
         future = asyncio.create_task(
             _run_task(
+                result_object=result_object,
                 node_id=-1,
-                dispatch_id=result_object.dispatch_id,
-                results_dir=result_object.results_dir,
                 serialized_callable=TransportableObject(_post_process),
                 selected_executor=post_processor,
                 node_name="post_process",
@@ -553,7 +548,6 @@ async def _postprocess_workflow(result_object: Result) -> Result:
                 call_after=[],
                 inputs=post_processing_inputs,
                 workflow_executor=post_processor,
-                result_object=None,
             )
         )
         pp_start_time = datetime.now(timezone.utc)
@@ -715,9 +709,8 @@ async def _run_planned_workflow(result_object: Result) -> Result:
 
         run_task_callable = partial(
             _run_task,
+            result_object=result_object,
             node_id=node_id,
-            dispatch_id=result_object.dispatch_id,
-            results_dir=result_object.results_dir,
             serialized_callable=serialized_callable,
             selected_executor=[selected_executor, selected_executor_data],
             node_name=node_name,
@@ -725,7 +718,6 @@ async def _run_planned_workflow(result_object: Result) -> Result:
             call_after=call_after,
             inputs=task_input,
             workflow_executor=post_processor,
-            result_object=result_object,
         )
 
         # Add the task generated for the node to the list of tasks

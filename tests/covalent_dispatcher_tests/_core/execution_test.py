@@ -787,9 +787,8 @@ async def test_run_task_sublattice_handling(test_db, mocker):
     inputs = {"args": [], "kwargs": {}}
 
     node_result = await _run_task(
+        result_object=result_object,
         node_id=1,
-        dispatch_id=result_object.dispatch_id,
-        results_dir=result_object.results_dir,
         inputs=inputs,
         serialized_callable=None,
         selected_executor=["local", {}],
@@ -797,7 +796,6 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         call_after=[],
         node_name=sublattice_prefix,
         workflow_executor=["local", {}],
-        result_object=result_object,
     )
 
     mock_get_sublattice_electron_id.assert_called_once()
@@ -811,9 +809,8 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         return_value=sub_result_object,
     )
     node_result = await _run_task(
+        result_object=result_object,
         node_id=1,
-        dispatch_id=result_object.dispatch_id,
-        results_dir=result_object.results_dir,
         inputs=inputs,
         serialized_callable=None,
         selected_executor=["local", {}],
@@ -821,7 +818,6 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         call_after=[],
         node_name=sublattice_prefix,
         workflow_executor=["local", {}],
-        result_object=result_object,
     )
 
     mock_dispatch_sync.assert_awaited_once()
@@ -831,9 +827,8 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         "covalent_dispatcher._core.execution._dispatch_sync_sublattice", return_value=None
     )
     node_result = await _run_task(
+        result_object=result_object,
         node_id=1,
-        dispatch_id=result_object.dispatch_id,
-        results_dir=result_object.results_dir,
         inputs=inputs,
         serialized_callable=None,
         selected_executor=["local", {}],
@@ -841,7 +836,6 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         call_after=[],
         node_name=sublattice_prefix,
         workflow_executor=["local", {}],
-        result_object=result_object,
     )
 
     assert node_result["status"] == Result.FAILED
