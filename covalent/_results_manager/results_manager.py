@@ -80,6 +80,9 @@ def result_from(lattice_record: Lattice) -> Result:
     function = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.function_filename
     )
+    function_string = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.function_string_filename
+    )
     executor_data = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.executor_data_filename
     )
@@ -105,23 +108,48 @@ def result_from(lattice_record: Lattice) -> Result:
     output = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.results_filename
     )
+    deps = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.deps_filename
+    )
+    call_before = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.call_before_filename
+    )
+    call_after = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.call_after_filename
+    )
+    cova_imports = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.cova_imports_filename
+    )
+    lattice_imports = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.lattice_imports_filename
+    )
 
+    name = lattice_record.name
     executor = lattice_record.executor
     workflow_executor = lattice_record.workflow_executor
 
     attributes = {
+        "workflow_function": function,
+        "workflow_function_string": function_string,
+        "__name__": name,
         "metadata": {
             "executor": executor,
             "executor_data": executor_data,
             "workflow_executor": workflow_executor,
             "workflow_executor_data": workflow_executor_data,
+            "deps": deps,
+            "call_before": call_before,
+            "call_after": call_after,
         },
         "args": inputs["args"],
         "kwargs": inputs["kwargs"],
         "named_args": named_args,
         "named_kwargs": named_kwargs,
         "transport_graph": transport_graph,
-        "workflow_function": function,
+        "cova_imports": cova_imports,
+        "lattice_imports": lattice_imports,
+        "post_processing": False,
+        "electron_outputs": {},
     }
 
     def dummy_function(x):
@@ -135,6 +163,7 @@ def result_from(lattice_record: Lattice) -> Result:
         str(Path(lattice_record.storage_path).parent),
         dispatch_id=lattice_record.dispatch_id,
     )
+    result._root_dispatch_id = lattice_record.root_dispatch_id
     result._status = lattice_record.status
     result._error = error
     result._inputs = inputs
