@@ -5,32 +5,32 @@ Lattice Sidebar
 .. image:: ../images/lattice_page.png
    :width: 350px
 
-Lattice sidebar gives an overview of attributes and details for a particular workflow dispatch. This contains as follows:
+The Lattice sidebar gives an overview of attributes and details for a particular workflow dispatch. This contains as follows:
 
-**Started - Ended**
+- **Started - Ended**
 
-Shows the local time when a dispatch started and when a dispatch ended.
+      Shows the local time when a dispatch started and when a dispatch ended.
 
-**Runtime**
+- **Runtime**
 
-Shows the live run time for the dispatch.
+      Shows the live run time for the dispatch.
 
-**Directory**
+- **Directory**
 
-Shows the folder path where all the result objects are stored for the lattice.
+      Shows the folder path where all the result objects are stored for the lattice.
 
-**Input**
+- **Input**
 
-Shows the input parameters for the lattice function.
+      Shows the input parameters for the lattice function.
 
-**Result**
+- **Result**
 
-Shows the result object related to workflow execution outcomes.
+      Shows the result object related to workflow execution outcomes.
 
-**Executor**
+- **Executor**
 
-Shows the executor's type and its relevant information for lattice function.
+      Shows the executor's type and its relevant information for lattice function.
 
-**Function String**
+- **Function String**
 
-Shows the detailed string representation of a lattice function ( python format ).
+      Shows the detailed string representation of a lattice function ( python format ).

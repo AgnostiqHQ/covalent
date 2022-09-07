@@ -74,6 +74,6 @@ Lock Nodes
    :align: center
    :width: 5000px
 
-- The **Toggle draggable nodes** toggle option (|lock| icon) **when unlocked**, lets users drag and move nodes inside a transport graph.
-- By clicking again, users can lock the position of the transport graph as they set.
-- By default, dragging nodes will not be allowed.
+- **When unlocked**, the **Toggle draggable nodes** toggle option (|lock| icon) lets users drag and move nodes inside a transport graph.
+- By clicking again, users can lock the position of the transport graph as it is currently set.
+- By default, the toggle nodes option will be locked and dragging nodes will not be allowed.

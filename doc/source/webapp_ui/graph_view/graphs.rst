@@ -5,7 +5,7 @@ Transport Graph
    :align: center
    :width: 5000px
 
-A 24 node **transport graph** containing respective nodes and links along with the different type of controls that will help users have a smooth experience and help them navigate through the transport graph easily.
+An example 24-node **transport graph** containing respective nodes and links along with the different type of controls that will help users have a smooth experience and help them navigate through the transport graph easily.
 
 Features
 ############

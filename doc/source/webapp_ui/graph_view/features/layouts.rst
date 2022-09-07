@@ -8,7 +8,7 @@ Layouts
 .. image:: ./images/layouts.gif
    :width: 5000px
 
-The **Layout** feature lets users change the layout of the current transport graph. Graph comes with different layouts, such as:
+The **Layout** feature lets users change the layout of the current transport graph. The Graph comes with different layouts options, such as:
 
 - Layered
 - Tree
@@ -19,4 +19,4 @@ The **Layout** feature lets users change the layout of the current transport gra
 
 Users can change the layout of the transport graph by clicking on the |layout| icon.
 
-**Note: By default, Layered layout is applied when users open the transport graph**
+**Note: By default, Layered layout is applied when users open the transport graph.**
