@@ -29,7 +29,7 @@ via SSH or Slurm or by interfacing with compute services in various cloud enviro
 
 import asyncio
 from abc import abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 from covalent._shared_files import logger
 from covalent.executor.base import AsyncBaseExecutor
@@ -127,6 +127,8 @@ class RemoteExecutor(AsyncBaseExecutor):
         Abstract method that retrieves the pickled result from the remote cache.
         """
 
+        pass
+
     @abstractmethod
     async def cancel(self) -> bool:
         """
@@ -134,7 +136,7 @@ class RemoteExecutor(AsyncBaseExecutor):
         """
         pass
 
-    async def run_async_subprocess(self, cmd) -> Any:
+    async def run_async_subprocess(self, cmd) -> Tuple:
         """
         Invokes an async subprocess to run a command.
         """
@@ -150,3 +152,5 @@ class RemoteExecutor(AsyncBaseExecutor):
 
         if stderr:
             app_log.debug(stderr)
+
+        return proc, stdout, stderr
