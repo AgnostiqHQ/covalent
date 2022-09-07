@@ -5,11 +5,9 @@
 
 import math
 import os
-import sys
 import time
 
 import numpy as np
-import scipy
 import scipy.fft as fft
 import yaml
 

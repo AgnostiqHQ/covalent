@@ -20,9 +20,7 @@
 
 """Workflow stack testing of File Transfer operations."""
 
-import os
 from pathlib import Path
-from time import sleep
 from unittest.mock import Mock
 
 import pytest
@@ -30,9 +28,6 @@ import pytest
 import covalent as ct
 import covalent._results_manager.results_manager as rm
 from covalent._file_transfer.enums import Order
-from covalent._file_transfer.strategies.rsync_strategy import Rsync
-from covalent._results_manager.result import Result
-from covalent_dispatcher._core.execution import _dispatch_sublattice
 
 
 @pytest.mark.parametrize(
