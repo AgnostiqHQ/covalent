@@ -63,6 +63,11 @@ LATTICE_NAMED_ARGS_FILENAME = "named_args.pkl"
 LATTICE_NAMED_KWARGS_FILENAME = "named_kwargs.pkl"
 LATTICE_RESULTS_FILENAME = "results.pkl"
 LATTICE_TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
+LATTICE_DEPS_FILENAME = "deps.pkl"
+LATTICE_CALL_BEFORE_FILENAME = "call_before.pkl"
+LATTICE_CALL_AFTER_FILENAME = "call_after.pkl"
+LATTICE_COVA_IMPORTS_FILENAME = "cova_imports.pkl"
+LATTICE_LATTICE_IMPORTS_FILENAME = "lattice_imports.pkl"
 LATTICE_STORAGE_TYPE = "local"
 
 ELECTRON_FUNCTION_FILENAME = "function.pkl"
@@ -705,6 +710,11 @@ Node Outputs
             (LATTICE_NAMED_KWARGS_FILENAME, self.lattice.named_kwargs),
             (LATTICE_RESULTS_FILENAME, self._result),
             (LATTICE_TRANSPORT_GRAPH_FILENAME, self._lattice.transport_graph),
+            (LATTICE_DEPS_FILENAME, self.lattice.metadata["deps"]),
+            (LATTICE_CALL_BEFORE_FILENAME, self.lattice.metadata["call_before"]),
+            (LATTICE_CALL_AFTER_FILENAME, self.lattice.metadata["call_after"]),
+            (LATTICE_COVA_IMPORTS_FILENAME, self.lattice.cova_imports),
+            (LATTICE_LATTICE_IMPORTS_FILENAME, self.lattice.lattice_imports),
         ]:
 
             store_file(data_storage_path, filename, data)
@@ -732,6 +742,13 @@ Node Outputs
                 "named_kwargs_filename": LATTICE_NAMED_KWARGS_FILENAME,
                 "results_filename": LATTICE_RESULTS_FILENAME,
                 "transport_graph_filename": LATTICE_TRANSPORT_GRAPH_FILENAME,
+                "deps_filename": LATTICE_DEPS_FILENAME,
+                "call_before_filename": LATTICE_CALL_BEFORE_FILENAME,
+                "call_after_filename": LATTICE_CALL_AFTER_FILENAME,
+                "cova_imports_filename": LATTICE_COVA_IMPORTS_FILENAME,
+                "lattice_imports_filename": LATTICE_LATTICE_IMPORTS_FILENAME,
+                "results_dir": self.results_dir,
+                "root_dispatch_id": self.root_dispatch_id,
                 "created_at": datetime.now(timezone.utc),
                 "updated_at": datetime.now(timezone.utc),
                 "started_at": self.start_time,
