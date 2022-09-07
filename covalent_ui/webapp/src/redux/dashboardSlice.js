@@ -132,7 +132,7 @@ export const dashboardSlice = createSlice({
       const searchValue = payload.search_string
       let filteredData = [];
       let finalArray = [];
-      if (!searchValue) {
+      // if (!searchValue) {
         if (statusFilter === 'ALL') {
           filteredData = current(state.overallDashboardList)
           finalArray = filteredData
@@ -141,16 +141,17 @@ export const dashboardSlice = createSlice({
           finalArray = filteredData?.filter(e => e.status === statusFilter)
         }
         state.dashboardList = finalArray
-      } else {
-        if (statusFilter === 'ALL') {
-          filteredData = current(state.dashboardList)
-          finalArray = filteredData
-        } else {
-          filteredData = current(state.dashboardList)
-          finalArray = filteredData?.filter(e => e.status === statusFilter)
-        }
-        state.dashboardList = finalArray
-      }
+      // } 
+      // else {
+      //   if (statusFilter === 'ALL') {
+      //     filteredData = current(state.dashboardList)
+      //     finalArray = filteredData
+      //   } else {
+      //     filteredData = current(state.dashboardList)
+      //     finalArray = filteredData?.filter(e => e.status === statusFilter)
+      //   }
+      //   state.dashboardList = finalArray
+      // }
 
     },
   },
