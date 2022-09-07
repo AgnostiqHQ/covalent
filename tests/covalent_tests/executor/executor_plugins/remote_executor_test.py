@@ -31,7 +31,9 @@ from covalent.executor.executor_plugins.remote_executor import RemoteExecutor
 class MockRemoteExecutor(RemoteExecutor):
     def __init__(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            tmpfile = tempfile.NamedTemporaryFile(prefix="mock_credentials", suffix=".rsa", dir=tmpdir)
+            tmpfile = tempfile.NamedTemporaryFile(
+                prefix="mock_credentials", suffix=".rsa", dir=tmpdir
+            )
 
         super().__init__(poll_freq=10, remote_cache=tmpdir, credentials_file=tmpfile)
 
