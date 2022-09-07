@@ -300,6 +300,8 @@ def test_result_persist_rehydrate(test_db, result_1, mocker):
 
     mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    assert result_1.lattice.metadata["results_dir"] == TEMP_RESULTS_DIR
+    assert result_1.results_dir == TEMP_RESULTS_DIR
     result_1.persist()
     with test_db.session() as session:
         lattice_row = session.query(Lattice).first()
