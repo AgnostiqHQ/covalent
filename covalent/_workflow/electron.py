@@ -32,14 +32,11 @@ from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     _DEFAULT_CONSTRAINT_VALUES,
     WAIT_EDGE_NAME,
-    attr_prefix,
     electron_dict_prefix,
     electron_list_prefix,
-    generator_prefix,
     parameter_prefix,
     prefix_separator,
     sublattice_prefix,
-    subscript_prefix,
 )
 from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash

@@ -21,7 +21,6 @@
 """Tests for results manager."""
 
 from http.client import HTTPMessage
-from unittest import result
 from unittest.mock import ANY, Mock, call
 
 import pytest
@@ -29,7 +28,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from covalent._data_store import models
-from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Lattice
 from covalent._results_manager import wait
 from covalent._results_manager.results_manager import (

@@ -18,36 +18,22 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""
-Integration test for choosing Conda environments within an executor.
-"""
+"""Unit tests for electron"""
 
 import covalent as ct
 
 
-def test_using_current_env() -> None:
-    """Test that the Conda environment can be specified in the executor
-    initialization and used in a simple electron."""
+def test_lattice_draw(mocker):
+    mock_send_draw_req = mocker.patch("covalent_ui.result_webhook.send_draw_request")
 
-    tmp_executor = ct.executor.LocalExecutor()
-    has_conda = tmp_executor.get_conda_path()
-    if not has_conda:
-        return
-
-    tmp_executor.get_conda_envs()
-    conda_env = tmp_executor.current_env
-
-    executor = ct.executor.LocalExecutor(conda_env=conda_env, current_env_on_conda_fail=True)
-
-    @ct.electron(executor=executor)
-    def passthrough(x):
+    @ct.electron
+    def task(x):
         return x
 
-    @ct.lattice()
-    def workflow(y):
-        return passthrough(x=y)
+    @ct.lattice
+    def workflow(x):
+        return task(x)
 
-    dispatch_id = ct.dispatch(workflow)(y="input")
-    result = ct.get_result(dispatch_id, wait=True)
+    workflow.draw(2)
 
-    assert result.result == "input"
+    mock_send_draw_req.assert_called_once()
