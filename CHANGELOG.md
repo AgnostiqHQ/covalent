@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Added credential management page
+
 ## [0.196.0] - 2022-09-07
 
 ### Authors
