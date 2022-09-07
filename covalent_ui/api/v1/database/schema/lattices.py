@@ -58,6 +58,9 @@ class Lattice(Base):
     # id of node if the lattice is actually a sublattice
     electron_id = Column(Integer)
 
+    # id of the root lattice
+    root_lattice_id = Column(Integer)
+
     # name of the lattice function
     name = Column(Text, nullable=False)
 
