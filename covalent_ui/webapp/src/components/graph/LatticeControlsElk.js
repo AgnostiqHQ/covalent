@@ -117,6 +117,7 @@ const LatticeControls = ({
           onClick={() => {
             fitView({ duration: 300, marginLeft, marginRight })
           }}
+          data-testid="FullscreenIcon"
         >
           <SvgIcon
             sx={{
