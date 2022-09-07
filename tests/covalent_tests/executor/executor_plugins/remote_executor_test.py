@@ -36,45 +36,51 @@ def _create_mock_executor():
 
 
 def test_remote_executor_init():
-    """Test remote executor constructor """
+    """Test remote executor constructor"""
 
     mock_executor = _create_mock_executor()
     assert mock_executor.poll_freq == 10
-    assert "mock_credentials" in mock_executor.credentials_file.name.split('/')[-1].split('.')[0]
-    assert "rsa" in mock_executor.credentials_file.name.split('/')[-1].split('.')[-1]
+    assert "mock_credentials" in mock_executor.credentials_file.name.split("/")[-1].split(".")[0]
+    assert "rsa" in mock_executor.credentials_file.name.split("/")[-1].split(".")[-1]
 
 
 @pytest.mark.asyncio
 async def test_run_async_subprocess():
     """Test remote executor async subprocess call"""
 
-    test_dir, test_file, non_existent_file = 'file_dir', 'file.txt', 'non_existent_file.txt'
-    create_file = f"rm -rf {test_dir} && mkdir {test_dir} && cd {test_dir} && touch {test_file} && echo 'hello remote "\
-                  f"executor' >> {test_file} "
+    test_dir, test_file, non_existent_file = "file_dir", "file.txt", "non_existent_file.txt"
+    create_file = (
+        f"rm -rf {test_dir} && mkdir {test_dir} && cd {test_dir} && touch {test_file} && echo 'hello remote "
+        f"executor' >> {test_file} "
+    )
     read_non_existent_file = f"cat {non_existent_file}"
 
     executor = _create_mock_executor()
-    create_file_proc, create_file_stdout, create_file_stderr = await executor.run_async_subprocess(create_file)
+    create_file_proc, create_file_stdout, create_file_stderr = await executor.run_async_subprocess(
+        create_file
+    )
 
     # Test that file creation works as expected
     assert create_file_proc == 0
-    assert create_file_stdout == ''
-    assert create_file_stderr == ''
+    assert create_file_stdout == ""
+    assert create_file_stderr == ""
 
     # Test that file was created and written to correctly
     try:
-        with open(f'{test_dir}/{test_file}', 'r') as test_file:
+        with open(f"{test_dir}/{test_file}", "r") as test_file:
             lines = test_file.readlines()
-            assert lines[0].strip() == 'hello remote executor'
+            assert lines[0].strip() == "hello remote executor"
 
     except FileNotFoundError as fe:
         return str(fe)
 
     # Test that reading from a non-existent file throws an error and returns a non-zero exit code
-    read_file_proc, read_file_stdout, read_file_stderr = await executor.run_async_subprocess(read_non_existent_file)
+    read_file_proc, read_file_stdout, read_file_stderr = await executor.run_async_subprocess(
+        read_non_existent_file
+    )
 
     assert read_file_proc == 1
-    assert read_file_stderr.strip() == f'cat: {non_existent_file}: No such file or directory'
+    assert read_file_stderr.strip() == f"cat: {non_existent_file}: No such file or directory"
 
 
 @pytest.mark.asyncio
