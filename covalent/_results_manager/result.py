@@ -55,6 +55,7 @@ log_stack_info = logger.log_stack_info
 
 LATTICE_FUNCTION_FILENAME = "function.pkl"
 LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
+LATTICE_DOCSTRING_FILENAME = "function_docstring.txt"
 LATTICE_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
 LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME = "workflow_executor_data.pkl"
 LATTICE_ERROR_FILENAME = "error.log"
@@ -699,6 +700,7 @@ Node Outputs
         for filename, data in [
             (LATTICE_FUNCTION_FILENAME, self.lattice.workflow_function),
             (LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
+            (LATTICE_DOCSTRING_FILENAME, self.lattice.__doc__),
             (LATTICE_EXECUTOR_DATA_FILENAME, self.lattice.metadata["executor_data"]),
             (
                 LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
@@ -726,6 +728,7 @@ Node Outputs
                 "electron_id": electron_id,
                 "status": str(self.status),
                 "name": self.lattice.__name__,
+                "docstring_filename": LATTICE_DOCSTRING_FILENAME,
                 "electron_num": self._num_nodes,
                 "completed_electron_num": 0,  # None of the nodes have been executed or completed yet.
                 "storage_path": str(data_storage_path),

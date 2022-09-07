@@ -39,6 +39,9 @@ class Lattice(Base):
     # name of the lattice function
     name = Column(Text, nullable=False)
 
+    # name of the file containing the lattice function's docstring
+    docstring_filename = Column(Text)
+
     # Workflow status
     status = Column(String(24), nullable=False)
 
