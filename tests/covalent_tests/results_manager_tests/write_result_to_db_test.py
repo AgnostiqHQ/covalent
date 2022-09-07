@@ -34,6 +34,7 @@ from covalent._results_manager.write_result_to_db import (
     MissingElectronRecordError,
     MissingLatticeRecordError,
     get_electron_type,
+    get_sublattice_electron_id,
     insert_electron_dependency_data,
     insert_electrons_data,
     insert_lattices_data,
@@ -42,7 +43,6 @@ from covalent._results_manager.write_result_to_db import (
     update_electrons_data,
     update_lattice_completed_electron_num,
     update_lattices_data,
-    write_sublattice_electron_id,
 )
 from covalent._shared_files.defaults import (
     arg_prefix,
@@ -113,6 +113,7 @@ def workflow_lattice():
 
 def get_lattice_kwargs(
     dispatch_id="dispatch_1",
+    electron_id=None,
     name="workflow_1",
     status="RUNNING",
     electron_num=6,
@@ -140,6 +141,7 @@ def get_lattice_kwargs(
 
     return {
         "dispatch_id": dispatch_id,
+        "electron_id": electron_id,
         "name": name,
         "status": status,
         "electron_num": electron_num,
@@ -261,6 +263,7 @@ def test_insert_lattices_data(test_db, mocker):
         for i, lattice in enumerate(rows):
             assert lattice.id == i + 1
             assert lattice.dispatch_id == f"dispatch_{i + 1}"
+            assert lattice.electron_id is None
             assert lattice.name == f"workflow_{i + 1}"
             assert lattice.status == "RUNNING"
             assert lattice.storage_type == STORAGE_TYPE
@@ -550,17 +553,17 @@ def test_write_sublattice_electron_id(test_db, mocker):
 
     # Create sublattice record.
     cur_time = dt.now(timezone.utc)
+    sub_electron_id = get_sublattice_electron_id(
+        parent_dispatch_id="dispatch_1", sublattice_node_id=3
+    )
     insert_lattices_data(
         **get_lattice_kwargs(
-            dispatch_id="dispatch_2", created_at=cur_time, updated_at=cur_time, started_at=cur_time
+            dispatch_id="dispatch_2",
+            electron_id=sub_electron_id,
+            created_at=cur_time,
+            updated_at=cur_time,
+            started_at=cur_time,
         ),
-    )
-
-    # Update sublattice record electron id
-    write_sublattice_electron_id(
-        parent_dispatch_id="dispatch_1",
-        sublattice_node_id=3,
-        sublattice_dispatch_id="dispatch_2",
     )
 
     # Assert that the electron id has indeed been written.
