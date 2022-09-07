@@ -124,7 +124,7 @@ class RemoteExecutor(AsyncBaseExecutor):
         pass
 
     @abstractmethod
-    async def cancel(self) -> bool:
+    async def cancel_task(self) -> bool:
         """
         Abstract method that sends a cancellation request to the remote backend.
         """
