@@ -107,7 +107,9 @@ async def test_run_async_subprocess():
     )
 
     assert read_file_proc.returncode == 1
-    assert read_file_stderr.decode().strip() == f"cat: {non_existent_file}: No such file or directory"
+    assert (
+        read_file_stderr.decode().strip() == f"cat: {non_existent_file}: No such file or directory"
+    )
 
 
 @pytest.mark.asyncio
