@@ -22,9 +22,7 @@
 Tests for self-contained entry point for the dispatcher
 """
 
-import time
 
-import covalent
 import covalent_dispatcher as dispatcher
 
 from .data import get_mock_result

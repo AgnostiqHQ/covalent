@@ -31,7 +31,6 @@ from functools import partial
 from typing import Any, Dict, List, Tuple
 
 from sqlalchemy import update
-from sqlalchemy.orm import Session
 
 from covalent import dispatch
 from covalent._data_store.datastore import workflow_db
@@ -55,10 +54,9 @@ from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
-from covalent.executor.base import BaseAsyncExecutor, wrapper_fn
+from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 from covalent_ui import result_webhook
 
-from .._db.dispatchdb import DispatchDB
 from ..entry_point import futures
 
 app_log = logger.app_log
@@ -341,7 +339,7 @@ async def _run_task(
                 node_id=node_id,
             )
 
-            if isinstance(executor, BaseAsyncExecutor):
+            if isinstance(executor, AsyncBaseExecutor):
                 output, stdout, stderr = await execute_callable()
             else:
                 loop = asyncio.get_running_loop()

@@ -20,7 +20,6 @@
 
 """Class corresponding to computation workflow."""
 
-import inspect
 import json
 import os
 import warnings
@@ -32,20 +31,12 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
-import networkx as nx
-
-import covalent_ui.result_webhook as result_webhook
-
-from .._data_store import DataStoreSession, models
+from .._data_store import DataStoreSession
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import DefaultMetadataValues
-from .._shared_files.utils import (
-    get_named_params,
-    get_serialized_function_str,
-    required_params_passed,
-)
+from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
@@ -55,12 +46,7 @@ if TYPE_CHECKING:
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
 
-from .._shared_files.utils import (
-    get_imports,
-    get_serialized_function_str,
-    get_timedelta,
-    required_params_passed,
-)
+from .._shared_files.utils import get_imports, get_serialized_function_str
 
 consumable_constraints = []
 
@@ -263,6 +249,8 @@ class Lattice:
             None
         """
 
+        import covalent_ui.result_webhook as result_webhook
+
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
 
@@ -368,7 +356,7 @@ def lattice(
 
     if isinstance(deps_bash, DepsBash):
         deps["bash"] = deps_bash
-    if isinstance(deps_bash, list) or isinstance(deps_bash, str):
+    if isinstance(deps_bash, (list, str)):
         deps["bash"] = DepsBash(commands=deps_bash)
 
     if isinstance(deps_pip, DepsPip):

@@ -118,31 +118,31 @@ export const statusIcon = (status) => {
       )
     case 'NEW_OBJECT':
       return (
-        <SvgIcon sx={{  mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <ActivitySvg />
         </SvgIcon>
       )
     case 'COMPLETED':
       return (
-        <SvgIcon sx={{  mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
     case 'POSTPROCESSING':
       return (
-        <SvgIcon sx={{  mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
     case 'PENDING_POSTPROCESSING':
       return (
-        <SvgIcon sx={{  mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
     case 'POSTPROCESSING_FAILED':
       return (
-        <SvgIcon sx={{  mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
@@ -167,25 +167,25 @@ export const nodeLabelIcon = (type) => {
   switch (type) {
     case 'function':
       return (
-        <SvgIcon sx={{mt:0.8}}>
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
           <FunctionSvg />
         </SvgIcon>
       )
     case 'electron_list':
       return (
-        <SvgIcon sx={{mt:0.8}}>
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
           <FunctionSvg />
         </SvgIcon>
       )
     case 'parameter':
       return (
-        <SvgIcon sx={{mt:1.8}}>
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
           <ParameterSvg />
         </SvgIcon>
       )
     case "sublattice":
       return (
-        <SvgIcon  sx={{mt:0.8}}>
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
           <SubLattice />
         </SvgIcon>
       )

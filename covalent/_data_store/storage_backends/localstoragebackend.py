@@ -22,7 +22,6 @@ import os
 import shutil
 import traceback
 import uuid
-from abc import ABC
 from pathlib import Path
 from typing import BinaryIO, Generator, List, Union
 
@@ -186,7 +185,6 @@ class LocalStorageBackend(StorageBackend):
                 os.remove(p)
             except FileNotFoundError:
                 failed.append(obj_name)
-                pass
             except Exception:
                 # e.g. permission errors
                 failed.append(obj_name)

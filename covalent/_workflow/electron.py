@@ -34,14 +34,11 @@ from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     WAIT_EDGE_NAME,
     DefaultMetadataValues,
-    attr_prefix,
     electron_dict_prefix,
     electron_list_prefix,
-    generator_prefix,
     parameter_prefix,
     prefix_separator,
     sublattice_prefix,
-    subscript_prefix,
 )
 from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
@@ -555,7 +552,7 @@ def electron(
 
     if isinstance(deps_bash, DepsBash):
         deps["bash"] = deps_bash
-    if isinstance(deps_bash, list) or isinstance(deps_bash, str):
+    if isinstance(deps_bash, (list, str)):
         deps["bash"] = DepsBash(commands=deps_bash)
 
     internal_call_before_deps = []

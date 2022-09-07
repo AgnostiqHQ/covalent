@@ -42,7 +42,6 @@ from covalent_dispatcher._cli.service import (
     cluster,
     config,
     logs,
-    migrate_legacy_result_object,
     purge,
     restart,
     start,

@@ -27,7 +27,6 @@ import json
 import os
 import shutil
 import socket
-import sys
 from subprocess import DEVNULL, Popen
 from typing import Optional
 
@@ -161,6 +160,7 @@ def _graceful_start(
         pidfile: Process ID file for the server.
         logfile: Log file for the server.
         port: Port requested to be used by the server.
+        no_cluster: Dask cluster is not used.
         develop: Start the server in developer mode.
 
     Returns:
@@ -176,12 +176,11 @@ def _graceful_start(
 
     pypath = f"PYTHONPATH={UI_SRVDIR}/../tests:$PYTHONPATH" if develop else ""
     dev_mode_flag = "--develop" if develop else ""
-    no_cluster_flag = "--no-cluster"
+    no_cluster_flag = "--no-cluster" if no_cluster else ""
     port = _next_available_port(port)
-    if no_cluster_flag in sys.argv:
-        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
-    else:
-        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
+    launch_str = (
+        f"{pypath} python app.py {dev_mode_flag} --port {port} {no_cluster_flag} >> {logfile} 2>&1"
+    )
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
@@ -403,7 +402,8 @@ def status() -> None:
 @click.option(
     "-y", "--yes", is_flag=True, help="Approve without showing the warning. [default: False]"
 )
-def purge(hard: bool, yes: bool) -> None:
+@click.option("--hell-yeah", is_flag=True, hidden=True)
+def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
     """
     Purge Covalent from this system. This command is for developers.
     """
@@ -415,6 +415,10 @@ def purge(hard: bool, yes: bool) -> None:
         get_config("user_interface.log_dir"),
         os.path.dirname(cm.config_file),
     }
+
+    if hell_yeah:
+        hard = True
+        yes = True
 
     if hard:
         removal_list.add(get_config("dispatcher.db_path"))

@@ -37,3 +37,6 @@ multi_line_output = 3
 include_trailing_comma = true
 profile = 'black'
 skip_gitignore = true
+
+[tool.pycln]
+all = true

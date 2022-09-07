@@ -1,19 +1,10 @@
-import uuid
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import Optional, Union
 
-from furl import furl
-
-from covalent._file_transfer.enums import (
-    FileSchemes,
-    FileTransferStrategyTypes,
-    FtCallDepReturnValue,
-    Order,
-)
-from covalent._file_transfer.file import File
-from covalent._file_transfer.strategies.http_strategy import HTTP
-from covalent._file_transfer.strategies.rsync_strategy import Rsync
-from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
+from .enums import FileTransferStrategyTypes, FtCallDepReturnValue, Order
+from .file import File
+from .strategies.http_strategy import HTTP
+from .strategies.rsync_strategy import Rsync
+from .strategies.transfer_strategy_base import FileTransferStrategy
 
 
 class FileTransfer:

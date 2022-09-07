@@ -20,38 +20,26 @@
 
 """Tests for the Covalent executor base module."""
 
-import io
 import os
 import tempfile
-from contextlib import redirect_stdout
 from functools import partial
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
+
 from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
-from covalent.executor.base import BaseAsyncExecutor, _AbstractBaseExecutor
+from covalent.executor.base import AsyncBaseExecutor
 
 
 class MockExecutor(BaseExecutor):
-    def setup(self, task_metadata):
-        pass
-
     def run(self, function, args, kwargs, task_metadata):
         return function(*args, **kwargs)
 
-    def teardown(self, task_metadata):
-        pass
 
-
-class MockAsyncExecutor(BaseAsyncExecutor):
-    async def setup(self, task_metadata):
-        pass
-
+class MockAsyncExecutor(AsyncBaseExecutor):
     async def run(self, function, args, kwargs, task_metadata):
         return function(*args, **kwargs)
-
-    async def teardown(self, task_metadata):
-        pass
 
 
 def test_write_streams_to_file(mocker):
@@ -85,25 +73,6 @@ def test_write_streams_to_file(mocker):
         with open(tmp_file.name) as f:
             lines = f.readlines()
         assert lines[0] == "absolute"
-
-
-def test_execute_in_conda_env(mocker):
-    """Test execute in conda enve method in Base Executor object."""
-
-    me = MockExecutor()
-
-    mocker.patch("covalent.executor.BaseExecutor.get_conda_path", return_value=False)
-    conda_env_fail_mock = mocker.patch("covalent.executor.BaseExecutor._on_conda_env_fail")
-    me.execute_in_conda_env(
-        "function",
-        "function_version",
-        "args",
-        "kwargs",
-        "conda_env",
-        "cache_dir",
-        "node_id",
-    )
-    conda_env_fail_mock.assert_called_once_with("function", "args", "kwargs", "node_id")
 
 
 def test_wrapper_fn():
@@ -212,6 +181,25 @@ def test_base_executor_subclassing():
         assert True
 
 
+def test_base_executor_run(mocker):
+    """Cover BaseExecutor.run() abstract method"""
+
+    def f(x):
+        return x
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {}
+
+    mocker.patch("covalent.executor.BaseExecutor.__abstractmethods__", set())
+    be = BaseExecutor()
+    try:
+        be.run(function, args, kwargs, {})
+        assert False
+    except NotImplementedError:
+        assert True
+
+
 def test_base_executor_execute(mocker):
     """Test the execute method"""
 
@@ -243,39 +231,24 @@ def test_base_executor_execute(mocker):
     assert result.get_deserialized() == 5
 
 
-def test_base_executor_execute_conda(mocker):
-    """Test the execute method with a condaenv"""
+@pytest.mark.asyncio
+async def test_async_base_executor_run(mocker):
+    """Cover AsyncBaseExecutor.run() abstract method"""
 
-    def f(x, y):
-        return x + y
+    def f(x):
+        return x
 
-    me = MockExecutor(conda_env="testenv")
     function = TransportableObject(f)
     args = [TransportableObject(2)]
-    kwargs = {"y": TransportableObject(3)}
-    call_before = []
-    call_after = []
-    dispatch_id = "asdf"
-    results_dir = "/tmp"
-    node_id = -1
+    kwargs = {}
 
-    mock_conda_exec = mocker.patch(
-        "covalent.executor.BaseExecutor.execute_in_conda_env", return_value=TransportableObject(5)
-    )
-
-    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
-
-    result, stdout, stderr = me.execute(
-        function=assembled_callable,
-        args=args,
-        kwargs=kwargs,
-        dispatch_id=dispatch_id,
-        results_dir=results_dir,
-        node_id=node_id,
-    )
-
-    assert result.get_deserialized() == 5
-    mock_conda_exec.assert_called_once()
+    mocker.patch("covalent.executor.base.AsyncBaseExecutor.__abstractmethods__", set())
+    be = AsyncBaseExecutor()
+    try:
+        await be.run(function, args, kwargs, {})
+        assert False
+    except NotImplementedError:
+        assert True
 
 
 def test_base_executor_passes_task_metadata(mocker):
@@ -347,7 +320,7 @@ def test_base_async_executor_passes_task_metadata(mocker):
 
 
 def test_async_write_streams_to_file(mocker):
-    """Test write log streams to file method in BaseAsyncExecutor via LocalExecutor."""
+    """Test write log streams to file method in AsyncBaseExecutor via LocalExecutor."""
 
     import asyncio
 
