@@ -111,47 +111,47 @@ async def test_run_async_subprocess():
 @pytest.mark.asyncio
 async def test_validate_credentials():
     """Test validation of credentials"""
-    res = await MockRemoteExecutor._validate_credentials()
+    res = await MockRemoteExecutor()._validate_credentials()
     assert res is None
 
 
 @pytest.mark.asyncio
 async def test_upload_task():
     """Test task upload"""
-    res = await MockRemoteExecutor._upload_task()
+    res = await MockRemoteExecutor()._upload_task()
     assert res is None
 
 
 @pytest.mark.asyncio
 async def test_submit_task():
     """Test task submit"""
-    res = await MockRemoteExecutor.submit_task()
+    res = await MockRemoteExecutor().submit_task(task_metadata={})
     assert res is None
 
 
 @pytest.mark.asyncio
 async def test_get_status():
     """Test querying electron status"""
-    res = await MockRemoteExecutor.get_status()
+    res = await MockRemoteExecutor().get_status()
     assert res is None
 
 
 @pytest.mark.asyncio
 async def test_poll_task():
     """Test polling task execution status"""
-    res = await MockRemoteExecutor._poll_task()
+    res = await MockRemoteExecutor()._poll_task()
     assert res is None
 
 
 @pytest.mark.asyncio
 async def test_query_result():
     """Test querying result from remote cache"""
-    res = await MockRemoteExecutor.query_result()
+    res = await MockRemoteExecutor().query_result()
     assert res is None
 
 
 @pytest.mark.asyncio
 async def test_cancel():
     """Test sending cancel workflow request to remote backend"""
-    res = await MockRemoteExecutor.cancel()
+    res = await MockRemoteExecutor().cancel()
     assert res is None
