@@ -63,7 +63,6 @@ async def run_dispatcher(json_lattice: str):
 
     dispatch_id = get_unique_id()
     from covalent._workflow.lattice import Lattice
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
 
     from ._core import run_workflow
 

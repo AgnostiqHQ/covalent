@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from covalent._file_transfer.enums import FtCallDepReturnValue
-from covalent._file_transfer.file import File
+from ..enums import FtCallDepReturnValue
+from ..file import File
 
 
 class FileTransferStrategy(ABC):

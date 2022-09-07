@@ -31,7 +31,6 @@ from functools import partial
 from typing import Any, Dict, List, Tuple
 
 from sqlalchemy import update
-from sqlalchemy.orm import Session
 
 from covalent import dispatch
 from covalent._data_store.datastore import workflow_db
@@ -58,7 +57,6 @@ from covalent.executor import _executor_manager
 from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 from covalent_ui import result_webhook
 
-from .._db.dispatchdb import DispatchDB
 from ..entry_point import futures
 
 app_log = logger.app_log

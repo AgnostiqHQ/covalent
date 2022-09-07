@@ -20,7 +20,6 @@
 
 """Lattices schema"""
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
-from sqlalchemy.orm import relationship
 
 from covalent_ui.api.v1.database.config.db import Base
 
