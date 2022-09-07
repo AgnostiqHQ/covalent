@@ -22,15 +22,12 @@
 Self-contained entry point for the dispatcher
 """
 
-import asyncio
 
 from covalent._results_manager.result import initialize_result_object
 from covalent._shared_files import logger
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-futures = {}
 
 
 async def run_dispatcher(json_lattice: str):
@@ -46,12 +43,9 @@ async def run_dispatcher(json_lattice: str):
         dispatch_id: A string containing the dispatch id of current dispatch.
     """
 
-    from ._core import run_workflow
-
     result_object = initialize_result_object(json_lattice)
 
     dispatch_id = result_object.dispatch_id
-    futures[dispatch_id] = asyncio.create_task(run_workflow(result_object))
 
     app_log.debug("Submitted result object to run_workflow.")
 
