@@ -20,7 +20,7 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Drawer,
   Link,
@@ -33,11 +33,20 @@ import {
 import { ReactComponent as Logo } from '../../assets/covalent-logo.svg'
 import { ReactComponent as DispatchList } from '../../assets/dashboard.svg'
 import { ReactComponent as DispatchPreview } from '../../assets/license.svg'
+import { ReactComponent as NavSettings } from '../../assets/NavSettings.svg'
 import { useMatch } from 'react-router-dom'
+import ListItemIcon from '@mui/material/ListItemIcon';
 
 export const navDrawerWidth = 60
 
+
 const NavDrawer = () => {
+  const [open, setOpen] = useState(false);
+
+  const handleClick = () => {
+    setOpen(!open);
+  };
+
   return (
     <Drawer
       data-testid="navDrawer"
@@ -64,7 +73,6 @@ const NavDrawer = () => {
           title="Dispatch list"
           path="/"
           icon={DispatchList}
-          margintop={8}
         />
 
         <LinkButton
@@ -72,6 +80,15 @@ const NavDrawer = () => {
           path="/preview"
           icon={DispatchPreview}
         />
+
+        <ListItemButton sx={{ pl: 2, pt: 2 }}
+          component={Link}
+          to="/settings">
+          <ListItemIcon sx={{ position: 'relative', left: '-17px' }}>
+            <NavSettings />
+          </ListItemIcon>
+        </ListItemButton>
+
       </List>
     </Drawer>
   )

@@ -20,22 +20,19 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { commonSlice } from './commonSlice'
-import { latticePreviewSlice } from './latticePreviewSlice'
-import { dashboardSlice } from './dashboardSlice'
-import { graphSlice } from './graphSlice'
-import { latticeSlice } from './latticeSlice'
-import { electronSlice } from './electronSlice'
-import { settingsSlice } from './settingsSlice'
+//  import { Container } from '@mui/material'
+//  import ResultListing from '../dispatches/ResultListing'
+ import { Box } from '@mui/system'
+ import NavDrawer from '../common/NavDrawer'
+ import SettingsCard from '../settings/SettingsCard'
 
-const reducers = {
-  common: commonSlice.reducer,
-  latticePreview: latticePreviewSlice.reducer,
-  dashboard: dashboardSlice.reducer,
-  graphResults: graphSlice.reducer,
-  latticeResults: latticeSlice.reducer,
-  electronResults: electronSlice.reducer,
-  settingsResults: settingsSlice.reducer,
-}
+ const SettingsLayout = () => {
+   return (
+     <Box sx={{ display: 'flex' }} data-testid="dashboard">
+        <NavDrawer />
+        <SettingsCard />
+     </Box>
+   )
+ }
 
-export default reducers
+ export default SettingsLayout

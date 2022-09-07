@@ -34,6 +34,7 @@ import theme from './utils/theme'
 import { ReactFlowProvider } from 'react-flow-renderer'
 import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
 import DispatchLayout from './components/dispatch/DispatchLayout'
+import SettingsLayout from './components/settings/SettingsLayout'
 import NotFound from './components/NotFound'
 import { differenceInSeconds } from 'date-fns'
 const App = () => {
@@ -89,6 +90,7 @@ const App = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/:dispatchId" element={<DispatchLayout />} />
             <Route path="/preview" element={<LatticePreviewLayout />} />
+            <Route path="/settings" element={<SettingsLayout />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </ThemeProvider>
