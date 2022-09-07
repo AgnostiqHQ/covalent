@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+
+### Fixed
+
+- Fixed missing lattice and result object attributes after rehydrating from datastore.
+
+### Changed
+
+- Implemented v12 of the DB schema
+
+### Tests
+
+- Enhanced DB tests to check faithfulness of persist and rehydrate operations
+
 ## [0.196.0] - 2022-09-07
 
 ### Authors
