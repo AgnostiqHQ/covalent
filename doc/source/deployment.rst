@@ -2,12 +2,12 @@
 Deployment Guide
 ****************
 
-Covalent natively operates a server on the same machine as the client. In order to improve availability, resilience, and performance, users may choose to serve Covalent on a remote machine instead. This page describes a variety of methods in which users may choose to self-host Covalent on the cloud or on premises.
+Covalent natively operates a server on the same machine as the client. In order to improve availability, resilience, and performance, users may choose to serve Covalent on a remote machine instead. This page describes a variety of methods in which users may choose to self-host Covalent on the cloud or on premises. Note that the use of "Covalent Server" on this page refers to a remote deployment of Covalent as a service, in contrast to the more general usage of the "Covalent server" which may otherwise refer to the backend which runs locally on the user's machine.
 
 Deployment with Docker
 ######################
 
-Covalent can be run using Docker Engine or on a container-based orchestration service such as Amazon ECS, Azure Container Instances, or Google Cloud Run. Covalent is distributed as a Docker image hosted at::
+Covalent Server can be run using Docker Engine or on a container-based orchestration service such as Amazon ECS, Azure Container Instances, or Google Cloud Run. Covalent Server is distributed as a Docker image hosted at::
 
     https://gallery.ecr.aws/covalent/covalent
 
@@ -60,7 +60,7 @@ Finally, start Covalent on a particular port::
 
 Since the server runs as a daemon process, the trailing ``&& bash`` prevents the container from exiting.
 
-Users coming with their own containers may choose to install Covalent as an extension. This is possible by replacing the ``FROM`` values with the user's container name. Note that if the base operating system differs from the recommended platform, Covalent may experience unexpected behavior. For a full list of supported platforms, refer to the Compatibility Matrix.
+Users coming with their own containers may choose to install Covalent as an extension. This is possible by replacing the ``FROM`` values with the user's container name. Note that if the base operating system differs from the recommended platform, Covalent may experience unexpected behavior. For a full list of supported platforms, refer to the `Compatibility Matrix <`_.
 
 Deployment on AWS
 #################
@@ -74,6 +74,8 @@ Covalent can be deployed as a service on Amazon EC2 using several methods. Since
 
 Gathering Requirements
 ----------------------
+
+The first step required to deploy Covalent on AWS is to `create an account <https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/>`_. In the account in which you intend to deploy Covalent Server
 
 .. tabs::
 
