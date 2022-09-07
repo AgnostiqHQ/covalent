@@ -38,7 +38,7 @@ export default function DialogBox({
   message,
 }) {
   const handleClose = () => setOpenDialogBox(false)
-  
+
   return (
     <Modal
       open={openDialogBox}
