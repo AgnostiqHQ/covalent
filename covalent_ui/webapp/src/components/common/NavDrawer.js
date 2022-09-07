@@ -35,17 +35,16 @@ import { ReactComponent as DispatchList } from '../../assets/dashboard.svg'
 import { ReactComponent as DispatchPreview } from '../../assets/license.svg'
 import { ReactComponent as NavSettings } from '../../assets/NavSettings.svg'
 import { useMatch } from 'react-router-dom'
-import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemIcon from '@mui/material/ListItemIcon'
 
 export const navDrawerWidth = 60
 
-
 const NavDrawer = () => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
 
   const handleClick = () => {
-    setOpen(!open);
-  };
+    setOpen(!open)
+  }
 
   return (
     <Drawer
@@ -69,11 +68,7 @@ const NavDrawer = () => {
           <Logo data-testid="covalentLogo" style={{ margin: 'auto' }} />
         </ListItemButton>
 
-        <LinkButton
-          title="Dispatch list"
-          path="/"
-          icon={DispatchList}
-        />
+        <LinkButton title="Dispatch list" path="/" icon={DispatchList} />
 
         <LinkButton
           title="Lattice draw preview"
@@ -81,14 +76,7 @@ const NavDrawer = () => {
           icon={DispatchPreview}
         />
 
-        <ListItemButton sx={{ pl: 2, pt: 2 }}
-          component={Link}
-          to="/settings">
-          <ListItemIcon sx={{ position: 'relative', left: '-17px' }}>
-            <NavSettings />
-          </ListItemIcon>
-        </ListItemButton>
-
+        <LinkButton title="Settings" path="/settings" icon={NavSettings} />
       </List>
     </Drawer>
   )
