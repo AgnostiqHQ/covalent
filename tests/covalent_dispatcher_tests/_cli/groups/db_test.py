@@ -1,9 +1,6 @@
 import sys
-from subprocess import PIPE, Popen
 from unittest.mock import Mock
 
-import pytest
-from click import ClickException
 from click.testing import CliRunner
 
 from covalent._data_store.datastore import DataStore

@@ -25,14 +25,11 @@ import shutil
 from datetime import datetime as dt
 from datetime import timezone
 from pathlib import Path
-from unicodedata import name
 
-import cloudpickle
 import pytest
-from sqlalchemy.orm import Session
 
 import covalent as ct
-from covalent._data_store.datastore import DataStore, DataStoreNotInitializedError
+from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.result import Result
 from covalent._results_manager.write_result_to_db import load_file

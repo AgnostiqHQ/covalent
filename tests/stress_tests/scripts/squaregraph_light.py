@@ -7,7 +7,6 @@
 # with each task depending on all the tasks in the previous layer
 
 import os
-import sys
 import time
 
 import yaml
