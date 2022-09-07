@@ -88,9 +88,9 @@ async def test_run_async_subprocess():
     )
 
     # Test that file creation works as expected
-    assert create_file_proc == 0
-    assert create_file_stdout == ""
-    assert create_file_stderr == ""
+    assert create_file_proc.returncode == 0
+    assert create_file_stdout.decode() == ""
+    assert create_file_stderr.decode() == ""
 
     # Test that file was created and written to correctly
     try:
@@ -106,8 +106,8 @@ async def test_run_async_subprocess():
         read_non_existent_file
     )
 
-    assert read_file_proc == 1
-    assert read_file_stderr.strip() == f"cat: {non_existent_file}: No such file or directory"
+    assert read_file_proc.returncode == 1
+    assert read_file_stderr.decode().strip() == f"cat: {non_existent_file}: No such file or directory"
 
 
 @pytest.mark.asyncio
