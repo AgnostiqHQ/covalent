@@ -16,11 +16,11 @@ Delete Dropdown options
 ************************
 .. image:: ../images/delete_options.gif
    :align: center
-- When the users enable the "All" filter, then the dropdown will have 5 options. They are as follows: All visible, All, Completed, Running and Failed. 
-    - "All visible" will select all the dispatches from the currently visible page. 
-    - "All" will prompt a pop-up to delete all the dispatches over the dispatch list. 
-    - "Completed" will prompt a pop-up to delete all the dispatches with the "Completed" status. 
-    - "Running" will prompt a pop-up to delete all the dispatches with the "Running" status. 
+- When the users enable the "All" filter, then the dropdown will have 5 options. They are as follows: All visible, All, Completed, Running and Failed.
+    - "All visible" will select all the dispatches from the currently visible page.
+    - "All" will prompt a pop-up to delete all the dispatches over the dispatch list.
+    - "Completed" will prompt a pop-up to delete all the dispatches with the "Completed" status.
+    - "Running" will prompt a pop-up to delete all the dispatches with the "Running" status.
     - "Failed" will prompt a pop-up to delete all the dispatches with the "Failed" status.
     - In the above example, By selecting the "All" option from the dropdown, users are able to delete all the dispatches. By selecting the "Failed" option from the dropdown, users are able to delete all the dispatches with "Failed" status. Similarly for the "Completed" and "Running" statuses.
 
@@ -28,7 +28,7 @@ Filter and Delete
 ***********************
 .. image:: ../images/filter_delete.gif
    :align: center
-- When the users enable any filter from the available statuses, then the dropdown will only have 2 options. They are as follows: All visible and that particular status filter. 
+- When the users enable any filter from the available statuses, then the dropdown will only have 2 options. They are as follows: All visible and that particular status filter.
     - In the above example, users enable the "Running" filter and hence in the dropdown there are two options such as "All visible" and "Running".
     - By clicking the "Running" option from the dropdown, users are able to delete all the dispatches with the "Running" status.
     - Similarly, for the "Completed" and "Failed" statuses.
