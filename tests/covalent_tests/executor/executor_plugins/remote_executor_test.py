@@ -20,8 +20,10 @@
 
 """Tests for Covalent remote executor."""
 
-import pytest
 import tempfile
+
+import pytest
+
 from covalent.executor.executor_plugins.remote_executor import RemoteExecutor
 
 
