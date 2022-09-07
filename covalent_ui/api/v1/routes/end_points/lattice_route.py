@@ -21,10 +21,8 @@
 """Lattice route"""
 
 import uuid
-from random import randrange
 
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices

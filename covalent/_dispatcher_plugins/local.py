@@ -22,7 +22,6 @@ from copy import deepcopy
 from functools import wraps
 from typing import Callable
 
-import cloudpickle as pickle
 import requests
 
 from .._results_manager import wait
@@ -30,7 +29,6 @@ from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
-from .._workflow.transport import TransportableObject
 from .base import BaseDispatcher
 
 

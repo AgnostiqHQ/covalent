@@ -1,14 +1,10 @@
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import Optional
 
 from furl import furl
 
-from covalent._file_transfer.enums import (
-    FileSchemes,
-    FileTransferStrategyTypes,
-    SchemeToStrategyMap,
-)
+from .enums import FileSchemes, FileTransferStrategyTypes, SchemeToStrategyMap
 
 
 class File:
