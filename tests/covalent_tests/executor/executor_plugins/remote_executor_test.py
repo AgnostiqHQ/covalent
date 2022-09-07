@@ -21,24 +21,49 @@
 """Tests for Covalent remote executor."""
 
 import tempfile
+from typing import Dict
 
 import pytest
 
 from covalent.executor.executor_plugins.remote_executor import RemoteExecutor
 
 
-def _create_mock_executor():
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmpfile = tempfile.NamedTemporaryFile(prefix="mock_credentials", suffix=".rsa", dir=tmpdir)
-        executor = RemoteExecutor(poll_freq=10, remote_cache=tmpdir, credentials_file=tmpfile)
+class MockRemoteExecutor(RemoteExecutor):
+    def __init__(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpfile = tempfile.NamedTemporaryFile(prefix="mock_credentials", suffix=".rsa", dir=tmpdir)
 
-    return executor
+        super().__init__(poll_freq=10, remote_cache=tmpdir, credentials_file=tmpfile)
+
+    async def run(self, function, args, kwargs, task_metadata):
+        return await function(*args, **kwargs)
+
+    async def _validate_credentials(self):
+        pass
+
+    async def _upload_task(self):
+        pass
+
+    async def submit_task(self, task_metadata: Dict):
+        pass
+
+    async def _poll_task(self):
+        pass
+
+    async def get_status(self):
+        pass
+
+    async def query_result(self):
+        pass
+
+    async def cancel(self):
+        pass
 
 
 def test_remote_executor_init():
     """Test remote executor constructor"""
 
-    mock_executor = _create_mock_executor()
+    mock_executor = MockRemoteExecutor()
     assert mock_executor.poll_freq == 10
     assert "mock_credentials" in mock_executor.credentials_file.name.split("/")[-1].split(".")[0]
     assert "rsa" in mock_executor.credentials_file.name.split("/")[-1].split(".")[-1]
@@ -55,7 +80,7 @@ async def test_run_async_subprocess():
     )
     read_non_existent_file = f"cat {non_existent_file}"
 
-    executor = _create_mock_executor()
+    executor = MockRemoteExecutor()
     create_file_proc, create_file_stdout, create_file_stderr = await executor.run_async_subprocess(
         create_file
     )
@@ -86,47 +111,47 @@ async def test_run_async_subprocess():
 @pytest.mark.asyncio
 async def test_validate_credentials():
     """Test validation of credentials"""
-    res = await _create_mock_executor()._validate_credentials()
+    res = await MockRemoteExecutor._validate_credentials()
     assert res is None
 
 
 @pytest.mark.asyncio
 async def test_upload_task():
     """Test task upload"""
-    res = await _create_mock_executor()._upload_task()
+    res = await MockRemoteExecutor._upload_task()
     assert res is None
 
 
 @pytest.mark.asyncio
 async def test_submit_task():
     """Test task submit"""
-    res = await _create_mock_executor().submit_task()
+    res = await MockRemoteExecutor.submit_task()
     assert res is None
 
 
 @pytest.mark.asyncio
 async def test_get_status():
     """Test querying electron status"""
-    res = await _create_mock_executor().get_status()
+    res = await MockRemoteExecutor.get_status()
     assert res is None
 
 
 @pytest.mark.asyncio
 async def test_poll_task():
     """Test polling task execution status"""
-    res = await _create_mock_executor()._poll_task()
+    res = await MockRemoteExecutor._poll_task()
     assert res is None
 
 
 @pytest.mark.asyncio
 async def test_query_result():
     """Test querying result from remote cache"""
-    res = await _create_mock_executor().query_result()
+    res = await MockRemoteExecutor.query_result()
     assert res is None
 
 
 @pytest.mark.asyncio
 async def test_cancel():
     """Test sending cancel workflow request to remote backend"""
-    res = await _create_mock_executor().cancel()
+    res = await MockRemoteExecutor.cancel()
     assert res is None
