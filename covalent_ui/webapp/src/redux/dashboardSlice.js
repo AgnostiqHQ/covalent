@@ -26,6 +26,7 @@ import api from '../utils/api'
 
 const initialState = {
   // results cache mapped by dispatch id
+  overallDashboardList: [],
   dashboardList: [],
   totalDispatches: 0,
   runningDispatches: 0,
@@ -82,6 +83,7 @@ export const dashboardSlice = createSlice({
         });
       });
       state.dashboardList = finalArray
+      state.overallDashboardList = finalArray
       state.totalDispatches = finalArray.length
       const lastStatusArray = _.orderBy(finalArray, ['started_at'], ['desc']);
       const lastStatus = lastStatusArray.length ? lastStatusArray[0].status : 'N/A'
@@ -97,12 +99,21 @@ export const dashboardSlice = createSlice({
     },
     allDispatchesDelete(state, { payload }) {
       const statusFilter = payload.status_filter;
+      const filterVal= payload.filter_value;
+      const allDispatches = current(state.overallDashboardList);
       let filteredData = [];
       if (statusFilter === 'ALL') {
         filteredData = [];
-      } else filteredData = current(state.dashboardList);
-      const finalArray = filteredData?.filter(e => e.status !== payload.status_filter)
+      } else filteredData = allDispatches;
+      const filteredArray = allDispatches.filter(object1 => {
+        return !filteredData.some(object2 => {
+          return object1.dispatch_id === object2.dispatch_id;
+        });
+      });
+      const finalArray = filteredData?.filter(e => e.status !== statusFilter)
+      // }
       state.dashboardList = finalArray
+      state.overallDashboardList = finalArray
       state.totalDispatches = finalArray.length
       const lastStatusArray = _.orderBy(finalArray, ['started_at'], ['desc']);
       const lastStatus = lastStatusArray.length ? lastStatusArray[0].status : 'N/A'
@@ -117,29 +128,30 @@ export const dashboardSlice = createSlice({
       state.dashboardOverview = dashOverview
     },
     filterDispatches(state, { payload }) {
-      const statusFilter = payload
+      const statusFilter = payload.status_filter
+      const searchValue = payload.search_string
       let filteredData = [];
-      let finalArray=[];
-      if (statusFilter === 'ALL') {
-        filteredData = current(state.dashboardList)
-        finalArray=filteredData
+      let finalArray = [];
+      if (!searchValue) {
+        if (statusFilter === 'ALL') {
+          filteredData = current(state.overallDashboardList)
+          finalArray = filteredData
+        } else {
+          filteredData = current(state.overallDashboardList)
+          finalArray = filteredData?.filter(e => e.status === statusFilter)
+        }
+        state.dashboardList = finalArray
       } else {
-        filteredData = current(state.dashboardList)
-        finalArray = filteredData?.filter(e => e.status === payload.status_filter)
-      }      
-      state.dashboardList = finalArray
-      state.totalDispatches = finalArray.length
-      const lastStatusArray = _.orderBy(finalArray, ['started_at'], ['desc']);
-      const lastStatus = lastStatusArray.length ? lastStatusArray[0].status : 'N/A'
-      const dashOverview = {
-        "total_jobs": finalArray.length,
-        "total_jobs_running": finalArray.filter(e => e.status === 'RUNNING').length,
-        "total_jobs_completed": finalArray.filter(e => e.status === 'COMPLETED').length,
-        "total_jobs_failed": finalArray.filter(e => e.status === 'FAILED').length,
-        "latest_running_task_status": finalArray.length ? lastStatus : "N/A",
-        "total_dispatcher_duration": finalArray.length ? finalArray?.map(obj => obj.runtime).reduce((partialSum, a) => partialSum + a, 0) : 'N/A'
+        if (statusFilter === 'ALL') {
+          filteredData = current(state.dashboardList)
+          finalArray = filteredData
+        } else {
+          filteredData = current(state.dashboardList)
+          finalArray = filteredData?.filter(e => e.status === statusFilter)
+        }
+        state.dashboardList = finalArray
       }
-      state.dashboardOverview = dashOverview
+
     },
   },
   extraReducers: (builder) => {
@@ -209,4 +221,4 @@ export const dashboardSlice = createSlice({
   },
 })
 
-export const { dispatchesDeleted, allDispatchesDelete,filterDispatches } = dashboardSlice.actions
+export const { dispatchesDeleted, allDispatchesDelete, filterDispatches } = dashboardSlice.actions

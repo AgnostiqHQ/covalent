@@ -56,7 +56,6 @@ const ElectronNode = ({
   targetPosition,
   isConnectable,
 }) => {
-  console.log(data,'data')
   const color = statusColor(data.status)
   const hasBorder = data.status !== 'NEW_OBJECT'
   return (

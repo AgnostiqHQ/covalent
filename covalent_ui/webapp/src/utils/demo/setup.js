@@ -46,6 +46,7 @@ export const demoState = {
     fetchDashboardList: { isFetching: false, error: null },
     fetchDashboardOverview: { isFetching: false, error: null },
     deleteResults: { isFetching: false, error: null },
+    overallDashboardList:demoDashboardListData.dashboardList,
     dashboardList: demoDashboardListData.dashboardList,
     totalDispatches:demoDashboardListData.dashboardList.total_count
   },

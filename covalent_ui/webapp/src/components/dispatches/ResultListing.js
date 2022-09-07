@@ -60,6 +60,7 @@ import {
   fetchDashboardList,
   dispatchesDeleted,
   allDispatchesDelete,
+  filterDispatches
 } from '../../redux/dashboardSlice'
 import CopyButton from '../common/CopyButton'
 import { formatDate, secondsToHms } from '../../utils/misc'
@@ -745,7 +746,6 @@ const ResultListing = () => {
     }
   }
   const handleDeleteSelected = () => {
-    console.log("Deleted selected")
     dispatch(dispatchesDeleted(selected))
     setOpenSnackbar(true)
     setSnackbarMessage('Dispatches have been deleted successfully!')
@@ -790,11 +790,12 @@ const ResultListing = () => {
   }
 
   const handleAllDeleteDispatches = () => {
-    console.log("Deleted all")
     dispatch(
       allDispatchesDelete({
+        list: dashboardListView,
         status_filter: deleteFilter,
         search_string: searchValue,
+        filter_value:filterValue
       })
     )
     setOpenSnackbar(true)
@@ -805,6 +806,20 @@ const ResultListing = () => {
     setSelected([])
     setOpenDialogBoxAll(false)
   }
+
+  const handleFilterByStatus = () => {
+    dispatch(
+      filterDispatches({
+        list: dashboardListView,
+        status_filter: filterValue,
+        search_string: searchValue,
+      })
+    )
+  }
+
+  useEffect(() => {
+    handleFilterByStatus();
+  }, [filterValue])
 
   return (
     <>
