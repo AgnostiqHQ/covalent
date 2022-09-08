@@ -45,6 +45,7 @@ def lattice_record():
     return Lattice(
         id=1,
         dispatch_id=DISPATCH_ID,
+        root_dispatch_id=DISPATCH_ID,
         name="mock_name",
         status="mock_status",
         electron_num="mock_electron_num",
