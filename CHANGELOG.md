@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Updated RTD concepts and tutorials to reflect new UI.
+
 ### Added
 
 - Added alembic migrations script for DB schema v12
