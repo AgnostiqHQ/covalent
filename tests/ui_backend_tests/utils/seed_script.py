@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from typing import List
 
 from sqlalchemy.orm import Session
 
@@ -13,9 +12,9 @@ def seed(engine):
     lattice_records = []
     electron_records = []
     electron_dependency_records = []
-    with open("tests/ui_backend_tests/utils/data/lattice.json") as json_file:
+    with open("tests/ui_backend_tests/utils/data/lattices.json") as json_file:
         lattice_data = json.load(json_file)
-        for item in lattice_data["lattice"]:
+        for item in lattice_data:
             lattice_records.append(
                 Lattice(
                     id=item["id"],
@@ -48,7 +47,7 @@ def seed(engine):
             )
     with open("tests/ui_backend_tests/utils/data/electrons.json") as json_file:
         electron_data = json.load(json_file)
-        for item in electron_data["electrons"]:
+        for item in electron_data:
             electron_records.append(
                 Electron(
                     id=item["id"],
@@ -80,7 +79,7 @@ def seed(engine):
             )
     with open("tests/ui_backend_tests/utils/data/electron_dependency.json") as json_file:
         electron_dependency_data = json.load(json_file)
-        for item in electron_dependency_data["electron_dependency"]:
+        for item in electron_dependency_data:
             electron_dependency_records.append(
                 ElectronDependency(
                     id=item["id"],

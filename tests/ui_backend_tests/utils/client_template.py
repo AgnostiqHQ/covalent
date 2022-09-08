@@ -1,6 +1,4 @@
-import json
 from enum import Enum
-from os.path import abspath, dirname
 from typing import Any, Dict
 
 from fastapi import FastAPI
@@ -19,8 +17,9 @@ class TestClientTemplate:
     path: str = None
     app: FastAPI = None
     method_type: MethodType = MethodType.GET
-    input_data: Dict
-    header: str
+    body_data: Dict = (None,)
+    query_data: Dict = (None,)
+    header: str = (None,)
 
     def build_query(self, path, query):
 

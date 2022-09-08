@@ -12,21 +12,107 @@ with open(output_path, "r") as output_json:
 
 def test_overview():
     """Test overview"""
+    test_data = output_data["test_overview"]["case1"]
     response = object_test_template(
-        path="/api/v1/dispatches/overview", app=main.fastapi_app, method_type=MethodType.GET
+        path=output_data["test_overview"]["path"], app=main.fastapi_app, method_type=MethodType.GET
     )
-    if "status_code" in output_data["test_overview"]["case1"]:
-        assert response.status_code == output_data["test_overview"]["case1"]["status_code"]
-    if "response_data" in output_data["test_overview"]["case1"]:
-        res_data = response.json()
-        assert res_data == output_data["test_overview"]["case1"]["response_data"]
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
+def test_overview_invalid_method():
+    """Test overview with post method"""
+    test_data = output_data["test_overview"]["case2"]
+    response = object_test_template(
+        path=output_data["test_overview"]["path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
 
 
 def test_list():
+    """Test list"""
+    test_data = output_data["test_list"]["case1"]
     response = object_test_template(
-        path="/api/v1/dispatches/list",
+        path=output_data["test_list"]["path"],
         app=main.fastapi_app,
         method_type=MethodType.GET,
-        query_data=output_data["test_list"]["case1"]["request_data"]["query"],
+        query_data=test_data["request_data"]["query"],
     )
-    assert response.status_code == output_data["test_list"]["case1"]["status_code"]
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
+def test_list_count():
+    """Test list"""
+    test_data = output_data["test_list"]["case2"]
+    response = object_test_template(
+        path=output_data["test_list"]["path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        query_data=test_data["request_data"]["query"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
+def test_list_search():
+    """Test list"""
+    test_data = output_data["test_list"]["case2"]
+    response = object_test_template(
+        path=output_data["test_list"]["path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        query_data=test_data["request_data"]["query"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
+def test_delete():
+    """Test delete from dispatch list"""
+    test_data = output_data["test_delete"]["case1"]
+    response = object_test_template(
+        path=output_data["test_delete"]["path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
+def test_delete_invalid_dispatch_id():
+    """Test delete from dispatch list"""
+    test_data = output_data["test_delete"]["case2"]
+    response = object_test_template(
+        path=output_data["test_delete"]["path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
+def test_delete_dispatch_multiple_times():
+    """Test delete from dispatch list"""
+    test_data = output_data["test_delete"]["case3"]
+    response = object_test_template(
+        path=output_data["test_delete"]["path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
