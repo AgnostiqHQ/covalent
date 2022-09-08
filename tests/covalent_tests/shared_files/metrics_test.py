@@ -20,11 +20,7 @@
 
 """Unit tests for metrics module."""
 
-from covalent._shared_files.metrics import (
-    PerformanceMetrics,
-    PlatformMetadata,
-    WorkflowBenchmarkResult,
-)
+from covalent._shared_files.metrics import PlatformMetadata
 
 
 def test_platform_metdata():

@@ -21,17 +21,19 @@
 """Result object."""
 
 import os
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 from sqlalchemy import and_, update
 
-from .._data_store import DataStore, DataStoreNotInitializedError, models, workflow_db
+from .._data_store import models, workflow_db
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
+from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
 from .write_result_to_db import (
     get_electron_type,
@@ -47,7 +49,6 @@ from .write_result_to_db import (
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import Status
-    from .._workflow.lattice import Lattice
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -87,6 +88,7 @@ class Result:
         results_dir: Directory where the result will be stored.
                      It'll be in the format of "<results_dir>/<dispatch_id>/".
         dispatch_id: Dispatch id assigned to this dispatch.
+        root_dispatch_id: Dispatch id of the root lattice in a hierarchy of sublattice workflows.
         status: Status of the result. It'll be one of the following:
                 - Result.NEW_OBJ: When it is a new result object.
                 - Result.COMPLETED: When processing of all the nodes has completed successfully.
@@ -111,7 +113,7 @@ class Result:
     FAILED = RESULT_STATUS.FAILED
     CANCELLED = RESULT_STATUS.CANCELLED
 
-    def __init__(self, lattice: "Lattice", results_dir: str, dispatch_id: str = None) -> None:
+    def __init__(self, lattice: Lattice, results_dir: str, dispatch_id: str = None) -> None:
 
         self._start_time = None
         self._end_time = None
@@ -120,6 +122,8 @@ class Result:
 
         self._lattice = lattice
         self._dispatch_id = dispatch_id
+
+        self._root_dispatch_id = dispatch_id
 
         self._status = Result.NEW_OBJ
 
@@ -191,7 +195,7 @@ Node Outputs
         return self._results_dir
 
     @property
-    def lattice(self) -> "Lattice":
+    def lattice(self) -> Lattice:
         """
         "Lattice" object which was dispatched.
         """
@@ -205,6 +209,14 @@ Node Outputs
         """
 
         return self._dispatch_id
+
+    @property
+    def root_dispatch_id(self) -> str:
+        """
+        Dispatch id of the root dispatch
+        """
+
+        return self._root_dispatch_id
 
     @property
     def status(self) -> Status:
@@ -661,7 +673,7 @@ Node Outputs
         result_folder_path = os.path.join(self.results_dir, f"{self.dispatch_id}")
         Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
-    def upsert_lattice_data(self):
+    def upsert_lattice_data(self, electron_id: int = None):
         """Update lattice data"""
 
         with workflow_db.session() as session:
@@ -701,6 +713,7 @@ Node Outputs
         if not lattice_exists:
             lattice_record_kwarg = {
                 "dispatch_id": self.dispatch_id,
+                "electron_id": electron_id,
                 "status": str(self.status),
                 "name": self.lattice.__name__,
                 "electron_num": self._num_nodes,
@@ -881,13 +894,18 @@ Node Outputs
         if not electron_dependencies_exist:
             insert_electron_dependency_data(dispatch_id=self.dispatch_id, lattice=self.lattice)
 
-    def persist(self) -> None:
+    def persist(self, electron_id: int = None) -> None:
         """Save Result object to a DataStoreSession. Changes are queued until
-        committed by the caller."""
+        committed by the caller.
+
+        Args:
+            electron_id: (hack) DB-generated id for the parent electron
+                if the workflow is actually a subworkflow
+        """
 
         self._initialize_results_dir()
         app_log.debug("upsert start")
-        self.upsert_lattice_data()
+        self.upsert_lattice_data(electron_id=electron_id)
         self.upsert_electron_data()
         app_log.debug("upsert complete")
         self.insert_electron_dependency_data()
@@ -936,3 +954,46 @@ def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str
                 in_decorator -= line.count(")")
 
     return "\n".join(function_lines) if has_cova_decorator else function_string
+
+
+def get_unique_id() -> str:
+    """
+    Get a unique ID.
+
+    Args:
+        None
+
+    Returns:
+        str: Unique ID
+    """
+
+    return str(uuid.uuid4())
+
+
+def initialize_result_object(
+    json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
+) -> Result:
+    """Convenience function for constructing a result object from a json-serialized lattice.
+
+    Args:
+        json_lattice: a JSON-serialized lattice
+        parent_result_object: the parent result object if json_lattice is a sublattice
+        parent_electron_id: the DB id of the parent electron (for sublattices)
+
+    Returns:
+        Result: result object
+    """
+
+    dispatch_id = get_unique_id()
+    lattice = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lattice, lattice.metadata["results_dir"], dispatch_id)
+    if parent_result_object:
+        result_object._root_dispatch_id = parent_result_object._root_dispatch_id
+
+    result_object._initialize_nodes()
+    app_log.debug("2: Constructed result object and initialized nodes.")
+
+    result_object.persist(electron_id=parent_electron_id)
+    app_log.debug("Result object persisted.")
+
+    return result_object
