@@ -76,6 +76,7 @@ def update_lattice_completed_electron_num(dispatch_id: str) -> None:
 
 def insert_lattices_data(
     dispatch_id: str,
+    electron_id: int,
     name: str,
     electron_num: int,
     completed_electron_num: int,
@@ -103,6 +104,7 @@ def insert_lattices_data(
 
     lattice_row = Lattice(
         dispatch_id=dispatch_id,
+        electron_id=electron_id,
         name=name,
         status=status,
         electron_num=electron_num,
@@ -343,11 +345,7 @@ def get_electron_type(node_name: str) -> str:
         return "function"
 
 
-def write_sublattice_electron_id(
-    parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
-) -> None:
-    """Function to attach the electron id of a sublattice in the lattice record."""
-
+def get_sublattice_electron_id(parent_dispatch_id: str, sublattice_node_id: int):
     with workflow_db.session() as session:
         sublattice_electron_id = (
             session.query(Lattice, Electron)
@@ -359,12 +357,8 @@ def write_sublattice_electron_id(
             .first()
             .Electron.id
         )
-        session.execute(
-            update(Lattice)
-            .where(Lattice.dispatch_id == sublattice_dispatch_id)
-            .values(electron_id=sublattice_electron_id, updated_at=dt.now(timezone.utc))
-        )
-        session.commit()
+
+    return sublattice_electron_id
 
 
 def write_lattice_error(dispatch_id: str, error: str):
