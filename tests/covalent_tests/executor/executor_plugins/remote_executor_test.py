@@ -99,7 +99,7 @@ async def test_run_async_subprocess():
             assert lines[0].strip() == "hello remote executor"
 
     except FileNotFoundError as fe:
-        return str(fe)
+         pytest.fail(f'Failed to parse {test_file} with exception "{fe}"')
 
     # Test that reading from a non-existent file throws an error and returns a non-zero exit code
     read_file_proc, read_file_stdout, read_file_stderr = await executor.run_async_subprocess(
