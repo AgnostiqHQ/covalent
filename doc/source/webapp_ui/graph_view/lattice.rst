@@ -8,7 +8,7 @@ Lattice Sidebar
 The Lattice sidebar gives an overview of attributes and details for a particular workflow dispatch. This contains as follows:
 
 - **Started - Ended**
-  
+
   Shows the local time when a dispatch started and when a dispatch ended.
 
 - **Runtime**
