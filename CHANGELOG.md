@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated AWS Lambda plugin rtd with mention to its limitations.
 
+### Tests
+
+- Updated more tests to DB schema v12
+
 ## [0.197.0] - 2022-09-08
 
 ### Authors
