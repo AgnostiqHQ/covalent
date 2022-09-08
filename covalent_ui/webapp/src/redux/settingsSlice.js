@@ -41,7 +41,7 @@ export const updateSettings = createAsyncThunk(
   'settingsResult/updateSettings',
   async (bodyParams, thunkAPI) =>
     await api
-      .patch('api/v1/settings',
+      .post('api/v1/settings?override_existing=true',
         bodyParams).catch(thunkAPI.rejectWithValue)
 )
 
