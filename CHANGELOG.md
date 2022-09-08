@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Removed inheritance of `call_before` metadata from parent electron to collected nodes.
+
 ## [0.196.0] - 2022-09-07
 
 ### Authors

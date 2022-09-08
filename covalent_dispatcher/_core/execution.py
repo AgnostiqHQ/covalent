@@ -330,9 +330,7 @@ async def _run_task(
 
         else:
             app_log.debug(f"Executing task {node_name}")
-
             assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
-
             execute_callable = partial(
                 executor.execute,
                 function=assembled_callable,
@@ -349,11 +347,9 @@ async def _run_task(
                 loop = asyncio.get_running_loop()
                 output, stdout, stderr = await loop.run_in_executor(None, execute_callable)
 
-            end_time = datetime.now(timezone.utc)
-
             node_result = generate_node_result(
                 node_id=node_id,
-                end_time=end_time,
+                end_time=datetime.now(timezone.utc),
                 status=Result.COMPLETED,
                 output=output,
                 stdout=stdout,
@@ -361,19 +357,14 @@ async def _run_task(
             )
 
     except Exception as ex:
-        end_time = datetime.now(timezone.utc)
-
         app_log.error(f"Exception occurred when running task {node_id}: {ex}")
-
         node_result = generate_node_result(
             node_id=node_id,
-            end_time=end_time,
+            end_time=datetime.now(timezone.utc),
             status=Result.FAILED,
             error="".join(traceback.TracebackException.from_exception(ex).format()),
         )
-        app_log.exception("Run task exception")
-    app_log.debug("Returning node result (run_task)")
-
+    app_log.debug(f"Node result: {node_result}")
     return node_result
 
 
