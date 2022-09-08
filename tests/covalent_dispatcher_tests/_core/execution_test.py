@@ -231,6 +231,7 @@ def test_result_post_process(mocker, test_db):
 
     res._status = Result.PENDING_POSTPROCESSING
     res._dispatch_id = "MOCK"
+    res._root_dispatch_id = "MOCK"
 
     mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
     res.persist()
@@ -563,6 +564,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
+    result_object._root_dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
     mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
@@ -595,6 +597,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
+    result_object._root_dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
     mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)

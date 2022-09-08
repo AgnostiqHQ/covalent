@@ -108,6 +108,7 @@ def test_get_result(mocker, app, client, test_db_file, tmp_path):
     lattice = Lattice(
         status=str(Result.COMPLETED),
         dispatch_id=DISPATCH_ID,
+        root_dispatch_id=DISPATCH_ID,
         name="test-lattice",
         created_at=datetime.now(),
         updated_at=datetime.now(),
@@ -133,6 +134,7 @@ def test_get_result_503(mocker, app, client, test_db_file, tmp_path):
     lattice = Lattice(
         status=str(Result.NEW_OBJ),
         dispatch_id=DISPATCH_ID,
+        root_dispatch_id=DISPATCH_ID,
         name="test-lattice",
         created_at=datetime.now(),
         updated_at=datetime.now(),
