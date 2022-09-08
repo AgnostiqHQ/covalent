@@ -319,10 +319,6 @@ jobs:
 
       - name: Download Covalent AWS executor Dockerfile
         id: get_aws_executor_dockerfile
-        if: >
-          inputs.prerelease
-          && !github.events.inputs.stable_version
-          && github.event_name == 'workflow_call'
         run: |
           url="https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/Dockerfile?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
           wget $url -O Dockerfile.awsexecutor
@@ -331,10 +327,6 @@ jobs:
 
       - name: Download covalent-aws-plugin VERSION file
         id: get_aws_plugin_version
-        if: >
-          inputs.prerelease
-          && !github.events.inputs.stable_version
-          && github.event_name == 'workflow_call'
         run: |
           url="https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/VERSION?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
           wget $url -O AWS_PLUGINS_VERSION
@@ -346,8 +338,8 @@ jobs:
           inputs.prerelease
           && !github.events.inputs.stable_version
           && github.event_name == 'workflow_call'
-          && steps.get_aws_plugin_dockerfile.outputs.status_code == '200'
-          && steps.get_aws_plugin_version.outputs.status_code == '200'
+          && steps.get_aws_plugin_dockerfile.outputs.status_code < 400
+          && steps.get_aws_plugin_version.outputs.status_code < 400
         run: |
           aws --version
           docker info
@@ -367,8 +359,8 @@ jobs:
           && !github.events.inputs.stable_version
           && github.event_name == 'workflow_call'
           && !github.events.inputs.test_release
-          && steps.get_aws_plugin_dockerfile.outputs.status_code == '200'
-          && steps.get_aws_plugin_version.outputs.status_code == '200'
+          && steps.get_aws_plugin_dockerfile.outputs.status_code < 400
+          && steps.get_aws_plugin_version.outputs.status_code < 400
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
@@ -378,7 +370,6 @@ jobs:
             - COVALENT_BASE_IMAGE: public.ecr.aws/covalent/covalent:${{ env.TAG }}
           push: true
           tags: |
-            public.ecr.aws/covalent-executor-base/covalent:latest
             public.ecr.aws/covalent-executor-base/covalent:${{ env.AWS_PLUGINS_TAG }}
 
       - name: Tag stable release
@@ -392,7 +383,7 @@ jobs:
           MANIFEST=$(aws ecr batch-get-image --repository-name covalent --image-ids imageTag=${{ github.events.inputs.stable_version }} --output json | jq --raw-output --join-output '.images[0].imageManifest')
           aws ecr put-image --repository-name covalent --image-tag stable --image-manifest "$MANIFEST"
 
-      - name: Build AWS executor table image
+      - name: Build AWS executor stable image
         if: >
           !inputs.prerelease
           && github.events.inputs.stable_version
