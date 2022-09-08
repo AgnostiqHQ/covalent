@@ -225,6 +225,17 @@ const ResultsTableHead = ({
               },
             }}
           >
+            <MenuItem divider onClose={handleClose} sx={{
+              cursor: 'default',
+              textAlign:'center',
+              justifyContent:'center',
+              display:'flex',
+              '&:hover': {
+                background: 'none !important',
+              },
+            }}>
+              Delete Options{' '}
+            </MenuItem>
             <MenuItem divider onClick={onSelectAllClick} onClose={handleClose}>
               {/* {numSelected > 0 && numSelected === total
                 ? 'Unselect all'
@@ -245,7 +256,7 @@ const ResultsTableHead = ({
               </>
             ) : null}
             {(filterValue === 'COMPLETED' || filterValue === 'ALL') &&
-            completedDispatches !== 0 ? (
+              completedDispatches !== 0 ? (
               <MenuItem
                 divider
                 onClick={() => {
@@ -258,7 +269,7 @@ const ResultsTableHead = ({
             ) : null}
 
             {(filterValue === 'RUNNING' || filterValue === 'ALL') &&
-            runningDispatches !== 0 ? (
+              runningDispatches !== 0 ? (
               <MenuItem
                 divider
                 onClick={() => {
@@ -270,7 +281,7 @@ const ResultsTableHead = ({
               </MenuItem>
             ) : null}
             {(filterValue === 'FAILED' || filterValue === 'ALL') &&
-            failedDispatches !== 0 ? (
+              failedDispatches !== 0 ? (
               <MenuItem
                 divider
                 onClick={() => {
@@ -497,9 +508,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-    {
-      fontSize: '1rem',
-    },
+  {
+    fontSize: '1rem',
+  },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
