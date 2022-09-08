@@ -1,0 +1,120 @@
+{
+    "test_electrons":{
+        "path": "/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/electron/0",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "id": 7,
+                "node_id": 0,
+                "parent_lattice_id": 2,
+                "type": "sublattice",
+                "storage_path": "/home/arunmukesh/Desktop/files/results/170ce563-8385-42cb-a1a6-2576937fa680/node_0",
+                "name": ":sublattice:sub_workflow",
+                "status": "COMPLETED",
+                "started_at": "2022-09-08T12:22:27",
+                "ended_at": "2022-09-08T12:22:28",
+                "runtime": 1000
+            }
+        }
+    },
+    "test_electrons_details_function_string":{
+        "path": "/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/electron/0/details/function_string",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": "@ct.electron\n@ct.lattice\ndef sub_workflow(x):\n    # 1 -> 0\n    return sub_sub_workflow(x)\n\n\n"
+            }
+        }
+    },
+    "test_electrons_details_executor":{
+        "path": "/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/electron/0/details/executor",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "executor_name": "dask",
+                "executor_details": null
+            }
+        }
+    },
+    "test_electrons_details_result":{
+        "path": "/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/electron/0/details/result",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": "\"9\""
+            }
+        }
+    },
+    "test_electrons_details_value":{
+        "path": "/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/electron/0/details/value",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": null
+            }
+        }
+    },
+    "test_electrons_details_stdout":{
+        "path": "/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/electron/0/details/stdout",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": ""
+            }
+        }
+    },
+    "test_electrons_details_deps":{
+        "path": "/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/electron/0/details/deps",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": null
+            }
+        }
+    },
+    "test_electrons_details_call_before":{
+        "path": "/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/electron/0/details/call_before",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": ""
+            }
+        }
+    },
+    "test_electrons_details_call_after":{
+        "path": "/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/electron/0/details/call_after",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": ""
+            }
+        }
+    },
+    "test_electrons_details_call_error":{
+        "path": "/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/electron/0/details/error",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": ""
+            }
+        }
+    },
+    "test_electrons_details_info":{
+        "path": "/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/electron/0/details/info",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": ""
+            }
+        }
+    },
+    "test_electrons_details_inputs":{
+        "path": "/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/electron/0/details/inputs",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": "{\"args\": [\"3\"], \"kwargs\": {}}"
+            }
+        }
+    }
+}
