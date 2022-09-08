@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Updated images in `Getting Started`, `Spacetime Classification`  tutorials.
+- Updated images and cell outputs in RTD.
+
+### Docs
+
+- Added credential management page
 
 ## [0.196.0] - 2022-09-07
 
