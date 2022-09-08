@@ -1,0 +1,75 @@
+{
+    "test_lattices":{
+        "path":"/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "dispatch_id": "170ce563-8385-42cb-a1a6-2576937fa680",
+                "status": "COMPLETED",
+                "total_electrons": 2,
+                "total_electrons_completed": 2,
+                "started_at": "2022-09-08T12:22:27",
+                "ended_at": "2022-09-08T12:22:28",
+                "directory": "/home/arunmukesh/Desktop/files/results/170ce563-8385-42cb-a1a6-2576937fa680",
+                "runtime": 1000,
+                "updated_at": null
+            }
+        }
+    },
+    "test_lattices_results":{
+        "path":"/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/details/result",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": "\"9\""
+            }
+        }
+    },
+    "test_lattices_function_string":{
+        "path":"/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/details/function_string",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": "@ct.lattice\ndef workflow(x):\n    # 1 -> 0\n    return sub_workflow(x)\n\n\n"
+            }
+        }
+    },
+    "test_lattices_function_inputs":{
+        "path":"/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/details/inputs",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": "{\"args\": [\"3\"], \"kwargs\": {}}"
+            }
+        }
+    },
+    "test_lattices_function_errors":{
+        "path":"/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/details/error",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "data": ""
+            }
+        }
+    },
+    "test_lattices_function_executor":{
+        "path":"/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/details/executor",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "executor_name": "dask",
+                "executor_details": null
+            }
+        }
+    },
+    "test_lattices_function_workflow_executor":{
+        "path":"/api/v1/dispatches/170ce563-8385-42cb-a1a6-2576937fa680/details/workflow_executor",
+        "case1":{
+            "status_code": 200,
+            "response_data":{
+                "workflow_executor_name": "dask",
+                "workflow_executor_details": null
+            }
+        }
+    }
+}
