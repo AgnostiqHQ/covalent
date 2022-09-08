@@ -47,11 +47,10 @@ jobs:
               - '.github/actions/changelog/dist/**'
 
       - name: Get latest release
-        id: get-latest-tag
         uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
         with:
           semver_only: true
-
       - name: Get commits
         id: commits
         uses: octokit/request-action@v2.x
@@ -70,7 +69,6 @@ jobs:
           changelog-path: CHANGELOG.md
           version-path: VERSION
           commits-json: ${{toJSON(fromJSON(steps.commits.outputs.data).commits)}}
-
       - name: Commit
         if: ${{ steps.changelog.outputs.message != 'noop' }}
         uses: EndBug/add-and-commit@v9
