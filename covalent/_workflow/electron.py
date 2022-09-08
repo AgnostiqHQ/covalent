@@ -239,11 +239,9 @@ class Electron:
                 get_item.__name__ = node_name
 
                 iterable_metadata = self.metadata.copy()
-                iterable_metadata[
-                    "call_before"
-                ] = (
-                    []
-                )  # Including this metadata from the parent electron in the collected nodes breaks file transfer
+                for elem in iterable_metadata["call_before"]:
+                    elem["attributes"]["retval_keyword"] = ""
+
                 get_item_electron = Electron(function=get_item, metadata=iterable_metadata)
                 yield get_item_electron(self, i)
 
