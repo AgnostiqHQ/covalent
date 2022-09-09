@@ -5,7 +5,7 @@ Electron Sidebar
 - The electron sidebar provides node-level details for a particular workflow dispatch.
 - The sidebar will be shown on the right-hand side when one of the nodes is clicked.
 
-.. image:: ../images/electron_sidebar.gif
+.. image:: ../images/electron-sidebar.gif
    :align: center
    :width: 5000px
 
