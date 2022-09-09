@@ -34,7 +34,6 @@ from covalent_ui.api.v1.models.lattices_model import (
     ElectronResponse,
 )
 from covalent_ui.api.v1.utils.file_handle import FileHandler, validate_data
-from covalent_ui.api.v1.utils.file_name import FileAttributes
 
 routes: APIRouter = APIRouter()
 
@@ -63,7 +62,6 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
                     }
                 ],
             )
-        handler = FileHandler(result["storage_path"])
         return ElectronResponse(
             id=result["id"],
             node_id=result["transport_graph_node_id"],
@@ -75,7 +73,7 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
             started_at=result["started_at"],
             ended_at=result["completed_at"],
             runtime=result["runtime"],
-            description=handler.get_file_attr(result["results_filename"], FileAttributes.DOC),
+            description="",
         )
 
 

@@ -35,7 +35,6 @@ from covalent_ui.api.v1.models.lattices_model import (
     LatticeWorkflowExecutorResponse,
 )
 from covalent_ui.api.v1.utils.file_handle import FileHandler
-from covalent_ui.api.v1.utils.file_name import FileAttributes
 
 routes: APIRouter = APIRouter()
 
@@ -64,7 +63,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
                 started_at=data.start_time,
                 ended_at=data.end_time,
                 directory=data.directory,
-                description=handler.get_file_attr(data["results_filename"], FileAttributes.DOC),
+                description=handler.read_from_text(data.docstring_filename),
                 runtime=data.runtime,
             )
         raise HTTPException(
