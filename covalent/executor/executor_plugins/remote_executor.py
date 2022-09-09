@@ -29,7 +29,7 @@ via SSH or Slurm or by interfacing with compute services in various cloud enviro
 
 import asyncio
 from abc import abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 from covalent._shared_files import logger
 from covalent.executor.base import AsyncBaseExecutor
@@ -79,7 +79,6 @@ class RemoteExecutor(AsyncBaseExecutor):
         Return:
             bool: True if the user credentials are valid and false if otherwise.
         """
-
         pass
 
     @abstractmethod
@@ -87,7 +86,6 @@ class RemoteExecutor(AsyncBaseExecutor):
         """
         Abstract method that uploads the pickled function to the remote cache.
         """
-
         pass
 
     @abstractmethod
@@ -101,7 +99,6 @@ class RemoteExecutor(AsyncBaseExecutor):
         Return:
             task_uuid: Task UUID defined on the remote backend.
         """
-
         pass
 
     @abstractmethod
@@ -109,7 +106,6 @@ class RemoteExecutor(AsyncBaseExecutor):
         """
         Abstract method that returns the status of an electron by querying the remote backend.
         """
-
         pass
 
     @abstractmethod
@@ -118,7 +114,6 @@ class RemoteExecutor(AsyncBaseExecutor):
         Abstract method that polls the remote backend until the status of a workflow's execution
         is either COMPLETED or FAILED.
         """
-
         pass
 
     @abstractmethod
@@ -134,7 +129,8 @@ class RemoteExecutor(AsyncBaseExecutor):
         """
         pass
 
-    async def run_async_subprocess(self, cmd) -> Any:
+    @staticmethod
+    async def run_async_subprocess(cmd) -> Tuple:
         """
         Invokes an async subprocess to run a command.
         """
@@ -150,3 +146,5 @@ class RemoteExecutor(AsyncBaseExecutor):
 
         if stderr:
             app_log.debug(stderr)
+
+        return proc, stdout, stderr
