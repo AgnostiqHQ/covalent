@@ -414,7 +414,7 @@ def test_update_node(test_db, result_1, mocker):
     result_1._update_node(
         node_id=0,
         end_time=dt.now(timezone.utc),
-        status="COMPLETED",
+        status=Result.COMPLETED,
         output=5,
     )
 
