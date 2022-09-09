@@ -9,8 +9,9 @@ inputs:
     description: "Path to the VERSION file"
     required: true
     default: "VERSION"
-  commits-json:
-    description: "JSON formatted commit log"
+  token:
+    description: "GitHub token to authenticate API requests."
+    required: true
 outputs:
   message:
     description: 'A commit message if there is a change to be committed, or "noop" if there is no change.'
