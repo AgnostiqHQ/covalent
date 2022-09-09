@@ -22,7 +22,7 @@
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._workflow.electron import Electron, electron, to_decoded_electron_collection
+from covalent._workflow.electron import Electron, to_decoded_electron_collection
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
@@ -213,13 +213,3 @@ def test_electron_metadata_is_serialized_early():
     assert node_0_metadata == encode_metadata(node_0_metadata)
     node_1_metadata = workflow.transport_graph.get_node_value(1, "metadata")
     assert node_1_metadata == encode_metadata(node_1_metadata)
-
-
-def test_iter():
-    """Test the iter dunder method for the Electron class."""
-
-    def test_callable(x):
-        return x, x + 1, x + 2
-
-    mock_metadata = {"call_before": []}
-    electron = Electron(function=test_callable, node_id=-1, metadata={})
