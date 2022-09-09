@@ -12,4 +12,4 @@ The Concepts section helps you learn about the parts of the Covalent workflow an
 
 * :doc:`Electron dependencies <electronDependencies>`:  One can specify different types of dependencies in an electron which will be installed or executed in the electron's backend execution environment.
 
-* :doc:`File Transferw<filetransferw>`: How to transfer files from and to remote or local filesystems.
+* :doc:`File Transfers<fileTransfer>`: How to transfer files from and to remote or local filesystems.
