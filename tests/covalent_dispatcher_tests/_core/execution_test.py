@@ -233,7 +233,8 @@ def test_result_post_process(mocker, test_db):
     res._dispatch_id = "MOCK"
     res._root_dispatch_id = "MOCK"
 
-    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
     res.persist()
 
     execution_result = res.post_process()
@@ -652,7 +653,7 @@ async def test_run_workflow_does_not_deserialize(mocker):
 
 
 @pytest.mark.asyncio
-async def test_run_workflow_with_client_side_postprocess(mocker):
+async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     """Check that run_workflow handles "client" workflow_executor for
     postprocessing"""
 
@@ -664,7 +665,10 @@ async def test_run_workflow_with_client_side_postprocess(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._core.execution.workflow_db", test_db)
+
     result_object.persist()
 
     result_object = await run_workflow(result_object)
@@ -672,7 +676,7 @@ async def test_run_workflow_with_client_side_postprocess(mocker):
 
 
 @pytest.mark.asyncio
-async def test_run_workflow_with_failed_postprocess(mocker):
+async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     """Check that run_workflow handles postprocessing failures"""
 
     dispatch_id = "asdf"
@@ -680,7 +684,10 @@ async def test_run_workflow_with_failed_postprocess(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._core.execution.workflow_db", test_db)
+
     result_object.persist()
 
     def failing_workflow(x):
@@ -715,9 +722,7 @@ def test_build_sublattice_graph():
 
 
 @pytest.mark.asyncio
-async def test_dispatch_sync_sublattice(mocker):
-    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
-
+async def test_dispatch_sync_sublattice(test_db, mocker):
     @ct.electron(executor="local")
     def task(x):
         return x
@@ -725,6 +730,10 @@ async def test_dispatch_sync_sublattice(mocker):
     @ct.lattice(executor="local", workflow_executor="local")
     def sub_workflow(x):
         return task(x)
+
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._core.execution.workflow_db", test_db)
 
     result_object = get_mock_result()
 
