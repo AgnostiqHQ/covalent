@@ -8,7 +8,7 @@ Zoom
 .. |zoom out| image:: ./images/zoom-out.png
     :width: 20px
 
-.. |fit to screen| image:: ./images/fit.png
+.. |fit to screen| image:: ./images/fit.jpg
     :width: 20px
 
 The zoom functionalities of the transport graph lets the users perform the following actions:
