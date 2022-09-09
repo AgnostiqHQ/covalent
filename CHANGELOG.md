@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Unit tests for `remote_executor.py`
+
+### Added
+
+- Added alembic migrations script for DB schema v12
+
+### Docs
+
+- Updated AWS Lambda plugin rtd with mention to its limitations.
+
+## [0.197.0] - 2022-09-08
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- Fixed missing lattice and result object attributes after rehydrating from datastore.
+
+### Changed
+
+- Implemented v12 of the DB schema
+
+### Tests
+
+- Enhanced DB tests to check faithfulness of persist and rehydrate operations
+
 ### Docs
 
 - Added read the docs for graph section on the user interface
