@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Removed inheritance of `call_before/after` metadata related to file transfers from parent electron to collected nodes.
+- Removed inheritance of `call_before` metadata related to file transfers from parent electron to collected nodes.
 
 ### Added
 
