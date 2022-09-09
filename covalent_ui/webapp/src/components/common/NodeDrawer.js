@@ -135,7 +135,13 @@ const NodeDrawer = ({ node, dispatchId }) => {
           boxSizing: 'border-box',
           border: 'none',
           p: 3,
+          marginRight: '10px',
+          marginTop:'22px',
+          height: '904px',
           bgcolor: alpha(theme.palette.background.default),
+          boxShadow:'0px 16px 50px rgba(0, 0, 0, 0.9)',
+          backdropFilter:'blur(8px)',
+          borderRadius: '16px',
         },
       })}
       anchor="right"
