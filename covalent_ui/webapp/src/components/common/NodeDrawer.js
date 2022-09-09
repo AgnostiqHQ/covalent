@@ -202,14 +202,14 @@ const NodeDrawer = ({ node, dispatchId }) => {
           {electronErrorData && <ErrorCard error={electronErrorData.data} />}
 
           {/* Description */}
-          {electronDetail.doc &&
+          {electronDetail.description &&
             (electronDetailIsFetching ? (
               <Skeleton data-testid="node__desc_skl" />
             ) : (
               <>
                 <Heading>Description</Heading>
                 <Typography fontSize="body2.fontSize" color="text.tertiary">
-                  {electronDetail.doc}
+                  {electronDetail.description}
                 </Typography>
               </>
             ))}
