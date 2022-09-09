@@ -39,8 +39,8 @@ try {
     .trim();
   const changelog = fs.readFileSync(core.getInput("changelog-path"), "utf8");
   const basehead = core.getInput("basehead");
-  const owner = github.context.repository_owner;
-  const repo = github.context.repository.split("/")[1];
+  const owner = github.context.payload.repository.organization
+  const repo = github.context.payload.repository.name
   const octokit = github.getOctokit(token);
   octokit.rest.repos
     .compareCommitsWithBasehead({
