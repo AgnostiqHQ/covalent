@@ -74,6 +74,7 @@ class Lattice:
         self.transport_graph = transport_graph or _TransportGraph()
         self.metadata = {}
         self.__name__ = self.workflow_function.__name__
+        self.__doc__ = self.workflow_function.__doc__
         self.post_processing = False
         self.args = []
         self.kwargs = {}
@@ -385,7 +386,6 @@ def lattice(
             for k, v in constraints.items():
                 lattice_object.set_metadata(k, v)
             lattice_object.transport_graph.lattice_metadata = lattice_object.metadata
-            lattice_object.__doc__ = func.__doc__
             return lattice_object
 
         return wrapper_lattice()
