@@ -40,7 +40,7 @@ repos:
         args: ["--profile", "black"]
 
   - repo: https://github.com/psf/black
-    rev: 22.6.0
+    rev: 22.8.0
     hooks:
       - id: black
         language_version: python3.8
@@ -65,6 +65,11 @@ repos:
           (?x)^(
               meta.yaml|
           )$
+  - repo: https://github.com/hadialqattan/pycln
+    rev: v2.1.1
+    hooks:
+      - id: pycln
+        args: [--config=pyproject.toml]
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.3.0
     hooks:

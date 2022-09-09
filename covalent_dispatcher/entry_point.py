@@ -23,29 +23,12 @@ Self-contained entry point for the dispatcher
 """
 
 import asyncio
-import uuid
 
-from covalent._results_manager.result import Result
+from covalent._results_manager.result import initialize_result_object
 from covalent._shared_files import logger
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-futures = {}
-
-
-def get_unique_id() -> str:
-    """
-    Get a unique ID.
-
-    Args:
-        None
-
-    Returns:
-        str: Unique ID
-    """
-
-    return str(uuid.uuid4())
 
 
 async def run_dispatcher(json_lattice: str):
@@ -61,25 +44,14 @@ async def run_dispatcher(json_lattice: str):
         dispatch_id: A string containing the dispatch id of current dispatch.
     """
 
-    dispatch_id = get_unique_id()
-    from covalent._workflow.lattice import Lattice
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
-
     from ._core import run_workflow
 
-    lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
-    result_object._dispatch_id = dispatch_id
-    result_object._initialize_nodes()
+    result_object = initialize_result_object(json_lattice)
 
-    app_log.debug("2: Constructed result object and initialized nodes.")
-    result_object.persist()
+    dispatch_id = result_object.dispatch_id
+    asyncio.create_task(run_workflow(result_object))
 
-    app_log.debug("Result object retrieved.")
-
-    futures[dispatch_id] = asyncio.create_task(run_workflow(result_object))
-
-    app_log.debug("Submitted lattice JSON to run_workflow.")
+    app_log.debug("Submitted result object to run_workflow.")
 
     return dispatch_id
 

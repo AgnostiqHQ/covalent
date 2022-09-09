@@ -21,7 +21,6 @@
 import subprocess
 import tempfile
 from copy import deepcopy
-from pathlib import Path
 from typing import List, Union
 
 from .deps import Deps

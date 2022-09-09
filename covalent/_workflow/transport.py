@@ -24,12 +24,12 @@ import base64
 import json
 import platform
 from copy import deepcopy
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict
 
 import cloudpickle
 import networkx as nx
 
-from .._data_store import DataStoreSession, models
+from .._data_store import DataStoreSession
 from .._shared_files.defaults import parameter_prefix
 
 

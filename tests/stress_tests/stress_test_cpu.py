@@ -1,5 +1,3 @@
-import numpy as np
-
 import covalent as ct
 
 N = 8

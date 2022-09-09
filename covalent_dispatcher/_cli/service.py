@@ -27,7 +27,6 @@ import json
 import os
 import shutil
 import socket
-import sys
 from subprocess import DEVNULL, Popen
 from typing import Optional
 
