@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 
 - Updated more tests to DB schema v12
+- Improved DB mocking in dispatcher tests
 
 ## [0.197.0] - 2022-09-08
 
