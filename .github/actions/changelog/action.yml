@@ -12,6 +12,9 @@ inputs:
   token:
     description: "GitHub token to authenticate API requests."
     required: true
+  basehead:
+    description: "Git syntax to compare refs, e.g. develop...master"
+    required: true
 outputs:
   message:
     description: 'A commit message if there is a change to be committed, or "noop" if there is no change.'
