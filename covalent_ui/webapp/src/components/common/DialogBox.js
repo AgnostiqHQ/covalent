@@ -48,6 +48,7 @@ export default function DialogBox({
       data-testid="dialogBox"
     >
       <Box
+        data-testid="dialogbox"
         sx={{
           position: 'absolute',
           top: '40%',
@@ -74,7 +75,11 @@ export default function DialogBox({
           <Grid
             sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
           >
-            <SvgIcon component={icon} style={{ fontSize: '30px' }} />
+            <SvgIcon
+              data-testid="dialogIcon"
+              component={icon}
+              style={{ fontSize: '30px' }}
+            />
             <Typography
               sx={{
                 paddingBottom: '5px',
@@ -90,7 +95,13 @@ export default function DialogBox({
           </Grid>
 
           <CloseIcon
-            style={{ marginTop: '3px', width: '10px', height: '10px',cursor:'pointer' }}
+            data-testid="closeIcon"
+            style={{
+              marginTop: '3px',
+              width: '10px',
+              height: '10px',
+              cursor: 'pointer',
+            }}
             onClick={handleClose}
           />
         </Grid>

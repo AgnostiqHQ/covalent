@@ -27,24 +27,24 @@ import Heading from '../common/Heading'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 
 const ExecutorSection = ({ isFetching, metadata, ...props }) => {
-    const executorType = _.get(metadata, 'executor_name')
-    const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
-    const src = _.join(
-        _.map(executorParams, (value, key) => `${key}: ${value}`),
-        '\n'
-    )
-    return (
-        <>
-            <Heading>
-                Executor: <strong>{executorType}</strong>
-            </Heading>
-            {src && (
-                <Paper elevation={0} {...props}>
-                    <SyntaxHighlighter language='json' src={src} />
-                </Paper>
-            )}
-        </>
-    )
+  const executorType = _.get(metadata, 'executor_name')
+  const executorParams = _.omitBy(_.get(metadata, 'executor'), (v) => v === '')
+  const src = _.join(
+    _.map(executorParams, (value, key) => `${key}: ${value}`),
+    '\n'
+  )
+  return (
+    <>
+      <Heading data-testid="executorSection">
+        Executor: <strong>{executorType}</strong>
+      </Heading>
+      {src && (
+        <Paper elevation={0} {...props}>
+          <SyntaxHighlighter language="json" src={src} />
+        </Paper>
+      )}
+    </>
+  )
 }
 
 export default ExecutorSection

@@ -1,10 +1,8 @@
-from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
 
 from covalent._file_transfer import File
-from covalent._file_transfer.enums import FileSchemes, FileTransferStrategyTypes
 from covalent._file_transfer.file_transfer import FileTransfer
 
 

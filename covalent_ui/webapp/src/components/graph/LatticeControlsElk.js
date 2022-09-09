@@ -40,6 +40,7 @@ import LabelOffIcon from '@mui/icons-material/LabelOff';
 import LabelIcon from '@mui/icons-material/Label';
 import * as React from 'react';
 import { LayoutOptions } from './LayoutOptions';
+import { ReactComponent as ScreenshotIcon } from '../../assets/screenshot.svg'
 
 const LatticeControls = ({
   marginLeft = 0,
@@ -59,12 +60,12 @@ const LatticeControls = ({
   anchorEl,
   handleClose,
   handleHideLabels,
-  hideLabels
+  hideLabels,
+  toggleScreenShot
 }) => {
   const { zoomIn, zoomOut } = useZoomPanHelper()
   const { fitView } = useFitViewHelper()
   return (
-
     <ToggleButtonGroup
       orientation="vertical"
       size="small"
@@ -88,6 +89,14 @@ const LatticeControls = ({
           <MinusIcon />
         </ToggleButton>
       </Hint>
+      <Hint title="Download Screenshot">
+        <ToggleButton
+          onClick={toggleScreenShot}
+          value=""
+          sx={{ height: '40px', color: 'white' }}>
+          <ScreenshotIcon />
+        </ToggleButton>
+      </Hint>
 
       <Hint title="Fit to screen">
         <ToggleButton
@@ -105,20 +114,23 @@ const LatticeControls = ({
         </ToggleButton>
       </Hint>
       <Hint title="Change layout">
-        <ToggleButton onClick={(e) => handleClick(e)} value="">
+        <ToggleButton data-testid="tooglebuttonclick" onClick={(e) => handleClick(e)} value="">
           <DashboardIcon />
         </ToggleButton>
       </Hint>
+
       <LayoutOptions
         algorithm={algorithm}
         open={open}
         anchorEl={anchorEl}
         handleClick={handleClick}
         handleClose={handleClose}
-        handleChangeAlgorithm={handleChangeAlgorithm} />
+        handleChangeAlgorithm={handleChangeAlgorithm}
+      />
 
       <Hint title="Change orientation">
         <ToggleButton
+          data-testid="changeorientation"
           onClick={() => {
             switch (direction) {
               case 'UP':
@@ -145,18 +157,18 @@ const LatticeControls = ({
         </ToggleButton>
       </Hint>
 
-      <Hint title={hideLabels ? "Show labels" : "Hide labels"}>
+      <Hint data-testid="handlelabelhide" title={hideLabels ? 'Show labels' : 'Hide labels'}>
         <ToggleButton value="" onClick={() => handleHideLabels()}>
           {hideLabels ? <LabelOffIcon /> : <LabelIcon />}
         </ToggleButton>
       </Hint>
       <Hint title="Toggle parameters">
-        <ToggleButton onClick={toggleParams} value="" selected={showParams}>
+        <ToggleButton data-testid="toggleparams" onClick={toggleParams} value="" selected={showParams}>
           P
         </ToggleButton>
       </Hint>
       <Hint title="Toggle draggable nodes">
-        <ToggleButton onClick={toggleNodesDraggable} value="">
+        <ToggleButton data-testid="toggledragablenode" onClick={toggleNodesDraggable} value="">
           {nodesDraggable ? <LockOpenOutlined /> : <LockOutlined />}
         </ToggleButton>
       </Hint>

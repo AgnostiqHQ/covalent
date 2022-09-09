@@ -68,7 +68,14 @@ if __name__ == "__main__":
         action="store_true",
         help="Start the server in developer mode.",
     )
-    ap.add_argument("--no-cluster", required=False, help="Start Covalent server without Dask")
+    ap.add_argument(
+        "--no-cluster",
+        dest="cluster",
+        action="store_false",
+        required=False,
+        help="Start Covalent server without Dask",
+    )
+    ap.set_defaults(cluster=True)
 
     args, unknown = ap.parse_known_args()
 
@@ -85,7 +92,7 @@ if __name__ == "__main__":
     RELOAD = False
 
     # Start dask if no-cluster flag is not specified (covalent stop auto terminates all child processes of this)
-    if not args.no_cluster:
+    if args.cluster:
         dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log)
         dask_cluster.start()
 

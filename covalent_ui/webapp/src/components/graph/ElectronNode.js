@@ -123,6 +123,7 @@ const ElectronNode = ({
           placement="bottom-end"
         >
           <Paper
+          data-testid="electronNode"
             elevation={!selected ? 1 : 5}
             sx={{
               height: '34px',
@@ -142,21 +143,21 @@ const ElectronNode = ({
               type="target"
               position={targetPosition}
               isConnectable={isConnectable}
+              data-testid='handleelectronNode'
             />
             {nodeLabelIcon(data.nodeType)}
             {(() => {
               switch (data.status) {
                 case 'NEW_OBJECT':
                   return (
-                    <SvgIcon
-                      sx={{ mt: 0.5, mr: 0.5, fontSize: 14, fill: color }}
-                    >
+                    <SvgIcon data-testid="atom" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
                       <AtomSvg />
                     </SvgIcon>
                   )
                 case 'RUNNING':
                   return (
                     <SvgIcon
+                    data-testid="loader"
                       sx={{ mt: 0.1, mr: 0.5, fontSize: 16, fill: color }}
                     >
                       <LoaderSvg />
@@ -164,21 +165,19 @@ const ElectronNode = ({
                   )
                 case 'COMPLETED':
                   return (
-                    <SvgIcon
-                      sx={{ fill: color, mt: 1 }}
-                    >
+                    <SvgIcon  data-testid="check" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
                       <CheckSvg />
                     </SvgIcon>
                   )
                 case 'FAILED':
                   return (
-                    <SvgIcon sx={{ mt: 1, fill: color }}>
+                    <SvgIcon data-testid="error" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
                       <ErrorSvg />
                     </SvgIcon>
                   )
                 case 'CANCELLED':
                   return (
-                    <SvgIcon sx={{ mt: 0.8, fill: color }}>
+                    <SvgIcon data-testid="cancel" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
                       <CancelSvg />
                     </SvgIcon>
                   )
@@ -189,6 +188,7 @@ const ElectronNode = ({
 
             <Typography sx={{ fontSize: 14, mb: 0.3 }}>{data.label}</Typography>
             <Handle
+            data-testid="sourcehandleelectronNode"
               type="source"
               position={sourcePosition}
               isConnectable={isConnectable}

@@ -241,6 +241,7 @@ const ResultsTableToolbar = ({
           title="All"
           count={allDispatches}
           isFetching={!dashboardOverviewFetching}
+          data-testid="sortDispatch"
         />
         <SortDispatch
           title="Running"
@@ -301,9 +302,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-  {
-    fontSize: '1rem',
-  },
+    {
+      fontSize: '1rem',
+    },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -454,7 +455,6 @@ const ResultListing = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isError])
-
 
   useEffect(() => {
     if (offset === 0) setPage(1)

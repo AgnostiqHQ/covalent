@@ -25,16 +25,16 @@ import shutil
 from datetime import datetime as dt
 from datetime import timezone
 from pathlib import Path
-from unicodedata import name
+from unittest.mock import MagicMock
 
-import cloudpickle
 import pytest
-from sqlalchemy.orm import Session
 
 import covalent as ct
-from covalent._data_store.datastore import DataStore, DataStoreNotInitializedError
+import covalent._results_manager.result as result_module
+from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
-from covalent._results_manager.result import Result
+from covalent._results_manager.result import Result, initialize_result_object
+from covalent._results_manager.results_manager import result_from
 from covalent._results_manager.write_result_to_db import load_file
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
@@ -48,6 +48,32 @@ def teardown_temp_results_dir(dispatch_id: str) -> None:
     dir_path = f"{TEMP_RESULTS_DIR}/{dispatch_id}"
     if os.path.exists(dir_path):
         shutil.rmtree(dir_path)
+
+
+def get_mock_result() -> Result:
+    """Construct a mock result object corresponding to a lattice."""
+
+    import sys
+
+    @ct.electron(executor="local")
+    def task(x):
+        print(f"stdout: {x}")
+        print("Error!", file=sys.stderr)
+        return x
+
+    @ct.lattice(results_dir=TEMP_RESULTS_DIR)
+    def pipeline(x):
+        res1 = task(x)
+        res2 = task(res1)
+        return res2
+
+    pipeline.build_graph(x="absolute")
+    received_workflow = LatticeClass.deserialize_from_json(pipeline.serialize_to_json())
+    result_object = Result(
+        received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
+    )
+
+    return result_object
 
 
 @pytest.fixture
@@ -73,8 +99,9 @@ def result_1():
     def task_2(x, y):
         return x + y
 
-    @ct.lattice(executor=le, workflow_executor=le)
+    @ct.lattice(executor=le, workflow_executor=le, results_dir=TEMP_RESULTS_DIR)
     def workflow_1(a, b):
+        """Docstring"""
         res_1 = task_1(a, b)
         return task_2(res_1, b)
 
@@ -84,6 +111,7 @@ def result_1():
     result = Result(
         lattice=received_lattice, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1"
     )
+    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
     result._initialize_nodes()
     return result
 
@@ -112,6 +140,11 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         assert lattice_row.electron_id is None
         assert lattice_row.executor == "local"
         assert lattice_row.workflow_executor == "local"
+        assert lattice_row.deps_filename == result_module.LATTICE_DEPS_FILENAME
+        assert lattice_row.call_before_filename == result_module.LATTICE_CALL_BEFORE_FILENAME
+        assert lattice_row.call_after_filename == result_module.LATTICE_CALL_AFTER_FILENAME
+        assert lattice_row.root_dispatch_id == "dispatch_1"
+        assert lattice_row.results_dir == result_1.results_dir
 
         lattice_storage_path = Path(lattice_row.storage_path)
         assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR) / "dispatch_1"
@@ -236,6 +269,69 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
     teardown_temp_results_dir(dispatch_id="dispatch_1")
 
 
+def test_result_persist_subworkflow_1(test_db, result_1, mocker):
+    """Test the persist method for the Result object when passed an electron_id"""
+
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    result_1.persist(electron_id=2)
+
+    # Query lattice / electron / electron dependency
+    with test_db.session() as session:
+        lattice_row = session.query(Lattice).first()
+        electron_rows = session.query(Electron).all()
+        electron_dependency_rows = session.query(ElectronDependency).all()
+
+        # Check that lattice record is as expected
+        assert lattice_row.dispatch_id == "dispatch_1"
+        assert isinstance(lattice_row.created_at, dt)
+        assert lattice_row.started_at is None
+        assert isinstance(lattice_row.updated_at, dt) and isinstance(lattice_row.created_at, dt)
+        assert lattice_row.completed_at is None
+        assert lattice_row.status == "NEW_OBJECT"
+        assert lattice_row.name == "workflow_1"
+        assert lattice_row.electron_id == 2
+        assert lattice_row.executor == "local"
+        assert lattice_row.workflow_executor == "local"
+
+
+def test_result_persist_rehydrate(test_db, result_1, mocker):
+    """Test that persist followed by result_from preserves all result,
+    lattice, and transport graph attributes"""
+
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    result_1.persist()
+    with test_db.session() as session:
+        lattice_row = session.query(Lattice).first()
+        result_2 = result_from(lattice_row)
+
+    assert result_1.__dict__.keys() == result_2.__dict__.keys()
+    assert result_1.lattice.__dict__.keys() == result_2.lattice.__dict__.keys()
+    for key in result_1.lattice.__dict__.keys():
+        if key == "transport_graph":
+            continue
+        assert result_1.lattice.__dict__[key] == result_2.lattice.__dict__[key]
+
+    for key in result_1.__dict__.keys():
+        if key == "_lattice":
+            continue
+        assert result_1.__dict__[key] == result_2.__dict__[key]
+
+    tg_1 = result_1.lattice.transport_graph._graph
+    tg_2 = result_2.lattice.transport_graph._graph
+
+    assert tg_1.nodes == tg_2.nodes
+    for n in tg_1.nodes:
+        assert tg_1.nodes[n].keys() == tg_2.nodes[n].keys()
+        for k in tg_1.nodes[n]:
+            assert tg_1.nodes[n][k] == tg_2.nodes[n][k]
+
+    assert tg_1.edges == tg_2.edges
+    for e in tg_1.edges:
+        assert tg_1.edges[e] == tg_2.edges[e]
+
+
 def test_get_node_error(test_db, result_1, mocker):
     """Test result method to get the node error."""
 
@@ -340,3 +436,37 @@ def test_update_node(test_db, result_1, mocker):
         assert lattice_record.electron_num == 5
         assert lattice_record.completed_electron_num == 1
         assert lattice_record.updated_at is not None
+
+
+def test_result_root_dispatch_id(result_1):
+    """Test the `root_dispatch_id` property`"""
+
+    assert result_1.root_dispatch_id == result_1._root_dispatch_id
+
+
+def test_initialize_result_object(mocker):
+    """Test the `initialize_result_object` function"""
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph(1)
+    json_lattice = workflow.serialize_to_json()
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    result_object = get_mock_result()
+
+    mock_result_class = mocker.patch("covalent._results_manager.result.Result")
+    mock_result_instance = mock_result_class.return_value
+    mock_result_instance.persist = MagicMock()
+
+    sub_result_object = initialize_result_object(
+        json_lattice=json_lattice, parent_result_object=result_object, parent_electron_id=5
+    )
+
+    mock_result_instance.persist.assert_called_with(electron_id=5)
+    assert sub_result_object._root_dispatch_id == result_object.dispatch_id
