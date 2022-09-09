@@ -30,9 +30,11 @@ from unittest.mock import MagicMock
 import pytest
 
 import covalent as ct
+import covalent._results_manager.result as result_module
 from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.result import Result, initialize_result_object
+from covalent._results_manager.results_manager import result_from
 from covalent._results_manager.write_result_to_db import load_file
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
@@ -97,8 +99,9 @@ def result_1():
     def task_2(x, y):
         return x + y
 
-    @ct.lattice(executor=le, workflow_executor=le)
+    @ct.lattice(executor=le, workflow_executor=le, results_dir=TEMP_RESULTS_DIR)
     def workflow_1(a, b):
+        """Docstring"""
         res_1 = task_1(a, b)
         return task_2(res_1, b)
 
@@ -108,6 +111,7 @@ def result_1():
     result = Result(
         lattice=received_lattice, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1"
     )
+    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
     result._initialize_nodes()
     return result
 
@@ -136,6 +140,11 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         assert lattice_row.electron_id is None
         assert lattice_row.executor == "local"
         assert lattice_row.workflow_executor == "local"
+        assert lattice_row.deps_filename == result_module.LATTICE_DEPS_FILENAME
+        assert lattice_row.call_before_filename == result_module.LATTICE_CALL_BEFORE_FILENAME
+        assert lattice_row.call_after_filename == result_module.LATTICE_CALL_AFTER_FILENAME
+        assert lattice_row.root_dispatch_id == "dispatch_1"
+        assert lattice_row.results_dir == result_1.results_dir
 
         lattice_storage_path = Path(lattice_row.storage_path)
         assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR) / "dispatch_1"
@@ -284,6 +293,43 @@ def test_result_persist_subworkflow_1(test_db, result_1, mocker):
         assert lattice_row.electron_id == 2
         assert lattice_row.executor == "local"
         assert lattice_row.workflow_executor == "local"
+
+
+def test_result_persist_rehydrate(test_db, result_1, mocker):
+    """Test that persist followed by result_from preserves all result,
+    lattice, and transport graph attributes"""
+
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    result_1.persist()
+    with test_db.session() as session:
+        lattice_row = session.query(Lattice).first()
+        result_2 = result_from(lattice_row)
+
+    assert result_1.__dict__.keys() == result_2.__dict__.keys()
+    assert result_1.lattice.__dict__.keys() == result_2.lattice.__dict__.keys()
+    for key in result_1.lattice.__dict__.keys():
+        if key == "transport_graph":
+            continue
+        assert result_1.lattice.__dict__[key] == result_2.lattice.__dict__[key]
+
+    for key in result_1.__dict__.keys():
+        if key == "_lattice":
+            continue
+        assert result_1.__dict__[key] == result_2.__dict__[key]
+
+    tg_1 = result_1.lattice.transport_graph._graph
+    tg_2 = result_2.lattice.transport_graph._graph
+
+    assert tg_1.nodes == tg_2.nodes
+    for n in tg_1.nodes:
+        assert tg_1.nodes[n].keys() == tg_2.nodes[n].keys()
+        for k in tg_1.nodes[n]:
+            assert tg_1.nodes[n][k] == tg_2.nodes[n][k]
+
+    assert tg_1.edges == tg_2.edges
+    for e in tg_1.edges:
+        assert tg_1.edges[e] == tg_2.edges[e]
 
 
 def test_get_node_error(test_db, result_1, mocker):
