@@ -24,12 +24,12 @@ import base64
 import json
 import platform
 from copy import deepcopy
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict
 
 import cloudpickle
 import networkx as nx
 
-from .._data_store import DataStoreSession, models
+from .._data_store import DataStoreSession
 from .._shared_files.defaults import parameter_prefix
 
 
@@ -56,7 +56,7 @@ class TransportableObject:
         except TypeError as ex:
             self._json = ""
 
-        self.attrs = {"doc": getattr(obj, "doc", ""), "name": getattr(obj, "name", "")}
+        self.attrs = {"doc": getattr(obj, "__doc__", ""), "name": getattr(obj, "__name__", "")}
 
     def __eq__(self, obj) -> bool:
         if not isinstance(obj, TransportableObject):

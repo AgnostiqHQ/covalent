@@ -23,15 +23,16 @@
 import inspect
 import os
 from contextlib import nullcontext
-from ctypes import POINTER, c_int32
+from ctypes import c_int32
 from subprocess import PIPE, Popen
 from tempfile import NamedTemporaryFile
 
 import pytest
 
-from covalent import DepsBash
+from covalent import DepsBash, TransportableObject
 from covalent._file_transfer.file_transfer import HTTP, File, FileTransfer, Order
-from covalent._workflow.lepton import Lepton, bash
+from covalent._workflow.lepton import Lepton
+from covalent._workflow.transport import encode_metadata
 from covalent.executor import LocalExecutor
 
 test_py_module = """
@@ -134,7 +135,7 @@ def test_lepton_init(
 
         electron_init_mock.assert_called_once_with("wrapper function")
         wrap_mock.assert_called_once_with()
-        assert set_metadata_mock.call_count == 4
+        assert set_metadata_mock.call_count == 5
 
         assert lepton.language == language
         assert lepton.function_name == function_name
@@ -193,10 +194,14 @@ def test_local_file_transfer_support(is_from_file_remote, is_to_file_remote, ord
         assert len(call_after_deps) == 0
 
         assert inspect.getsource(
-            call_before_deps[0].apply_fn.get_deserialized()
+            TransportableObject.from_dict(
+                call_before_deps[0]["attributes"]["apply_fn"]
+            ).get_deserialized()
         ) == inspect.getsource(pre_hook_call_dep)
         assert inspect.getsource(
-            call_before_deps[1].apply_fn.get_deserialized()
+            TransportableObject.from_dict(
+                call_before_deps[1]["attributes"]["apply_fn"]
+            ).get_deserialized()
         ) == inspect.getsource(file_transfer_call_dep)
 
     if mock_file_transfer.order == "after":
@@ -206,10 +211,14 @@ def test_local_file_transfer_support(is_from_file_remote, is_to_file_remote, ord
         assert len(call_after_deps) == 1
 
         assert inspect.getsource(
-            call_before_deps[0].apply_fn.get_deserialized()
+            TransportableObject.from_dict(
+                call_before_deps[0]["attributes"]["apply_fn"]
+            ).get_deserialized()
         ) == inspect.getsource(pre_hook_call_dep)
         assert inspect.getsource(
-            call_after_deps[0].apply_fn.get_deserialized()
+            TransportableObject.from_dict(
+                call_after_deps[0]["attributes"]["apply_fn"]
+            ).get_deserialized()
         ) == inspect.getsource(file_transfer_call_dep)
 
 
@@ -232,7 +241,7 @@ def test_http_file_transfer(order):
         )
 
     deps = mock_lepton_with_files.get_metadata("deps")
-    assert deps["bash"].commands == []
+    assert deps["bash"]["attributes"]["commands"] == []
     assert deps.get("pip") is None
     call_before = mock_lepton_with_files.get_metadata("call_before")
     call_after = mock_lepton_with_files.get_metadata("call_after")
@@ -244,12 +253,16 @@ def test_http_file_transfer(order):
         assert len(call_before) == 2
         assert len(call_after) == 0
 
-        assert inspect.getsource(call_before[0].apply_fn.get_deserialized()) == inspect.getsource(
-            pre_hook_call_dep
-        )
-        assert inspect.getsource(call_before[1].apply_fn.get_deserialized()) == inspect.getsource(
-            file_transfer_call_dep
-        )
+        assert inspect.getsource(
+            TransportableObject.from_dict(
+                call_before[0]["attributes"]["apply_fn"]
+            ).get_deserialized()
+        ) == inspect.getsource(pre_hook_call_dep)
+        assert inspect.getsource(
+            TransportableObject.from_dict(
+                call_before[1]["attributes"]["apply_fn"]
+            ).get_deserialized()
+        ) == inspect.getsource(file_transfer_call_dep)
 
     if mock_file_download.order == "after":
         # There should be one call before call deps: pre hook
@@ -257,12 +270,16 @@ def test_http_file_transfer(order):
         # There should be one call after call deps: file transfer
         assert len(call_after) == 1
 
-        assert inspect.getsource(call_before[0].apply_fn.get_deserialized()) == inspect.getsource(
-            pre_hook_call_dep
-        )
-        assert inspect.getsource(call_after[0].apply_fn.get_deserialized()) == inspect.getsource(
-            file_transfer_call_dep
-        )
+        assert inspect.getsource(
+            TransportableObject.from_dict(
+                call_before[0]["attributes"]["apply_fn"]
+            ).get_deserialized()
+        ) == inspect.getsource(pre_hook_call_dep)
+        assert inspect.getsource(
+            TransportableObject.from_dict(
+                call_after[0]["attributes"]["apply_fn"]
+            ).get_deserialized()
+        ) == inspect.getsource(file_transfer_call_dep)
 
 
 @pytest.fixture
@@ -491,3 +508,17 @@ def test_shell_wrapper(
         return
 
     assert result == expected_return
+
+
+def test_lepton_constructor_serializes_metadata():
+
+    le = LocalExecutor()
+    bashdep = DepsBash(["yum install gcc"])
+    lep = Lepton(
+        "python",
+        library_name="test_module",
+        function_name="test_fn",
+        executor=le,
+        deps_bash=bashdep,
+    )
+    assert lep.metadata == encode_metadata(lep.metadata)

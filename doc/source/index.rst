@@ -146,7 +146,9 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    Concepts <concepts/concepts>
    Tutorials <tutorials/tutorials>
    How-To Guides <how_to/index>
+   User Interface <webapp_ui/index>
    🔌 Plugins <plugins>
+   Credentials <credentials>
    API Documentation <api/index>
 
 

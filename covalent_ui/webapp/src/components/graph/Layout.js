@@ -27,9 +27,9 @@ import { isNode } from 'react-flow-renderer'
 import { isParameter } from '../../utils/misc'
 import theme from '../../utils/theme'
 
-const layout = (graph, direction,showParams = true,hideLabels) => {
-  const elements = mapGraphToElements(graph, direction, showParams,hideLabels)
-  assignNodePositions(elements, direction)
+const layout = (graph, direction, showParams = true, hideLabels,preview) => {
+  const elements = mapGraphToElements(graph, direction, showParams, hideLabels,preview)
+  assignNodePositions(elements, direction,preview)
 
   return elements
 }
@@ -47,7 +47,7 @@ const filterGraph = (graph, nodePredicate) => {
 /**
  * Map Covalent graph nodes and links to ReactFlow graph elements.
  */
-const mapGraphToElements = (graph, direction, showParams,hideLabels) => {
+const mapGraphToElements = (graph, direction, showParams, hideLabels,preview) => {
   if (!showParams) {
     graph = filterGraph(graph, (node) => !isParameter(node))
   }
@@ -63,8 +63,15 @@ const mapGraphToElements = (graph, direction, showParams,hideLabels) => {
       type: isParam ? 'parameter' : 'electron',
       data: {
         fullName: name,
-        label: hideLabels?_.truncate(name, { length: 0 }):_.truncate(name, { length: 70 }),
+        label: hideLabels
+          ? _.truncate(name, { length: 0 })
+          : _.truncate(name, { length: 70 }),
         status: node.status,
+        executor: preview ? node?.metadata.executor_name : node.executor_label,
+        node_id: preview ? node.id : node.node_id,
+        hideLabels: hideLabels,
+        nodeType:node.type,
+        preview
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,
@@ -95,12 +102,12 @@ const nodeHeight = lineHeight
 const edgeWidth = (name) => _.size(name) * fontSize
 const edgeHeight = lineHeight
 
-const assignNodePositions = (elements, direction) => {
-  let handleDirection=''
-    if(direction==='DOWN') handleDirection='TB'
-    else if(direction==='RIGHT') handleDirection='LR'
-    else if(direction==='LEFT') handleDirection='RL'
-    else handleDirection='BT'
+const assignNodePositions = (elements, direction,preview) => {
+  let handleDirection = ''
+  if (direction === 'DOWN') handleDirection = 'TB'
+  else if (direction === 'RIGHT') handleDirection = 'LR'
+  else if (direction === 'LEFT') handleDirection = 'RL'
+  else handleDirection = 'BT'
   const dagreGraph = new dagre.graphlib.Graph()
   dagreGraph.setDefaultEdgeLabel(() => ({}))
   dagreGraph.setGraph({
@@ -144,7 +151,7 @@ const assignNodePositions = (elements, direction) => {
  *
  * @returns { source: <position>, target: <position> }
  */
- const getHandlePositions = (direction) => {
+const getHandlePositions = (direction) => {
   switch (direction) {
     case 'DOWN':
       return { source: 'bottom', target: 'top' }

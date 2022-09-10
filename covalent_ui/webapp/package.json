@@ -11,6 +11,7 @@
     "@reduxjs/toolkit": "^1.6.2",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
+    "@testing-library/react-hooks": "^8.0.1",
     "@testing-library/user-event": "^12.1.10",
     "axios": "^0.24.0",
     "clsx": "^1.1.1",
@@ -19,6 +20,7 @@
     "date-fns": "^2.27.0",
     "elkjs": "^0.7.1",
     "fuse.js": "^6.4.6",
+    "html2canvas": "1.3.3",
     "humanize-duration": "^3.27.1",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
@@ -31,19 +33,26 @@
     "react-syntax-highlighter": "^15.4.5",
     "redux-localstorage": "^0.4.1",
     "socket.io-client": "^4.4.0",
-    "use-debounce": "^8.0.1"
+    "use-debounce": "^8.0.1",
+    "use-react-screenshot": "3.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "build-demo": "REACT_APP_DEMO=true BUILD_PATH=build-demo react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "testcov": "CI=true react-scripts test --coverage --collectCoverageFrom=src/**/*js"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
+    ]
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "/node_modules/(?!d3|d3-array|internmap|delaunator|robust-predicates)"
     ]
   },
   "browserslist": {

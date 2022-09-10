@@ -20,7 +20,6 @@
 
 """Class corresponding to computation workflow."""
 
-import inspect
 import json
 import os
 import warnings
@@ -30,20 +29,12 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
-import networkx as nx
-
-import covalent_ui.result_webhook as result_webhook
-
-from .._data_store import DataStoreSession, models
+from .._data_store import DataStoreSession
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
-from .._shared_files.utils import (
-    get_named_params,
-    get_serialized_function_str,
-    required_params_passed,
-)
+from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
@@ -53,12 +44,7 @@ if TYPE_CHECKING:
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
 
-from .._shared_files.utils import (
-    get_imports,
-    get_serialized_function_str,
-    get_timedelta,
-    required_params_passed,
-)
+from .._shared_files.utils import get_imports, get_serialized_function_str
 
 consumable_constraints = []
 
@@ -88,6 +74,7 @@ class Lattice:
         self.transport_graph = transport_graph or _TransportGraph()
         self.metadata = {}
         self.__name__ = self.workflow_function.__name__
+        self.__doc__ = self.workflow_function.__doc__
         self.post_processing = False
         self.args = []
         self.kwargs = {}
@@ -260,6 +247,8 @@ class Lattice:
             None
         """
 
+        import covalent_ui.result_webhook as result_webhook
+
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
 
@@ -388,6 +377,8 @@ def lattice(
         "call_after": call_after,
     }
 
+    constraints = encode_metadata(constraints)
+
     def decorator_lattice(func=None):
         @wraps(func)
         def wrapper_lattice(*args, **kwargs):
@@ -395,7 +386,6 @@ def lattice(
             for k, v in constraints.items():
                 lattice_object.set_metadata(k, v)
             lattice_object.transport_graph.lattice_metadata = lattice_object.metadata
-            lattice_object.__doc__ = func.__doc__
             return lattice_object
 
         return wrapper_lattice()

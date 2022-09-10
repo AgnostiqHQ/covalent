@@ -34,6 +34,7 @@ from covalent._results_manager.write_result_to_db import (
     MissingElectronRecordError,
     MissingLatticeRecordError,
     get_electron_type,
+    get_sublattice_electron_id,
     insert_electron_dependency_data,
     insert_electrons_data,
     insert_lattices_data,
@@ -42,7 +43,6 @@ from covalent._results_manager.write_result_to_db import (
     update_electrons_data,
     update_lattice_completed_electron_num,
     update_lattices_data,
-    write_sublattice_electron_id,
 )
 from covalent._shared_files.defaults import (
     arg_prefix,
@@ -59,6 +59,7 @@ from covalent._shared_files.defaults import (
 STORAGE_TYPE = "local"
 FUNCTION_FILENAME = "dispatch_source.pkl"
 FUNCTION_STRING_FILENAME = "dispatch_source.py"
+DOCSTRING_FILENAME = "dispatch_source_docstring.txt"
 EXECUTOR_DATA_FILENAME = "executor_data.pkl"
 WORKFLOW_EXECUTOR_DATA_FILENAME = "workflow_executor_data.pkl"
 ERROR_FILENAME = "error.txt"
@@ -74,6 +75,9 @@ TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 DEPS_FILENAME = "deps.pkl"
 CALL_BEFORE_FILENAME = "call_before.pkl"
 CALL_AFTER_FILENAME = "call_after.pkl"
+COVA_IMPORTS_FILENAME = "cova_imports.pkl"
+LATTICE_IMPORTS_FILENAME = "lattice_imports.pkl"
+RESULTS_DIR = "/tmp/results"
 
 
 @pytest.fixture
@@ -113,7 +117,9 @@ def workflow_lattice():
 
 def get_lattice_kwargs(
     dispatch_id="dispatch_1",
+    electron_id=None,
     name="workflow_1",
+    docstring_filename=DOCSTRING_FILENAME,
     status="RUNNING",
     electron_num=6,
     completed_electron_num=0,
@@ -131,6 +137,13 @@ def get_lattice_kwargs(
     named_kwargs_filename=NAMED_KWARGS_FILENAME,
     results_filename=RESULTS_FILENAME,
     transport_graph_filename=TRANSPORT_GRAPH_FILENAME,
+    deps_filename=DEPS_FILENAME,
+    call_before_filename=CALL_BEFORE_FILENAME,
+    call_after_filename=CALL_AFTER_FILENAME,
+    cova_imports_filename=COVA_IMPORTS_FILENAME,
+    lattice_imports_filename=LATTICE_IMPORTS_FILENAME,
+    results_dir=RESULTS_DIR,
+    root_dispatch_id="dispatch_1",
     created_at=None,
     updated_at=None,
     started_at=None,
@@ -140,7 +153,9 @@ def get_lattice_kwargs(
 
     return {
         "dispatch_id": dispatch_id,
+        "electron_id": electron_id,
         "name": name,
+        "docstring_filename": docstring_filename,
         "status": status,
         "electron_num": electron_num,
         "completed_electron_num": completed_electron_num,
@@ -158,6 +173,13 @@ def get_lattice_kwargs(
         "named_kwargs_filename": named_kwargs_filename,
         "results_filename": results_filename,
         "transport_graph_filename": transport_graph_filename,
+        "deps_filename": deps_filename,
+        "call_before_filename": call_before_filename,
+        "call_after_filename": call_after_filename,
+        "cova_imports_filename": cova_imports_filename,
+        "lattice_imports_filename": lattice_imports_filename,
+        "results_dir": results_dir,
+        "root_dispatch_id": root_dispatch_id,
         "created_at": created_at,
         "updated_at": updated_at,
         "started_at": started_at,
@@ -246,12 +268,14 @@ def test_insert_lattices_data(test_db, mocker):
         lattice_args = get_lattice_kwargs(
             dispatch_id=f"dispatch_{i + 1}",
             name=f"workflow_{i + 1}",
+            docstring_filename=f"docstring_{i+1}.txt",
             storage_path=f"results/dispatch_{i+1}/",
             executor="dask",
             workflow_executor="dask",
             created_at=cur_time,
             updated_at=cur_time,
             started_at=cur_time,
+            root_dispatch_id=f"dispatch_{i + 1}",
         )
         insert_lattices_data(**lattice_args)
 
@@ -261,7 +285,9 @@ def test_insert_lattices_data(test_db, mocker):
         for i, lattice in enumerate(rows):
             assert lattice.id == i + 1
             assert lattice.dispatch_id == f"dispatch_{i + 1}"
+            assert lattice.electron_id is None
             assert lattice.name == f"workflow_{i + 1}"
+            assert lattice.docstring_filename == f"docstring_{i+1}.txt"
             assert lattice.status == "RUNNING"
             assert lattice.storage_type == STORAGE_TYPE
             assert lattice.storage_path == f"results/dispatch_{i+1}/"
@@ -276,6 +302,13 @@ def test_insert_lattices_data(test_db, mocker):
             assert lattice.named_args_filename == NAMED_ARGS_FILENAME
             assert lattice.named_kwargs_filename == NAMED_KWARGS_FILENAME
             assert lattice.results_filename == RESULTS_FILENAME
+            assert lattice.deps_filename == DEPS_FILENAME
+            assert lattice.call_before_filename == CALL_BEFORE_FILENAME
+            assert lattice.call_after_filename == CALL_AFTER_FILENAME
+            assert lattice.cova_imports_filename == COVA_IMPORTS_FILENAME
+            assert lattice.lattice_imports_filename == LATTICE_IMPORTS_FILENAME
+            assert lattice.results_dir == RESULTS_DIR
+            assert lattice.root_dispatch_id == f"dispatch_{i + 1}"
             assert (
                 lattice.created_at.strftime("%m/%d/%Y, %H:%M:%S")
                 == lattice.updated_at.strftime("%m/%d/%Y, %H:%M:%S")
@@ -550,17 +583,17 @@ def test_write_sublattice_electron_id(test_db, mocker):
 
     # Create sublattice record.
     cur_time = dt.now(timezone.utc)
+    sub_electron_id = get_sublattice_electron_id(
+        parent_dispatch_id="dispatch_1", sublattice_node_id=3
+    )
     insert_lattices_data(
         **get_lattice_kwargs(
-            dispatch_id="dispatch_2", created_at=cur_time, updated_at=cur_time, started_at=cur_time
+            dispatch_id="dispatch_2",
+            electron_id=sub_electron_id,
+            created_at=cur_time,
+            updated_at=cur_time,
+            started_at=cur_time,
         ),
-    )
-
-    # Update sublattice record electron id
-    write_sublattice_electron_id(
-        parent_dispatch_id="dispatch_1",
-        sublattice_node_id=3,
-        sublattice_dispatch_id="dispatch_2",
     )
 
     # Assert that the electron id has indeed been written.

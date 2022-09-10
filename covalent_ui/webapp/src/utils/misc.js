@@ -29,6 +29,9 @@ import { ReactComponent as CheckSvg } from '../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../assets/status/error.svg'
 import { ReactComponent as CancelSvg } from '../assets/status/stop.svg'
 import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
+import { ReactComponent as FunctionSvg } from '../assets/nodeType/fuction.svg'
+import { ReactComponent as ParameterSvg } from '../assets/nodeType/parameter.svg'
+import { ReactComponent as SubLattice } from '../assets/nodeType/sublattice.svg'
 
 export const secondsToHms = (ms) => {
   let time = ''
@@ -109,50 +112,81 @@ export const statusIcon = (status) => {
   switch (status) {
     case 'RUNNING':
       return (
-        <SvgIcon sx={{ fontSize: '16', mr: 0.5 }}>
+        <SvgIcon sx={{ mr: 0.5 }}>
           <LoaderSvg />
         </SvgIcon>
       )
     case 'NEW_OBJECT':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <ActivitySvg />
         </SvgIcon>
       )
     case 'COMPLETED':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
     case 'POSTPROCESSING':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
     case 'PENDING_POSTPROCESSING':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
     case 'POSTPROCESSING_FAILED':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
     case 'FAILED':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <ErrorSvg />
         </SvgIcon>
       )
     case 'CANCELLED':
       return (
-        <SvgIcon sx={{ fontSize: '16', mt: 1 }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <CancelSvg />
+        </SvgIcon>
+      )
+    default:
+      return null
+  }
+}
+
+export const nodeLabelIcon = (type) => {
+  switch (type) {
+    case 'function':
+      return (
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+          <FunctionSvg />
+        </SvgIcon>
+      )
+    case 'electron_list':
+      return (
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+          <FunctionSvg />
+        </SvgIcon>
+      )
+    case 'parameter':
+      return (
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+          <ParameterSvg />
+        </SvgIcon>
+      )
+    case "sublattice":
+      return (
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+          <SubLattice />
         </SvgIcon>
       )
     default:
