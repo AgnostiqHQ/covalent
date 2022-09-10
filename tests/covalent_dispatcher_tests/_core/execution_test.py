@@ -731,12 +731,14 @@ async def test_dispatch_sync_sublattice(mocker):
     serialized_callable = ct.TransportableObject(sub_workflow)
     inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}
 
+    executor_cache = ExecutorCache()
     sub_result = await _dispatch_sync_sublattice(
         parent_result_object=result_object,
         parent_electron_id=1,
         inputs=inputs,
         serialized_callable=serialized_callable,
         workflow_executor=["local", {}],
+        executor_cache=executor_cache,
     )
     assert sub_result.result == 2
 
@@ -749,6 +751,7 @@ async def test_dispatch_sync_sublattice(mocker):
             inputs=inputs,
             serialized_callable=serialized_callable,
             workflow_executor=["client", {}],
+            executor_cache=executor_cache,
         )
         assert False
 
@@ -762,6 +765,7 @@ async def test_dispatch_sync_sublattice(mocker):
             inputs=inputs,
             serialized_callable=serialized_callable,
             workflow_executor=["fake_executor", {}],
+            executor_cache=executor_cache,
         )
         assert False
 
@@ -789,6 +793,7 @@ async def test_run_task_sublattice_handling(test_db, mocker):
 
     inputs = {"args": [], "kwargs": {}}
 
+    executor_cache = ExecutorCache()
     node_result = await _run_task(
         result_object=result_object,
         node_id=1,
@@ -799,6 +804,8 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         call_after=[],
         node_name=sublattice_prefix,
         workflow_executor=["local", {}],
+        executor_cache=executor_cache,
+        unplanned_task=False,
     )
 
     mock_get_sublattice_electron_id.assert_called_once()
@@ -821,6 +828,8 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         call_after=[],
         node_name=sublattice_prefix,
         workflow_executor=["local", {}],
+        executor_cache=executor_cache,
+        unplanned_task=False,
     )
 
     mock_dispatch_sync.assert_awaited_once()
@@ -839,6 +848,8 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         call_after=[],
         node_name=sublattice_prefix,
         workflow_executor=["local", {}],
+        executor_cache=executor_cache,
+        unplanned_task=False,
     )
 
     assert node_result["status"] == Result.FAILED
