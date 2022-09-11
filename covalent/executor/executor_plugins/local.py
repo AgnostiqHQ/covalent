@@ -55,7 +55,8 @@ class LocalExecutor(BaseExecutor):
         app_log.debug(f"Local executor {self.instance_id}: provisioning resources")
 
     def teardown(self, task_metadata: Dict):
-        app_log.debug(f"Local executor {self.instance_id}: relinquishing resources")
+        if not task_metadata:
+            app_log.debug(f"Local executor {self.instance_id}: relinquishing resources")
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         app_log.debug(f"Local executor {self.instance_id}: {self.tasks_left} tasks left")

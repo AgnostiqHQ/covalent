@@ -96,7 +96,8 @@ class DaskExecutor(AsyncBaseExecutor):
         app_log.debug(f"Dask executor {self.instance_id}: provisioning resources")
 
     async def teardown(self, task_metadata: Dict):
-        app_log.debug(f"Dask executor {self.instance_id}: Relinquishing resources")
+        if not task_metadata:
+            app_log.debug(f"Dask executor {self.instance_id}: Relinquishing resources")
 
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
