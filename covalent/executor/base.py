@@ -22,9 +22,11 @@
 Class that defines the base executor template.
 """
 
+import asyncio
 import copy
 import io
 import os
+import threading
 from abc import ABC, abstractmethod
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
@@ -184,7 +186,7 @@ class _AbstractBaseExecutor(ABC):
         Instance attributes will be overwritten.
         """
         if object_dict:
-            self.__dict__ = object_dict["attributes"]
+            self.__dict__ = copy.deepcopy(object_dict["attributes"])
         return self
 
 
@@ -213,6 +215,8 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         self.warmed_up = False
         self.tasks_left = 1
+
+        self._lock = None
 
     def write_streams_to_file(
         self,
@@ -286,9 +290,13 @@ class BaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        if not self.warmed_up:
-            self.setup(task_metadata=task_metadata)
-            self.warmed_up = True
+        if not self._lock:
+            self._lock = threading.Lock()
+
+        with self._lock:
+            if not self.warmed_up:
+                self.setup(task_metadata=task_metadata)
+                self.warmed_up = True
 
         dispatch_info = DispatchInfo(dispatch_id)
         fn_version = function.args[0].python_version
@@ -299,14 +307,18 @@ class BaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = self.run(function, args, kwargs, task_metadata)
 
-            self.tasks_left -= 1
+            with self._lock:
+                self.tasks_left -= 1
+
             if self.tasks_left < 1:
                 self.teardown(task_metadata={})
             else:
                 self.teardown(task_metadata=task_metadata)
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
-            self.tasks_left -= 1
+            with self._lock:
+                self.tasks_left -= 1
+
             if self.tasks_left < 1:
                 self.teardown(task_metadata={})
             else:
@@ -373,6 +385,8 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         self.warmed_up = False
         self.tasks_left = 1
 
+        self._lock = None
+
     async def write_streams_to_file(
         self,
         stream_strings: Iterable[str],
@@ -430,9 +444,13 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        if not self.warmed_up:
-            await self.setup(task_metadata=task_metadata)
-            self.warmed_up = True
+        if not self._lock:
+            self._lock = asyncio.Lock()
+
+        async with self._lock:
+            if not self.warmed_up:
+                await self.setup(task_metadata=task_metadata)
+                self.warmed_up = True
 
         try:
             with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(
@@ -440,14 +458,18 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = await self.run(function, args, kwargs, task_metadata)
 
-            self.tasks_left -= 1
+            async with self._lock:
+                self.tasks_left -= 1
+
             if self.tasks_left < 1:
                 await self.teardown(task_metadata={})
             else:
                 await self.teardown(task_metadata=task_metadata)
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
-            self.tasks_left -= 1
+            async with self._lock:
+                self.tasks_left -= 1
+
             if self.tasks_left < 1:
                 await self.teardown(task_metadata={})
             else:
