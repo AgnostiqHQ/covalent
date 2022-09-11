@@ -293,13 +293,25 @@ class BaseExecutor(_AbstractBaseExecutor):
         dispatch_info = DispatchInfo(dispatch_id)
         fn_version = function.args[0].python_version
 
-        with self.get_dispatch_context(dispatch_info), redirect_stdout(
-            io.StringIO()
-        ) as stdout, redirect_stderr(io.StringIO()) as stderr:
+        try:
+            with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(
+                io.StringIO()
+            ) as stderr:
+                result = self.run(function, args, kwargs, task_metadata)
 
-            self.setup(task_metadata=task_metadata)
-            result = self.run(function, args, kwargs, task_metadata)
-            self.teardown(task_metadata=task_metadata)
+            self.tasks_left -= 1
+            if self.tasks_left < 1:
+                self.teardown(task_metadata={})
+            else:
+                self.teardown(task_metadata=task_metadata)
+        except Exception as ex:
+            # Don't forget to cleanup even if run() raises an exception
+            self.tasks_left -= 1
+            if self.tasks_left < 1:
+                self.teardown(task_metadata={})
+            else:
+                self.teardown(task_metadata=task_metadata)
+            raise ex
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),

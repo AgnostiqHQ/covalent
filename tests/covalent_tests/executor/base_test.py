@@ -562,6 +562,7 @@ def test_executor_clone_sets_instance_id():
     assert shared_me_2.instance_id == id(shared_me_2)
 
 
+@pytest.mark.asyncio
 async def test_base_async_executor_execute(mocker):
     """Test the execute method"""
 
