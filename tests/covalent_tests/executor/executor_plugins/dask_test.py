@@ -31,6 +31,8 @@ def test_dask_executor_init(mocker):
     de = DaskExecutor("127.0.0.1")
 
     assert de.scheduler_address == "127.0.0.1"
+    assert de.time_limit == -1
+    assert de.retries == 0
 
 
 def test_dask_wrapper_fn():
