@@ -58,7 +58,7 @@ import {
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node, dispatchId, setSelectedElectron }) => {
+const NodeDrawer = ({ node, setSelectedElectron }) => {
   const dispatch = useDispatch()
   const electronId = node !== undefined && node.node_id
   const electronDetail = useSelector(
@@ -98,20 +98,20 @@ const NodeDrawer = ({ node, dispatchId, setSelectedElectron }) => {
 
   useEffect(() => {
     if (!!node) {
-      dispatch(electronDetails({ electronId, dispatchId }))
-      dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
-      dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
+      dispatch(electronDetails({ electronId, dispatchId: node.parent_dispatch_id }))
+      dispatch(electronInput({ dispatchId: node.parent_dispatch_id, electronId, params: 'inputs' }))
+      dispatch(electronResult({ dispatchId: node.parent_dispatch_id, electronId, params: 'result' }))
       dispatch(
-        electronExecutor({ dispatchId, electronId, params: 'executor' })
+        electronExecutor({ dispatchId: node.parent_dispatch_id, electronId, params: 'executor' })
       )
       dispatch(
         electronFunctionString({
-          dispatchId,
+          dispatchId: node.parent_dispatch_id,
           electronId,
           params: 'function_string',
         })
       )
-      dispatch(electronError({ dispatchId, electronId, params: 'error' }))
+      dispatch(electronError({ dispatchId: node.parent_dispatch_id, electronId, params: 'error' }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node, callSocketApi])
