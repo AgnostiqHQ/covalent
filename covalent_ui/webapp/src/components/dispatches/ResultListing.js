@@ -810,7 +810,7 @@ const ResultListing = () => {
           <Grid>
             <TableContainer
               sx={{
-                height: _.isEmpty(dashboardListView) ? 50 : 315,
+                height: _.isEmpty(dashboardListView) ? 50 : 500,
               }}
             >
               <StyledTable
