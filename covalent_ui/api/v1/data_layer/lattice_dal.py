@@ -141,12 +141,6 @@ class Lattices:
         Return:
             List of sub Lattices
         """
-        # self.db_con.query(Electron.parent_lattice_id).where(La)
-        get_parent_lattice_id = (
-            self.db_con.query(Lattice.id)
-            .where(Lattice.dispatch_id == str(dispatch_id))
-            .scalar_subquery()
-        )
 
         data = (
             self.db_con.query(
@@ -173,8 +167,8 @@ class Lattices:
             )
             .filter(
                 Lattice.is_active.is_not(False),
-                Lattice.electron_id == Electron.id,
-                Lattice.root_lattice_id == get_parent_lattice_id,
+                Lattice.electron_id.is_not(None),
+                Lattice.root_dispatch_id == str(dispatch_id),
             )
             .order_by(
                 desc(sort_by.value)

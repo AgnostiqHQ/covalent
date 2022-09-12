@@ -36,7 +36,7 @@ class Graph:
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
 
-    def get_nodes(self, lattice_id: str):
+    def get_nodes(self, dispatch_id: str):
         """
         Get nodes from dispatch id
         When dispatch id passed to get graph
@@ -47,7 +47,7 @@ class Graph:
         Return:
             graph data with list of nodes and links
         """
-        print("node ", lattice_id)
+        print("node ", dispatch_id)
         sql = text(
             """SELECT electrons.id as id, electrons.name as name,
             electrons.transport_graph_node_id as node_id,
@@ -63,19 +63,19 @@ class Graph:
             (case when electrons.type == 'sublattice'
             then
             (select lattices.dispatch_id from lattices
+            join electrons on lattices.electron_id == electrons.id
             where lattices.electron_id == electrons.id)
             else Null
             END
             ) as sublattice_dispatch_id
             from electrons join lattices on electrons.parent_lattice_id == lattices.id
-            where (lattices.root_lattice_id == :a
-            or lattices.id == :a )
+            where lattices.root_dispatch_id == :a
         """
         )
-        result = self.db_con.execute(sql, {"a": lattice_id}).fetchall()
+        result = self.db_con.execute(sql, {"a": str(dispatch_id)}).fetchall()
         return result
 
-    def get_links(self, lattice_id: str):
+    def get_links(self, dispatch_id: str):
         """
         Get links from dispatch id
         When dispatch id passed to get graph
@@ -97,7 +97,7 @@ class Graph:
             )
             .join(Lattice, Lattice.id == Electron.parent_lattice_id)
             .join(Electron, Electron.id == ElectronDependency.electron_id)
-            .filter((Lattice.root_lattice_id == lattice_id) | (Lattice.id == lattice_id))
+            .filter((Lattice.root_dispatch_id == str(dispatch_id)))
             .all()
         )
 
@@ -127,11 +127,7 @@ class Graph:
         Return:
             graph data with list of nodes and links
         """
-        lattice_id = (
-            self.db_con.query(Lattice.id).where(Lattice.dispatch_id == str(dispatch_id)).first()
-        )
-        lattice_id = (self.check_error(data=lattice_id))[0]
-        nodes = self.get_nodes(lattice_id=lattice_id)
-        data = self.get_links(lattice_id=lattice_id)
+        nodes = self.get_nodes(dispatch_id=dispatch_id)
+        data = self.get_links(dispatch_id=dispatch_id)
         links = self.check_error(data=data)
         return {"dispatch_id": str(dispatch_id), "nodes": nodes, "links": links}
