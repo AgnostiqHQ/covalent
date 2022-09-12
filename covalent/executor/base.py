@@ -135,6 +135,9 @@ class _AbstractBaseExecutor(ABC):
         self.instance_id = id(self)
         self.shared = False
 
+        # Runtime state: must not be persisted
+        self._state = {}
+
     def clone(self):
         new_exec = copy.deepcopy(self)
         new_exec.instance_id = id(new_exec)
@@ -216,7 +219,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         self.warmed_up = False
         self.tasks_left = 1
 
-        self._lock = None
+        self._state["lock"] = None
 
     def write_streams_to_file(
         self,
@@ -290,10 +293,10 @@ class BaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        if not self._lock:
-            self._lock = threading.Lock()
+        if not self._state["lock"]:
+            self._state["lock"] = threading.Lock()
 
-        with self._lock:
+        with self._state["lock"]:
             if not self.warmed_up:
                 self.setup(task_metadata=task_metadata)
                 self.warmed_up = True
@@ -307,7 +310,7 @@ class BaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = self.run(function, args, kwargs, task_metadata)
 
-            with self._lock:
+            with self._state["lock"]:
                 self.tasks_left -= 1
 
             if self.tasks_left < 1:
@@ -316,7 +319,7 @@ class BaseExecutor(_AbstractBaseExecutor):
                 self.teardown(task_metadata=task_metadata)
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
-            with self._lock:
+            with self._state["lock"]:
                 self.tasks_left -= 1
 
             if self.tasks_left < 1:
@@ -385,7 +388,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         self.warmed_up = False
         self.tasks_left = 1
 
-        self._lock = None
+        self._state["lock"] = None
 
     async def write_streams_to_file(
         self,
@@ -444,10 +447,10 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        if not self._lock:
-            self._lock = asyncio.Lock()
+        if not self._state["lock"]:
+            self._state["lock"] = asyncio.Lock()
 
-        async with self._lock:
+        async with self._state["lock"]:
             if not self.warmed_up:
                 await self.setup(task_metadata=task_metadata)
                 self.warmed_up = True
@@ -458,7 +461,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = await self.run(function, args, kwargs, task_metadata)
 
-            async with self._lock:
+            async with self._state["lock"]:
                 self.tasks_left -= 1
 
             if self.tasks_left < 1:
@@ -467,7 +470,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
                 await self.teardown(task_metadata=task_metadata)
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
-            async with self._lock:
+            async with self._state["lock"]:
                 self.tasks_left -= 1
 
             if self.tasks_left < 1:
