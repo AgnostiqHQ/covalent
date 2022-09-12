@@ -267,7 +267,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
         with:
-          platforms: [linux/amd64, linux/arm64]
+          platforms: "linux/amd64,linux/arm64"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@master
@@ -375,7 +375,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           file: ./Dockerfile.awsexecutor
-          platforms: [linux/amd64, linux/arm64]
+          platforms: "linux/amd64,linux/arm64"
           build-args:
             - COVALENT_BASE_IMAGE: public.ecr.aws/covalent/covalent:${{ env.TAG }}
           push: true
@@ -404,7 +404,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           file: ./Dockerfile.awsexecutor
-          platforms: [linux/amd64, linux/arm64]
+          platforms: "linux/amd64,linux/arm64"
           build-args:
             - COVALENT_BASE_IMAGE: public.ecr.aws/covalent/covalent:stable
           push: true
