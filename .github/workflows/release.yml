@@ -283,7 +283,7 @@ jobs:
           echo "TAG=$TAG" >> $GITHUB_ENV
       - name: Login to Public Registry
         run: |
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
       - name: Build and push pre-release
         if: >
           (inputs.prerelease
