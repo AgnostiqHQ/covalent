@@ -40,7 +40,7 @@ on:
         default: true
   pull_request:
     branches:
-      - use-oidc
+      - "use-oidc"
 
 env:
   PAUL_BLART: >

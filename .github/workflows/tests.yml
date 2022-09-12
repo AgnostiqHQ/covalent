@@ -22,6 +22,8 @@ name: tests
 
 on:
   pull_request:
+    branches-exclude:
+      - "use-oidc"
   workflow_run:
     workflows: [changelog]
     types: [completed]
