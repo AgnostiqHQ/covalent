@@ -30,9 +30,11 @@ from unittest.mock import MagicMock
 import pytest
 
 import covalent as ct
+import covalent._results_manager.result as result_module
 from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
 from covalent._results_manager.result import Result, initialize_result_object
+from covalent._results_manager.results_manager import result_from
 from covalent._results_manager.write_result_to_db import load_file
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
@@ -97,8 +99,9 @@ def result_1():
     def task_2(x, y):
         return x + y
 
-    @ct.lattice(executor=le, workflow_executor=le)
+    @ct.lattice(executor=le, workflow_executor=le, results_dir=TEMP_RESULTS_DIR)
     def workflow_1(a, b):
+        """Docstring"""
         res_1 = task_1(a, b)
         return task_2(res_1, b)
 
@@ -108,6 +111,7 @@ def result_1():
     result = Result(
         lattice=received_lattice, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1"
     )
+    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
     result._initialize_nodes()
     return result
 
@@ -136,6 +140,11 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         assert lattice_row.electron_id is None
         assert lattice_row.executor == "local"
         assert lattice_row.workflow_executor == "local"
+        assert lattice_row.deps_filename == result_module.LATTICE_DEPS_FILENAME
+        assert lattice_row.call_before_filename == result_module.LATTICE_CALL_BEFORE_FILENAME
+        assert lattice_row.call_after_filename == result_module.LATTICE_CALL_AFTER_FILENAME
+        assert lattice_row.root_dispatch_id == "dispatch_1"
+        assert lattice_row.results_dir == result_1.results_dir
 
         lattice_storage_path = Path(lattice_row.storage_path)
         assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR) / "dispatch_1"
@@ -286,6 +295,43 @@ def test_result_persist_subworkflow_1(test_db, result_1, mocker):
         assert lattice_row.workflow_executor == "local"
 
 
+def test_result_persist_rehydrate(test_db, result_1, mocker):
+    """Test that persist followed by result_from preserves all result,
+    lattice, and transport graph attributes"""
+
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    result_1.persist()
+    with test_db.session() as session:
+        lattice_row = session.query(Lattice).first()
+        result_2 = result_from(lattice_row)
+
+    assert result_1.__dict__.keys() == result_2.__dict__.keys()
+    assert result_1.lattice.__dict__.keys() == result_2.lattice.__dict__.keys()
+    for key in result_1.lattice.__dict__.keys():
+        if key == "transport_graph":
+            continue
+        assert result_1.lattice.__dict__[key] == result_2.lattice.__dict__[key]
+
+    for key in result_1.__dict__.keys():
+        if key == "_lattice":
+            continue
+        assert result_1.__dict__[key] == result_2.__dict__[key]
+
+    tg_1 = result_1.lattice.transport_graph._graph
+    tg_2 = result_2.lattice.transport_graph._graph
+
+    assert tg_1.nodes == tg_2.nodes
+    for n in tg_1.nodes:
+        assert tg_1.nodes[n].keys() == tg_2.nodes[n].keys()
+        for k in tg_1.nodes[n]:
+            assert tg_1.nodes[n][k] == tg_2.nodes[n][k]
+
+    assert tg_1.edges == tg_2.edges
+    for e in tg_1.edges:
+        assert tg_1.edges[e] == tg_2.edges[e]
+
+
 def test_get_node_error(test_db, result_1, mocker):
     """Test result method to get the node error."""
 
@@ -368,7 +414,7 @@ def test_update_node(test_db, result_1, mocker):
     result_1._update_node(
         node_id=0,
         end_time=dt.now(timezone.utc),
-        status="COMPLETED",
+        status=Result.COMPLETED,
         output=5,
     )
 
@@ -424,3 +470,76 @@ def test_initialize_result_object(mocker):
 
     mock_result_instance.persist.assert_called_with(electron_id=5)
     assert sub_result_object._root_dispatch_id == result_object.dispatch_id
+
+
+def test_result_post_process(mocker, test_db):
+    """Test client-side post-processing of results."""
+
+    import covalent as ct
+
+    @ct.electron
+    def construct_cu_slab(x):
+        return x
+
+    @ct.electron
+    def compute_system_energy(x):
+        return x
+
+    @ct.electron
+    def construct_n_molecule(x):
+        return x
+
+    @ct.electron
+    def get_relaxed_slab(x):
+        return x
+
+    @ct.lattice
+    def compute_energy():
+        N2 = construct_n_molecule(1)
+        e_N2 = compute_system_energy(N2)
+
+        slab = construct_cu_slab(2)
+        e_slab = compute_system_energy(slab)
+
+        relaxed_slab = get_relaxed_slab(3)
+        e_relaxed_slab = compute_system_energy(relaxed_slab)
+
+        return (N2, e_N2, slab, e_slab, relaxed_slab, e_relaxed_slab)
+
+    compute_energy.build_graph()
+
+    compute_energy = LatticeClass.deserialize_from_json(compute_energy.serialize_to_json())
+
+    node_outputs = {
+        "construct_n_molecule(0)": 1,
+        ":parameter:1(1)": 1,
+        "compute_system_energy(2)": 1,
+        "construct_cu_slab(3)": 2,
+        ":parameter:2(4)": 2,
+        "compute_system_energy(5)": 2,
+        "get_relaxed_slab(6)": 3,
+        ":parameter:3(7)": 3,
+        "compute_system_energy(8)": 3,
+    }
+
+    encoded_node_outputs = {
+        k: ct.TransportableObject.make_transportable(v) for k, v in node_outputs.items()
+    }
+
+    res = Result(compute_energy, compute_energy.metadata["results_dir"])
+    res._initialize_nodes()
+
+    for i, v in enumerate(encoded_node_outputs.values()):
+        compute_energy.transport_graph.set_node_value(i, "output", v)
+
+    res._status = Result.PENDING_POSTPROCESSING
+    res._dispatch_id = "MOCK"
+    res._root_dispatch_id = "MOCK"
+
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    res.persist()
+
+    execution_result = res.post_process()
+
+    assert execution_result == compute_energy()

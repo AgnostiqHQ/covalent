@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
-from sqlalchemy import and_, update
+from sqlalchemy import and_
 
 from .._data_store import models, workflow_db
 from .._shared_files import logger
@@ -55,6 +55,7 @@ log_stack_info = logger.log_stack_info
 
 LATTICE_FUNCTION_FILENAME = "function.pkl"
 LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
+LATTICE_DOCSTRING_FILENAME = "function_docstring.txt"
 LATTICE_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
 LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME = "workflow_executor_data.pkl"
 LATTICE_ERROR_FILENAME = "error.log"
@@ -63,6 +64,11 @@ LATTICE_NAMED_ARGS_FILENAME = "named_args.pkl"
 LATTICE_NAMED_KWARGS_FILENAME = "named_kwargs.pkl"
 LATTICE_RESULTS_FILENAME = "results.pkl"
 LATTICE_TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
+LATTICE_DEPS_FILENAME = "deps.pkl"
+LATTICE_CALL_BEFORE_FILENAME = "call_before.pkl"
+LATTICE_CALL_AFTER_FILENAME = "call_after.pkl"
+LATTICE_COVA_IMPORTS_FILENAME = "cova_imports.pkl"
+LATTICE_LATTICE_IMPORTS_FILENAME = "lattice_imports.pkl"
 LATTICE_STORAGE_TYPE = "local"
 
 ELECTRON_FUNCTION_FILENAME = "function.pkl"
@@ -271,9 +277,6 @@ Node Outputs
 
         self._num_nodes = self.lattice.transport_graph.get_internal_graph_copy().number_of_nodes()
         for node_id in range(self._num_nodes):
-            node_name = self.lattice.transport_graph.get_node_value(node_id, "name")
-
-            self.lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
 
             self.lattice.transport_graph.set_node_value(node_id, "start_time", None)
 
@@ -605,30 +608,20 @@ Node Outputs
 
         app_log.debug("Inside update node")
 
-        electron_kwargs = {}
-        node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
-        if not node_path.exists():
-            node_path.mkdir()
-
         if node_name is not None:
-            self.lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
-            electron_kwargs["name"] = node_name
+            self.lattice.transport_graph.set_node_value(node_id, "name", node_name)
 
         if start_time is not None:
             self.lattice.transport_graph.set_node_value(node_id, "start_time", start_time)
-            electron_kwargs["started_at"] = start_time
 
         if end_time is not None:
             self.lattice.transport_graph.set_node_value(node_id, "end_time", end_time)
-            electron_kwargs["completed_at"] = end_time
 
         if status is not None:
             self.lattice.transport_graph.set_node_value(node_id, "status", status)
-            electron_kwargs["status"] = str(status)
 
         if output is not None:
             self.lattice.transport_graph.set_node_value(node_id, "output", output)
-            store_file(node_path, ELECTRON_RESULTS_FILENAME, output)
 
         if error is not None:
             self.lattice.transport_graph.set_node_value(node_id, "error", error)
@@ -640,31 +633,12 @@ Node Outputs
 
         if stdout is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
-            store_file(node_path, ELECTRON_STDOUT_FILENAME, stdout)
 
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
-            store_file(node_path, ELECTRON_STDERR_FILENAME, stderr)
 
-        if str(status) == "COMPLETED":
-            update_lattice_completed_electron_num(self.dispatch_id)
+        self.upsert_electron_data()
 
-        with workflow_db.session() as session:
-            lattice_id = (
-                session.query(models.Lattice)
-                .where(models.Lattice.dispatch_id == self.dispatch_id)
-                .all()[0]
-                .id
-            )
-            session.execute(
-                update(models.Electron)
-                .where(
-                    models.Electron.parent_lattice_id == lattice_id,
-                    models.Electron.transport_graph_node_id == node_id,
-                )
-                .values(updated_at=datetime.now(timezone.utc), **electron_kwargs)
-            )
-            session.commit()
         app_log.debug("Inside update node - SUCCESS")
 
     def _initialize_results_dir(self):
@@ -694,6 +668,7 @@ Node Outputs
         for filename, data in [
             (LATTICE_FUNCTION_FILENAME, self.lattice.workflow_function),
             (LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
+            (LATTICE_DOCSTRING_FILENAME, self.lattice.__doc__),
             (LATTICE_EXECUTOR_DATA_FILENAME, self.lattice.metadata["executor_data"]),
             (
                 LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
@@ -705,6 +680,11 @@ Node Outputs
             (LATTICE_NAMED_KWARGS_FILENAME, self.lattice.named_kwargs),
             (LATTICE_RESULTS_FILENAME, self._result),
             (LATTICE_TRANSPORT_GRAPH_FILENAME, self._lattice.transport_graph),
+            (LATTICE_DEPS_FILENAME, self.lattice.metadata["deps"]),
+            (LATTICE_CALL_BEFORE_FILENAME, self.lattice.metadata["call_before"]),
+            (LATTICE_CALL_AFTER_FILENAME, self.lattice.metadata["call_after"]),
+            (LATTICE_COVA_IMPORTS_FILENAME, self.lattice.cova_imports),
+            (LATTICE_LATTICE_IMPORTS_FILENAME, self.lattice.lattice_imports),
         ]:
 
             store_file(data_storage_path, filename, data)
@@ -716,6 +696,7 @@ Node Outputs
                 "electron_id": electron_id,
                 "status": str(self.status),
                 "name": self.lattice.__name__,
+                "docstring_filename": LATTICE_DOCSTRING_FILENAME,
                 "electron_num": self._num_nodes,
                 "completed_electron_num": 0,  # None of the nodes have been executed or completed yet.
                 "storage_path": str(data_storage_path),
@@ -732,6 +713,13 @@ Node Outputs
                 "named_kwargs_filename": LATTICE_NAMED_KWARGS_FILENAME,
                 "results_filename": LATTICE_RESULTS_FILENAME,
                 "transport_graph_filename": LATTICE_TRANSPORT_GRAPH_FILENAME,
+                "deps_filename": LATTICE_DEPS_FILENAME,
+                "call_before_filename": LATTICE_CALL_BEFORE_FILENAME,
+                "call_after_filename": LATTICE_CALL_AFTER_FILENAME,
+                "cova_imports_filename": LATTICE_COVA_IMPORTS_FILENAME,
+                "lattice_imports_filename": LATTICE_LATTICE_IMPORTS_FILENAME,
+                "results_dir": self.results_dir,
+                "root_dispatch_id": self.root_dispatch_id,
                 "created_at": datetime.now(timezone.utc),
                 "updated_at": datetime.now(timezone.utc),
                 "started_at": self.start_time,
@@ -752,7 +740,6 @@ Node Outputs
 
     def upsert_electron_data(self):
         """Update electron data"""
-
         tg = self.lattice.transport_graph
         dirty_nodes = set(tg.dirty_nodes)
         tg.dirty_nodes.clear()  # Ensure that dirty nodes list is reset once the data is updated
@@ -766,7 +753,7 @@ Node Outputs
                 if not node_path.exists():
                     node_path.mkdir()
 
-                attribute_name = tg.get_node_value(node_key=node_id, value_key="name")
+                node_name = tg.get_node_value(node_key=node_id, value_key="name")
 
                 try:
                     function_string = tg.get_node_value(node_id, "function_string")
@@ -791,9 +778,7 @@ Node Outputs
                 try:
                     node_output = tg.get_node_value(node_id, "output")
                 except KeyError:
-                    node_output = TransportableObject(None)
-                if not isinstance(node_output, TransportableObject):
-                    node_output = TransportableObject(node_output)
+                    node_output = None
 
                 executor = tg.get_node_value(node_id, "metadata")["executor"]
                 started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
@@ -834,6 +819,7 @@ Node Outputs
                     is not None
                 )
 
+                status = tg.get_node_value(node_key=node_id, value_key="status")
                 if not electron_exists:
                     electron_record_kwarg = {
                         "parent_dispatch_id": self.dispatch_id,
@@ -841,8 +827,8 @@ Node Outputs
                         "type": get_electron_type(
                             tg.get_node_value(node_key=node_id, value_key="name")
                         ),
-                        "name": tg.get_node_value(node_key=node_id, value_key="name"),
-                        "status": str(tg.get_node_value(node_key=node_id, value_key="status")),
+                        "name": node_name,
+                        "status": str(status),
                         "storage_type": ELECTRON_STORAGE_TYPE,
                         "storage_path": str(node_path),
                         "function_filename": ELECTRON_FUNCTION_FILENAME,
@@ -868,12 +854,15 @@ Node Outputs
                     electron_record_kwarg = {
                         "parent_dispatch_id": self.dispatch_id,
                         "transport_graph_node_id": node_id,
-                        "status": str(tg.get_node_value(node_key=node_id, value_key="status")),
+                        "name": node_name,
+                        "status": str(status),
                         "started_at": started_at,
                         "updated_at": datetime.now(timezone.utc),
                         "completed_at": completed_at,
                     }
                     update_electrons_data(**electron_record_kwarg)
+                    if status == Result.COMPLETED:
+                        update_lattice_completed_electron_num(self.dispatch_id)
 
     def insert_electron_dependency_data(self):
         """Update electron dependency data"""
@@ -909,7 +898,7 @@ Node Outputs
         self.upsert_electron_data()
         app_log.debug("upsert complete")
         self.insert_electron_dependency_data()
-        app_log.debug("persis complete")
+        app_log.debug("persist complete")
 
     def _convert_to_electron_result(self) -> Any:
         """

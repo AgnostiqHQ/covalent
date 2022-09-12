@@ -78,6 +78,7 @@ def insert_lattices_data(
     dispatch_id: str,
     electron_id: int,
     name: str,
+    docstring_filename: str,
     electron_num: int,
     completed_electron_num: int,
     status: str,
@@ -95,6 +96,13 @@ def insert_lattices_data(
     named_kwargs_filename: str,
     results_filename: str,
     transport_graph_filename: str,
+    deps_filename: str,
+    call_before_filename: str,
+    call_after_filename: str,
+    cova_imports_filename: str,
+    lattice_imports_filename: str,
+    results_dir: str,
+    root_dispatch_id: str,
     created_at: dt,
     updated_at: dt,
     started_at: dt,
@@ -106,6 +114,7 @@ def insert_lattices_data(
         dispatch_id=dispatch_id,
         electron_id=electron_id,
         name=name,
+        docstring_filename=docstring_filename,
         status=status,
         electron_num=electron_num,
         completed_electron_num=completed_electron_num,
@@ -123,6 +132,13 @@ def insert_lattices_data(
         named_kwargs_filename=named_kwargs_filename,
         results_filename=results_filename,
         transport_graph_filename=transport_graph_filename,
+        deps_filename=deps_filename,
+        call_before_filename=call_before_filename,
+        call_after_filename=call_after_filename,
+        cova_imports_filename=cova_imports_filename,
+        lattice_imports_filename=lattice_imports_filename,
+        results_dir=results_dir,
+        root_dispatch_id=root_dispatch_id,
         is_active=True,
         created_at=created_at,
         updated_at=updated_at,
@@ -275,6 +291,7 @@ def update_lattices_data(dispatch_id: str, **kwargs) -> None:
 def update_electrons_data(
     parent_dispatch_id: str,
     transport_graph_node_id: int,
+    name: str,
     status: str,
     started_at: dt,
     updated_at: dt,
@@ -282,6 +299,7 @@ def update_electrons_data(
 ) -> None:
     """This function updates the electrons record."""
 
+    print("DEBUG: update_electrons_data called on node", transport_graph_node_id)
     with workflow_db.session() as session:
         parent_lattice_id = (
             session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()[0].id
@@ -305,6 +323,7 @@ def update_electrons_data(
                 Electron.transport_graph_node_id == transport_graph_node_id,
             )
             .values(
+                name=name,
                 status=status,
                 started_at=started_at,
                 updated_at=updated_at,
