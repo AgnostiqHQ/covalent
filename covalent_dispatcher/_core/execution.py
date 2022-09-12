@@ -30,10 +30,6 @@ from datetime import datetime, timezone
 from functools import partial
 from typing import Any, Dict, List, Tuple
 
-from sqlalchemy import update
-
-from covalent._data_store.datastore import workflow_db
-from covalent._data_store.models import Lattice as Lattice_model
 from covalent._results_manager import Result
 from covalent._results_manager.result import initialize_result_object
 from covalent._results_manager.write_result_to_db import (
@@ -608,17 +604,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
-    with workflow_db.session() as session:
-        session.execute(
-            update(Lattice_model)
-            .where(Lattice_model.dispatch_id == result_object.dispatch_id)
-            .values(
-                status=str(Result.RUNNING),
-                updated_at=datetime.now(timezone.utc),
-                started_at=datetime.now(timezone.utc),
-            )
-        )
-        session.commit()
+    result_object.upsert_lattice_data()
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
     # Executor for post_processing and dispatching sublattices
