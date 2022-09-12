@@ -63,7 +63,6 @@ class Graph:
             (case when electrons.type == 'sublattice'
             then
             (select lattices.dispatch_id from lattices
-            join electrons on lattices.electron_id == electrons.id
             where lattices.electron_id == electrons.id)
             else Null
             END
