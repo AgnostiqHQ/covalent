@@ -46,6 +46,8 @@ env:
     '"FyzHsn",'
     '"wjcunningham7",'
     '"santoshkumarradha"]'
+  EXECUTOR_BASE_DOCKERFILE_URL: "https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/Dockerfile?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
+  AWS_PLUGINS_VERSION_URL: "https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/VERSION?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
 
 jobs:
   github:
@@ -317,29 +319,37 @@ jobs:
             public.ecr.aws/covalent/covalent:latest
             public.ecr.aws/covalent/covalent:${{ env.TAG }}
 
+      - name: Check if executor base Dockerfile exists
+        id: check_aws_executor_dockerfile
+        run: |
+          status_code=$(wget --server-response ${{ env.EXECUTOR_BASE_DOCKERFILE }} 2>&1 | grep HTTP/ | awk '{print $2}')
+          echo "::set-output name=status::value=$status_code"
+
       - name: Download Covalent AWS executor Dockerfile
         id: get_aws_executor_dockerfile
+        if: steps.check_aws_executor_dockerfile.outputs.status_code < 400
         run: |
-          url="https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/Dockerfile?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
-          wget $url -O Dockerfile.awsexecutor
-          status_code=$(wget --server-response $url 2>&1 | grep HTTP/ | awk '{print $2}')
+          wget ${{ env.EXECUTOR_BASE_DOCKERFILE_URL }} -O Dockerfile.awsexecutor
+
+      - name: Check if covalent-aws-plugin VERSION file is present
+        id: check_aws_plugin_version_file
+        run: |
+          status_code=$(wget --server-response ${{ env.AWS_PLUGINS_VERSION_URL }} 2>&1 | grep HTTP/ | awk '{print $2}')
           echo "::set-output name=status::value=$status_code"
 
       - name: Download covalent-aws-plugin VERSION file
         id: get_aws_plugin_version
+        if: steps.check_aws_plugin_version_file.outputs.status_code < 400
         run: |
-          url="https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/VERSION?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
-          wget $url -O AWS_PLUGINS_VERSION
-          status_code=$(wget --server-response $url 2>&1 | grep HTTP/ | awk '{print $2}')
-          echo "::set-output name=status::value=$status_code"
+          wget ${{ env.AWS_PLUGINS_VERSION_URL }} -O AWS_PLUGINS_VERSION
 
       - name: Generate AWS executor base image tag
         if: >
           inputs.prerelease
           && !github.events.inputs.stable_version
           && github.event_name == 'workflow_call'
-          && steps.get_aws_plugin_dockerfile.outputs.status_code < 400
-          && steps.get_aws_plugin_version.outputs.status_code < 400
+          && steps.get_aws_plugin_dockerfile.outcome == 'success'
+          && steps.get_aws_plugin_version.outcome == 'success'
         run: |
           aws --version
           docker info
@@ -359,8 +369,8 @@ jobs:
           && !github.events.inputs.stable_version
           && github.event_name == 'workflow_call'
           && !github.events.inputs.test_release
-          && steps.get_aws_plugin_dockerfile.outputs.status_code < 400
-          && steps.get_aws_plugin_version.outputs.status_code < 400
+          && steps.get_aws_plugin_dockerfile.outcome == 'success'
+          && steps.get_aws_plugin_version.outcome == 'success'
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
