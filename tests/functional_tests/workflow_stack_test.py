@@ -119,8 +119,8 @@ def test_sublatticing():
     dispatch_id = ct.dispatch(workflow)(a=1, b=2)
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
-    assert workflow_result.error == ""
-    assert workflow_result.status == str(Result.COMPLETED)
+    assert workflow_result.error is None
+    assert workflow_result.status == Result.COMPLETED
     assert workflow_result.result == 3
     assert workflow_result.get_node_result(node_id=0)["sublattice_result"].result == 3
 
@@ -463,7 +463,7 @@ def test_decorated_function():
 
     rm._delete_result(dispatch_id)
 
-    assert workflow_result.status == str(Result.COMPLETED)
+    assert workflow_result.status == Result.COMPLETED
 
 
 def test_leaf_electron_failure():
@@ -482,7 +482,7 @@ def test_leaf_electron_failure():
 
     tg = workflow_result.lattice.transport_graph
 
-    assert workflow_result.status == str(Result.FAILED)
+    assert workflow_result.status == Result.FAILED
     assert tg.get_node_value(0, "status") == Result.FAILED
 
 
@@ -503,7 +503,7 @@ def test_intermediate_electron_failure():
 
     tg = workflow_result.lattice.transport_graph
 
-    assert workflow_result.status == str(Result.FAILED)
+    assert workflow_result.status == Result.FAILED
     assert tg.get_node_value(0, "status") == Result.FAILED
 
 
@@ -607,7 +607,7 @@ def test_client_workflow_executor():
 
     rm._delete_result(dispatch_id)
 
-    assert workflow_result.status == str(Result.PENDING_POSTPROCESSING)
+    assert workflow_result.status == Result.PENDING_POSTPROCESSING
     assert workflow_result.result is None
     workflow_result.persist()
 
@@ -678,7 +678,7 @@ def test_wait_for():
     result = ct.get_result(dispatch_id, wait=True)
     result.persist()
 
-    assert result.status == str(Result.COMPLETED)
+    assert result.status == Result.COMPLETED
     assert (
         result.get_node_result(node_id=6)["start_time"]
         > result.get_node_result(node_id=0)["end_time"]
