@@ -30,7 +30,7 @@ import {
 } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { Handle } from 'react-flow-renderer'
-
+import CopyButton from '../common/CopyButton'
 import { ReactComponent as AtomSvg } from '../../assets/status/activity.svg'
 import { ReactComponent as CheckSvg } from '../../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../../assets/status/error.svg'
@@ -123,7 +123,7 @@ const ElectronNode = ({
           placement="bottom-end"
         >
           <Paper
-          data-testid="electronNode"
+            data-testid="electronNode"
             elevation={!selected ? 1 : 5}
             sx={{
               height: '34px',
@@ -157,7 +157,7 @@ const ElectronNode = ({
                 case 'RUNNING':
                   return (
                     <SvgIcon
-                    data-testid="loader"
+                      data-testid="loader"
                       sx={{ mt: 0.1, mr: 0.5, fontSize: 16, fill: color }}
                     >
                       <LoaderSvg />
@@ -165,7 +165,7 @@ const ElectronNode = ({
                   )
                 case 'COMPLETED':
                   return (
-                    <SvgIcon  data-testid="check" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
+                    <SvgIcon data-testid="check" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
                       <CheckSvg />
                     </SvgIcon>
                   )
@@ -188,11 +188,22 @@ const ElectronNode = ({
 
             <Typography sx={{ fontSize: 14, mb: 0.3 }}>{data.label}</Typography>
             <Handle
-            data-testid="sourcehandleelectronNode"
+              data-testid="sourcehandleelectronNode"
               type="source"
               position={sourcePosition}
               isConnectable={isConnectable}
             />
+            {data.nodeType === 'sublattice' && (
+              <CopyButton
+                sx={{ ml: 1, color: 'text.tertiary'}}
+                fontSize='10'
+                content={data.sublattices_id}
+                size="small"
+                className="copy-btn"
+                title="Copy ID"
+                isBorderPresent={true}
+              />
+            )}
           </Paper>
         </ElectronTooltip>
         {!data.hideLabels ? (
