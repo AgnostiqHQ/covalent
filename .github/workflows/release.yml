@@ -39,8 +39,6 @@ on:
         type: boolean
         default: true
   pull_request:
-    branches:
-      - "use-oidc"
 
 env:
   PAUL_BLART: >
