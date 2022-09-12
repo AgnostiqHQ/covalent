@@ -380,6 +380,7 @@ jobs:
             - COVALENT_BASE_IMAGE: public.ecr.aws/covalent/covalent:${{ env.TAG }}
           push: true
           tags: |
+            public.ecr.aws/covalent/covalent-executor-base:latest
             public.ecr.aws/covalent/covalent-executor-base:${{ env.AWS_PLUGINS_TAG }}
 
       - name: Tag stable release
