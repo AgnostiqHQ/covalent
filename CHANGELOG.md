@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Removed inheritance of `call_before` metadata related to file transfers from parent electron to collected nodes.
+
 ### Added
 
 - Unit tests for `remote_executor.py`
