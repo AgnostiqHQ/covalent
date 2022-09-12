@@ -10,18 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Modified `_DEFAULT_CONSTRAINT_VALUES` to a dataclass called `DefaultMetadataValues`, it is still used as a dictionary everywhere (named `DEFAULT_METADATA_VALUES` instead) but in an object-like manner.
-
 - Modified `_DEFAULT_CONFIG` to also be a dataclass called `DefaultConfig`, which is initialized whenever needed and used like a dictionary (named `DEFAULT_CONFIG`).
-
 - `ConfigManager` is now thread safe since it is initialized whenever needed instead of one object being accessed by multiple processes/threads leading to corruption of the config file.
-
 - Using `contextlib.supress` to ignore `psutil.NoSuchProcess` errors instead of `try/except` with `pass`.
 
 ### Added
 
 - Factory functions to generate configurations and default metadata at the time when required. This is because certain values like default executors are only determined when the covalent server starts.
-
 - Respecting the configuration options like default executor, no. of workers, developer mode, etc. when restarting the server.
+- Unit tests for `remote_executor.py`
+- Added alembic migrations script for DB schema v12
 
 ### Removed
 
@@ -31,23 +29,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 
 - Updated tests to reflect above changes.
+- Updated more tests to DB schema v12
+- Improved DB mocking in dispatcher tests
 
-### Added
+### Fixed
 
-- Unit tests for `remote_executor.py`
-
-### Added
-
-- Added alembic migrations script for DB schema v12
+- Removed inheritance of `call_before` metadata related to file transfers from parent electron to collected nodes.
 
 ### Docs
 
 - Updated AWS Lambda plugin rtd with mention to its limitations.
-
-### Tests
-
-- Updated more tests to DB schema v12
-- Improved DB mocking in dispatcher tests
 
 ## [0.197.0] - 2022-09-08
 
