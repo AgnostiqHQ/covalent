@@ -22,7 +22,7 @@
 FROM python:3.8-slim-bullseye AS build
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends curl gcc linux-headers-$(uname -r) \
+  && apt-get install -y --no-install-recommends curl gcc \
   && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
   && apt-get install -y nodejs \
   && npm install --global yarn \
