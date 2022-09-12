@@ -33,7 +33,7 @@ import {
 import { ReactComponent as Logo } from '../../assets/covalent-logo.svg'
 import { ReactComponent as DispatchList } from '../../assets/dashboard.svg'
 import { ReactComponent as DispatchPreview } from '../../assets/license.svg'
-import { ReactComponent as NavSettings } from '../../assets/NavSettings.svg'
+import { ReactComponent as NavSettings } from '../../assets/SettingsIcon.svg'
 import { useMatch } from 'react-router-dom'
 import ListItemIcon from '@mui/material/ListItemIcon'
 
@@ -94,7 +94,14 @@ const LinkButton = ({ title, icon, path, margintop }) => {
       enterNextDelay={750}
     >
       <ListItemButton
-        sx={{ mt: margintop }}
+        sx={{
+          textAlign: 'left',
+          position:
+            title === 'Settings'
+              ? 'fixed'
+              : 'unset',
+          bottom: '0px',
+        }}
         component={Link}
         to={path}
         selected={!!selected}

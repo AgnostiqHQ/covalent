@@ -33,7 +33,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Collapse from '@mui/material/Collapse';
 import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
@@ -81,6 +81,8 @@ const SettingsCard = () => {
   const settings_result = useSelector((state) => state.settingsResults.settingsList)
   const menuKeyName = Object.keys(settings_result)
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
+  const defaultObjKey = Object.keys(settings_result)[0];
+  const defaultObjValue = Object.values(settings_result)[0];
   const setting__ref = useRef(null);
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
@@ -103,16 +105,6 @@ const SettingsCard = () => {
     const updateData = {
       [resultKey]: formDataObj
     }
-    dispatch(updateSettings(updateData)).then((action) => {
-      if (action.type === updateSettings.fulfilled.type) {
-        setOpenSnackbar(true)
-        setSnackbarMessage('settings updated successfully')
-        dispatch(settingsResults())
-      } else if (action.type === updateSettings.rejected.type) {
-        setOpenSnackbar(true)
-        setSnackbarMessage('Something went wrong and could not settings updated!')
-      }
-    })
   };
 
   const popHandleSubmit = (event) => {
@@ -135,6 +127,7 @@ const SettingsCard = () => {
       }
     })
     setOpenDialogBox(false)
+    setHandle('')
   };
 
   const getSubmenuName = (name) => {
@@ -238,11 +231,8 @@ const SettingsCard = () => {
     else {
       setIsDisabled(true)
     }
-
-    if (handle) {
-      setOpenDialogBox(true)
-    } else {
-      setOpenDialogBox(false)
+    if (handle || !handle) {
+      setHandle('')
       setResultKey(key)
       setResultOutput(value)
     }
@@ -298,10 +288,11 @@ const SettingsCard = () => {
                     return (
                       <ListItem disablePadding>
                         <ListItemButton
-                          onClick={isChildHasList ? () => handleClick(value) : () => { }}>
+                          onClick={isChildHasList ? () => handleClick(value) : () => { }}
+                          sx={{ right: isChildHasList(value) ? '55px' : '0px' }}>
                           {isChildHasList(value) &&
                             <ListItemIcon>
-                              {open ? <ExpandLess /> : <ExpandMore />}
+                              {open ? <ExpandLess /> : <KeyboardArrowRightIcon />}
                             </ListItemIcon>
                           }
                           <ListItemText inset primary={getSettingsName(key)}
@@ -345,13 +336,13 @@ const SettingsCard = () => {
 
         <Grid item xs={9}>
           <Typography variant="h6" component="h6">
-            {getSettingsName(resultKey)}
+            {_.map(resultKey === "" ? defaultObjKey : getSettingsName(resultKey))}
           </Typography>
           <Grid container spacing={3} sx={{ mt: 2 }}>
             <Grid item xs={7}>
               <form onSubmit={handleSubmit} id="get__pop_id">
                 {
-                  _.map(resultOutput, function (value, key) {
+                  _.map(resultOutput === undefined ? defaultObjValue : resultOutput, function (value, key) {
 
                     return (
                       <Box sx={{ mb: 3 }}>
@@ -466,39 +457,42 @@ const SettingsCard = () => {
                     )
                   })
                 }
-
-                <DialogToolbar
-                  openDialogBox={openDialogBox}
-                  setOpenDialogBox={setOpenDialogBox}
-                  onClickHand={popHandleSubmit}
-                />
-
-                <Stack spacing={2} direction="row" sx={{ float: 'right' }}>
-                  <Button variant="outlined"
-                    onClick={cancelButton}
-                    sx={(theme) => ({
-                      padding: '8px 20px',
-                      border: '1px solid #6473FF',
-                      borderRadius: '60px',
-                      color: 'white',
-                      fontSize: '16px',
-                      textTransform: 'capitalize'
-                    })}>Cancel</Button>
-                  <Button var
-                    type="submit"
-                    sx={(theme) => ({
-                      background: '#5552FF',
-                      borderRadius: '60px',
-                      color: 'white',
-                      padding: '8px 30px',
-                      fontSize: '16px',
-                      textTransform: 'capitalize'
-                    })}>Save</Button>
-                </Stack>
+                {openDialogBox &&
+                  <DialogToolbar
+                    openDialogBox={openDialogBox}
+                    setOpenDialogBox={setOpenDialogBox}
+                    onClickHand={popHandleSubmit}
+                  />
+                }
+                {!isDisabled &&
+                  <Stack spacing={2} direction="row" sx={{ float: 'right' }}>
+                    <Button variant="outlined"
+                      onClick={cancelButton}
+                      sx={(theme) => ({
+                        padding: '8px 20px',
+                        border: '1px solid #6473FF',
+                        borderRadius: '60px',
+                        color: 'white',
+                        fontSize: '16px',
+                        textTransform: 'capitalize'
+                      })}>Cancel</Button>
+                    <Button var
+                      type="submit"
+                      sx={(theme) => ({
+                        background: '#5552FF',
+                        borderRadius: '60px',
+                        color: 'white',
+                        padding: '8px 30px',
+                        fontSize: '16px',
+                        textTransform: 'capitalize'
+                      })}>Save</Button>
+                  </Stack>
+                }
               </form>
             </Grid>
           </Grid>
         </Grid>
+
       </Grid>
     </Container >
   )
