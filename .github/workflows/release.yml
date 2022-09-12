@@ -399,6 +399,8 @@ jobs:
           && github.events.inputs.stable_version
           && !github.events.inputs.test_release
           && contains(env.PAUL_BLART, github.actor)
+          && steps.get_aws_plugin_dockerfile.outcome == 'success'
+          && steps.get_aws_plugin_version.outcome == 'success'
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
