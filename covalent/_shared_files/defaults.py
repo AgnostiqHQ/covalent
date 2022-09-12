@@ -21,7 +21,9 @@
 """Create custom sentinels and defaults for Covalent"""
 
 import os
-from configparser import ConfigParser
+from builtins import list
+from dataclasses import dataclass, field
+from typing import Dict, List
 
 import dask.system
 
@@ -36,9 +38,17 @@ sublattice_prefix = f"{prefix_separator}sublattice{prefix_separator}"
 attr_prefix = f"{prefix_separator}attribute{prefix_separator}"
 arg_prefix = f"{prefix_separator}arg{prefix_separator}"
 
-# Default configuration settings
-_DEFAULT_CONFIG = {
-    "sdk": {
+WAIT_EDGE_NAME = "!waiting_edge"
+
+
+def get_default_sdk_config():
+    return {
+        "config_file": (
+            os.environ.get("COVALENT_CONFIG_DIR")
+            or os.environ.get("XDG_CONFIG_DIR")
+            or os.environ["HOME"] + "/.config"
+        )
+        + "/covalent/covalent.conf",
         "log_dir": (
             os.environ.get("COVALENT_LOGDIR")
             or (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
@@ -49,8 +59,12 @@ _DEFAULT_CONFIG = {
         "executor_dir": os.environ.get("COVALENT_EXECUTOR_DIR")
         or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
         + "/covalent/executor_plugins",
-    },
-    "dispatcher": {
+        "no_cluster": "false",
+    }
+
+
+def get_default_dispatcher_config():
+    return {
         "address": "localhost",
         "port": 48008,
         "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
@@ -60,8 +74,11 @@ _DEFAULT_CONFIG = {
         + "/covalent",
         "db_path": (os.environ.get("XDG_DATA_HOME"))
         or (os.environ["HOME"] + "/.local/share") + "/covalent/dispatcher_db.sqlite",
-    },
-    "dask": {
+    }
+
+
+def get_default_dask_config():
+    return {
         "cache_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
@@ -69,67 +86,53 @@ _DEFAULT_CONFIG = {
         "mem_per_worker": "auto",
         "threads_per_worker": 1,
         "num_workers": dask.system.CPU_COUNT,
-    },
-    "workflow_data": {
+    }
+
+
+def get_default_workflow_data_config():
+    return {
         "storage_type": "local",
         "base_dir": (os.environ.get("XDG_DATA_HOME"))
         or (os.environ["HOME"] + "/.local/share") + "/covalent/workflow_data",
-    },
-    "user_interface": {
+    }
+
+
+def get_default_ui_config():
+    return {
         "address": "localhost",
         "port": 48008,
         "dev_port": 49009,
         "log_dir": (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
         + "/covalent",
-    },
-}
+    }
 
 
-def set_executor() -> dict:
-    """Sets the executor based on whether Dask service is running.
+def get_default_executor() -> dict:
+    """
+    Gets the executor based on whether Dask service is running.
 
     Returns:
         "dask" as the executor if Dask is running and "local" if Dask is not running.
     """
-    config_dir = (
-        os.environ.get("COVALENT_CONFIG_DIR")
-        or (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
-    ) + "/covalent"
-    config_parser = ConfigParser()
-    config_file = f"{config_dir}/covalent.conf"
-    config_parser.read(config_file)
+    from .config import get_config
 
-    try:
-        executor = (
-            {"executor": "dask"}
-            if config_parser["dask"]["scheduler_address"]
-            else {"executor": "local"}
-        )
-    except KeyError:
-        executor = {"executor": "local"}
-    return executor
+    return "local" if get_config("sdk.no_cluster") else "dask"
 
 
-# Going forward we may only want to return the executor field of DEFAULT_CONSTRAINT_VALUES
-# The rest of those parameters will now be in this dictionary
-_DEFAULT_CONSTRAINT_VALUES = set_executor()
-_DEFAULT_CONSTRAINT_VALUES["deps"] = {}
-_DEFAULT_CONSTRAINT_VALUES["call_before"] = []
-_DEFAULT_CONSTRAINT_VALUES["call_after"] = []
-_DEFAULT_CONSTRAINT_VALUES["workflow_executor"] = _DEFAULT_CONSTRAINT_VALUES["executor"]
+# Default configuration settings
+@dataclass
+class DefaultConfig:
+    sdk: Dict = field(default_factory=get_default_sdk_config)
+    dispatcher: Dict = field(default_factory=get_default_dispatcher_config)
+    dask: Dict = field(default_factory=get_default_dask_config)
+    workflow_data: Dict = field(default_factory=get_default_workflow_data_config)
+    user_interface: Dict = field(default_factory=get_default_ui_config)
 
-_DEFAULT_CONSTRAINTS_DEPRECATED = {
-    "schedule": False,
-    "num_cpu": 1,
-    "cpu_feature_set": [],
-    "num_gpu": 0,
-    "gpu_type": "",
-    "gpu_compute_capability": [],
-    "memory": "1G",
-    "executor": "local",
-    "time_limit": "00-00:00:00",
-    "budget": 0,
-    "conda_env": "",
-}
 
-WAIT_EDGE_NAME = "!waiting_edge"
+@dataclass
+class DefaultMetadataValues:
+    executor: str = field(default_factory=get_default_executor)
+    deps: Dict = field(default_factory=dict)
+    call_before: List = field(default_factory=list)
+    call_after: List = field(default_factory=list)
+    workflow_executor: str = field(default_factory=get_default_executor)
