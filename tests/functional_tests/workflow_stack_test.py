@@ -229,7 +229,7 @@ def test_electron_deps_call_before():
     dispatch_id = ct.dispatch(workflow)(file_path=tmp_path)
     res = ct.get_result(dispatch_id, wait=True)
 
-    assert res.error == ""
+    assert res.error is None
 
     assert res.result == (True, "Hello")
 
