@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Convert `COVALENT_SVC_PORT` to `int` when parsing env var
+
+### Added
+
+- Environment variables added to `defaults.py` in order to support system services
+- Covalent OpenRC init script added
+
+### Changed
+
+- Database is initialized in `covalent_ui/app.py` instead of in the CLI's `start` method in order to support management via `start-stop-daemon`.
+
 ### Added
 
 - Unit tests for `remote_executor.py`
