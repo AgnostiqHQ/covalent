@@ -66,28 +66,22 @@ class ExecutorCache:
         self.id_instance_map = {}
         self.tasks_per_instance = {}
 
-        self.id_instance_map[0] = None
-
     def initialize_from_result_object(self, result_object: Result):
         g = result_object.lattice.transport_graph
 
         for node in g._graph.nodes:
             node_name = result_object.lattice.transport_graph.get_node_value(node, "name")
 
-            # Skip parameter nodes
+            # Skip parameter nodes since they don't run in an executor
             if node_name.startswith(parameter_prefix):
                 continue
             executor_data = g.get_node_value(node, "metadata")["executor_data"]
 
-            # User specified short name only, not an object instance
+            # DEBUGGING ONLY: This should never happen
             if not executor_data:
-                continue
+                assert False
 
             executor_id = executor_data["attributes"]["instance_id"]
-
-            # Don't track one-time-use executor instances
-            if executor_id == 0:
-                continue
 
             self.id_instance_map[executor_id] = None
             if executor_id not in self.tasks_per_instance:
@@ -99,12 +93,9 @@ class ExecutorCache:
         executor_data = result_object.lattice.get_metadata("workflow_executor_data")
         if executor_data:
             executor_id = executor_data["attributes"]["instance_id"]
-            self.id_instance_map[executor_id] = None
 
-            # Don't track non-shared instances
-            if executor_id == 0:
-                pass
-            elif executor_id not in self.tasks_per_instance:
+            self.id_instance_map[executor_id] = None
+            if executor_id not in self.tasks_per_instance:
                 self.tasks_per_instance[executor_id] = 1
             else:
                 self.tasks_per_instance[executor_id] += 1
@@ -326,32 +317,28 @@ def _get_executor_instance(
     try:
         short_name, object_dict = selected_executor
 
-        if object_dict:
-            # Try hitting the cache
-            executor_id = object_dict["attributes"]["instance_id"]
+        # Try hitting the cache
+        executor_id = object_dict["attributes"]["instance_id"]
 
-            executor = executor_cache.id_instance_map[executor_id]
-        else:
-            # Short name was specified instead of an instance
-            executor_id = 0
-            executor = None
+        executor = executor_cache.id_instance_map[executor_id]
 
         app_log.debug(f"Running task {node_name} using executor {short_name}, {object_dict}")
 
-        # Cache miss: construct a new executor instance
+        # Cache miss: construct a new executor instance and cache it if either:
+
         if not executor:
             executor = _executor_manager.get_executor(short_name)
             executor.from_dict(object_dict)
 
-            # cache the instance if a shared instance was specified during
-            # workflow construction
-            if executor_id > 0:
+            executor.tasks_left = executor_cache.tasks_per_instance[executor_id]
+
+            # Cache the executor if it is "shared"
+            if executor.shared:
                 executor_cache.id_instance_map[executor_id] = executor
-                executor.tasks_left = executor_cache.tasks_per_instance[executor_id]
 
         # Check if we are using a shared instance for an un-planned
         # task
-        if unplanned_task and executor_id > 0:
+        if unplanned_task and executor.shared:
             executor.tasks_left += 1
 
     except Exception as ex:

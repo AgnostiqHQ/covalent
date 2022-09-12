@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Unit tests for electron"""
+"""Unit tests for lattice"""
 
 import covalent as ct
 
@@ -37,3 +37,20 @@ def test_lattice_draw(mocker):
     workflow.draw(2)
 
     mock_send_draw_req.assert_called_once()
+
+
+def test_lattice_build_graph_populates_executor_data():
+    """Test that task nodes have nonempty executor_data"""
+
+    @ct.electron(executor="local")
+    def task(x):
+        return x
+
+    @ct.lattice(executor="local")
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph(1)
+    tg = workflow.transport_graph
+
+    assert tg._graph.nodes[0]["metadata"]["executor_data"]

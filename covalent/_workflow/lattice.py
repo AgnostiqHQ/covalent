@@ -29,6 +29,7 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
+from .. import executor as executor_module
 from .._data_store import DataStoreSession
 from .._shared_files import logger
 from .._shared_files.config import get_config
@@ -230,6 +231,20 @@ class Lattice:
                         "Please make sure you are not manipulating an object inside the lattice."
                     )
                     raise
+
+        # Mint a new workflow executor instance if the user specified no sharing.
+        new_metadata = deepcopy(self.metadata)
+        short_name = self.get_metadata("workflow_executor")
+        object_dict = self.get_metadata("workflow_executor_data")
+
+        executor = executor_module._executor_manager.get_executor(short_name)
+        executor.from_dict(object_dict)
+
+        if not executor.is_shared_instance():
+            executor = executor.clone()
+
+        new_metadata["workflow_executor_data"] = executor.to_dict()
+        self.metadata = new_metadata
 
     def persist(self, ds: DataStoreSession, update: bool):
         self.transport_graph.persist(ds, update)

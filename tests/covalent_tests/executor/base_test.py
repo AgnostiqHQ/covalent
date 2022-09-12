@@ -470,14 +470,13 @@ def test_async_executor_setup_teardown(mocker):
 def test_get_shared_instance():
     me = MockExecutor()
     shared_me = me.get_shared_instance()
-    assert me.instance_id == 0
-    assert shared_me.instance_id > 0
+    assert shared_me.shared is True
 
 
 def test_is_shared_instance():
     me = MockExecutor()
     assert me.is_shared_instance() is False
-    me.instance_id = 1
+    me.shared = True
     assert me.is_shared_instance() is True
 
 
@@ -557,7 +556,8 @@ def test_executor_clone_sets_instance_id():
 
     me = MockExecutor()
     me_2 = me.clone()
-    assert me.instance_id == 0
+    assert me_2.instance_id == id(me_2)
+    assert me_2.shared == me.shared
     shared_me_2 = me.get_shared_instance().clone()
     assert shared_me_2.instance_id == id(shared_me_2)
 

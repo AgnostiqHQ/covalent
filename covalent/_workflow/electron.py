@@ -20,11 +20,13 @@
 
 """Class corresponding to computation nodes."""
 
+import copy
 import inspect
 import operator
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
+from .. import executor as executor_module
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger
@@ -238,6 +240,8 @@ class Electron:
 
                 get_item.__name__ = node_name
 
+                # Switch the main node's electron to shared mode
+                self.metadata["executor_data"]["attributes"]["shared"] = True
                 get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
                 yield get_item_electron(self, i)
 
@@ -261,6 +265,9 @@ class Electron:
                 return getattr(e, attr)
 
             get_attr.__name__ = prefix_separator + self.function.__name__ + ".__getattr__"
+
+            # Switch the main node's electron to shared mode
+            self.metadata["executor_data"]["attributes"]["shared"] = True
             get_attr_electron = Electron(function=get_attr, metadata=self.metadata.copy())
             return get_attr_electron(self, attr)
 
@@ -275,6 +282,8 @@ class Electron:
 
             get_item.__name__ = prefix_separator + self.function.__name__ + ".__getitem__"
 
+            # Switch the main node's electron to shared mode
+            self.metadata["executor_data"]["attributes"]["shared"] = True
             get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
             return get_item_electron(self, key)
 
@@ -317,13 +326,26 @@ class Electron:
             ):
                 self.set_metadata(k, active_lattice.get_metadata(k))
 
+        # Mint a new executor instance if user specified no sharing.
+        short_name = self.get_metadata("executor")
+        object_dict = self.get_metadata("executor_data")
+
+        executor = executor_module._executor_manager.get_executor(short_name)
+        executor.from_dict(object_dict)
+
+        if not executor.is_shared_instance():
+            executor = executor.clone()
+
+        node_metadata = copy.deepcopy(self.metadata)
+        node_metadata["executor_data"] = executor.to_dict()
+
         # Add a node to the transport graph of the active lattice
         self.node_id = active_lattice.transport_graph.add_node(
             name=sublattice_prefix + self.function.__name__
             if isinstance(self.function, Lattice)
             else self.function.__name__,
             function=self.function,
-            metadata=self.metadata.copy(),
+            metadata=node_metadata,
             function_string=get_serialized_function_str(self.function),
         )
 
@@ -355,7 +377,7 @@ class Electron:
 
         return Electron(
             self.function,
-            metadata=self.metadata,
+            metadata=node_metadata,
             node_id=self.node_id,
         )
 
@@ -392,7 +414,12 @@ class Electron:
             )
 
         elif isinstance(param_value, list):
-            list_node = self.add_collection_node_to_graph(transport_graph, electron_list_prefix)
+            # For collection parameters, switch the main node's executor to shared
+            metadata = transport_graph.get_node_value(node_id, "metadata")
+            metadata["executor_data"]["attributes"]["shared"] = True
+            list_node = self.add_collection_node_to_graph(
+                transport_graph, copy.deepcopy(metadata), electron_list_prefix
+            )
 
             for index, v in enumerate(param_value):
                 self.connect_node_with_others(
@@ -408,7 +435,11 @@ class Electron:
             )
 
         elif isinstance(param_value, dict):
-            dict_node = self.add_collection_node_to_graph(transport_graph, electron_dict_prefix)
+            metadata = transport_graph.get_node_value(node_id, "metadata")
+            metadata["executor_data"]["attributes"]["shared"] = True
+            dict_node = self.add_collection_node_to_graph(
+                transport_graph, copy.deepcopy(metadata), electron_dict_prefix
+            )
 
             for k, v in param_value.items():
                 self.connect_node_with_others(dict_node, k, v, "kwarg", None, transport_graph)
@@ -438,7 +469,9 @@ class Electron:
                 arg_index=arg_index,
             )
 
-    def add_collection_node_to_graph(self, graph: "_TransportGraph", prefix: str) -> int:
+    def add_collection_node_to_graph(
+        self, graph: "_TransportGraph", metadata: Dict, prefix: str
+    ) -> int:
         """
         Adds the node to lattice's transport graph in the case
         where a collection of electrons is passed as an argument
@@ -446,6 +479,7 @@ class Electron:
 
         Args:
             graph: Transport graph of the lattice
+            metadata: metadata from which to derive collection node's metadata
             prefix: Prefix of the node
 
         Returns:
@@ -453,9 +487,13 @@ class Electron:
         """
 
         new_metadata = encode_metadata(_DEFAULT_CONSTRAINT_VALUES.copy())
-        if "executor" in self.metadata:
-            new_metadata["executor"] = self.metadata["executor"]
-            new_metadata["executor_data"] = self.metadata["executor_data"]
+
+        # Use the same executor instance as specified in metadata
+        new_metadata["executor"] = metadata["executor"]
+        new_metadata["executor_data"] = metadata["executor_data"]
+        new_metadata["deps"] = metadata["deps"]
+
+        # TODO: include calldeps with file transfers filtered out
 
         node_id = graph.add_node(
             name=prefix,

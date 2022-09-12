@@ -48,11 +48,11 @@ def test_lattice_metadata_is_serialized_early():
 
 
 def test_lattice_json_serialization():
-    @ct.electron(executor="le", deps_bash=ct.DepsBash("yum install gcc"))
+    @ct.electron(executor="local", deps_bash=ct.DepsBash("yum install gcc"))
     def f(x):
         return x * x
 
-    @ct.lattice(executor="le")
+    @ct.lattice(executor="local")
     def workflow(x):
         return f(x)
 

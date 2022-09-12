@@ -22,6 +22,7 @@
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
+from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
 from covalent._workflow.electron import Electron, to_decoded_electron_collection
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
@@ -124,13 +125,24 @@ def test_electron_add_collection_node():
 
     e = Electron(f)
     tg = _TransportGraph()
-    node_id = e.add_collection_node_to_graph(tg, prefix=":")
+    metadata = encode_metadata(_DEFAULT_CONSTRAINT_VALUES.copy())
+    metadata["executor"] = "custom_executor"
+    metadata["executor_data"] = {"attributes": {"instance_id": 1}}
+    metadata["deps"] = {"pip": "pipdep", "bash": "bashdep"}
+    node_id = e.add_collection_node_to_graph(tg, prefix=":", metadata=metadata)
     collection_fn = tg.get_node_value(node_id, "function").get_deserialized()
 
     collection = [
         TransportableObject.make_transportable(1),
         TransportableObject.make_transportable(2),
     ]
+
+    collection_metadata = tg.get_node_value(node_id, "metadata")
+    assert collection_metadata["deps"] == metadata["deps"]
+    assert collection_metadata["executor"] == metadata["executor"]
+    assert collection_metadata["executor_data"] == metadata["executor_data"]
+    assert collection_metadata["call_before"] == metadata["call_before"]
+    assert collection_metadata["call_before"] == metadata["call_after"]
 
     assert collection_fn(x=collection) == [1, 2]
 
@@ -213,3 +225,157 @@ def test_electron_metadata_is_serialized_early():
     assert node_0_metadata == encode_metadata(node_0_metadata)
     node_1_metadata = workflow.transport_graph.get_node_value(1, "metadata")
     assert node_1_metadata == encode_metadata(node_1_metadata)
+
+
+def test_collection_node_executor_instance():
+    """Test that collection nodes use the same executor instance as
+    their main node."""
+
+    @ct.electron(executor="local")
+    def make_list(arr):
+        return list(arr)
+
+    @ct.electron(executor="local")
+    def make_dict(mapping):
+        return dict(mapping)
+
+    @ct.lattice
+    def list_workflow():
+        return make_list([1, 2, 3])
+
+    @ct.lattice
+    def dict_workflow():
+        return make_dict({"a": 1, "b": 2})
+
+    list_workflow.build_graph()
+    tg = list_workflow.transport_graph
+
+    main_ex = tg.get_node_value(0, "metadata")["executor_data"]
+    main_eid = main_ex["attributes"]["instance_id"]
+    main_shared = main_ex["attributes"]["shared"]
+
+    list_node_ex = tg.get_node_value(1, "metadata")["executor_data"]
+    list_eid = list_node_ex["attributes"]["instance_id"]
+    list_shared = list_node_ex["attributes"]["shared"]
+
+    assert main_eid == list_eid
+    assert main_shared is True
+    assert list_shared is True
+
+    dict_workflow.build_graph()
+    tg = dict_workflow.transport_graph
+
+    main_ex = tg.get_node_value(0, "metadata")["executor_data"]
+    main_eid = main_ex["attributes"]["instance_id"]
+    main_shared = main_ex["attributes"]["shared"]
+
+    dict_node_ex = tg.get_node_value(1, "metadata")["executor_data"]
+    dict_eid = dict_node_ex["attributes"]["instance_id"]
+    dict_shared = dict_node_ex["attributes"]["shared"]
+
+    assert main_eid == dict_eid
+    assert main_shared is True
+    assert dict_shared is True
+
+
+def test_iter_node_executor_instance():
+    """Test that generated nodes share the same executor instance as
+    their main node."""
+
+    @ct.electron(executor="local")
+    def make_list(arr):
+        return list(arr)
+
+    @ct.lattice
+    def unpacking_workflow():
+        x, y, z = make_list([1, 2, 3])
+        return x
+
+    unpacking_workflow.build_graph()
+    tg = unpacking_workflow.transport_graph
+
+    main_ex = tg.get_node_value(0, "metadata")["executor_data"]
+    main_shared = main_ex["attributes"]["shared"]
+    main_eid = main_ex["attributes"]["instance_id"]
+
+    # generated nodes are 5, 7, 9
+
+    ex_x = tg.get_node_value(5, "metadata")["executor_data"]
+    x_eid = ex_x["attributes"]["instance_id"]
+    assert main_eid == x_eid
+    assert main_shared is True
+    assert main_ex == ex_x
+
+    ex_y = tg.get_node_value(7, "metadata")["executor_data"]
+    y_eid = ex_y["attributes"]["instance_id"]
+    assert main_eid == y_eid
+    assert main_ex == ex_y
+
+    ex_z = tg.get_node_value(9, "metadata")["executor_data"]
+    z_eid = ex_z["attributes"]["instance_id"]
+    assert main_eid == z_eid
+    assert main_ex == ex_z
+
+
+def test_electron_getitem_executor_instance():
+    """Test electron __getitem__ shares the main node's executor"""
+
+    @ct.electron(executor="local")
+    def create_array():
+        return [0, 1, 2, 3, 4, 5]
+
+    @ct.electron(executor="local")
+    def identity(x):
+        return x
+
+    @ct.lattice
+    def workflow():
+        arr = create_array()
+        third_element = arr[2]
+        return third_element
+
+    workflow.build_graph()
+    tg = workflow.transport_graph
+    main_ex = tg.get_node_value(0, "metadata")["executor_data"]
+    main_shared = main_ex["attributes"]["shared"]
+    main_eid = main_ex["attributes"]["instance_id"]
+
+    getitem_ex = tg.get_node_value(1, "metadata")["executor_data"]
+    getitem_eid = getitem_ex["attributes"]["instance_id"]
+
+    assert main_shared is True
+    assert main_eid == getitem_eid
+
+
+def test_electron_getattr_executor_instance():
+    """Test electron __getattr__ shares the main node's executor"""
+
+    class Point:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+
+    @ct.electron(executor="local")
+    def create_point():
+        return Point(3, 4)
+
+    @ct.electron(executor="local")
+    def echo(a):
+        return a
+
+    @ct.lattice
+    def workflow():
+        point = create_point()
+        return point.x * point.x + point.y * point.y
+
+    workflow.build_graph()
+    tg = workflow.transport_graph
+    main_ex = tg.get_node_value(0, "metadata")["executor_data"]
+    main_shared = main_ex["attributes"]["shared"]
+    main_eid = main_ex["attributes"]["instance_id"]
+
+    getattr_ex = tg.get_node_value(1, "metadata")["executor_data"]
+    getattr_eid = getattr_ex["attributes"]["instance_id"]
+
+    assert main_shared is True
+    assert main_eid == getattr_eid

@@ -132,21 +132,21 @@ class _AbstractBaseExecutor(ABC):
         self.time_limit = time_limit
         self.retries = retries
 
-        self.instance_id = 0
+        self.instance_id = id(self)
+        self.shared = False
 
     def clone(self):
         new_exec = copy.deepcopy(self)
-        if new_exec.instance_id > 0:
-            new_exec.instance_id = id(new_exec)
+        new_exec.instance_id = id(new_exec)
         return new_exec
 
     def get_shared_instance(self) -> "_AbstractBaseExecutor":
         shared_exec = self.clone()
-        shared_exec.instance_id = id(shared_exec)
+        shared_exec.shared = True
         return shared_exec
 
     def is_shared_instance(self) -> bool:
-        return self.instance_id > 0
+        return self.shared
 
     def get_dispatch_context(self, dispatch_info: DispatchInfo) -> ContextManager[DispatchInfo]:
         """
@@ -171,7 +171,7 @@ class _AbstractBaseExecutor(ABC):
         return {
             "type": str(self.__class__),
             "short_name": self.short_name(),
-            "attributes": self.__dict__.copy(),
+            "attributes": copy.deepcopy(self.__dict__),
         }
 
     def from_dict(self, object_dict: dict) -> "BaseExecutor":

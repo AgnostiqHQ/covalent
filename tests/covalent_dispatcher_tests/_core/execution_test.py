@@ -716,6 +716,14 @@ def test_build_sublattice_graph():
 
 @pytest.mark.asyncio
 async def test_dispatch_sync_sublattice(mocker):
+
+    from covalent.executor import LocalExecutor
+
+    le = LocalExecutor()
+    executor_cache = ExecutorCache()
+    executor_cache.id_instance_map[le.instance_id] = le
+    executor_cache.tasks_per_instance[le.instance_id] = 1
+
     mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
 
     @ct.electron(executor="local")
@@ -731,13 +739,12 @@ async def test_dispatch_sync_sublattice(mocker):
     serialized_callable = ct.TransportableObject(sub_workflow)
     inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}
 
-    executor_cache = ExecutorCache()
     sub_result = await _dispatch_sync_sublattice(
         parent_result_object=result_object,
         parent_electron_id=1,
         inputs=inputs,
         serialized_callable=serialized_callable,
-        workflow_executor=["local", {}],
+        workflow_executor=[le.short_name(), le.to_dict()],
         executor_cache=executor_cache,
     )
     assert sub_result.result == 2
@@ -759,12 +766,19 @@ async def test_dispatch_sync_sublattice(mocker):
         pass
 
     try:
+        bad_short_name = "fake_executor"
+        bad_object_dict = {
+            "type": "FakeExecutor",
+            "short_name": "fake_executor",
+            "attributes": {"instance_id": -1},
+        }
+        executor_cache.id_instance_map[-1] = None
         sub_result = await _dispatch_sync_sublattice(
             parent_result_object=result_object,
             parent_electron_id=1,
             inputs=inputs,
             serialized_callable=serialized_callable,
-            workflow_executor=["fake_executor", {}],
+            workflow_executor=["fake_executor", bad_object_dict],
             executor_cache=executor_cache,
         )
         assert False
@@ -775,6 +789,14 @@ async def test_dispatch_sync_sublattice(mocker):
 
 @pytest.mark.asyncio
 async def test_run_task_sublattice_handling(test_db, mocker):
+
+    from covalent.executor import LocalExecutor
+
+    le = LocalExecutor()
+
+    executor_cache = ExecutorCache()
+    executor_cache.id_instance_map[le.instance_id] = le
+    executor_cache.tasks_per_instance[le.instance_id] = 1
 
     result_object = get_mock_result()
     sub_result_object = get_mock_result()
@@ -793,17 +815,16 @@ async def test_run_task_sublattice_handling(test_db, mocker):
 
     inputs = {"args": [], "kwargs": {}}
 
-    executor_cache = ExecutorCache()
     node_result = await _run_task(
         result_object=result_object,
         node_id=1,
         inputs=inputs,
         serialized_callable=None,
-        selected_executor=["local", {}],
+        selected_executor=[le.short_name(), le.to_dict()],
         call_before=[],
         call_after=[],
         node_name=sublattice_prefix,
-        workflow_executor=["local", {}],
+        workflow_executor=[le.short_name(), le.to_dict()],
         executor_cache=executor_cache,
         unplanned_task=False,
     )
@@ -823,11 +844,11 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         node_id=1,
         inputs=inputs,
         serialized_callable=None,
-        selected_executor=["local", {}],
+        selected_executor=[le.short_name(), le.to_dict()],
         call_before=[],
         call_after=[],
         node_name=sublattice_prefix,
-        workflow_executor=["local", {}],
+        workflow_executor=[le.short_name(), le.to_dict()],
         executor_cache=executor_cache,
         unplanned_task=False,
     )
@@ -843,11 +864,11 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         node_id=1,
         inputs=inputs,
         serialized_callable=None,
-        selected_executor=["local", {}],
+        selected_executor=[le.short_name(), le.to_dict()],
         call_before=[],
         call_after=[],
         node_name=sublattice_prefix,
-        workflow_executor=["local", {}],
+        workflow_executor=[le.short_name(), le.to_dict()],
         executor_cache=executor_cache,
         unplanned_task=False,
     )
@@ -921,12 +942,19 @@ def test_executor_cache_initialize():
     cache = ExecutorCache()
     cache.initialize_from_result_object(result_object)
 
-    assert 0 in cache.id_instance_map.keys()
+    tg = received_lattice.transport_graph
+
+    task4_eid = tg._graph.nodes[4]["metadata"]["executor_data"]["attributes"]["instance_id"]
+    workflow_eid = received_lattice.metadata["workflow_executor_data"]["attributes"]["instance_id"]
     assert id_1 in cache.id_instance_map.keys()
     assert id_2 in cache.id_instance_map.keys()
-    assert len(cache.id_instance_map.keys()) == 3
+    assert task4_eid in cache.id_instance_map.keys()
+    assert workflow_eid in cache.id_instance_map.keys()
+    assert len(cache.id_instance_map.keys()) == 4
     assert cache.tasks_per_instance[id_1] == 1
     assert cache.tasks_per_instance[id_2] == 2
+    assert cache.tasks_per_instance[task4_eid] == 1
+    assert cache.tasks_per_instance[workflow_eid] == 1
 
     # Test using shared workflow executor instance
     workflow_2.build_graph(5)
@@ -1045,14 +1073,13 @@ def test_get_executor_instance():
     )
 
     assert executor_instance.short_name() == "local"
-    assert cache.id_instance_map[0] is None
 
     # throwaway instance -- don't cache
     node_id = 2
     node_name = tg.get_node_value(node_id, "name")
     executor = tg.get_node_value(node_id, "metadata")["executor"]
     executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
-    assert executor_data["attributes"]["instance_id"] == 0
+    assert executor_data["attributes"]["shared"] is False
     selected_executor = [executor, executor_data]
 
     executor_instance = _get_executor_instance(
@@ -1065,14 +1092,13 @@ def test_get_executor_instance():
     )
 
     assert executor_instance.short_name() == "local"
-    assert cache.id_instance_map[0] is None
 
     # shared instance -- to cache
     node_id = 3
     node_name = tg.get_node_value(node_id, "name")
     executor = tg.get_node_value(node_id, "metadata")["executor"]
     executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
-    assert executor_data["attributes"]["instance_id"] > 0
+    assert executor_data["attributes"]["shared"] is True
     selected_executor = [executor, executor_data]
 
     shared_instance = _get_executor_instance(
