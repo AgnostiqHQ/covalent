@@ -604,14 +604,11 @@ def test_client_workflow_executor():
     dispatch_id = ct.dispatch(work_func)(1, 2, c=3)
 
     workflow_result = rm.get_result(dispatch_id, wait=True)
-
-    rm._delete_result(dispatch_id)
-
     assert workflow_result.status == Result.PENDING_POSTPROCESSING
     assert workflow_result.result is None
     workflow_result.persist()
-
     assert workflow_result.post_process() == 15
+    rm._delete_result(dispatch_id)
 
 
 def test_two_iterations():
