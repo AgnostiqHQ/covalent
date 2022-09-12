@@ -22,7 +22,7 @@ name: tests
 
 on:
   pull_request:
-    branches-exclude:
+    branches-ignore:
       - "use-oidc"
   workflow_run:
     workflows: [changelog]
@@ -387,10 +387,10 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
-#  release:
-#    needs: tests
-#    if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
-#    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
-#    secrets: inherit # pragma: allowlist secret
-#    with:
-#      prerelease: true
+  release:
+    needs: tests
+    if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
+    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
+    secrets: inherit # pragma: allowlist secret
+    with:
+      prerelease: true
