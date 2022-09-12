@@ -12,12 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding a step in `release.yml/docker` job to trigger the AWS executor base image build in the remote repo `covalent-aws-plugins`
 - Pass all the necessary inputs for the triggered workflow as part of the HTTP POST request body
 
+### Fixed
+
+- Removed inheritance of `call_before` metadata related to file transfers from parent electron to collected nodes.
+
 ### Added
 
 - Unit tests for `remote_executor.py`
-
-### Added
-
 - Added alembic migrations script for DB schema v12
 
 ### Docs

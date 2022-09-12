@@ -238,7 +238,15 @@ class Electron:
 
                 get_item.__name__ = node_name
 
-                get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
+                iterable_metadata = self.metadata.copy()
+
+                filtered_call_before = []
+                for elem in iterable_metadata["call_before"]:
+                    if elem["attributes"]["retval_keyword"] != "files":
+                        filtered_call_before.append(elem)
+                iterable_metadata["call_before"] = filtered_call_before
+
+                get_item_electron = Electron(function=get_item, metadata=iterable_metadata)
                 yield get_item_electron(self, i)
 
     def __getattr__(self, attr: str) -> "Electron":
