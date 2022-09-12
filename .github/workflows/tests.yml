@@ -21,6 +21,7 @@
 name: tests
 
 on:
+  pull_request:
   workflow_run:
     workflows: [changelog]
     types: [completed]
