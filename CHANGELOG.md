@@ -15,11 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added alembic migrations script for DB schema v12
 - Unit tests for `remote_executor.py`
 
-### Added
-
-- Added alembic migrations script for DB schema v12
 
 ### Docs
 
