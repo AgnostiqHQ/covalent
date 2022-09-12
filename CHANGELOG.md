@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed a bug in changelog.yml caused by passing a large list of commits as a var
 
+### Tests
+
+- Updated more tests to DB schema v12
+- Improved DB mocking in dispatcher tests
+
 ## [0.197.0] - 2022-09-08
 
 ### Authors
