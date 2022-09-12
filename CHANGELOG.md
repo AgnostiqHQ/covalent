@@ -13,11 +13,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Unit tests for `remote_executor.py`
+
+### Added
+
 - Added alembic migrations script for DB schema v12
 
 ### Docs
 
 - Updated AWS Lambda plugin rtd with mention to its limitations.
+
+### Tests
+
+- Updated more tests to DB schema v12
+- Improved DB mocking in dispatcher tests
 
 ## [0.197.0] - 2022-09-08
 
