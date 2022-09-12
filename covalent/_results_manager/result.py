@@ -740,7 +740,6 @@ Node Outputs
 
     def upsert_electron_data(self):
         """Update electron data"""
-
         tg = self.lattice.transport_graph
         dirty_nodes = set(tg.dirty_nodes)
         tg.dirty_nodes.clear()  # Ensure that dirty nodes list is reset once the data is updated
@@ -899,7 +898,7 @@ Node Outputs
         self.upsert_electron_data()
         app_log.debug("upsert complete")
         self.insert_electron_dependency_data()
-        app_log.debug("persis complete")
+        app_log.debug("persist complete")
 
     def _convert_to_electron_result(self) -> Any:
         """
