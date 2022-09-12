@@ -98,7 +98,7 @@ const LatticeGraph = ({
   useEffect(() => {
     resizing()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [marginRight, marginLeft])
+  }, [marginRight, marginLeft,fitView])
 
   // layouting
   useEffect(() => {

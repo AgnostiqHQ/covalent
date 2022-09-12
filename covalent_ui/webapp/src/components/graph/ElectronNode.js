@@ -107,11 +107,11 @@ const ElectronNode = ({
           title={
             data.hideLabels ? (
               <>
-                <Typography color="inherit">name : {data.fullName}</Typography>
-                <Typography color="inherit">
+                <Typography sx={{ fontSize: '0.75rem' }} color="inherit">name : {data.fullName}</Typography>
+                <Typography sx={{ fontSize: '0.75rem' }} color="inherit">
                   executor : {data.executor}
                 </Typography>
-                <Typography color="inherit">
+                <Typography sx={{ fontSize: '0.75rem' }} color="inherit">
                   node_id : {data.node_id}
                 </Typography>
               </>

@@ -35,6 +35,7 @@ import {
 } from '@mui/material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import LatticeDispatchOverview from './LatticeDispatchOverview'
+import SublatticesListing from '../dispatches/SublatticesListing'
 import ErrorCard from '../common/ErrorCard'
 import { latticeDetails, latticeError } from '../../redux/latticeSlice'
 import { ChevronLeft } from '@mui/icons-material'
@@ -45,7 +46,7 @@ import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
 const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
-  const [tab, setTab] = useState('overview')
+  const [tab, setTab] = useState('sublattices')
 
   const drawerLatticeDetails = useSelector(
     (state) => state.latticeResults.latticeDetails
@@ -125,12 +126,13 @@ const DispatchDrawerContents = () => {
 
       {/* tabs */}
       {/* {latOutput !== null && */}
-      <TabContext value={tab}>
+      <TabContext value={tab} sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <CustomTabList
           variant="fullWidth"
           onChange={(e, newTab) => setTab(newTab)}
         >
           <Tab label="Overview" value="overview" />
+          <Tab label="Sublattices" value="sublattices" />
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
@@ -139,6 +141,9 @@ const DispatchDrawerContents = () => {
             latDetails={drawerLatticeDetails}
             isFetching={drawerLatticeDetailsFetching}
           />
+        </TabPanel>
+        <TabPanel value="sublattices" sx={{ px: 0, py: 1 }}>
+          <SublatticesListing/>
         </TabPanel>
       </TabContext>
       {/* } */}
@@ -149,6 +154,7 @@ const DispatchDrawerContents = () => {
 const CustomTabList = styled(TabList)(({ theme }) => ({
   '& .MuiTab-root': {
     textTransform: 'none',
+    color:'#86869A',
     '&.Mui-selected': {
       color: theme.palette.primary.white,
     },

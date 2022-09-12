@@ -32,6 +32,7 @@ const initialState = {
   latticeInput: {},
   latticeFunctionString: {},
   latticeExecutorDetail: {},
+  sublatticesList:[],
   latticeDetailsResults: { isFetching: false, error: null },
   latticeResultsList: { isFetching: false, error: null },
   latticeOutputList: { isFetching: false, error: null },
@@ -39,6 +40,7 @@ const initialState = {
   latticeInputList: { isFetching: false, error: null },
   latticeErrorList: { isFetching: false, error: null },
   latticeExecutorDetailList: { isFetching: false, error: null },
+  sublatticesListResults: { isFetching: false, error: null },
 }
 
 export const latticeDetails = createAsyncThunk(
@@ -94,6 +96,17 @@ export const latticeExecutorDetail = createAsyncThunk(
       .get(`api/v1/dispatches/${dispatchId}/details/${params}`)
       .catch(thunkAPI.rejectWithValue)
 )
+
+export const sublatticesListDetails = createAsyncThunk(
+  'latticeResults/sublatticesList',
+  async (bodyParams, thunkAPI) =>
+    await api
+      .get(
+        `api/v1/dispatches/${bodyParams.dispatchId}/sublattices?sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
+      )
+      .catch(thunkAPI.rejectWithValue)
+)
+
 
 export const latticeSlice = createSlice({
   name: 'latticeResults',
@@ -201,6 +214,20 @@ export const latticeSlice = createSlice({
       .addCase(latticeExecutorDetail.rejected, (state, { payload }) => {
         state.latticeExecutorDetailList.isFetching = false
         state.latticeExecutorDetailList.error = payload
+      })
+
+      //sublatticesList
+      .addCase(sublatticesListDetails.fulfilled, (state, { payload }) => {
+        state.sublatticesListResults.isFetching = false
+        state.sublatticesList = payload.sub_lattices
+      })
+      .addCase(sublatticesListDetails.pending, (state, { payload }) => {
+        state.sublatticesListResults.isFetching = true
+        state.sublatticesListResults.error = null
+      })
+      .addCase(sublatticesListDetails.rejected, (state, { payload }) => {
+        state.sublatticesListResults.isFetching = false
+        state.sublatticesListResults.error = payload
       })
   },
 })
