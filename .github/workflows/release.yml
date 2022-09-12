@@ -38,6 +38,9 @@ on:
         required: true
         type: boolean
         default: true
+  pull_request:
+    branches:
+      - use-oidc
 
 env:
   PAUL_BLART: >
@@ -50,6 +53,7 @@ env:
 jobs:
   github:
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
@@ -121,6 +125,7 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
   pypi:
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
     outputs:
       version: ${{ steps.validate.outputs.version }}
     steps:
@@ -208,6 +213,7 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
   conda:
     needs: pypi
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -255,7 +261,7 @@ jobs:
           ref: "v${{ github.event.inputs.stable_version }}"
       - name: Check out master
         uses: actions/checkout@v2
-        if: inputs.prerelease
+        if: inputs.prerelease || github.event_name == 'pull_request'
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -283,9 +289,10 @@ jobs:
           docker login --username AWS --password-stdin public.ecr.aws
       - name: Build and push pre-release
         if: >
-          inputs.prerelease
+          (inputs.prerelease
           && !github.events.inputs.stable_version
-          && github.event_name == 'workflow_call'
+          && github.event_name == 'workflow_call')
+          || github.event_name == 'pull_request'
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
