@@ -38,7 +38,6 @@ on:
         required: true
         type: boolean
         default: true
-  pull_request:
 
 env:
   PAUL_BLART: >
@@ -51,7 +50,6 @@ env:
 jobs:
   github:
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
@@ -123,7 +121,6 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
   pypi:
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
     outputs:
       version: ${{ steps.validate.outputs.version }}
     steps:
@@ -211,7 +208,6 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
   conda:
     needs: pypi
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -252,14 +248,14 @@ jobs:
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
-        if: github.event.inputs.stable_version
+        if: inputs.stable_version
         with:
           persist-credentials: false
           fetch-depth: 0
           ref: "v${{ github.event.inputs.stable_version }}"
       - name: Check out master
         uses: actions/checkout@v2
-        if: inputs.prerelease || github.event_name == 'pull_request'
+        if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -286,10 +282,9 @@ jobs:
           aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
       - name: Build and push pre-release
         if: >
-          (inputs.prerelease
-          && !github.events.inputs.stable_version
-          && github.event_name == 'workflow_call')
-          || github.event_name == 'pull_request'
+          inputs.prerelease
+          && !inputs.stable_version
+          && github.event_name == 'workflow_call'
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
@@ -303,10 +298,11 @@ jobs:
       - name: Tag stable release
         if: >
           github.event_name == 'workflow_dispatch'
-          && github.event.inputs.stable_version
+          && inputs.stable_version
           && !inputs.prerelease
           && !github.events.inputs.test_release
           && contains(env.PAUL_BLART, github.actor)
         run: |
-          MANIFEST=$(aws ecr batch-get-image --repository-name covalent --image-ids imageTag=${{ github.events.inputs.stable_version }} --output json | jq --raw-output --join-output '.images[0].imageManifest')
-          aws ecr put-image --repository-name covalent --image-tag stable --image-manifest "$MANIFEST"
+          docker pull public.ecr.aws/covalent/covalent:${{ inputs.stable_version }}
+          docker tag public.ecr.aws/covalent/covalent:${{ inputs.stable_version }} public.ecr.aws/covalent/covalent:stable
+          docker push public.ecr.aws/covalent/covalent:stable
