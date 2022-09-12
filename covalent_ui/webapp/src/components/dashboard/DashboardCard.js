@@ -73,8 +73,6 @@ const DashboardCard = () => {
         p: 3,
         mb: 2,
         borderRadius: '8px',
-        position: 'fixed',
-        width: '93%',
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>

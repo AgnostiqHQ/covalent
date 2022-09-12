@@ -369,10 +369,7 @@ const ResultsTableToolbar = ({
   setOffset,
 }) => {
   return (
-    <Toolbar
-      disableGutters
-      sx={{ mb: 1, position: 'fixed', top: '260px', width: '93%' }}
-    >
+    <Toolbar disableGutters sx={{ mb: 1 }}>
       {numSelected > 0 && (
         <Typography
           sx={{
@@ -810,10 +807,10 @@ const ResultListing = () => {
           setOffset={setOffset}
         />
         {dashboardListView && (
-          <Grid sx={{ marginTop: '270px', position: 'fixed', width: '93%' }}>
+          <Grid>
             <TableContainer
               sx={{
-                height: _.isEmpty(dashboardListView) ? 100 : 350,
+                height: _.isEmpty(dashboardListView) ? 50 : 315,
               }}
             >
               <StyledTable
@@ -962,7 +959,7 @@ const ResultListing = () => {
         <>
           {/*  */}
           {/* <Skeleton variant="rectangular" height={50} /> */}
-          <TableContainer sx={{ marginTop: '300px', height: 300 }}>
+          <TableContainer>
             <StyledTable>
               <TableBody>
                 {[...Array(7)].map((_) => (
