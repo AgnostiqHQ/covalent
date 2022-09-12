@@ -295,7 +295,9 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           file: ./Dockerfile.dev
-          platforms: all
+          platforms:
+            - "linux/amd64"
+            - "linux/arm64"
           push: true
           tags: |
             public.ecr.aws/covalent/covalent:latest
