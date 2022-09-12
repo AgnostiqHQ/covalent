@@ -51,7 +51,9 @@ _DEFAULT_CONFIG = {
     },
     "dispatcher": {
         "address": "localhost",
-        "port": int(os.environ.get("COVALENT_SVC_PORT")) if os.environ.get("COVALENT_SVC_PORT") or 48008,
+        "port": int(os.environ.get("COVALENT_SVC_PORT"))
+        if os.environ.get("COVALENT_SVC_PORT")
+        else 48008,
         "cache_dir": os.environ.get("COVALENT_CACHE_DIR")
         or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
         "results_dir": os.environ.get("COVALENT_RESULTS_DIR", "results"),
@@ -82,7 +84,9 @@ _DEFAULT_CONFIG = {
     },
     "user_interface": {
         "address": "localhost",
-        "port": int(os.environ.get("COVALENT_SVC_PORT")) if os.environ.get("COVALENT_SVC_PORT") or 48008,
+        "port": int(os.environ.get("COVALENT_SVC_PORT"))
+        if os.environ.get("COVALENT_SVC_PORT")
+        else 48008,
         "dev_port": 49009,
         "log_dir": os.environ.get("COVALENT_LOGDIR")
         or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
