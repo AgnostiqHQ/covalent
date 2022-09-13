@@ -51,10 +51,10 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
-    def setup(self, task_metadata: Dict):
+    def setup(self, task_metadata: Dict = {}):
         app_log.debug(f"Local executor {self.instance_id}: provisioning resources")
 
-    def teardown(self, task_metadata: Dict):
+    def teardown(self, task_metadata: Dict = {}):
         if not task_metadata:
             app_log.debug(f"Local executor {self.instance_id}: relinquishing resources")
 

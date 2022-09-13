@@ -92,10 +92,10 @@ class DaskExecutor(AsyncBaseExecutor):
 
         self.scheduler_address = scheduler_address
 
-    async def setup(self, task_metadata: Dict):
+    async def setup(self, task_metadata: Dict = {}):
         app_log.debug(f"Dask executor {self.instance_id}: provisioning resources")
 
-    async def teardown(self, task_metadata: Dict):
+    async def teardown(self, task_metadata: Dict = {}):
         if not task_metadata:
             app_log.debug(f"Dask executor {self.instance_id}: Relinquishing resources")
 
