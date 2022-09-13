@@ -9,12 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Skipping stalling `dask_executor` functional test
-
-### Changed
-
 - Database is initialized in `covalent_ui/app.py` instead of in the CLI's `start` method in order to support management via `start-stop-daemon`.
 - Convert `COVALENT_SVC_PORT` to `int` when parsing env var
+- Skipping stalling `dask_executor` functional test
 
 ### Added
 
@@ -22,8 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modified `_DEFAULT_CONFIG` to also be a dataclass called `DefaultConfig`, which is initialized whenever needed and used like a dictionary (named `DEFAULT_CONFIG`).
 - `ConfigManager` is now thread safe since it is initialized whenever needed instead of one object being accessed by multiple processes/threads leading to corruption of the config file.
 - Using `contextlib.supress` to ignore `psutil.NoSuchProcess` errors instead of `try/except` with `pass`.
-
-### Added
 - Filter workflow dispatches by status on the GUI.
 - Delete all workflow dispatches present in the database from the GUI and add filter level deletion of workflow dispatches as well. 
 - Theme changes as part of latest wireframe.
