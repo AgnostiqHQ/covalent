@@ -23,8 +23,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
   Container, Grid, Box, Input, InputLabel, Radio, RadioGroup, Button,
-  Stack, Snackbar, SvgIcon, Toolbar
+  Stack, Snackbar, SvgIcon, Toolbar, InputAdornment
 } from '@mui/material';
+import { Search as SearchIcon } from '@mui/icons-material'
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -81,14 +82,15 @@ const SettingsCard = () => {
   const settings_result = useSelector((state) => state.settingsResults.settingsList)
   const menuKeyName = Object.keys(settings_result)
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
-  const defaultObjKey = Object.keys(settings_result)[0];
-  const defaultObjValue = Object.values(settings_result)[0];
+  const defaultObjKey = Object.keys(settings_result)[0]
+  const defaultObjValue = Object.values(settings_result)[0]
   const setting__ref = useRef(null);
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
   const [isDisabled, setIsDisabled] = useState(false);
   const [handle, setHandle] = useState('');
   const [openDialogBox, setOpenDialogBox] = useState(false)
+  const [searchData, setSearchData] = useState(settings_result)
 
   useEffect(() => {
     dispatch(settingsResults())
@@ -153,6 +155,7 @@ const SettingsCard = () => {
     }
     return formattedName
   }
+
   const getLabelName = (name) => {
     let formattedName = name;
     const uSpliit = name.includes("_");
@@ -177,6 +180,12 @@ const SettingsCard = () => {
     else if (formattedName === 'Results dir') {
       formattedName = 'Results directory'
     }
+    else if (formattedName === 'Executor dir') {
+      formattedName = 'Executor directory'
+    }
+    else if (formattedName === 'Log stdout') {
+      formattedName = 'Log standard out'
+    }
     else if (formattedName === 'Log dir') {
       formattedName = 'Log directory'
     }
@@ -185,6 +194,7 @@ const SettingsCard = () => {
     }
     return formattedName
   }
+
   const getSettingsName = (name) => {
     let formattedName = name;
     const uSpliit = name.includes("_");
@@ -205,6 +215,7 @@ const SettingsCard = () => {
     }
     return formattedName
   }
+
   const isChildHasList = (item) => {
     let childIsObject = false;
     _.map(item, function (value) {
@@ -250,6 +261,18 @@ const SettingsCard = () => {
     }
   }
 
+  const handleInputChange = (e) => {
+    const filterData = Object.fromEntries(Object.entries(settings_result).
+      filter(([key]) => key.includes(e.target.value)))
+    setSearchData(filterData)
+  };
+
+  useEffect(() => {
+    if (settings_result) {
+      setSearchData(settings_result)
+    }
+  }, [settings_result])
+
   return (
     <Container maxWidth="xl" sx={{ mb: 4, mt: 7.5, ml: 4 }}>
       <Snackbar
@@ -280,11 +303,28 @@ const SettingsCard = () => {
             borderColor: theme.palette.background.coveBlack02,
           })}
         >
-          <List>
-            {menuKeyName.length !== 0 ?
+          <List sx={{ pt: 0, pb: 0 }}>
+            {_.size(settings_result) !== 0 ?
               <>
+                <Input sx={{
+                  px: 2,
+                  py: 0.5,
+                  width: "95%",
+                  height: '40px',
+                  border: '1px solid #303067',
+                  borderRadius: '60px',
+                  mb: 3
+                }}
+                  disableUnderline
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
+                    </InputAdornment>
+                  }
+                  onChange={(e) => handleInputChange(e)}
+                  placeholder="Search" />
                 {
-                  _.map(settings_result, function (value, key) {
+                  _.map(searchData, function (value, key) {
                     return (
                       <ListItem disablePadding>
                         <ListItemButton
@@ -334,164 +374,173 @@ const SettingsCard = () => {
           </List>
         </Grid>
 
-        <Grid item xs={9}>
-          <Typography variant="h6" component="h6">
-            {_.map(resultKey === "" ? defaultObjKey : getSettingsName(resultKey))}
-          </Typography>
-          <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={7}>
-              <form onSubmit={handleSubmit} id="get__pop_id">
-                {
-                  _.map(resultOutput === undefined ? defaultObjValue : resultOutput, function (value, key) {
+        {_.size(settings_result) !== 0 ?
+          <Grid item xs={9}>
+            <Typography variant="h6" component="h6">
+              {_.map(resultKey === "" ? getSettingsName(defaultObjKey) : getSettingsName(resultKey))}
+            </Typography>
+            <Grid container spacing={3} sx={{ mt: 2 }}>
+              <Grid item xs={7}>
+                <form onSubmit={handleSubmit} id="get__pop_id">
+                  {
+                    _.map(resultOutput === undefined ? defaultObjValue : resultOutput, function (value, key) {
 
-                    return (
-                      <Box sx={{ mb: 3 }}>
-                        {
-                          _.isObject(value)
-                            ?
-                            <>
-                              <Typography variant="h6" component="h6">
-                                {getSettingsName(key)}
-                              </Typography>
-                              {
-                                _.map(value, function (item, key) {
-                                  return (
-                                    <Box sx={{ mt: 3 }}>
-                                      {value === "true" || value === "false" ?
-                                        <FormControl>
-                                          <FormLabel id="demo-row-radio-buttons-group-label"
-                                            sx={(theme) => ({
-                                              fontSize: '16px',
-                                            })}> {getSettingsName(key)}</FormLabel>
-                                          <RadioGroup
-                                            row
-                                            aria-labelledby="demo-row-radio-buttons-group-label"
-                                            name="row-radio-buttons-group"
-                                          >
-                                            <FormControlLabel value="true"
-                                              disabled={isDisabled} control={<Radio />} label="True" />
-                                            <FormControlLabel value="false"
-                                              disabled={isDisabled} control={<Radio />} label="False" />
-                                          </RadioGroup>
-                                        </FormControl>
-                                        :
-                                        <>
-                                          <InputLabel variant="standard" htmlFor="uncontrolled-native"
-                                            sx={{
-                                              fontSize: '16px',
-                                              mb: 1
-                                            }}>
-                                            {getLabelName(key)}
-                                          </InputLabel>
-                                          <Input sx={{
-                                            px: 2,
-                                            py: 0.5,
-                                            width: "100%",
-                                            height: '45px',
-                                            border: '1px solid #303067',
-                                            borderRadius: '60px',
-                                          }}
-                                            disabled={isDisabled}
-                                            onKeyDown={handleKeypress}
-                                            ref={setting__ref}
-                                            name={key}
-                                            defaultValue={item}
-                                            disableUnderline
-                                            placeholder="Log directroy" />
-                                        </>
-                                      }
-                                    </Box>
-                                  )
-                                })
-                              }
-                            </>
-                            :
-                            <>
-                              {value === "true" || value === "false" ?
-                                <FormControl>
-                                  <FormLabel id="demo-row-radio-buttons-group-label"
-                                    sx={(theme) => ({
-                                      fontSize: '16px',
-                                    })}> {getSettingsName(key)}</FormLabel>
-                                  <RadioGroup
-                                    row
-                                    aria-labelledby="demo-row-radio-buttons-group-label"
-                                    name={key}
-                                    ref={setting__ref}
-                                    defaultValue={value}
-                                  >
-                                    <FormControlLabel disabled={isDisabled} value="true" control={<Radio />} label="True" />
-                                    <FormControlLabel disabled={isDisabled} value="false" control={<Radio />} label="False" />
-                                  </RadioGroup>
-                                </FormControl>
-                                :
-                                <>
-                                  <InputLabel variant="standard" htmlFor="uncontrolled-native"
-                                    sx={{
-                                      fontSize: '16px',
-                                      mb: 1
-                                    }}>
-                                    {getLabelName(key)}
-                                  </InputLabel>
-                                  <Input sx={{
-                                    px: 2,
-                                    py: 0.5,
-                                    width: "100%",
-                                    height: '45px',
-                                    border: '1px solid #303067',
-                                    borderRadius: '60px',
-                                  }}
-                                    disabled={isDisabled}
-                                    onKeyDown={handleKeypress}
-                                    ref={setting__ref}
-                                    name={key}
-                                    defaultValue={value}
-                                    disableUnderline
-                                    placeholder={key} />
-                                </>
-                              }
-                            </>
-                        }
+                      return (
+                        <Box sx={{ mb: 3 }}>
+                          {
+                            _.isObject(value)
+                              ?
+                              <>
+                                <Typography variant="h6" component="h6"
+                                  sx={(theme) => ({ color: theme.palette.primary.light })}>
+                                  {getSettingsName(key)}
+                                </Typography>
+                                {
+                                  _.map(value, function (item, key) {
+                                    return (
+                                      <Box sx={{ mt: 3 }}>
+                                        {value === "true" || value === "false" ?
+                                          <FormControl>
+                                            <FormLabel id="demo-row-radio-buttons-group-label"
+                                              sx={(theme) => ({
+                                                fontSize: '16px',
+                                              })}> {getSettingsName(key)}</FormLabel>
+                                            <RadioGroup
+                                              row
+                                              aria-labelledby="demo-row-radio-buttons-group-label"
+                                              name="row-radio-buttons-group"
+                                            >
+                                              <FormControlLabel value="true"
+                                                disabled={isDisabled} control={<Radio />} label="True" />
+                                              <FormControlLabel value="false"
+                                                disabled={isDisabled} control={<Radio />} label="False" />
+                                            </RadioGroup>
+                                          </FormControl>
+                                          :
+                                          <>
+                                            <InputLabel variant="standard" htmlFor="uncontrolled-native"
+                                              sx={{
+                                                fontSize: '16px',
+                                                mb: 1
+                                              }}>
+                                              {getLabelName(key)}
+                                            </InputLabel>
+                                            <Input sx={{
+                                              px: 2,
+                                              py: 0.5,
+                                              width: "100%",
+                                              height: '45px',
+                                              border: '1px solid #303067',
+                                              borderRadius: '60px',
+                                            }}
+                                              disabled={isDisabled}
+                                              onKeyDown={handleKeypress}
+                                              ref={setting__ref}
+                                              name={key}
+                                              defaultValue={item}
+                                              disableUnderline
+                                              placeholder="Log directroy" />
+                                          </>
+                                        }
+                                      </Box>
+                                    )
+                                  })
+                                }
+                              </>
+                              :
+                              <>
+                                {value === "true" || value === "false" ?
+                                  <FormControl>
+                                    <FormLabel id="demo-row-radio-buttons-group-label"
+                                      sx={(theme) => ({
+                                        fontSize: '16px',
+                                      })}> {getSettingsName(key)}</FormLabel>
+                                    <RadioGroup
+                                      row
+                                      aria-labelledby="demo-row-radio-buttons-group-label"
+                                      name={key}
+                                      ref={setting__ref}
+                                      defaultValue={value}
+                                    >
+                                      <FormControlLabel disabled={isDisabled} value="true" control={<Radio />} label="True" />
+                                      <FormControlLabel disabled={isDisabled} value="false" control={<Radio />} label="False" />
+                                    </RadioGroup>
+                                  </FormControl>
+                                  :
+                                  <>
+                                    <InputLabel variant="standard" htmlFor="uncontrolled-native"
+                                      sx={{
+                                        fontSize: '16px',
+                                        mb: 1
+                                      }}>
+                                      {getLabelName(key)}
+                                    </InputLabel>
+                                    <Input sx={{
+                                      px: 2,
+                                      py: 0.5,
+                                      width: "100%",
+                                      height: '45px',
+                                      border: '1px solid #303067',
+                                      borderRadius: '60px',
+                                    }}
+                                      disabled={isDisabled}
+                                      onKeyDown={handleKeypress}
+                                      ref={setting__ref}
+                                      name={key}
+                                      defaultValue={value}
+                                      disableUnderline
+                                      placeholder={key} />
+                                  </>
+                                }
+                              </>
+                          }
 
-                      </Box>
-                    )
-                  })
-                }
-                {openDialogBox &&
-                  <DialogToolbar
-                    openDialogBox={openDialogBox}
-                    setOpenDialogBox={setOpenDialogBox}
-                    onClickHand={popHandleSubmit}
-                  />
-                }
-                {!isDisabled &&
-                  <Stack spacing={2} direction="row" sx={{ float: 'right' }}>
-                    <Button variant="outlined"
-                      onClick={cancelButton}
-                      sx={(theme) => ({
-                        padding: '8px 20px',
-                        border: '1px solid #6473FF',
-                        borderRadius: '60px',
-                        color: 'white',
-                        fontSize: '16px',
-                        textTransform: 'capitalize'
-                      })}>Cancel</Button>
-                    <Button var
-                      type="submit"
-                      sx={(theme) => ({
-                        background: '#5552FF',
-                        borderRadius: '60px',
-                        color: 'white',
-                        padding: '8px 30px',
-                        fontSize: '16px',
-                        textTransform: 'capitalize'
-                      })}>Save</Button>
-                  </Stack>
-                }
-              </form>
+                        </Box>
+                      )
+                    })
+                  }
+                  {openDialogBox &&
+                    <DialogToolbar
+                      openDialogBox={openDialogBox}
+                      setOpenDialogBox={setOpenDialogBox}
+                      onClickHand={popHandleSubmit}
+                    />
+                  }
+                  {!isDisabled &&
+                    <Stack spacing={2} direction="row" sx={{ float: 'right' }}>
+                      <Button variant="outlined"
+                        onClick={cancelButton}
+                        sx={(theme) => ({
+                          padding: '8px 20px',
+                          border: '1px solid #6473FF',
+                          borderRadius: '60px',
+                          color: 'white',
+                          fontSize: '16px',
+                          textTransform: 'capitalize'
+                        })}>Cancel</Button>
+                      <Button var
+                        type="submit"
+                        sx={(theme) => ({
+                          background: '#5552FF',
+                          borderRadius: '60px',
+                          color: 'white',
+                          padding: '8px 30px',
+                          fontSize: '16px',
+                          textTransform: 'capitalize'
+                        })}>Save</Button>
+                    </Stack>
+                  }
+                </form>
+              </Grid>
             </Grid>
           </Grid>
-        </Grid>
+          :
+          <Box sx={{ width: 300 }}>
+            <Skeleton />
+            <Skeleton animation="wave" />
+            <Skeleton animation={false} />
+          </Box>
+        }
 
       </Grid>
     </Container >

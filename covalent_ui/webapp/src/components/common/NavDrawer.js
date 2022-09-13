@@ -113,7 +113,7 @@ const LinkButton = ({ title, icon, path, margintop }) => {
               border: '1px solid #998AFF',
               width: '30px',
               height: '30px',
-              padding: '5px 0px 0px 3px',
+              padding: title === 'Settings' ? '4px 4px 4px 2px' : '5px 0px 0px 3px',
               borderRadius: '6px',
               my: 2,
             }}
