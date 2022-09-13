@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Skipping stalling `dask_executor` functional test
+
+### Changed
+
 - Database is initialized in `covalent_ui/app.py` instead of in the CLI's `start` method in order to support management via `start-stop-daemon`.
 - Convert `COVALENT_SVC_PORT` to `int` when parsing env var
 
