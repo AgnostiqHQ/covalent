@@ -39,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Removed inheritance of `call_before` metadata related to file transfers from parent electron to collected nodes.
+- Executor instances at runtime no longer inadvertently modify
+  transport graph nodes when modifying their attributes.
 
 ### Docs
 
