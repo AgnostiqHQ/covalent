@@ -58,7 +58,7 @@ const ParameterNode = ({
           <Paper
             sx={{
               position: 'absolute',
-              top: -16,
+              top: -15,
               zIndex: -100,
               display: 'flex',
               alignItems: 'center',
@@ -66,13 +66,12 @@ const ParameterNode = ({
               borderRadius: '5px 5px 0px 0px',
               minWidth: '30%',
               overflow: 'hidden',
-              background: (theme) => theme.palette.background.executorBg,
               // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
               color: (theme) => theme.palette.text.tertiary,
-              borderColor: (theme) => theme.palette.primary.highlightBlue,
-              borderStyle: 'solid',
-              borderWidth: 1,
               cursor: 'default',
+              '&:hover': {
+                color: (theme) => theme.palette.text.primary,
+              },
             }}
           >
             <Handle
@@ -122,6 +121,7 @@ const ParameterNode = ({
             cursor: 'default',
             '&:hover': {
               bgcolor: (theme) => theme.palette.background.coveBlack02,
+              color: (theme) => theme.palette.primary.white,
             },
           })}
         >
@@ -160,6 +160,9 @@ const ParameterNode = ({
               // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
               color: (theme) => theme.palette.text.tertiary,
               cursor: 'default',
+              '&:hover': {
+                color: (theme) => theme.palette.text.primary,
+              },
             }}
           >
             <Handle

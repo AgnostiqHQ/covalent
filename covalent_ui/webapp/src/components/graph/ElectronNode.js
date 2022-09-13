@@ -79,12 +79,14 @@ const ElectronNode = ({
                 borderRadius: '5px 5px 0px 0px',
                 minWidth: '30%',
                 overflow: 'hidden',
-                background: (theme) => theme.palette.background.executorBg,
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) => !selected ?theme.palette.text.tertiary:theme.palette.text.primary,
-                borderColor: (theme) => theme.palette.primary.highlightBlue,
-                borderStyle: 'solid',
-                borderWidth: hasBorder ? 1 : 0,
+                color: (theme) =>
+                  !selected
+                    ? theme.palette.text.tertiary
+                    : theme.palette.text.primary,
+                '&:hover': {
+                  color: (theme) => theme.palette.text.primary,
+                },
               }}
             >
               <Handle
@@ -143,6 +145,7 @@ const ElectronNode = ({
               borderWidth: hasBorder ? 1 : 0,
               '&:hover': {
                 bgcolor: (theme) => theme.palette.background.coveBlack02,
+                color: (theme) => theme.palette.primary.white,
               },
             }}
           >
@@ -251,7 +254,14 @@ const ElectronNode = ({
                 borderRadius: '16px',
                 minWidth: '20%',
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) => !selected ?theme.palette.text.tertiary:theme.palette.text.primary,
+                color: (theme) =>
+                  !selected
+                    ? theme.palette.text.tertiary
+                    : theme.palette.text.primary,
+
+                '&:hover': {
+                  color: (theme) => theme.palette.text.primary,
+                },
               }}
             >
               <Handle

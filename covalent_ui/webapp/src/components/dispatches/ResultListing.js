@@ -812,10 +812,10 @@ const ResultListing = () => {
               sx={{
                 height: _.isEmpty(dashboardListView) ? 50 : 310,
                 '@media (min-width: 1700px)': {
-                  height: _.isEmpty(dashboardListView) ? 50 : '55vh',
+                  height: _.isEmpty(dashboardListView) ? 50 : '53vh',
                 },
               }}
-            >
+              >
               <StyledTable stickyHeader>
                 <ResultsTableHead
                   order={sortOrder}
