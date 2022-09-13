@@ -354,10 +354,6 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         raise NotImplementedError
 
-    def teardown(self, task_metadata: Dict) -> Any:
-        """Placeholder to run nay executor specific cleanup/teardown actions"""
-        pass
-
 
 class AsyncBaseExecutor(_AbstractBaseExecutor):
     """Async base executor class to be used for defining any executor
