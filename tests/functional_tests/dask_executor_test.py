@@ -19,6 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import pytest
+
 import covalent as ct
 from covalent._results_manager import Result
 
@@ -32,6 +34,7 @@ def start_dask_cluster():
     return cluster.scheduler_address
 
 
+@pytest.mark.skip(reason="Stalling the functional test pipeline")
 def test_dask_executor():
     from covalent.executor import DaskExecutor
 

@@ -20,8 +20,14 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import { useEffect, useRef, useState, createRef } from 'react'
-import ReactFlow, { MiniMap } from 'react-flow-renderer'
+import ReactFlow, {
+  MiniMap,
+  getIncomers,
+  getOutgoers,
+  isEdge,
+} from 'react-flow-renderer'
 import ElectronNode from './ElectronNode'
+import { NODE_TEXT_COLOR } from './ElectronNode'
 import ParameterNode from './ParameterNode'
 import DirectedEdge from './DirectedEdge'
 import layout from './Layout'
@@ -30,7 +36,7 @@ import LatticeControls from './LatticeControlsElk'
 import theme from '../../utils/theme'
 import { statusColor } from '../../utils/misc'
 import useFitViewHelper from './ReactFlowHooks'
-import { useScreenshot, createFileName } from "use-react-screenshot"
+import { useScreenshot, createFileName } from 'use-react-screenshot'
 import covalentLogo from '../../assets/frame.png'
 
 // https://reactjs.org/docs/hooks-faq.html#how-to-get-the-previous-props-or-state
@@ -48,7 +54,7 @@ const LatticeGraph = ({
   hasSelectedNode,
   marginLeft = 0,
   marginRight = 0,
-  dispatchId
+  dispatchId,
 }) => {
   const { fitView } = useFitViewHelper()
   const [elements, setElements] = useState([])
@@ -58,7 +64,8 @@ const LatticeGraph = ({
   const [nodesDraggable, setNodesDraggable] = useState(false)
   const [algorithm, setAlgorithm] = useState('layered')
   const [hideLabels, setHideLabels] = useState(false)
-  const [screen, setScreen] = useState(false);
+  const [screen, setScreen] = useState(false)
+  const [highlighted, setHighlighted] = useState(false)
 
   // set Margin
   const prevMarginRight = usePrevious(marginRight)
@@ -76,9 +83,14 @@ const LatticeGraph = ({
   }
 
   useEffect(() => {
-    marginSet()
+    if (!highlighted) marginSet()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitView, marginLeft, marginRight, graph, direction, elements, showParams])
+  }, [fitView, marginLeft, marginRight, graph, elements, highlighted])
+
+  useEffect(() => {
+    setHighlighted(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [direction, showParams, algorithm, hideLabels])
 
   // handle resizing
   const resizing = () => {
@@ -99,7 +111,14 @@ const LatticeGraph = ({
     if (algorithm === 'oldLayout') {
       setElements(layout(graph, direction, showParams, hideLabels, preview))
     } else {
-      assignNodePositions(graph, direction, showParams, algorithm, hideLabels, preview)
+      assignNodePositions(
+        graph,
+        direction,
+        showParams,
+        algorithm,
+        hideLabels,
+        preview
+      )
         .then((els) => {
           setElements(els)
         })
@@ -119,113 +138,205 @@ const LatticeGraph = ({
   }
 
   const handleChangeAlgorithm = (event) => {
-    setAnchorEl(null);
-    setAlgorithm(event);
-  };
+    setAnchorEl(null)
+    setAlgorithm(event)
+  }
 
   const handleHideLabels = () => {
     const value = !hideLabels
-    setHideLabels(value);
-  };
+    setHideLabels(value)
+  }
 
   /*<--------ScreenShot-------->*/
 
   useEffect(() => {
     if (screen) {
-      takeScreenShot(ref_chart.current).then(download);
-      setScreen(false);
+      takeScreenShot(ref_chart.current).then(download)
+      setScreen(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen]);
+  }, [screen])
 
-
-  const ref_chart = createRef(null);
+  const ref_chart = createRef(null)
 
   // eslint-disable-next-line no-unused-vars
   const [image, takeScreenShot] = useScreenshot({
-    type: "image/jpeg",
+    type: 'image/jpeg',
     quality: 1.0,
-  });
+  })
 
-  const download = (image, { name = dispatchId, extension = "jpg" } = {}) => {
-    const a = document.createElement("a");
-    a.href = image;
-    a.download = createFileName(extension, name);
-    a.click();
-  };
+  const download = (image, { name = dispatchId, extension = 'jpg' } = {}) => {
+    const a = document.createElement('a')
+    a.href = image
+    a.download = createFileName(extension, name)
+    a.click()
+  }
+
+  // highlight links of selected nodes
+  const getAllIncomers = (node, elements) => {
+    return getIncomers(node, elements).reduce(
+      (memo, incomer) => [
+        ...memo,
+        incomer,
+        ...getAllIncomers(incomer, elements),
+      ],
+      []
+    )
+  }
+
+  const getAllOutgoers = (node, elements) => {
+    return getOutgoers(node, elements).reduce(
+      (memo, outgoer) => [
+        ...memo,
+        outgoer,
+        ...getAllOutgoers(outgoer, elements),
+      ],
+      []
+    )
+  }
+
+  const highlightPath = (node, elements, selection) => {
+    if (node && elements) {
+      const allIncomers = getAllIncomers(node, elements)
+      const allOutgoers = getAllOutgoers(node, elements)
+      setHighlighted(true)
+      setElements((prevElements) => {
+        return prevElements?.map((elem) => {
+          const incomerIds = allIncomers.map((i) => i.id)
+          const outgoerIds = allOutgoers.map((o) => o.id)
+          if (isEdge(elem)) {
+            if (selection) {
+              const animated =
+                (outgoerIds.includes(elem.target) &&
+                  (outgoerIds.includes(elem.source) ||
+                    node.id === elem.source)) ||
+                (incomerIds.includes(elem.source) &&
+                  (incomerIds.includes(elem.target) || node.id === elem.target))
+              elem.style = {
+                ...elem.style,
+                stroke: animated ? '#6473FF' : '#303067',
+              }
+              elem.labelStyle = animated
+                ? { fill: '#6473FF' }
+                : { fill: NODE_TEXT_COLOR }
+            } else {
+              elem.animated = false
+              elem.style = {
+                ...elem.style,
+                stroke: '#303067',
+              }
+            }
+          }
+
+          return elem
+        })
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (!hasSelectedNode) resetNodeStyles()
+  }, [hasSelectedNode])
+
+  const resetNodeStyles = () => {
+    setElements((prevElements) => {
+      return prevElements?.map((elem) => {
+        if (isEdge(elem)) {
+          elem.animated = false
+          elem.labelStyle = { fill: NODE_TEXT_COLOR }
+          elem.style = {
+            ...elem.style,
+            stroke: '#303067',
+          }
+        }
+        return elem
+      })
+    })
+  }
 
   return (
     <>
-      {
-
-        elements?.length > 0 && (
-          <>
-            <ReactFlow
-              ref={ref_chart}
-              data-testid="lattice__graph"
-              nodeTypes={{ electron: ElectronNode, parameter: ParameterNode }}
-              edgeTypes={{ directed: DirectedEdge }}
-              nodesDraggable={nodesDraggable}
-              nodesConnectable={false}
-              elements={elements}
-              defaultZoom={1}
-              minZoom={0}
-              maxZoom={3}
-              selectNodesOnDrag={hasSelectedNode}
-            >
-              {screen &&
-                <div>
-                  <img style={{ position: 'absolute', zIndex: '2', right: '20px', bottom: '25px' }}
-                    src={covalentLogo} alt='covalentLogo' />
-                </div>
-              }
-            </ReactFlow>
-            <LatticeControls
-              marginLeft={marginLeft}
-              marginRight={marginRight}
-              showParams={showParams}
-              toggleParams={() => {
-                setShowParams(!showParams)
-              }}
-              showMinimap={showMinimap}
-              toggleMinimap={() => {
-                setShowMinimap(!showMinimap)
-              }}
-              toggleScreenShot={() => {
-                setScreen(true)
-
-              }}
-              open={open}
-              anchorEl={anchorEl}
-              handleClick={handleClick}
-              handleClose={handleClose}
-              direction={direction}
-              setDirection={setDirection}
-              algorithm={algorithm}
-              handleHideLabels={handleHideLabels}
-              hideLabels={hideLabels}
-              handleChangeAlgorithm={handleChangeAlgorithm}
-              nodesDraggable={nodesDraggable}
-              toggleNodesDraggable={() => setNodesDraggable(!nodesDraggable)}
-            />
-            {showMinimap && (
-              <MiniMap
-                style={{
-                  backgroundColor: theme.palette.background.default,
-                  position: 'absolute',
-                  bottom: 12,
-                  left: 513,
-                  zIndex: 5,
-                  height: 150,
-                  width: 300,
-                }}
-                maskColor={theme.palette.background.paper}
-                nodeColor={(node) => statusColor(node.data.status)}
-              />
+      {elements?.length > 0 && (
+        <>
+          <ReactFlow
+            ref={ref_chart}
+            data-testid="lattice__graph"
+            nodeTypes={{ electron: ElectronNode, parameter: ParameterNode }}
+            edgeTypes={{ directed: DirectedEdge }}
+            nodesDraggable={nodesDraggable}
+            nodesConnectable={false}
+            elements={elements}
+            defaultZoom={0.5}
+            minZoom={0}
+            maxZoom={1.5}
+            onSelectionChange={(selectedElements) => {
+              const node = selectedElements?.[0]
+              highlightPath(node, elements, true)
+            }}
+            selectNodesOnDrag={hasSelectedNode}
+            onPaneClick={() => {
+              resetNodeStyles()
+            }}
+          >
+            {screen && (
+              <div>
+                <img
+                  style={{
+                    position: 'absolute',
+                    zIndex: '2',
+                    paddingLeft: '25px',
+                    bottom: '25px',
+                  }}
+                  src={covalentLogo}
+                  alt="covalentLogo"
+                />
+              </div>
             )}
-          </>
-
-        )}
+          </ReactFlow>
+          <LatticeControls
+            marginLeft={marginLeft}
+            marginRight={marginRight}
+            showParams={showParams}
+            toggleParams={() => {
+              setShowParams(!showParams)
+            }}
+            showMinimap={showMinimap}
+            toggleMinimap={() => {
+              setShowMinimap(!showMinimap)
+            }}
+            toggleScreenShot={() => {
+              setScreen(true)
+            }}
+            open={open}
+            anchorEl={anchorEl}
+            handleClick={handleClick}
+            handleClose={handleClose}
+            direction={direction}
+            setDirection={setDirection}
+            algorithm={algorithm}
+            handleHideLabels={handleHideLabels}
+            hideLabels={hideLabels}
+            handleChangeAlgorithm={handleChangeAlgorithm}
+            nodesDraggable={nodesDraggable}
+            toggleNodesDraggable={() => setNodesDraggable(!nodesDraggable)}
+          />
+          {showMinimap && (
+            <MiniMap
+              style={{
+                backgroundColor: theme.palette.background.default,
+                position: 'absolute',
+                bottom: 12,
+                left: 522,
+                zIndex: 5,
+                height: 150,
+                width: 300,
+              }}
+              maskColor={theme.palette.background.paper}
+              nodeColor={(node) => statusColor(node.data.status)}
+            />
+          )}
+        </>
+      )}
     </>
   )
 }

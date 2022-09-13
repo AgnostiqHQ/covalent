@@ -53,7 +53,6 @@ const defaultTheme = createTheme({
       paper: '#1C1C46',
       coveBlack01: '#464660',
       coveBlack02: '#303067',
-      coveBlack03: '#1C1C46',
       graphCanvas: '#464646',
       darkblackbg: '#101820',
       buttonBg: '#10102C',

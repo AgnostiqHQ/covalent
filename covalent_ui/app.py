@@ -25,6 +25,7 @@ import uvicorn
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 
+from covalent._data_store.datastore import DataStore
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent_dispatcher._service.app_dask import DaskCluster
@@ -95,6 +96,9 @@ if __name__ == "__main__":
     if args.cluster:
         dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log)
         dask_cluster.start()
+
+    # Initialize the database
+    DataStore(initialize_db=True)
 
     # Start covalent main app
     uvicorn.run("app:fastapi_app", host=host, port=port, debug=DEBUG, reload=RELOAD)
