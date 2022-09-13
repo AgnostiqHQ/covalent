@@ -9,23 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Database is initialized in `covalent_ui/app.py` instead of in the CLI's `start` method in order to support management via `start-stop-daemon`.
+- Convert `COVALENT_SVC_PORT` to `int` when parsing env var
+
+### Added
+
 - Modified `_DEFAULT_CONSTRAINT_VALUES` to a dataclass called `DefaultMetadataValues`, it is still used as a dictionary everywhere (named `DEFAULT_METADATA_VALUES` instead) but in an object-like manner.
 - Modified `_DEFAULT_CONFIG` to also be a dataclass called `DefaultConfig`, which is initialized whenever needed and used like a dictionary (named `DEFAULT_CONFIG`).
 - `ConfigManager` is now thread safe since it is initialized whenever needed instead of one object being accessed by multiple processes/threads leading to corruption of the config file.
 - Using `contextlib.supress` to ignore `psutil.NoSuchProcess` errors instead of `try/except` with `pass`.
-
-### Fixed
-
-- Executor instances at runtime no longer inadvertently modify
-  transport graph nodes when modifying their attributes.
-
-
-### Added
-
 - Factory functions to generate configurations and default metadata at the time when required. This is because certain values like default executors are only determined when the covalent server starts.
 - Respecting the configuration options like default executor, no. of workers, developer mode, etc. when restarting the server.
 - Unit tests for `remote_executor.py`
 - Added alembic migrations script for DB schema v12
+- Environment variables added to `defaults.py` in order to support system services
+- Covalent OpenRC init script added
 
 ### Removed
 
@@ -41,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Removed inheritance of `call_before` metadata related to file transfers from parent electron to collected nodes.
+- Executor instances at runtime no longer inadvertently modify
+  transport graph nodes when modifying their attributes.
 
 ### Docs
 
