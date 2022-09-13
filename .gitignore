@@ -34,7 +34,6 @@
 !/covalent_dispatcher/**
 !/doc/**
 /doc/build/**
-!/init/**
 !/tests/**
 
 # Ignore dask-worker-spaces
