@@ -75,14 +75,14 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
   return (
     <div data-testid="dispatchoverview">
       {/* Description */}
-      {result?.lattice !== undefined &&
+      {result?.description &&
         (isFetching ? (
           <Skeleton />
         ) : (
           <>
             <Heading>Description</Heading>
             <Typography fontSize="body2.fontSize">
-              {result?.lattice.doc}
+              {result?.description}
             </Typography>
           </>
         ))}

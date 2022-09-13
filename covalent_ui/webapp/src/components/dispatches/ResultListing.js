@@ -72,7 +72,6 @@ import { ReactComponent as DeleteNewIcon } from '../../assets/delete.svg'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import Runtime from './Runtime'
 import OverflowTip from '../common/EllipsisTooltip'
-import { ReactComponent as SublatticeFailed } from '../../assets/sublattice/failed.svg'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
@@ -167,7 +166,7 @@ const ResultsTableHead = ({
   }
 
   return (
-    <TableHead>
+    <TableHead sx={{ position: 'sticky', zIndex: 19 }}>
       <TableRow>
         <TableCell
           padding="checkbox"
@@ -230,6 +229,21 @@ const ResultsTableHead = ({
               },
             }}
           >
+            <MenuItem
+              divider
+              onClose={handleClose}
+              sx={{
+                cursor: 'default',
+                textAlign: 'center',
+                justifyContent: 'center',
+                display: 'flex',
+                '&:hover': {
+                  background: 'none !important',
+                },
+              }}
+            >
+              Delete Options{' '}
+            </MenuItem>
             <MenuItem divider onClick={onSelectAllClick} onClose={handleClose}>
               {/* {numSelected > 0 && numSelected === total
                 ? 'Unselect all'
@@ -863,8 +877,15 @@ const ResultListing = () => {
         />
         {dashboardListView && (
           <Grid>
-            <TableContainer>
-              <StyledTable>
+            <TableContainer
+              sx={{
+                height: _.isEmpty(dashboardListView) ? 50 : 310,
+                '@media (min-width: 1700px)': {
+                  height: _.isEmpty(dashboardListView) ? 50 : '55vh',
+                },
+              }}
+            >
+              <StyledTable stickyHeader>
                 <ResultsTableHead
                   order={sortOrder}
                   orderBy={sortColumn}
@@ -894,7 +915,7 @@ const ResultListing = () => {
                   cancelledDispatches={cancelledDispatches}
                 />
 
-                <TableBody>
+                <TableBody sx={{ height: 'max-content' }}>
                   {dashboardListView &&
                     stableSort(dashboardListView, getComparator(sortOrder, sortColumn)).map((result, index) => (
                       <TableRow hover key={result.dispatchId}>
@@ -913,9 +934,6 @@ const ResultListing = () => {
                         </TableCell>
 
                         <TableCell sx={{ paddingTop: '6px !important' }}>
-                          <SvgIcon sx={{ mt: 0.1, mr: 0.5, fontSize: 16 }}>
-                            <SublatticeFailed />
-                          </SvgIcon>
                           <Link
                             underline="none"
                             href={`/${result.dispatchId}`}
@@ -960,7 +978,7 @@ const ResultListing = () => {
               </StyledTable>
             </TableContainer>
 
-            {_.isEmpty(dashboardListView) && (
+            {_.isEmpty(dashboardListView) && !isFetching && (
               <Typography
                 sx={{
                   my: 3,
@@ -981,22 +999,24 @@ const ResultListing = () => {
                 paddingTop: '10px',
               }}
             >
-              <Pagination
-                color="primary"
-                shape="rounded"
-                variant="outlined"
-                count={
-                  totalRecords && totalRecords > 10
-                    ? Math.ceil(totalRecords / 10)
-                    : 1
-                }
-                page={page}
-                onChange={handlePageChanges}
-                showFirstButton
-                showLastButton
-                siblingCount={2}
-                boundaryCount={2}
-              />
+              {!_.isEmpty(dashboardListView) && (
+                <Pagination
+                  color="primary"
+                  shape="rounded"
+                  variant="outlined"
+                  count={
+                    totalRecords && totalRecords > 10
+                      ? Math.ceil(totalRecords / 10)
+                      : 1
+                  }
+                  page={page}
+                  onChange={handlePageChanges}
+                  showFirstButton
+                  showLastButton
+                  siblingCount={2}
+                  boundaryCount={2}
+                />
+              )}
             </Grid>
           </Grid>
         )}

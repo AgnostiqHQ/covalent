@@ -25,7 +25,6 @@ import json
 import cloudpickle as pickle
 
 from covalent._workflow.transport import TransportableObject, _TransportGraph
-from covalent_ui.api.v1.utils.file_name import FileAttributes
 
 
 def validate_data(unpickled_object):
@@ -83,15 +82,6 @@ class FileHandler:
             return validate_data(unpickled_object)
         except Exception:
             return None
-
-    def get_file_attr(self, path, attr: FileAttributes):
-        """Get File Attributes"""
-        unpickled_object = self.__unpickle_file(path)
-        if attr == FileAttributes.DOC:
-            return unpickled_object.__doc__
-        if attr.value == FileAttributes.NAME:
-            return unpickled_object.__name__
-        return None
 
     def read_from_text(self, path):
         """Return data from text file"""

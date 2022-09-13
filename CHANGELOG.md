@@ -17,7 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Using `contextlib.supress` to ignore `psutil.NoSuchProcess` errors instead of `try/except` with `pass`.
 
 ### Added
-
 - Filter workflow dispatches by status on the GUI.
 - Delete all workflow dispatches present in the database from the GUI and add filter level deletion of workflow dispatches as well. 
 - Theme changes as part of latest wireframe.
@@ -77,6 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+### Docs
+- Update user interface docs for filter and delete features.
 - Added credential management page
 
 ## [0.196.0] - 2022-09-07

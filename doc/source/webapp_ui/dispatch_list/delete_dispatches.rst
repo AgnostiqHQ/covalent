@@ -35,10 +35,10 @@ Filter and Delete
 
 Search and Delete
 ***********************
-.. image:: ../images/search_dlt.gif
+.. image:: ../images/search_delete.gif
    :align: center
 - When the users search for something, then the 5 dropdown options only apply to the search results. That is, the dispatches which are not under the scope of this search results will not be affected.
-    - In the above example, Users search for workflow and get 16 search results. Now...
+    - In the above example, Users search for workflow and get 15 search results. Now...
     - "All visible" or checkbox will select all the dispatches from the currently visible page.
-    - "All" will prompt a pop-up to delete all the dispatches from this search results only. That is all 16 dispatches.
-    - "Completed" will prompt a pop-up to delete all the dispatches from this search results with the "Completed" status, that is only 14 dispatches. Similarly, for the "Running" and "Failed" statuses.
+    - "All" will prompt a pop-up to delete all the dispatches from this search results only. That is all 15 dispatches.
+    - "Completed" will prompt a pop-up to delete all the dispatches from this search results with the "Completed" status. Similarly, for the "Running" and "Failed" statuses.
