@@ -810,15 +810,13 @@ const ResultListing = () => {
           <Grid>
             <TableContainer
               sx={{
-                height: _.isEmpty(dashboardListView) ? 50 : 500,
+                height: _.isEmpty(dashboardListView) ? 50 : 310,
+                '@media (min-width: 1700px)': {
+                  height: _.isEmpty(dashboardListView) ? 50 : '55vh',
+                },
               }}
             >
-              <StyledTable
-                stickyHeader
-                sx={{
-                  height: 'max-content',
-                }}
-              >
+              <StyledTable stickyHeader>
                 <ResultsTableHead
                   order={sortOrder}
                   orderBy={sortColumn}
