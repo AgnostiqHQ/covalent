@@ -30,6 +30,14 @@ from fastapi.responses import JSONResponse
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent_ui.api.v1.routes import routes
+import select
+import os
+import subprocess
+import pty
+import logging
+import struct
+import termios
+import fcntl
 
 # Config
 
@@ -61,7 +69,71 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def set_winsize(fd, row, col, xpix=0, ypix=0):
+    logging.debug("setting window size with termios")
+    winsize = struct.pack("HHHH", row, col, xpix, ypix)
+    fcntl.ioctl(fd, termios.TIOCSWINSZ, winsize)
 
+async def read_and_forward_pty_output():
+    print("in read")
+    max_read_bytes = 1024 * 10
+    while True:
+        await sio.sleep(0.01)
+        print("sam read and forward pty output")
+        if fdd:
+            print("sam in fdd")
+            timeout_sec = 0
+            (data_ready, _, _) = select.select([fdd], [], [], timeout_sec)
+            if  data_ready:
+                print("sam in data ready ", data_ready)
+                output = os.read(fdd, max_read_bytes).decode()
+                await sio.emit("pty-output", {"output": output}, namespace="/pty")
+
+@sio.on("pty-input", namespace="/pty")
+def pty_input(sid, data):
+    print(data,"data from browser")
+    print("RECEIVEEEEEEEEEEEEEEEE")
+    """write to the child pty. The pty sees this as if you are typing in a real
+    terminal.
+    """
+    if fdd:
+        #logging.debug("received input from browser: %s" % data["input"])
+        print('sam pty input ', data)
+        os.write(fdd, data["input"].encode())
+
+
+@sio.on("resize", namespace="/pty")
+def resize(sid,data):
+    if fdd:
+        logging.debug(f"Resizing window to {data['rows']}x{data['cols']}")
+        set_winsize(fdd, data["rows"], data["cols"])
+
+
+@sio.on("connect", namespace="/pty")
+async def chat_message(*args):
+    logging.info("new client connected")
+    global child
+    if child:
+        # already started child process, don't start another
+        return
+
+    # create child process attached to a pty we can read from and write to
+    (child_pid, fd) = pty.fork()
+    print(child_pid,"ppppppppppppppppppppppppppppppppppppppppppppppp")
+    if child_pid == 0:
+        # this is the child process fork.
+        # anything printed here will show up in the pty, including the output
+        # of this subprocess
+        subprocess.run(["bash"])
+        print("connectedddddddddddddddddddddddd")
+    else:
+        child = child_pid
+        global fdd
+        fdd=fd
+        set_winsize(fdd, 50, 50)
+        cmd = ["bash"]
+        sio.start_background_task(read_and_forward_pty_output)
+        
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
