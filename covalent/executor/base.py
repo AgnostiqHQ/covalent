@@ -315,8 +315,7 @@ class BaseExecutor(_AbstractBaseExecutor):
 
             if self.tasks_left < 1:
                 self.teardown(task_metadata={})
-            else:
-                self.teardown(task_metadata=task_metadata)
+
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
             with self._state["lock"]:
@@ -324,8 +323,7 @@ class BaseExecutor(_AbstractBaseExecutor):
 
             if self.tasks_left < 1:
                 self.teardown(task_metadata={})
-            else:
-                self.teardown(task_metadata=task_metadata)
+
             raise ex
 
         self.write_streams_to_file(
@@ -462,8 +460,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
             if self.tasks_left < 1:
                 await self.teardown(task_metadata={})
-            else:
-                await self.teardown(task_metadata=task_metadata)
+
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
             async with self._state["lock"]:
@@ -471,8 +468,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
             if self.tasks_left < 1:
                 await self.teardown(task_metadata={})
-            else:
-                await self.teardown(task_metadata=task_metadata)
+
             raise ex
 
         await self.write_streams_to_file(
