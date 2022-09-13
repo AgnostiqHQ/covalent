@@ -53,6 +53,8 @@ class Lattices:
                 Lattice.status,
                 Lattice.storage_path.label("directory"),
                 Lattice.error_filename,
+                Lattice.results_filename,
+                Lattice.docstring_filename,
                 func.datetime(Lattice.started_at, "localtime").label("start_time"),
                 func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label(
                     "end_time"
