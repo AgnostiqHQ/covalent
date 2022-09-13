@@ -73,4 +73,4 @@ def test_dask_executor():
     time_taken = (result.end_time - result.start_time).total_seconds()
     print(f"Time taken: {time_taken}")
 
-    assert result.status == str(Result.COMPLETED)
+    assert result.status == Result.COMPLETED

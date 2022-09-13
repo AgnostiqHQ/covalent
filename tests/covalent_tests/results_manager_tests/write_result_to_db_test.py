@@ -503,6 +503,7 @@ def test_update_electrons_data(test_db, mocker):
         update_electrons_data(
             parent_dispatch_id="dispatch_1",
             transport_graph_node_id=0,
+            name="task",
             status="RUNNING",
             started_at=dt.now(timezone.utc),
             updated_at=dt.now(timezone.utc),
@@ -516,6 +517,7 @@ def test_update_electrons_data(test_db, mocker):
     update_electrons_data(
         parent_dispatch_id="dispatch_1",
         transport_graph_node_id=0,
+        name="task",
         status="RUNNING",
         started_at=cur_time,
         updated_at=cur_time,
