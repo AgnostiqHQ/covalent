@@ -21,6 +21,7 @@
 
 import covalent as ct
 from covalent._results_manager import Result
+import pytest
 
 
 def start_dask_cluster():
@@ -32,6 +33,7 @@ def start_dask_cluster():
     return cluster.scheduler_address
 
 
+@pytest.mark.skip(reason="Stalling the functional test pipeline")
 def test_dask_executor():
     from covalent.executor import DaskExecutor
 
