@@ -32,7 +32,7 @@ const demoDashboardListData = {
     dashboardList: [
         {
             "dispatch_id": "2537c3b0-c150-441b-81c6-844e3fd88ef3",
-            "lattice_name": "final_calc",
+            "lattice_name": "compute_energy",
             "runtime": 1000,
             "total_electrons": 10,
             "total_electrons_completed": 10,
