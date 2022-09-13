@@ -76,14 +76,14 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
   return (
     <div data-testid="dispatchoverview">
       {/* Description */}
-      {result?.lattice !== undefined &&
+      {result?.description &&
         (isFetching ? (
           <Skeleton />
         ) : (
           <>
             <Heading>Description</Heading>
             <Typography fontSize="body2.fontSize">
-              {result?.lattice.doc}
+              {result?.description}
             </Typography>
           </>
         ))}
@@ -132,12 +132,15 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       )}
 
       {/* Input */}
-      <InputSection
+      {Object.keys(drawerInput).length !== 0 && (
+        <InputSection
         isFetching={
           drawerInputListFetching && Object.keys(drawerInput).length === 0
         }
         inputs={drawerInput.data}
       />
+      )}
+
 
       {/* Result */}
       {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
@@ -154,13 +157,15 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       )}
 
       {/* Executor */}
-      <ExecutorSection
+      {Object.keys(drawerExecutorDetail).length !== 0 && (
+        <ExecutorSection
         isFetching={
           Object.keys(drawerExecutorDetail).length === 0 &&
           drawerExecutorDetailListFetching
         }
         metadata={drawerExecutorDetail}
       />
+      )}
 
       <Divider sx={{ my: 3 }} />
 

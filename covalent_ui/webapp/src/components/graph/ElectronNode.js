@@ -31,7 +31,7 @@ import {
 import { styled } from '@mui/material/styles'
 import { Handle } from 'react-flow-renderer'
 
-import { ReactComponent as AtomSvg } from '../../assets/status/activity.svg'
+import { ReactComponent as AtomSvg } from '../../assets/status/pending.svg'
 import { ReactComponent as CheckSvg } from '../../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../../assets/status/error.svg'
 import { ReactComponent as CancelSvg } from '../../assets/status/stop.svg'
@@ -79,12 +79,14 @@ const ElectronNode = ({
                 borderRadius: '5px 5px 0px 0px',
                 minWidth: '30%',
                 overflow: 'hidden',
-                background: (theme) => theme.palette.background.executorBg,
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) => theme.palette.text.tertiary,
-                borderColor: (theme) => theme.palette.primary.highlightBlue,
-                borderStyle: 'solid',
-                borderWidth: hasBorder ? 1 : 0,
+                color: (theme) =>
+                  !selected
+                    ? theme.palette.text.tertiary
+                    : theme.palette.text.primary,
+                '&:hover': {
+                  color: (theme) => theme.palette.text.primary,
+                },
               }}
             >
               <Handle
@@ -123,7 +125,7 @@ const ElectronNode = ({
           placement="bottom-end"
         >
           <Paper
-          data-testid="electronNode"
+            data-testid="electronNode"
             elevation={!selected ? 1 : 5}
             sx={{
               height: '34px',
@@ -132,32 +134,49 @@ const ElectronNode = ({
               px: 1,
               py: 0.5,
               borderRadius: '100px',
-              // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
+              bgcolor: !selected
+                ? (theme) => theme.palette.background.paper
+                : (theme) => theme.palette.primary.dark,
               color: !selected ? NODE_TEXT_COLOR : '#FAFAFA',
-              borderColor: color,
+              borderColor: !selected
+                ? (theme) => theme.palette.primary.highlightBlue
+                : (theme) => theme.palette.background.paper,
               borderStyle: 'solid',
               borderWidth: hasBorder ? 1 : 0,
+              '&:hover': {
+                bgcolor: (theme) => theme.palette.background.coveBlack02,
+                color: (theme) => theme.palette.primary.white,
+              },
             }}
           >
             <Handle
               type="target"
               position={targetPosition}
               isConnectable={isConnectable}
-              data-testid='handleelectronNode'
+              data-testid="handleelectronNode"
             />
             {nodeLabelIcon(data.nodeType)}
             {(() => {
               switch (data.status) {
                 case 'NEW_OBJECT':
                   return (
-                    <SvgIcon data-testid="atom" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
+                    <SvgIcon
+                      data-testid="atom"
+                      sx={{
+                        mr: 0.1,
+                        fontSize: 14,
+                        fill: color,
+                        position: 'relative',
+                        top: '1.7px',
+                      }}
+                    >
                       <AtomSvg />
                     </SvgIcon>
                   )
                 case 'RUNNING':
                   return (
                     <SvgIcon
-                    data-testid="loader"
+                      data-testid="loader"
                       sx={{ mt: 0.1, mr: 0.5, fontSize: 16, fill: color }}
                     >
                       <LoaderSvg />
@@ -165,19 +184,46 @@ const ElectronNode = ({
                   )
                 case 'COMPLETED':
                   return (
-                    <SvgIcon  data-testid="check" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
+                    <SvgIcon
+                      data-testid="check"
+                      sx={{
+                        mr: 0.1,
+                        fontSize: 14,
+                        fill: color,
+                        position: 'relative',
+                        top: '1.7px',
+                      }}
+                    >
                       <CheckSvg />
                     </SvgIcon>
                   )
                 case 'FAILED':
                   return (
-                    <SvgIcon data-testid="error" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
+                    <SvgIcon
+                      data-testid="error"
+                      sx={{
+                        mr: 0.1,
+                        fontSize: 14,
+                        fill: color,
+                        position: 'relative',
+                        top: '1.7px',
+                      }}
+                    >
                       <ErrorSvg />
                     </SvgIcon>
                   )
                 case 'CANCELLED':
                   return (
-                    <SvgIcon data-testid="cancel" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
+                    <SvgIcon
+                      data-testid="cancel"
+                      sx={{
+                        mr: 0.1,
+                        fontSize: 14,
+                        fill: color,
+                        position: 'relative',
+                        top: '1.7px',
+                      }}
+                    >
                       <CancelSvg />
                     </SvgIcon>
                   )
@@ -188,7 +234,7 @@ const ElectronNode = ({
 
             <Typography sx={{ fontSize: 14, mb: 0.3 }}>{data.label}</Typography>
             <Handle
-            data-testid="sourcehandleelectronNode"
+              data-testid="sourcehandleelectronNode"
               type="source"
               position={sourcePosition}
               isConnectable={isConnectable}
@@ -201,14 +247,21 @@ const ElectronNode = ({
               elevation={!selected ? 1 : 5}
               sx={{
                 position: 'absolute',
-                top: data.executor ? 48 : 35,
+                top: data.executor ? 48 : 30,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '16px',
                 minWidth: '20%',
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) => theme.palette.text.tertiary,
+                color: (theme) =>
+                  !selected
+                    ? theme.palette.text.tertiary
+                    : theme.palette.text.primary,
+
+                '&:hover': {
+                  color: (theme) => theme.palette.text.primary,
+                },
               }}
             >
               <Handle
