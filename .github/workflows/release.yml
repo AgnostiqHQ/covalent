@@ -364,6 +364,7 @@ jobs:
           echo "AWS_PLUGINS_TAG=$AWS_PLUGINS_TAG" >> $GITHUB_ENV
 
       - name: Build and push pre-release AWS executor image
+        uses: docker/build-push-action@v2
         if: >
           inputs.prerelease
           && !github.events.inputs.stable_version
