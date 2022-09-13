@@ -247,7 +247,6 @@ async def _dispatch_sync_sublattice(
     inputs: Dict,
     serialized_callable: Any,
     workflow_executor: Any,
-    executor_cache: ExecutorCache,
 ) -> str:
     """Dispatch a sublattice using the workflow_executor."""
 
@@ -284,7 +283,6 @@ async def _dispatch_sync_sublattice(
             call_after=[],
             inputs=sub_dispatch_inputs,
             workflow_executor=workflow_executor,
-            executor_cache=executor_cache,
             unplanned_task=True,
         )
     )
@@ -354,7 +352,6 @@ async def _run_task(
     call_after: List,
     node_name: str,
     workflow_executor: Any,
-    executor_cache: ExecutorCache,
     unplanned_task: bool,
 ) -> None:
     """
@@ -376,7 +373,7 @@ async def _run_task(
 
     dispatch_id = result_object.dispatch_id
     results_dir = result_object.results_dir
-
+    executor_cache = result_object._runtime_state["executor_cache"]
     executor = _get_executor_instance(
         node_id=node_id,
         dispatch_id=dispatch_id,
@@ -402,7 +399,6 @@ async def _run_task(
                 inputs=inputs,
                 serialized_callable=serialized_callable,
                 workflow_executor=workflow_executor,
-                executor_cache=executor_cache,
             )
 
             if not sublattice_result:
@@ -589,7 +585,7 @@ async def _initialize_deps_and_queue(
     return num_tasks
 
 
-async def _postprocess_workflow(result_object: Result, executor_cache: ExecutorCache) -> Result:
+async def _postprocess_workflow(result_object: Result) -> Result:
     """
     Postprocesses a workflow with a completed computational graph
 
@@ -637,7 +633,6 @@ async def _postprocess_workflow(result_object: Result, executor_cache: ExecutorC
                 call_after=[],
                 inputs=post_processing_inputs,
                 workflow_executor=post_processor,
-                executor_cache=executor_cache,
                 unplanned_task=False,
             )
         )
@@ -700,6 +695,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     # Tabulate number of tasks assigned to each executor instance
     exec_cache = ExecutorCache()
     exec_cache.initialize_from_result_object(result_object)
+    result_object._runtime_state["executor_cache"] = exec_cache
 
     tasks_queue = Queue()
     pending_deps = {}
@@ -803,7 +799,6 @@ async def _run_planned_workflow(result_object: Result) -> Result:
             call_after=call_after,
             inputs=task_input,
             workflow_executor=post_processor,
-            executor_cache=exec_cache,
             unplanned_task=False,
         )
 
@@ -831,7 +826,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
-    result_object = await _postprocess_workflow(result_object, exec_cache)
+    result_object = await _postprocess_workflow(result_object)
 
     result_object.persist()
     await result_webhook.send_update(result_object)

@@ -145,6 +145,9 @@ class Result:
 
         self._error = None
 
+        # Don't persist this
+        self._runtime_state = {}
+
     def __str__(self):
         """String representation of the result object"""
 

@@ -697,6 +697,7 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
 
     result_object = get_mock_result()
 
+    result_object._runtime_state["executor_cache"] = executor_cache
     serialized_callable = ct.TransportableObject(sub_workflow)
     inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}
 
@@ -706,7 +707,6 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
         inputs=inputs,
         serialized_callable=serialized_callable,
         workflow_executor=[le.short_name(), le.to_dict()],
-        executor_cache=executor_cache,
     )
     assert sub_result.result == 2
 
@@ -719,7 +719,6 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
             inputs=inputs,
             serialized_callable=serialized_callable,
             workflow_executor=["client", {}],
-            executor_cache=executor_cache,
         )
         assert False
 
@@ -740,7 +739,6 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
             inputs=inputs,
             serialized_callable=serialized_callable,
             workflow_executor=["fake_executor", bad_object_dict],
-            executor_cache=executor_cache,
         )
         assert False
 
@@ -776,6 +774,8 @@ async def test_run_task_sublattice_handling(test_db, mocker):
 
     inputs = {"args": [], "kwargs": {}}
 
+    result_object._runtime_state["executor_cache"] = executor_cache
+
     node_result = await _run_task(
         result_object=result_object,
         node_id=1,
@@ -786,7 +786,6 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         call_after=[],
         node_name=sublattice_prefix,
         workflow_executor=[le.short_name(), le.to_dict()],
-        executor_cache=executor_cache,
         unplanned_task=False,
     )
 
@@ -810,7 +809,6 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         call_after=[],
         node_name=sublattice_prefix,
         workflow_executor=[le.short_name(), le.to_dict()],
-        executor_cache=executor_cache,
         unplanned_task=False,
     )
 
@@ -830,7 +828,6 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         call_after=[],
         node_name=sublattice_prefix,
         workflow_executor=[le.short_name(), le.to_dict()],
-        executor_cache=executor_cache,
         unplanned_task=False,
     )
 
