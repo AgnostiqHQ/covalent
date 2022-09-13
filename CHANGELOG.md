@@ -12,8 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding a step in `release.yml/docker` job to trigger the AWS executor base image build in the remote repo `covalent-aws-plugins`
 - Pass all the necessary inputs for the triggered workflow as part of the HTTP POST request body
 
-### Fixed
-
 ### Changed
 
 - Modified `_DEFAULT_CONSTRAINT_VALUES` to a dataclass called `DefaultMetadataValues`, it is still used as a dictionary everywhere (named `DEFAULT_METADATA_VALUES` instead) but in an object-like manner.
