@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Executor instances at runtime no longer inadvertently modify
   transport graph nodes when modifying their attributes.
-
+- Syntax error in `tests.yml`
 
 ### Added
 
