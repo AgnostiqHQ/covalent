@@ -602,5 +602,5 @@ def test_executor_from_dict_makes_deepcopy():
     me = MockExecutor(log_stdout="/tmp/stdout.log")
     object_dict = me.to_dict()
     me = me.from_dict(object_dict)
-    me._state = "runtime_state"
-    assert "_state" not in object_dict["attributes"]
+    me._lock = "unpicklable_object"
+    assert "_lock" not in object_dict["attributes"]
