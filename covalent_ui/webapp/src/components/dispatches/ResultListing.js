@@ -833,6 +833,7 @@ const ResultListing = () => {
 
   useEffect(() => {
     handleFilterByStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterValue])
 
   return (

@@ -124,7 +124,6 @@ export const dashboardSlice = createSlice({
     },
     filterDispatches(state, { payload }) {
       const statusFilter = payload.status_filter
-      const searchValue = payload.search_string
       let filteredData = [];
       let finalArray = [];
       // if (!searchValue) {
