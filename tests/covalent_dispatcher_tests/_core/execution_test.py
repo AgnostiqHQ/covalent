@@ -172,77 +172,6 @@ def test_post_process():
     assert execution_result == compute_energy()
 
 
-def test_result_post_process(mocker, test_db):
-    """Test client-side post-processing of results."""
-
-    import covalent as ct
-
-    @ct.electron
-    def construct_cu_slab(x):
-        return x
-
-    @ct.electron
-    def compute_system_energy(x):
-        return x
-
-    @ct.electron
-    def construct_n_molecule(x):
-        return x
-
-    @ct.electron
-    def get_relaxed_slab(x):
-        return x
-
-    @ct.lattice
-    def compute_energy():
-        N2 = construct_n_molecule(1)
-        e_N2 = compute_system_energy(N2)
-
-        slab = construct_cu_slab(2)
-        e_slab = compute_system_energy(slab)
-
-        relaxed_slab = get_relaxed_slab(3)
-        e_relaxed_slab = compute_system_energy(relaxed_slab)
-
-        return (N2, e_N2, slab, e_slab, relaxed_slab, e_relaxed_slab)
-
-    compute_energy.build_graph()
-
-    compute_energy = Lattice.deserialize_from_json(compute_energy.serialize_to_json())
-
-    node_outputs = {
-        "construct_n_molecule(0)": 1,
-        ":parameter:1(1)": 1,
-        "compute_system_energy(2)": 1,
-        "construct_cu_slab(3)": 2,
-        ":parameter:2(4)": 2,
-        "compute_system_energy(5)": 2,
-        "get_relaxed_slab(6)": 3,
-        ":parameter:3(7)": 3,
-        "compute_system_energy(8)": 3,
-    }
-
-    encoded_node_outputs = {
-        k: ct.TransportableObject.make_transportable(v) for k, v in node_outputs.items()
-    }
-
-    res = Result(compute_energy, compute_energy.metadata["results_dir"])
-    res._initialize_nodes()
-
-    for i, v in enumerate(encoded_node_outputs.values()):
-        compute_energy.transport_graph.set_node_value(i, "output", v)
-
-    res._status = Result.PENDING_POSTPROCESSING
-    res._dispatch_id = "MOCK"
-
-    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
-    res.persist()
-
-    execution_result = res.post_process()
-
-    assert execution_result == compute_energy()
-
-
 def test_get_task_inputs():
     """Test _get_task_inputs for both dicts and list parameter types"""
 
@@ -566,9 +495,22 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
+    result_object._root_dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    # patch all methods that reference a DB
+    mocker.patch("covalent._results_manager.result.Result.upsert_lattice_data")
+    mocker.patch("covalent._results_manager.result.Result.upsert_electron_data")
+    mocker.patch("covalent._results_manager.result.Result.persist")
+    mocker.patch(
+        "covalent._results_manager.result.Result._get_node_name", return_value="failing_task"
+    )
+    mocker.patch(
+        "covalent._results_manager.result.Result._get_node_error", return_value="AssertionError"
+    )
+    mocker.patch("covalent_dispatcher._core.execution.update_lattices_data")
+    mocker.patch("covalent_dispatcher._core.execution.write_lattice_error")
+
     result_object.persist()
     result_object = await run_workflow(result_object)
 
@@ -598,9 +540,21 @@ async def test_run_workflow_with_failing_leaf(mocker):
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, lattice.metadata["results_dir"])
     result_object._dispatch_id = dispatch_id
+    result_object._root_dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    mocker.patch("covalent._results_manager.result.Result.upsert_lattice_data")
+    mocker.patch("covalent._results_manager.result.Result.upsert_electron_data")
+    mocker.patch("covalent._results_manager.result.Result.persist")
+    mocker.patch(
+        "covalent._results_manager.result.Result._get_node_name", return_value="failing_task"
+    )
+    mocker.patch(
+        "covalent._results_manager.result.Result._get_node_error", return_value="AssertionError"
+    )
+    mocker.patch("covalent_dispatcher._core.execution.update_lattices_data")
+    mocker.patch("covalent_dispatcher._core.execution.write_lattice_error")
+
     result_object.persist()
 
     result_object = await run_workflow(result_object)
@@ -652,7 +606,7 @@ async def test_run_workflow_does_not_deserialize(mocker):
 
 
 @pytest.mark.asyncio
-async def test_run_workflow_with_client_side_postprocess(mocker):
+async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     """Check that run_workflow handles "client" workflow_executor for
     postprocessing"""
 
@@ -664,7 +618,9 @@ async def test_run_workflow_with_client_side_postprocess(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+
     result_object.persist()
 
     result_object = await run_workflow(result_object)
@@ -672,7 +628,7 @@ async def test_run_workflow_with_client_side_postprocess(mocker):
 
 
 @pytest.mark.asyncio
-async def test_run_workflow_with_failed_postprocess(mocker):
+async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     """Check that run_workflow handles postprocessing failures"""
 
     dispatch_id = "asdf"
@@ -680,7 +636,9 @@ async def test_run_workflow_with_failed_postprocess(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+
     result_object.persist()
 
     def failing_workflow(x):
@@ -733,6 +691,9 @@ async def test_dispatch_sync_sublattice(mocker):
     @ct.lattice(executor="local", workflow_executor="local")
     def sub_workflow(x):
         return task(x)
+
+    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
 
     result_object = get_mock_result()
 

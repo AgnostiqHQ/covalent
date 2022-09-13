@@ -23,6 +23,8 @@
 import copy
 import inspect
 import operator
+from builtins import list
+from dataclasses import asdict
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
@@ -32,8 +34,8 @@ from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
-    _DEFAULT_CONSTRAINT_VALUES,
     WAIT_EDGE_NAME,
+    DefaultMetadataValues,
     electron_dict_prefix,
     electron_list_prefix,
     parameter_prefix,
@@ -48,6 +50,8 @@ from .lattice import Lattice
 from .transport import TransportableObject, encode_metadata
 
 consumable_constraints = ["budget", "time_limit"]
+
+DEFAULT_METADATA_VALUES = asdict(DefaultMetadataValues())
 
 if TYPE_CHECKING:
     from ..executor import BaseExecutor
@@ -242,7 +246,16 @@ class Electron:
 
                 # Switch the main node's electron to shared mode
                 self.metadata["executor_data"]["attributes"]["shared"] = True
-                get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
+
+                iterable_metadata = self.metadata.copy()
+
+                filtered_call_before = []
+                for elem in iterable_metadata["call_before"]:
+                    if elem["attributes"]["retval_keyword"] != "files":
+                        filtered_call_before.append(elem)
+                iterable_metadata["call_before"] = filtered_call_before
+
+                get_item_electron = Electron(function=get_item, metadata=iterable_metadata)
                 yield get_item_electron(self, i)
 
     def __getattr__(self, attr: str) -> "Electron":
@@ -321,8 +334,8 @@ class Electron:
         for k in self.metadata:
             if (
                 k not in consumable_constraints
-                and k in _DEFAULT_CONSTRAINT_VALUES
-                and self.get_metadata(k) is _DEFAULT_CONSTRAINT_VALUES[k]
+                and k in DEFAULT_METADATA_VALUES
+                and self.get_metadata(k) is DEFAULT_METADATA_VALUES[k]
             ):
                 self.set_metadata(k, active_lattice.get_metadata(k))
 
@@ -458,7 +471,7 @@ class Electron:
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
-                metadata=encode_metadata(_DEFAULT_CONSTRAINT_VALUES.copy()),
+                metadata=encode_metadata(DEFAULT_METADATA_VALUES.copy()),
                 value=encoded_param_value,
             )
             transport_graph.add_edge(
@@ -486,7 +499,7 @@ class Electron:
             node_id: Node id of the added node
         """
 
-        new_metadata = encode_metadata(_DEFAULT_CONSTRAINT_VALUES.copy())
+        new_metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
 
         # Use the same executor instance as specified in metadata
         new_metadata["executor"] = metadata["executor"]
@@ -548,13 +561,13 @@ def electron(
     backend: Optional[str] = None,
     executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+    ] = DEFAULT_METADATA_VALUES["executor"],
     # Add custom metadata fields here
     files: List[FileTransfer] = [],
-    deps_bash: Union[DepsBash, List, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", []),
-    deps_pip: Union[DepsPip, list] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("pip", None),
-    call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
-    call_after: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
+    deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []),
+    deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None),
+    call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"],
+    call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"],
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns the wrapper function with the same functionality as `_func`.
 
@@ -586,7 +599,7 @@ def electron(
 
     if isinstance(deps_bash, DepsBash):
         deps["bash"] = deps_bash
-    if isinstance(deps_bash, list) or isinstance(deps_bash, str):
+    if isinstance(deps_bash, (list, str)):
         deps["bash"] = DepsBash(commands=deps_bash)
 
     internal_call_before_deps = []

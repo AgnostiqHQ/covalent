@@ -30,10 +30,6 @@ from datetime import datetime, timezone
 from functools import partial
 from typing import Any, Dict, List, Tuple
 
-from sqlalchemy import update
-
-from covalent._data_store.datastore import workflow_db
-from covalent._data_store.models import Lattice as Lattice_model
 from covalent._results_manager import Result
 from covalent._results_manager.result import initialize_result_object
 from covalent._results_manager.write_result_to_db import (
@@ -432,9 +428,7 @@ async def _run_task(
 
         else:
             app_log.debug(f"Executing task {node_name}")
-
             assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
-
             execute_callable = partial(
                 executor.execute,
                 function=assembled_callable,
@@ -451,11 +445,9 @@ async def _run_task(
                 loop = asyncio.get_running_loop()
                 output, stdout, stderr = await loop.run_in_executor(None, execute_callable)
 
-            end_time = datetime.now(timezone.utc)
-
             node_result = generate_node_result(
                 node_id=node_id,
-                end_time=end_time,
+                end_time=datetime.now(timezone.utc),
                 status=Result.COMPLETED,
                 output=output,
                 stdout=stdout,
@@ -463,19 +455,14 @@ async def _run_task(
             )
 
     except Exception as ex:
-        end_time = datetime.now(timezone.utc)
-
         app_log.error(f"Exception occurred when running task {node_id}: {ex}")
-
         node_result = generate_node_result(
             node_id=node_id,
-            end_time=end_time,
+            end_time=datetime.now(timezone.utc),
             status=Result.FAILED,
             error="".join(traceback.TracebackException.from_exception(ex).format()),
         )
-        app_log.exception("Run task exception")
-    app_log.debug("Returning node result (run_task)")
-
+    app_log.debug(f"Node result: {node_result}")
     return node_result
 
 
@@ -725,17 +712,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
-    with workflow_db.session() as session:
-        session.execute(
-            update(Lattice_model)
-            .where(Lattice_model.dispatch_id == result_object.dispatch_id)
-            .values(
-                status=str(Result.RUNNING),
-                updated_at=datetime.now(timezone.utc),
-                started_at=datetime.now(timezone.utc),
-            )
-        )
-        session.commit()
+    result_object.upsert_lattice_data()
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
     # Executor for post_processing and dispatching sublattices

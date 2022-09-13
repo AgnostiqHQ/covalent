@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
-from sqlalchemy import and_, update
+from sqlalchemy import and_
 
 from .._data_store import models, workflow_db
 from .._shared_files import logger
@@ -277,9 +277,6 @@ Node Outputs
 
         self._num_nodes = self.lattice.transport_graph.get_internal_graph_copy().number_of_nodes()
         for node_id in range(self._num_nodes):
-            node_name = self.lattice.transport_graph.get_node_value(node_id, "name")
-
-            self.lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
 
             self.lattice.transport_graph.set_node_value(node_id, "start_time", None)
 
@@ -611,30 +608,20 @@ Node Outputs
 
         app_log.debug("Inside update node")
 
-        electron_kwargs = {}
-        node_path = Path(self.results_dir) / self.dispatch_id / f"node_{node_id}"
-        if not node_path.exists():
-            node_path.mkdir()
-
         if node_name is not None:
-            self.lattice.transport_graph.set_node_value(node_id, "node_name", node_name)
-            electron_kwargs["name"] = node_name
+            self.lattice.transport_graph.set_node_value(node_id, "name", node_name)
 
         if start_time is not None:
             self.lattice.transport_graph.set_node_value(node_id, "start_time", start_time)
-            electron_kwargs["started_at"] = start_time
 
         if end_time is not None:
             self.lattice.transport_graph.set_node_value(node_id, "end_time", end_time)
-            electron_kwargs["completed_at"] = end_time
 
         if status is not None:
             self.lattice.transport_graph.set_node_value(node_id, "status", status)
-            electron_kwargs["status"] = str(status)
 
         if output is not None:
             self.lattice.transport_graph.set_node_value(node_id, "output", output)
-            store_file(node_path, ELECTRON_RESULTS_FILENAME, output)
 
         if error is not None:
             self.lattice.transport_graph.set_node_value(node_id, "error", error)
@@ -646,31 +633,12 @@ Node Outputs
 
         if stdout is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stdout", stdout)
-            store_file(node_path, ELECTRON_STDOUT_FILENAME, stdout)
 
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
-            store_file(node_path, ELECTRON_STDERR_FILENAME, stderr)
 
-        if str(status) == "COMPLETED":
-            update_lattice_completed_electron_num(self.dispatch_id)
+        self.upsert_electron_data()
 
-        with workflow_db.session() as session:
-            lattice_id = (
-                session.query(models.Lattice)
-                .where(models.Lattice.dispatch_id == self.dispatch_id)
-                .all()[0]
-                .id
-            )
-            session.execute(
-                update(models.Electron)
-                .where(
-                    models.Electron.parent_lattice_id == lattice_id,
-                    models.Electron.transport_graph_node_id == node_id,
-                )
-                .values(updated_at=datetime.now(timezone.utc), **electron_kwargs)
-            )
-            session.commit()
         app_log.debug("Inside update node - SUCCESS")
 
     def _initialize_results_dir(self):
@@ -772,7 +740,6 @@ Node Outputs
 
     def upsert_electron_data(self):
         """Update electron data"""
-
         tg = self.lattice.transport_graph
         dirty_nodes = set(tg.dirty_nodes)
         tg.dirty_nodes.clear()  # Ensure that dirty nodes list is reset once the data is updated
@@ -786,7 +753,7 @@ Node Outputs
                 if not node_path.exists():
                     node_path.mkdir()
 
-                attribute_name = tg.get_node_value(node_key=node_id, value_key="name")
+                node_name = tg.get_node_value(node_key=node_id, value_key="name")
 
                 try:
                     function_string = tg.get_node_value(node_id, "function_string")
@@ -811,9 +778,7 @@ Node Outputs
                 try:
                     node_output = tg.get_node_value(node_id, "output")
                 except KeyError:
-                    node_output = TransportableObject(None)
-                if not isinstance(node_output, TransportableObject):
-                    node_output = TransportableObject(node_output)
+                    node_output = None
 
                 executor = tg.get_node_value(node_id, "metadata")["executor"]
                 started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
@@ -854,6 +819,7 @@ Node Outputs
                     is not None
                 )
 
+                status = tg.get_node_value(node_key=node_id, value_key="status")
                 if not electron_exists:
                     electron_record_kwarg = {
                         "parent_dispatch_id": self.dispatch_id,
@@ -861,8 +827,8 @@ Node Outputs
                         "type": get_electron_type(
                             tg.get_node_value(node_key=node_id, value_key="name")
                         ),
-                        "name": tg.get_node_value(node_key=node_id, value_key="name"),
-                        "status": str(tg.get_node_value(node_key=node_id, value_key="status")),
+                        "name": node_name,
+                        "status": str(status),
                         "storage_type": ELECTRON_STORAGE_TYPE,
                         "storage_path": str(node_path),
                         "function_filename": ELECTRON_FUNCTION_FILENAME,
@@ -888,12 +854,15 @@ Node Outputs
                     electron_record_kwarg = {
                         "parent_dispatch_id": self.dispatch_id,
                         "transport_graph_node_id": node_id,
-                        "status": str(tg.get_node_value(node_key=node_id, value_key="status")),
+                        "name": node_name,
+                        "status": str(status),
                         "started_at": started_at,
                         "updated_at": datetime.now(timezone.utc),
                         "completed_at": completed_at,
                     }
                     update_electrons_data(**electron_record_kwarg)
+                    if status == Result.COMPLETED:
+                        update_lattice_completed_electron_num(self.dispatch_id)
 
     def insert_electron_dependency_data(self):
         """Update electron dependency data"""
@@ -929,7 +898,7 @@ Node Outputs
         self.upsert_electron_data()
         app_log.debug("upsert complete")
         self.insert_electron_dependency_data()
-        app_log.debug("persis complete")
+        app_log.debug("persist complete")
 
     def _convert_to_electron_result(self) -> Any:
         """
