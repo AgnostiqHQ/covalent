@@ -135,7 +135,7 @@ jobs:
 
       - name: Set up Python
         if: >
-          matrix.os == 'macos-latest'
+          contains(matrix.os, 'macos')
           && (env.NEED_PYTHON || env.BUILD_AND_RUN_ALL)
         uses: actions/setup-python@v2
         with:
