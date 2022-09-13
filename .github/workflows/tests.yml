@@ -109,7 +109,7 @@ jobs:
 
       - name: Generate environment variables
         run: |
-          if ${{ matrix.os = = 'ubuntu-latest' \
+          if ${{ matrix.os == 'ubuntu-latest' \
             && contains(matrix.container, 'ubuntu20-py38') \
             && matrix.backend == 'dask' }} ; then
             RECOMMENDED_PLATFORM=true
