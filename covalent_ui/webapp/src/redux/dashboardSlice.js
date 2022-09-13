@@ -43,7 +43,7 @@ export const fetchDashboardList = createAsyncThunk(
   async (bodyParams, thunkAPI) =>
     await api
       .get(
-        `api/v1/dispatches/list?count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
+        `api/v1/dispatches/list?count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}&status_filter=${bodyParams.status_filter}`
       )
       .catch(thunkAPI.rejectWithValue)
 )
@@ -59,6 +59,14 @@ export const deleteDispatches = createAsyncThunk(
   async (bodyParams, thunkAPI) =>
     await api
       .post('api/v1/dispatches/delete', bodyParams)
+      .catch(thunkAPI.rejectWithValue)
+)
+
+export const deleteAllDispatches = createAsyncThunk(
+  'dashboard/deleteAllDispatches',
+  async (bodyParams, thunkAPI) =>
+    await api
+      .post('api/v1/dispatches/delete-all', bodyParams)
       .catch(thunkAPI.rejectWithValue)
 )
 
@@ -114,6 +122,22 @@ export const dashboardSlice = createSlice({
         state.deleteResults.error = null
       })
       .addCase(deleteDispatches.rejected, (state, { payload }) => {
+        state.deleteResults.isFetching = false
+        state.deleteResults.isDeleted = false
+        state.deleteResults.error = payload
+      })
+
+      //deleteAllResults
+      .addCase(deleteAllDispatches.fulfilled, (state, { meta }) => {
+        state.deleteResults.isFetching = false
+        state.deleteResults.isDeleted = true
+      })
+      .addCase(deleteAllDispatches.pending, (state, { payload }) => {
+        state.deleteResults.isFetching = true
+        state.deleteResults.isDeleted = false
+        state.deleteResults.error = null
+      })
+      .addCase(deleteAllDispatches.rejected, (state, { payload }) => {
         state.deleteResults.isFetching = false
         state.deleteResults.isDeleted = false
         state.deleteResults.error = payload
