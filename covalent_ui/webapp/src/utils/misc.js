@@ -24,7 +24,7 @@ import _ from 'lodash'
 import { isValid, format, parseISO } from 'date-fns'
 import theme from './theme'
 import { SvgIcon } from '@mui/material'
-import { ReactComponent as ActivitySvg } from '../assets/status/activity.svg'
+import { ReactComponent as ActivitySvg } from '../assets/status/pending.svg'
 import { ReactComponent as CheckSvg } from '../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../assets/status/error.svg'
 import { ReactComponent as CancelSvg } from '../assets/status/stop.svg'
@@ -32,6 +32,11 @@ import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
 import { ReactComponent as FunctionSvg } from '../assets/nodeType/fuction.svg'
 import { ReactComponent as ParameterSvg } from '../assets/nodeType/parameter.svg'
 import { ReactComponent as SubLattice } from '../assets/nodeType/sublattice.svg'
+import { ReactComponent as ArgSvg } from '../assets/nodeType/arg.svg'
+import { ReactComponent as AttributeSvg } from '../assets/nodeType/attribute.svg'
+import { ReactComponent as ElectronDictSvg } from '../assets/nodeType/electron-dict.svg'
+import { ReactComponent as ElectronListSvg } from '../assets/nodeType/electron-list.svg'
+import { ReactComponent as GeneratedSvg } from '../assets/nodeType/generated.svg'
 
 export const secondsToHms = (ms) => {
   let time = ''
@@ -174,7 +179,7 @@ export const nodeLabelIcon = (type) => {
     case 'electron_list':
       return (
         <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
-          <FunctionSvg />
+          <ElectronListSvg />
         </SvgIcon>
       )
     case 'parameter':
@@ -183,10 +188,40 @@ export const nodeLabelIcon = (type) => {
           <ParameterSvg />
         </SvgIcon>
       )
-    case "sublattice":
+    case 'sublattice':
       return (
         <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
           <SubLattice />
+        </SvgIcon>
+      )
+    case 'electron_dict':
+      return (
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+          <ElectronDictSvg />
+        </SvgIcon>
+      )
+    case 'attribute':
+      return (
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+          <AttributeSvg />
+        </SvgIcon>
+      )
+    case 'generated':
+      return (
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+          <GeneratedSvg />
+        </SvgIcon>
+      )
+    case 'subscripted':
+      return (
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+          <SubLattice />
+        </SvgIcon>
+      )
+    case 'arg':
+      return (
+        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+          <ArgSvg />
         </SvgIcon>
       )
     default:
