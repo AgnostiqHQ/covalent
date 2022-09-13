@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Adding a step in `release.yml/docker` job to trigger the AWS executor base image build in the remote repo `covalent-aws-plugins`
 - Pass all the necessary inputs for the triggered workflow as part of the HTTP POST request body
+- Added MacOS 12 to test matrix
+
 
 ### Changed
 
@@ -56,10 +58,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated AWS Lambda plugin rtd with mention to its limitations.
 - Updated RTD concepts and tutorials to reflect new UI.
-
-### Operations
-
-- Added MacOS 12 to test matrix
 
 ## [0.197.0] - 2022-09-08
 
