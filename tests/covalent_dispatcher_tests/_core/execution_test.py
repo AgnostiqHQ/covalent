@@ -673,7 +673,7 @@ def test_build_sublattice_graph():
 
 
 @pytest.mark.asyncio
-async def test_dispatch_sync_sublattice(mocker):
+async def test_dispatch_sync_sublattice(test_db, mocker):
 
     from covalent.executor import LocalExecutor
 
