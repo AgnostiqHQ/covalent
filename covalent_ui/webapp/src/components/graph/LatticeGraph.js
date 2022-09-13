@@ -284,7 +284,7 @@ const LatticeGraph = ({
                   style={{
                     position: 'absolute',
                     zIndex: '2',
-                    paddingRight: '1px',
+                    paddingLeft: '25px',
                     bottom: '25px',
                   }}
                   src={covalentLogo}
