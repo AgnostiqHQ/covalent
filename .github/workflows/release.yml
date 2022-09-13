@@ -396,7 +396,6 @@ jobs:
           aws ecr put-image --repository-name covalent --image-tag stable --image-manifest "$MANIFEST"
 
       - name: Build AWS executor stable image
-        uses: docker/build-push-action@v2
         if: >
           !inputs.prerelease
           && github.events.inputs.stable_version
