@@ -727,8 +727,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
 
         if node_id < 0:
             app_log.debug(f"Workflow {result_object.dispatch_id} failed or cancelled.")
-            await asyncio.gather(*task_futures)
-            return result_object
+            break
 
         # Get name of the node for the current task
         node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
