@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ConfigManager` is now thread safe since it is initialized whenever needed instead of one object being accessed by multiple processes/threads leading to corruption of the config file.
 - Using `contextlib.supress` to ignore `psutil.NoSuchProcess` errors instead of `try/except` with `pass`.
 
+### Fixed
+
+- Executor instances at runtime no longer inadvertently modify
+  transport graph nodes when modifying their attributes.
+
+
 ### Added
 
 - Factory functions to generate configurations and default metadata at the time when required. This is because certain values like default executors are only determined when the covalent server starts.
