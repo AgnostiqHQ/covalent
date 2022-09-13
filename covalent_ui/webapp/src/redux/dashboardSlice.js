@@ -96,23 +96,18 @@ export const dashboardSlice = createSlice({
         "total_dispatcher_duration": finalArray.length ? finalArray?.map(obj => obj.runtime).reduce((partialSum, a) => partialSum + a, 0) : 'N/A'
       }
       state.dashboardOverview = dashOverview
-    },
+    },    
     allDispatchesDelete(state, { payload }) {
       const statusFilter = payload.status_filter;
-      const filterVal= payload.filter_value;
+      const filterVal = payload.filter_value;
       const allDispatches = current(state.overallDashboardList);
       let filteredData = [];
       if (statusFilter === 'ALL') {
         filteredData = [];
       } else filteredData = allDispatches;
-      const filteredArray = allDispatches.filter(object1 => {
-        return !filteredData.some(object2 => {
-          return object1.dispatch_id === object2.dispatch_id;
-        });
-      });
       const finalArray = filteredData?.filter(e => e.status !== statusFilter)
-      // }
-      state.dashboardList = finalArray
+      const filteredFinal = filterVal === 'ALL' ? finalArray : finalArray.filter(e => e.status === filterVal)
+      state.dashboardList = filteredFinal
       state.overallDashboardList = finalArray
       state.totalDispatches = finalArray.length
       const lastStatusArray = _.orderBy(finalArray, ['started_at'], ['desc']);
@@ -133,14 +128,14 @@ export const dashboardSlice = createSlice({
       let filteredData = [];
       let finalArray = [];
       // if (!searchValue) {
-        if (statusFilter === 'ALL') {
-          filteredData = current(state.overallDashboardList)
-          finalArray = filteredData
-        } else {
-          filteredData = current(state.overallDashboardList)
-          finalArray = filteredData?.filter(e => e.status === statusFilter)
-        }
-        state.dashboardList = finalArray
+      if (statusFilter === 'ALL') {
+        filteredData = current(state.overallDashboardList)
+        finalArray = filteredData
+      } else {
+        filteredData = current(state.overallDashboardList)
+        finalArray = filteredData?.filter(e => e.status === statusFilter)
+      }
+      state.dashboardList = finalArray
       // } 
       // else {
       //   if (statusFilter === 'ALL') {
