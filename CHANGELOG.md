@@ -26,8 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Respecting the configuration options like default executor, no. of workers, developer mode, etc. when restarting the server.
 - Unit tests for `remote_executor.py`
 - Added alembic migrations script for DB schema v12
-- Unit tests for `remote_executor.py`
-
 
 ### Removed
 
