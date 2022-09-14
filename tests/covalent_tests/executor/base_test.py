@@ -231,6 +231,7 @@ def test_base_executor_execute(mocker):
     )
 
     assert result.get_deserialized() == 5
+    assert me.get_task_data(dispatch_id, node_id, "_status") == "COMPLETED"
 
 
 @pytest.mark.asyncio
@@ -529,6 +530,7 @@ def test_base_executor_run_exception(mocker):
     except RuntimeError as ex:
         assert me._tasks_left == 0
         me.teardown.times_called == 1
+        assert me.get_task_data(dispatch_id, node_id, "_status") == "FAILED"
 
 
 @pytest.mark.asyncio
@@ -576,6 +578,7 @@ async def test_async_base_executor_run_exception(mocker):
     except RuntimeError as ex:
         assert async_me._tasks_left == 0
         async_me.teardown.times_called == 1
+        assert await async_me.get_task_data(dispatch_id, node_id, "_status") == "FAILED"
 
 
 def test_executor_clone_sets_instance_id():
@@ -619,6 +622,7 @@ async def test_base_async_executor_execute(mocker):
     )
 
     assert result.get_deserialized() == 5
+    assert await me.get_task_data(dispatch_id, node_id, "_status") == "COMPLETED"
 
 
 def test_executor_from_dict_makes_deepcopy():
