@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
-- Updating path references to local workflows
+- Updating all references to local workflows
 
 ### Operations
 
