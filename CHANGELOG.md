@@ -10,11 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Updating all references to local workflows
-
-### Operations
-
 - Adding `nightly.yml` workflow for nightly CI
 - Updated triggers to `tests` and `changelog` workflows
+- Added a reusable JS action for hotfixes
 
 ## [0.198.0] - 2022-09-14
 
