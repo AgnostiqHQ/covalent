@@ -266,11 +266,14 @@ async def _get_executor_instance(
 
         app_log.debug(f"Running task {node_name} using executor {short_name}, {object_dict}")
 
-        # Cache miss: construct and cache a new executor instance
+        # Cache miss: construct a new executor instance
 
         if not executor:
             executor = _executor_manager.get_executor(short_name)
             executor.from_dict(object_dict)
+
+            # Initialize runtime state and register the instance with
+            # the cache
             executor._initialize_runtime(executor_cache=executor_cache)
 
         # Check if we are using a shared instance for an un-planned
@@ -319,7 +322,7 @@ async def _run_task(
 
     dispatch_id = result_object.dispatch_id
     results_dir = result_object.results_dir
-    executor_cache = result_object._runtime_state["executor_cache"]
+    executor_cache = result_object._get_executor_cache()
     executor = await _get_executor_instance(
         node_id=node_id,
         dispatch_id=dispatch_id,
@@ -639,9 +642,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
 
     # Tabulate number of tasks assigned to each executor instance
-    exec_cache = ExecutorCache()
-    exec_cache.initialize_from_result_object(result_object)
-    result_object._runtime_state["executor_cache"] = exec_cache
+    exec_cache = result_object._get_executor_cache()
 
     tasks_queue = Queue()
     pending_deps = {}

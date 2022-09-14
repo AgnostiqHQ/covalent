@@ -23,21 +23,20 @@
 import asyncio
 
 import covalent.executor.base
-from covalent._results_manager.result import Result
 from covalent._shared_files.defaults import parameter_prefix
 
 
 class ExecutorCache:
     """Dispatcher cache of live executor instances"""
 
-    def __init__(self, result_object: Result = None):
+    def __init__(self, result_object=None):
         self.id_instance_map = {}
         self.tasks_per_instance = {}
 
         if result_object:
             self.initialize_from_result_object(result_object)
 
-    def initialize_from_result_object(self, result_object: Result):
+    def initialize_from_result_object(self, result_object):
         g = result_object.lattice.transport_graph
 
         for node in g._graph.nodes:

@@ -35,6 +35,7 @@ from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
+from ..executor._runtime.utils import ExecutorCache
 from .write_result_to_db import (
     get_electron_type,
     insert_electron_dependency_data,
@@ -915,6 +916,28 @@ Node Outputs
         """
 
         return self._result
+
+    def _get_executor_cache(self) -> ExecutorCache:
+        """
+        Private method for the dispatcher to retrieve the runtime
+        executor cache.
+
+        Instantiates a new cache when called for the first time by the
+        dispatcher.
+
+        """
+
+        if "executor_cache" not in self._runtime_state:
+            self._runtime_state["executor_cache"] = ExecutorCache(self)
+
+        return self._runtime_state["executor_cache"]
+
+    def _set_executor_cache(self, cache: ExecutorCache):
+        """
+        Explicitly set the executor cache used by the dispatcher
+        """
+
+        self._runtime_state["executor_cache"] = cache
 
 
 def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:

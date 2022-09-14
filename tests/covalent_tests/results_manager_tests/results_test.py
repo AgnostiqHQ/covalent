@@ -38,6 +38,7 @@ from covalent._results_manager.results_manager import result_from
 from covalent._results_manager.write_result_to_db import load_file
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
+from covalent.executor._runtime.utils import ExecutorCache
 
 TEMP_RESULTS_DIR = "/tmp/results"
 
@@ -543,3 +544,19 @@ def test_result_post_process(mocker, test_db):
     execution_result = res.post_process()
 
     assert execution_result == compute_energy()
+
+
+def test_get_executor_cache(mocker):
+    result_object = get_mock_result()
+    cache_init = mocker.patch(
+        "covalent.executor._runtime.utils.ExecutorCache.__init__", return_value=None
+    )
+    cache = result_object._get_executor_cache()
+    cache_init.assert_called_once_with(result_object)
+
+
+def test_set_executor_cache(mocker):
+    result_object = get_mock_result()
+    cache = ExecutorCache()
+    result_object._set_executor_cache(cache)
+    assert result_object._runtime_state["executor_cache"] == cache
