@@ -20,4 +20,4 @@
 
 """Import shared utils."""
 
-from .defaults import _DEFAULT_CONSTRAINT_VALUES
+from .defaults import DefaultMetadataValues
