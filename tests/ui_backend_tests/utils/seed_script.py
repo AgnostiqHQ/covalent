@@ -38,6 +38,7 @@ def seed(engine):
                     named_kwargs_filename=item["named_kwargs_filename"],
                     results_filename=item["results_filename"],
                     transport_graph_filename=item["transport_graph_filename"],
+                    root_dispatch_id=item["root_dispatch_id"],
                     is_active=item["is_active"],
                     created_at=convert_to_date(item["created_at"]),
                     updated_at=convert_to_date(item["updated_at"]),

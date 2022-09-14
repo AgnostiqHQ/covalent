@@ -112,6 +112,9 @@ class Lattice(Base):
     # Name of the file containing the transport graph
     transport_graph_filename = Column(Text)
 
+    # Dispatch id of the root lattice in a hierarchy of sublattices
+    root_dispatch_id = Column(String(64), nullable=False)
+
     # Name of the column which signifies soft deletion of a lattice
     is_active = Column(Boolean, nullable=False, default=True)
 
