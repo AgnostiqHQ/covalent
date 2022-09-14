@@ -27,6 +27,7 @@ from covalent_ui.api.v1.routes.end_points import (
     electron_routes,
     graph_route,
     lattice_route,
+    logs_route,
     summary_routes,
 )
 
@@ -37,4 +38,6 @@ routes.include_router(summary_routes.routes, prefix="/api/v1/dispatches", tags=[
 routes.include_router(lattice_route.routes, prefix="/api/v1/dispatches", tags=["Dispatches"])
 routes.include_router(graph_route.routes, prefix="/api/v1/dispatches", tags=["Graph"])
 routes.include_router(electron_routes.routes, prefix="/api/v1/dispatches", tags=["Electrons"])
+routes.include_router(logs_route.routes, prefix="/api/v1/logs", tags=["Logs"])
+routes.include_router(app.router, prefix="/api", tags=["dispatcher"])
 routes.include_router(app.router, prefix="/api", tags=["dispatcher"])
