@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Adding `nightly.yml` workflow for nightly CI
+- Updated triggers to `tests` and `changelog` workflows
+
 ## [0.198.0] - 2022-09-14
 
 ### Authors
@@ -14,11 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scott Wyman Neagle <scott@agnostiq.ai>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
 
-
-### Operations
-
-- Adding `nightly.yml` workflow for nightly CI
-- Updated triggers to `tests` and `changelog` workflows
 
 ### Operations
 
