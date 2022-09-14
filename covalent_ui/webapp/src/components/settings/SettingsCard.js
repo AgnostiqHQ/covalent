@@ -23,9 +23,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
   Container, Grid, Box, Input, InputLabel, Radio, RadioGroup, Button,
-  Stack, Snackbar, SvgIcon, Toolbar, InputAdornment
+  Stack, Snackbar, SvgIcon, Toolbar, InputAdornment, IconButton
 } from '@mui/material';
-import { Search as SearchIcon } from '@mui/icons-material'
+import { Clear as ClearIcon, ConstructionOutlined, Search as SearchIcon } from '@mui/icons-material'
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -91,6 +91,8 @@ const SettingsCard = () => {
   const [handle, setHandle] = useState('');
   const [openDialogBox, setOpenDialogBox] = useState(false)
   const [searchData, setSearchData] = useState(settings_result)
+  const [searchKey, setSearchKey] = useState('')
+  const [restoreData, setRestoreData] = useState({})
 
   useEffect(() => {
     dispatch(settingsResults())
@@ -107,6 +109,17 @@ const SettingsCard = () => {
     const updateData = {
       [resultKey]: formDataObj
     }
+    dispatch(updateSettings(updateData)).then((action) => {
+      if (action.type === updateSettings.fulfilled.type) {
+        setOpenSnackbar(true)
+        setSnackbarMessage('settings updated successfully')
+      } else if (action.type === updateSettings.rejected.type) {
+        setOpenSnackbar(true)
+        setSnackbarMessage('Something went wrong and could not settings updated!')
+      }
+    })
+    setOpenDialogBox(false)
+    setHandle('')
   };
 
   const popHandleSubmit = (event) => {
@@ -231,6 +244,9 @@ const SettingsCard = () => {
         setOpen(!open);
         tmpList.push(key)
       }
+      else {
+        setOpen(false);
+      }
     })
     setSubMenu(tmpList);
   };
@@ -242,8 +258,29 @@ const SettingsCard = () => {
     else {
       setIsDisabled(true)
     }
-    if (handle || !handle) {
+    if (handle) {
+      const formData = new FormData(document.getElementById("get__pop_id"));
+      const formDataObj = {};
+      formData.forEach((value, key) => (
+        formDataObj[key] = value)
+      );
+      const updateData = {
+        [resultKey]: formDataObj
+      }
+      dispatch(updateSettings(updateData)).then((action) => {
+        if (action.type === updateSettings.fulfilled.type) {
+          setOpenSnackbar(true)
+          setSnackbarMessage('settings updated successfully')
+          dispatch(settingsResults())
+        } else if (action.type === updateSettings.rejected.type) {
+          setOpenSnackbar(true)
+          setSnackbarMessage('Something went wrong and could not settings updated!')
+        }
+      })
       setHandle('')
+      setResultKey(key)
+      setResultOutput(value)
+    } else if (!handle) {
       setResultKey(key)
       setResultOutput(value)
     }
@@ -255,21 +292,30 @@ const SettingsCard = () => {
 
   const cancelButton = () => {
     if (handle) {
-      setOpenDialogBox(true)
-    } else {
-      setOpenDialogBox(false)
+      // Deep copy
     }
   }
 
   const handleInputChange = (e) => {
+    setSearchKey(e.target.value)
     const filterData = Object.fromEntries(Object.entries(settings_result).
       filter(([key]) => key.includes(e.target.value)))
     setSearchData(filterData)
   };
 
+  const handleSearchClear = () => {
+    setSearchKey('')
+    dispatch(settingsResults())
+  }
+
+  const handleSubmenuClick = (menu) => {
+    document.getElementById(menu).scrollIntoView({ behavior: "smooth" });
+  }
+
   useEffect(() => {
     if (settings_result) {
       setSearchData(settings_result)
+      setRestoreData(settings_result)
     }
   }, [settings_result])
 
@@ -316,9 +362,20 @@ const SettingsCard = () => {
                   mb: 3
                 }}
                   disableUnderline
+                  value={searchKey}
                   startAdornment={
                     <InputAdornment position="start">
                       <SearchIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
+                    </InputAdornment>
+                  }
+                  endAdornment={
+                    <InputAdornment
+                      position="end"
+                      sx={{ visibility: searchKey !== '' ? 'visible' : 'hidden' }}
+                    >
+                      <IconButton size="small" onClick={() => handleSearchClear()}>
+                        <ClearIcon fontSize="inherit" sx={{ color: 'text.secondary' }} />
+                      </IconButton>
                     </InputAdornment>
                   }
                   onChange={(e) => handleInputChange(e)}
@@ -338,7 +395,11 @@ const SettingsCard = () => {
                           <ListItemText inset primary={getSettingsName(key)}
                             onClick={() => menuClick(value, key)}
                             disableTypography
-                            sx={{ pl: "0px", fontSize: '18px' }} />
+                            sx={{
+                              color: resultKey === key ? 'white' : 'text.primary',
+                              pl: "0px", fontSize: '18px', fontWeight: resultKey === key ?
+                                'bold' : 'normal'
+                            }} />
                         </ListItemButton>
                       </ListItem>
                     )
@@ -353,6 +414,7 @@ const SettingsCard = () => {
                             <ListItem disablePadding>
                               <ListItemButton sx={{ pl: 4, pt: 0.3, pb: 0.3 }}>
                                 <ListItemText inset primary={getSubmenuName(value)}
+                                  onClick={() => handleSubmenuClick(value)}
                                   disableTypography
                                   sx={{ pl: "0px", fontSize: '18px' }} />
                               </ListItemButton>
@@ -376,7 +438,7 @@ const SettingsCard = () => {
 
         {_.size(settings_result) !== 0 ?
           <Grid item xs={9}>
-            <Typography variant="h6" component="h6">
+            <Typography variant="h6" component="h6" sx={{ fontWeight: 'bold' }}>
               {_.map(resultKey === "" ? getSettingsName(defaultObjKey) : getSettingsName(resultKey))}
             </Typography>
             <Grid container spacing={3} sx={{ mt: 2 }}>
@@ -384,15 +446,14 @@ const SettingsCard = () => {
                 <form onSubmit={handleSubmit} id="get__pop_id">
                   {
                     _.map(resultOutput === undefined ? defaultObjValue : resultOutput, function (value, key) {
-
                       return (
-                        <Box sx={{ mb: 3 }}>
+                        <Box sx={{ mb: 3 }} id={key}>
                           {
                             _.isObject(value)
                               ?
                               <>
                                 <Typography variant="h6" component="h6"
-                                  sx={(theme) => ({ color: theme.palette.primary.light })}>
+                                  sx={(theme) => ({ color: theme.palette.primary.light, fontWeight: 'bold' })}>
                                   {getSettingsName(key)}
                                 </Typography>
                                 {
@@ -404,9 +465,11 @@ const SettingsCard = () => {
                                             <FormLabel id="demo-row-radio-buttons-group-label"
                                               sx={(theme) => ({
                                                 fontSize: '16px',
+                                                color: 'text.primary'
                                               })}> {getSettingsName(key)}</FormLabel>
                                             <RadioGroup
                                               row
+                                              ref={setting__ref}
                                               aria-labelledby="demo-row-radio-buttons-group-label"
                                               name="row-radio-buttons-group"
                                             >
@@ -421,7 +484,8 @@ const SettingsCard = () => {
                                             <InputLabel variant="standard" htmlFor="uncontrolled-native"
                                               sx={{
                                                 fontSize: '16px',
-                                                mb: 1
+                                                mb: 1,
+                                                color: 'text.primary'
                                               }}>
                                               {getLabelName(key)}
                                             </InputLabel>
@@ -454,6 +518,7 @@ const SettingsCard = () => {
                                     <FormLabel id="demo-row-radio-buttons-group-label"
                                       sx={(theme) => ({
                                         fontSize: '16px',
+                                        color: 'text.primary'
                                       })}> {getSettingsName(key)}</FormLabel>
                                     <RadioGroup
                                       row
@@ -471,7 +536,8 @@ const SettingsCard = () => {
                                     <InputLabel variant="standard" htmlFor="uncontrolled-native"
                                       sx={{
                                         fontSize: '16px',
-                                        mb: 1
+                                        mb: 1,
+                                        color: 'text.primary'
                                       }}>
                                       {getLabelName(key)}
                                     </InputLabel>
