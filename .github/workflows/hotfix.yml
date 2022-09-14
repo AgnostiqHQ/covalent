@@ -45,69 +45,23 @@ jobs:
       && contains(github.event.issue.labels.*.name, 'hotfix')
     runs-on: ubuntu-latest
     steps:
-      - name: Extract PR route
-        run: |
-          pr_route=$(echo ${{ github.event.issue.pull_request.url }} \
-            | sed s-https://api.github.com--)
-          echo "PR_ROUTE=$pr_route" >> $GITHUB_ENV
-      - name: Get PR data
-        id: pr-data
-        uses: octokit/request-action@v2.x
-        with:
-          route: GET ${{ env.PR_ROUTE }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout PR branch
-        uses: actions/checkout@v2
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-          ref: ${{ fromJson(steps.pr-data.outputs.data).head.ref }}
-      - name: Validate tree
-        run: |
-          sha_length=20
-          latest_tag=$(git describe --abbrev=$sha_length)
-          IFS='-' read -ra describe_commits <<< "$latest_tag"
-          if [ "${#describe_commits[-1]}" -gt $sha_length ] && [ "${describe_commits[-2]}" -gt 2 ] ; then
-            echo 'MESSAGE="Please squash your commits before applying a hotfix."' >> $GITHUB_ENV
-            exit 2
-          fi
-          echo "LATEST_TAG=${describe_commits[0]}" >> $GITHUB_ENV
-      - name: Get release
-        id: get-release
-        uses: cardinalby/git-get-release-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag: env.LATEST_TAG
       - name: Hotfix version
-        run: |
-          IFS='-' read -ra hotfix_version <<< "${{ steps.get-release.outputs.tag_name }}"
-          if [[ ${{ steps.get-release.outputs.prerelease }} = false ]] && [ ${#hotfix_version[1]} -gt 0 ] ; then
-            version="${hotfix_version[0]}-$(( ${hotfix_version[1]} + 1 ))"
-          elif [[ $${{ steps.get-release.outputs.prerelease }} = false ]] ; then
-            version="${hotfix_version[0]}-1"
-          else
-            echo 'MESSAGE="Hotfix branches must be created from a stable release."' >> $GITHUB_ENV
-            exit 1
-          fi
-          git checkout -b "hotfix-$version"
-          echo $version > VERSION
-          echo "VERSION=$version" >> $GITHUB_ENV
-          echo 'MESSAGE="Hotfix ' $version ' has been created. ' \
-            'You may contact mall security to create a stable release using this tag."' >> $GITHUB_ENV
+        id: version
+        uses: ./.github/actions/hotfix
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Commit
         uses: EndBug/add-and-commit@v9
         with:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
-          message: "${{ github.event.issue.title }} (#${{ github.event.issue.number }})"
-          tag: env.VERSION
+          message: ${{ steps.version.outputs.message }}
+          tag: ${{ steps.version.outputs.version }}
       - name: Comment
         if: always()
         uses: thollander/actions-comment-pull-request@v1
         with:
-          message: env.MESSAGE
+          message: ${{ steps.version.outputs.comment }}
           pr_number: github.event.issue.number
           GITHUB_TOKEN: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
