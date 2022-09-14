@@ -20,13 +20,15 @@
 
 """Language translation module for Electron objects."""
 
+from builtins import list
+from dataclasses import asdict
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger
-from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
+from .._shared_files.defaults import DefaultMetadataValues
 from .depsbash import DepsBash
 from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
@@ -35,6 +37,8 @@ from .transport import encode_metadata
 
 if TYPE_CHECKING:  # pragma: no cover
     from ..executor import BaseExecutor
+
+DEFAULT_METADATA_VALUES = asdict(DefaultMetadataValues())
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -84,12 +88,12 @@ class Lepton(Electron):
         display_name: Optional[str] = "",
         executor: Union[
             List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
-        ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+        ] = DEFAULT_METADATA_VALUES["executor"],
         files: List[FileTransfer] = [],
-        deps_bash: Union[DepsBash, List, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", []),
-        deps_pip: Union[DepsPip, list] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("pip", None),
-        call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
-        call_after: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
+        deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []),
+        deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None),
+        call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"],
+        call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"],
     ) -> None:
         self.language = language
         self.library_name = library_name
@@ -408,12 +412,12 @@ def bash(
     display_name: Optional[str] = "",
     executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+    ] = DEFAULT_METADATA_VALUES["executor"],
     files: List[FileTransfer] = [],
-    deps_bash: Union[DepsBash, List, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", []),
-    deps_pip: Union[DepsPip, list] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("pip", None),
-    call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
-    call_after: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
+    deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []),
+    deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None),
+    call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"],
+    call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"],
 ) -> Callable:
     """Bash decorator which wraps a Python function as a Bash Lepton."""
 

@@ -13,6 +13,7 @@ Dispatch List
 - :doc:`Pagination <dispatch_list/pagination>`
 - :doc:`Search <dispatch_list/search>`
 - :doc:`Sort <dispatch_list/sort>`
+- :doc:`Filter <dispatch_list/filter>`
 - :doc:`Workflow Dispatch Deletion <dispatch_list/delete_dispatches>`
 
 ---------------------------------

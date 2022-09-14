@@ -25,6 +25,7 @@ from enum import Enum
 class Status(Enum):
     """To restrict status field"""
 
+    ALL = "ALL"
     NEW_OBJECT = "NEW_OBJECT"
     COMPLETED = "COMPLETED"
     POSTPROCESSING = "POSTPROCESSING"
