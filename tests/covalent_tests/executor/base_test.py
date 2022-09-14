@@ -714,7 +714,7 @@ def test_executor_set_data_protects_status():
 
 
 @pytest.mark.asyncio
-async def test_executor_initialize_task_data():
+async def test_async_executor_initialize_task_data():
     """Test initializing task data"""
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
     me._initialize_runtime()
@@ -723,7 +723,7 @@ async def test_executor_initialize_task_data():
 
 
 @pytest.mark.asyncio
-async def test_executor_get_set_task_data():
+async def test_async_executor_get_set_task_data():
     """Test get task data"""
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
     me._initialize_runtime()
@@ -735,7 +735,7 @@ async def test_executor_get_set_task_data():
 
 
 @pytest.mark.asyncio
-async def test_executor_set_data_protects_status():
+async def test_async_executor_set_data_protects_status():
     """Test public set_task_data doesn't allow setting `_status`"""
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
     me._initialize_runtime()

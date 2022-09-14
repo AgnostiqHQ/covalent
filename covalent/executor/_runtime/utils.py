@@ -47,10 +47,6 @@ class ExecutorCache:
                 continue
             executor_data = g.get_node_value(node, "metadata")["executor_data"]
 
-            # DEBUGGING ONLY: This should never happen
-            if not executor_data:
-                assert False
-
             executor_id = executor_data["attributes"]["instance_id"]
 
             self.id_instance_map[executor_id] = None
