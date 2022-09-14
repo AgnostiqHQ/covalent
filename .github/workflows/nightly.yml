@@ -95,7 +95,7 @@ jobs:
     name: Create Release
     needs: push_to_master
     if: needs.push_to_master.outputs.release == 'true'
-    uses: AgnostiqHQ/covalent/github/workflows/release.yml@develop
+    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
     with:
       prerelease: true
     secrets: inherit # pragma: allowlist secret
