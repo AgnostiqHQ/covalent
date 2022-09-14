@@ -1,0 +1,125 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+name: nightly
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+
+jobs:
+  license:
+    name: License Scanner
+    uses: ./.github/workflows/license.yml@develop
+
+  tests:
+    name: Unit and Functional Tests
+    uses: ./.github/workflows/tests.yml@develop
+    secrets: inherit # pragma: allowlist secret
+
+  benchmarks:
+    name: Benchmarks
+    uses: ./.github/workflows/benchmark.yml@develop
+    secrets: inherit # pragma: allowlist secret
+
+  changelog:
+    name: Assign Version
+    needs:
+      - license
+      - tests
+    uses: ./.github/workflows/changelog.yml@develop
+    secrets: inherit # pragma: allowlist secret
+
+  push_to_master:
+    name: Push to Master
+    runs-on: ubuntu-latest
+    needs: changelog
+    outputs:
+      release: ${{ steps.push.outputs.release }}
+    steps:
+      - name: Get latest release
+        id: query-tags
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/{owner}/{repo}/tags
+          owner: AgnostiqHQ
+          repo: covalent
+
+      - name: Parse latest tag
+        id: get-latest-tag
+        run: |
+          # This assumes that the response from the API is sorted in decreasing order (thus the first element is the latest tag)
+          latest_tag=${{ fromJSON(steps.query-tags.outputs.data)[0].name }}
+          echo "::set-output name=tag::${latest_tag}"
+
+      - name: Checkout default branch
+        uses: github/checkout@v3
+
+      - name: Push to master
+        id: push
+        run: |
+          MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
+          VERSION="$(cat ./VERSION)"
+          release=false
+          if [ "$MASTER_VERSION" = "$VERSION" ] ; then
+            echo "$VERSION has been previously released."
+          elif dpkg --compare-versions $VERSION 'gt' '0.177.0' ; then
+            git config user.name "CovalentOpsBot"
+            git config user.email "covalentopsbot@users.noreply.github.com"
+            git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
+            git push origin HEAD:master
+            release=true
+          else
+            echo "We cannot release versions less than 0.177.0."
+          fi
+          echo "::set-output name=release::$release"
+
+  release:
+    name: Create Release
+    needs: push_to_master
+    if: needs.push_to_master.outputs.release == 'true'
+    uses: ./.github/workflows/release.yml@develop
+    with:
+      prerelease: true
+    secrets: inherit # pragma: allowlist secret
+
+  notify:
+    name: Notify Slack
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: github/checkout@v3
+        with:
+          ref: "master"
+
+      - name: Format Slack message
+        run: |
+          VERSION="$(cat ./VERSION)"
+          SLACK_MSG=":rocket: Version $VERSION is now available."
+          echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
+
+      - name: Notify Slack
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "covalent-ci"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: ${{ env.SLACK_MSG }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
