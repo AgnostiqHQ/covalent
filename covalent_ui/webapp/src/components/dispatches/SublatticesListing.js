@@ -40,10 +40,12 @@ import {
   tableBodyClasses,
   tableSortLabelClasses,
   Skeleton,
+  linkClasses,
+  Grid,
 } from '@mui/material'
-import {
-  sublatticesListDetails
-} from '../../redux/latticeSlice'
+import { SublatticeIcon } from '../../utils/misc'
+
+import { sublatticesListDetails } from '../../redux/latticeSlice'
 import Runtime from './Runtime'
 import OverflowTip from '../common/EllipsisTooltip'
 
@@ -68,11 +70,7 @@ const headers = [
   },
 ]
 
-const ResultsTableHead = ({
-  order,
-  orderBy,
-  onSort,
-}) => {
+const ResultsTableHead = ({ order, orderBy, onSort }) => {
   return (
     <TableHead>
       <TableRow>
@@ -105,30 +103,31 @@ const ResultsTableHead = ({
 }
 
 const StyledTable = styled(Table)(({ theme }) => ({
-
   // customize text
-  [` & .${tableCellClasses.head}`]:
-  {
+  [` & .${tableCellClasses.head}`]: {
     fontSize: '0.75rem',
   },
-  [`& .${tableBodyClasses.root} .${tableRowClasses.root} `]:
-  {
+  [`& .${tableBodyClasses.root} .${tableRowClasses.root} `]: {
     fontSize: '0.875rem',
   },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
     color: theme.palette.text.tertiary,
-    borderColor: 'theme.palette.background.default',
+    borderColor: theme.palette.background.default,
   },
 
-  // customize hover
   [`& .${tableBodyClasses.root} .${tableRowClasses.root}:hover`]: {
     backgroundColor: theme.palette.background.paper,
     cursor: 'pointer',
+
     [`& .${tableCellClasses.root}`]: {
+      borderColor: theme.palette.background.default,
       color: theme.palette.text.secondary,
-    }
+    },
+    [`& .${linkClasses.root}`]: {
+      color: theme.palette.text.secondary,
+    },
   },
 
   // customize selected
@@ -137,6 +136,23 @@ const StyledTable = styled(Table)(({ theme }) => ({
   },
   [`& .${tableBodyClasses.root} .${tableRowClasses.root}.Mui-selected:hover`]: {
     backgroundColor: theme.palette.background.coveBlack01,
+  },
+
+  [`& .${tableCellClasses.root}`]: {
+    borderColor: theme.palette.background.default,
+  },
+
+  [`& .${tableCellClasses.root}`]: {
+    borderColor: theme.palette.background.default,
+  },
+
+  [`& .${tableCellClasses.root}:first-of-type`]: {
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+  },
+  [`& .${tableCellClasses.root}:last-of-type`]: {
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
   },
 }))
 
@@ -173,7 +189,7 @@ const SublatticesListing = () => {
     const bodyParams = {
       sort_by: sortColumn,
       direction: sortOrder,
-      dispatchId
+      dispatchId,
     }
     dispatch(sublatticesListDetails(bodyParams))
   }
@@ -189,7 +205,6 @@ const SublatticesListing = () => {
     setSortColumn(column)
   }
 
-
   return (
     <>
       <Box>
@@ -203,12 +218,26 @@ const SublatticesListing = () => {
                   onSort={handleChangeSort}
                 />
 
-                <TableBody>
+                <TableBody
+                  sx={{
+                    '.MuiTableRow-root': {
+                      borderBottom: '2 px solid red',
+                    },
+                  }}
+                >
                   {sublatticesListView &&
                     sublatticesListView.map((result, index) => (
-                      <TableRow hover key={result.dispatchId} height='40px'>
+                      <TableRow hover key={result.dispatchId} height="40px">
                         <TableCell>
-                          <OverflowTip width='100px' fontSize='14px' value={result.latticeName} />
+                          <Grid sx={{ display: 'flex', mt: 0.8, mb: 0 }}>
+                            {' '}
+                            {SublatticeIcon(result.status)}
+                            <OverflowTip
+                              width="70px"
+                              fontSize="14px"
+                              value={result.latticeName}
+                            />
+                          </Grid>
                         </TableCell>
                         <TableCell>
                           <Runtime
@@ -216,8 +245,11 @@ const SublatticesListing = () => {
                             endTime={result.endTime}
                           />
                         </TableCell>
-                        <TableCell >
-                          <OverflowTip width='100px' value={`${result.totalElectrons}/${result.totalElectronsCompleted}`} />
+                        <TableCell>
+                          <OverflowTip
+                            width="70px"
+                            value={`${result.totalElectrons}/${result.totalElectronsCompleted}`}
+                          />
                         </TableCell>
                       </TableRow>
                     ))}

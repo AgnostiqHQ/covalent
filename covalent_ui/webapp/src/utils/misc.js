@@ -32,7 +32,9 @@ import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
 import { ReactComponent as FunctionSvg } from '../assets/nodeType/fuction.svg'
 import { ReactComponent as ParameterSvg } from '../assets/nodeType/parameter.svg'
 import { ReactComponent as SubLattice } from '../assets/nodeType/sublattice.svg'
-
+import { ReactComponent as RunningSvg } from '../assets/sublattice/running.svg'
+import { ReactComponent as FailedSvg } from '../assets/sublattice/failed.svg'
+import { ReactComponent as SuccessSvg } from '../assets/sublattice/success.svg'
 export const secondsToHms = (ms) => {
   let time = ''
   const sec = Math.floor(ms / 1000)
@@ -183,12 +185,38 @@ export const nodeLabelIcon = (type) => {
           <ParameterSvg />
         </SvgIcon>
       )
-    case "sublattice":
+    case 'sublattice':
       return (
         <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
           <SubLattice />
         </SvgIcon>
       )
+    default:
+      return null
+  }
+}
+
+export const SublatticeIcon = (type) => {
+  switch (type) {
+    case 'COMPLETED':
+      return (
+        <SvgIcon sx={{ mr: 1 }}>
+          <SuccessSvg />
+        </SvgIcon>
+      )
+    case 'FAILED':
+      return (
+        <SvgIcon sx={{ mr: 1 }}>
+          <FailedSvg />
+        </SvgIcon>
+      )
+    case 'RUNNING':
+      return (
+        <SvgIcon sx={{ mr: 1 }}>
+          <RunningSvg />
+        </SvgIcon>
+      )
+
     default:
       return null
   }

@@ -107,7 +107,9 @@ const ElectronNode = ({
           title={
             data.hideLabels ? (
               <>
-                <Typography sx={{ fontSize: '0.75rem' }} color="inherit">name : {data.fullName}</Typography>
+                <Typography sx={{ fontSize: '0.75rem' }} color="inherit">
+                  name : {data.fullName}
+                </Typography>
                 <Typography sx={{ fontSize: '0.75rem' }} color="inherit">
                   executor : {data.executor}
                 </Typography>
@@ -143,14 +145,23 @@ const ElectronNode = ({
               type="target"
               position={targetPosition}
               isConnectable={isConnectable}
-              data-testid='handleelectronNode'
+              data-testid="handleelectronNode"
             />
             {nodeLabelIcon(data.nodeType)}
             {(() => {
               switch (data.status) {
                 case 'NEW_OBJECT':
                   return (
-                    <SvgIcon data-testid="atom" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
+                    <SvgIcon
+                      data-testid="atom"
+                      sx={{
+                        mr: 0.1,
+                        fontSize: 14,
+                        fill: color,
+                        position: 'relative',
+                        top: '1.7px',
+                      }}
+                    >
                       <AtomSvg />
                     </SvgIcon>
                   )
@@ -165,19 +176,46 @@ const ElectronNode = ({
                   )
                 case 'COMPLETED':
                   return (
-                    <SvgIcon data-testid="check" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
+                    <SvgIcon
+                      data-testid="check"
+                      sx={{
+                        mr: 0.1,
+                        fontSize: 14,
+                        fill: color,
+                        position: 'relative',
+                        top: '1.7px',
+                      }}
+                    >
                       <CheckSvg />
                     </SvgIcon>
                   )
                 case 'FAILED':
                   return (
-                    <SvgIcon data-testid="error" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
+                    <SvgIcon
+                      data-testid="error"
+                      sx={{
+                        mr: 0.1,
+                        fontSize: 14,
+                        fill: color,
+                        position: 'relative',
+                        top: '1.7px',
+                      }}
+                    >
                       <ErrorSvg />
                     </SvgIcon>
                   )
                 case 'CANCELLED':
                   return (
-                    <SvgIcon data-testid="cancel" sx={{ mr: 0.1, fontSize: 14, fill: color, position: 'relative', top: '1.7px' }}>
+                    <SvgIcon
+                      data-testid="cancel"
+                      sx={{
+                        mr: 0.1,
+                        fontSize: 14,
+                        fill: color,
+                        position: 'relative',
+                        top: '1.7px',
+                      }}
+                    >
                       <CancelSvg />
                     </SvgIcon>
                   )
@@ -195,13 +233,16 @@ const ElectronNode = ({
             />
             {data.nodeType === 'sublattice' && (
               <CopyButton
-                sx={{ ml: 1, color: 'text.tertiary'}}
-                fontSize='10'
+                sx={{ ml: 1, color: 'text.tertiary' }}
+                fontSize="10"
                 content={data.sublattices_id}
                 size="small"
                 className="copy-btn"
                 title="Copy ID"
+                width={17}
+                height={17}
                 isBorderPresent={true}
+                borderRadius="4px"
               />
             )}
           </Paper>
