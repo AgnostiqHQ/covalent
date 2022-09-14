@@ -405,3 +405,50 @@ jobs:
           push: true
           tags: |
             public.ecr.aws/covalent/covalent-executor-base:stable
+
+  aws_ami:
+    needs: pypi
+    if: >
+      github.event.inputs.stable_version
+      && contains(env.PAUL_BLART, github.actor)
+      && !github.event.inputs.test_release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Terraform repository
+        uses: actions/checkout@v2
+        with:
+          repository: AgnostiqHQ/terraform
+          ref: refs/heads/develop
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Initialize Packer Templates
+        id: pkr_init
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: init
+          working_directory: images/aws
+
+      - name: Validate the Packer template
+        uses: hashicorp/packer-github-actions@master
+        id: pkr_validate
+        if: steps.pkr_init.outcome == 'success'
+        with:
+          command: validate
+          arguments: -syntax-only
+          working_directory: images/aws
+
+      - name: Build the AMI
+        if: steps.pkr_validate.outcome == 'success'
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: build
+          working_directory: images/aws
+        env:
+          PKR_VAR_covalent_version: ${{ github.event.inputs.stable_version }}
+          PACKER_LOG: 1
