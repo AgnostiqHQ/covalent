@@ -840,6 +840,15 @@ async def test_run_task_sublattice_handling(test_db, mocker):
     assert node_result["status"] == Result.FAILED
 
 
+def test_executor_cache_init(mocker):
+    result_object = get_mock_result()
+    mock_init = mocker.patch(
+        "covalent_dispatcher._core.execution.ExecutorCache.initialize_from_result_object"
+    )
+    cache = ExecutorCache(result_object)
+    mock_init.assert_called_once_with(result_object)
+
+
 def test_executor_cache_initialize():
     """Test ExecuterCache initialize correctly counts the tasks assigned
     to each cached executor"""

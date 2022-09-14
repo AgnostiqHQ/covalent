@@ -62,6 +62,9 @@ class ExecutorCache:
         self.id_instance_map = {}
         self.tasks_per_instance = {}
 
+        if result_object:
+            self.initialize_from_result_object(result_object)
+
     def initialize_from_result_object(self, result_object: Result):
         g = result_object.lattice.transport_graph
 
