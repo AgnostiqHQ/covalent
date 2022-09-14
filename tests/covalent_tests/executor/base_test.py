@@ -29,6 +29,7 @@ import pytest
 
 from covalent import DepsCall, TransportableObject
 from covalent.executor import BaseExecutor, wrapper_fn
+from covalent.executor._runtime.utils import ExecutorCache
 from covalent.executor.base import AsyncBaseExecutor
 
 
@@ -650,3 +651,97 @@ async def test_async_executor_task_count_helpers():
     assert me._tasks_left == 2
     await me._decrement_task_count()
     assert me._tasks_left == 1
+
+
+def test_executor_initialize_runtime():
+    """Test registering executor instance with executor cache"""
+    me = MockExecutor(log_stdout="/tmp/stdout.log")
+    me.shared = True
+    cache = ExecutorCache()
+    cache.id_instance_map[me.instance_id] = None
+    cache.tasks_per_instance[me.instance_id] = 5
+    me._initialize_runtime(cache)
+
+    assert cache.id_instance_map[me.instance_id] == me
+    assert me._tasks_left == 5
+
+
+@pytest.mark.asyncio
+async def test_async_executor_initialize_runtime():
+    """Test registering async executor instance with executor cache"""
+    me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
+    me.shared = True
+    cache = ExecutorCache()
+    cache.id_instance_map[me.instance_id] = None
+    cache.tasks_per_instance[me.instance_id] = 5
+    me._initialize_runtime(cache)
+
+    assert cache.id_instance_map[me.instance_id] == me
+    assert me._tasks_left == 5
+
+
+def test_executor_initialize_task_data():
+    """Test initializing task data"""
+    me = MockExecutor(log_stdout="/tmp/stdout.log")
+    me._initialize_runtime()
+    me._initialize_task_data("asdf", 1)
+    assert me._state["running_tasks"]["asdf"][1] == {}
+
+
+def test_executor_get_set_task_data():
+    """Test get task data"""
+    me = MockExecutor(log_stdout="/tmp/stdout.log")
+    me._initialize_runtime()
+    me._initialize_task_data("asdf", 1)
+    me._set_task_data("asdf", 1, "_status", "RUNNING")
+    me.set_task_data("asdf", 1, "jobID", 42)
+    assert me.get_task_data("asdf", 1, "_status") == "RUNNING"
+    assert me.get_task_data("asdf", 1, "jobID") == 42
+
+
+def test_executor_set_data_protects_status():
+    """Test public set_task_data doesn't allow setting `_status`"""
+    me = MockExecutor(log_stdout="/tmp/stdout.log")
+    me._initialize_runtime()
+    me._initialize_task_data("asdf", 1)
+
+    try:
+        me.set_task_data("asdf", 1, "_status", "RUNNING")
+        assert False
+    except KeyError:
+        pass
+
+
+@pytest.mark.asyncio
+async def test_executor_initialize_task_data():
+    """Test initializing task data"""
+    me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
+    me._initialize_runtime()
+    await me._initialize_task_data("asdf", 1)
+    assert me._state["running_tasks"]["asdf"][1] == {}
+
+
+@pytest.mark.asyncio
+async def test_executor_get_set_task_data():
+    """Test get task data"""
+    me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
+    me._initialize_runtime()
+    await me._initialize_task_data("asdf", 1)
+    await me._set_task_data("asdf", 1, "_status", "RUNNING")
+    await me.set_task_data("asdf", 1, "jobID", 42)
+    assert await me.get_task_data("asdf", 1, "_status") == "RUNNING"
+    assert await me.get_task_data("asdf", 1, "jobID") == 42
+
+
+@pytest.mark.asyncio
+async def test_executor_set_data_protects_status():
+    """Test public set_task_data doesn't allow setting `_status`"""
+    me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
+    me._initialize_runtime()
+    await me._initialize_task_data("asdf", 1)
+
+    try:
+        await me.set_task_data("asdf", 1, "_status", "RUNNING")
+        assert False
+    except KeyError:
+        pass

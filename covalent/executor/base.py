@@ -221,7 +221,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         self._warmed_up = False
         self._tasks_left = 1
 
-        # User-defined state
+        # task and resource state
         self._state = {}
 
     def _initialize_runtime(self, executor_cache: ExecutorCache = None):
@@ -233,6 +233,8 @@ class BaseExecutor(_AbstractBaseExecutor):
             if self.shared:
                 executor_cache.id_instance_map[self.instance_id] = self
 
+        self._state["running_tasks"] = {}
+
     def _decrement_task_count(self):
         with self._lock:
             self._tasks_left -= 1
@@ -240,6 +242,29 @@ class BaseExecutor(_AbstractBaseExecutor):
     def _increment_task_count(self):
         with self._lock:
             self._tasks_left += 1
+
+    def _initialize_task_data(self, dispatch_id: str, node_id: int):
+        with self._lock:
+            if dispatch_id not in self._state["running_tasks"]:
+                self._state["running_tasks"][dispatch_id] = {}
+
+            self._state["running_tasks"][dispatch_id][node_id] = {}
+
+    def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
+        with self._lock:
+            self._state["running_tasks"][dispatch_id][node_id][key] = val
+
+    def set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
+        if key == "_status":
+            raise KeyError("_status is reserved")
+        with self._lock:
+            self._state["running_tasks"][dispatch_id][node_id][key] = val
+
+    def get_task_data(self, dispatch_id: str, node_id: int, key: str):
+        with self._lock:
+            data = self._state["running_tasks"][dispatch_id][node_id][key]
+
+        return data
 
     def write_streams_to_file(
         self,
@@ -404,8 +429,16 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         # User-defined state
         self._state = {}
 
-    def _initialize_runtime(self):
+    def _initialize_runtime(self, executor_cache: ExecutorCache = None):
         self._lock = asyncio.Lock()
+        if executor_cache:
+            self._tasks_left = executor_cache.tasks_per_instance[self.instance_id]
+
+            # Cache the executor if it is "shared"
+            if self.shared:
+                executor_cache.id_instance_map[self.instance_id] = self
+
+        self._state["running_tasks"] = {}
 
     async def _decrement_task_count(self):
         async with self._lock:
@@ -414,6 +447,29 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     async def _increment_task_count(self):
         async with self._lock:
             self._tasks_left += 1
+
+    async def _initialize_task_data(self, dispatch_id: str, node_id: int):
+        async with self._lock:
+            if dispatch_id not in self._state["running_tasks"]:
+                self._state["running_tasks"][dispatch_id] = {}
+
+            self._state["running_tasks"][dispatch_id][node_id] = {}
+
+    async def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
+        async with self._lock:
+            self._state["running_tasks"][dispatch_id][node_id][key] = val
+
+    async def set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
+        if key == "_status":
+            raise KeyError("_status is reserved")
+        async with self._lock:
+            self._state["running_tasks"][dispatch_id][node_id][key] = val
+
+    async def get_task_data(self, dispatch_id: str, node_id: int, key: str):
+        async with self._lock:
+            data = self._state["running_tasks"][dispatch_id][node_id][key]
+
+        return data
 
     async def write_streams_to_file(
         self,
