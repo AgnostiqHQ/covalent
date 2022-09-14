@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Skipping stalling `dask_executor` functional test
 - Database is initialized in `covalent_ui/app.py` instead of in the CLI's `start` method in order to support management via `start-stop-daemon`.
 - Convert `COVALENT_SVC_PORT` to `int` when parsing env var
+- Skipping stalling `dask_executor` functional test
 
 ### Added
 
@@ -41,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Deprecated `_DEFAULT_CONSTRAINTS_DEPRECATED` removed.
 - Confusing `click` argument `no-cluster` instead of flag `--no-cluster` removed; this was also partially responsible for unexpected behaviour with using `no-cluster` option when starting covalent.
+
+### Operations
+
+- Fixed a bug in changelog.yml caused by passing a large list of commits as a var
 
 ### Tests
 
