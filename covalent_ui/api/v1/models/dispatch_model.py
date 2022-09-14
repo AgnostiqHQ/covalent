@@ -63,6 +63,7 @@ class DispatchSummaryRequest(BaseModel):
     sort_by: Optional[SortBy] = SortBy.STARTED
     search: Optional[str] = ""
     direction: Optional[SortDirection] = SortDirection.DESCENDING
+    filter: Optional[Status] = Status.ALL
 
 
 class DispatchModule(BaseModel):
@@ -106,9 +107,16 @@ class DispatchResponse(BaseModel):
 
 
 class DeleteDispatchesRequest(BaseModel):
-    """Dashboard metadate model"""
+    """Dashboard delete request model"""
 
-    dispatches: List[UUID]
+    dispatches: Optional[List[UUID]] = None
+
+
+class DeleteAllDispatchesRequest(BaseModel):
+    """Dashboard delete all request model"""
+
+    status_filter: Optional[Status] = Status.ALL
+    search_string: Optional[str] = ""
 
 
 class DeleteDispatchesResponse(BaseModel):
@@ -126,6 +134,8 @@ class DispatchDashBoardResponse(BaseModel):
     total_jobs_running: int = None
     total_jobs_completed: int = None
     total_jobs_failed: int = None
+    total_jobs_cancelled: int = None
+    total_jobs_new_object: int = None
     latest_running_task_status: Status = None
     total_dispatcher_duration: int = None
 
@@ -134,8 +144,12 @@ class DispatchDashBoardResponse(BaseModel):
 
         schema_extra = {
             "example": {
+                "total_jobs": 5,
                 "total_jobs_running": 5,
-                "total_jobs_done": 20,
+                "total_jobs_completed": 20,
+                "total_jobs_failed": 3,
+                "total_jobs_cancelled": 0,
+                "total_jobs_new_object": 1,
                 "latest_running_task_status": "COMPLETED",
                 "total_dispatcher_duration": 90,
             }
