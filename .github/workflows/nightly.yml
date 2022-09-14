@@ -27,16 +27,16 @@ on:
 jobs:
   license:
     name: License Scanner
-    uses: ./.github/workflows/license.yml@develop
+    uses: AgnostiqHQ/covalent/.github/workflows/license.yml@develop
 
   tests:
     name: Unit and Functional Tests
-    uses: ./.github/workflows/tests.yml@develop
+    uses: AgnostiqHQ/covalent/.github/workflows/tests.yml@develop
     secrets: inherit # pragma: allowlist secret
 
   benchmarks:
     name: Benchmarks
-    uses: ./.github/workflows/benchmark.yml@develop
+    uses: AgnostiqHQ/covalent/.github/workflows/benchmark.yml@develop
     secrets: inherit # pragma: allowlist secret
 
   changelog:
@@ -44,7 +44,7 @@ jobs:
     needs:
       - license
       - tests
-    uses: ./.github/workflows/changelog.yml@develop
+    uses: AgnostiqHQ/covalent/.github/workflows/changelog.yml@develop
     secrets: inherit # pragma: allowlist secret
 
   push_to_master:
