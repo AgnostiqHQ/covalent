@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Fix `release.yml` workflow
+- Adding a step in `release.yml/docker` job to trigger the AWS executor base image build in the remote repo `covalent-aws-plugins`
+- Pass all the necessary inputs for the triggered workflow as part of the HTTP POST request body
+- Added MacOS 12 to test matrix
+
+
 ### Changed
 
+- Skipping stalling `dask_executor` functional test
 - Database is initialized in `covalent_ui/app.py` instead of in the CLI's `start` method in order to support management via `start-stop-daemon`.
 - Convert `COVALENT_SVC_PORT` to `int` when parsing env var
 - Skipping stalling `dask_executor` functional test
@@ -49,12 +58,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed inheritance of `call_before` metadata related to file transfers from parent electron to collected nodes.
 - Executor instances at runtime no longer inadvertently modify
   transport graph nodes when modifying their attributes.
+- Syntax error in `tests.yml`
 
 ### Docs
 
 - Updated AWS Lambda plugin rtd with mention to its limitations.
 - Updated RTD concepts and tutorials to reflect new UI.
-
 
 ## [0.197.0] - 2022-09-08
 
