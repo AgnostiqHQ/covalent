@@ -51,24 +51,14 @@ jobs:
         id: get-latest-tag
         with:
           semver_only: true
-      - name: Get commits
-        id: commits
-        uses: octokit/request-action@v2.x
-        with:
-          route: "GET
-            /repos\
-            /${{ github.repository }}\
-            /compare\
-            /${{ steps.get-latest-tag.outputs.tag }}...${{ github.sha }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update version number
         id: changelog
         uses: ./.github/actions/changelog
         with:
           changelog-path: CHANGELOG.md
           version-path: VERSION
-          commits-json: ${{toJSON(fromJSON(steps.commits.outputs.data).commits)}}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          basehead: ${{ steps.get-latest-tag.outputs.tag }}...${{ github.sha }}
       - name: Commit
         if: ${{ steps.changelog.outputs.message != 'noop' }}
         uses: EndBug/add-and-commit@v9

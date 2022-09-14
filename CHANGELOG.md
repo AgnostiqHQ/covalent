@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.198.0] - 2022-09-14
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+
 ### Operations
 
 - Adding `nightly.yml` workflow for nightly CI
@@ -15,20 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Fix `release.yml` workflow
-
-### Operations
-
 - Adding a step in `release.yml/docker` job to trigger the AWS executor base image build in the remote repo `covalent-aws-plugins`
 - Pass all the necessary inputs for the triggered workflow as part of the HTTP POST request body
+- Added MacOS 12 to test matrix
+
 
 ### Changed
 
 - Skipping stalling `dask_executor` functional test
-
-### Changed
-
 - Database is initialized in `covalent_ui/app.py` instead of in the CLI's `start` method in order to support management via `start-stop-daemon`.
 - Convert `COVALENT_SVC_PORT` to `int` when parsing env var
+- Skipping stalling `dask_executor` functional test
 
 ### Added
 
@@ -36,8 +41,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modified `_DEFAULT_CONFIG` to also be a dataclass called `DefaultConfig`, which is initialized whenever needed and used like a dictionary (named `DEFAULT_CONFIG`).
 - `ConfigManager` is now thread safe since it is initialized whenever needed instead of one object being accessed by multiple processes/threads leading to corruption of the config file.
 - Using `contextlib.supress` to ignore `psutil.NoSuchProcess` errors instead of `try/except` with `pass`.
-
-### Added
 - Filter workflow dispatches by status on the GUI.
 - Delete all workflow dispatches present in the database from the GUI and add filter level deletion of workflow dispatches as well. 
 - Theme changes as part of latest wireframe.
@@ -53,6 +56,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecated `_DEFAULT_CONSTRAINTS_DEPRECATED` removed.
 - Confusing `click` argument `no-cluster` instead of flag `--no-cluster` removed; this was also partially responsible for unexpected behaviour with using `no-cluster` option when starting covalent.
 
+### Operations
+
+- Fixed a bug in changelog.yml caused by passing a large list of commits as a var
+
 ### Tests
 
 - Updated tests to reflect above changes.
@@ -64,15 +71,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed inheritance of `call_before` metadata related to file transfers from parent electron to collected nodes.
 - Executor instances at runtime no longer inadvertently modify
   transport graph nodes when modifying their attributes.
+- Syntax error in `tests.yml`
 
 ### Docs
 
 - Updated AWS Lambda plugin rtd with mention to its limitations.
 - Updated RTD concepts and tutorials to reflect new UI.
-
-### Operations
-
-- Added MacOS 12 to test matrix
 
 ## [0.197.0] - 2022-09-08
 
