@@ -629,3 +629,24 @@ def test_executor_from_dict_makes_deepcopy():
     me = me.from_dict(object_dict)
     me._new_attr = "unpicklable_object"
     assert "_new_attr" not in object_dict["attributes"]
+
+
+def test_executor_task_count_helpers():
+    """Test incrementing and decrementing task count"""
+    me = MockExecutor(log_stdout="/tmp/stdout.log")
+    me._initialize_runtime()
+    me._increment_task_count()
+    assert me._tasks_left == 2
+    me._decrement_task_count()
+    assert me._tasks_left == 1
+
+
+@pytest.mark.asyncio
+async def test_async_executor_task_count_helpers():
+    """Test incrementing and decrementing task count"""
+    me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
+    me._initialize_runtime()
+    await me._increment_task_count()
+    assert me._tasks_left == 2
+    await me._decrement_task_count()
+    assert me._tasks_left == 1

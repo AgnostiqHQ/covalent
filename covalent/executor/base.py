@@ -35,6 +35,7 @@ from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 import aiofiles
 
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
+from covalent.executor._runtime.utils import ExecutorCache
 
 from .._shared_files import logger
 from .._shared_files.context_managers import active_dispatch_info_manager
@@ -223,14 +224,20 @@ class BaseExecutor(_AbstractBaseExecutor):
         # User-defined state
         self._state = {}
 
-    def _initialize_runtime(self):
+    def _initialize_runtime(self, executor_cache: ExecutorCache = None):
         self._lock = threading.Lock()
+        if executor_cache:
+            self._tasks_left = executor_cache.tasks_per_instance[self.instance_id]
 
-    def decrement_task_count(self):
+            # Cache the executor if it is "shared"
+            if self.shared:
+                executor_cache.id_instance_map[self.instance_id] = self
+
+    def _decrement_task_count(self):
         with self._lock:
             self._tasks_left -= 1
 
-    def increment_task_count(self):
+    def _increment_task_count(self):
         with self._lock:
             self._tasks_left += 1
 
@@ -320,14 +327,14 @@ class BaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = self.run(function, args, kwargs, task_metadata)
 
-            self.decrement_task_count()
+            self._decrement_task_count()
 
             if self._tasks_left < 1:
                 self.teardown(task_metadata={})
 
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
-            self.decrement_task_count()
+            self._decrement_task_count()
 
             if self._tasks_left < 1:
                 self.teardown(task_metadata={})
@@ -400,11 +407,11 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     def _initialize_runtime(self):
         self._lock = asyncio.Lock()
 
-    async def decrement_task_count(self):
+    async def _decrement_task_count(self):
         async with self._lock:
             self._tasks_left -= 1
 
-    async def increment_task_count(self):
+    async def _increment_task_count(self):
         async with self._lock:
             self._tasks_left += 1
 
@@ -476,7 +483,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = await self.run(function, args, kwargs, task_metadata)
 
-            await self.decrement_task_count()
+            await self._decrement_task_count()
 
             if self._tasks_left < 1:
                 await self.teardown(task_metadata={})
@@ -484,7 +491,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
 
-            await self.decrement_task_count()
+            await self._decrement_task_count()
 
             if self._tasks_left < 1:
                 await self.teardown(task_metadata={})

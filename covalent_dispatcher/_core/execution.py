@@ -50,67 +50,12 @@ from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
+from covalent.executor._runtime.utils import ExecutorCache
 from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 from covalent_ui import result_webhook
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-class ExecutorCache:
-    def __init__(self, result_object: Result = None):
-        self.id_instance_map = {}
-        self.tasks_per_instance = {}
-
-        if result_object:
-            self.initialize_from_result_object(result_object)
-
-    def initialize_from_result_object(self, result_object: Result):
-        g = result_object.lattice.transport_graph
-
-        for node in g._graph.nodes:
-            node_name = result_object.lattice.transport_graph.get_node_value(node, "name")
-
-            # Skip parameter nodes since they don't run in an executor
-            if node_name.startswith(parameter_prefix):
-                continue
-            executor_data = g.get_node_value(node, "metadata")["executor_data"]
-
-            # DEBUGGING ONLY: This should never happen
-            if not executor_data:
-                assert False
-
-            executor_id = executor_data["attributes"]["instance_id"]
-
-            self.id_instance_map[executor_id] = None
-            if executor_id not in self.tasks_per_instance:
-                self.tasks_per_instance[executor_id] = 1
-            else:
-                self.tasks_per_instance[executor_id] += 1
-
-        # Do the same for postprocessing (if postprocessing is still around:) )
-        executor_data = result_object.lattice.get_metadata("workflow_executor_data")
-        if executor_data:
-            executor_id = executor_data["attributes"]["instance_id"]
-
-            self.id_instance_map[executor_id] = None
-            if executor_id not in self.tasks_per_instance:
-                self.tasks_per_instance[executor_id] = 1
-            else:
-                self.tasks_per_instance[executor_id] += 1
-
-    # Might be better to bring back the info_queue and just send a
-    # "cleanup" message
-    async def finalize_executors(self):
-        """Clean up any executors still running"""
-        for key, executor in self.id_instance_map.items():
-            if executor is None:
-                continue
-            if isinstance(executor, AsyncBaseExecutor):
-                await executor.teardown()
-            else:
-                loop = asyncio.get_running_loop()
-                await loop.run_in_executor(None, executor.teardown)
 
 
 # This is to be run out-of-process
@@ -321,26 +266,20 @@ async def _get_executor_instance(
 
         app_log.debug(f"Running task {node_name} using executor {short_name}, {object_dict}")
 
-        # Cache miss: construct a new executor instance and cache it if either:
+        # Cache miss: construct and cache a new executor instance
 
         if not executor:
             executor = _executor_manager.get_executor(short_name)
             executor.from_dict(object_dict)
-            executor._initialize_runtime()
-
-            executor._tasks_left = executor_cache.tasks_per_instance[executor_id]
-
-            # Cache the executor if it is "shared"
-            if executor.shared:
-                executor_cache.id_instance_map[executor_id] = executor
+            executor._initialize_runtime(executor_cache=executor_cache)
 
         # Check if we are using a shared instance for an un-planned
         # task
         if unplanned_task and executor.shared:
             if isinstance(executor, AsyncBaseExecutor):
-                await executor.increment_task_count()
+                await executor._increment_task_count()
             else:
-                executor.increment_task_count()
+                executor._increment_task_count()
 
     except Exception as ex:
         app_log.debug(f"Exception when trying to determine executor: {ex}")

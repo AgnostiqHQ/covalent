@@ -43,6 +43,8 @@ def test_local_executor_passes_results_dir(mocker):
         )
         le = LocalExecutor()
 
+        le._initialize_runtime()
+
         assembled_callable = partial(wrapper_fn, TransportableObject(simple_task), [], [])
 
         le.execute(
