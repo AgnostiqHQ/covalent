@@ -377,8 +377,8 @@ jobs:
           context: .
           file: ./Dockerfile.awsexecutor
           platforms: "linux/amd64,linux/arm64"
-          build-args:
-            - COVALENT_BASE_IMAGE: public.ecr.aws/covalent/covalent:${{ env.TAG }}
+          build-args: |
+            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:${{ env.TAG }}
           push: true
           tags: |
             public.ecr.aws/covalent/covalent-executor-base:latest
@@ -409,8 +409,8 @@ jobs:
           context: .
           file: ./Dockerfile.awsexecutor
           platforms: "linux/amd64,linux/arm64"
-          build-args:
-            - COVALENT_BASE_IMAGE: public.ecr.aws/covalent/covalent:stable
+          build-args: |
+            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:stable
           push: true
           tags: |
             public.ecr.aws/covalent/covalent-executor-base:stable
