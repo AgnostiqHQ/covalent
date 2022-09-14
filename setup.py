@@ -31,7 +31,12 @@ site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 with open("VERSION") as f:
     version = f.read().strip()
 
-with open("requirements.txt") as f:
+
+requirements_file = "requirements.txt"
+if os.environ.get("COVALENT_SDK_ONLY"):
+    requirements_file = "requirements-client.txt"
+
+with open(requirements_file) as f:
     required = f.read().splitlines()
 
 
@@ -49,8 +54,7 @@ def recursively_append_files(directory: str):
     filepaths = []
 
     for path, _, filenames in os.walk(directory):
-        for filename in filenames:
-            filepaths.append(os.path.join(path, filename).split("/", 1)[1])
+        filepaths.extend(os.path.join(path, filename).split("/", 1)[1] for filename in filenames)
 
     return filepaths
 
