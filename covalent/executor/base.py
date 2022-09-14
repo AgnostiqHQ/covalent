@@ -234,6 +234,13 @@ class BaseExecutor(_AbstractBaseExecutor):
                 executor_cache.id_instance_map[self.instance_id] = self
 
         self._state["running_tasks"] = {}
+        self._state["resource_metadata"] = {}
+
+    def _set_resource_metadata(self, metadata):
+        self._state["resource_metadata"] = metadata
+
+    def _get_resource_metadata(self):
+        return self._state["resource_metadata"]
 
     def _decrement_task_count(self):
         with self._lock:
@@ -265,6 +272,9 @@ class BaseExecutor(_AbstractBaseExecutor):
             data = self._state["running_tasks"][dispatch_id][node_id][key]
 
         return data
+
+    def _get_running_tasks(self):
+        return self._state["running_tasks"]
 
     def write_streams_to_file(
         self,
@@ -340,7 +350,8 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         with self._lock:
             if not self._warmed_up:
-                self.setup(task_metadata=task_metadata)
+                resource_metadata = self.setup(task_metadata=task_metadata)
+                self._set_resource_metadata(resource_metadata)
                 self._warmed_up = True
 
         dispatch_info = DispatchInfo(dispatch_id)
@@ -355,14 +366,16 @@ class BaseExecutor(_AbstractBaseExecutor):
             self._decrement_task_count()
 
             if self._tasks_left < 1:
-                self.teardown(task_metadata={})
+                resource_metadata = self._get_resource_metadata()
+                self.teardown(resource_metadata)
 
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
             self._decrement_task_count()
 
             if self._tasks_left < 1:
-                self.teardown(task_metadata={})
+                resource_metadata = self._get_resource_metadata()
+                self.teardown(resource_metadata)
 
             raise ex
 
@@ -439,37 +452,41 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
                 executor_cache.id_instance_map[self.instance_id] = self
 
         self._state["running_tasks"] = {}
+        self._state["resource_metadata"] = {}
+
+    def _set_resource_metadata(self, metadata):
+        self._state["resource_metadata"] = metadata
+
+    def _get_resource_metadata(self):
+        return self._state["resource_metadata"]
 
     async def _decrement_task_count(self):
-        async with self._lock:
-            self._tasks_left -= 1
+        self._tasks_left -= 1
 
     async def _increment_task_count(self):
-        async with self._lock:
-            self._tasks_left += 1
+        self._tasks_left += 1
 
     async def _initialize_task_data(self, dispatch_id: str, node_id: int):
-        async with self._lock:
-            if dispatch_id not in self._state["running_tasks"]:
-                self._state["running_tasks"][dispatch_id] = {}
+        if dispatch_id not in self._state["running_tasks"]:
+            self._state["running_tasks"][dispatch_id] = {}
 
-            self._state["running_tasks"][dispatch_id][node_id] = {}
+        self._state["running_tasks"][dispatch_id][node_id] = {}
 
     async def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
-        async with self._lock:
-            self._state["running_tasks"][dispatch_id][node_id][key] = val
+        self._state["running_tasks"][dispatch_id][node_id][key] = val
 
     async def set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
         if key == "_status":
             raise KeyError("_status is reserved")
-        async with self._lock:
-            self._state["running_tasks"][dispatch_id][node_id][key] = val
+
+        self._state["running_tasks"][dispatch_id][node_id][key] = val
 
     async def get_task_data(self, dispatch_id: str, node_id: int, key: str):
-        async with self._lock:
-            data = self._state["running_tasks"][dispatch_id][node_id][key]
 
-        return data
+        return self._state["running_tasks"][dispatch_id][node_id][key]
+
+    def _get_running_tasks(self):
+        return self._state["running_tasks"]
 
     async def write_streams_to_file(
         self,
@@ -530,7 +547,8 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
         async with self._lock:
             if not self._warmed_up:
-                await self.setup(task_metadata=task_metadata)
+                resource_metadata = await self.setup(task_metadata=task_metadata)
+                self._set_resource_metadata(resource_metadata)
                 self._warmed_up = True
 
         try:
@@ -542,7 +560,8 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             await self._decrement_task_count()
 
             if self._tasks_left < 1:
-                await self.teardown(task_metadata={})
+                resource_metadata = self._get_resource_metadata()
+                await self.teardown(resource_metadata)
 
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
@@ -550,7 +569,8 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             await self._decrement_task_count()
 
             if self._tasks_left < 1:
-                await self.teardown(task_metadata={})
+                resource_metadata = self._get_resource_metadata()
+                await self.teardown(resource_metadata)
 
             raise ex
 

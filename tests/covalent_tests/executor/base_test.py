@@ -362,12 +362,6 @@ def test_async_write_streams_to_file(mocker):
 
 
 def test_executor_setup_teardown_method(mocker):
-    me = MockExecutor()
-    me._initialize_runtime()
-    me.setup = MagicMock()
-    me.teardown = MagicMock()
-    me._tasks_left = 2
-
     def f(x, y):
         return x + y
 
@@ -386,6 +380,12 @@ def test_executor_setup_teardown_method(mocker):
         "results_dir": results_dir,
     }
 
+    me = MockExecutor()
+    me._initialize_runtime()
+    me.setup = MagicMock(return_value=task_metadata)
+    me.teardown = MagicMock(return_value=None)
+    me._tasks_left = 2
+
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
     result, stdout, stderr = me.execute(
@@ -402,8 +402,8 @@ def test_executor_setup_teardown_method(mocker):
     me.teardown.assert_not_called()
     assert me._tasks_left == 1
 
-    me.setup = MagicMock()
-    me.teardown = MagicMock()
+    me.setup = MagicMock(return_value=task_metadata)
+    me.teardown = MagicMock(return_value=None)
 
     result, stdout, stderr = me.execute(
         function=assembled_callable,
@@ -413,7 +413,7 @@ def test_executor_setup_teardown_method(mocker):
         results_dir=results_dir,
         node_id=node_id,
     )
-    me.teardown.assert_called_once_with(task_metadata={})
+    me.teardown.assert_called_once_with(task_metadata)
     assert me._tasks_left == 0
 
 
@@ -422,12 +422,6 @@ async def test_async_executor_setup_teardown(mocker):
     def f(x, y):
         return x, y
 
-    me = MockAsyncExecutor()
-    me._initialize_runtime()
-    me.setup = AsyncMock()
-    me.run = AsyncMock()
-    me.teardown = AsyncMock()
-    me._tasks_left = 2
     function = TransportableObject(f)
     args = [TransportableObject(2)]
     kwargs = {"y": TransportableObject(3)}
@@ -438,6 +432,14 @@ async def test_async_executor_setup_teardown(mocker):
     node_id = -1
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
+
+    me = MockAsyncExecutor()
+    me._initialize_runtime()
+    me.setup = AsyncMock(return_value=task_metadata)
+    me.run = AsyncMock()
+    me.teardown = AsyncMock()
+    me._tasks_left = 2
 
     awaitable = me.execute(
         function=assembled_callable,
@@ -449,13 +451,12 @@ async def test_async_executor_setup_teardown(mocker):
     )
 
     await awaitable
-    task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
     me.run.assert_called_once_with(assembled_callable, args, kwargs, task_metadata)
     me.setup.assert_awaited_once_with(task_metadata=task_metadata)
     me.teardown.assert_not_awaited()
     assert me._tasks_left == 1
 
-    me.setup = AsyncMock()
+    me.setup = AsyncMock(return_value=task_metadata)
     me.teardown = AsyncMock()
 
     awaitable = me.execute(
@@ -468,7 +469,7 @@ async def test_async_executor_setup_teardown(mocker):
     )
     await awaitable
 
-    me.teardown.assert_awaited_once_with(task_metadata={})
+    me.teardown.assert_awaited_once_with(task_metadata)
     assert me._tasks_left == 0
 
 
