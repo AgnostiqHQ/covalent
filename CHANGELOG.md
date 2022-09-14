@@ -11,8 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated `requirements.txt` and `tests/requirements.txt`
 
+### Docs
+
+- Fixed a notebook which was not rendering
+
 ### Operations
 
+- Updating all references to local workflows
 - Adding `nightly.yml` workflow for nightly CI
 - Updated triggers to `tests` and `changelog` workflows
 - Updating all references to local workflows
