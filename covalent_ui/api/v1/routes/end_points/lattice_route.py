@@ -58,6 +58,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
         lattice = Lattices(session)
         data = lattice.get_lattices_id(dispatch_id)
         if data is not None:
+            handler = FileHandler(data["directory"])
             return LatticeDetailResponse(
                 dispatch_id=data.dispatch_id,
                 status=data.status,
@@ -66,6 +67,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
                 started_at=data.start_time,
                 ended_at=data.end_time,
                 directory=data.directory,
+                description=handler.read_from_text(data.docstring_filename),
                 runtime=data.runtime,
             )
         raise HTTPException(

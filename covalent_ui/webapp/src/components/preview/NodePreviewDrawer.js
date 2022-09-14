@@ -61,6 +61,12 @@ const NodeDrawer = ({ node,setSelectedElectron }) => {
           border: 'none',
           p: 3,
           bgcolor: alpha(theme.palette.background.default),
+          boxShadow:'0px 16px 50px rgba(0, 0, 0, 0.9)',
+          backdropFilter:'blur(8px)',
+          borderRadius: '16px',
+          marginRight: '10px',
+          marginTop:'22px',
+          height: '904px',
         },
       })}
       anchor="right"

@@ -20,8 +20,11 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import { useEffect, useRef, useState, useMemo, useCallback, createRef } from 'react'
-import ReactFlow, { MiniMap, applyEdgeChanges, applyNodeChanges } from 'react-flow-renderer'
+import ReactFlow, { MiniMap, applyEdgeChanges, applyNodeChanges,getIncomers,
+  getOutgoers,
+  isEdge, } from 'react-flow-renderer'
 import ElectronNode from './ElectronNode'
+import { NODE_TEXT_COLOR } from './ElectronNode'
 import ParameterNode from './ParameterNode'
 import DirectedEdge from './DirectedEdge'
 import layout from './Layout'
@@ -30,7 +33,7 @@ import LatticeControls from './LatticeControlsElk'
 import theme from '../../utils/theme'
 import { statusColor } from '../../utils/misc'
 import useFitViewHelper from './ReactFlowHooks'
-import { useScreenshot, createFileName } from "use-react-screenshot"
+import { useScreenshot, createFileName } from 'use-react-screenshot'
 import covalentLogo from '../../assets/frame.png'
 
 // https://reactjs.org/docs/hooks-faq.html#how-to-get-the-previous-props-or-state
@@ -63,7 +66,8 @@ const LatticeGraph = ({
   const [hideLabels, setHideLabels] = useState(false)
   const [fitMarginLeft, setFitMarginLeft] = useState()
   const [fitMarginRight, setFitMarginRight] = useState()
-  const [screen, setScreen] = useState(false);
+  const [screen, setScreen] = useState(false)
+  const [highlighted, setHighlighted] = useState(false)
 
   // set Margin
   const prevMarginRight = usePrevious(marginRight)
@@ -81,10 +85,14 @@ const LatticeGraph = ({
   }
 
   useEffect(() => {
-    marginSet()
+    if (!highlighted) marginSet()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitView, marginLeft, marginRight, graph, direction, showParams])
+  }, [fitView, marginLeft, marginRight, graph, direction, showParams, highlighted])
 
+  useEffect(() => {
+    setHighlighted(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [direction, showParams, algorithm, hideLabels])
 
   // handle resizing
   const resizing = () => {
@@ -110,7 +118,14 @@ const LatticeGraph = ({
       setEdges(initialEdges)
       setTimeout(() => fitView({ marginLeft: fitMarginLeft, marginRight: fitMarginRight, duration: 300 }), 300)
     } else {
-      assignNodePositions(graph, direction, showParams, algorithm, hideLabels)
+      assignNodePositions(
+        graph,
+        direction,
+        showParams,
+        algorithm,
+        hideLabels,
+        preview
+      )
         .then((els) => {
           const initialNodes = els && els.filter((e) => e.type !== 'directed')
           const initialEdges = els && els.filter((e) => e.type === 'directed')
@@ -140,9 +155,9 @@ const LatticeGraph = ({
   }
 
   const handleChangeAlgorithm = (event) => {
-    setAnchorEl(null);
-    setAlgorithm(event);
-  };
+    setAnchorEl(null)
+    setAlgorithm(event)
+  }
 
   const handleHideLabels = (marginLeft, marginRight) => {
     const value = !hideLabels
@@ -164,28 +179,106 @@ const LatticeGraph = ({
 
   useEffect(() => {
     if (screen) {
-      takeScreenShot(ref_chart.current).then(download);
-      setScreen(false);
+      takeScreenShot(ref_chart.current).then(download)
+      setScreen(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen]);
+  }, [screen])
 
-
-  const ref_chart = createRef(null);
+  const ref_chart = createRef(null)
 
   // eslint-disable-next-line no-unused-vars
   const [image, takeScreenShot] = useScreenshot({
-    type: "image/jpeg",
+    type: 'image/jpeg',
     quality: 1.0,
-  });
+  })
 
-  const download = (image, { name = dispatchId, extension = "jpg" } = {}) => {
-    const a = document.createElement("a");
-    a.href = image;
-    a.download = createFileName(extension, name);
-    a.click();
-  };
+  const download = (image, { name = dispatchId, extension = 'jpg' } = {}) => {
+    const a = document.createElement('a')
+    a.href = image
+    a.download = createFileName(extension, name)
+    a.click()
+  }
+  const getAllIncomers = (node, elements) => {
+    return getIncomers(node, elements).reduce(
+      (memo, incomer) => [
+        ...memo,
+        incomer,
+        ...getAllIncomers(incomer, elements),
+      ],
+      []
+    )
+  }
 
+  const getAllOutgoers = (node, elements) => {
+    return getOutgoers(node, elements).reduce(
+      (memo, outgoer) => [
+        ...memo,
+        outgoer,
+        ...getAllOutgoers(outgoer, elements),
+      ],
+      []
+    )
+  }
+
+  const highlightPath = (node, elements, selection) => {
+    if (node && elements) {
+      const allIncomers = getAllIncomers(node, elements)
+      const allOutgoers = getAllOutgoers(node, elements)
+      setHighlighted(true)
+      setEdges((prevElements) => {
+        return prevElements?.map((elem) => {
+          const incomerIds = allIncomers.map((i) => i.id)
+          const outgoerIds = allOutgoers.map((o) => o.id)
+          if (isEdge(elem)) {
+            if (selection) {
+              const animated =
+                (outgoerIds.includes(elem.target) &&
+                  (outgoerIds.includes(elem.source) ||
+                    node.id === elem.source)) ||
+                (incomerIds.includes(elem.source) &&
+                  (incomerIds.includes(elem.target) || node.id === elem.target))
+              elem.style = {
+                ...elem.style,
+                stroke: animated ? '#6473FF' : '#303067',
+              }
+              elem.labelStyle = animated
+                ? { fill: '#6473FF' }
+                : { fill: NODE_TEXT_COLOR }
+            } else {
+              elem.animated = false
+              elem.style = {
+                ...elem.style,
+                stroke: '#303067',
+              }
+            }
+          }
+
+          return elem
+        })
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (!hasSelectedNode) resetNodeStyles()
+  }, [hasSelectedNode])
+
+  const resetNodeStyles = () => {
+    setEdges((prevElements) => {
+      return prevElements?.map((elem) => {
+        if (isEdge(elem)) {
+          elem.animated = false
+          elem.labelStyle = { fill: NODE_TEXT_COLOR }
+          elem.style = {
+            ...elem.style,
+            stroke: '#303067',
+          }
+        }
+        return elem
+      })
+    })
+  }
   const nodeTypes = useMemo(() => ({ electron: ElectronNode, parameter: ParameterNode }), []);
   const edgeTypes = useMemo(() => ({ directed: DirectedEdge }), []);
   return (
@@ -207,6 +300,10 @@ const LatticeGraph = ({
             fitView
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
+            onSelectionChange={(selectedElements) => {
+              const node = selectedElements?.[0]
+              highlightPath(node, edges, true)
+            }}
             // prevent selection when nothing is selected to prevent fitView
             selectNodesOnDrag={hasSelectedNode}
             onNodeClick={(e) => onClickNode(e)}
@@ -253,7 +350,7 @@ const LatticeGraph = ({
                 backgroundColor: theme.palette.background.default,
                 position: 'absolute',
                 bottom: 12,
-                left: 513,
+                left: 522,
                 zIndex: 5,
                 height: 150,
                 width: 300,

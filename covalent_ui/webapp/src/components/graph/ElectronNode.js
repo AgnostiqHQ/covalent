@@ -79,12 +79,14 @@ const ElectronNode = ({
                 borderRadius: '5px 5px 0px 0px',
                 minWidth: '30%',
                 overflow: 'hidden',
-                background: (theme) => theme.palette.background.executorBg,
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) => theme.palette.text.tertiary,
-                borderColor: (theme) => theme.palette.primary.highlightBlue,
-                borderStyle: 'solid',
-                borderWidth: hasBorder ? 1 : 0,
+                color: (theme) =>
+                  !selected
+                    ? theme.palette.text.tertiary
+                    : theme.palette.text.primary,
+                '&:hover': {
+                  color: (theme) => theme.palette.text.primary,
+                },
               }}
             >
               <Handle
@@ -134,11 +136,19 @@ const ElectronNode = ({
               px: 1,
               py: 0.5,
               borderRadius: '100px',
-              // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
+              bgcolor: !selected
+                ? (theme) => theme.palette.background.paper
+                : (theme) => theme.palette.primary.dark,
               color: !selected ? NODE_TEXT_COLOR : '#FAFAFA',
-              borderColor: color,
+              borderColor: !selected
+                ? (theme) => theme.palette.primary.highlightBlue
+                : (theme) => theme.palette.background.paper,
               borderStyle: 'solid',
               borderWidth: hasBorder ? 1 : 0,
+              '&:hover': {
+                bgcolor: (theme) => theme.palette.background.coveBlack02,
+                color: (theme) => theme.palette.primary.white,
+              },
             }}
           >
             <Handle
@@ -253,14 +263,21 @@ const ElectronNode = ({
               elevation={!selected ? 1 : 5}
               sx={{
                 position: 'absolute',
-                top: data.executor ? 48 : 35,
+                top: data.executor ? 48 : 30,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '16px',
                 minWidth: '20%',
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) => theme.palette.text.tertiary,
+                color: (theme) =>
+                  !selected
+                    ? theme.palette.text.tertiary
+                    : theme.palette.text.primary,
+
+                '&:hover': {
+                  color: (theme) => theme.palette.text.primary,
+                },
               }}
             >
               <Handle
