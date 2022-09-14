@@ -22,6 +22,7 @@
 
 from datetime import datetime
 from enum import Enum
+from typing import Union
 
 from pydantic import BaseModel
 
@@ -29,84 +30,84 @@ from pydantic import BaseModel
 class LatticeDetailResponse(BaseModel):
     """Lattices details model"""
 
-    dispatch_id: str = None
-    status: str = None
-    total_electrons: int = None
-    total_electrons_completed: int = None
-    started_at: datetime = None
-    ended_at: datetime = None
-    directory: str = None
-    description: str = None
-    runtime: int = None
-    updated_at: datetime = None
+    dispatch_id: Union[str, None] = None
+    status: Union[str, None] = None
+    total_electrons: Union[int, None] = None
+    total_electrons_completed: Union[int, None] = None
+    started_at: Union[datetime, None] = None
+    ended_at: Union[datetime, None] = None
+    directory: Union[str, None] = None
+    description: Union[str, None] = None
+    runtime: Union[int, None] = None
+    updated_at: Union[datetime, None] = None
 
 
 class LatticeFileResponse(BaseModel):
     """Lattices File Response Model"""
 
-    data: str = None
+    data: Union[str, None] = None
 
 
 class LatticeExecutorResponse(BaseModel):
     """Lattices File Response Model"""
 
-    executor_name: str = None
-    executor_details: dict = None
+    executor_name: Union[str, None] = None
+    executor_details: Union[dict, None] = None
 
 
 class LatticeWorkflowExecutorResponse(BaseModel):
     """Lattices File Response Model"""
 
-    workflow_executor_name: str = None
-    workflow_executor_details: dict = None
+    workflow_executor_name: Union[str, None] = None
+    workflow_executor_details: Union[dict, None] = None
 
 
 class GraphResponse(BaseModel):
     """Graph Response Model"""
 
-    dispatch_id: str = None
-    graph: dict = None
+    dispatch_id: Union[str, None] = None
+    graph: Union[dict, None] = None
 
 
 class ElectronResponse(BaseModel):
     """Electron Response Model"""
 
-    id: int = None
-    node_id: int = None
-    parent_lattice_id: int = None
-    type: str = None
-    storage_path: str = None
-    name: str = None
-    status: str = None
-    started_at: datetime = None
-    ended_at: datetime = None
-    runtime: int = None
-    description: str = None
+    id: Union[int, None] = None
+    node_id: Union[int, None] = None
+    parent_lattice_id: Union[int, None] = None
+    type: Union[str, None] = None
+    storage_path: Union[str, None] = None
+    name: Union[str, None] = None
+    status: Union[str, None] = None
+    started_at: Union[datetime, None] = None
+    ended_at: Union[datetime, None] = None
+    runtime: Union[int, None] = None
+    description: Union[str, None] = None
 
 
 class ElectronFileResponse(BaseModel):
     """Electron Response Model"""
 
-    data: str = None
+    data: Union[str, None] = None
 
 
 class ElectronExecutorResponse(BaseModel):
     """Lattices File Response Model"""
 
-    executor_name: str = None
-    executor_details: dict = None
+    executor_name: Union[str, None] = None
+    executor_details: Union[dict, None] = None
 
 
 class ElectronErrorResponse(BaseModel):
     """Eelctron Error Response Model"""
 
-    data: str = None
+    data: Union[str, None] = None
 
 
 class ElectronFunctionResponse(BaseModel):
     """Electron Function Response Model"""
 
-    data: str = None
+    data: Union[str, None] = None
 
 
 class FileOutput(str, Enum):

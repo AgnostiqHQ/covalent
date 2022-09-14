@@ -24,7 +24,7 @@ from typing import Dict, Optional
 
 from fastapi import APIRouter
 
-from covalent._shared_files.config import _ConfigManager as settings
+from covalent._shared_files.config import ConfigManager as settings
 from covalent_ui.api.v1.models.settings_model import (
     GetSettingsResponseModel,
     UpdateSettingsResponseModel,

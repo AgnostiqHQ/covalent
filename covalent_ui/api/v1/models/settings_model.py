@@ -21,6 +21,7 @@
 """Settings request and response model"""
 
 import enum
+from typing import Union
 
 from pydantic import BaseModel
 
@@ -28,7 +29,7 @@ from pydantic import BaseModel
 class GetSettingsResponseModel(BaseModel):
     """Get Settings response model"""
 
-    data: dict = None
+    data: Union[dict, None] = None
 
 
 class UpdateSettingsResponseModel(BaseModel):
@@ -39,7 +40,7 @@ class UpdateSettingsResponseModel(BaseModel):
 
 class Validators(enum.Enum):
     """Validate settings overwrite"""
-    
+
     DISPATCHER = "dispatcher"
     DASK = "dask"
     WORKFLOW_DATA = "workflow_data"
