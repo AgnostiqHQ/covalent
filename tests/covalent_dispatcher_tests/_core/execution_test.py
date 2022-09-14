@@ -675,9 +675,15 @@ def test_build_sublattice_graph():
 @pytest.mark.asyncio
 async def test_dispatch_sync_sublattice(test_db, mocker):
 
+    import copy
+
     from covalent.executor import LocalExecutor
 
     le = LocalExecutor()
+    object_dict = copy.deepcopy(le.to_dict())
+
+    le._initialize_runtime()
+
     executor_cache = ExecutorCache()
     executor_cache.id_instance_map[le.instance_id] = le
     executor_cache.tasks_per_instance[le.instance_id] = 1
@@ -706,7 +712,7 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
         parent_electron_id=1,
         inputs=inputs,
         serialized_callable=serialized_callable,
-        workflow_executor=[le.short_name(), le.to_dict()],
+        workflow_executor=[le.short_name(), object_dict],
     )
     assert sub_result.result == 2
 
@@ -972,7 +978,8 @@ async def test_executor_cache_finalize():
     de.teardown.assert_awaited_once()
 
 
-def test_get_executor_instance():
+@pytest.mark.asyncio
+async def test_get_executor_instance():
     """Test _get_executor_instance"""
 
     from covalent._workflow.lattice import Lattice
@@ -1021,7 +1028,7 @@ def test_get_executor_instance():
     executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
     selected_executor = [executor, executor_data]
 
-    executor_instance = _get_executor_instance(
+    executor_instance = await _get_executor_instance(
         node_id=node_id,
         dispatch_id="asdf",
         node_name=node_name,
@@ -1040,7 +1047,7 @@ def test_get_executor_instance():
     assert executor_data["attributes"]["shared"] is False
     selected_executor = [executor, executor_data]
 
-    executor_instance = _get_executor_instance(
+    executor_instance = await _get_executor_instance(
         node_id=node_id,
         dispatch_id="asdf",
         node_name=node_name,
@@ -1059,7 +1066,7 @@ def test_get_executor_instance():
     assert executor_data["attributes"]["shared"] is True
     selected_executor = [executor, executor_data]
 
-    shared_instance = _get_executor_instance(
+    shared_instance = await _get_executor_instance(
         node_id=node_id,
         dispatch_id="asdf",
         node_name=node_name,
@@ -1072,7 +1079,7 @@ def test_get_executor_instance():
     assert shared_instance.short_name() == "local"
     assert shared_instance.is_shared_instance()
     assert cache.id_instance_map[exec_id] == shared_instance
-    assert shared_instance.tasks_left == cache.tasks_per_instance[exec_id]
+    assert shared_instance._tasks_left == cache.tasks_per_instance[exec_id]
 
     # shared instance -- retrieve from cache
     node_id = 4
@@ -1081,7 +1088,7 @@ def test_get_executor_instance():
     executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
     selected_executor = [executor, executor_data]
 
-    new_shared_instance = _get_executor_instance(
+    new_shared_instance = await _get_executor_instance(
         node_id=node_id,
         dispatch_id="asdf",
         node_name=node_name,
@@ -1092,10 +1099,10 @@ def test_get_executor_instance():
 
     assert new_shared_instance is shared_instance
 
-    task_count = shared_instance.tasks_left
+    task_count = shared_instance._tasks_left
 
     # Test increment task count (for un-planned tasks)
-    shared_instance = _get_executor_instance(
+    shared_instance = await _get_executor_instance(
         node_id=node_id,
         dispatch_id="asdf",
         node_name=node_name,
@@ -1105,4 +1112,4 @@ def test_get_executor_instance():
     )
 
     task_count += 1
-    assert task_count == shared_instance.tasks_left
+    assert task_count == shared_instance._tasks_left

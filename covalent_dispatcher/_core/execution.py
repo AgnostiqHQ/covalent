@@ -58,7 +58,7 @@ log_stack_info = logger.log_stack_info
 
 
 class ExecutorCache:
-    def __init__(self):
+    def __init__(self, result_object: Result = None):
         self.id_instance_map = {}
         self.tasks_per_instance = {}
 
@@ -298,7 +298,7 @@ async def _dispatch_sync_sublattice(
     return await run_workflow(sub_result_object)
 
 
-def _get_executor_instance(
+async def _get_executor_instance(
     node_id: int,
     dispatch_id: str,
     node_name: str,
@@ -323,8 +323,9 @@ def _get_executor_instance(
         if not executor:
             executor = _executor_manager.get_executor(short_name)
             executor.from_dict(object_dict)
+            executor._initialize_runtime()
 
-            executor.tasks_left = executor_cache.tasks_per_instance[executor_id]
+            executor._tasks_left = executor_cache.tasks_per_instance[executor_id]
 
             # Cache the executor if it is "shared"
             if executor.shared:
@@ -333,7 +334,10 @@ def _get_executor_instance(
         # Check if we are using a shared instance for an un-planned
         # task
         if unplanned_task and executor.shared:
-            executor.tasks_left += 1
+            if isinstance(executor, AsyncBaseExecutor):
+                await executor.increment_task_count()
+            else:
+                executor.increment_task_count()
 
     except Exception as ex:
         app_log.debug(f"Exception when trying to determine executor: {ex}")
@@ -374,7 +378,7 @@ async def _run_task(
     dispatch_id = result_object.dispatch_id
     results_dir = result_object.results_dir
     executor_cache = result_object._runtime_state["executor_cache"]
-    executor = _get_executor_instance(
+    executor = await _get_executor_instance(
         node_id=node_id,
         dispatch_id=dispatch_id,
         node_name=node_name,

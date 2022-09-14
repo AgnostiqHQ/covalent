@@ -207,6 +207,7 @@ def test_base_executor_execute(mocker):
         return x + y
 
     me = MockExecutor()
+    me._initialize_runtime()
 
     function = TransportableObject(f)
     args = [TransportableObject(2)]
@@ -259,6 +260,7 @@ def test_base_executor_passes_task_metadata(mocker):
         return task_metadata
 
     me = MockExecutor()
+    me._initialize_runtime()
     me.run = fake_run
     function = TransportableObject(f)
     args = [TransportableObject(2)]
@@ -293,6 +295,7 @@ def test_base_async_executor_passes_task_metadata(mocker):
         return task_metadata
 
     me = MockAsyncExecutor()
+    me._initialize_runtime()
     me.run = fake_run
     function = TransportableObject(f)
     args = [TransportableObject(2)]
@@ -359,9 +362,10 @@ def test_async_write_streams_to_file(mocker):
 
 def test_executor_setup_teardown_method(mocker):
     me = MockExecutor()
+    me._initialize_runtime()
     me.setup = MagicMock()
     me.teardown = MagicMock()
-    me.tasks_left = 2
+    me._tasks_left = 2
 
     def f(x, y):
         return x + y
@@ -395,7 +399,7 @@ def test_executor_setup_teardown_method(mocker):
     assert result.get_deserialized() == 5
     me.setup.assert_called_once_with(task_metadata=task_metadata)
     me.teardown.assert_not_called()
-    assert me.tasks_left == 1
+    assert me._tasks_left == 1
 
     me.setup = MagicMock()
     me.teardown = MagicMock()
@@ -409,20 +413,20 @@ def test_executor_setup_teardown_method(mocker):
         node_id=node_id,
     )
     me.teardown.assert_called_once_with(task_metadata={})
-    assert me.tasks_left == 0
+    assert me._tasks_left == 0
 
 
-def test_async_executor_setup_teardown(mocker):
-    import asyncio
-
+@pytest.mark.asyncio
+async def test_async_executor_setup_teardown(mocker):
     def f(x, y):
         return x, y
 
     me = MockAsyncExecutor()
+    me._initialize_runtime()
     me.setup = AsyncMock()
     me.run = AsyncMock()
     me.teardown = AsyncMock()
-    me.tasks_left = 2
+    me._tasks_left = 2
     function = TransportableObject(f)
     args = [TransportableObject(2)]
     kwargs = {"y": TransportableObject(3)}
@@ -443,12 +447,12 @@ def test_async_executor_setup_teardown(mocker):
         node_id=node_id,
     )
 
-    asyncio.run(awaitable)
+    await awaitable
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
     me.run.assert_called_once_with(assembled_callable, args, kwargs, task_metadata)
     me.setup.assert_awaited_once_with(task_metadata=task_metadata)
     me.teardown.assert_not_awaited()
-    assert me.tasks_left == 1
+    assert me._tasks_left == 1
 
     me.setup = AsyncMock()
     me.teardown = AsyncMock()
@@ -461,10 +465,10 @@ def test_async_executor_setup_teardown(mocker):
         results_dir=results_dir,
         node_id=node_id,
     )
-    asyncio.run(awaitable)
+    await awaitable
 
     me.teardown.assert_awaited_once_with(task_metadata={})
-    assert me.tasks_left == 0
+    assert me._tasks_left == 0
 
 
 def test_get_shared_instance():
@@ -482,7 +486,6 @@ def test_is_shared_instance():
 
 def test_base_executor_run_exception(mocker):
     """Check base executor's handling of exceptions in run"""
-    import asyncio
 
     def f():
         raise RuntimeError
@@ -494,18 +497,10 @@ def test_base_executor_run_exception(mocker):
         def __call__(self, task_metadata):
             self.times_called += 1
 
-    class MockAsyncCleanup:
-        def __init__(self):
-            self.times_called = 0
-
-        async def __call__(self, task_metadata):
-            self.times_called += 1
-
     me = MockExecutor()
-    async_me = MockAsyncExecutor()
+    me._initialize_runtime()
 
     me.teardown = MockCleanup()
-    async_me.teardown = MockAsyncCleanup()
 
     function = TransportableObject(f)
     args = []
@@ -530,8 +525,38 @@ def test_base_executor_run_exception(mocker):
         assert False
 
     except RuntimeError as ex:
-        assert me.tasks_left == 0
+        assert me._tasks_left == 0
         me.teardown.times_called == 1
+
+
+@pytest.mark.asyncio
+async def test_async_base_executor_run_exception(mocker):
+    """Check async base executor's handling of exceptions in run"""
+
+    def f():
+        raise RuntimeError
+
+    class MockAsyncCleanup:
+        def __init__(self):
+            self.times_called = 0
+
+        async def __call__(self, task_metadata):
+            self.times_called += 1
+
+    async_me = MockAsyncExecutor()
+    async_me._initialize_runtime()
+
+    async_me.teardown = MockAsyncCleanup()
+
+    function = TransportableObject(f)
+    args = []
+    kwargs = {}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = 1
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
     # BaseAsyncExecutor
     try:
@@ -543,11 +568,11 @@ def test_base_executor_run_exception(mocker):
             results_dir="tmp",
             node_id=node_id,
         )
-        asyncio.run(awaitable)
+        await awaitable
         assert False
 
     except RuntimeError as ex:
-        assert async_me.tasks_left == 0
+        assert async_me._tasks_left == 0
         async_me.teardown.times_called == 1
 
 
@@ -570,7 +595,7 @@ async def test_base_async_executor_execute(mocker):
         return x + y
 
     me = MockAsyncExecutor()
-
+    me._initialize_runtime()
     function = TransportableObject(f)
     args = [TransportableObject(2)]
     kwargs = {"y": TransportableObject(3)}
@@ -602,5 +627,5 @@ def test_executor_from_dict_makes_deepcopy():
     me = MockExecutor(log_stdout="/tmp/stdout.log")
     object_dict = me.to_dict()
     me = me.from_dict(object_dict)
-    me._lock = "unpicklable_object"
-    assert "_lock" not in object_dict["attributes"]
+    me._new_attr = "unpicklable_object"
+    assert "_new_attr" not in object_dict["attributes"]

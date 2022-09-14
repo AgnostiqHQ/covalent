@@ -135,9 +135,6 @@ class _AbstractBaseExecutor(ABC):
         self.instance_id = id(self)
         self.shared = False
 
-        # Runtime state: must not be persisted
-        self._state = {}
-
     def clone(self):
         new_exec = copy.deepcopy(self)
         new_exec.instance_id = id(new_exec)
@@ -216,10 +213,26 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         super().__init__(*args, **kwargs)
 
-        self.warmed_up = False
-        self.tasks_left = 1
+        # Runtime state: must not be persisted
 
-        self._state["lock"] = None
+        # internals
+        self._lock = None
+        self._warmed_up = False
+        self._tasks_left = 1
+
+        # User-defined state
+        self._state = {}
+
+    def _initialize_runtime(self):
+        self._lock = threading.Lock()
+
+    def decrement_task_count(self):
+        with self._lock:
+            self._tasks_left -= 1
+
+    def increment_task_count(self):
+        with self._lock:
+            self._tasks_left += 1
 
     def write_streams_to_file(
         self,
@@ -293,13 +306,10 @@ class BaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        if not self._state["lock"]:
-            self._state["lock"] = threading.Lock()
-
-        with self._state["lock"]:
-            if not self.warmed_up:
+        with self._lock:
+            if not self._warmed_up:
                 self.setup(task_metadata=task_metadata)
-                self.warmed_up = True
+                self._warmed_up = True
 
         dispatch_info = DispatchInfo(dispatch_id)
         fn_version = function.args[0].python_version
@@ -310,18 +320,16 @@ class BaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = self.run(function, args, kwargs, task_metadata)
 
-            with self._state["lock"]:
-                self.tasks_left -= 1
+            self.decrement_task_count()
 
-            if self.tasks_left < 1:
+            if self._tasks_left < 1:
                 self.teardown(task_metadata={})
 
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
-            with self._state["lock"]:
-                self.tasks_left -= 1
+            self.decrement_task_count()
 
-            if self.tasks_left < 1:
+            if self._tasks_left < 1:
                 self.teardown(task_metadata={})
 
             raise ex
@@ -379,10 +387,26 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
         super().__init__(*args, **kwargs)
 
-        self.warmed_up = False
-        self.tasks_left = 1
+        # Runtime state: must not be persisted
 
-        self._state["lock"] = None
+        # internals
+        self._lock = None
+        self._warmed_up = False
+        self._tasks_left = 1
+
+        # User-defined state
+        self._state = {}
+
+    def _initialize_runtime(self):
+        self._lock = asyncio.Lock()
+
+    async def decrement_task_count(self):
+        async with self._lock:
+            self._tasks_left -= 1
+
+    async def increment_task_count(self):
+        async with self._lock:
+            self._tasks_left += 1
 
     async def write_streams_to_file(
         self,
@@ -441,13 +465,10 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        if not self._state["lock"]:
-            self._state["lock"] = asyncio.Lock()
-
-        async with self._state["lock"]:
-            if not self.warmed_up:
+        async with self._lock:
+            if not self._warmed_up:
                 await self.setup(task_metadata=task_metadata)
-                self.warmed_up = True
+                self._warmed_up = True
 
         try:
             with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(
@@ -455,18 +476,17 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = await self.run(function, args, kwargs, task_metadata)
 
-            async with self._state["lock"]:
-                self.tasks_left -= 1
+            await self.decrement_task_count()
 
-            if self.tasks_left < 1:
+            if self._tasks_left < 1:
                 await self.teardown(task_metadata={})
 
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
-            async with self._state["lock"]:
-                self.tasks_left -= 1
 
-            if self.tasks_left < 1:
+            await self.decrement_task_count()
+
+            if self._tasks_left < 1:
                 await self.teardown(task_metadata={})
 
             raise ex
