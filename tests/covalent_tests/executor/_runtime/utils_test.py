@@ -194,12 +194,16 @@ async def test_executor_cache_finalize():
     le = LocalExecutor().get_shared_instance()
     de = DaskExecutor("tcp://127.0.0.1:30000").get_shared_instance()
 
+    le._initialize_runtime()
+    de._initialize_runtime()
+
     le.teardown = MagicMock()
     de.teardown = AsyncMock()
 
     cache = ExecutorCache()
     cache.id_instance_map[le.instance_id] = le
     cache.id_instance_map[de.instance_id] = de
+    cache.id_instance_map[0] = None
 
     await cache.finalize_executors()
 

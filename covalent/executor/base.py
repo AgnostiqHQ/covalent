@@ -310,9 +310,12 @@ class BaseExecutor(_AbstractBaseExecutor):
     def setup(self, task_metadata: Dict = {}):
         pass
 
-    def teardown(self, task_metadata: Dict = {}):
+    def teardown(self, resource_metadata: Dict = {}):
         # Relinquish all resources if called without task_metadata
         pass
+
+    def _finalize(self):
+        self.teardown(self._get_resource_metadata())
 
     def execute(
         self,
@@ -525,9 +528,12 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     async def setup(self, task_metadata: Dict = {}):
         pass
 
-    async def teardown(self, task_metadata: Dict = {}):
+    async def teardown(self, resource_metadata: Dict = {}):
         # Relinquish all resources if called without task_metadata
         pass
+
+    async def _finalize(self):
+        await self.teardown(self._get_resource_metadata())
 
     async def execute(
         self,

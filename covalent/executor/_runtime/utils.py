@@ -74,7 +74,7 @@ class ExecutorCache:
             if executor is None:
                 continue
             if isinstance(executor, covalent.executor.base.AsyncBaseExecutor):
-                await executor.teardown()
+                await executor._finalize()
             else:
                 loop = asyncio.get_running_loop()
-                await loop.run_in_executor(None, executor.teardown)
+                await loop.run_in_executor(None, executor._finalize)
