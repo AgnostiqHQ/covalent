@@ -33,7 +33,7 @@ with open("VERSION") as f:
 
 
 requirements_file = "requirements.txt"
-sdk_only = os.environ.get("COVALENT_SDK_ONLY", False)
+sdk_only = os.environ.get("COVALENT_SDK_ONLY")
 if sdk_only == "True":
     requirements_file = "requirements-client.txt"
 
