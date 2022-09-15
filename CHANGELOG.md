@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Adding a new `aws_ami` job to `release.yml` to build the Covalent self-hosted AMI using packer
+
 ### Tests
 
 - Fixed `asserts` in stress tests
