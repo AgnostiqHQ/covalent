@@ -578,7 +578,7 @@ async def test_async_base_executor_run_exception(mocker):
     except RuntimeError as ex:
         assert async_me._tasks_left == 0
         async_me.teardown.times_called == 1
-        assert await async_me.get_task_data(dispatch_id, node_id, "_status") == "FAILED"
+        assert async_me.get_task_data(dispatch_id, node_id, "_status") == "FAILED"
 
 
 def test_executor_clone_sets_instance_id():
@@ -622,7 +622,7 @@ async def test_base_async_executor_execute(mocker):
     )
 
     assert result.get_deserialized() == 5
-    assert await me.get_task_data(dispatch_id, node_id, "_status") == "COMPLETED"
+    assert me.get_task_data(dispatch_id, node_id, "_status") == "COMPLETED"
 
 
 def test_executor_from_dict_makes_deepcopy():
@@ -652,9 +652,9 @@ async def test_async_executor_task_count_helpers():
     """Test incrementing and decrementing task count"""
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
     me._initialize_runtime()
-    await me._increment_task_count()
+    me._increment_task_count()
     assert me._tasks_left == 2
-    await me._decrement_task_count()
+    me._decrement_task_count()
     assert me._tasks_left == 1
 
 
@@ -722,7 +722,7 @@ async def test_async_executor_initialize_task_data():
     """Test initializing task data"""
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
     me._initialize_runtime()
-    await me._initialize_task_data("asdf", 1)
+    me._initialize_task_data("asdf", 1)
     assert me._state["running_tasks"]["asdf"][1] == {}
 
 
@@ -731,11 +731,11 @@ async def test_async_executor_get_set_task_data():
     """Test get task data"""
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
     me._initialize_runtime()
-    await me._initialize_task_data("asdf", 1)
-    await me._set_task_data("asdf", 1, "_status", "RUNNING")
-    await me.set_task_data("asdf", 1, "jobID", 42)
-    assert await me.get_task_data("asdf", 1, "_status") == "RUNNING"
-    assert await me.get_task_data("asdf", 1, "jobID") == 42
+    me._initialize_task_data("asdf", 1)
+    me._set_task_data("asdf", 1, "_status", "RUNNING")
+    me.set_task_data("asdf", 1, "jobID", 42)
+    assert me.get_task_data("asdf", 1, "_status") == "RUNNING"
+    assert me.get_task_data("asdf", 1, "jobID") == 42
 
 
 @pytest.mark.asyncio
@@ -743,10 +743,10 @@ async def test_async_executor_set_data_protects_status():
     """Test public set_task_data doesn't allow setting `_status`"""
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
     me._initialize_runtime()
-    await me._initialize_task_data("asdf", 1)
+    me._initialize_task_data("asdf", 1)
 
     try:
-        await me.set_task_data("asdf", 1, "_status", "RUNNING")
+        me.set_task_data("asdf", 1, "_status", "RUNNING")
         assert False
     except KeyError:
         pass

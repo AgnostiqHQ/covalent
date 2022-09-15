@@ -279,10 +279,7 @@ async def _get_executor_instance(
         # Check if we are using a shared instance for an un-planned
         # task
         if unplanned_task and executor.shared:
-            if isinstance(executor, AsyncBaseExecutor):
-                await executor._increment_task_count()
-            else:
-                executor._increment_task_count()
+            executor._increment_task_count()
 
     except Exception as ex:
         app_log.debug(f"Exception when trying to determine executor: {ex}")

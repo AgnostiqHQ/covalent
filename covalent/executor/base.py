@@ -468,28 +468,28 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     def _get_resource_metadata(self):
         return self._state["resource_metadata"]
 
-    async def _decrement_task_count(self):
+    def _decrement_task_count(self):
         self._tasks_left -= 1
 
-    async def _increment_task_count(self):
+    def _increment_task_count(self):
         self._tasks_left += 1
 
-    async def _initialize_task_data(self, dispatch_id: str, node_id: int):
+    def _initialize_task_data(self, dispatch_id: str, node_id: int):
         if dispatch_id not in self._state["running_tasks"]:
             self._state["running_tasks"][dispatch_id] = {}
 
         self._state["running_tasks"][dispatch_id][node_id] = {}
 
-    async def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
+    def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
         self._state["running_tasks"][dispatch_id][node_id][key] = val
 
-    async def set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
+    def set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
         if key == "_status":
             raise KeyError("_status is reserved")
 
         self._state["running_tasks"][dispatch_id][node_id][key] = val
 
-    async def get_task_data(self, dispatch_id: str, node_id: int, key: str):
+    def get_task_data(self, dispatch_id: str, node_id: int, key: str):
 
         return self._state["running_tasks"][dispatch_id][node_id][key]
 
@@ -555,8 +555,8 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             "node_id": node_id,
             "results_dir": results_dir,
         }
-        await self._initialize_task_data(dispatch_id, node_id)
-        await self._set_task_data(dispatch_id, node_id, "_status", "RUNNING")
+        self._initialize_task_data(dispatch_id, node_id)
+        self._set_task_data(dispatch_id, node_id, "_status", "RUNNING")
 
         async with self._lock:
             if not self._warmed_up:
@@ -570,9 +570,9 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = await self.run(function, args, kwargs, task_metadata)
 
-            await self._decrement_task_count()
+            self._decrement_task_count()
 
-            await self._set_task_data(dispatch_id, node_id, "_status", "COMPLETED")
+            self._set_task_data(dispatch_id, node_id, "_status", "COMPLETED")
 
             if self._tasks_left < 1:
                 resource_metadata = self._get_resource_metadata()
@@ -581,9 +581,9 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         except Exception as ex:
             # Don't forget to cleanup even if run() raises an exception
 
-            await self._decrement_task_count()
+            self._decrement_task_count()
 
-            await self._set_task_data(dispatch_id, node_id, "_status", "FAILED")
+            self._set_task_data(dispatch_id, node_id, "_status", "FAILED")
 
             if self._tasks_left < 1:
                 resource_metadata = self._get_resource_metadata()
