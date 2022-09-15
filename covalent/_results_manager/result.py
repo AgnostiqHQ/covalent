@@ -20,6 +20,7 @@
 
 """Result object."""
 
+import asyncio
 import os
 import uuid
 from datetime import datetime, timezone
@@ -938,6 +939,11 @@ Node Outputs
         """
 
         self._runtime_state["executor_cache"] = cache
+
+    def _get_tasks_queue(self) -> asyncio.Queue:
+        if "tasks_queue" not in self._runtime_state:
+            self._runtime_state["tasks_queue"] = asyncio.Queue()
+        return self._runtime_state["tasks_queue"]
 
 
 def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:

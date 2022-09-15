@@ -560,3 +560,10 @@ def test_set_executor_cache(mocker):
     cache = ExecutorCache()
     result_object._set_executor_cache(cache)
     assert result_object._runtime_state["executor_cache"] == cache
+
+
+def test_get_tasks_queue():
+    """Test _get_tasks_queue"""
+    result_object = get_mock_result()
+    q = result_object._get_tasks_queue()
+    assert q == result_object._get_tasks_queue()

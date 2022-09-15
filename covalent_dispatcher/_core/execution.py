@@ -649,7 +649,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     # Tabulate number of tasks assigned to each executor instance
     exec_cache = result_object._get_executor_cache()
 
-    tasks_queue = Queue()
+    tasks_queue = result_object._get_tasks_queue()
     pending_deps = {}
     task_futures: list = []
 
