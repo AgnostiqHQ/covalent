@@ -44,7 +44,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-          ref: refs/head/fix_benchmark_workflow
 
       - name: Check out SHA
         if: github.event_name == 'workflow_dispatch'
