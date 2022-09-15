@@ -307,7 +307,7 @@ jobs:
         if: >
           inputs.prerelease
           && !github.events.inputs.stable_version
-          && github.event_name == 'workflow_call'
+          && github.event_name == 'schedule'
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
@@ -347,7 +347,7 @@ jobs:
         if: >
           inputs.prerelease
           && !github.events.inputs.stable_version
-          && github.event_name == 'workflow_call'
+          && github.event_name == 'schedule'
           && steps.get_aws_plugin_dockerfile.outcome == 'success'
           && steps.get_aws_plugin_version.outcome == 'success'
         run: |
@@ -368,7 +368,7 @@ jobs:
         if: >
           inputs.prerelease
           && !github.events.inputs.stable_version
-          && github.event_name == 'workflow_call'
+          && github.event_name == 'schedule'
           && !github.events.inputs.test_release
           && steps.get_aws_plugin_dockerfile.outcome == 'success'
           && steps.get_aws_plugin_version.outcome == 'success'
@@ -391,6 +391,7 @@ jobs:
           && !inputs.prerelease
           && !github.events.inputs.test_release
           && contains(env.PAUL_BLART, github.actor)
+          && github.event_name != 'schedule'
         run: |
           MANIFEST=$(aws ecr batch-get-image --repository-name covalent --image-ids imageTag=${{ github.events.inputs.stable_version }} --output json | jq --raw-output --join-output '.images[0].imageManifest')
           aws ecr put-image --repository-name covalent --image-tag stable --image-manifest "$MANIFEST"
