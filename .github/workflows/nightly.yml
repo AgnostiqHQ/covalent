@@ -23,7 +23,6 @@ name: nightly
 on:
   schedule:
     - cron: "0 4 * * *"
-  pull_request:
 
 jobs:
   #license:
@@ -35,11 +34,10 @@ jobs:
   #  uses: AgnostiqHQ/covalent/.github/workflows/tests.yml@develop
   #  secrets: inherit # pragma: allowlist secret
 
-  benchmarks:
-    name: Benchmarks
-    uses: AgnostiqHQ/covalent/.github/workflows/benchmark.yml@fix_benchmark_workflow
-    secrets: inherit # pragma: allowlist secret
-
+  #benchmarks:
+  #  name: Benchmarks
+  #  uses: AgnostiqHQ/covalent/.github/workflows/benchmark.yml@fix_benchmark_workflow
+  #  secrets: inherit # pragma: allowlist secret
 
   #changelog:
   #  name: Assign Version
