@@ -88,10 +88,10 @@ async def read_and_forward_pty_output():
             (data_ready, _, _) = select.select([fdd], [], [], timeout_sec)
             if data_ready:
                 output = os.read(fdd, max_read_bytes).decode()
-                await sio.emit("pty-output", {"output": output}, namespace="/pty")
+                await sio.emit("pty-output", {"output": output})
 
 
-@sio.on("pty-input", namespace="/pty")
+@sio.on("pty-input")
 def pty_input(sid, data):
     """write to the child pty. The pty sees this as if you are typing in a real
     terminal.
@@ -101,14 +101,14 @@ def pty_input(sid, data):
         os.write(fdd, data["input"].encode())
 
 
-@sio.on("resize", namespace="/pty")
+@sio.on("resize")
 def resize(sid, data):
     if fdd:
         logging.debug(f"Resizing window to {data['rows']}x{data['cols']}")
         set_winsize(fdd, data["rows"], data["cols"])
 
 
-@sio.on("connect", namespace="/pty")
+@sio.on("connect")
 async def chat_message(*args):
     logging.info("new client connected")
     global child
