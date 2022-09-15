@@ -72,7 +72,7 @@ jobs:
           python -m locust
           --user $(python -c 'import os; print(os.cpu_count())')
           --spawn-rate 3
-          --run-time 10m
+          --run-time 1m
           --csv=loadtest_results
           --headless
           -f ./load_tests/locustfiles
