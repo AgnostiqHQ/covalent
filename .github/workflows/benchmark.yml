@@ -36,7 +36,7 @@ jobs:
       COVALENT_SERVER_IFACE_ANY: true
     steps:
       - name: Check out head
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
           persist-credentials: false
 
