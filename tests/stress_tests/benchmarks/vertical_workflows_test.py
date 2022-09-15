@@ -1,6 +1,7 @@
 import pytest
 
 import covalent as ct
+from covalent._shared_files.util_classes import Status
 
 
 @pytest.mark.parametrize("iteration", range(5))
@@ -46,4 +47,4 @@ def test_benchmark_fully_vertical_multiply_workflow(benchmark, iteration):
     result, status = run_benchmark(iteration, vertical_multiply_workflow, *[50])
     logger.debug(result.dict())
 
-    assert status == "COMPLETED"
+    assert status == Status("COMPLETED")

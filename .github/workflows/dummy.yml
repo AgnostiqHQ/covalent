@@ -1,0 +1,10 @@
+name: dummy
+
+on:
+  pull_request:
+
+jobs:
+  benchmark:
+    name: Benchmarks
+    uses: AgnostiqHQ/covalent/.github/workflows/benchmark.yml@develop
+    secrets: inherit
