@@ -20,9 +20,7 @@
 
 """Runtime utility classes for the executor"""
 
-import asyncio
 
-import covalent.executor.base
 from covalent._shared_files.defaults import parameter_prefix
 
 
@@ -73,8 +71,5 @@ class ExecutorCache:
         for key, executor in self.id_instance_map.items():
             if executor is None:
                 continue
-            if isinstance(executor, covalent.executor.base.AsyncBaseExecutor):
-                await executor._finalize()
             else:
-                loop = asyncio.get_running_loop()
-                await loop.run_in_executor(None, executor._finalize)
+                await executor._finalize()

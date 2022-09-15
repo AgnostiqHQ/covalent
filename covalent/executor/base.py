@@ -322,8 +322,11 @@ class BaseExecutor(_AbstractBaseExecutor):
         # Relinquish all resources if called without task_metadata
         pass
 
-    def _finalize(self):
-        self.teardown(self._get_resource_metadata())
+    # To be invoked from the dispatcher's thread
+    async def _finalize(self):
+        loop = asyncio.get_running_loop()
+        fut = loop.run_in_executor(None, self.teardown, self._get_resource_metadata())
+        await fut
 
     def execute(
         self,
