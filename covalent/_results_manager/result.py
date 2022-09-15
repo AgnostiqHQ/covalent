@@ -918,6 +918,12 @@ Node Outputs
 
         return self._result
 
+        # Runtime state:
+
+    def _initialize_runtime_state(self):
+        self._runtime_state = {}
+        self._runtime_state["workflow_tasks"] = 0
+
     def _get_executor_cache(self) -> ExecutorCache:
         """
         Private method for the dispatcher to retrieve the runtime
@@ -944,6 +950,10 @@ Node Outputs
         if "tasks_queue" not in self._runtime_state:
             self._runtime_state["tasks_queue"] = asyncio.Queue()
         return self._runtime_state["tasks_queue"]
+
+    def _get_workflow_executor_task_id(self) -> int:
+        self._runtime_state["workflow_tasks"] += 1
+        return -1 * self._runtime_state["workflow_tasks"]
 
 
 def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:
@@ -1012,6 +1022,7 @@ def initialize_result_object(
         result_object._root_dispatch_id = parent_result_object._root_dispatch_id
 
     result_object._initialize_nodes()
+    result_object._initialize_runtime_state()
     app_log.debug("2: Constructed result object and initialized nodes.")
 
     result_object.persist(electron_id=parent_electron_id)

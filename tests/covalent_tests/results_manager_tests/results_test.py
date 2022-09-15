@@ -87,7 +87,7 @@ def test_db():
     )
 
 
-le = LocalExecutor(log_stdout="/tmp/stdout.log")
+le = LocalExecutor(log_stdout="/tmp/stdout.log").get_shared_instance()
 
 
 @pytest.fixture
@@ -548,6 +548,7 @@ def test_result_post_process(mocker, test_db):
 
 def test_get_executor_cache(mocker):
     result_object = get_mock_result()
+    result_object._initialize_runtime_state()
     cache_init = mocker.patch(
         "covalent.executor._runtime.utils.ExecutorCache.__init__", return_value=None
     )
@@ -558,6 +559,7 @@ def test_get_executor_cache(mocker):
 def test_set_executor_cache(mocker):
     result_object = get_mock_result()
     cache = ExecutorCache()
+    result_object._initialize_runtime_state()
     result_object._set_executor_cache(cache)
     assert result_object._runtime_state["executor_cache"] == cache
 
@@ -565,5 +567,14 @@ def test_set_executor_cache(mocker):
 def test_get_tasks_queue():
     """Test _get_tasks_queue"""
     result_object = get_mock_result()
+    result_object._initialize_runtime_state()
     q = result_object._get_tasks_queue()
     assert q == result_object._get_tasks_queue()
+
+
+def test_get_workflow_exec_task_id():
+    """Test _get_workflow_executor_task_id"""
+    result_object = get_mock_result()
+    result_object._initialize_runtime_state()
+    assert result_object._get_workflow_executor_task_id() == -1
+    assert result_object._get_workflow_executor_task_id() == -2

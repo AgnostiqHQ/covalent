@@ -702,6 +702,7 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
     mocker.patch("covalent._results_manager.result.workflow_db", test_db)
 
     result_object = get_mock_result()
+    result_object._initialize_runtime_state()
 
     result_object._runtime_state["executor_cache"] = executor_cache
     serialized_callable = ct.TransportableObject(sub_workflow)

@@ -223,7 +223,7 @@ async def _dispatch_sync_sublattice(
     fut = asyncio.create_task(
         _run_task(
             result_object=parent_result_object,
-            node_id=-1,
+            node_id=parent_result_object._get_workflow_executor_task_id(),
             serialized_callable=TransportableObject.make_transportable(_build_sublattice_graph),
             selected_executor=workflow_executor,
             node_name="build_sublattice_graph",
@@ -579,7 +579,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         future = asyncio.create_task(
             _run_task(
                 result_object=result_object,
-                node_id=-1,
+                node_id=result_object._get_workflow_executor_task_id(),
                 serialized_callable=TransportableObject(_post_process),
                 selected_executor=post_processor,
                 node_name="post_process",
