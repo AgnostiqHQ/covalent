@@ -399,10 +399,17 @@ async def _run_task(
 
     except Exception as ex:
         app_log.error(f"Exception occurred when running task {node_id}: {ex}")
+        node_status = Result.FAILED
+
+        # Check for cancelled ordinary electrons
+        if not node_name.startswith(sublattice_prefix):
+            status = executor._get_task_status(dispatch_id, node_id)
+            if status == "CANCELLED":
+                node_status = Result.CANCELLED
         node_result = generate_node_result(
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
-            status=Result.FAILED,
+            status=node_status,
             error="".join(traceback.TracebackException.from_exception(ex).format()),
         )
     app_log.debug(f"Node result: {node_result}")

@@ -900,8 +900,9 @@ async def test_get_executor_instance():
     )
 
     assert executor_instance.short_name() == "local"
+    assert executor_instance.instance_id in cache.id_instance_map
 
-    # throwaway instance -- don't cache
+    # throwaway instance
     node_id = 2
     node_name = tg.get_node_value(node_id, "name")
     executor = tg.get_node_value(node_id, "metadata")["executor"]
@@ -919,8 +920,9 @@ async def test_get_executor_instance():
     )
 
     assert executor_instance.short_name() == "local"
+    assert executor_instance.instance_id in cache.id_instance_map
 
-    # shared instance -- to cache
+    # shared instance
     node_id = 3
     node_name = tg.get_node_value(node_id, "name")
     executor = tg.get_node_value(node_id, "metadata")["executor"]
@@ -975,3 +977,53 @@ async def test_get_executor_instance():
 
     task_count += 1
     assert task_count == shared_instance._tasks_left
+
+
+@pytest.mark.asyncio
+async def test_run_task_handles_cancelled_status(mocker):
+    """Test that _run_task returns a Result.CANCELLED node status if
+    the task was cancelled during execution.
+    """
+
+    import copy
+
+    from covalent.executor import LocalExecutor
+
+    def f(x, y):
+        return x + y
+
+    result_object = get_mock_result()
+    le = LocalExecutor()
+    short_name = le.short_name()
+    executor_data = copy.deepcopy(le.to_dict())
+    cache = ExecutorCache()
+    cache.id_instance_map[le.instance_id] = le
+    cache.tasks_per_instance[le.instance_id] = 1
+    result_object._set_executor_cache(cache)
+
+    mocker.patch("covalent.executor.LocalExecutor.execute", side_effect=RuntimeError("Cancelled"))
+
+    args = []
+    kwargs = {}
+    call_before = []
+    call_after = []
+    node_id = 1
+    inputs = {"args": [], "kwargs": {}}
+
+    le._initialize_runtime(cache)
+    le._initialize_task_data(result_object.dispatch_id, node_id)
+    le._set_task_status(result_object.dispatch_id, node_id, "CANCELLED")
+
+    node_result = await _run_task(
+        result_object=result_object,
+        node_id=node_id,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=[short_name, executor_data],
+        call_before=call_before,
+        call_after=call_after,
+        node_name="test_task",
+        workflow_executor=[short_name, executor_data],
+        unplanned_task=False,
+    )
+    assert node_result["status"] == Result.CANCELLED
