@@ -37,6 +37,8 @@ import { ReactComponent as AttributeSvg } from '../assets/nodeType/attribute.svg
 import { ReactComponent as ElectronDictSvg } from '../assets/nodeType/electron-dict.svg'
 import { ReactComponent as ElectronListSvg } from '../assets/nodeType/electron-list.svg'
 import { ReactComponent as GeneratedSvg } from '../assets/nodeType/generated.svg'
+import { ReactComponent as InfoSvg } from '../assets/status/info.svg'
+import { ReactComponent as WarningSvg } from '../assets/status/warning.svg'
 
 export const secondsToHms = (ms) => {
   let time = ''
@@ -65,6 +67,13 @@ export const formatDate = (date) => {
     date = parseISO(date)
   }
   return isValid(date) ? format(date, 'MMM dd, HH:mm:ss') : '-'
+}
+
+export const formatLogDate = (date) => {
+  if (_.isString(date)) {
+    date = parseISO(date)
+  }
+  return isValid(date) ? format(date, 'dd MMM yy') : '-'
 }
 
 export const truncateMiddle = (s, start, end, omission = '…') => {
@@ -111,6 +120,73 @@ export const statusLabel = (status) => {
       POSTPROCESSING_FAILED: 'Completed',
     }[status] || status
   )
+}
+
+export const logStatusLabel = (status) => {
+  return (
+    {
+      INFO: 'Info',
+      DEBUG: 'Debug',
+      WARNING: 'Warning',
+      WARN: 'Warn',
+      ERROR: 'Error',
+    }[status] || status
+  )
+}
+
+export const logStatusIcon = (status) => {
+  switch (status) {
+    case 'WARNING':
+      return (
+        <SvgIcon sx={{ mt: 1 }}>
+          <WarningSvg />
+        </SvgIcon>
+      )
+    case 'INFO':
+      return (
+        <SvgIcon sx={{ mt: 1.2 }}>
+          <InfoSvg />
+        </SvgIcon>
+      )
+    case 'COMPLETED':
+      return (
+        <SvgIcon sx={{ mt: 1 }}>
+          <CheckSvg />
+        </SvgIcon>
+      )
+    case 'POSTPROCESSING':
+      return (
+        <SvgIcon sx={{ mt: 1 }}>
+          <CheckSvg />
+        </SvgIcon>
+      )
+    case 'PENDING_POSTPROCESSING':
+      return (
+        <SvgIcon sx={{ mt: 1 }}>
+          <CheckSvg />
+        </SvgIcon>
+      )
+    case 'POSTPROCESSING_FAILED':
+      return (
+        <SvgIcon sx={{ mt: 1 }}>
+          <CheckSvg />
+        </SvgIcon>
+      )
+    case 'ERROR':
+      return (
+        <SvgIcon sx={{ mt: 1 }}>
+          <ErrorSvg />
+        </SvgIcon>
+      )
+    case 'CANCELLED':
+      return (
+        <SvgIcon sx={{ mt: 1 }}>
+          <CancelSvg />
+        </SvgIcon>
+      )
+    default:
+      return null
+  }
 }
 
 export const statusIcon = (status) => {

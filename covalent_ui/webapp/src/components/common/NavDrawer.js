@@ -28,11 +28,14 @@ import {
   ListItemButton,
   Tooltip,
   SvgIcon,
+  Grid,
 } from '@mui/material'
 
 import { ReactComponent as Logo } from '../../assets/covalent-logo.svg'
 import { ReactComponent as DispatchList } from '../../assets/dashboard.svg'
 import { ReactComponent as DispatchPreview } from '../../assets/license.svg'
+import { ReactComponent as Logs } from '../../assets/logs.svg'
+
 import { useMatch } from 'react-router-dom'
 
 export const navDrawerWidth = 60
@@ -72,6 +75,9 @@ const NavDrawer = () => {
           path="/preview"
           icon={DispatchPreview}
         />
+        <Grid>
+          <LinkButton title="Logs" path="/logs" icon={Logs} margintop={36} />
+        </Grid>
       </List>
     </Drawer>
   )
