@@ -586,10 +586,8 @@ def test_executor_clone_sets_instance_id():
 
     me = MockExecutor()
     me_2 = me.clone()
-    assert me_2.instance_id == id(me_2)
+    assert me_2.instance_id != me.instance_id
     assert me_2.shared == me.shared
-    shared_me_2 = me.get_shared_instance().clone()
-    assert shared_me_2.instance_id == id(shared_me_2)
 
 
 @pytest.mark.asyncio

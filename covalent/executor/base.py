@@ -27,6 +27,7 @@ import copy
 import io
 import os
 import threading
+import uuid
 from abc import ABC, abstractmethod
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
@@ -133,12 +134,12 @@ class _AbstractBaseExecutor(ABC):
         self.time_limit = time_limit
         self.retries = retries
 
-        self.instance_id = id(self)
+        self.instance_id = int(uuid.uuid4())
         self.shared = False
 
     def clone(self):
         new_exec = copy.deepcopy(self)
-        new_exec.instance_id = id(new_exec)
+        new_exec.instance_id = int(uuid.uuid4())
         return new_exec
 
     def get_shared_instance(self) -> "_AbstractBaseExecutor":
