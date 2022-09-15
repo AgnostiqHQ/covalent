@@ -49,6 +49,7 @@ from covalent_dispatcher._core.execution import (
     _initialize_deps_and_queue,
     _plan_workflow,
     _post_process,
+    _postprocess_workflow,
     _run_task,
     _update_node_result,
     generate_node_result,
@@ -681,9 +682,6 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
 
     from covalent.executor import LocalExecutor
 
-    async def fake_run_workflow(result_object):
-        return result_object
-
     le = LocalExecutor()
     object_dict = copy.deepcopy(le.to_dict())
 
@@ -1047,3 +1045,42 @@ async def test_run_task_handles_cancelled_status(mocker):
         unplanned_task=False,
     )
     assert node_result["status"] == Result.CANCELLED
+
+
+@pytest.mark.asyncio
+async def test_postprocess_workflow(mocker):
+
+    result_object = get_mock_result()
+    result_object._initialize_nodes()
+    result_object._initialize_runtime_state()
+
+    postprocess_result_1 = generate_node_result(
+        node_id=0,
+        status=Result.COMPLETED,
+        output=42,
+        end_time="00:00",
+    )
+
+    postprocess_result_2 = generate_node_result(
+        node_id=0,
+        status=Result.FAILED,
+        end_time="00:00",
+    )
+
+    mock_run_task = mocker.patch(
+        "covalent_dispatcher._core.execution._run_task", return_value=postprocess_result_1
+    )
+    mocker.patch("covalent._results_manager.result.Result.upsert_lattice_data")
+    mocker.patch("covalent._results_manager.result.Result.get_all_node_outputs", return_value=1)
+
+    result_object = await _postprocess_workflow(result_object)
+
+    assert result_object.status == Result.COMPLETED
+
+    mock_run_task = mocker.patch(
+        "covalent_dispatcher._core.execution._run_task", return_value=postprocess_result_2
+    )
+
+    result_object = await _postprocess_workflow(result_object)
+
+    assert result_object.status == Result.POSTPROCESSING_FAILED
