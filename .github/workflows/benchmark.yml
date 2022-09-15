@@ -21,8 +21,7 @@
 name: benchmark
 
 on:
-  schedule:
-    - cron: "* * * * *"
+  workflow_call:
   workflow_dispatch:
     inputs:
       commit_sha:
@@ -37,7 +36,7 @@ jobs:
       COVALENT_SERVER_IFACE_ANY: true
     steps:
       - name: Check out head
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'workflow_call'
         uses: actions/checkout@v3
         with:
           persist-credentials: false
