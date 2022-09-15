@@ -253,7 +253,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         if dispatch_id not in self._state["tasks"]:
             self._state["tasks"][dispatch_id] = {}
 
-        self._state["tasks"][dispatch_id][node_id] = {"_status": "NEW"}
+        self._state["tasks"][dispatch_id][node_id] = {"_status": "RUNNING"}
 
     def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
         self._state["tasks"][dispatch_id][node_id][key] = val
@@ -311,6 +311,15 @@ class BaseExecutor(_AbstractBaseExecutor):
         # Relinquish all resources if called without task_metadata
         pass
 
+    def _cancel_task(self, dispatch_id: str, node_id: int):
+        with self._lock:
+            status = self._get_task_status(dispatch_id, node_id)
+            if status == "RUNNING":
+                self._set_task_status(dispatch_id, node_id, "CANCELLING")
+
+        if status == "RUNNING":
+            self.cancel(dispatch_id, node_id)
+
     # To be invoked from the dispatcher's thread
     async def _finalize(self):
         loop = asyncio.get_running_loop()
@@ -353,7 +362,6 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         with self._lock:
             self._initialize_task_data(dispatch_id, node_id)
-            self._set_task_status(dispatch_id, node_id, "RUNNING")
 
             if not self._warmed_up:
                 resource_metadata = self.setup(task_metadata=task_metadata)
@@ -373,7 +381,11 @@ class BaseExecutor(_AbstractBaseExecutor):
                 self._set_task_status(dispatch_id, node_id, "COMPLETED")
         except Exception as ex:
             with self._lock:
-                self._set_task_status(dispatch_id, node_id, "FAILED")
+                # Check if we got here by cancellation
+                if self._get_task_status(dispatch_id, node_id) == "CANCELLING":
+                    self._set_task_status(dispatch_id, node_id, "CANCELLED")
+                else:
+                    self._set_task_status(dispatch_id, node_id, "FAILED")
             raise ex
         finally:
             self._decrement_task_count()
@@ -473,7 +485,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         if dispatch_id not in self._state["tasks"]:
             self._state["tasks"][dispatch_id] = {}
 
-        self._state["tasks"][dispatch_id][node_id] = {"_status": "NEW"}
+        self._state["tasks"][dispatch_id][node_id] = {"_status": "RUNNING"}
 
     def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
         self._state["tasks"][dispatch_id][node_id][key] = val
@@ -534,6 +546,12 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         # Relinquish all resources if called without task_metadata
         pass
 
+    async def _cancel_task(self, dispatch_id: str, node_id: int):
+        status = self._get_task_status(dispatch_id, node_id)
+        if status == "RUNNING":
+            self._set_task_status(dispatch_id, node_id, "CANCELLING")
+            await self.cancel(dispatch_id, node_id)
+
     async def _finalize(self):
         await self.teardown(self._get_resource_metadata())
 
@@ -553,7 +571,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
         self._initialize_task_data(dispatch_id, node_id)
-        self._set_task_status(dispatch_id, node_id, "RUNNING")
 
         async with self._lock:
             if not self._warmed_up:
@@ -569,12 +586,19 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
             self._set_task_status(dispatch_id, node_id, "COMPLETED")
         except Exception as ex:
-            self._set_task_status(dispatch_id, node_id, "FAILED")
+            # Check if we got here by cancellation
+            if self._get_task_status(dispatch_id, node_id) == "CANCELLING":
+                self._set_task_status(dispatch_id, node_id, "CANCELLED")
+            else:
+                self._set_task_status(dispatch_id, node_id, "FAILED")
             raise ex
         finally:
             self._decrement_task_count()
             if self._tasks_left < 1:
                 resource_metadata = self._get_resource_metadata()
+
+                # TODO: exceptions raised here should probably be handled
+                # separately without changing the task outcome
                 await self.teardown(resource_metadata)
 
         await self.write_streams_to_file(
