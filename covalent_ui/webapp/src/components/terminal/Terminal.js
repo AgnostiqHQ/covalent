@@ -44,7 +44,7 @@ const Terminal = () => {
                     theme: {
                         background: '#08081A'
                     },
-                    cols: 8
+                    cols: 100
                 }}
                 ref={xtermRef}
                 onData={(data) => {
