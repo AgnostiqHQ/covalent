@@ -232,7 +232,7 @@ class BaseExecutor(_AbstractBaseExecutor):
 
             executor_cache.id_instance_map[self.instance_id] = self
 
-        self._state["running_tasks"] = {}
+        self._state["tasks"] = {}
         self._state["resource_metadata"] = {}
 
     def _set_resource_metadata(self, metadata):
@@ -251,24 +251,24 @@ class BaseExecutor(_AbstractBaseExecutor):
 
     def _initialize_task_data(self, dispatch_id: str, node_id: int):
         with self._lock:
-            if dispatch_id not in self._state["running_tasks"]:
-                self._state["running_tasks"][dispatch_id] = {}
+            if dispatch_id not in self._state["tasks"]:
+                self._state["tasks"][dispatch_id] = {}
 
-            self._state["running_tasks"][dispatch_id][node_id] = {"_status": "NEW"}
+            self._state["tasks"][dispatch_id][node_id] = {"_status": "NEW"}
 
     def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
         with self._lock:
-            self._state["running_tasks"][dispatch_id][node_id][key] = val
+            self._state["tasks"][dispatch_id][node_id][key] = val
 
     def set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
         if key == "_status":
             raise KeyError("_status is reserved")
         with self._lock:
-            self._state["running_tasks"][dispatch_id][node_id][key] = val
+            self._state["tasks"][dispatch_id][node_id][key] = val
 
     def get_task_data(self, dispatch_id: str, node_id: int, key: str):
         with self._lock:
-            data = self._state["running_tasks"][dispatch_id][node_id][key]
+            data = self._state["tasks"][dispatch_id][node_id][key]
 
         return data
 
@@ -278,8 +278,8 @@ class BaseExecutor(_AbstractBaseExecutor):
     def _get_task_status(self, dispatch_id: str, node_id: int):
         return self.get_task_data(dispatch_id, node_id, "_status")
 
-    def _get_running_tasks(self):
-        return self._state["running_tasks"]
+    def _get_registered_tasks(self):
+        return self._state["tasks"]
 
     def write_streams_to_file(
         self,
@@ -311,6 +311,9 @@ class BaseExecutor(_AbstractBaseExecutor):
 
                 with open(filepath, "a") as f:
                     f.write(ss)
+
+    def cancel(self, dispatch_id: str, node_id: int):
+        pass
 
     def setup(self, task_metadata: Dict = {}):
         pass
@@ -357,6 +360,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         }
 
         self._initialize_task_data(dispatch_id, node_id)
+
         self._set_task_status(dispatch_id, node_id, "RUNNING")
 
         with self._lock:
@@ -466,7 +470,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             if self.shared:
                 executor_cache.id_instance_map[self.instance_id] = self
 
-        self._state["running_tasks"] = {}
+        self._state["tasks"] = {}
         self._state["resource_metadata"] = {}
 
     def _set_resource_metadata(self, metadata):
@@ -479,26 +483,27 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         self._tasks_left -= 1
 
     def _increment_task_count(self):
+
         self._tasks_left += 1
 
     def _initialize_task_data(self, dispatch_id: str, node_id: int):
-        if dispatch_id not in self._state["running_tasks"]:
-            self._state["running_tasks"][dispatch_id] = {}
+        if dispatch_id not in self._state["tasks"]:
+            self._state["tasks"][dispatch_id] = {}
 
-        self._state["running_tasks"][dispatch_id][node_id] = {"_status": "NEW"}
+        self._state["tasks"][dispatch_id][node_id] = {"_status": "NEW"}
 
     def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
-        self._state["running_tasks"][dispatch_id][node_id][key] = val
+        self._state["tasks"][dispatch_id][node_id][key] = val
 
     def set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
         if key == "_status":
             raise KeyError("_status is reserved")
 
-        self._state["running_tasks"][dispatch_id][node_id][key] = val
+        self._state["tasks"][dispatch_id][node_id][key] = val
 
     def get_task_data(self, dispatch_id: str, node_id: int, key: str):
 
-        return self._state["running_tasks"][dispatch_id][node_id][key]
+        return self._state["tasks"][dispatch_id][node_id][key]
 
     def _set_task_status(self, dispatch_id: str, node_id: int, status: str):
         self._set_task_data(dispatch_id, node_id, "_status", status)
@@ -506,8 +511,8 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     def _get_task_status(self, dispatch_id: str, node_id: int):
         return self.get_task_data(dispatch_id, node_id, "_status")
 
-    def _get_running_tasks(self):
-        return self._state["running_tasks"]
+    def _get_registered_tasks(self):
+        return self._state["tasks"]
 
     async def write_streams_to_file(
         self,
@@ -542,6 +547,9 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
                 async with aiofiles.open(filepath, "a") as f:
                     await f.write(ss)
+
+    async def cancel(self, dispatch_id: str, node_id: int):
+        pass
 
     async def setup(self, task_metadata: Dict = {}):
         pass
@@ -583,9 +591,9 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = await self.run(function, args, kwargs, task_metadata)
 
-            self._decrement_task_count()
-
             self._set_task_status(dispatch_id, node_id, "COMPLETED")
+
+            self._decrement_task_count()
 
             if self._tasks_left < 1:
                 resource_metadata = self._get_resource_metadata()
