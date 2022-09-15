@@ -36,9 +36,11 @@ jobs:
       COVALENT_SERVER_IFACE_ANY: true
     steps:
       - name: Check out head
+        if: github.event_name == 'workflow_call'
         uses: actions/checkout@v3
         with:
           persist-credentials: false
+          ref: fix_benchmark_workflow
 
       - name: Check out SHA
         if: github.event_name == 'workflow_dispatch'

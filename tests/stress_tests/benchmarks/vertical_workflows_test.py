@@ -24,7 +24,7 @@ def test_benchmark_fully_vertical_add_workflow(benchmark, iteration):
     result, status = run_benchmark(iteration, vertical_add_workflow, *[50])
     logger.debug(result.dict())
 
-    assert status == "COMPLETED"
+    assert status == Status("COMPLETED")
 
 
 @pytest.mark.parametrize("iteration", range(5))
