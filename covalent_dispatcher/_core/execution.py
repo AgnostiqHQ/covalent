@@ -269,6 +269,7 @@ async def _get_executor_instance(
         # Cache miss: construct a new executor instance
 
         if not executor:
+            app_log.debug(f"Cache miss for executor id {executor_id}")
             executor = _executor_manager.get_executor(short_name)
             executor.from_dict(object_dict)
 

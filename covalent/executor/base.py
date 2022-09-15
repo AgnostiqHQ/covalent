@@ -254,7 +254,7 @@ class BaseExecutor(_AbstractBaseExecutor):
             if dispatch_id not in self._state["running_tasks"]:
                 self._state["running_tasks"][dispatch_id] = {}
 
-            self._state["running_tasks"][dispatch_id][node_id] = {}
+            self._state["running_tasks"][dispatch_id][node_id] = {"_status": "NEW"}
 
     def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
         with self._lock:
@@ -271,6 +271,12 @@ class BaseExecutor(_AbstractBaseExecutor):
             data = self._state["running_tasks"][dispatch_id][node_id][key]
 
         return data
+
+    def _set_task_status(self, dispatch_id: str, node_id: int, status: str):
+        self._set_task_data(dispatch_id, node_id, "_status", status)
+
+    def _get_task_status(self, dispatch_id: str, node_id: int):
+        return self.get_task_data(dispatch_id, node_id, "_status")
 
     def _get_running_tasks(self):
         return self._state["running_tasks"]
@@ -351,7 +357,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         }
 
         self._initialize_task_data(dispatch_id, node_id)
-        self._set_task_data(dispatch_id, node_id, "_status", "RUNNING")
+        self._set_task_status(dispatch_id, node_id, "RUNNING")
 
         with self._lock:
             if not self._warmed_up:
@@ -370,7 +376,7 @@ class BaseExecutor(_AbstractBaseExecutor):
 
             self._decrement_task_count()
 
-            self._set_task_data(dispatch_id, node_id, "_status", "COMPLETED")
+            self._set_task_status(dispatch_id, node_id, "COMPLETED")
 
             if self._tasks_left < 1:
                 resource_metadata = self._get_resource_metadata()
@@ -380,7 +386,7 @@ class BaseExecutor(_AbstractBaseExecutor):
             # Don't forget to cleanup even if run() raises an exception
             self._decrement_task_count()
 
-            self._set_task_data(dispatch_id, node_id, "_status", "FAILED")
+            self._set_task_status(dispatch_id, node_id, "FAILED")
 
             if self._tasks_left < 1:
                 resource_metadata = self._get_resource_metadata()
@@ -479,7 +485,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         if dispatch_id not in self._state["running_tasks"]:
             self._state["running_tasks"][dispatch_id] = {}
 
-        self._state["running_tasks"][dispatch_id][node_id] = {}
+        self._state["running_tasks"][dispatch_id][node_id] = {"_status": "NEW"}
 
     def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
         self._state["running_tasks"][dispatch_id][node_id][key] = val
@@ -493,6 +499,12 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     def get_task_data(self, dispatch_id: str, node_id: int, key: str):
 
         return self._state["running_tasks"][dispatch_id][node_id][key]
+
+    def _set_task_status(self, dispatch_id: str, node_id: int, status: str):
+        self._set_task_data(dispatch_id, node_id, "_status", status)
+
+    def _get_task_status(self, dispatch_id: str, node_id: int):
+        return self.get_task_data(dispatch_id, node_id, "_status")
 
     def _get_running_tasks(self):
         return self._state["running_tasks"]
@@ -557,7 +569,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
         self._initialize_task_data(dispatch_id, node_id)
-        self._set_task_data(dispatch_id, node_id, "_status", "RUNNING")
+        self._set_task_status(dispatch_id, node_id, "RUNNING")
 
         async with self._lock:
             if not self._warmed_up:
@@ -573,7 +585,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
             self._decrement_task_count()
 
-            self._set_task_data(dispatch_id, node_id, "_status", "COMPLETED")
+            self._set_task_status(dispatch_id, node_id, "COMPLETED")
 
             if self._tasks_left < 1:
                 resource_metadata = self._get_resource_metadata()
@@ -584,7 +596,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
             self._decrement_task_count()
 
-            self._set_task_data(dispatch_id, node_id, "_status", "FAILED")
+            self._set_task_status(dispatch_id, node_id, "FAILED")
 
             if self._tasks_left < 1:
                 resource_metadata = self._get_resource_metadata()

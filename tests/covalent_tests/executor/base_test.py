@@ -688,7 +688,7 @@ def test_executor_initialize_task_data():
     me = MockExecutor(log_stdout="/tmp/stdout.log")
     me._initialize_runtime()
     me._initialize_task_data("asdf", 1)
-    assert me._state["running_tasks"]["asdf"][1] == {}
+    assert me._state["running_tasks"]["asdf"][1] == {"_status": "NEW"}
 
 
 def test_executor_get_set_task_data():
@@ -721,7 +721,7 @@ async def test_async_executor_initialize_task_data():
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
     me._initialize_runtime()
     me._initialize_task_data("asdf", 1)
-    assert me._state["running_tasks"]["asdf"][1] == {}
+    assert me._state["running_tasks"]["asdf"][1] == {"_status": "NEW"}
 
 
 @pytest.mark.asyncio
@@ -748,3 +748,17 @@ async def test_async_executor_set_data_protects_status():
         assert False
     except KeyError:
         pass
+
+
+def test_executor_get_task_status():
+    me = MockExecutor(log_stdout="/tmp/stdout.log")
+    me._initialize_runtime()
+    me._initialize_task_data("asdf", 1)
+    me._set_task_status("asdf", 1, "CANCELLED")
+    assert me._get_task_status("asdf", 1) == "CANCELLED"
+
+    me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
+    me._initialize_runtime()
+    me._initialize_task_data("asdf", 1)
+    me._set_task_status("asdf", 1, "CANCELLED")
+    assert me._get_task_status("asdf", 1) == "CANCELLED"

@@ -644,6 +644,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
         assert False
 
     result_object.lattice.set_metadata("workflow_executor", "bogus")
+
     result_object = await run_workflow(result_object)
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
