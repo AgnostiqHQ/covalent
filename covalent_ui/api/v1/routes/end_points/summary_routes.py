@@ -29,12 +29,14 @@ from sqlalchemy.orm import Session
 import covalent_ui.api.v1.database.config.db as db
 from covalent_ui.api.v1.data_layer.summary_dal import Summary
 from covalent_ui.api.v1.models.dispatch_model import (
+    DeleteAllDispatchesRequest,
     DeleteDispatchesRequest,
     DeleteDispatchesResponse,
     DispatchDashBoardResponse,
     SortBy,
     SortDirection,
 )
+from covalent_ui.api.v1.utils.status import Status
 
 routes: APIRouter = APIRouter()
 
@@ -46,6 +48,7 @@ def get_all_dispatches(
     sort_by: Optional[SortBy] = SortBy.RUNTIME,
     search: Optional[str] = "",
     sort_direction: Optional[SortDirection] = SortDirection.DESCENDING,
+    status_filter: Optional[Status] = Status.ALL,
 ):
     """Get All Dispatches
 
@@ -57,7 +60,7 @@ def get_all_dispatches(
     """
     with Session(db.engine) as session:
         summary = Summary(session)
-        return summary.get_summary(count, offset, sort_by, search, sort_direction)
+        return summary.get_summary(count, offset, sort_by, search, sort_direction, status_filter)
 
 
 @routes.get("/overview", response_model=DispatchDashBoardResponse)
@@ -76,7 +79,7 @@ def get_dashboard_details():
 
 
 @routes.post("/delete", response_model=DeleteDispatchesResponse)
-def delete_dispatches(req: DeleteDispatchesRequest):
+def delete_dispatches(req: Optional[DeleteDispatchesRequest]):
     """Delete one or more Dispatches
 
     Args:
@@ -90,3 +93,20 @@ def delete_dispatches(req: DeleteDispatchesRequest):
     with Session(db.engine) as session:
         summary = Summary(session)
         return summary.delete_dispatches(req)
+
+
+@routes.post("/delete-all", response_model=DeleteDispatchesResponse)
+def delete_all_dispatches(req: Optional[DeleteAllDispatchesRequest]):
+    """Delete one or more Dispatches
+
+    Args:
+        req: Dispatch Dispatch Request
+
+    Returns:
+        List of deleted dispatches if success
+        List of deleted dispatches if fails
+    """
+
+    with Session(db.engine) as session:
+        summary = Summary(session)
+        return summary.delete_all_dispatches(req)

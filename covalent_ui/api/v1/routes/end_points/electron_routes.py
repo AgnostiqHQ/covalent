@@ -73,6 +73,7 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
             started_at=result["started_at"],
             ended_at=result["completed_at"],
             runtime=result["runtime"],
+            description="",
         )
 
 

@@ -22,6 +22,7 @@
 Class that defines the base executor template.
 """
 
+import copy
 import io
 import os
 from abc import ABC, abstractmethod
@@ -167,7 +168,7 @@ class _AbstractBaseExecutor(ABC):
         Instance attributes will be overwritten.
         """
         if object_dict:
-            self.__dict__ = object_dict["attributes"]
+            self.__dict__ = copy.deepcopy(object_dict["attributes"])
         return self
 
 
