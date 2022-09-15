@@ -25,10 +25,6 @@ on:
     types: [created]
   workflow_dispatch:
     inputs:
-      release_candidate:
-        description: "Create a release candidate if true, otherwise a post-release"
-        type: boolean
-        default: true
       stable_version:
         description: "Stable version number, e.g. 0.110.2"
         type: string
@@ -126,23 +122,14 @@ jobs:
       - name: Ensure release is a terminal commit
         run: |
           latest_tag=$(git describe)
+          terminal_commit=1
           IFS='-' read -ra describe_tag <<< "$latest_tag"
           if [[ ${#describe_tag[1]} -gt 0 ]] ; then
-            id=${describe_tag[1]}
-            if [[ ${{ inputs.release_candidate }} ]] ; then
-              id=${id#rc}
-              version="${describe_tag[0]}-rc.$(($id+1))"
-            else
-              version="${describe_tag[0]}-$(($id+1))"
-            fi
+            version="${describe_tag[0]}-$((${describe_tag[1]}+1))"
           else
-            if [[ ${{ inputs.release_candidate }} ]] ; then
-              echo "Invalid release candidate. Version should take the form X.Y.Z-rc.A"
-              exit 3
-            fi
             version="${describe_tag[0]}-1"
           fi
-          if [[ ! $(git tag -l "$version") ]] ; then
+          if [[ $(git tag -l "$version") ]] ; then
             echo "Cannot create a hotfix using this stable version. $version already exists."
             exit 1
           fi
@@ -156,20 +143,17 @@ jobs:
               exit 2
             fi
           done
-      - name: Apply commits to release branch
+      - name: Apply commits to hotfix branch
         run: |
-          latest_tag=$(git describe)
-          IFS='-' read -ra describe_tag <<< "$latest_tag"
-          branch="release-${describe_tag[0]}"
           git config user.name "CovalentOpsBot"
           git config user.email "covalentopsbot@users.noreply.github.com"
-          git checkout $branch
+          git checkout -b "hotfix-$VERSION"
           IFS=',' read -ra commit_shas <<< "${{ github.event.inputs.commit_shas }}"
           git cherry-pick -X ours ${commit_shas[@]}
           git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
-          git push origin $branch
+          git push -u origin "hotfix-$VERSION"
       - name: Increment version
-        run: echo ${${{ env.VERSION }}:1} > ./VERSION
+        run: echo ${VERSION:1} > ./VERSION
       - name: Commit
         uses: EndBug/add-and-commit@v9
         with:
@@ -184,5 +168,5 @@ jobs:
         with:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
-          message: "Applying version ${{ env.VERSION }}"
-#          push: "--force"
+          message: "Applying hotfix ${{ env.VERSION }}"
+          push: "--force"
