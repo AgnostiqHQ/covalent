@@ -250,33 +250,22 @@ class BaseExecutor(_AbstractBaseExecutor):
             self._tasks_left += 1
 
     def _initialize_task_data(self, dispatch_id: str, node_id: int):
-        with self._lock:
-            if dispatch_id not in self._state["tasks"]:
-                self._state["tasks"][dispatch_id] = {}
+        if dispatch_id not in self._state["tasks"]:
+            self._state["tasks"][dispatch_id] = {}
 
-            self._state["tasks"][dispatch_id][node_id] = {"_status": "NEW"}
+        self._state["tasks"][dispatch_id][node_id] = {"_status": "NEW"}
 
     def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
-        with self._lock:
-            self._state["tasks"][dispatch_id][node_id][key] = val
+        self._state["tasks"][dispatch_id][node_id][key] = val
 
-    def set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
-        if key == "_status":
-            raise KeyError("_status is reserved")
-        with self._lock:
-            self._state["tasks"][dispatch_id][node_id][key] = val
-
-    def get_task_data(self, dispatch_id: str, node_id: int, key: str):
-        with self._lock:
-            data = self._state["tasks"][dispatch_id][node_id][key]
-
-        return data
+    def _get_task_data(self, dispatch_id: str, node_id: int, key: str):
+        return self._state["tasks"][dispatch_id][node_id][key]
 
     def _set_task_status(self, dispatch_id: str, node_id: int, status: str):
         self._set_task_data(dispatch_id, node_id, "_status", status)
 
     def _get_task_status(self, dispatch_id: str, node_id: int):
-        return self.get_task_data(dispatch_id, node_id, "_status")
+        return self._get_task_data(dispatch_id, node_id, "_status")
 
     def _get_registered_tasks(self):
         return self._state["tasks"]
@@ -362,11 +351,10 @@ class BaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        self._initialize_task_data(dispatch_id, node_id)
-
-        self._set_task_status(dispatch_id, node_id, "RUNNING")
-
         with self._lock:
+            self._initialize_task_data(dispatch_id, node_id)
+            self._set_task_status(dispatch_id, node_id, "RUNNING")
+
             if not self._warmed_up:
                 resource_metadata = self.setup(task_metadata=task_metadata)
                 self._set_resource_metadata(resource_metadata)
@@ -381,9 +369,11 @@ class BaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = self.run(function, args, kwargs, task_metadata)
 
-            self._set_task_status(dispatch_id, node_id, "COMPLETED")
+            with self._lock:
+                self._set_task_status(dispatch_id, node_id, "COMPLETED")
         except Exception as ex:
-            self._set_task_status(dispatch_id, node_id, "FAILED")
+            with self._lock:
+                self._set_task_status(dispatch_id, node_id, "FAILED")
             raise ex
         finally:
             self._decrement_task_count()
@@ -488,21 +478,14 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
         self._state["tasks"][dispatch_id][node_id][key] = val
 
-    def set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
-        if key == "_status":
-            raise KeyError("_status is reserved")
-
-        self._state["tasks"][dispatch_id][node_id][key] = val
-
-    def get_task_data(self, dispatch_id: str, node_id: int, key: str):
-
+    def _get_task_data(self, dispatch_id: str, node_id: int, key: str):
         return self._state["tasks"][dispatch_id][node_id][key]
 
     def _set_task_status(self, dispatch_id: str, node_id: int, status: str):
         self._set_task_data(dispatch_id, node_id, "_status", status)
 
     def _get_task_status(self, dispatch_id: str, node_id: int):
-        return self.get_task_data(dispatch_id, node_id, "_status")
+        return self._get_task_data(dispatch_id, node_id, "_status")
 
     def _get_registered_tasks(self):
         return self._state["tasks"]
