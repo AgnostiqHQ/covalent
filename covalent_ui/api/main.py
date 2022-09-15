@@ -25,6 +25,7 @@ import logging
 import os
 import pty
 import select
+import signal
 import struct
 import subprocess
 import termios
@@ -42,6 +43,7 @@ from covalent_ui.api.v1.routes import routes
 
 fdd = None
 child = None
+terminal_subprocess = True
 # Config
 
 WEBHOOK_PATH = "/api/webhook"
@@ -81,7 +83,7 @@ def set_winsize(fd, row, col, xpix=0, ypix=0):
 
 async def read_and_forward_pty_output():
     max_read_bytes = 1024 * 10
-    while True:
+    while terminal_subprocess:
         await sio.sleep(0.01)
         if fdd:
             timeout_sec = 0
@@ -108,13 +110,13 @@ def resize(sid, data):
         set_winsize(fdd, data["rows"], data["cols"])
 
 
-@sio.on("connect")
+@sio.on("start_terminal")
 async def chat_message(*args):
     logging.info("new client connected")
     global child
-    if child:
-        # already started child process, don't start another
-        return
+    # if child:
+    #     # already started child process, don't start another
+    #     return
 
     # create child process attached to a pty we can read from and write to
     (child_pid, fd) = pty.fork()
@@ -129,6 +131,8 @@ async def chat_message(*args):
         fdd = fd
         set_winsize(fdd, 50, 50)
         cmd = ["bash"]
+        global terminal_subprocess
+        terminal_subprocess = True
         sio.start_background_task(read_and_forward_pty_output)
 
 
@@ -158,3 +162,20 @@ async def handle_result_update(result_update: dict):
 async def handle_draw_request(draw_request: dict):
     await sio.emit("draw_request", draw_request)
     return {"ok": True}
+
+
+@app.post("/term")
+async def handle_draw_request(draw_request: dict):
+    global terminal_subprocess
+    terminal_subprocess = not terminal_subprocess
+    sio.start_background_task(read_and_forward_pty_output)
+    return {"ok": True}
+
+
+@sio.on("stop_terminal")
+async def stop_terminal(*args):
+    global terminal_subprocess
+    terminal_subprocess = False
+    os.kill(child, signal.SIGKILL)
+    await sio.sleep(0.01)
+    # sio.start_background_task(read_and_forward_pty_output)
