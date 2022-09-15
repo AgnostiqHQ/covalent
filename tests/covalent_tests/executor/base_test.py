@@ -533,6 +533,70 @@ def test_base_executor_run_exception(mocker):
         assert me._get_task_data(dispatch_id, node_id, "_status") == "FAILED"
 
 
+def test_base_executor_run_cancellation(mocker):
+    """Check base executor's handling of task cancellation"""
+
+    import types
+
+    def f():
+        raise RuntimeError
+
+    class MockCleanup:
+        def __init__(self):
+            self.times_called = 0
+
+        def __call__(self, task_metadata):
+            self.times_called += 1
+
+    me = MockExecutor()
+    me._initialize_runtime()
+
+    me.teardown = MockCleanup()
+
+    function = TransportableObject(f)
+    args = []
+    kwargs = {}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = 1
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    def mock_run(self, function, args, kwargs, task_metadata):
+        self._set_task_status(dispatch_id, node_id, "CANCELLING")
+        return 1
+
+    def mock_cancelled_run(self, function, args, kwargs, task_metadata):
+        self._set_task_status(dispatch_id, node_id, "CANCELLING")
+        raise RuntimeError("Task Cancelled")
+
+    me.run = types.MethodType(mock_run, me)
+
+    me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir="tmp",
+        node_id=node_id,
+    )
+    assert me._get_task_status(dispatch_id, node_id) == "COMPLETED"
+
+    me.run = types.MethodType(mock_cancelled_run, me)
+
+    with pytest.raises(RuntimeError) as ex:
+        me.execute(
+            function=assembled_callable,
+            args=args,
+            kwargs=kwargs,
+            dispatch_id=dispatch_id,
+            results_dir="tmp",
+            node_id=node_id,
+        )
+        assert me._get_task_status(dispatch_id, node_id) == "CANCELLED"
+
+
 @pytest.mark.asyncio
 async def test_async_base_executor_run_exception(mocker):
     """Check async base executor's handling of exceptions in run"""
@@ -579,6 +643,71 @@ async def test_async_base_executor_run_exception(mocker):
         assert async_me._tasks_left == 0
         async_me.teardown.times_called == 1
         assert async_me._get_task_data(dispatch_id, node_id, "_status") == "FAILED"
+
+
+@pytest.mark.asyncio
+async def test_async_executor_run_cancellation(mocker):
+    """Check async executor's handling of task cancellation"""
+
+    import types
+
+    def f():
+        raise RuntimeError
+
+    class MockAsyncCleanup:
+        def __init__(self):
+            self.times_called = 0
+
+        async def __call__(self, task_metadata):
+            self.times_called += 1
+
+    me = MockAsyncExecutor()
+    me._initialize_runtime()
+
+    me.teardown = MockAsyncCleanup()
+
+    function = TransportableObject(f)
+    args = []
+    kwargs = {}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = 1
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    async def mock_run(self, function, args, kwargs, task_metadata):
+        self._set_task_status(dispatch_id, node_id, "CANCELLING")
+        return 1
+
+    async def mock_cancelled_run(self, function, args, kwargs, task_metadata):
+        self._set_task_status(dispatch_id, node_id, "CANCELLING")
+        raise RuntimeError("Task Cancelled")
+
+    me.run = types.MethodType(mock_run, me)
+
+    await me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir="tmp",
+        node_id=node_id,
+    )
+    assert me._get_task_status(dispatch_id, node_id) == "COMPLETED"
+
+    me.run = types.MethodType(mock_cancelled_run, me)
+
+    with pytest.raises(RuntimeError) as ex:
+        await me.execute(
+            function=assembled_callable,
+            args=args,
+            kwargs=kwargs,
+            dispatch_id=dispatch_id,
+            results_dir="tmp",
+            node_id=node_id,
+        )
+        assert me._get_task_status(dispatch_id, node_id) == "CANCELLED"
 
 
 def test_executor_clone_sets_instance_id():
