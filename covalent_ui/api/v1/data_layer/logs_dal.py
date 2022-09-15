@@ -91,19 +91,19 @@ class Logs:
                 else:
                     result_data.append({"log_date": None, "status": "INFO", "message": reg[0]})
 
-            modified_data = sorted(
-                result_data,
-                key=lambda e: (e[sort_by.value] is None, e[sort_by.value]),
-                reverse=reverse_list,
-            )
-
             if search != "":
-                modified_data = [
+                result_data = [
                     x
-                    for x in modified_data
+                    for x in result_data
                     if (search.lower() in x["message"].lower())
                     or (search.lower() in x["status"].lower())
                 ]
+
+            modified_data = sorted(
+                result_data,
+                key=lambda e: (e[sort_by.value] is not None, e[sort_by.value]),
+                reverse=reverse_list,
+            )
 
             modified_data = modified_data[offset:]
             modified_data = modified_data[:count]
