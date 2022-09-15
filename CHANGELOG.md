@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Fixed `asserts` in stress tests
+
+### Operations
+
+- Adding a `dummy` test workflow to debug `benchmarks` on a `workflow_call`
+
 ### Added
 
 - `requirements-client.txt` file added.
