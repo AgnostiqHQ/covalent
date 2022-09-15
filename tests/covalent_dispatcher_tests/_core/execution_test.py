@@ -26,6 +26,7 @@ Tests for the core functionality of the dispatcher.
 import asyncio
 from asyncio import Queue
 from typing import Dict, List
+from unittest.mock import MagicMock
 
 import cloudpickle as pickle
 import pytest
@@ -50,6 +51,7 @@ from covalent_dispatcher._core.execution import (
     _post_process,
     _run_task,
     _update_node_result,
+    generate_node_result,
     run_workflow,
 )
 
@@ -679,6 +681,9 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
 
     from covalent.executor import LocalExecutor
 
+    async def fake_run_workflow(result_object):
+        return result_object
+
     le = LocalExecutor()
     object_dict = copy.deepcopy(le.to_dict())
 
@@ -708,14 +713,26 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
     serialized_callable = ct.TransportableObject(sub_workflow)
     inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}
 
+    result_object._update_node = MagicMock()
+
+    mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
+
     sub_result = await _dispatch_sync_sublattice(
         parent_result_object=result_object,
         parent_electron_id=1,
+        parent_tg_node_id=0,
         inputs=inputs,
         serialized_callable=serialized_callable,
         workflow_executor=[le.short_name(), object_dict],
     )
-    assert sub_result.result == 2
+
+    # Check that sub-result object is attached to the parent tg node
+    node_result = generate_node_result(
+        node_id=0,
+        status=Result.RUNNING,
+        sublattice_result=sub_result,
+    )
+    result_object._update_node.assert_called_once_with(**node_result)
 
     # Check handling of invalid workflow executors
 
@@ -723,6 +740,7 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
         sub_result = await _dispatch_sync_sublattice(
             parent_result_object=result_object,
             parent_electron_id=1,
+            parent_tg_node_id=0,
             inputs=inputs,
             serialized_callable=serialized_callable,
             workflow_executor=["client", {}],
@@ -743,6 +761,7 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
         sub_result = await _dispatch_sync_sublattice(
             parent_result_object=result_object,
             parent_electron_id=1,
+            parent_tg_node_id=0,
             inputs=inputs,
             serialized_callable=serialized_callable,
             workflow_executor=["fake_executor", bad_object_dict],

@@ -192,6 +192,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
 async def _dispatch_sync_sublattice(
     parent_result_object: Result,
     parent_electron_id: int,
+    parent_tg_node_id: int,
     inputs: Dict,
     serialized_callable: Any,
     workflow_executor: Any,
@@ -242,6 +243,15 @@ async def _dispatch_sync_sublattice(
         json_sublattice, parent_result_object, parent_electron_id
     )
     app_log.debug(f"Sublattice dispatch id: {sub_result_object.dispatch_id}")
+
+    # Attach the sublattice result object to the parent tg node
+    node_result = generate_node_result(
+        node_id=parent_tg_node_id,
+        status=Result.RUNNING,
+        sublattice_result=sub_result_object,
+    )
+
+    parent_result_object._update_node(**node_result)
 
     return await run_workflow(sub_result_object)
 
@@ -343,6 +353,7 @@ async def _run_task(
             sublattice_result = await _dispatch_sync_sublattice(
                 parent_result_object=result_object,
                 parent_electron_id=sub_electron_id,
+                parent_tg_node_id=node_id,
                 inputs=inputs,
                 serialized_callable=serialized_callable,
                 workflow_executor=workflow_executor,
