@@ -34,12 +34,12 @@ import theme from './utils/theme'
 import { ReactFlowProvider } from 'react-flow-renderer'
 import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
 import DispatchLayout from './components/dispatch/DispatchLayout'
+import TerminalLayout from './components/terminal/TerminalLayout'
 import NotFound from './components/NotFound'
 import { differenceInSeconds } from 'date-fns'
 const App = () => {
   const dispatch = useDispatch()
   const pathName = useLocation()
-
   useEffect(() => {
     let lastCalledOn = null
     var onUpdate = (update) => {
@@ -89,6 +89,7 @@ const App = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/:dispatchId" element={<DispatchLayout />} />
             <Route path="/preview" element={<LatticePreviewLayout />} />
+            <Route path="/terminal" element={<TerminalLayout />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </ThemeProvider>

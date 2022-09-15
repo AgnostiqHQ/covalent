@@ -33,6 +33,7 @@ import {
 import { ReactComponent as Logo } from '../../assets/covalent-logo.svg'
 import { ReactComponent as DispatchList } from '../../assets/dashboard.svg'
 import { ReactComponent as DispatchPreview } from '../../assets/license.svg'
+import { ReactComponent as UITerminal } from '../../assets/terminal.svg'
 import { useMatch } from 'react-router-dom'
 
 export const navDrawerWidth = 60
@@ -71,6 +72,11 @@ const NavDrawer = () => {
           title="Lattice draw preview"
           path="/preview"
           icon={DispatchPreview}
+        />
+        <LinkButton
+          title="Terminal"
+          path="/terminal"
+          icon={UITerminal}
         />
       </List>
     </Drawer>
