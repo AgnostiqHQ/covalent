@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
-- Adding a `dummy` test workflow to debug `benchmarks` on a `workflow_call`
+- Update check blocks to assert the `workflow_call` event type is replaced with `schedule`
 
 ### Added
 
