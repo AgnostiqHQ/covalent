@@ -378,25 +378,15 @@ class BaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = self.run(function, args, kwargs, task_metadata)
 
-            self._decrement_task_count()
-
             self._set_task_status(dispatch_id, node_id, "COMPLETED")
-
-            if self._tasks_left < 1:
-                resource_metadata = self._get_resource_metadata()
-                self.teardown(resource_metadata)
-
         except Exception as ex:
-            # Don't forget to cleanup even if run() raises an exception
-            self._decrement_task_count()
-
             self._set_task_status(dispatch_id, node_id, "FAILED")
-
+            raise ex
+        finally:
+            self._decrement_task_count()
             if self._tasks_left < 1:
                 resource_metadata = self._get_resource_metadata()
                 self.teardown(resource_metadata)
-
-            raise ex
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
@@ -592,25 +582,14 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
                 result = await self.run(function, args, kwargs, task_metadata)
 
             self._set_task_status(dispatch_id, node_id, "COMPLETED")
-
-            self._decrement_task_count()
-
-            if self._tasks_left < 1:
-                resource_metadata = self._get_resource_metadata()
-                await self.teardown(resource_metadata)
-
         except Exception as ex:
-            # Don't forget to cleanup even if run() raises an exception
-
-            self._decrement_task_count()
-
             self._set_task_status(dispatch_id, node_id, "FAILED")
-
+            raise ex
+        finally:
+            self._decrement_task_count()
             if self._tasks_left < 1:
                 resource_metadata = self._get_resource_metadata()
                 await self.teardown(resource_metadata)
-
-            raise ex
 
         await self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
