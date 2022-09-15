@@ -35,12 +35,8 @@ jobs:
     env:
       COVALENT_SERVER_IFACE_ANY: true
     steps:
-      - name: Debug out
-        run: |
-          echo "Event name is ${{ github.event_name }}"
-
       - name: Check out head
-        if: github.event_name == 'workflow_call'
+        if: github.event_name == 'schedule'
         uses: actions/checkout@v3
         with:
           persist-credentials: false
