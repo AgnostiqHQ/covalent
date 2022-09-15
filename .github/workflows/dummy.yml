@@ -7,4 +7,4 @@ jobs:
   benchmark:
     name: Benchmarks
     uses: AgnostiqHQ/covalent/.github/workflows/benchmark.yml@develop
-    secrets: inherit
+    secrets: inherit # pragma: allowlist secret
