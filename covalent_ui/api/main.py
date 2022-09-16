@@ -25,7 +25,6 @@ import logging
 import os
 import pty
 import select
-import signal
 import struct
 import subprocess
 import termios
@@ -41,11 +40,10 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent_ui.api.v1.routes import routes
 
-fdd = None
-child = None
-terminal_subprocess = True
-# Config
+file_descriptor = None
+child_process_id = None
 
+# Config
 WEBHOOK_PATH = "/api/webhook"
 address = get_config("user_interface.address")
 port = str(get_config("user_interface.dev_port"))
@@ -83,13 +81,13 @@ def set_winsize(fd, row, col, xpix=0, ypix=0):
 
 async def read_and_forward_pty_output():
     max_read_bytes = 1024 * 10
-    while terminal_subprocess:
+    while True:
         await sio.sleep(0.01)
-        if fdd:
+        if file_descriptor:
             timeout_sec = 0
-            (data_ready, _, _) = select.select([fdd], [], [], timeout_sec)
+            (data_ready, _, _) = select.select([file_descriptor], [], [], timeout_sec)
             if data_ready:
-                output = os.read(fdd, max_read_bytes).decode()
+                output = os.read(file_descriptor, max_read_bytes).decode()
                 await sio.emit("pty-output", {"output": output})
 
 
@@ -98,41 +96,31 @@ def pty_input(sid, data):
     """write to the child pty. The pty sees this as if you are typing in a real
     terminal.
     """
-    if fdd:
-        # logging.debug("received input from browser: %s" % data["input"])
-        os.write(fdd, data["input"].encode())
+    if file_descriptor:
+        os.write(file_descriptor, data["input"].encode())
 
 
 @sio.on("resize")
 def resize(sid, data):
-    if fdd:
+    if file_descriptor:
         logging.debug(f"Resizing window to {data['rows']}x{data['cols']}")
-        set_winsize(fdd, data["rows"], data["cols"])
+        set_winsize(file_descriptor, data["rows"], data["cols"])
 
 
 @sio.on("start_terminal")
 async def chat_message(*args):
     logging.info("new client connected")
-    global child
-    # if child:
-    #     # already started child process, don't start another
-    #     return
-
-    # create child process attached to a pty we can read from and write to
+    global child_process_id
+    if child_process_id:
+        return
     (child_pid, fd) = pty.fork()
     if child_pid == 0:
-        # this is the child process fork.
-        # anything printed here will show up in the pty, including the output
-        # of this subprocess
         subprocess.run(["bash"])
     else:
-        child = child_pid
-        global fdd
-        fdd = fd
-        set_winsize(fdd, 50, 50)
-        cmd = ["bash"]
-        global terminal_subprocess
-        terminal_subprocess = True
+        child_process_id = child_pid
+        global file_descriptor
+        file_descriptor = fd
+        set_winsize(file_descriptor, 50, 50)
         sio.start_background_task(read_and_forward_pty_output)
 
 
@@ -162,20 +150,3 @@ async def handle_result_update(result_update: dict):
 async def handle_draw_request(draw_request: dict):
     await sio.emit("draw_request", draw_request)
     return {"ok": True}
-
-
-@app.post("/term")
-async def handle_draw_request(draw_request: dict):
-    global terminal_subprocess
-    terminal_subprocess = not terminal_subprocess
-    sio.start_background_task(read_and_forward_pty_output)
-    return {"ok": True}
-
-
-@sio.on("stop_terminal")
-async def stop_terminal(*args):
-    global terminal_subprocess
-    terminal_subprocess = False
-    os.kill(child, signal.SIGKILL)
-    await sio.sleep(0.01)
-    # sio.start_background_task(read_and_forward_pty_output)
