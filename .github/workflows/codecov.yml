@@ -25,9 +25,11 @@ on:
 
 jobs:
   patch:
+    runs-on: ubuntu-latest
     steps:
       - run: echo "No report needed."
 
   project:
+    runs-on: ubuntu-latest
     steps:
       - run: echo "No report needed."
