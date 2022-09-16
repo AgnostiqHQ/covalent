@@ -27,8 +27,8 @@ on:
     branches:
       - develop
     paths-ignore:
-      - "CHANGELOG.md"
-      - "VERSION"
+      - 'CHANGELOG.md'
+      - 'VERSION'
   workflow_dispatch:
     inputs:
       commit_sha:
