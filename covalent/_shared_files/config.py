@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import fcntl
+import copy
 import os
 import shutil
 from dataclasses import asdict
@@ -68,7 +69,7 @@ class ConfigManager:
             None
         """
 
-        self.config_data = config_dict  # asdict(DefaultConfig())
+        self.config_data = copy.deepcopy(config_dict)  # asdict(DefaultConfig())
 
     def update_config(
         self, new_entries: Optional[Dict] = None, override_existing: bool = True
