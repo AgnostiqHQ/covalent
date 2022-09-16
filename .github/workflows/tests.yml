@@ -136,7 +136,8 @@ jobs:
             || [ ${{ steps.modified-files.outputs.functional_tests }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.build }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.actions }} = 'true' ] ; then
-            BUILD_AND_RUN_ALL=false
+            #BUILD_AND_RUN_ALL=true
+            echo "PASSING"
           fi
           echo "RECOMMENDED_PLATFORM=$RECOMMENDED_PLATFORM" >> $GITHUB_ENV
           echo "NEED_PYTHON=$NEED_PYTHON" >> $GITHUB_ENV
