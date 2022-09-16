@@ -25,7 +25,9 @@ on:
 
 jobs:
   patch:
-    run: echo "No report needed."
+    steps:
+      - run: echo "No report needed."
 
   project:
-    run: echo "No report needed."
+    steps:
+      - run: echo "No report needed."
