@@ -23,6 +23,12 @@ name: tests
 on:
   pull_request:
   workflow_call:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'VERSION'
   workflow_dispatch:
     inputs:
       commit_sha:

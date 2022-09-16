@@ -75,6 +75,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
+      "push",
       "pull_request",
       "workflow_call",
       "workflow_dispatch"

@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated triggers to `tests` and `changelog` workflows
 - Enhanced pre-release workflows
 - `codecov` passthrough workflow added for when tests are not run
+- Tests are run on one platform on pushes to `develop` to keep codecov reports accurate
 
 ## [0.198.0] - 2022-09-14
 
