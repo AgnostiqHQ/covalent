@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Installation requirements are now split into client side and server side requirements' files.
 - `setup.py` modified to install client side requirements only, if `COVALENT_SDK_ONLY` environment variable is present and `True`.
+- Updated `requirements.txt` and `tests/requirements.txt`
+- Updated `nbconvert` by dependabot
 
 ### Docs
 
@@ -29,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updating all references to local workflows
 - Adding `nightly.yml` workflow for nightly CI
 - Updated triggers to `tests` and `changelog` workflows
+- Enhanced pre-release workflows
 
 ## [0.198.0] - 2022-09-14
 
