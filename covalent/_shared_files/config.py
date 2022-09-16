@@ -22,6 +22,7 @@ import fcntl
 import os
 import shutil
 from dataclasses import asdict
+from enum import Enum
 from functools import reduce
 from operator import getitem
 from pathlib import Path
@@ -32,6 +33,11 @@ import toml
 """Configuration manager."""
 
 
+class CMType(Enum):
+    CLIENT = 1
+    SERVER = 2
+
+
 class ConfigManager:
     """
     Configuration manager class object.
@@ -39,34 +45,19 @@ class ConfigManager:
     This class is used to manage an in-memory copy of a TOML configuration file.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, config_dict, config_file) -> None:
 
-        from .defaults import DefaultConfig
+        self.config_file = config_file
 
-        DEFAULT_CONFIG = asdict(DefaultConfig())
-
-        self.config_file = DEFAULT_CONFIG["sdk"]["config_file"]
-
-        self.generate_default_config()
-
-        try:
-            with open(self.config_file, "r") as f:
-                pass
-
+        self.generate_default_config(config_dict)
+        if os.path.exists(self.config_file):
+            # Update config with user configuration file:
             self.update_config()
-        except FileNotFoundError:
+        else:
             Path(self.config_file).parent.mkdir(parents=True, exist_ok=True)
             self.write_config()
 
-        Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.db_path")).parent.mkdir(parents=True, exist_ok=True)
-
-    def generate_default_config(self) -> None:
+    def generate_default_config(self, config_dict) -> None:
         """
         Load the default configuration into memory.
 
@@ -77,9 +68,7 @@ class ConfigManager:
             None
         """
 
-        from .defaults import DefaultConfig
-
-        self.config_data = asdict(DefaultConfig())
+        self.config_data = config_dict  # asdict(DefaultConfig())
 
     def update_config(
         self, new_entries: Optional[Dict] = None, override_existing: bool = True
@@ -204,7 +193,37 @@ class ConfigManager:
             data[keys[-1]] = value
 
 
-def set_config(new_config: Union[Dict, str], new_value: Any = None) -> None:
+class ClientConfigManager(ConfigManager):
+    def __init__(self):
+        from .defaults import DefaultClientConfig, get_default_config_path
+
+        DEFAULT_CONFIG = asdict(DefaultClientConfig())
+
+        super().__init__(DEFAULT_CONFIG, get_default_config_path(CMType.CLIENT))
+
+        Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
+        Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
+
+
+class ServerConfigManager(ConfigManager):
+    def __init__(self):
+        from .defaults import DefaultServerConfig, get_default_config_path
+
+        DEFAULT_CONFIG = asdict(DefaultServerConfig())
+
+        super().__init__(DEFAULT_CONFIG, get_default_config_path(CMType.SERVER))
+
+        Path(self.get("service.cache_dir")).mkdir(parents=True, exist_ok=True)
+        Path(self.get("service.results_dir")).mkdir(parents=True, exist_ok=True)
+        Path(self.get("service.log_dir")).mkdir(parents=True, exist_ok=True)
+        Path(self.get("service.db_path")).parent.mkdir(parents=True, exist_ok=True)
+
+
+def get_default_config_manager(type: CMType):
+    return ClientConfigManager() if type == CMType.CLIENT else ServerConfigManager()
+
+
+def set_config(type: CMType, new_config: Union[Dict, str], new_value: Any = None) -> None:
     """
     Update the configuration.
 
@@ -218,7 +237,7 @@ def set_config(new_config: Union[Dict, str], new_value: Any = None) -> None:
     Returns:
         None
     """
-    cm = ConfigManager()
+    cm = get_default_config_manager(type)
 
     if isinstance(new_config, str):
         cm.set(new_config, new_value)
@@ -228,7 +247,7 @@ def set_config(new_config: Union[Dict, str], new_value: Any = None) -> None:
     cm.write_config()
 
 
-def get_config(entries: Union[str, List] = None) -> Union[Dict, Union[str, int]]:
+def get_config(type: CMType, entries: Union[str, List] = None) -> Union[Dict, Union[str, int]]:
     """
     Return a configuration setting.
 
@@ -245,7 +264,7 @@ def get_config(entries: Union[str, List] = None) -> Union[Dict, Union[str, int]]
     """
 
     entries = entries or []
-    cm = ConfigManager()
+    cm = get_default_config_manager(type)
 
     if isinstance(entries, List) and len(entries) == 0:
         # If no arguments are passed, return the full configuration as a dict
@@ -262,7 +281,7 @@ def get_config(entries: Union[str, List] = None) -> Union[Dict, Union[str, int]]
         return dict(zip(entries, values))
 
 
-def reload_config() -> None:
+def reload_config(type: CMType) -> None:
     """
     Reload the configuration from the TOML file.
 
@@ -272,11 +291,13 @@ def reload_config() -> None:
     Returns:
         None
     """
-    cm = ConfigManager()
+    cm = get_default_config_manager(type)
     cm.read_config()
 
 
-def update_config(new_entries: Optional[Dict] = None, override_existing: bool = True) -> None:
+def update_config(
+    type: CMType, new_entries: Optional[Dict] = None, override_existing: bool = True
+) -> None:
     """
     Read the configuration from the TOML file and append to default
         (or existing) configuration. Optionally, update configuration
@@ -290,5 +311,5 @@ def update_config(new_entries: Optional[Dict] = None, override_existing: bool = 
     Returns:
         None
     """
-    cm = ConfigManager()
+    cm = get_default_config_manager(type)
     cm.update_config(new_entries, override_existing)

@@ -18,15 +18,25 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import os
 import tempfile
 from dataclasses import asdict
 
 import pytest
 
-from covalent._shared_files.config import ConfigManager, get_config, reload_config, set_config
-from covalent._shared_files.defaults import DefaultConfig
+from covalent._shared_files.config import (
+    ClientConfigManager,
+    ConfigManager,
+    ServerConfigManager,
+    get_config,
+    reload_config,
+    set_config,
+)
+from covalent._shared_files.defaults import DefaultClientConfig, DefaultServerConfig
 
-DEFAULT_CONFIG = asdict(DefaultConfig())
+DEFAULT_CONFIG = {}
+DEFAULT_CLIENT_CONFIG = asdict(DefaultClientConfig())
+DEFAULT_SERVER_CONFIG = asdict(DefaultServerConfig())
 
 
 @pytest.mark.parametrize(
@@ -37,12 +47,31 @@ DEFAULT_CONFIG = asdict(DefaultConfig())
         ("HOME", ".config/covalent/covalent.conf"),
     ],
 )
-def test_config_manager_init_directory_setting(monkeypatch, dir_env, conf_dir):
+def test_client_config_manager_init_directory_setting(monkeypatch, dir_env, conf_dir):
     """Test the init method for the config manager."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         monkeypatch.setenv(dir_env, tmp_dir)
-        cm = ConfigManager()
+        print(os.environ.get("XDG_CONFIG_DIR"))
+        cm = ClientConfigManager()
+        print(dir_env, conf_dir, f"{tmp_dir}/{conf_dir}", cm.config_file)
+        assert cm.config_file == f"{tmp_dir}/{conf_dir}"
+
+
+@pytest.mark.parametrize(
+    "dir_env, conf_dir",
+    [
+        ("COVALENT_CONFIG_DIR", "covalent/covalentd.conf"),
+        ("XDG_CONFIG_DIR", "covalent/covalentd.conf"),
+        ("HOME", ".config/covalent/covalentd.conf"),
+    ],
+)
+def test_server_config_manager_init_directory_setting(monkeypatch, dir_env, conf_dir):
+    """Test the init method for the config manager."""
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        monkeypatch.setenv(dir_env, tmp_dir)
+        cm = ServerConfigManager()
         assert cm.config_file == f"{tmp_dir}/{conf_dir}"
 
 

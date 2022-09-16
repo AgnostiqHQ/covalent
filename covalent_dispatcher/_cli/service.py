@@ -37,13 +37,21 @@ from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
 from covalent._data_store.datastore import DataStore
-from covalent._shared_files.config import ConfigManager, get_config, set_config
+from covalent._shared_files.config import (
+    ClientConfigManager,
+    CMType,
+    ServerConfigManager,
+    get_config,
+    set_config,
+)
 from covalent.utils.migrate import migrate_pickled_result_object
 
-cm = ConfigManager()
+# cm = ConfigManager()
+ccm = ClientConfigManager()
+scm = ServerConfigManager()
 
-UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
-UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
+UI_PIDFILE = get_config(CMType.SERVER, "service.cache_dir") + "/ui.pid"
+UI_LOGFILE = get_config(CMType.SERVER, "service.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = f"{os.path.dirname(os.path.abspath(__file__))}/../../covalent_ui"
 
 MIGRATION_WARNING_MSG = "There have been changes applied to the database."
@@ -168,7 +176,7 @@ def _graceful_start(
     """
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
-        port = get_config("user_interface.port")
+        port = get_config(CMType.SERVER, "service.port")
         click.echo(f"Covalent server is already running at http://localhost:{port}.")
         return port
 
@@ -239,7 +247,7 @@ def _graceful_shutdown(pidfile: str) -> None:
 @click.option(
     "-p",
     "--port",
-    default=get_config("user_interface.port"),
+    default=get_config(CMType.SERVER, "service.port"),
     show_default=True,
     help="Server port number.",
 )
@@ -301,7 +309,7 @@ def start(
     Start the Covalent server.
     """
     if develop:
-        set_config({"sdk.log_level": "debug"})
+        set_config(CMType.CLIENT, {"sdk.log_level": "debug"})
 
     db = DataStore.factory()
     if db.is_migration_pending and not ignore_migrations:
@@ -309,24 +317,22 @@ def start(
         click.echo(MIGRATION_COMMAND_MSG)
         return ctx.exit(1)
 
-    set_config("user_interface.port", port)
-    set_config("dispatcher.port", port)
+    set_config(CMType.SERVER, "service.port", port)
 
     if not no_cluster:
         if mem_per_worker:
-            set_config("dask.mem_per_worker", mem_per_worker)
+            set_config(CMType.SERVER, "dask.mem_per_worker", mem_per_worker)
         if threads_per_worker:
-            set_config("dask.threads_per_worker", threads_per_worker)
+            set_config(CMType.SERVER, "dask.threads_per_worker", threads_per_worker)
         if workers:
-            set_config("dask.num_workers", workers)
+            set_config(CMType.SERVER, "dask.num_workers", workers)
 
-        set_config("sdk.no_cluster", "false")
+        set_config(CMType.CLIENT, "sdk.no_cluster", "false")
     else:
-        set_config("sdk.no_cluster", "true")
+        set_config(CMType.CLIENT, "sdk.no_cluster", "true")
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
-    set_config("user_interface.port", port)
-    set_config("dispatcher.port", port)
+    set_config(CMType.SERVER, "service.port", port)
 
     # Wait until the server actually starts listening on the port
     server_listening = False
@@ -363,12 +369,12 @@ def restart(ctx, port: bool, develop: bool) -> None:
     """
 
     configuration = {
-        "port": port or get_config("user_interface.port"),
-        "develop": develop or (get_config("sdk.log_level") == "debug"),
-        "no_cluster": get_config("user_interface.port"),
-        "mem_per_worker": get_config("dask.mem_per_worker"),
-        "threads_per_worker": get_config("dask.threads_per_worker"),
-        "workers": set_config("dask.num_workers"),
+        "port": port or get_config(CMType.SERVER, "service.port"),
+        "develop": develop or (get_config(CMType.CLIENT, "sdk.log_level") == "debug"),
+        "no_cluster": get_config(CMType.SERVER, "service.port"),
+        "mem_per_worker": get_config(CMType.SERVER, "dask.mem_per_worker"),
+        "threads_per_worker": get_config(CMType.SERVER, "dask.threads_per_worker"),
+        "workers": set_config(CMType.SERVER, "dask.num_workers"),
     }
 
     ctx.invoke(stop)
@@ -383,7 +389,7 @@ def status() -> None:
 
     pid = _read_pid(UI_PIDFILE)
     if _read_pid(UI_PIDFILE) != -1 and psutil.pid_exists(pid):
-        ui_port = get_config("user_interface.port")
+        ui_port = get_config(CMType.SERVER, "service.port")
         click.echo(f"Covalent server is running at http://localhost:{ui_port}.")
     else:
         _rm_pid_file(UI_PIDFILE)
@@ -407,11 +413,11 @@ def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
     """
 
     removal_list = {
-        get_config("sdk.log_dir"),
-        get_config("dispatcher.cache_dir"),
-        get_config("dispatcher.log_dir"),
-        get_config("user_interface.log_dir"),
-        os.path.dirname(cm.config_file),
+        get_config(CMType.CLIENT, "sdk.log_dir"),
+        get_config(CMType.SERVER, "service.cache_dir"),
+        get_config(CMType.SERVER, "service.log_dir"),
+        os.path.dirname(ccm.config_file),
+        os.path.dirname(scm.config_file),
     }
 
     if hell_yeah:
@@ -419,7 +425,7 @@ def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
         yes = True
 
     if hard:
-        removal_list.add(get_config("dispatcher.db_path"))
+        removal_list.add(get_config(CMType.SERVER, "service.db_path"))
 
     if not yes:
 
@@ -572,8 +578,8 @@ def cluster(
     # addr of the admin server for the Dask cluster process
     # started with covalent
     loop = asyncio.get_event_loop()
-    admin_host = get_config("dask.admin_host")
-    admin_port = get_config("dask.admin_port")
+    admin_host = get_config(CMType.SERVER, "dask.admin_host")
+    admin_port = get_config(CMType.SERVER, "dask.admin_port")
     admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
 
     if status:
@@ -634,5 +640,7 @@ def cluster(
 @click.command()
 def config() -> None:
     """Print Covalent's configuration to stdout"""
-    cm.read_config()
-    click.echo(json.dumps(cm.config_data, sort_keys=True, indent=4))
+    ccm.read_config()
+    click.echo(json.dumps(ccm.config_data, sort_keys=True, indent=4))
+    scm.read_config()
+    click.echo(json.dumps(scm.config_data, sort_keys=True, indent=4))
