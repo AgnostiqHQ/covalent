@@ -221,22 +221,18 @@ async def _dispatch_sync_sublattice(
 
     # increment the task count b/c this is an "un-planned" task (not
     # visible in the initial transport graph)
-    fut = asyncio.create_task(
-        _run_task(
-            result_object=parent_result_object,
-            node_id=parent_result_object._get_workflow_executor_task_id(),
-            serialized_callable=TransportableObject.make_transportable(_build_sublattice_graph),
-            selected_executor=workflow_executor,
-            node_name="build_sublattice_graph",
-            call_before=[],
-            call_after=[],
-            inputs=sub_dispatch_inputs,
-            workflow_executor=workflow_executor,
-            unplanned_task=True,
-        )
+    res = await _run_task(
+        result_object=parent_result_object,
+        node_id=parent_result_object._get_workflow_executor_task_id(),
+        serialized_callable=TransportableObject.make_transportable(_build_sublattice_graph),
+        selected_executor=workflow_executor,
+        node_name="build_sublattice_graph",
+        call_before=[],
+        call_after=[],
+        inputs=sub_dispatch_inputs,
+        workflow_executor=workflow_executor,
+        unplanned_task=True,
     )
-
-    res = await fut
     json_sublattice = json.loads(res["output"].json)
 
     sub_result_object = initialize_result_object(
