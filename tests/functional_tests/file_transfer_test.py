@@ -20,9 +20,7 @@
 
 """Workflow stack testing of File Transfer operations."""
 
-import os
 from pathlib import Path
-from time import sleep
 from unittest.mock import Mock
 
 import pytest
@@ -30,9 +28,6 @@ import pytest
 import covalent as ct
 import covalent._results_manager.results_manager as rm
 from covalent._file_transfer.enums import Order
-from covalent._file_transfer.strategies.rsync_strategy import Rsync
-from covalent._results_manager.result import Result
-from covalent_dispatcher._core.execution import _dispatch_sublattice
 
 
 @pytest.mark.parametrize(
@@ -146,6 +141,50 @@ def test_local_file_transfer_with_kwargs_multiple(tmp_path: Path):
         (ft2.from_file.filepath, ft2.to_file.filepath),
     ]
 
+    for f in [source_file_1, dest_file_1, source_file_2, dest_file_2]:
+        f.unlink()
+
+
+def test_local_file_transfer_collected_nodes(tmp_path: Path):
+    """
+    Test to check if electron with iterable outputs works with file transfers.
+    """
+    MOCK_CONTENTS = "hello"
+
+    source_file_1 = tmp_path / Path("source.txt")
+    dest_file_1 = tmp_path / Path("dest.txt")
+
+    source_file_2 = tmp_path / Path("source2.txt")
+    dest_file_2 = tmp_path / Path("dest2.txt")
+
+    source_file_1.write_text(MOCK_CONTENTS)
+    source_file_2.write_text(MOCK_CONTENTS)
+
+    ft1 = ct.fs.FileTransfer(str(source_file_1), str(dest_file_1))
+    ft2 = ct.fs.FileTransfer(str(source_file_2), str(dest_file_2))
+
+    @ct.electron(files=[ft1, ft2])
+    def test_transfer(files=[]):
+        _, f_1 = files[0]
+        _, f_2 = files[1]
+        with open(f_1, "r") as f:
+            content_1 = f.readlines()[0]
+        with open(f_2, "r") as f:
+            content_2 = f.readlines()[0]
+        return content_1, content_2
+
+    @ct.lattice
+    def workflow():
+        a, b = test_transfer()
+        return a, b
+
+    dispatch_id = ct.dispatch(workflow)()
+
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+    rm._delete_result(dispatch_id)
+
+    assert len(workflow_result.result) == 2
+    assert workflow_result.result == (MOCK_CONTENTS, MOCK_CONTENTS)
     for f in [source_file_1, dest_file_1, source_file_2, dest_file_2]:
         f.unlink()
 

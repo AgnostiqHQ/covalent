@@ -29,11 +29,9 @@ from typing import Any
 import cloudpickle
 import networkx as nx
 from sqlalchemy import update
-from sqlalchemy.orm import Session
 
-from covalent._data_store.datastore import DataStore, workflow_db
-from covalent._data_store.models import Electron, ElectronDependency, Lattice
-
+from .._data_store.datastore import workflow_db
+from .._data_store.models import Electron, ElectronDependency, Lattice
 from .._shared_files import logger
 from .._shared_files.defaults import (
     arg_prefix,
@@ -78,7 +76,9 @@ def update_lattice_completed_electron_num(dispatch_id: str) -> None:
 
 def insert_lattices_data(
     dispatch_id: str,
+    electron_id: int,
     name: str,
+    docstring_filename: str,
     electron_num: int,
     completed_electron_num: int,
     status: str,
@@ -96,6 +96,13 @@ def insert_lattices_data(
     named_kwargs_filename: str,
     results_filename: str,
     transport_graph_filename: str,
+    deps_filename: str,
+    call_before_filename: str,
+    call_after_filename: str,
+    cova_imports_filename: str,
+    lattice_imports_filename: str,
+    results_dir: str,
+    root_dispatch_id: str,
     created_at: dt,
     updated_at: dt,
     started_at: dt,
@@ -105,7 +112,9 @@ def insert_lattices_data(
 
     lattice_row = Lattice(
         dispatch_id=dispatch_id,
+        electron_id=electron_id,
         name=name,
+        docstring_filename=docstring_filename,
         status=status,
         electron_num=electron_num,
         completed_electron_num=completed_electron_num,
@@ -123,6 +132,13 @@ def insert_lattices_data(
         named_kwargs_filename=named_kwargs_filename,
         results_filename=results_filename,
         transport_graph_filename=transport_graph_filename,
+        deps_filename=deps_filename,
+        call_before_filename=call_before_filename,
+        call_after_filename=call_after_filename,
+        cova_imports_filename=cova_imports_filename,
+        lattice_imports_filename=lattice_imports_filename,
+        results_dir=results_dir,
+        root_dispatch_id=root_dispatch_id,
         is_active=True,
         created_at=created_at,
         updated_at=updated_at,
@@ -275,6 +291,7 @@ def update_lattices_data(dispatch_id: str, **kwargs) -> None:
 def update_electrons_data(
     parent_dispatch_id: str,
     transport_graph_node_id: int,
+    name: str,
     status: str,
     started_at: dt,
     updated_at: dt,
@@ -282,6 +299,7 @@ def update_electrons_data(
 ) -> None:
     """This function updates the electrons record."""
 
+    print("DEBUG: update_electrons_data called on node", transport_graph_node_id)
     with workflow_db.session() as session:
         parent_lattice_id = (
             session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()[0].id
@@ -305,6 +323,7 @@ def update_electrons_data(
                 Electron.transport_graph_node_id == transport_graph_node_id,
             )
             .values(
+                name=name,
                 status=status,
                 started_at=started_at,
                 updated_at=updated_at,
@@ -345,11 +364,7 @@ def get_electron_type(node_name: str) -> str:
         return "function"
 
 
-def write_sublattice_electron_id(
-    parent_dispatch_id: str, sublattice_node_id: int, sublattice_dispatch_id: str
-) -> None:
-    """Function to attach the electron id of a sublattice in the lattice record."""
-
+def get_sublattice_electron_id(parent_dispatch_id: str, sublattice_node_id: int):
     with workflow_db.session() as session:
         sublattice_electron_id = (
             session.query(Lattice, Electron)
@@ -361,12 +376,8 @@ def write_sublattice_electron_id(
             .first()
             .Electron.id
         )
-        session.execute(
-            update(Lattice)
-            .where(Lattice.dispatch_id == sublattice_dispatch_id)
-            .values(electron_id=sublattice_electron_id, updated_at=dt.now(timezone.utc))
-        )
-        session.commit()
+
+    return sublattice_electron_id
 
 
 def write_lattice_error(dispatch_id: str, error: str):

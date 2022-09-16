@@ -76,20 +76,17 @@ class FileHandler:
         self.location = location
 
     def read_from_pickle(self, path):
+        """Return data from pickle file"""
         try:
-            with open(self.location + "/" + path, "rb") as read_file:
-                unpickled_object = pickle.load(read_file)
-                read_file.close()
-
-                return validate_data(unpickled_object)
-        except EOFError:
-            return None
+            unpickled_object = self.__unpickle_file(path)
+            return validate_data(unpickled_object)
         except Exception:
             return None
 
     def read_from_text(self, path):
+        """Return data from text file"""
         try:
-            with open(self.location + "/" + path, "r") as read_file:
+            with open(self.location + "/" + path, "r", encoding="utf-8") as read_file:
                 text_object = read_file.readlines()
                 list_str = ""
                 read_file.close()
@@ -102,4 +99,13 @@ class FileHandler:
         except EOFError:
             return None
         except Exception:
+            return None
+
+    def __unpickle_file(self, path):
+        try:
+            with open(self.location + "/" + path, "rb") as read_file:
+                unpickled_object = pickle.load(read_file)
+                read_file.close()
+                return unpickled_object
+        except EOFError:
             return None

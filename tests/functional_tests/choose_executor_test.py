@@ -20,7 +20,6 @@
 
 """Functional tests for selecting executor"""
 
-import pytest
 
 import covalent as ct
 

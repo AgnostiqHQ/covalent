@@ -55,13 +55,14 @@
 !.secrets.baseline
 !alembic.ini
 !codecov.yml
-!Dockerfile
+!Dockerfile*
 !MANIFEST.in
 !Makefile
 !README.md
 !meta.yaml
 !pyproject.toml
 !requirements.txt
+!requirements-client.txt
 !setup.py
 
 # Allow markdown etc
@@ -72,7 +73,8 @@
 !README.md
 !VERSION
 
-
+# Ignore notebook checkpoints
+**/.ipynb_checkpoints
 
 # Ignore .sonarwork files
 covalent_ui/api/.scannerwork/.sonar_lock

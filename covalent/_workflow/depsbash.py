@@ -23,7 +23,6 @@ from copy import deepcopy
 from typing import List, Union
 
 from .deps import Deps
-from .depscall import DepsCall
 from .transport import TransportableObject
 
 

@@ -21,7 +21,7 @@
 //  */
 
 import { render, screen, fireEvent } from '@testing-library/react'
-import App from '../NodeDrawer'
+import NodeDrawer from '../NodeDrawer'
 import "@testing-library/jest-dom";
 import React from 'react'
 import { Provider } from 'react-redux'
@@ -34,7 +34,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { ReactFlowProvider } from 'react-flow-renderer'
 import { HelmetProvider } from 'react-helmet-async'
 
-function reduxRender(rederedComponent) {
+function reduxRender(renderedComponent) {
   const store = configureStore({
     reducer: reducers,
   })
@@ -43,7 +43,7 @@ function reduxRender(rederedComponent) {
       <HelmetProvider>
         <ReactFlowProvider>
           <ThemeProvider theme={theme}>
-            <BrowserRouter>{rederedComponent}</BrowserRouter>
+            <BrowserRouter>{renderedComponent}</BrowserRouter>
           </ThemeProvider>
         </ReactFlowProvider>
       </HelmetProvider>
@@ -79,8 +79,8 @@ const electronDetail = {
 
 describe('electronNode file Rendered', () => {
 
-  test('renders inoputsrc', async () => {
-    reduxRender(<App node={node} dispatchId={dispatchId} electronId={electronId}
+  test('renders inputsrc', async () => {
+    reduxRender(<NodeDrawer node={node} dispatchId={dispatchId} electronId={electronId}
       electronDetailIsFetching={true} electronDetailStatus={electronDetail.status}
       electronDetail={electronDetail} />)
     const linkElement = screen.getByTestId('nodeDrawer')
@@ -88,14 +88,47 @@ describe('electronNode file Rendered', () => {
   })
 
   test('renders electronNode122', async () => {
-    reduxRender(<App node={node} dispatchId={dispatchId} electronId={electronId} electronDetailIsFetching={false} />)
+    reduxRender(<NodeDrawer node={node} dispatchId={dispatchId} electronId={electronId} electronDetailIsFetching={false} />)
     const linkElement = screen.getByTestId('nodeDrawer')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders electronNode', async () => {
-    reduxRender(<App />)
+    reduxRender(<NodeDrawer />)
     const linkElement = screen.getByTestId('nodeDrawer')
+    expect(linkElement).toBeInTheDocument()
+  })
+
+  test('renders Node drawer for handleclose function', async () => {
+    reduxRender(<NodeDrawer node={node} />)
+    const linkElement = screen.getByTestId('node__dra_close')
+    fireEvent.click(screen.getByTestId('CloseIcon'))
+    expect(linkElement).toBeInTheDocument()
+  })
+
+  test('renders Node drawer for node box function', async () => {
+    const electronInputResult = {}
+    reduxRender(<NodeDrawer electronDetailIsFetching={false} node={node} electronDetail={electronDetail} />)
+    const linkElement = screen.getByTestId('node__box_skl')
+    expect(linkElement).toBeInTheDocument()
+  })
+
+  test('renders Node drawer for checking runtime function', async () => {
+    const electronDetail = {
+      ended_at: "2022-08-09T11:49:26",
+      id: 43,
+      name: "identity",
+      node_id: 14,
+      parent_lattice_id: 2,
+      runtime: 0,
+      started_at: "2022-08-09T11:49:26",
+      status: "RUNNING",
+      storage_path: "/home/prasannavenkatesh/Desktop/workflows/results/edcd9b3e-6d52-44ac-baa5-d45614e25699/node_14",
+      type: "function"
+    }
+    const electronInputResult = {}
+    reduxRender(<NodeDrawer electronDetailIsFetching={false} node={node} electronDetail={electronDetail} />)
+    const linkElement = screen.getByTestId('node__box_skl')
     expect(linkElement).toBeInTheDocument()
   })
 

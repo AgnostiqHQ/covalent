@@ -20,30 +20,23 @@
 
 """Class corresponding to computation workflow."""
 
-import inspect
 import json
 import os
 import warnings
+from builtins import list
 from contextlib import redirect_stdout
 from copy import deepcopy
+from dataclasses import asdict
 from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
-import networkx as nx
-
-import covalent_ui.result_webhook as result_webhook
-
-from .._data_store import DataStoreSession, models
+from .._data_store import DataStoreSession
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
-from .._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
-from .._shared_files.utils import (
-    get_named_params,
-    get_serialized_function_str,
-    required_params_passed,
-)
+from .._shared_files.defaults import DefaultMetadataValues
+from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
@@ -53,15 +46,11 @@ if TYPE_CHECKING:
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
 
-from .._shared_files.utils import (
-    get_imports,
-    get_serialized_function_str,
-    get_timedelta,
-    required_params_passed,
-)
+from .._shared_files.utils import get_imports, get_serialized_function_str
 
 consumable_constraints = []
 
+DEFAULT_METADATA_VALUES = asdict(DefaultMetadataValues())
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -88,6 +77,7 @@ class Lattice:
         self.transport_graph = transport_graph or _TransportGraph()
         self.metadata = {}
         self.__name__ = self.workflow_function.__name__
+        self.__doc__ = self.workflow_function.__doc__
         self.post_processing = False
         self.args = []
         self.kwargs = {}
@@ -260,6 +250,8 @@ class Lattice:
             None
         """
 
+        import covalent_ui.result_webhook as result_webhook
+
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
 
@@ -318,16 +310,16 @@ def lattice(
     backend: Optional[str] = None,
     executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["executor"],
+    ] = DEFAULT_METADATA_VALUES["executor"],
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     workflow_executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = _DEFAULT_CONSTRAINT_VALUES["workflow_executor"],
+    ] = DEFAULT_METADATA_VALUES["workflow_executor"],
     # Add custom metadata fields here
-    deps_bash: Union[DepsBash, list, str] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("bash", None),
-    deps_pip: Union[DepsPip, list] = _DEFAULT_CONSTRAINT_VALUES["deps"].get("pip", None),
-    call_before: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_before"],
-    call_after: Union[List[DepsCall], DepsCall] = _DEFAULT_CONSTRAINT_VALUES["call_after"],
+    deps_bash: Union[DepsBash, list, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", None),
+    deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None),
+    call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"],
+    call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"],
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -365,7 +357,7 @@ def lattice(
 
     if isinstance(deps_bash, DepsBash):
         deps["bash"] = deps_bash
-    if isinstance(deps_bash, list) or isinstance(deps_bash, str):
+    if isinstance(deps_bash, (list, str)):
         deps["bash"] = DepsBash(commands=deps_bash)
 
     if isinstance(deps_pip, DepsPip):
@@ -397,7 +389,6 @@ def lattice(
             for k, v in constraints.items():
                 lattice_object.set_metadata(k, v)
             lattice_object.transport_graph.lattice_metadata = lattice_object.metadata
-            lattice_object.__doc__ = func.__doc__
             return lattice_object
 
         return wrapper_lattice()

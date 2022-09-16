@@ -30,17 +30,12 @@ from datetime import datetime, timezone
 from functools import partial
 from typing import Any, Dict, List, Tuple
 
-from sqlalchemy import update
-from sqlalchemy.orm import Session
-
-from covalent import dispatch
-from covalent._data_store.datastore import workflow_db
-from covalent._data_store.models import Lattice as Lattice_model
 from covalent._results_manager import Result
+from covalent._results_manager.result import initialize_result_object
 from covalent._results_manager.write_result_to_db import (
+    get_sublattice_electron_id,
     update_lattices_data,
     write_lattice_error,
-    write_sublattice_electron_id,
 )
 from covalent._shared_files import logger
 from covalent._shared_files.context_managers import active_lattice_manager
@@ -55,19 +50,17 @@ from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
-from covalent.executor.base import BaseAsyncExecutor, wrapper_fn
+from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 from covalent_ui import result_webhook
-
-from .._db.dispatchdb import DispatchDB
-from ..entry_point import futures
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
 # This is to be run out-of-process
-def _dispatch(fn, *args, **kwargs):
-    return dispatch(fn)(*args, **kwargs)
+def _build_sublattice_graph(sub: Lattice, *args, **kwargs):
+    sub.build_graph(*args, **kwargs)
+    return sub.serialize_to_json()
 
 
 def generate_node_result(
@@ -195,14 +188,16 @@ def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
         return result
 
 
-async def _dispatch_sublattice(
-    dispatch_id: str,
-    results_dir: str,
+async def _dispatch_sync_sublattice(
+    parent_result_object: Result,
+    parent_electron_id: int,
     inputs: Dict,
     serialized_callable: Any,
     workflow_executor: Any,
 ) -> str:
     """Dispatch a sublattice using the workflow_executor."""
+
+    app_log.debug("Inside _dispatch_sync_sublattice")
 
     try:
         short_name, object_dict = workflow_executor
@@ -218,17 +213,16 @@ async def _dispatch_sublattice(
     for arg in inputs["args"]:
         sub_dispatch_inputs["args"].append(arg)
 
-    # Dispatch the sublattice workflow. This must be run
+    # Build the sublattice graph. This must be run
     # externally since it involves deserializing the
     # sublattice workflow function.
     fut = asyncio.create_task(
         _run_task(
+            result_object=parent_result_object,
             node_id=-1,
-            dispatch_id=dispatch_id,
-            results_dir=results_dir,
-            serialized_callable=TransportableObject.make_transportable(_dispatch),
+            serialized_callable=TransportableObject.make_transportable(_build_sublattice_graph),
             selected_executor=workflow_executor,
-            node_name="dispatch_sublattice",
+            node_name="build_sublattice_graph",
             call_before=[],
             call_after=[],
             inputs=sub_dispatch_inputs,
@@ -237,13 +231,19 @@ async def _dispatch_sublattice(
     )
 
     res = await fut
-    return json.loads(res["output"].json)
+    json_sublattice = json.loads(res["output"].json)
+
+    sub_result_object = initialize_result_object(
+        json_sublattice, parent_result_object, parent_electron_id
+    )
+    app_log.debug(f"Sublattice dispatch id: {sub_result_object.dispatch_id}")
+
+    return await run_workflow(sub_result_object)
 
 
 async def _run_task(
+    result_object: Result,
     node_id: int,
-    dispatch_id: str,
-    results_dir: str,
     inputs: Dict,
     serialized_callable: Any,
     selected_executor: Any,
@@ -269,6 +269,9 @@ async def _run_task(
         None
     """
 
+    dispatch_id = result_object.dispatch_id
+    results_dir = result_object.results_dir
+
     # Instantiate the executor from JSON
     try:
         short_name, object_dict = selected_executor
@@ -286,24 +289,19 @@ async def _run_task(
     try:
 
         if node_name.startswith(sublattice_prefix):
-            sub_dispatch_id = await _dispatch_sublattice(
-                dispatch_id=dispatch_id,
-                results_dir=results_dir,
+            sub_electron_id = get_sublattice_electron_id(
+                parent_dispatch_id=dispatch_id, sublattice_node_id=node_id
+            )
+
+            # Read the result object directly from the server
+
+            sublattice_result = await _dispatch_sync_sublattice(
+                parent_result_object=result_object,
+                parent_electron_id=sub_electron_id,
                 inputs=inputs,
                 serialized_callable=serialized_callable,
                 workflow_executor=workflow_executor,
             )
-
-            app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
-
-            write_sublattice_electron_id(
-                parent_dispatch_id=dispatch_id,
-                sublattice_node_id=node_id,
-                sublattice_dispatch_id=sub_dispatch_id,
-            )
-            # Read the result object directly from the server
-
-            sublattice_result = await futures[sub_dispatch_id]
 
             if not sublattice_result:
                 raise RuntimeError("Sublattice execution failed")
@@ -328,9 +326,7 @@ async def _run_task(
 
         else:
             app_log.debug(f"Executing task {node_name}")
-
             assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
-
             execute_callable = partial(
                 executor.execute,
                 function=assembled_callable,
@@ -341,17 +337,15 @@ async def _run_task(
                 node_id=node_id,
             )
 
-            if isinstance(executor, BaseAsyncExecutor):
+            if isinstance(executor, AsyncBaseExecutor):
                 output, stdout, stderr = await execute_callable()
             else:
                 loop = asyncio.get_running_loop()
                 output, stdout, stderr = await loop.run_in_executor(None, execute_callable)
 
-            end_time = datetime.now(timezone.utc)
-
             node_result = generate_node_result(
                 node_id=node_id,
-                end_time=end_time,
+                end_time=datetime.now(timezone.utc),
                 status=Result.COMPLETED,
                 output=output,
                 stdout=stdout,
@@ -359,19 +353,14 @@ async def _run_task(
             )
 
     except Exception as ex:
-        end_time = datetime.now(timezone.utc)
-
         app_log.error(f"Exception occurred when running task {node_id}: {ex}")
-
         node_result = generate_node_result(
             node_id=node_id,
-            end_time=end_time,
+            end_time=datetime.now(timezone.utc),
             status=Result.FAILED,
             error="".join(traceback.TracebackException.from_exception(ex).format()),
         )
-        app_log.exception("Run task exception")
-    app_log.debug("Returning node result (run_task)")
-
+    app_log.debug(f"Node result: {node_result}")
     return node_result
 
 
@@ -537,9 +526,8 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     try:
         future = asyncio.create_task(
             _run_task(
+                result_object=result_object,
                 node_id=-1,
-                dispatch_id=result_object.dispatch_id,
-                results_dir=result_object.results_dir,
                 serialized_callable=TransportableObject(_post_process),
                 selected_executor=post_processor,
                 node_name="post_process",
@@ -616,17 +604,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
-    with workflow_db.session() as session:
-        session.execute(
-            update(Lattice_model)
-            .where(Lattice_model.dispatch_id == result_object.dispatch_id)
-            .values(
-                status=str(Result.RUNNING),
-                updated_at=datetime.now(timezone.utc),
-                started_at=datetime.now(timezone.utc),
-            )
-        )
-        session.commit()
+    result_object.upsert_lattice_data()
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
     # Executor for post_processing and dispatching sublattices
@@ -708,9 +686,8 @@ async def _run_planned_workflow(result_object: Result) -> Result:
 
         run_task_callable = partial(
             _run_task,
+            result_object=result_object,
             node_id=node_id,
-            dispatch_id=result_object.dispatch_id,
-            results_dir=result_object.results_dir,
             serialized_callable=serialized_callable,
             selected_executor=[selected_executor, selected_executor_data],
             node_name=node_name,
