@@ -24,7 +24,7 @@ on:
   workflow_dispatch:
     inputs:
       commit_sha:
-        description: "SHA used to build and push image."
+        description: 'SHA used to build and push image.'
         type: string
         required: true
 

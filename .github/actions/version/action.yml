@@ -1,28 +1,28 @@
-name: "Pull Request Version Validation"
-description: "Validate the VERSION file and ensure the CHANGELOG edits are valid."
+name: 'Pull Request Version Validation'
+description: 'Validate the VERSION file and ensure the CHANGELOG edits are valid.'
 inputs:
   changelog-path:
-    description: "Path to the CHANGELOG file"
+    description: 'Path to the CHANGELOG file'
     required: true
-    default: "./CHANGELOG.md"
+    default: './CHANGELOG.md'
   version-path:
-    description: "Path to the VERSION file"
+    description: 'Path to the VERSION file'
     required: true
-    default: "./VERSION"
+    default: './VERSION'
   base_ref:
-    description: "Git base commit ref"
+    description: 'Git base commit ref'
     required: true
     default: ${{ github.event.pull_request.base.ref }}
   head_ref:
-    description: "Git head commit ref"
+    description: 'Git head commit ref'
     required: true
     default: ${{ github.event.pull_request.head.ref }}
   unreleased_header_line:
-    description: "Line number of which [UNRELEASED] appears"
+    description: 'Line number of which [UNRELEASED] appears'
     required: true
     default: 8
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Check out head
       uses: actions/checkout@v1

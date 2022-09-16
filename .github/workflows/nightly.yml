@@ -22,7 +22,7 @@ name: nightly
 
 on:
   schedule:
-    - cron: "0 4 * * *"
+    - cron: '0 4 * * *'
 
 jobs:
   license:
@@ -108,7 +108,7 @@ jobs:
       - name: Checkout master
         uses: github/checkout@v3
         with:
-          ref: "master"
+          ref: 'master'
 
       - name: Format Slack message
         run: |
@@ -119,7 +119,7 @@ jobs:
       - name: Notify Slack
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: "covalent-ci"
-          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_CHANNEL: 'covalent-ci'
+          SLACK_USERNAME: 'CovalentOpsBot'
           SLACK_MESSAGE: ${{ env.SLACK_MSG }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

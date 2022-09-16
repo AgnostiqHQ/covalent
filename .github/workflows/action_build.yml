@@ -55,5 +55,5 @@ jobs:
         with:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
-          message: "NCC build for GitHub action"
+          message: 'NCC build for GitHub action'
           push: origin develop --force

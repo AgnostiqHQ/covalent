@@ -24,7 +24,7 @@ on:
   workflow_dispatch:
     inputs:
       stable_version:
-        description: "Stable version number, e.g. 0.32.3"
+        description: 'Stable version number, e.g. 0.32.3'
         type: string
       test_release:
         description: "Test the workflow but don't create the release. Uncheck this box to create a release."
@@ -34,7 +34,7 @@ on:
   workflow_call:
     inputs:
       prerelease:
-        description: "true: Create a prerelease. false: Create a stable release"
+        description: 'true: Create a prerelease. false: Create a stable release'
         required: true
         type: boolean
         default: true
@@ -46,8 +46,8 @@ env:
     '"FyzHsn",'
     '"wjcunningham7",'
     '"santoshkumarradha"]'
-  EXECUTOR_BASE_DOCKERFILE_URL: "https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/Dockerfile?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
-  AWS_PLUGINS_VERSION_URL: "https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/VERSION?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
+  EXECUTOR_BASE_DOCKERFILE_URL: 'https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/Dockerfile?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}'
+  AWS_PLUGINS_VERSION_URL: 'https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/VERSION?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}'
 
 jobs:
   github:
@@ -59,7 +59,7 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: "v${{ github.event.inputs.stable_version }}"
+          ref: 'v${{ github.event.inputs.stable_version }}'
       - name: Check out master
         uses: actions/checkout@v2
         if: inputs.prerelease
@@ -115,11 +115,11 @@ jobs:
         if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: "covalent"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
+          SLACK_CHANNEL: 'covalent'
+          SLACK_USERNAME: 'CovalentOpsBot'
+          SLACK_MESSAGE: 'The release.yml workflow is failing in ${{ github.ref }}!'
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: ":warning:  Attention Required  :warning:"
+          SLACK_TITLE: ':warning:  Attention Required  :warning:'
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
 
   pypi:
@@ -133,7 +133,7 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: "v${{ github.event.inputs.stable_version }}"
+          ref: 'v${{ github.event.inputs.stable_version }}'
       - name: Check out master
         uses: actions/checkout@v2
         if: inputs.prerelease
@@ -203,11 +203,11 @@ jobs:
         if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: "covalent"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
+          SLACK_CHANNEL: 'covalent'
+          SLACK_USERNAME: 'CovalentOpsBot'
+          SLACK_MESSAGE: 'The release.yml workflow is failing in ${{ github.ref }}!'
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: ":warning:  Attention Required  :warning:"
+          SLACK_TITLE: ':warning:  Attention Required  :warning:'
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
 
   conda:
@@ -217,9 +217,9 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - "3.8"
-          - "3.9"
-          - "3.10"
+          - '3.8'
+          - '3.9'
+          - '3.10'
     steps:
       - name: Check for stable release
         if: github.event.inputs.stable_version && !inputs.prerelease
@@ -228,9 +228,9 @@ jobs:
         uses: AgnostiqHQ/conda-skeleton-publish@main
         if: ${{ !github.event.inputs.test_release }}
         with:
-          pypi_package: "covalent"
+          pypi_package: 'covalent'
           python_version: ${{ matrix.python-version }}
-          upload_channel: "agnostiq"
+          upload_channel: 'agnostiq'
           access_token: ${{ secrets.ANACONDA_TOKEN }}
           package_version: ${{ needs.pypi.outputs.version }}
           stable: ${{ env.STABLE }}
@@ -239,11 +239,11 @@ jobs:
         if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: "covalent"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
+          SLACK_CHANNEL: 'covalent'
+          SLACK_USERNAME: 'CovalentOpsBot'
+          SLACK_MESSAGE: 'The release.yml workflow is failing in ${{ github.ref }}!'
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: ":warning:  Attention Required  :warning:"
+          SLACK_TITLE: ':warning:  Attention Required  :warning:'
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
 
   docker:
@@ -255,7 +255,7 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: "v${{ github.event.inputs.stable_version }}"
+          ref: 'v${{ github.event.inputs.stable_version }}'
 
       - name: Check out master
         uses: actions/checkout@v2
@@ -267,7 +267,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
         with:
-          platforms: "linux/amd64,linux/arm64"
+          platforms: 'linux/amd64,linux/arm64'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@master
@@ -376,7 +376,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           file: ./Dockerfile.awsexecutor
-          platforms: "linux/amd64,linux/arm64"
+          platforms: 'linux/amd64,linux/arm64'
           build-args: |
             COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:${{ env.TAG }}
           push: true
@@ -408,7 +408,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           file: ./Dockerfile.awsexecutor
-          platforms: "linux/amd64,linux/arm64"
+          platforms: 'linux/amd64,linux/arm64'
           build-args: |
             COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:stable
           push: true

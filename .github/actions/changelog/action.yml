@@ -1,23 +1,23 @@
-name: "Changelog Update"
-description: "Parse the new information in the CHANGELOG and update the CHANGELOG and VERSION files accordingly."
+name: 'Changelog Update'
+description: 'Parse the new information in the CHANGELOG and update the CHANGELOG and VERSION files accordingly.'
 inputs:
   changelog-path:
-    description: "Path to the CHANGELOG file"
+    description: 'Path to the CHANGELOG file'
     required: true
-    default: "CHANGELOG.md"
+    default: 'CHANGELOG.md'
   version-path:
-    description: "Path to the VERSION file"
+    description: 'Path to the VERSION file'
     required: true
-    default: "VERSION"
+    default: 'VERSION'
   token:
-    description: "GitHub token to authenticate API requests."
+    description: 'GitHub token to authenticate API requests.'
     required: true
   basehead:
-    description: "Git syntax to compare refs, e.g. develop...master"
+    description: 'Git syntax to compare refs, e.g. develop...master'
     required: true
 outputs:
   message:
     description: 'A commit message if there is a change to be committed, or "noop" if there is no change.'
 runs:
-  using: "node16"
-  main: "dist/index.js"
+  using: 'node16'
+  main: 'dist/index.js'
