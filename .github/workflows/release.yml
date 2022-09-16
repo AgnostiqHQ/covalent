@@ -391,7 +391,6 @@ jobs:
           && !inputs.prerelease
           && !github.events.inputs.test_release
           && contains(env.PAUL_BLART, github.actor)
-          && github.event_name != 'schedule'
         run: |
           MANIFEST=$(aws ecr batch-get-image --repository-name covalent --image-ids imageTag=${{ github.events.inputs.stable_version }} --output json | jq --raw-output --join-output '.images[0].imageManifest')
           aws ecr put-image --repository-name covalent --image-tag stable --image-manifest "$MANIFEST"
