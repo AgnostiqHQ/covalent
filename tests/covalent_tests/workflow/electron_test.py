@@ -20,12 +20,16 @@
 
 """Unit tests for electron"""
 
+from dataclasses import asdict
+
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._shared_files.defaults import _DEFAULT_CONSTRAINT_VALUES
+from covalent._shared_files.defaults import DefaultMetadataValues
 from covalent._workflow.electron import Electron, to_decoded_electron_collection
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
+
+DEFAULT_METADATA_VALUES = asdict(DefaultMetadataValues())
 
 
 @ct.electron
@@ -125,7 +129,7 @@ def test_electron_add_collection_node():
 
     e = Electron(f)
     tg = _TransportGraph()
-    metadata = encode_metadata(_DEFAULT_CONSTRAINT_VALUES.copy())
+    metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
     metadata["executor"] = "custom_executor"
     metadata["executor_data"] = {"attributes": {"instance_id": 1}}
     metadata["deps"] = {"pip": "pipdep", "bash": "bashdep"}
