@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding `nightly.yml` workflow for nightly CI
 - Updated triggers to `tests` and `changelog` workflows
 - Enhanced pre-release workflows
+- `codecov` passthrough workflow added for when tests are not run
 
 ## [0.198.0] - 2022-09-14
 

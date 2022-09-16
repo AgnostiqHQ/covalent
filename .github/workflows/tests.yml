@@ -63,6 +63,12 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     outputs:
       release: ${{ steps.push.outputs.release }}
+      codecov: >
+        ${{ steps.upload-sdk-report.outcome }} == 'skipped'
+        && ${{ steps.upload-dispatcher-report.outcome }} == 'skipped'
+        && ${{ steps.upload-functional-report.outcome }} == 'skipped'
+        && ${{ steps.upload-ui-backend-report.outcome }} == 'skipped'
+        && ${{ steps.upload-ui-frontend-report.outcome }} == 'skipped'
     steps:
       - name: Check out head
         if: github.event_name != 'workflow_dispatch'
@@ -124,7 +130,7 @@ jobs:
             || [ ${{ steps.modified-files.outputs.functional_tests }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.build }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.actions }} = 'true' ] ; then
-            BUILD_AND_RUN_ALL=true
+            BUILD_AND_RUN_ALL=false
           fi
           echo "RECOMMENDED_PLATFORM=$RECOMMENDED_PLATFORM" >> $GITHUB_ENV
           echo "NEED_PYTHON=$NEED_PYTHON" >> $GITHUB_ENV
@@ -259,6 +265,7 @@ jobs:
         run: covalent logs
 
       - name: Upload SDK report to Codecov
+        id: upload-sdk-report
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
@@ -271,6 +278,7 @@ jobs:
           name: "SDK Unit Tests"
 
       - name: Upload Dispatcher report to Codecov
+        id: upload-dispatcher-report
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
@@ -283,6 +291,7 @@ jobs:
           name: "Dispatcher Unit Tests"
 
       - name: Upload Functional report to Codecov
+        id: upload-functional-report
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
@@ -294,6 +303,7 @@ jobs:
           name: "Functional Tests"
 
       - name: Upload UI backend report to Codecov
+        id: upload-ui-backend-report
         if: >
           false
           && env.RECOMMENDED_PLATFORM
@@ -307,6 +317,7 @@ jobs:
           name: "UI Backend Unit Tests"
 
       - name: Upload UI frontend report to Codecov
+        id: upload-ui-frontend-report
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
@@ -330,3 +341,8 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+
+  codecov:
+    needs: tests
+    if: needs.tests.outputs.codecov == 'true'
+    uses: ./.github/workflows/codecov.yml
