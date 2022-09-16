@@ -218,7 +218,8 @@ class BaseExecutor(_AbstractBaseExecutor):
         # Runtime state: must not be persisted
 
         # internals
-        self._lock = None
+        self._task_lock = None
+        self._resource_lock = None
         self._warmed_up = False
         self._tasks_left = 1
 
@@ -226,7 +227,8 @@ class BaseExecutor(_AbstractBaseExecutor):
         self._state = {}
 
     def _initialize_runtime(self, executor_cache: ExecutorCache = None):
-        self._lock = threading.Lock()
+        self._task_lock = threading.Lock()
+        self._resource_lock = threading.Lock()
         if executor_cache:
             self._tasks_left = executor_cache.tasks_per_instance[self.instance_id]
 
@@ -242,11 +244,11 @@ class BaseExecutor(_AbstractBaseExecutor):
         return self._state["resource_metadata"]
 
     def _decrement_task_count(self):
-        with self._lock:
+        with self._task_lock:
             self._tasks_left -= 1
 
     def _increment_task_count(self):
-        with self._lock:
+        with self._task_lock:
             self._tasks_left += 1
 
     def _initialize_task_data(self, dispatch_id: str, node_id: int):
@@ -312,7 +314,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         pass
 
     def _cancel_task(self, dispatch_id: str, node_id: int):
-        with self._lock:
+        with self._task_lock:
             status = self._get_task_status(dispatch_id, node_id)
             if status == "RUNNING":
                 self._set_task_status(dispatch_id, node_id, "CANCELLING")
@@ -360,9 +362,11 @@ class BaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        with self._lock:
+        with self._task_lock:
             self._initialize_task_data(dispatch_id, node_id)
 
+        # Use a dedicated lock b/c this might block for a long time
+        with self._resource_lock:
             if not self._warmed_up:
                 resource_metadata = self.setup(task_metadata=task_metadata)
                 self._set_resource_metadata(resource_metadata)
@@ -377,10 +381,10 @@ class BaseExecutor(_AbstractBaseExecutor):
             ) as stderr:
                 result = self.run(function, args, kwargs, task_metadata)
 
-            with self._lock:
+            with self._task_lock:
                 self._set_task_status(dispatch_id, node_id, "COMPLETED")
         except Exception as ex:
-            with self._lock:
+            with self._task_lock:
                 # Check if we got here by cancellation
                 if self._get_task_status(dispatch_id, node_id) == "CANCELLING":
                     self._set_task_status(dispatch_id, node_id, "CANCELLED")
@@ -390,7 +394,8 @@ class BaseExecutor(_AbstractBaseExecutor):
         finally:
             self._decrement_task_count()
             if self._tasks_left < 1:
-                resource_metadata = self._get_resource_metadata()
+                with self._resource_lock:
+                    resource_metadata = self._get_resource_metadata()
                 self.teardown(resource_metadata)
 
         self.write_streams_to_file(
@@ -449,7 +454,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         # Runtime state: must not be persisted
 
         # internals
-        self._lock = None
+        self._resource_lock = None
         self._warmed_up = False
         self._tasks_left = 1
 
@@ -457,7 +462,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         self._state = {}
 
     def _initialize_runtime(self, executor_cache: ExecutorCache = None):
-        self._lock = asyncio.Lock()
+        self._resource_lock = asyncio.Lock()
         if executor_cache:
             self._tasks_left = executor_cache.tasks_per_instance[self.instance_id]
 
@@ -572,7 +577,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         }
         self._initialize_task_data(dispatch_id, node_id)
 
-        async with self._lock:
+        async with self._resource_lock:
             if not self._warmed_up:
                 resource_metadata = await self.setup(task_metadata=task_metadata)
                 self._set_resource_metadata(resource_metadata)
