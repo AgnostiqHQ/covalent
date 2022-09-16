@@ -56,6 +56,7 @@ def download_logs():
     Returns:
         An Overview of dispatches as object
     """
-    file_name = "covalent_ui.log"
-    file_path = os.path.join(get_config("dispatcher.log_dir1"), file_name)
-    return StreamingResponse(open(file_path, "rb"))
+    log_file = get_config("user_interface.log_dir") + "/covalent_ui.log"
+    if os.path.exists(log_file):
+        return StreamingResponse(open(log_file, "rb"))
+    return {"data": None}
