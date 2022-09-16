@@ -858,8 +858,7 @@ async def test_run_task_sublattice_handling(test_db, mocker):
     assert node_result["status"] == Result.FAILED
 
 
-@pytest.mark.asyncio
-async def test_get_executor_instance():
+def test_get_executor_instance():
     """Test _get_executor_instance"""
 
     from covalent._workflow.lattice import Lattice
@@ -908,7 +907,7 @@ async def test_get_executor_instance():
     executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
     selected_executor = [executor, executor_data]
 
-    executor_instance = await _get_executor_instance(
+    executor_instance = _get_executor_instance(
         node_id=node_id,
         dispatch_id="asdf",
         node_name=node_name,
@@ -928,7 +927,7 @@ async def test_get_executor_instance():
     assert executor_data["attributes"]["shared"] is False
     selected_executor = [executor, executor_data]
 
-    executor_instance = await _get_executor_instance(
+    executor_instance = _get_executor_instance(
         node_id=node_id,
         dispatch_id="asdf",
         node_name=node_name,
@@ -948,7 +947,7 @@ async def test_get_executor_instance():
     assert executor_data["attributes"]["shared"] is True
     selected_executor = [executor, executor_data]
 
-    shared_instance = await _get_executor_instance(
+    shared_instance = _get_executor_instance(
         node_id=node_id,
         dispatch_id="asdf",
         node_name=node_name,
@@ -970,7 +969,7 @@ async def test_get_executor_instance():
     executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
     selected_executor = [executor, executor_data]
 
-    new_shared_instance = await _get_executor_instance(
+    new_shared_instance = _get_executor_instance(
         node_id=node_id,
         dispatch_id="asdf",
         node_name=node_name,
@@ -984,7 +983,7 @@ async def test_get_executor_instance():
     task_count = shared_instance._tasks_left
 
     # Test increment task count (for un-planned tasks)
-    shared_instance = await _get_executor_instance(
+    shared_instance = _get_executor_instance(
         node_id=node_id,
         dispatch_id="asdf",
         node_name=node_name,

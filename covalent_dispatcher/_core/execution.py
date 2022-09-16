@@ -256,7 +256,7 @@ async def _dispatch_sync_sublattice(
     return await run_workflow(sub_result_object)
 
 
-async def _get_executor_instance(
+def _get_executor_instance(
     node_id: int,
     dispatch_id: str,
     node_name: str,
@@ -331,7 +331,7 @@ async def _run_task(
     dispatch_id = result_object.dispatch_id
     results_dir = result_object.results_dir
     executor_cache = result_object._get_executor_cache()
-    executor = await _get_executor_instance(
+    executor = _get_executor_instance(
         node_id=node_id,
         dispatch_id=dispatch_id,
         node_name=node_name,
