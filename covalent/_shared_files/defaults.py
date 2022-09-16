@@ -181,10 +181,10 @@ def get_default_executor() -> dict:
 def get_default_config_path(type: CMType) -> str:
     base = (
         os.environ.get("COVALENT_CONFIG_DIR")
-        or os.environ.get("XDG_CACHE_HOME")
-        or os.environ["HOME"] + "/.config"
+        or os.environ.get("XDG_CONFIG_DIR")
+        or (os.environ.get("HOME") + "/.config")
     )
-    filename = "/covalent.conf" if type == CMType.CLIENT else "/covalentd.conf"
+    filename = "/covalent/covalent.conf" if type == CMType.CLIENT else "/covalent/covalentd.conf"
     return base + filename
 
 
