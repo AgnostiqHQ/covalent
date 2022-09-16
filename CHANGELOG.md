@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Split the `ConfigManager` into `Client` and `Server` components
+- Update the `set/get/update` config methods to distinguish between the client and server parts
+
 ### Added
 
 - `requirements-client.txt` file added.
