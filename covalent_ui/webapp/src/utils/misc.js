@@ -69,11 +69,17 @@ export const formatDate = (date) => {
   return isValid(date) ? format(date, 'MMM dd, HH:mm:ss') : '-'
 }
 
+export const formatLogTime = (date) => {
+  if (_.isString(date)) {
+    date = parseISO(date)
+  }
+  return isValid(date) ? format(date, 'HH:mm:ss,SSS') : '-'
+}
 export const formatLogDate = (date) => {
   if (_.isString(date)) {
     date = parseISO(date)
   }
-  return isValid(date) ? format(date, 'dd MMM yy') : '-'
+  return isValid(date) ? format(date, 'yyyy-MM-dd') : '-'
 }
 
 export const truncateMiddle = (s, start, end, omission = '…') => {
@@ -148,25 +154,13 @@ export const logStatusIcon = (status) => {
           <InfoSvg />
         </SvgIcon>
       )
-    case 'COMPLETED':
+    case 'WARN':
       return (
         <SvgIcon sx={{ mt: 1 }}>
-          <CheckSvg />
+          <WarningSvg />
         </SvgIcon>
       )
-    case 'POSTPROCESSING':
-      return (
-        <SvgIcon sx={{ mt: 1 }}>
-          <CheckSvg />
-        </SvgIcon>
-      )
-    case 'PENDING_POSTPROCESSING':
-      return (
-        <SvgIcon sx={{ mt: 1 }}>
-          <CheckSvg />
-        </SvgIcon>
-      )
-    case 'POSTPROCESSING_FAILED':
+    case 'DEBUG':
       return (
         <SvgIcon sx={{ mt: 1 }}>
           <CheckSvg />
@@ -176,12 +170,6 @@ export const logStatusIcon = (status) => {
       return (
         <SvgIcon sx={{ mt: 1 }}>
           <ErrorSvg />
-        </SvgIcon>
-      )
-    case 'CANCELLED':
-      return (
-        <SvgIcon sx={{ mt: 1 }}>
-          <CancelSvg />
         </SvgIcon>
       )
     default:

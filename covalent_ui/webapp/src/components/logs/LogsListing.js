@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Table,
-  Link,
   TableRow,
   TableHead,
   TableCell,
@@ -14,30 +13,28 @@ import {
   InputAdornment,
   TableContainer,
   TableSortLabel,
-  Tooltip,
   Toolbar,
-  Checkbox,
   Box,
   styled,
   tableCellClasses,
   tableRowClasses,
   tableBodyClasses,
   tableSortLabelClasses,
-  Pagination,
   linkClasses,
   Grid,
   Skeleton,
-  Snackbar,
-  SvgIcon,
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 import { useDebounce } from 'use-debounce'
 import { fetchLogsList } from '../../redux/logsSlice'
-import OverflowTip from '../common/EllipsisTooltip'
-import { formatLogDate } from '../../utils/misc'
 import DownloadButton from '../common/DownloadButton'
 import CopyButton from '../common/CopyButton'
-import { logStatusIcon, logStatusLabel } from '../../utils/misc'
+import {
+  logStatusIcon,
+  logStatusLabel,
+  formatLogDate,
+  formatLogTime,
+} from '../../utils/misc'
 
 const headers = [
   {
@@ -61,13 +58,12 @@ const headers = [
 
 const ResultsTableToolbar = ({ query, onSearch, setQuery }) => {
   return (
-    <Toolbar disableGutters sx={{ mb: 1 }}>
+    <Toolbar disableGutters sx={{ mb: 1, width: '80%' }}>
       <Input
+        fullWidth
         sx={{
-          ml: 'auto',
           px: 1,
           py: 0.5,
-          maxWidth: 260,
           height: '32px',
           border: '1px solid #303067',
           borderRadius: '60px',
@@ -152,6 +148,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
     color: theme.palette.text.tertiary,
+    backgroundColor: theme.palette.background.paper,
   },
 
   // copy btn on hover
@@ -163,17 +160,29 @@ const StyledTable = styled(Table)(({ theme }) => ({
   // customize hover
   [`& .${tableBodyClasses.root} .${tableRowClasses.root}:hover`]: {
     backgroundColor: theme.palette.background.paper,
-    cursor: 'pointer',
 
     [`& .${tableCellClasses.root}`]: {
-      borderColor: theme.palette.background.default,
+      borderColor: theme.palette.background.coveBlack02,
       paddingTop: 4,
       paddingBottom: 4,
-      color: theme.palette.text.secondary,
     },
     [`& .${linkClasses.root}`]: {
       color: theme.palette.text.secondary,
     },
+  },
+
+  [`& .${tableBodyClasses.root} .${tableRowClasses.root}`]: {
+    backgroundColor: theme.palette.background.paper,
+    cursor: 'pointer',
+
+    [`& .${tableCellClasses.root}`]: {
+      borderColor: theme.palette.background.coveBlack02,
+      paddingTop: 4,
+      paddingBottom: 4,
+    },
+    // [`& .${linkClasses.root}`]: {
+    //   color: theme.palette.text.secondary,
+    // },
   },
 
   // customize selected
@@ -210,21 +219,17 @@ const LogsListing = () => {
   const [sortOrder, setSortOrder] = useState('desc')
   const [offset, setOffset] = useState(0)
 
-  const dashboardListView = useSelector((state) => state.logs.logList)?.map(
-    (e) => {
-      return {
-        logDate: e.log_date,
-        status: e.status,
-        message: e.message,
-      }
+  const logListView = useSelector((state) => state.logs.logList)?.map((e) => {
+    return {
+      logDate: e.log_date,
+      status: e.status,
+      message: e.message,
     }
-  )
+  })
 
   const isFetching = useSelector((state) => state.logs.fetchLogList.isFetching)
 
-  console.log(isFetching)
-
-  const dashboardListAPI = () => {
+  const logListAPI = () => {
     const bodyParams = {
       count: 10,
       offset,
@@ -246,7 +251,7 @@ const LogsListing = () => {
   }
 
   useEffect(() => {
-    dashboardListAPI()
+    logListAPI()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortColumn, sortOrder, searchValue])
 
@@ -258,7 +263,6 @@ const LogsListing = () => {
     setSortColumn(column)
   }
 
-  console.log(dashboardListView)
   return (
     <>
       <Box>
@@ -267,14 +271,17 @@ const LogsListing = () => {
           onSearch={onSearch}
           setQuery={setSearchKey}
         />
-        {dashboardListView && (
+        {logListView && (
           <Grid>
             <TableContainer
               sx={{
-                height: _.isEmpty(dashboardListView) ? 50 : '62vh',
+                height: _.isEmpty(logListView) ? 50 : '62vh',
                 '@media (min-width: 1700px)': {
-                  height: _.isEmpty(dashboardListView) ? 50 : '75vh',
+                  height: _.isEmpty(logListView) ? 50 : '75vh',
                 },
+                width: '80%',
+                borderRadius:
+                  _.isEmpty(logListView) && !isFetching ? '0px' : '8px',
               }}
             >
               <StyledTable stickyHeader>
@@ -282,21 +289,33 @@ const LogsListing = () => {
                   order={sortOrder}
                   orderBy={sortColumn}
                   numSelected={_.size(selected)}
-                  total={_.size(dashboardListView)}
+                  total={_.size(logListView)}
                   onSort={handleChangeSort}
                 />
 
                 <TableBody>
-                  {dashboardListView &&
-                    dashboardListView.map((result, index) => (
+                  {logListView &&
+                    logListView.map((result, index) => (
                       <TableRow hover key={index} sx={{ height: '50px' }}>
-                        <TableCell style={{ width: 180 }}>
-                          {formatLogDate(result.logDate)}
+                        <TableCell
+                          style={{
+                            width: 180,
+                            verticalAlign: 'top',
+                          }}
+                        >
+                          <Grid>{formatLogTime(result.logDate)}</Grid>
+                          <Grid
+                            sx={{
+                              color: (theme) => theme.palette.text.tertiary,
+                              fontSize: '14px',
+                            }}
+                          >
+                            {formatLogDate(result.logDate)}
+                          </Grid>
                         </TableCell>
-                        <TableCell style={{ width: 180 }}>
+                        <TableCell style={{ width: 180, verticalAlign: 'top' }}>
                           <Box
                             sx={{
-                              mt: 1,
                               mb: 2,
                               display: 'flex',
                               alignItems: 'center',
@@ -307,7 +326,14 @@ const LogsListing = () => {
                             {logStatusLabel(result.status)}
                           </Box>
                         </TableCell>
-                        <TableCell>{result.message}</TableCell>
+                        <TableCell
+                          sx={{
+                            color: (theme) => theme.palette.primary.white,
+                            whiteSpace: 'pre-wrap',
+                          }}
+                        >
+                          {result.message}
+                        </TableCell>
                         <TableCell sx={{ width: '15px' }}>
                           <CopyButton
                             data-testid="copyMessage"
@@ -323,14 +349,17 @@ const LogsListing = () => {
               </StyledTable>
             </TableContainer>
 
-            {_.isEmpty(dashboardListView) && !isFetching && (
+            {_.isEmpty(logListView) && !isFetching && (
               <Typography
                 sx={{
-                  my: 3,
                   textAlign: 'center',
                   color: 'text.secondary',
                   fontSize: 'h6.fontSize',
-                  width: '85%',
+                  width: '80%',
+                  paddingTop: 2,
+                  paddingBottom: 2,
+
+                  backgroundColor: (theme) => theme.palette.background.paper,
                 }}
               >
                 No results found.
@@ -340,11 +369,11 @@ const LogsListing = () => {
         )}
       </Box>
 
-      {isFetching && _.isEmpty(dashboardListView) && (
+      {isFetching && _.isEmpty(logListView) && (
         <>
           {/*  */}
           {/* <Skeleton variant="rectangular" height={50} /> */}
-          <TableContainer sx={{ width: '84%' }}>
+          <TableContainer sx={{ width: '80%' }}>
             <StyledTable>
               <TableBody>
                 {[...Array(7)].map((_) => (

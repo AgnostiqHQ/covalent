@@ -31,6 +31,7 @@ import { useEffect } from 'react'
 import { graphBgColor } from '../../utils/theme'
 import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
 import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
+
 import PreviewDrawerContents from './PreviewDrawerContents'
 
 const LatticePreviewLayout = () => {
@@ -58,6 +59,7 @@ const LatticePreviewLayout = () => {
   if (!lattice) {
     return (
       <NotFound>
+        <NavDrawer />
         <Typography variant="h6" sx={{ mb: 1 }}>
           Lattice preview not found.
         </Typography>
