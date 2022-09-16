@@ -62,6 +62,7 @@
 !meta.yaml
 !pyproject.toml
 !requirements.txt
+!requirements-client.txt
 !setup.py
 
 # Allow markdown etc
