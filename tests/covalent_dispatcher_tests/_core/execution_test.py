@@ -1019,7 +1019,6 @@ async def test_run_task_handles_cancelled_status(mocker):
     result_object._set_executor_cache(cache)
 
     mocker.patch("covalent.executor.LocalExecutor.execute", side_effect=RuntimeError("Cancelled"))
-
     args = []
     kwargs = {}
     call_before = []
@@ -1030,6 +1029,8 @@ async def test_run_task_handles_cancelled_status(mocker):
     le._initialize_runtime(cache)
     le._initialize_task_data(result_object.dispatch_id, node_id)
     le._set_task_status(result_object.dispatch_id, node_id, "CANCELLED")
+
+    mocker.patch("covalent.executor.LocalExecutor._initialize_task_data")
 
     node_result = await _run_task(
         result_object=result_object,

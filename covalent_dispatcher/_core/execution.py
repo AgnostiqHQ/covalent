@@ -51,7 +51,7 @@ from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
 from covalent.executor._runtime.utils import ExecutorCache
-from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
+from covalent.executor.base import wrapper_fn
 from covalent_ui import result_webhook
 
 app_log = logger.app_log
@@ -379,8 +379,7 @@ async def _run_task(
         else:
             app_log.debug(f"Executing task {node_name}")
             assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
-            execute_callable = partial(
-                executor.execute,
+            output, stdout, stderr = await executor._execute_async(
                 function=assembled_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
@@ -388,12 +387,6 @@ async def _run_task(
                 results_dir=results_dir,
                 node_id=node_id,
             )
-
-            if isinstance(executor, AsyncBaseExecutor):
-                output, stdout, stderr = await execute_callable()
-            else:
-                loop = asyncio.get_running_loop()
-                output, stdout, stderr = await loop.run_in_executor(None, execute_callable)
 
             node_result = generate_node_result(
                 node_id=node_id,

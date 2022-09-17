@@ -221,6 +221,7 @@ def test_base_executor_execute(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
+    me._initialize_task_data(dispatch_id, node_id)
     result, stdout, stderr = me.execute(
         function=assembled_callable,
         args=args,
@@ -232,6 +233,94 @@ def test_base_executor_execute(mocker):
 
     assert result.get_deserialized() == 5
     assert me._get_task_data(dispatch_id, node_id, "_status") == "COMPLETED"
+
+
+@pytest.mark.asyncio
+async def test_base_executor_execute_async(mocker):
+    """Test the _execute_async coroutine"""
+
+    def f(x, y):
+        return x + y
+
+    me = MockExecutor()
+    me._initialize_runtime()
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    me.execute = MagicMock(return_value=(1, "", ""))
+    me._initialize_task_data = MagicMock()
+    result, stdout, stderr = await me._execute_async(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    me._initialize_task_data.assert_called_once_with(dispatch_id, node_id)
+
+    me.execute.assert_called_once_with(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+
+@pytest.mark.asyncio
+async def test_async_executor_execute_async(mocker):
+    """Test the _execute_async coroutine"""
+
+    def f(x, y):
+        return x + y
+
+    me = MockAsyncExecutor()
+    me._initialize_runtime()
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    me.execute = AsyncMock(return_value=(1, "", ""))
+    me._initialize_task_data = MagicMock()
+    result, stdout, stderr = await me._execute_async(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    me._initialize_task_data.assert_called_once_with(dispatch_id, node_id)
+
+    me.execute.assert_awaited_with(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
 
 
 @pytest.mark.asyncio
@@ -275,6 +364,7 @@ def test_base_executor_passes_task_metadata(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
+    me._initialize_task_data(dispatch_id, node_id)
     metadata, stdout, stderr = me.execute(
         function=assembled_callable,
         args=args,
@@ -310,6 +400,7 @@ def test_base_async_executor_passes_task_metadata(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
+    me._initialize_task_data(dispatch_id, node_id)
     awaitable = me.execute(
         function=assembled_callable,
         args=args,
@@ -389,6 +480,7 @@ def test_executor_setup_teardown_method(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
+    me._initialize_task_data(dispatch_id, node_id)
     result, stdout, stderr = me.execute(
         function=assembled_callable,
         args=args,
@@ -406,6 +498,7 @@ def test_executor_setup_teardown_method(mocker):
     me.setup = MagicMock(return_value=task_metadata)
     me.teardown = MagicMock(return_value=None)
 
+    me._initialize_task_data(dispatch_id, node_id)
     result, stdout, stderr = me.execute(
         function=assembled_callable,
         args=args,
@@ -442,6 +535,7 @@ async def test_async_executor_setup_teardown(mocker):
     me.teardown = AsyncMock()
     me._tasks_left = 2
 
+    me._initialize_task_data(dispatch_id, node_id)
     awaitable = me.execute(
         function=assembled_callable,
         args=args,
@@ -460,6 +554,7 @@ async def test_async_executor_setup_teardown(mocker):
     me.setup = AsyncMock(return_value=task_metadata)
     me.teardown = AsyncMock()
 
+    me._initialize_task_data(dispatch_id, node_id)
     awaitable = me.execute(
         function=assembled_callable,
         args=args,
@@ -514,6 +609,7 @@ def test_base_executor_run_exception(mocker):
     results_dir = "/tmp"
     node_id = 1
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    me._initialize_task_data(dispatch_id, node_id)
 
     # BaseExecutor
     try:
@@ -573,6 +669,7 @@ def test_base_executor_run_cancellation(mocker):
 
     me.run = types.MethodType(mock_run, me)
 
+    me._initialize_task_data(dispatch_id, node_id)
     me.execute(
         function=assembled_callable,
         args=args,
@@ -625,6 +722,7 @@ async def test_async_base_executor_run_exception(mocker):
     results_dir = "/tmp"
     node_id = 1
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    async_me._initialize_task_data(dispatch_id, node_id)
 
     # BaseAsyncExecutor
     try:
@@ -685,6 +783,7 @@ async def test_async_executor_run_cancellation(mocker):
         raise RuntimeError("Task Cancelled")
 
     me.run = types.MethodType(mock_run, me)
+    me._initialize_task_data(dispatch_id, node_id)
 
     await me.execute(
         function=assembled_callable,
@@ -739,6 +838,7 @@ async def test_base_async_executor_execute(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
+    me._initialize_task_data(dispatch_id, node_id)
     result, stdout, stderr = await me.execute(
         function=assembled_callable,
         args=args,
@@ -871,9 +971,15 @@ def test_executor_cancel_task(mocker):
     mock_cancel = mocker.patch("covalent.executor.base.BaseExecutor.cancel")
     me._initialize_runtime()
     me._initialize_task_data("asdf", 1)
+    me._initialize_task_data("asdf", 2)
+    me._set_task_status("asdf", 2, "COMPLETED")
     me._cancel_task("asdf", 1)
     assert me._get_task_status("asdf", 1) == "CANCELLING"
     mock_cancel.assert_called_with("asdf", 1)
+
+    mock_cancel = mocker.patch("covalent.executor.base.BaseExecutor.cancel")
+    me._cancel_task("asdf", 2)
+    mock_cancel.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -882,6 +988,12 @@ async def test_async_executor_cancel_task(mocker):
     mock_cancel = mocker.patch("covalent.executor.base.AsyncBaseExecutor.cancel")
     me._initialize_runtime()
     me._initialize_task_data("asdf", 1)
+    me._initialize_task_data("asdf", 2)
+    me._set_task_status("asdf", 2, "COMPLETED")
     await me._cancel_task("asdf", 1)
     assert me._get_task_status("asdf", 1) == "CANCELLING"
     mock_cancel.assert_awaited_with("asdf", 1)
+
+    mock_cancel = mocker.patch("covalent.executor.base.AsyncBaseExecutor.cancel")
+    await me._cancel_task("asdf", 2)
+    mock_cancel.assert_not_awaited()

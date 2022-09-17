@@ -30,6 +30,7 @@ import threading
 import uuid
 from abc import ABC, abstractmethod
 from contextlib import redirect_stderr, redirect_stdout
+from functools import partial
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
@@ -407,6 +408,32 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         return (result, stdout.getvalue(), stderr.getvalue())
 
+    async def _execute_async(
+        self,
+        function: Callable,
+        args: List,
+        kwargs: Dict,
+        dispatch_id: str,
+        results_dir: str,
+        node_id: int = -1,
+    ) -> Any:
+
+        execute_callable = partial(
+            self.execute,
+            function=function,
+            args=args,
+            kwargs=kwargs,
+            dispatch_id=dispatch_id,
+            results_dir=results_dir,
+            node_id=node_id,
+        )
+
+        self._initialize_task_data(dispatch_id, node_id)
+
+        loop = asyncio.get_running_loop()
+        fut = loop.run_in_executor(None, execute_callable)
+        return await fut
+
     @abstractmethod
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
         """Abstract method to run a function in the executor.
@@ -575,8 +602,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             "node_id": node_id,
             "results_dir": results_dir,
         }
-        self._initialize_task_data(dispatch_id, node_id)
-
         async with self._resource_lock:
             if not self._warmed_up:
                 resource_metadata = await self.setup(task_metadata=task_metadata)
@@ -614,6 +639,27 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         )
 
         return (result, stdout.getvalue(), stderr.getvalue())
+
+    async def _execute_async(
+        self,
+        function: Callable,
+        args: List,
+        kwargs: Dict,
+        dispatch_id: str,
+        results_dir: str,
+        node_id: int = -1,
+    ) -> Any:
+
+        self._initialize_task_data(dispatch_id, node_id)
+
+        return await self.execute(
+            function=function,
+            args=args,
+            kwargs=kwargs,
+            dispatch_id=dispatch_id,
+            results_dir=results_dir,
+            node_id=node_id,
+        )
 
     @abstractmethod
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
