@@ -1,8 +1,8 @@
 [
   {
-    "name": "Ubuntu 18.04 / Python 3.8 / Dask",
+    "name": "Debian 10 / Python 3.8 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py38:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py38:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
@@ -12,9 +12,9 @@
     ]
   },
   {
-    "name": "Ubuntu 18.04 / Python 3.8 / Local",
+    "name": "Debian 10 / Python 3.8 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py38:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py38:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
@@ -23,9 +23,9 @@
     ]
   },
   {
-    "name": "Ubuntu 18.04 / Python 3.9 / Dask",
+    "name": "Debian 10 / Python 3.9 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py39:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py39:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
@@ -35,9 +35,9 @@
     ]
   },
   {
-    "name": "Ubuntu 18.04 / Python 3.9 / Local",
+    "name": "Debian 10 / Python 3.9 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py39:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py39:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
@@ -46,9 +46,9 @@
     ]
   },
   {
-    "name": "Ubuntu 18.04 / Python 3.10 / Dask",
+    "name": "Debian 10 / Python 3.10 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py310:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py310:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
@@ -58,9 +58,9 @@
     ]
   },
   {
-    "name": "Ubuntu 18.04 / Python 3.10 / Local",
+    "name": "Debian 10 / Python 3.10 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py310:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py310:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
@@ -69,9 +69,9 @@
     ]
   },
   {
-    "name": "Ubuntu 20.04 / Python 3.8 / Dask",
+    "name": "Debian 11 / Python 3.8 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py38:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py38:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
@@ -81,9 +81,9 @@
     ]
   },
   {
-    "name": "Ubuntu 20.04 / Python 3.8 / Local",
+    "name": "Debian 11 / Python 3.8 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py38:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py38:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
@@ -92,9 +92,9 @@
     ]
   },
   {
-    "name": "Ubuntu 20.04 / Python 3.9 / Dask",
+    "name": "Debian 11 / Python 3.9 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py39:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py39:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
@@ -104,9 +104,9 @@
     ]
   },
   {
-    "name": "Ubuntu 20.04 / Python 3.9 / Local",
+    "name": "Debian 11 / Python 3.9 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py39:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py39:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
@@ -115,9 +115,9 @@
     ]
   },
   {
-    "name": "Ubuntu 20.04 / Python 3.10 / Dask",
+    "name": "Debian 11 / Python 3.10 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py310:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py310:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
@@ -127,9 +127,9 @@
     ]
   },
   {
-    "name": "Ubuntu 20.04 / Python 3.10 / Local",
+    "name": "Debian 11 / Python 3.10 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py310:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py310:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
@@ -179,7 +179,7 @@
     "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py38:latest",
     "backend": "local",
     "experimental": true,
-    "trigger":
+    "trigger": [
       "pull_request",
       "schedule",
       "workflow_dispatch"
