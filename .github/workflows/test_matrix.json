@@ -168,7 +168,6 @@
     "backend": "dask",
     "experimental": true,
     "trigger": [
-      "pull_request",
       "schedule",
       "workflow_dispatch"
     ]
@@ -180,7 +179,6 @@
     "backend": "local",
     "experimental": true,
     "trigger": [
-      "pull_request",
       "schedule",
       "workflow_dispatch"
     ]
@@ -192,7 +190,6 @@
     "backend": "dask",
     "experimental": true,
     "trigger": [
-      "pull_request",
       "schedule",
       "workflow_dispatch"
     ]
@@ -204,7 +201,6 @@
     "backend": "local",
     "experimental": true,
     "trigger": [
-      "pull_request",
       "schedule",
       "workflow_dispatch"
     ]
