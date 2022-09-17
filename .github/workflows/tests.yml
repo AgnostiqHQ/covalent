@@ -330,17 +330,21 @@ jobs:
           flags: UI_Frontend
           name: 'UI Frontend Unit Tests'
 
-      - name: 'codecov/patch'
+      - name: Local Codecov
+        id: local-codecov
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
           && github.event_name != 'schedule'
-          && steps.upload-sdk-report.outcome == 'skipped'
-          && steps.upload-dispatcher-report.outcome == 'skipped'
-          && steps.upload-functional-report.outcome == 'skipped'
-          && steps.upload-ui-backend-report.outcome == 'skipped'
-          && steps.upload-ui-frontend-report.outcome  == 'skipped'
-        run: echo "No report needed."
+        run: |
+          if ${{ steps.upload-sdk-report.outcome == 'skipped'
+            && steps.upload-dispatcher-report.outcome == 'skipped'
+            && steps.upload-functional-report.outcome == 'skipped'
+            && steps.upload-ui-backend-report.outcome == 'skipped'
+            && steps.upload-ui-frontend-report.outcome  == 'skipped' }} ; then
+            local_codecov=true
+          fi
+          echo "::set-output name=local_codecov::${local_codecov}"
 
       - name: Alert Slack
         if: >
@@ -354,3 +358,11 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ':warning:  Attention Required  :warning:'
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+
+  codecov:
+    needs: tests
+    name: 'codecov/patch'
+    if: needs.tests.outputs.codecov == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No report needed."
