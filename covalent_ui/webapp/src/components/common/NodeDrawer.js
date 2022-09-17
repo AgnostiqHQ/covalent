@@ -135,7 +135,13 @@ const NodeDrawer = ({ node, dispatchId }) => {
           boxSizing: 'border-box',
           border: 'none',
           p: 3,
+          marginRight: '10px',
+          marginTop:'22px',
+          height: '904px',
           bgcolor: alpha(theme.palette.background.default),
+          boxShadow:'0px 16px 50px rgba(0, 0, 0, 0.9)',
+          backdropFilter:'blur(8px)',
+          borderRadius: '16px',
         },
       })}
       anchor="right"
@@ -193,17 +199,17 @@ const NodeDrawer = ({ node, dispatchId }) => {
             </>
           )}
 
-          <ErrorCard error={electronErrorData.data} />
+          {electronErrorData && <ErrorCard error={electronErrorData.data} />}
 
           {/* Description */}
-          {electronDetail.doc &&
+          {electronDetail.description &&
             (electronDetailIsFetching ? (
               <Skeleton data-testid="node__desc_skl" />
             ) : (
               <>
                 <Heading>Description</Heading>
                 <Typography fontSize="body2.fontSize" color="text.tertiary">
-                  {electronDetail.doc}
+                  {electronDetail.description}
                 </Typography>
               </>
             ))}
@@ -278,11 +284,13 @@ const NodeDrawer = ({ node, dispatchId }) => {
           )}
 
           {/* Executor */}
-          <ExecutorSection
-            metadata={electronExecutorResult}
-            sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
-            isFetching={electronExecutorResultIsFetching}
-          />
+          {electronExecutorResult && (
+            <ExecutorSection
+              metadata={electronExecutorResult}
+              sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
+              isFetching={electronExecutorResultIsFetching}
+            />
+          )}
 
           <Divider sx={{ my: 2 }} />
 
