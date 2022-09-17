@@ -186,6 +186,30 @@
     ]
   },
   {
+    "name": "Ubuntu 22.04 / Python 3.9 / Dask",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py39:latest",
+    "backend": "dask",
+    "experimental": true,
+    "trigger": [
+      "pull_request",
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "Ubuntu 22.04 / Python 3.9 / Local",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py39:latest",
+    "backend": "local",
+    "experimental": true,
+    "trigger": [
+      "pull_request",
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
     "name": "CentOS 7 / Python 3.8 / Dask",
     "os": "ubuntu-latest",
     "container": {
@@ -210,6 +234,36 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
+      "workflow_call",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "CentOS 7 / Python 3.9 / Dask",
+    "os": "ubuntu-latest",
+    "container": {
+      "image": "ghcr.io/agnostiqhq/covalent-dev/centos7-py39:latest",
+      "options": "--user root"
+    },
+    "backend": "dask",
+    "experimental": false,
+    "trigger": [
+      "pull_request",
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "CentOS 7 / Python 3.9 / Local",
+    "os": "ubuntu-latest",
+    "container": {
+      "image": "ghcr.io/agnostiqhq/covalent-dev/centos7-py39:latest",
+      "options": "--user root"
+    },
+    "backend": "local",
+    "experimental": false,
+    "trigger": [
+      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
