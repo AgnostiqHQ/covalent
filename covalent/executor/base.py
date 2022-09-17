@@ -585,6 +585,14 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             await self.cancel(dispatch_id, node_id)
 
     async def _finalize(self):
+        running_tasks = self._get_registered_tasks()
+        cancel_futures = []
+        for dispatch_id in running_tasks:
+            for node_id in running_tasks[dispatch_id]:
+                fut = asyncio.create_task(self._cancel_task(dispatch_id, node_id))
+                cancel_futures.append(fut)
+        await asyncio.gather(*cancel_futures)
+
         await self.teardown(self._get_resource_metadata())
 
     async def execute(
