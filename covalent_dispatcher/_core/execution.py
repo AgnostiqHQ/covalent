@@ -489,7 +489,8 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
 
 
 async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue):
-    result_object._status = Result.CANCELLED
+    if result_object._status != Result.FAILED:
+        result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
     result_object.upsert_lattice_data()

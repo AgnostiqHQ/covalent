@@ -453,11 +453,20 @@ async def test_handle_cancelled_node(mocker):
 
     node_result = {"node_id": 1, "status": Result.CANCELLED}
 
+    result_object._status = Result.RUNNING
     await _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
 
     assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == -1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
     assert result_object.status == Result.CANCELLED
+
+    # Check that Result.CANCELLED is subordinate to Result.FAILED
+    result_object._status = Result.FAILED
+    await _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
+
+    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == -1
+    assert pending_deps == {0: 1, 1: 0, 2: 1}
+    assert result_object.status == Result.FAILED
 
 
 @pytest.mark.asyncio
