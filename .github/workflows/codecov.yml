@@ -18,18 +18,14 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+name: codecov
+
 on:
   workflow_call:
 
 jobs:
   patch:
     name: 'codecov/patch'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "No report needed."
-
-  project:
-    name: 'codecov/project'
     runs-on: ubuntu-latest
     steps:
       - run: echo "No report needed."
