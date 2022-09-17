@@ -138,6 +138,54 @@
     ]
   },
   {
+    "name": "Debian 11 / Python 3.11 / Dask",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py311:latest",
+    "backend": "dask",
+    "experimental": true,
+    "trigger": [
+      "pull_request",
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "Debian 11 / Python 3.11 / Local",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py311:latest",
+    "backend": "local",
+    "experimental": true,
+    "trigger": [
+      "pull_request",
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "Ubuntu 22.04 / Python 3.8 / Dask",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py38:latest",
+    "backend": "dask",
+    "experimental": true,
+    "trigger": [
+      "pull_request",
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "Ubuntu 22.04 / Python 3.8 / Local",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py38:latest",
+    "backend": "local",
+    "experimental": true,
+    "trigger":
+      "pull_request",
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
     "name": "CentOS 7 / Python 3.8 / Dask",
     "os": "ubuntu-latest",
     "container": {

@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding `nightly.yml` workflow for nightly CI
 - Updated triggers to `tests` and `changelog` workflows
 - Enhanced pre-release workflows
+- Added CI for Debian 11 / Python 3.11
+- Added CI for Ubuntu 22.04 / Python 3.8
 
 ## [0.198.0] - 2022-09-14
 
