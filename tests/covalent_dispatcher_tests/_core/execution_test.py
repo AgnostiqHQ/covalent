@@ -997,9 +997,9 @@ def test_get_executor_instance():
 
 
 @pytest.mark.asyncio
-async def test_run_task_handles_cancelled_status(mocker):
+async def test_run_task_handles_cancelled_exception(mocker):
     """Test that _run_task returns a Result.CANCELLED node status if
-    the task was cancelled during execution.
+    the task was cancelled during execute().
     """
 
     import copy
@@ -1010,6 +1010,7 @@ async def test_run_task_handles_cancelled_status(mocker):
         return x + y
 
     result_object = get_mock_result()
+    result_object._initialize_runtime_state()
     le = LocalExecutor()
     short_name = le.short_name()
     executor_data = copy.deepcopy(le.to_dict())
@@ -1045,6 +1046,61 @@ async def test_run_task_handles_cancelled_status(mocker):
         unplanned_task=False,
     )
     assert node_result["status"] == Result.CANCELLED
+
+
+@pytest.mark.asyncio
+async def test_run_task_handles_already_cancelled_task(mocker):
+    """Test that _run_task aborts if Result._cancel() has already been
+    called."""
+
+    import copy
+
+    from covalent.executor import LocalExecutor
+
+    def f(x, y):
+        return x + y
+
+    result_object = get_mock_result()
+    result_object._initialize_runtime_state()
+    result_object._cancel_called = True
+    le = LocalExecutor()
+    short_name = le.short_name()
+    executor_data = copy.deepcopy(le.to_dict())
+    cache = ExecutorCache()
+    cache.id_instance_map[le.instance_id] = le
+    cache.tasks_per_instance[le.instance_id] = 1
+    result_object._set_executor_cache(cache)
+
+    mock_execute = mocker.patch(
+        "covalent.executor.LocalExecutor.execute", side_effect=RuntimeError("Cancelled")
+    )
+    args = []
+    kwargs = {}
+    call_before = []
+    call_after = []
+    node_id = 1
+    inputs = {"args": [], "kwargs": {}}
+
+    le._initialize_runtime(cache)
+    le._initialize_task_data(result_object.dispatch_id, node_id)
+    le._set_task_status(result_object.dispatch_id, node_id, "CANCELLED")
+
+    mocker.patch("covalent.executor.LocalExecutor._initialize_task_data")
+
+    node_result = await _run_task(
+        result_object=result_object,
+        node_id=node_id,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=[short_name, executor_data],
+        call_before=call_before,
+        call_after=call_after,
+        node_name="test_task",
+        workflow_executor=[short_name, executor_data],
+        unplanned_task=False,
+    )
+    assert node_result["status"] == Result.CANCELLED
+    mock_execute.assert_not_called()
 
 
 @pytest.mark.asyncio

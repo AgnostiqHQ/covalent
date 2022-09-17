@@ -923,6 +923,8 @@ Node Outputs
     def _initialize_runtime_state(self):
         self._runtime_state = {}
         self._runtime_state["workflow_tasks"] = 0
+        self._runtime_state["cancel_called"] = False
+        self._runtime_state["node_failed"] = False
 
     def _get_executor_cache(self) -> ExecutorCache:
         """
@@ -954,6 +956,15 @@ Node Outputs
     def _get_workflow_executor_task_id(self) -> int:
         self._runtime_state["workflow_tasks"] += 1
         return -1 * self._runtime_state["workflow_tasks"]
+
+    @property
+    def _cancel_called(self):
+        """Test whether Result._cancel() has been invoked"""
+        return self._runtime_state["cancel_called"]
+
+    @_cancel_called.setter
+    def _cancel_called(self, state: bool):
+        self._runtime_state["cancel_called"] = state
 
 
 def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:

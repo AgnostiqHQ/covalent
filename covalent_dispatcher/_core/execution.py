@@ -324,6 +324,15 @@ async def _run_task(
         None
     """
 
+    if result_object._cancel_called:
+        app_log.debug(f"Workflow cancelled, not proceeding with node {node_id}")
+        node_result = generate_node_result(
+            node_id=node_id,
+            end_time=datetime.now(timezone.utc),
+            status=Result.CANCELLED,
+        )
+        return node_result
+
     dispatch_id = result_object.dispatch_id
     results_dir = result_object.results_dir
     executor_cache = result_object._get_executor_cache()

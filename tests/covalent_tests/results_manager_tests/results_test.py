@@ -578,3 +578,12 @@ def test_get_workflow_exec_task_id():
     result_object._initialize_runtime_state()
     assert result_object._get_workflow_executor_task_id() == -1
     assert result_object._get_workflow_executor_task_id() == -2
+
+
+def test_cancel_called_property():
+    """Test the _cancel_called property"""
+    result_object = get_mock_result()
+    result_object._initialize_runtime_state()
+    result_object._cancel_called = True
+
+    assert result_object._cancel_called is True
