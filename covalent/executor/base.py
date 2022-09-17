@@ -323,10 +323,33 @@ class BaseExecutor(_AbstractBaseExecutor):
         if status == "RUNNING":
             self.cancel(dispatch_id, node_id)
 
+    def _finalize_sync(self):
+
+        # Because tasks are registered in _run_task's thread during
+        # _execute_async(), any task that entered _run_task before
+        # _finalize is called will be tracked.
+        tasks = self._get_registered_tasks()
+
+        # Don't use the default threadpool since it might be saturated
+        # with running tasks
+        cancel_threads = []
+        for dispatch_id in tasks:
+            for node_id in tasks[dispatch_id]:
+                t = threading.Thread(target=self._cancel_task, args=[dispatch_id, node_id])
+                t.start()
+                cancel_threads.append(t)
+
+        for t in cancel_threads:
+            t.join()
+
+        with self._resource_lock:
+            resource_metadata = self._get_resource_metadata()
+        self.teardown(resource_metadata)
+
     # To be invoked from the dispatcher's thread
     async def _finalize(self):
         loop = asyncio.get_running_loop()
-        fut = loop.run_in_executor(None, self.teardown, self._get_resource_metadata())
+        fut = loop.run_in_executor(None, self._finalize_sync)
         await fut
 
     def execute(
@@ -585,10 +608,10 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             await self.cancel(dispatch_id, node_id)
 
     async def _finalize(self):
-        running_tasks = self._get_registered_tasks()
+        tasks = self._get_registered_tasks()
         cancel_futures = []
-        for dispatch_id in running_tasks:
-            for node_id in running_tasks[dispatch_id]:
+        for dispatch_id in tasks:
+            for node_id in tasks[dispatch_id]:
                 fut = asyncio.create_task(self._cancel_task(dispatch_id, node_id))
                 cancel_futures.append(fut)
         await asyncio.gather(*cancel_futures)

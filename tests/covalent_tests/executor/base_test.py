@@ -1002,6 +1002,20 @@ async def test_async_executor_cancel_task(mocker):
 
 
 @pytest.mark.asyncio
+async def test_base_executor_finalize(mocker):
+    me = MockExecutor(log_stdout="/tmp/stdout.log")
+    mock_cancel = mocker.patch("covalent.executor.base.BaseExecutor.cancel")
+    mock_teardown = mocker.patch("covalent.executor.base.BaseExecutor.teardown")
+    me._initialize_runtime()
+    me._initialize_task_data("asdf", 1)
+    me._initialize_task_data("asdf", 2)
+    await me._finalize()
+    assert me._get_task_status("asdf", 1) == "CANCELLING"
+    assert me._get_task_status("asdf", 2) == "CANCELLING"
+    mock_teardown.assert_called_once()
+
+
+@pytest.mark.asyncio
 async def test_async_executor_finalize(mocker):
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
     mock_cancel = mocker.patch("covalent.executor.base.AsyncBaseExecutor.cancel")
