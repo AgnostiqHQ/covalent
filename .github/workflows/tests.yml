@@ -29,7 +29,7 @@ on:
     paths-ignore:
       - 'CHANGELOG.md'
       - 'VERSION'
-  workflow_dispatch: # Manual
+  workflow_dispatch:
     inputs:
       commit_sha:
         description: 'Commit SHA used for testing'
@@ -130,8 +130,7 @@ jobs:
             || [ ${{ steps.modified-files.outputs.functional_tests }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.build }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.actions }} = 'true' ] ; then
-            #BUILD_AND_RUN_ALL=true
-            echo "PASSING"
+            BUILD_AND_RUN_ALL=true
           fi
           echo "RECOMMENDED_PLATFORM=$RECOMMENDED_PLATFORM" >> $GITHUB_ENV
           echo "NEED_PYTHON=$NEED_PYTHON" >> $GITHUB_ENV
