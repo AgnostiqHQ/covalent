@@ -246,7 +246,7 @@
       "options": "--user root"
     },
     "backend": "dask",
-    "experimental": false,
+    "experimental": true,
     "trigger": [
       "pull_request",
       "schedule",
@@ -261,7 +261,7 @@
       "options": "--user root"
     },
     "backend": "local",
-    "experimental": false,
+    "experimental": true,
     "trigger": [
       "pull_request",
       "workflow_call",
