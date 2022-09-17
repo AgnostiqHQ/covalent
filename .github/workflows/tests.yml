@@ -21,9 +21,9 @@
 name: tests
 
 on:
-  pull_request: # Feature branches
-  workflow_call: # Nightly
-  push: # Merges to develop
+  pull_request:
+  workflow_call:
+  push:
     branches:
       - develop
     paths-ignore:
@@ -359,9 +359,17 @@ jobs:
           SLACK_TITLE: ':warning:  Attention Required  :warning:'
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
 
-  codecov:
+  codecov_patch:
     needs: tests
     name: 'codecov/patch'
+    if: needs.tests.outputs.codecov == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No report needed."
+
+  codecov_project:
+    needs: tests
+    name: 'codecov/project'
     if: needs.tests.outputs.codecov == 'true'
     runs-on: ubuntu-latest
     steps:
