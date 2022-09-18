@@ -508,6 +508,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._root_dispatch_id = dispatch_id
     result_object._initialize_nodes()
+    result_object._initialize_runtime_state()
 
     # patch all methods that reference a DB
     mocker.patch("covalent._results_manager.result.Result.upsert_lattice_data")
@@ -553,6 +554,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._root_dispatch_id = dispatch_id
     result_object._initialize_nodes()
+    result_object._initialize_runtime_state()
 
     mocker.patch("covalent._results_manager.result.Result.upsert_lattice_data")
     mocker.patch("covalent._results_manager.result.Result.upsert_electron_data")
@@ -628,6 +630,7 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     result_object.lattice.set_metadata("workflow_executor", "client")
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
+    result_object._initialize_runtime_state()
 
     mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent._results_manager.result.workflow_db", test_db)
@@ -646,6 +649,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     result_object = get_mock_result()
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
+    result_object._initialize_runtime_state()
 
     mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent._results_manager.result.workflow_db", test_db)
@@ -791,6 +795,8 @@ async def test_run_task_sublattice_handling(test_db, mocker):
     executor_cache.tasks_per_instance[le.instance_id] = 1
 
     result_object = get_mock_result()
+    result_object._initialize_nodes()
+    result_object._initialize_runtime_state()
     sub_result_object = get_mock_result()
     sub_result_object._dispatch_id = "sublattice_workflow"
     sub_result_object._result = ct.TransportableObject(5)
