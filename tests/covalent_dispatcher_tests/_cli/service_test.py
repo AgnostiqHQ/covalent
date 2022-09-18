@@ -903,3 +903,54 @@ def test_sdk_no_cluster(mocker, monkeypatch):
 
     graceful_start_mock.assert_called_once()
     set_config_mock.assert_has_calls([mock.call(CMType.CLIENT, "sdk.no_cluster", "true")])
+
+
+def test_purge_hidden_option(mocker):
+    """Test the 'covalent purge' CLI command."""
+
+    from covalent_dispatcher._cli.service import UI_PIDFILE
+
+    runner = CliRunner()
+
+    dir_list = [
+        mock.call(CMType.CLIENT, "sdk.log_dir"),
+        mock.call(CMType.SERVER, "service.cache_dir"),
+        mock.call(CMType.SERVER, "service.log_dir"),
+        mock.call(CMType.SERVER, "service.db_path"),
+    ]
+
+    def get_config_side_effect(*args):
+        return "file" if args[0] == CMType.SERVER and args[1] == "service.db_path" else "dir"
+
+    get_config_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.get_config", side_effect=get_config_side_effect
+    )
+    os_path_dirname_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.os.path.dirname", return_value="dir"
+    )
+
+    def isdir_side_effect(path):
+        return path == "dir"
+
+    os_path_isdir_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.os.path.isdir", side_effect=isdir_side_effect
+    )
+
+    graceful_shutdown_mock = mocker.patch("covalent_dispatcher._cli.service._graceful_shutdown")
+    shutil_rmtree_mock = mocker.patch("covalent_dispatcher._cli.service.shutil.rmtree")
+    os_remove_mock = mocker.patch("covalent_dispatcher._cli.service.os.remove")
+
+    result = runner.invoke(purge, args="--hell-yeah")
+
+    os_path_isdir_mock.assert_has_calls(
+        [mock.call("dir"), mock.call("dir"), mock.call("dir"), mock.call("file")],
+        any_order=True,
+    )
+    os_remove_mock.assert_called_with("file")
+    assert get_config_mock.call_count == 4
+
+    graceful_shutdown_mock.assert_called_with(UI_PIDFILE)
+
+    shutil_rmtree_mock.assert_has_calls([mock.call("dir", ignore_errors=True)])
+
+    assert "Covalent server files have been purged.\n" in result.output
