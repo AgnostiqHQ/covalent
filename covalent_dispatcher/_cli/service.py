@@ -412,20 +412,20 @@ def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
     Purge Covalent from this system. This command is for developers.
     """
 
-    removal_list = {
+    removal_list = [
         get_config(CMType.CLIENT, "sdk.log_dir"),
         get_config(CMType.SERVER, "service.cache_dir"),
         get_config(CMType.SERVER, "service.log_dir"),
         os.path.dirname(ccm.config_file),
         os.path.dirname(scm.config_file),
-    }
+    ]
 
     if hell_yeah:
         hard = True
         yes = True
 
     if hard:
-        removal_list.add(get_config(CMType.SERVER, "service.db_path"))
+        removal_list.append(get_config(CMType.SERVER, "service.db_path"))
 
     if not yes:
 

@@ -221,6 +221,9 @@ class ServerConfigManager(ConfigManager):
 
 
 def get_default_config_manager(type: CMType):
+    """
+    Return the default config manager depending on the type
+    """
     return ClientConfigManager() if type == CMType.CLIENT else ServerConfigManager()
 
 
