@@ -297,7 +297,7 @@ jobs:
         if: >
           inputs.prerelease
           && !inputs.stable_version
-          && github.event_name == 'workflow_call'
+          && github.event_name == 'schedule'
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
@@ -337,7 +337,7 @@ jobs:
         if: >
           inputs.prerelease
           && !github.events.inputs.stable_version
-          && github.event_name == 'workflow_call'
+          && github.event_name == 'schedule'
           && steps.get_aws_plugin_dockerfile.outcome == 'success'
           && steps.get_aws_plugin_version.outcome == 'success'
         run: |
@@ -358,7 +358,7 @@ jobs:
         if: >
           inputs.prerelease
           && !github.events.inputs.stable_version
-          && github.event_name == 'workflow_call'
+          && github.event_name == 'schedule'
           && !github.events.inputs.test_release
           && steps.get_aws_plugin_dockerfile.outcome == 'success'
           && steps.get_aws_plugin_version.outcome == 'success'

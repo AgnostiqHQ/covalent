@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Fixed `asserts` in stress tests
+
 ### Added
 
 - `requirements-client.txt` file added.
@@ -36,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed unused `push_to_s3` workflow
 - Workflows authenticate to AWS using OIDC with specific roles
 - Only the recommended platform is tested on pull requests
+- Update check blocks to assert the `workflow_call` event type is replaced with `schedule`
 
 ## [0.198.0] - 2022-09-14
 
