@@ -6,7 +6,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
@@ -29,7 +28,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
@@ -52,7 +50,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
@@ -87,6 +84,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
+      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
@@ -98,7 +96,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
@@ -121,7 +118,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
@@ -213,7 +209,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
@@ -267,7 +262,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
@@ -290,7 +284,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
@@ -313,7 +306,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
@@ -336,7 +328,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
@@ -359,7 +350,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]
@@ -382,7 +372,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
       "workflow_call",
       "workflow_dispatch"
     ]

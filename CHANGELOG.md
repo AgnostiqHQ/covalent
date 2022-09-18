@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Fixed `asserts` in stress tests
+
 ### Added
 
 - `requirements-client.txt` file added.
+
+### Fixed
+
+- Config file is now locked during reads and writes to mitigate concurrency issues
 
 ### Changed
 
@@ -32,6 +40,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added CI for Centos 7 / Python 3.9
 - Added experimental CI for Debian 11 / Python 3.11rc2
 - Renamed Ubuntu images to Debian for accuracy
+- Removed badges workflow; version badge is now generated using the latest pre-release tag
+- Removed unused `push_to_s3` workflow
+- Workflows authenticate to AWS using OIDC with specific roles
+- Only the recommended platform is tested on pull requests
+- Update check blocks to assert the `workflow_call` event type is replaced with `schedule`
 
 ## [0.198.0] - 2022-09-14
 
