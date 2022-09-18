@@ -302,7 +302,6 @@ def test_purge_proceed(hard, mocker):
     """Test the 'covalent purge' CLI command."""
 
     from covalent_dispatcher._cli.service import UI_PIDFILE
-    from covalent_dispatcher._cli.service import ClientConfigManager as ccm
 
     runner = CliRunner()
 
@@ -312,18 +311,8 @@ def test_purge_proceed(hard, mocker):
         mock.call(CMType.SERVER, "service.log_dir"),
     ]
 
-    # dir_list = [
-    #    mock.call(dirs)
-    #    for dirs in [
-    #        "sdk.log_dir",
-    #        "dispatcher.cache_dir",
-    #        "dispatcher.log_dir",
-    #        "user_interface.log_dir",
-    #    ]
-    # ]
-
-    def get_config_side_effect(conf_name):
-        return "file" if conf_name == "dispatcher.db_path" else "dir"
+    def get_config_side_effect(*args):
+        return "file" if args[0] == CMType.SERVER and args[1] == "service.db_path" else "dir"
 
     get_config_mock = mocker.patch(
         "covalent_dispatcher._cli.service.get_config", side_effect=get_config_side_effect
@@ -346,16 +335,22 @@ def test_purge_proceed(hard, mocker):
     if hard:
         result = runner.invoke(purge, args="--hard", input="y")
 
-        dir_list.append(mock.call("dispatcher.db_path"))
-        os_path_isdir_mock.assert_has_calls([mock.call("file"), mock.call("file")], any_order=True)
+        dir_list.append(mock.call(CMType.SERVER, "service.db_path"))
+        os_path_isdir_mock.assert_has_calls(
+            [mock.call("dir"), mock.call("dir"), mock.call("dir"), mock.call("file")],
+            any_order=True,
+        )
         os_remove_mock.assert_called_with("file")
+        assert get_config_mock.call_count == 4
     else:
         result = runner.invoke(purge, input="y")
 
-    get_config_mock.assert_has_calls(dir_list, any_order=True)
-    assert get_config_mock.call_count == 3
-    os_path_dirname_mock.assert_called_with(ccm.config_file)
-    os_path_isdir_mock.assert_has_calls([mock.call("dir"), mock.call("dir")], any_order=True)
+        assert get_config_mock.call_count == 3
+        get_config_mock.assert_has_calls(dir_list, any_order=True)
+        assert os_path_dirname_mock.call_count == 2
+        os_path_isdir_mock.assert_has_calls(
+            [mock.call("dir"), mock.call("dir"), mock.call("dir")], any_order=True
+        )
 
     graceful_shutdown_mock.assert_called_with(UI_PIDFILE)
 
@@ -367,23 +362,16 @@ def test_purge_proceed(hard, mocker):
 @pytest.mark.parametrize("hard", [False, True])
 def test_purge_abort(hard, mocker):
     """Test the 'covalent purge' CLI command."""
-
-    from covalent_dispatcher._cli.service import cm
-
     runner = CliRunner()
 
     dir_list = [
-        mock.call(dirs)
-        for dirs in [
-            "sdk.log_dir",
-            "dispatcher.cache_dir",
-            "dispatcher.log_dir",
-            "user_interface.log_dir",
-        ]
+        mock.call(CMType.CLIENT, "sdk.log_dir"),
+        mock.call(CMType.SERVER, "service.cache_dir"),
+        mock.call(CMType.SERVER, "service.log_dir"),
     ]
 
-    def get_config_side_effect(conf_name):
-        return "file" if conf_name == "dispatcher.db_path" else "dir"
+    def get_config_side_effect(*args):
+        return "file" if args[0] == CMType.SERVER and args[1] == "service.db_path" else "dir"
 
     get_config_mock = mocker.patch(
         "covalent_dispatcher._cli.service.get_config", side_effect=get_config_side_effect
@@ -401,13 +389,14 @@ def test_purge_abort(hard, mocker):
 
     if hard:
         result = runner.invoke(purge, input="n", args="--hard")
-        dir_list.append(mock.call("dispatcher.db_path"))
+        dir_list.append(mock.call(CMType.SERVER, "service.db_path"))
         os_path_isdir_mock.assert_has_calls([mock.call("file")])
     else:
         result = runner.invoke(purge, input="n")
 
     get_config_mock.assert_has_calls(dir_list, any_order=True)
-    os_path_dirname_mock.assert_called_with(cm.config_file)
+    assert os_path_dirname_mock.call_count == 2
+    # os_path_dirname_mock.assert_called_with(cm.config_file)
     os_path_isdir_mock.assert_has_calls([mock.call("dir")])
 
     assert "Aborted!\n" in result.output
@@ -440,7 +429,6 @@ def test_logs(exists, mocker):
 
 def test_config(mocker):
     """Test covalent config cli"""
-    from covalent._shared_files.config import ClientConfigManager as ccm
 
     cfg_read_config_mock = mocker.patch("covalent_dispatcher._cli.service.ccm.read_config")
     scm_cfg_read_config_mock = mocker.patch("covalent_dispatcher._cli.service.scm.read_config")
