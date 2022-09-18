@@ -21,7 +21,7 @@
 """Tests for Covalent command line interface (CLI) Tool."""
 
 import tempfile
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import mock
 import pytest
@@ -954,3 +954,15 @@ def test_purge_hidden_option(mocker):
     shutil_rmtree_mock.assert_has_calls([mock.call("dir", ignore_errors=True)])
 
     assert "Covalent server files have been purged.\n" in result.output
+
+
+def test_terminate_child_processes(mocker):
+    from covalent_dispatcher._cli.service import _terminate_child_processes
+
+    psutil_process_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.psutil.Process", return_value=MagicMock()
+    )
+
+    _terminate_child_processes(1)
+
+    psutil_process_mock.assert_called_with(1)
