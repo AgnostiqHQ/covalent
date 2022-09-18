@@ -46,7 +46,6 @@ from covalent._shared_files.config import (
 )
 from covalent.utils.migrate import migrate_pickled_result_object
 
-# cm = ConfigManager()
 ccm = ClientConfigManager()
 scm = ServerConfigManager()
 
