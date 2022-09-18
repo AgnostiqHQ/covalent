@@ -966,6 +966,33 @@ Node Outputs
     def _cancel_called(self, state: bool):
         self._runtime_state["cancel_called"] = state
 
+    async def _cancel(self):
+        """Cancel the workflow and all sublattice workflows"""
+
+        if self._status in [Result.COMPLETED, Result.CANCELLED]:
+            return
+
+        self._cancel_called = True
+        await self._get_tasks_queue().put(-1)
+        cache = self._get_executor_cache()
+        await cache.finalize_executors()
+
+        # Recursively cancel running sublattices
+        sublattice_futures = []
+
+        for node_id in self.lattice.transport_graph._graph.nodes:
+
+            node_name = self.lattice.transport_graph.get_node_value(node_id, "name")
+            if node_name.startswith(sublattice_prefix):
+                sub_result_obj = self.lattice.transport_graph.get_node_value(
+                    node_id, "sublattice_result"
+                )
+                if sub_result_obj:
+                    cancel_task = asyncio.create_task(sub_result_obj._cancel())
+                    sublattice_futures.append(cancel_task)
+
+        await asyncio.gather(*sublattice_futures)
+
 
 def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:
     """

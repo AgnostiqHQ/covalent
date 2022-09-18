@@ -25,7 +25,7 @@ import shutil
 from datetime import datetime as dt
 from datetime import timezone
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -73,6 +73,36 @@ def get_mock_result() -> Result:
     result_object = Result(
         received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
     )
+
+    return result_object
+
+
+def get_mock_sublattice_result() -> Result:
+    """Construct a mock result object whose transport graph contains a
+    sublattice."""
+
+    import sys
+
+    @ct.electron(executor="local")
+    def task(x):
+        print(f"stdout: {x}")
+        print("Error!", file=sys.stderr)
+        return x
+
+    @ct.electron
+    @ct.lattice
+    def sub_workflow(x):
+        return task(x)
+
+    @ct.lattice(results_dir=TEMP_RESULTS_DIR)
+    def workflow(x):
+        res1 = task(x)
+        res2 = sub_workflow(res1)
+        return res2
+
+    workflow.build_graph(x=1)
+    received_workflow = LatticeClass.deserialize_from_json(workflow.serialize_to_json())
+    result_object = Result(received_workflow, workflow.metadata["results_dir"], "root_workflow")
 
     return result_object
 
@@ -587,3 +617,30 @@ def test_cancel_called_property():
     result_object._cancel_called = True
 
     assert result_object._cancel_called is True
+
+
+@pytest.mark.asyncio
+async def test_cancel_workflow(mocker):
+    """Test Result._cancel()"""
+
+    result_object = get_mock_sublattice_result()
+    result_object._initialize_nodes()
+    result_object._initialize_runtime_state()
+    cache = ExecutorCache()
+    result_object._set_executor_cache(cache)
+    mock_finalize = mocker.patch(
+        "covalent.executor._runtime.utils.ExecutorCache.finalize_executors"
+    )
+    mock_put = mocker.patch("asyncio.Queue.put")
+    subresult_object = get_mock_result()
+    subresult_object._cancel = AsyncMock()
+    tg = result_object.lattice.transport_graph
+    tg.set_node_value(2, "sublattice_result", subresult_object)
+
+    await result_object._cancel()
+
+    mock_put.assert_awaited_once_with(-1)
+    assert result_object._cancel_called is True
+    mock_finalize.assert_awaited()
+
+    subresult_object._cancel.assert_awaited_once()
