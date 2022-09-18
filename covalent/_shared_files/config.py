@@ -45,8 +45,11 @@ class _ConfigManager:
         self.config_file = f"{config_dir}/covalent.conf"
 
         self.generate_default_config()
-        if os.path.exists(self.config_file):
-            # Update config with user configuration file:
+
+        try:
+            with open(self.config_file, "r") as f:
+                pass
+
             self.update_config()
         else:
             Path(config_dir).mkdir(parents=True, exist_ok=True)
@@ -110,8 +113,10 @@ class _ConfigManager:
                         else:
                             old_dict.setdefault(key, value)
 
-        if os.path.exists(self.config_file):
-            file_config = toml.load(self.config_file)
+        with open(self.config_file, "r+") as f:
+            fcntl.lockf(f, fcntl.LOCK_EX)
+            file_config = toml.load(f)
+
             update_nested_dict(self.config_data, file_config)
             if new_entries:
                 update_nested_dict(self.config_data, new_entries, override_existing)
@@ -141,8 +146,8 @@ class _ConfigManager:
         Returns:
             None
         """
-
         with open(self.config_file, "w") as f:
+            fcntl.lockf(f, fcntl.LOCK_EX)
             toml.dump(self.config_data, f)
 
     def purge_config(self) -> None:
