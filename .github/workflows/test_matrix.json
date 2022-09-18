@@ -144,7 +144,6 @@
     "backend": "dask",
     "experimental": true,
     "trigger": [
-      "pull_request",
       "schedule",
       "workflow_dispatch"
     ]
@@ -156,7 +155,6 @@
     "backend": "local",
     "experimental": true,
     "trigger": [
-      "pull_request",
       "schedule",
       "workflow_dispatch"
     ]
@@ -166,7 +164,7 @@
     "os": "ubuntu-latest",
     "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py38:latest",
     "backend": "dask",
-    "experimental": true,
+    "experimental": false,
     "trigger": [
       "schedule",
       "workflow_dispatch"
@@ -177,7 +175,7 @@
     "os": "ubuntu-latest",
     "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py38:latest",
     "backend": "local",
-    "experimental": true,
+    "experimental": false,
     "trigger": [
       "schedule",
       "workflow_dispatch"
@@ -188,7 +186,7 @@
     "os": "ubuntu-latest",
     "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py39:latest",
     "backend": "dask",
-    "experimental": true,
+    "experimental": false,
     "trigger": [
       "schedule",
       "workflow_dispatch"
@@ -199,7 +197,7 @@
     "os": "ubuntu-latest",
     "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py39:latest",
     "backend": "local",
-    "experimental": true,
+    "experimental": false,
     "trigger": [
       "schedule",
       "workflow_dispatch"
@@ -242,9 +240,8 @@
       "options": "--user root"
     },
     "backend": "dask",
-    "experimental": true,
+    "experimental": false,
     "trigger": [
-      "pull_request",
       "schedule",
       "workflow_dispatch"
     ]
@@ -257,10 +254,9 @@
       "options": "--user root"
     },
     "backend": "local",
-    "experimental": true,
+    "experimental": false,
     "trigger": [
-      "pull_request",
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
