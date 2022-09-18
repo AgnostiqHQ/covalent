@@ -305,7 +305,7 @@ class BaseExecutor(_AbstractBaseExecutor):
                     f.write(ss)
 
     def cancel(self, dispatch_id: str, node_id: int):
-        pass
+        app_log.warning(f"Cancel not implemented for {type(self)}")
 
     def setup(self, task_metadata: Dict = {}):
         pass
@@ -592,7 +592,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
                     await f.write(ss)
 
     async def cancel(self, dispatch_id: str, node_id: int):
-        pass
+        app_log.warning(f"Cancel not implemented for {type(self)}")
 
     async def setup(self, task_metadata: Dict = {}):
         pass

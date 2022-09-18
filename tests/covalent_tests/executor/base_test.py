@@ -966,6 +966,23 @@ def test_executor_get_task_status():
     assert me._get_task_status("asdf", 1) == "CANCELLED"
 
 
+def test_executor_cancel_stub(mocker):
+    mock_warn = mocker.patch("covalent.executor.base.app_log.warning")
+    me = MockExecutor(log_stdout="/tmp/stdout.log")
+    me.cancel("asdf", 1)
+    me_type = type(me)
+    mock_warn.assert_called_once_with(f"Cancel not implemented for {me_type}")
+
+
+@pytest.mark.asyncio
+async def test_async_executor_cancel_stub(mocker):
+    mock_warn = mocker.patch("covalent.executor.base.app_log.warning")
+    me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
+    await me.cancel("asdf", 1)
+    me_type = type(me)
+    mock_warn.assert_called_once_with(f"Cancel not implemented for {me_type}")
+
+
 def test_executor_cancel_task(mocker):
     me = MockExecutor(log_stdout="/tmp/stdout.log")
     mock_cancel = mocker.patch("covalent.executor.base.BaseExecutor.cancel")
