@@ -77,7 +77,8 @@ def test_config_manager_init_write_update_config(
             "covalent._shared_files.config.ConfigManager.get", side_effect=config_keys
         )
         path_mock = mocker.patch("covalent._shared_files.config.Path.__init__", return_value=None)
-        mocker.patch("os.path.exists", return_value=path_exists)
+        side_effect = None if path_exists else FileNotFoundError
+        open_mock = mocker.patch("covalent._shared_files.config.open", side_effect=side_effect)
 
         cm = ConfigManager()
         assert hasattr(cm, "config_data")
@@ -209,10 +210,12 @@ def test_write_config(mocker):
     cm = ConfigManager()
     toml_dump_mock = mocker.patch("covalent._shared_files.config.toml.dump")
     open_mock = mocker.patch("covalent._shared_files.config.open")
+    lock_mock = mocker.patch("fcntl.lockf")
     mock_file = open_mock.return_value.__enter__.return_value
     cm.write_config()
     toml_dump_mock.assert_called_once_with(cm.config_data, mock_file)
     open_mock.assert_called_once_with(cm.config_file, "w")
+    lock_mock.assert_called_once()
 
 
 def test_config_manager_set(mocker):

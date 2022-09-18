@@ -3,6 +3,7 @@ import random
 import pytest
 
 import covalent as ct
+from covalent._shared_files.util_classes import Status
 
 
 @pytest.mark.parametrize("iteration", range(5))
@@ -40,4 +41,4 @@ def test_benchmark_primality_test(benchmark, iteration):
     results, status = run_benchmark(iteration, primality_tests, *[nums_to_test])
     logger.debug(results.dict())
 
-    assert status == "COMPLETED"
+    assert status == Status("COMPLETED")
