@@ -26,6 +26,14 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 
+@pytest.fixture(scope="session")
+def event_loop():
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    yield loop
+    loop.close()
+
+
 def test_dask_executor_init(mocker):
     """Test dask executor constructor"""
 
@@ -56,7 +64,8 @@ def test_dask_wrapper_fn():
     assert stderr == "Bye\n"
 
 
-def test_dask_executor_run():
+@pytest.mark.asyncio
+async def test_dask_executor_run(event_loop):
     """Test run method for Dask executor"""
     import io
     import sys
@@ -82,14 +91,15 @@ def test_dask_executor_run():
     dask_exec._initialize_task_data("asdf", 1)
 
     with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
-        result = asyncio.run(dask_exec.run(f, args, kwargs, task_metadata))
+        result = await dask_exec.run(f, args, kwargs, task_metadata)
 
     assert result == (5, 7)
     assert stdout.getvalue() == "Hello\n"
     assert stderr.getvalue() == "Bye\n"
 
 
-def test_dask_executor_run_cancelling_task():
+@pytest.mark.asyncio
+def test_dask_executor_run_cancelling_task(event_loop):
     """Test run method for Dask executor"""
     import io
     import sys
