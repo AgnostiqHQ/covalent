@@ -138,9 +138,13 @@ def test_server_config_manager_init_write_update_config(
         path_mock = mocker.patch("covalent._shared_files.config.Path.__init__", return_value=None)
         side_effect = None if path_exists else FileNotFoundError
         open_mock = mocker.patch("covalent._shared_files.config.open", side_effect=side_effect)
+        path_exists_mock = mocker.patch(
+            "covalent._shared_files.config.os.path.exists", return_value=path_exists
+        )
 
         cm = ServerConfigManager()
         assert hasattr(cm, "config_data")
+        path_exists_mock.assert_called_once()
         assert write_config_mock.called is write_config_called
         assert update_config_mock.called is update_config_called
 
