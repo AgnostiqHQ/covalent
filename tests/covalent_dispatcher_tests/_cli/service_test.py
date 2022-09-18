@@ -878,3 +878,28 @@ def test_start_dask_config_options_mem_per_workers_and_threads_per_worker(mocker
 
     assert set_config_mock.call_count == 6
     graceful_start_mock.assert_called_once()
+
+
+def test_sdk_no_cluster(mocker, monkeypatch):
+    runner = CliRunner()
+    port_val = 42
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start", return_value=port_val
+    )
+    db_mock = Mock()
+    mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
+    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
+
+    db_mock.is_migration_pending = False
+
+    cli_args = f"--port {port_val} -d --no-cluster"
+
+    res = runner.invoke(start, cli_args)
+
+    graceful_start_mock.assert_called_once()
+    set_config_mock.assert_has_calls([mock.call(CMType.CLIENT, "sdk.no_cluster", "true")])
