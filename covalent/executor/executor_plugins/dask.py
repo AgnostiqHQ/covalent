@@ -113,7 +113,11 @@ class DaskExecutor(AsyncBaseExecutor):
 
             await dask_client
 
-        future = dask_client.submit(dask_wrapper, function, args, kwargs)
+        if self._get_task_status(dispatch_id, node_id) != "CANCELLING":
+            future = dask_client.submit(dask_wrapper, function, args, kwargs)
+        else:
+            raise RuntimeError("Cancelled")
+
         self._set_task_data(dispatch_id, node_id, "dask_future", future)
         app_log.debug(f"Submitted task {node_id} to dask")
         result, worker_stdout, worker_stderr = await dask_client.gather(future)
