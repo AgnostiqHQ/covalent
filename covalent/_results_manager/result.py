@@ -972,6 +972,7 @@ Node Outputs
         if self._status in [Result.COMPLETED, Result.CANCELLED]:
             return
 
+        app_log.debug(f"Cancelling workflow {self._dispatch_id}")
         self._cancel_called = True
         await self._get_tasks_queue().put(-1)
         cache = self._get_executor_cache()

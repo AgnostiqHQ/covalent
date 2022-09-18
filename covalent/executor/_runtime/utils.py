@@ -22,7 +22,10 @@
 
 import asyncio
 
+from covalent._shared_files import logger
 from covalent._shared_files.defaults import parameter_prefix
+
+app_log = logger.app_log
 
 
 class ExecutorCache:
@@ -69,11 +72,14 @@ class ExecutorCache:
     # "cleanup" message
     async def finalize_executors(self):
         """Clean up any executors still running"""
+
+        app_log.debug("Finalizing executors")
         finalize_futures = []
         for key, executor in self.id_instance_map.items():
             if executor is None:
                 continue
             else:
                 finalize_futures.append(asyncio.create_task(executor._finalize()))
+                app_log.debug(f"Finalizing executor instance {key}")
 
         await asyncio.gather(*finalize_futures)

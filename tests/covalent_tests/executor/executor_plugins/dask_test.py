@@ -89,6 +89,37 @@ def test_dask_executor_run():
     assert stderr.getvalue() == "Bye\n"
 
 
+def test_dask_executor_run_cancelling_task():
+    """Test run method for Dask executor"""
+    import io
+    import sys
+    from contextlib import redirect_stderr, redirect_stdout
+
+    from dask.distributed import LocalCluster
+
+    from covalent.executor import DaskExecutor
+
+    cluster = LocalCluster()
+
+    dask_exec = DaskExecutor(cluster.scheduler_address)
+
+    def f(x, y):
+        print("Hello", file=sys.stdout)
+        print("Bye", file=sys.stderr)
+        return x, y
+
+    args = [5]
+    kwargs = {"y": 7}
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    dask_exec._initialize_runtime()
+    dask_exec._initialize_task_data("asdf", 1)
+    dask_exec._set_task_status("asdf", 1, "CANCELLING")
+
+    with pytest.raises(RuntimeError) as exc:
+        with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
+            result = asyncio.run(dask_exec.run(f, args, kwargs, task_metadata))
+
+
 @pytest.mark.asyncio
 async def test_dask_executor_cancel(mocker):
     """Test cancel method for Dask executor"""
