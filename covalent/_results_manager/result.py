@@ -926,6 +926,14 @@ Node Outputs
         self._runtime_state["cancel_called"] = False
         self._runtime_state["node_failed"] = False
 
+    def __getstate__(self):
+        """Don't pickle runtime state which could contains locks or
+        other unpicklable objects."""
+
+        state = self.__dict__.copy()
+        state["_runtime_state"] = {}
+        return state
+
     def _get_executor_cache(self) -> ExecutorCache:
         """
         Private method for the dispatcher to retrieve the runtime

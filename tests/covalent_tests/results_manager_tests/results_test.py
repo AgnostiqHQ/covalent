@@ -576,6 +576,15 @@ def test_result_post_process(mocker, test_db):
     assert execution_result == compute_energy()
 
 
+def test_getstate(mocker):
+    """Test result.__getstate__()"""
+
+    result_object = get_mock_result()
+    result_object._initialize_runtime_state()
+    state = result_object.__getstate__()
+    assert state["_runtime_state"] == {}
+
+
 def test_get_executor_cache(mocker):
     result_object = get_mock_result()
     result_object._initialize_runtime_state()
