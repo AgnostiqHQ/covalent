@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `requirements-client.txt` file added.
 
+### Fixed
+
+- Config file is now locked during reads and writes to mitigate concurrency issues
+
 ### Changed
 
 - Installation requirements are now split into client side and server side requirements' files.

@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import fcntl
 import os
 import shutil
 from dataclasses import asdict
@@ -47,10 +48,13 @@ class ConfigManager:
         self.config_file = DEFAULT_CONFIG["sdk"]["config_file"]
 
         self.generate_default_config()
-        if os.path.exists(self.config_file):
-            # Update config with user configuration file:
+
+        try:
+            with open(self.config_file, "r") as f:
+                pass
+
             self.update_config()
-        else:
+        except FileNotFoundError:
             Path(self.config_file).parent.mkdir(parents=True, exist_ok=True)
             self.write_config()
 
@@ -110,14 +114,16 @@ class ConfigManager:
                         else:
                             old_dict.setdefault(key, value)
 
-        if os.path.exists(self.config_file):
-            file_config = toml.load(self.config_file)
+        with open(self.config_file, "r+") as f:
+            fcntl.lockf(f, fcntl.LOCK_EX)
+            file_config = toml.load(f)
+
             update_nested_dict(self.config_data, file_config)
             if new_entries:
                 update_nested_dict(self.config_data, new_entries, override_existing)
 
-        # Writing it back to the file
-        self.write_config()
+            # Writing it back to the file
+            self.write_config()
 
     def read_config(self) -> None:
         """
@@ -142,8 +148,8 @@ class ConfigManager:
         Returns:
             None
         """
-
         with open(self.config_file, "w") as f:
+            fcntl.lockf(f, fcntl.LOCK_EX)
             toml.dump(self.config_data, f)
 
     def purge_config(self) -> None:
