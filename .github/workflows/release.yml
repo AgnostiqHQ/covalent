@@ -248,10 +248,13 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
-        if: github.event.inputs.stable_version
+        if: inputs.stable_version
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -275,45 +278,32 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.ECR_PUBLIC_UPLOAD_ROLE }}
           aws-region: us-east-1
-
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Generate tag
         run: |
           aws --version
           docker info
           TAG="$(cat ./VERSION)"
-          if aws ecr describe-images \
-            --repository-name covalent
-            --image-ids imageTag=$TAG &>/dev/null ; then
-            SHORT_SHA="${GITHUB_SHA::8}"
-            TAG=$TAG-$SHORT_SHA
-          fi
           echo "TAG: $TAG"
           echo "TAG=$TAG" >> $GITHUB_ENV
 
       - name: Login to Public Registry
-        uses: docker/login-action@v1
-        with:
-          registry: public.ecr.aws
-          username: ${{ secrets.AWS_KEY_ID }}
-          password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
 
       - name: Build and push pre-release
         if: >
           inputs.prerelease
-          && !github.events.inputs.stable_version
+          && !inputs.stable_version
           && github.event_name == 'workflow_call'
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           file: ./Dockerfile.dev
-          platforms: all
+          platforms: linux/amd64
           push: true
           tags: |
             public.ecr.aws/covalent/covalent:latest
@@ -387,13 +377,14 @@ jobs:
       - name: Tag stable release
         if: >
           github.event_name == 'workflow_dispatch'
-          && github.event.inputs.stable_version
+          && inputs.stable_version
           && !inputs.prerelease
           && !github.events.inputs.test_release
           && contains(env.PAUL_BLART, github.actor)
         run: |
-          MANIFEST=$(aws ecr batch-get-image --repository-name covalent --image-ids imageTag=${{ github.events.inputs.stable_version }} --output json | jq --raw-output --join-output '.images[0].imageManifest')
-          aws ecr put-image --repository-name covalent --image-tag stable --image-manifest "$MANIFEST"
+          docker pull public.ecr.aws/covalent/covalent:${{ inputs.stable_version }}
+          docker tag public.ecr.aws/covalent/covalent:${{ inputs.stable_version }} public.ecr.aws/covalent/covalent:stable
+          docker push public.ecr.aws/covalent/covalent:stable
 
       - name: Build AWS executor stable image
         if: >
