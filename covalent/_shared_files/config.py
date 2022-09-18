@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import copy
+import fcntl
 import os
 import shutil
 from dataclasses import asdict
@@ -103,14 +104,16 @@ class ConfigManager:
                         else:
                             old_dict.setdefault(key, value)
 
-        if os.path.exists(self.config_file):
-            file_config = toml.load(self.config_file)
+        with open(self.config_file, "r+") as f:
+            fcntl.lockf(f, fcntl.LOCK_EX)
+            file_config = toml.load(f)
+
             update_nested_dict(self.config_data, file_config)
             if new_entries:
                 update_nested_dict(self.config_data, new_entries, override_existing)
 
-        # Writing it back to the file
-        self.write_config()
+            # Writing it back to the file
+            self.write_config()
 
     def read_config(self) -> None:
         """
@@ -135,8 +138,8 @@ class ConfigManager:
         Returns:
             None
         """
-
         with open(self.config_file, "w") as f:
+            fcntl.lockf(f, fcntl.LOCK_EX)
             toml.dump(self.config_data, f)
 
     def purge_config(self) -> None:
@@ -218,6 +221,9 @@ class ServerConfigManager(ConfigManager):
 
 
 def get_default_config_manager(type: CMType):
+    """
+    Return the default config manager depending on the type
+    """
     return ClientConfigManager() if type == CMType.CLIENT else ServerConfigManager()
 
 

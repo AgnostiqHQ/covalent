@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import covalent as ct
+from covalent._shared_files.util_classes import Status
 
 
 @pytest.mark.parametrize("iteration", range(5))
@@ -29,4 +30,4 @@ def test_benchmark_matrix_multiplication(benchmark, iteration):
     results, status = run_benchmark(iteration, matrix_multiplication, *[arraysizes])
     logger.debug(results.dict())
 
-    assert status == "COMPLETED"
+    assert status == Status("COMPLETED")

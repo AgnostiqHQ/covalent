@@ -136,10 +136,15 @@ def test_server_config_manager_init_write_update_config(
             "covalent._shared_files.config.ServerConfigManager.get", side_effect=config_keys
         )
         path_mock = mocker.patch("covalent._shared_files.config.Path.__init__", return_value=None)
-        mocker.patch("os.path.exists", return_value=path_exists)
+        side_effect = None if path_exists else FileNotFoundError
+        open_mock = mocker.patch("covalent._shared_files.config.open", side_effect=side_effect)
+        path_exists_mock = mocker.patch(
+            "covalent._shared_files.config.os.path.exists", return_value=path_exists
+        )
 
         cm = ServerConfigManager()
         assert hasattr(cm, "config_data")
+        path_exists_mock.assert_called_once()
         assert write_config_mock.called is write_config_called
         assert update_config_mock.called is update_config_called
 
@@ -391,9 +396,11 @@ def test_write_client_config(mocker):
 
     cm = ClientConfigManager()
     toml_dump_mock = mocker.patch("covalent._shared_files.config.toml.dump")
+    fnctl_lock_mock = mocker.patch("covalent._shared_files.config.fcntl.lockf")
     open_mock = mocker.patch("covalent._shared_files.config.open")
     mock_file = open_mock.return_value.__enter__.return_value
     cm.write_config()
+    fnctl_lock_mock.assert_called_once()
     toml_dump_mock.assert_called_once_with(cm.config_data, mock_file)
     open_mock.assert_called_once_with(cm.config_file, "w")
 
@@ -404,10 +411,12 @@ def test_write_server_config(mocker):
     cm = ServerConfigManager()
     toml_dump_mock = mocker.patch("covalent._shared_files.config.toml.dump")
     open_mock = mocker.patch("covalent._shared_files.config.open")
+    lock_mock = mocker.patch("fcntl.lockf")
     mock_file = open_mock.return_value.__enter__.return_value
     cm.write_config()
     toml_dump_mock.assert_called_once_with(cm.config_data, mock_file)
     open_mock.assert_called_once_with(cm.config_file, "w")
+    lock_mock.assert_called_once()
 
 
 def test_client_config_manager_set(mocker):

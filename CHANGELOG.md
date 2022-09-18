@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Fixed `asserts` in stress tests
 ### Changed
 
 - Split the `ConfigManager` into `Client` and `Server` components
@@ -15,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `requirements-client.txt` file added.
+
+### Fixed
+
+- Config file is now locked during reads and writes to mitigate concurrency issues
 
 ### Changed
 
@@ -33,6 +40,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding `nightly.yml` workflow for nightly CI
 - Updated triggers to `tests` and `changelog` workflows
 - Enhanced pre-release workflows
+- Removed badges workflow; version badge is now generated using the latest pre-release tag
+- Removed unused `push_to_s3` workflow
+- Workflows authenticate to AWS using OIDC with specific roles
+- Only the recommended platform is tested on pull requests
+- Update check blocks to assert the `workflow_call` event type is replaced with `schedule`
 
 ## [0.198.0] - 2022-09-14
 
