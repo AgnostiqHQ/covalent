@@ -26,9 +26,9 @@ from unittest.mock import Mock
 import mock
 import pytest
 from click.testing import CliRunner
-from covalent._shared_files.config import CMType
 
 from covalent._data_store.datastore import DataStore
+from covalent._shared_files.config import CMType
 from covalent_dispatcher._cli.service import (
     MIGRATION_COMMAND_MSG,
     MIGRATION_WARNING_MSG,
@@ -302,14 +302,17 @@ def test_purge_proceed(hard, mocker):
     """Test the 'covalent purge' CLI command."""
 
     from covalent_dispatcher._cli.service import UI_PIDFILE
+    from covalent_dispatcher._cli.service import ClientConfigManager as ccm
 
     runner = CliRunner()
 
-    dir_list = [mock.call(CMType.CLIENT, "sdk.log_dir"),
-                mock.call(CMType.SERVER, "service.cache_dir"),
-                mock.call(CMType.SERVER, "service.log_dir")]
+    dir_list = [
+        mock.call(CMType.CLIENT, "sdk.log_dir"),
+        mock.call(CMType.SERVER, "service.cache_dir"),
+        mock.call(CMType.SERVER, "service.log_dir"),
+    ]
 
-    #dir_list = [
+    # dir_list = [
     #    mock.call(dirs)
     #    for dirs in [
     #        "sdk.log_dir",
@@ -317,7 +320,7 @@ def test_purge_proceed(hard, mocker):
     #        "dispatcher.log_dir",
     #        "user_interface.log_dir",
     #    ]
-    #]
+    # ]
 
     def get_config_side_effect(conf_name):
         return "file" if conf_name == "dispatcher.db_path" else "dir"
@@ -349,10 +352,9 @@ def test_purge_proceed(hard, mocker):
     else:
         result = runner.invoke(purge, input="y")
 
-    #get_config_mock.assert_has_calls(dir_list, any_order=True)
-    print(get_config_mock.__dict__)
+    get_config_mock.assert_has_calls(dir_list, any_order=True)
     assert get_config_mock.call_count == 3
-    #os_path_dirname_mock.assert_called_with(cm.config_file)
+    os_path_dirname_mock.assert_called_with(ccm.config_file)
     os_path_isdir_mock.assert_has_calls([mock.call("dir"), mock.call("dir")], any_order=True)
 
     graceful_shutdown_mock.assert_called_with(UI_PIDFILE)
@@ -439,7 +441,6 @@ def test_logs(exists, mocker):
 def test_config(mocker):
     """Test covalent config cli"""
     from covalent._shared_files.config import ClientConfigManager as ccm
-    from covalent._shared_files.config import ServerConfigManager as scm
 
     cfg_read_config_mock = mocker.patch("covalent_dispatcher._cli.service.ccm.read_config")
     scm_cfg_read_config_mock = mocker.patch("covalent_dispatcher._cli.service.scm.read_config")
