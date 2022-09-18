@@ -112,25 +112,6 @@ def get_default_service_config():
     }
 
 
-def get_default_dispatcher_config():
-    return {
-        "address": "localhost",
-        "port": int(os.environ.get("COVALENT_SVC_PORT"))
-        if os.environ.get("COVALENT_SVC_PORT")
-        else 48008,
-        "cache_dir": os.environ.get("COVALENT_CACHE_DIR")
-        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
-        "results_dir": os.environ.get("COVALENT_RESULTS_DIR", "results"),
-        "log_dir": os.environ.get("COVALENT_LOGDIR")
-        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
-        "db_path": os.environ.get("COVALENT_DATABASE")
-        or (
-            (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
-            + "/covalent/dispatcher_db.sqlite"
-        ),
-    }
-
-
 def get_default_dask_config():
     return {
         "cache_dir": os.environ.get("COVALENT_CACHE_DIR")
