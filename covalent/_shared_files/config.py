@@ -18,8 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import fcntl
 import copy
+import fcntl
 import os
 import shutil
 from dataclasses import asdict
