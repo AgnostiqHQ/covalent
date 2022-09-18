@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed badges workflow; version badge is now generated using the latest pre-release tag
 - Removed unused `push_to_s3` workflow
 - Workflows authenticate to AWS using OIDC with specific roles
+- Only the recommended platform is tested on pull requests
 
 ## [0.198.0] - 2022-09-14
 
