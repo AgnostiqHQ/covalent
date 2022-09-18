@@ -20,6 +20,7 @@
 
 """Runtime utility classes for the executor"""
 
+import asyncio
 
 from covalent._shared_files.defaults import parameter_prefix
 
@@ -68,8 +69,11 @@ class ExecutorCache:
     # "cleanup" message
     async def finalize_executors(self):
         """Clean up any executors still running"""
+        finalize_futures = []
         for key, executor in self.id_instance_map.items():
             if executor is None:
                 continue
             else:
-                await executor._finalize()
+                finalize_futures.append(asyncio.create_task(executor._finalize()))
+
+        await asyncio.gather(*finalize_futures)
