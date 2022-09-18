@@ -21,6 +21,9 @@
 """Tests for Covalent dask executor."""
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 
 
 def test_dask_executor_init(mocker):
@@ -55,7 +58,6 @@ def test_dask_wrapper_fn():
 
 def test_dask_executor_run():
     """Test run method for Dask executor"""
-
     import io
     import sys
     from contextlib import redirect_stderr, redirect_stdout
@@ -76,9 +78,36 @@ def test_dask_executor_run():
     args = [5]
     kwargs = {"y": 7}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    dask_exec._initialize_runtime()
+    dask_exec._initialize_task_data("asdf", 1)
+
     with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
         result = asyncio.run(dask_exec.run(f, args, kwargs, task_metadata))
 
     assert result == (5, 7)
     assert stdout.getvalue() == "Hello\n"
     assert stderr.getvalue() == "Bye\n"
+
+
+@pytest.mark.asyncio
+async def test_dask_executor_cancel(mocker):
+    """Test cancel method for Dask executor"""
+
+    from covalent.executor import DaskExecutor
+
+    dask_exec = DaskExecutor("localhost:5873")
+    key = "a"
+    mock_cancel_fut = AsyncMock()
+    dispatch_id = "test_dispatch"
+    node_id = 1
+    fut = MagicMock()
+    fut.cancel = mock_cancel_fut
+    get_data_mock = mocker.patch(
+        "covalent.executor.base.AsyncBaseExecutor._get_task_data", return_value=fut
+    )
+
+    await dask_exec.cancel(dispatch_id, node_id)
+
+    get_data_mock.assert_called_once_with(dispatch_id, node_id, "dask_future")
+
+    mock_cancel_fut.assert_awaited_once()

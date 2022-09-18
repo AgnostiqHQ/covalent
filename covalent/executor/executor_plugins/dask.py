@@ -92,16 +92,16 @@ class DaskExecutor(AsyncBaseExecutor):
 
         self.scheduler_address = scheduler_address
 
-    async def setup(self, task_metadata: Dict = {}):
-        app_log.debug(f"Dask executor {self.instance_id}: provisioning resources")
-
-    async def teardown(self, resource_metadata: Dict = {}):
-        if not resource_metadata:
-            app_log.debug(f"Dask executor {self.instance_id}: Relinquishing resources")
+    async def cancel(self, dispatch_id: str, node_id: int):
+        fut = self._get_task_data(dispatch_id, node_id, "dask_future")
+        app_log.debug(f"Cancelling dask job for {dispatch_id}:{node_id}")
+        await fut.cancel()
+        app_log.debug(f"Cancelled dask job for {dispatch_id}:{node_id}")
 
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
 
+        dispatch_id = task_metadata["dispatch_id"]
         node_id = task_metadata["node_id"]
         app_log.debug(f"Dask executor {self.instance_id} has {self._tasks_left} tasks left")
 
@@ -114,11 +114,11 @@ class DaskExecutor(AsyncBaseExecutor):
             await dask_client
 
         future = dask_client.submit(dask_wrapper, function, args, kwargs)
+        self._set_task_data(dispatch_id, node_id, "dask_future", future)
         app_log.debug(f"Submitted task {node_id} to dask")
         result, worker_stdout, worker_stderr = await dask_client.gather(future)
 
         print(worker_stdout, end="", file=sys.stdout)
         print(worker_stderr, end="", file=sys.stderr)
 
-        # FIX: need to get stdout and stderr from dask worker and print them
         return result
