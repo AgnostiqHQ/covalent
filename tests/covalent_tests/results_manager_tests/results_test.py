@@ -653,3 +653,31 @@ async def test_cancel_workflow(mocker):
     mock_finalize.assert_awaited()
 
     subresult_object._cancel.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_cancel_completed_workflow(mocker):
+    """Test Result._cancel() for completed or already cancelled workflows"""
+
+    result_object = get_mock_sublattice_result()
+    result_object._initialize_nodes()
+    result_object._initialize_runtime_state()
+    result_object._status = Result.COMPLETED
+    cache = ExecutorCache()
+    result_object._set_executor_cache(cache)
+    mock_finalize = mocker.patch(
+        "covalent.executor._runtime.utils.ExecutorCache.finalize_executors"
+    )
+    mock_put = mocker.patch("asyncio.Queue.put")
+    subresult_object = get_mock_result()
+    subresult_object._cancel = AsyncMock()
+    tg = result_object.lattice.transport_graph
+    tg.set_node_value(2, "sublattice_result", subresult_object)
+
+    await result_object._cancel()
+
+    mock_put.assert_not_awaited()
+    assert not result_object._cancel_called
+    mock_finalize.assert_not_awaited()
+
+    subresult_object._cancel.assert_not_awaited()
