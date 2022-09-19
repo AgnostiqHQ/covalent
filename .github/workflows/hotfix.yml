@@ -58,7 +58,7 @@ jobs:
           IFS='-' read -ra latest_tag <<< $(echo ${{ steps.latest-tag-release.outputs.tag }} | cut -c2-)
           if [ ${stable_tag[0]} != ${release_tag[1]} ] ; then
             echo "This branch does not contain a matching stable release. Hotfixes can only be applied to stable releases."
-            exit 1
+            exit 0
           if [ ${#latest_tag[1]} -eq 0 ] ; then
             version="${latest_tag[0]}-1-rc.0"
           elif [[ ${latest_tag[1]} =~ $re ]] && [ ${#latest_tag[2]} -eq 0 ] ; then
@@ -77,18 +77,12 @@ jobs:
           echo "VERSION=$version" >> $GITHUB_ENV
       - name: Commit
         uses: EndBug/add-and-commit@v9
+        if: ${{ env.VERSION }}
         with:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
           message: "${{ github.event.issue.title }} (#${{ github.event.issue.number }})"
           tag: "v${{ env.VERSION }}"
-      - name: Comment
-        if: always()
-        uses: thollander/actions-comment-pull-request@v1
-        with:
-          message: env.MESSAGE
-          pr_number: github.event.issue.number
-          GITHUB_TOKEN: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
   release:
     name: Create Release
