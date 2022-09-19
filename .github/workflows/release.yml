@@ -443,15 +443,21 @@ jobs:
           arguments: -syntax-only
           working_directory: images/aws
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
       - name: Wait until latest version is available on PyPI
         run: |
           RELEASE_VERSION=${{ needs.pypi.outputs.version }}
-          VERSION_ON_PYPI=""
+          LATEST_VERSION_ON_PYPI=""
           pypi_status=$(getconf ARG_MAX)
           while [ $pypi_status -gt 0 ]; do
-            VERSION_ON_PYPI=$(curl -X GET https://pypi.org/pypi/covalent/json | jq '.releases' | jq 'keys' | jq -r 'last')
-          if [[ "$VERSION_ON_PYPI" == "$RELEASE_VERSION" ]]; then
+            LATEST_VERSION_ON_PYPI=$(pip index versions covalent | grep "covalent" | cut -d' ' -f2 | cut -d'(' -f2 | cut -d')' -f1)
+          if [[ "$LATEST_VERSION_ON_PYPI" == "$RELEASE_VERSION" ]]; then
               pypi_status=0
+              exit $pypi_status
           else
             echo "Waiting for the covalent:$RELEASE_VERSION to become available on PyPI"
             sleep 10
