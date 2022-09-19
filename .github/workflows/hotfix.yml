@@ -87,6 +87,7 @@ jobs:
   release:
     name: Create Release
     needs: hotfix
+    if: needs.hotfix.outputs.version
     uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
     with:
       prerelease: true
