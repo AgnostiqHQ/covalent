@@ -306,6 +306,7 @@ class BaseExecutor(_AbstractBaseExecutor):
 
     def cancel(self, dispatch_id: str, node_id: int):
         app_log.warning(f"Cancel not implemented for {type(self)}")
+        raise NotImplementedError
 
     def setup(self, task_metadata: Dict = {}):
         pass
@@ -321,7 +322,10 @@ class BaseExecutor(_AbstractBaseExecutor):
                 self._set_task_status(dispatch_id, node_id, "CANCELLING")
 
         if status == "RUNNING":
-            self.cancel(dispatch_id, node_id)
+            try:
+                self.cancel(dispatch_id, node_id)
+            except NotImplementedError as ex:
+                pass
 
     def _finalize_sync(self):
 
@@ -590,6 +594,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
     async def cancel(self, dispatch_id: str, node_id: int):
         app_log.warning(f"Cancel not implemented for {type(self)}")
+        raise NotImplementedError
 
     async def setup(self, task_metadata: Dict = {}):
         pass
@@ -602,7 +607,10 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         status = self._get_task_status(dispatch_id, node_id)
         if status == "RUNNING":
             self._set_task_status(dispatch_id, node_id, "CANCELLING")
-            await self.cancel(dispatch_id, node_id)
+            try:
+                await self.cancel(dispatch_id, node_id)
+            except NotImplementedError as ex:
+                pass
 
     async def _finalize(self):
         tasks = self._get_registered_tasks()

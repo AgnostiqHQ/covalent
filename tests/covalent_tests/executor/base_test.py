@@ -969,27 +969,34 @@ def test_executor_get_task_status():
 def test_executor_cancel_stub(mocker):
     mock_warn = mocker.patch("covalent.executor.base.app_log.warning")
     me = MockExecutor(log_stdout="/tmp/stdout.log")
-    me.cancel("asdf", 1)
     me_type = type(me)
-    mock_warn.assert_called_once_with(f"Cancel not implemented for {me_type}")
+    with pytest.raises(NotImplementedError) as ex:
+        me.cancel("asdf", 1)
+        mock_warn.assert_called_once_with(f"Cancel not implemented for {me_type}")
 
 
 @pytest.mark.asyncio
 async def test_async_executor_cancel_stub(mocker):
     mock_warn = mocker.patch("covalent.executor.base.app_log.warning")
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
-    await me.cancel("asdf", 1)
     me_type = type(me)
-    mock_warn.assert_called_once_with(f"Cancel not implemented for {me_type}")
+    with pytest.raises(NotImplementedError) as ex:
+        await me.cancel("asdf", 1)
+        mock_warn.assert_called_once_with(f"Cancel not implemented for {me_type}")
 
 
 def test_executor_cancel_task(mocker):
     me = MockExecutor(log_stdout="/tmp/stdout.log")
-    mock_cancel = mocker.patch("covalent.executor.base.BaseExecutor.cancel")
     me._initialize_runtime()
     me._initialize_task_data("asdf", 1)
     me._initialize_task_data("asdf", 2)
     me._set_task_status("asdf", 2, "COMPLETED")
+
+    me._cancel_task("asdf", 1)
+    assert me._get_task_status("asdf", 1) == "CANCELLING"
+
+    me._initialize_task_data("asdf", 1)
+    mock_cancel = mocker.patch("covalent.executor.base.BaseExecutor.cancel")
     me._cancel_task("asdf", 1)
     assert me._get_task_status("asdf", 1) == "CANCELLING"
     mock_cancel.assert_called_with("asdf", 1)
@@ -1003,11 +1010,16 @@ def test_executor_cancel_task(mocker):
 @pytest.mark.asyncio
 async def test_async_executor_cancel_task(mocker):
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
-    mock_cancel = mocker.patch("covalent.executor.base.AsyncBaseExecutor.cancel")
     me._initialize_runtime()
     me._initialize_task_data("asdf", 1)
     me._initialize_task_data("asdf", 2)
     me._set_task_status("asdf", 2, "COMPLETED")
+
+    await me._cancel_task("asdf", 1)
+    assert me._get_task_status("asdf", 1) == "CANCELLING"
+
+    me._initialize_task_data("asdf", 1)
+    mock_cancel = mocker.patch("covalent.executor.base.AsyncBaseExecutor.cancel")
     await me._cancel_task("asdf", 1)
     assert me._get_task_status("asdf", 1) == "CANCELLING"
     mock_cancel.assert_awaited_with("asdf", 1)
