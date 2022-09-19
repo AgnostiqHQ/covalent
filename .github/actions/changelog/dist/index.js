@@ -9785,7 +9785,7 @@ try {
             "Changelog does not contain enough information to update the version."
           );
         }
-        const version = vmajor + "." + vminor + "." + vpatch;
+        const version = vmajor + "." + vminor + "." + vpatch + '-rc.0';
         const changelog_header =
           "## [" + version + "] - " + new Date().toISOString().split("T")[0];
         let message = "noop";
