@@ -15,7 +15,7 @@ const Terminal = () => {
     useEffect(() => {
         socket.emit('start_terminal', () => {
             fitAddon.fit();
-            console.log("sending new dimensions to server's pty", dims);
+            const dims = { cols: xtermRef.current.terminal.cols, rows: xtermRef.current.terminal.rows };
             socket.emit("resize", dims);
             console.debug(`socket ${socket.id} connected: ${socket.connected}`)
         })
