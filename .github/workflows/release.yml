@@ -204,10 +204,17 @@ jobs:
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
           fi
-          if ${{ inputs.prerelease == true }} ; then
-            VERSION="${VERSION}rc0"
-          fi
-          VERSION="$(echo $VERSION | sed 's/-/.post/')"
+          IFS='-' read -ra version_sub <<< $VERSION
+          if [ ${#version_sub[1]} -eq 0 ] ; then
+            #do nothing
+            :
+          elif [[ ${version_sub[1]} =~ rc ]] ; then
+            VERSION="${version_sub[0]}$(echo ${version_sub[1]} | sed 's/\.//')"
+          elif [ ${#version_sub[2]} -eq 0 ] ; then
+            VERSION="$(echo $VERSION | sed 's/-/.post/')"
+          else
+            VERSION="${version_sub[0]}.post${version_sub[1]}.dev$(echo ${version_sub[2]} | sed 's/rc.//')"
+           fi
           cd dist
           tar xzf covalent-${VERSION}.tar.gz
           diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
