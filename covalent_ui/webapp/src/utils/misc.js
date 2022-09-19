@@ -108,13 +108,27 @@ export const displayStatus = (status) => _.startCase(_.lowerCase(status))
 export const statusColor = (status) => {
   return {
     RUNNING: theme.palette.running.main,
-    NEW_OBJECT: theme.palette.running.main,
+    STARTING: theme.palette.running.main,
+    NEW_OBJECT: theme.palette.queued.main,
     COMPLETED: theme.palette.success.main,
+    FAILED: theme.palette.error.main,
+    CANCELLED: theme.palette.success.main,
     POSTPROCESSING: theme.palette.success.main,
     PENDING_POSTPROCESSING: theme.palette.success.main,
     POSTPROCESSING_FAILED: theme.palette.success.main,
-    FAILED: theme.palette.error.main,
-    CANCELLED: theme.palette.error.main,
+    REGISTERING: theme.palette.queued.main,
+    PENDING: theme.palette.queued.main,
+    PENDING_BACKEND: theme.palette.queued.main,
+    QUEUED: theme.palette.queued.main,
+    PROVISIONING: theme.palette.queued.main,
+    DEPROVISIONING: theme.palette.queued.main,
+    COMPLETING: theme.palette.success.main,
+    REG_FAILED: theme.palette.error.main,
+    BOOT_FAILED: theme.palette.error.main,
+    PROVISION_FAILED: theme.palette.error.main,
+    DEPROVISION_FAILED: theme.palette.error.main,
+    CONNECTION_LOST: theme.palette.error.main,
+    TIMEOUT: theme.palette.error.main,
   }[status]
 }
 
@@ -267,55 +281,55 @@ export const nodeLabelIcon = (type) => {
   switch (type) {
     case 'function':
       return (
-        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <FunctionSvg />
         </SvgIcon>
       )
     case 'electron_list':
       return (
-        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <ElectronListSvg />
         </SvgIcon>
       )
     case 'parameter':
       return (
-        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <ParameterSvg />
         </SvgIcon>
       )
     case 'sublattice':
       return (
-        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <SubLattice />
         </SvgIcon>
       )
     case 'electron_dict':
       return (
-        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <ElectronDictSvg />
         </SvgIcon>
       )
     case 'attribute':
       return (
-        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <AttributeSvg />
         </SvgIcon>
       )
     case 'generated':
       return (
-        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <GeneratedSvg />
         </SvgIcon>
       )
     case 'subscripted':
       return (
-        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <SubLattice />
         </SvgIcon>
       )
     case 'arg':
       return (
-        <SvgIcon sx={{ position: 'relative', top: '1.7px', fontSize: '16px' }}>
+        <SvgIcon sx={{ mt: 1 }}>
           <ArgSvg />
         </SvgIcon>
       )

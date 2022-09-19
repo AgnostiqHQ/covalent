@@ -70,6 +70,9 @@ const defaultTheme = createTheme({
     running: {
       main: '#dac3ff',
     },
+    queued: {
+      main: '#FFC164',
+    },
     text: {
       primary: '#CBCBD7',
       secondary: '#F1F1F6',
