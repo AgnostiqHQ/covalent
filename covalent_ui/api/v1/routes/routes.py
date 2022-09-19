@@ -32,8 +32,6 @@ from covalent_ui.api.v1.routes.end_points import (
 )
 
 routes = APIRouter()
-
-
 routes.include_router(summary_routes.routes, prefix="/api/v1/dispatches", tags=["Dispatches"])
 routes.include_router(lattice_route.routes, prefix="/api/v1/dispatches", tags=["Dispatches"])
 routes.include_router(graph_route.routes, prefix="/api/v1/dispatches", tags=["Graph"])

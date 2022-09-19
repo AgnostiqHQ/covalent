@@ -20,20 +20,11 @@
 """Logs response model"""
 
 
-from enum import Enum
 from typing import List, Optional, Union
 
 from pydantic import BaseModel, conint
 
-
-class CaseInsensitiveEnum(Enum):
-    """Enum overriden to support case insensitive keys"""
-
-    @classmethod
-    def _missing_(cls, value):
-        for member in cls:
-            if member.value == value.upper():
-                return member
+from covalent_ui.api.v1.utils.models_helper import CaseInsensitiveEnum, SortDirection
 
 
 class SortBy(CaseInsensitiveEnum):
@@ -43,14 +34,9 @@ class SortBy(CaseInsensitiveEnum):
     STATUS = "status"
 
 
-class SortDirection(CaseInsensitiveEnum):
-    """Values to decide sort direction"""
-
-    ASCENDING = "ASC"
-    DESCENDING = "DESC"
-
-
 class LogsRequest(BaseModel):
+    """Logs request model"""
+
     count: conint(gt=0, lt=100)
     offset: Optional[conint(gt=-1)] = 0
     sort_by: Optional[SortBy] = SortBy.LOG_DATE
