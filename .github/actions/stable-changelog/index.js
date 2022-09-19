@@ -7,13 +7,9 @@ try {
     .readFileSync(core.getInput("version-path"), "utf8")
     .trim();
   const changelog = fs.readFileSync(core.getInput("changelog-path"), "utf8");
-  let curline = 0;
-  let begin = Number.MAX_SAFE_INTEGER;
-  let end = Number.MAX_SAFE_INTEGER;
   const rl = readline.createInterface({
     input: fs.createReadStream(core.getInput("changelog-path")),
   });
-  let section, i, last_release;
   const re = /\[\d+\.\d+\.\d+(-\d+)*?\]/;
   const summary = {
     Authors: [],
@@ -25,6 +21,10 @@ try {
     Docs: [],
     Operations: [],
   };
+  let curline = 0;
+  let begin = Number.MAX_SAFE_INTEGER;
+  let end = Number.MAX_SAFE_INTEGER;
+  let section, i, last_release;
   rl.on("line", (text) => {
     if (text.match("\\b" + head_version + "\\b")) {
       begin = curline++;
