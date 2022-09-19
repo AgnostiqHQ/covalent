@@ -1,0 +1,59 @@
+name: dummy
+
+on:
+  pull_request:
+
+aws_ami:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout Terraform repository
+      uses: actions/checkout@v2
+      with:
+        repository: AgnostiqHQ/terraform
+        ref: refs/heads/develop
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Initialize Packer Templates
+      id: pkr_init
+      uses: hashicorp/packer-github-actions@master
+      with:
+        command: init
+        working_directory: images/aws
+    - name: Validate the Packer template
+      uses: hashicorp/packer-github-actions@master
+      id: pkr_validate
+      with:
+        command: validate
+        arguments: -syntax-only
+        working_directory: images/aws
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Wait until latest version is available on PyPI
+      run: |
+        RELEASE_VERSION=0.177.0
+        LATEST_VERSION_ON_PYPI=""
+        pypi_status=$(getconf ARG_MAX)
+        while [ $pypi_status -gt 0 ]; do
+          LATEST_VERSION_ON_PYPI=$(pip index versions covalent | grep "covalent" | cut -d' ' -f2 | cut -d'(' -f2 | cut -d')' -f1)
+          if [[ "$LATEST_VERSION_ON_PYPI" == "$RELEASE_VERSION" ]]; then
+            pypi_status=0
+            exit $pypi_status
+          else
+            echo "Waiting for the covalent:$RELEASE_VERSION to become available on PyPI"
+            sleep 10
+          fi
+        done
+    - name: Build the AMI
+      uses: hashicorp/packer-github-actions@master
+      with:
+        command: build
+        working_directory: images/aws
+      env:
+        PKR_VAR_covalent_version: "0.177.0"
+        PACKER_LOG: 1
