@@ -386,9 +386,6 @@ class BaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        with self._task_lock:
-            self._initialize_task_data(dispatch_id, node_id)
-
         # Use a dedicated lock b/c this might block for a long time
         with self._resource_lock:
             if not self._warmed_up:
