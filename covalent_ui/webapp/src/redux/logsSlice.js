@@ -27,7 +27,9 @@ import api from '../utils/api'
 const initialState = {
   // results cache mapped by dispatch id
   logList: [],
+  logFile: '',
   fetchLogList: { isFetching: false, error: null },
+  logFileList: { isFetching: false, error: null },
   totalDispatches: 0,
 }
 
@@ -37,6 +39,16 @@ export const fetchLogsList = createAsyncThunk(
     await api
       .get(
         `api/v1/logs/?&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
+      )
+      .catch(thunkAPI.rejectWithValue)
+)
+
+export const downloadCovalentLogFile = createAsyncThunk(
+  'logs/download',
+  async (bodyParams, thunkAPI) =>
+    await api
+      .get(
+        `api/v1/logs/download`
       )
       .catch(thunkAPI.rejectWithValue)
 )
@@ -60,6 +72,19 @@ export const logsSlice = createSlice({
       .addCase(fetchLogsList.rejected, (state, { payload }) => {
         state.fetchLogList.isFetching = false
         state.fetchLogList.error = payload
+      })
+      .addCase(downloadCovalentLogFile.fulfilled, (state, { payload }) => {
+        // log file download
+        state.logFileList.isFetching = false
+        state.logFile = payload
+      })
+      .addCase(downloadCovalentLogFile.pending, (state, { payload }) => {
+        state.logFileList.isFetching = true
+        state.logFileList.error = null
+      })
+      .addCase(downloadCovalentLogFile.rejected, (state, { payload }) => {
+        state.logFileList.isFetching = false
+        state.logFileList.error = payload
       })
   },
 })
