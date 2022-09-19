@@ -65,13 +65,23 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
           ref: "v${{ github.event.inputs.stable_version }}"
+      - name: Format prerelease ref
+        if: inputs.prerelease
+        run: |
+          re='^[0-9]+$'
+          IFS='.' read -ra version <<< "${{ inputs.prerelease_version }}"
+          if [[ ${version[0]} =~ $re ]] ; then
+            echo "PRERELEASE=v$version" >> $GITHUB_ENV
+          else
+            echo "PRERELEASE=$version" >> $GITHUB_ENV
+          fi
       - name: Check out prerelease tag
         uses: actions/checkout@v2
         if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: "v${{ inputs.prerelease_version }}"
+          ref: "${{ env.PRERELEASE }}"
       - name: Read version
         run: |
           if [ -z ${{ inputs.prerelease }} ] && \
