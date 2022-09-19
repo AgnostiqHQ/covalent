@@ -38,6 +38,7 @@ const Terminal = () => {
                     Terminal
                 </Typography>
                 <Chip sx={{ height: '24px', ml: 1, mb: 1.5, fontSize: '0.75rem', color: '#FFFFFF' }} label='BETA' variant='outlined' />
+                <Chip sx={{ height: '24px', ml: 1, mb: 1.5, fontSize: '0.75rem', color: socket.connected ? 'green' : 'red' }} label={socket.connected ? 'Connected' : 'Disconnected'} variant='outlined' />
             </Grid>
             <XTerm
                 options={{
