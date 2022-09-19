@@ -108,6 +108,10 @@ class Logs:
             reverse=reverse_list,
         )
 
-        modified_data = modified_data[offset:count] if count != 0 else modified_data[offset:]
+        print(offset, count)
+
+        modified_data = (
+            modified_data[offset : count + offset] if count != 0 else modified_data[offset:]
+        )
 
         return LogsResponse(items=modified_data, total_count=len(result_data))

@@ -25,7 +25,6 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
-from pydantic import conint
 
 from covalent._shared_files.config import get_config
 from covalent_ui.api.v1.data_layer.logs_dal import Logs
@@ -36,7 +35,7 @@ routes: APIRouter = APIRouter()
 
 @routes.get("/")
 def get_logs(
-    count: Optional[conint(lt=100)] = Query(0),
+    count: Optional[int] = Query(0),
     offset: Optional[int] = Query(0),
     sort_by: Optional[SortBy] = SortBy.LOG_DATE,
     search: Optional[str] = "",
@@ -58,5 +57,5 @@ def download_logs():
     """
     log_file = get_config("user_interface.log_dir") + "/covalent_ui.log"
     if os.path.exists(log_file):
-        return StreamingResponse(open(log_file, "rb"))
+        return StreamingResponse(open(log_file, "rb"), media_type="text/html")
     return {"data": None}
