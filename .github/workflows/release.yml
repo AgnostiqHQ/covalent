@@ -437,7 +437,6 @@ jobs:
       - name: Validate the Packer template
         uses: hashicorp/packer-github-actions@master
         id: pkr_validate
-        if: steps.pkr_init.outcome == 'success'
         with:
           command: validate
           arguments: -syntax-only
@@ -465,7 +464,6 @@ jobs:
           done
 
       - name: Build the AMI
-        if: steps.pkr_validate.outcome == 'success'
         uses: hashicorp/packer-github-actions@master
         with:
           command: build
