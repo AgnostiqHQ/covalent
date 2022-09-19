@@ -44,7 +44,6 @@ import { ReactComponent as TimeoutSvg } from '../assets/status/timeout.svg'
 import { ReactComponent as QueuedSvg } from '../assets/status/queued.svg'
 import { ReactComponent as CompletingSvg } from '../assets/status/completing.svg'
 
-
 export const secondsToHms = (ms) => {
   let time = ''
   const sec = Math.floor(ms / 1000)
@@ -169,7 +168,7 @@ export const logStatusLabel = (status) => {
       WARNING: 'Warning',
       WARN: 'Warn',
       ERROR: 'Error',
-      CRITICAL: 'Critical'
+      CRITICAL: 'Critical',
     }[status] || status
   )
 }
@@ -186,7 +185,7 @@ export const logStatusIcon = (status) => {
     case 'INFO':
     case 'DEBUG':
       return (
-        <SvgIcon sx={{ mt: 1.2 }}>
+        <SvgIcon sx={{ mt: 1.6 }}>
           <InfoSvg />
         </SvgIcon>
       )
@@ -203,7 +202,6 @@ export const logStatusIcon = (status) => {
 }
 
 export const statusIcon = (status) => {
-
   switch (status) {
     case 'RUNNING':
     case 'STARTING':

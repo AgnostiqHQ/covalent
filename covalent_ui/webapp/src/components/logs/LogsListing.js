@@ -50,15 +50,15 @@ const headers = [
     sortable: true,
   },
   {
-    id: 'message',
-    getter: 'message',
-    label: 'Message',
+    id: 'log',
+    getter: 'log',
+    label: 'Log',
   },
 ]
 
 const ResultsTableToolbar = ({ query, onSearch, setQuery }) => {
   return (
-    <Toolbar disableGutters sx={{ mb: 1, width: '80%' }}>
+    <Toolbar disableGutters sx={{ mb: 1, width: '260px', height: '32px' }}>
       <Input
         fullWidth
         sx={{
@@ -69,7 +69,7 @@ const ResultsTableToolbar = ({ query, onSearch, setQuery }) => {
           borderRadius: '60px',
         }}
         disableUnderline
-        placeholder="Search"
+        placeholder="Search in logs"
         value={query}
         onChange={(e) => onSearch(e)}
         startAdornment={
@@ -92,7 +92,7 @@ const ResultsTableToolbar = ({ query, onSearch, setQuery }) => {
   )
 }
 
-const ResultsTableHead = ({ order, orderBy, onSort }) => {
+const ResultsTableHead = ({ order, orderBy, onSort, logListView }) => {
   return (
     <TableHead sx={{ position: 'sticky', zIndex: 19 }}>
       <TableRow>
@@ -119,14 +119,16 @@ const ResultsTableHead = ({ order, orderBy, onSort }) => {
             </TableCell>
           )
         })}
-        <TableCell>
-          <DownloadButton
-            data-testid="downloadButton"
-            size="small"
-            title="Download log"
-            isBorderPresent
-          />
-        </TableCell>
+        {!_.isEmpty(logListView) && (
+          <TableCell align="right">
+            <DownloadButton
+              data-testid="downloadButton"
+              size="small"
+              title="Download log"
+              isBorderPresent
+            />
+          </TableCell>
+        )}
       </TableRow>
     </TableHead>
   )
@@ -148,7 +150,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
     color: theme.palette.text.tertiary,
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.default,
   },
 
   // copy btn on hover
@@ -162,7 +164,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
     backgroundColor: theme.palette.background.paper,
 
     [`& .${tableCellClasses.root}`]: {
-      borderColor: theme.palette.background.coveBlack02,
+      borderColor: theme.palette.background.default,
       paddingTop: 4,
       paddingBottom: 4,
     },
@@ -172,11 +174,11 @@ const StyledTable = styled(Table)(({ theme }) => ({
   },
 
   [`& .${tableBodyClasses.root} .${tableRowClasses.root}`]: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.default,
     cursor: 'pointer',
 
     [`& .${tableCellClasses.root}`]: {
-      borderColor: theme.palette.background.coveBlack02,
+      borderColor: theme.palette.background.default,
       paddingTop: 4,
       paddingBottom: 4,
     },
@@ -195,19 +197,19 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize border
   [`& .${tableCellClasses.root}`]: {
-    borderColor: theme.palette.background.paper,
+    borderColor: theme.palette.background.default,
     paddingTop: 4,
     paddingBottom: 4,
   },
 
-  // [`& .${tableCellClasses.root}:first-of-type`]: {
-  //   borderTopLeftRadius: 8,
-  //   borderBottomLeftRadius: 8,
-  // },
-  // [`& .${tableCellClasses.root}:last-of-type`]: {
-  //   borderTopRightRadius: 8,
-  //   borderBottomRightRadius: 8,
-  // },
+  [`& .${tableCellClasses.root}:first-of-type`]: {
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+  },
+  [`& .${tableCellClasses.root}:last-of-type`]: {
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+  },
 }))
 
 const LogsListing = () => {
@@ -231,7 +233,6 @@ const LogsListing = () => {
 
   const logListAPI = () => {
     const bodyParams = {
-      count: 10,
       offset,
       sort_by: sortColumn,
       search: searchKey,
@@ -277,9 +278,10 @@ const LogsListing = () => {
               sx={{
                 height: _.isEmpty(logListView) ? 50 : '62vh',
                 '@media (min-width: 1700px)': {
-                  height: _.isEmpty(logListView) ? 50 : '75vh',
+                  height: _.isEmpty(logListView) ? 50 : '68vh',
                 },
-                width: '80%',
+                width: _.isEmpty(logListView) ? '40%' : null,
+
                 borderRadius:
                   _.isEmpty(logListView) && !isFetching ? '0px' : '8px',
               }}
@@ -291,6 +293,7 @@ const LogsListing = () => {
                   numSelected={_.size(selected)}
                   total={_.size(logListView)}
                   onSort={handleChangeSort}
+                  logListView={logListView}
                 />
 
                 <TableBody>
@@ -300,7 +303,7 @@ const LogsListing = () => {
                         <TableCell
                           style={{
                             width: 180,
-                            verticalAlign: 'top',
+                            verticalAlign: 'center',
                           }}
                         >
                           <Grid>{formatLogTime(result.logDate)}</Grid>
@@ -313,10 +316,11 @@ const LogsListing = () => {
                             {formatLogDate(result.logDate)}
                           </Grid>
                         </TableCell>
-                        <TableCell style={{ width: 180, verticalAlign: 'top' }}>
+                        <TableCell
+                          style={{ width: 180, verticalAlign: 'center' }}
+                        >
                           <Box
                             sx={{
-                              mb: 2,
                               display: 'flex',
                               alignItems: 'center',
                             }}
@@ -355,11 +359,8 @@ const LogsListing = () => {
                   textAlign: 'center',
                   color: 'text.secondary',
                   fontSize: 'h6.fontSize',
-                  width: '80%',
-                  paddingTop: 2,
+                  paddingTop: 4,
                   paddingBottom: 2,
-
-                  backgroundColor: (theme) => theme.palette.background.paper,
                 }}
               >
                 No results found.
@@ -373,22 +374,22 @@ const LogsListing = () => {
         <>
           {/*  */}
           {/* <Skeleton variant="rectangular" height={50} /> */}
-          <TableContainer sx={{ width: '80%' }}>
+          <TableContainer sx={{ width: '99.5%' }}>
             <StyledTable>
               <TableBody>
                 {[...Array(7)].map((_) => (
                   <TableRow key={Math.random()}>
-                    <TableCell>
+                    <TableCell sx={{ width: '13%' }}>
+                      <Skeleton sx={{ my: 2 }} />
+                    </TableCell>
+                    <TableCell sx={{ width: '13%' }}>
                       <Skeleton sx={{ my: 2 }} />
                     </TableCell>
                     <TableCell>
                       <Skeleton sx={{ my: 2 }} />
                     </TableCell>
-                    <TableCell>
-                      <Skeleton sx={{ my: 2 }} />
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <Skeleton sx={{ my: 2 }} />
+                    <TableCell sx={{ width: '5%' }}>
+                      <Skeleton sx={{ my: 1, py: 2, px: 0.5 }} />
                     </TableCell>
                   </TableRow>
                 ))}

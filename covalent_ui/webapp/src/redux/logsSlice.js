@@ -36,7 +36,7 @@ export const fetchLogsList = createAsyncThunk(
   async (bodyParams, thunkAPI) =>
     await api
       .get(
-        `api/v1/logs/?count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
+        `api/v1/logs/?&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
       )
       .catch(thunkAPI.rejectWithValue)
 )
