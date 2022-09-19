@@ -41,6 +41,7 @@ jobs:
       - name: Latest tag
         id: latest-tag
         uses: ./.github/actions/describe
+<<<<<<< HEAD
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.event.ref }}
