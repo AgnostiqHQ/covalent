@@ -39,12 +39,21 @@ class Logs:
             else:
                 if len(output_arr) == 0:
                     output_arr.append(last_msg)
-                output_arr.append(line)
-                output_arr[len(output_arr) - 1] += last_msg
+                else:
+                    output_arr[len(output_arr) - 1] += last_msg
                 last_msg = ""
+                output_arr.append(line)
         else:
-            last_msg += "\n" + line
+            last_msg += line + "\n"
         return last_msg
+
+    def __split_merge_json(self, line, regex_expr):
+        reg = regex_expr.split(line.rstrip("\n"))
+        json_data = {"log_date": None, "status": "INFO", "message": reg[0]}
+        if len(reg) >= 3:
+            parse_str = datetime.strptime(reg[1], "%Y-%m-%d %I:%M:%S,%f")
+            json_data = {"log_date": f"{parse_str}", "status": reg[2], "message": reg[3]}
+        return json_data
 
     def get_logs(self, sort_by, direction, search, count, offset):
         """
@@ -61,7 +70,7 @@ class Logs:
         output_data, result_data = [], []
         file_name, file_location = "covalent_ui.log", self.config("user_interface.log_dir")
         last_msg = ""
-        reverse_list = bool(direction.value == "DESC")
+        reverse_list = direction.value == "DESC"
 
         split_line, split_words = (
             r"\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,3})?,[0-9]+]"
@@ -70,8 +79,7 @@ class Logs:
         try:
             with open(f"{file_location}/{file_name}", "r") as logfile:
                 for line in logfile:
-                    msg = self.__split_merge_line(output_data, split_line, line, last_msg)
-                    last_msg = msg
+                    last_msg = self.__split_merge_line(output_data, split_line, line, last_msg)
                 if last_msg != "":
                     if len(output_data) == 0:
                         output_data.append(last_msg)
@@ -80,34 +88,26 @@ class Logs:
         except FileNotFoundError:
             output_data = []
 
-        if len(output_data) >= 1:
-            regex_word = re.compile(split_words)
-            for line in output_data:
-                reg = regex_word.split(line.rstrip("\n"))
-                if len(reg) >= 3:
-                    parse_str = datetime.strptime(reg[1], "%Y-%m-%d %I:%M:%S,%f")
-                    json_data = {"log_date": f"{parse_str}", "status": reg[2], "message": reg[3]}
-                    result_data.append(json_data)
-                else:
-                    result_data.append({"log_date": None, "status": "INFO", "message": reg[0]})
+        if len(output_data) == 0:
+            return LogsResponse(items=[], total_count=len(result_data))
 
-            if search != "":
-                result_data = [
-                    x
-                    for x in result_data
-                    if (search.lower() in x["message"].lower())
-                    or (search.lower() in x["status"].lower())
-                ]
+        regex_expr = re.compile(split_words)
+        result_data = [self.__split_merge_json(line, regex_expr) for line in output_data]
 
-            modified_data = sorted(
-                result_data,
-                key=lambda e: (e[sort_by.value] is not None, e[sort_by.value]),
-                reverse=reverse_list,
-            )
+        if search != "":
+            result_data = [
+                x
+                for x in result_data
+                if (search.lower() in x["message"].lower())
+                or (search.lower() in x["status"].lower())
+            ]
 
-            modified_data = modified_data[offset:]
-            modified_data = modified_data[:count]
-        else:
-            modified_data = []
+        modified_data = sorted(
+            result_data,
+            key=lambda e: (e[sort_by.value] is not None, e[sort_by.value]),
+            reverse=reverse_list,
+        )
+
+        modified_data = modified_data[offset:count] if count != 0 else modified_data[offset:]
 
         return LogsResponse(items=modified_data, total_count=len(result_data))

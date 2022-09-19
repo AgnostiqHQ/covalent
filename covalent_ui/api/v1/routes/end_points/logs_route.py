@@ -36,7 +36,7 @@ routes: APIRouter = APIRouter()
 
 @routes.get("/")
 def get_logs(
-    count: Optional[conint(gt=0, lt=100)] = Query(10),
+    count: Optional[conint(lt=100)] = Query(0),
     offset: Optional[int] = Query(0),
     sort_by: Optional[SortBy] = SortBy.LOG_DATE,
     search: Optional[str] = "",
