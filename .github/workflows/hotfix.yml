@@ -53,9 +53,9 @@ jobs:
         id: hotfix
         run: |
           re='^[0-9]+$'
-          IFS='-' read -ra stable_tag <<< "${{ steps.stable-tag.outputs.tag }}"
-          IFS='-' read -ra release_tag <<< "${{ github.event.ref }}"
-          IFS='-' read -ra latest_tag <<< "${{ steps.latest-tag-release.outputs.tag }}"
+          IFS='-' read -ra stable_tag <<< $(echo ${{ steps.stable-tag.outputs.tag }} | cut -c2-)
+          IFS='-' read -ra release_tag <<< $(echo ${{ github.event.ref }} | cut -c2-)
+          IFS='-' read -ra latest_tag <<< $(echo ${{ steps.latest-tag-release.outputs.tag }} | cut -c2-)
           if [ ${stable_tag[0]} != ${release_tag[1]} ] ; then
             echo "This branch does not contain a matching stable release. Hotfixes can only be applied to stable releases."
             exit 1
