@@ -38,6 +38,11 @@ on:
         required: true
         type: boolean
         default: true
+      prerelease_version:
+        description: "The prerelease version to release"
+        required: false
+        type: string
+        default: "master"
 
 env:
   PAUL_BLART: >
@@ -53,19 +58,20 @@ jobs:
   github:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out release tag
+      - name: Check out stable release tag
         uses: actions/checkout@v2
         if: github.event.inputs.stable_version
         with:
           persist-credentials: false
           fetch-depth: 0
           ref: "v${{ github.event.inputs.stable_version }}"
-      - name: Check out master
+      - name: Check out prerelease tag
         uses: actions/checkout@v2
         if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
+          ref: "v${{ inputs.prerelease_version }}"
       - name: Read version
         run: |
           if [ -z ${{ inputs.prerelease }} ] && \

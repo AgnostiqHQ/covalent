@@ -21,122 +21,80 @@
 name: hotfix
 
 on:
-  issue_comment:
-    types: [created]
-  workflow_dispatch:
-    inputs:
-      release_candidate:
-        description: "Create a release candidate if true, otherwise a post-release"
-        type: boolean
-        default: true
-      stable_version:
-        description: "Stable version number, e.g. 0.110.2"
-        type: string
-        required: true
-      commit_shas:
-        description: "Comma-separated string of SHAs to apply."
-        required: true
+  push:
+    branches:
+      - "release-0.*.*"
 
 jobs:
   hotfix:
-    if: >
-      github.event.issue.pull_request
-      && github.event.comment.body == 'hotfix-now'
-      && contains(github.event.issue.labels.*.name, 'hotfix')
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ env.VERSION }}
     steps:
-      - name: Hotfix version
-        id: version
-        uses: ./.github/actions/hotfix
+      - name: Stable tag
+        id: stable-tag
+        uses: ./.github/actions/describe
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.event.ref }}
+          stable: true
+      - name: Latest tag
+        id: latest-tag
+        uses: ./.github/actions/describe
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.event.ref }}
+          stable: false
+      - name: Check out head
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Hotfix version
+        id: hotfix
+        run: |
+          re='^[0-9]+$'
+          IFS='-' read -ra stable_tag <<< "${{ steps.stable-tag.outputs.tag }}"
+          IFS='-' read -ra release_tag <<< "${{ github.event.ref }}"
+          IFS='-' read -ra latest_tag <<< "${{ steps.latest-tag-release.outputs.tag }}"
+          if [ ${stable_tag[0]} != ${release_tag[1]} ] ; then
+            echo "This branch does not contain a matching stable release. Hotfixes can only be applied to stable releases."
+            exit 1
+          if [ ${#latest_tag[1]} -eq 0 ] ; then
+            version="${latest_tag[0]}-1-rc.0"
+          elif [[ ${latest_tag[1]} =~ $re ]] && [ ${#latest_tag[2]} -eq 0 ] ; then
+            version="${latest_tag[0]}-$(( ${latest_tag[1]} + 1 ))-rc.0"
+          elif [[ ${latest_tag[1]} =~ $re ]] ; then
+            IFS='.' read -ra rc <<< "${latest_tag[2]}"
+            version="${latest_tag[0]}-${latest_tag[1]}-rc.$(( ${rc[1]} + 1 ))"
+          else
+            echo "Hotfix branches must be created from a stable release."
+            exit 2
+          fi
+          changelog_header="## [${version}] - $(date -I)"
+          nl=$'\n'
+          sed -i '/UNRELEASED/a\'$'\n''\'$'\n'"$changelog_header" CHANGELOG.md
+          echo $version > VERSION
+          echo "VERSION=$version" >> $GITHUB_ENV
       - name: Commit
         uses: EndBug/add-and-commit@v9
         with:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
-          message: ${{ steps.version.outputs.message }}
-          tag: ${{ steps.version.outputs.version }}
+          message: "${{ github.event.issue.title }} (#${{ github.event.issue.number }})"
+          tag: "v${{ env.VERSION }}"
       - name: Comment
         if: always()
         uses: thollander/actions-comment-pull-request@v1
         with:
-          message: ${{ steps.version.outputs.comment }}
+          message: env.MESSAGE
           pr_number: github.event.issue.number
           GITHUB_TOKEN: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
-  hotfix-sha:
-    if: >
-      github.event.inputs.stable_version
-      && github.event.inputs.commit_shas
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out release tag
-        uses: actions/checkout@v2
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-          ref: "v${{ github.event.inputs.stable_version }}"
-      - name: Ensure release is a terminal commit
-        run: |
-          latest_tag=$(git describe)
-          IFS='-' read -ra describe_tag <<< "$latest_tag"
-          if [[ ${#describe_tag[1]} -gt 0 ]] ; then
-            id=${describe_tag[1]}
-            if [[ ${{ inputs.release_candidate }} ]] ; then
-              id=${id#rc}
-              version="${describe_tag[0]}-rc.$(($id+1))"
-            else
-              version="${describe_tag[0]}-$(($id+1))"
-            fi
-          else
-            if [[ ${{ inputs.release_candidate }} ]] ; then
-              echo "Invalid release candidate. Version should take the form X.Y.Z-rc.A"
-              exit 3
-            fi
-            version="${describe_tag[0]}-1"
-          fi
-          if [[ ! $(git tag -l "$version") ]] ; then
-            echo "Cannot create a hotfix using this stable version. $version already exists."
-            exit 1
-          fi
-          echo "VERSION=$version" >> $GITHUB_ENV
-      - name: Validate SHAs
-        run: |
-          IFS=',' read -ra commit_shas <<< "${{ github.event.inputs.commit_shas }}"
-          for sha in ${commit_shas[@]} ; do
-            if [[ ! $(git rev-parse --quiet --verify ${sha}^{commit}) ]] ; then
-              echo "Commit not found: ${sha}."
-              exit 2
-            fi
-          done
-      - name: Apply commits to release branch
-        run: |
-          latest_tag=$(git describe)
-          IFS='-' read -ra describe_tag <<< "$latest_tag"
-          branch="release-${describe_tag[0]}"
-          git config user.name "CovalentOpsBot"
-          git config user.email "covalentopsbot@users.noreply.github.com"
-          git checkout $branch
-          IFS=',' read -ra commit_shas <<< "${{ github.event.inputs.commit_shas }}"
-          git cherry-pick -X ours ${commit_shas[@]}
-          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
-          git push origin $branch
-      - name: Increment version
-        run: echo ${${{ env.VERSION }}:1} > ./VERSION
-      - name: Commit
-        uses: EndBug/add-and-commit@v9
-        with:
-          author_name: CovalentOpsBot
-          author_email: covalentopsbot@users.noreply.github.com
-          message: "The new version will be ${{ env.VERSION }}"
-      - name: Squash commits
-        run: |
-          git reset --soft "v${{ github.event.inputs.stable_version }}"
-      - name: Commit
-        uses: EndBug/add-and-commit@v9
-        with:
-          author_name: CovalentOpsBot
-          author_email: covalentopsbot@users.noreply.github.com
-          message: "Applying version ${{ env.VERSION }}"
-#          push: "--force"
+  release:
+    name: Create Release
+    needs: hotfix
+    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
+    with:
+      prerelease: true
+      prerelease_version: needs.hotfix.outputs.version
+    secrets: inherit # pragma: allowlist secret
