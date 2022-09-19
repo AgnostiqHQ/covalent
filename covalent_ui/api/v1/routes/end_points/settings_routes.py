@@ -20,9 +20,9 @@
 """Settings Route"""
 
 
-from typing import Dict, Optional
+from typing import Dict
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 
 from covalent._shared_files.config import ConfigManager as settings
 from covalent_ui.api.v1.models.settings_model import (
@@ -49,7 +49,19 @@ def get_settings():
 
 
 @routes.post("/settings", response_model=UpdateSettingsResponseModel)
-def post_settings(new_entries: Optional[Dict] = None, override_existing: bool = True):
+def post_settings(new_entries: Dict, override_existing: bool = True):
+    first_key = next(iter(new_entries.keys()))
+    if first_key == "":
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "loc": ["path", "update-settings"],
+                    "msg": "Key should not be empty string",
+                    "type": None,
+                }
+            ],
+        )
     """
     Update the exising configuration dictionary with the configuration sent in request body.
     Only executor fields are writable.
@@ -64,6 +76,15 @@ def post_settings(new_entries: Optional[Dict] = None, override_existing: bool = 
         settings updated successfully when updated.
     """
     if len([validator.value for validator in Validators if validator.value in new_entries]) != 0:
-        return UpdateSettingsResponseModel(data="Field cannot be updated")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "loc": ["path", "update-settings"],
+                    "msg": "Field cannot be updated",
+                    "type": None,
+                }
+            ],
+        )
     settings().update_config(new_entries, override_existing)
     return UpdateSettingsResponseModel(data="settings updated successfully")
