@@ -21,10 +21,10 @@
 """Fastapi init"""
 
 import fcntl
-import logging
 import os
 import pty
 import select
+import signal
 import struct
 import subprocess
 import termios
@@ -57,11 +57,6 @@ app = FastAPI()
 sio = socketio.AsyncServer(async_mode="asgi")
 
 
-@sio.on("message")
-async def chat_message(sid, data):
-    await sio.emit("draw-request", "hi ")
-
-
 app.include_router(routes.routes)
 
 app.add_middleware(
@@ -74,16 +69,15 @@ app.add_middleware(
 
 
 def set_winsize(fd, row, col, xpix=0, ypix=0):
-    logging.debug("setting window size with termios")
     winsize = struct.pack("HHHH", row, col, xpix, ypix)
     fcntl.ioctl(fd, termios.TIOCSWINSZ, winsize)
 
 
 async def read_and_forward_pty_output():
     max_read_bytes = 1024 * 10
-    while True:
+    while terminal_subprocess:
         await sio.sleep(0.01)
-        if file_descriptor:
+        if file_descriptor and terminal_subprocess:
             timeout_sec = 0
             (data_ready, _, _) = select.select([file_descriptor], [], [], timeout_sec)
             if data_ready:
@@ -103,16 +97,14 @@ def pty_input(sid, data):
 @sio.on("resize")
 def resize(sid, data):
     if file_descriptor:
-        logging.debug(f"Resizing window to {data['rows']}x{data['cols']}")
         set_winsize(file_descriptor, data["rows"], data["cols"])
 
 
 @sio.on("start_terminal")
 async def chat_message(*args):
-    logging.info("new client connected")
+    global terminal_subprocess
+    terminal_subprocess = True
     global child_process_id
-    if child_process_id:
-        return
     (child_pid, fd) = pty.fork()
     if child_pid == 0:
         subprocess.run(["bash"])
@@ -121,7 +113,15 @@ async def chat_message(*args):
         global file_descriptor
         file_descriptor = fd
         set_winsize(file_descriptor, 50, 50)
-        sio.start_background_task(read_and_forward_pty_output)
+        await sio.start_background_task(read_and_forward_pty_output)
+
+
+@sio.on("stop_terminal")
+async def stop_terminal(*args):
+    global terminal_subprocess
+    terminal_subprocess = False
+    os.killpg(child_process_id, signal.SIGKILL)
+    await sio.sleep(0.01)
 
 
 @app.exception_handler(RequestValidationError)
