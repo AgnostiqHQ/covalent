@@ -39,6 +39,11 @@ import { ReactComponent as ElectronListSvg } from '../assets/nodeType/electron-l
 import { ReactComponent as GeneratedSvg } from '../assets/nodeType/generated.svg'
 import { ReactComponent as InfoSvg } from '../assets/status/info.svg'
 import { ReactComponent as WarningSvg } from '../assets/status/warning.svg'
+import { ReactComponent as ConnectionLostSvg } from '../assets/status/connectionLost.svg'
+import { ReactComponent as TimeoutSvg } from '../assets/status/timeout.svg'
+import { ReactComponent as QueuedSvg } from '../assets/status/queued.svg'
+import { ReactComponent as CompletingSvg } from '../assets/status/completing.svg'
+
 
 export const secondsToHms = (ms) => {
   let time = ''
@@ -117,6 +122,7 @@ export const statusLabel = (status) => {
   return (
     {
       RUNNING: 'Running',
+      STARTING: 'Starting',
       NEW_OBJECT: 'Pending',
       COMPLETED: 'Completed',
       FAILED: 'Failed',
@@ -124,6 +130,19 @@ export const statusLabel = (status) => {
       POSTPROCESSING: 'Completed',
       PENDING_POSTPROCESSING: 'Completed',
       POSTPROCESSING_FAILED: 'Completed',
+      REGISTERING: 'Registering',
+      PENDING: 'Pending',
+      PENDING_BACKEND: 'Pending Backend',
+      QUEUED: 'Queued',
+      PROVISIONING: 'Provisioning',
+      DEPROVISIONING: 'Deprovisioning',
+      COMPLETING: 'Completing',
+      REG_FAILED: 'Registration Failed',
+      BOOT_FAILED: 'Boot Failed',
+      PROVISION_FAILED: 'Provision Failed',
+      DEPROVISION_FAILED: 'Deprovision Failed',
+      CONNECTION_LOST: 'Connection Lost',
+      TIMEOUT: 'Timeout',
     }[status] || status
   )
 }
@@ -136,6 +155,7 @@ export const logStatusLabel = (status) => {
       WARNING: 'Warning',
       WARN: 'Warn',
       ERROR: 'Error',
+      CRITICAL: 'Critical'
     }[status] || status
   )
 }
@@ -143,30 +163,21 @@ export const logStatusLabel = (status) => {
 export const logStatusIcon = (status) => {
   switch (status) {
     case 'WARNING':
-      return (
-        <SvgIcon sx={{ mt: 1 }}>
-          <WarningSvg />
-        </SvgIcon>
-      )
-    case 'INFO':
-      return (
-        <SvgIcon sx={{ mt: 1.2 }}>
-          <InfoSvg />
-        </SvgIcon>
-      )
     case 'WARN':
       return (
         <SvgIcon sx={{ mt: 1 }}>
           <WarningSvg />
         </SvgIcon>
       )
+    case 'INFO':
     case 'DEBUG':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
-          <CheckSvg />
+        <SvgIcon sx={{ mt: 1.2 }}>
+          <InfoSvg />
         </SvgIcon>
       )
     case 'ERROR':
+    case 'CRITICAL':
       return (
         <SvgIcon sx={{ mt: 1 }}>
           <ErrorSvg />
@@ -178,37 +189,41 @@ export const logStatusIcon = (status) => {
 }
 
 export const statusIcon = (status) => {
+
   switch (status) {
     case 'RUNNING':
+    case 'STARTING':
       return (
         <SvgIcon sx={{ mr: 0.5 }}>
           <LoaderSvg />
         </SvgIcon>
       )
     case 'NEW_OBJECT':
+    case 'PENDING':
+    case 'REGISTERING':
+    case 'PENDING_BACKEND':
       return (
         <SvgIcon sx={{ mt: 1 }}>
           <ActivitySvg />
         </SvgIcon>
       )
+    case 'QUEUED':
+    case 'PROVISIONING':
+    case 'DEPROVISIONING':
+      return (
+        <SvgIcon sx={{ mt: 1 }}>
+          <QueuedSvg />
+        </SvgIcon>
+      )
+    case 'COMPLETING':
+      return (
+        <SvgIcon sx={{ mt: 1 }}>
+          <CompletingSvg />
+        </SvgIcon>
+      )
     case 'COMPLETED':
-      return (
-        <SvgIcon sx={{ mt: 1 }}>
-          <CheckSvg />
-        </SvgIcon>
-      )
     case 'POSTPROCESSING':
-      return (
-        <SvgIcon sx={{ mt: 1 }}>
-          <CheckSvg />
-        </SvgIcon>
-      )
     case 'PENDING_POSTPROCESSING':
-      return (
-        <SvgIcon sx={{ mt: 1 }}>
-          <CheckSvg />
-        </SvgIcon>
-      )
     case 'POSTPROCESSING_FAILED':
       return (
         <SvgIcon sx={{ mt: 1 }}>
@@ -216,9 +231,25 @@ export const statusIcon = (status) => {
         </SvgIcon>
       )
     case 'FAILED':
+    case 'REG_FAILED':
+    case 'BOOT_FAILED':
+    case 'PROVISION_FAILED':
+    case 'DEPROVISION_FAILED':
       return (
         <SvgIcon sx={{ mt: 1 }}>
           <ErrorSvg />
+        </SvgIcon>
+      )
+    case 'CONNECTION_LOST':
+      return (
+        <SvgIcon sx={{ mt: 1 }}>
+          <ConnectionLostSvg />
+        </SvgIcon>
+      )
+    case 'TIMEOUT':
+      return (
+        <SvgIcon sx={{ mt: 1 }}>
+          <TimeoutSvg />
         </SvgIcon>
       )
     case 'CANCELLED':
