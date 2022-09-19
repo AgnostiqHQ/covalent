@@ -66,7 +66,6 @@ try {
       core.setFailed("This stable version has already been released.");
     const changelog_header =
       "## [" + version[0] + "] - " + new Date().toISOString().split("T")[0];
-    let message = "noop";
     const unreleased = "UNRELEASED";
     const sections = [];
     Object.keys(summary).forEach((section) => {
