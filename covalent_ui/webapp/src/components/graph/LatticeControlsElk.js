@@ -46,6 +46,8 @@ import * as React from 'react'
 import { LayoutOptions } from './LayoutOptions'
 import { ReactComponent as ScreenshotIcon } from '../../assets/screenshot.svg'
 import { ReactComponent as FitViewSvg } from '../../assets/latticeControls/fit-view.svg'
+import { ReactComponent as ZoomInSvg } from '../../assets/latticeControls/zoom-in.svg'
+import { ReactComponent as ZoomOutSvg } from '../../assets/latticeControls/zoom-out.svg'
 
 const LatticeControls = ({
   marginLeft = 0,
@@ -90,14 +92,38 @@ const LatticeControls = ({
       }}
     >
       <Hint title="Zoom in">
-        <ToggleButton value="" onClick={() => zoomIn(300)}>
-          <PlusIcon />
+        <ToggleButton
+          value=""
+          onClick={() => zoomIn(300)}
+          sx={{ height: '40px', color: 'white' }}
+        >
+          <SvgIcon
+            sx={{
+              fontSize: '35px',
+              mt: 3,
+              ml: 2.5,
+            }}
+          >
+            <ZoomInSvg />
+          </SvgIcon>{' '}
         </ToggleButton>
       </Hint>
 
       <Hint title="Zoom out">
-        <ToggleButton value="" onClick={() => zoomOut(300)}>
-          <MinusIcon />
+        <ToggleButton
+          value=""
+          onClick={() => zoomOut(300)}
+          sx={{ height: '40px', color: 'white' }}
+        >
+          <SvgIcon
+            sx={{
+              fontSize: '35px',
+              mt: 4,
+              ml: 2.5,
+            }}
+          >
+            <ZoomOutSvg />
+          </SvgIcon>{' '}
         </ToggleButton>
       </Hint>
       <Hint title="Download Screenshot">
