@@ -10,10 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 
 - Fixed `asserts` in stress tests
-### Changed
-
-- Split the `ConfigManager` into `Client` and `Server` components
-- Update the `set/get/update` config methods to distinguish between the client and server parts
 
 ### Added
 
@@ -29,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `setup.py` modified to install client side requirements only, if `COVALENT_SDK_ONLY` environment variable is present and `True`.
 - Updated `requirements.txt` and `tests/requirements.txt`
 - Updated `nbconvert` by dependabot
+- Split the `ConfigManager` into `Client` and `Server` components
+- Update the `set/get/update` config methods to distinguish between the client and server parts
 
 ### Docs
 
