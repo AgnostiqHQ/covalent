@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.data_layer.graph_dal import Graph
 from covalent_ui.api.v1.database.config.db import engine
-from covalent_ui.api.v1.models.lattices_model import GraphResponse
+from covalent_ui.api.v1.models.graph_model import GraphResponse
 
 routes: APIRouter = APIRouter()
 
