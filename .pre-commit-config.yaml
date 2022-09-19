@@ -29,7 +29,7 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-added-large-files
-        args: ['--maxkb=10000']
+        args: ["--maxkb=10000"]
       - id: check-merge-conflict
       - id: requirements-txt-fixer
 
@@ -37,7 +37,7 @@ repos:
     rev: 5.10.1
     hooks:
       - id: isort
-        args: ['--profile', 'black']
+        args: ["--profile", "black"]
 
   - repo: https://github.com/psf/black
     rev: 22.8.0
@@ -50,7 +50,7 @@ repos:
     hooks:
       - id: flake8
         args:
-          - '--max-complexity=50'
+          - "--max-complexity=50"
         exclude: |
           (?x)^(
               tests/example_dispatch.py
@@ -65,8 +65,6 @@ repos:
           (?x)^(
               meta.yaml|
           )$
-        args:
-          - '--single-quote=true'
   - repo: https://github.com/hadialqattan/pycln
     rev: v2.1.1
     hooks:
@@ -78,11 +76,11 @@ repos:
       - id: detect-secrets
         args:
           [
-            '--baseline',
-            '.secrets.baseline',
-            '--filter',
-            './.detect_secrets_filters/ipynb_hash_filter.py::is_pynb_hash',
-            '--filter',
-            './.detect_secrets_filters/ipynb_hash_filter.py::is_pynb_image',
+            "--baseline",
+            ".secrets.baseline",
+            "--filter",
+            "./.detect_secrets_filters/ipynb_hash_filter.py::is_pynb_hash",
+            "--filter",
+            "./.detect_secrets_filters/ipynb_hash_filter.py::is_pynb_image",
           ]
         verbose: true

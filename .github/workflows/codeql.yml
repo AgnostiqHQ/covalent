@@ -22,7 +22,7 @@ name: CodeQL
 
 on:
   schedule:
-    - cron: '48 3 * * *'
+    - cron: "48 3 * * *"
 
 jobs:
   analyze:
@@ -36,8 +36,8 @@ jobs:
       fail-fast: false
       matrix:
         language:
-          - 'javascript'
-          - 'python'
+          - "javascript"
+          - "python"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -51,9 +51,9 @@ jobs:
         if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: 'covalent'
-          SLACK_USERNAME: 'CovalentOpsBot'
-          SLACK_MESSAGE: 'The codeql.yml workflow is failing!'
+          SLACK_CHANNEL: "covalent"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: "The codeql.yml workflow is failing!"
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: ':warning:  Attention Required  :warning:'
+          SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}

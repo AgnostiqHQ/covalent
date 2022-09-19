@@ -1,6 +1,6 @@
 name: 📝 Documentation
 description: Propose an improvement in documentation.
-labels: ['documentation']
+labels: ["documentation"]
 
 body:
   - type: markdown

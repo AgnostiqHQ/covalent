@@ -26,11 +26,11 @@ on:
   workflow_dispatch:
     inputs:
       stable_version:
-        description: 'Stable version number, e.g. 0.110.2'
+        description: "Stable version number, e.g. 0.110.2"
         type: string
         required: true
       commit_shas:
-        description: 'Comma-separated string of SHAs to apply.'
+        description: "Comma-separated string of SHAs to apply."
         required: true
 
 jobs:
@@ -97,7 +97,7 @@ jobs:
         with:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
-          message: '${{ github.event.issue.title }} (#${{ github.event.issue.number }})'
+          message: "${{ github.event.issue.title }} (#${{ github.event.issue.number }})"
           tag: env.VERSION
       - name: Comment
         if: always()
@@ -118,7 +118,7 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: 'v${{ github.event.inputs.stable_version }}'
+          ref: "v${{ github.event.inputs.stable_version }}"
       - name: Ensure release is a terminal commit
         run: |
           latest_tag=$(git describe)
@@ -159,7 +159,7 @@ jobs:
         with:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
-          message: 'The new version will be ${{ env.VERSION }}'
+          message: "The new version will be ${{ env.VERSION }}"
       - name: Squash commits
         run: |
           git reset --soft "v${{ github.event.inputs.stable_version }}"
@@ -168,5 +168,5 @@ jobs:
         with:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
-          message: 'Applying hotfix ${{ env.VERSION }}'
-          push: '--force'
+          message: "Applying hotfix ${{ env.VERSION }}"
+          push: "--force"

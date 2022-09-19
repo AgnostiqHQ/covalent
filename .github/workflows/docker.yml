@@ -24,9 +24,13 @@ on:
   workflow_dispatch:
     inputs:
       commit_sha:
-        description: 'SHA used to build and push image.'
+        description: "SHA used to build and push image."
         type: string
         required: true
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   docker:
@@ -50,8 +54,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.ECR_UPLOAD_ROLE }}
           aws-region: us-east-1
 
       - name: Login to Amazon ECR

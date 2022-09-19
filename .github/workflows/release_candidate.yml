@@ -24,7 +24,7 @@ on:
   workflow_dispatch:
     inputs:
       prerelease_version:
-        description: 'Pre-release version being prepared for stable release, e.g., 0.177.0'
+        description: "Pre-release version being prepared for stable release, e.g., 0.177.0"
         type: string
         required: true
 

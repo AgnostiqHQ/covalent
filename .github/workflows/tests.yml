@@ -27,12 +27,12 @@ on:
     branches:
       - develop
     paths-ignore:
-      - 'CHANGELOG.md'
-      - 'VERSION'
+      - CHANGELOG.md
+      - VERSION
   workflow_dispatch:
     inputs:
       commit_sha:
-        description: 'Commit SHA used for testing'
+        description: "Commit SHA used for testing"
         type: string
         required: true
 
@@ -275,7 +275,7 @@ jobs:
         with:
           files: ./sdk_coverage.xml
           flags: SDK
-          name: 'SDK Unit Tests'
+          name: "SDK Unit Tests"
 
       - name: Upload Dispatcher report to Codecov
         id: upload-dispatcher-report
@@ -288,7 +288,7 @@ jobs:
         with:
           files: ./dispatcher_coverage.xml
           flags: Dispatcher
-          name: 'Dispatcher Unit Tests'
+          name: "Dispatcher Unit Tests"
 
       - name: Upload Functional report to Codecov
         id: upload-functional-report
@@ -300,7 +300,7 @@ jobs:
         with:
           files: ./functional_tests_coverage.xml
           flags: Functional_Tests
-          name: 'Functional Tests'
+          name: "Functional Tests"
 
       - name: Upload UI backend report to Codecov
         id: upload-ui-backend-report
@@ -314,7 +314,7 @@ jobs:
         with:
           files: ./ui_backend_coverage.xml
           flags: UI_Backend
-          name: 'UI Backend Unit Tests'
+          name: "UI Backend Unit Tests"
 
       - name: Upload UI frontend report to Codecov
         id: upload-ui-frontend-report
@@ -327,7 +327,7 @@ jobs:
         with:
           files: ./covalent_ui/webapp/coverage/clover.xml
           flags: UI_Frontend
-          name: 'UI Frontend Unit Tests'
+          name: "UI Frontend Unit Tests"
 
       - name: Local Codecov
         id: local-codecov
@@ -351,16 +351,16 @@ jobs:
           && failure()
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: 'covalent'
-          SLACK_USERNAME: 'CovalentOpsBot'
-          SLACK_MESSAGE: 'The tests.yml workflow is failing in develop!'
+          SLACK_CHANNEL: "covalent"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: "The tests.yml workflow is failing in develop!"
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: ':warning:  Attention Required  :warning:'
+          SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
 
   codecov_patch:
     needs: tests
-    name: 'codecov/patch'
+    name: "codecov/patch"
     if: needs.tests.outputs.codecov == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -368,7 +368,7 @@ jobs:
 
   codecov_project:
     needs: tests
-    name: 'codecov/project'
+    name: "codecov/project"
     if: needs.tests.outputs.codecov == 'true'
     runs-on: ubuntu-latest
     steps:
