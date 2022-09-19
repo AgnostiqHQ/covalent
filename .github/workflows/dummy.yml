@@ -10,7 +10,7 @@ jobs:
       - name: Checkout Terraform repository
         uses: actions/checkout@v2
         with:
-          repository: AgnostiqHQ/terraform
+          repository: git@github.com:AgnostiqHQ/terraform.git
           ref: refs/heads/develop
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Configure AWS credentials
