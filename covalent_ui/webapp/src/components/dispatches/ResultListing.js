@@ -811,6 +811,9 @@ const ResultListing = () => {
             <TableContainer
               sx={{
                 height: _.isEmpty(dashboardListView) ? 50 : 310,
+                '@media (min-width: 1500px)': {
+                  height: _.isEmpty(dashboardListView) ? 50 : 450,
+                },
                 '@media (min-width: 1700px)': {
                   height: _.isEmpty(dashboardListView) ? 50 : '53vh',
                 },
