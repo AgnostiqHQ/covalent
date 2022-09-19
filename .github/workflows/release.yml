@@ -454,13 +454,13 @@ jobs:
           pypi_status=$(getconf ARG_MAX)
           while [ $pypi_status -gt 0 ]; do
             LATEST_VERSION_ON_PYPI=$(pip index versions covalent | grep "covalent" | cut -d' ' -f2 | cut -d'(' -f2 | cut -d')' -f1)
-          if [[ "$LATEST_VERSION_ON_PYPI" == "$RELEASE_VERSION" ]]; then
+            if [[ "$LATEST_VERSION_ON_PYPI" == "$RELEASE_VERSION" ]]; then
               pypi_status=0
               exit $pypi_status
-          else
-            echo "Waiting for the covalent:$RELEASE_VERSION to become available on PyPI"
-            sleep 10
-          fi
+            else
+              echo "Waiting for the covalent:$RELEASE_VERSION to become available on PyPI"
+              sleep 10
+            fi
           done
 
       - name: Build the AMI
