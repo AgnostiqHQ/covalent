@@ -57,6 +57,8 @@ env:
 jobs:
   github:
     runs-on: ubuntu-latest
+    outputs:
+      release: ${{ env.RELEASE }}
     steps:
       - name: Check out stable release tag
         uses: actions/checkout@v2
@@ -82,6 +84,15 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
           ref: "${{ env.PRERELEASE }}"
+      - name: Generate stable release message
+        if: >
+          github.event.inputs.stable_version
+          && contains(env.PAUL_BLART, github.actor)
+        id: stable-changelog
+        uses: ./.github/actions/stable-changelog
+        with:
+          changelog-path: CHANGELOG.md
+          version-path: VERSION
       - name: Read version
         run: |
           if [ -z ${{ inputs.prerelease }} ] && \
@@ -92,22 +103,8 @@ jobs:
           VERSION="$(cat ./VERSION)"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=v$VERSION" >> $GITHUB_ENV
-      - name: Tag commit
+      - name: Generate prerelease message
         if: inputs.prerelease
-        id: push
-        run: |
-          git config user.name "CovalentOpsBot"
-          git config user.email "covalentopsbot@users.noreply.github.com"
-          git tag -a $RELEASE -m "Release $RELEASE"
-          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
-          git push origin $RELEASE
-      - name: Check conditions for stable release
-        if: >
-          github.event.inputs.stable_version
-          && contains(env.PAUL_BLART, github.actor)
-        id: no-push
-        run: echo "Stable release for version ${{ github.event.inputs.stable_version }}"
-      - name: Generate release message
         id: message
         run: |
           begin=$(grep -n "\b${VERSION}\b" ./CHANGELOG.md | cut -d ':' -f 1)
@@ -116,17 +113,38 @@ jobs:
           echo 'MESSAGE<<EOF' >> $GITHUB_ENV
           tail +$begin ./CHANGELOG.md | head -$end >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
-      - name: Create release
+      - name: Tag commit
+        id: push
+        run: |
+          git config user.name "CovalentOpsBot"
+          git config user.email "covalentopsbot@users.noreply.github.com"
+          git tag -a $RELEASE -m "Release $RELEASE"
+          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
+          git push origin $RELEASE
+      - name: Create prerelease
         if: >-
-          ${{ (steps.push.outcome == 'success' || steps.no-push.outcome == 'success')
+          inputs.prerelease
           && steps.message.outcome == 'success'
+          && steps.push.outcome == 'success'
           && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false') }}
         uses: ncipollo/release-action@v1
         with:
           body: ${{ env.MESSAGE }}
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
           tag: ${{ env.RELEASE }}
-          prerelease: ${{ inputs.prerelease }}
+          prerelease: true
+      - name: Create stable release
+        if: >-
+          github.event.inputs.stable_version
+          && contains(env.PAUL_BLART, github.actor)
+          && steps.stable-changelog.outcome == 'success'
+          && steps.push.outcome == 'success'
+          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false') }}
+        uses: ncipollo/release-action@v1
+        with:
+          body: ${{ steps.stable-changelog.outputs.message }}
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          tag: ${{ env.RELEASE }}
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
@@ -140,22 +158,16 @@ jobs:
 
   pypi:
     runs-on: ubuntu-latest
+    needs: github
     outputs:
       version: ${{ steps.validate.outputs.version }}
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
-        if: github.event.inputs.stable_version
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: "v${{ github.event.inputs.stable_version }}"
-      - name: Check out master
-        uses: actions/checkout@v2
-        if: inputs.prerelease
-        with:
-          persist-credentials: false
-          fetch-depth: 0
+          ref: ${{ needs.github.outputs.release }}
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
