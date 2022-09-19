@@ -1,4 +1,4 @@
-import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
+import NavDrawer from '../common/NavDrawer'
 import { Container } from '@mui/material'
 import { Box } from '@mui/system'
 import { Typography } from '@mui/material'

@@ -30,7 +30,7 @@ const initialState = {
   logFile: '',
   fetchLogList: { isFetching: false, error: null },
   logFileList: { isFetching: false, error: null },
-  totalDispatches: 0,
+  totalLogs: 0,
 }
 
 export const fetchLogsList = createAsyncThunk(
@@ -38,7 +38,7 @@ export const fetchLogsList = createAsyncThunk(
   async (bodyParams, thunkAPI) =>
     await api
       .get(
-        `api/v1/logs/?&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
+        `api/v1/logs/?&count=${bodyParams.count}&offset=${bodyParams.offset}&search=${bodyParams.search}&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}`
       )
       .catch(thunkAPI.rejectWithValue)
 )
@@ -56,13 +56,18 @@ export const downloadCovalentLogFile = createAsyncThunk(
 export const logsSlice = createSlice({
   name: 'logs',
   initialState,
+  reducers: {
+    resetLogs(state) {
+      state.logFile = ''
+    },
+  },
   extraReducers: (builder) => {
     builder
       // dashboardList
       .addCase(fetchLogsList.fulfilled, (state, { payload }) => {
         // update dashboardList
         state.fetchLogList.isFetching = false
-        state.totalDispatches = payload.total_count
+        state.totalLogs = payload.total_count
         state.logList = payload.items
       })
       .addCase(fetchLogsList.pending, (state, { payload }) => {
@@ -88,3 +93,5 @@ export const logsSlice = createSlice({
       })
   },
 })
+
+export const { resetLogs } = logsSlice.actions

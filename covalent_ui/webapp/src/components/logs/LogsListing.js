@@ -24,11 +24,12 @@ import {
   Grid,
   Skeleton,
   Snackbar,
-  SvgIcon
+  SvgIcon,
+  Pagination,
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 import { useDebounce } from 'use-debounce'
-import { fetchLogsList, downloadCovalentLogFile } from '../../redux/logsSlice'
+import { fetchLogsList, downloadCovalentLogFile,resetLogs } from '../../redux/logsSlice'
 import DownloadButton from '../common/DownloadButton'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import CopyButton from '../common/CopyButton'
@@ -95,7 +96,7 @@ const ResultsTableToolbar = ({ query, onSearch, setQuery }) => {
   )
 }
 
-const ResultsTableHead = ({ order, orderBy, onSort, logListView,onDownload }) => {
+const ResultsTableHead = ({ order, orderBy, onSort, logListView, onDownload }) => {
   return (
     <TableHead sx={{ position: 'sticky', zIndex: 19 }}>
       <TableRow>
@@ -224,9 +225,18 @@ const LogsListing = () => {
   const [sortColumn, setSortColumn] = useState('log_date')
   const [sortOrder, setSortOrder] = useState('desc')
   const [offset, setOffset] = useState(0)
+  const [page, setPage] = useState(1)
   const logFinalFile = useSelector((state) => state.logs.logFile)
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
+
+   // reset store values to initial state when moved to another page
+   useEffect(() => {
+    return () => {
+      dispatch(resetLogs());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortColumn, sortOrder, searchValue, page]);
 
   useEffect(() => {
     if (logFinalFile) {
@@ -246,7 +256,14 @@ const LogsListing = () => {
   }, [logFinalFile])
 
   const downloadLogFile = () => {
-    dispatch(downloadCovalentLogFile())
+    dispatch(downloadCovalentLogFile()).then((action) => {
+      if (action.type === downloadCovalentLogFile.rejected.type) {
+        setOpenSnackbar(true)
+        setSnackbarMessage(
+          'Something went wrong and could not download the file!'
+        )
+      }
+    })
   }
 
   const logListView = useSelector((state) => state.logs.logList)?.map((e) => {
@@ -256,11 +273,13 @@ const LogsListing = () => {
       message: e.message,
     }
   })
+  const totalRecords = useSelector((state) => state.logs.totalLogs)
 
   const isFetching = useSelector((state) => state.logs.fetchLogList.isFetching)
 
   const logListAPI = () => {
     const bodyParams = {
+      count: 70,
       offset,
       sort_by: sortColumn,
       search: searchKey,
@@ -270,6 +289,18 @@ const LogsListing = () => {
       dispatch(fetchLogsList(bodyParams))
     }
   }
+
+  const handlePageChanges = (event, pageValue) => {
+    setPage(pageValue)
+    setSelected([])
+    const offsetValue = pageValue === 1 ? 0 : pageValue * 70 - 70
+    setOffset(offsetValue)
+  }
+
+  useEffect(() => {
+    if (offset === 0) setPage(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offset])
 
   const onSearch = (e) => {
     setSearchKey(e.target.value)
@@ -282,7 +313,7 @@ const LogsListing = () => {
   useEffect(() => {
     logListAPI()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortColumn, sortOrder, searchValue])
+  }, [sortColumn, sortOrder, searchValue, page])
 
   const handleChangeSort = (column) => {
     setSelected([])
@@ -313,6 +344,7 @@ const LogsListing = () => {
           }
         />
         <ResultsTableToolbar
+          totalRecords={totalRecords}
           query={searchKey}
           onSearch={onSearch}
           setQuery={setSearchKey}
@@ -333,6 +365,7 @@ const LogsListing = () => {
             >
               <StyledTable stickyHeader>
                 <ResultsTableHead
+                  totalRecords={totalRecords}
                   order={sortOrder}
                   orderBy={sortColumn}
                   numSelected={_.size(selected)}
@@ -412,6 +445,34 @@ const LogsListing = () => {
                 No results found.
               </Typography>
             )}
+            <Grid
+              container
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                paddingTop: '10px',
+              }}
+            >
+              {!_.isEmpty(logListView) && (
+                <Pagination
+                  color="primary"
+                  shape="rounded"
+                  variant="outlined"
+                  count={
+                    totalRecords && totalRecords > 70
+                      ? Math.ceil(totalRecords / 70)
+                      : 1
+                  }
+                  page={page}
+                  onChange={handlePageChanges}
+                  showFirstButton
+                  showLastButton
+                  siblingCount={2}
+                  boundaryCount={2}
+                />
+              )}
+            </Grid>
           </Grid>
         )}
       </Box>
