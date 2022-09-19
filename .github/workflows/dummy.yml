@@ -10,9 +10,9 @@ jobs:
       - name: Checkout Terraform repository
         uses: actions/checkout@v2
         with:
-          repository: https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}.github.com/AgnostiqHQ/terraform.git
+          repository: AgnostiqHQ/terraform
           ref: refs/heads/develop
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
