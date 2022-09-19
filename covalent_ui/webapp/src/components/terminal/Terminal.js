@@ -11,9 +11,12 @@ import Typography from '@mui/material/Typography';
 const Terminal = () => {
     const xtermRef = useRef()
     const webLinksAddon = new WebLinksAddon()
-    const fitAddon = new FitAddon()
+    const fitAddon = new FitAddon();
     useEffect(() => {
         socket.emit('start_terminal', () => {
+            fitAddon.fit();
+            console.log("sending new dimensions to server's pty", dims);
+            socket.emit("resize", dims);
             console.debug(`socket ${socket.id} connected: ${socket.connected}`)
         })
         return () => {
@@ -34,7 +37,7 @@ const Terminal = () => {
                 <Typography sx={{ fontSize: '2rem' }} component="h4" display="inline">
                     Terminal
                 </Typography>
-                <Chip sx={{ height: '24px',ml:1,mb:1.5, fontSize: '0.75rem',color:'#FFFFFF' }} label='BETA' variant='outlined' />
+                <Chip sx={{ height: '24px', ml: 1, mb: 1.5, fontSize: '0.75rem', color: '#FFFFFF' }} label='BETA' variant='outlined' />
             </Grid>
             <XTerm
                 options={{
@@ -44,7 +47,6 @@ const Terminal = () => {
                     theme: {
                         background: '#08081A'
                     },
-                    cols: 100
                 }}
                 ref={xtermRef}
                 onData={(data) => {
