@@ -18,7 +18,7 @@ const run = async () => {
   } = await octokit.rest.git.getRef({
     owner: owner,
     repo: repo,
-    ref: branch.replace("refs/heads/", ""),
+    ref: `heads/${branch.replace("refs/heads/", "")}`
   });
   const { data: tags } = await octokit.rest.repos.listTags({
     owner: owner,
