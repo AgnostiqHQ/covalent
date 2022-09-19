@@ -25,7 +25,7 @@ import {
   Container, Grid, Box, Input, InputLabel, Radio, RadioGroup, Button,
   Stack, Snackbar, SvgIcon, Toolbar, InputAdornment, IconButton
 } from '@mui/material';
-import { Clear as ClearIcon, ConstructionOutlined, Search as SearchIcon } from '@mui/icons-material'
+import { Clear as ClearIcon, ConstructionOutlined, Key, Search as SearchIcon } from '@mui/icons-material'
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -33,7 +33,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Collapse from '@mui/material/Collapse';
-import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
@@ -77,13 +77,10 @@ const SettingsCard = () => {
   const dispatch = useDispatch()
   const [open, setOpen] = useState(false);
   const [subMenu, setSubMenu] = useState([]);
-  const [resultKey, setResultKey] = useState("");
+  const [resultKey, setResultKey] = useState("sdk");
   const [resultOutput, setResultOutput] = useState();
   const settings_result = useSelector((state) => state.settingsResults.settingsList)
-  const menuKeyName = Object.keys(settings_result)
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
-  const defaultObjKey = Object.keys(settings_result)[0]
-  const defaultObjValue = Object.values(settings_result)[0]
   const setting__ref = useRef(null);
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
@@ -92,27 +89,25 @@ const SettingsCard = () => {
   const [openDialogBox, setOpenDialogBox] = useState(false)
   const [searchData, setSearchData] = useState(settings_result)
   const [searchKey, setSearchKey] = useState('')
-  const [restoreData, setRestoreData] = useState({})
-
+  const [restoreData, setRestoreData] = useState()
   useEffect(() => {
     dispatch(settingsResults())
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
 
   const handleSubmit = (event) => {
-    const formData = new FormData(event.currentTarget);
     event.preventDefault();
-    const formDataObj = {};
-    formData.forEach((value, key) => (
-      formDataObj[key] = value)
-    );
     const updateData = {
-      [resultKey]: formDataObj
+      [resultKey]: resultOutput
     }
     dispatch(updateSettings(updateData)).then((action) => {
       if (action.type === updateSettings.fulfilled.type) {
         setOpenSnackbar(true)
-        setSnackbarMessage('settings updated successfully')
+        setSnackbarMessage('Settings Updated Successfully')
+        setSearchData(currValue => ({
+          ...currValue,
+          [resultKey]: resultOutput
+        }))
       } else if (action.type === updateSettings.rejected.type) {
         setOpenSnackbar(true)
         setSnackbarMessage('Something went wrong and could not settings updated!')
@@ -135,7 +130,7 @@ const SettingsCard = () => {
     dispatch(updateSettings(updateData)).then((action) => {
       if (action.type === updateSettings.fulfilled.type) {
         setOpenSnackbar(true)
-        setSnackbarMessage('settings updated successfully')
+        setSnackbarMessage('Settings Updated Successfully')
       } else if (action.type === updateSettings.rejected.type) {
         setOpenSnackbar(true)
         setSnackbarMessage('Something went wrong and could not settings updated!')
@@ -219,7 +214,7 @@ const SettingsCard = () => {
       formattedName = a + " " + b.replace(b.at(0), b.at(0).toLocaleUpperCase())
     }
     else {
-      if (name === 'sdk') {
+      if (name === 'sdk' || name === "dask") {
         formattedName = name.toUpperCase();
       }
       else {
@@ -258,29 +253,28 @@ const SettingsCard = () => {
     else {
       setIsDisabled(true)
     }
+    setRestoreData(value)
     if (handle) {
-      const formData = new FormData(document.getElementById("get__pop_id"));
-      const formDataObj = {};
-      formData.forEach((value, key) => (
-        formDataObj[key] = value)
-      );
       const updateData = {
-        [resultKey]: formDataObj
+        [resultKey]: resultOutput
       }
       dispatch(updateSettings(updateData)).then((action) => {
         if (action.type === updateSettings.fulfilled.type) {
           setOpenSnackbar(true)
-          setSnackbarMessage('settings updated successfully')
-          dispatch(settingsResults())
+          setSnackbarMessage('Settings Updated Successfully')
+          setSearchData(currValue => ({
+            ...currValue,
+            [resultKey]: resultOutput
+          }))
         } else if (action.type === updateSettings.rejected.type) {
           setOpenSnackbar(true)
           setSnackbarMessage('Something went wrong and could not settings updated!')
         }
       })
+      setIsDisabled(false)
       setHandle('')
-      setResultKey(key)
-      setResultOutput(value)
-    } else if (!handle) {
+    }
+    else {
       setResultKey(key)
       setResultOutput(value)
     }
@@ -290,9 +284,27 @@ const SettingsCard = () => {
     setHandle(event.key)
   }
 
-  const cancelButton = () => {
+  const onInputExecutorChange = (e, subkey, key) => {
+    setResultOutput(currValue => ({
+      ...currValue,
+      [key]: {
+        ...currValue[key],
+        [subkey]: e.target.value
+      },
+    }))
+  }
+
+  const handleChange = (e, key) => {
+    setHandle(e.target.value)
+    setResultOutput(currValue => ({
+      ...currValue,
+      [key]: e.target.value
+    }))
+  }
+
+  const cancelButton = (res) => {
     if (handle) {
-      // Deep copy
+      setResultOutput(restoreData)
     }
   }
 
@@ -312,10 +324,18 @@ const SettingsCard = () => {
     document.getElementById(menu).scrollIntoView({ behavior: "smooth" });
   }
 
+  const onInputChange = (e, key) => {
+    setResultOutput(currValue => ({
+      ...currValue,
+      [key]: e.target.value
+    }))
+  }
+
   useEffect(() => {
     if (settings_result) {
+      setResultOutput(Object.values(settings_result)[0])
+      setRestoreData(Object.values(settings_result)[0])
       setSearchData(settings_result)
-      setRestoreData(settings_result)
     }
   }, [settings_result])
 
@@ -389,7 +409,7 @@ const SettingsCard = () => {
                           sx={{ right: isChildHasList(value) ? '55px' : '0px' }}>
                           {isChildHasList(value) &&
                             <ListItemIcon>
-                              {open ? <ExpandLess /> : <KeyboardArrowRightIcon />}
+                              {open ? <ExpandMore /> : <KeyboardArrowRightIcon />}
                             </ListItemIcon>
                           }
                           <ListItemText inset primary={getSettingsName(key)}
@@ -439,13 +459,13 @@ const SettingsCard = () => {
         {_.size(settings_result) !== 0 ?
           <Grid item xs={9}>
             <Typography variant="h6" component="h6" sx={{ fontWeight: 'bold' }}>
-              {_.map(resultKey === "" ? getSettingsName(defaultObjKey) : getSettingsName(resultKey))}
+              {getSettingsName(resultKey)}
             </Typography>
             <Grid container spacing={3} sx={{ mt: 2 }}>
               <Grid item xs={7}>
                 <form onSubmit={handleSubmit} id="get__pop_id">
                   {
-                    _.map(resultOutput === undefined ? defaultObjValue : resultOutput, function (value, key) {
+                    _.map(resultOutput, function (value, key) {
                       return (
                         <Box sx={{ mb: 3 }} id={key}>
                           {
@@ -457,7 +477,7 @@ const SettingsCard = () => {
                                   {getSettingsName(key)}
                                 </Typography>
                                 {
-                                  _.map(value, function (item, key) {
+                                  _.map(value, function (item, key1) {
                                     return (
                                       <Box sx={{ mt: 3 }}>
                                         {value === "true" || value === "false" ?
@@ -466,10 +486,10 @@ const SettingsCard = () => {
                                               sx={(theme) => ({
                                                 fontSize: '16px',
                                                 color: 'text.primary'
-                                              })}> {getSettingsName(key)}</FormLabel>
+                                              })}> {getSettingsName(key1)}</FormLabel>
                                             <RadioGroup
                                               row
-                                              ref={setting__ref}
+                                              onChange={handleChange}
                                               aria-labelledby="demo-row-radio-buttons-group-label"
                                               name="row-radio-buttons-group"
                                             >
@@ -487,7 +507,7 @@ const SettingsCard = () => {
                                                 mb: 1,
                                                 color: 'text.primary'
                                               }}>
-                                              {getLabelName(key)}
+                                              {getLabelName(key1)}
                                             </InputLabel>
                                             <Input sx={{
                                               px: 2,
@@ -499,11 +519,11 @@ const SettingsCard = () => {
                                             }}
                                               disabled={isDisabled}
                                               onKeyDown={handleKeypress}
-                                              ref={setting__ref}
-                                              name={key}
-                                              defaultValue={item}
+                                              name={key1}
+                                              onChange={(e) => onInputExecutorChange(e, key1, key)}
+                                              value={item}
                                               disableUnderline
-                                              placeholder="Log directroy" />
+                                              placeholder={key1} />
                                           </>
                                         }
                                       </Box>
@@ -524,11 +544,13 @@ const SettingsCard = () => {
                                       row
                                       aria-labelledby="demo-row-radio-buttons-group-label"
                                       name={key}
-                                      ref={setting__ref}
-                                      defaultValue={value}
+                                      value={value}
+                                      onChange={(e) => handleChange(e, key)}
                                     >
-                                      <FormControlLabel disabled={isDisabled} value="true" control={<Radio />} label="True" />
-                                      <FormControlLabel disabled={isDisabled} value="false" control={<Radio />} label="False" />
+                                      <FormControlLabel disabled={isDisabled} value="true"
+                                        control={<Radio />} label="True" />
+                                      <FormControlLabel disabled={isDisabled}
+                                        value="false" control={<Radio />} label="False" />
                                     </RadioGroup>
                                   </FormControl>
                                   :
@@ -551,9 +573,9 @@ const SettingsCard = () => {
                                     }}
                                       disabled={isDisabled}
                                       onKeyDown={handleKeypress}
-                                      ref={setting__ref}
                                       name={key}
-                                      defaultValue={value}
+                                      onChange={(e) => onInputChange(e, key)}
+                                      value={value}
                                       disableUnderline
                                       placeholder={key} />
                                   </>
@@ -575,7 +597,7 @@ const SettingsCard = () => {
                   {!isDisabled &&
                     <Stack spacing={2} direction="row" sx={{ float: 'right' }}>
                       <Button variant="outlined"
-                        onClick={cancelButton}
+                        onClick={() => cancelButton(resultOutput)}
                         sx={(theme) => ({
                           padding: '8px 20px',
                           border: '1px solid #6473FF',
