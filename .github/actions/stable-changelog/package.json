@@ -1,0 +1,16 @@
+{
+  "name": "stable-changelog",
+  "version": "0.110.2",
+  "description": "Parse the information in the CHANGELOG. Compile updates from release candidates into a stable version.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Scott Wyman Neagle <scott@agnostiq.ai> (http://covalent.xyz)",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "@actions/core": "^1.9.1",
+    "@actions/github": "^5.0.3"
+  }
+}
