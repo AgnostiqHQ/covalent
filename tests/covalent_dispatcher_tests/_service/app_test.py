@@ -153,3 +153,13 @@ def test_get_result_dispatch_id_not_found(mocker, test_db_file, client, tmp_path
     mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)
     response = client.get(f"/api/result/{DISPATCH_ID}")
     assert response.status_code == 404
+
+
+def test_db_path_get_config(mocker):
+    dbpath = "/Users/root/covalent/results.db"
+
+    get_config_mock = mocker.patch("covalent_dispatcher._db.dispatchdb.get_config")
+
+    dispatch_db = DispatchDB()
+
+    get_config_mock.assert_called_once()
