@@ -20,11 +20,12 @@
 """Settings Route"""
 
 
+from enum import Enum
 from typing import Dict
 
 from fastapi import APIRouter, HTTPException, status
 
-from covalent._shared_files.config import ConfigManager as settings
+from covalent._shared_files.config import CMType, get_config, update_config
 from covalent_ui.api.v1.models.settings_model import (
     GetSettingsResponseModel,
     UpdateSettingsResponseModel,
@@ -32,6 +33,11 @@ from covalent_ui.api.v1.models.settings_model import (
 )
 
 routes: APIRouter = APIRouter()
+
+
+class ConfigFileType(Enum):
+    CLIENT = "client"
+    SERVER = "server"
 
 
 @routes.get("/settings", response_model=GetSettingsResponseModel)
@@ -45,25 +51,16 @@ def get_settings():
     Returns:
         Configuration file as json object.
     """
-    return GetSettingsResponseModel(data=settings().config_data)
+    return GetSettingsResponseModel(
+        client=get_config(CMType.CLIENT), server=get_config(CMType.SERVER)
+    )
 
 
 @routes.post("/settings", response_model=UpdateSettingsResponseModel)
 def post_settings(new_entries: Dict, override_existing: bool = True):
-    first_key = next(iter(new_entries.keys()))
-    if first_key == "":
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "loc": ["path", "update-settings"],
-                    "msg": "Key should not be empty string",
-                    "type": None,
-                }
-            ],
-        )
     """
-    Update the exising configuration dictionary with the configuration sent in request body.
+    Update the exising configuration dictionary with the configuration sent in request body with
+    respect to the type of configuration ex client/server.
     Only executor fields are writable.
 
     Args:
@@ -75,7 +72,41 @@ def post_settings(new_entries: Dict, override_existing: bool = True):
     Returns:
         settings updated successfully when updated.
     """
-    if len([validator.value for validator in Validators if validator.value in new_entries]) != 0:
+
+    if new_entries == {}:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "loc": ["path", "update-settings"],
+                    "msg": "Key should not be empty",
+                    "type": None,
+                }
+            ],
+        )
+    file_type = next(iter(new_entries.keys()))
+    first_key = next(iter(new_entries[file_type].keys()))
+    if first_key == "":
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "loc": ["path", "update-settings"],
+                    "msg": "Key should not be empty string",
+                    "type": None,
+                }
+            ],
+        )
+    if (
+        len(
+            [
+                validator.value
+                for validator in Validators
+                if validator.value in new_entries[file_type]
+            ]
+        )
+        != 0
+    ):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=[
@@ -86,5 +117,19 @@ def post_settings(new_entries: Dict, override_existing: bool = True):
                 }
             ],
         )
-    settings().update_config(new_entries, override_existing)
-    return UpdateSettingsResponseModel(data="settings updated successfully")
+    if file_type == ConfigFileType.SERVER.value:
+        update_config(CMType.SERVER, new_entries[file_type], override_existing)
+        return UpdateSettingsResponseModel(data="server settings updated successfully")
+    elif file_type == ConfigFileType.CLIENT.value:
+        update_config(CMType.CLIENT, new_entries[file_type], override_existing)
+        return UpdateSettingsResponseModel(data="client settings updated successfully")
+    raise HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail=[
+            {
+                "loc": ["path", "update-settings"],
+                "msg": "invalid update request",
+                "type": None,
+            }
+        ],
+    )

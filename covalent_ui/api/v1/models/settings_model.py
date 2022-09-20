@@ -29,7 +29,8 @@ from pydantic import BaseModel
 class GetSettingsResponseModel(BaseModel):
     """Get Settings response model"""
 
-    data: Union[dict, None] = None
+    client: Union[dict, None] = None
+    server: Union[dict, None] = None
 
 
 class UpdateSettingsResponseModel(BaseModel):
