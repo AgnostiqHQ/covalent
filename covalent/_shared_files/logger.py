@@ -25,13 +25,13 @@ import os
 import sys
 import time
 
-from .config import get_config
+from .config import CMType, get_config
 
 logging.Formatter.converter = time.gmtime
 
 app_log = logging.getLogger(__name__)
 
-log_level = get_config("sdk.log_level").upper()
+log_level = get_config(CMType.CLIENT, "sdk.log_level").upper()
 app_log.setLevel(log_level)
 
 # Set the format
@@ -54,13 +54,13 @@ log_stack_info = os.environ.get("LOGSTACK", "TRUE").upper() == "TRUE"
 log_debug_info = os.environ.get("LOGDEBUG", "FALSE").upper() == "TRUE"
 
 # Also log to file
-log_to_file = get_config("sdk.enable_logging").upper() == "TRUE"
+log_to_file = get_config(CMType.CLIENT, "sdk.enable_logging").upper() == "TRUE"
 
 if log_to_file:
     import datetime
     import logging.handlers
 
-    log_dir = get_config("sdk.log_dir")
+    log_dir = get_config(CMType.CLIENT, "sdk.log_dir")
     os.makedirs(log_dir, exist_ok=True)
 
     timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d_%H.%M.%S_UTC")

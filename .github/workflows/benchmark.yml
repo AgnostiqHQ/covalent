@@ -29,6 +29,10 @@ on:
         type: string
         required: true
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   benchmarks:
     runs-on: ubuntu-latest
@@ -36,7 +40,7 @@ jobs:
       COVALENT_SERVER_IFACE_ANY: true
     steps:
       - name: Check out head
-        if: github.event_name == 'workflow_call'
+        if: github.event_name == 'schedule'
         uses: actions/checkout@v3
         with:
           persist-credentials: false
@@ -84,8 +88,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.S3_UPLOAD_ROLE }}
           aws-region: us-east-1
 
       - name: Upload benchmark results to S3
