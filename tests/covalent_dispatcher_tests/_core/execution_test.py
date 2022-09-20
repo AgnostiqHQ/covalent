@@ -293,7 +293,12 @@ def test_gather_deps():
     def square(x):
         return x * x
 
-    @ct.electron(deps_bash=ct.DepsBash("ls -l"), call_after=[ct.DepsCall(square, [3])])
+    @ct.electron(
+        deps_bash=ct.DepsBash("ls -l"),
+        deps_pip=ct.DepsPip(["numpy"]),
+        call_before=[ct.DepsCall(square, [2])],
+        call_after=[ct.DepsCall(square, [3])],
+    )
     def task(x):
         return x
 
@@ -307,7 +312,7 @@ def test_gather_deps():
     result_object = Result(received_workflow, "/tmp", "asdf")
 
     before, after = _gather_deps(result_object, 0)
-    assert len(before) == 1
+    assert len(before) == 3
     assert len(after) == 1
 
 
