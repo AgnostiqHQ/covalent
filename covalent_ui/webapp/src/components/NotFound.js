@@ -36,7 +36,18 @@ const NotFound = ({ text = 'Page not found.', children }) => {
   return (
     <>
       <NavDrawer />
-      <Container maxWidth="xl" sx={{ mb: 4, mt: 7 }}>
+      <Container
+        maxWidth="xl"
+        sx={{
+          mb: 4,
+          mt: 7,
+          ml: 10,
+          width: '70%',
+          '@media (min-width: 1700px)': {
+            ml: '15%',
+          },
+        }}
+      >
         <AppBar position="static" color="transparent">
           <Toolbar disableGutters sx={{ my: 2 }}>
             <Link href="/">
@@ -46,11 +57,14 @@ const NotFound = ({ text = 'Page not found.', children }) => {
         </AppBar>
 
         <Paper elevation={4} sx={{ p: 2 }}>
-          {children || <Typography data-testid="message" variant="h5">{text}</Typography>}
+          {children || (
+            <Typography data-testid="message" variant="h5">
+              {text}
+            </Typography>
+          )}
         </Paper>
       </Container>
     </>
-
   )
 }
 

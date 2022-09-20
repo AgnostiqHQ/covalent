@@ -1,7 +1,6 @@
 import NavDrawer from '../common/NavDrawer'
-import { Container } from '@mui/material'
+import { Container, Typography } from '@mui/material'
 import { Box } from '@mui/system'
-import { Typography } from '@mui/material'
 import LogsListing from './LogsListing'
 
 const LogsLayout = () => {

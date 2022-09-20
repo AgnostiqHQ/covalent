@@ -365,7 +365,7 @@ const LogsListing = () => {
               sx={{
                 height: _.isEmpty(logListView) ? 50 : '61vh',
                 '@media (min-width: 1700px)': {
-                  height: _.isEmpty(logListView) ? 50 : '68vh',
+                  height: _.isEmpty(logListView) ? 50 : '66vh',
                 },
                 width: _.isEmpty(logListView) ? '40%' : null,
 
@@ -510,7 +510,7 @@ const LogsListing = () => {
           <TableContainer sx={{ width: '99.5%' }}>
             <StyledTable>
               <TableBody>
-                {[...Array(7)].map((_) => (
+                {[...Array(7)].map(() => (
                   <TableRow key={Math.random()}>
                     <TableCell sx={{ width: '13%' }}>
                       <Skeleton sx={{ my: 2 }} />

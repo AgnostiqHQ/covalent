@@ -68,22 +68,40 @@ const NavDrawer = () => {
           path="/"
           icon={DispatchList}
           margintop={8}
+          paddingTop={0.5}
+          paddingLeft={0.5}
         />
 
         <LinkButton
           title="Lattice draw preview"
           path="/preview"
           icon={DispatchPreview}
+          paddingTop={0.5}
+          paddingLeft={0.5}
         />
         <Grid>
-          <LinkButton title="Logs" path="/logs" icon={Logs} margintop={36} />
+          <LinkButton
+            title="Logs"
+            path="/logs"
+            icon={Logs}
+            margintop={36}
+            paddingTop={0.9}
+            paddingLeft={0.8}
+          />
         </Grid>
       </List>
     </Drawer>
   )
 }
 
-const LinkButton = ({ title, icon, path, margintop }) => {
+const LinkButton = ({
+  title,
+  icon,
+  path,
+  margintop,
+  paddingTop,
+  paddingLeft,
+}) => {
   const selected = useMatch(path)
 
   return (
@@ -107,7 +125,8 @@ const LinkButton = ({ title, icon, path, margintop }) => {
               border: '1px solid #998AFF',
               width: '30px',
               height: '30px',
-              padding: '5px 0px 0px 3px',
+              paddingTop: paddingTop,
+              paddingLeft: paddingLeft,
               borderRadius: '6px',
               my: 2,
             }}
