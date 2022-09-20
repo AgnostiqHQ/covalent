@@ -159,9 +159,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-    {
-      fontSize: '1rem',
-    },
+  {
+    fontSize: '1rem',
+  },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -260,8 +260,7 @@ const LogsListing = () => {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      setSnackbarMessage('Covalent logs downloaded successfully!')
-      setOpenSnackbar(true)
+      dispatch(resetLogs())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logFinalFile])
