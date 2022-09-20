@@ -94,6 +94,10 @@ class DaskExecutor(AsyncBaseExecutor):
 
     async def cancel(self, dispatch_id: str, node_id: int):
         fut = self._get_task_data(dispatch_id, node_id, "dask_future")
+        if not fut:
+            app_log.debug(f"Job {dispatch_id}:{node_id} has not yet been submitted to dask")
+            return
+
         app_log.debug(f"Cancelling dask job for {dispatch_id}:{node_id}")
         await fut.cancel()
         app_log.debug(f"Cancelled dask job for {dispatch_id}:{node_id}")

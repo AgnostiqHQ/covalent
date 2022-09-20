@@ -131,7 +131,7 @@ def test_dask_executor_run_cancelling_task(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_dask_executor_cancel(mocker):
+async def test_dask_executor_cancel_after_submit(mocker):
     """Test cancel method for Dask executor"""
 
     from covalent.executor import DaskExecutor
@@ -152,3 +152,29 @@ async def test_dask_executor_cancel(mocker):
     get_data_mock.assert_called_once_with(dispatch_id, node_id, "dask_future")
 
     mock_cancel_fut.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_dask_executor_cancel_before_submit(mocker):
+    """Test cancel method for Dask executor before the task has been
+    submitted to Dask
+    """
+
+    from covalent.executor import DaskExecutor
+
+    dask_exec = DaskExecutor("localhost:5873")
+    key = "a"
+    mock_cancel_fut = AsyncMock()
+    dispatch_id = "test_dispatch"
+    node_id = 1
+    fut = MagicMock()
+    fut.cancel = mock_cancel_fut
+    get_data_mock = mocker.patch(
+        "covalent.executor.base.AsyncBaseExecutor._get_task_data", return_value=None
+    )
+
+    await dask_exec.cancel(dispatch_id, node_id)
+
+    get_data_mock.assert_called_once_with(dispatch_id, node_id, "dask_future")
+
+    mock_cancel_fut.assert_not_awaited()

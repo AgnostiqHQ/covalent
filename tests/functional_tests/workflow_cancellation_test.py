@@ -75,7 +75,7 @@ async def test_result_cancel_dask_executor(event_loop):
         sleeping_task(x)
         return 1
 
-    sleeping_time = 10
+    sleeping_time = 15
     workflow.build_graph(sleeping_time)
 
     json_lattice = workflow.serialize_to_json()

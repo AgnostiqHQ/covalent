@@ -262,7 +262,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         self._state["tasks"][dispatch_id][node_id][key] = val
 
     def _get_task_data(self, dispatch_id: str, node_id: int, key: str):
-        return self._state["tasks"][dispatch_id][node_id][key]
+        return self._state["tasks"][dispatch_id][node_id].get(key, None)
 
     def _set_task_status(self, dispatch_id: str, node_id: int, status: str):
         self._set_task_data(dispatch_id, node_id, "_status", status)
@@ -547,7 +547,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         self._state["tasks"][dispatch_id][node_id][key] = val
 
     def _get_task_data(self, dispatch_id: str, node_id: int, key: str):
-        return self._state["tasks"][dispatch_id][node_id][key]
+        return self._state["tasks"][dispatch_id][node_id].get(key, None)
 
     def _set_task_status(self, dispatch_id: str, node_id: int, status: str):
         self._set_task_data(dispatch_id, node_id, "_status", status)
