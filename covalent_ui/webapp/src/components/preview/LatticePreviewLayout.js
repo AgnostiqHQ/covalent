@@ -59,7 +59,6 @@ const LatticePreviewLayout = () => {
   if (!lattice) {
     return (
       <NotFound>
-        <NavDrawer />
         <Typography variant="h6" sx={{ mb: 1 }}>
           Lattice preview not found.
         </Typography>

@@ -84,12 +84,7 @@ export function DispatchLayout() {
 
   // dispatch id not found
   if (latDetailError !== null && latDetailError.status === 400) {
-    return (
-      <>
-        <NotFound text="Lattice dispatch not found." />
-        <NavDrawer />
-      </>
-    )
+    return <NotFound text="Lattice dispatch not found." />
   }
 
   return (

@@ -30,22 +30,27 @@ import {
 } from '@mui/material'
 
 import { ReactComponent as Logo } from '../assets/covalent-full-logo.svg'
+import NavDrawer from '../components/common/NavDrawer'
 
 const NotFound = ({ text = 'Page not found.', children }) => {
   return (
-    <Container  maxWidth="xl" sx={{ mb: 4, mt: 7 }}>
-      <AppBar position="static" color="transparent">
-        <Toolbar disableGutters sx={{ my: 2 }}>
-          <Link href="/">
-            <Logo data-testid="logo" />
-          </Link>
-        </Toolbar>
-      </AppBar>
+    <>
+      <NavDrawer />
+      <Container maxWidth="xl" sx={{ mb: 4, mt: 7 }}>
+        <AppBar position="static" color="transparent">
+          <Toolbar disableGutters sx={{ my: 2 }}>
+            <Link href="/">
+              <Logo data-testid="logo" />
+            </Link>
+          </Toolbar>
+        </AppBar>
 
-      <Paper elevation={4} sx={{ p: 2 }}>
-        {children || <Typography data-testid="message" variant="h5">{text}</Typography>}
-      </Paper>
-    </Container>
+        <Paper elevation={4} sx={{ p: 2 }}>
+          {children || <Typography data-testid="message" variant="h5">{text}</Typography>}
+        </Paper>
+      </Container>
+    </>
+
   )
 }
 
