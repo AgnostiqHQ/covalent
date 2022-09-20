@@ -107,6 +107,7 @@ const ResultsTableHead = ({
   onSort,
   logListView,
   onDownload,
+  disableDownload
 }) => {
   return (
     <TableHead sx={{ position: 'sticky', zIndex: 19 }}>
@@ -142,6 +143,7 @@ const ResultsTableHead = ({
               title="Download log"
               isBorderPresent
               onClick={onDownload}
+              disabled={disableDownload}
             />
           </TableCell>
         )}
@@ -240,7 +242,7 @@ const LogsListing = () => {
   const logFinalFile = useSelector((state) => state.logs.logFile)
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
-
+  const [disableDownload, setDisableDownload] = useState(false)
   // reset store values to initial state when moved to another page
   useEffect(() => {
     return () => {
@@ -261,17 +263,20 @@ const LogsListing = () => {
       link.click()
       document.body.removeChild(link)
       dispatch(resetLogs())
+      setDisableDownload(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logFinalFile])
 
   const downloadLogFile = () => {
+    setDisableDownload(true);
     dispatch(downloadCovalentLogFile()).then((action) => {
       if (action.type === downloadCovalentLogFile.rejected.type) {
         setOpenSnackbar(true)
         setSnackbarMessage(
           'Something went wrong and could not download the file!'
         )
+        setDisableDownload(false);
       }
     })
   }
@@ -383,6 +388,7 @@ const LogsListing = () => {
                   onSort={handleChangeSort}
                   logListView={logListView}
                   onDownload={downloadLogFile}
+                  disableDownload={disableDownload}
                 />
 
                 <TableBody>

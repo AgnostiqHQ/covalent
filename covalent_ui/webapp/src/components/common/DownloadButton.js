@@ -23,11 +23,12 @@
 import { IconButton, Tooltip, Grid } from '@mui/material'
 import { ReactComponent as DownloadIcon } from '../../assets/download.svg'
 
-const DownloadButton = ({ content, isBorderPresent,onClick, ...props }) => {
+const DownloadButton = ({ content, isBorderPresent,onClick,disabled, ...props }) => {
   return (
     <Tooltip title={props.title} placement="right" data-testid="copyButton">
       <IconButton
         onClick={onClick}
+        disabled={disabled}
         disableRipple
         sx={{ color: 'text.tertiary' }}
         {...props}
