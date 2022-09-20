@@ -78,7 +78,9 @@ class Logs:
 
         split_line, split_words = (
             r"\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,3})?,[0-9]+]"
-        ), (r"\[(.*)\] \[(TRACE|DEBUG|INFO|NOTICE|WARN|WARNING|ERROR|SEVERE|FATAL)\] ((.|\n)*)")
+        ), (
+            r"\[(.*)\] \[(TRACE|DEBUG|INFO|NOTICE|WARN|WARNING|ERROR|SEVERE|CRITICAL|FATAL)\] ((.|\n)*)"
+        )
 
         try:
             with open(UI_LOGFILE, "r", encoding="utf-8") as logfile:
