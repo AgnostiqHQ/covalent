@@ -29,7 +29,11 @@ import {
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 import { useDebounce } from 'use-debounce'
-import { fetchLogsList, downloadCovalentLogFile,resetLogs } from '../../redux/logsSlice'
+import {
+  fetchLogsList,
+  downloadCovalentLogFile,
+  resetLogs,
+} from '../../redux/logsSlice'
 import DownloadButton from '../common/DownloadButton'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import CopyButton from '../common/CopyButton'
@@ -96,7 +100,13 @@ const ResultsTableToolbar = ({ query, onSearch, setQuery }) => {
   )
 }
 
-const ResultsTableHead = ({ order, orderBy, onSort, logListView, onDownload }) => {
+const ResultsTableHead = ({
+  order,
+  orderBy,
+  onSort,
+  logListView,
+  onDownload,
+}) => {
   return (
     <TableHead sx={{ position: 'sticky', zIndex: 19 }}>
       <TableRow>
@@ -148,9 +158,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-  {
-    fontSize: '1rem',
-  },
+    {
+      fontSize: '1rem',
+    },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -230,27 +240,27 @@ const LogsListing = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
 
-   // reset store values to initial state when moved to another page
-   useEffect(() => {
+  // reset store values to initial state when moved to another page
+  useEffect(() => {
     return () => {
-      dispatch(resetLogs());
-    };
+      dispatch(resetLogs())
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortColumn, sortOrder, searchValue, page]);
+  }, [sortColumn, sortOrder, searchValue, page])
 
   useEffect(() => {
     if (logFinalFile) {
-      const link = document.createElement('a');
-      const blob = new Blob([logFinalFile]);
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', 'covalent_ui.log');
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setSnackbarMessage('Covalent logs downloaded successfully!');
-      setOpenSnackbar(true);
+      const link = document.createElement('a')
+      const blob = new Blob([logFinalFile])
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+      link.setAttribute('download', 'covalent_ui.log')
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      setSnackbarMessage('Covalent logs downloaded successfully!')
+      setOpenSnackbar(true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logFinalFile])
@@ -353,7 +363,7 @@ const LogsListing = () => {
           <Grid>
             <TableContainer
               sx={{
-                height: _.isEmpty(logListView) ? 50 : '62vh',
+                height: _.isEmpty(logListView) ? 50 : '61vh',
                 '@media (min-width: 1700px)': {
                   height: _.isEmpty(logListView) ? 50 : '68vh',
                 },
