@@ -70,7 +70,7 @@ async def graceful_shutdown():
     # Query list of running and pending workflows
     # TODO: Add logic to do this in batches
     dispatches = get_all_dispatches(
-        count=Query(100), 
+        count=Query(100),
         offset=Query(0),
         status_filter=Status.RUNNING
     ).items
