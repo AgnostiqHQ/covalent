@@ -44,6 +44,7 @@ from covalent._shared_files.config import (
     get_config,
     set_config,
 )
+from covalent._shared_files.defaults import get_default_executor
 from covalent.utils.migrate import migrate_pickled_result_object
 
 ccm = ClientConfigManager()
@@ -390,6 +391,16 @@ def status() -> None:
     if _read_pid(UI_PIDFILE) != -1 and psutil.pid_exists(pid):
         ui_port = get_config(CMType.SERVER, "service.port")
         click.echo(f"Covalent server is running at http://localhost:{ui_port}.")
+
+        default_executor = get_default_executor()
+        click.echo(f" > Default executor: {default_executor}")
+
+        if default_executor == "dask":
+            dashboard_link = get_config(CMType.SERVER, "dask.dashboard_link")
+            workers = get_config(CMType.SERVER, "dask.num_workers")
+            click.echo(f" > Running with {workers} workers.")
+            click.echo(f" > Navigate to {dashboard_link} for more details.")
+
     else:
         _rm_pid_file(UI_PIDFILE)
         click.echo("Covalent server is stopped.")

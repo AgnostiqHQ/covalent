@@ -135,7 +135,7 @@ def get_default_workflow_data_config():
     }
 
 
-def get_default_executor() -> dict:
+def get_default_executor() -> str:
     """
     Gets the executor based on whether Dask service is running.
 
@@ -144,7 +144,7 @@ def get_default_executor() -> dict:
     """
     from .config import get_config
 
-    return "local" if get_config(CMType.CLIENT, "sdk.no_cluster") else "dask"
+    return "local" if get_config(CMType.CLIENT, "sdk.no_cluster") == "true" else "dask"
 
 
 def get_default_config_path(type: CMType) -> str:
