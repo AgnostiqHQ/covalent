@@ -33,7 +33,7 @@ import { ReactComponent as Logo } from '../assets/covalent-full-logo.svg'
 
 const NotFound = ({ text = 'Page not found.', children }) => {
   return (
-    <Container>
+    <Container  maxWidth="xl" sx={{ mb: 4, mt: 7 }}>
       <AppBar position="static" color="transparent">
         <Toolbar disableGutters sx={{ my: 2 }}>
           <Link href="/">
