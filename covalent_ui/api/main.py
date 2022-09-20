@@ -21,7 +21,7 @@
 """Fastapi init"""
 
 import socketio
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,7 +29,10 @@ from fastapi.responses import JSONResponse
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import CMType, get_config
+from covalent_dispatcher._core.execution import cancel_workflow
 from covalent_ui.api.v1.routes import routes
+from covalent_ui.api.v1.routes.end_points.summary_routes import get_all_dispatches
+from covalent_ui.api.v1.utils.status import Status
 
 # Config
 
@@ -61,6 +64,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.on_event("shutdown")
+async def graceful_shutdown():
+    # Query list of running and pending workflows
+    # TODO: Add logic to do this in batches
+    dispatches = get_all_dispatches(
+        count=Query(100), 
+        offset=Query(0),
+        status_filter=Status.RUNNING
+    ).items
+    dispatches += get_all_dispatches(
+        count=Query(100),
+        offset=Query(0),
+        status_filter=Status.PENDING
+    ).items
+
+    # TODO: Batch these requests
+    for dispatch in dispatches:
+        cancel_workflow(dispatch.dispatch_id)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
