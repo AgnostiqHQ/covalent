@@ -47,6 +47,7 @@ def test_local_executor_passes_results_dir(mocker):
 
         assembled_callable = partial(wrapper_fn, TransportableObject(simple_task), [], [])
 
+        le._initialize_task_data(-1, 0)
         le.execute(
             function=assembled_callable,
             args=[],
