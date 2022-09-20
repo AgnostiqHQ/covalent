@@ -57,6 +57,10 @@ from covalent_ui import result_webhook
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
+# Global map of running workflows
+
+_running_workflows = {}
+
 
 # This is to be run out-of-process
 def _build_sublattice_graph(sub: Lattice, *args, **kwargs):
@@ -839,6 +843,8 @@ async def run_workflow(result_object: Result) -> Result:
 
     try:
         _plan_workflow(result_object)
+        _register_dispatch(result_object)
+        app_log.debug(f"Registered dispatch {result_object.dispatch_id}")
         result_object = await _run_planned_workflow(result_object)
 
     except Exception as ex:
@@ -855,11 +861,22 @@ async def run_workflow(result_object: Result) -> Result:
             "".join(traceback.TracebackException.from_exception(ex).format()),
         )
         raise
+    finally:
+        _unregister_dispatch(result_object)
+        app_log.debug(f"Unregistered dispatch {result_object.dispatch_id}")
 
     return result_object
 
 
-def cancel_workflow(dispatch_id: str) -> None:
+def _register_dispatch(result_object: Result):
+    _running_workflows[result_object.dispatch_id] = result_object
+
+
+def _unregister_dispatch(result_object: Result):
+    del _running_workflows[result_object.dispatch_id]
+
+
+async def cancel_workflow(dispatch_id: str) -> None:
     """
     Cancels a dispatched workflow using publish subscribe mechanism
     provided by Dask.
@@ -870,7 +887,5 @@ def cancel_workflow(dispatch_id: str) -> None:
     Returns:
         None
     """
-
-    # shared_var = Variable(dispatch_id)
-    # shared_var.set(str(Result.CANCELLED))
-    pass
+    if dispatch_id in _running_workflows:
+        await _running_workflows[dispatch_id]._cancel()

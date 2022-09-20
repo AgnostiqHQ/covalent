@@ -26,7 +26,7 @@ Tests for the core functionality of the dispatcher.
 import asyncio
 from asyncio import Queue
 from typing import Dict, List
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import cloudpickle as pickle
 import pytest
@@ -50,8 +50,11 @@ from covalent_dispatcher._core.execution import (
     _plan_workflow,
     _post_process,
     _postprocess_workflow,
+    _register_dispatch,
     _run_task,
+    _unregister_dispatch,
     _update_node_result,
+    cancel_workflow,
     generate_node_result,
     run_workflow,
 )
@@ -1155,3 +1158,85 @@ async def test_postprocess_workflow(mocker):
     result_object = await _postprocess_workflow(result_object)
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
+
+
+@pytest.mark.asyncio
+async def test_run_workflow_normal(mocker):
+    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
+    mocker.patch(
+        "covalent_dispatcher._core.execution._run_planned_workflow", return_value=result_object
+    )
+    mock_register = mocker.patch("covalent_dispatcher._core.execution._register_dispatch")
+    mock_unregister = mocker.patch("covalent_dispatcher._core.execution._unregister_dispatch")
+    mock_update_lattices_data = mocker.patch(
+        "covalent_dispatcher._core.execution.update_lattices_data"
+    )
+    mock_write_lattice_error = mocker.patch(
+        "covalent_dispatcher._core.execution.write_lattice_error"
+    )
+
+    await run_workflow(result_object)
+
+    mock_register.assert_called_once_with(result_object)
+    mock_unregister.assert_called_once_with(result_object)
+    mock_update_lattices_data.assert_not_called()
+    mock_write_lattice_error.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_run_workflow_exception(mocker):
+    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
+    mocker.patch(
+        "covalent_dispatcher._core.execution._run_planned_workflow",
+        return_value=result_object,
+        side_effect=RuntimeError("Error"),
+    )
+    mock_register = mocker.patch("covalent_dispatcher._core.execution._register_dispatch")
+    mock_unregister = mocker.patch("covalent_dispatcher._core.execution._unregister_dispatch")
+    mock_update_lattices_data = mocker.patch(
+        "covalent_dispatcher._core.execution.update_lattices_data"
+    )
+    mock_write_lattice_error = mocker.patch(
+        "covalent_dispatcher._core.execution.write_lattice_error"
+    )
+
+    await run_workflow(result_object)
+
+    mock_register.assert_called_once_with(result_object)
+    mock_unregister.assert_called_once_with(result_object)
+    mock_register.assert_called_once_with(result_object)
+    mock_unregister.assert_called_once_with(result_object)
+    mock_update_lattices_data.assert_called_once()
+    mock_write_lattice_error.assert_called_once()
+
+
+def test_register_workflow(mocker):
+    from covalent_dispatcher._core.execution import _running_workflows
+
+    result_object = get_mock_result()
+    _register_dispatch(result_object)
+    assert result_object.dispatch_id in _running_workflows
+    _unregister_dispatch(result_object)
+    assert result_object.dispatch_id not in _running_workflows
+
+
+@pytest.mark.asyncio
+async def test_cancel_workflow(mocker):
+    res1 = get_mock_result()
+    res2 = get_mock_result()
+    res1._dispatch_id = "dispatch1"
+    res2._dispatch_id = "dispatch2"
+
+    res1._cancel = AsyncMock()
+    res2._cancel = AsyncMock()
+
+    _register_dispatch(res1)
+    _register_dispatch(res2)
+    await cancel_workflow("dispatch1")
+    _unregister_dispatch(res1)
+    await cancel_workflow("dispatch1")
+
+    res1._cancel.assert_awaited_once()
+    res2._cancel.assert_not_awaited()
