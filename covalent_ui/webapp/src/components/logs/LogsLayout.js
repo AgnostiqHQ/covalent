@@ -10,7 +10,7 @@ const LogsLayout = () => {
       <NavDrawer />
       <Container maxWidth="xl" sx={{ mb: 4, mt: 7 }}>
         <Typography
-          fontSize="h4.fontSize"
+          fontSize="32px"
           sx={{ color: (theme) => theme.palette.primary.white, mb: 4 }}
         >
           Logs{' '}

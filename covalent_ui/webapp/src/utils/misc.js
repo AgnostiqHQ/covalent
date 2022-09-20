@@ -128,6 +128,12 @@ export const statusColor = (status) => {
     DEPROVISION_FAILED: theme.palette.error.main,
     CONNECTION_LOST: theme.palette.error.main,
     TIMEOUT: theme.palette.error.main,
+    WARNING: theme.palette.warning.main,
+    INFO: theme.palette.info.main,
+    DEBUG: theme.palette.info.main,
+    WARN: theme.palette.warning.main,
+    ERROR: theme.palette.error.main,
+    CRITICAL: theme.palette.error.main,
   }[status]
 }
 
@@ -178,21 +184,21 @@ export const logStatusIcon = (status) => {
     case 'WARNING':
     case 'WARN':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon sx={{ mt: 0.5, fontSize: '18px' }}>
           <WarningSvg />
         </SvgIcon>
       )
     case 'INFO':
     case 'DEBUG':
       return (
-        <SvgIcon sx={{ mt: 1.6 }}>
+        <SvgIcon sx={{ mt: 1.4 }}>
           <InfoSvg />
         </SvgIcon>
       )
     case 'ERROR':
     case 'CRITICAL':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon sx={{ mt: 0.5, fontSize: '18px' }}>
           <ErrorSvg />
         </SvgIcon>
       )

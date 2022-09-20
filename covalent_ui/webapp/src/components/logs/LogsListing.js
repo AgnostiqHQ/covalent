@@ -42,6 +42,7 @@ import {
   logStatusLabel,
   formatLogDate,
   formatLogTime,
+  statusColor,
 } from '../../utils/misc'
 
 const headers = [
@@ -390,16 +391,23 @@ const LogsListing = () => {
                     logListView.map((result, index) => (
                       <TableRow hover key={index} sx={{ height: '50px' }}>
                         <TableCell
-                          style={{
+                          sx={{
                             width: 180,
                             verticalAlign: 'center',
+                            fontFamily: (theme) => theme.typography.logsFont,
                           }}
                         >
-                          <Grid>{formatLogTime(result.logDate)}</Grid>
+                          <Grid
+                            sx={{
+                              fontSize: '12px',
+                            }}
+                          >
+                            {formatLogTime(result.logDate)}
+                          </Grid>
                           <Grid
                             sx={{
                               color: (theme) => theme.palette.text.tertiary,
-                              fontSize: '14px',
+                              fontSize: '10px',
                             }}
                           >
                             {formatLogDate(result.logDate)}
@@ -412,6 +420,8 @@ const LogsListing = () => {
                             sx={{
                               display: 'flex',
                               alignItems: 'center',
+                              fontSize: '14px',
+                              color: statusColor(result.status),
                             }}
                           >
                             {logStatusIcon(result.status)}
@@ -425,7 +435,14 @@ const LogsListing = () => {
                             whiteSpace: 'pre-wrap',
                           }}
                         >
-                          {result.message}
+                          <Typography
+                            sx={{
+                              fontSize: '12px',
+                              fontFamily: (theme) => theme.typography.logsFont,
+                            }}
+                          >
+                            {result.message}
+                          </Typography>
                         </TableCell>
                         <TableCell sx={{ width: '15px' }}>
                           <CopyButton

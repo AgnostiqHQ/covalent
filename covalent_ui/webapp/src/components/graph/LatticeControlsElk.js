@@ -28,7 +28,6 @@ import {
   SvgIcon,
 } from '@mui/material'
 import {
-  Add as PlusIcon,
   ArrowBack,
   ArrowDownward,
   ArrowForward,
@@ -36,7 +35,6 @@ import {
   LockOpenOutlined,
   LockOutlined,
   MapOutlined,
-  Remove as MinusIcon,
 } from '@mui/icons-material'
 import useFitViewHelper from './ReactFlowHooks'
 import DashboardIcon from '@mui/icons-material/Dashboard'
