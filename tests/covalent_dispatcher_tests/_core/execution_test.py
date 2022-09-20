@@ -1185,6 +1185,33 @@ async def test_run_workflow_normal(mocker):
 
 
 @pytest.mark.asyncio
+async def test_run_completed_workflow(mocker):
+    result_object = get_mock_result()
+    result_object._status = Result.COMPLETED
+    mock_plan = mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
+    mock_run_planned_workflow = mocker.patch(
+        "covalent_dispatcher._core.execution._run_planned_workflow", return_value=result_object
+    )
+    mock_register = mocker.patch("covalent_dispatcher._core.execution._register_dispatch")
+    mock_unregister = mocker.patch("covalent_dispatcher._core.execution._unregister_dispatch")
+    mock_update_lattices_data = mocker.patch(
+        "covalent_dispatcher._core.execution.update_lattices_data"
+    )
+    mock_write_lattice_error = mocker.patch(
+        "covalent_dispatcher._core.execution.write_lattice_error"
+    )
+
+    await run_workflow(result_object)
+
+    mock_plan.assert_not_called()
+    mock_run_planned_workflow.assert_not_called()
+    mock_register.assert_not_called()
+    mock_unregister.assert_not_called()
+    mock_update_lattices_data.assert_not_called()
+    mock_write_lattice_error.assert_not_called()
+
+
+@pytest.mark.asyncio
 async def test_run_workflow_exception(mocker):
     result_object = get_mock_result()
     mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
@@ -1202,7 +1229,8 @@ async def test_run_workflow_exception(mocker):
         "covalent_dispatcher._core.execution.write_lattice_error"
     )
 
-    await run_workflow(result_object)
+    with pytest.raises(RuntimeError) as ex:
+        await run_workflow(result_object)
 
     mock_register.assert_called_once_with(result_object)
     mock_unregister.assert_called_once_with(result_object)

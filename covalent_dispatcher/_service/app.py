@@ -79,7 +79,7 @@ async def cancel(request: Request) -> str:
     data = await request.body()
     dispatch_id = data.decode("utf-8")
 
-    dispatcher.cancel_running_dispatch(dispatch_id)
+    await dispatcher.cancel_running_dispatch(dispatch_id)
     return f"Dispatch {dispatch_id} cancelled."
 
 

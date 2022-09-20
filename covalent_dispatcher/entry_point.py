@@ -27,6 +27,8 @@ import asyncio
 from covalent._results_manager.result import initialize_result_object
 from covalent._shared_files import logger
 
+from ._core import run_workflow
+
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
@@ -44,8 +46,6 @@ async def run_dispatcher(json_lattice: str):
         dispatch_id: A string containing the dispatch id of current dispatch.
     """
 
-    from ._core import run_workflow
-
     result_object = initialize_result_object(json_lattice)
 
     dispatch_id = result_object.dispatch_id
@@ -56,7 +56,7 @@ async def run_dispatcher(json_lattice: str):
     return dispatch_id
 
 
-def cancel_running_dispatch(dispatch_id: str) -> None:
+async def cancel_running_dispatch(dispatch_id: str) -> None:
     """
     Cancels a running dispatch job.
 
@@ -69,4 +69,4 @@ def cancel_running_dispatch(dispatch_id: str) -> None:
 
     from ._core import cancel_workflow
 
-    cancel_workflow(dispatch_id)
+    asyncio.create_task(cancel_workflow(dispatch_id))

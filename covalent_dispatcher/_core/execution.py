@@ -888,4 +888,5 @@ async def cancel_workflow(dispatch_id: str) -> None:
         None
     """
     if dispatch_id in _running_workflows:
+        app_log.debug(f"Cancelling dispatch {dispatch_id}")
         await _running_workflows[dispatch_id]._cancel()
