@@ -72,12 +72,8 @@ def get_default_server_config():
     Return the default server config for a client
     """
     return {
-        "address": os.environ.get("COVALENT_DISPATCHER_ADDR")
-        if os.environ.get("COVALENT_DISPATCHER_ADDR")
-        else "localhost",
-        "port": int(os.environ.get("COVALENT_SVC_PORT"))
-        if os.environ.get("COVALENT_SVC_PORT")
-        else 48008,
+        "address": os.environ.get("COVALENT_DISPATCHER_ADDR", "localhost"),
+        "port": int(os.environ.get("COVALENT_SVC_PORT", 48008)),
     }
 
 
