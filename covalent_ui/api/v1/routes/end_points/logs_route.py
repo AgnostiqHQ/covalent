@@ -20,13 +20,10 @@
 
 """Logs Routes"""
 
-import os
 from typing import Optional
 
 from fastapi import APIRouter, Query
-from fastapi.responses import StreamingResponse
 
-from covalent._shared_files.config import get_config
 from covalent_ui.api.v1.data_layer.logs_dal import Logs
 from covalent_ui.api.v1.models.logs_model import SortBy, SortDirection
 
@@ -47,15 +44,5 @@ def get_logs(
 
 @routes.get("/download")
 def download_logs():
-    """Overview of Dispatches
-
-    Args:
-        None
-
-    Returns:
-        An Overview of dispatches as object
-    """
-    log_file = get_config("user_interface.log_dir") + "/covalent_ui.log"
-    if os.path.exists(log_file):
-        return StreamingResponse(open(log_file, "rb"), media_type="text/html")
-    return {"data": None}
+    logs = Logs()
+    return logs.download_logs()

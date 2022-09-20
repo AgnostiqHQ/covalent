@@ -18,11 +18,16 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import os
 import re
 from datetime import datetime
 
-from covalent._shared_files.config import get_config
+from fastapi.responses import StreamingResponse
+
+from covalent._shared_files.config import CMType, get_config
 from covalent_ui.api.v1.models.logs_model import LogsResponse
+
+UI_LOGFILE = get_config(CMType.SERVER, "service.log_dir") + "/covalent_ui.log"
 
 
 class Logs:
@@ -68,7 +73,6 @@ class Logs:
             List of top most Lattices and count
         """
         output_data, result_data = [], []
-        file_name, file_location = "covalent_ui.log", self.config("user_interface.log_dir")
         last_msg = ""
         reverse_list = direction.value == "DESC"
 
@@ -77,7 +81,7 @@ class Logs:
         ), (r"\[(.*)\] \[(TRACE|DEBUG|INFO|NOTICE|WARN|WARNING|ERROR|SEVERE|FATAL)\] ((.|\n)*)")
 
         try:
-            with open(f"{file_location}/{file_name}", "r") as logfile:
+            with open(UI_LOGFILE, "r", encoding="utf-8") as logfile:
                 for line in logfile:
                     last_msg = self.__split_merge_line(output_data, split_line, line, last_msg)
                 if last_msg != "":
@@ -85,10 +89,12 @@ class Logs:
                         output_data.append(last_msg)
                     output_data[len(output_data) - 1] += last_msg
                     last_msg = ""
-        except FileNotFoundError:
+        except FileNotFoundError as e:
+            print("reererereee", e)
             output_data = []
 
         if len(output_data) == 0:
+            print("OOOOO")
             return LogsResponse(items=[], total_count=len(result_data))
 
         regex_expr = re.compile(split_words)
@@ -115,3 +121,8 @@ class Logs:
         )
 
         return LogsResponse(items=modified_data, total_count=len(result_data))
+
+    def download_logs(self):
+        if os.path.exists(UI_LOGFILE):
+            return StreamingResponse(open(UI_LOGFILE, "rb"), media_type="text/html")
+        return {"data": None}
