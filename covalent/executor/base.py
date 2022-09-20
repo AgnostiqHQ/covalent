@@ -516,10 +516,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         self._resource_lock = asyncio.Lock()
         if executor_cache:
             self._tasks_left = executor_cache.tasks_per_instance[self.instance_id]
-
-            # Cache the executor if it is "shared"
-            if self.shared:
-                executor_cache.id_instance_map[self.instance_id] = self
+            executor_cache.id_instance_map[self.instance_id] = self
 
         self._state["tasks"] = {}
         self._state["resource_metadata"] = {}

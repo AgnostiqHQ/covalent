@@ -912,6 +912,16 @@ async def test_async_executor_initialize_runtime():
     assert me._tasks_left == 5
 
 
+def test_executor_initialize_runtime(mocker):
+    me = MockExecutor()
+    mock_cache = MagicMock()
+    mock_cache.tasks_per_instance = {me.instance_id: 5}
+    mock_cache.id_instance_map = {me.instance_id: None}
+    me._initialize_runtime(mock_cache)
+    assert me._tasks_left == 5
+    assert mock_cache.id_instance_map[me.instance_id] is me
+
+
 def test_executor_initialize_task_data():
     """Test initializing task data"""
     me = MockExecutor(log_stdout="/tmp/stdout.log")
@@ -929,6 +939,17 @@ def test_executor_get_set_task_data():
     me._set_task_data("asdf", 1, "jobID", 42)
     assert me._get_task_data("asdf", 1, "_status") == "RUNNING"
     assert me._get_task_data("asdf", 1, "jobID") == 42
+
+
+@pytest.mark.asyncio
+def test_async_executor_initialize_runtime(mocker):
+    me = MockAsyncExecutor()
+    mock_cache = MagicMock()
+    mock_cache.tasks_per_instance = {me.instance_id: 5}
+    mock_cache.id_instance_map = {me.instance_id: None}
+    me._initialize_runtime(mock_cache)
+    assert me._tasks_left == 5
+    assert mock_cache.id_instance_map[me.instance_id] is me
 
 
 @pytest.mark.asyncio
