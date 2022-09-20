@@ -18,24 +18,31 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-name: push-to-s3
+name: Prepare Release Candidate
 
 on:
-  push:
-    branches:
-      - develop-ui
+  workflow_dispatch:
+    inputs:
+      prerelease_version:
+        description: "Pre-release version being prepared for stable release, e.g., 0.177.0"
+        type: string
+        required: true
 
 jobs:
-  publish:
+  prep-rc:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out head
-        uses: actions/checkout@v2
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Get tag sha
+        id: tag-sha
+        uses: octokit/request-action@v2.x
         with:
-          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Deploy static site to S3 bucket
-        run: aws s3 sync ./covalent_ui/webapp/build-demo/ ${{ secrets.S3_STATIC }} --delete
+          route: GET /repos/{repo}/git/ref/tags/{tag}
+          repo: ${{ github.repository }}
+          tag: v${{ inputs.prerelease_version }}-rc.0
+      - name: Create release branch
+        uses: peterjgrainger/action-create-branch@v2.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          branch: release-${{ inputs.prerelease_version }}
+          sha: ${{ fromJSON(steps.tag-sha.outputs.data).object.sha }}
