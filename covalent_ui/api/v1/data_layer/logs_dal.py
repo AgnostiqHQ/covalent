@@ -22,7 +22,7 @@ import os
 import re
 from datetime import datetime
 
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response
 
 from covalent._shared_files.config import CMType, get_config
 from covalent_ui.api.v1.models.logs_model import LogsResponse
@@ -52,13 +52,18 @@ class Logs:
             last_msg += line + "\n"
         return last_msg
 
-    def __split_merge_json(self, line, regex_expr):
+    def __split_merge_json(self, line, regex_expr, result_data, search):
         reg = regex_expr.split(line.rstrip("\n"))
         json_data = {"log_date": None, "status": "INFO", "message": reg[0]}
         if len(reg) >= 3:
             parse_str = datetime.strptime(reg[1], "%Y-%m-%d %I:%M:%S,%f")
             json_data = {"log_date": f"{parse_str}", "status": reg[2], "message": reg[3]}
-        return json_data
+        if search != "" and (
+            (search in json_data["message"].lower()) or (search in json_data["status"].lower())
+        ):
+            result_data.append(json_data)
+        else:
+            result_data.append(json_data)
 
     def get_logs(self, sort_by, direction, search, count, offset):
         """
@@ -91,25 +96,15 @@ class Logs:
                         output_data.append(last_msg)
                     output_data[len(output_data) - 1] += last_msg
                     last_msg = ""
-        except FileNotFoundError as e:
-            print("reererereee", e)
+        except FileNotFoundError:
             output_data = []
 
         if len(output_data) == 0:
-            print("OOOOO")
             return LogsResponse(items=[], total_count=len(result_data))
 
         regex_expr = re.compile(split_words)
-        result_data = [self.__split_merge_json(line, regex_expr) for line in output_data]
-
-        if search != "":
-            result_data = [
-                x
-                for x in result_data
-                if (search.lower() in x["message"].lower())
-                or (search.lower() in x["status"].lower())
-            ]
-
+        for line in output_data:
+            self.__split_merge_json(line, regex_expr, result_data, search.lower())
         modified_data = sorted(
             result_data,
             key=lambda e: (e[sort_by.value] is not None, e[sort_by.value]),
@@ -125,6 +120,10 @@ class Logs:
         return LogsResponse(items=modified_data, total_count=len(result_data))
 
     def download_logs(self):
+        """Download logs"""
+        data = None
         if os.path.exists(UI_LOGFILE):
-            return StreamingResponse(open(UI_LOGFILE, "rb"), media_type="text/html")
-        return {"data": None}
+            with open(UI_LOGFILE, "rb") as file:
+                data = file.read().decode("utf-8")
+                return Response(data)
+        return {"data": data}
