@@ -58,10 +58,9 @@ class Logs:
         if len(reg) >= 3:
             parse_str = datetime.strptime(reg[1], "%Y-%m-%d %I:%M:%S,%f")
             json_data = {"log_date": f"{parse_str}", "status": reg[2], "message": reg[3]}
-        if search != "" and (
-            (search in json_data["message"].lower()) or (search in json_data["status"].lower())
-        ):
-            result_data.append(json_data)
+        if search != "":
+            if (search in json_data["message"].lower()) or (search in json_data["status"].lower()):
+                result_data.append(json_data)
         else:
             result_data.append(json_data)
 
@@ -110,8 +109,6 @@ class Logs:
             key=lambda e: (e[sort_by.value] is not None, e[sort_by.value]),
             reverse=reverse_list,
         )
-
-        print(offset, count)
 
         modified_data = (
             modified_data[offset : count + offset] if count != 0 else modified_data[offset:]
