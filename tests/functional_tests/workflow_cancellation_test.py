@@ -25,6 +25,7 @@ import pytest
 import covalent as ct
 from covalent._data_store.datastore import DataStore
 from covalent._results_manager.result import Result, initialize_result_object
+from covalent._shared_files.config import CMType, get_config
 from covalent_dispatcher._core.execution import run_workflow
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -94,6 +95,42 @@ async def test_result_cancel_local_executor(event_loop):
     assert result_object._status == Result.CANCELLED
     loop = asyncio.get_running_loop()
     print("Scheduled tasks", loop._scheduled)
+
+
+def test_cancel_endpoint():
+    """End-to-end test of /api/cancel"""
+    import time
+
+    import requests
+
+    @ct.electron
+    def sleeping_task(delay):
+        import time
+
+        time.sleep(delay)
+        print("Slept for {delay} seconds")
+        return delay
+
+    @ct.lattice
+    def workflow(x):
+        res = sleeping_task(x)
+        res2 = sleeping_task(res)
+        return 1
+
+    dispatch_id = ct.dispatch(workflow)(8)
+    time.sleep(0.2)
+
+    server_ip = str(get_config(CMType.CLIENT, "server.address"))
+    server_port = str(get_config(CMType.CLIENT, "server.port"))
+    cancel_url = "http://" + server_ip + ":" + server_port + "/api/cancel"
+
+    r = requests.post(cancel_url, data=dispatch_id)
+    expected_cancel_msg = f"Dispatch {dispatch_id} cancelled."
+    r.raise_for_status()
+    assert r.content.decode("utf-8").strip().replace('"', "") == expected_cancel_msg
+
+    result = ct.get_result(dispatch_id, wait=True)
+    assert result.status == ct.status.CANCELLED
 
 
 def test_dummy_end():
