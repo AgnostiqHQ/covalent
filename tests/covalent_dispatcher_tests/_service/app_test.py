@@ -91,30 +91,10 @@ def test_submit(mocker, app, client):
     response = client.post("/api/submit", data=json.dumps({}))
     assert response.json() == DISPATCH_ID
 
-@pytest.mark.parametrize(
-    "dispatch_id, retval",
-    [
-        (
-            DISPATCH_ID,
-            f"Dispatch {DISPATCH_ID} cancelled."
-         ),
-        (
-            "non-existent-dispatch-id",
-            {'message': 'The dispatch ID non-existent-dispatch-id was not found.'}
-         )
-
-    ]
-)
-def test_cancel(mocker, test_db, retval, dispatch_id, client):
+@pytest.mark.parametrize("dispatch_id", (DISPATCH_ID, "invalid-dispatch-id"))
+def test_cancel(mocker, test_db, dispatch_id, client):
 
     """Test cancel workflow endpoint."""
-
-    mock_cancel = mocker.patch(
-            "covalent_dispatcher.cancel_running_dispatch",
-            return_value=retval,
-        )
-
-    response = client.post("/api/cancel", data=dispatch_id.encode("utf-8"))
 
     if dispatch_id==DISPATCH_ID:
         record = {
@@ -125,9 +105,21 @@ def test_cancel(mocker, test_db, retval, dispatch_id, client):
         with test_db.session() as session:
             session.add(MockLattice(**record))
             session.commit()
+        mock_cancel = mocker.patch(
+            "covalent_dispatcher.cancel_running_dispatch",
+            return_value=f"Dispatch {DISPATCH_ID} cancelled.",
+        )
+
+        response = client.post("/api/cancel", data=dispatch_id.encode("utf-8"))
         assert response.json() == mock_cancel.return_value
         assert response.status_code == 200
     else:
+        mock_cancel = mocker.patch(
+            "covalent_dispatcher.cancel_running_dispatch",
+            return_value={'message': f"The dispatch ID {dispatch_id} was not found."},
+        )
+
+        response = client.post("/api/cancel", data=dispatch_id.encode("utf-8"))
         assert response.json() == mock_cancel.return_value
         assert response.status_code == 404
 
