@@ -125,8 +125,6 @@ def test_cancel(mocker, test_db, retval, dispatch_id, client):
         with test_db.session() as session:
             session.add(MockLattice(**record))
             session.commit()
-        
-        mock_cancel.assert_called_with(dispatch_id)
         assert response.json() == mock_cancel.return_value
         assert response.status_code == 200
     else:
