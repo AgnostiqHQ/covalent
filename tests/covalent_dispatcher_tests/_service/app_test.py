@@ -101,7 +101,7 @@ def test_cancel(mocker, test_db_file, client):
     with test_db_file.session() as session:
         session.add(lattice)
         session.commit()
-        
+
     mock_cancel = mocker.patch(
         "covalent_dispatcher.cancel_running_dispatch",
         return_value=f"Dispatch {DISPATCH_ID} cancelled.",
@@ -111,7 +111,7 @@ def test_cancel(mocker, test_db_file, client):
     assert response.json() == mock_cancel.return_value
     assert response.status_code == 200
     os.remove("/tmp/testdb.sqlite")
-   
+
 
 def test_db_path(mocker, app, client):
     dbpath = "/Users/root/covalent/results.db"
