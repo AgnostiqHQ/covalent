@@ -673,6 +673,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
 
+    result_object._initialize_runtime_state()
     result_object.lattice.workflow_function = ct.TransportableObject(failing_workflow)
     result_object.lattice.set_metadata("workflow_executor", "local")
 
