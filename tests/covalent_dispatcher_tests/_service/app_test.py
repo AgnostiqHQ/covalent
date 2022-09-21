@@ -106,7 +106,7 @@ def test_cancel(mocker, test_db, client):
     response = client.post("/api/cancel", data=DISPATCH_ID.encode("utf-8"))
     assert response.json() == mock_cancel.return_value
     assert response.status_code == 200
-   
+
 
 def test_db_path(mocker, app, client):
     dbpath = "/Users/root/covalent/results.db"
