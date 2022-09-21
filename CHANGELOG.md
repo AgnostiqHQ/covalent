@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 
 - Fixed `asserts` in stress tests
+- Added unit tests for `defaults.py`
 
 ### Added
 
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Config file is now locked during reads and writes to mitigate concurrency issues
+- In `defaults.py/get_default_executor`, condition to return `local` or `dask` is now fixed
 
 ### Changed
 
