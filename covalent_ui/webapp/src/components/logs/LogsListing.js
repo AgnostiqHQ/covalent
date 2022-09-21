@@ -357,7 +357,7 @@ const LogsListing = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortColumn, sortOrder, searchValue, page])
 
-  const handleChangeSort = (column) => {
+  const handleChangeSort = (e,column) => {
     setOffset(0)
     const isAsc = sortColumn === column && sortOrder === 'asc'
     setSortOrder(isAsc ? 'desc' : 'asc')
