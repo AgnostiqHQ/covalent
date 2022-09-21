@@ -87,14 +87,16 @@ def test_db_file():
 
 
 def test_submit(mocker, app, client):
-    mocker.patch("covalent_dispatcher.run_dispatcher", return_value=DISPATCH_ID)
+    mocker.patch("covalent_dispatcher.run_dispatcher", return_value=DISPATCH_ID) 
     response = client.post("/api/submit", data=json.dumps({}))
     assert response.json() == DISPATCH_ID
 
 
-def test_cancel(app, client):
+def test_cancel(mocker, app, client):
+    cancel_running_dispatch= mocker.patch("covalent_dispatcher.cancel_running_dispatch", return_value=f"Dispatch {DISPATCH_ID} cancelled.")
     response = client.post("/api/cancel", data=DISPATCH_ID.encode("utf-8"))
-    assert response.json() == f"Dispatch {DISPATCH_ID} cancelled."
+    cancel_running_dispatch.assert_called_with(DISPATCH_ID)
+    assert response.json() == cancel_running_dispatch.return_value
 
 
 def test_db_path(mocker, app, client):
