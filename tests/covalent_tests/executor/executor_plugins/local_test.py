@@ -22,7 +22,6 @@
 
 import tempfile
 from functools import partial
-from unittest.mock import MagicMock
 
 import covalent as ct
 from covalent._workflow.transport import TransportableObject
@@ -111,47 +110,11 @@ def test_wrapper_fn_calldep_non_unique_retval_keys_injection():
 
 
 def test_local_executor_run():
-    from concurrent.futures import ThreadPoolExecutor
-
     def f(x):
         return x**2
 
     le = LocalExecutor()
-    le._initialize_runtime()
     args = [5]
     kwargs = {}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
-    le._initialize_task_data("asdf", 1)
-    ex = ThreadPoolExecutor(1)
-    resources = {"threadpool": ex}
-    le._set_resource_data(resources)
     assert le.run(f, args, kwargs, task_metadata) == 25
-    ex.shutdown()
-
-
-def test_local_executor_setup():
-    le = LocalExecutor()
-    resources = le.setup()
-    assert "threadpool" in resources
-
-
-def test_local_executor_teardown():
-    le = LocalExecutor()
-    mock_pool = MagicMock()
-    resources = {"threadpool": mock_pool}
-    le.teardown(resources)
-
-    mock_pool.shutdown.assert_called_once()
-
-
-def test_local_executor_cancel():
-    le = LocalExecutor()
-    le._initialize_runtime()
-    dispatch_id = "asdf"
-    le._initialize_task_data(dispatch_id, 0)
-    le._initialize_task_data(dispatch_id, 1)
-    mock_fut = MagicMock()
-    le._set_task_data(dispatch_id, 0, "future", mock_fut)
-    le.cancel(dispatch_id, 0)
-    le.cancel(dispatch_id, 1)
-    mock_fut.cancel.assert_called_once()

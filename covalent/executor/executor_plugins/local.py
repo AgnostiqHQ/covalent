@@ -25,7 +25,6 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 import os
-from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
@@ -53,32 +52,13 @@ class LocalExecutor(BaseExecutor):
     """
 
     def setup(self, task_metadata: Dict = {}):
-        app_log.debug(f"Local executor {self.instance_id}: spinning up worker thread")
-        resources = {"threadpool": ThreadPoolExecutor(max_workers=1)}
-        return resources
+        app_log.debug(f"Local executor {self.instance_id}: provisioning resources")
 
-    def teardown(self, resource_data: Dict = {}):
-        threadpool = resource_data["threadpool"]
-        threadpool.shutdown()
-        app_log.debug(f"Local executor {self.instance_id}: shut down worker thread")
+    def teardown(self, resource_metadata: Dict = {}):
+        if not resource_metadata:
+            app_log.debug(f"Local executor {self.instance_id}: relinquishing resources")
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         app_log.debug(f"Local executor {self.instance_id}: {self._tasks_left} tasks left")
         app_log.debug(f"Running function {function} locally")
-        dispatch_id = task_metadata["dispatch_id"]
-        node_id = task_metadata["node_id"]
-        threadpool = self._get_resource_data()["threadpool"]
-
-        if self._get_task_status(dispatch_id, node_id) == "RUNNING":
-            fut = threadpool.submit(function, *args, **kwargs)
-            self._set_task_data(dispatch_id, node_id, "future", fut)
-        else:
-            raise RuntimeError("Job has been cancelled")
-        return fut.result()
-
-    def cancel(self, dispatch_id: str, node_id: int):
-        fut = self._get_task_data(dispatch_id, node_id, "future")
-        if fut:
-            app_log.debug(f"Cancelling future for task {dispatch_id}:{node_id}")
-            fut.cancel()
-            app_log.debug(f"Cancelled future for task {dispatch_id}:{node_id}")
+        return function(*args, **kwargs)
