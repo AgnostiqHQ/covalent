@@ -31,7 +31,7 @@ from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from .._shared_files.config import get_config
+from .._shared_files.config import CMType, get_config
 from . import models
 
 
@@ -45,7 +45,7 @@ class DataStore:
         if db_URL:
             self.db_URL = db_URL
         else:
-            self.db_URL = "sqlite+pysqlite:///" + get_config("dispatcher.db_path")
+            self.db_URL = "sqlite+pysqlite:///" + get_config(CMType.SERVER, "service.db_path")
 
         self.engine = create_engine(self.db_URL, **kwargs)
         self.Session = sessionmaker(self.engine)

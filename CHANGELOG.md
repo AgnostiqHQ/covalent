@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Tests
+
+- Fixed `asserts` in stress tests
+- Added unit tests for `defaults.py`
+
 ### Added
 
 - `requirements-client.txt` file added.
+
+### Fixed
+
+- Config file is now locked during reads and writes to mitigate concurrency issues
+- In `defaults.py/get_default_executor`, condition to return `local` or `dask` is now fixed
 
 ### Changed
 
@@ -17,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `setup.py` modified to install client side requirements only, if `COVALENT_SDK_ONLY` environment variable is present and `True`.
 - Updated `requirements.txt` and `tests/requirements.txt`
 - Updated `nbconvert` by dependabot
+- Split the `ConfigManager` into `Client` and `Server` components
+- Update the `set/get/update` config methods to distinguish between the client and server parts
 
 ### Docs
 
@@ -28,6 +40,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding `nightly.yml` workflow for nightly CI
 - Updated triggers to `tests` and `changelog` workflows
 - Enhanced pre-release workflows
+- Removed badges workflow; version badge is now generated using the latest pre-release tag
+- Removed unused `push_to_s3` workflow
+- Workflows authenticate to AWS using OIDC with specific roles
+- Only the recommended platform is tested on pull requests
+- Update check blocks to assert the `workflow_call` event type is replaced with `schedule`
 
 ## [0.198.0] - 2022-09-14
 
