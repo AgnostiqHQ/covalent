@@ -91,15 +91,16 @@ def test_submit(mocker, app, client):
     response = client.post("/api/submit", data=json.dumps({}))
     assert response.json() == DISPATCH_ID
 
+
 @pytest.mark.parametrize("dispatch_id", (DISPATCH_ID, "invalid-dispatch-id"))
 def test_cancel(mocker, test_db, dispatch_id, client):
 
     """Test cancel workflow endpoint."""
 
-    if dispatch_id==DISPATCH_ID:
+    if dispatch_id == DISPATCH_ID:
         record = {
-        "dispatch_id": DISPATCH_ID,
-        "status": "RUNNING",
+            "dispatch_id": DISPATCH_ID,
+            "status": "RUNNING",
         }
 
         with test_db.session() as session:
@@ -116,7 +117,7 @@ def test_cancel(mocker, test_db, dispatch_id, client):
     else:
         mock_cancel = mocker.patch(
             "covalent_dispatcher.cancel_running_dispatch",
-            return_value={'message': f"The dispatch ID {dispatch_id} was not found."},
+            return_value={"message": f"The dispatch ID {dispatch_id} was not found."},
         )
 
         response = client.post("/api/cancel", data=dispatch_id.encode("utf-8"))
