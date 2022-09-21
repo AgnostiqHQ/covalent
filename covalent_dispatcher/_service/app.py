@@ -87,7 +87,7 @@ async def cancel(request: Request) -> str:
                 content={"message": f"The dispatch ID {dispatch_id} was not found."},
             )
         else:
-             await dispatcher.cancel_running_dispatch(dispatch_id)
+            await dispatcher.cancel_running_dispatch(dispatch_id)
         return f"Dispatch {dispatch_id} cancelled."
 
 
