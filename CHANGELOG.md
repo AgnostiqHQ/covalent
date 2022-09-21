@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `requirements-client.txt` file added.
+- Logs tab on the GUI which displays the covalent logs and also the ability to download the log file.
 
 ### Fixed
 
