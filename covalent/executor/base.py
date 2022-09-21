@@ -617,7 +617,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             for node_id in tasks[dispatch_id]:
                 if self._get_task_status(dispatch_id, node_id) == "RUNNING":
                     fut = asyncio.create_task(self._cancel_task(dispatch_id, node_id))
-                cancel_futures.append(fut)
+                    cancel_futures.append(fut)
         await asyncio.gather(*cancel_futures)
 
         await self.teardown(self._get_resource_data())

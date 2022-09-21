@@ -898,8 +898,7 @@ def test_executor_initialize_runtime():
     assert me._tasks_left == 5
 
 
-@pytest.mark.asyncio
-async def test_async_executor_initialize_runtime():
+def test_async_executor_initialize_runtime():
     """Test registering async executor instance with executor cache"""
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
     me.shared = True
@@ -1059,10 +1058,14 @@ async def test_base_executor_finalize(mocker):
     me._initialize_runtime()
     me._initialize_task_data("asdf", 1)
     me._initialize_task_data("asdf", 2)
+    me._initialize_task_data("asdf", 3)
+    me._set_task_status("asdf", 1, "COMPLETED")
     await me._finalize()
-    assert me._get_task_status("asdf", 1) == "CANCELLING"
+    assert me._get_task_status("asdf", 3) == "CANCELLING"
     assert me._get_task_status("asdf", 2) == "CANCELLING"
+    assert me._get_task_status("asdf", 1) == "COMPLETED"
     mock_teardown.assert_called_once()
+    assert mock_cancel.call_count == 2
 
 
 @pytest.mark.asyncio
@@ -1073,7 +1076,11 @@ async def test_async_executor_finalize(mocker):
     me._initialize_runtime()
     me._initialize_task_data("asdf", 1)
     me._initialize_task_data("asdf", 2)
+    me._initialize_task_data("asdf", 3)
+    me._set_task_status("asdf", 1, "COMPLETED")
     await me._finalize()
-    assert me._get_task_status("asdf", 1) == "CANCELLING"
+    assert me._get_task_status("asdf", 3) == "CANCELLING"
     assert me._get_task_status("asdf", 2) == "CANCELLING"
+    assert me._get_task_status("asdf", 1) == "COMPLETED"
     mock_teardown.assert_awaited_once()
+    assert mock_cancel.await_count == 2
