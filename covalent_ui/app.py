@@ -86,7 +86,7 @@ if __name__ == "__main__":
     else:
         port = int(get_config(CMType.SERVER, "service.port"))
 
-    host = "localhost" if not COVALENT_SERVER_IFACE_ANY else "0.0.0.0"
+    host = "0.0.0.0"
 
     DEBUG = True if args.develop is True else False
     # reload = True if args.develop is True else False
