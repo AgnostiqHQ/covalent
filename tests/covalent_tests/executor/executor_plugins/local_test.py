@@ -22,6 +22,9 @@
 
 import tempfile
 from functools import partial
+from unittest.mock import MagicMock
+
+import pytest
 
 import covalent as ct
 from covalent._workflow.transport import TransportableObject
@@ -120,3 +123,18 @@ def test_local_executor_run():
     le._initialize_runtime()
     le._initialize_task_data("asdf", 1)
     assert le.run(f, args, kwargs, task_metadata) == 25
+
+
+def test_local_executor_run_cancelled_task():
+
+    f = MagicMock()
+    le = LocalExecutor()
+    args = [5]
+    kwargs = {}
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    le._initialize_runtime()
+    le._initialize_task_data("asdf", 1)
+    le._set_task_status("asdf", 1, "CANCELLING")
+    with pytest.raises(RuntimeError):
+        le.run(f, args, kwargs, task_metadata)
+        f.assert_not_called()

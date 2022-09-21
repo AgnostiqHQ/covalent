@@ -60,5 +60,10 @@ class LocalExecutor(BaseExecutor):
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         app_log.debug(f"Local executor {self.instance_id}: {self._tasks_left} tasks left")
-        app_log.debug(f"Running function {function} locally")
-        return function(*args, **kwargs)
+        dispatch_id = task_metadata["dispatch_id"]
+        node_id = task_metadata["node_id"]
+        if self._get_task_status(dispatch_id, node_id) == "RUNNING":
+            app_log.debug(f"Running function {function} locally")
+            return function(*args, **kwargs)
+        else:
+            raise RuntimeError(f"Skipping task {dispatch_id}:{node_id}")
