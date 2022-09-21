@@ -117,4 +117,6 @@ def test_local_executor_run():
     args = [5]
     kwargs = {}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    le._initialize_runtime()
+    le._initialize_task_data("asdf", 1)
     assert le.run(f, args, kwargs, task_metadata) == 25
