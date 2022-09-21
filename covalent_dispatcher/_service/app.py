@@ -78,9 +78,17 @@ async def cancel(request: Request) -> str:
     """
     data = await request.body()
     dispatch_id = data.decode("utf-8")
-
-    await dispatcher.cancel_running_dispatch(dispatch_id)
-    return f"Dispatch {dispatch_id} cancelled."
+    
+    with workflow_db.session() as session:
+        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+        if not lattice_record:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The dispatch ID {dispatch_id} was not found."},
+            )
+        else:
+             await dispatcher.cancel_running_dispatch(dispatch_id)
+        return f"Dispatch {dispatch_id} cancelled."
 
 
 @router.get("/db-path")
