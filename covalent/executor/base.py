@@ -236,13 +236,13 @@ class BaseExecutor(_AbstractBaseExecutor):
             executor_cache.id_instance_map[self.instance_id] = self
 
         self._state["tasks"] = {}
-        self._state["resource_metadata"] = {}
+        self._state["resource_data"] = {}
 
-    def _set_resource_metadata(self, metadata):
-        self._state["resource_metadata"] = metadata
+    def _set_resource_data(self, metadata):
+        self._state["resource_data"] = metadata
 
-    def _get_resource_metadata(self):
-        return self._state["resource_metadata"]
+    def _get_resource_data(self):
+        return self._state["resource_data"]
 
     def _decrement_task_count(self):
         with self._task_lock:
@@ -311,7 +311,7 @@ class BaseExecutor(_AbstractBaseExecutor):
     def setup(self, task_metadata: Dict = {}):
         pass
 
-    def teardown(self, resource_metadata: Dict = {}):
+    def teardown(self, resource_data: Dict = {}):
         # Relinquish all resources if called without task_metadata
         pass
 
@@ -347,8 +347,8 @@ class BaseExecutor(_AbstractBaseExecutor):
             t.join()
 
         with self._resource_lock:
-            resource_metadata = self._get_resource_metadata()
-        self.teardown(resource_metadata)
+            resource_data = self._get_resource_data()
+        self.teardown(resource_data)
 
     # To be invoked from the dispatcher's thread
     async def _finalize(self):
@@ -393,8 +393,8 @@ class BaseExecutor(_AbstractBaseExecutor):
         # Use a dedicated lock b/c this might block for a long time
         with self._resource_lock:
             if not self._warmed_up:
-                resource_metadata = self.setup(task_metadata=task_metadata)
-                self._set_resource_metadata(resource_metadata)
+                resource_data = self.setup(task_metadata=task_metadata)
+                self._set_resource_data(resource_data)
                 self._warmed_up = True
 
         dispatch_info = DispatchInfo(dispatch_id)
@@ -420,8 +420,8 @@ class BaseExecutor(_AbstractBaseExecutor):
             self._decrement_task_count()
             if self._tasks_left < 1:
                 with self._resource_lock:
-                    resource_metadata = self._get_resource_metadata()
-                self.teardown(resource_metadata)
+                    resource_data = self._get_resource_data()
+                self.teardown(resource_data)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
@@ -519,13 +519,13 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             executor_cache.id_instance_map[self.instance_id] = self
 
         self._state["tasks"] = {}
-        self._state["resource_metadata"] = {}
+        self._state["resource_data"] = {}
 
-    def _set_resource_metadata(self, metadata):
-        self._state["resource_metadata"] = metadata
+    def _set_resource_data(self, metadata):
+        self._state["resource_data"] = metadata
 
-    def _get_resource_metadata(self):
-        return self._state["resource_metadata"]
+    def _get_resource_data(self):
+        return self._state["resource_data"]
 
     def _decrement_task_count(self):
         self._tasks_left -= 1
@@ -596,7 +596,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     async def setup(self, task_metadata: Dict = {}):
         pass
 
-    async def teardown(self, resource_metadata: Dict = {}):
+    async def teardown(self, resource_data: Dict = {}):
         # Relinquish all resources if called without task_metadata
         pass
 
@@ -618,7 +618,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
                 cancel_futures.append(fut)
         await asyncio.gather(*cancel_futures)
 
-        await self.teardown(self._get_resource_metadata())
+        await self.teardown(self._get_resource_data())
 
     async def execute(
         self,
@@ -637,8 +637,8 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         }
         async with self._resource_lock:
             if not self._warmed_up:
-                resource_metadata = await self.setup(task_metadata=task_metadata)
-                self._set_resource_metadata(resource_metadata)
+                resource_data = await self.setup(task_metadata=task_metadata)
+                self._set_resource_data(resource_data)
                 self._warmed_up = True
 
         try:
@@ -658,11 +658,11 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         finally:
             self._decrement_task_count()
             if self._tasks_left < 1:
-                resource_metadata = self._get_resource_metadata()
+                resource_data = self._get_resource_data()
 
                 # TODO: exceptions raised here should probably be handled
                 # separately without changing the task outcome
-                await self.teardown(resource_metadata)
+                await self.teardown(resource_data)
 
         await self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
