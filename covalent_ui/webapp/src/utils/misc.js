@@ -111,7 +111,7 @@ export const statusColor = (status) => {
     NEW_OBJECT: theme.palette.queued.main,
     COMPLETED: theme.palette.success.main,
     FAILED: theme.palette.error.main,
-    CANCELLED: theme.palette.success.main,
+    CANCELLED: theme.palette.error.main,
     POSTPROCESSING: theme.palette.success.main,
     PENDING_POSTPROCESSING: theme.palette.success.main,
     POSTPROCESSING_FAILED: theme.palette.success.main,
