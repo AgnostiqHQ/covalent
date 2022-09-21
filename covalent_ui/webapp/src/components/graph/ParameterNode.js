@@ -40,6 +40,7 @@ const ParameterNode = ({
   targetPosition,
   isConnectable,
 }) => {
+  console.log(data.preview,'prev')
   return (
     <Grid
       sx={{
@@ -113,9 +114,10 @@ const ParameterNode = ({
         arrow
         placement="bottom-end"
       >
-        <Grid
+        <Paper
           sx={(theme) => ({
             px: 1,
+            py: 0,
             borderRadius: '100px',
             color: 'text.disabled',
             bgcolor: theme.palette.background.paper,
@@ -130,7 +132,7 @@ const ParameterNode = ({
             },
           })}
         >
-          <Grid sx={{ marginTop: '13px' }}>{nodeLabelIcon(data.nodeType)}</Grid>
+          <Grid sx={{ height: '36px' }}>{nodeLabelIcon(data.nodeType)}</Grid>
           <Handle
             type="source"
             position={sourcePosition}
@@ -145,7 +147,7 @@ const ParameterNode = ({
               isConnectable={isConnectable}
             />
           </Typography>
-        </Grid>
+        </Paper>
       </ParameterTooltip>
       {!data.hideLabels ? (
         <ParameterTooltip
@@ -156,12 +158,14 @@ const ParameterNode = ({
           <Paper
             sx={{
               position: 'absolute',
-              top: 27,
+              top: 31,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: '16px',
               minWidth: '20%',
+              bgcolor: (theme) => theme.palette.background.paper,
+
               // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
               color: (theme) => theme.palette.text.tertiary,
               cursor: 'default',

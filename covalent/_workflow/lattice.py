@@ -33,7 +33,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._data_store import DataStoreSession
 from .._shared_files import logger
-from .._shared_files.config import get_config
+from .._shared_files.config import CMType, get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import DefaultMetadataValues
 from .._shared_files.utils import get_named_params, get_serialized_function_str
@@ -311,7 +311,7 @@ def lattice(
     executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = DEFAULT_METADATA_VALUES["executor"],
-    results_dir: Optional[str] = get_config("dispatcher.results_dir"),
+    results_dir: Optional[str] = get_config(CMType.SERVER, "service.results_dir"),
     workflow_executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = DEFAULT_METADATA_VALUES["workflow_executor"],

@@ -1,6 +1,7 @@
 import pytest
 
 import covalent as ct
+from covalent._shared_files.util_classes import Status
 
 
 @pytest.mark.parametrize("iteration", range(5))
@@ -26,4 +27,4 @@ def test_add_multiply_workflow(benchmark, iteration: int):
     metrics, dispatch_status = run_benchmark(iteration, add_multiply_workflow, *[1, 2])
     logger.debug(metrics.dict())
 
-    assert dispatch_status == "COMPLETED"
+    assert dispatch_status == Status("COMPLETED")

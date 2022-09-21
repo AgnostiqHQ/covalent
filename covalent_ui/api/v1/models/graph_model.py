@@ -18,24 +18,13 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-name: push-to-s3
+"""Graph request and response model"""
 
-on:
-  push:
-    branches:
-      - develop-ui
+from pydantic import BaseModel
 
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out head
-        uses: actions/checkout@v2
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Deploy static site to S3 bucket
-        run: aws s3 sync ./covalent_ui/webapp/build-demo/ ${{ secrets.S3_STATIC }} --delete
+
+class GraphResponse(BaseModel):
+    """Graph Response Model"""
+
+    dispatch_id: str = None
+    graph: dict = None
