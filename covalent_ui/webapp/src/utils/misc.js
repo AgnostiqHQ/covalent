@@ -297,7 +297,7 @@ export const nodeLabelIcon = (type) => {
       )
     case 'parameter':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon sx={{ mt: 1.6 }}>
           <ParameterSvg />
         </SvgIcon>
       )
