@@ -91,13 +91,17 @@ def test_submit(mocker, app, client):
     response = client.post("/api/submit", data=json.dumps({}))
     assert response.json() == DISPATCH_ID
 
-def test_cancel(mocker, test_db, client):
+def test_cancel(mocker, test_db_file, client):
     """Test cancel workflow endpoint."""
+    lattice = MockLattice(
+        status=str(Result.RUNNING),
+        dispatch_id=DISPATCH_ID,
+    )
 
-    lattice_record = {"dispatch_id": DISPATCH_ID, "status": "RUNNING"}
-    with test_db.session() as session:
-        session.add(MockLattice(**lattice_record))
+    with test_db_file.session() as session:
+        session.add(lattice)
         session.commit()
+        
     mock_cancel = mocker.patch(
         "covalent_dispatcher.cancel_running_dispatch",
         return_value=f"Dispatch {DISPATCH_ID} cancelled.",
@@ -106,6 +110,7 @@ def test_cancel(mocker, test_db, client):
     response = client.post("/api/cancel", data=DISPATCH_ID.encode("utf-8"))
     assert response.json() == mock_cancel.return_value
     assert response.status_code == 200
+    os.remove("/tmp/testdb.sqlite")
    
 
 def test_db_path(mocker, app, client):
