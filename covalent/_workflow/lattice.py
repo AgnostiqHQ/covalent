@@ -240,14 +240,15 @@ class Lattice:
         short_name = self.get_metadata("workflow_executor")
         object_dict = self.get_metadata("workflow_executor_data")
 
-        executor = executor_module._executor_manager.get_executor(short_name)
-        executor.from_dict(object_dict)
+        if short_name != "client":
+            executor = executor_module._executor_manager.get_executor(short_name)
+            executor.from_dict(object_dict)
 
-        if not executor.is_shared_instance():
-            executor = executor.clone()
+            if not executor.is_shared_instance():
+                executor = executor.clone()
 
-        new_metadata["workflow_executor_data"] = executor.to_dict()
-        self.metadata = new_metadata
+            new_metadata["workflow_executor_data"] = executor.to_dict()
+            self.metadata = new_metadata
 
     def persist(self, ds: DataStoreSession, update: bool):
         self.transport_graph.persist(ds, update)
