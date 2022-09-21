@@ -22,6 +22,7 @@
 
 import _ from 'lodash'
 import demoDashboardListData from './dashboardDemoData'
+import logsDemoData from './logsDemoData'
 import latticeDetailsDemoData from './latticeDemoData'
 import graphDemoData from './graphDemoData'
 import latticePreview from './draw-a'
@@ -46,12 +47,12 @@ export const demoState = {
     fetchDashboardList: { isFetching: false, error: null },
     fetchDashboardOverview: { isFetching: false, error: null },
     deleteResults: { isFetching: false, error: null },
-    overallDashboardList:demoDashboardListData.dashboardList,
+    overallDashboardList: demoDashboardListData.dashboardList,
     dashboardList: demoDashboardListData.dashboardList,
-    totalDispatches:demoDashboardListData.dashboardList.total_count
+    totalDispatches: demoDashboardListData.dashboardList.total_count
   },
-  latticeResults:{
-    latticeResultsData:latticeDetailsDemoData,
+  latticeResults: {
+    latticeResultsData: latticeDetailsDemoData,
     latticeDetailsResults: { isFetching: false, error: null },
     latticeResultsList: { isFetching: false, error: null },
     latticeOutputList: { isFetching: false, error: null },
@@ -60,6 +61,11 @@ export const demoState = {
     latticeErrorList: { isFetching: false, error: null },
     latticeExecutorDetailList: { isFetching: false, error: null },
   },
-  graphResults:graphDemoData,
+  graphResults: graphDemoData,
   latticePreview,
+  logs: {
+    logList: logsDemoData.logList,
+    fetchLogList: { isFetching: false, error: null },
+    totalLogs:5
+  }
 }

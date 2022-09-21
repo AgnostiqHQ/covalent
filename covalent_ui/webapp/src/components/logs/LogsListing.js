@@ -1,6 +1,8 @@
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { createSelector } from '@reduxjs/toolkit'
+import Fuse from 'fuse.js'
 import {
   Table,
   TableRow,
@@ -30,10 +32,9 @@ import {
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 import { useDebounce } from 'use-debounce'
 import {
-  fetchLogsList,
-  downloadCovalentLogFile,
-  resetLogs,
+  fetchLogsList
 } from '../../redux/logsSlice'
+import { isDemo } from '../../utils/demo/setup'
 import DownloadButton from '../common/DownloadButton'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import CopyButton from '../common/CopyButton'
@@ -47,8 +48,8 @@ import {
 
 const headers = [
   {
-    id: 'log_date',
-    getter: 'log_date',
+    id: 'logDate',
+    getter: 'logDate',
     label: 'Time',
     sortable: true,
   },
@@ -109,6 +110,9 @@ const ResultsTableHead = ({
   onDownload,
   disableDownload
 }) => {
+  const createSortHandler = (property) => (event) => {
+    onSort(event, property);
+  };
   return (
     <TableHead sx={{ position: 'sticky', zIndex: 19 }}>
       <TableRow>
@@ -125,7 +129,7 @@ const ResultsTableHead = ({
                 <TableSortLabel
                   active={orderBy === header.id}
                   direction={orderBy === header.id ? order : 'asc'}
-                  onClick={() => onSort(header.id)}
+                  onClick={createSortHandler(header.id)}
                 >
                   {header.label}
                 </TableSortLabel>
@@ -235,21 +239,14 @@ const LogsListing = () => {
   const [selected, setSelected] = useState([])
   const [searchKey, setSearchKey] = useState('')
   const [searchValue] = useDebounce(searchKey, 1000)
-  const [sortColumn, setSortColumn] = useState('log_date')
+  const [sortColumn, setSortColumn] = useState('logDate')
   const [sortOrder, setSortOrder] = useState('desc')
   const [offset, setOffset] = useState(0)
   const [page, setPage] = useState(1)
-  const logFinalFile = useSelector((state) => state.logs.logFile)
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
   const [disableDownload, setDisableDownload] = useState(false)
-  // reset store values to initial state when moved to another page
-  useEffect(() => {
-    return () => {
-      dispatch(resetLogs())
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortColumn, sortOrder, searchValue, page])
+  const [logFinalFile, setLogFinalFile] = useState('')
 
   useEffect(() => {
     if (logFinalFile) {
@@ -262,26 +259,22 @@ const LogsListing = () => {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      dispatch(resetLogs())
       setDisableDownload(false);
+      setLogFinalFile('')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logFinalFile])
 
   const downloadLogFile = () => {
-    setDisableDownload(true);
-    dispatch(downloadCovalentLogFile()).then((action) => {
-      if (action.type === downloadCovalentLogFile.rejected.type) {
-        setOpenSnackbar(true)
-        setSnackbarMessage(
-          'Something went wrong and could not download the file!'
-        )
-        setDisableDownload(false);
-      }
-    })
+    setLogFinalFile(`
+    [2022-09-21 09:03:33,121] [INFO] 127.0.0.1:45294 - "POST /api/webhook HTTP/1.1" 200 emitting event "result-update" to all [/]
+    [2022-09-21 09:07:20,178] [ERROR] 127.0.0.1:45888 - "GET /static/js/2.71f4b899.chunk.js HTTP/1.1" 200
+    [2022-09-21 09:07:20,343] [CRITICAL] 127.0.0.1:45888 - "GET /socket.io/?EIO=4&transport=polling&t=ODVJJgL HTTP/1.1" 200
+    [2022-09-21 09:07:20,485] [WARN] 127.0.0.1:45888 - "GET /api/v1/dispatches/list?count=10&offset=0&search=&sort_by=started_at&sort_direction=desc&status_filter=ALL HTTP/1.1" 200
+    [2022-09-21 09:07:20,497] [WARNING] 127.0.0.1:45890 - "GET /api/v1/dispatches/overview HTTP/1.1" 200 `)
   }
 
-  const logListView = useSelector((state) => state.logs.logList)?.map((e) => {
+  const logListViewInital = useSelector((state) => state.logs.logList)?.map((e) => {
     return {
       logDate: e.log_date,
       status: e.status,
@@ -317,6 +310,40 @@ const LogsListing = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offset])
 
+  const selectQuery = (state, searchKey) => searchKey
+  const selectResultsCache = (state) => state.logs.logList
+  const selectNormQuery = createSelector(selectQuery, (query) => _.trim(query))
+  const selectItems = createSelector(selectResultsCache, (cache) => _.map(cache))
+  const selectSearchIndex = createSelector(selectItems, (items) => {
+    return new Fuse(items, {
+      includeMatches: true,
+      threshold: 0.4,
+      ignoreLocation: true,
+      keys: [
+        { name: 'status', weight: 1 },
+        { name: 'message', weight: 1 },
+      ],
+    })
+  })
+
+  // search query is present
+  const selectSearchResults = createSelector(
+    selectSearchIndex,
+    selectNormQuery,
+    (index, normQuery) => index.search(normQuery)
+  )
+  const logListView = useSelector((state) =>
+    !selectNormQuery(state, searchKey)
+      ? logListViewInital
+      : selectSearchResults(state, searchKey).map((e) => {
+        return {
+          logDate: e.item.log_date,
+          status: e.item.status,
+          message: e.item.message,
+        }
+      })
+  )
+
   const onSearch = (e) => {
     setSearchKey(e.target.value)
     if (e.target.value.length > 3) {
@@ -326,16 +353,52 @@ const LogsListing = () => {
   }
 
   useEffect(() => {
-    logListAPI()
+    if (!isDemo) logListAPI()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortColumn, sortOrder, searchValue, page])
 
   const handleChangeSort = (column) => {
-    setSelected([])
     setOffset(0)
     const isAsc = sortColumn === column && sortOrder === 'asc'
     setSortOrder(isAsc ? 'desc' : 'asc')
     setSortColumn(column)
+  }
+
+  function stableSort(array, comparator) {
+    const stabilizedThis = array.map((el, index) => [el, index]);
+    stabilizedThis.sort((a, b) => {
+      const order = comparator(a[0], b[0]);
+      if (order !== 0) {
+        return order;
+      }
+      return a[1] - b[1];
+    });
+    return stabilizedThis.map((el) => el[0]);
+  }
+
+  function descendingComparator(a, b, orderBy) {
+    if (orderBy === 'logDate') {
+      if (new Date(b[orderBy]) < new Date(a[orderBy])) {
+        return -1;
+      }
+      if (new Date(b[orderBy]) > new Date(a[orderBy])) {
+        return 1;
+      }
+    }
+
+    if (b[orderBy] < a[orderBy]) {
+      return -1;
+    }
+    if (b[orderBy] > a[orderBy]) {
+      return 1;
+    }
+    return 0;
+  }
+
+  function getComparator(order, orderBy) {
+    return order === 'desc'
+      ? (a, b) => descendingComparator(a, b, orderBy)
+      : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
   return (
@@ -393,7 +456,7 @@ const LogsListing = () => {
 
                 <TableBody>
                   {logListView &&
-                    logListView.map((result, index) => (
+                    stableSort(logListView, getComparator(sortOrder, sortColumn)).map((result, index) => (
                       <TableRow hover key={index} sx={{ height: '50px' }}>
                         <TableCell
                           sx={{
