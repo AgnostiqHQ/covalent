@@ -97,16 +97,7 @@ def post_settings(new_entries: Dict, override_existing: bool = True):
                 }
             ],
         )
-    if (
-        len(
-            [
-                validator.value
-                for validator in Validators
-                if validator.value in new_entries[file_type]
-            ]
-        )
-        != 0
-    ):
+    if len([validator.value for validator in Validators if validator.value in new_entries]) != 0:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=[

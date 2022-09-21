@@ -42,7 +42,4 @@ class UpdateSettingsResponseModel(BaseModel):
 class Validators(enum.Enum):
     """Validate settings overwrite"""
 
-    DISPATCHER = "dispatcher"
-    DASK = "dask"
-    WORKFLOW_DATA = "workflow_data"
-    USER_INTERFACE = "user_interface"
+    SERVER = "server"
