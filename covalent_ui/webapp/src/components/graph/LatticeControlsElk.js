@@ -96,6 +96,7 @@ const LatticeControls = ({
           sx={{ height: '40px', color: 'white' }}
         >
           <SvgIcon
+            data-testid="AddIcon"
             sx={{
               fontSize: '35px',
               mt: 3,
@@ -114,6 +115,7 @@ const LatticeControls = ({
           sx={{ height: '40px', color: 'white' }}
         >
           <SvgIcon
+            data-testid="RemoveIcon"
             sx={{
               fontSize: '35px',
               mt: 4,
