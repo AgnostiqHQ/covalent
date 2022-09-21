@@ -1156,13 +1156,22 @@ async def test_postprocess_workflow(mocker):
 
     assert result_object.status == Result.COMPLETED
 
-    mock_run_task = mocker.patch(
-        "covalent_dispatcher._core.execution._run_task", return_value=postprocess_result_2
-    )
 
+@pytest.mark.asyncio
+async def test_postprocess_cancelled_workflow(mocker):
+    """Check that cancelled workflows don't get postprocessed"""
+
+    result_object = get_mock_result()
+    result_object._initialize_nodes()
+    result_object._initialize_runtime_state()
+    result_object._cancel_called = True
+    mock_upsert = mocker.patch("covalent._results_manager.result.Result.upsert_lattice_data")
+    mock_log = mocker.patch("covalent_dispatcher._core.execution.app_log.debug")
     result_object = await _postprocess_workflow(result_object)
 
-    assert result_object.status == Result.POSTPROCESSING_FAILED
+    assert result_object.status == Result.CANCELLED
+    mock_upsert.assert_not_called()
+    mock_log.assert_called_once_with("Refusing to postprocess cancelled workflow")
 
 
 @pytest.mark.asyncio

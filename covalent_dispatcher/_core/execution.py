@@ -564,6 +564,11 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         The postprocessed result object
     """
 
+    if result_object._cancel_called:
+        result_object._status = Result.CANCELLED
+        app_log.debug("Refusing to postprocess cancelled workflow")
+        return result_object
+
     # Executor for post_processing
     pp_executor = result_object.lattice.get_metadata("workflow_executor")
     pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
