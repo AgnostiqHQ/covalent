@@ -93,7 +93,10 @@ def test_submit(mocker, app, client):
 
 
 def test_cancel(mocker, app, client):
-    cancel_running_dispatch= mocker.patch("covalent_dispatcher.cancel_running_dispatch", return_value=f"Dispatch {DISPATCH_ID} cancelled.")
+    cancel_running_dispatch = mocker.patch(
+        "covalent_dispatcher.cancel_running_dispatch",
+        return_value=f"Dispatch {DISPATCH_ID} cancelled.",
+    )
     response = client.post("/api/cancel", data=DISPATCH_ID.encode("utf-8"))
     cancel_running_dispatch.assert_called_with(DISPATCH_ID)
     assert response.json() == cancel_running_dispatch.return_value
