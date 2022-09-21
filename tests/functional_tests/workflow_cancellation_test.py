@@ -50,32 +50,31 @@ def test_db():
 
 
 @pytest.mark.asyncio
-async def test_result_cancel_dask_executor(event_loop):
-    """Integration test for Result._cancel with dask executor"""
+async def test_result_cancel_local_executor(event_loop):
+    """Integration test for Result._cancel with local executor"""
 
     import asyncio
     import time
 
-    from dask.distributed import LocalCluster
+    from covalent.executor import LocalExecutor
 
-    from covalent.executor import DaskExecutor
+    local_exec = LocalExecutor().get_shared_instance()
 
-    lc = LocalCluster()
-    dask_exec = DaskExecutor(lc.scheduler_address).get_shared_instance()
-
-    @ct.electron(executor=dask_exec)
+    @ct.electron(executor=local_exec)
     def sleeping_task(delay):
         import time
 
         time.sleep(delay)
         print("Slept for {delay} seconds")
+        return delay
 
     @ct.lattice
     def workflow(x):
-        sleeping_task(x)
+        res = sleeping_task(x)
+        res2 = sleeping_task(res)
         return 1
 
-    sleeping_time = 15
+    sleeping_time = 4
     workflow.build_graph(sleeping_time)
 
     json_lattice = workflow.serialize_to_json()
@@ -89,8 +88,8 @@ async def test_result_cancel_dask_executor(event_loop):
     et = time.time()
 
     cache = result_object._get_executor_cache()
-    assert dask_exec.instance_id in cache.id_instance_map
-    assert et - st < sleeping_time
+    assert local_exec.instance_id in cache.id_instance_map
+    assert et - st < 2 * sleeping_time
 
     assert result_object._status == Result.CANCELLED
     loop = asyncio.get_running_loop()
