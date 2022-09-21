@@ -491,7 +491,7 @@ def test_executor_setup_teardown_method(mocker):
     )
 
     assert result.get_deserialized() == 5
-    me.setup.assert_called_once_with(task_metadata=task_metadata)
+    me.setup.assert_called_once_with(task_metadata)
     me.teardown.assert_not_called()
     assert me._tasks_left == 1
 
@@ -547,7 +547,7 @@ async def test_async_executor_setup_teardown(mocker):
 
     await awaitable
     me.run.assert_called_once_with(assembled_callable, args, kwargs, task_metadata)
-    me.setup.assert_awaited_once_with(task_metadata=task_metadata)
+    me.setup.assert_awaited_once_with(task_metadata)
     me.teardown.assert_not_awaited()
     assert me._tasks_left == 1
 

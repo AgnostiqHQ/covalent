@@ -138,6 +138,64 @@ class _AbstractBaseExecutor(ABC):
         self.instance_id = int(uuid.uuid4())
         self.shared = False
 
+        # Internal runtime state -- do not persist
+        self._state = {}
+
+    def _initialize_runtime(self, executor_cache: ExecutorCache = None):
+        self._state["_warmed_up"] = False
+        self._state["_tasks_left"] = 1
+
+        if executor_cache:
+            self._state["_tasks_left"] = executor_cache.tasks_per_instance[self.instance_id]
+
+            executor_cache.id_instance_map[self.instance_id] = self
+
+        self._state["tasks"] = {}
+        self._state["resource_data"] = {}
+
+    @property
+    def _warmed_up(self):
+        return self._state["_warmed_up"]
+
+    @_warmed_up.setter
+    def _warmed_up(self, state: bool):
+        self._state["_warmed_up"] = state
+
+    @property
+    def _tasks_left(self):
+        return self._state["_tasks_left"]
+
+    @_tasks_left.setter
+    def _tasks_left(self, num_tasks: int):
+        self._state["_tasks_left"] = num_tasks
+
+    def _set_resource_data(self, data):
+        self._state["resource_data"] = data
+
+    def _get_resource_data(self):
+        return self._state["resource_data"]
+
+    def _initialize_task_data(self, dispatch_id: str, node_id: int):
+        if dispatch_id not in self._state["tasks"]:
+            self._state["tasks"][dispatch_id] = {}
+
+        self._state["tasks"][dispatch_id][node_id] = {"_status": "RUNNING"}
+
+    def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
+        self._state["tasks"][dispatch_id][node_id][key] = val
+
+    def _get_task_data(self, dispatch_id: str, node_id: int, key: str):
+        return self._state["tasks"][dispatch_id][node_id].get(key, None)
+
+    def _set_task_status(self, dispatch_id: str, node_id: int, status: str):
+        self._set_task_data(dispatch_id, node_id, "_status", status)
+
+    def _get_task_status(self, dispatch_id: str, node_id: int):
+        return self._get_task_data(dispatch_id, node_id, "_status")
+
+    def _get_registered_tasks(self):
+        return self._state["tasks"]
+
     def clone(self):
         new_exec = copy.deepcopy(self)
         new_exec.instance_id = int(uuid.uuid4())
@@ -216,33 +274,18 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         super().__init__(*args, **kwargs)
 
-        # Runtime state: must not be persisted
+    @property
+    def _task_lock(self):
+        return self._state["_task_lock"]
 
-        # internals
-        self._task_lock = None
-        self._resource_lock = None
-        self._warmed_up = False
-        self._tasks_left = 1
-
-        # task and resource state
-        self._state = {}
+    @property
+    def _resource_lock(self):
+        return self._state["_resource_lock"]
 
     def _initialize_runtime(self, executor_cache: ExecutorCache = None):
-        self._task_lock = threading.Lock()
-        self._resource_lock = threading.Lock()
-        if executor_cache:
-            self._tasks_left = executor_cache.tasks_per_instance[self.instance_id]
-
-            executor_cache.id_instance_map[self.instance_id] = self
-
-        self._state["tasks"] = {}
-        self._state["resource_data"] = {}
-
-    def _set_resource_data(self, metadata):
-        self._state["resource_data"] = metadata
-
-    def _get_resource_data(self):
-        return self._state["resource_data"]
+        super()._initialize_runtime(executor_cache)
+        self._state["_task_lock"] = threading.Lock()
+        self._state["_resource_lock"] = threading.Lock()
 
     def _decrement_task_count(self):
         with self._task_lock:
@@ -251,27 +294,6 @@ class BaseExecutor(_AbstractBaseExecutor):
     def _increment_task_count(self):
         with self._task_lock:
             self._tasks_left += 1
-
-    def _initialize_task_data(self, dispatch_id: str, node_id: int):
-        if dispatch_id not in self._state["tasks"]:
-            self._state["tasks"][dispatch_id] = {}
-
-        self._state["tasks"][dispatch_id][node_id] = {"_status": "RUNNING"}
-
-    def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
-        self._state["tasks"][dispatch_id][node_id][key] = val
-
-    def _get_task_data(self, dispatch_id: str, node_id: int, key: str):
-        return self._state["tasks"][dispatch_id][node_id].get(key, None)
-
-    def _set_task_status(self, dispatch_id: str, node_id: int, status: str):
-        self._set_task_data(dispatch_id, node_id, "_status", status)
-
-    def _get_task_status(self, dispatch_id: str, node_id: int):
-        return self._get_task_data(dispatch_id, node_id, "_status")
-
-    def _get_registered_tasks(self):
-        return self._state["tasks"]
 
     def write_streams_to_file(
         self,
@@ -394,7 +416,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         # Use a dedicated lock b/c this might block for a long time
         with self._resource_lock:
             if not self._warmed_up:
-                resource_data = self.setup(task_metadata=task_metadata)
+                resource_data = self.setup(task_metadata)
                 self._set_resource_data(resource_data)
                 self._warmed_up = True
 
@@ -503,58 +525,19 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
         super().__init__(*args, **kwargs)
 
-        # Runtime state: must not be persisted
-
-        # internals
-        self._resource_lock = None
-        self._warmed_up = False
-        self._tasks_left = 1
-
-        # User-defined state
-        self._state = {}
-
     def _initialize_runtime(self, executor_cache: ExecutorCache = None):
-        self._resource_lock = asyncio.Lock()
-        if executor_cache:
-            self._tasks_left = executor_cache.tasks_per_instance[self.instance_id]
-            executor_cache.id_instance_map[self.instance_id] = self
+        super()._initialize_runtime(executor_cache)
+        self._state["_resource_lock"] = asyncio.Lock()
 
-        self._state["tasks"] = {}
-        self._state["resource_data"] = {}
-
-    def _set_resource_data(self, metadata):
-        self._state["resource_data"] = metadata
-
-    def _get_resource_data(self):
-        return self._state["resource_data"]
+    @property
+    def _resource_lock(self):
+        return self._state["_resource_lock"]
 
     def _decrement_task_count(self):
         self._tasks_left -= 1
 
     def _increment_task_count(self):
-
         self._tasks_left += 1
-
-    def _initialize_task_data(self, dispatch_id: str, node_id: int):
-        if dispatch_id not in self._state["tasks"]:
-            self._state["tasks"][dispatch_id] = {}
-
-        self._state["tasks"][dispatch_id][node_id] = {"_status": "RUNNING"}
-
-    def _set_task_data(self, dispatch_id: str, node_id: int, key: str, val: Any):
-        self._state["tasks"][dispatch_id][node_id][key] = val
-
-    def _get_task_data(self, dispatch_id: str, node_id: int, key: str):
-        return self._state["tasks"][dispatch_id][node_id].get(key, None)
-
-    def _set_task_status(self, dispatch_id: str, node_id: int, status: str):
-        self._set_task_data(dispatch_id, node_id, "_status", status)
-
-    def _get_task_status(self, dispatch_id: str, node_id: int):
-        return self._get_task_data(dispatch_id, node_id, "_status")
-
-    def _get_registered_tasks(self):
-        return self._state["tasks"]
 
     async def write_streams_to_file(
         self,
@@ -639,7 +622,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         }
         async with self._resource_lock:
             if not self._warmed_up:
-                resource_data = await self.setup(task_metadata=task_metadata)
+                resource_data = await self.setup(task_metadata)
                 self._set_resource_data(resource_data)
                 self._warmed_up = True
 
