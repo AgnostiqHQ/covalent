@@ -78,7 +78,7 @@ async def cancel(request: Request) -> str:
     """
     data = await request.body()
     dispatch_id = data.decode("utf-8")
-    
+
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
         if not lattice_record:
