@@ -339,9 +339,10 @@ class BaseExecutor(_AbstractBaseExecutor):
         cancel_threads = []
         for dispatch_id in tasks:
             for node_id in tasks[dispatch_id]:
-                t = threading.Thread(target=self._cancel_task, args=[dispatch_id, node_id])
-                t.start()
-                cancel_threads.append(t)
+                if self._get_task_status(dispatch_id, node_id) == "RUNNING":
+                    t = threading.Thread(target=self._cancel_task, args=[dispatch_id, node_id])
+                    t.start()
+                    cancel_threads.append(t)
 
         for t in cancel_threads:
             t.join()
@@ -614,7 +615,8 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         cancel_futures = []
         for dispatch_id in tasks:
             for node_id in tasks[dispatch_id]:
-                fut = asyncio.create_task(self._cancel_task(dispatch_id, node_id))
+                if self._get_task_status(dispatch_id, node_id) == "RUNNING":
+                    fut = asyncio.create_task(self._cancel_task(dispatch_id, node_id))
                 cancel_futures.append(fut)
         await asyncio.gather(*cancel_futures)
 
