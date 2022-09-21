@@ -87,7 +87,7 @@ def test_db_file():
 
 
 def test_submit(mocker, app, client):
-    mocker.patch("covalent_dispatcher.run_dispatcher", return_value=DISPATCH_ID) 
+    mocker.patch("covalent_dispatcher.run_dispatcher", return_value=DISPATCH_ID)
     response = client.post("/api/submit", data=json.dumps({}))
     assert response.json() == DISPATCH_ID
 
