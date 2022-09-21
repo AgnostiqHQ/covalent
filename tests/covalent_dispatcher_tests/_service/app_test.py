@@ -92,45 +92,50 @@ def test_submit(mocker, app, client):
     assert response.json() == DISPATCH_ID
 
 @pytest.mark.parametrize(
-    "dispatch_id, retval", 
+    "dispatch_id, retval",
     [
         (
-            DISPATCH_ID, 
-            f"Dispatch {DISPATCH_ID} cancelled." 
+            DISPATCH_ID,
+            f"Dispatch {DISPATCH_ID} cancelled."
          ),
         (
-            "non-existent-dispatch-id", 
+            "non-existent-dispatch-id",
             {'message': 'The dispatch ID non-existent-dispatch-id was not found.'}
          )
-        
+
     ]
 )
 def test_cancel(mocker, test_db, retval, dispatch_id, client):
-    
+
     """Test cancel workflow endpoint."""
-    
+
     mock_cancel = mocker.patch(
             "covalent_dispatcher.cancel_running_dispatch",
             return_value=retval,
         )
-    
+
     response = client.post("/api/cancel", data=dispatch_id.encode("utf-8"))
-    
+
     if dispatch_id==DISPATCH_ID:
         record = {
         "dispatch_id": DISPATCH_ID,
         "status": "RUNNING",
         }
-    
+
         with test_db.session() as session:
             session.add(MockLattice(**record))
             session.commit()
+<<<<<<< HEAD
+=======
+
+        mock_cancel.assert_called_with(dispatch_id)
+>>>>>>> 04918a405b6d27aaa69f57cd8463c339cc880b0b
         assert response.json() == mock_cancel.return_value
         assert response.status_code == 200
     else:
         assert response.json() == mock_cancel.return_value
         assert response.status_code == 404
-        
+
 
 def test_db_path(mocker, app, client):
     dbpath = "/Users/root/covalent/results.db"
