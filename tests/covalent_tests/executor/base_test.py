@@ -1059,10 +1059,14 @@ async def test_base_executor_finalize(mocker):
     me._initialize_runtime()
     me._initialize_task_data("asdf", 1)
     me._initialize_task_data("asdf", 2)
+    me._initialize_task_data("asdf", 3)
+    me._set_task_status("asdf", 3, "COMPLETED")
     await me._finalize()
     assert me._get_task_status("asdf", 1) == "CANCELLING"
     assert me._get_task_status("asdf", 2) == "CANCELLING"
+    assert me._get_task_status("asdf", 3) == "COMPLETED"
     mock_teardown.assert_called_once()
+    assert mock_cancel.call_count == 2
 
 
 @pytest.mark.asyncio
@@ -1073,7 +1077,11 @@ async def test_async_executor_finalize(mocker):
     me._initialize_runtime()
     me._initialize_task_data("asdf", 1)
     me._initialize_task_data("asdf", 2)
+    me._initialize_task_data("asdf", 3)
+    me._set_task_status("asdf", 3, "COMPLETED")
     await me._finalize()
     assert me._get_task_status("asdf", 1) == "CANCELLING"
     assert me._get_task_status("asdf", 2) == "CANCELLING"
+    assert me._get_task_status("asdf", 3) == "COMPLETED"
     mock_teardown.assert_awaited_once()
+    assert mock_cancel.await_count == 2
