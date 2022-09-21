@@ -131,7 +131,7 @@ class LocalDispatcher(BaseDispatcher):
             )
 
         return wrapper
-    
+
     @staticmethod
     def cancel(
         dispatch_id: str,
@@ -141,12 +141,12 @@ class LocalDispatcher(BaseDispatcher):
     ):
         """
         Sends a request to the dispatcher server to cancel a running workflow.
-        
+
         Args:
             dispatch_id: The dispatch id corresponding to the running workflow to be canceled.
             dispatcher_addr: The address of the dispatcher server.
         """
-        
+
         test_url = f"http://{dispatcher_addr}/api/cancel"
 
         r = requests.post(test_url, data=dispatch_id.encode("utf-8"))
