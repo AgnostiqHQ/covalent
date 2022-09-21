@@ -40,6 +40,7 @@ const ParameterNode = ({
   targetPosition,
   isConnectable,
 }) => {
+  console.log(data.preview,'prev')
   return (
     <Grid
       sx={{
@@ -152,7 +153,7 @@ const ParameterNode = ({
           <Paper
             sx={{
               position: 'absolute',
-              top: data.preview ? 20 : 31,
+              top: 31,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
