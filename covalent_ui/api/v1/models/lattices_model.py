@@ -62,55 +62,9 @@ class LatticeWorkflowExecutorResponse(BaseModel):
     workflow_executor_details: Union[dict, None] = None
 
 
-class GraphResponse(BaseModel):
-    """Graph Response Model"""
+class LatticeFileOutput(str, Enum):
+    """Lattices file names"""
 
-    dispatch_id: Union[str, None] = None
-    graph: Union[dict, None] = None
-
-
-class ElectronResponse(BaseModel):
-    """Electron Response Model"""
-
-    id: Union[int, None] = None
-    node_id: Union[int, None] = None
-    parent_lattice_id: Union[int, None] = None
-    type: Union[str, None] = None
-    storage_path: Union[str, None] = None
-    name: Union[str, None] = None
-    status: Union[str, None] = None
-    started_at: Union[datetime, None] = None
-    ended_at: Union[datetime, None] = None
-    runtime: Union[int, None] = None
-    description: Union[str, None] = None
-
-
-class ElectronFileResponse(BaseModel):
-    """Electron Response Model"""
-
-    data: Union[str, None] = None
-
-
-class ElectronExecutorResponse(BaseModel):
-    """Lattices File Response Model"""
-
-    executor_name: Union[str, None] = None
-    executor_details: Union[dict, None] = None
-
-
-class ElectronErrorResponse(BaseModel):
-    """Eelctron Error Response Model"""
-
-    data: Union[str, None] = None
-
-
-class ElectronFunctionResponse(BaseModel):
-    """Electron Function Response Model"""
-
-    data: Union[str, None] = None
-
-
-class FileOutput(str, Enum):
     RESULT = "result"
     FUNCTION_STRING = "function_string"
     INPUTS = "inputs"

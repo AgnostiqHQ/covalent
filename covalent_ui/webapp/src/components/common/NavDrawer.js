@@ -28,12 +28,15 @@ import {
   ListItemButton,
   Tooltip,
   SvgIcon,
+  Grid,
 } from '@mui/material'
 
 import { ReactComponent as Logo } from '../../assets/covalent-logo.svg'
 import { ReactComponent as DispatchList } from '../../assets/dashboard.svg'
 import { ReactComponent as DispatchPreview } from '../../assets/license.svg'
 import { ReactComponent as NavSettings } from '../../assets/SettingsIcon.svg'
+import { ReactComponent as Logs } from '../../assets/logs.svg'
+
 import { useMatch } from 'react-router-dom'
 import ListItemIcon from '@mui/material/ListItemIcon'
 
@@ -68,21 +71,47 @@ const NavDrawer = () => {
           <Logo data-testid="covalentLogo" style={{ margin: 'auto' }} />
         </ListItemButton>
 
-        <LinkButton title="Dispatch list" path="/" icon={DispatchList} />
+        <LinkButton
+          title="Dispatch list"
+          path="/"
+          icon={DispatchList}
+          margintop={8}
+          paddingTop={0.5}
+          paddingLeft={0.5}
+        />
 
         <LinkButton
           title="Lattice draw preview"
           path="/preview"
           icon={DispatchPreview}
+          paddingTop={0.5}
+          paddingLeft={0.5}
         />
 
         <LinkButton title="Settings" path="/settings" icon={NavSettings} />
+        <Grid>
+          <LinkButton
+            title="Logs"
+            path="/logs"
+            icon={Logs}
+            margintop={36}
+            paddingTop={0.9}
+            paddingLeft={0.8}
+          />
+        </Grid>
       </List>
     </Drawer>
   )
 }
 
-const LinkButton = ({ title, icon, path, margintop }) => {
+const LinkButton = ({
+  title,
+  icon,
+  path,
+  margintop,
+  paddingTop,
+  paddingLeft,
+}) => {
   const selected = useMatch(path)
 
   return (
@@ -113,7 +142,8 @@ const LinkButton = ({ title, icon, path, margintop }) => {
               border: '1px solid #998AFF',
               width: '30px',
               height: '30px',
-              padding: title === 'Settings' ? '4px 4px 4px 2px' : '5px 0px 0px 3px',
+              paddingTop: paddingTop,
+              paddingLeft: paddingLeft,
               borderRadius: '6px',
               my: 2,
             }}

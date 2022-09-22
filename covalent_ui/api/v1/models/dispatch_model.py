@@ -21,43 +21,18 @@
 
 
 from datetime import datetime
-from enum import Enum
 from typing import List, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel, conint
 
+from covalent_ui.api.v1.utils.models_helper import SortBy, SortDirection
 from covalent_ui.api.v1.utils.status import Status
 
 
-class CaseInsensitiveEnum(Enum):
-    """Enum overriden to support case insensitive keys"""
-
-    @classmethod
-    def _missing_(cls, value):
-        for member in cls:
-            if member.value == value.upper():
-                return member
-
-
-class SortBy(CaseInsensitiveEnum):
-    """Values to filter data by"""
-
-    RUNTIME = "runtime"
-    STATUS = "status"
-    STARTED = "started_at"
-    LATTICE_NAME = "lattice_name"
-    ENDED = "ended_at"
-
-
-class SortDirection(CaseInsensitiveEnum):
-    """Values to decide sort direction"""
-
-    ASCENDING = "ASC"
-    DESCENDING = "DESC"
-
-
 class DispatchSummaryRequest(BaseModel):
+    """Dispatch Summary Request model"""
+
     count: conint(gt=0, lt=100)
     offset: Optional[conint(gt=-1)] = 0
     sort_by: Optional[SortBy] = SortBy.STARTED

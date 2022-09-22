@@ -27,6 +27,7 @@ import { graphSlice } from './graphSlice'
 import { latticeSlice } from './latticeSlice'
 import { electronSlice } from './electronSlice'
 import { settingsSlice } from './settingsSlice'
+import { logsSlice } from './logsSlice'
 
 const reducers = {
   common: commonSlice.reducer,
@@ -36,6 +37,7 @@ const reducers = {
   latticeResults: latticeSlice.reducer,
   electronResults: electronSlice.reducer,
   settingsResults: settingsSlice.reducer,
+  logs: logsSlice.reducer,
 }
 
 export default reducers
