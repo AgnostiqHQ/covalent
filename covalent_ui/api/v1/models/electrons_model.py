@@ -20,11 +20,53 @@
 
 """Request and response models for Electrons"""
 
+from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel
 
 from covalent_ui.api.v1.utils.status import Status
+
+
+class ElectronResponse(BaseModel):
+    """Electron Response Model"""
+
+    id: int = None
+    node_id: int = None
+    parent_lattice_id: int = None
+    type: str = None
+    storage_path: str = None
+    name: str = None
+    status: str = None
+    started_at: datetime = None
+    ended_at: datetime = None
+    runtime: int = None
+    description: str = None
+
+
+class ElectronFileResponse(BaseModel):
+    """Electron Response Model"""
+
+    data: str = None
+
+
+class ElectronExecutorResponse(BaseModel):
+    """Electron File Response Model"""
+
+    executor_name: str = None
+    executor_details: dict = None
+
+
+class ElectronErrorResponse(BaseModel):
+    """Electron Error Response Model"""
+
+    data: str = None
+
+
+class ElectronFunctionResponse(BaseModel):
+    """Electron Function Response Model"""
+
+    data: str = None
 
 
 class ElectronResponseModel(BaseModel):
@@ -43,7 +85,9 @@ class ElectronResponseModel(BaseModel):
     updated_at: str
 
 
-class FileOutput(str, Enum):
+class ElectronFileOutput(str, Enum):
+    """Electron file output"""
+
     FUNCTION_STRING = "function_string"
     FUNCTION = "function"
     EXECUTOR = "executor"

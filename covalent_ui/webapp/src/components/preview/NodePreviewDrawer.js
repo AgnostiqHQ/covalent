@@ -67,7 +67,7 @@ const NodeDrawer = ({ node }) => {
           borderRadius: '16px',
           marginRight: '10px',
           marginTop:'22px',
-          height: '904px',
+          height: '95vh',
         },
       })}
       anchor="right"

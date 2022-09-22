@@ -23,6 +23,12 @@ name: tests
 on:
   pull_request:
   workflow_call:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - CHANGELOG.md
+      - VERSION
   workflow_dispatch:
     inputs:
       commit_sha:
@@ -62,7 +68,7 @@ jobs:
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
     outputs:
-      release: ${{ steps.push.outputs.release }}
+      codecov: ${{ steps.local-codecov.outputs.local_codecov }}
     steps:
       - name: Check out head
         if: github.event_name != 'workflow_dispatch'
@@ -259,10 +265,11 @@ jobs:
         run: covalent logs
 
       - name: Upload SDK report to Codecov
+        id: upload-sdk-report
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'workflow_run'
+          && (github.event_name == 'schedule'
           || steps.sdk-coverage.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
@@ -271,10 +278,11 @@ jobs:
           name: "SDK Unit Tests"
 
       - name: Upload Dispatcher report to Codecov
+        id: upload-dispatcher-report
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'workflow_run'
+          && (github.event_name == 'schedule'
           || steps.dispatcher-coverage.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
@@ -283,6 +291,7 @@ jobs:
           name: "Dispatcher Unit Tests"
 
       - name: Upload Functional report to Codecov
+        id: upload-functional-report
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
@@ -294,11 +303,12 @@ jobs:
           name: "Functional Tests"
 
       - name: Upload UI backend report to Codecov
+        id: upload-ui-backend-report
         if: >
           false
           && env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'workflow_run'
+          && (github.event_name == 'schedule'
           || steps.ui-backend-coverage.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
@@ -307,10 +317,11 @@ jobs:
           name: "UI Backend Unit Tests"
 
       - name: Upload UI frontend report to Codecov
+        id: upload-ui-frontend-report
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'workflow_run'
+          && (github.event_name == 'schedule'
           || steps.ui-frontend-tests.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
@@ -318,9 +329,25 @@ jobs:
           flags: UI_Frontend
           name: "UI Frontend Unit Tests"
 
+      - name: Local Codecov
+        id: local-codecov
+        if: >
+          env.RECOMMENDED_PLATFORM
+          && github.event_name != 'workflow_dispatch'
+          && github.event_name != 'schedule'
+        run: |
+          if ${{ steps.upload-sdk-report.outcome == 'skipped'
+            && steps.upload-dispatcher-report.outcome == 'skipped'
+            && steps.upload-functional-report.outcome == 'skipped'
+            && steps.upload-ui-backend-report.outcome == 'skipped'
+            && steps.upload-ui-frontend-report.outcome  == 'skipped' }} ; then
+            local_codecov=true
+          fi
+          echo "::set-output name=local_codecov::${local_codecov}"
+
       - name: Alert Slack
         if: >
-          github.event_name == 'workflow_call'
+          github.event_name == 'schedule'
           && failure()
         uses: rtCamp/action-slack-notify@v2
         env:
@@ -330,3 +357,19 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+
+  codecov_patch:
+    needs: tests
+    name: "codecov/patch"
+    if: needs.tests.outputs.codecov == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No report needed."
+
+  codecov_project:
+    needs: tests
+    name: "codecov/project"
+    if: needs.tests.outputs.codecov == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No report needed."

@@ -20,20 +20,22 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
- import { commonSlice } from './commonSlice'
- import { latticePreviewSlice } from './latticePreviewSlice'
- import { dashboardSlice } from './dashboardSlice'
- import { graphSlice } from './graphSlice'
- import { latticeSlice } from './latticeSlice'
- import { electronSlice } from './electronSlice'
+import { commonSlice } from './commonSlice'
+import { latticePreviewSlice } from './latticePreviewSlice'
+import { dashboardSlice } from './dashboardSlice'
+import { graphSlice } from './graphSlice'
+import { latticeSlice } from './latticeSlice'
+import { electronSlice } from './electronSlice'
+import { logsSlice } from './logsSlice'
 
- const reducers = {
-   common: commonSlice.reducer,
-   latticePreview: latticePreviewSlice.reducer,
-   dashboard:dashboardSlice.reducer,
-   graphResults: graphSlice.reducer,
-   latticeResults:latticeSlice.reducer,
-   electronResults:electronSlice.reducer,
- }
+const reducers = {
+  common: commonSlice.reducer,
+  latticePreview: latticePreviewSlice.reducer,
+  dashboard: dashboardSlice.reducer,
+  graphResults: graphSlice.reducer,
+  latticeResults: latticeSlice.reducer,
+  electronResults: electronSlice.reducer,
+  logs: logsSlice.reducer,
+}
 
- export default reducers
+export default reducers
