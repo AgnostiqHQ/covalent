@@ -20,26 +20,20 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { commonSlice } from './commonSlice'
-import { latticePreviewSlice } from './latticePreviewSlice'
-import { dashboardSlice } from './dashboardSlice'
-import { graphSlice } from './graphSlice'
-import { latticeSlice } from './latticeSlice'
-import { electronSlice } from './electronSlice'
-import { settingsSlice } from './settingsSlice'
-import { logsSlice } from './logsSlice'
-import { popupSlice } from './popupSlice'
+import { createSlice } from '@reduxjs/toolkit'
 
-const reducers = {
-  common: commonSlice.reducer,
-  latticePreview: latticePreviewSlice.reducer,
-  dashboard: dashboardSlice.reducer,
-  graphResults: graphSlice.reducer,
-  latticeResults: latticeSlice.reducer,
-  electronResults: electronSlice.reducer,
-  settingsResults: settingsSlice.reducer,
-  dataRes: popupSlice.reducer,
-  logs: logsSlice.reducer,
+const initialState = {
+    popupData: null
 }
 
-export default reducers
+export const popupSlice = createSlice({
+    name: 'common',
+    initialState,
+    reducers: {
+        toggleLatticeDrawer(state, { payload }) {
+            state.popupData = payload
+        },
+    },
+})
+
+export const { toggleLatticeDrawer } = popupSlice.actions

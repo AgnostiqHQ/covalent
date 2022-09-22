@@ -36,8 +36,9 @@ export default function DialogBox({
   title,
   handler,
   message,
+  handleClose,
+  handlePopClose
 }) {
-  const handleClose = () => setOpenDialogBox(false)
 
   return (
     <Modal
@@ -125,7 +126,7 @@ export default function DialogBox({
         >
           <Grid item>
             <PrimaryButton
-              handler={handleClose}
+              handler={handlePopClose}
               title="Exit without saving"
               hoverColor={(theme) => theme.palette.primary.dark}
             />

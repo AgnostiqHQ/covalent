@@ -29,26 +29,28 @@ import {
   Tooltip,
   SvgIcon,
   Grid,
+  Toolbar,
+  Typography,
+  Snackbar
 } from '@mui/material'
-
 import { ReactComponent as Logo } from '../../assets/covalent-logo.svg'
 import { ReactComponent as DispatchList } from '../../assets/dashboard.svg'
 import { ReactComponent as DispatchPreview } from '../../assets/license.svg'
 import { ReactComponent as NavSettings } from '../../assets/SettingsIcon.svg'
 import { ReactComponent as Logs } from '../../assets/logs.svg'
 
+import { ReactComponent as ExitNewIcon } from '../../assets/exit.svg'
+import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import { useMatch } from 'react-router-dom'
-import ListItemIcon from '@mui/material/ListItemIcon'
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from "react-router-dom";
+import DialogBox from '../../components/settings/DialogBox'
+import { updateSettings } from '../../redux/settingsSlice';
+import { toggleLatticeDrawer } from '../../redux/popupSlice'
 
 export const navDrawerWidth = 60
 
 const NavDrawer = () => {
-  const [open, setOpen] = useState(false)
-
-  const handleClick = () => {
-    setOpen(!open)
-  }
-
   return (
     <Drawer
       data-testid="navDrawer"
@@ -104,6 +106,38 @@ const NavDrawer = () => {
   )
 }
 
+
+const DialogToolbar = ({
+  openDialogBox,
+  setOpenDialogBox,
+  onClickHand,
+  handleClose,
+  handlePopClose
+}) => {
+  return (
+    <Toolbar disableGutters sx={{ mb: 1 }}>
+      <Typography
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+      </Typography>
+      <DialogBox
+        openDialogBox={openDialogBox}
+        setOpenDialogBox={setOpenDialogBox}
+        handler={onClickHand}
+        handleClose={handleClose}
+        title="Leave settings?"
+        message="You have unsaved changes. How do you want to proceed"
+        icon={ExitNewIcon}
+        handlePopClose={handlePopClose}
+      />
+    </Toolbar>
+  )
+}
+
 const LinkButton = ({
   title,
   icon,
@@ -112,51 +146,137 @@ const LinkButton = ({
   paddingTop,
   paddingLeft,
 }) => {
+  const dispatch = useDispatch()
   const selected = useMatch(path)
+  const dRes = useSelector((state) => state.dataRes.popupData)
+  const [popupShow, setPopupShow] = useState(false)
+  const [openSnackbar, setOpenSnackbar] = useState(false)
+  const [snackbarMessage, setSnackbarMessage] = useState(null)
+  let navigate = useNavigate();
+
+  const menuClick = (path) => {
+    // navigate(path);
+    if (dRes === null) {
+      navigate(path);
+    }
+    else if (dRes.isChanged === true) {
+      setPopupShow(true)
+    }
+    else {
+      navigate(path);
+    }
+  }
+
+  const popHandleSubmit = (event) => {
+    const updateData = {
+      [dRes.mainKey]: {
+        [dRes.nodeName]: dRes.data
+      }
+    }
+    dispatch(updateSettings(updateData)).then((action) => {
+      if (action.type === updateSettings.fulfilled.type) {
+        setOpenSnackbar(true)
+        setSnackbarMessage('Settings updated successfully')
+        setPopupShow(false)
+        const settingObj = {
+          isChanged: false
+        }
+        dispatch(toggleLatticeDrawer(settingObj))
+      } else if (action.type === updateSettings.rejected.type) {
+        setOpenSnackbar(true)
+        setSnackbarMessage('Something went wrong and could not update settings!')
+        setPopupShow(false)
+        const settingObj = {
+          isChanged: false
+        }
+        dispatch(toggleLatticeDrawer(settingObj))
+      }
+    })
+  }
+
+  const handleClose = (event) => {
+    setPopupShow(false)
+  }
+
+  const handlePopClose = () => {
+    navigate(path)
+    const settingObj = {
+      isChanged: false
+    }
+    dispatch(toggleLatticeDrawer(settingObj))
+  }
 
   return (
-    <Tooltip
-      title={title}
-      placement="right"
-      arrow
-      enterDelay={500}
-      enterNextDelay={750}
-    >
-      <ListItemButton
-        sx={{
-          textAlign: 'left',
-          position:
-            title === 'Settings'
-              ? 'fixed'
-              : 'unset',
-          bottom: '0px',
-        }}
-        component={Link}
-        to={path}
-        selected={!!selected}
-      >
-        {!!selected ? (
+    <>
+      {popupShow &&
+        <DialogToolbar
+          openDialogBox={popupShow}
+          setOpenDialogBox={popupShow}
+          onClickHand={popHandleSubmit}
+          handleClose={handleClose}
+          handlePopClose={handlePopClose}
+        />
+      }
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        message={snackbarMessage}
+        onClose={() => setOpenSnackbar(false)}
+        action={
           <SvgIcon
             sx={{
-              mx: 'auto',
-              border: '1px solid #998AFF',
-              width: '30px',
-              height: '30px',
-              paddingTop: paddingTop,
-              paddingLeft: paddingLeft,
-              borderRadius: '6px',
-              my: 2,
+              mt: 2,
+              zIndex: 2,
+              cursor: 'pointer',
             }}
-            component={icon}
+            component={closeIcon}
+            onClick={() => setOpenSnackbar(false)}
           />
-        ) : (
-          <SvgIcon
-            sx={{ mx: 'auto', my: 2, marginLeft: '4px' }}
-            component={icon}
-          />
-        )}
-      </ListItemButton>
-    </Tooltip>
+        }
+      />
+      <Tooltip
+        title={title}
+        placement="right"
+        arrow
+        enterDelay={500}
+        enterNextDelay={750}
+      >
+        <ListItemButton
+          sx={{
+            textAlign: 'left',
+            position:
+              title === 'Settings'
+                ? 'fixed'
+                : 'unset',
+            bottom: '0px',
+          }}
+          onClick={() => menuClick(path)}
+          // component={Link}
+          // to={path}
+          selected={!!selected}
+        >
+          {!!selected ? (
+            <SvgIcon
+              sx={{
+                mx: 'auto',
+                border: '1px solid #998AFF',
+                width: '30px',
+                height: '30px',
+                padding: title === 'Settings' ? '4px 4px 4px 2px' : '5px 0px 0px 3px',
+                borderRadius: '6px',
+                my: 2,
+              }}
+              component={icon}
+            />
+          ) : (
+            <SvgIcon
+              sx={{ mx: 'auto', my: 2, marginLeft: '4px' }}
+              component={icon}
+            />
+          )}
+        </ListItemButton>
+      </Tooltip>
+    </>
   )
 }
 export default NavDrawer

@@ -53,7 +53,7 @@ export const settingsSlice = createSlice({
       // settingslist
       .addCase(settingsResults.fulfilled, (state, { payload }) => {
         state.settingsResultsList.isFetching = false
-        state.settingsList = payload.data
+        state.settingsList = payload
       })
       .addCase(settingsResults.pending, (state, { payload }) => {
         state.settingsResultsList.isFetching = true
