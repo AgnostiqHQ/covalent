@@ -139,4 +139,4 @@ def test_sync(lattice_record, mocker, tmp_path):
         mock_get_result_from_dispatcher.assert_any_call(dispatch_id, wait=True, status_only=True)
     mock_get_result_from_dispatcher.reset_mock()
     with pytest.raises(Exception):
-        sync(result_from(lattice_record))
+        sync(1)
