@@ -10,14 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 
 - Fixed `asserts` in stress tests
+- Added unit tests for `defaults.py`
 
 ### Added
 
 - `requirements-client.txt` file added.
+- Logs tab on the GUI which displays the covalent logs and also the ability to download the log file.
 
 ### Fixed
 
 - Config file is now locked during reads and writes to mitigate concurrency issues
+- In `defaults.py/get_default_executor`, condition to return `local` or `dask` is now fixed
 
 ### Changed
 
@@ -25,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `setup.py` modified to install client side requirements only, if `COVALENT_SDK_ONLY` environment variable is present and `True`.
 - Updated `requirements.txt` and `tests/requirements.txt`
 - Updated `nbconvert` by dependabot
+- Split the `ConfigManager` into `Client` and `Server` components
+- Update the `set/get/update` config methods to distinguish between the client and server parts
 
 ### Docs
 

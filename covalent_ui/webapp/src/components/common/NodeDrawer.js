@@ -137,7 +137,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
           p: 3,
           marginRight: '10px',
           marginTop:'22px',
-          height: '904px',
+          height: '95vh',
           bgcolor: alpha(theme.palette.background.default),
           boxShadow:'0px 16px 50px rgba(0, 0, 0, 0.9)',
           backdropFilter:'blur(8px)',
