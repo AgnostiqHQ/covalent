@@ -6,7 +6,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -17,7 +17,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -28,7 +28,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -39,7 +39,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -50,7 +50,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -61,7 +61,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -72,8 +72,9 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
+      "push",
       "pull_request",
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -84,8 +85,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "pull_request",
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -96,7 +96,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -107,7 +107,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -118,7 +118,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -129,7 +129,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -143,7 +143,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -157,7 +157,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -168,7 +168,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -179,7 +179,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -190,7 +190,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -201,7 +201,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -212,7 +212,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -223,7 +223,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -234,7 +234,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -245,7 +245,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -256,7 +256,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -267,7 +267,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -278,7 +278,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -289,7 +289,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   }
