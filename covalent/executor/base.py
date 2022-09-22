@@ -36,7 +36,7 @@ from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 
 from .._shared_files import logger
 from .._shared_files.context_managers import active_dispatch_info_manager
-from .._shared_files.util_classes import DispatchInfo
+from .._shared_files.util_classes import DispatchInfo, SafeVariable
 from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
@@ -233,6 +233,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         kwargs: Dict,
         dispatch_id: str,
         results_dir: str,
+        status_store: SafeVariable,
         node_id: int = -1,
     ) -> Any:
         """
@@ -248,6 +249,7 @@ class BaseExecutor(_AbstractBaseExecutor):
             dispatch_id: The unique identifier of the external lattice process which is
                          calling this function.
             results_dir: The location of the results directory.
+            status_store: Variable to store the latest status in to keep the UI updated.
             node_id: ID of the node in the transport graph which is using this executor.
 
         Returns:
@@ -261,6 +263,7 @@ class BaseExecutor(_AbstractBaseExecutor):
             "dispatch_id": dispatch_id,
             "node_id": node_id,
             "results_dir": results_dir,
+            "status_store": status_store,
         }
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
@@ -373,6 +376,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         kwargs: Dict,
         dispatch_id: str,
         results_dir: str,
+        status_store: SafeVariable,
         node_id: int = -1,
     ) -> Any:
 
@@ -380,6 +384,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             "dispatch_id": dispatch_id,
             "node_id": node_id,
             "results_dir": results_dir,
+            "status_store": status_store,
         }
 
         with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:

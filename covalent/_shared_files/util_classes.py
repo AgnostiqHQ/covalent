@@ -20,23 +20,34 @@
 
 
 import multiprocessing as mp
+import queue
 from dataclasses import dataclass
 from multiprocessing.queues import Queue as MPQ
 from typing import Any, NamedTuple
 
 
-class StatusStore(MPQ):
-    def __init__(self, maxsize: int = 1) -> None:
-        ctx = mp.get_context()
-        super().__init__(maxsize, ctx=ctx)
+class SafeVariable(MPQ):
+    def __init__(self) -> None:
+        super().__init__(maxsize=1, ctx=mp.get_context())
 
     def save(self, value: Any) -> None:
         print("Saving things")
-        self.put_nowait(value)
+
+        try:
+            self.put_nowait(value)
+        except queue.Full:
+            self.get_nowait()
+            self.put_nowait(value)
 
     def retrieve(self) -> Any:
-        print("Retrieving things")
-        return self.get_nowait()
+        print("Loading things")
+
+        try:
+            value = self.get_nowait()
+            self.put_nowait(value)
+            return value
+        except queue.Empty:
+            return None
 
 
 @dataclass

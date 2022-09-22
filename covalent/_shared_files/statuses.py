@@ -19,7 +19,14 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import asyncio
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from util_classes import SafeVariable
+
+    from .._results_manager.result import Result
 
 
 @dataclass
@@ -71,3 +78,16 @@ class ConnectionLostStatus(FailedStatus):
 class TimeoutStatus(FailedStatus):
     status_name = "Timeout"
     description = "Task exceeded the time limit and was terminated"
+
+
+async def status_listener(
+    result_object: "Result", node_id: int, status_store: "SafeVariable"
+) -> None:
+    while True:
+        current_status = status_store.retrieve()
+        if isinstance(current_status, (None, PendingStatus, RunningStatus)):
+            result_object._update_node(node_id=node_id, status=current_status)
+            await asyncio.sleep(0)
+        else:
+            result_object._update_node(node_id=node_id, status=current_status)
+            break
