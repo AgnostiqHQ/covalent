@@ -56,7 +56,7 @@ class Logs:
         reg = regex_expr.split(line.rstrip("\n"))
         json_data = {"log_date": None, "status": "INFO", "message": reg[0]}
         if len(reg) >= 3:
-            parse_str = datetime.strptime(reg[1], "%Y-%m-%d %I:%M:%S,%f")
+            parse_str = datetime.strptime(reg[1], "%Y-%m-%d %H:%M:%S,%f")
             json_data = {"log_date": f"{parse_str}", "status": reg[2], "message": reg[3]}
         if search != "":
             if (search in json_data["message"].lower()) or (search in json_data["status"].lower()):
