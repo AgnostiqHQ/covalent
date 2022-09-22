@@ -3875,3 +3875,7 @@ Installed executor plugins don't have to be referred to by their full module nam
 - CHANGELOG.md to track changes (this file).
 - Semantic versioning in VERSION.
 - CI pipeline job to enforce versioning.
+
+### Changed
+
+- Single line call to join instead of a for loop
