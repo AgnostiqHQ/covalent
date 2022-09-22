@@ -244,6 +244,7 @@ const LogsListing = () => {
   const [offset, setOffset] = useState(0)
   const [page, setPage] = useState(1)
   const [openSnackbar, setOpenSnackbar] = useState(false)
+  // eslint-disable-next-line no-unused-vars
   const [snackbarMessage, setSnackbarMessage] = useState(null)
   const [disableDownload, setDisableDownload] = useState(false)
   const [logFinalFile, setLogFinalFile] = useState('')
