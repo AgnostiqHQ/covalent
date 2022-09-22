@@ -5,66 +5,206 @@
 
 .. image:: AWS_EC2.jpg
 
-This executor plugin interfaces Covalent with an EC2 instance over SSH. This plugin is appropriate for executing workflow tasks on an instance that has been auto-provisioned and configured by the plugin.
 
-To use this plugin with Covalent, simply install it using `pip`:
+Covalent is a Pythonic workflow tool used to execute tasks on advanced computing hardware.
 
-.. code:: shell
+This plugin allows tasks to be executed in an AWS EC2 instance (which is auto-created) when you execute your workflow with covalent.
 
-    pip install covalent-ec2-plugin
 
-Users will also need to have `Terraform <https://www.terraform.io/downloads>`_ installed on their local machine in order to use this plugin.
-The following shows an example of how a user might modify their Covalent `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_  to support this plugin:
+===========================================
+1. Installation
+===========================================
+
+To use this plugin with Covalent, simply install it using :code:`pip`:
+
+.. code:: bash
+
+   pip install covalent-ec2-plugin
+
+.. note::
+
+   Users will also need to have `Terraform <https://www.terraform.io/downloads>`_ installed on their local machine in order to use this plugin.
+
+
+
+===========================================
+2. Usage Example
+===========================================
+
+This is a toy example of how a workflow can be adapted to utilize the EC2 Executor. Here we train a Support Vector Machine (SVM) and spin up an EC2 automatically to execute the :code:`train_svm` electron. We also note we require :doc:`DepsPip <../../concepts/concepts>` to install the dependencies on the EC2 instance.
+
+.. code-block:: python
+
+    from numpy.random import permutation
+    from sklearn import svm, datasets
+    import covalent as ct
+
+    deps_pip = ct.DepsPip(
+        packages=["numpy==1.23.2", "scikit-learn==1.1.2"]
+    )
+
+    executor = ct.executor.EC2Executor(
+        instance_type="t2.micro",
+        volume_size=8, #GiB
+        ssh_key_file="~/.ssh/ec2_key" # default key_name will be "ec2_key"
+    )
+
+    # Use executor plugin to train our SVM model.
+    @ct.electron(
+        executor=executor,
+        deps_pip=deps_pip
+    )
+    def train_svm(data, C, gamma):
+        X, y = data
+        clf = svm.SVC(C=C, gamma=gamma)
+        clf.fit(X[90:], y[90:])
+        return clf
+
+    @ct.electron
+    def load_data():
+        iris = datasets.load_iris()
+        perm = permutation(iris.target.size)
+        iris.data = iris.data[perm]
+        iris.target = iris.target[perm]
+        return iris.data, iris.target
+
+    @ct.electron
+    def score_svm(data, clf):
+        X_test, y_test = data
+        return clf.score(
+            X_test[:90],
+            y_test[:90]
+        )
+
+    @ct.lattice
+    def run_experiment(C=1.0, gamma=0.7):
+        data = load_data()
+        clf = train_svm(
+            data=data,
+            C=C,
+            gamma=gamma
+        )
+        score = score_svm(
+            data=data,
+            clf=clf
+        )
+        return score
+
+    # Dispatch the workflow
+    dispatch_id = ct.dispatch(run_experiment)(
+        C=1.0,
+        gamma=0.7
+    )
+
+    # Wait for our result and get result value
+    result = ct.get_result(dispatch_id=dispatch_id, wait=True).result
+
+    print(result)
+
+During the execution of the workflow one can navigate to the UI to see the status of the workflow, once completed however the above script should also output a value with the score of our model.
+
+.. code-block:: python
+
+    0.8666666666666667
+
+===========================================
+3. Overview of Configuration
+===========================================
+
+.. list-table::
+   :widths: 2 1 2 3
+   :header-rows: 1
+
+   * - Config Key
+     - Is Required
+     - Default
+     - Description
+   * - profile
+     - No
+     - default
+     - Named AWS profile used for authentication
+   * - region
+     - No
+     - us-east-1
+     - AWS Region to use to for client calls
+   * - credentials_file
+     - Yes
+     - ~/.aws/credentials
+     - The path to the AWS credentials file
+   * - ssh_key_file
+     - Yes
+     - ~/.ssh/id_rsa
+     - The path to the private key that corresponds to the EC2 Key Pair
+   * - instance_type
+     - Yes
+     - t2.micro
+     - The `EC2 instance type <https://aws.amazon.com/ec2/instance-types/>`_ that will be spun up automatically.
+   * - key_name
+     - Yes
+     - Name of key specified in :code:`ssh_key_file`.
+     - The name of the AWS EC2 Key Pair that will be used to SSH into EC2 instance
+   * - volume_size
+     - No
+     - 8
+     - The size in GiB of the GP2 SSD disk to be provisioned with EC2 instance.
+   * - vpc
+     - No
+     - (Auto created)
+     - The VPC ID that will be associated with the EC2 instance, if not specified a VPC will be created.
+   * - subnet
+     - No
+     - (Auto created)
+     - The Subnet ID that will be associated with the EC2 instance, if not specified a public Subnet will be created.
+   * - remote_cache
+     - No
+     - ~/.cache/covalent
+     - The location on the EC2 instance where covalent artifacts will be created.
+
+This plugin can be configured in one of two ways:
+
+#. Configuration options can be passed in as constructor keys to the executor class :code:`ct.executor.EC2Executor`
+
+#. By modifying the `covalent configuration file <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ under the section :code:`[executors.ec2]`
+
+
+
+The following shows an example of how a user might modify their `covalent configuration file <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_  to support this plugin:
 
 .. code:: shell
 
     [executors.ec2]
-    username = "ubuntu"
-    profile = "default"
-    credentials_file = "/home/user/.aws/credentials"
-    key_name = "ssh_key"
     ssh_key_file = "/home/user/.ssh/ssh_key.pem"
-
-
-This configuration assumes that the user has created a private key file for connecting to the instance via SSH that is stored on their local machine at `/home/user/.ssh/ssh_key.pem`. The configuration also assumes that the user uses the default AWS profile and credentials file located at `/home/user/.aws/credentials` to authenticate to their AWS account.
-
-
-Within a workflow, users can decorate electrons using the minimal default settings:
-
-.. code:: python
-
-    import covalent as ct
-
-    @ct.electron(executor="ec2")
-    def my_task():
-        import socket
-        return socket.get_hostname()
-
-
-
-or use a class object that makes use of a custom AWS user profile to deploy a specific instance type within a specific subnet in a VPC:
-
-.. code:: python
-
-    executor = ct.executor.EC2Executor(
-        username="ubuntu",
-        ssh_key_file="/home/user/.ssh/ssh_key.pem",
-        key_name="ssh_key"
-        instance_type="t2.micro",
-        volume_size="8GiB",
-        ami="amzn-ami-hvm-*-x86_64-gp2",
-        vpc="vpc-07bdd9ca40c4c50a7",
-        subnet="subnet-0a0a7f2a7532383c3",
-        profile="custom_user_profile",
-        credentials_file="~/.aws/credentials"
-    )
-
-    @ct.electron(executor=executor)
-    def my_custom_task(x, y):
-        return x + y
-
+    key_name = "ssh_key"
 
 
 .. autoclass:: covalent.executor.EC2Executor
     :members:
     :inherited-members:
+
+
+===========================================
+4. Required Cloud Resources
+===========================================
+
+In order to run your workflows with covalent there are a few notable resources that need to be provisioned first.
+
+.. list-table::
+   :widths: 2 1 2 3
+   :header-rows: 1
+
+   * - Resource
+     - Is Required
+     - Config Key
+     - Description
+   * - AWS EC2 Key Pair
+     - Yes
+     - :code:`key_name`
+     - An EC2 Key Pair must be created and named corresponding to the :code:`key_name` config value.
+   * - VPC
+     - No
+     - :code:`vpc`
+     - A VPC ID can be provided corresponding to the :code:`vpc` config value. Otherwise a VPC will be auto-created for each electron.
+   * - Subnet
+     - No
+     - :code:`subnet`
+     - A Subnet ID can be provided corresponding to the :code:`subnet` config value. Otherwise a public Subnet will be auto-created for each electron.
