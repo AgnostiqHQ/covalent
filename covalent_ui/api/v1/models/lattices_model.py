@@ -109,52 +109,10 @@ class GraphResponseData(BaseModel):
 class GraphResponse(BaseModel):
     """Graph Response Model"""
 
-    dispatch_id: str = None
-    graph: dict = None
 
+class LatticeFileOutput(str, Enum):
+    """Lattices file names"""
 
-class ElectronResponse(BaseModel):
-    """Electron Response Model"""
-
-    id: int = None
-    node_id: int = None
-    parent_lattice_id: int = None
-    type: str = None
-    storage_path: str = None
-    name: str = None
-    status: str = None
-    started_at: datetime = None
-    ended_at: datetime = None
-    runtime: int = None
-    description: str = None
-
-
-class ElectronFileResponse(BaseModel):
-    """Electron Response Model"""
-
-    data: str = None
-
-
-class ElectronExecutorResponse(BaseModel):
-    """Lattices File Response Model"""
-
-    executor_name: str = None
-    executor_details: dict = None
-
-
-class ElectronErrorResponse(BaseModel):
-    """Eelctron Error Response Model"""
-
-    data: str = None
-
-
-class ElectronFunctionResponse(BaseModel):
-    """Electron Function Response Model"""
-
-    data: str = None
-
-
-class FileOutput(str, Enum):
     RESULT = "result"
     FUNCTION_STRING = "function_string"
     INPUTS = "inputs"

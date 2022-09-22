@@ -30,9 +30,9 @@ from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
 from covalent_ui.api.v1.database.config.db import engine
 from covalent_ui.api.v1.models.dispatch_model import SortDirection
 from covalent_ui.api.v1.models.lattices_model import (
-    FileOutput,
     LatticeDetailResponse,
     LatticeExecutorResponse,
+    LatticeFileOutput,
     LatticeFileResponse,
     LatticeWorkflowExecutorResponse,
     SubLatticeDetailResponse,
@@ -83,7 +83,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
 
 
 @routes.get("/{dispatch_id}/details/{name}")
-def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
+def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
     """Get lattice file data
 
     Args:

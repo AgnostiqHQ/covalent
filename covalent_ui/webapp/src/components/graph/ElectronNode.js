@@ -23,7 +23,6 @@
 import {
   Grid,
   Paper,
-  SvgIcon,
   Tooltip,
   tooltipClasses,
   Typography,
@@ -31,12 +30,7 @@ import {
 import { styled } from '@mui/material/styles'
 import { Handle } from 'react-flow-renderer'
 import CopyButton from '../common/CopyButton'
-import { ReactComponent as AtomSvg } from '../../assets/status/activity.svg'
-import { ReactComponent as CheckSvg } from '../../assets/status/checkmark.svg'
-import { ReactComponent as ErrorSvg } from '../../assets/status/error.svg'
-import { ReactComponent as CancelSvg } from '../../assets/status/stop.svg'
-import { statusColor, truncateMiddle, nodeLabelIcon } from '../../utils/misc'
-import { ReactComponent as LoaderSvg } from '../../assets/loader.svg'
+import { truncateMiddle, nodeLabelIcon,statusIcon } from '../../utils/misc'
 
 export const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
 
@@ -56,7 +50,6 @@ const ElectronNode = ({
   targetPosition,
   isConnectable,
 }) => {
-  const color = statusColor(data.status)
   const hasBorder = data.status !== 'NEW_OBJECT'
   return (
     <>
@@ -158,82 +151,7 @@ const ElectronNode = ({
               data-testid="handleelectronNode"
             />
             {nodeLabelIcon(data.nodeType)}
-            {(() => {
-              switch (data.status) {
-                case 'NEW_OBJECT':
-                  return (
-                    <SvgIcon
-                      data-testid="atom"
-                      sx={{
-                        mr: 0.1,
-                        fontSize: 14,
-                        fill: color,
-                        position: 'relative',
-                        top: '1.7px',
-                      }}
-                    >
-                      <AtomSvg />
-                    </SvgIcon>
-                  )
-                case 'RUNNING':
-                  return (
-                    <SvgIcon
-                      data-testid="loader"
-                      sx={{ mt: 0.1, mr: 0.5, fontSize: 16, fill: color }}
-                    >
-                      <LoaderSvg />
-                    </SvgIcon>
-                  )
-                case 'COMPLETED':
-                  return (
-                    <SvgIcon
-                      data-testid="check"
-                      sx={{
-                        mr: 0.1,
-                        fontSize: 14,
-                        fill: color,
-                        position: 'relative',
-                        top: '1.7px',
-                      }}
-                    >
-                      <CheckSvg />
-                    </SvgIcon>
-                  )
-                case 'FAILED':
-                  return (
-                    <SvgIcon
-                      data-testid="error"
-                      sx={{
-                        mr: 0.1,
-                        fontSize: 14,
-                        fill: color,
-                        position: 'relative',
-                        top: '1.7px',
-                      }}
-                    >
-                      <ErrorSvg />
-                    </SvgIcon>
-                  )
-                case 'CANCELLED':
-                  return (
-                    <SvgIcon
-                      data-testid="cancel"
-                      sx={{
-                        mr: 0.1,
-                        fontSize: 14,
-                        fill: color,
-                        position: 'relative',
-                        top: '1.7px',
-                      }}
-                    >
-                      <CancelSvg />
-                    </SvgIcon>
-                  )
-                default:
-                  return null
-              }
-            })()}
-
+            {statusIcon(data.status)}
             <Typography sx={{ fontSize: 14, mb: 0.3 }}>{data.label}</Typography>
             <Handle
               data-testid="sourcehandleelectronNode"

@@ -15,40 +15,34 @@
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Electron Dependency Request and Respone Model"""
+"""Logs Routes"""
 
-from typing import List
+from typing import Optional
 
-from pydantic import BaseModel
+from fastapi import APIRouter, Query
 
-from covalent_ui.api.v1.utils.status import Status
+from covalent_ui.api.v1.data_layer.logs_dal import Logs
+from covalent_ui.api.v1.models.logs_model import SortBy, SortDirection
 
-
-class LinkModule(BaseModel):
-    """Link Module Validation"""
-
-    id: int
-    electron_id: int
-    parent_electron_id: int
-    edge_name: str
-    parameter_type: str
-    created_at: str
+routes: APIRouter = APIRouter()
 
 
-class NodeModule(BaseModel):
-    """Node Module Validation"""
+@routes.get("/")
+def get_logs(
+    count: Optional[int] = Query(0),
+    offset: Optional[int] = Query(0),
+    sort_by: Optional[SortBy] = SortBy.LOG_DATE,
+    search: Optional[str] = "",
+    sort_direction: Optional[SortDirection] = SortDirection.DESCENDING,
+):
+    logs = Logs()
+    return logs.get_logs(sort_by, sort_direction, search, count, offset)
 
-    id: int
-    name: str
-    start_time: str
-    end_time: str
-    status: Status
 
-
-class GraphResponseModel(BaseModel):
-    """Graph Response Validation"""
-
-    node: List[NodeModule]
-    links: List[LinkModule]
+@routes.get("/download")
+def download_logs():
+    logs = Logs()
+    return logs.download_logs()

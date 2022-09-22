@@ -31,6 +31,7 @@ import { useState } from 'react'
 import { graphBgColor } from '../../utils/theme'
 import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
 import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
+
 import PreviewDrawerContents from './PreviewDrawerContents'
 
 const LatticePreviewLayout = () => {
