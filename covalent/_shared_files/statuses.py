@@ -39,6 +39,12 @@ class PendingStatus(Status):
     description = "Task exists in the dispatch database but has not been invoked by the dispatcher"
 
 
+# Running Statuses
+class RunningStatus(Status):
+    category_name = "Running"
+    description = "Task is currently executing"
+
+
 # Completed Statuses
 class CompletedStatus(Status):
     category_name = "Completed"

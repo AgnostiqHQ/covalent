@@ -19,8 +19,24 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import multiprocessing as mp
 from dataclasses import dataclass
-from typing import NamedTuple
+from multiprocessing.queues import Queue as MPQ
+from typing import Any, NamedTuple
+
+
+class StatusStore(MPQ):
+    def __init__(self, maxsize: int = 1) -> None:
+        ctx = mp.get_context()
+        super().__init__(maxsize, ctx=ctx)
+
+    def save(self, value: Any) -> None:
+        print("Saving things")
+        self.put_nowait(value)
+
+    def retrieve(self) -> Any:
+        print("Retrieving things")
+        return self.get_nowait()
 
 
 @dataclass
