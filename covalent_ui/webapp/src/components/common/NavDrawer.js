@@ -28,6 +28,7 @@ import {
   ListItemButton,
   Tooltip,
   SvgIcon,
+  Grid,
 } from '@mui/material'
 
 import { ReactComponent as Logo } from '../../assets/covalent-logo.svg'
@@ -66,12 +67,16 @@ const NavDrawer = () => {
           path="/"
           icon={DispatchList}
           margintop={8}
+          paddingTop={0.5}
+          paddingLeft={0.5}
         />
 
         <LinkButton
           title="Lattice draw preview"
           path="/preview"
           icon={DispatchPreview}
+          paddingTop={0.5}
+          paddingLeft={0.5}
         />
         <LinkButton
           title="Terminal"
@@ -83,7 +88,14 @@ const NavDrawer = () => {
   )
 }
 
-const LinkButton = ({ title, icon, path, margintop }) => {
+const LinkButton = ({
+  title,
+  icon,
+  path,
+  margintop,
+  paddingTop,
+  paddingLeft,
+}) => {
   const selected = useMatch(path)
 
   return (
@@ -107,7 +119,8 @@ const LinkButton = ({ title, icon, path, margintop }) => {
               border: '1px solid #998AFF',
               width: '30px',
               height: '30px',
-              padding: '5px 0px 0px 3px',
+              paddingTop: paddingTop,
+              paddingLeft: paddingLeft,
               borderRadius: '6px',
               my: 2,
             }}

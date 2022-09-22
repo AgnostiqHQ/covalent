@@ -36,6 +36,7 @@ import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
 import DispatchLayout from './components/dispatch/DispatchLayout'
 import TerminalLayout from './components/terminal/TerminalLayout'
 import NotFound from './components/NotFound'
+import LogsLayout from './components/logs/LogsLayout'
 import { differenceInSeconds } from 'date-fns'
 const App = () => {
   const dispatch = useDispatch()
