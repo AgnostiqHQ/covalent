@@ -27,23 +27,25 @@ latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"] = {}
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].latticeDetails =
 {
     "dispatch_id": "2537c3b0-c150-441b-81c6-844e3fd88ef3",
-    "lattice_name": "final_calc",
-    "runtime": 1000,
-    "total_electrons": 10,
-    "total_electrons_completed": 10,
-    "started_at": "2022-08-11T12:14:39",
-    "ended_at": "2022-08-11T12:14:40",
+    "lattice_name": "compute_energy",
+    "runtime": 13000,
+    "total_electrons": 8,
+    "total_electrons_completed": 8,
+    "started_at": "2022-06-13T12:14:30",
+    "ended_at": "2022-06-13T12:14:43",
     "status": "COMPLETED",
     "updated_at": "2022-08-11T12:14:40",
     "directory": "/home/covalent/Desktop/workflows/results/2537c3b0-c150-441b-81c6-844e3fd88ef3",
 };
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].latticeError = null;
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].latticeResult = {
-    "data": "\"[19.30560599 19.22910799 19.1520599  ... 19.14461197 19.0669631218.98876836],[-35.96235506 -36.07771597 -36.1925922  ... -36.20362793 -36.31796856 -36.43181675],[209.39040932 209.61808842 209.84549899 ... 209.86738212 210.09449597 210.32133708],[312.26474717 312.52275968 312.78145573 ... 312.80640174 313.06584912 313.32598355]\""
+    "data": "0.3241872821704259"
 };
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].latticeInput = null;
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].latticeInput = {
+    "data": "{ initial_height: '3', distance: '1.1' }"
+};
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].latticeFunctionString = {
-    "data": '# @ct.lattice\ndef final_calc(\n    target_list=["sirius", "trappist-1"],\n    region="America/Los_Angeles",\n    latitude=49.2827,\n    longitude=-123.1207,\n):\n    RA = get_RA(target_list=target_list)\n    dec = get_dec(target_list=target_list)\n    T = convert_to_utc(time_zone=region)\n    d = days_since_J2000(region=region)\n    lst = local_sidereal_time(d=d, long=longitude, T=T)\n    ha = hour_angle(LST=lst, RA=RA)\n    alt = altitude_of_target(dec=dec, lat=latitude, ha=ha)\n    az = get_azimuth(dec=dec, lat=latitude, ha=ha, alt=alt)\n    return alt, az\n\n\n',
+    "data": '# @ct.lattice(backend=executor1)\ndef compute_energy(initial_height=3, distance=1.10):\n    N2 = construct_n_molecule(d=distance)\n    e_N2 = compute_system_energy(system=N2)\n\n    slab = construct_cu_slab(unit_cell=(4, 4, 2), vacuum=10.0)\n    e_slab = compute_system_energy(system=slab)\n\n    relaxed_slab = get_relaxed_slab(slab=slab, molecule=N2, height=initial_height)\n    e_relaxed_slab = compute_system_energy(system=relaxed_slab)\n    final_result = e_slab + e_N2 - e_relaxed_slab\n\n    return final_result\n\n\n'
 };
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].latticeExecutor = {
     "executor_name": "dask",
@@ -52,15 +54,13 @@ latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].latticeExecutor =
 // electron data initilisation
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron = []
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[0] = {}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[1] = {}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[4] = {}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[5] = {}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[8] = {}
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[2] = {}
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[3] = {}
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[6] = {}
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[7] = {}
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[9] = {}
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[10] = {}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[12] = {}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[14] = {}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[15] = {}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[17] = {}
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[11] = {}
 
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[0].electronDetails = {
     "id": 0,
@@ -68,130 +68,157 @@ latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[0].elect
     "parent_lattice_id": 1,
     "type": "function",
     "storage_path": "/home/covalent/Desktop/workflows/results/2537c3b0-c150-441b-81c6-844e3fd88ef3/node_4",
-    "name": "get_RA",
+    "name": "construct_n_molecule",
     "status": "COMPLETED",
-    "started_at": "2022-08-11T12:14:39",
-    "ended_at": "2022-08-11T12:14:39",
+    "started_at": "2022-06-13T12:14:30",
+    "ended_at": "2022-06-13T12:14:30",
     "runtime": 50
 }
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[0].electronResult = {
-    "data": "101.28715533333333,346.6223687285788"
+    "data": "Atoms(symbols='N2', pbc=False, calculator=EMT(...))"
 }
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[0].electronExecutor = {
-    "executor_name": "dask",
+    "executor_name": "local",
     "executor_details": null
 }
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[0].electronFunctionString = {
-    "data": '# @ct.electron\ndef get_RA(target_list):\n    RA = []\n    for target_name in target_list:\n        response = requests.get(\n            "http://simbad.u-strasbg.fr/simbad/sim-id?output.format=votable&Ident=%s&output.params=ra,dec"\n            % target_name\n        )\n        star_info = response.text\n        RA.append(\n            star_info[star_info.index("<TR><TD>") + 8 : star_info.index("</TD><TD>")]\n        )\n    RA_degs = []\n    for source in RA:\n        hour = float(source.split(" ")[0])\n        minute = float(source.split(" ")[1])\n        second = float(source.split(" ")[2])\n        RA_degs.append(((hour + minute / 60 + second / 3600) * 15))\n    return RA_degs\n\n\n'
+    "data": '# @ct.electron\ndef construct_n_molecule(d=0):\n    return Atoms("2N", positions=[(0.0, 0.0, 0.0), (0.0, 0.0, d)])\n\n\n'
 }
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[0].electronError = null
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[0].electronInput = {
-    "data": "target_list=['sirius','trappist-1']"
+    "data": "d=1.1"
 }
 
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[1].electronDetails = {
-    "id": 1,
-    "node_id": 1,
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[6].electronDetails = {
+    "id": 6,
+    "node_id": 6,
     "parent_lattice_id": 1,
     "type": "function",
     "storage_path": "/home/covalent/Desktop/workflows/results/2537c3b0-c150-441b-81c6-844e3fd88ef3/node_4",
-    "name": ":electron_list:",
+    "name": "compute_system_energy",
     "status": "COMPLETED",
-    "started_at": "2022-08-11T12:14:39",
-    "ended_at": "2022-08-11T12:14:39",
+    "started_at": "2022-06-13T12:14:30",
+    "ended_at": "2022-06-13T12:14:30",
     "runtime": 50
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[1].electronResult = {
-    "data": "sirius,trappist-1"
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[6].electronInput = {
+    "data": "system=Atoms(symbols='Cu32N2', pbc=[True, True, False], cell=[[10.210621920333747, 0.0, 0.0], [5.105310960166873, 8.842657971447272, 0.0], [0.0, 0.0, 22.08423447177455]], tags=..., constraint=FixAtoms(indices=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]), calculator=EMT(...))"
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[1].electronExecutor = {
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[6].electronExecutor = {
     "executor_name": "local",
     "executor_details": null
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[1].electronFunctionString = {
-    "data": '# to_electron_collection was not inspectable\n\n',
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[6].electronFunctionString = {
+    "data": '# @ct.electron(backend=executor2)\ndef compute_system_energy(system):\n    system.calc = EMT()\n    return system.get_potential_energy()\n\n\n',
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[1].electronError = null
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[1].electronInput = {
-    "data": "target_list=['sirius','trappist-1']"
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[6].electronError = null
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[6].electronResult = {
+    "data": "11.509056283570393"
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[4].electronDetails = {
-    "id": 4,
-    "node_id": 4,
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[3].electronDetails = {
+    "id": 3,
+    "node_id": 3,
     "parent_lattice_id": 1,
     "type": "function",
     "storage_path": "/home/covalent/Desktop/workflows/results/2537c3b0-c150-441b-81c6-844e3fd88ef3/node_4",
-    "name": "get_dec",
+    "name": "construct_cu_slab",
     "status": "COMPLETED",
-    "started_at": "2022-08-11T12:14:39",
-    "ended_at": "2022-08-11T12:14:39",
+    "started_at": "2022-06-13T12:14:30",
+    "ended_at": "2022-06-13T12:14:30",
     "runtime": 50
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[4].electronResult = {
-    "data": "-16.71611586111111,-5.041399250518333"
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[3].electronResult = {
+    "data": "Atoms(symbols='Cu32N2', pbc=[True, True, False], cell=[[10.210621920333747, 0.0, 0.0], [5.105310960166873, 8.842657971447272, 0.0], [0.0, 0.0, 22.08423447177455]], tags=..., constraint=FixAtoms(indices=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]), calculator=EMT(...))"
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[4].electronExecutor = {
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[3].electronExecutor = {
     "executor_name": "local",
     "executor_details": null
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[4].electronFunctionString = {
-    "data": '# @ct.electron\ndef get_dec(target_list):\n    dec = []\n    for target_name in target_list:\n        response = requests.get(\n            "http://simbad.u-strasbg.fr/simbad/sim-id?output.format=votable&Ident=%s&output.params=ra,dec"\n            % target_name\n        )\n        star_info = response.text\n        dec.append(\n            star_info[star_info.index("</TD><TD>") + 9 : star_info.index("</TD></TR>")]\n        )\n    dec_degs = []\n    for source in dec:\n        degree = float(source.split(" ")[0])\n        arcmin = float(source.split(" ")[1])\n        arcsec = float(source.split(" ")[2])\n        if degree < 0:\n            dec_degs.append(degree - arcmin / 60 - arcsec / 3600)\n        else:\n            dec_degs.append(degree + arcmin / 60 + arcsec / 3600)\n    return dec_degs\n\n\n',
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[3].electronFunctionString = {
+    "data": '# @ct.electron(backend=executor1)\ndef construct_cu_slab(\n    unit_cell=(4, 4, 2), vacuum=10.0,\n):\n    slab = fcc111("Cu", size=unit_cell, vacuum=vacuum)\n    return slab\n\n\n',
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[4].electronError = null
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[4].electronInput = {
-    "data": "target_list=['sirius','trappist-1']"
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[3].electronError = null
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[3].electronInput = {
+    "data": "unit_cell=(4, 4, 2), vacuum=10.0"
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[5].electronDetails = {
-    "id": 5,
-    "node_id": 5,
+
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[2].electronDetails = {
+    "id": 2,
+    "node_id": 2,
     "parent_lattice_id": 1,
     "type": "function",
     "storage_path": "/home/covalent/Desktop/workflows/results/2537c3b0-c150-441b-81c6-844e3fd88ef3/node_4",
-    "name": ":electron_list:",
+    "name": "compute_system_energy",
     "status": "COMPLETED",
-    "started_at": "2022-08-11T12:14:39",
-    "ended_at": "2022-08-11T12:14:39",
+    "started_at": "2022-06-13T12:14:30",
+    "ended_at": "2022-06-13T12:14:30",
     "runtime": 50
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[5].electronResult = {
-    "data": "sirius,trappist-1"
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[2].electronResult = {
+    "data": "0.44034357303561467"
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[5].electronExecutor = {
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[2].electronExecutor = {
     "executor_name": "local",
     "executor_details": null
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[5].electronFunctionString = {
-    "data": '# to_electron_collection was not inspectable\n\n',
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[2].electronFunctionString = {
+    "data": '# @ct.electron(backend=executor2)\ndef compute_system_energy(system):\n    system.calc = EMT()\n    return system.get_potential_energy()\n\n\n',
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[5].electronError = null
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[5].electronInput = {
-    "data": "target_list=['sirius','trappist-1']"
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[2].electronError = null
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[2].electronInput = {
+    "data": "system=Atoms(symbols='N2', pbc=False, calculator=EMT(...))"
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[8].electronDetails = {
-    "id": 8,
-    "node_id": 8,
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[7].electronDetails = {
+    "id": 7,
+    "node_id": 7,
     "parent_lattice_id": 1,
     "type": "function",
     "storage_path": "/home/covalent/Desktop/workflows/results/2537c3b0-c150-441b-81c6-844e3fd88ef3/node_4",
-    "name": "convert_to_utc",
+    "name": "get_relaxed_slab",
     "status": "COMPLETED",
-    "started_at": "2022-08-11T12:14:39",
-    "ended_at": "2022-08-11T12:14:39",
+    "started_at": "2022-06-13T12:14:30",
+    "ended_at": "2022-06-13T12:14:30",
     "runtime": 50
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[8].electronResult = {
-    "data": "[ 8.     8.016  8.032 ... 31.968 31.984 32.   ]"
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[7].electronResult = {
+    "data": "Atoms(symbols='Cu32N2', pbc=[True, True, False], cell=[[10.210621920333747, 0.0, 0.0], [5.105310960166873, 8.842657971447272, 0.0], [0.0, 0.0, 22.08423447177455]], tags=..., constraint=FixAtoms(indices=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]), calculator=EMT(...))"
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[8].electronExecutor = {
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[7].electronExecutor = {
     "executor_name": "local",
     "executor_details": null
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[8].electronFunctionString = {
-    "data": '# @ct.electron\ndef convert_to_utc(time_zone):\n    start_time = 0\n    end_time = 24.016\n    now = datetime.now(pytz.timezone(time_zone))\n    offset = now.utcoffset().total_seconds() / 60 / 60\n    utc_timerange = np.arange(start_time - offset, end_time - offset, 0.016)\n    return utc_timerange\n\n\n',
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[7].electronFunctionString = {
+    "data": '# @ct.electron\ndef get_relaxed_slab(slab, molecule, height=1.85):\n    slab.calc = EMT()\n    add_adsorbate(slab, molecule, height, "ontop")\n    constraint = FixAtoms(mask=[a.symbol != "N" for a in slab])\n    slab.set_constraint(constraint)\n    dyn = QuasiNewton(slab, trajectory="/tmp/N2Cu.traj", logfile="/tmp/temp")\n    dyn.run(fmax=0.01)\n    return slab\n\n\n',
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[8].electronError = null
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[8].electronInput = {
-    "data": "time_zone=America/Los_Angeles"
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[7].electronError = null
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[7].electronInput = {
+    "data": "slab=Atoms(symbols='Cu32N2', pbc=[True, True, False], cell=[[10.210621920333747, 0.0, 0.0], [5.105310960166873, 8.842657971447272, 0.0], [0.0, 0.0, 22.08423447177455]], tags=..., constraint=FixAtoms(indices=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]), calculator=EMT(...)), molecule=Atoms(symbols='N2', pbc=False, calculator=EMT(...)), height=3"
+}
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[9].electronDetails = {
+    "id": 9,
+    "node_id": 9,
+    "parent_lattice_id": 1,
+    "type": "function",
+    "storage_path": "/home/covalent/Desktop/workflows/results/2537c3b0-c150-441b-81c6-844e3fd88ef3/node_4",
+    "name": "compute_system_energy",
+    "status": "COMPLETED",
+    "started_at": "2022-06-13T12:14:30",
+    "ended_at": "2022-06-13T12:14:30",
+    "runtime": 50
+}
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[9].electronInput = {
+    "data": "system=Atoms(symbols='Cu32N2', pbc=[True, True, False], cell=[[10.210621920333747, 0.0, 0.0], [5.105310960166873, 8.842657971447272, 0.0], [0.0, 0.0, 22.08423447177455]], tags=..., constraint=FixAtoms(indices=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]), calculator=EMT(...))"
+}
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[9].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[9].electronFunctionString = {
+    "data": '# @ct.electron(backend=executor2)\ndef compute_system_energy(system):\n    system.calc = EMT()\n    return system.get_potential_energy()\n\n\n',
+}
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[9].electronError = null
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[9].electronResult = {
+    "data": "11.625212574435581"
 }
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[10].electronDetails = {
     "id": 10,
@@ -199,129 +226,51 @@ latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[10].elec
     "parent_lattice_id": 1,
     "type": "function",
     "storage_path": "/home/covalent/Desktop/workflows/results/2537c3b0-c150-441b-81c6-844e3fd88ef3/node_4",
-    "name": "days_since_J2000",
+    "name": "compute_system_energy_+_compute_system_energy",
     "status": "COMPLETED",
-    "started_at": "2022-08-11T12:14:39",
-    "ended_at": "2022-08-11T12:14:39",
+    "started_at": "2022-06-13T12:14:30",
+    "ended_at": "2022-06-13T12:14:30",
     "runtime": 50
 }
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[10].electronResult = {
-    "data": "8068"
+    "data": "11.949399856606007"
 }
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[10].electronExecutor = {
     "executor_name": "local",
     "executor_details": null
 }
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[10].electronFunctionString = {
-    "data": '# @ct.electron\ndef days_since_J2000(region):\n    f_date = date(2000, 1, 1)\n    year = get_date(time_zone=region)[0]\n    month = get_date(time_zone=region)[1]\n    day = get_date(time_zone=region)[2]\n    l_date = date(year, month, day)\n    delta = l_date - f_date\n    return delta.days\n\n\n'
+    "data": '# compute_system_energy_+_compute_system_energy was not inspectable\n\n',
 }
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[10].electronError = null
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[10].electronInput = {
-    "data": "region=America/Los_Angeles"
+    "data": "arg_1=11.509056283570393, arg_2=0.44034357303561467"
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[12].electronDetails = {
-    "id": 12,
-    "node_id": 12,
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[11].electronDetails = {
+    "id": 11,
+    "node_id": 11,
     "parent_lattice_id": 1,
     "type": "function",
     "storage_path": "/home/covalent/Desktop/workflows/results/2537c3b0-c150-441b-81c6-844e3fd88ef3/node_4",
-    "name": "local_sidereal_time",
+    "name": "compute_system_energy_+_compute_system_energy_-_compute_system_energy",
     "status": "COMPLETED",
-    "started_at": "2022-08-11T12:14:39",
-    "ended_at": "2022-08-11T12:14:39",
+    "started_at": "2022-06-13T12:14:30",
+    "ended_at": "2022-06-13T12:14:30",
     "runtime": 50
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[12].electronResult = {
-    "data": "[8049.867845  8050.1085021 8050.3491592 ... 8410.3721778 8410.6128349 8410.853492 ]"
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[11].electronResult = {
+    "data": "0.3241872821704259"
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[12].electronExecutor = {
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[11].electronExecutor = {
     "executor_name": "local",
     "executor_details": null
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[12].electronFunctionString = {
-    "data": '# @ct.electron\ndef local_sidereal_time(d, long, T):\n    LST = 100.46 + 0.985647 * (d + T / 24) + long + 15 * T\n    return LST\n\n\n',
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[11].electronFunctionString = {
+    "data": '# compute_system_energy_+_compute_system_energy_-_compute_system_energy was not inspectable',
 }
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[12].electronError = null
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[12].electronInput = {
-    "data": "d=8068, long=-123.1207, T=[ 8.     8.016  8.032 ... 31.968 31.984 32.   ]"
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[14].electronDetails = {
-    "id": 14,
-    "node_id": 14,
-    "parent_lattice_id": 1,
-    "type": "function",
-    "storage_path": "/home/covalent/Desktop/workflows/results/2537c3b0-c150-441b-81c6-844e3fd88ef3/node_4",
-    "name": "hour_angle",
-    "status": "COMPLETED",
-    "started_at": "2022-08-11T12:14:39",
-    "ended_at": "2022-08-11T12:14:39",
-    "runtime": 50
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[14].electronResult = {
-    "data": "[7948.58068967 7948.82134676 7949.06200386 ... 8309.08502247 8309.32567957   8309.56633667],[7703.24547627 7703.48613337 7703.72679047 ... 8063.74980908 8063.99046617  8064.23112327]"
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[14].electronExecutor = {
-    "executor_name": "local",
-    "executor_details": null
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[14].electronFunctionString = {
-    "data": '# @ct.electron\ndef hour_angle(LST, RA):\n    LST_list = []\n    for source in RA:\n        LST_list.append(np.asarray([value - source for value in LST]))\n    return LST_list\n\n\n',
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[14].electronError = null
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[14].electronInput = {
-    "data": "LST=[8049.867845  8050.1085021 8050.3491592 ... 8410.3721778 8410.6128349 \n 8410.853492 ], RA=[101.28715533333333, 346.6223687285788]"
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[15].electronDetails = {
-    "id": 15,
-    "node_id": 15,
-    "parent_lattice_id": 1,
-    "type": "function",
-    "storage_path": "/home/covalent/Desktop/workflows/results/2537c3b0-c150-441b-81c6-844e3fd88ef3/node_4",
-    "name": "altitude_of_target",
-    "status": "COMPLETED",
-    "started_at": "2022-08-11T12:14:39",
-    "ended_at": "2022-08-11T12:14:39",
-    "runtime": 50
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[15].electronResult = {
-    "data": "[19.30560599 19.22910799 19.1520599  ... 19.14461197 19.06696312        18.98876836],[-35.96235506 -36.07771597 -36.1925922  ... -36.20362793 -36.31796856 -36.43181675]"
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[15].electronExecutor = {
-    "executor_name": "local",
-    "executor_details": null
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[15].electronFunctionString = {
-    "data": '# @ct.electron\ndef altitude_of_target(dec, lat, ha):\n    alt_list = []\n    lat = lat * 0.0174533\n    for i in range(len(dec)):\n        dec_i = dec[i] * 0.0174533\n        ha_i = ha[i] * 0.0174533\n        alt = np.arcsin(\n            np.sin(dec_i) * np.sin(lat) + np.cos(dec_i) * np.cos(lat) * np.cos(ha_i)\n        )\n        alt_list.append(alt * 57.2958)\n    return alt_list\n\n\n',
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[15].electronError = null
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[15].electronInput = {
-    "data": "dec=[-16.71611586111111, -5.041399250518333], lat=49.2827, ha=[array([7948.58068967, 7948.82134676, 7949.06200386, ..., 8309.08502247, \n 8309.32567957, 8309.56633667]), array([7703.24547627, 7703.48613337, 7703.72679047, ..., 8063.74980908,8063.99046617, 8064.23112327])]"
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[17].electronDetails = {
-    "id": 17,
-    "node_id": 17,
-    "parent_lattice_id": 1,
-    "type": "function",
-    "storage_path": "/home/covalent/Desktop/workflows/results/2537c3b0-c150-441b-81c6-844e3fd88ef3/node_4",
-    "name": "get_azimuth",
-    "status": "COMPLETED",
-    "started_at": "2022-08-11T12:14:39",
-    "ended_at": "2022-08-11T12:14:39",
-    "runtime": 50
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[17].electronResult = {
-    "data": "[209.39040932 209.61808842 209.84549899 ... 209.86738212 210.09449597 210.32133708],[312.26474717 312.52275968 312.78145573 ... 312.80640174 313.06584912 313.32598355]"
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[14].electronExecutor = {
-    "executor_name": "local",
-    "executor_details": null
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[17].electronFunctionString = {
-    "data": '# @ct.electron\ndef get_azimuth(dec, lat, ha, alt):\n    az_list = []\n    lat = round(lat * 0.0174533, 2)\n    for i in range(len(dec)):\n        azimuth = []\n        dec_i = round(dec[i] * 0.0174533, 2)\n        ha_i = ha[i] * 0.0174533\n        alt_i = alt[i] * 0.0174533\n        a = np.arccos(\n            (np.sin(dec_i) - np.sin(alt_i) * np.sin(lat))\n            / (np.cos(alt_i) * np.cos(lat))\n        )\n        for q in range(len(ha_i)):\n            if np.sin(ha_i[q]) < 0:\n                azimuth.append(a[q] * 57.2958)\n            else:\n                azimuth.append(360 - (a[q] * 57.2958))\n        az_list.append(np.array(azimuth))\n    return az_list\n\n\n',
-}
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[17].electronError = null
-latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[17].electronInput = {
-    "data": "dec=[-16.71611586111111, -5.041399250518333], lat=49.2827, ha=[array([7948.58068967, 7948.82134676, 7949.06200386, ..., 8309.08502247,8309.32567957, 8309.56633667]), array([7703.24547627, 7703.48613337, 7703.72679047, ..., 8063.74980908,8063.99046617, 8064.23112327])], alt=[array([19.30560599, 19.22910799, 19.1520599 , ..., 19.14461197,19.06696312, 18.98876836]), array([-35.96235506, -36.07771597, -36.1925922 , ..., -36.20362793, -36.31796856, -36.43181675])]"
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[11].electronError = null
+latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[11].electronInput = {
+    "data": "arg_1=11.949399856606007, arg_2=11.625212574435581"
 }
 
 //   Dispatch eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a
@@ -1561,7 +1510,7 @@ latticeDetailsDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"].electron[14].elec
     "type": "function",
     "storage_path": "/home/covalent/Desktop/workflows/results/ba3c238c-cb92-48e8-b7b2-debeebe2e81a/node_4",
     "name": "hour_angle",
-    "status": "COMPLETED",
+    "status": "PENDING",
     "started_at": "2022-08-10T12:14:39",
     "ended_at": "2022-08-11T12:14:40",
     "runtime": 50
@@ -1585,7 +1534,7 @@ latticeDetailsDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"].electron[15].elec
     "type": "function",
     "storage_path": "/home/covalent/Desktop/workflows/results/ba3c238c-cb92-48e8-b7b2-debeebe2e81a/node_4",
     "name": "altitude_of_target",
-    "status": "COMPLETED",
+    "status": "PENDING",
     "started_at": "2022-08-10T12:14:39",
     "ended_at": "2022-08-11T12:14:40",
     "runtime": 50
@@ -1609,7 +1558,7 @@ latticeDetailsDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"].electron[17].elec
     "type": "function",
     "storage_path": "/home/covalent/Desktop/workflows/results/ba3c238c-cb92-48e8-b7b2-debeebe2e81a/node_4",
     "name": "get_azimuth",
-    "status": "COMPLETED",
+    "status": "PENDING",
     "started_at": "2022-08-10T12:14:39",
     "ended_at": "2022-08-11T12:14:40",
     "runtime": 50
