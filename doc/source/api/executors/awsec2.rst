@@ -188,6 +188,9 @@ The following shows an example of how a user might modify their `covalent config
 
 In order to run your workflows with covalent there are a few notable resources that need to be provisioned first.
 
+The required resources include an EC2 Key Pair, and optionally a VPC & Subnet that can be used instead of the EC2 executor automatically creating it.
+
+
 .. list-table::
    :widths: 2 1 2 3
    :header-rows: 1
@@ -208,3 +211,7 @@ In order to run your workflows with covalent there are a few notable resources t
      - No
      - :code:`subnet`
      - A Subnet ID can be provided corresponding to the :code:`subnet` config value. Otherwise a public Subnet will be auto-created for each electron.
+
+
+#. To create an AWS EC2 Key pair refer to the following `AWS documentation <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html>`_.
+#. To create a VPC & Subnet refer to the following `AWS documentation <https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html>`_.
