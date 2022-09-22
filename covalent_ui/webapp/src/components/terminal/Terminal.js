@@ -3,8 +3,8 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { XTerm } from 'xterm-for-react'
 import { FitAddon } from 'xterm-addon-fit';
+import io from 'socket.io-client'
 import { WebLinksAddon } from 'xterm-addon-web-links';
-import socket from '../../utils/socket'
 import { Container, Grid, Chip } from '@mui/material';
 import Typography from '@mui/material/Typography';
 
@@ -12,13 +12,20 @@ const Terminal = () => {
     const xtermRef = useRef()
     const webLinksAddon = new WebLinksAddon()
     const fitAddon = new FitAddon();
+    const socket = io(process.env.REACT_APP_SOCKET_URL, {
+        // required for CORS
+        withCredentials: true,
+    })
     useEffect(() => {
-        socket.emit('start_terminal', () => {
+        socket.on('connect', () => {
+            console.debug(`socket ${socket.id} terminal connected: ${socket.connected}`)
+            socket.emit('start_terminal');
             fitAddon.fit();
             const dims = { cols: xtermRef.current.terminal.cols, rows: xtermRef.current.terminal.rows };
             socket.emit("resize", dims);
-            console.debug(`socket ${socket.id} connected: ${socket.connected}`)
         })
+    })
+    useEffect(() => {
         return () => {
             socket.emit('stop_terminal')
         }
@@ -27,9 +34,6 @@ const Terminal = () => {
         socket.on("pty-output", function (data) {
             xtermRef.current.terminal.write(data.output);
         });
-        return () => {
-            socket.off('pty-output')
-        }
     })
     return (
         <Container sx={{ mb: 4, mt: 7.5, ml: 5 }}>
@@ -38,7 +42,7 @@ const Terminal = () => {
                     Terminal
                 </Typography>
                 <Chip sx={{ height: '24px', ml: 1, mb: 1.5, fontSize: '0.75rem', color: '#FFFFFF' }} label='BETA' variant='outlined' />
-                <Chip sx={{ height: '24px', ml: 1, mb: 1.5, fontSize: '0.75rem', color: socket.connected ? 'green' : 'red' }} label={socket.connected ? 'Connected' : 'Disconnected'} variant='outlined' />
+                <Chip sx={{ height: '24px', ml: 1, mb: 1.5, fontSize: '0.75rem', color: socket.id ? 'green' : 'red' }} label={socket.id ? 'Connected' : 'Disconnected'} variant='outlined' />
             </Grid>
             <XTerm
                 options={{
