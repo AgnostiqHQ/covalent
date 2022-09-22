@@ -54,7 +54,10 @@ def get_home(request: Request, rest_of_path: str):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-socketio_app = socketio.ASGIApp(sio, static_files=STATIC_FILES)
+socketio_app = socketio.ASGIApp(
+    sio,
+    static_files=STATIC_FILES,
+)
 fastapi_app.mount("/", socketio_app)
 
 
@@ -101,11 +104,4 @@ if __name__ == "__main__":
     DataStore(initialize_db=True)
 
     # Start covalent main app
-    uvicorn.run(
-        "app:fastapi_app",
-        host=host,
-        port=port,
-        debug=DEBUG,
-        reload=RELOAD,
-        log_config="./log_config.yml",
-    )
+    uvicorn.run("app:fastapi_app", host=host, port=port, debug=DEBUG, reload=RELOAD)
