@@ -47,6 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding `nightly.yml` workflow for nightly CI
 - Updated triggers to `tests` and `changelog` workflows
 - Enhanced pre-release workflows
+- `codecov` passthrough jobs added for when tests are not run
+- Tests are run on one platform on pushes to `develop` to keep codecov reports accurate
+- Test matrix source triggers changed from `workflow_call` to `schedule` since contexts are inherited
 - Removed badges workflow; version badge is now generated using the latest pre-release tag
 - Removed unused `push_to_s3` workflow
 - Workflows authenticate to AWS using OIDC with specific roles
