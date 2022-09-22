@@ -26,7 +26,6 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
-from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.models.lattices_model import LatticeDetailResponse
 
@@ -75,7 +74,6 @@ class Lattices:
                     "updated_at"
                 ),
             )
-            .join(Electron, Electron.parent_lattice_id == Lattice.id)
             .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
             .first()
         )
@@ -112,7 +110,6 @@ class Lattices:
                 Lattice.electron_num.label("total_electrons"),
                 Lattice.completed_electron_num.label("total_electrons_completed"),
             )
-            .join(Electron, Electron.parent_lattice_id == Lattice.id)
             .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
             .first()
         )
