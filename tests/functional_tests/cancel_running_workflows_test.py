@@ -28,7 +28,7 @@ def test_cancel_workflows():
     N = 8
     STALL = 10
     X = 50
-    
+
     @ct.electron
     def cpu_workload(stall, x):
         i = 0
