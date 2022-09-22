@@ -3876,6 +3876,8 @@ Installed executor plugins don't have to be referred to by their full module nam
 - Semantic versioning in VERSION.
 - CI pipeline job to enforce versioning.
 
+## [0.0.1] - 2020-09-22
+
 ### Changed
 
 - Single line call to join instead of a for loop
