@@ -339,26 +339,13 @@ Node Outputs
         Returns:
             node_outputs: A dictionary containing the output of every node execution.
         """
-        with workflow_db.session() as session:
 
-            lattice_id = (
-                session.query(models.Lattice)
-                .where(models.Lattice.dispatch_id == self.dispatch_id)
-                .first()
-                .id
-            )
-            electron_records = (
-                session.query(models.Electron)
-                .where(models.Electron.parent_lattice_id == lattice_id)
-                .all()
-            )
-            all_node_outputs = {}
-            for electron in electron_records:
-                node_id = electron.transport_graph_node_id
-                all_node_outputs[
-                    f"{self._get_node_name(node_id=node_id)}({node_id})"
-                ] = self._get_node_output(node_id=node_id)
-            return all_node_outputs
+        all_node_outputs = {}
+        for node_id in self._lattice.transport_graph._graph.nodes:
+            all_node_outputs[
+                f"{self._get_node_name(node_id=node_id)}({node_id})"
+            ] = self._get_node_output(node_id=node_id)
+        return all_node_outputs
 
     def get_all_node_results(self) -> List[Dict]:
         """
@@ -481,29 +468,7 @@ Node Outputs
                     Will return None if error occured in execution.
         """
 
-        with workflow_db.session() as session:
-
-            lattice_id = (
-                session.query(models.Lattice)
-                .where(models.Lattice.dispatch_id == self.dispatch_id)
-                .first()
-                .id
-            )
-            electron = (
-                session.query(models.Electron)
-                .where(
-                    (
-                        and_(
-                            models.Electron.parent_lattice_id == lattice_id,
-                            models.Electron.transport_graph_node_id == node_id,
-                        )
-                    )
-                )
-                .first()
-            )
-            return load_file(
-                storage_path=electron.storage_path, filename=electron.results_filename
-            )
+        return self._lattice.transport_graph.get_node_value(node_id, "output")
 
     def _get_node_value(self, node_id: int) -> Any:
         """
