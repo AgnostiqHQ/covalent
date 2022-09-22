@@ -20,10 +20,16 @@
 //  * Relief from the License may be granted by purchasing a commercial license.
 //  */
 
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  cleanup,
+} from '@testing-library/react'
 import App from '../LatticeControlsElk'
-import "@testing-library/jest-dom";
-import React, { useState } from 'react'
+import '@testing-library/jest-dom'
+import React from 'react'
 import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
@@ -68,7 +74,7 @@ describe('lattice toggle buttons', () => {
     fireEvent.click(linkElement)
     await waitFor(() => screen.getByLabelText('Zoom out'))
     expect(screen.getByLabelText('Zoom out')).toBeInTheDocument('Zoom out')
-    expect(linkElement).toBeVisible();
+    expect(linkElement).toBeVisible()
   })
 
   test('renders fit to screen button', async () => {
@@ -76,17 +82,25 @@ describe('lattice toggle buttons', () => {
     const linkElement = screen.getByTestId('FullscreenIcon')
     fireEvent.click(linkElement)
     await waitFor(() => screen.getByLabelText('Fit to screen'))
-    expect(screen.getByLabelText('Fit to screen')).toBeInTheDocument('Fit to screen')
-    expect(linkElement).toBeVisible();
+    expect(screen.getByLabelText('Fit to screen')).toBeInTheDocument(
+      'Fit to screen'
+    )
+    expect(linkElement).toBeVisible()
   })
 
   test('renders hide labels nodes button', async () => {
     const handleHideLabels = jest.fn()
-    reduxRender(<App openDialogBox={true} title={'hideLabels'} handleHideLabels={handleHideLabels} />)
+    reduxRender(
+      <App
+        openDialogBox={true}
+        title={'hideLabels'}
+        handleHideLabels={handleHideLabels}
+      />
+    )
     const linkElement = screen.getByTestId('LabelIcon')
     fireEvent.click(linkElement)
     await waitFor(() => screen.getByLabelText('Hide labels'))
-    expect(handleHideLabels).toBeDefined();
+    expect(handleHideLabels).toBeDefined()
     expect(screen.getByLabelText('Hide labels')).toBeInTheDocument(
       'Hide labels'
     )
@@ -94,10 +108,9 @@ describe('lattice toggle buttons', () => {
   })
 
   test('renders Layout option button', async () => {
-    const handleClick = jest.fn()
     reduxRender(<App openDialogBox={true} title={'Change layout'} />)
     const linkElement = screen.getByTestId('DashboardIcon')
-    expect(linkElement).toBeVisible();
+    expect(linkElement).toBeVisible()
   })
 
   test('renders toggle minimap button', async () => {
@@ -105,8 +118,10 @@ describe('lattice toggle buttons', () => {
     const linkElement = screen.getByTestId('MapOutlinedIcon')
     fireEvent.click(linkElement)
     await waitFor(() => screen.getByLabelText('Toggle minimap'))
-    expect(screen.getByLabelText('Toggle minimap')).toBeInTheDocument('Toggle minimap')
-    expect(linkElement).toBeVisible();
+    expect(screen.getByLabelText('Toggle minimap')).toBeInTheDocument(
+      'Toggle minimap'
+    )
+    expect(linkElement).toBeVisible()
   })
 
   test('renders toggle draggable nodes button', async () => {
@@ -114,17 +129,21 @@ describe('lattice toggle buttons', () => {
     const linkElement = screen.getByLabelText('Change orientation')
     fireEvent.click(linkElement)
     await waitFor(() => screen.getByLabelText('Change orientation'))
-    expect(screen.getByLabelText('Change orientation')).toBeInTheDocument('Change orientation')
-    expect(linkElement).toBeVisible();
+    expect(screen.getByLabelText('Change orientation')).toBeInTheDocument(
+      'Change orientation'
+    )
+    expect(linkElement).toBeVisible()
   })
 
-  test('renders toggle draggable nodes button', async () => {
+  test('renders toggle draggable nodes buttons', async () => {
     reduxRender(<App openDialogBox={true} title={'Toggle draggable nodes'} />)
     const linkElement = screen.getByTestId('LockOutlinedIcon')
     fireEvent.click(linkElement)
     await waitFor(() => screen.getByLabelText('Toggle draggable nodes'))
-    expect(screen.getByLabelText('Toggle draggable nodes')).toBeInTheDocument('Toggle draggable nodes')
-    expect(linkElement).toBeVisible();
+    expect(screen.getByLabelText('Toggle draggable nodes')).toBeInTheDocument(
+      'Toggle draggable nodes'
+    )
+    expect(linkElement).toBeVisible()
   })
 
   test('renders toggle parameters nodes button', async () => {
@@ -132,159 +151,142 @@ describe('lattice toggle buttons', () => {
     const linkElement = screen.getByLabelText('Toggle parameters')
     fireEvent.click(linkElement)
     await waitFor(() => screen.getByLabelText('Toggle parameters'))
-    expect(screen.getByLabelText('Toggle parameters')).toBeInTheDocument('Toggle parameters')
-    expect(linkElement).toBeVisible();
+    expect(screen.getByLabelText('Toggle parameters')).toBeInTheDocument(
+      'Toggle parameters'
+    )
+    expect(linkElement).toBeVisible()
   })
 
   test('renders toggle parameters tooglebuttonclick', async () => {
     reduxRender(<App />)
     const linkElement = screen.getByTestId('tooglebuttonclick')
-    expect(linkElement).toBeInTheDocument();
+    expect(linkElement).toBeInTheDocument()
   })
 
-  test("toggle button Click rendered", () => {
+  test('toggle button Click rendered', () => {
     const handleClick = jest.fn()
     reduxRender(<App handleClick={handleClick} />)
     const linkElement = screen.getByTestId('tooglebuttonclick')
-    fireEvent.click(linkElement);
-  });
+    fireEvent.click(linkElement)
+  })
 
   test('renders changeorientation', async () => {
     reduxRender(<App />)
     const linkElement = screen.getByTestId('changeorientation')
-    expect(linkElement).toBeInTheDocument();
+    expect(linkElement).toBeInTheDocument()
   })
 
   test('renders handlelabelhide', async () => {
     reduxRender(<App />)
     const linkElement = screen.getByTestId('handlelabelhide')
-    expect(linkElement).toBeInTheDocument();
+    expect(linkElement).toBeInTheDocument()
   })
 
   test('renders handlelabelhide title Show labels rendered', async () => {
     reduxRender(<App hideLabels="Show labels" />)
     const linkElement = screen.getByTestId('handlelabelhide')
-    expect(linkElement).toBeInTheDocument();
+    expect(linkElement).toBeInTheDocument()
   })
 
   test('renders handlelabelhide title Hide labels rendered', async () => {
     reduxRender(<App hideLabels="Hide labels" />)
     const linkElement = screen.getByTestId('handlelabelhide')
-    expect(linkElement).toBeInTheDocument();
+    expect(linkElement).toBeInTheDocument()
   })
 
   test('renders toggleparams', async () => {
     reduxRender(<App />)
     const linkElement = screen.getByTestId('toggleparams')
-    expect(linkElement).toBeInTheDocument();
+    expect(linkElement).toBeInTheDocument()
   })
 
-  test("toggleparams onclicked rendered", () => {
+  test('toggleparams onclicked rendered', () => {
     const handleClick = jest.fn()
     reduxRender(<App handleClick={handleClick} />)
     const linkElement = screen.getByTestId('tooglebuttonclick')
-    fireEvent.click(linkElement);
-  });
+    fireEvent.click(linkElement)
+  })
 
   test('renders toggledragablenode', async () => {
     reduxRender(<App />)
     const linkElement = screen.getByTestId('toggledragablenode')
-    expect(linkElement).toBeInTheDocument();
+    expect(linkElement).toBeInTheDocument()
   })
 
-  test("toggledragablenode onclicked rendered", () => {
+  test('toggledragablenode onclicked rendered', () => {
     const toggleNodesDraggable = jest.fn()
     reduxRender(<App toggleNodesDraggable={toggleNodesDraggable} />)
     const linkElement = screen.getByTestId('toggledragablenode')
-    fireEvent.click(linkElement);
-  });
+    fireEvent.click(linkElement)
+  })
 
-  const direction = [
-    "DOWN"
-  ]
+  const direction = ['DOWN']
 
-  const direction1 = [
-    "UP"
-  ]
+  const direction1 = ['UP']
 
-  const direction2 = [
-    "LEFT"
-  ]
+  const direction2 = ['LEFT']
 
-  const direction3 = [
-    "RIGHT"
-  ]
+  const direction3 = ['RIGHT']
 
   afterEach(cleanup)
 
-  it("render the change orientation left button", () => {
+  it('render the change orientation left button', () => {
     const { result } = renderHook(() => <App direction={direction1} />)
-    act(() => { result.current.props })
+    act(() => {})
     expect(result.current.props.direction).toBe(direction1)
   })
 
-  it("render the change orientation up button", () => {
+  it('render the change orientation up button', () => {
     const { result } = renderHook(() => <App direction={direction2} />)
-    act(() => { result.current.props })
+    act(() => {})
     expect(result.current.props.direction).toBe(direction2)
   })
 
-  it("render the change orientation right button", () => {
+  it('render the change orientation right button', () => {
     const { result } = renderHook(() => <App direction={direction3} />)
-    act(() => { result.current.props })
+    act(() => {})
     expect(result.current.props.direction).toBe(direction3)
   })
 
-  it("render the change orientation down button", () => {
+  it('render the change orientation down button', () => {
     const { result } = renderHook(() => <App direction={direction} />)
-    act(() => { result.current.props })
+    act(() => {})
     expect(result.current.props.direction).toBe(direction)
   })
 
-  test('render lattice orientation', () => {
-    const setStateMock = jest.fn({ useState });
-    const useStateMock = (useState) => [useState, setStateMock];
-    jest.spyOn(React, 'useState').mockImplementation(useStateMock);
-    const continer = reduxRender(<App direction={direction} />)
-    const linkElement = screen.getByTestId('changeorientation')
-    fireEvent.click(linkElement)
-    const elementLink = screen.getByTestId('ArrowDownwardIcon');
-  })
-
   test('renders up button for change orientation', async () => {
-    const setStateMock = jest.fn();
-    const useStateMock = (useState) => [useState, setStateMock];
-    jest.spyOn(React, 'useState').mockImplementation(useStateMock);
+    const setStateMock = jest.fn()
+    const useStateMock = (useState) => [useState, setStateMock]
+    jest.spyOn(React, 'useState').mockImplementation(useStateMock)
 
     reduxRender(<App direction={direction1} />)
     const linkElement = screen.getByTestId('changeorientation')
     fireEvent.click(linkElement)
-    const elementLink = screen.getByTestId('ArrowUpwardIcon');
+    const elementLink = screen.getByTestId('ArrowUpwardIcon')
     expect(elementLink).toBeInTheDocument('')
   })
 
   test('renders left button for change orientation', async () => {
-    const setStateMock = jest.fn();
-    const useStateMock = (useState) => [useState, setStateMock];
-    jest.spyOn(React, 'useState').mockImplementation(useStateMock);
+    const setStateMock = jest.fn()
+    const useStateMock = (useState) => [useState, setStateMock]
+    jest.spyOn(React, 'useState').mockImplementation(useStateMock)
 
     reduxRender(<App direction={direction2} />)
     const linkElement = screen.getByTestId('changeorientation')
     fireEvent.click(linkElement)
-    const elementLink = screen.getByTestId('ArrowBackIcon');
+    const elementLink = screen.getByTestId('ArrowBackIcon')
     expect(elementLink).toBeInTheDocument('')
   })
 
   test('renders right button for change orientation', async () => {
-    const setStateMock = jest.fn();
-    const useStateMock = (useState) => [useState, setStateMock];
-    jest.spyOn(React, 'useState').mockImplementation(useStateMock);
+    const setStateMock = jest.fn()
+    const useStateMock = (useState) => [useState, setStateMock]
+    jest.spyOn(React, 'useState').mockImplementation(useStateMock)
 
     reduxRender(<App direction={direction3} />)
     const linkElement = screen.getByTestId('changeorientation')
     fireEvent.click(linkElement)
-    const elementLink = screen.getByTestId('ArrowForwardIcon');
+    const elementLink = screen.getByTestId('ArrowForwardIcon')
     expect(elementLink).toBeInTheDocument()
   })
-
 })
