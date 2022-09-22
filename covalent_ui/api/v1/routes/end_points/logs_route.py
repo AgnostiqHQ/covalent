@@ -15,38 +15,34 @@
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Graph Route"""
+"""Logs Routes"""
 
-import uuid
+from typing import Optional
 
-from fastapi import APIRouter
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Query
 
-from covalent_ui.api.v1.data_layer.graph_dal import Graph
-from covalent_ui.api.v1.database.config.db import engine
-from covalent_ui.api.v1.models.graph_model import GraphResponse
+from covalent_ui.api.v1.data_layer.logs_dal import Logs
+from covalent_ui.api.v1.models.logs_model import SortBy, SortDirection
 
 routes: APIRouter = APIRouter()
 
 
-@routes.get("/{dispatch_id}/graph", response_model=GraphResponse)
-def get_graph(dispatch_id: uuid.UUID):
-    """Get Graph
+@routes.get("/")
+def get_logs(
+    count: Optional[int] = Query(0),
+    offset: Optional[int] = Query(0),
+    sort_by: Optional[SortBy] = SortBy.LOG_DATE,
+    search: Optional[str] = "",
+    sort_direction: Optional[SortDirection] = SortDirection.DESCENDING,
+):
+    logs = Logs()
+    return logs.get_logs(sort_by, sort_direction, search, count, offset)
 
-    Args:
-        dispatch_id: To fetch lattice data with the provided dispatch id
 
-    Returns:
-        Returns the lattice data with the dispatch id provided
-    """
-
-    with Session(engine) as session:
-
-        graph = Graph(session)
-        graph_data = graph.get_graph(dispatch_id)
-        return GraphResponse(
-            dispatch_id=graph_data["dispatch_id"],
-            graph={"nodes": graph_data["nodes"], "links": graph_data["links"]},
-        )
+@routes.get("/download")
+def download_logs():
+    logs = Logs()
+    return logs.download_logs()
