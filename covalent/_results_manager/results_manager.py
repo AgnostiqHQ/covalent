@@ -26,11 +26,9 @@ from typing import Dict, List, Optional, Union
 import cloudpickle as pickle
 import requests
 from requests.adapters import HTTPAdapter
-from sqlalchemy.orm import Session
 from urllib3.util import Retry
 
 from .. import _workflow as ct
-from .._data_store.datastore import DataStore
 from .._data_store.models import Lattice
 from .._shared_files import logger
 from .._shared_files.config import CMType, get_config
@@ -278,7 +276,6 @@ def redispatch_result(result_object: Result, dispatcher: str = None) -> str:
 
 
 def sync(
-    db: DataStore,
     dispatch_id: Optional[Union[List[str], str]] = None,
 ) -> None:
     """
@@ -297,10 +294,9 @@ def sync(
         for d in dispatch_id:
             _get_result_from_dispatcher(d, wait=True, status_only=True)
     else:
-        with Session(db.engine) as session:
-            rows = session.query(Lattice).all()
-        for row in rows:
-            _get_result_from_dispatcher(row.dispatch_id, wait=True, status_only=True)
+        raise Exception(
+            f"dispatch_id must be a string or a list. You passed a {type(dispatch_id)}."
+        )
 
 
 def cancel(
