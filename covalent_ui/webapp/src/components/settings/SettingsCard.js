@@ -40,14 +40,10 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import { settingsResults, updateSettings } from '../../redux/settingsSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import _, { capitalize, filter, update } from 'lodash'
+import _, { capitalize } from 'lodash'
 import Skeleton from '@mui/material/Skeleton';
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const SettingsCard = () => {
   const dispatch = useDispatch()
@@ -70,9 +66,6 @@ const SettingsCard = () => {
   const menuCallResult = useSelector((state) => state.dataRes.popupData)
   const [clientDetail, setClientDetail] = useState(null)
   const [serverDetail, setServerDetail] = useState(null)
-
-  const [searchData1, setSearchData1] = useState(null)
-
 
   useEffect(() => {
     dispatch(settingsResults())
@@ -308,14 +301,18 @@ const SettingsCard = () => {
 
   const handleInputChange = (e) => {
     setSearchKey(e.target.value)
-    const filterData = Object.fromEntries(Object.entries(searchData).filter(([key]) =>
+    const filterData = Object.fromEntries(Object.entries(clientDetail).filter(([key]) =>
       key.includes(e.target.value)))
-    setSearchData(filterData)
+    const filterData1 = Object.fromEntries(Object.entries(serverDetail).filter(([key]) =>
+      key.includes(e.target.value)))
+    setClientDetail(filterData)
+    setServerDetail(filterData1)
   };
 
   const handleSearchClear = () => {
     setSearchKey('')
-    dispatch(settingsResults())
+    setClientDetail(Object.values(settings_result)[0])
+    setServerDetail(Object.values(settings_result)[1])
   }
 
   const handleSubmenuClick = (menu) => {
@@ -362,7 +359,36 @@ const SettingsCard = () => {
               })}
             >
               <Box>
-                <Typography variant="h6" component="h6" sx={{ fontWeight: 'bold' }}>
+                <Input sx={{
+                  px: 2,
+                  py: 0.5,
+                  width: "95%",
+                  height: '40px',
+                  border: '1px solid #303067',
+                  borderRadius: '60px',
+                  mb: 3
+                }}
+                  disableUnderline
+                  value={searchKey}
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
+                    </InputAdornment>
+                  }
+                  endAdornment={
+                    <InputAdornment
+                      position="end"
+                      sx={{ visibility: searchKey !== '' ? 'visible' : 'hidden' }}
+                    >
+                      <IconButton size="small" onClick={() => handleSearchClear()}>
+                        <ClearIcon fontSize="inherit" sx={{ color: 'text.secondary' }} />
+                      </IconButton>
+                    </InputAdornment>
+                  }
+                  onChange={(e) => handleInputChange(e)}
+                  placeholder="Search" />
+                <Typography variant="h6" component="h6"
+                  sx={(theme) => ({ color: theme.palette.primary.light, fontWeight: 'bold', mb: 2 })}>
                   {capitalize(accName)}
                 </Typography>
                 {_.map(clientDetail, function (menuValue, menuKey) {
@@ -414,7 +440,8 @@ const SettingsCard = () => {
               </Box>
 
               <Box>
-                <Typography variant="h6" component="h6" sx={{ fontWeight: 'bold' }}>
+                <Typography variant="h6" component="h6"
+                  sx={(theme) => ({ color: theme.palette.primary.light, fontWeight: 'bold', mb: 2, mt: 2 })}>
                   {capitalize(serverName)}
                 </Typography>
                 {_.map(serverDetail, function (menuValue, menuKey) {

@@ -70,9 +70,6 @@ const NavDrawer = () => {
     >
       <List>
 
-        {/* <ListItemButton sx={{ my: 2.5, mb: 6 }} component={Link} to="/">
-          <Logo data-testid="covalentLogo" style={{ margin: 'auto' }} />
-        </ListItemButton> */}
         <LinkButton
           title="Logo"
           path="/"
@@ -191,6 +188,7 @@ const LinkButton = ({
           isChanged: false
         }
         dispatch(toggleLatticeDrawer(settingObj))
+        navigate(path)
       } else if (action.type === updateSettings.rejected.type) {
         setOpenSnackbar(true)
         setSnackbarMessage('Something went wrong and could not update settings!')
