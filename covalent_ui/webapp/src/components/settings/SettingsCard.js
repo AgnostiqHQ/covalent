@@ -603,9 +603,9 @@ const SettingsCard = () => {
                                           <MenuItem value="notset">Notset</MenuItem>
                                           <MenuItem value="debug">Debug</MenuItem>
                                           <MenuItem value="info">Info</MenuItem>
-                                          <MenuItem value="warnings">Warning</MenuItem>
+                                          <MenuItem value="warning">Warning</MenuItem>
                                           <MenuItem value="error">Error</MenuItem>
-                                          <MenuItem value="critical">Citical</MenuItem>
+                                          <MenuItem value="critical">Critical</MenuItem>
                                         </Select>
                                       </Box>
                                       :
