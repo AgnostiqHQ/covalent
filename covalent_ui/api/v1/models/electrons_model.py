@@ -22,6 +22,7 @@
 
 from datetime import datetime
 from enum import Enum
+from typing import Union
 
 from pydantic import BaseModel
 
@@ -47,7 +48,8 @@ class ElectronResponse(BaseModel):
 class ElectronFileResponse(BaseModel):
     """Electron Response Model"""
 
-    data: str = None
+    data: Union[str, None] = None
+    python_object: Union[str, None] = None
 
 
 class ElectronExecutorResponse(BaseModel):

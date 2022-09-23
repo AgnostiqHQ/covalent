@@ -20,11 +20,31 @@
 
 """File handlers"""
 
+import base64
 import json
 
 import cloudpickle as pickle
 
 from covalent._workflow.transport import TransportableObject, _TransportGraph
+
+
+def transportable_object(obj):
+    if obj:
+        load_pickle = base64.b64decode(obj._object.encode("utf-8"))
+        return f"""
+        pickle.loads({load_pickle})"""
+    return None
+
+
+def listToString(string):
+    if string:
+        str1 = ""
+        for ele in string:
+            if ele:
+                str1 += ele
+            else:
+                return None
+        return str1
 
 
 def validate_data(unpickled_object):
@@ -39,21 +59,33 @@ def validate_data(unpickled_object):
             return list_str
     if isinstance(unpickled_object, dict):
         args_array = []
+        decoded_array = []
         kwargs_array = {}
         if bool(unpickled_object):
             if "type" in unpickled_object:
                 return unpickled_object
             for obj in unpickled_object["args"]:
+                object_bytes = transportable_object(obj)
+                decoded_array.append(object_bytes)
                 args_array.append(obj.object_string) if obj is not None else None
 
             for obj in unpickled_object["kwargs"]:
+                object_bytes = transportable_object(unpickled_object["kwargs"][obj])
+                decoded_array.append(object_bytes)
                 kwargs_array[obj] = (
                     unpickled_object["kwargs"][obj].object_string
                     if unpickled_object["kwargs"][obj] is not None
                     else None
                 )
 
-            return json.dumps({"args": args_array, "kwargs": kwargs_array})
+            decoded = listToString(decoded_array)
+            return (
+                json.dumps({"args": args_array, "kwargs": kwargs_array}),
+                f"""
+            import pickle
+            {decoded}
+            """,
+            )
         else:
             return None
     elif isinstance(unpickled_object, str):
@@ -61,8 +93,14 @@ def validate_data(unpickled_object):
             unpickled_object if (unpickled_object != "" or unpickled_object is not None) else None
         )
     elif isinstance(unpickled_object, TransportableObject):
+        object_bytes = transportable_object(unpickled_object)
         res = unpickled_object.object_string
-        return json.dumps(res)
+        return (
+            json.dumps(res),
+            f"""
+        import pickle{object_bytes}
+        """,
+        )
     elif isinstance(unpickled_object, _TransportGraph):
         return str(unpickled_object.__dict__)
     else:
@@ -80,7 +118,7 @@ class FileHandler:
         try:
             unpickled_object = self.__unpickle_file(path)
             return validate_data(unpickled_object)
-        except Exception:
+        except Exception as e:
             return None
 
     def read_from_text(self, path):

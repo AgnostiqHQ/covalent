@@ -111,7 +111,9 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
         Returns electron details based on the given name
     """
     if name == "inputs":
-        response = get_electron_inputs(dispatch_id=dispatch_id, electron_id=electron_id)
+        response, python_object = get_electron_inputs(
+            dispatch_id=dispatch_id, electron_id=electron_id
+        )
         return ElectronFileResponse(data=response)
     with Session(engine) as session:
         electron = Electrons(session)
@@ -122,8 +124,8 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                 response = handler.read_from_text(result["function_string_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "function":
-                response = handler.read_from_pickle(result["function_filename"])
-                return ElectronFileResponse(data=response)
+                response, python_object = handler.read_from_pickle(result["function_filename"])
+                return ElectronFileResponse(data=response, python_object=python_object)
             elif name == "executor":
                 executor_name = result["executor"]
                 executor_data = handler.read_from_pickle(result["executor_data_filename"])
@@ -131,8 +133,8 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                     executor_name=executor_name, executor_details=executor_data
                 )
             elif name == "result":
-                response = handler.read_from_pickle(result["results_filename"])
-                return ElectronFileResponse(data=str(response))
+                response, python_object = handler.read_from_pickle(result["results_filename"])
+                return ElectronFileResponse(data=str(response), python_object=python_object)
             elif name == "value":
                 response = handler.read_from_pickle(result["value_filename"])
                 return ElectronFileResponse(data=response)

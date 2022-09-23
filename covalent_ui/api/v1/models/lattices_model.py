@@ -46,6 +46,14 @@ class LatticeFileResponse(BaseModel):
     """Lattices File Response Model"""
 
     data: Union[str, None] = None
+    python_object: Union[str, None] = None
+
+
+class LatticeFileInput(BaseModel):
+    """Lattices File Response Model"""
+
+    data: Union[str, None] = None
+    python_object: Union[dict, None] = None
 
 
 class LatticeExecutorResponse(BaseModel):
