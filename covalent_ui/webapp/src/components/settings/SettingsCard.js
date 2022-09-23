@@ -23,7 +23,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Container, Grid, Box, Input, InputLabel, Radio, RadioGroup, Button,
-  Stack, Snackbar, SvgIcon, InputAdornment, IconButton
+  Stack, Snackbar, SvgIcon, InputAdornment, IconButton, Select, MenuItem
 } from '@mui/material';
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 import Typography from '@mui/material/Typography';
@@ -44,15 +44,19 @@ import _, { capitalize } from 'lodash'
 import Skeleton from '@mui/material/Skeleton';
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
+import { styled } from '@mui/material/styles';
 
 const SettingsCard = () => {
   const dispatch = useDispatch()
+  const serverName = 'server'
+  const accName = 'client'
   const [open, setOpen] = useState(false)
   const [subMenu, setSubMenu] = useState([])
   const [resultKey, setResultKey] = useState("sdk")
   const [resultOutput, setResultOutput] = useState()
   const settings_result = useSelector((state) => state.settingsResults.settingsList)
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
+  const menuCallResult = useSelector((state) => state.dataRes.popupData)
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
   const [isDisabled, setIsDisabled] = useState(false)
@@ -61,11 +65,10 @@ const SettingsCard = () => {
   const [searchKey, setSearchKey] = useState('')
   const [restoreData, setRestoreData] = useState()
   const [valueChange, setValueChange] = useState(false)
-  const [serverName, setServerName] = useState('server')
-  const [accName, setAccName] = useState('client')
-  const menuCallResult = useSelector((state) => state.dataRes.popupData)
   const [clientDetail, setClientDetail] = useState(null)
   const [serverDetail, setServerDetail] = useState(null)
+  const [tempData, setTempData] = useState(null)
+  const [tempDataServer, setTempDataServer] = useState(null)
 
   useEffect(() => {
     dispatch(settingsResults())
@@ -95,6 +98,8 @@ const SettingsCard = () => {
       setSearchData(Object.values(settings_result)[0])
       setClientDetail(Object.values(settings_result)[0])
       setServerDetail(Object.values(settings_result)[1])
+      setTempData(Object.values(settings_result)[0])
+      setTempDataServer(Object.values(settings_result)[1])
     }
   }, [settings_result])
 
@@ -291,6 +296,15 @@ const SettingsCard = () => {
     }))
   }
 
+  const handleSelectChange = (e, key) => {
+    setHandle(e.target.value)
+    setValueChange(true)
+    setResultOutput(currValue => ({
+      ...currValue,
+      [key]: e.target.value
+    }))
+  }
+
   const cancelButton = () => {
     if (handle) {
       setResultOutput(restoreData)
@@ -301,9 +315,9 @@ const SettingsCard = () => {
 
   const handleInputChange = (e) => {
     setSearchKey(e.target.value)
-    const filterData = Object.fromEntries(Object.entries(clientDetail).filter(([key]) =>
+    const filterData = Object.fromEntries(Object.entries(tempData).filter(([key]) =>
       key.includes(e.target.value)))
-    const filterData1 = Object.fromEntries(Object.entries(serverDetail).filter(([key]) =>
+    const filterData1 = Object.fromEntries(Object.entries(tempDataServer).filter(([key]) =>
       key.includes(e.target.value)))
     setClientDetail(filterData)
     setServerDetail(filterData1)
@@ -325,6 +339,17 @@ const SettingsCard = () => {
       [key]: e.target.value
     }))
   }
+
+  const StyledList = styled(List)({
+    // hover states
+    '& .MuiListItemButton-root:hover': {
+      backgroundColor: '#1C1C46',
+      borderRadius: '8px',
+      '&, & .MuiListItemIcon-root': {
+        color: 'white',
+      },
+    },
+  });
 
   return (
     <Container maxWidth="xl" sx={{ mb: 4, mt: 7.5, ml: 4 }}>
@@ -370,6 +395,7 @@ const SettingsCard = () => {
                 }}
                   disableUnderline
                   value={searchKey}
+                  autoComplete="off"
                   startAdornment={
                     <InputAdornment position="start">
                       <SearchIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
@@ -393,26 +419,28 @@ const SettingsCard = () => {
                 </Typography>
                 {_.map(clientDetail, function (menuValue, menuKey) {
                   return (
-                    <ListItem disablePadding>
-                      <ListItemButton
-                        onClick={isChildHasList ? () => handleClick(menuValue) : () => { }}
-                        sx={{ right: isChildHasList(menuValue) ? '0px' : '0px' }}>
-                        {isChildHasList(menuValue) &&
-                          <ListItemIcon>
-                            {open ? <ExpandMore /> : <KeyboardArrowRightIcon />}
-                          </ListItemIcon>
-                        }
-                        <ListItemText inset primary={getSettingsName(menuKey)}
-                          onClick={() => menuClick(menuValue, menuKey, accName)}
-                          disableTypography
-                          sx={{
-                            color: resultKey === menuKey ? 'white' : 'text.primary',
-                            pl: "0px", fontSize: '18px', fontWeight: resultKey === menuKey ?
-                              'bold' : 'normal'
-                          }}
-                        />
-                      </ListItemButton>
-                    </ListItem>
+                    <StyledList sx={{ pb: 0, pt: 0 }}>
+                      <ListItem disablePadding>
+                        <ListItemButton
+                          onClick={isChildHasList ? () => handleClick(menuValue) : () => { }}
+                          sx={{ right: isChildHasList(menuValue) ? '0px' : '0px' }}>
+                          {isChildHasList(menuValue) &&
+                            <ListItemIcon>
+                              {open ? <ExpandMore /> : <KeyboardArrowRightIcon />}
+                            </ListItemIcon>
+                          }
+                          <ListItemText inset primary={getSettingsName(menuKey)}
+                            onClick={() => menuClick(menuValue, menuKey, accName)}
+                            disableTypography
+                            sx={{
+                              color: resultKey === menuKey ? 'white' : 'text.primary',
+                              pl: "0px", fontSize: '18px', fontWeight: resultKey === menuKey ?
+                                'bold' : 'normal'
+                            }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    </StyledList>
                   )
                 })
                 }
@@ -423,14 +451,16 @@ const SettingsCard = () => {
                       {
                         _.map(subMenu, function (value, key) {
                           return (
-                            <ListItem disablePadding>
-                              <ListItemButton sx={{ pl: 9, pt: 0.3, pb: 0.3 }}>
-                                <ListItemText inset primary={getSubmenuName(value)}
-                                  onClick={() => handleSubmenuClick(value)}
-                                  disableTypography
-                                  sx={{ pl: "0px", fontSize: '18px' }} />
-                              </ListItemButton>
-                            </ListItem>
+                            <StyledList sx={{ pb: 0, pt: 0 }}>
+                              <ListItem disablePadding>
+                                <ListItemButton sx={{ pl: 9, pt: 0.3, pb: 0.3 }}>
+                                  <ListItemText inset primary={getSubmenuName(value)}
+                                    onClick={() => handleSubmenuClick(value)}
+                                    disableTypography
+                                    sx={{ pl: "0px", fontSize: '18px' }} />
+                                </ListItemButton>
+                              </ListItem>
+                            </StyledList>
                           )
                         })
                       }
@@ -446,26 +476,28 @@ const SettingsCard = () => {
                 </Typography>
                 {_.map(serverDetail, function (menuValue, menuKey) {
                   return (
-                    <ListItem disablePadding>
-                      <ListItemButton
-                        onClick={isChildHasList ? () => handleClick(menuValue) : () => { }}
-                        sx={{ right: isChildHasList(menuValue) ? '0px' : '0px' }}>
-                        {isChildHasList(menuValue) &&
-                          <ListItemIcon>
-                            {open ? <ExpandMore /> : <KeyboardArrowRightIcon />}
-                          </ListItemIcon>
-                        }
-                        <ListItemText inset primary={getSettingsName(menuKey)}
-                          onClick={() => menuClick(menuValue, menuKey)}
-                          disableTypography
-                          sx={{
-                            color: resultKey === menuKey ? 'white' : 'text.primary',
-                            pl: "0px", fontSize: '18px', fontWeight: resultKey === menuKey ?
-                              'bold' : 'normal'
-                          }}
-                        />
-                      </ListItemButton>
-                    </ListItem>
+                    <StyledList sx={{ pb: 0, pt: 0 }}>
+                      <ListItem disablePadding>
+                        <ListItemButton
+                          onClick={isChildHasList ? () => handleClick(menuValue) : () => { }}
+                          sx={{ right: isChildHasList(menuValue) ? '0px' : '0px' }}>
+                          {isChildHasList(menuValue) &&
+                            <ListItemIcon>
+                              {open ? <ExpandMore /> : <KeyboardArrowRightIcon />}
+                            </ListItemIcon>
+                          }
+                          <ListItemText inset primary={getSettingsName(menuKey)}
+                            onClick={() => menuClick(menuValue, menuKey)}
+                            disableTypography
+                            sx={{
+                              color: resultKey === menuKey ? 'white' : 'text.primary',
+                              pl: "0px", fontSize: '18px', fontWeight: resultKey === menuKey ?
+                                'bold' : 'normal'
+                            }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    </StyledList>
                   )
                 })
                 }
@@ -534,6 +566,7 @@ const SettingsCard = () => {
                                               }}
                                                 disabled={isDisabled}
                                                 onKeyDown={handleKeypress}
+                                                autoComplete="off"
                                                 name={key1}
                                                 onChange={(e) => onInputExecutorChange(e, key1, key)}
                                                 value={item}
@@ -548,53 +581,86 @@ const SettingsCard = () => {
                                 </Box>
                                 :
                                 <>
-                                  {value === "true" || value === "false" ?
-                                    <FormControl>
-                                      <FormLabel id="demo-row-radio-buttons-group-label"
-                                        sx={(theme) => ({
-                                          fontSize: '16px',
-                                          color: 'text.primary'
-                                        })}> {getSettingsName(key)}</FormLabel>
-                                      <RadioGroup
-                                        row
-                                        aria-labelledby="demo-row-radio-buttons-group-label"
-                                        name={key}
-                                        value={value}
-                                        onChange={(e) => handleChange(e, key)}
-                                      >
-                                        <FormControlLabel disabled={isDisabled} value="true"
-                                          control={<Radio />} label="True" />
-                                        <FormControlLabel disabled={isDisabled}
-                                          value="false" control={<Radio />} label="False" />
-                                      </RadioGroup>
-                                    </FormControl>
-                                    :
-                                    <>
-                                      <InputLabel variant="standard" htmlFor="uncontrolled-native"
-                                        sx={{
-                                          fontSize: '16px',
-                                          mb: 1,
-                                          color: 'text.primary'
-                                        }}>
-                                        {getLabelName(key)}
-                                      </InputLabel>
-                                      <Input sx={{
-                                        px: 2,
-                                        py: 0.5,
-                                        width: "100%",
-                                        height: '45px',
-                                        border: '1px solid #303067',
-                                        borderRadius: '60px',
-                                      }}
-                                        disabled={isDisabled}
-                                        onKeyDown={handleKeypress}
-                                        name={key}
-                                        onChange={(e) => onInputChange(e, key)}
-                                        value={value}
-                                        disableUnderline
-                                        placeholder={key} />
-                                    </>
+                                  {
+                                    key === "log_level" ?
+                                      <Box>
+                                        <FormLabel id="demo-simple-select-label"
+                                          sx={(theme) => ({
+                                            fontSize: '16px',
+                                            color: 'text.primary',
+                                          })}> {getSettingsName(key)}</FormLabel>
+                                        <Select
+                                          fullWidth
+                                          labelId="demo-simple-select-label"
+                                          id="demo-simple-select"
+                                          value={value}
+                                          name={key}
+                                          label={key}
+                                          onChange={(e) => handleSelectChange(e, key)}
+                                          sx={{ mt: 1 }}
+                                          className="dropdownSelect"
+                                        >
+                                          <MenuItem value="notset">Notset</MenuItem>
+                                          <MenuItem value="debug">Debug</MenuItem>
+                                          <MenuItem value="info">Info</MenuItem>
+                                          <MenuItem value="warnings">Warning</MenuItem>
+                                          <MenuItem value="error">Error</MenuItem>
+                                          <MenuItem value="critical">Citical</MenuItem>
+                                        </Select>
+                                      </Box>
+                                      :
+                                      <>
+                                        {value === "true" || value === "false" ?
+                                          <FormControl>
+                                            <FormLabel id="demo-row-radio-buttons-group-label"
+                                              sx={(theme) => ({
+                                                fontSize: '16px',
+                                                color: 'text.primary'
+                                              })}> {getSettingsName(key)}</FormLabel>
+                                            <RadioGroup
+                                              row
+                                              aria-labelledby="demo-row-radio-buttons-group-label"
+                                              name={key}
+                                              value={value}
+                                              onChange={(e) => handleChange(e, key)}
+                                            >
+                                              <FormControlLabel disabled={isDisabled} value="true"
+                                                control={<Radio />} label="True" />
+                                              <FormControlLabel disabled={isDisabled}
+                                                value="false" control={<Radio />} label="False" />
+                                            </RadioGroup>
+                                          </FormControl>
+                                          :
+                                          <>
+                                            <InputLabel variant="standard" htmlFor="uncontrolled-native"
+                                              sx={{
+                                                fontSize: '16px',
+                                                mb: 1,
+                                                color: 'text.primary'
+                                              }}>
+                                              {getLabelName(key)}
+                                            </InputLabel>
+                                            <Input sx={{
+                                              px: 2,
+                                              py: 0.5,
+                                              width: "100%",
+                                              height: '45px',
+                                              border: '1px solid #303067',
+                                              borderRadius: '60px',
+                                            }}
+                                              disabled={isDisabled}
+                                              autoComplete="off"
+                                              onKeyDown={handleKeypress}
+                                              name={key}
+                                              onChange={(e) => onInputChange(e, key)}
+                                              value={value}
+                                              disableUnderline
+                                              placeholder={key} />
+                                          </>
+                                        }
+                                      </>
                                   }
+
                                 </>
                             }
                           </Box>
