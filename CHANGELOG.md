@@ -10,14 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 
 - Fixed `asserts` in stress tests
+- Added unit tests for `defaults.py`
 
 ### Added
 
 - `requirements-client.txt` file added.
+- Logs tab on the GUI which displays the covalent logs and also the ability to download the log file.
 
 ### Fixed
 
 - Config file is now locked during reads and writes to mitigate concurrency issues
+- In `defaults.py/get_default_executor`, condition to return `local` or `dask` is now fixed
 
 ### Changed
 
@@ -38,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding `nightly.yml` workflow for nightly CI
 - Updated triggers to `tests` and `changelog` workflows
 - Enhanced pre-release workflows
+- `codecov` passthrough jobs added for when tests are not run
+- Tests are run on one platform on pushes to `develop` to keep codecov reports accurate
+- Test matrix source triggers changed from `workflow_call` to `schedule` since contexts are inherited
 - Removed badges workflow; version badge is now generated using the latest pre-release tag
 - Removed unused `push_to_s3` workflow
 - Workflows authenticate to AWS using OIDC with specific roles
