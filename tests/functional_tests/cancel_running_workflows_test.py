@@ -36,22 +36,20 @@ def test_cancel_workflows():
             x * x
             i += 1
 
-
     @ct.lattice
     def workflow(iterations, stall, x):
         for _ in range(iterations):
             cpu_workload(stall, x)
 
-
     n_electrons = [2**i for i in range(N)]
     dispatch_ids = [ct.dispatch(workflow)(it, STALL, X) for it in n_electrons]
 
-    print('Canceling running tasks...')
+    print("Canceling running tasks...")
     for d_id in dispatch_ids:
         ct.cancel(d_id)
         status = ct.get_result(d_id).status
-        print(f'status of dispatch_id {d_id} before `cancel` signal completes is {status}')
+        print(f"status of dispatch_id {d_id} before `cancel` signal completes is {status}")
         if status in [Result.RUNNING, Result.POSTPROCESSING]:
             status = ct.get_result(d_id, wait=True).status
-            print(f'status of dispatch_id {d_id} after `cancel` signal completes is {status}')
+            print(f"status of dispatch_id {d_id} after `cancel` signal completes is {status}")
             assert status == Result.CANCELLED
