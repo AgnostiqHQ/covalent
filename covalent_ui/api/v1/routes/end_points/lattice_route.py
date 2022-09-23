@@ -28,9 +28,9 @@ from sqlalchemy.orm import Session
 import covalent_ui.api.v1.database.config.db as db
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
 from covalent_ui.api.v1.models.lattices_model import (
-    FileOutput,
     LatticeDetailResponse,
     LatticeExecutorResponse,
+    LatticeFileOutput,
     LatticeFileResponse,
     LatticeWorkflowExecutorResponse,
 )
@@ -79,7 +79,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
 
 
 @routes.get("/{dispatch_id}/details/{name}")
-def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
+def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
     """Get lattice file data
 
     Args:

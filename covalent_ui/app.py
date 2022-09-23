@@ -103,4 +103,11 @@ if __name__ == "__main__":
     DataStore(initialize_db=True)
 
     # Start covalent main app
-    uvicorn.run("app:fastapi_app", host=host, port=port, debug=DEBUG, reload=RELOAD)
+    uvicorn.run(
+        "app:fastapi_app",
+        host=host,
+        port=port,
+        debug=DEBUG,
+        reload=RELOAD,
+        log_config="./log_config.yml",
+    )

@@ -32,6 +32,7 @@ const LinkBehavior = React.forwardRef(({ href, ...props }, ref) => {
 const defaultTheme = createTheme({
   typography: {
     fontFamily: '"DM Sans", "Helvetica", "Arial", sans-serif',
+    logsFont: '"Inter", "Arial", sans-serif',
   },
   palette: {
     mode: 'dark',
@@ -69,6 +70,12 @@ const defaultTheme = createTheme({
     },
     running: {
       main: '#dac3ff',
+    },
+    info: {
+      main: '#CBCBD7',
+    },
+    queued: {
+      main: '#FFC164',
     },
     text: {
       primary: '#CBCBD7',

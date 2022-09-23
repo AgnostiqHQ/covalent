@@ -27,9 +27,9 @@ from sqlalchemy.orm import Session
 import covalent_ui.api.v1.database.config.db as db
 from covalent._results_manager.results_manager import get_result
 from covalent_ui.api.v1.data_layer.electron_dal import Electrons
-from covalent_ui.api.v1.models.electrons_model import FileOutput
-from covalent_ui.api.v1.models.lattices_model import (
+from covalent_ui.api.v1.models.electrons_model import (
     ElectronExecutorResponse,
+    ElectronFileOutput,
     ElectronFileResponse,
     ElectronResponse,
 )
@@ -78,6 +78,14 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
 
 
 def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
+    """
+    Get Electron Inputs
+    Args:
+        dispatch_id: Dispatch id of lattice/sublattice
+        electron_id: Transport graph node id of a electron
+    Returns:
+        Returns the inputs data from Result object
+    """
     from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 
     result_object = get_result(dispatch_id=str(dispatch_id), wait=False)
@@ -91,8 +99,17 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
 
 
 @routes.get("/{dispatch_id}/electron/{electron_id}/details/{name}")
-def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput):
-
+def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFileOutput):
+    """
+    Get Electron details
+    Args:
+        dispatch_id: Dispatch id of lattice/sublattice
+        electron_id: Transport graph node id of a electron
+        name: refers file type, like inputs, function_string, function, executor, result, value, key,
+        stdout, deps, call_before, call_after, error, info
+    Returns:
+        Returns electron details based on the given name
+    """
     if name == "inputs":
         response = get_electron_inputs(dispatch_id=dispatch_id, electron_id=electron_id)
         return ElectronFileResponse(data=response)
