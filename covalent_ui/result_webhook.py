@@ -58,7 +58,7 @@ async def send_update(result: Result) -> None:
             "result": {
                 "dispatch_id": result.dispatch_id,
                 "results_dir": result.results_dir,
-                "status": result.status.STATUS,
+                "status": result.status,
             },
         },
     )

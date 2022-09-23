@@ -135,7 +135,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         assert lattice_row.started_at is None
         assert isinstance(lattice_row.updated_at, dt) and isinstance(lattice_row.created_at, dt)
         assert lattice_row.completed_at is None
-        assert lattice_row.status == "NEW_OBJECT"
+        assert lattice_row.status == Result.NEW_OBJ
         assert lattice_row.name == "workflow_1"
         assert lattice_row.electron_id is None
         assert lattice_row.executor == "local"
@@ -185,7 +185,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
 
         # Check that the electron records are as expected
         for electron in electron_rows:
-            assert electron.status == "NEW_OBJECT"
+            assert electron.status == Result.NEW_OBJ
             assert electron.parent_lattice_id == 1
             assert electron.started_at is None and electron.completed_at is None
 
@@ -246,7 +246,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         assert lattice_row.completed_at.strftime("%Y-%m-%d %H:%M") == cur_time.strftime(
             "%Y-%m-%d %H:%M"
         )
-        assert lattice_row.status == "COMPLETED"
+        assert lattice_row.status == Result.COMPLETED
         result = load_file(
             storage_path=lattice_storage_path, filename=lattice_row.results_filename
         )
@@ -254,7 +254,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
 
         # Check that the electron records are as expected
         for electron in electron_rows:
-            assert electron.status == "COMPLETED"
+            assert electron.status == Result.COMPLETED
             assert electron.parent_lattice_id == 1
             assert (
                 electron.started_at.strftime("%Y-%m-%d %H:%M")
@@ -288,7 +288,7 @@ def test_result_persist_subworkflow_1(test_db, result_1, mocker):
         assert lattice_row.started_at is None
         assert isinstance(lattice_row.updated_at, dt) and isinstance(lattice_row.created_at, dt)
         assert lattice_row.completed_at is None
-        assert lattice_row.status == "NEW_OBJECT"
+        assert lattice_row.status == Result.NEW_OBJ
         assert lattice_row.name == "workflow_1"
         assert lattice_row.electron_id == 2
         assert lattice_row.executor == "local"
@@ -388,7 +388,7 @@ def test_update_node(test_db, result_1, mocker):
         )
 
         assert electron_record.name == "test_name"
-        assert electron_record.status == "RUNNING"
+        assert electron_record.status == Result.RUNNING
         assert electron_record.started_at is not None
 
         stdout = load_file(
@@ -424,7 +424,7 @@ def test_update_node(test_db, result_1, mocker):
             session.query(Electron).where(Electron.transport_graph_node_id == 0).first()
         )
 
-        assert electron_record.status == "COMPLETED"
+        assert electron_record.status == Result.COMPLETED
         assert electron_record.completed_at is not None
         assert electron_record.updated_at is not None
 

@@ -32,8 +32,8 @@ if TYPE_CHECKING:
 @dataclass
 class Status:
     executor_name = "_AbstractBaseExecutor"
-    category_name = ""
-    status_name = ""
+    category_name = "Default"
+    status_name = "DefaultStatus"
     description = "Default status description"
 
     def __str__(self):
@@ -44,43 +44,58 @@ class Status:
 
 
 # Pending Statuses
-class PendingStatus(Status):
+class PendingCategory(Status):
     category_name = "Pending"
-    description = "Task exists in the dispatch database but has not been invoked by the dispatcher"
+    description = "Task exists in the dispatch database but is waiting to be executed"
+
+
+class PendingPostprocessingStatus(PendingCategory):
+    status_name = "PendingPostprocessing"
+    description = "Task is waiting to be post-processed"
 
 
 # Running Statuses
-class RunningStatus(Status):
+class RunningCategory(Status):
     category_name = "Running"
     description = "Task is currently executing"
 
 
+class PostprocessingStatus(RunningCategory):
+    status_name = "Postprocessing"
+    description = "Task is currently postprocessing"
+
+
 # Completed Statuses
-class CompletedStatus(Status):
+class CompletedCategory(Status):
     category_name = "Completed"
     description = "Task completed successfully"
 
 
-# Cancelled Statuses
-class CancelledStatus(Status):
-    category_name = "Cancelled"
-    description = "Task was cancelled by the user"
-
-
 # Failed Statuses
-class FailedStatus(Status):
+class FailedCategory(Status):
     category_name = "Failed"
     description = "Execution of task has failed"
 
 
-class ConnectionLostStatus(FailedStatus):
+class ConnectionLostStatus(FailedCategory):
     status_name = "ConnectionLost"
     description = "Connection to remote backend lost"
 
 
-class TimeoutStatus(FailedStatus):
+class TimeoutStatus(FailedCategory):
     status_name = "Timeout"
     description = "Task exceeded the time limit and was terminated"
+
+
+class PostprocessingFailedStatus(FailedCategory):
+    status_name = "PostprocessingFailed"
+    description = "Failed to post-process the task"
+
+
+# Cancelled Statuses
+class CancelledCategory(Status):
+    category_name = "Cancelled"
+    description = "Task was cancelled by the user"
 
 
 async def status_listener(
@@ -88,7 +103,7 @@ async def status_listener(
 ) -> None:
     while True:
         current_status = status_store.retrieve()
-        if isinstance(current_status, (None, PendingStatus, RunningStatus)):
+        if isinstance(current_status, (None, PendingCategory, RunningCategory)):
             result_object._update_node(node_id=node_id, status=current_status)
             await asyncio.sleep(0)
         else:
@@ -97,11 +112,11 @@ async def status_listener(
 
 
 class RESULT_STATUS:
-    NEW_OBJECT = Status("NEW_OBJECT")
-    COMPLETED = Status("COMPLETED")
-    POSTPROCESSING = Status("POSTPROCESSING")
-    PENDING_POSTPROCESSING = Status("PENDING_POSTPROCESSING")
-    POSTPROCESSING_FAILED = Status("POSTPROCESSING_FAILED")
-    FAILED = Status("FAILED")
-    RUNNING = Status("RUNNING")
-    CANCELLED = Status("CANCELLED")
+    NEW_OBJECT = str(PendingCategory())
+    RUNNING = str(RunningCategory())
+    PENDING_POSTPROCESSING = str(PendingPostprocessingStatus())
+    POSTPROCESSING = str(PostprocessingStatus())
+    COMPLETED = str(CompletedCategory())
+    POSTPROCESSING_FAILED = str(PostprocessingFailedStatus())
+    FAILED = str(FailedCategory())
+    CANCELLED = str(CancelledCategory())

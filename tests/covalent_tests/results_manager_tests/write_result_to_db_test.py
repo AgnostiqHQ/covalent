@@ -29,6 +29,7 @@ import pytest
 import covalent as ct
 from covalent._data_store.datastore import DataStore
 from covalent._data_store.models import Electron, ElectronDependency, Lattice
+from covalent._results_manager.result import Result
 from covalent._results_manager.write_result_to_db import (
     InvalidFileExtension,
     MissingElectronRecordError,
@@ -288,7 +289,7 @@ def test_insert_lattices_data(test_db, mocker):
             assert lattice.electron_id is None
             assert lattice.name == f"workflow_{i + 1}"
             assert lattice.docstring_filename == f"docstring_{i+1}.txt"
-            assert lattice.status == "RUNNING"
+            assert lattice.status == Result.RUNNING
             assert lattice.storage_type == STORAGE_TYPE
             assert lattice.storage_path == f"results/dispatch_{i+1}/"
             assert lattice.function_filename == FUNCTION_FILENAME
@@ -476,7 +477,7 @@ def test_update_lattices_data(test_db, mocker):
         rows = session.query(Lattice).all()
 
         for lattice in rows:
-            assert lattice.status == "COMPLETED"
+            assert lattice.status == Result.COMPLETED
             assert (
                 lattice.updated_at.strftime("%m/%d/%Y, %H:%M:%S")
                 == lattice.completed_at.strftime("%m/%d/%Y, %H:%M:%S")
@@ -528,7 +529,7 @@ def test_update_electrons_data(test_db, mocker):
         rows = session.query(Electron).all()
 
         for electron in rows:
-            assert electron.status == "RUNNING"
+            assert electron.status == Result.RUNNING
             assert (
                 electron.started_at.strftime("%m/%d/%Y, %H:%M:%S")
                 == electron.updated_at.strftime("%m/%d/%Y, %H:%M:%S")
