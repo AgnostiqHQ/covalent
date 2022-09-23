@@ -37,7 +37,7 @@ class Status:
     description = "Default status description"
 
     def __str__(self):
-        return self.get_identifier()
+        return self.status_name
 
     def get_identifier(self):
         return ":".join((self.executor_name, self.category_name, self.status_name))
@@ -45,35 +45,39 @@ class Status:
 
 # Pending Statuses
 class PendingCategory(Status):
-    category_name = "Pending"
+    category_name = "PendingCategory"
+    status_name = "PENDING"
     description = "Task exists in the dispatch database but is waiting to be executed"
 
 
 class PendingPostprocessingStatus(PendingCategory):
-    status_name = "PendingPostprocessing"
+    status_name = "PENDING_POSTPROCESSING"
     description = "Task is waiting to be post-processed"
 
 
 # Running Statuses
 class RunningCategory(Status):
-    category_name = "Running"
+    category_name = "RunningCategory"
+    status_name = "RUNNING"
     description = "Task is currently executing"
 
 
 class PostprocessingStatus(RunningCategory):
-    status_name = "Postprocessing"
+    status_name = "POSTPROCESSING"
     description = "Task is currently postprocessing"
 
 
 # Completed Statuses
 class CompletedCategory(Status):
-    category_name = "Completed"
+    category_name = "CompletedCategory"
+    status_name = "COMPLETED"
     description = "Task completed successfully"
 
 
 # Failed Statuses
 class FailedCategory(Status):
-    category_name = "Failed"
+    category_name = "FailedCategory"
+    status_name = "FAILED"
     description = "Execution of task has failed"
 
 
@@ -88,13 +92,14 @@ class TimeoutStatus(FailedCategory):
 
 
 class PostprocessingFailedStatus(FailedCategory):
-    status_name = "PostprocessingFailed"
+    status_name = "POSTPROCESSING_FAILED"
     description = "Failed to post-process the task"
 
 
 # Cancelled Statuses
 class CancelledCategory(Status):
-    category_name = "Cancelled"
+    category_name = "CancelledCategory"
+    status_name = "CANCELLED"
     description = "Task was cancelled by the user"
 
 
