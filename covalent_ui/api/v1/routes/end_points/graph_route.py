@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.data_layer.graph_dal import Graph
 from covalent_ui.api.v1.database.config.db import engine
-from covalent_ui.api.v1.models.lattices_model import GraphResponse, GraphResponseData
+from covalent_ui.api.v1.models.graph_model import GraphResponse
 
 routes: APIRouter = APIRouter()
 
@@ -48,5 +48,5 @@ def get_graph(dispatch_id: uuid.UUID):
         graph_data = graph.get_graph(dispatch_id)
         return GraphResponse(
             dispatch_id=graph_data["dispatch_id"],
-            graph=GraphResponseData(nodes=graph_data["nodes"], links=graph_data["links"]),
+            graph={"nodes": graph_data["nodes"], "links": graph_data["links"]},
         )

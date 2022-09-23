@@ -26,7 +26,8 @@ from typing import List
 
 from pydantic import BaseModel
 
-from covalent_ui.api.v1.models.dispatch_model import CaseInsensitiveEnum, DispatchModule
+from covalent_ui.api.v1.models.dispatch_model import DispatchModule
+from covalent_ui.api.v1.utils.models_helper import CaseInsensitiveEnum
 
 
 class SubLatticeSortBy(CaseInsensitiveEnum):
