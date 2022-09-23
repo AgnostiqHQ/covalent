@@ -20,9 +20,11 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import { useEffect, useRef, useState, useMemo, useCallback, createRef } from 'react'
-import ReactFlow, { MiniMap, applyEdgeChanges, applyNodeChanges,getIncomers,
+import ReactFlow, {
+  MiniMap, applyEdgeChanges, applyNodeChanges, getIncomers,
   getOutgoers,
-  isEdge, } from 'react-flow-renderer'
+  isEdge,
+} from 'react-flow-renderer'
 import ElectronNode from './ElectronNode'
 import { NODE_TEXT_COLOR } from './ElectronNode'
 import ParameterNode from './ParameterNode'
@@ -106,7 +108,7 @@ const LatticeGraph = ({
   useEffect(() => {
     resizing()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [marginRight, marginLeft,fitView])
+  }, [marginRight, marginLeft, fitView])
 
   // layouting
   useEffect(() => {
@@ -199,35 +201,22 @@ const LatticeGraph = ({
     a.download = createFileName(extension, name)
     a.click()
   }
-  const getAllIncomers = (node, elements) => {
-    return getIncomers(node, elements).reduce(
-      (memo, incomer) => [
-        ...memo,
-        incomer,
-        ...getAllIncomers(incomer, elements),
-      ],
-      []
-    )
+
+  const getAllIncomers = (node, nodes, edges) => {
+    return getIncomers(node, nodes, edges)
   }
 
-  const getAllOutgoers = (node, elements) => {
-    return getOutgoers(node, elements).reduce(
-      (memo, outgoer) => [
-        ...memo,
-        outgoer,
-        ...getAllOutgoers(outgoer, elements),
-      ],
-      []
-    )
+  const getAllOutgoers = (node, nodes, edges) => {
+    return getOutgoers(node, nodes, edges)
   }
 
-  const highlightPath = (node, elements, selection) => {
-    if (node && elements) {
-      const allIncomers = getAllIncomers(node, elements)
-      const allOutgoers = getAllOutgoers(node, elements)
+  const highlightPath = (node, nodes, edges, selection) => {
+    if (node && edges) {
+      const allIncomers = getAllIncomers(node, nodes, edges)
+      const allOutgoers = getAllOutgoers(node, nodes, edges)
       setHighlighted(true)
-      setEdges((prevElements) => {
-        return prevElements?.map((elem) => {
+      setEdges((edges) => {
+        return edges?.map((elem) => {
           const incomerIds = allIncomers.map((i) => i.id)
           const outgoerIds = allOutgoers.map((o) => o.id)
           if (isEdge(elem)) {
@@ -300,9 +289,9 @@ const LatticeGraph = ({
             fitView
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
-            onSelectionChange={(selectedElements) => {
-              const node = selectedElements?.[0]
-              highlightPath(node, edges, true)
+            onSelectionChange={(selectedNode) => {
+              const node = selectedNode?.nodes && selectedNode?.nodes[0]
+              highlightPath(node, nodes, edges, true)
             }}
             // prevent selection when nothing is selected to prevent fitView
             selectNodesOnDrag={hasSelectedNode}

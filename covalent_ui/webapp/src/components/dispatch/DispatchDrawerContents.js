@@ -46,7 +46,7 @@ import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
 const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
-  const [tab, setTab] = useState('sublattices')
+  const [tab, setTab] = useState('overview')
 
   const drawerLatticeDetails = useSelector(
     (state) => state.latticeResults.latticeDetails
