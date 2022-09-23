@@ -129,7 +129,7 @@ class Summary:
                 ),
                 Lattice.status.in_(status_filters),
                 Lattice.is_active.is_not(False),
-                Lattice.electron_id is None,
+                Lattice.electron_id.is_(None),
             )
             .first()
         )
