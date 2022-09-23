@@ -34,7 +34,6 @@ from .._data_store.datastore import DataStore
 from .._data_store.models import Lattice
 from .._shared_files import logger
 from .._shared_files.config import CMType, get_config
-from .._shared_files.util_classes import Status
 from .._workflow.transport import TransportableObject
 from .result import Result
 from .wait import EXTREME
@@ -171,7 +170,7 @@ def result_from(lattice_record: Lattice) -> Result:
         dispatch_id=lattice_record.dispatch_id,
     )
     result._root_dispatch_id = lattice_record.root_dispatch_id
-    result._status = Status(lattice_record.status)
+    result._status = lattice_record.status
     result._error = error if error else None
     result._inputs = inputs
     result._start_time = lattice_record.started_at
@@ -234,7 +233,7 @@ def _delete_result(
     Args:
         dispatch_id: The dispatch id of the result.
         results_dir: The directory where the results are stored in dispatch id named folders.
-        remove_parent_directory: Status of whether to delete the parent directory when removing the result.
+        remove_parent_directory: Whether to delete the parent directory when removing the result.
 
     Returns:
         None

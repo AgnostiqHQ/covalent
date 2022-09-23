@@ -21,7 +21,6 @@
 
 import multiprocessing as mp
 import queue
-from dataclasses import dataclass
 from multiprocessing.queues import Queue as MPQ
 from typing import Any, NamedTuple
 
@@ -48,32 +47,6 @@ class SafeVariable(MPQ):
             return value
         except queue.Empty:
             return None
-
-
-@dataclass
-class Status:
-    STATUS: str
-
-    def __bool__(self):
-        """
-        Return True if the status is not "NEW_OBJECT"
-        """
-
-        return self.STATUS != "NEW_OBJECT"
-
-    def __str__(self) -> str:
-        return self.STATUS
-
-
-class RESULT_STATUS:
-    NEW_OBJECT = Status("NEW_OBJECT")
-    COMPLETED = Status("COMPLETED")
-    POSTPROCESSING = Status("POSTPROCESSING")
-    PENDING_POSTPROCESSING = Status("PENDING_POSTPROCESSING")
-    POSTPROCESSING_FAILED = Status("POSTPROCESSING_FAILED")
-    FAILED = Status("FAILED")
-    RUNNING = Status("RUNNING")
-    CANCELLED = Status("CANCELLED")
 
 
 class DispatchInfo(NamedTuple):

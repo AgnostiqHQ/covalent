@@ -24,7 +24,7 @@ import os
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
+from typing import Any, Dict, List, Set, Union
 
 from sqlalchemy import and_
 
@@ -32,7 +32,7 @@ from .._data_store import models, workflow_db
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import prefix_separator, sublattice_prefix
-from .._shared_files.util_classes import RESULT_STATUS, Status
+from .._shared_files.statuses import RESULT_STATUS, Status
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
 from .write_result_to_db import (
@@ -46,9 +46,6 @@ from .write_result_to_db import (
     update_lattice_completed_electron_num,
     update_lattices_data,
 )
-
-if TYPE_CHECKING:
-    from .._shared_files.util_classes import Status
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -439,7 +436,7 @@ Node Outputs
                 .name
             )
 
-    def _get_node_status(self, node_id: int) -> "Status":
+    def _get_node_status(self, node_id: int) -> Status:
         """
         Returns the status of a node.
 
@@ -579,7 +576,7 @@ Node Outputs
         node_name: str = None,
         start_time: "datetime" = None,
         end_time: "datetime" = None,
-        status: "Status" = None,
+        status: Status = None,
         output: Any = None,
         error: Exception = None,
         sublattice_result: "Result" = None,

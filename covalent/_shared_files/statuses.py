@@ -36,6 +36,9 @@ class Status:
     status_name = ""
     description = "Default status description"
 
+    def __str__(self):
+        return self.get_identifier()
+
     def get_identifier(self):
         return ":".join((self.executor_name, self.category_name, self.status_name))
 
@@ -91,3 +94,14 @@ async def status_listener(
         else:
             result_object._update_node(node_id=node_id, status=current_status)
             break
+
+
+class RESULT_STATUS:
+    NEW_OBJECT = Status("NEW_OBJECT")
+    COMPLETED = Status("COMPLETED")
+    POSTPROCESSING = Status("POSTPROCESSING")
+    PENDING_POSTPROCESSING = Status("PENDING_POSTPROCESSING")
+    POSTPROCESSING_FAILED = Status("POSTPROCESSING_FAILED")
+    FAILED = Status("FAILED")
+    RUNNING = Status("RUNNING")
+    CANCELLED = Status("CANCELLED")

@@ -30,7 +30,7 @@ import covalent.executor as covalent_executor
 from covalent._data_store import DataStore
 from covalent._shared_files import logger
 from covalent._shared_files.config import CMType, get_config
-from covalent._shared_files.util_classes import Status
+from covalent._shared_files.statuses import Status
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -122,7 +122,7 @@ def extract_graph(graph):
 
 def result_encoder(obj):
     if isinstance(obj, Status):
-        return obj.STATUS
+        return obj.get_identifier()
     if isinstance(obj, datetime):
         return obj.isoformat()
     return str(obj)

@@ -427,7 +427,7 @@ async def _handle_completed_node(result_object, node_result, pending_deps, tasks
     g = result_object.lattice.transport_graph._graph
 
     for child, edges in g.adj[node_result["node_id"]].items():
-        for edge in edges:
+        for _ in edges:
             pending_deps[child] -= 1
         if pending_deps[child] < 1:
             app_log.debug(f"Queuing node {child} for execution")
@@ -534,12 +534,13 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         await result_webhook.send_update(result_object)
         return result_object
 
-    post_processing_inputs = {}
-    post_processing_inputs["args"] = [
-        TransportableObject.make_transportable(result_object.lattice),
-        TransportableObject.make_transportable(result_object.get_all_node_outputs()),
-    ]
-    post_processing_inputs["kwargs"] = {}
+    post_processing_inputs = {
+        "args": [
+            TransportableObject.make_transportable(result_object.lattice),
+            TransportableObject.make_transportable(result_object.get_all_node_outputs()),
+        ],
+        "kwargs": {},
+    }
 
     try:
         future = asyncio.create_task(
