@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Fixed a notebook which was not rendering
+- Add DNN tutorial.
 
 ### Operations
 
