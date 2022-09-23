@@ -40,7 +40,7 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import { settingsResults, updateSettings } from '../../redux/settingsSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import _, { capitalize, filter } from 'lodash'
+import _, { capitalize, filter, update } from 'lodash'
 import Skeleton from '@mui/material/Skeleton';
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
@@ -65,9 +65,14 @@ const SettingsCard = () => {
   const [searchKey, setSearchKey] = useState('')
   const [restoreData, setRestoreData] = useState()
   const [valueChange, setValueChange] = useState(false)
-  const [expanded, setExpanded] = useState('client')
+  const [serverName, setServerName] = useState('server')
   const [accName, setAccName] = useState('client')
   const menuCallResult = useSelector((state) => state.dataRes.popupData)
+  const [clientDetail, setClientDetail] = useState(null)
+  const [serverDetail, setServerDetail] = useState(null)
+
+  const [searchData1, setSearchData1] = useState(null)
+
 
   useEffect(() => {
     dispatch(settingsResults())
@@ -94,14 +99,18 @@ const SettingsCard = () => {
 
   useEffect(() => {
     if (settings_result) {
-      const dValue = Object.values(settings_result)[0]
-      if (dValue !== undefined) {
-        setResultOutput(dValue.sdk)
-      }
-      setRestoreData(Object.values(settings_result)[0])
       setSearchData(Object.values(settings_result)[0])
+      setClientDetail(Object.values(settings_result)[0])
+      setServerDetail(Object.values(settings_result)[1])
     }
   }, [settings_result])
+
+  useEffect(() => {
+    if (_.size(searchData) !== 0) {
+      setResultOutput(Object.values(searchData)[0])
+      setRestoreData(Object.values(searchData)[0])
+    }
+  }, [searchData])
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -115,7 +124,7 @@ const SettingsCard = () => {
         setOpenSnackbar(true)
         setSnackbarMessage('Settings Updated Successfully')
         setValueChange(false)
-        setSearchData(currValue => ({
+        setClientDetail(currValue => ({
           ...currValue,
           [resultKey]: resultOutput
         }))
@@ -227,7 +236,13 @@ const SettingsCard = () => {
     setSubMenu(tmpList);
   };
 
-  const menuClick = (value, key) => {
+  const menuClick = (value, key, panel) => {
+    if (panel === "client") {
+      setIsDisabled(false)
+    }
+    else {
+      setIsDisabled(true)
+    }
     setRestoreData(value)
     if (menuCallResult.isChanged) {
       const updateData = {
@@ -240,7 +255,7 @@ const SettingsCard = () => {
           setOpenSnackbar(true)
           setSnackbarMessage('Settings Updated Successfully')
           setValueChange(false)
-          setSearchData(currValue => ({
+          setClientDetail(currValue => ({
             ...currValue,
             [resultKey]: resultOutput
           }))
@@ -314,48 +329,6 @@ const SettingsCard = () => {
     }))
   }
 
-  const handleAccordianChange = (panel, value) => (event, isExpanded) => {
-    if (handle) {
-      const updateData = {
-        [accName]: {
-          [resultKey]: resultOutput
-        }
-      }
-      dispatch(updateSettings(updateData)).then((action) => {
-        if (action.type === updateSettings.fulfilled.type) {
-          setOpenSnackbar(true)
-          setSnackbarMessage('Settings Updated Successfully')
-          setValueChange(false)
-          setSearchData(currValue => ({
-            ...currValue,
-            [resultKey]: resultOutput
-          }))
-          setIsDisabled(false)
-          setHandle('')
-        } else if (action.type === updateSettings.rejected.type) {
-          setOpenSnackbar(true)
-          setSnackbarMessage('Something went wrong and could not settings updated!')
-        }
-      })
-    }
-    else {
-      setSearchData(value)
-      setSearchKey('')
-      setResultKey(Object.keys(value)[0])
-      setResultOutput(Object.values(value)[0])
-      setExpanded(isExpanded ? panel : false)
-      setAccName(panel)
-      setOpen(false)
-    }
-    if (panel === "client") {
-      setIsDisabled(false)
-    }
-    else {
-      setIsDisabled(true)
-    }
-
-  };
-
   return (
     <Container maxWidth="xl" sx={{ mb: 4, mt: 7.5, ml: 4 }}>
       <Snackbar
@@ -375,281 +348,266 @@ const SettingsCard = () => {
           />
         }
       />
-      <Typography variant="h4" component="h4">
+      <Typography variant="h4" component="h4" sx={{ mb: 5 }}>
         Settings
       </Typography>
       {_.size(settings_result) !== 0 ?
 
-        _.map(settings_result, function (value, key) {
-          return (
-            <Box key={key} sx={{ mt: 4 }}>
-              <Accordion expanded={expanded === key} onChange={handleAccordianChange(key, value)}
-                sx={{
-                  backgroundColor: "#08081a",
-                  backgroundImage: 'none'
-                }}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1bh-content"
-                  id="panel1bh-header">
-                  <Typography variant="h6" component="h6" sx={{ fontWeight: 'bold' }}>
-                    {capitalize(key)}
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Grid container spacing={3} sx={{ mt: 0.5 }}>
-                    <Grid item xs={3}
-                      sx={(theme) => ({
-                        borderRight: 1,
-                        borderColor: theme.palette.background.coveBlack02,
-                      })}
-                    >
-                      <Input sx={{
-                        px: 2,
-                        py: 0.5,
-                        width: "95%",
-                        height: '40px',
-                        border: '1px solid #303067',
-                        borderRadius: '60px',
-                        mb: 3
-                      }}
-                        disableUnderline
-                        value={searchKey}
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <SearchIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
-                          </InputAdornment>
+        <Box>
+          <Grid container spacing={3}>
+            <Grid item xs={3}
+              sx={(theme) => ({
+                borderRight: 1,
+                borderColor: theme.palette.background.coveBlack02,
+              })}
+            >
+              <Box>
+                <Typography variant="h6" component="h6" sx={{ fontWeight: 'bold' }}>
+                  {capitalize(accName)}
+                </Typography>
+                {_.map(clientDetail, function (menuValue, menuKey) {
+                  return (
+                    <ListItem disablePadding>
+                      <ListItemButton
+                        onClick={isChildHasList ? () => handleClick(menuValue) : () => { }}
+                        sx={{ right: isChildHasList(menuValue) ? '0px' : '0px' }}>
+                        {isChildHasList(menuValue) &&
+                          <ListItemIcon>
+                            {open ? <ExpandMore /> : <KeyboardArrowRightIcon />}
+                          </ListItemIcon>
                         }
-                        endAdornment={
-                          <InputAdornment
-                            position="end"
-                            sx={{ visibility: searchKey !== '' ? 'visible' : 'hidden' }}
-                          >
-                            <IconButton size="small" onClick={() => handleSearchClear()}>
-                              <ClearIcon fontSize="inherit" sx={{ color: 'text.secondary' }} />
-                            </IconButton>
-                          </InputAdornment>
-                        }
-                        onChange={(e) => handleInputChange(e)}
-                        placeholder="Search" />
+                        <ListItemText inset primary={getSettingsName(menuKey)}
+                          onClick={() => menuClick(menuValue, menuKey, accName)}
+                          disableTypography
+                          sx={{
+                            color: resultKey === menuKey ? 'white' : 'text.primary',
+                            pl: "0px", fontSize: '18px', fontWeight: resultKey === menuKey ?
+                              'bold' : 'normal'
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  )
+                })
+                }
 
-                      {_.map(searchData, function (menuValue, menuKey) {
+                {open &&
+                  <Collapse in={open} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                      {
+                        _.map(subMenu, function (value, key) {
+                          return (
+                            <ListItem disablePadding>
+                              <ListItemButton sx={{ pl: 9, pt: 0.3, pb: 0.3 }}>
+                                <ListItemText inset primary={getSubmenuName(value)}
+                                  onClick={() => handleSubmenuClick(value)}
+                                  disableTypography
+                                  sx={{ pl: "0px", fontSize: '18px' }} />
+                              </ListItemButton>
+                            </ListItem>
+                          )
+                        })
+                      }
+                    </List>
+                  </Collapse>
+                }
+              </Box>
+
+              <Box>
+                <Typography variant="h6" component="h6" sx={{ fontWeight: 'bold' }}>
+                  {capitalize(serverName)}
+                </Typography>
+                {_.map(serverDetail, function (menuValue, menuKey) {
+                  return (
+                    <ListItem disablePadding>
+                      <ListItemButton
+                        onClick={isChildHasList ? () => handleClick(menuValue) : () => { }}
+                        sx={{ right: isChildHasList(menuValue) ? '0px' : '0px' }}>
+                        {isChildHasList(menuValue) &&
+                          <ListItemIcon>
+                            {open ? <ExpandMore /> : <KeyboardArrowRightIcon />}
+                          </ListItemIcon>
+                        }
+                        <ListItemText inset primary={getSettingsName(menuKey)}
+                          onClick={() => menuClick(menuValue, menuKey)}
+                          disableTypography
+                          sx={{
+                            color: resultKey === menuKey ? 'white' : 'text.primary',
+                            pl: "0px", fontSize: '18px', fontWeight: resultKey === menuKey ?
+                              'bold' : 'normal'
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  )
+                })
+                }
+              </Box>
+
+            </Grid>
+            <Grid item xs={9}>
+              <Typography variant="h6" component="h6" sx={{ fontWeight: 'bold' }}>
+                {getSettingsName(resultKey)}
+              </Typography>
+              <Grid container spacing={3} sx={{ mt: 2 }}>
+                <Grid item xs={7}>
+                  <form onSubmit={handleSubmit} id="get__pop_id">
+                    {
+                      _.map(resultOutput, function (value, key) {
                         return (
-                          <ListItem disablePadding>
-                            <ListItemButton
-                              onClick={isChildHasList ? () => handleClick(menuValue) : () => { }}
-                              sx={{ right: isChildHasList(menuValue) ? '0px' : '0px' }}>
-                              {isChildHasList(menuValue) &&
-                                <ListItemIcon>
-                                  {open ? <ExpandMore /> : <KeyboardArrowRightIcon />}
-                                </ListItemIcon>
-                              }
-                              <ListItemText inset primary={getSettingsName(menuKey)}
-                                onClick={() => menuClick(menuValue, menuKey)}
-                                disableTypography
-                                sx={{
-                                  color: resultKey === menuKey ? 'white' : 'text.primary',
-                                  pl: "0px", fontSize: '18px', fontWeight: resultKey === menuKey ?
-                                    'bold' : 'normal'
-                                }}
-                              />
-                            </ListItemButton>
-                          </ListItem>
+                          <Box sx={{ mb: 3 }}>
+                            {
+                              _.isObject(value)
+                                ?
+                                <Box id={key}>
+                                  <Typography variant="h6" component="h6"
+                                    sx={(theme) => ({ color: theme.palette.primary.light, fontWeight: 'bold' })}>
+                                    {getSettingsName(key)}
+                                  </Typography>
+                                  {
+                                    _.map(value, function (item, key1) {
+                                      return (
+                                        <Box sx={{ mt: 3 }}>
+                                          {value === "true" || value === "false" ?
+                                            <FormControl>
+                                              <FormLabel id="demo-row-radio-buttons-group-label"
+                                                sx={(theme) => ({
+                                                  fontSize: '16px',
+                                                  color: 'text.primary'
+                                                })}> {getSettingsName(key1)}</FormLabel>
+                                              <RadioGroup
+                                                row
+                                                onChange={handleChange}
+                                                aria-labelledby="demo-row-radio-buttons-group-label"
+                                                name="row-radio-buttons-group"
+                                              >
+                                                <FormControlLabel value="true"
+                                                  disabled={isDisabled} control={<Radio />} label="True" />
+                                                <FormControlLabel value="false"
+                                                  disabled={isDisabled} control={<Radio />} label="False" />
+                                              </RadioGroup>
+                                            </FormControl>
+                                            :
+                                            <>
+                                              <InputLabel variant="standard" htmlFor="uncontrolled-native"
+                                                sx={{
+                                                  fontSize: '16px',
+                                                  mb: 1,
+                                                  color: 'text.primary'
+                                                }}>
+                                                {getLabelName(key1)}
+                                              </InputLabel>
+                                              <Input sx={{
+                                                px: 2,
+                                                py: 0.5,
+                                                width: "100%",
+                                                height: '45px',
+                                                border: '1px solid #303067',
+                                                borderRadius: '60px',
+                                              }}
+                                                disabled={isDisabled}
+                                                onKeyDown={handleKeypress}
+                                                name={key1}
+                                                onChange={(e) => onInputExecutorChange(e, key1, key)}
+                                                value={item}
+                                                disableUnderline
+                                                placeholder={key1} />
+                                            </>
+                                          }
+                                        </Box>
+                                      )
+                                    })
+                                  }
+                                </Box>
+                                :
+                                <>
+                                  {value === "true" || value === "false" ?
+                                    <FormControl>
+                                      <FormLabel id="demo-row-radio-buttons-group-label"
+                                        sx={(theme) => ({
+                                          fontSize: '16px',
+                                          color: 'text.primary'
+                                        })}> {getSettingsName(key)}</FormLabel>
+                                      <RadioGroup
+                                        row
+                                        aria-labelledby="demo-row-radio-buttons-group-label"
+                                        name={key}
+                                        value={value}
+                                        onChange={(e) => handleChange(e, key)}
+                                      >
+                                        <FormControlLabel disabled={isDisabled} value="true"
+                                          control={<Radio />} label="True" />
+                                        <FormControlLabel disabled={isDisabled}
+                                          value="false" control={<Radio />} label="False" />
+                                      </RadioGroup>
+                                    </FormControl>
+                                    :
+                                    <>
+                                      <InputLabel variant="standard" htmlFor="uncontrolled-native"
+                                        sx={{
+                                          fontSize: '16px',
+                                          mb: 1,
+                                          color: 'text.primary'
+                                        }}>
+                                        {getLabelName(key)}
+                                      </InputLabel>
+                                      <Input sx={{
+                                        px: 2,
+                                        py: 0.5,
+                                        width: "100%",
+                                        height: '45px',
+                                        border: '1px solid #303067',
+                                        borderRadius: '60px',
+                                      }}
+                                        disabled={isDisabled}
+                                        onKeyDown={handleKeypress}
+                                        name={key}
+                                        onChange={(e) => onInputChange(e, key)}
+                                        value={value}
+                                        disableUnderline
+                                        placeholder={key} />
+                                    </>
+                                  }
+                                </>
+                            }
+                          </Box>
                         )
                       })
-                      }
-
-                      {open &&
-                        <Collapse in={open} timeout="auto" unmountOnExit>
-                          <List component="div" disablePadding>
-                            {
-                              _.map(subMenu, function (value, key) {
-                                return (
-                                  <ListItem disablePadding>
-                                    <ListItemButton sx={{ pl: 9, pt: 0.3, pb: 0.3 }}>
-                                      <ListItemText inset primary={getSubmenuName(value)}
-                                        onClick={() => handleSubmenuClick(value)}
-                                        disableTypography
-                                        sx={{ pl: "0px", fontSize: '18px' }} />
-                                    </ListItemButton>
-                                  </ListItem>
-                                )
-                              })
-                            }
-                          </List>
-                        </Collapse>
-                      }
-
-                    </Grid>
-                    {_.size(settings_result) !== 0 ?
-                      <Grid item xs={9}>
-                        <Typography variant="h6" component="h6" sx={{ fontWeight: 'bold' }}>
-                          {getSettingsName(resultKey)}
-                        </Typography>
-                        <Grid container spacing={3} sx={{ mt: 2 }}>
-                          <Grid item xs={7}>
-                            <form onSubmit={handleSubmit} id="get__pop_id">
-                              {
-                                _.map(resultOutput, function (value, key) {
-                                  return (
-                                    <Box sx={{ mb: 3 }}>
-                                      {
-                                        _.isObject(value)
-                                          ?
-                                          <Box id={key}>
-                                            <Typography variant="h6" component="h6"
-                                              sx={(theme) => ({ color: theme.palette.primary.light, fontWeight: 'bold' })}>
-                                              {getSettingsName(key)}
-                                            </Typography>
-                                            {
-                                              _.map(value, function (item, key1) {
-                                                return (
-                                                  <Box sx={{ mt: 3 }}>
-                                                    {value === "true" || value === "false" ?
-                                                      <FormControl>
-                                                        <FormLabel id="demo-row-radio-buttons-group-label"
-                                                          sx={(theme) => ({
-                                                            fontSize: '16px',
-                                                            color: 'text.primary'
-                                                          })}> {getSettingsName(key1)}</FormLabel>
-                                                        <RadioGroup
-                                                          row
-                                                          onChange={handleChange}
-                                                          aria-labelledby="demo-row-radio-buttons-group-label"
-                                                          name="row-radio-buttons-group"
-                                                        >
-                                                          <FormControlLabel value="true"
-                                                            disabled={isDisabled} control={<Radio />} label="True" />
-                                                          <FormControlLabel value="false"
-                                                            disabled={isDisabled} control={<Radio />} label="False" />
-                                                        </RadioGroup>
-                                                      </FormControl>
-                                                      :
-                                                      <>
-                                                        <InputLabel variant="standard" htmlFor="uncontrolled-native"
-                                                          sx={{
-                                                            fontSize: '16px',
-                                                            mb: 1,
-                                                            color: 'text.primary'
-                                                          }}>
-                                                          {getLabelName(key1)}
-                                                        </InputLabel>
-                                                        <Input sx={{
-                                                          px: 2,
-                                                          py: 0.5,
-                                                          width: "100%",
-                                                          height: '45px',
-                                                          border: '1px solid #303067',
-                                                          borderRadius: '60px',
-                                                        }}
-                                                          disabled={isDisabled}
-                                                          onKeyDown={handleKeypress}
-                                                          name={key1}
-                                                          onChange={(e) => onInputExecutorChange(e, key1, key)}
-                                                          value={item}
-                                                          disableUnderline
-                                                          placeholder={key1} />
-                                                      </>
-                                                    }
-                                                  </Box>
-                                                )
-                                              })
-                                            }
-                                          </Box>
-                                          :
-                                          <>
-                                            {value === "true" || value === "false" ?
-                                              <FormControl>
-                                                <FormLabel id="demo-row-radio-buttons-group-label"
-                                                  sx={(theme) => ({
-                                                    fontSize: '16px',
-                                                    color: 'text.primary'
-                                                  })}> {getSettingsName(key)}</FormLabel>
-                                                <RadioGroup
-                                                  row
-                                                  aria-labelledby="demo-row-radio-buttons-group-label"
-                                                  name={key}
-                                                  value={value}
-                                                  onChange={(e) => handleChange(e, key)}
-                                                >
-                                                  <FormControlLabel disabled={isDisabled} value="true"
-                                                    control={<Radio />} label="True" />
-                                                  <FormControlLabel disabled={isDisabled}
-                                                    value="false" control={<Radio />} label="False" />
-                                                </RadioGroup>
-                                              </FormControl>
-                                              :
-                                              <>
-                                                <InputLabel variant="standard" htmlFor="uncontrolled-native"
-                                                  sx={{
-                                                    fontSize: '16px',
-                                                    mb: 1,
-                                                    color: 'text.primary'
-                                                  }}>
-                                                  {getLabelName(key)}
-                                                </InputLabel>
-                                                <Input sx={{
-                                                  px: 2,
-                                                  py: 0.5,
-                                                  width: "100%",
-                                                  height: '45px',
-                                                  border: '1px solid #303067',
-                                                  borderRadius: '60px',
-                                                }}
-                                                  disabled={isDisabled}
-                                                  onKeyDown={handleKeypress}
-                                                  name={key}
-                                                  onChange={(e) => onInputChange(e, key)}
-                                                  value={value}
-                                                  disableUnderline
-                                                  placeholder={key} />
-                                              </>
-                                            }
-                                          </>
-                                      }
-                                    </Box>
-                                  )
-                                })
-                              }
-                              {!isDisabled &&
-                                <Stack spacing={2} direction="row" sx={{ float: 'right' }}>
-                                  <Button variant="outlined"
-                                    onClick={() => cancelButton()}
-                                    sx={(theme) => ({
-                                      padding: '8px 20px',
-                                      border: '1px solid #6473FF',
-                                      borderRadius: '60px',
-                                      color: 'white',
-                                      fontSize: '16px',
-                                      textTransform: 'capitalize'
-                                    })}>Cancel</Button>
-                                  <Button var
-                                    type="submit"
-                                    sx={(theme) => ({
-                                      background: '#5552FF',
-                                      borderRadius: '60px',
-                                      color: 'white',
-                                      padding: '8px 30px',
-                                      fontSize: '16px',
-                                      textTransform: 'capitalize'
-                                    })}>Save</Button>
-                                </Stack>
-                              }
-                            </form>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                      :
-                      <Box sx={{ width: 300 }}>
-                        <Skeleton />
-                        <Skeleton animation="wave" />
-                        <Skeleton animation={false} />
-                      </Box>
                     }
-                  </Grid>
-                </AccordionDetails>
-              </Accordion>
-            </Box>
-          )
-        })
+
+                    {!isDisabled &&
+                      <Stack spacing={2} direction="row" sx={{ float: 'right' }}>
+                        <Button variant="outlined"
+                          onClick={() => cancelButton()}
+                          sx={(theme) => ({
+                            padding: '8px 20px',
+                            border: '1px solid #6473FF',
+                            borderRadius: '60px',
+                            color: 'white',
+                            fontSize: '16px',
+                            textTransform: 'capitalize'
+                          })}>Cancel</Button>
+                        <Button var
+                          type="submit"
+                          sx={(theme) => ({
+                            background: '#5552FF',
+                            borderRadius: '60px',
+                            color: 'white',
+                            padding: '8px 30px',
+                            fontSize: '16px',
+                            textTransform: 'capitalize'
+                          })}>Save</Button>
+                      </Stack>
+                    }
+
+                  </form>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+
+
+        </Box>
         :
         <Box sx={{ width: "100%" }}>
           <Skeleton />
@@ -658,7 +616,6 @@ const SettingsCard = () => {
         </Box>
 
       }
-
     </Container >
   )
 }

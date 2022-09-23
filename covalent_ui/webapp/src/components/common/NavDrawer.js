@@ -69,9 +69,18 @@ const NavDrawer = () => {
       }}
     >
       <List>
-        <ListItemButton sx={{ my: 2.5, mb: 6 }} component={Link} to="/">
+
+        {/* <ListItemButton sx={{ my: 2.5, mb: 6 }} component={Link} to="/">
           <Logo data-testid="covalentLogo" style={{ margin: 'auto' }} />
-        </ListItemButton>
+        </ListItemButton> */}
+        <LinkButton
+          title="Logo"
+          path="/"
+          icon={Logo}
+          margintop={8}
+          paddingTop={0.5}
+          paddingLeft={0.5}
+        />
 
         <LinkButton
           title="Dispatch list"
@@ -234,48 +243,54 @@ const LinkButton = ({
           />
         }
       />
-      <Tooltip
-        title={title}
-        placement="right"
-        arrow
-        enterDelay={500}
-        enterNextDelay={750}
-      >
-        <ListItemButton
-          sx={{
-            textAlign: 'left',
-            position:
-              title === 'Settings'
-                ? 'fixed'
-                : 'unset',
-            bottom: '0px',
-          }}
-          onClick={() => menuClick(path)}
-          // component={Link}
-          // to={path}
-          selected={!!selected}
-        >
-          {!!selected ? (
-            <SvgIcon
-              sx={{
-                mx: 'auto',
-                border: '1px solid #998AFF',
-                width: '30px',
-                height: '30px',
-                padding: title === 'Settings' ? '4px 4px 4px 2px' : '5px 0px 0px 3px',
-                borderRadius: '6px',
-                my: 2,
-              }}
-              component={icon}
-            />
-          ) : (
-            <SvgIcon
-              sx={{ mx: 'auto', my: 2, marginLeft: '4px' }}
-              component={icon}
-            />
-          )}
+      {title === "Logo" ?
+        <ListItemButton sx={{ my: 2.5, mb: 6 }} onClick={() => menuClick(path)}>
+          <Logo data-testid="covalentLogo" style={{ margin: 'auto' }} />
         </ListItemButton>
-      </Tooltip>
+        :
+        <Tooltip
+          title={title}
+          placement="right"
+          arrow
+          enterDelay={500}
+          enterNextDelay={750}
+        >
+          <ListItemButton
+            sx={{
+              textAlign: 'left',
+              position:
+                title === 'Settings'
+                  ? 'fixed'
+                  : 'unset',
+              bottom: '0px',
+            }}
+            onClick={() => menuClick(path)}
+            // component={Link}
+            // to={path}
+            selected={!!selected}
+          >
+            {!!selected ? (
+              <SvgIcon
+                sx={{
+                  mx: 'auto',
+                  border: '1px solid #998AFF',
+                  width: '30px',
+                  height: '30px',
+                  padding: title === 'Settings' ? '4px 4px 4px 2px' : '5px 0px 0px 3px',
+                  borderRadius: '6px',
+                  my: 2,
+                }}
+                component={icon}
+              />
+            ) : (
+              <SvgIcon
+                sx={{ mx: 'auto', my: 2, marginLeft: '4px' }}
+                component={icon}
+              />
+            )}
+          </ListItemButton>
+        </Tooltip>
+      }
     </>
   )
 }
