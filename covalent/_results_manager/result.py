@@ -981,13 +981,14 @@ Node Outputs
             return
 
         app_log.debug(f"Cancelling workflow {self._dispatch_id}")
+        cancel_futures = []
         self._cancel_called = True
         await self._get_tasks_queue().put(-1)
         cache = self._get_executor_cache()
-        await cache.finalize_executors()
+        finalize_fut = asyncio.create_task(cache.finalize_executors())
+        cancel_futures.append(finalize_fut)
 
         # Recursively cancel running sublattices
-        sublattice_futures = []
 
         for node_id in self.lattice.transport_graph._graph.nodes:
 
@@ -998,9 +999,9 @@ Node Outputs
                 )
                 if sub_result_obj:
                     cancel_task = asyncio.create_task(sub_result_obj._cancel())
-                    sublattice_futures.append(cancel_task)
+                    cancel_futures.append(cancel_task)
 
-        await asyncio.gather(*sublattice_futures)
+        await asyncio.gather(*cancel_futures)
 
 
 def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:
