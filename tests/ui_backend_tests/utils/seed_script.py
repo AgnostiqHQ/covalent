@@ -29,7 +29,7 @@ def seed(engine):
                     completed_electron_num=item["completed_electron_num"],
                     storage_type=item["storage_type"],
                     storage_path=os.path.dirname(__file__)
-                    + "/results/"
+                    + "/mock_results/"
                     + item["dispatch_id"],  # item["storage_path"],
                     function_filename=item["function_filename"],
                     function_string_filename=item["function_string_filename"],
@@ -67,7 +67,7 @@ def seed(engine):
                     status=item["status"],
                     storage_type=item["storage_type"],
                     storage_path=os.path.dirname(__file__)
-                    + "/results/"
+                    + "/mock_results/"
                     + lattice_records[item["parent_lattice_id"] - 1].dispatch_id
                     + "/"
                     + "node_"

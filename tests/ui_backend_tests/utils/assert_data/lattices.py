@@ -21,7 +21,7 @@ def seed_lattice_data():
                     "directory": os.path.abspath(  # os.path.dirname(__file__)
                         os.path.join(os.path.dirname(__file__), os.pardir)
                     )
-                    + "/results/"
+                    + "/mock_results/"
                     + "78525234-72ec-42dc-94a0-f4751707f9cd",
                     "description": None,
                     "runtime": 0,

@@ -1,0 +1,4 @@
+@ct.lattice
+def workflow(name):
+	result=join(hello(),moniker(name))
+	return result+" !!"

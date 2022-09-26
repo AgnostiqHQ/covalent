@@ -1,0 +1,2 @@
+@ct.electron
+def join(*a): return "".join(a)

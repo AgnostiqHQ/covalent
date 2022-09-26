@@ -1,0 +1,2 @@
+@ct.electron
+def moniker(name): return name+" "
