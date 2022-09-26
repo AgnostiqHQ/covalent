@@ -22,23 +22,37 @@
 
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
+import { BrowserRouter } from 'react-router-dom'
+
 import App from '../NotFound'
 
 describe('page not found component render', () => {
   test('page not found text check', () => {
-    const component = render(<App />);
-    const linkElement = component.getByText(/Page not found./i);
-    expect(linkElement).toBeInTheDocument();
+    const component = render(
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    )
+    const linkElement = component.getByText(/Page not found./i)
+    expect(linkElement).toBeInTheDocument()
   })
 
   test('page not found logo', () => {
-    render(<App />)
+    render(
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    )
     const element = screen.getByTestId('logo')
     expect(element).toBeInTheDocument()
   })
 
   test('page not found message check', () => {
-    render(<App />)
+    render(
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    )
     const element = screen.getByTestId('message')
     expect(element).toBeInTheDocument()
   })

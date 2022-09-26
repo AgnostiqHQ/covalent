@@ -20,12 +20,11 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { screen } from '@testing-library/react'
+import { screen, render } from '@testing-library/react'
 import App from '../DashboardCard'
 import { BrowserRouter } from 'react-router-dom'
 import React from 'react'
 import { Provider } from 'react-redux'
-import { render } from '@testing-library/react'
 import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
 import theme from '../../../utils/theme'
