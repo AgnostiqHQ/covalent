@@ -397,65 +397,64 @@ const LogsListing = () => {
                 <TableBody>
                   {logListView &&
                     logListView.map((result, index) => (
-                      <TableRow
-                        hover
-                        key={index}
-                        sx={{ height: '50px' }}
-                        onMouseEnter={() => setIsShown(true)}
-                        onMouseLeave={() => setIsShown(false)}
+                      <Tooltip
+                        title={!copied ? 'Click to copy log message' : 'Copied'}
+                        placement="top"
+                        data-testid="log"
                       >
-                        {console.log(isShown)}
-                        <TableCell
-                          sx={{
-                            width: 180,
-                            verticalAlign: 'top',
-                            fontFamily: (theme) => theme.typography.logsFont,
+                        <TableRow
+                          onClick={() => {
+                            copy(result.message)
+                            setCopied(true)
+                            setTimeout(() => setCopied(false), 1200)
                           }}
-                        >
-                          <Grid
-                            sx={{
-                              fontSize: '12px',
-                            }}
-                          >
-                            {formatLogTime(result.logDate)}
-                          </Grid>
-                          <Grid
-                            sx={{
-                              color: (theme) => theme.palette.text.tertiary,
-                              fontSize: '10px',
-                            }}
-                          >
-                            {formatLogDate(result.logDate)}
-                          </Grid>
-                        </TableCell>
-                        <TableCell style={{ width: 180, verticalAlign: 'top' }}>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'top',
-                              fontSize: '14px',
-                              color: statusColor(result.status),
-                            }}
-                          >
-                            {logStatusIcon(result.status)}
-                            &nbsp;
-                            {logStatusLabel(result.status)}
-                          </Box>
-                        </TableCell>
-                        <Tooltip
-                          title={
-                            !copied ? 'Click to copy log message' : 'Copied'
-                          }
-                          placement="top"
-                          data-testid="log"
+                          hover
+                          key={index}
+                          onMouseEnter={() => setIsShown(true)}
+                          onMouseLeave={() => setIsShown(false)}
                         >
                           <TableCell
-                            colSpan={2}
-                            onClick={() => {
-                              copy(result.message)
-                              setCopied(true)
-                              setTimeout(() => setCopied(false), 1200)
+                            sx={{
+                              width: 180,
+                              verticalAlign: 'top',
+                              fontFamily: (theme) => theme.typography.logsFont,
                             }}
+                          >
+                            <Grid
+                              sx={{
+                                fontSize: '12px',
+                              }}
+                            >
+                              {formatLogTime(result.logDate)}
+                            </Grid>
+                            <Grid
+                              sx={{
+                                color: (theme) => theme.palette.text.tertiary,
+                                fontSize: '10px',
+                              }}
+                            >
+                              {formatLogDate(result.logDate)}
+                            </Grid>
+                          </TableCell>
+                          <TableCell
+                            style={{ width: 180, verticalAlign: 'top' }}
+                          >
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'top',
+                                fontSize: '14px',
+                                color: statusColor(result.status),
+                              }}
+                            >
+                              {logStatusIcon(result.status)}
+                              &nbsp;
+                              {logStatusLabel(result.status)}
+                            </Box>
+                          </TableCell>
+
+                          <TableCell
+                            colSpan={2}
                             sx={{
                               verticalAlign: 'top',
                               color: (theme) => theme.palette.primary.white,
@@ -472,8 +471,8 @@ const LogsListing = () => {
                               {result.message}
                             </Typography>
                           </TableCell>
-                        </Tooltip>
-                      </TableRow>
+                        </TableRow>
+                      </Tooltip>
                     ))}
                 </TableBody>
               </StyledTable>
@@ -541,9 +540,6 @@ const LogsListing = () => {
                     </TableCell>
                     <TableCell>
                       <Skeleton sx={{ my: 2 }} />
-                    </TableCell>
-                    <TableCell sx={{ width: '5%' }}>
-                      <Skeleton sx={{ my: 1, py: 2, px: 0.5 }} />
                     </TableCell>
                   </TableRow>
                 ))}

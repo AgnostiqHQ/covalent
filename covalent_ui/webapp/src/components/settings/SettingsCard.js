@@ -316,9 +316,9 @@ const SettingsCard = () => {
   const handleInputChange = (e) => {
     setSearchKey(e.target.value)
     const filterData = Object.fromEntries(Object.entries(tempData).filter(([key]) =>
-      key.includes(e.target.value)))
+      key.includes(e.target.value.toLowerCase())))
     const filterData1 = Object.fromEntries(Object.entries(tempDataServer).filter(([key]) =>
-      key.includes(e.target.value)))
+      key.includes(e.target.value.toLowerCase())))
     setClientDetail(filterData)
     setServerDetail(filterData1)
   };
@@ -585,10 +585,10 @@ const SettingsCard = () => {
                                     key === "log_level" ?
                                       <Box>
                                         <FormLabel id="demo-simple-select-label"
-                                          sx={(theme) => ({
+                                          sx={{
                                             fontSize: '16px',
-                                            color: 'text.primary',
-                                          })}> {getSettingsName(key)}</FormLabel>
+                                            color: 'text.primary'
+                                          }}> {getSettingsName(key)}</FormLabel>
                                         <Select
                                           fullWidth
                                           labelId="demo-simple-select-label"
