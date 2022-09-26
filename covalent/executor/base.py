@@ -346,8 +346,8 @@ class BaseExecutor(_AbstractBaseExecutor):
         if status == "RUNNING":
             try:
                 self.cancel(dispatch_id, node_id)
-            except NotImplementedError as ex:
-                pass
+            except Exception as ex:
+                app_log.exception(f"Failed to cancel task {dispatch_id}:{node_id}: {ex}")
 
     def _finalize_sync(self):
 
@@ -590,8 +590,8 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             self._set_task_status(dispatch_id, node_id, "CANCELLING")
             try:
                 await self.cancel(dispatch_id, node_id)
-            except NotImplementedError as ex:
-                pass
+            except Exception as ex:
+                app_log.exception(f"Failed to cancel task {dispatch_id}:{node_id}: {ex}")
 
     async def _finalize(self):
         tasks = self._get_registered_tasks()

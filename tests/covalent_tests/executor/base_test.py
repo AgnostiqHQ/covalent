@@ -1026,6 +1026,16 @@ def test_executor_cancel_task(mocker):
     mock_cancel.assert_not_called()
     assert me._get_task_status("asdf", 2) == "COMPLETED"
 
+    # Check that exceptions in cancel() are logged
+
+    me._set_task_status("asdf", 1, "RUNNING")
+    mock_except = mocker.patch("covalent.executor.base.app_log.exception")
+    mock_cancel = mocker.patch(
+        "covalent.executor.base.BaseExecutor.cancel", side_effect=NotImplementedError()
+    )
+    me._cancel_task("asdf", 1)
+    mock_except.assert_called_once()
+
 
 @pytest.mark.asyncio
 async def test_async_executor_cancel_task(mocker):
@@ -1048,6 +1058,16 @@ async def test_async_executor_cancel_task(mocker):
     await me._cancel_task("asdf", 2)
     mock_cancel.assert_not_awaited()
     assert me._get_task_status("asdf", 2) == "COMPLETED"
+
+    # Check that exceptions in cancel() are logged
+
+    me._set_task_status("asdf", 1, "RUNNING")
+    mock_except = mocker.patch("covalent.executor.base.app_log.exception")
+    mock_cancel = mocker.patch(
+        "covalent.executor.base.AsyncBaseExecutor.cancel", side_effect=NotImplementedError()
+    )
+    await me._cancel_task("asdf", 1)
+    mock_except.assert_called_once()
 
 
 @pytest.mark.asyncio
