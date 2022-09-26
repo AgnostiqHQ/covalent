@@ -91,7 +91,7 @@ const NavDrawer = () => {
           paddingRight="0px"
           paddingBottom="0px"
           position="fixed"
-          bottom={490}
+          bottom="68%"
         />
 
         <LinkButton
@@ -103,7 +103,7 @@ const NavDrawer = () => {
           paddingRight="0px"
           paddingBottom="0px"
           position="fixed"
-          bottom={410}
+          bottom="58%"
         />
 
         <LinkButton

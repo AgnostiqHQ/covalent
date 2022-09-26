@@ -244,7 +244,6 @@ const LogsListing = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
   const [disableDownload, setDisableDownload] = useState(false)
-  const [isShown, setIsShown] = useState(false)
   const [copied, setCopied] = useState(false)
   // reset store values to initial state when moved to another page
   useEffect(() => {
@@ -410,8 +409,6 @@ const LogsListing = () => {
                           }}
                           hover
                           key={index}
-                          onMouseEnter={() => setIsShown(true)}
-                          onMouseLeave={() => setIsShown(false)}
                         >
                           <TableCell
                             sx={{
