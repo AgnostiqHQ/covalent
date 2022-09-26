@@ -242,7 +242,7 @@ def encode_metadata(metadata: dict) -> dict:
     if "executor" in metadata:
         if "executor_data" not in metadata:
             encoded_metadata["executor_data"] = {}
-        if not isinstance(metadata["executor"], str):
+        if metadata["executor"] is not None and not isinstance(metadata["executor"], str):
             encoded_executor = metadata["executor"].to_dict()
             encoded_metadata["executor"] = encoded_executor["short_name"]
             encoded_metadata["executor_data"] = encoded_executor
@@ -250,27 +250,32 @@ def encode_metadata(metadata: dict) -> dict:
     if "workflow_executor" in metadata:
         if "workflow_executor_data" not in metadata:
             encoded_metadata["workflow_executor_data"] = {}
-        if not isinstance(metadata["workflow_executor"], str):
+        if metadata["workflow_executor"] is not None and not isinstance(
+            metadata["workflow_executor"], str
+        ):
             encoded_wf_executor = metadata["workflow_executor"].to_dict()
             encoded_metadata["workflow_executor"] = encoded_wf_executor["short_name"]
             encoded_metadata["workflow_executor_data"] = encoded_wf_executor
 
     # Bash Deps, Pip Deps, Env Deps, etc
     if "deps" in metadata:
-        for dep_type, dep_object in metadata["deps"].items():
-            if not isinstance(dep_object, dict):
-                encoded_metadata["deps"][dep_type] = dep_object.to_dict()
+        if metadata["deps"] is not None:
+            for dep_type, dep_object in metadata["deps"].items():
+                if not isinstance(dep_object, dict):
+                    encoded_metadata["deps"][dep_type] = dep_object.to_dict()
 
     # call_before/after
     if "call_before" in metadata:
-        for i, dep in enumerate(metadata["call_before"]):
-            if not isinstance(dep, dict):
-                encoded_metadata["call_before"][i] = dep.to_dict()
+        if metadata["call_before"] is not None:
+            for i, dep in enumerate(metadata["call_before"]):
+                if not isinstance(dep, dict):
+                    encoded_metadata["call_before"][i] = dep.to_dict()
 
     if "call_after" in metadata:
-        for i, dep in enumerate(metadata["call_after"]):
-            if not isinstance(dep, dict):
-                encoded_metadata["call_after"][i] = dep.to_dict()
+        if metadata["call_after"] is not None:
+            for i, dep in enumerate(metadata["call_after"]):
+                if not isinstance(dep, dict):
+                    encoded_metadata["call_after"][i] = dep.to_dict()
 
     return encoded_metadata
 
