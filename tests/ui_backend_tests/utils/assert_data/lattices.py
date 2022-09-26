@@ -44,8 +44,6 @@ def seed_lattice_data():
                 },
                 "response_data": {
                     "data": """@ct.lattice\ndef workflow(name):\n\tresult=join(hello(),moniker(name))\n\treturn result+\" !!\"
-
-
 """
                 },
             },

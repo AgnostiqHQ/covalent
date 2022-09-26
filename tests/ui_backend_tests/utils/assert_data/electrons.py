@@ -36,7 +36,7 @@ def seed_electron_data():
                     "electron_id": 0,
                     "name": "function_string",
                 },
-                "response_data": {"data": '@ct.electron\ndef hello(): return "Hello "\n\n\n'},
+                "response_data": {"data": '@ct.electron\ndef hello(): return "Hello "\n'},
             },
             "case_executor_1": {
                 "status_code": 200,
