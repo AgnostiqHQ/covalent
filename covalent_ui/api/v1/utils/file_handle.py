@@ -29,22 +29,17 @@ from covalent._workflow.transport import TransportableObject, _TransportGraph
 
 
 def transportable_object(obj):
+    """Decode transportable object
+
+    Args:
+        obj: Covalent transportable object
+    Returns:
+        Decoded transportable object
+    """
     if obj:
         load_pickle = base64.b64decode(obj._object.encode("utf-8"))
-        return f"""
-        pickle.loads({load_pickle})"""
+        return f"\npickle.loads({load_pickle})"
     return None
-
-
-def listToString(string):
-    if string:
-        str1 = ""
-        for ele in string:
-            if ele:
-                str1 += ele
-            else:
-                return None
-        return str1
 
 
 def validate_data(unpickled_object):
@@ -59,32 +54,27 @@ def validate_data(unpickled_object):
             return list_str
     if isinstance(unpickled_object, dict):
         args_array = []
-        decoded_array = []
         kwargs_array = {}
         if bool(unpickled_object):
             if "type" in unpickled_object:
                 return unpickled_object
             for obj in unpickled_object["args"]:
-                object_bytes = transportable_object(obj)
-                decoded_array.append(object_bytes)
                 args_array.append(obj.object_string) if obj is not None else None
 
             for obj in unpickled_object["kwargs"]:
-                object_bytes = transportable_object(unpickled_object["kwargs"][obj])
-                decoded_array.append(object_bytes)
                 kwargs_array[obj] = (
                     unpickled_object["kwargs"][obj].object_string
                     if unpickled_object["kwargs"][obj] is not None
                     else None
                 )
 
-            decoded = listToString(decoded_array)
+            to_transportable_object = TransportableObject(
+                {"args": str(args_array), "kwargs": str(kwargs_array)}
+            )
+            object_bytes = transportable_object(to_transportable_object)
             return (
                 json.dumps({"args": args_array, "kwargs": kwargs_array}),
-                f"""
-            import pickle
-            {decoded}
-            """,
+                f"import pickle{object_bytes}",
             )
         else:
             return None
@@ -97,9 +87,7 @@ def validate_data(unpickled_object):
         res = unpickled_object.object_string
         return (
             json.dumps(res),
-            f"""
-        import pickle{object_bytes}
-        """,
+            f"import pickle{object_bytes}",
         )
     elif isinstance(unpickled_object, _TransportGraph):
         return str(unpickled_object.__dict__)
