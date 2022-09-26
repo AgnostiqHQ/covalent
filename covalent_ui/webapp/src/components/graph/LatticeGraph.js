@@ -26,6 +26,7 @@ import ReactFlow, {
   getIncomers,
   getOutgoers,
   isEdge,
+  isNode
 } from 'react-flow-renderer'
 import ElectronNode from './ElectronNode'
 import { NODE_TEXT_COLOR } from './ElectronNode'
@@ -203,6 +204,14 @@ const LatticeGraph = ({
         return prevElements?.map((elem) => {
           const incomerIds = allIncomers.map((i) => i.id)
           const outgoerIds = allOutgoers.map((o) => o.id)
+          if (isNode(elem) && (allOutgoers.length > 0 || allIncomers.length > 0)) {
+            const highlight = elem.id === node.id || incomerIds.includes(elem.id) || outgoerIds.includes(elem.id)
+
+            elem.style = {
+              ...elem.style,
+              opacity: highlight ? 1 : 0.45,
+            }
+          }
           if (isEdge(elem)) {
             if (selection) {
               const animated =
@@ -214,6 +223,7 @@ const LatticeGraph = ({
               elem.style = {
                 ...elem.style,
                 stroke: animated ? '#6473FF' : '#303067',
+                opacity: animated ? 1 : 0.45,
               }
               elem.labelStyle = animated
                 ? { fill: '#6473FF' }
@@ -240,7 +250,12 @@ const LatticeGraph = ({
   const resetNodeStyles = () => {
     setElements((prevElements) => {
       return prevElements?.map((elem) => {
-        if (isEdge(elem)) {
+        if (isNode(elem)) {
+          elem.style = {
+            ...elem.style,
+            opacity: 1,
+          }
+        } else {
           elem.animated = false
           elem.labelStyle = { fill: NODE_TEXT_COLOR }
           elem.style = {

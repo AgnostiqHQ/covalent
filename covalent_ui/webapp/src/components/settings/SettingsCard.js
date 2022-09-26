@@ -91,6 +91,7 @@ const SettingsCard = () => {
       }
       dispatch(toggleLatticeDrawer(settingObj))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valueChange, resultOutput])
 
   useEffect(() => {
