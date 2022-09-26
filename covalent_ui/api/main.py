@@ -43,7 +43,7 @@ socket_origins = [f"http://{address}:{port}", f"http://{address}:{socket_port}"]
 app_log = logger.app_log
 
 app = FastAPI()
-sio = socketio.AsyncServer(cors_allowed_origins=socket_origins, async_mode="asgi")
+sio = socketio.AsyncServer(cors_allowed_origins=socket_origins, async_mode="asgi", logger=True)
 
 
 @sio.on("message")
