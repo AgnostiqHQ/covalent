@@ -52,6 +52,7 @@ def test_local_executor_passes_results_dir(mocker):
             dispatch_id=-1,
             results_dir=tmp_dir,
             node_id=0,
+            status_store=mocker.MagicMock(),
         )
         mocked_function.assert_called_once()
 
@@ -106,12 +107,14 @@ def test_wrapper_fn_calldep_non_unique_retval_keys_injection():
     assert output.get_deserialized() == 6
 
 
-def test_local_executor_run():
+def test_local_executor_run(mocker):
     def f(x):
         return x**2
+
+    status_store = mocker.MagicMock()
 
     le = LocalExecutor()
     args = [5]
     kwargs = {}
-    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1, "status_store": status_store}
     assert le.run(f, args, kwargs, task_metadata) == 25
