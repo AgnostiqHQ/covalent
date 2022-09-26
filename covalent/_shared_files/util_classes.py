@@ -24,26 +24,27 @@ import queue
 from multiprocessing.queues import Queue as MPQ
 from typing import Any, NamedTuple
 
+from . import logger
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
+
 
 class SafeVariable(MPQ):
     def __init__(self) -> None:
         super().__init__(maxsize=1, ctx=mp.get_context())
 
     def save(self, value: Any) -> None:
-        print("Saving things")
-
         try:
-            self.put_nowait(value)
+            self.put(value, timeout=1)
         except queue.Full:
             self.get_nowait()
             self.put_nowait(value)
 
     def retrieve(self) -> Any:
-        print("Loading things")
-
         try:
-            value = self.get_nowait()
-            self.put_nowait(value)
+            value = self.get(timeout=1)
+            self.put(value, timeout=1)
             return value
         except queue.Empty:
             return None

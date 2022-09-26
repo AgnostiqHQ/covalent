@@ -23,6 +23,11 @@ import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from . import logger
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
+
 if TYPE_CHECKING:
     from util_classes import SafeVariable
 
@@ -68,6 +73,11 @@ class PostprocessingStatus(RunningCategory):
     description = "Task is currently postprocessing"
 
 
+class IntRunningStatus(RunningCategory):
+    status_name = "INT_RUNNING"
+    description = "Intermediate running status"
+
+
 # Completed Statuses
 class CompletedCategory(Status):
     category_name = "CompletedCategory"
@@ -110,11 +120,13 @@ async def status_listener(
     while True:
         try:
             current_status = status_store.retrieve()
-            if isinstance(current_status, (None, PendingCategory, RunningCategory)):
-                result_object._update_node(node_id=node_id, status=current_status)
-                await asyncio.sleep(1)
+            if isinstance(current_status, (type(None), PendingCategory, RunningCategory)):
+                node_status = result_object._get_node_status(node_id)
+                if node_status != str(current_status):
+                    result_object._update_node(node_id=node_id, status=str(current_status))
+                await asyncio.sleep(0)
             else:
-                result_object._update_node(node_id=node_id, status=current_status)
+                result_object._update_node(node_id=node_id, status=str(current_status))
                 break
         except asyncio.CancelledError:
             status_store.close()

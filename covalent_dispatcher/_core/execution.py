@@ -46,7 +46,7 @@ from covalent._shared_files.defaults import (
     prefix_separator,
     sublattice_prefix,
 )
-from covalent._shared_files.statuses import status_listener
+from covalent._shared_files.statuses import PendingCategory, status_listener
 from covalent._shared_files.util_classes import SafeVariable
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
@@ -333,7 +333,10 @@ async def _run_task(
 
         else:
             app_log.debug(f"Executing task {node_name}")
+
             status_store = SafeVariable()
+            status_store.save(PendingCategory())
+
             assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
             execute_callable = partial(
                 executor.execute,
