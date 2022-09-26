@@ -37,6 +37,7 @@ class Status:
     description = "Default status description"
 
     def __str__(self):
+        # return self.get_identifier()
         return self.status_name
 
     def get_identifier(self):
@@ -107,12 +108,16 @@ async def status_listener(
     result_object: "Result", node_id: int, status_store: "SafeVariable"
 ) -> None:
     while True:
-        current_status = status_store.retrieve()
-        if isinstance(current_status, (None, PendingCategory, RunningCategory)):
-            result_object._update_node(node_id=node_id, status=current_status)
-            await asyncio.sleep(0)
-        else:
-            result_object._update_node(node_id=node_id, status=current_status)
+        try:
+            current_status = status_store.retrieve()
+            if isinstance(current_status, (None, PendingCategory, RunningCategory)):
+                result_object._update_node(node_id=node_id, status=current_status)
+                await asyncio.sleep(1)
+            else:
+                result_object._update_node(node_id=node_id, status=current_status)
+                break
+        except asyncio.CancelledError:
+            status_store.close()
             break
 
 

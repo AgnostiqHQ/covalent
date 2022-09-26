@@ -361,6 +361,9 @@ async def _run_task(
                 loop = asyncio.get_running_loop()
                 output, stdout, stderr = await loop.run_in_executor(None, execute_callable)
 
+            # Stop listening for status updates
+            listener_task.cancel()
+
             node_result = generate_node_result(
                 node_id=node_id,
                 end_time=datetime.now(timezone.utc),
@@ -371,6 +374,9 @@ async def _run_task(
             )
 
     except Exception as ex:
+        # Stop listening for status updates
+        listener_task.cancel()
+
         app_log.error(f"Exception occurred when running task {node_id}: {ex}")
         node_result = generate_node_result(
             node_id=node_id,
