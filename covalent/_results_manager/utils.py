@@ -22,7 +22,7 @@
 
 import requests
 
-from .._shared_files.config import CMType, get_config
+from .._shared_files.config import get_config
 
 
 def convert_to_lattice_function_call(
@@ -54,9 +54,7 @@ def convert_to_lattice_function_call(
 
 
 def _db_path(
-    dispatcher: str = get_config(CMType.CLIENT, "server.address")
-    + ":"
-    + str(get_config(CMType.CLIENT, "server.port")),
+    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
 ) -> str:
     url = "http://" + dispatcher + "/api/db-path"
     r = requests.get(url)
