@@ -222,17 +222,15 @@ const SettingsCard = () => {
   }
 
   const handleClick = (item) => {
-    let tmpList = [];
     _.map(item, function (value, key) {
       if (_.isObject(value)) {
         setOpen(!open);
-        tmpList.push(key)
+        setSubMenu(item)
       }
       else {
         setOpen(false);
       }
     })
-    setSubMenu(tmpList);
   };
 
   const menuClick = (value, key, panel) => {
@@ -330,8 +328,15 @@ const SettingsCard = () => {
     setServerDetail(Object.values(settings_result)[1])
   }
 
-  const handleSubmenuClick = (menu) => {
-    document.getElementById(menu).scrollIntoView({ behavior: "smooth" });
+  const handleSubmenuClick = (value, key) => {
+    if (resultKey !== "executors") {
+      setValueChange(false)
+      setResultKey("executors")
+      setResultOutput(value)
+    }
+    else {
+      document.getElementById(key).scrollIntoView({ behavior: "smooth" });
+    }
   }
 
   const onInputChange = (e, key) => {
@@ -420,7 +425,7 @@ const SettingsCard = () => {
                 </Typography>
                 {_.map(clientDetail, function (menuValue, menuKey) {
                   return (
-                    <StyledList sx={{ pb: 0, pt: 0 }}>
+                    <StyledList sx={{ pb: 0, pt: 0 }} key={menuKey}>
                       <ListItem disablePadding>
                         <ListItemButton
                           onClick={isChildHasList ? () => handleClick(menuValue) : () => { }}
@@ -452,11 +457,11 @@ const SettingsCard = () => {
                       {
                         _.map(subMenu, function (value, key) {
                           return (
-                            <StyledList sx={{ pb: 0, pt: 0 }}>
+                            <StyledList sx={{ pb: 0, pt: 0 }} key={key}>
                               <ListItem disablePadding>
                                 <ListItemButton sx={{ pl: 9, pt: 0.3, pb: 0.3 }}>
-                                  <ListItemText inset primary={getSubmenuName(value)}
-                                    onClick={() => handleSubmenuClick(value)}
+                                  <ListItemText inset primary={getSubmenuName(key)}
+                                    onClick={() => handleSubmenuClick(subMenu, key)}
                                     disableTypography
                                     sx={{ pl: "0px", fontSize: '18px' }} />
                                 </ListItemButton>
@@ -477,7 +482,7 @@ const SettingsCard = () => {
                 </Typography>
                 {_.map(serverDetail, function (menuValue, menuKey) {
                   return (
-                    <StyledList sx={{ pb: 0, pt: 0 }}>
+                    <StyledList sx={{ pb: 0, pt: 0 }} key={menuKey}>
                       <ListItem disablePadding>
                         <ListItemButton
                           onClick={isChildHasList ? () => handleClick(menuValue) : () => { }}
@@ -515,11 +520,11 @@ const SettingsCard = () => {
                     {
                       _.map(resultOutput, function (value, key) {
                         return (
-                          <Box sx={{ mb: 3 }}>
+                          <Box sx={{ mb: 3 }} key={key}>
                             {
                               _.isObject(value)
                                 ?
-                                <Box id={key}>
+                                <Box key={key}>
                                   <Typography variant="h6" component="h6"
                                     sx={(theme) => ({ color: theme.palette.primary.light, fontWeight: 'bold' })}>
                                     {getSettingsName(key)}
@@ -527,7 +532,7 @@ const SettingsCard = () => {
                                   {
                                     _.map(value, function (item, key1) {
                                       return (
-                                        <Box sx={{ mt: 3 }}>
+                                        <Box sx={{ mt: 3 }} key={key1}>
                                           {value === "true" || value === "false" ?
                                             <FormControl>
                                               <FormLabel id="demo-row-radio-buttons-group-label"
