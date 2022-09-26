@@ -37,7 +37,6 @@ import {
 } from '../../redux/logsSlice'
 import DownloadButton from '../common/DownloadButton'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
-import CopyButton from '../common/CopyButton'
 import {
   logStatusIcon,
   logStatusLabel,
@@ -451,7 +450,7 @@ const LogsListing = () => {
                           data-testid="log"
                         >
                           <TableCell
-                            colSpan={2} 
+                            colSpan={2}
                             onClick={() => {
                               copy(result.message)
                               setCopied(true)

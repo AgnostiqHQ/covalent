@@ -803,7 +803,7 @@ const ResultListing = () => {
           <Grid>
             <TableContainer
               sx={{
-                height: _.isEmpty(dashboardListView) ? 50 : 310,
+                height: _.isEmpty(dashboardListView) ? 50 : 350,
                 '@media (min-width: 1500px) and (min-height: 850px)': {
                   height: _.isEmpty(dashboardListView) ? 50 : 450,
                 },

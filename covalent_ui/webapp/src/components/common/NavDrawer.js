@@ -314,7 +314,7 @@ const LinkButton = ({
                 sx={{
                   mx: 'auto',
                   my: 2,
-                  marginLeft: '4px',
+                  marginLeft: title === 'Settings' ? '0px' : '4px',
                   '&:hover': {
                     mx: 'auto',
                     border: '1px solid #998AFF',
