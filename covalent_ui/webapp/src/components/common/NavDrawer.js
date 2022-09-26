@@ -31,7 +31,7 @@ import {
   Grid,
   Toolbar,
   Typography,
-  Snackbar
+  Snackbar,
 } from '@mui/material'
 import { ReactComponent as Logo } from '../../assets/covalent-logo.svg'
 import { ReactComponent as DispatchList } from '../../assets/dashboard.svg'
@@ -42,10 +42,10 @@ import { ReactComponent as Logs } from '../../assets/logs.svg'
 import { ReactComponent as ExitNewIcon } from '../../assets/exit.svg'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import { useMatch } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import DialogBox from '../../components/settings/DialogBox'
-import { updateSettings } from '../../redux/settingsSlice';
+import { updateSettings } from '../../redux/settingsSlice'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
 
 export const navDrawerWidth = 60
@@ -69,14 +69,17 @@ const NavDrawer = () => {
       }}
     >
       <List>
-
         <LinkButton
           title="Logo"
           path="/"
           icon={Logo}
           margintop={8}
-          paddingTop={0.5}
-          paddingLeft={0.5}
+          paddingTop="5px"
+          paddingLeft="3px"
+          paddingRight="0px"
+          paddingBottom="0px"
+          position="unset"
+          bottom={0}
         />
 
         <LinkButton
@@ -84,27 +87,48 @@ const NavDrawer = () => {
           path="/"
           icon={DispatchList}
           margintop={8}
-          paddingTop={0.5}
-          paddingLeft={0.5}
+          paddingTop="5px"
+          paddingLeft="3px"
+          paddingRight="0px"
+          paddingBottom="0px"
+          position="unset"
+          bottom={0}
         />
 
         <LinkButton
           title="Lattice draw preview"
           path="/preview"
           icon={DispatchPreview}
-          paddingTop={0.5}
-          paddingLeft={0.5}
+          paddingTop="5px"
+          paddingLeft="3px"
+          paddingRight="0px"
+          paddingBottom="0px"
+          position="unset"
+          bottom={0}
         />
 
-        <LinkButton title="Settings" path="/settings" icon={NavSettings} />
+        <LinkButton
+          title="Settings"
+          path="/settings"
+          icon={NavSettings}
+          position="fixed"
+          bottom={0}
+          paddingTop="4px"
+          paddingLeft="2px"
+          paddingRight="4px"
+          paddingBottom="4px"
+        />
         <Grid>
           <LinkButton
             title="Logs"
             path="/logs"
             icon={Logs}
-            margintop={36}
-            paddingTop={0.9}
-            paddingLeft={0.8}
+            paddingTop="7px"
+            paddingLeft="4px"
+            paddingRight="0px"
+            paddingBottom="0px"
+            position="fixed"
+            bottom={70}
           />
         </Grid>
       </List>
@@ -112,13 +136,12 @@ const NavDrawer = () => {
   )
 }
 
-
 const DialogToolbar = ({
   openDialogBox,
   setOpenDialogBox,
   onClickHand,
   handleClose,
-  handlePopClose
+  handlePopClose,
 }) => {
   return (
     <Toolbar disableGutters sx={{ mb: 1 }}>
@@ -128,8 +151,7 @@ const DialogToolbar = ({
           alignItems: 'center',
           justifyContent: 'center',
         }}
-      >
-      </Typography>
+      ></Typography>
       <DialogBox
         openDialogBox={openDialogBox}
         setOpenDialogBox={setOpenDialogBox}
@@ -149,8 +171,12 @@ const LinkButton = ({
   icon,
   path,
   margintop,
+  paddingRight,
+  paddingBottom,
   paddingTop,
   paddingLeft,
+  position,
+  bottom,
 }) => {
   const dispatch = useDispatch()
   const selected = useMatch(path)
@@ -158,26 +184,24 @@ const LinkButton = ({
   const [popupShow, setPopupShow] = useState(false)
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
-  let navigate = useNavigate();
+  let navigate = useNavigate()
 
   const menuClick = (path) => {
     // navigate(path);
     if (dRes === null) {
-      navigate(path);
-    }
-    else if (dRes.isChanged === true) {
+      navigate(path)
+    } else if (dRes.isChanged === true) {
       setPopupShow(true)
-    }
-    else {
-      navigate(path);
+    } else {
+      navigate(path)
     }
   }
 
   const popHandleSubmit = (event) => {
     const updateData = {
       [dRes.mainKey]: {
-        [dRes.nodeName]: dRes.data
-      }
+        [dRes.nodeName]: dRes.data,
+      },
     }
     dispatch(updateSettings(updateData)).then((action) => {
       if (action.type === updateSettings.fulfilled.type) {
@@ -185,16 +209,18 @@ const LinkButton = ({
         setSnackbarMessage('Settings updated successfully')
         setPopupShow(false)
         const settingObj = {
-          isChanged: false
+          isChanged: false,
         }
         dispatch(toggleLatticeDrawer(settingObj))
         navigate(path)
       } else if (action.type === updateSettings.rejected.type) {
         setOpenSnackbar(true)
-        setSnackbarMessage('Something went wrong and could not update settings!')
+        setSnackbarMessage(
+          'Something went wrong and could not update settings!'
+        )
         setPopupShow(false)
         const settingObj = {
-          isChanged: false
+          isChanged: false,
         }
         dispatch(toggleLatticeDrawer(settingObj))
       }
@@ -208,14 +234,14 @@ const LinkButton = ({
   const handlePopClose = () => {
     navigate(path)
     const settingObj = {
-      isChanged: false
+      isChanged: false,
     }
     dispatch(toggleLatticeDrawer(settingObj))
   }
 
   return (
     <>
-      {popupShow &&
+      {popupShow && (
         <DialogToolbar
           openDialogBox={popupShow}
           setOpenDialogBox={popupShow}
@@ -223,7 +249,7 @@ const LinkButton = ({
           handleClose={handleClose}
           handlePopClose={handlePopClose}
         />
-      }
+      )}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={3000}
@@ -241,11 +267,11 @@ const LinkButton = ({
           />
         }
       />
-      {title === "Logo" ?
+      {title === 'Logo' ? (
         <ListItemButton sx={{ my: 2.5, mb: 6 }} onClick={() => menuClick(path)}>
           <Logo data-testid="covalentLogo" style={{ margin: 'auto' }} />
         </ListItemButton>
-        :
+      ) : (
         <Tooltip
           title={title}
           placement="right"
@@ -254,13 +280,14 @@ const LinkButton = ({
           enterNextDelay={750}
         >
           <ListItemButton
+            disableRipple
             sx={{
               textAlign: 'left',
-              position:
-                title === 'Settings'
-                  ? 'fixed'
-                  : 'unset',
-              bottom: '0px',
+              position: position,
+              bottom: bottom,
+              '&:hover': {
+                background: (theme) => theme.palette.background.default,
+              },
             }}
             onClick={() => menuClick(path)}
             // component={Link}
@@ -274,7 +301,10 @@ const LinkButton = ({
                   border: '1px solid #998AFF',
                   width: '30px',
                   height: '30px',
-                  padding: title === 'Settings' ? '4px 4px 4px 2px' : '5px 0px 0px 3px',
+                  paddingTop: paddingTop,
+                  paddingRight: paddingRight,
+                  paddingLeft: paddingLeft,
+                  paddingBottom: paddingBottom,
                   borderRadius: '6px',
                   my: 2,
                 }}
@@ -282,13 +312,29 @@ const LinkButton = ({
               />
             ) : (
               <SvgIcon
-                sx={{ mx: 'auto', my: 2, marginLeft: '4px' }}
+                sx={{
+                  mx: 'auto',
+                  my: 2,
+                  marginLeft: '4px',
+                  '&:hover': {
+                    mx: 'auto',
+                    border: '1px solid #998AFF',
+                    width: '30px',
+                    height: '30px',
+                    paddingTop: paddingTop,
+                    paddingRight: paddingRight,
+                    paddingLeft: paddingLeft,
+                    paddingBottom: paddingBottom,
+                    borderRadius: '6px',
+                    my: 2,
+                  },
+                }}
                 component={icon}
               />
             )}
           </ListItemButton>
         </Tooltip>
-      }
+      )}
     </>
   )
 }

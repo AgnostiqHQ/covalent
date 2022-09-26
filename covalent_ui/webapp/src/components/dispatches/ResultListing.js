@@ -413,14 +413,7 @@ const ResultsTableToolbar = ({
         message="Are you sure about deleting"
         icon={DeleteNewIcon}
       />
-      <Grid
-        ml={2}
-        container
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ width: '35%' }}
-      >
+      <Grid ml={2} container direction="row">
         <SortDispatch
           title="All"
           count={allDispatches}
