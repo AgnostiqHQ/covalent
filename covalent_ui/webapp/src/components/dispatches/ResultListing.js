@@ -376,6 +376,7 @@ const ResultsTableToolbar = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            width: '12%',
           }}
         >
           {numSelected} selected
@@ -805,7 +806,7 @@ const ResultListing = () => {
               sx={{
                 height: _.isEmpty(dashboardListView) ? 50 : 350,
                 '@media (min-width: 1500px) and (min-height: 850px)': {
-                  height: _.isEmpty(dashboardListView) ? 50 : 450,
+                  height: _.isEmpty(dashboardListView) ? 50 : 485,
                 },
                 '@media (min-width: 1700px)': {
                   height: _.isEmpty(dashboardListView) ? 50 : '53vh',

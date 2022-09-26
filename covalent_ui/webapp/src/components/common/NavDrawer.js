@@ -79,19 +79,19 @@ const NavDrawer = () => {
           paddingBottom="0px"
           position="unset"
           bottom={0}
+          top={10}
         />
 
         <LinkButton
           title="Dispatch list"
           path="/"
           icon={DispatchList}
-          margintop={8}
           paddingTop="5px"
           paddingLeft="3px"
           paddingRight="0px"
           paddingBottom="0px"
-          position="unset"
-          bottom={0}
+          position="fixed"
+          bottom={490}
         />
 
         <LinkButton
@@ -102,8 +102,8 @@ const NavDrawer = () => {
           paddingLeft="3px"
           paddingRight="0px"
           paddingBottom="0px"
-          position="unset"
-          bottom={0}
+          position="fixed"
+          bottom={410}
         />
 
         <LinkButton
@@ -112,18 +112,18 @@ const NavDrawer = () => {
           icon={NavSettings}
           position="fixed"
           bottom={0}
-          paddingTop="4px"
+          paddingTop="3px"
           paddingLeft="2px"
-          paddingRight="4px"
-          paddingBottom="4px"
+          paddingRight="3px"
+          paddingBottom="6px"
         />
         <Grid>
           <LinkButton
             title="Logs"
             path="/logs"
             icon={Logs}
-            paddingTop="7px"
-            paddingLeft="4px"
+            paddingTop="8px"
+            paddingLeft="5px"
             paddingRight="0px"
             paddingBottom="0px"
             position="fixed"
@@ -283,7 +283,9 @@ const LinkButton = ({
             sx={{
               textAlign: 'left',
               position: position,
+              left: -10,
               bottom: bottom,
+              marginTop: margintop ? margintop : '0px',
               '&:hover': {
                 background: (theme) => theme.palette.background.default,
               },
@@ -296,7 +298,7 @@ const LinkButton = ({
             {!!selected ? (
               <SvgIcon
                 sx={{
-                  mx: 'auto',
+                  mx: 0.5,
                   border: '1px solid #998AFF',
                   width: '30px',
                   height: '30px',
@@ -314,17 +316,19 @@ const LinkButton = ({
                 sx={{
                   mx: 'auto',
                   my: 2,
-                  marginLeft: title === 'Settings' ? '0px' : '4px',
+                  marginLeft: '4px',
+                  border: '1px solid',
+                  borderColor: (theme) => theme.palette.background.default,
+                  width: '30px',
+                  height: '30px',
+                  paddingTop: paddingTop,
+                  paddingRight: paddingRight,
+                  paddingLeft: paddingLeft,
+                  paddingBottom: paddingBottom,
+                  borderRadius: '6px',
+
                   '&:hover': {
-                    mx: 'auto',
                     border: '1px solid #998AFF',
-                    width: '30px',
-                    height: '30px',
-                    paddingTop: paddingTop,
-                    paddingRight: paddingRight,
-                    paddingLeft: paddingLeft,
-                    paddingBottom: paddingBottom,
-                    borderRadius: '6px',
                     my: 2,
                   },
                 }}
