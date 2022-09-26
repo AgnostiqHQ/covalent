@@ -21,7 +21,7 @@
 from contextlib import contextmanager
 from os import path
 from pathlib import Path
-from typing import BinaryIO, Dict, Generator, Optional
+from typing import BinaryIO, Generator, Optional
 
 from alembic import command
 from alembic.config import Config
@@ -31,9 +31,8 @@ from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from .._shared_files.config import get_config
+from .._shared_files.config import CMType, get_config
 from . import models
-from .storage_backends import LocalStorageBackend, StorageBackend
 
 
 class DataStore:
@@ -46,7 +45,7 @@ class DataStore:
         if db_URL:
             self.db_URL = db_URL
         else:
-            self.db_URL = "sqlite+pysqlite:///" + get_config("dispatcher.db_path")
+            self.db_URL = "sqlite+pysqlite:///" + get_config(CMType.SERVER, "service.db_path")
 
         self.engine = create_engine(self.db_URL, **kwargs)
         self.Session = sessionmaker(self.engine)

@@ -36,9 +36,9 @@ from dask.distributed import Client
 from covalent._shared_files import logger
 
 # Relative imports are not allowed in executor plugins
-from covalent._shared_files.config import get_config
+from covalent._shared_files.config import CMType, get_config
 from covalent._shared_files.utils import _address_client_mapper
-from covalent.executor.base import BaseAsyncExecutor
+from covalent.executor.base import AsyncBaseExecutor
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "DaskExecutor"
@@ -62,7 +62,7 @@ def dask_wrapper(fn, args, kwargs):
     return output, stdout.getvalue(), stderr.getvalue()
 
 
-class DaskExecutor(BaseAsyncExecutor):
+class DaskExecutor(AsyncBaseExecutor):
     """
     Dask executor class that submits the input function to a running dask cluster.
     """
@@ -84,7 +84,7 @@ class DaskExecutor(BaseAsyncExecutor):
 
         if not scheduler_address:
             try:
-                scheduler_address = get_config("dask.scheduler_address")
+                scheduler_address = get_config(CMType.SERVER, "dask.scheduler_address")
             except KeyError as ex:
                 app_log.debug(
                     "No dask scheduler address found in config. Address must be set manually."

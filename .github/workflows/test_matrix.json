@@ -6,8 +6,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -18,7 +17,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -29,8 +28,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -41,7 +39,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -52,8 +50,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -64,7 +61,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -75,8 +72,9 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
+      "push",
       "pull_request",
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -87,7 +85,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -98,8 +96,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -110,7 +107,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -121,8 +118,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -133,7 +129,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -147,8 +143,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -162,7 +157,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -173,8 +168,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -185,7 +179,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -196,8 +190,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -208,7 +201,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -219,8 +212,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "pull_request",
-      "workflow_run",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -231,7 +223,73 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_run",
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "MacOS 12 / Python 3.8 / Dask",
+    "os": "macos-12",
+    "python-version": "3.8",
+    "backend": "dask",
+    "experimental": false,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "MacOS 12 / Python 3.8 / Local",
+    "os": "macos-12",
+    "python-version": "3.8",
+    "backend": "local",
+    "experimental": false,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "MacOS 12 / Python 3.9 / Dask",
+    "os": "macos-12",
+    "python-version": "3.9",
+    "backend": "dask",
+    "experimental": false,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "MacOS 12 / Python 3.9 / Local",
+    "os": "macos-12",
+    "python-version": "3.9",
+    "backend": "local",
+    "experimental": false,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "MacOS 12 / Python 3.10 / Dask",
+    "os": "macos-12",
+    "python-version": "3.10",
+    "backend": "dask",
+    "experimental": false,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "MacOS 12 / Python 3.10 / Local",
+    "os": "macos-12",
+    "python-version": "3.10",
+    "backend": "local",
+    "experimental": false,
+    "trigger": [
+      "schedule",
       "workflow_dispatch"
     ]
   }

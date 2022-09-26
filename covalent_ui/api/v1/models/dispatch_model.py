@@ -21,48 +21,24 @@
 
 
 from datetime import datetime
-from enum import Enum
 from typing import List, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel, conint
 
+from covalent_ui.api.v1.utils.models_helper import SortBy, SortDirection
 from covalent_ui.api.v1.utils.status import Status
 
 
-class CaseInsensitiveEnum(Enum):
-    """Enum overriden to support case insensitive keys"""
-
-    @classmethod
-    def _missing_(cls, value):
-        for member in cls:
-            if member.value == value.upper():
-                return member
-
-
-class SortBy(CaseInsensitiveEnum):
-    """Values to filter data by"""
-
-    RUNTIME = "runtime"
-    STATUS = "status"
-    STARTED = "started_at"
-    LATTICE_NAME = "lattice_name"
-    ENDED = "ended_at"
-
-
-class SortDirection(CaseInsensitiveEnum):
-    """Values to decide sort direction"""
-
-    ASCENDING = "ASC"
-    DESCENDING = "DESC"
-
-
 class DispatchSummaryRequest(BaseModel):
+    """Dispatch Summary Request model"""
+
     count: conint(gt=0, lt=100)
     offset: Optional[conint(gt=-1)] = 0
     sort_by: Optional[SortBy] = SortBy.STARTED
     search: Optional[str] = ""
     direction: Optional[SortDirection] = SortDirection.DESCENDING
+    filter: Optional[Status] = Status.ALL
 
 
 class DispatchModule(BaseModel):
@@ -106,9 +82,16 @@ class DispatchResponse(BaseModel):
 
 
 class DeleteDispatchesRequest(BaseModel):
-    """Dashboard metadate model"""
+    """Dashboard delete request model"""
 
-    dispatches: List[UUID]
+    dispatches: Optional[List[UUID]] = None
+
+
+class DeleteAllDispatchesRequest(BaseModel):
+    """Dashboard delete all request model"""
+
+    status_filter: Optional[Status] = Status.ALL
+    search_string: Optional[str] = ""
 
 
 class DeleteDispatchesResponse(BaseModel):
@@ -126,6 +109,8 @@ class DispatchDashBoardResponse(BaseModel):
     total_jobs_running: int = None
     total_jobs_completed: int = None
     total_jobs_failed: int = None
+    total_jobs_cancelled: int = None
+    total_jobs_new_object: int = None
     latest_running_task_status: Status = None
     total_dispatcher_duration: int = None
 
@@ -134,8 +119,12 @@ class DispatchDashBoardResponse(BaseModel):
 
         schema_extra = {
             "example": {
+                "total_jobs": 5,
                 "total_jobs_running": 5,
-                "total_jobs_done": 20,
+                "total_jobs_completed": 20,
+                "total_jobs_failed": 3,
+                "total_jobs_cancelled": 0,
+                "total_jobs_new_object": 1,
                 "latest_running_task_status": "COMPLETED",
                 "total_dispatcher_duration": 90,
             }

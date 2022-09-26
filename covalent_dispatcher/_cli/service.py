@@ -27,7 +27,6 @@ import json
 import os
 import shutil
 import socket
-import sys
 from subprocess import DEVNULL, Popen
 from typing import Optional
 
@@ -38,13 +37,21 @@ from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
 from covalent._data_store.datastore import DataStore
-from covalent._shared_files.config import _config_manager as cm
-from covalent._shared_files.config import get_config, set_config
+from covalent._shared_files.config import (
+    ClientConfigManager,
+    CMType,
+    ServerConfigManager,
+    get_config,
+    set_config,
+)
 from covalent.utils.migrate import migrate_pickled_result_object
 
-UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
-UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
-UI_SRVDIR = os.path.dirname(os.path.abspath(__file__)) + "/../../covalent_ui"
+ccm = ClientConfigManager()
+scm = ServerConfigManager()
+
+UI_PIDFILE = get_config(CMType.SERVER, "service.cache_dir") + "/ui.pid"
+UI_LOGFILE = get_config(CMType.SERVER, "service.log_dir") + "/covalent_ui.log"
+UI_SRVDIR = f"{os.path.dirname(os.path.abspath(__file__))}/../../covalent_ui"
 
 MIGRATION_WARNING_MSG = "There have been changes applied to the database."
 MIGRATION_COMMAND_MSG = '   (use "covalent db migrate" to run database migrations)'
@@ -141,9 +148,7 @@ def _is_server_running() -> bool:
     Returns:
         status: Status of whether the server is running.
     """
-    if _read_pid(UI_PIDFILE) == -1:
-        return False
-    return True
+    return _read_pid(UI_PIDFILE) != -1
 
 
 def _graceful_start(
@@ -162,6 +167,7 @@ def _graceful_start(
         pidfile: Process ID file for the server.
         logfile: Log file for the server.
         port: Port requested to be used by the server.
+        no_cluster: Dask cluster is not used.
         develop: Start the server in developer mode.
 
     Returns:
@@ -169,7 +175,7 @@ def _graceful_start(
     """
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
-        port = get_config("user_interface.port")
+        port = get_config(CMType.SERVER, "service.port")
         click.echo(f"Covalent server is already running at http://localhost:{port}.")
         return port
 
@@ -177,12 +183,11 @@ def _graceful_start(
 
     pypath = f"PYTHONPATH={UI_SRVDIR}/../tests:$PYTHONPATH" if develop else ""
     dev_mode_flag = "--develop" if develop else ""
-    no_cluster_flag = "--no-cluster"
+    no_cluster_flag = "--no-cluster" if no_cluster else ""
     port = _next_available_port(port)
-    if no_cluster_flag in sys.argv:
-        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} --no-cluster {no_cluster} >> {logfile} 2>&1"
-    else:
-        launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} >> {logfile} 2>&1"
+    launch_str = (
+        f"{pypath} python app.py {dev_mode_flag} --port {port} {no_cluster_flag} >> {logfile} 2>&1"
+    )
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
@@ -204,11 +209,9 @@ def _terminate_child_processes(pid: int) -> None:
         None
     """
     for child_proc in psutil.Process(pid).children(recursive=True):
-        try:
+        with contextlib.suppress(psutil.NoSuchProcess):
             child_proc.kill()
             child_proc.wait()
-        except psutil.NoSuchProcess:
-            pass
 
 
 def _graceful_shutdown(pidfile: str) -> None:
@@ -227,12 +230,9 @@ def _graceful_shutdown(pidfile: str) -> None:
         proc = psutil.Process(pid)
         _terminate_child_processes(pid)
 
-        try:
+        with contextlib.suppress(psutil.NoSuchProcess):
             proc.terminate()
             proc.wait()
-        except psutil.NoSuchProcess:
-            pass
-
         click.echo("Covalent server has stopped.")
 
     else:
@@ -246,7 +246,7 @@ def _graceful_shutdown(pidfile: str) -> None:
 @click.option(
     "-p",
     "--port",
-    default=get_config("user_interface.port"),
+    default=get_config(CMType.SERVER, "service.port"),
     show_default=True,
     help="Server port number.",
 )
@@ -293,7 +293,6 @@ def _graceful_shutdown(pidfile: str) -> None:
     default=False,
     help="Start the server without Dask",
 )
-@click.argument("no-cluster", required=False)
 @click.pass_context
 def start(
     ctx: click.Context,
@@ -309,7 +308,7 @@ def start(
     Start the Covalent server.
     """
     if develop:
-        set_config({"sdk.log_level": "debug"})
+        set_config(CMType.CLIENT, {"sdk.log_level": "debug"})
 
     db = DataStore.factory()
     if db.is_migration_pending and not ignore_migrations:
@@ -317,20 +316,22 @@ def start(
         click.echo(MIGRATION_COMMAND_MSG)
         return ctx.exit(1)
 
-    set_config("user_interface.port", port)
-    set_config("dispatcher.port", port)
+    set_config(CMType.SERVER, "service.port", port)
 
     if not no_cluster:
         if mem_per_worker:
-            set_config("dask.mem_per_worker", mem_per_worker)
+            set_config(CMType.SERVER, "dask.mem_per_worker", mem_per_worker)
         if threads_per_worker:
-            set_config("dask.threads_per_worker", threads_per_worker)
+            set_config(CMType.SERVER, "dask.threads_per_worker", threads_per_worker)
         if workers:
-            set_config("dask.num_workers", workers)
+            set_config(CMType.SERVER, "dask.num_workers", workers)
+
+        set_config(CMType.CLIENT, "sdk.no_cluster", "false")
+    else:
+        set_config(CMType.CLIENT, "sdk.no_cluster", "true")
 
     port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
-    set_config("user_interface.port", port)
-    set_config("dispatcher.port", port)
+    set_config(CMType.SERVER, "service.port", port)
 
     # Wait until the server actually starts listening on the port
     server_listening = False
@@ -341,8 +342,6 @@ def start(
             sock.close()
         except OSError:
             server_listening = True
-
-    DataStore(initialize_db=True)
 
 
 @click.command()
@@ -367,10 +366,18 @@ def restart(ctx, port: bool, develop: bool) -> None:
     """
     Restart the server.
     """
-    port = port or get_config("user_interface.port")
+
+    configuration = {
+        "port": port or get_config(CMType.SERVER, "service.port"),
+        "develop": develop or (get_config(CMType.CLIENT, "sdk.log_level") == "debug"),
+        "no_cluster": get_config(CMType.SERVER, "service.port"),
+        "mem_per_worker": get_config(CMType.SERVER, "dask.mem_per_worker"),
+        "threads_per_worker": get_config(CMType.SERVER, "dask.threads_per_worker"),
+        "workers": set_config(CMType.SERVER, "dask.num_workers"),
+    }
 
     ctx.invoke(stop)
-    ctx.invoke(start, port=port, develop=develop)
+    ctx.invoke(start, **configuration)
 
 
 @click.command()
@@ -381,7 +388,7 @@ def status() -> None:
 
     pid = _read_pid(UI_PIDFILE)
     if _read_pid(UI_PIDFILE) != -1 and psutil.pid_exists(pid):
-        ui_port = get_config("user_interface.port")
+        ui_port = get_config(CMType.SERVER, "service.port")
         click.echo(f"Covalent server is running at http://localhost:{ui_port}.")
     else:
         _rm_pid_file(UI_PIDFILE)
@@ -398,21 +405,26 @@ def status() -> None:
 @click.option(
     "-y", "--yes", is_flag=True, help="Approve without showing the warning. [default: False]"
 )
-def purge(hard: bool, yes: bool) -> None:
+@click.option("--hell-yeah", is_flag=True, hidden=True)
+def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
     """
     Purge Covalent from this system. This command is for developers.
     """
 
-    removal_list = {
-        get_config("sdk.log_dir"),
-        get_config("dispatcher.cache_dir"),
-        get_config("dispatcher.log_dir"),
-        get_config("user_interface.log_dir"),
-        os.path.dirname(cm.config_file),
-    }
+    removal_list = [
+        get_config(CMType.CLIENT, "sdk.log_dir"),
+        get_config(CMType.SERVER, "service.cache_dir"),
+        get_config(CMType.SERVER, "service.log_dir"),
+        os.path.dirname(ccm.config_file),
+        os.path.dirname(scm.config_file),
+    ]
+
+    if hell_yeah:
+        hard = True
+        yes = True
 
     if hard:
-        removal_list.add(get_config("dispatcher.db_path"))
+        removal_list.append(get_config(CMType.SERVER, "service.db_path"))
 
     if not yes:
 
@@ -565,8 +577,8 @@ def cluster(
     # addr of the admin server for the Dask cluster process
     # started with covalent
     loop = asyncio.get_event_loop()
-    admin_host = get_config("dask.admin_host")
-    admin_port = get_config("dask.admin_port")
+    admin_host = get_config(CMType.SERVER, "dask.admin_host")
+    admin_port = get_config(CMType.SERVER, "dask.admin_port")
     admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
 
     if status:
@@ -627,5 +639,7 @@ def cluster(
 @click.command()
 def config() -> None:
     """Print Covalent's configuration to stdout"""
-    cm.read_config()
-    click.echo(json.dumps(cm.config_data, sort_keys=True, indent=4))
+    ccm.read_config()
+    click.echo(json.dumps(ccm.config_data, sort_keys=True, indent=4))
+    scm.read_config()
+    click.echo(json.dumps(scm.config_data, sort_keys=True, indent=4))

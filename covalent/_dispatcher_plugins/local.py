@@ -22,15 +22,13 @@ from copy import deepcopy
 from functools import wraps
 from typing import Callable
 
-import cloudpickle as pickle
 import requests
 
 from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
-from .._shared_files.config import get_config
+from .._shared_files.config import CMType, get_config
 from .._workflow.lattice import Lattice
-from .._workflow.transport import TransportableObject
 from .base import BaseDispatcher
 
 
@@ -43,9 +41,9 @@ class LocalDispatcher(BaseDispatcher):
     @staticmethod
     def dispatch(
         orig_lattice: Lattice,
-        dispatcher_addr: str = get_config("dispatcher.address")
+        dispatcher_addr: str = get_config(CMType.CLIENT, "server.address")
         + ":"
-        + str(get_config("dispatcher.port")),
+        + str(get_config(CMType.CLIENT, "server.port")),
     ) -> Callable:
         """
         Wrapping the dispatching functionality to allow input passing
@@ -94,9 +92,9 @@ class LocalDispatcher(BaseDispatcher):
     @staticmethod
     def dispatch_sync(
         lattice: Lattice,
-        dispatcher_addr: str = get_config("dispatcher.address")
+        dispatcher_addr: str = get_config(CMType.CLIENT, "server.address")
         + ":"
-        + str(get_config("dispatcher.port")),
+        + str(get_config(CMType.CLIENT, "server.port")),
     ) -> Callable:
         """
         Wrapping the synchronous dispatching functionality to allow input

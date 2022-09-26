@@ -20,11 +20,10 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { screen } from '@testing-library/react'
+import { screen, render } from '@testing-library/react'
 import { DispatchLayout } from '../DispatchLayout'
 import DispatchLayoutValidate from '../DispatchLayout'
 import React from 'react'
-import { render } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
@@ -54,7 +53,6 @@ function reduxRender(renderedComponent) {
 }
 
 describe('Dispatch layout contents', () => {
-
   test('Not found is rendered', () => {
     reduxRender(<DispatchLayoutValidate />)
     const linkElement = screen.getByTestId('logo')
@@ -62,7 +60,7 @@ describe('Dispatch layout contents', () => {
   })
 
   test('Not found text rendered', () => {
-    reduxRender(<DispatchLayoutValidate text='Page not found.' />)
+    reduxRender(<DispatchLayoutValidate text="Page not found." />)
     const linkElement = screen.getByTestId('message')
     expect(linkElement).toBeInTheDocument()
   })
@@ -98,8 +96,12 @@ describe('Dispatch layout contents', () => {
   })
 
   test('dispatch layout dashboard icon is rendered', () => {
-    const { container } = reduxRender(<DispatchLayout />);
-    expect(container.querySelector('MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1iqd9nb-MuiSvgIcon-root')).toBeDefined();
+    const { container } = reduxRender(<DispatchLayout />)
+    expect(
+      container.querySelector(
+        'MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1iqd9nb-MuiSvgIcon-root'
+      )
+    ).toBeDefined()
   })
 
   test('dispatch layout Lattice draw preview is rendered', () => {
@@ -109,8 +111,12 @@ describe('Dispatch layout contents', () => {
   })
 
   test('dispatch layout license icon is rendered', () => {
-    const { container } = reduxRender(<DispatchLayout />);
-    expect(container.querySelector('MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-nc05j6-MuiSvgIcon-root')).toBeDefined();
+    const { container } = reduxRender(<DispatchLayout />)
+    expect(
+      container.querySelector(
+        'MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-nc05j6-MuiSvgIcon-root'
+      )
+    ).toBeDefined()
   })
 
   test('dispatch layout lattice drawer is rendered', () => {
@@ -138,8 +144,12 @@ describe('Dispatch layout contents', () => {
   })
 
   test('dispatch layout tree icon is rendered', () => {
-    const { container } = reduxRender(<DispatchLayout />);
-    expect(container.querySelector('MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-khmmae-MuiSvgIcon-root')).toBeDefined();
+    const { container } = reduxRender(<DispatchLayout />)
+    expect(
+      container.querySelector(
+        'MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-khmmae-MuiSvgIcon-root'
+      )
+    ).toBeDefined()
   })
 
   test('dispatch layout copy dispatch button is rendered', () => {
@@ -155,8 +165,12 @@ describe('Dispatch layout contents', () => {
   })
 
   test('dispatch layout overview text is rendered', () => {
-    const { container } = reduxRender(<DispatchLayout />);
-    expect(container.querySelector('MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary MuiTab-fullWidth Mui-selected css-bpxy16-MuiButtonBase-root-MuiTab-root')).toBeDefined();
+    const { container } = reduxRender(<DispatchLayout />)
+    expect(
+      container.querySelector(
+        'MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary MuiTab-fullWidth Mui-selected css-bpxy16-MuiButtonBase-root-MuiTab-root'
+      )
+    ).toBeDefined()
   })
 
   test('dispatch layout overview button div is rendered', () => {
@@ -182,5 +196,4 @@ describe('Dispatch layout contents', () => {
     const linkElement = screen.getByTestId('pageLoader')
     expect(linkElement).toBeInTheDocument()
   })
-
 })

@@ -21,8 +21,6 @@
 
 import codecs
 import os
-import time
-from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 import cloudpickle as pickle
@@ -31,13 +29,13 @@ from requests.adapters import HTTPAdapter
 from sqlalchemy.orm import Session
 from urllib3.util import Retry
 
-from covalent._workflow.transport import TransportableObject
-
 from .. import _workflow as ct
 from .._data_store.datastore import DataStore
 from .._data_store.models import Lattice
 from .._shared_files import logger
-from .._shared_files.config import get_config
+from .._shared_files.config import CMType, get_config
+from .._shared_files.util_classes import Status
+from .._workflow.transport import TransportableObject
 from .result import Result
 from .wait import EXTREME
 from .write_result_to_db import MissingLatticeRecordError, load_file
@@ -82,6 +80,12 @@ def result_from(lattice_record: Lattice) -> Result:
     function = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.function_filename
     )
+    function_string = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.function_string_filename
+    )
+    function_docstring = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.docstring_filename
+    )
     executor_data = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.executor_data_filename
     )
@@ -107,23 +111,52 @@ def result_from(lattice_record: Lattice) -> Result:
     output = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.results_filename
     )
+    deps = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.deps_filename
+    )
+    call_before = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.call_before_filename
+    )
+    call_after = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.call_after_filename
+    )
+    cova_imports = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.cova_imports_filename
+    )
+    lattice_imports = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.lattice_imports_filename
+    )
 
+    name = lattice_record.name
     executor = lattice_record.executor
     workflow_executor = lattice_record.workflow_executor
+    results_dir = lattice_record.results_dir
+    num_nodes = lattice_record.electron_num
 
     attributes = {
+        "workflow_function": function,
+        "workflow_function_string": function_string,
+        "__name__": name,
+        "__doc__": function_docstring,
         "metadata": {
             "executor": executor,
             "executor_data": executor_data,
             "workflow_executor": workflow_executor,
             "workflow_executor_data": workflow_executor_data,
+            "deps": deps,
+            "call_before": call_before,
+            "call_after": call_after,
+            "results_dir": results_dir,
         },
         "args": inputs["args"],
         "kwargs": inputs["kwargs"],
         "named_args": named_args,
         "named_kwargs": named_kwargs,
         "transport_graph": transport_graph,
-        "workflow_function": function,
+        "cova_imports": cova_imports,
+        "lattice_imports": lattice_imports,
+        "post_processing": False,
+        "electron_outputs": {},
     }
 
     def dummy_function(x):
@@ -134,22 +167,26 @@ def result_from(lattice_record: Lattice) -> Result:
 
     result = Result(
         lat,
-        str(Path(lattice_record.storage_path).parent),
+        results_dir,
         dispatch_id=lattice_record.dispatch_id,
     )
-    result._status = lattice_record.status
-    result._error = error
+    result._root_dispatch_id = lattice_record.root_dispatch_id
+    result._status = Status(lattice_record.status)
+    result._error = error if error else None
     result._inputs = inputs
     result._start_time = lattice_record.started_at
     result._end_time = lattice_record.completed_at
     result._result = output if output is not None else TransportableObject(None)
+    result._num_nodes = num_nodes
     return result
 
 
 def _get_result_from_dispatcher(
     dispatch_id: str,
     wait: bool = False,
-    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
+    dispatcher: str = get_config(CMType.CLIENT, "server.address")
+    + ":"
+    + str(get_config(CMType.CLIENT, "server.port")),
     status_only: bool = False,
 ) -> Dict:
 
@@ -188,7 +225,7 @@ def _get_result_from_dispatcher(
 
 def _delete_result(
     dispatch_id: str,
-    results_dir: str = get_config("dispatcher.results_dir"),
+    results_dir: str = get_config(CMType.SERVER, "service.results_dir"),
     remove_parent_directory: bool = False,
 ) -> None:
     """
@@ -268,7 +305,9 @@ def sync(
 
 def cancel(
     dispatch_id: str,
-    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
+    dispatcher: str = get_config(CMType.CLIENT, "server.address")
+    + ":"
+    + str(get_config(CMType.CLIENT, "server.port")),
 ) -> str:
     """
     Cancel a running dispatch.

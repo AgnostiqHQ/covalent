@@ -1,11 +1,7 @@
-import os
 import urllib.request
-from pathlib import Path
-from subprocess import PIPE, CalledProcessError, Popen
-from typing import Optional
 
-from covalent._file_transfer import File
-from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
+from .. import File
+from .transfer_strategy_base import FileTransferStrategy
 
 
 class HTTP(FileTransferStrategy):

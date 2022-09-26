@@ -12,6 +12,343 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding missing `requirements.txt` for certain tutorial
 - Fixing package version errors in tutorial `requirements.txt`
 
+- Fixed `asserts` in stress tests
+- Added unit tests for `defaults.py`
+
+### Added
+
+- `requirements-client.txt` file added.
+- Logs tab on the GUI which displays the covalent logs and also the ability to download the log file.
+
+### Fixed
+
+- Config file is now locked during reads and writes to mitigate concurrency issues
+- In `defaults.py/get_default_executor`, condition to return `local` or `dask` is now fixed
+
+### Changed
+
+- Installation requirements are now split into client side and server side requirements' files.
+- `setup.py` modified to install client side requirements only, if `COVALENT_SDK_ONLY` environment variable is present and `True`.
+- Updated `requirements.txt` and `tests/requirements.txt`
+- Updated `nbconvert` by dependabot
+- Split the `ConfigManager` into `Client` and `Server` components
+- Update the `set/get/update` config methods to distinguish between the client and server parts
+
+### Docs
+
+- Fixed a notebook which was not rendering
+
+### Operations
+
+- Updating all references to local workflows
+- Adding `nightly.yml` workflow for nightly CI
+- Updated triggers to `tests` and `changelog` workflows
+- Enhanced pre-release workflows
+- `codecov` passthrough jobs added for when tests are not run
+- Tests are run on one platform on pushes to `develop` to keep codecov reports accurate
+- Test matrix source triggers changed from `workflow_call` to `schedule` since contexts are inherited
+- Removed badges workflow; version badge is now generated using the latest pre-release tag
+- Removed unused `push_to_s3` workflow
+- Workflows authenticate to AWS using OIDC with specific roles
+- Only the recommended platform is tested on pull requests
+- Update check blocks to assert the `workflow_call` event type is replaced with `schedule`
+
+## [0.198.0] - 2022-09-14
+
+### Authors
+
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+
+### Operations
+
+- Fix `release.yml` workflow
+- Adding a step in `release.yml/docker` job to trigger the AWS executor base image build in the remote repo `covalent-aws-plugins`
+- Pass all the necessary inputs for the triggered workflow as part of the HTTP POST request body
+- Added MacOS 12 to test matrix
+
+
+### Changed
+
+- Skipping stalling `dask_executor` functional test
+- Database is initialized in `covalent_ui/app.py` instead of in the CLI's `start` method in order to support management via `start-stop-daemon`.
+- Convert `COVALENT_SVC_PORT` to `int` when parsing env var
+- Skipping stalling `dask_executor` functional test
+
+### Added
+
+- Modified `_DEFAULT_CONSTRAINT_VALUES` to a dataclass called `DefaultMetadataValues`, it is still used as a dictionary everywhere (named `DEFAULT_METADATA_VALUES` instead) but in an object-like manner.
+- Modified `_DEFAULT_CONFIG` to also be a dataclass called `DefaultConfig`, which is initialized whenever needed and used like a dictionary (named `DEFAULT_CONFIG`).
+- `ConfigManager` is now thread safe since it is initialized whenever needed instead of one object being accessed by multiple processes/threads leading to corruption of the config file.
+- Using `contextlib.supress` to ignore `psutil.NoSuchProcess` errors instead of `try/except` with `pass`.
+- Filter workflow dispatches by status on the GUI.
+- Delete all workflow dispatches present in the database from the GUI and add filter level deletion of workflow dispatches as well. 
+- Theme changes as part of latest wireframe.
+- Factory functions to generate configurations and default metadata at the time when required. This is because certain values like default executors are only determined when the covalent server starts.
+- Respecting the configuration options like default executor, no. of workers, developer mode, etc. when restarting the server.
+- Unit tests for `remote_executor.py`
+- Added alembic migrations script for DB schema v12
+- Environment variables added to `defaults.py` in order to support system services
+- Covalent OpenRC init script added
+
+### Removed
+
+- Deprecated `_DEFAULT_CONSTRAINTS_DEPRECATED` removed.
+- Confusing `click` argument `no-cluster` instead of flag `--no-cluster` removed; this was also partially responsible for unexpected behaviour with using `no-cluster` option when starting covalent.
+
+### Operations
+
+- Fixed a bug in changelog.yml caused by passing a large list of commits as a var
+
+### Tests
+
+- Updated tests to reflect above changes.
+- Updated more tests to DB schema v12
+- Improved DB mocking in dispatcher tests
+
+### Fixed
+
+- Removed inheritance of `call_before` metadata related to file transfers from parent electron to collected nodes.
+- Executor instances at runtime no longer inadvertently modify
+  transport graph nodes when modifying their attributes.
+- Syntax error in `tests.yml`
+
+### Docs
+
+- Updated AWS Lambda plugin rtd with mention to its limitations.
+- Updated RTD concepts and tutorials to reflect new UI.
+
+## [0.197.0] - 2022-09-08
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- Fixed missing lattice and result object attributes after rehydrating from datastore.
+
+### Changed
+
+- Implemented v12 of the DB schema
+
+### Tests
+
+- Enhanced DB tests to check faithfulness of persist and rehydrate operations
+
+### Docs
+
+### Docs
+- Update user interface docs for filter and delete features.
+- Added credential management page
+
+## [0.196.0] - 2022-09-07
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Sublattices are now run completely internally, without any HTTP calls.
+- Lattice-level metadata is persisted atomically for sublattices.
+
+## [0.195.0] - 2022-09-06
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- `import covalent` no longer pulls in the server components
+
+### Operations
+
+- Fixed `tests.yml` where `RECOMMENDED_PLATFORM` was not properly set
+
+## [0.194.0] - 2022-09-06
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Operations
+
+- Added a workflow which checks for missing or extra requirements
+- Added pycln to pre-commit hooks #867
+
+### Removed
+
+- PyYAML
+- tailer
+
+## [0.193.0] - 2022-09-06
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Refactored executor base classes
+
+### Operations
+
+- pre-commit autoupdate
+
+## [0.192.0] - 2022-09-02
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Changed
+
+- Modified how `no_cluster` is passed to `app.py` from the CLI
+
+## [0.191.0] - 2022-09-01
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Added
+
+- Implementation of RemoteExecutor
+
+## [0.190.0] - 2022-09-01
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+
+
+### Changed
+
+- Renamed `BaseAsyncExecutor` and its references to `AsyncBaseExecutor`.
+
+## [0.189.0] - 2022-08-31
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+
+
+### Added
+
+- Added capability to take screenshot of the graph with covalent logo on the GUI.
+
+### Operations
+
+- Changed the environment switches in tests.yml to be `true`/empty instead of 1/0
+
+- Adding `benchmark.yml` workflow
+
+### Tests
+
+- Adding scripts in `tests/stress_tests/benchmarks`
+
 ## [0.188.0] - 2022-08-31
 
 ### Authors
@@ -99,7 +436,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sankalp Sanand <sankalp@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 - Venkat Bala <venkat@agnostiq.ai>
-
 
 ### Added
 

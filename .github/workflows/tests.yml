@@ -22,9 +22,13 @@ name: tests
 
 on:
   pull_request:
-  workflow_run:
-    workflows: [changelog]
-    types: [completed]
+  workflow_call:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - CHANGELOG.md
+      - VERSION
   workflow_dispatch:
     inputs:
       commit_sha:
@@ -64,7 +68,7 @@ jobs:
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
     outputs:
-      release: ${{ steps.push.outputs.release }}
+      codecov: ${{ steps.local-codecov.outputs.local_codecov }}
     steps:
       - name: Check out head
         if: github.event_name != 'workflow_dispatch'
@@ -109,28 +113,24 @@ jobs:
 
       - name: Generate environment variables
         run: |
-          RECOMMENDED_PLATFORM=0
-          if [ ${{ matrix.os }} = 'ubuntu-latest' ] \
-            && [ ${{ matrix.container }} = 'python:3.8-bullseye' ] \
-            && [ ${{ matrix.backend }} = 'dask' ] ; then
-            RECOMMENDED_PLATFORM=1
+          if ${{ matrix.os == 'ubuntu-latest'
+            && contains(matrix.container, 'ubuntu20-py38')
+            && matrix.backend == 'dask' }} ; then
+            RECOMMENDED_PLATFORM=true
           fi
-          NEED_PYTHON=0
           if [ ${{ steps.modified-files.outputs.sdk }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.dispatcher }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.ui_backend }} = 'true' ] ; then
-            NEED_PYTHON=1
+            NEED_PYTHON=true
           fi
-          NEED_FRONTEND=0
           if [ ${{ steps.modified-files.outputs.ui_frontend }} = 'true' ] ; then
-            NEED_FRONTEND=1
+            NEED_FRONTEND=true
           fi
-          BUILD_AND_RUN_ALL=0
           if [ ${{ github.event_name }} != 'pull_request' ] \
-            || [ ${{ steps.modified-files.outputs.functional_tests }} == 'true' ] \
+            || [ ${{ steps.modified-files.outputs.functional_tests }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.build }} = 'true' ] \
             || [ ${{ steps.modified-files.outputs.actions }} = 'true' ] ; then
-            BUILD_AND_RUN_ALL=1
+            BUILD_AND_RUN_ALL=true
           fi
           echo "RECOMMENDED_PLATFORM=$RECOMMENDED_PLATFORM" >> $GITHUB_ENV
           echo "NEED_PYTHON=$NEED_PYTHON" >> $GITHUB_ENV
@@ -139,7 +139,7 @@ jobs:
 
       - name: Set up Python
         if: >
-          matrix.os == 'macos-latest'
+          contains(matrix.os, 'macos')
           && (env.NEED_PYTHON || env.BUILD_AND_RUN_ALL)
         uses: actions/setup-python@v2
         with:
@@ -265,10 +265,11 @@ jobs:
         run: covalent logs
 
       - name: Upload SDK report to Codecov
+        id: upload-sdk-report
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'workflow_run'
+          && (github.event_name == 'schedule'
           || steps.sdk-coverage.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
@@ -277,10 +278,11 @@ jobs:
           name: "SDK Unit Tests"
 
       - name: Upload Dispatcher report to Codecov
+        id: upload-dispatcher-report
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'workflow_run'
+          && (github.event_name == 'schedule'
           || steps.dispatcher-coverage.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
@@ -289,6 +291,7 @@ jobs:
           name: "Dispatcher Unit Tests"
 
       - name: Upload Functional report to Codecov
+        id: upload-functional-report
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
@@ -300,11 +303,12 @@ jobs:
           name: "Functional Tests"
 
       - name: Upload UI backend report to Codecov
+        id: upload-ui-backend-report
         if: >
           false
           && env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'workflow_run'
+          && (github.event_name == 'schedule'
           || steps.ui-backend-coverage.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
@@ -313,10 +317,11 @@ jobs:
           name: "UI Backend Unit Tests"
 
       - name: Upload UI frontend report to Codecov
+        id: upload-ui-frontend-report
         if: >
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'workflow_run'
+          && (github.event_name == 'schedule'
           || steps.ui-frontend-tests.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
@@ -324,62 +329,25 @@ jobs:
           flags: UI_Frontend
           name: "UI Frontend Unit Tests"
 
-      - name: Get latest release
-        uses: actions-ecosystem/action-get-latest-tag@v1
-        id: get-latest-tag
+      - name: Local Codecov
+        id: local-codecov
         if: >
-          github.ref == 'refs/heads/develop'
-          && env.RECOMMENDED_PLATFORM
-          && github.event_name == 'workflow_run'
-        with:
-          semver_only: true
-
-      - name: Push to master
-        id: push
-        if: >
-          github.ref == 'refs/heads/develop'
-          && env.RECOMMENDED_PLATFORM
-          && github.event_name == 'workflow_run'
+          env.RECOMMENDED_PLATFORM
+          && github.event_name != 'workflow_dispatch'
+          && github.event_name != 'schedule'
         run: |
-          MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
-          VERSION="$(cat ./VERSION)"
-          release=false
-          if [ "$MASTER_VERSION" = "$VERSION" ] ; then
-            echo "$VERSION has been previously released."
-          elif dpkg --compare-versions $VERSION 'gt' '0.110.2' ; then
-            git config user.name "CovalentOpsBot"
-            git config user.email "covalentopsbot@users.noreply.github.com"
-            git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
-            git push origin HEAD:master
-            release=true
-          else
-            echo "We cannot release versions less than 0.110.2."
+          if ${{ steps.upload-sdk-report.outcome == 'skipped'
+            && steps.upload-dispatcher-report.outcome == 'skipped'
+            && steps.upload-functional-report.outcome == 'skipped'
+            && steps.upload-ui-backend-report.outcome == 'skipped'
+            && steps.upload-ui-frontend-report.outcome  == 'skipped' }} ; then
+            local_codecov=true
           fi
-          echo "RELEASE=$release" >> $GITHUB_ENV
-          echo "::set-output name=release::$release"
-
-      - name: Format Slack message
-        if: >
-          github.ref == 'refs/heads/develop'
-          && env.RECOMMENDED_PLATFORM
-          && github.event_name == 'workflow_run'
-        run: |
-          VERSION="$(cat ./VERSION)"
-          SLACK_MSG=":rocket: Version $VERSION is now available."
-          echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
-
-      - name: Notify Slack
-        if: steps.push.outcome == 'success' && env.RELEASE == 'true'
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: "covalent-ci"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: ${{ env.SLACK_MSG }}
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          echo "::set-output name=local_codecov::${local_codecov}"
 
       - name: Alert Slack
         if: >
-          github.event_name == 'workflow_run'
+          github.event_name == 'schedule'
           && failure()
         uses: rtCamp/action-slack-notify@v2
         env:
@@ -390,10 +358,18 @@ jobs:
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
 
-  release:
+  codecov_patch:
     needs: tests
-    if: github.ref == 'refs/heads/develop' && needs.tests.outputs.release == 'true'
-    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
-    secrets: inherit # pragma: allowlist secret
-    with:
-      prerelease: true
+    name: "codecov/patch"
+    if: needs.tests.outputs.codecov == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No report needed."
+
+  codecov_project:
+    needs: tests
+    name: "codecov/project"
+    if: needs.tests.outputs.codecov == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No report needed."

@@ -39,6 +39,9 @@ class Lattice(Base):
     # name of the lattice function
     name = Column(Text, nullable=False)
 
+    # name of the file containing the lattice function's docstring
+    docstring_filename = Column(Text)
+
     # Workflow status
     status = Column(String(24), nullable=False)
 
@@ -89,6 +92,27 @@ class Lattice(Base):
 
     # Name of the file containing the transport graph
     transport_graph_filename = Column(Text)
+
+    # Name of the file containing the default electron dependencies
+    deps_filename = Column(Text)
+
+    # Name of the file containing the default list of callables before electrons are executed
+    call_before_filename = Column(Text)
+
+    # Name of the file containing the default list of callables after electrons are executed
+    call_after_filename = Column(Text)
+
+    # Name of the file containing the set of cova imports
+    cova_imports_filename = Column(Text)
+
+    # Name of the file containing the set of lattice imports
+    lattice_imports_filename = Column(Text)
+
+    # Results directory (will be deprecated soon)
+    results_dir = Column(Text)
+
+    # Dispatch id of the root lattice in a hierarchy of sublattices
+    root_dispatch_id = Column(String(64), nullable=False)
 
     # Name of the column which signifies soft deletion of a lattice
     is_active = Column(Boolean, nullable=False, default=True)
