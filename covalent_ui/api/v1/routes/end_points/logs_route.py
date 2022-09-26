@@ -39,6 +39,7 @@ def get_logs(
     sort_direction: Optional[SortDirection] = SortDirection.DESCENDING,
 ):
     logs = Logs()
+    print("random")
     return logs.get_logs(sort_by, sort_direction, search, count, offset)
 
 
