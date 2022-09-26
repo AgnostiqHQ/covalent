@@ -58,7 +58,7 @@ and return an excited phrase.
 
     print(result)
 
-During the execution of the workflow, one can navigate to the UI to see the status of the workflow. Once completed, the above script 
+During the execution of the workflow, one can navigate to the UI to see the status of the workflow. Once completed, the above script
 should also output the result:
 
 .. code:: bash
@@ -108,13 +108,13 @@ The following table shows a list of all input arguments including the required a
      - No
      - 5
      - Time interval between successive polls to the lambda function
-   * - cache_dir  	
-     - No	
-     - ~/.cache/covalent	
+   * - cache_dir
+     - No
+     - ~/.cache/covalent
      - Path on the local file system to a cache
-   * - cleanup	
-     - No	
-     - True	
+   * - cleanup
+     - No
+     - True
      - Flag represents whether or not to cleanup temporary files generated during execution
 
 The following snippet shows how users may modify their Covalent `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ to provide
@@ -162,7 +162,7 @@ Alternatively, users can customize this executor entirely by providing their own
                                 timeout=30,
                                 memory_size=512,
                                 cleanup=True)
-    
+
     @ct.electron(executor=lambda_executor)
     def task(x, y):
         return x + y
@@ -172,7 +172,7 @@ Alternatively, users can customize this executor entirely by providing their own
 4. Required AWS Resources
 ###########################
 
-In order for the executor to work end-to-end, the following resources need to be configured 
+In order for the executor to work end-to-end, the following resources need to be configured
 either with `Terraform <https://www.terraform.io/>`_ or manually provisioned on the `AWS Dashboard <https://aws.amazon.com/>`_:
 
 .. list-table:: Title
@@ -182,17 +182,17 @@ either with `Terraform <https://www.terraform.io/>`_ or manually provisioned on 
    * - Resource
      - Config Name
      - Description
-   * - IAM Role	
-     - lambda_role_name	
-     - The IAM role this lambda will assume during execution of your tasks 
-   * - S3 Bucket	
-     - s3_bucket_name	
+   * - IAM Role
+     - lambda_role_name
+     - The IAM role this lambda will assume during execution of your tasks
+   * - S3 Bucket
+     - s3_bucket_name
      - Name of an AWS S3 bucket that the executor can use to store temporary files
 
 4a. Manually provisioning resources
 ***********************************
 
-The following JSON policy document shows the necessary IAM permissions required for the executor 
+The following JSON policy document shows the necessary IAM permissions required for the executor
 to properly run tasks using the AWS Lambda compute service:
 
 .. dropdown:: IAM Policy
@@ -268,7 +268,7 @@ where `<bucket-name>` is the name of an S3 bucket to be used by the executor to 
 execution. By default, the Lambda executor looks for an S3 bucket with the name `covalent-lambda-job-resources` in the user's
 AWS account.
 The executor creates an AWS Lambda function using a deployment package containing the code to be executed. The created
-lambda function interacts with the S3 bucket as well as with the AWS Cloudwatch service to route any log messages. 
+lambda function interacts with the S3 bucket as well as with the AWS Cloudwatch service to route any log messages.
 Due to this, the lambda function must have the necessary IAM permissions in order to do so. By default, the executor assumes that the
 user has already provisioned an IAM role named `CovalentLambdaExecutionRole` that has the `AWSLambdaExecute` policy attached to it.
 The policy document is summarized here for convenience:
@@ -299,6 +299,6 @@ The policy document is summarized here for convenience:
         }
 
 For more information on how to create IAM roles and attach policies in AWS, refer to `IAM roles <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create.html>`_.
-For more information on AWS S3, refer to `AWS S3 <https://aws.amazon.com/s3/>`_. 
+For more information on AWS S3, refer to `AWS S3 <https://aws.amazon.com/s3/>`_.
 
 
