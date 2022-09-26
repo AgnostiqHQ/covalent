@@ -216,6 +216,7 @@ def test_base_executor_execute(mocker):
     dispatch_id = "asdf"
     results_dir = "/tmp"
     node_id = -1
+    status_store = mocker.MagicMock()
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
@@ -226,6 +227,7 @@ def test_base_executor_execute(mocker):
         dispatch_id=dispatch_id,
         results_dir=results_dir,
         node_id=node_id,
+        status_store=status_store,
     )
 
     assert result.get_deserialized() == 5
@@ -268,6 +270,7 @@ def test_base_executor_passes_task_metadata(mocker):
     dispatch_id = "asdf"
     results_dir = "/tmp"
     node_id = -1
+    status_store = mocker.MagicMock()
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
@@ -278,8 +281,14 @@ def test_base_executor_passes_task_metadata(mocker):
         dispatch_id=dispatch_id,
         results_dir=results_dir,
         node_id=node_id,
+        status_store=status_store,
     )
-    task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
+    task_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_id": node_id,
+        "results_dir": results_dir,
+        "status_store": status_store,
+    }
     assert metadata == task_metadata
 
 
@@ -302,6 +311,7 @@ def test_base_async_executor_passes_task_metadata(mocker):
     dispatch_id = "asdf"
     results_dir = "/tmp"
     node_id = -1
+    status_store = mocker.MagicMock()
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
@@ -312,10 +322,16 @@ def test_base_async_executor_passes_task_metadata(mocker):
         dispatch_id=dispatch_id,
         results_dir=results_dir,
         node_id=node_id,
+        status_store=status_store,
     )
 
     metadata, stdout, stderr = asyncio.run(awaitable)
-    task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
+    task_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_id": node_id,
+        "results_dir": results_dir,
+        "status_store": status_store,
+    }
     assert metadata == task_metadata
 
 
@@ -373,11 +389,13 @@ def test_executor_setup_teardown_method(mocker):
     dispatch_id = "asdf"
     results_dir = "/tmp"
     node_id = -1
+    status_store = mocker.MagicMock()
 
     task_metadata = {
         "dispatch_id": dispatch_id,
         "node_id": node_id,
         "results_dir": results_dir,
+        "status_store": status_store,
     }
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
@@ -389,6 +407,7 @@ def test_executor_setup_teardown_method(mocker):
         dispatch_id=dispatch_id,
         results_dir=results_dir,
         node_id=node_id,
+        status_store=status_store,
     )
 
     assert result.get_deserialized() == 5
@@ -414,6 +433,7 @@ def test_async_executor_setup_teardown(mocker):
     dispatch_id = "asdf"
     results_dir = "/tmp"
     node_id = -1
+    status_store = mocker.MagicMock()
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
@@ -424,10 +444,16 @@ def test_async_executor_setup_teardown(mocker):
         dispatch_id=dispatch_id,
         results_dir=results_dir,
         node_id=node_id,
+        status_store=status_store,
     )
 
     asyncio.run(awaitable)
-    task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
+    task_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_id": node_id,
+        "results_dir": results_dir,
+        "status_store": status_store,
+    }
     me.run.assert_called_once_with(assembled_callable, args, kwargs, task_metadata)
     me.setup.assert_called_once_with(task_metadata=task_metadata)
     me.teardown.assert_called_once_with(task_metadata=task_metadata)
