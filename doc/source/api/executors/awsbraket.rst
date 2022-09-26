@@ -218,10 +218,10 @@ role with the appropriate permissions to be passed to Braket.
      - An S3 bucket for storing task-specific data, such as Braket outputs or function inputs.
 
 
-#. For more information on the permissions required of the IAM role,
-   please see the AWS documentation on `"managing access to Amazon
-   Braket"
+#. To set up finer-grained permissions for the IAM role, please see
+   the AWS documentation on `"managing access to Amazon Braket"
    <https://docs.aws.amazon.com/braket/latest/developerguide/braket-manage-access.html>`_.
+
 #. Braket jobs are packaged and shipped in containers together with
    some supporting packages; for more context, see the `"Bring your
    own container"
