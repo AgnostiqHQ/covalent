@@ -246,17 +246,15 @@ const ResultsTableHead = ({
               All visible{' '}
             </MenuItem>
             {filterValue === 'ALL' ? (
-              <>
-                <MenuItem
-                  divider
-                  onClick={() => {
-                    handleAllDelete('ALL', allDispatches)
-                  }}
-                  onClose={handleClose}
-                >
-                  All
-                </MenuItem>
-              </>
+              <MenuItem
+                divider
+                onClick={() => {
+                  handleAllDelete('ALL', allDispatches)
+                }}
+                onClose={handleClose}
+              >
+                All
+              </MenuItem>
             ) : null}
             {(filterValue === 'COMPLETED' || filterValue === 'ALL') &&
             completedDispatches !== 0 ? (

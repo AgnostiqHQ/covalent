@@ -118,7 +118,7 @@ const ResultsTableHead = ({
             <TableCell
               key={header.id}
               sx={(theme) => ({
-                borderColor:
+                borderColor:  
                   theme.palette.background.coveBlack03 + '!important',
               })}
             >
@@ -127,6 +127,11 @@ const ResultsTableHead = ({
                   active={orderBy === header.id}
                   direction={orderBy === header.id ? order : 'asc'}
                   onClick={() => onSort(header.id)}
+                  sx={{
+                    '.Mui-active': {
+                      color: (theme) => theme.palette.text.secondary,
+                    },
+                  }}
                 >
                   {header.label}
                 </TableSortLabel>
