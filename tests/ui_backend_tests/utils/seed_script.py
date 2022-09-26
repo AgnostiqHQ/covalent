@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime
 
 from sqlalchemy.orm import Session
@@ -12,7 +13,9 @@ def seed(engine):
     lattice_records = []
     electron_records = []
     electron_dependency_records = []
-    with open("tests/ui_backend_tests/utils/data/lattices.json") as json_file:
+    with open(
+        "tests/ui_backend_tests/utils/data/lattices.json", "r", encoding="utf-8"
+    ) as json_file:
         lattice_data = json.load(json_file)
         for item in lattice_data:
             lattice_records.append(
@@ -25,7 +28,9 @@ def seed(engine):
                     electron_num=item["electron_num"],
                     completed_electron_num=item["completed_electron_num"],
                     storage_type=item["storage_type"],
-                    storage_path=item["storage_path"],
+                    storage_path=os.path.dirname(__file__)
+                    + "/results/"
+                    + item["dispatch_id"],  # item["storage_path"],
                     function_filename=item["function_filename"],
                     function_string_filename=item["function_string_filename"],
                     executor=item["executor"],
@@ -46,7 +51,10 @@ def seed(engine):
                     completed_at=convert_to_date(item["completed_at"]),
                 )
             )
-    with open("tests/ui_backend_tests/utils/data/electrons.json") as json_file:
+
+    with open(
+        "tests/ui_backend_tests/utils/data/electrons.json", "r", encoding="utf-8"
+    ) as json_file:
         electron_data = json.load(json_file)
         for item in electron_data:
             electron_records.append(
@@ -58,7 +66,12 @@ def seed(engine):
                     name=item["name"],
                     status=item["status"],
                     storage_type=item["storage_type"],
-                    storage_path=item["storage_path"],
+                    storage_path=os.path.dirname(__file__)
+                    + "/results/"
+                    + lattice_records[item["parent_lattice_id"] - 1].dispatch_id
+                    + "/"
+                    + "node_"
+                    + str(item["transport_graph_node_id"]),
                     function_filename=item["function_filename"],
                     function_string_filename=item["function_string_filename"],
                     executor=item["executor"],
@@ -78,7 +91,10 @@ def seed(engine):
                     completed_at=convert_to_date(item["completed_at"]),
                 )
             )
-    with open("tests/ui_backend_tests/utils/data/electron_dependency.json") as json_file:
+
+    with open(
+        "tests/ui_backend_tests/utils/data/electron_dependency.json", "r", encoding="utf-8"
+    ) as json_file:
         electron_dependency_data = json.load(json_file)
         for item in electron_dependency_data:
             electron_dependency_records.append(

@@ -89,6 +89,7 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
     Returns:
         Returns the lattice file data with the dispatch id and file_module provided provided
     """
+    print("Sam ", name)
     with Session(db.engine) as session:
         electron = Lattices(session)
         lattice_data = electron.get_lattices_id_storage_file(dispatch_id)
@@ -96,6 +97,7 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
             handler = FileHandler(lattice_data["directory"])
             if name == "result":
                 response = handler.read_from_pickle(lattice_data["results_filename"])
+                print("sam res ", response)
                 return LatticeFileResponse(data=str(response))
             if name == "inputs":
                 response = handler.read_from_pickle(lattice_data["inputs_filename"])

@@ -1,90 +1,57 @@
 [
     {
         "arg_index": 0,
-        "created_at": "2022-09-12 07:12:35.755913",
+        "created_at": "2022-09-23 10:01:11.140861",
         "edge_name": "arg[0]",
         "electron_id": 4,
         "id": 1,
         "is_active": 1,
         "parameter_type": "arg",
         "parent_electron_id": 1,
-        "updated_at": "2022-09-12 07:12:35.755916"
+        "updated_at": "2022-09-23 10:01:11.140863"
     },
     {
         "arg_index": 1,
-        "created_at": "2022-09-12 07:12:35.758810",
+        "created_at": "2022-09-23 10:01:11.143146",
         "edge_name": "arg[1]",
         "electron_id": 4,
         "id": 2,
         "is_active": 1,
         "parameter_type": "arg",
         "parent_electron_id": 2,
-        "updated_at": "2022-09-12 07:12:35.758813"
+        "updated_at": "2022-09-23 10:01:11.143148"
     },
     {
         "arg_index": 0,
-        "created_at": "2022-09-12 07:12:35.760679",
+        "created_at": "2022-09-23 10:01:11.144343",
         "edge_name": "name",
         "electron_id": 2,
         "id": 3,
         "is_active": 1,
         "parameter_type": "arg",
         "parent_electron_id": 3,
-        "updated_at": "2022-09-12 07:12:35.760682"
+        "updated_at": "2022-09-23 10:01:11.144345"
     },
     {
         "arg_index": null,
-        "created_at": "2022-09-12 07:12:35.762478",
+        "created_at": "2022-09-23 10:01:11.145512",
         "edge_name": "arg_1",
         "electron_id": 5,
         "id": 4,
         "is_active": 1,
         "parameter_type": "kwarg",
         "parent_electron_id": 4,
-        "updated_at": "2022-09-12 07:12:35.762481"
+        "updated_at": "2022-09-23 10:01:11.145513"
     },
     {
         "arg_index": null,
-        "created_at": "2022-09-12 07:12:35.764164",
+        "created_at": "2022-09-23 10:01:11.146586",
         "edge_name": "arg_2",
         "electron_id": 5,
         "id": 5,
         "is_active": 1,
         "parameter_type": "kwarg",
         "parent_electron_id": 6,
-        "updated_at": "2022-09-12 07:12:35.764167"
-    },
-    {
-        "arg_index": 0,
-        "created_at": "2022-09-12 07:12:49.754471",
-        "edge_name": "arg[0]",
-        "electron_id": 7,
-        "id": 6,
-        "is_active": 1,
-        "parameter_type": "arg",
-        "parent_electron_id": 8,
-        "updated_at": "2022-09-12 07:12:49.754474"
-    },
-    {
-        "arg_index": 0,
-        "created_at": "2022-09-12 07:12:49.911126",
-        "edge_name": "arg[0]",
-        "electron_id": 9,
-        "id": 7,
-        "is_active": 1,
-        "parameter_type": "arg",
-        "parent_electron_id": 10,
-        "updated_at": "2022-09-12 07:12:49.911129"
-    },
-    {
-        "arg_index": 0,
-        "created_at": "2022-09-12 07:12:50.059493",
-        "edge_name": "x",
-        "electron_id": 11,
-        "id": 8,
-        "is_active": 1,
-        "parameter_type": "arg",
-        "parent_electron_id": 12,
-        "updated_at": "2022-09-12 07:12:50.059499"
+        "updated_at": "2022-09-23 10:01:11.146588"
     }
 ]
