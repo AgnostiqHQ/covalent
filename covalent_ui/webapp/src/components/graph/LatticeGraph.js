@@ -153,13 +153,11 @@ const LatticeGraph = ({
 
   const download = useCallback(() => {
     if (ref_chart.current === null) {
-      console.log('sd')
       return
     }
     setScreen(true);
     toJpeg(ref_chart.current, { cacheBust: true, })
       .then((dataUrl) => {
-        console.log('OPoo')
         const link = document.createElement('a')
         link.download = `${dispatchId}.jpg`
         link.href = dataUrl
@@ -169,12 +167,8 @@ const LatticeGraph = ({
       .catch((err) => {
         console.log(err)
       })
-  }, [ref_chart])
-
-  useEffect(() => {
-    console.log(screen, 'screen')
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen])
+  }, [ref_chart])
 
 
   // highlight links of selected nodes
