@@ -498,23 +498,6 @@ Node Outputs
         result_folder_path = os.path.join(self.results_dir, f"{self.dispatch_id}")
         Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
-    def persist(self, electron_id: int = None) -> None:
-        """Save Result object to a DataStoreSession. Changes are queued until
-        committed by the caller.
-
-        Args:
-            electron_id: (hack) DB-generated id for the parent electron
-                if the workflow is actually a subworkflow
-        """
-
-        self._initialize_results_dir()
-        app_log.debug("upsert start")
-        self.upsert_lattice_data(electron_id=electron_id)
-        self.upsert_electron_data()
-        app_log.debug("upsert complete")
-        self.insert_electron_dependency_data()
-        app_log.debug("persist complete")
-
     def _convert_to_electron_result(self) -> Any:
         """
         Convert the result object to an electron's result.

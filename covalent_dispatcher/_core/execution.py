@@ -53,6 +53,8 @@ from covalent.executor import _executor_manager
 from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 from covalent_ui import result_webhook
 
+from .._db import update
+
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
@@ -438,7 +440,7 @@ async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks
 
 async def _update_node_result(result_object, node_result, pending_deps, tasks_queue):
     app_log.warning("Updating node result (run_planned_workflow).")
-    result_object._update_node(**node_result)
+    update._node(result_object, **node_result)
     await result_webhook.send_update(result_object)
 
     node_status = node_result["status"]
