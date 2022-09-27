@@ -23,19 +23,19 @@
 import { Container } from '@mui/material'
 import { Box } from '@mui/system'
 import NavDrawer from '../common/NavDrawer'
-import Typography from '@mui/material/Typography';
+import Typography from '@mui/material/Typography'
 
 const SettingsLayout = () => {
-    return (
-        <Box sx={{ display: 'flex' }}>
-            <NavDrawer />
-            <Container maxWidth="xl" sx={{ mb: 4, mt: 7.5, ml: 4 }}>
-                <Typography variant="h4" component="h4">
-                    Settings
-                </Typography>
-            </Container>
-        </Box>
-    )
+  return (
+    <Box sx={{ display: 'flex' }}>
+      <NavDrawer />
+      <Container maxWidth="xl" sx={{ mb: 4, mt: 7.5, ml: 4, }}>
+        <Typography variant="h4" component="h4">
+          Settings
+        </Typography>
+      </Container>
+    </Box>
+  )
 }
 
 export default SettingsLayout
