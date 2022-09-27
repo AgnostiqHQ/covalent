@@ -11,7 +11,7 @@ from dask.distributed import LocalCluster
 from distributed.core import Server, rpc
 
 from covalent._shared_files import logger
-from covalent._shared_files.config import CMType, get_config, update_config
+from covalent._shared_files.config import get_config, update_config
 from covalent._shared_files.utils import get_random_available_port
 
 app_log = logger.app_log
@@ -169,17 +169,17 @@ class DaskCluster(Process):
         self.admin_port = get_random_available_port()
         # Read the configuration options from the main config file
         try:
-            self.num_workers = get_config(CMType.SERVER, "dask.num_workers")
+            self.num_workers = get_config("dask.num_workers")
         except KeyError:
             self.logger.warning("Num workers not specified, using default = 1")
 
         try:
-            self.mem_per_worker = get_config(CMType.SERVER, "dask.mem_per_worker")
+            self.mem_per_worker = get_config("dask.mem_per_worker")
         except KeyError:
             self.logger.warning("Memory limit per worker not provided, using default = 'auto'")
 
         try:
-            self.threads_per_worker = get_config(CMType.SERVER, "dask.threads_per_worker")
+            self.threads_per_worker = get_config("dask.threads_per_worker")
         except KeyError:
             self.logger.warning("Threads per worker not provided, using default = 1")
 
@@ -201,7 +201,6 @@ class DaskCluster(Process):
 
         try:
             update_config(
-                CMType.SERVER,
                 {
                     "dask": {
                         "scheduler_address": scheduler_address,
@@ -211,7 +210,7 @@ class DaskCluster(Process):
                         "admin_host": self.admin_host,
                         "admin_port": self.admin_port,
                     }
-                },
+                }
             )
 
             admin = DaskAdminWorker(self.cluster, self.admin_host, self.admin_port, self.logger)
