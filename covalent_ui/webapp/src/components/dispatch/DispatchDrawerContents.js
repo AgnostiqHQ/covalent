@@ -42,6 +42,7 @@ import { ChevronLeft } from '@mui/icons-material'
 import CopyButton from '../common/CopyButton'
 import { truncateMiddle } from '../../utils/misc'
 import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
+import { sublatticesListDetails } from '../../redux/latticeSlice'
 
 const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
@@ -62,9 +63,26 @@ const DispatchDrawerContents = () => {
   )
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
+  const sublatticesListView = useSelector(
+    (state) => state.latticeResults.sublatticesList
+  )
+  const sublatticesListApi = () => {
+    const bodyParams = {
+      sort_by: 'total_electrons',
+      direction: 'desc',
+      dispatchId,
+    }
+    dispatch(sublatticesListDetails(bodyParams))
+  }
+
   useEffect(() => {
     dispatch(latticeError({ dispatchId, params: 'error' }))
     dispatch(latticeDetails({ dispatchId }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [callSocketApi])
+
+  useEffect(() => {
+    sublatticesListApi();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
 
@@ -132,7 +150,7 @@ const DispatchDrawerContents = () => {
           onChange={(e, newTab) => setTab(newTab)}
         >
           <Tab label="Overview" value="overview" />
-          <Tab label="Sublattices" value="sublattices" />
+          {sublatticesListView.length > 0 && (<Tab label="Sublattices" value="sublattices" />)}
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
@@ -142,9 +160,11 @@ const DispatchDrawerContents = () => {
             isFetching={drawerLatticeDetailsFetching}
           />
         </TabPanel>
-        <TabPanel value="sublattices" sx={{ px: 0, py: 1 }}>
-          <SublatticesListing/>
-        </TabPanel>
+        {sublatticesListView.length > 0 && (
+          <TabPanel value="sublattices" sx={{ px: 0, py: 1 }}>
+            <SublatticesListing />
+          </TabPanel>
+        )}
       </TabContext>
       {/* } */}
     </Box>
@@ -154,7 +174,7 @@ const DispatchDrawerContents = () => {
 const CustomTabList = styled(TabList)(({ theme }) => ({
   '& .MuiTab-root': {
     textTransform: 'none',
-    color:'#86869A',
+    color: '#86869A',
     '&.Mui-selected': {
       color: theme.palette.primary.white,
     },
