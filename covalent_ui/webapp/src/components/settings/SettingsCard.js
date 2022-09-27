@@ -109,6 +109,7 @@ const SettingsCard = () => {
   useEffect(() => {
     if (settings_result) {
       setResultOutput(Object.values(settings_result)[0]['sdk'])
+      setRestoreData(Object.values(settings_result)[0]['sdk'])
       setClientDetail(Object.values(settings_result)[0])
       setServerDetail(Object.values(settings_result)[1])
       setTempData(Object.values(settings_result)[0])
