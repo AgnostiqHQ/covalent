@@ -9,11 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Tests
 
+- Updated status related tests
 - Fixed `asserts` in stress tests
 - Added unit tests for `defaults.py`
 
 ### Added
 
+- Statuses and mechanism for executors to update their statuses.
+- `SafeVariable` class to share data safely between different threads if needed.
+- `task_metadata` in executors now also contains `status_store` using which they can update their statuses.
 - `requirements-client.txt` file added.
 - Logs tab on the GUI which displays the covalent logs and also the ability to download the log file.
 
@@ -24,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Updated statuses everywhere to use `Result`'s status attributes for now instead of using strings directly.
+- `ct.status` now uses `covalent._shared_files.statuses.RESULT_STATUS` constant.
 - Installation requirements are now split into client side and server side requirements' files.
 - `setup.py` modified to install client side requirements only, if `COVALENT_SDK_ONLY` environment variable is present and `True`.
 - Updated `requirements.txt` and `tests/requirements.txt`
