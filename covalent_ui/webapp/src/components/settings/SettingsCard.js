@@ -70,7 +70,6 @@ const SettingsCard = () => {
   const settings_result = useSelector(
     (state) => state.settingsResults.settingsList
   )
-  const callSocketApi = useSelector((state) => state.common.callSocketApi)
   const menuCallResult = useSelector((state) => state.dataRes.popupData)
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
@@ -88,7 +87,7 @@ const SettingsCard = () => {
   useEffect(() => {
     dispatch(settingsResults())
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [callSocketApi])
+  }, [])
 
   useEffect(() => {
     if (valueChange) {
@@ -96,7 +95,7 @@ const SettingsCard = () => {
         isChanged: valueChange,
         data: resultOutput,
         nodeName: resultKey,
-        mainKey: accName,
+        mainKey: accName
       }
       dispatch(toggleLatticeDrawer(settingObj))
     } else {
@@ -141,6 +140,7 @@ const SettingsCard = () => {
           ...currValue,
           [resultKey]: resultOutput,
         }))
+        setRestoreData(resultOutput)
       } else if (action.type === updateSettings.rejected.type) {
         setOpenSnackbar(true)
         setSnackbarMessage(
@@ -270,6 +270,7 @@ const SettingsCard = () => {
             ...currValue,
             [resultKey]: resultOutput,
           }))
+          setRestoreData(resultOutput)
         } else if (action.type === updateSettings.rejected.type) {
           setOpenSnackbar(true)
           setSnackbarMessage(
@@ -478,7 +479,7 @@ const SettingsCard = () => {
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => {}
+                              : () => { }
                           }
                           sx={{
                             right: isChildHasList(menuValue) ? '0px' : '0px',
@@ -565,7 +566,7 @@ const SettingsCard = () => {
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => {}
+                              : () => { }
                           }
                           sx={{
                             right: isChildHasList(menuValue) ? '0px' : '0px',
@@ -621,7 +622,7 @@ const SettingsCard = () => {
                       return (
                         <Box sx={{ mb: 3 }} key={key}>
                           {_.isObject(value) ? (
-                            <Box key={key}>
+                            <Box key={key} id={key}>
                               <Typography
                                 variant="h6"
                                 component="h6"
@@ -923,8 +924,9 @@ const SettingsCard = () => {
           <Skeleton animation="wave" />
           <Skeleton animation={false} />
         </Box>
-      )}
-    </Container>
+      )
+      }
+    </Container >
   )
 }
 
