@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `asserts` in stress tests
 - Added unit tests for `defaults.py`
+- Updated `test_sync()` to match the new function signature.
 
 ### Added
 
@@ -30,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `nbconvert` by dependabot
 - Split the `ConfigManager` into `Client` and `Server` components
 - Update the `set/get/update` config methods to distinguish between the client and server parts
+- `get_all_node_results()` uses in memory `Result` instead of DB
+- `get_all_node_outputs()` uses in memory Result instead of DB
+
+### Removed
+
+- The DB dependency in `sync()`
+- The ability for `sync()` to wait for all dispatches.
 
 ### Docs
 
