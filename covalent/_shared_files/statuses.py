@@ -73,11 +73,6 @@ class PostprocessingStatus(RunningCategory):
     description = "Task is currently postprocessing"
 
 
-class IntRunningStatus(RunningCategory):
-    status_name = "INT_RUNNING"
-    description = "Intermediate running status"
-
-
 # Completed Statuses
 class CompletedCategory(Status):
     category_name = "CompletedCategory"

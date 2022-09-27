@@ -24,6 +24,8 @@ import queue
 from multiprocessing.queues import Queue as MPQ
 from typing import Any, NamedTuple
 
+import cloudpickle as pickle
+
 from . import logger
 
 app_log = logger.app_log
@@ -35,6 +37,7 @@ class SafeVariable(MPQ):
         super().__init__(maxsize=1, ctx=mp.get_context())
 
     def save(self, value: Any) -> None:
+        value = pickle.dumps(value)
         try:
             self.put(value, timeout=0.5)
         except queue.Full:
@@ -45,7 +48,7 @@ class SafeVariable(MPQ):
         try:
             value = self.get(timeout=0.5)
             self.put(value, timeout=0.5)
-            return value
+            return pickle.loads(value)
         except queue.Empty:
             return None
 
