@@ -184,46 +184,21 @@ const LinkButton = ({
     }
   }
 
-  const popHandleSubmit = (event) => {
-    const updateData = {
-      [dRes.mainKey]: {
-        [dRes.nodeName]: dRes.data,
-      },
-    }
-    dispatch(updateSettings(updateData)).then((action) => {
-      if (action.type === updateSettings.fulfilled.type) {
-        setOpenSnackbar(true)
-        setSnackbarMessage('Settings updated successfully')
-        setPopupShow(false)
-        const settingObj = {
-          isChanged: false,
-        }
-        dispatch(toggleLatticeDrawer(settingObj))
-        navigate(path)
-      } else if (action.type === updateSettings.rejected.type) {
-        setOpenSnackbar(true)
-        setSnackbarMessage(
-          'Something went wrong and could not update settings!'
-        )
-        setPopupShow(false)
-        const settingObj = {
-          isChanged: false,
-        }
-        dispatch(toggleLatticeDrawer(settingObj))
-      }
-    })
-  }
-
   const handleClose = (event) => {
     setPopupShow(false)
   }
 
-  const handlePopClose = () => {
+  const handlePopClose = (save) => {
     navigate(path)
     const settingObj = {
       isChanged: false,
     }
+    if(save) {
+      setOpenSnackbar(true);
+      setSnackbarMessage('Settings Updated Successfully')
+    }
     dispatch(toggleLatticeDrawer(settingObj))
+
   }
 
   return (
@@ -232,9 +207,9 @@ const LinkButton = ({
         <DialogToolbar
           openDialogBox={popupShow}
           setOpenDialogBox={popupShow}
-          onClickHand={popHandleSubmit}
+          onClickHand={()=>handlePopClose(true)}
           handleClose={handleClose}
-          handlePopClose={handlePopClose}
+          handlePopClose={()=>handlePopClose(false)}
         />
       )}
       <Snackbar

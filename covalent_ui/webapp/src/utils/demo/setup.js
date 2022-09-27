@@ -23,6 +23,7 @@
 import _ from 'lodash'
 import demoDashboardListData from './dashboardDemoData'
 import logsDemoData from './logsDemoData'
+import settingsDemoData from './settingsDemoData'
 import latticeDetailsDemoData from './latticeDemoData'
 import graphDemoData from './graphDemoData'
 import latticePreview from './draw-a'
@@ -66,6 +67,9 @@ export const demoState = {
   logs: {
     logList: logsDemoData.logList,
     fetchLogList: { isFetching: false, error: null },
-    totalLogs:5
+    totalLogs: 5
+  },
+  settingsResults: {
+    settingsList: settingsDemoData.settingsOverview
   }
 }

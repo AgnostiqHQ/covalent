@@ -39,22 +39,23 @@ import {
   MenuItem,
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
-import Typography from '@mui/material/Typography'
-import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemText from '@mui/material/ListItemText'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import Collapse from '@mui/material/Collapse'
-import ExpandMore from '@mui/icons-material/ExpandMore'
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
-import FormControlLabel from '@mui/material/FormControlLabel'
-import FormControl from '@mui/material/FormControl'
-import FormLabel from '@mui/material/FormLabel'
-import { settingsResults, updateSettings } from '../../redux/settingsSlice'
-import { useDispatch, useSelector } from 'react-redux'
-import _, { capitalize } from 'lodash'
-import Skeleton from '@mui/material/Skeleton'
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Collapse from '@mui/material/Collapse';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
+import { isDemo } from '../../utils/demo/setup'
+import { settingsResults, updateSettings } from '../../redux/settingsSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import _, { capitalize, set } from 'lodash'
+import Skeleton from '@mui/material/Skeleton';
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
 import { styled } from '@mui/material/styles'
@@ -67,9 +68,7 @@ const SettingsCard = () => {
   const [subMenu, setSubMenu] = useState([])
   const [resultKey, setResultKey] = useState('sdk')
   const [resultOutput, setResultOutput] = useState()
-  const settings_result = useSelector(
-    (state) => state.settingsResults.settingsList
-  )
+  const [settings_result, setSettingsResult] = useState(useSelector((state) => state.settingsResults.settingsList))
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
   const menuCallResult = useSelector((state) => state.dataRes.popupData)
   const [openSnackbar, setOpenSnackbar] = useState(false)
@@ -86,7 +85,7 @@ const SettingsCard = () => {
   const [tempDataServer, setTempDataServer] = useState(null)
 
   useEffect(() => {
-    dispatch(settingsResults())
+    if (!isDemo) dispatch(settingsResults())
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
 
@@ -118,38 +117,33 @@ const SettingsCard = () => {
     }
   }, [settings_result])
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setSettingsResult(currValue => ({
+      ...currValue,
+      [accName]: {
+        ...currValue[accName],
+        [resultKey]: resultOutput
+      }
+    }))
+    // setResultOutput(updateData[accName][resultKey])
+    setResultKey(resultKey)
+    setOpenSnackbar(true)
+    setSnackbarMessage('Settings Updated Successfully')
+    setValueChange(false)
+    setClientDetail(currValue => ({
+      ...currValue,
+      [resultKey]: resultOutput
+    }))
+    setHandle('')
+  }
+
   useEffect(() => {
     if (_.size(searchData) !== 0) {
       setResultOutput(Object.values(searchData)[0])
       setRestoreData(Object.values(searchData)[0])
     }
   }, [searchData])
-
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    const updateData = {
-      [accName]: {
-        [resultKey]: resultOutput,
-      },
-    }
-    dispatch(updateSettings(updateData)).then((action) => {
-      if (action.type === updateSettings.fulfilled.type) {
-        setOpenSnackbar(true)
-        setSnackbarMessage('Settings Updated Successfully')
-        setValueChange(false)
-        setClientDetail((currValue) => ({
-          ...currValue,
-          [resultKey]: resultOutput,
-        }))
-      } else if (action.type === updateSettings.rejected.type) {
-        setOpenSnackbar(true)
-        setSnackbarMessage(
-          'Something went wrong and could not settings updated!'
-        )
-      }
-    })
-    setHandle('')
-  }
 
   const getSubmenuName = (name) => {
     let formattedName = name
@@ -256,27 +250,20 @@ const SettingsCard = () => {
     }
     setRestoreData(value)
     if (menuCallResult.isChanged) {
-      const updateData = {
+      setSettingsResult(currValue => ({
+        ...currValue,
         [accName]: {
-          [resultKey]: resultOutput,
-        },
-      }
-      dispatch(updateSettings(updateData)).then((action) => {
-        if (action.type === updateSettings.fulfilled.type) {
-          setOpenSnackbar(true)
-          setSnackbarMessage('Settings Updated Successfully')
-          setValueChange(false)
-          setClientDetail((currValue) => ({
-            ...currValue,
-            [resultKey]: resultOutput,
-          }))
-        } else if (action.type === updateSettings.rejected.type) {
-          setOpenSnackbar(true)
-          setSnackbarMessage(
-            'Something went wrong and could not settings updated!'
-          )
+          ...currValue[accName],
+          [resultKey]: resultOutput
         }
-      })
+      }))
+      setOpenSnackbar(true)
+      setSnackbarMessage('Settings Updated Successfully')
+      setValueChange(false)
+      setClientDetail(currValue => ({
+        ...currValue,
+        [resultKey]: resultOutput
+      }))
       setHandle('')
       setIsDisabled(false)
     } else {
