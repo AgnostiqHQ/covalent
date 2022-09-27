@@ -51,7 +51,7 @@ def test_dask_wrapper_fn():
     assert stderr == "Bye\n"
 
 
-def test_dask_executor_run():
+def test_dask_executor_run(mocker):
     """Test run method for Dask executor"""
 
     import io
@@ -73,7 +73,8 @@ def test_dask_executor_run():
 
     args = [5]
     kwargs = {"y": 7}
-    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    status_store = mocker.MagicMock()
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1, "status_store": status_store}
     with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
         result = asyncio.run(dask_exec.run(f, args, kwargs, task_metadata))
 
