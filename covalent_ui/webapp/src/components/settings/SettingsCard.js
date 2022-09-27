@@ -443,7 +443,7 @@ const SettingsCard = () => {
                   variant="h6"
                   component="h6"
                   sx={(theme) => ({
-                    color: theme.palette.primary.light,
+                    color: theme.palette.primary.white,
                     fontWeight: 'bold',
                     mb: 2,
                   })}
@@ -529,7 +529,7 @@ const SettingsCard = () => {
                   variant="h6"
                   component="h6"
                   sx={(theme) => ({
-                    color: theme.palette.primary.light,
+                    color: theme.palette.primary.white,
                     fontWeight: 'bold',
                     mb: 2,
                     mt: 2,
@@ -586,7 +586,11 @@ const SettingsCard = () => {
             <Grid item xs={9}>
               <Typography
                 component="h6"
-                sx={{ fontWeight: 'bold', fontSize: '24px' }}
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '24px',
+                  color: (theme) => theme.palette.primary.white,
+                }}
               >
                 {getSettingsName(resultKey)}
               </Typography>
@@ -677,6 +681,8 @@ const SettingsCard = () => {
                                             border: '1px solid #303067',
                                             borderRadius: '60px',
                                             fontSize: '14px',
+                                            color: (theme) =>
+                                              theme.palette.text.secondary,
                                           }}
                                           disabled={isDisabled}
                                           onKeyDown={handleKeypress}
@@ -827,6 +833,8 @@ const SettingsCard = () => {
                                           border: '1px solid #303067',
                                           borderRadius: '60px',
                                           fontSize: '14px',
+                                          color: (theme) =>
+                                            theme.palette.text.secondary,
                                         }}
                                         disabled={isDisabled}
                                         autoComplete="off"
