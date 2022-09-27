@@ -247,6 +247,12 @@ const LatticeGraph = ({
     if (!hasSelectedNode) resetNodeStyles()
   }, [hasSelectedNode])
 
+  useEffect(() => {
+    return () => {
+      resetNodeStyles()
+    };
+  })
+
   const resetNodeStyles = () => {
     setElements((prevElements) => {
       return prevElements?.map((elem) => {
