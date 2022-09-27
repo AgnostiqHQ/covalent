@@ -53,6 +53,20 @@ class SafeVariable(MPQ):
             return None
 
 
+# TODO: Following definitions are for legacy reasons only and should be removed soon:
+# {
+
+
+class Status:
+    def __init__(self, STATUS) -> None:
+        print("This class is deprecated and will be removed in a future version")
+        print("Please use `covalent._shared_files.statuses.Status` instead")
+        self.STATUS = STATUS
+
+    def __str__(self) -> str:
+        return self.STATUS
+
+
 class DispatchInfo(NamedTuple):
     """
     Information about a dispatch to be shared to a task post dispatch.
@@ -62,3 +76,6 @@ class DispatchInfo(NamedTuple):
     """
 
     dispatch_id: str
+
+
+# }
