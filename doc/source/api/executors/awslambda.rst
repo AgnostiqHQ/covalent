@@ -9,18 +9,20 @@ With this executor, users can execute tasks (electrons) or entire lattices using
 to use this plugin for electrons that are expected to be short lived and low in compute intensity. This plugin can also be used
 for workflows with several short lived embarassingly parallel tasks aka horizontal workflows.
 
-.. note::
-    Due to the isolated nature of AWS Lambda, the packages available on that environment are limited. This means that only the modules that
-    come with python out-of-the-box are accessible to your function. `Deps` are also limited in a similar fashion. However, AWS does provide
-    a workaround for pip package installations: https://aws.amazon.com/premiumsupport/knowledge-center/lambda-python-package-compatible/.
 
 1. Installation
 ###############
 To use this plugin with Covalent, simply install it using `pip`:
 
-.. code:: shell
+.. code-block:: shell
 
     pip install covalent-awslambda-plugin
+
+.. note::
+    Due to the isolated nature of AWS Lambda, the packages available on that environment are limited. This means that only the modules that
+    come with python out-of-the-box are accessible to your function. `Deps` are also limited in a similar fashion. However, AWS does provide
+    a workaround for pip package installations: https://aws.amazon.com/premiumsupport/knowledge-center/lambda-python-package-compatible/.
+
 
 2. Usage Example
 ################
@@ -28,24 +30,26 @@ To use this plugin with Covalent, simply install it using `pip`:
 This is an example of how a workflow can be constructed to use the AWS Lambda executor. In the example, we join two words to form a phrase
 and return an excited phrase.
 
-.. code:: python
+.. code-block:: python
 
     import covalent as ct
     from covalent.executor import AWSLambdaExecutor
 
-    executor = AWSLambdaExecutor(region="us-east-1",
-                            lambda_role_name="CovalentLambdaExecutionRole",
-                            s3_bucket_name="covalent-lambda-job-resources",
-                            timeout=60,
-                            memory_size=512)
+    executor = AWSLambdaExecutor(
+        region="us-east-1",
+        lambda_role_name="CovalentLambdaExecutionRole",
+        s3_bucket_name="covalent-lambda-job-resources",
+        timeout=60,
+        memory_size=512
+        )
 
     @ct.electron(executor=executor)
     def join_words(a, b):
-        return ", ".join([a, b])
+        return ",".join([a, b])
 
     @ct.electron(executor=executor)
     def excitement(a):
-        return f"{a}"!
+        return f"{a}!"
 
     @ct.lattice
     def simple_workflow(a, b):
@@ -61,7 +65,7 @@ and return an excited phrase.
 During the execution of the workflow, one can navigate to the UI to see the status of the workflow. Once completed, the above script
 should also output the result:
 
-.. code:: bash
+.. code-block:: bash
 
     Hello, World!
 
@@ -120,7 +124,7 @@ The following table shows a list of all input arguments including the required a
 The following snippet shows how users may modify their Covalent `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ to provide
 the necessary input arguments to the executor:
 
-.. code:: bash
+.. code-block:: bash
 
     [executors.awslambda]
     credentials = "/home/<user>/.aws/credentials"
@@ -136,7 +140,7 @@ the necessary input arguments to the executor:
 
 Within a workflow, users can use this executor with the default values configured in the configuration file as follows:
 
-.. code:: python
+.. code-block:: python
 
     import covalent as ct
 
@@ -147,21 +151,23 @@ Within a workflow, users can use this executor with the default values configure
 
 Alternatively, users can customize this executor entirely by providing their own values to its constructor as follows:
 
-.. code:: python
+.. code-block:: python
 
     import covalent as ct
     from covalent.executor import AWSLambdaExecutor
 
-    lambda_executor = AWSLambdaExecutor(credentials="my_custom_credentials",
-                                profile="custom_profile",
-                                region="us-east-1",
-                                lambda_role_name="my_lambda_role_name",
-                                s3_bucket_name="my_s3_bucket",
-                                cache_dir="/home/<user>/covalent/cache",
-                                poll_freq=5,
-                                timeout=30,
-                                memory_size=512,
-                                cleanup=True)
+    lambda_executor = AWSLambdaExecutor(
+        credentials="my_custom_credentials",
+        profile="custom_profile",
+        region="us-east-1",
+        lambda_role_name="my_lambda_role_name",
+        s3_bucket_name="my_s3_bucket",
+        cache_dir="/home/<user>/covalent/cache",
+        poll_freq=5,
+        timeout=30,
+        memory_size=512,
+        cleanup=True
+        )
 
     @ct.electron(executor=lambda_executor)
     def task(x, y):
@@ -189,15 +195,12 @@ either with `Terraform <https://www.terraform.io/>`_ or manually provisioned on 
      - s3_bucket_name
      - Name of an AWS S3 bucket that the executor can use to store temporary files
 
-4a. Manually provisioning resources
-***********************************
-
 The following JSON policy document shows the necessary IAM permissions required for the executor
 to properly run tasks using the AWS Lambda compute service:
 
 .. dropdown:: IAM Policy
 
-    .. code:: json
+    .. code-block:: json
 
         {
         "Version": "2012-10-17",
@@ -275,7 +278,7 @@ The policy document is summarized here for convenience:
 
 .. dropdown:: Covalent Lambda Execution Role Policy
 
-    .. code:: json
+    .. code-block:: json
 
         {
             "Version": "2012-10-17",
