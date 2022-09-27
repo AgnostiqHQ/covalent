@@ -3,7 +3,7 @@ const github = require("@actions/github");
 const fs = require("fs");
 const readline = require("readline");
 try {
-  const head_version = fs
+  const headVersion = fs
     .readFileSync(core.getInput("version-path"), "utf8")
     .trim();
   const changelog = fs.readFileSync(core.getInput("changelog-path"), "utf8");
@@ -21,50 +21,42 @@ try {
     Docs: [],
     Operations: [],
   };
-  let curline = 0;
-  let begin = Number.MAX_SAFE_INTEGER;
-  let end = Number.MAX_SAFE_INTEGER;
-  let section, i, last_release;
+  let section, lastRelease, isInPrereleaseBlock, isAuthorAlreadyIncluded;
   rl.on("line", (text) => {
-    if (text.match("\\b" + head_version + "\\b")) {
-      begin = curline++;
-      return;
-    }
-    if (curline < begin || curline > end) {
-      curline++;
-      return;
-    }
-    if (text.match(re)) {
-      end = curline++;
-      last_release = text.match(re)[0];
+    if (text.match("\\b" + headVersion + "\\b")) {
+      isInPrereleaseBlock = true;
+    } else if (isInPrereleaseBlock && text.match(re)) {
+      isInPrereleaseBlock = false;
+      lastRelease = text.match(re)[0];
       rl.close();
-      return;
-    }
-    console.log(text);
-    if (text.includes("### Authors")) section = "Authors";
-    else if (text.includes("### Added")) section = "Added";
-    else if (text.includes("### Changed")) section = "Changed";
-    else if (text.includes("### Removed")) section = "Removed";
-    else if (text.includes("### Fixed")) section = "Fixed";
-    else if (text.includes("### Tests")) section = "Tests";
-    else if (text.includes("### Docs")) section = "Docs";
-    else if (text.includes("### Operations")) section = "Operations";
-    else if (text.includes("##")) section = null;
-    else if (text.length > 2 && section === "Authors") {
-      i = 0;
-      while (text && i < summary.Authors.length) {
-        if (summary.Authors[i].includes(text.split(/[<>]/)[1])) text = null;
-        i++;
-      }
-      if (text) summary.Authors.push(text);
-    } else if (text.length > 2 && section) summary[section].push(text);
-    curline++;
+    } else if (isInPrereleaseBlock && text.includes("### Authors"))
+      section = "Authors";
+    else if (isInPrereleaseBlock && text.includes("### Added"))
+      section = "Added";
+    else if (isInPrereleaseBlock && text.includes("### Changed"))
+      section = "Changed";
+    else if (isInPrereleaseBlock && text.includes("### Removed"))
+      section = "Removed";
+    else if (isInPrereleaseBlock && text.includes("### Fixed"))
+      section = "Fixed";
+    else if (isInPrereleaseBlock && text.includes("### Tests"))
+      section = "Tests";
+    else if (isInPrereleaseBlock && text.includes("### Docs")) section = "Docs";
+    else if (isInPrereleaseBlock && text.includes("### Operations"))
+      section = "Operations";
+    else if (isInPrereleaseBlock && text.includes("##")) section = null;
+    else if (isInPrereleaseBlock && text.length > 2 && section === "Authors") {
+      isAuthorAlreadyIncluded = summary.Authors.find(author => author.includes(text.split(/[<>]/)[1]))
+      if(!isAuthorAlreadyIncluded)
+          summary.Authors.push(text);
+    } else if (isInPrereleaseBlock && text.length > 2 && section)
+      summary[section].push(text);
   });
   rl.on("close", () => {
-    const version = head_version.split("-rc");
+    const version = headVersion.split("-rc");
     if (version.length < 2)
       core.setFailed("This stable version has already been released.");
-    const changelog_header =
+    const changelogHeader =
       "## [" + version[0] + "] - " + new Date().toISOString().split("T")[0];
     const unreleased = "UNRELEASED";
     const sections = [];
@@ -72,11 +64,11 @@ try {
       sections.push(`### ${section}`);
       sections.push(summary[section].join("\n"));
     });
-    const message = changelog_header.concat("\n", "\n", sections.join("\n"));
+    const message = changelogHeader.concat("\n", "\n", sections.join("\n"));
 
     const new_changelog = changelog
       .slice(0, changelog.indexOf(unreleased) + unreleased.length + 1)
-      .concat(message, changelog.slice(changelog.indexOf(last_release)));
+      .concat(message, changelog.slice(changelog.indexOf(lastRelease)));
     fs.writeFileSync(core.getInput("changelog-path"), new_changelog, "utf8");
     fs.writeFileSync(core.getInput("version-path"), version[0], "utf8");
     core.setOutput("message", message);
