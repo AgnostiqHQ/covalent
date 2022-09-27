@@ -351,10 +351,9 @@ In order to run your workflows with covalent there are a few notable AWS resourc
     }
 
 
-===========================================
-5. Source
-===========================================
-
+.. ===========================================
+.. 5. Source
+.. ===========================================
 
 .. autoclass:: covalent.executor.AWSBatchExecutor
     :members:

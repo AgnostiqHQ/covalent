@@ -183,11 +183,6 @@ The following shows an example of how a user might modify their `covalent config
     time_limit = 3600
 
 
-.. autoclass:: covalent.executor.BraketExecutor
-    :members:
-    :inherited-members:
-
-
 ===========================================
 4. Required Cloud Resources
 ===========================================
@@ -233,3 +228,11 @@ role with the appropriate permissions to be passed to Braket.
 #. The `AWS documentation on S3
    <https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html>`_
    details how to configure an S3 bucket.
+
+.. ===========================================
+.. 5. Source
+.. ===========================================
+
+.. autoclass:: covalent.executor.BraketExecutor
+    :members:
+    :inherited-members:

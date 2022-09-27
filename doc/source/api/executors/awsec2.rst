@@ -215,3 +215,11 @@ The required resources include an EC2 Key Pair, and optionally a VPC & Subnet th
 
 #. To create an AWS EC2 Key pair refer to the following `AWS documentation <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html>`_.
 #. To create a VPC & Subnet refer to the following `AWS documentation <https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html>`_.
+
+.. ===========================================
+.. 5. Source
+.. ===========================================
+
+.. autoclass:: covalent.executor.EC2Executor
+    :members:
+    :inherited-members:
