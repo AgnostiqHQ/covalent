@@ -2,8 +2,12 @@ import os
 
 from furl import furl
 
+from ..._shared_files import logger
 from .. import File
 from .transfer_strategy_base import FileTransferStrategy
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 
 class S3(FileTransferStrategy):
@@ -48,6 +52,9 @@ class S3(FileTransferStrategy):
         from_filepath = from_file.filepath
         to_filepath = to_file.filepath
         bucket_name = furl(from_file.uri).origin[5:]
+        app_log.debug(
+            f"S3 download bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
+        )
 
         def callable():
             import boto3
@@ -66,6 +73,9 @@ class S3(FileTransferStrategy):
         from_filepath = from_file.filepath
         to_filepath = to_file.filepath
         bucket_name = furl(to_file.uri).origin[5:]
+        app_log.debug(
+            f"S3 download bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
+        )
 
         def callable():
             import boto3
