@@ -378,7 +378,7 @@ const SettingsCard = () => {
   })
 
   return (
-    <Container maxWidth="xl" sx={{ mb: 4, mt: 7.5 }}>
+    <Container maxWidth="xl" sx={{ mb: 4, marginTop: '32px' }}>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={3000}
@@ -396,7 +396,14 @@ const SettingsCard = () => {
           />
         }
       />
-      <Typography variant="h4" component="h4" sx={{ mb: 5 }}>
+      <Typography
+        component="h4"
+        sx={{
+          mb: 5,
+          color: (theme) => theme.palette.primary.white,
+          fontSize: '32px',
+        }}
+      >
         Settings
       </Typography>
       {_.size(settings_result) !== 0 ? (

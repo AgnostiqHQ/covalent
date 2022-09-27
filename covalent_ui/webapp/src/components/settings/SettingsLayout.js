@@ -23,7 +23,6 @@
 //  import { Container } from '@mui/material'
 //  import ResultListing from '../dispatches/ResultListing'
 import { Box } from '@mui/system'
-import { Container } from '@mui/material'
 import NavDrawer from '../common/NavDrawer'
 import SettingsCard from '../settings/SettingsCard'
 
@@ -31,9 +30,7 @@ const SettingsLayout = () => {
   return (
     <Box sx={{ display: 'flex' }} data-testid="dashboard">
       <NavDrawer />
-      <Container maxWidth="xl">
-        <SettingsCard />
-      </Container>
+      <SettingsCard />
     </Box>
   )
 }
