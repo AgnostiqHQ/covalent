@@ -499,7 +499,7 @@ const SettingsCard = () => {
                                   ? 'white'
                                   : 'text.primary',
                               pl: '0px',
-                              fontSize: '18px',
+                              fontSize: '14px',
                               fontWeight:
                                 resultKey === menuKey ? 'bold' : 'normal',
                             }}
@@ -525,7 +525,7 @@ const SettingsCard = () => {
                                     handleSubmenuClick(subMenu, key)
                                   }
                                   disableTypography
-                                  sx={{ pl: '0px', fontSize: '18px' }}
+                                  sx={{ pl: '0px', fontSize: '14px' }}
                                 />
                               </ListItemButton>
                             </ListItem>
@@ -584,7 +584,7 @@ const SettingsCard = () => {
                                   ? 'white'
                                   : 'text.primary',
                               pl: '0px',
-                              fontSize: '18px',
+                              fontSize: '14px',
                               fontWeight:
                                 resultKey === menuKey ? 'bold' : 'normal',
                             }}
@@ -598,9 +598,8 @@ const SettingsCard = () => {
             </Grid>
             <Grid item xs={9}>
               <Typography
-                variant="h6"
                 component="h6"
-                sx={{ fontWeight: 'bold' }}
+                sx={{ fontWeight: 'bold', fontSize: '24px' }}
               >
                 {getSettingsName(resultKey)}
               </Typography>
@@ -630,7 +629,7 @@ const SettingsCard = () => {
                                         <FormLabel
                                           id="demo-row-radio-buttons-group-label"
                                           sx={(theme) => ({
-                                            fontSize: '16px',
+                                            fontSize: '14px',
                                             color: 'text.primary',
                                           })}
                                         >
@@ -647,13 +646,25 @@ const SettingsCard = () => {
                                             value="true"
                                             disabled={isDisabled}
                                             control={<Radio />}
-                                            label="True"
+                                            label={
+                                              <Typography
+                                                sx={{ fontSize: '14px' }}
+                                              >
+                                                True
+                                              </Typography>
+                                            }
                                           />
                                           <FormControlLabel
                                             value="false"
                                             disabled={isDisabled}
                                             control={<Radio />}
-                                            label="False"
+                                            label={
+                                              <Typography
+                                                sx={{ fontSize: '14px' }}
+                                              >
+                                                False
+                                              </Typography>
+                                            }
                                           />
                                         </RadioGroup>
                                       </FormControl>
@@ -663,7 +674,7 @@ const SettingsCard = () => {
                                           variant="standard"
                                           htmlFor="uncontrolled-native"
                                           sx={{
-                                            fontSize: '16px',
+                                            fontSize: '14px',
                                             mb: 1,
                                             color: 'text.primary',
                                           }}
@@ -678,6 +689,7 @@ const SettingsCard = () => {
                                             height: '45px',
                                             border: '1px solid #303067',
                                             borderRadius: '60px',
+                                            fontSize: '14px',
                                           }}
                                           disabled={isDisabled}
                                           onKeyDown={handleKeypress}
@@ -703,7 +715,7 @@ const SettingsCard = () => {
                                   <FormLabel
                                     id="demo-simple-select-label"
                                     sx={{
-                                      fontSize: '16px',
+                                      fontSize: '14px',
                                       color: 'text.primary',
                                     }}
                                   >
@@ -718,15 +730,43 @@ const SettingsCard = () => {
                                     name={key}
                                     label={key}
                                     onChange={(e) => handleSelectChange(e, key)}
-                                    sx={{ mt: 1 }}
+                                    sx={{ mt: 1, fontSize: '14px' }}
                                     className="dropdownSelect"
                                   >
-                                    <MenuItem value="notset">Notset</MenuItem>
-                                    <MenuItem value="debug">Debug</MenuItem>
-                                    <MenuItem value="info">Info</MenuItem>
-                                    <MenuItem value="warning">Warning</MenuItem>
-                                    <MenuItem value="error">Error</MenuItem>
-                                    <MenuItem value="critical">
+                                    <MenuItem
+                                      sx={{ fontSize: '14px' }}
+                                      value="notset"
+                                    >
+                                      Notset
+                                    </MenuItem>
+                                    <MenuItem
+                                      sx={{ fontSize: '14px' }}
+                                      value="debug"
+                                    >
+                                      Debug
+                                    </MenuItem>
+                                    <MenuItem
+                                      sx={{ fontSize: '14px' }}
+                                      value="info"
+                                    >
+                                      Info
+                                    </MenuItem>
+                                    <MenuItem
+                                      sx={{ fontSize: '14px' }}
+                                      value="warning"
+                                    >
+                                      Warning
+                                    </MenuItem>
+                                    <MenuItem
+                                      sx={{ fontSize: '14px' }}
+                                      value="error"
+                                    >
+                                      Error
+                                    </MenuItem>
+                                    <MenuItem
+                                      sx={{ fontSize: '14px' }}
+                                      value="critical"
+                                    >
                                       Critical
                                     </MenuItem>
                                   </Select>
@@ -738,7 +778,7 @@ const SettingsCard = () => {
                                       <FormLabel
                                         id="demo-row-radio-buttons-group-label"
                                         sx={(theme) => ({
-                                          fontSize: '16px',
+                                          fontSize: '14px',
                                           color: 'text.primary',
                                         })}
                                       >
@@ -753,16 +793,28 @@ const SettingsCard = () => {
                                         onChange={(e) => handleChange(e, key)}
                                       >
                                         <FormControlLabel
-                                          disabled={isDisabled}
                                           value="true"
+                                          disabled={isDisabled}
                                           control={<Radio />}
-                                          label="True"
+                                          label={
+                                            <Typography
+                                              sx={{ fontSize: '14px' }}
+                                            >
+                                              True
+                                            </Typography>
+                                          }
                                         />
                                         <FormControlLabel
-                                          disabled={isDisabled}
                                           value="false"
+                                          disabled={isDisabled}
                                           control={<Radio />}
-                                          label="False"
+                                          label={
+                                            <Typography
+                                              sx={{ fontSize: '14px' }}
+                                            >
+                                              False
+                                            </Typography>
+                                          }
                                         />
                                       </RadioGroup>
                                     </FormControl>
@@ -772,7 +824,7 @@ const SettingsCard = () => {
                                         variant="standard"
                                         htmlFor="uncontrolled-native"
                                         sx={{
-                                          fontSize: '16px',
+                                          fontSize: '14px',
                                           mb: 1,
                                           color: 'text.primary',
                                         }}
@@ -787,6 +839,7 @@ const SettingsCard = () => {
                                           height: '45px',
                                           border: '1px solid #303067',
                                           borderRadius: '60px',
+                                          fontSize: '14px',
                                         }}
                                         disabled={isDisabled}
                                         autoComplete="off"
@@ -821,7 +874,7 @@ const SettingsCard = () => {
                             border: '1px solid #6473FF',
                             borderRadius: '60px',
                             color: 'white',
-                            fontSize: '16px',
+                            fontSize: '14px',
                             textTransform: 'capitalize',
                           })}
                         >
@@ -835,7 +888,7 @@ const SettingsCard = () => {
                             borderRadius: '60px',
                             color: 'white',
                             padding: '8px 30px',
-                            fontSize: '16px',
+                            fontSize: '14px',
                             textTransform: 'capitalize',
                           })}
                         >
