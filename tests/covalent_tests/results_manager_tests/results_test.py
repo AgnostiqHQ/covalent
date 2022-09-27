@@ -332,13 +332,9 @@ def test_result_persist_rehydrate(test_db, result_1, mocker):
         assert tg_1.edges[e] == tg_2.edges[e]
 
 
-def test_get_node_error(test_db, result_1, mocker):
+def test_get_node_error(result_1):
     """Test result method to get the node error."""
-
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
-    result_1.persist()
-    assert result_1._get_node_error(node_id=0) == ""
+    assert not result_1._get_node_error(node_id=0)
 
 
 def test_get_node_value(test_db, result_1, mocker):

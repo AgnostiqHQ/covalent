@@ -26,14 +26,12 @@ from typing import Dict, List, Optional, Union
 import cloudpickle as pickle
 import requests
 from requests.adapters import HTTPAdapter
-from sqlalchemy.orm import Session
 from urllib3.util import Retry
 
 from .. import _workflow as ct
-from .._data_store.datastore import DataStore
 from .._data_store.models import Lattice
 from .._shared_files import logger
-from .._shared_files.config import CMType, get_config
+from .._shared_files.config import get_config
 from .._workflow.transport import TransportableObject
 from .result import Result
 from .wait import EXTREME
@@ -183,9 +181,7 @@ def result_from(lattice_record: Lattice) -> Result:
 def _get_result_from_dispatcher(
     dispatch_id: str,
     wait: bool = False,
-    dispatcher: str = get_config(CMType.CLIENT, "server.address")
-    + ":"
-    + str(get_config(CMType.CLIENT, "server.port")),
+    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
     status_only: bool = False,
 ) -> Dict:
 
@@ -224,7 +220,7 @@ def _get_result_from_dispatcher(
 
 def _delete_result(
     dispatch_id: str,
-    results_dir: str = get_config(CMType.SERVER, "service.results_dir"),
+    results_dir: str = get_config("dispatcher.results_dir"),
     remove_parent_directory: bool = False,
 ) -> None:
     """
@@ -277,7 +273,6 @@ def redispatch_result(result_object: Result, dispatcher: str = None) -> str:
 
 
 def sync(
-    db: DataStore,
     dispatch_id: Optional[Union[List[str], str]] = None,
 ) -> None:
     """
@@ -296,17 +291,14 @@ def sync(
         for d in dispatch_id:
             _get_result_from_dispatcher(d, wait=True, status_only=True)
     else:
-        with Session(db.engine) as session:
-            rows = session.query(Lattice).all()
-        for row in rows:
-            _get_result_from_dispatcher(row.dispatch_id, wait=True, status_only=True)
+        raise Exception(
+            f"dispatch_id must be a string or a list. You passed a {type(dispatch_id)}."
+        )
 
 
 def cancel(
     dispatch_id: str,
-    dispatcher: str = get_config(CMType.CLIENT, "server.address")
-    + ":"
-    + str(get_config(CMType.CLIENT, "server.port")),
+    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
 ) -> str:
     """
     Cancel a running dispatch.
