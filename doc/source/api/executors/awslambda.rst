@@ -303,5 +303,3 @@ The policy document is summarized here for convenience:
 
 For more information on how to create IAM roles and attach policies in AWS, refer to `IAM roles <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create.html>`_.
 For more information on AWS S3, refer to `AWS S3 <https://aws.amazon.com/s3/>`_.
-
-
