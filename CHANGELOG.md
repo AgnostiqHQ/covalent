@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `asserts` in stress tests
 - Added unit tests for `defaults.py`
+- Updated `test_sync()` to match the new function signature.
 
 ### Added
 
@@ -28,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `setup.py` modified to install client side requirements only, if `COVALENT_SDK_ONLY` environment variable is present and `True`.
 - Updated `requirements.txt` and `tests/requirements.txt`
 - Updated `nbconvert` by dependabot
+
+### Removed
+
+- The DB dependency in `sync()`
+- The ability for `sync()` to wait for all dispatches.
 
 ### Docs
 
