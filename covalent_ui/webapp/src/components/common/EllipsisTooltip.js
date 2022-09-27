@@ -27,7 +27,6 @@ const OverflowTip = props => {
         <Tooltip
             data-testid="toolTip"
             title={props.value}
-            interactive
             disableHoverListener={!hoverStatus}
             style={{ fontSize: '2em' }}
         >

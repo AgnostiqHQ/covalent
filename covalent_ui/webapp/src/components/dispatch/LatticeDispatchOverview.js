@@ -27,6 +27,7 @@ import CopyButton from '../common/CopyButton'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
 import InputSection from '../common/InputSection'
+import ResultSection from '../common/ResultSection'
 import ExecutorSection from '../common/ExecutorSection'
 import {
   latticeResults,
@@ -136,7 +137,8 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
           isFetching={
             drawerInputListFetching && Object.keys(drawerInput).length === 0
           }
-          inputs={drawerInput.data}
+          sx={() => ({ cursor: 'pointer' })}
+          inputs={drawerInput}
         />
       )}
 
@@ -144,14 +146,13 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       {/* Result */}
       {drawerResult && result.status === 'COMPLETED' && (
         <>
-          <Heading>Result</Heading>
-          {drawerResultListFetching ? (
-            <Skeleton height={60} style={{ mt: 1 }} />
-          ) : (
-            <Paper elevation={0}>
-              <SyntaxHighlighter language="python" src={drawerResult.data} />
-            </Paper>
-          )}
+          <ResultSection
+            isFetching={
+              drawerResultListFetching && Object.keys(drawerResult).length === 0
+            }
+            sx={() => ({ cursor: 'pointer' })}
+            results={drawerResult}
+          />
         </>
       )}
 

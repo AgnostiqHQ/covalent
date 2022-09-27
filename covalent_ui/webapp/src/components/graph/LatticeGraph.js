@@ -19,12 +19,14 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-import { useEffect, useRef, useState, createRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
+import { toJpeg } from 'html-to-image';
 import ReactFlow, {
   MiniMap,
   getIncomers,
   getOutgoers,
   isEdge,
+  isNode
 } from 'react-flow-renderer'
 import ElectronNode from './ElectronNode'
 import { NODE_TEXT_COLOR } from './ElectronNode'
@@ -36,7 +38,6 @@ import LatticeControls from './LatticeControlsElk'
 import theme from '../../utils/theme'
 import { statusColor } from '../../utils/misc'
 import useFitViewHelper from './ReactFlowHooks'
-import { useScreenshot, createFileName } from 'use-react-screenshot'
 import covalentLogo from '../../assets/frame.png'
 
 // https://reactjs.org/docs/hooks-faq.html#how-to-get-the-previous-props-or-state
@@ -149,28 +150,27 @@ const LatticeGraph = ({
 
   /*<--------ScreenShot-------->*/
 
-  useEffect(() => {
-    if (screen) {
-      takeScreenShot(ref_chart.current).then(download)
-      setScreen(false)
+  const ref_chart = useRef(null)
+
+  const download = useCallback(() => {
+    if (ref_chart.current === null) {
+      return
     }
+    setScreen(true);
+    toJpeg(ref_chart.current, { cacheBust: true, })
+      .then((dataUrl) => {
+        const link = document.createElement('a')
+        link.download = `${dispatchId}.jpg`
+        link.href = dataUrl
+        link.click()
+        setScreen(false)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen])
+  }, [ref_chart])
 
-  const ref_chart = createRef(null)
-
-  // eslint-disable-next-line no-unused-vars
-  const [image, takeScreenShot] = useScreenshot({
-    type: 'image/jpeg',
-    quality: 1.0,
-  })
-
-  const download = (image, { name = dispatchId, extension = 'jpg' } = {}) => {
-    const a = document.createElement('a')
-    a.href = image
-    a.download = createFileName(extension, name)
-    a.click()
-  }
 
   // highlight links of selected nodes
   const getAllIncomers = (node, elements) => {
@@ -204,6 +204,14 @@ const LatticeGraph = ({
         return prevElements?.map((elem) => {
           const incomerIds = allIncomers.map((i) => i.id)
           const outgoerIds = allOutgoers.map((o) => o.id)
+          if (isNode(elem) && (allOutgoers.length > 0 || allIncomers.length > 0)) {
+            const highlight = elem.id === node.id || incomerIds.includes(elem.id) || outgoerIds.includes(elem.id)
+
+            elem.style = {
+              ...elem.style,
+              opacity: highlight ? 1 : 0.45,
+            }
+          }
           if (isEdge(elem)) {
             if (selection) {
               const animated =
@@ -215,6 +223,7 @@ const LatticeGraph = ({
               elem.style = {
                 ...elem.style,
                 stroke: animated ? '#6473FF' : '#303067',
+                opacity: animated ? 1 : 0.45,
               }
               elem.labelStyle = animated
                 ? { fill: '#6473FF' }
@@ -241,7 +250,12 @@ const LatticeGraph = ({
   const resetNodeStyles = () => {
     setElements((prevElements) => {
       return prevElements?.map((elem) => {
-        if (isEdge(elem)) {
+        if (isNode(elem)) {
+          elem.style = {
+            ...elem.style,
+            opacity: 1,
+          }
+        } else {
           elem.animated = false
           elem.labelStyle = { fill: NODE_TEXT_COLOR }
           elem.style = {
@@ -305,7 +319,7 @@ const LatticeGraph = ({
               setShowMinimap(!showMinimap)
             }}
             toggleScreenShot={() => {
-              setScreen(true)
+              download()
             }}
             open={open}
             anchorEl={anchorEl}

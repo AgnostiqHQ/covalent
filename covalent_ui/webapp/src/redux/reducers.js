@@ -26,7 +26,9 @@ import { dashboardSlice } from './dashboardSlice'
 import { graphSlice } from './graphSlice'
 import { latticeSlice } from './latticeSlice'
 import { electronSlice } from './electronSlice'
+import { settingsSlice } from './settingsSlice'
 import { logsSlice } from './logsSlice'
+import { popupSlice } from './popupSlice'
 
 const reducers = {
   common: commonSlice.reducer,
@@ -35,6 +37,8 @@ const reducers = {
   graphResults: graphSlice.reducer,
   latticeResults: latticeSlice.reducer,
   electronResults: electronSlice.reducer,
+  settingsResults: settingsSlice.reducer,
+  dataRes: popupSlice.reducer,
   logs: logsSlice.reducer,
 }
 

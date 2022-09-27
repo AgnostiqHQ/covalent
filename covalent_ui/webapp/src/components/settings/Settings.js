@@ -21,21 +21,21 @@
  */
 
 import { Container } from '@mui/material'
-import ResultListing from '../dispatches/ResultListing'
 import { Box } from '@mui/system'
 import NavDrawer from '../common/NavDrawer'
-import DashboardCard from './DashboardCard'
+import Typography from '@mui/material/Typography';
 
-const Dashboard = () => {
-  return (
-    <Box sx={{ display: 'flex' }} data-testid="dashboard">
-      <NavDrawer />
-      <Container maxWidth="xl" sx={{ mb: 4, marginTop: '32px' }}>
-        <DashboardCard />
-        <ResultListing />
-      </Container>
-    </Box>
-  )
+const SettingsLayout = () => {
+    return (
+        <Box sx={{ display: 'flex' }}>
+            <NavDrawer />
+            <Container maxWidth="xl" sx={{ mb: 4, mt: 7.5, ml: 4 }}>
+                <Typography variant="h4" component="h4">
+                    Settings
+                </Typography>
+            </Container>
+        </Box>
+    )
 }
 
-export default Dashboard
+export default SettingsLayout

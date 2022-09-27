@@ -98,21 +98,21 @@ class DeleteDispatchesResponse(BaseModel):
     """Dashboard metadate model"""
 
     success_items: List[UUID]
-    failure_items: List[UUID] = None
-    message: str = None
+    failure_items: Union[List[UUID], None] = None
+    message: Union[str, None] = None
 
 
 class DispatchDashBoardResponse(BaseModel):
     """Dashboard metadate model"""
 
-    total_jobs: int = None
-    total_jobs_running: int = None
-    total_jobs_completed: int = None
-    total_jobs_failed: int = None
-    total_jobs_cancelled: int = None
-    total_jobs_new_object: int = None
-    latest_running_task_status: Status = None
-    total_dispatcher_duration: int = None
+    total_jobs: Union[int, None] = None
+    total_jobs_running: Union[int, None] = None
+    total_jobs_completed: Union[int, None] = None
+    total_jobs_failed: Union[int, None] = None
+    total_jobs_cancelled: Union[int, None] = None
+    total_jobs_new_object: Union[int, None] = None
+    latest_running_task_status: Union[Status, None] = None
+    total_dispatcher_duration: Union[int, None] = None
 
     class Config:
         """Configure example for openAPI"""

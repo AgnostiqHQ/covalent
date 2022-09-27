@@ -381,6 +381,7 @@ const ResultsTableToolbar = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            width: '12%',
           }}
         >
           {numSelected} selected
@@ -418,14 +419,7 @@ const ResultsTableToolbar = ({
         message="Are you sure about deleting"
         icon={DeleteNewIcon}
       />
-      <Grid
-        ml={2}
-        container
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ width: '35%' }}
-      >
+      <Grid ml={2} container direction="row">
         <SortDispatch
           title="All"
           count={allDispatches}
@@ -880,9 +874,9 @@ const ResultListing = () => {
           <Grid>
             <TableContainer
               sx={{
-                height: _.isEmpty(dashboardListView) ? 50 : 310,
+                height: _.isEmpty(dashboardListView) ? 50 : 350,
                 '@media (min-width: 1500px) and (min-height: 850px)': {
-                  height: _.isEmpty(dashboardListView) ? 50 : 450,
+                  height: _.isEmpty(dashboardListView) ? 50 : 485,
                 },
                 '@media (min-width: 1700px)': {
                   height: _.isEmpty(dashboardListView) ? 50 : '53vh',

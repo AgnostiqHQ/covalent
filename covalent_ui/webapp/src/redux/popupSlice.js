@@ -20,22 +20,20 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { Container } from '@mui/material'
-import ResultListing from '../dispatches/ResultListing'
-import { Box } from '@mui/system'
-import NavDrawer from '../common/NavDrawer'
-import DashboardCard from './DashboardCard'
+import { createSlice } from '@reduxjs/toolkit'
 
-const Dashboard = () => {
-  return (
-    <Box sx={{ display: 'flex' }} data-testid="dashboard">
-      <NavDrawer />
-      <Container maxWidth="xl" sx={{ mb: 4, marginTop: '32px' }}>
-        <DashboardCard />
-        <ResultListing />
-      </Container>
-    </Box>
-  )
+const initialState = {
+    popupData: null
 }
 
-export default Dashboard
+export const popupSlice = createSlice({
+    name: 'common',
+    initialState,
+    reducers: {
+        toggleLatticeDrawer(state, { payload }) {
+            state.popupData = payload
+        },
+    },
+})
+
+export const { toggleLatticeDrawer } = popupSlice.actions
