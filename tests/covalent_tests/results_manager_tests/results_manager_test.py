@@ -35,7 +35,7 @@ from covalent._results_manager.results_manager import (
     result_from,
     sync,
 )
-from covalent._shared_files.config import CMType, get_config
+from covalent._shared_files.config import get_config
 
 DISPATCH_ID = "91c3ee18-5f2d-44ee-ac2a-39b79cf56646"
 
@@ -97,11 +97,7 @@ def test_get_result_from_dispatcher(mocker):
     mock_response.append(Mock(status=200, msg=HTTPMessage()))
     getconn_mock.return_value.getresponse.side_effect = mock_response
     dispatch_id = "9d1b308b-4763-4990-ae7f-6a6e36d35893"
-    dispatcher = (
-        get_config(CMType.CLIENT, "server.address")
-        + ":"
-        + str(get_config(CMType.CLIENT, "server.port"))
-    )
+    dispatcher = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
     _get_result_from_dispatcher(
         dispatch_id, wait=wait.LONG, dispatcher=dispatcher, status_only=False
     )

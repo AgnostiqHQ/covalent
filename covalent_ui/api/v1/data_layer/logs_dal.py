@@ -24,10 +24,10 @@ from datetime import datetime
 
 from fastapi.responses import Response
 
-from covalent._shared_files.config import CMType, get_config
+from covalent._shared_files.config import get_config
 from covalent_ui.api.v1.models.logs_model import LogsResponse
 
-UI_LOGFILE = get_config(CMType.SERVER, "service.log_dir") + "/covalent_ui.log"
+UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 
 
 class Logs:
