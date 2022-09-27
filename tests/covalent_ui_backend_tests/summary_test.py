@@ -1,8 +1,8 @@
 from os.path import abspath, dirname
 
-import tests.ui_backend_tests.utils.main as main
-from tests.ui_backend_tests.utils.assert_data.summary import seed_summary_data
-from tests.ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
+import tests.covalent_ui_backend_tests.utils.main as main
+from tests.covalent_ui_backend_tests.utils.assert_data.summary import seed_summary_data
+from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
 
 object_test_template = TestClientTemplate()
 output_path = dirname(abspath(__file__)) + "/utils/assert_data/summary_data.json"

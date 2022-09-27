@@ -17,7 +17,7 @@ def seed_electron_data():
                     "storage_path": os.path.abspath(
                         os.path.join(os.path.dirname(__file__), os.pardir)
                     )
-                    + "/mock_results/78525234-72ec-42dc-94a0-f4751707f9cd/node_0",
+                    + "/mock_files/78525234-72ec-42dc-94a0-f4751707f9cd/node_0",
                     "name": "hello",
                     "status": "COMPLETED",
                     "started_at": "2022-09-23T15:31:11",

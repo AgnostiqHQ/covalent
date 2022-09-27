@@ -1,11 +1,9 @@
-from os.path import abspath, dirname
-
-import tests.ui_backend_tests.utils.main as main
-from tests.ui_backend_tests.utils.assert_data.electrons import seed_electron_data
-from tests.ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
+import tests.covalent_ui_backend_tests.utils.main as main
+from tests.covalent_ui_backend_tests.utils.assert_data.electrons import seed_electron_data
+from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
 
 object_test_template = TestClientTemplate()
-output_path = dirname(abspath(__file__)) + "/utils/assert_data/electrons_data.json"
+# output_path = dirname(abspath(__file__)) + "/utils/assert_data/electrons_data.json"
 # with open(output_path, "r") as output_json:
 #     output_data = json.load(output_json)
 output_data = seed_electron_data()
