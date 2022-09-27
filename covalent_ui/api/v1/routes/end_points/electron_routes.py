@@ -89,6 +89,7 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
     from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 
     result_object = get_result(dispatch_id=str(dispatch_id), wait=False)
+
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
@@ -114,7 +115,7 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
         response, python_object = get_electron_inputs(
             dispatch_id=dispatch_id, electron_id=electron_id
         )
-        return ElectronFileResponse(data=response)
+        return ElectronFileResponse(data=str(response), python_object=str(python_object))
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
@@ -137,10 +138,7 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                 return ElectronFileResponse(data=str(response), python_object=python_object)
             elif name == "value":
                 response = handler.read_from_pickle(result["value_filename"])
-                return ElectronFileResponse(data=response)
-            elif name == "key":
-                response = handler.read_from_pickle(result["key_filename"])
-                return ElectronFileResponse(data=response)
+                return ElectronFileResponse(data=str(response))
             elif name == "stdout":
                 response = handler.read_from_text(result["stdout_filename"])
                 return ElectronFileResponse(data=response)

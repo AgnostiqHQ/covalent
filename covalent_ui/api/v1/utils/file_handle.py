@@ -43,6 +43,7 @@ def transportable_object(obj):
 
 
 def validate_data(unpickled_object):
+
     """Validate unpickled object"""
     if isinstance(unpickled_object, list):
         if not (unpickled_object):
@@ -69,11 +70,11 @@ def validate_data(unpickled_object):
                 )
 
             to_transportable_object = TransportableObject(
-                {"args": str(args_array), "kwargs": str(kwargs_array)}
+                {"args": tuple(args_array), "kwargs": kwargs_array}
             )
             object_bytes = transportable_object(to_transportable_object)
             return (
-                json.dumps({"args": args_array, "kwargs": kwargs_array}),
+                str(({"args": tuple(args_array), "kwargs": kwargs_array})),
                 f"import pickle{object_bytes}",
             )
         else:
@@ -92,7 +93,7 @@ def validate_data(unpickled_object):
     elif isinstance(unpickled_object, _TransportGraph):
         return str(unpickled_object.__dict__)
     else:
-        return unpickled_object
+        return unpickled_object, unpickled_object
 
 
 class FileHandler:
