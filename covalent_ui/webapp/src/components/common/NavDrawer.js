@@ -37,14 +37,12 @@ import { ReactComponent as DispatchList } from '../../assets/dashboard.svg'
 import { ReactComponent as DispatchPreview } from '../../assets/license.svg'
 import { ReactComponent as NavSettings } from '../../assets/SettingsIcon.svg'
 import { ReactComponent as Logs } from '../../assets/logs.svg'
-
 import { ReactComponent as ExitNewIcon } from '../../assets/exit.svg'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import { useMatch } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import DialogBox from '../../components/settings/DialogBox'
-import { updateSettings } from '../../redux/settingsSlice'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
 
 export const navDrawerWidth = 60

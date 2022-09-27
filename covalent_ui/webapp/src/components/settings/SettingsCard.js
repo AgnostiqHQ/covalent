@@ -52,9 +52,9 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import { isDemo } from '../../utils/demo/setup'
-import { settingsResults, updateSettings } from '../../redux/settingsSlice';
+import { settingsResults } from '../../redux/settingsSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import _, { capitalize, set } from 'lodash'
+import _, { capitalize } from 'lodash'
 import Skeleton from '@mui/material/Skeleton';
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
@@ -75,7 +75,6 @@ const SettingsCard = () => {
   const [snackbarMessage, setSnackbarMessage] = useState(null)
   const [isDisabled, setIsDisabled] = useState(false)
   const [handle, setHandle] = useState('')
-  const [searchData, setSearchData] = useState(settings_result)
   const [searchKey, setSearchKey] = useState('')
   const [restoreData, setRestoreData] = useState()
   const [valueChange, setValueChange] = useState(false)
@@ -109,13 +108,14 @@ const SettingsCard = () => {
 
   useEffect(() => {
     if (settings_result) {
-      setSearchData(Object.values(settings_result)[0])
+      setResultOutput(Object.values(settings_result)[0]['sdk'])
       setClientDetail(Object.values(settings_result)[0])
       setServerDetail(Object.values(settings_result)[1])
       setTempData(Object.values(settings_result)[0])
       setTempDataServer(Object.values(settings_result)[1])
     }
-  }, [settings_result])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -126,7 +126,13 @@ const SettingsCard = () => {
         [resultKey]: resultOutput
       }
     }))
-    // setResultOutput(updateData[accName][resultKey])
+    const updateData = {
+      [accName]: {
+        [resultKey]: resultOutput,
+      },
+    }
+    const resOut = updateData['client'][resultKey]
+    setResultOutput(resOut)
     setResultKey(resultKey)
     setOpenSnackbar(true)
     setSnackbarMessage('Settings Updated Successfully')
@@ -138,12 +144,13 @@ const SettingsCard = () => {
     setHandle('')
   }
 
-  useEffect(() => {
-    if (_.size(searchData) !== 0) {
-      setResultOutput(Object.values(searchData)[0])
-      setRestoreData(Object.values(searchData)[0])
-    }
-  }, [searchData])
+  // useEffect(() => {
+  //   if (_.size(searchData) !== 0) {
+  //     console.log('4',Object.values(searchData))
+  //     setResultOutput(Object.values(searchData)[0])
+  //     setRestoreData(Object.values(searchData)[0])
+  //   }
+  // }, [searchData])
 
   const getSubmenuName = (name) => {
     let formattedName = name
@@ -458,7 +465,7 @@ const SettingsCard = () => {
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => {}
+                              : () => { }
                           }
                           sx={{
                             right: isChildHasList(menuValue) ? '0px' : '0px',
@@ -545,7 +552,7 @@ const SettingsCard = () => {
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => {}
+                              : () => { }
                           }
                           sx={{
                             right: isChildHasList(menuValue) ? '0px' : '0px',
