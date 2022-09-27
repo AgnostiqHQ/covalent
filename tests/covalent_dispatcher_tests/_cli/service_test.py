@@ -222,7 +222,7 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
 
     if ignore_migrations or not is_migration_pending:
         graceful_start_mock.assert_called_once()
-        assert set_config_mock.call_count == 4
+        assert set_config_mock.call_count == 6
         # set_config_mock.assert_called_once()
     else:
         assert MIGRATION_COMMAND_MSG in res.output
@@ -341,16 +341,14 @@ def test_purge_proceed(hard, mocker):
         dir_list.append(mock.call("dispatcher.db_path"))
         os_path_isdir_mock.assert_has_calls([mock.call("file"), mock.call("file")], any_order=True)
         os_remove_mock.assert_called_with("file")
-        assert get_config_mock.call_count == 4
+        assert get_config_mock.call_count == 5
     else:
         result = runner.invoke(purge, input="y")
 
-        assert get_config_mock.call_count == 3
+        assert get_config_mock.call_count == 4
         get_config_mock.assert_has_calls(dir_list, any_order=True)
-        assert os_path_dirname_mock.call_count == 2
-        os_path_isdir_mock.assert_has_calls(
-            [mock.call("dir"), mock.call("dir"), mock.call("dir")], any_order=True
-        )
+        assert os_path_dirname_mock.call_count == 1
+        os_path_isdir_mock.assert_has_calls([mock.call("dir"), mock.call("dir")], any_order=True)
 
     graceful_shutdown_mock.assert_called_with(UI_PIDFILE)
 
@@ -400,7 +398,7 @@ def test_purge_abort(hard, mocker):
         result = runner.invoke(purge, input="n")
 
     get_config_mock.assert_has_calls(dir_list, any_order=True)
-    assert os_path_dirname_mock.call_count == 2
+    assert os_path_dirname_mock.call_count == 1
     os_path_isdir_mock.assert_has_calls([mock.call("dir")])
 
     assert "Aborted!\n" in result.output
@@ -722,7 +720,7 @@ def test_start_config_mem_per_worker(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 5
+    assert set_config_mock.call_count == 7
     graceful_start_mock.assert_called_once()
 
 
@@ -748,7 +746,7 @@ def test_start_config_threads_per_worker(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 5
+    assert set_config_mock.call_count == 7
     graceful_start_mock.assert_called_once()
 
 
@@ -774,7 +772,7 @@ def test_start_config_num_workers(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 5
+    assert set_config_mock.call_count == 7
     graceful_start_mock.assert_called_once()
 
 
@@ -800,7 +798,7 @@ def test_start_all_dask_config(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 7
+    assert set_config_mock.call_count == 9
     graceful_start_mock.assert_called_once()
 
 
@@ -826,7 +824,7 @@ def test_start_dask_config_options_workers_and_mem_per_worker(mocker, monkeypatc
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 6
+    assert set_config_mock.call_count == 8
     graceful_start_mock.assert_called_once()
 
 
@@ -852,7 +850,7 @@ def test_start_dask_config_options_workers_and_threads_per_worker(mocker, monkey
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 6
+    assert set_config_mock.call_count == 8
     graceful_start_mock.assert_called_once()
 
 
@@ -878,7 +876,7 @@ def test_start_dask_config_options_mem_per_workers_and_threads_per_worker(mocker
 
     res = runner.invoke(start, cli_args)
 
-    assert set_config_mock.call_count == 6
+    assert set_config_mock.call_count == 8
     graceful_start_mock.assert_called_once()
 
 
@@ -937,11 +935,11 @@ def test_purge_hidden_option(mocker):
     result = runner.invoke(purge, args="--hell-yeah")
 
     os_path_isdir_mock.assert_has_calls(
-        [mock.call("dir"), mock.call("dir"), mock.call("dir"), mock.call("file")],
+        [mock.call("dir"), mock.call("file")],
         any_order=True,
     )
     os_remove_mock.assert_called_with("file")
-    assert get_config_mock.call_count == 4
+    assert get_config_mock.call_count == 5
 
     graceful_shutdown_mock.assert_called_with(UI_PIDFILE)
 
