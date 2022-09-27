@@ -7,7 +7,7 @@ const LogsLayout = () => {
   return (
     <Box sx={{ display: 'flex' }} data-testid="dashboard">
       <NavDrawer />
-      <Container maxWidth="xl" sx={{ mb: 4, mt: 7 }}>
+      <Container maxWidth="xl" sx={{ mb: 4, mt: '32px' }}>
         <Typography
           fontSize="32px"
           sx={{ color: (theme) => theme.palette.primary.white, mb: 4 }}

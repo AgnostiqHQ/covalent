@@ -44,7 +44,7 @@ const NotFound = ({ text = 'Page not found.', children }) => {
           ml: 10,
           width: '70%',
           '@media (min-width: 1700px)': {
-            ml: '15%',
+            ml: '12%',
           },
         }}
       >

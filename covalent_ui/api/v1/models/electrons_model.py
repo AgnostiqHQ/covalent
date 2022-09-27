@@ -95,7 +95,6 @@ class ElectronFileOutput(str, Enum):
     EXECUTOR = "executor"
     RESULT = "result"
     VALUE = "value"
-    KEY = "key"
     STDOUT = "stdout"
     DEPS = "deps"
     CALL_BEFORE = "call_before"

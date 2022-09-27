@@ -122,7 +122,7 @@ const ResultsTableHead = ({
             <TableCell
               key={header.id}
               sx={(theme) => ({
-                borderColor:
+                borderColor:  
                   theme.palette.background.coveBlack03 + '!important',
               })}
             >

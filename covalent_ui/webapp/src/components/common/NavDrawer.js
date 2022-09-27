@@ -68,19 +68,7 @@ const NavDrawer = () => {
       }}
     >
       <List>
-        <LinkButton
-          title="Logo"
-          path="/"
-          icon={Logo}
-          margintop={8}
-          paddingTop="5px"
-          paddingLeft="3px"
-          paddingRight="0px"
-          paddingBottom="0px"
-          position="unset"
-          bottom={0}
-          top={10}
-        />
+        <LinkButton title="Logo" path="/" icon={Logo} />
 
         <LinkButton
           title="Dispatch list"
@@ -103,7 +91,7 @@ const NavDrawer = () => {
           paddingRight="0px"
           paddingBottom="0px"
           position="fixed"
-          bottom="58%"
+          bottom="60%"
         />
 
         <LinkButton
@@ -111,7 +99,7 @@ const NavDrawer = () => {
           path="/settings"
           icon={NavSettings}
           position="fixed"
-          bottom={0}
+          bottom={55}
           paddingTop="3px"
           paddingLeft="2px"
           paddingRight="3px"
@@ -127,7 +115,7 @@ const NavDrawer = () => {
             paddingRight="0px"
             paddingBottom="0px"
             position="fixed"
-            bottom={70}
+            bottom={0}
           />
         </Grid>
       </List>
@@ -267,8 +255,11 @@ const LinkButton = ({
         }
       />
       {title === 'Logo' ? (
-        <ListItemButton sx={{ my: 2.5, mb: 6 }} onClick={() => menuClick(path)}>
-          <Logo data-testid="covalentLogo" style={{ margin: 'auto' }} />
+        <ListItemButton
+          sx={{ position: 'fixed', top: 5 }}
+          onClick={() => menuClick(path)}
+        >
+          <Logo data-testid="covalentLogo" style={{ width: '30px' }} />
         </ListItemButton>
       ) : (
         <Tooltip
