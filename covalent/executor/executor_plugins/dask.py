@@ -37,6 +37,7 @@ from covalent._shared_files import logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import CMType, get_config
+from covalent._shared_files.statuses import RunningCategory
 from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor.base import AsyncBaseExecutor
 
@@ -60,6 +61,11 @@ def dask_wrapper(fn, args, kwargs):
         output = fn(*args, **kwargs)
 
     return output, stdout.getvalue(), stderr.getvalue()
+
+
+class IntRunningStatus(RunningCategory):
+    status_name = "INT_RUNNING"
+    description = "Intermediate running status"
 
 
 class DaskExecutor(AsyncBaseExecutor):
@@ -98,6 +104,10 @@ class DaskExecutor(AsyncBaseExecutor):
         """Submit the function and inputs to the dask cluster"""
 
         node_id = task_metadata["node_id"]
+        status_store = task_metadata["status_store"]
+
+        status_store.save(IntRunningStatus())
+        app_log.debug(f"DE: Saved status: {status_store.retrieve()}")
 
         dask_client = _address_client_mapper.get(self.scheduler_address)
 

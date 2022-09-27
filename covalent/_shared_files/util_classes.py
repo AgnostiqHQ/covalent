@@ -19,9 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-import multiprocessing as mp
 import queue
-from multiprocessing.queues import Queue as MPQ
 from typing import Any, NamedTuple
 
 import cloudpickle as pickle
@@ -32,22 +30,22 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-class SafeVariable(MPQ):
+class SafeVariable(queue.Queue):
     def __init__(self) -> None:
-        super().__init__(maxsize=1, ctx=mp.get_context())
+        super().__init__(maxsize=1)
 
     def save(self, value: Any) -> None:
         value = pickle.dumps(value)
         try:
-            self.put(value, timeout=0.5)
+            self.put_nowait(value)
         except queue.Full:
             self.get_nowait()
             self.put_nowait(value)
 
     def retrieve(self) -> Any:
         try:
-            value = self.get(timeout=0.5)
-            self.put(value, timeout=0.5)
+            value = self.get_nowait()
+            self.put_nowait(value)
             return pickle.loads(value)
         except queue.Empty:
             return None

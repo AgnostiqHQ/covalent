@@ -124,7 +124,7 @@ async def status_listener(
                 result_object._update_node(node_id=node_id, status=str(current_status))
                 break
         except asyncio.CancelledError:
-            status_store.close()
+            del status_store
             break
 
 
