@@ -25,7 +25,6 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
-import asyncio
 import io
 import os
 import sys
@@ -108,9 +107,7 @@ class DaskExecutor(AsyncBaseExecutor):
         status_store = task_metadata["status_store"]
 
         status_store.save(IntRunningStatus())
-        await asyncio.sleep(3)
         app_log.debug(f"Saving status: {status_store.retrieve()}")
-        await asyncio.sleep(5)
 
         dask_client = _address_client_mapper.get(self.scheduler_address)
 

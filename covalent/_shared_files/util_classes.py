@@ -36,15 +36,15 @@ class SafeVariable(MPQ):
 
     def save(self, value: Any) -> None:
         try:
-            self.put(value, timeout=1)
+            self.put(value, timeout=0.5)
         except queue.Full:
             self.get_nowait()
             self.put_nowait(value)
 
     def retrieve(self) -> Any:
         try:
-            value = self.get(timeout=1)
-            self.put(value, timeout=1)
+            value = self.get(timeout=0.5)
+            self.put(value, timeout=0.5)
             return value
         except queue.Empty:
             return None
