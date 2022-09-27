@@ -22,7 +22,9 @@
 Defines the core functionality of the dispatcher
 """
 
+
 import asyncio
+import contextlib
 import json
 import traceback
 from asyncio import Queue
@@ -377,8 +379,10 @@ async def _run_task(
             )
 
     except Exception as ex:
-        # Stop listening for status updates
-        listener_task.cancel()
+
+        with contextlib.suppress(UnboundLocalError):
+            # Stop listening for status updates
+            listener_task.cancel()
 
         app_log.error(f"Exception occurred when running task {node_id}: {ex}")
         node_result = generate_node_result(
