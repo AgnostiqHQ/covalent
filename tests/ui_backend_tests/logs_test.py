@@ -1,20 +1,16 @@
-import json
-from os.path import abspath, dirname
-
 import tests.ui_backend_tests.utils.main as main
+from tests.ui_backend_tests.utils.assert_data.logs import seed_logs_data
 from tests.ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
 
 object_test_template = TestClientTemplate()
-output_path = dirname(abspath(__file__)) + "/utils/logs_data.json"
-with open(output_path, "r") as output_json:
-    output_data = json.load(output_json)
+output_data = seed_logs_data()
 
 
 def __get_custom_response(case: str):
     test_data = output_data["test_logs"][case]
     request = test_data["request_data"]["query"]
     response = object_test_template(
-        path=output_data["test_logs"]["path"],
+        api_path=output_data["test_logs"]["api_path"],
         app=main.fastapi_app,
         method_type=MethodType.GET,
         query_data=request,
@@ -30,7 +26,9 @@ def test_logs(mocker):
     )
     test_data = output_data["test_logs"]["case1"]
     response = object_test_template(
-        path=output_data["test_logs"]["path"], app=main.fastapi_app, method_type=MethodType.GET
+        api_path=output_data["test_logs"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
     )
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
@@ -69,7 +67,9 @@ def test_non_existing_logs(mocker):
     )
     test_data = output_data["test_logs"]["case5"]
     response = object_test_template(
-        path=output_data["test_logs"]["path"], app=main.fastapi_app, method_type=MethodType.GET
+        api_path=output_data["test_logs"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
     )
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
@@ -83,7 +83,7 @@ def test_download_log(mocker):
     )
     test_data = output_data["test_download_logs"]["case1"]
     response = object_test_template(
-        path=output_data["test_download_logs"]["path"],
+        api_path=output_data["test_download_logs"]["api_path"],
         app=main.fastapi_app,
         method_type=MethodType.GET,
     )
