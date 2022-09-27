@@ -27,7 +27,7 @@ from fastapi.templating import Jinja2Templates
 
 from covalent._data_store.datastore import DataStore
 from covalent._shared_files import logger
-from covalent._shared_files.config import CMType, get_config
+from covalent._shared_files.config import get_config
 from covalent_dispatcher._service.app_dask import DaskCluster
 from covalent_ui.api.main import app as fastapi_app
 from covalent_ui.api.main import sio
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     if args.port:
         port = int(args.port)
     else:
-        port = int(get_config(CMType.SERVER, "service.port"))
+        port = int(get_config("dispatcher.port"))
 
     host = "localhost" if not COVALENT_SERVER_IFACE_ANY else "0.0.0.0"
 

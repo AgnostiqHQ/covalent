@@ -24,7 +24,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from covalent._shared_files.config import CMType
 from covalent.executor import BaseExecutor, _executor_manager, _ExecutorManager
 
 
@@ -33,7 +32,7 @@ def test_get_executor_local(mocker):
 
     update_config_mock = mocker.patch("covalent.executor.update_config")
     _executor_manager.get_executor(name="local")
-    update_config_mock.assert_called_once_with(CMType.CLIENT)
+    update_config_mock.assert_called_once_with()
 
 
 def test_executor_manager_init(mocker):
@@ -68,7 +67,7 @@ def test_executor_manager_generate_plugins_list(mocker):
 
     em.generate_plugins_list()
     os_path_join_mock.assert_called_once_with("covalent", "executor_plugins")
-    get_config_mock.assert_called_once_with(CMType.CLIENT, "sdk.executor_dir")
+    get_config_mock.assert_called_once_with("sdk.executor_dir")
 
     assert load_executors_mock.mock_calls == [
         mocker.call("pkg_plugins_path"),
@@ -100,8 +99,8 @@ def test_get_executor(mocker):
 
     em.executor_plugins_map = {"mock_name": plugin_mock}
     resp = em.get_executor(name="mock_name")
-    update_config_mock.assert_called_once_with(CMType.CLIENT)
-    get_config_mock.assert_called_once_with(CMType.CLIENT, "executors.mock_name")
+    update_config_mock.assert_called_once_with()
+    get_config_mock.assert_called_once_with("executors.mock_name")
     assert resp == "plugin map func called"
 
     # Case 3 - name is str and not in executor_plugin_map
