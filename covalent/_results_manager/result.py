@@ -311,7 +311,7 @@ Node Outputs
                 node_id, "sublattice_result"
             ),
             "stdout": self.lattice.transport_graph.get_node_value(node_id, "stdout"),
-            "stderr": self._get_node_error(node_id),
+            "stderr": self.lattice.transport_graph.get_node_value(node_id, "stderr"),
         }
 
     def get_all_node_outputs(self) -> dict:
