@@ -174,11 +174,15 @@ const LinkButton = ({
   let navigate = useNavigate()
 
   const menuClick = (path) => {
-    // navigate(path);
     if (dRes === null) {
       navigate(path)
     } else if (dRes.isChanged === true) {
-      setPopupShow(true)
+      if (path === '/settings') {
+        setPopupShow(false)
+      }
+      else {
+        setPopupShow(true)
+      }
     } else {
       navigate(path)
     }
@@ -219,11 +223,12 @@ const LinkButton = ({
   }
 
   const handlePopClose = () => {
-    navigate(path)
+    setPopupShow(false)
     const settingObj = {
       isChanged: false,
     }
     dispatch(toggleLatticeDrawer(settingObj))
+    navigate(path)
   }
 
   return (
