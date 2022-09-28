@@ -5,7 +5,7 @@
 
 .. image:: AWS_ECS.jpg
 
-With this executor, users can execute tasks (electrons) or entire lattices using the AWS Elastic Container service (ECS).
+With this executor, users can execute tasks (electrons) or entire lattices using the AWS Elastic Container Service (ECS).
 This executor plugin is well suited for low to medium compute intensive electrons with modest memory requirements. Since AWS ECS
 offers very quick spin up times, this executor is a good fit for workflows with a large number of independent tasks that can
 be dispatched simultaneously.
