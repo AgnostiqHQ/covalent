@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## Docs
+
+- Updated ECS Executor RTD with config & cloud resources table
+
 ### Tests
 
 - Fixed `asserts` in stress tests
