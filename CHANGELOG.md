@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Update `nightly` schedule to midnight EST
+
 ### Docs
 
 - Updated EC2 RTD with config & cloud resources table
