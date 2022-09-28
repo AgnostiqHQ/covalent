@@ -98,7 +98,6 @@ class DaskExecutor(AsyncBaseExecutor):
         """Submit the function and inputs to the dask cluster"""
 
         node_id = task_metadata["node_id"]
-        status_store = task_metadata["status_store"]
 
         dask_client = _address_client_mapper.get(self.scheduler_address)
 

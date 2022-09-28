@@ -114,12 +114,11 @@ async def status_listener(
 ) -> None:
     while True:
         try:
-            current_status = status_store.retrieve()
+            current_status = await status_store.retrieve_async()
             if isinstance(current_status, (type(None), PendingCategory, RunningCategory)):
                 node_status = result_object._get_node_status(node_id)
                 if node_status != str(current_status):
                     result_object._update_node(node_id=node_id, status=str(current_status))
-                await asyncio.sleep(0)
             else:
                 result_object._update_node(node_id=node_id, status=str(current_status))
                 break
