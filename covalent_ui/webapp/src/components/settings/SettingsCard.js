@@ -423,8 +423,8 @@ const SettingsCard = () => {
                   sx={{
                     px: 2,
                     py: 0.5,
-                    width: '95%',
-                    height: '40px',
+                    width: '278px',
+                    height: '32px',
                     border: '1px solid #303067',
                     borderRadius: '60px',
                     mb: 3,
@@ -672,7 +672,9 @@ const SettingsCard = () => {
                                             control={<Radio />}
                                             label={
                                               <Typography
-                                                sx={{ fontSize: '14px' }}
+                                                sx={{
+                                                  fontSize: '14px',
+                                                }}
                                               >
                                                 False
                                               </Typography>
@@ -697,8 +699,8 @@ const SettingsCard = () => {
                                           sx={{
                                             px: 2,
                                             py: 0.5,
-                                            width: '100%',
-                                            height: '45px',
+                                            width: '360px',
+                                            height: '32px',
                                             border: '1px solid #303067',
                                             borderRadius: '60px',
                                             fontSize: '14px',
@@ -725,7 +727,13 @@ const SettingsCard = () => {
                           ) : (
                             <>
                               {key === 'log_level' ? (
-                                <Box>
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignContent: 'flex-start',
+                                  }}
+                                >
                                   <FormLabel
                                     id="demo-simple-select-label"
                                     sx={{
@@ -736,15 +744,20 @@ const SettingsCard = () => {
                                     {' '}
                                     {getSettingsName(key)}
                                   </FormLabel>
+
                                   <Select
-                                    fullWidth
                                     labelId="demo-simple-select-label"
                                     id="demo-simple-select"
                                     value={value}
                                     name={key}
                                     label={key}
                                     onChange={(e) => handleSelectChange(e, key)}
-                                    sx={{ mt: 1, fontSize: '14px' }}
+                                    sx={{
+                                      mt: 1,
+                                      fontSize: '14px',
+                                      width: '140px',
+                                      height: '32px',
+                                    }}
                                     className="dropdownSelect"
                                   >
                                     <MenuItem
@@ -849,8 +862,8 @@ const SettingsCard = () => {
                                         sx={{
                                           px: 2,
                                           py: 0.5,
-                                          width: '100%',
-                                          height: '45px',
+                                          width: '360px',
+                                          height: '32px',
                                           border: '1px solid #303067',
                                           borderRadius: '60px',
                                           fontSize: '14px',
@@ -892,6 +905,8 @@ const SettingsCard = () => {
                             color: 'white',
                             fontSize: '14px',
                             textTransform: 'capitalize',
+                            width: '77px',
+                            height: '32px',
                           })}
                         >
                           Cancel
@@ -906,6 +921,8 @@ const SettingsCard = () => {
                             padding: '8px 30px',
                             fontSize: '14px',
                             textTransform: 'capitalize',
+                            width: '63px',
+                            height: '32px',
                           })}
                         >
                           Save
