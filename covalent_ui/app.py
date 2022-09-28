@@ -31,6 +31,7 @@ from covalent._shared_files.config import CMType, get_config
 from covalent_dispatcher._service.app_dask import DaskCluster
 from covalent_ui.api.main import app as fastapi_app
 from covalent_ui.api.main import sio
+from covalent_ui.api.v1.utils.log_handler import log_config
 
 # read env vars configuring server
 COVALENT_SERVER_IFACE_ANY = os.getenv("COVALENT_SERVER_IFACE_ANY", "False").lower() in (
@@ -44,6 +45,7 @@ WEBAPP_PATH = "webapp/build"
 STATIC_FILES = {"": WEBAPP_PATH, "/": f"{WEBAPP_PATH}/index.html"}
 
 # Log configuration
+log_to_file = get_config(CMType.CLIENT, "sdk.enable_logging").upper() == "TRUE"
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 templates = Jinja2Templates(directory=WEBAPP_PATH)
@@ -105,7 +107,7 @@ if __name__ == "__main__":
         "app:fastapi_app",
         host=host,
         port=port,
-        debug=DEBUG,
+        debug=log_to_file,
         reload=RELOAD,
-        log_config="./log_config.yml",
+        log_config=log_config(),
     )

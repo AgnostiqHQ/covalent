@@ -762,12 +762,6 @@ const SettingsCard = () => {
                                   >
                                     <MenuItem
                                       sx={{ fontSize: '14px' }}
-                                      value="notset"
-                                    >
-                                      Notset
-                                    </MenuItem>
-                                    <MenuItem
-                                      sx={{ fontSize: '14px' }}
                                       value="debug"
                                     >
                                       Debug
