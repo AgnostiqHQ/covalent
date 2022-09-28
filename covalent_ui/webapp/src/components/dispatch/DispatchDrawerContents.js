@@ -42,7 +42,7 @@ import { ChevronLeft } from '@mui/icons-material'
 import CopyButton from '../common/CopyButton'
 import { truncateMiddle } from '../../utils/misc'
 import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
-import { sublatticesListDetails } from '../../redux/latticeSlice'
+import { sublatticesListDetails, resetSublatticesId } from '../../redux/latticeSlice'
 
 const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
@@ -85,6 +85,11 @@ const DispatchDrawerContents = () => {
     sublatticesListApi();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
+
+  const handleTabChange = (value) => {
+    dispatch(resetSublatticesId());
+    setTab(value);
+  }
 
   return (
     <Box sx={{ px: 3 }} data-testid="latticedispatchoverview">
@@ -147,7 +152,7 @@ const DispatchDrawerContents = () => {
       <TabContext value={tab} sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <CustomTabList
           variant="fullWidth"
-          onChange={(e, newTab) => setTab(newTab)}
+          onChange={(e, newTab) => handleTabChange(newTab)}
         >
           <Tab label="Overview" value="overview" />
           {sublatticesListView.length > 0 && (<Tab label="Sublattices" value="sublattices" />)}
