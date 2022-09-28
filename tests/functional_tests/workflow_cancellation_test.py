@@ -25,7 +25,7 @@ import pytest
 import covalent as ct
 from covalent._data_store.datastore import DataStore
 from covalent._results_manager.result import Result, initialize_result_object
-from covalent._shared_files.config import CMType, get_config
+from covalent._shared_files.config import get_config
 from covalent_dispatcher._core.execution import run_workflow
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -120,8 +120,8 @@ def test_cancel_endpoint():
     dispatch_id = ct.dispatch(workflow)(8)
     time.sleep(0.2)
 
-    server_ip = str(get_config(CMType.CLIENT, "server.address"))
-    server_port = str(get_config(CMType.CLIENT, "server.port"))
+    server_ip = str(get_config("dispatcher.address"))
+    server_port = str(get_config("dispatcher.port"))
     cancel_url = "http://" + server_ip + ":" + server_port + "/api/cancel"
 
     r = requests.post(cancel_url, data=dispatch_id)
