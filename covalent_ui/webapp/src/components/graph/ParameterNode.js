@@ -40,7 +40,6 @@
    targetPosition,
    isConnectable,
  }) => {
-   console.log(data.preview,'prev')
    return (
      <Grid
        sx={{

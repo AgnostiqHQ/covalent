@@ -23,6 +23,7 @@
 import _ from 'lodash'
 import React, { useEffect } from 'react'
 import { Close } from '@mui/icons-material'
+import { useStoreActions } from 'react-flow-renderer'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Box,
@@ -58,7 +59,7 @@ import {
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node, setSelectedElectron }) => {
+const NodeDrawer = ({ node,dispatchId }) => {
   const dispatch = useDispatch()
   const electronId = node !== undefined && node.node_id
   const electronDetail = useSelector(
@@ -98,25 +99,30 @@ const NodeDrawer = ({ node, setSelectedElectron }) => {
 
   useEffect(() => {
     if (!!node) {
-      dispatch(electronDetails({ electronId, dispatchId: node.parent_dispatch_id }))
-      dispatch(electronInput({ dispatchId: node.parent_dispatch_id, electronId, params: 'inputs' }))
-      dispatch(electronResult({ dispatchId: node.parent_dispatch_id, electronId, params: 'result' }))
+      dispatch(electronDetails({ electronId, dispatchId }))
+      dispatch(electronInput({ dispatchId , electronId, params: 'inputs' }))
+      dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
       dispatch(
-        electronExecutor({ dispatchId: node.parent_dispatch_id, electronId, params: 'executor' })
+        electronExecutor({ dispatchId, electronId, params: 'executor' })
       )
       dispatch(
         electronFunctionString({
-          dispatchId: node.parent_dispatch_id,
+          dispatchId,
           electronId,
           params: 'function_string',
         })
       )
-      dispatch(electronError({ dispatchId: node.parent_dispatch_id, electronId, params: 'error' }))
+      dispatch(electronError({ dispatchId, electronId, params: 'error' }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node, callSocketApi])
+
+  const setSelectedElements = useStoreActions(
+    (actions) => actions.setSelectedElements
+  )
+
   const handleClose = () => {
-    setSelectedElectron(null)
+    setSelectedElements([])
   }
 
   const hasStarted = !!_.get(electronDetail, 'started_at')

@@ -32,7 +32,7 @@ const initialState = {
   latticeInput: {},
   latticeFunctionString: {},
   latticeExecutorDetail: {},
-  sublatticesList:[],
+  sublatticesList: [],
   latticeDetailsResults: { isFetching: false, error: null },
   latticeResultsList: { isFetching: false, error: null },
   latticeOutputList: { isFetching: false, error: null },
@@ -41,6 +41,7 @@ const initialState = {
   latticeErrorList: { isFetching: false, error: null },
   latticeExecutorDetailList: { isFetching: false, error: null },
   sublatticesListResults: { isFetching: false, error: null },
+  sublatticesDispatchId: null
 }
 
 export const latticeDetails = createAsyncThunk(
@@ -115,6 +116,9 @@ export const latticeSlice = createSlice({
     resetLatticeState() {
       return initialState
     },
+    sublatticesDispatchId(state, payload) {
+      state.sublatticesId = payload.payload
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -232,4 +236,4 @@ export const latticeSlice = createSlice({
   },
 })
 
-export const { resetLatticeState } = latticeSlice.actions
+export const { resetLatticeState, sublatticesDispatchId } = latticeSlice.actions

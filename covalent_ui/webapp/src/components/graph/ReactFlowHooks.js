@@ -20,99 +20,101 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { useMemo } from 'react'
-import { zoomIdentity } from 'd3-zoom'
-import { getRectOfNodes, useStoreApi } from 'react-flow-renderer'
+ import { useMemo } from 'react'
+ import { zoomIdentity } from 'd3-zoom'
+ import { getRectOfNodes, useStoreState, useStore } from 'react-flow-renderer'
 
-const DEFAULT_PADDING = 0.1
+ const DEFAULT_PADDING = 0.1
 
-const initialFitViewHelper = {
-  fitView: ({ padding = DEFAULT_PADDING, includeHiddenNodes = false }) => { },
-}
+ const initialFitViewHelper = {
+   fitView: ({ padding = DEFAULT_PADDING, includeHiddenNodes = false }) => {},
+ }
 
-const getTransition = (selection, duration = 0) => {
-  return selection.transition().duration(duration)
-}
+ const getTransition = (selection, duration = 0) => {
+   return selection.transition().duration(duration)
+ }
 
-const clamp = (val, min = 0, max = 1) => Math.min(Math.max(val, min), max)
+ const clamp = (val, min = 0, max = 1) => Math.min(Math.max(val, min), max)
 
-const getTransformForBounds = (
-  bounds,
-  width,
-  height,
-  minZoom,
-  maxZoom,
-  padding = 0.1,
-  marginLeft = 0,
-  marginRight = 0
-) => {
-  width -= marginLeft + marginRight
-  const xZoom = width / (bounds.width * (1 + padding))
-  const yZoom = height / (bounds.height * (1 + padding))
-  const zoom = Math.min(xZoom, yZoom)
-  const clampedZoom = clamp(zoom, minZoom, maxZoom)
-  const boundsCenterX = bounds.x + bounds.width / 2
-  const boundsCenterY = bounds.y + bounds.height / 2
-  const x = width / 2 - boundsCenterX * clampedZoom + marginLeft
-  const y = height / 2 - boundsCenterY * clampedZoom
+ const getTransformForBounds = (
+   bounds,
+   width,
+   height,
+   minZoom,
+   maxZoom,
+   padding = 0.1,
+   marginLeft = 0,
+   marginRight = 0
+ ) => {
+   width -= marginLeft + marginRight
+   const xZoom = width / (bounds.width * (1 + padding))
+   const yZoom = height / (bounds.height * (1 + padding))
+   const zoom = Math.min(xZoom, yZoom)
+   const clampedZoom = clamp(zoom, minZoom, maxZoom)
+   const boundsCenterX = bounds.x + bounds.width / 2
+   const boundsCenterY = bounds.y + bounds.height / 2
+   const x = width / 2 - boundsCenterX * clampedZoom + marginLeft
+   const y = height / 2 - boundsCenterY * clampedZoom
 
-  return [x, y, clampedZoom]
-}
+   return [x, y, clampedZoom]
+ }
 
-/**
- * Customized fitView helper that supports margins.
- */
-const useFitViewHelper = () => {
-  const store = useStoreApi()
-  const { d3Zoom, d3Selection } = store.getState()
-  const fitViewHelperFunctions = useMemo(() => {
-    if (d3Selection && d3Zoom) {
-      return {
-        fitView: (
-          options = {
-            padding: DEFAULT_PADDING,
-            includeHiddenNodes: false,
-            duration: 0,
-            marginLeft: 0,
-            marginRight: 0,
-          }
-        ) => {
-          const { nodeInternals, width, height, minZoom, maxZoom } = store.getState()
-          const nodes = Array.from(nodeInternals.values())
-          if (!nodes.length) {
-            return
-          }
+ /**
+  * Customized fitView helper that supports margins.
+  */
+ const useFitViewHelper = () => {
+   const store = useStore()
+   const d3Zoom = useStoreState((s) => s.d3Zoom)
+   const d3Selection = useStoreState((s) => s.d3Selection)
 
-          const bounds = getRectOfNodes(
-            options.includeHiddenNodes
-              ? nodes
-              : nodes.filter((node) => !node.isHidden)
-          )
-          const [x, y, zoom] = getTransformForBounds(
-            bounds,
-            width,
-            height,
-            options.minZoom || minZoom,
-            options.maxZoom || maxZoom,
-            options.padding || DEFAULT_PADDING,
-            options.marginLeft || 0,
-            options.marginRight || 0
-          )
-          const transform = zoomIdentity.translate(x, y).scale(zoom)
+   const fitViewHelperFunctions = useMemo(() => {
+     if (d3Selection && d3Zoom) {
+       return {
+         fitView: (
+           options = {
+             padding: DEFAULT_PADDING,
+             includeHiddenNodes: false,
+             duration: 0,
+             marginLeft: 0,
+             marginRight: 0,
+           }
+         ) => {
+           const { nodes, width, height, minZoom, maxZoom } = store.getState()
 
-          d3Zoom.transform(
-            getTransition(d3Selection, options.duration),
-            transform
-          )
-        },
-        initialized: true,
-      }
-    }
+           if (!nodes.length) {
+             return
+           }
 
-    return initialFitViewHelper
-  }, [store, d3Zoom, d3Selection])
+           const bounds = getRectOfNodes(
+             options.includeHiddenNodes
+               ? nodes
+               : nodes.filter((node) => !node.isHidden)
+           )
+           const [x, y, zoom] = getTransformForBounds(
+             bounds,
+             width,
+             height,
+             options.minZoom || minZoom,
+             options.maxZoom || maxZoom,
+             options.padding || DEFAULT_PADDING,
+             options.marginLeft || 0,
+             options.marginRight || 0
+           )
+           const transform = zoomIdentity.translate(x, y).scale(zoom)
 
-  return fitViewHelperFunctions
-}
+           d3Zoom.transform(
+             getTransition(d3Selection, options.duration),
+             transform
+           )
+         },
+         initialized: true,
+       }
+     }
 
-export default useFitViewHelper
+     return initialFitViewHelper
+   }, [store, d3Zoom, d3Selection])
+
+   return fitViewHelperFunctions
+ }
+
+ export default useFitViewHelper

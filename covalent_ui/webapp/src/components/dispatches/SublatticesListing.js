@@ -45,7 +45,7 @@ import {
 } from '@mui/material'
 import { SublatticeIcon } from '../../utils/misc'
 
-import { sublatticesListDetails } from '../../redux/latticeSlice'
+import { sublatticesListDetails,sublatticesDispatchId } from '../../redux/latticeSlice'
 import Runtime from './Runtime'
 import OverflowTip from '../common/EllipsisTooltip'
 
@@ -205,6 +205,10 @@ const SublatticesListing = () => {
     setSortColumn(column)
   }
 
+  const sublatticesDispatch = (sublatticeId) => {
+    dispatch(sublatticesDispatchId(sublatticeId))
+  }
+
   return (
     <>
       <Box>
@@ -227,7 +231,7 @@ const SublatticesListing = () => {
                 >
                   {sublatticesListView &&
                     sublatticesListView.map((result, index) => (
-                      <TableRow hover key={result.dispatchId} height="40px">
+                      <TableRow hover key={result.dispatchId} height="40px" onClick={() => sublatticesDispatch(result.dispatchId)}>
                         <TableCell>
                           <Grid sx={{ display: 'flex', mt: 0.8, mb: 0 }}>
                             {' '}
