@@ -39,7 +39,7 @@ jobs:
       - name: Boilerplate
         env:
           boilerplate: |
-            # Copyright 2021 Agnostiq Inc.
+            '# Copyright 2021 Agnostiq Inc.
             #
             # This file is part of Covalent.
             #
@@ -57,7 +57,7 @@ jobs:
             # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
             # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
             #
-            # Relief from the License may be granted by purchasing a commercial license.
+            # Relief from the License may be granted by purchasing a commercial license.'
           run: |
             for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
               if [[ ! $( cat $file ) =~ $boilerplate ]] ; then
