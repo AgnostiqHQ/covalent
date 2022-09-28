@@ -59,8 +59,8 @@ jobs:
             #
             # Relief from the License may be granted by purchasing a commercial license.'
         run: |
-            for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-              if [[ ! $( cat $file ) =~ $boilerplate ]] ; then
-                exit 1
-              fi
-            done
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ ! $( cat $file ) =~ $boilerplate ]] ; then
+              exit 1
+            fi
+          done
