@@ -17,11 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `requirements-client.txt` file added.
 - Logs tab on the GUI which displays the covalent logs and also the ability to download the log file.
+- Missing copyrights to the file transfer module.
 
 ### Fixed
 
 - Config file is now locked during reads and writes to mitigate concurrency issues
 - In `defaults.py/get_default_executor`, condition to return `local` or `dask` is now fixed
+- Strip "/" from the S3 bucket download "from file path" and the upload "to file path"
+- Correctly return stderr in get_node_result
 
 ### Changed
 
