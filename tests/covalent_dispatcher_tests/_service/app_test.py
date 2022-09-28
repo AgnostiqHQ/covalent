@@ -112,6 +112,9 @@ def test_cancel(mocker, test_db_file, client):
     response = client.post("/api/cancel", data=DISPATCH_ID.encode("utf-8"))
     assert response.json() == f"Dispatch {DISPATCH_ID} cancelled."
     assert response.status_code == 200
+
+    response = client.post("/api/cancel", data="nonexistent_dispatch".encode("utf-8"))
+    assert response.status_code == 404
     os.remove("/tmp/testdb.sqlite")
 
 
