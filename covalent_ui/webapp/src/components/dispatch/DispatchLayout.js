@@ -84,7 +84,7 @@ export function DispatchLayout() {
   // unselect on change of dispatch
   useEffect(() => {
     setSelectedElements([])
-  }, [dispatchId, setSelectedElements])
+  }, [dispatchId, setSelectedElements,sublatticesDispatchId])
 
   // dispatch id not found
   if (latDetailError !== null && latDetailError.status === 400) {

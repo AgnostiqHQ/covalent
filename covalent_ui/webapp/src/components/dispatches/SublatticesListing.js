@@ -29,6 +29,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
+  Tooltip,
   TableBody,
   Typography,
   TableContainer,
@@ -45,7 +46,7 @@ import {
 } from '@mui/material'
 import { SublatticeIcon } from '../../utils/misc'
 
-import { sublatticesListDetails,sublatticesDispatchId } from '../../redux/latticeSlice'
+import { sublatticesListDetails, sublatticesDispatchId } from '../../redux/latticeSlice'
 import Runtime from './Runtime'
 import OverflowTip from '../common/EllipsisTooltip'
 
@@ -109,6 +110,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
   },
   [`& .${tableBodyClasses.root} .${tableRowClasses.root} `]: {
     fontSize: '0.875rem',
+    padding:'0px'
   },
 
   // subdue header text
@@ -162,6 +164,9 @@ const SublatticesListing = () => {
   const [sortColumn, setSortColumn] = useState('total_electrons')
   const [sortOrder, setSortOrder] = useState('desc')
 
+  const sublatticesId = useSelector(
+    (state) => state.latticeResults.sublatticesId
+  )
   const sublatticesListView = useSelector(
     (state) => state.latticeResults.sublatticesList
   )?.map((e) => {
@@ -231,31 +236,33 @@ const SublatticesListing = () => {
                 >
                   {sublatticesListView &&
                     sublatticesListView.map((result, index) => (
-                      <TableRow hover key={result.dispatchId} height="40px" onClick={() => sublatticesDispatch(result.dispatchId)}>
-                        <TableCell>
-                          <Grid sx={{ display: 'flex', mt: 0.8, mb: 0 }}>
-                            {' '}
-                            {SublatticeIcon(result.status)}
+                      <Tooltip title='Click to view sublattices graph'>
+                        <TableRow hover key={result.dispatchId} onClick={() => sublatticesDispatch(result.dispatchId)} sx={{ padding:'',backgroundColor: result.dispatchId === sublatticesId ? '#1C1C46' : '', color: result.dispatchId === sublatticesId ? '#FFFFFF' : '' }}>
+                          <TableCell>
+                            <Grid sx={{ display: 'flex', mt: 0.8, mb: 0 }}>
+                              {' '}
+                              {SublatticeIcon(result.status)}
+                              <OverflowTip
+                                width="70px"
+                                fontSize="14px"
+                                value={result.latticeName}
+                              />
+                            </Grid>
+                          </TableCell>
+                          <TableCell>
+                            <Runtime
+                              startTime={result.startTime}
+                              endTime={result.endTime}
+                            />
+                          </TableCell>
+                          <TableCell>
                             <OverflowTip
                               width="70px"
-                              fontSize="14px"
-                              value={result.latticeName}
+                              value={`${result.totalElectrons}/${result.totalElectronsCompleted}`}
                             />
-                          </Grid>
-                        </TableCell>
-                        <TableCell>
-                          <Runtime
-                            startTime={result.startTime}
-                            endTime={result.endTime}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <OverflowTip
-                            width="70px"
-                            value={`${result.totalElectrons}/${result.totalElectronsCompleted}`}
-                          />
-                        </TableCell>
-                      </TableRow>
+                          </TableCell>
+                        </TableRow>
+                      </Tooltip>
                     ))}
                 </TableBody>
               </StyledTable>
