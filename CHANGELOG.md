@@ -11,16 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `asserts` in stress tests
 - Added unit tests for `defaults.py`
+- Updated `test_sync()` to match the new function signature.
 
 ### Added
 
 - `requirements-client.txt` file added.
 - Logs tab on the GUI which displays the covalent logs and also the ability to download the log file.
+- Missing copyrights to the file transfer module.
 
 ### Fixed
 
 - Config file is now locked during reads and writes to mitigate concurrency issues
 - In `defaults.py/get_default_executor`, condition to return `local` or `dask` is now fixed
+- Strip "/" from the S3 bucket download "from file path" and the upload "to file path"
+- Correctly return stderr in get_node_result
 
 ### Changed
 
@@ -30,6 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `nbconvert` by dependabot
 - Split the `ConfigManager` into `Client` and `Server` components
 - Update the `set/get/update` config methods to distinguish between the client and server parts
+- `get_all_node_results()` uses in memory `Result` instead of DB
+- `get_all_node_outputs()` uses in memory Result instead of DB
+
+### Removed
+
+- The DB dependency in `sync()`
+- The ability for `sync()` to wait for all dispatches.
 
 ### Docs
 
@@ -49,6 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Workflows authenticate to AWS using OIDC with specific roles
 - Only the recommended platform is tested on pull requests
 - Update check blocks to assert the `workflow_call` event type is replaced with `schedule`
+- Create a hotfix when pushing to a release branch
 
 ## [0.198.0] - 2022-09-14
 
