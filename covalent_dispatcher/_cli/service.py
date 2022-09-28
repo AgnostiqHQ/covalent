@@ -38,7 +38,8 @@ from distributed.core import connect, rpc
 
 from covalent._data_store.datastore import DataStore
 from covalent._shared_files.config import ConfigManager, get_config, set_config
-from covalent.utils.migrate import migrate_pickled_result_object
+
+from .migrate import migrate_pickled_result_object
 
 cm = ConfigManager()
 
