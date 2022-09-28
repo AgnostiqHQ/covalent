@@ -21,16 +21,22 @@
  */
 
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { Box, Typography, Skeleton } from '@mui/material'
+import { useSelector, useDispatch } from 'react-redux'
+import { Box, Typography, Skeleton, SvgIcon,Tooltip } from '@mui/material'
 import { statusIcon, statusColor, statusLabel } from '../../utils/misc'
+import { resetSublatticesId } from '../../redux/latticeSlice'
+import { ReactComponent as BackButton } from '../../assets/back.svg'
 
 const DispatchTopBar = () => {
+  const dispatch = useDispatch()
   const drawerLatticeDetails = useSelector(
     (state) => state.latticeResults.latticeDetails
   )
   const drawerLatticeDetailsFetching = useSelector(
     (state) => state.latticeResults.latticeDetailsResults.isFetching
+  )
+  const sublatticesDispatchId = useSelector(
+    (state) => state.latticeResults.sublatticesId
   )
 
   return (
@@ -53,12 +59,13 @@ const DispatchTopBar = () => {
             backgroundColor: (theme) => theme.palette.background.default,
           }}
         >
-          {/* status */}
           <Box>
             <LatticeStatusCard
               dispatchId={drawerLatticeDetails.dispatch_id}
               latDetails={drawerLatticeDetails}
               isFetching={drawerLatticeDetailsFetching}
+              sublatticesDispatchId={sublatticesDispatchId}
+              dispatch={dispatch}
             />
           </Box>
         </Box>
@@ -69,7 +76,7 @@ const DispatchTopBar = () => {
 
 export default DispatchTopBar
 
-const LatticeStatusCard = ({ latDetails, isFetching }) => {
+const LatticeStatusCard = ({ latDetails, isFetching, sublatticesDispatchId, dispatch }) => {
   return (
     <Box sx={{ my: 0, pt: 1 }} data-testid="topbarcard">
       <Box
@@ -77,6 +84,19 @@ const LatticeStatusCard = ({ latDetails, isFetching }) => {
           display: 'flex',
         }}
       >
+        {sublatticesDispatchId && (
+          <Tooltip title='Revert back to main lattice'>
+            <Box
+              sx={{
+                display: 'flex'
+              }}
+            >
+              <SvgIcon onClick={() => dispatch(resetSublatticesId())} sx={{ mt: 0.5, cursor: 'pointer' }} >
+                <BackButton />
+              </SvgIcon>
+            </Box>
+          </Tooltip>
+        )}
         <Box
           sx={{
             borderRight: !isFetching ? '1px solid #303067' : 'none',

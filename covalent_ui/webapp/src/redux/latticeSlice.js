@@ -118,6 +118,9 @@ export const latticeSlice = createSlice({
     },
     sublatticesDispatchId(state, payload) {
       state.sublatticesId = payload.payload
+    },
+    resetSublatticesId(state) {
+      state.sublatticesId = null
     }
   },
   extraReducers: (builder) => {
@@ -236,4 +239,4 @@ export const latticeSlice = createSlice({
   },
 })
 
-export const { resetLatticeState, sublatticesDispatchId } = latticeSlice.actions
+export const { resetLatticeState, sublatticesDispatchId,resetSublatticesId } = latticeSlice.actions
