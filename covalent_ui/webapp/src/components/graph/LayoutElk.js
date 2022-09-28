@@ -114,6 +114,7 @@ const assignNodePositions = async (
           'elk.spacing.edgeNode': hideLabels ? 60 : 40,
           'elk.spacing.edgeLabel': 10,
           'elk.layered.spacing.nodeNodeBetweenLayers': 80,
+          'elk.layered.spacing.baseValue': hideLabels ? 40 : 10
         },
       })
       : new ELK({
