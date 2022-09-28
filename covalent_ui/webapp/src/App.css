@@ -64,11 +64,7 @@
   background-color: transparent !important;
 }
 
-.dropdownSelect .css-ptsu71-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input {
-  padding: 12.5px 14px;
-}
-
-.dropdownSelect .css-9425fu-MuiOutlinedInput-notchedOutline {
+.dropdownSelect .MuiOutlinedInput-notchedOutline {
   border-color: #303067;
   border-radius: 60px;
 }

@@ -351,10 +351,12 @@ const SettingsCard = () => {
   }
 
   const handleSubmenuClick = (value, key) => {
+    setIsDisabled(false)
     if (resultKey !== 'executors') {
       setValueChange(false)
       setResultKey('executors')
       setResultOutput(value)
+      setRestoreData(value)
     } else {
       document.getElementById(key).scrollIntoView({ behavior: 'smooth' })
     }
@@ -483,6 +485,8 @@ const SettingsCard = () => {
                           }
                           sx={{
                             right: isChildHasList(menuValue) ? '0px' : '0px',
+                            padding: '0px',
+                            margin: '8px 16px'
                           }}
                         >
                           {isChildHasList(menuValue) && (
@@ -525,13 +529,12 @@ const SettingsCard = () => {
                         return (
                           <StyledList sx={{ pb: 0, pt: 0 }} key={key}>
                             <ListItem disablePadding>
-                              <ListItemButton sx={{ pl: 9, pt: 0.3, pb: 0.3 }}>
+                              <ListItemButton sx={{ pl: 9, pt: 0.3, pb: 0.3 }} onClick={() =>
+                                handleSubmenuClick(subMenu, key)
+                              }>
                                 <ListItemText
                                   inset
                                   primary={getSubmenuName(key)}
-                                  onClick={() =>
-                                    handleSubmenuClick(subMenu, key)
-                                  }
                                   disableTypography
                                   sx={{ pl: '0px', fontSize: '14px' }}
                                 />
@@ -570,6 +573,8 @@ const SettingsCard = () => {
                           }
                           sx={{
                             right: isChildHasList(menuValue) ? '0px' : '0px',
+                            padding: '0px',
+                            margin: '8px 16px'
                           }}
                         >
                           {isChildHasList(menuValue) && (
