@@ -337,4 +337,3 @@ an ECS task definition using the user provided arguments is registered and the c
 The output from the task is uploaded to the S3 bucket provided by the user and parsed to obtain the result object.
 In order for the executor to properly run and build images, users must have `Docker installed <https://www.docker.com/get-started/>`_ and properly
 configured on their machines.
-
