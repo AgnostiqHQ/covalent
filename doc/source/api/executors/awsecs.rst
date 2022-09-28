@@ -220,7 +220,7 @@ Alternatively, users can customize this executor entirely by providing their own
 This executor uses different AWS services (`S3 <https://aws.amazon.com/s3/>`_, `ECR <https://aws.amazon.com/ecr/>`_, `ECS <https://aws.amazon.com/ecs/>`_, and `Fargate <https://aws.amazon.com/fargate/>`_) to successfully run a task. In order for the executor to work end-to-end, the following resources need to be configured
 either with `Terraform <https://www.terraform.io/>`_ or manually provisioned on the `AWS Dashboard <https://aws.amazon.com/>`_
 
-.. list-table:: 
+.. list-table::
     :widths: 25 25 50
     :header-rows: 1
 
