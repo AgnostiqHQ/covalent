@@ -118,7 +118,7 @@ export function DispatchLayout() {
         <NodeDrawer
           node={selectedElectron}
           graph={graph_result}
-          dispatchId={sublatticesDispatchId ? sublatticesDispatchId : dispatchId}
+          dispatchId={sublatticesDispatchId ? sublatticesDispatchId?.dispatchId : dispatchId}
         />
       ) : (
         <PageLoading />
