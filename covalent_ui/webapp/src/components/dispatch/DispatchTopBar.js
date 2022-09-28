@@ -20,168 +20,169 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
- import React from 'react'
- import { useSelector, useDispatch } from 'react-redux'
- import { Box, Typography, Skeleton, SvgIcon, Tooltip } from '@mui/material'
- import { statusIcon, statusColor, statusLabel } from '../../utils/misc'
- import { resetSublatticesId } from '../../redux/latticeSlice'
- import { ReactComponent as BackButton } from '../../assets/back.svg'
+import React from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { Box, Typography, Skeleton, SvgIcon, Tooltip } from '@mui/material'
+import { statusIcon, statusColor, statusLabel } from '../../utils/misc'
+import { resetSublatticesId } from '../../redux/latticeSlice'
+import { ReactComponent as BackButton } from '../../assets/back.svg'
 
- const DispatchTopBar = () => {
-   const dispatch = useDispatch()
-   const drawerLatticeDetails = useSelector(
-     (state) => state.latticeResults.latticeDetails
-   )
-   const drawerLatticeDetailsFetching = useSelector(
-     (state) => state.latticeResults.latticeDetailsResults.isFetching
-   )
-   const sublatticesDispatchId = useSelector(
-     (state) => state.latticeResults.sublatticesId
-   )
+const DispatchTopBar = () => {
+  const dispatch = useDispatch()
+  const drawerLatticeDetails = useSelector(
+    (state) => state.latticeResults.latticeDetails
+  )
+  const drawerLatticeDetailsFetching = useSelector(
+    (state) => state.latticeResults.latticeDetailsResults.isFetching
+  )
+  const sublatticesDispatchId = useSelector(
+    (state) => state.latticeResults.sublatticesId
+  )
 
-   return (
-     <>
-       <div>
-         <Box
-           data-testid="topbar"
-           sx={{
-             position: 'absolute',
-             top: 0,
-             width: '100%',
-             height: '55px',
-             justifyContent: 'center',
-             zIndex: 95,
-             display: 'flex',
-             alignItems: 'center',
-             mt: 0,
-             paddingLeft: '27%',
-             ml: 0,
-             backgroundColor: (theme) => theme.palette.background.default,
-           }}
-         >
-           <Box>
-             <LatticeStatusCard
-               dispatchId={drawerLatticeDetails.dispatch_id}
-               latDetails={drawerLatticeDetails}
-               isFetching={drawerLatticeDetailsFetching}
-               sublatticesDispatchId={sublatticesDispatchId}
-               dispatch={dispatch}
-             />
-           </Box>
-         </Box>
-       </div>
-     </>
-   )
- }
+  return (
+    <>
+      <div>
+        <Box
+          data-testid="topbar"
+          sx={{
+            position: 'absolute',
+            top: 0,
+            width: '100%',
+            height: '55px',
+            justifyContent: 'center',
+            zIndex: 95,
+            display: 'flex',
+            alignItems: 'center',
+            mt: 0,
+            paddingLeft: '27%',
+            ml: 0,
+            backgroundColor: (theme) => theme.palette.background.default,
+          }}
+        >
+          <Box>
+            <LatticeStatusCard
+              dispatchId={drawerLatticeDetails.dispatch_id}
+              latDetails={drawerLatticeDetails}
+              isFetching={drawerLatticeDetailsFetching}
+              sublatticesDispatchId={sublatticesDispatchId}
+              dispatch={dispatch}
+            />
+          </Box>
+        </Box>
+      </div>
+    </>
+  )
+}
 
- export default DispatchTopBar
+export default DispatchTopBar
 
- const LatticeStatusCard = ({
-   latDetails,
-   isFetching,
-   sublatticesDispatchId,
-   dispatch,
- }) => {
-   return (
-     <Box sx={{ my: 0, pt: 1 }} data-testid="topbarcard">
-       <Box sx={{ position: 'absolute', left: 490, pt: 0.5 }}>
-         {sublatticesDispatchId && (
-           <Tooltip title="Revert back to main lattice">
-             <Box
-               sx={{
-                 display: 'flex',
-               }}
-             >
-               <SvgIcon
-                 onClick={() => dispatch(resetSublatticesId())}
-                 sx={{ mt: 0.5, cursor: 'pointer' }}
-               >
-                 <BackButton />
-               </SvgIcon>
-             </Box>
-           </Tooltip>
-         )}
-       </Box>
-       <Box
-         sx={{
-           display: 'flex',
-         }}
-       >
-         <Box
-           sx={{
-             borderRight: !isFetching ? '1px solid #303067' : 'none',
-             height: '25px',
-             display: 'flex',
-             alignItems: 'center',
-             pr: 4.4,
-           }}
-         >
-           {isFetching ? (
-             <Skeleton
-               width={150}
-               height={60}
-               sx={{
-                 alignItems: 'center',
-                 py: 2,
-                 mt: 4,
-               }}
-             />
-           ) : (
-             <Box
-               sx={{
-                 color: statusColor(latDetails.status),
-                 display: 'flex',
-                 fontSize: '1.125rem',
-                 alignItems: 'center',
-                 justifySelf: 'center',
-               }}
-             >
-               {/* {statusIcon(latDetails.status)}
+const LatticeStatusCard = ({
+  latDetails,
+  isFetching,
+  sublatticesDispatchId,
+  dispatch,
+}) => {
+  return (
+    <Box sx={{ my: 0, pt: 1 }} data-testid="topbarcard">
+      <Box sx={{ position: 'absolute', left: 490 }}>
+        {sublatticesDispatchId && (
+          <Tooltip title="Revert back to main lattice">
+            <Box
+              sx={{
+                display: 'flex',
+              }}
+            >
+              <Typography sx={{ display: 'flex' }}>Viewing: {sublatticesDispatchId?.latticeName}</Typography>
+              <SvgIcon
+                onClick={() => dispatch(resetSublatticesId())}
+                sx={{ pl:1,cursor: 'pointer' }}
+              >
+                <BackButton />
+              </SvgIcon>
+            </Box>
+          </Tooltip>
+        )}
+      </Box>
+      <Box
+        sx={{
+          display: 'flex',
+        }}
+      >
+        <Box
+          sx={{
+            borderRight: !isFetching ? '1px solid #303067' : 'none',
+            height: '25px',
+            display: 'flex',
+            alignItems: 'center',
+            pr: 4.4,
+          }}
+        >
+          {isFetching ? (
+            <Skeleton
+              width={150}
+              height={60}
+              sx={{
+                alignItems: 'center',
+                py: 2,
+                mt: 4,
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                color: statusColor(latDetails.status),
+                display: 'flex',
+                fontSize: '1.125rem',
+                alignItems: 'center',
+                justifySelf: 'center',
+              }}
+            >
+              {/* {statusIcon(latDetails.status)}
                 &nbsp; */}
-               {statusLabel(latDetails.status)}
-             </Box>
-           )}
-         </Box>
+              {statusLabel(latDetails.status)}
+            </Box>
+          )}
+        </Box>
 
-         <Box sx={{ justifySelf: 'center' }}>
-           {isFetching ? (
-             <Skeleton
-               width={150}
-               height={60}
-               sx={{
-                 alignItems: 'center',
-                 py: 2,
-                 ml: 2,
-               }}
-             />
-           ) : (
-             <Box
-               sx={{
-                 display: 'flex',
-                 alignItems: 'center',
-                 pl: 4.4,
-                 height: '25px',
-               }}
-             >
-               {statusIcon(latDetails.status)}
-               <Typography fontSize="body2.fontSize" sx={{ ml: 1 }}>
-                 <Box
-                   component="span"
-                   sx={{
-                     color:
-                       latDetails.status !== 'COMPLETED'
-                         ? statusColor(latDetails.status)
-                         : '',
-                   }}
-                 >
-                   {latDetails.total_electrons_completed}
-                 </Box>
-                 &nbsp;/ {latDetails.total_electrons}
-               </Typography>
-             </Box>
-           )}
-         </Box>
-       </Box>
-     </Box>
-   )
- }
+        <Box sx={{ justifySelf: 'center' }}>
+          {isFetching ? (
+            <Skeleton
+              width={150}
+              height={60}
+              sx={{
+                alignItems: 'center',
+                py: 2,
+                ml: 2,
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                pl: 4.4,
+                height: '25px',
+              }}
+            >
+              {statusIcon(latDetails.status)}
+              <Typography fontSize="body2.fontSize" sx={{ ml: 1 }}>
+                <Box
+                  component="span"
+                  sx={{
+                    color:
+                      latDetails.status !== 'COMPLETED'
+                        ? statusColor(latDetails.status)
+                        : '',
+                  }}
+                >
+                  {latDetails.total_electrons_completed}
+                </Box>
+                &nbsp;/ {latDetails.total_electrons}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      </Box>
+    </Box>
+  )
+}

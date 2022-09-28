@@ -50,7 +50,7 @@ export function DispatchLayout() {
   // check if socket message is received and call API
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
   useEffect(() => {
-    if (sublatticesDispatchId) dispatch(graphResults({ dispatchId: sublatticesDispatchId }))
+    if (sublatticesDispatchId?.dispatchId) dispatch(graphResults({ dispatchId: sublatticesDispatchId?.dispatchId }))
     else dispatch(graphResults({ dispatchId }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi, sublatticesDispatchId])
