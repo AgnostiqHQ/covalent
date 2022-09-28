@@ -34,23 +34,23 @@ class SafeVariable(asyncio.Queue):
         self.event_loop = event_loop or asyncio.get_event_loop()
         super().__init__(maxsize=1)
 
-    def put_safe(self, value: Any) -> None:
+    def put_nowait_safe(self, value: Any) -> None:
         self.event_loop.call_soon_threadsafe(super().put_nowait, value)
 
-    def get_safe(self) -> Any:
+    def get_nowait_safe(self) -> Any:
         return self.event_loop.call_soon_threadsafe(super().get_nowait, ())
 
     def save(self, value: Any) -> None:
         try:
-            self.put_safe(value)
+            self.put_nowait_safe(value)
         except asyncio.QueueFull:
-            self.get_safe()
-            self.put_safe(value)
+            self.get_nowait_safe()
+            self.put_nowait_safe(value)
 
     def retrieve(self) -> Any:
         try:
-            value = self.get_safe()
-            self.put_safe(value)
+            value = self.get_nowait_safe()
+            self.put_nowait_safe(value)
             return value
         except asyncio.QueueEmpty:
             return None
