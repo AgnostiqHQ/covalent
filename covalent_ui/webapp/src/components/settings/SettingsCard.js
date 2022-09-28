@@ -38,7 +38,7 @@ import {
   Select,
   MenuItem,
 } from '@mui/material'
-import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
+import { Clear as ClearIcon, ConstructionOutlined, Search as SearchIcon } from '@mui/icons-material'
 import Typography from '@mui/material/Typography'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
@@ -335,12 +335,18 @@ const SettingsCard = () => {
         key.includes(e.target.value.toLowerCase())
       )
     )
+    const subMenuFilter = Object.fromEntries(
+      Object.entries(tempData.executors).filter(([key]) =>
+        key.includes(e.target.value.toLowerCase())
+      )
+    )
     const filterData1 = Object.fromEntries(
       Object.entries(tempDataServer).filter(([key]) =>
         key.includes(e.target.value.toLowerCase())
       )
     )
     setClientDetail(filterData)
+    setSubMenu(subMenuFilter)
     setServerDetail(filterData1)
   }
 
@@ -485,12 +491,11 @@ const SettingsCard = () => {
                           }
                           sx={{
                             right: isChildHasList(menuValue) ? '0px' : '0px',
-                            padding: '0px',
-                            margin: '8px 16px'
+                            padding: '0px'
                           }}
                         >
                           {isChildHasList(menuValue) && (
-                            <ListItemIcon>
+                            <ListItemIcon sx={{ minWidth: '45px', pl: 1 }}>
                               {open ? (
                                 <ExpandMore />
                               ) : (
@@ -506,11 +511,12 @@ const SettingsCard = () => {
                             }
                             disableTypography
                             sx={{
+                              padding: '8px 16px',
                               color:
                                 resultKey === menuKey
                                   ? 'white'
                                   : 'text.primary',
-                              pl: '0px',
+                              pl: isChildHasList(menuValue) ? '0px' : '16px',
                               fontSize: '14px',
                               fontWeight:
                                 resultKey === menuKey ? 'bold' : 'normal',
@@ -529,7 +535,7 @@ const SettingsCard = () => {
                         return (
                           <StyledList sx={{ pb: 0, pt: 0 }} key={key}>
                             <ListItem disablePadding>
-                              <ListItemButton sx={{ pl: 9, pt: 0.3, pb: 0.3 }} onClick={() =>
+                              <ListItemButton sx={{ pl: 7, pt: 0.3, pb: 0.3 }} onClick={() =>
                                 handleSubmenuClick(subMenu, key)
                               }>
                                 <ListItemText
@@ -573,12 +579,11 @@ const SettingsCard = () => {
                           }
                           sx={{
                             right: isChildHasList(menuValue) ? '0px' : '0px',
-                            padding: '0px',
-                            margin: '8px 16px'
+                            padding: '0px'
                           }}
                         >
                           {isChildHasList(menuValue) && (
-                            <ListItemIcon>
+                            <ListItemIcon sx={{ minWidth: '45px', pl: 1 }}>
                               {open ? (
                                 <ExpandMore />
                               ) : (
@@ -592,11 +597,12 @@ const SettingsCard = () => {
                             onClick={() => menuClick(menuValue, menuKey)}
                             disableTypography
                             sx={{
+                              padding: '8px 16px',
                               color:
                                 resultKey === menuKey
                                   ? 'white'
                                   : 'text.primary',
-                              pl: '0px',
+                              pl: isChildHasList(menuValue) ? '0px' : '16px',
                               fontSize: '14px',
                               fontWeight:
                                 resultKey === menuKey ? 'bold' : 'normal',
