@@ -23,7 +23,7 @@ name: boilerplate
 on: pull_request
 
 jobs:
-  version:
+  boilerplate:
     runs-on: ubuntu-latest
     steps:
       - name: Check out head
