@@ -172,11 +172,15 @@ const LinkButton = ({
   let navigate = useNavigate()
 
   const menuClick = (path) => {
-    // navigate(path);
     if (dRes === null) {
       navigate(path)
     } else if (dRes.isChanged === true) {
-      setPopupShow(true)
+      if (path === '/settings') {
+        setPopupShow(false)
+      }
+      else {
+        setPopupShow(true)
+      }
     } else {
       navigate(path)
     }
@@ -196,7 +200,6 @@ const LinkButton = ({
       setSnackbarMessage('Settings Updated Successfully')
     }
     dispatch(toggleLatticeDrawer(settingObj))
-
   }
 
   return (

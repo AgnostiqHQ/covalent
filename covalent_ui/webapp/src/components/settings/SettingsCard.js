@@ -69,7 +69,6 @@ const SettingsCard = () => {
   const [resultKey, setResultKey] = useState('sdk')
   const [resultOutput, setResultOutput] = useState()
   const [settings_result, setSettingsResult] = useState(useSelector((state) => state.settingsResults.settingsList))
-  const callSocketApi = useSelector((state) => state.common.callSocketApi)
   const menuCallResult = useSelector((state) => state.dataRes.popupData)
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
@@ -86,7 +85,7 @@ const SettingsCard = () => {
   useEffect(() => {
     if (!isDemo) dispatch(settingsResults())
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [callSocketApi])
+  }, [])
 
   useEffect(() => {
     if (valueChange) {
@@ -94,7 +93,7 @@ const SettingsCard = () => {
         isChanged: valueChange,
         data: resultOutput,
         nodeName: resultKey,
-        mainKey: accName,
+        mainKey: accName
       }
       dispatch(toggleLatticeDrawer(settingObj))
     } else {
@@ -329,12 +328,18 @@ const SettingsCard = () => {
         key.includes(e.target.value.toLowerCase())
       )
     )
+    const subMenuFilter = Object.fromEntries(
+      Object.entries(tempData.executors).filter(([key]) =>
+        key.includes(e.target.value.toLowerCase())
+      )
+    )
     const filterData1 = Object.fromEntries(
       Object.entries(tempDataServer).filter(([key]) =>
         key.includes(e.target.value.toLowerCase())
       )
     )
     setClientDetail(filterData)
+    setSubMenu(subMenuFilter)
     setServerDetail(filterData1)
   }
 
@@ -345,10 +350,12 @@ const SettingsCard = () => {
   }
 
   const handleSubmenuClick = (value, key) => {
+    setIsDisabled(false)
     if (resultKey !== 'executors') {
       setValueChange(false)
       setResultKey('executors')
       setResultOutput(value)
+      setRestoreData(value)
     } else {
       document.getElementById(key).scrollIntoView({ behavior: 'smooth' })
     }
@@ -373,7 +380,7 @@ const SettingsCard = () => {
   })
 
   return (
-    <Container maxWidth="xl" sx={{ mb: 4, mt: 7.5 }}>
+    <Container maxWidth="xl" sx={{ mb: 4, marginTop: '32px' }}>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={3000}
@@ -391,7 +398,14 @@ const SettingsCard = () => {
           />
         }
       />
-      <Typography variant="h4" component="h4" sx={{ mb: 5 }}>
+      <Typography
+        component="h4"
+        sx={{
+          mb: 5,
+          color: (theme) => theme.palette.primary.white,
+          fontSize: '32px',
+        }}
+      >
         Settings
       </Typography>
       {_.size(settings_result) !== 0 ? (
@@ -410,8 +424,8 @@ const SettingsCard = () => {
                   sx={{
                     px: 2,
                     py: 0.5,
-                    width: '95%',
-                    height: '40px',
+                    width: '278px',
+                    height: '32px',
                     border: '1px solid #303067',
                     borderRadius: '60px',
                     mb: 3,
@@ -470,10 +484,11 @@ const SettingsCard = () => {
                           }
                           sx={{
                             right: isChildHasList(menuValue) ? '0px' : '0px',
+                            padding: '0px'
                           }}
                         >
                           {isChildHasList(menuValue) && (
-                            <ListItemIcon>
+                            <ListItemIcon sx={{ minWidth: '45px', pl: 1 }}>
                               {open ? (
                                 <ExpandMore />
                               ) : (
@@ -489,11 +504,12 @@ const SettingsCard = () => {
                             }
                             disableTypography
                             sx={{
+                              padding: '8px 16px',
                               color:
                                 resultKey === menuKey
                                   ? 'white'
                                   : 'text.primary',
-                              pl: '0px',
+                              pl: isChildHasList(menuValue) ? '0px' : '16px',
                               fontSize: '14px',
                               fontWeight:
                                 resultKey === menuKey ? 'bold' : 'normal',
@@ -512,13 +528,12 @@ const SettingsCard = () => {
                         return (
                           <StyledList sx={{ pb: 0, pt: 0 }} key={key}>
                             <ListItem disablePadding>
-                              <ListItemButton sx={{ pl: 9, pt: 0.3, pb: 0.3 }}>
+                              <ListItemButton sx={{ pl: 7, pt: 0.3, pb: 0.3 }} onClick={() =>
+                                handleSubmenuClick(subMenu, key)
+                              }>
                                 <ListItemText
                                   inset
                                   primary={getSubmenuName(key)}
-                                  onClick={() =>
-                                    handleSubmenuClick(subMenu, key)
-                                  }
                                   disableTypography
                                   sx={{ pl: '0px', fontSize: '14px' }}
                                 />
@@ -557,10 +572,11 @@ const SettingsCard = () => {
                           }
                           sx={{
                             right: isChildHasList(menuValue) ? '0px' : '0px',
+                            padding: '0px'
                           }}
                         >
                           {isChildHasList(menuValue) && (
-                            <ListItemIcon>
+                            <ListItemIcon sx={{ minWidth: '45px', pl: 1 }}>
                               {open ? (
                                 <ExpandMore />
                               ) : (
@@ -574,11 +590,12 @@ const SettingsCard = () => {
                             onClick={() => menuClick(menuValue, menuKey)}
                             disableTypography
                             sx={{
+                              padding: '8px 16px',
                               color:
                                 resultKey === menuKey
                                   ? 'white'
                                   : 'text.primary',
-                              pl: '0px',
+                              pl: isChildHasList(menuValue) ? '0px' : '16px',
                               fontSize: '14px',
                               fontWeight:
                                 resultKey === menuKey ? 'bold' : 'normal',
@@ -609,7 +626,7 @@ const SettingsCard = () => {
                       return (
                         <Box sx={{ mb: 3 }} key={key}>
                           {_.isObject(value) ? (
-                            <Box key={key}>
+                            <Box key={key} id={key}>
                               <Typography
                                 variant="h6"
                                 component="h6"
@@ -659,7 +676,9 @@ const SettingsCard = () => {
                                             control={<Radio />}
                                             label={
                                               <Typography
-                                                sx={{ fontSize: '14px' }}
+                                                sx={{
+                                                  fontSize: '14px',
+                                                }}
                                               >
                                                 False
                                               </Typography>
@@ -684,8 +703,8 @@ const SettingsCard = () => {
                                           sx={{
                                             px: 2,
                                             py: 0.5,
-                                            width: '100%',
-                                            height: '45px',
+                                            width: '360px',
+                                            height: '32px',
                                             border: '1px solid #303067',
                                             borderRadius: '60px',
                                             fontSize: '14px',
@@ -712,7 +731,13 @@ const SettingsCard = () => {
                           ) : (
                             <>
                               {key === 'log_level' ? (
-                                <Box>
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignContent: 'flex-start',
+                                  }}
+                                >
                                   <FormLabel
                                     id="demo-simple-select-label"
                                     sx={{
@@ -723,23 +748,22 @@ const SettingsCard = () => {
                                     {' '}
                                     {getSettingsName(key)}
                                   </FormLabel>
+
                                   <Select
-                                    fullWidth
                                     labelId="demo-simple-select-label"
                                     id="demo-simple-select"
                                     value={value}
                                     name={key}
                                     label={key}
                                     onChange={(e) => handleSelectChange(e, key)}
-                                    sx={{ mt: 1, fontSize: '14px' }}
+                                    sx={{
+                                      mt: 1,
+                                      fontSize: '14px',
+                                      width: '140px',
+                                      height: '32px',
+                                    }}
                                     className="dropdownSelect"
                                   >
-                                    <MenuItem
-                                      sx={{ fontSize: '14px' }}
-                                      value="notset"
-                                    >
-                                      Notset
-                                    </MenuItem>
                                     <MenuItem
                                       sx={{ fontSize: '14px' }}
                                       value="debug"
@@ -836,8 +860,8 @@ const SettingsCard = () => {
                                         sx={{
                                           px: 2,
                                           py: 0.5,
-                                          width: '100%',
-                                          height: '45px',
+                                          width: '360px',
+                                          height: '32px',
                                           border: '1px solid #303067',
                                           borderRadius: '60px',
                                           fontSize: '14px',
@@ -879,6 +903,8 @@ const SettingsCard = () => {
                             color: 'white',
                             fontSize: '14px',
                             textTransform: 'capitalize',
+                            width: '77px',
+                            height: '32px',
                           })}
                         >
                           Cancel
@@ -893,6 +919,8 @@ const SettingsCard = () => {
                             padding: '8px 30px',
                             fontSize: '14px',
                             textTransform: 'capitalize',
+                            width: '63px',
+                            height: '32px',
                           })}
                         >
                           Save
@@ -911,8 +939,9 @@ const SettingsCard = () => {
           <Skeleton animation="wave" />
           <Skeleton animation={false} />
         </Box>
-      )}
-    </Container>
+      )
+      }
+    </Container >
   )
 }
 
