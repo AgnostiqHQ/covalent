@@ -68,7 +68,8 @@ runs:
           echo "Removing the [UNRELEASED] header is prohibited in pull requests."
           exit 2
         fi
-        latest_release=$(sed -n "/\[\d+\.\d+\.\d+(-\d+)*?(-rc\.\d+)*?\]/=" ${{ inputs.changelog-path }} | head -n 1)
+        re="/\[[0-9]\+\.[0-9]\+\.[0-9]\+\(-[0-9]\+\)\?\(-rc\.[0-9]\+\)\?\]/="
+        latest_release=$(sed -n $re ${{ inputs.changelog-path }} | head -n 1)
         IFS='[]' read -ra changelog_version <<< $(sed "${latest_release}q;d" ${{ inputs.changelog-path }})
         if [[ "${changelog_version[1]}" != $HEAD_VERSION ]] ; then
           echo "The most recent CHANGELOG release does not match the VERSION."
