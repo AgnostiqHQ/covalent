@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated Lambda Executor RTD with config & cloud resources table
 
+### Operations
+
+- Remove `benchmark` workflow from `nightly` schedule
+
 ### Tests
 
 - Fixed `asserts` in stress tests
@@ -64,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Workflows authenticate to AWS using OIDC with specific roles
 - Only the recommended platform is tested on pull requests
 - Update check blocks to assert the `workflow_call` event type is replaced with `schedule`
+- Create a hotfix when pushing to a release branch
 
 ## [0.198.0] - 2022-09-14
 
