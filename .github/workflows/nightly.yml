@@ -65,7 +65,7 @@ jobs:
           echo "::set-output name=tag::${latest_tag}"
 
       - name: Checkout default branch
-        uses: github/checkout@v3
+        uses: actions/checkout@v3
 
       - name: Push to master
         id: push
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master
-        uses: github/checkout@v3
+        uses: actions/checkout@v3
         with:
           ref: "master"
 
