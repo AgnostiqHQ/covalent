@@ -64,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update nightly trigger to `hourly` for testing
 - Update `changelog` action token to `COVALENT_OPS_BOT_TOKEN`
 - Remove `benchmark` workflow from `nightly` schedule
+- Removed payload dependency from changelog action so it can run on a schedule
+- Remove `benchmark` workflow from `nightly` schedule
 
 ## [0.198.0] - 2022-09-14
 
