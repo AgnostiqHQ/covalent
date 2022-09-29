@@ -55,7 +55,9 @@ class SafeVariable(asyncio.Queue):
             return None
 
     async def retrieve_async(self) -> Any:
-        return await self.get()
+        value = await self.get()
+        await self.put(value)
+        return value
 
 
 # TODO: Following definitions are for legacy reasons only and should be removed soon:

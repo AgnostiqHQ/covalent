@@ -147,8 +147,14 @@ async def test_safe_variable_retrieve_async(
     """Testing SafeVariable's retrieve_async method"""
 
     get_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.get", side_effect=mocker.AsyncMock
+        "covalent._shared_files.util_classes.SafeVariable.get", return_value=test_value
     )
 
-    await safe_variable.retrieve_async()
+    put_mock = mocker.patch(
+        "covalent._shared_files.util_classes.SafeVariable.put", side_effect=mocker.AsyncMock
+    )
+
+    value = await safe_variable.retrieve_async()
     get_mock.assert_called_once()
+    put_mock.assert_called_with(test_value)
+    assert value == test_value
