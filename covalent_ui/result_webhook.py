@@ -26,10 +26,10 @@ import requests
 import covalent_ui.app as ui_server
 from covalent._results_manager import Result
 from covalent._shared_files import logger
-from covalent._shared_files.config import CMType, get_config
+from covalent._shared_files.config import get_config
 from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
 
-DEFAULT_PORT = get_config(CMType.SERVER, "service.port")
+DEFAULT_PORT = get_config("user_interface.port")
 
 app_log = logger.app_log
 
