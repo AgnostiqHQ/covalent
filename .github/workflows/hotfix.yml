@@ -21,152 +21,75 @@
 name: hotfix
 
 on:
-  issue_comment:
-    types: [created]
-  workflow_dispatch:
-    inputs:
-      stable_version:
-        description: "Stable version number, e.g. 0.110.2"
-        type: string
-        required: true
-      commit_shas:
-        description: "Comma-separated string of SHAs to apply."
-        required: true
+  push:
+    branches:
+      - "release-0.*.*"
 
 jobs:
   hotfix:
-    if: >
-      github.event.issue.pull_request
-      && github.event.comment.body == 'hotfix-now'
-      && contains(github.event.issue.labels.*.name, 'hotfix')
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ env.VERSION }}
     steps:
-      - name: Extract PR route
-        run: |
-          pr_route=$(echo ${{ github.event.issue.pull_request.url }} \
-            | sed s-https://api.github.com--)
-          echo "PR_ROUTE=$pr_route" >> $GITHUB_ENV
-      - name: Get PR data
-        id: pr-data
-        uses: octokit/request-action@v2.x
+      - name: Stable tag
+        id: stable-tag
+        uses: ./.github/actions/describe
         with:
-          route: GET ${{ env.PR_ROUTE }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout PR branch
-        uses: actions/checkout@v2
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.event.ref }}
+          stable: true
+      - name: Latest tag
+        id: latest-tag
+        uses: ./.github/actions/describe
         with:
-          persist-credentials: false
-          fetch-depth: 0
-          ref: ${{ fromJson(steps.pr-data.outputs.data).head.ref }}
-      - name: Validate tree
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.event.ref }}
+          stable: false
+      - name: Check out head
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Hotfix version
+        id: hotfix
         run: |
-          sha_length=20
-          latest_tag=$(git describe --abbrev=$sha_length)
-          IFS='-' read -ra describe_commits <<< "$latest_tag"
-          if [ "${#describe_commits[-1]}" -gt $sha_length ] && [ "${describe_commits[-2]}" -gt 2 ] ; then
-            echo 'MESSAGE="Please squash your commits before applying a hotfix."' >> $GITHUB_ENV
+          re='^[0-9]+$'
+          IFS='-' read -ra stable_tag <<< $(echo ${{ steps.stable-tag.outputs.tag }} | cut -c2-)
+          IFS='-' read -ra release_tag <<< $(echo ${{ github.event.ref }} | cut -c2-)
+          IFS='-' read -ra latest_tag <<< $(echo ${{ steps.latest-tag-release.outputs.tag }} | cut -c2-)
+          if [ ${stable_tag[0]} != ${release_tag[1]} ] ; then
+            echo "This branch does not contain a matching stable release. Hotfixes can only be applied to stable releases."
+            exit 0
+          if [ ${#latest_tag[1]} -eq 0 ] ; then
+            version="${latest_tag[0]}-1-rc.0"
+          elif [[ ${latest_tag[1]} =~ $re ]] && [ ${#latest_tag[2]} -eq 0 ] ; then
+            version="${latest_tag[0]}-$(( ${latest_tag[1]} + 1 ))-rc.0"
+          elif [[ ${latest_tag[1]} =~ $re ]] ; then
+            IFS='.' read -ra rc <<< "${latest_tag[2]}"
+            version="${latest_tag[0]}-${latest_tag[1]}-rc.$(( ${rc[1]} + 1 ))"
+          else
+            echo "Hotfix branches must be created from a stable release."
             exit 2
           fi
-          echo "LATEST_TAG=${describe_commits[0]}" >> $GITHUB_ENV
-      - name: Get release
-        id: get-release
-        uses: cardinalby/git-get-release-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag: env.LATEST_TAG
-      - name: Hotfix version
-        run: |
-          IFS='-' read -ra hotfix_version <<< "${{ steps.get-release.outputs.tag_name }}"
-          if [[ ${{ steps.get-release.outputs.prerelease }} = false ]] && [ ${#hotfix_version[1]} -gt 0 ] ; then
-            version="${hotfix_version[0]}-$(( ${hotfix_version[1]} + 1 ))"
-          elif [[ $${{ steps.get-release.outputs.prerelease }} = false ]] ; then
-            version="${hotfix_version[0]}-1"
-          else
-            echo 'MESSAGE="Hotfix branches must be created from a stable release."' >> $GITHUB_ENV
-            exit 1
-          fi
-          git checkout -b "hotfix-$version"
+          changelog_header="## [${version}] - $(date -I)"
+          nl=$'\n'
+          sed -i '/UNRELEASED/a\'$'\n''\'$'\n'"$changelog_header" CHANGELOG.md
           echo $version > VERSION
           echo "VERSION=$version" >> $GITHUB_ENV
-          echo 'MESSAGE="Hotfix ' $version ' has been created. ' \
-            'You may contact mall security to create a stable release using this tag."' >> $GITHUB_ENV
       - name: Commit
         uses: EndBug/add-and-commit@v9
+        if: ${{ env.VERSION }}
         with:
           author_name: CovalentOpsBot
           author_email: covalentopsbot@users.noreply.github.com
           message: "${{ github.event.issue.title }} (#${{ github.event.issue.number }})"
-          tag: env.VERSION
-      - name: Comment
-        if: always()
-        uses: thollander/actions-comment-pull-request@v1
-        with:
-          message: env.MESSAGE
-          pr_number: github.event.issue.number
-          GITHUB_TOKEN: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          tag: "v${{ env.VERSION }}"
 
-  hotfix-sha:
-    if: >
-      github.event.inputs.stable_version
-      && github.event.inputs.commit_shas
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out release tag
-        uses: actions/checkout@v2
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-          ref: "v${{ github.event.inputs.stable_version }}"
-      - name: Ensure release is a terminal commit
-        run: |
-          latest_tag=$(git describe)
-          terminal_commit=1
-          IFS='-' read -ra describe_tag <<< "$latest_tag"
-          if [[ ${#describe_tag[1]} -gt 0 ]] ; then
-            version="${describe_tag[0]}-$((${describe_tag[1]}+1))"
-          else
-            version="${describe_tag[0]}-1"
-          fi
-          if [[ $(git tag -l "$version") ]] ; then
-            echo "Cannot create a hotfix using this stable version. $version already exists."
-            exit 1
-          fi
-          echo "VERSION=$version" >> $GITHUB_ENV
-      - name: Validate SHAs
-        run: |
-          IFS=',' read -ra commit_shas <<< "${{ github.event.inputs.commit_shas }}"
-          for sha in ${commit_shas[@]} ; do
-            if [[ ! $(git rev-parse --quiet --verify ${sha}^{commit}) ]] ; then
-              echo "Commit not found: ${sha}."
-              exit 2
-            fi
-          done
-      - name: Apply commits to hotfix branch
-        run: |
-          git config user.name "CovalentOpsBot"
-          git config user.email "covalentopsbot@users.noreply.github.com"
-          git checkout -b "hotfix-$VERSION"
-          IFS=',' read -ra commit_shas <<< "${{ github.event.inputs.commit_shas }}"
-          git cherry-pick -X ours ${commit_shas[@]}
-          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
-          git push -u origin "hotfix-$VERSION"
-      - name: Increment version
-        run: echo ${VERSION:1} > ./VERSION
-      - name: Commit
-        uses: EndBug/add-and-commit@v9
-        with:
-          author_name: CovalentOpsBot
-          author_email: covalentopsbot@users.noreply.github.com
-          message: "The new version will be ${{ env.VERSION }}"
-      - name: Squash commits
-        run: |
-          git reset --soft "v${{ github.event.inputs.stable_version }}"
-      - name: Commit
-        uses: EndBug/add-and-commit@v9
-        with:
-          author_name: CovalentOpsBot
-          author_email: covalentopsbot@users.noreply.github.com
-          message: "Applying hotfix ${{ env.VERSION }}"
-          push: "--force"
+  release:
+    name: Create Release
+    needs: hotfix
+    if: needs.hotfix.outputs.version
+    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
+    with:
+      prerelease: true
+      prerelease_version: needs.hotfix.outputs.version
+    secrets: inherit # pragma: allowlist secret
