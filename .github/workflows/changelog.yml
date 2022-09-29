@@ -22,7 +22,6 @@ name: changelog
 
 on:
   workflow_call:
-  push:
 
 jobs:
   changelog:
