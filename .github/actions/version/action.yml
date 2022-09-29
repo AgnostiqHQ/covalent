@@ -72,6 +72,8 @@ runs:
         IFS='[]' read -ra changelog_version <<< $(sed "${latest_release}q;d" ${{ inputs.changelog-path }})
         if [[ "${changelog_version[1]}" != $HEAD_VERSION ]] ; then
           echo "The most recent CHANGELOG release does not match the VERSION."
+          echo ${changelog_version[1]}
+          echo $HEAD_VERSION
           exit 3
         fi
         IFS='@-+,' read -ra LINES <<< "$(git diff ${{ inputs.base_ref }} -- ${{ inputs.changelog-path }} | sed '5q;d')"
