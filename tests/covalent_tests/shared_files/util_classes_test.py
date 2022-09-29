@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import asyncio
+import queue
 from unittest import mock
 
 import pytest
@@ -33,8 +33,7 @@ def test_value():
 
 @pytest.fixture
 def safe_variable():
-    event_loop = mock.MagicMock()
-    return SafeVariable(event_loop=event_loop)
+    return SafeVariable()
 
 
 def test_legacy_status():
@@ -50,34 +49,15 @@ def test_legacy_status():
 def test_safe_variable_init(mocker: mock):
     """Testing SafeVariable's initialization"""
 
-    event_loop = mocker.MagicMock()
-    safe_variable = SafeVariable(event_loop=event_loop)
-
+    safe_variable = SafeVariable()
     assert safe_variable.maxsize == 1
-    assert safe_variable.event_loop == event_loop
-
-
-def test_safe_variable_put_nowait_safe(test_value: int, safe_variable: SafeVariable):
-    """Testing SafeVariable's put_nowait_safe method"""
-
-    safe_variable.put_nowait_safe(test_value)
-    safe_variable.event_loop.call_soon_threadsafe.assert_called_with(
-        safe_variable.put_nowait, test_value
-    )
-
-
-def test_safe_variable_get_nowait_safe(safe_variable: SafeVariable):
-    """Testing SafeVariable's get_nowait_safe method"""
-
-    safe_variable.get_nowait_safe()
-    safe_variable.event_loop.call_soon_threadsafe.assert_called_with(safe_variable.get_nowait, ())
 
 
 def test_safe_variable_save(mocker: mock, test_value: int, safe_variable: SafeVariable):
     """Testing SafeVariable's save method"""
 
     put_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.put_nowait_safe"
+        "covalent._shared_files.util_classes.SafeVariable.put_nowait"
     )
 
     safe_variable.save(test_value)
@@ -88,15 +68,15 @@ def test_safe_variable_save_exception(mocker: mock, test_value: int, safe_variab
     """Testing SafeVariable's save method when queue is full"""
 
     put_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.put_nowait_safe"
+        "covalent._shared_files.util_classes.SafeVariable.put_nowait"
     )
-    put_nowait_safe_mock.side_effect = asyncio.QueueFull
+    put_nowait_safe_mock.side_effect = queue.Full
 
     get_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.get_nowait_safe"
+        "covalent._shared_files.util_classes.SafeVariable.get_nowait"
     )
 
-    with pytest.raises(asyncio.QueueFull):
+    with pytest.raises(queue.Full):
         safe_variable.save(test_value + 1)
 
     get_nowait_safe_mock.assert_called_once()
@@ -107,12 +87,12 @@ def test_safe_variable_retrieve(mocker: mock, test_value: int, safe_variable: Sa
     """Testing SafeVariable's retrieve method"""
 
     get_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.get_nowait_safe"
+        "covalent._shared_files.util_classes.SafeVariable.get_nowait"
     )
     get_nowait_safe_mock.return_value = test_value
 
     put_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.put_nowait_safe"
+        "covalent._shared_files.util_classes.SafeVariable.put_nowait"
     )
 
     value = safe_variable.retrieve()
@@ -125,12 +105,12 @@ def test_safe_variable_retrieve_exception(mocker: mock, safe_variable: SafeVaria
     """Testing SafeVariable's retrieve method when queue is empty"""
 
     get_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.get_nowait_safe"
+        "covalent._shared_files.util_classes.SafeVariable.get_nowait"
     )
-    get_nowait_safe_mock.side_effect = asyncio.QueueEmpty
+    get_nowait_safe_mock.side_effect = queue.Empty
 
     put_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.put_nowait_safe"
+        "covalent._shared_files.util_classes.SafeVariable.put_nowait"
     )
 
     value = safe_variable.retrieve()
@@ -140,21 +120,16 @@ def test_safe_variable_retrieve_exception(mocker: mock, safe_variable: SafeVaria
     put_nowait_safe_mock.call_count == 0
 
 
-@pytest.mark.asyncio
-async def test_safe_variable_retrieve_async(
-    mocker: mock, test_value: int, safe_variable: SafeVariable
-):
+def test_safe_variable_retrieve_wait(mocker: mock, test_value: int, safe_variable: SafeVariable):
     """Testing SafeVariable's retrieve_async method"""
 
     get_mock = mocker.patch(
         "covalent._shared_files.util_classes.SafeVariable.get", return_value=test_value
     )
 
-    put_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.put", side_effect=mocker.AsyncMock
-    )
+    put_mock = mocker.patch("covalent._shared_files.util_classes.SafeVariable.put")
 
-    value = await safe_variable.retrieve_async()
+    value = safe_variable.retrieve_wait()
     get_mock.assert_called_once()
     put_mock.assert_called_with(test_value)
     assert value == test_value

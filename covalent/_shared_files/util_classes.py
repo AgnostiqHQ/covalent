@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-import asyncio
+import queue
 from typing import Any, NamedTuple
 
 from . import logger
@@ -28,35 +28,28 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-class SafeVariable(asyncio.Queue):
-    def __init__(self, event_loop=None) -> None:
-        self.event_loop = event_loop or asyncio.get_event_loop()
+class SafeVariable(queue.Queue):
+    def __init__(self) -> None:
         super().__init__(maxsize=1)
-
-    def put_nowait_safe(self, value: Any) -> None:
-        self.event_loop.call_soon_threadsafe(self.put_nowait, value)
-
-    def get_nowait_safe(self) -> Any:
-        return self.event_loop.call_soon_threadsafe(self.get_nowait, ())
 
     def save(self, value: Any) -> None:
         try:
-            self.put_nowait_safe(value)
-        except asyncio.QueueFull:
-            self.get_nowait_safe()
-            self.put_nowait_safe(value)
+            self.put_nowait(value)
+        except queue.Full:
+            self.get_nowait()
+            self.put_nowait(value)
 
     def retrieve(self) -> Any:
         try:
-            value = self.get_nowait_safe()
-            self.put_nowait_safe(value)
+            value = self.get_nowait()
+            self.put_nowait(value)
             return value
-        except asyncio.QueueEmpty:
+        except queue.Empty:
             return None
 
-    async def retrieve_async(self) -> Any:
-        value = await self.get()
-        await self.put(value)
+    def retrieve_wait(self) -> Any:
+        value = self.get()
+        self.put(value)
         return value
 
 
