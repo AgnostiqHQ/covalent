@@ -7,15 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Operations
-
-- Update nightly trigger to `hourly` for testing
-- Update `changelog` action token to `COVALENT_OPS_BOT_TOKEN`
-
-### Operations
-
-- Remove `benchmark` workflow from `nightly` schedule
-
 ### Tests
 
 - Fixed `asserts` in stress tests
@@ -70,6 +61,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Only the recommended platform is tested on pull requests
 - Update check blocks to assert the `workflow_call` event type is replaced with `schedule`
 - Create a hotfix when pushing to a release branch
+- Update nightly trigger to `hourly` for testing
+- Update `changelog` action token to `COVALENT_OPS_BOT_TOKEN`
+- Remove `benchmark` workflow from `nightly` schedule
 
 ## [0.198.0] - 2022-09-14
 
