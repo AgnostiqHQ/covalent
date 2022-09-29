@@ -1,0 +1,19 @@
+name: "Describe"
+description: "This action returns the latest tag on a branch."
+inputs:
+  token:
+    description: "GitHub token to authenticate API requests."
+    required: true
+  branch:
+    description: "The branch to search for the tag."
+    required: true
+  stable:
+    description: "If true, will only return a tag that matches a stable release. Default is false."
+    required: false
+    default: false
+outputs:
+  tag:
+    description: "The latest tag on the branch."
+runs:
+  using: "node16"
+  main: "dist/index.js"
