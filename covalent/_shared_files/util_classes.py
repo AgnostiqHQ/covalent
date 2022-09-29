@@ -19,7 +19,6 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-# import queue
 import asyncio
 from typing import Any, NamedTuple
 
@@ -65,8 +64,6 @@ class SafeVariable(asyncio.Queue):
 
 class Status:
     def __init__(self, STATUS) -> None:
-        print("This class is deprecated and will be removed in a future version")
-        print("Please use `covalent._shared_files.statuses.Status` instead")
         self.STATUS = STATUS
 
     def __str__(self) -> str:
