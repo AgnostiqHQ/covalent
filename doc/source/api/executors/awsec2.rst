@@ -186,7 +186,7 @@ The following shows an example of how a user might modify their `covalent config
 4. Required Cloud Resources
 ===========================================
 
-In order to run your workflows with covalent there are a few notable resources that need to be provisioned first.
+This plugin requires users have an AWS account. New users can follow instructions `here <https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/>`_ to create a new account. In order to run workflows with Covalent and the AWS EC2 plugin, there are a few notable resources that need to be provisioned first. Whenever interacting with AWS resources, users strongly recommended to follow `best practices <../../credentials>` for managing cloud credentials.
 
 The required resources include an EC2 Key Pair, and optionally a VPC & Subnet that can be used instead of the EC2 executor automatically creating it.
 
@@ -215,6 +215,12 @@ The required resources include an EC2 Key Pair, and optionally a VPC & Subnet th
 
 #. To create an AWS EC2 Key pair refer to the following `AWS documentation <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html>`_.
 #. To create a VPC & Subnet refer to the following `AWS documentation <https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html>`_.
+
+When tasks are run using this executor, the following infrastructure is ephemerally deployed.
+
+.. image:: AWS_EC2_Infra.png
+
+This includes the minimal infrastructure needed to deploy an EC2 instance in a public subnet connected to an internet gateway. Users can validate that resources are correctly provisioned by monitoring the EC2 dashboard in the AWS Management Console. The overhead added by using this executor is on the order of several minutes, depending on the complexity of any additional user-specified runtime dependencies. Note that this can be deployed in any AWS region in which the user is otherwise able to deploy EC2 instances. These resources are torn down upon task completion and not shared across tasks in a workflow. Deployment of these resources will incur charges for EC2 alone; refer to `AWS EC2 pricing <https://aws.amazon.com/ec2/pricing/>`_ for details. Note that some users may encounter quota limits when using EC2.
 
 .. ===========================================
 .. 5. Source
