@@ -35,7 +35,7 @@ from covalent._results_manager.results_manager import (
     result_from,
     sync,
 )
-from covalent._shared_files.config import CMType, get_config
+from covalent._shared_files.config import get_config
 
 DISPATCH_ID = "91c3ee18-5f2d-44ee-ac2a-39b79cf56646"
 
@@ -97,11 +97,7 @@ def test_get_result_from_dispatcher(mocker):
     mock_response.append(Mock(status=200, msg=HTTPMessage()))
     getconn_mock.return_value.getresponse.side_effect = mock_response
     dispatch_id = "9d1b308b-4763-4990-ae7f-6a6e36d35893"
-    dispatcher = (
-        get_config(CMType.CLIENT, "server.address")
-        + ":"
-        + str(get_config(CMType.CLIENT, "server.port"))
-    )
+    dispatcher = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
     _get_result_from_dispatcher(
         dispatch_id, wait=wait.LONG, dispatcher=dispatcher, status_only=False
     )
@@ -128,17 +124,15 @@ def test_sync(lattice_record, mocker, tmp_path):
     db = MockDataStore(lattice_record, tmp_path)
 
     dispatch_id = "9d1b308b-4763-4990-ae7f-6a6e36d35893"
-    sync(db, dispatch_id)
+    sync(dispatch_id)
     mock_get_result_from_dispatcher.assert_called_once_with(
         dispatch_id, wait=True, status_only=True
     )
     mock_get_result_from_dispatcher.reset_mock()
     dispatch_ids = ["f34671d1-48f2-41ce-89d9-9a8cb5c60e5d", "02dfd929-d96b-4ad1-8411-a818ce465169"]
-    sync(db, dispatch_ids)
+    sync(dispatch_ids)
     for dispatch_id in dispatch_ids:
         mock_get_result_from_dispatcher.assert_any_call(dispatch_id, wait=True, status_only=True)
     mock_get_result_from_dispatcher.reset_mock()
-    sync(db)
-    mock_get_result_from_dispatcher.assert_called_once_with(
-        DISPATCH_ID, wait=True, status_only=True
-    )
+    with pytest.raises(Exception):
+        sync(1)
