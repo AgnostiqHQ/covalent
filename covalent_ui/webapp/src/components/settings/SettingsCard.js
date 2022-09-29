@@ -38,7 +38,7 @@ import {
   Select,
   MenuItem,
 } from '@mui/material'
-import { Clear as ClearIcon, ConstructionOutlined, Search as SearchIcon } from '@mui/icons-material'
+import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 import Typography from '@mui/material/Typography'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
