@@ -53,9 +53,9 @@ jobs:
         id: query-tags
         uses: octokit/request-action@v2.x
         with:
-          route: GET /repos/{owner}/{repo}/tags
-          owner: AgnostiqHQ
-          repo: covalent
+          route: GET /repos/AgnostiqHQ/covalent/tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
       - name: Parse latest tag
         id: get-latest-tag
