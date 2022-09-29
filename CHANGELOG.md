@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `repository` arg to checkout in `version`
 - fix `octokit` request action route, update env token
 - add `fetch-depth: 0` to fetch entire history
+- fix regex for matching version
 
 ## [0.199.0] - 2022-09-29
 

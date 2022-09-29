@@ -3,11 +3,11 @@ description: "Validate the VERSION file and ensure the CHANGELOG edits are valid
 inputs:
   changelog-path:
     description: "Path to the CHANGELOG file"
-    required: true
+    required: false
     default: "./CHANGELOG.md"
   version-path:
     description: "Path to the VERSION file"
-    required: true
+    required: false
     default: "./VERSION"
   base_ref:
     description: "Git base commit ref"
@@ -19,18 +19,11 @@ inputs:
     default: ${{ github.event.pull_request.head.ref }}
   unreleased_header_line:
     description: "Line number of which [UNRELEASED] appears"
-    required: true
+    required: false
     default: 8
 runs:
   using: "composite"
   steps:
-    - name: Check out head
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        ref: ${{ inputs.head_ref }}
-        repository: ${{ github.event.pull_request.head.repo.full_name }}
-
     - name: Check git history
       shell: bash
       run: |
@@ -68,7 +61,7 @@ runs:
           echo "Removing the [UNRELEASED] header is prohibited in pull requests."
           exit 2
         fi
-        latest_release=$(sed -n "/\[[0-9]\+\.[0-9]\+\.[0-9]\+\]/=" ${{ inputs.changelog-path }} | head -n 1)
+        latest_release=$(sed -n "/\[\d+\.\d+\.\d+(-\d+)*?(-rc\.\d+)*?\]/=" ${{ inputs.changelog-path }} | head -n 1)
         IFS='[]' read -ra changelog_version <<< $(sed "${latest_release}q;d" ${{ inputs.changelog-path }})
         if [[ "${changelog_version[1]}" != $HEAD_VERSION ]] ; then
           echo "The most recent CHANGELOG release does not match the VERSION."
