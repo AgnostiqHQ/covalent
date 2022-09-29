@@ -42,16 +42,13 @@ from covalent._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
+from covalent._shared_files.exceptions import MissingLatticeRecordError
 
 from .datastore import workflow_db
 from .models import Electron, ElectronDependency, Lattice
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-class MissingLatticeRecordError(Exception):
-    pass
 
 
 class MissingElectronRecordError(Exception):

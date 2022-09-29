@@ -36,9 +36,9 @@ import psutil
 from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
-from covalent._data_store.datastore import DataStore
 from covalent._shared_files.config import ConfigManager, get_config, set_config
 
+from .._db.datastore import DataStore
 from .migrate import migrate_pickled_result_object
 
 cm = ConfigManager()
