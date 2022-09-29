@@ -34,10 +34,10 @@ class SafeVariable(asyncio.Queue):
         super().__init__(maxsize=1)
 
     def put_nowait_safe(self, value: Any) -> None:
-        self.event_loop.call_soon_threadsafe(super().put_nowait, value)
+        self.event_loop.call_soon_threadsafe(self.put_nowait, value)
 
     def get_nowait_safe(self) -> Any:
-        return self.event_loop.call_soon_threadsafe(super().get_nowait, ())
+        return self.event_loop.call_soon_threadsafe(self.get_nowait, ())
 
     def save(self, value: Any) -> None:
         try:
