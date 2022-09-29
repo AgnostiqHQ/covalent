@@ -293,12 +293,30 @@ const SettingsCard = () => {
     setValueChange(true)
   }
 
+  const handleKeypressSub = (event) => {
+    setHandle(event.key)
+    setValueChange(true)
+  }
+
   const onInputExecutorChange = (e, subkey, key) => {
     setResultOutput((currValue) => ({
       ...currValue,
       [key]: {
         ...currValue[key],
         [subkey]: e.target.value,
+      },
+    }))
+  }
+
+  const onInputExecutorChangeSub = (e, key1, subkey, key) => {
+    setResultOutput((currValue) => ({
+      ...currValue,
+      [key]: {
+        ...currValue[key],
+        [key1]: {
+          ...key1.subkey,
+          [subkey]: e.target.value,
+        },
       },
     }))
   }
@@ -703,40 +721,85 @@ const SettingsCard = () => {
                                       </FormControl>
                                     ) : (
                                       <>
-                                        <InputLabel
-                                          variant="standard"
-                                          htmlFor="uncontrolled-native"
-                                          sx={{
-                                            fontSize: '14px',
-                                            mb: 1,
-                                            color: 'text.primary',
-                                          }}
-                                        >
-                                          {getLabelName(key1)}
-                                        </InputLabel>
-                                        <Input
-                                          sx={{
-                                            px: 2,
-                                            py: 0.5,
-                                            width: '85%',
-                                            height: '32px',
-                                            border: '1px solid #303067',
-                                            borderRadius: '60px',
-                                            fontSize: '14px',
-                                            color: (theme) =>
-                                              theme.palette.text.secondary,
-                                          }}
-                                          disabled={isDisabled}
-                                          onKeyDown={handleKeypress}
-                                          autoComplete="off"
-                                          name={key1}
-                                          onChange={(e) =>
-                                            onInputExecutorChange(e, key1, key)
-                                          }
-                                          value={item}
-                                          disableUnderline
-                                          placeholder={key1}
-                                        />
+                                        {_.isObject(item) ?
+                                          _.map(item, function (inputSubValue, inputSubKey) {
+                                            return (
+                                              <>
+                                                <InputLabel
+                                                  variant="standard"
+                                                  htmlFor="uncontrolled-native"
+                                                  sx={{
+                                                    fontSize: '14px',
+                                                    mb: 1,
+                                                    color: 'text.primary',
+                                                  }}
+                                                >
+                                                  {getLabelName(inputSubKey)}
+                                                </InputLabel>
+                                                <Input
+                                                  sx={{
+                                                    px: 2,
+                                                    py: 0.5,
+                                                    width: '85%',
+                                                    height: '32px',
+                                                    border: '1px solid #303067',
+                                                    borderRadius: '60px',
+                                                    fontSize: '14px',
+                                                    color: (theme) =>
+                                                      theme.palette.text.secondary,
+                                                  }}
+                                                  disabled={isDisabled}
+                                                  onKeyDown={handleKeypressSub}
+                                                  autoComplete="off"
+                                                  name={inputSubKey}
+                                                  onChange={(e) =>
+                                                    onInputExecutorChangeSub(e, key1, inputSubKey, key)
+                                                  }
+                                                  value={inputSubValue}
+                                                  disableUnderline
+                                                  placeholder={inputSubKey}
+                                                />
+                                              </>
+                                            )
+                                          })
+                                          :
+                                          <>
+                                            <InputLabel
+                                              variant="standard"
+                                              htmlFor="uncontrolled-native"
+                                              sx={{
+                                                fontSize: '14px',
+                                                mb: 1,
+                                                color: 'text.primary',
+                                              }}
+                                            >
+                                              {getLabelName(key1)}
+                                            </InputLabel>
+                                            <Input
+                                              sx={{
+                                                px: 2,
+                                                py: 0.5,
+                                                width: '85%',
+                                                height: '32px',
+                                                border: '1px solid #303067',
+                                                borderRadius: '60px',
+                                                fontSize: '14px',
+                                                color: (theme) =>
+                                                  theme.palette.text.secondary,
+                                              }}
+                                              disabled={isDisabled}
+                                              onKeyDown={handleKeypress}
+                                              autoComplete="off"
+                                              name={key1}
+                                              onChange={(e) =>
+                                                onInputExecutorChange(e, key1, key)
+                                              }
+                                              value={item}
+                                              disableUnderline
+                                              placeholder={key1}
+                                            />
+                                          </>
+                                        }
                                       </>
                                     )}
                                   </Box>
