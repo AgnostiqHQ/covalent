@@ -211,6 +211,10 @@ The required resources include an EC2 Key Pair, and optionally a VPC & Subnet th
      - No
      - :code:`subnet`
      - A Subnet ID can be provided corresponding to the :code:`subnet` config value. Otherwise a public Subnet will be auto-created for each electron.
+   * - Security Group
+     - No
+     - (Auto Created)
+     - A security group will be auto created and attached to the VPC in order to give the local machine (dispatching workflow) SSH access to the EC2 instance.
    * - EC2 Instance
      - No
      - (Auto Created)
