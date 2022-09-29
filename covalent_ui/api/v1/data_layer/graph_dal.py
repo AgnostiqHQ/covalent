@@ -22,6 +22,7 @@
 from uuid import UUID
 
 from fastapi import HTTPException
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.database.schema.electron import Electron
@@ -43,20 +44,45 @@ class Graph:
         Return:
             graph data with list of nodes
         """
-        return (
-            self.db_con.query(
-                Electron.id,
-                Electron.name,
-                Electron.transport_graph_node_id.label("node_id"),
-                Electron.started_at,
-                Electron.completed_at,
-                Electron.status,
-                Electron.type,
-                Electron.executor,
-            )
-            .filter(Electron.parent_lattice_id == parent_lattice_id)
-            .all()
+        # sub_query = self.db_con.query(Lattice.id).where(Lattice.electron_id == Electron.id).subquery()
+        # return (
+        #     self.db_con.query(
+        #         Electron.id,
+        #         Electron.name,
+        #         Electron.transport_graph_node_id.label("node_id"),
+        #         Electron.started_at,
+        #         Electron.completed_at,
+        #         Electron.status,
+        #         Electron.type,
+        #         Electron.executor,
+        #         self.db_con.query(Lattice.id).where(Lattice.electron_id == Electron.id)
+        #     )
+        #     .filter(Electron.parent_lattice_id == parent_lattice_id)
+        #     .all()
+        # )
+        sql = text(
+            """SELECT
+            electrons.id as id,
+            electrons.name as name,
+            electrons.transport_graph_node_id as node_id,
+            electrons.started_at,
+            electrons.completed_at,
+            electrons.status,
+            electrons.type,
+            electrons.executor as executor_label,
+            (case when electrons.type == 'sublattice'
+            then
+            (select lattices.dispatch_id from lattices
+            where lattices.electron_id == electrons.id)
+            else Null
+            END
+            ) as sublattice_dispatch_id
+            from electrons join lattices on electrons.parent_lattice_id == lattices.id
+            where lattices.id == :a
+        """
         )
+        result = self.db_con.execute(sql, {"a": parent_lattice_id}).fetchall()
+        return result
 
     def get_links(self, parent_lattice_id: int):
         """
