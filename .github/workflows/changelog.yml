@@ -22,6 +22,7 @@ name: changelog
 
 on:
   workflow_call:
+  push:
 
 jobs:
   changelog:
@@ -58,15 +59,16 @@ jobs:
           changelog-path: CHANGELOG.md
           version-path: VERSION
           token: ${{ secrets.GITHUB_TOKEN }}
-          basehead: ${{ steps.get-latest-tag.outputs.tag }}...${{ github.sha }}
+          basehead: v0.198.0...e3bfd88c87466847a0831030981b8dcf946ff912
       - name: Commit
         if: ${{ steps.changelog.outputs.message != 'noop' }}
-        uses: EndBug/add-and-commit@v9
-        with:
-          author_name: CovalentOpsBot
-          author_email: covalentopsbot@users.noreply.github.com
-          message: ${{ steps.changelog.outputs.message }}
-          push: origin develop --force
+        run: echo "Ready to commit!"
+  #        uses: EndBug/add-and-commit@v9
+  #        with:
+  #          author_name: CovalentOpsBot
+  #          author_email: covalentopsbot@users.noreply.github.com
+  #          message: ${{ steps.changelog.outputs.message }}
+  #          push: origin develop --force
 
   action-build:
     needs: changelog
