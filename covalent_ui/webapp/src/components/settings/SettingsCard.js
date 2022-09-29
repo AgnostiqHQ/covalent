@@ -713,39 +713,29 @@ const SettingsCard = () => {
                                         >
                                           {getLabelName(key1)}
                                         </InputLabel>
-                                        <Tooltip
-                                          title={item}
-                                          placement="top"
-                                          data-testid="input "
-                                        >
-                                          <Input
-                                            sx={{
-                                              px: 2,
-                                              py: 0.5,
-                                              width: '360px',
-                                              height: '32px',
-                                              border: '1px solid #303067',
-                                              borderRadius: '60px',
-                                              fontSize: '14px',
-                                              color: (theme) =>
-                                                theme.palette.text.secondary,
-                                            }}
-                                            disabled={isDisabled}
-                                            onKeyDown={handleKeypress}
-                                            autoComplete="off"
-                                            name={key1}
-                                            onChange={(e) =>
-                                              onInputExecutorChange(
-                                                e,
-                                                key1,
-                                                key
-                                              )
-                                            }
-                                            value={item}
-                                            disableUnderline
-                                            placeholder={key1}
-                                          />
-                                        </Tooltip>
+                                        <Input
+                                          sx={{
+                                            px: 2,
+                                            py: 0.5,
+                                            width: '85%',
+                                            height: '32px',
+                                            border: '1px solid #303067',
+                                            borderRadius: '60px',
+                                            fontSize: '14px',
+                                            color: (theme) =>
+                                              theme.palette.text.secondary,
+                                          }}
+                                          disabled={isDisabled}
+                                          onKeyDown={handleKeypress}
+                                          autoComplete="off"
+                                          name={key1}
+                                          onChange={(e) =>
+                                            onInputExecutorChange(e, key1, key)
+                                          }
+                                          value={item}
+                                          disableUnderline
+                                          placeholder={key1}
+                                        />
                                       </>
                                     )}
                                   </Box>
@@ -776,15 +766,14 @@ const SettingsCard = () => {
                                   <Select
                                     labelId="demo-simple-select-label"
                                     id="demo-simple-select"
+                                    displayEmpty
                                     value={value}
-                                    name={key}
-                                    label={key}
                                     onChange={(e) => handleSelectChange(e, key)}
                                     sx={{
-                                      mt: 1,
                                       fontSize: '14px',
                                       width: '140px',
                                       height: '32px',
+                                      mt: 1,
                                     }}
                                     className="dropdownSelect"
                                   >
@@ -880,35 +869,27 @@ const SettingsCard = () => {
                                       >
                                         {getLabelName(key)}
                                       </InputLabel>
-                                      <Tooltip
-                                        title={value}
-                                        placement="top"
-                                        data-testid="input "
-                                      >
-                                        <Input
-                                          sx={{
-                                            px: 2,
-                                            py: 0.5,
-                                            width: '360px',
-                                            height: '32px',
-                                            border: '1px solid #303067',
-                                            borderRadius: '60px',
-                                            fontSize: '14px',
-                                            color: (theme) =>
-                                              theme.palette.text.secondary,
-                                          }}
-                                          disabled={isDisabled}
-                                          autoComplete="off"
-                                          onKeyDown={handleKeypress}
-                                          name={key}
-                                          onChange={(e) =>
-                                            onInputChange(e, key)
-                                          }
-                                          value={value}
-                                          disableUnderline
-                                          placeholder={key}
-                                        />
-                                      </Tooltip>
+                                      <Input
+                                        sx={{
+                                          px: 2,
+                                          py: 0.5,
+                                          width: '85%',
+                                          height: '32px',
+                                          border: '1px solid #303067',
+                                          borderRadius: '60px',
+                                          fontSize: '14px',
+                                          color: (theme) =>
+                                            theme.palette.text.secondary,
+                                        }}
+                                        disabled={isDisabled}
+                                        autoComplete="off"
+                                        onKeyDown={handleKeypress}
+                                        name={key}
+                                        onChange={(e) => onInputChange(e, key)}
+                                        value={value}
+                                        disableUnderline
+                                        placeholder={key}
+                                      />
                                     </>
                                   )}
                                 </>
