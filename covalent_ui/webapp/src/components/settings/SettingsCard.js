@@ -37,6 +37,7 @@ import {
   IconButton,
   Select,
   MenuItem,
+  Tooltip,
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 import Typography from '@mui/material/Typography'
@@ -95,7 +96,7 @@ const SettingsCard = () => {
         isChanged: valueChange,
         data: resultOutput,
         nodeName: resultKey,
-        mainKey: accName
+        mainKey: accName,
       }
       dispatch(toggleLatticeDrawer(settingObj))
     } else {
@@ -376,7 +377,12 @@ const SettingsCard = () => {
   }
 
   const StyledList = styled(List)({
+    '& .MuiListItemButton-root': {
+      backgroundColor: (theme) => theme.palette.background.default,
+      borderRadius: '8px',
+    },
     // hover states
+
     '& .MuiListItemButton-root:hover': {
       backgroundColor: '#1C1C46',
       borderRadius: '8px',
@@ -487,11 +493,11 @@ const SettingsCard = () => {
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => { }
+                              : () => {}
                           }
                           sx={{
                             right: isChildHasList(menuValue) ? '0px' : '0px',
-                            padding: '0px'
+                            padding: '0px',
                           }}
                         >
                           {isChildHasList(menuValue) && (
@@ -535,9 +541,10 @@ const SettingsCard = () => {
                         return (
                           <StyledList sx={{ pb: 0, pt: 0 }} key={key}>
                             <ListItem disablePadding>
-                              <ListItemButton sx={{ pl: 7, pt: 0.3, pb: 0.3 }} onClick={() =>
-                                handleSubmenuClick(subMenu, key)
-                              }>
+                              <ListItemButton
+                                sx={{ pl: 7, pt: 0.3, pb: 0.3 }}
+                                onClick={() => handleSubmenuClick(subMenu, key)}
+                              >
                                 <ListItemText
                                   inset
                                   primary={getSubmenuName(key)}
@@ -575,11 +582,11 @@ const SettingsCard = () => {
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => { }
+                              : () => {}
                           }
                           sx={{
                             right: isChildHasList(menuValue) ? '0px' : '0px',
-                            padding: '0px'
+                            padding: '0px',
                           }}
                         >
                           {isChildHasList(menuValue) && (
@@ -706,29 +713,39 @@ const SettingsCard = () => {
                                         >
                                           {getLabelName(key1)}
                                         </InputLabel>
-                                        <Input
-                                          sx={{
-                                            px: 2,
-                                            py: 0.5,
-                                            width: '360px',
-                                            height: '32px',
-                                            border: '1px solid #303067',
-                                            borderRadius: '60px',
-                                            fontSize: '14px',
-                                            color: (theme) =>
-                                              theme.palette.text.secondary,
-                                          }}
-                                          disabled={isDisabled}
-                                          onKeyDown={handleKeypress}
-                                          autoComplete="off"
-                                          name={key1}
-                                          onChange={(e) =>
-                                            onInputExecutorChange(e, key1, key)
-                                          }
-                                          value={item}
-                                          disableUnderline
-                                          placeholder={key1}
-                                        />
+                                        <Tooltip
+                                          title={item}
+                                          placement="top"
+                                          data-testid="input "
+                                        >
+                                          <Input
+                                            sx={{
+                                              px: 2,
+                                              py: 0.5,
+                                              width: '360px',
+                                              height: '32px',
+                                              border: '1px solid #303067',
+                                              borderRadius: '60px',
+                                              fontSize: '14px',
+                                              color: (theme) =>
+                                                theme.palette.text.secondary,
+                                            }}
+                                            disabled={isDisabled}
+                                            onKeyDown={handleKeypress}
+                                            autoComplete="off"
+                                            name={key1}
+                                            onChange={(e) =>
+                                              onInputExecutorChange(
+                                                e,
+                                                key1,
+                                                key
+                                              )
+                                            }
+                                            value={item}
+                                            disableUnderline
+                                            placeholder={key1}
+                                          />
+                                        </Tooltip>
                                       </>
                                     )}
                                   </Box>
@@ -863,27 +880,35 @@ const SettingsCard = () => {
                                       >
                                         {getLabelName(key)}
                                       </InputLabel>
-                                      <Input
-                                        sx={{
-                                          px: 2,
-                                          py: 0.5,
-                                          width: '360px',
-                                          height: '32px',
-                                          border: '1px solid #303067',
-                                          borderRadius: '60px',
-                                          fontSize: '14px',
-                                          color: (theme) =>
-                                            theme.palette.text.secondary,
-                                        }}
-                                        disabled={isDisabled}
-                                        autoComplete="off"
-                                        onKeyDown={handleKeypress}
-                                        name={key}
-                                        onChange={(e) => onInputChange(e, key)}
-                                        value={value}
-                                        disableUnderline
-                                        placeholder={key}
-                                      />
+                                      <Tooltip
+                                        title={value}
+                                        placement="top"
+                                        data-testid="input "
+                                      >
+                                        <Input
+                                          sx={{
+                                            px: 2,
+                                            py: 0.5,
+                                            width: '360px',
+                                            height: '32px',
+                                            border: '1px solid #303067',
+                                            borderRadius: '60px',
+                                            fontSize: '14px',
+                                            color: (theme) =>
+                                              theme.palette.text.secondary,
+                                          }}
+                                          disabled={isDisabled}
+                                          autoComplete="off"
+                                          onKeyDown={handleKeypress}
+                                          name={key}
+                                          onChange={(e) =>
+                                            onInputChange(e, key)
+                                          }
+                                          value={value}
+                                          disableUnderline
+                                          placeholder={key}
+                                        />
+                                      </Tooltip>
                                     </>
                                   )}
                                 </>
@@ -946,9 +971,8 @@ const SettingsCard = () => {
           <Skeleton animation="wave" />
           <Skeleton animation={false} />
         </Box>
-      )
-      }
-    </Container >
+      )}
+    </Container>
   )
 }
 
