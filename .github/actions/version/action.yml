@@ -19,11 +19,18 @@ inputs:
     default: ${{ github.event.pull_request.head.ref }}
   unreleased_header_line:
     description: "Line number of which [UNRELEASED] appears"
-    required: false
+    required: true
     default: 8
 runs:
   using: "composite"
   steps:
+    - name: Check out head
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ inputs.head_ref }}
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+
     - name: Check git history
       shell: bash
       run: |
