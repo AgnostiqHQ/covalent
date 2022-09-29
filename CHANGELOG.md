@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed syntax issues in `nightly.yml`
 - Add `repository` arg to checkout in `version`
 - fix `octokit` request action route, update env token
+- updated hotfix logic to run on a merge to a release branch
 
 ## [0.199.0] - 2022-09-29
 
@@ -87,6 +88,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Only the recommended platform is tested on pull requests
 - Update check blocks to assert the `workflow_call` event type is replaced with `schedule`
 - Create a hotfix when pushing to a release branch
+- Update nightly trigger to `hourly` for testing
+- Update `changelog` action token to `COVALENT_OPS_BOT_TOKEN`
+- Remove `benchmark` workflow from `nightly` schedule
+- Removed payload dependency from changelog action so it can run on a schedule
+- Remove `benchmark` workflow from `nightly` schedule
 
 ## [0.198.0] - 2022-09-14
 
