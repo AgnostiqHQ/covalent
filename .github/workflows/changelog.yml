@@ -58,7 +58,7 @@ jobs:
           changelog-path: CHANGELOG.md
           version-path: VERSION
           token: ${{ secrets.GITHUB_TOKEN }}
-          basehead: v0.198.0...e3bfd88c87466847a0831030981b8dcf946ff912
+          basehead: ${{ steps.get-latest-tag.outputs.tag }}...e3bfd88c87466847a0831030981b8dcf946ff912
       - name: Commit
         if: ${{ steps.changelog.outputs.message != 'noop' }}
         run: echo "Ready to commit!"
