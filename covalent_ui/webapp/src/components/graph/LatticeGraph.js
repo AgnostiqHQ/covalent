@@ -90,7 +90,7 @@
    useEffect(() => {
      setHighlighted(false)
      // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [direction, showParams, algorithm, hideLabels])
+   }, [direction, showParams, algorithm, hideLabels,graph])
 
    // handle resizing
    const resizing = () => {
@@ -104,7 +104,7 @@
    useEffect(() => {
      resizing()
      // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [marginRight, marginLeft, fitView, elements])
+   }, [marginRight, marginLeft, fitView, elements,graph])
 
    // layouting
    useEffect(() => {

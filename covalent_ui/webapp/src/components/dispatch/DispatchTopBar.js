@@ -21,19 +21,26 @@
  */
 
 import React from 'react'
-import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { Box, Typography, Skeleton } from '@mui/material'
+import { useSelector, useDispatch } from 'react-redux'
+import { Box, Typography, Skeleton, SvgIcon, Tooltip } from '@mui/material'
 import { statusIcon, statusColor, statusLabel } from '../../utils/misc'
+import { resetSublatticesId } from '../../redux/latticeSlice'
+import { ReactComponent as BackButton } from '../../assets/back.svg'
 
 const DispatchTopBar = () => {
   const { dispatchId } = useParams()
+  const dispatch = useDispatch()
   const drawerLatticeDetails = useSelector(
     (state) => state.latticeResults.latticeResultsData[dispatchId].latticeDetails
   )
   const drawerLatticeDetailsFetching = useSelector(
     (state) => state.latticeResults.latticeDetailsResults.isFetching
   )
+  const sublatticesDispatchId = useSelector(
+    (state) => state.latticeResults.sublatticesId
+  )
+
   return (
     <>
       <div>
@@ -54,12 +61,13 @@ const DispatchTopBar = () => {
             backgroundColor: (theme) => theme.palette.background.default,
           }}
         >
-          {/* status */}
           <Box>
             <LatticeStatusCard
               dispatchId={drawerLatticeDetails.dispatch_id}
               latDetails={drawerLatticeDetails}
               isFetching={drawerLatticeDetailsFetching}
+              sublatticesDispatchId={sublatticesDispatchId}
+              dispatch={dispatch}
             />
           </Box>
         </Box>
@@ -70,9 +78,40 @@ const DispatchTopBar = () => {
 
 export default DispatchTopBar
 
-const LatticeStatusCard = ({ latDetails, isFetching }) => {
+const LatticeStatusCard = ({
+  latDetails,
+  isFetching,
+  sublatticesDispatchId,
+  dispatch,
+}) => {
   return (
-    <Box sx={{ my: 0, pt: '18px' }} data-testid="topbarcard">
+    <Box sx={{ my: 0, pt: 1 }} data-testid="topbarcard">
+      <Box sx={{ position: 'absolute', left: 490 }}>
+        {sublatticesDispatchId && (
+          <Tooltip title="Revert back to main lattice">
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <Typography sx={{ display: 'flex' }}>
+                Viewing: {sublatticesDispatchId?.latticeName}
+              </Typography>
+              <SvgIcon
+                onClick={() => dispatch(resetSublatticesId())}
+                sx={{
+                  cursor: 'pointer',
+                  width: '50px',
+                  fontSize: '30px',
+                }}
+              >
+                <BackButton />
+              </SvgIcon>
+            </Box>
+          </Tooltip>
+        )}
+      </Box>
       <Box
         sx={{
           display: 'flex',
@@ -108,7 +147,7 @@ const LatticeStatusCard = ({ latDetails, isFetching }) => {
               }}
             >
               {/* {statusIcon(latDetails.status)}
-               &nbsp; */}
+                &nbsp; */}
               {statusLabel(latDetails.status)}
             </Box>
           )}

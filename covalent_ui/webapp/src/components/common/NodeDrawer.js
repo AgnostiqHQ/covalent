@@ -23,6 +23,7 @@
 import _ from 'lodash'
 import React, { useEffect } from 'react'
 import { Close } from '@mui/icons-material'
+import { useStoreActions } from 'react-flow-renderer'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Box,
@@ -33,7 +34,6 @@ import {
   Typography,
   Skeleton,
 } from '@mui/material'
-import { useStoreActions } from 'react-flow-renderer'
 import { alpha } from '@mui/material/styles'
 
 import {
@@ -61,7 +61,7 @@ import { isDemo } from '../../utils/demo/setup'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node, dispatchId }) => {
+const NodeDrawer = ({ node,dispatchId }) => {
   const dispatch = useDispatch()
   const electronId = node !== undefined && node.id
   const electronDetail = useSelector(
@@ -99,7 +99,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
   useEffect(() => {
     if (!!node && !isDemo) {
       dispatch(electronDetails({ electronId, dispatchId }))
-      dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
+      dispatch(electronInput({ dispatchId , electronId, params: 'inputs' }))
       dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
       dispatch(
         electronExecutor({ dispatchId, electronId, params: 'executor' })
@@ -115,9 +115,11 @@ const NodeDrawer = ({ node, dispatchId }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node, callSocketApi])
+
   const setSelectedElements = useStoreActions(
     (actions) => actions.setSelectedElements
   )
+
   const handleClose = () => {
     setSelectedElements([])
   }

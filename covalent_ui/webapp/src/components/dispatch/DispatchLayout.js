@@ -47,10 +47,16 @@ export function DispatchLayout() {
 
   // check if socket message is received and call API
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
+  const sublatticesDispatchId = useSelector(
+    (state) => state.latticeResults.sublatticesId
+  )
   useEffect(() => {
-    if (!isDemo) dispatch(graphResults({ dispatchId }))
+    if (!isDemo) {
+      if (sublatticesDispatchId?.dispatchId) dispatch(graphResults({ dispatchId: sublatticesDispatchId?.dispatchId }))
+      else dispatch(graphResults({ dispatchId }))
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [callSocketApi])
+  }, [callSocketApi, sublatticesDispatchId])
 
 
   // reset store values to initial state when moved to another page
@@ -83,7 +89,7 @@ export function DispatchLayout() {
   // unselect on change of dispatch
   useEffect(() => {
     setSelectedElements([])
-  }, [dispatchId, setSelectedElements])
+  }, [dispatchId, setSelectedElements, sublatticesDispatchId])
 
   useEffect(() => {
     return () => {
@@ -124,7 +130,7 @@ export function DispatchLayout() {
         <NodeDrawer
           node={selectedElectron}
           graph={graph_result}
-          dispatchId={dispatchId}
+          dispatchId={sublatticesDispatchId ? sublatticesDispatchId?.dispatchId : dispatchId}
         />
       )}
     </>

@@ -32,6 +32,9 @@ import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
 import { ReactComponent as FunctionSvg } from '../assets/nodeType/fuction.svg'
 import { ReactComponent as ParameterSvg } from '../assets/nodeType/parameter.svg'
 import { ReactComponent as SubLattice } from '../assets/nodeType/sublattice.svg'
+import { ReactComponent as RunningSvg } from '../assets/sublattice/running.svg'
+import { ReactComponent as FailedSvg } from '../assets/sublattice/failed.svg'
+import { ReactComponent as SuccessSvg } from '../assets/sublattice/success.svg'
 import { ReactComponent as ArgSvg } from '../assets/nodeType/arg.svg'
 import { ReactComponent as AttributeSvg } from '../assets/nodeType/attribute.svg'
 import { ReactComponent as ElectronDictSvg } from '../assets/nodeType/electron-dict.svg'
@@ -337,6 +340,32 @@ export const nodeLabelIcon = (type) => {
           <ArgSvg />
         </SvgIcon>
       )
+    default:
+      return null
+  }
+}
+
+export const SublatticeIcon = (type) => {
+  switch (type) {
+    case 'COMPLETED':
+      return (
+        <SvgIcon sx={{ mr: 1 }}>
+          <SuccessSvg />
+        </SvgIcon>
+      )
+    case 'FAILED':
+      return (
+        <SvgIcon sx={{ mr: 1 }}>
+          <FailedSvg />
+        </SvgIcon>
+      )
+    case 'RUNNING':
+      return (
+        <SvgIcon sx={{ mr: 1 }}>
+          <RunningSvg />
+        </SvgIcon>
+      )
+
     default:
       return null
   }
