@@ -220,12 +220,6 @@ When tasks are run using this executor, the following infrastructure is ephemera
 
 .. image:: AWS_EC2_Infra.png
 
-This includes the minimal infrastructure needed to deploy an EC2 instance in a public subnet connected to an internet gateway. Users can validate that resources are correctly provisioned by monitoring the EC2 dashboard in the AWS Management Console. The overhead added by using this executor is on the order of several minutes, depending on the complexity of any additional user-specified runtime dependencies. Note that this can be deployed in any AWS region in which the user is otherwise able to deploy EC2 instances. These resources are torn down upon task completion and not shared across tasks in a workflow. Deployment of these resources will incur charges for EC2 alone; refer to `AWS EC2 pricing <https://aws.amazon.com/ec2/pricing/>`_ for details. Note that some users may encounter quota limits when using EC2.
-
-When tasks are run using this executor, the following infrastructure is ephemerally deployed.
-
-.. image:: AWS_EC2_Infra.png
-
 This includes the minimal infrastructure needed to deploy an EC2 instance in a public subnet connected to an internet gateway. Users can validate that resources are correctly provisioned by monitoring the EC2 dashboard in the AWS Management Console. The overhead added by using this executor is on the order of several minutes, depending on the complexity of any additional user-specified runtime dependencies. Users are advised not to use any sensitive data with this executor without careful consideration of security policies. By default, data in transit is cached on the EBS volume attached to the EC2 instance in an unencrypted format.
 
 These resources are torn down upon task completion and not shared across tasks in a workflow. Deployment of these resources will incur charges for EC2 alone; refer to `AWS EC2 pricing <https://aws.amazon.com/ec2/pricing/>`_ for details.
