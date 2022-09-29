@@ -37,7 +37,7 @@ jobs:
 
   changelog:
     name: Assign Version
-    uses: AgnostiqHQ/covalent/.github/workflows/changelog.yml@develop
+    uses: ./.github/workflows/changelog.yml
     secrets: inherit # pragma: allowlist secret
 
   push_to_master:
