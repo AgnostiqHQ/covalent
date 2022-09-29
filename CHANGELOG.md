@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed syntax issues in `nightly.yml`
 - Add `repository` arg to checkout in `version`
+- fix `octokit` request action route, update env token
 
 ## [0.199.0] - 2022-09-29
 
