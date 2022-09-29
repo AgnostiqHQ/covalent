@@ -41,7 +41,7 @@ origins = [f"http://{address}:{port}"]
 socket_origins = [f"http://{address}:{port}", f"http://{address}:{socket_port}"]
 
 app_log = logger.app_log
-log_to_file = get_config(CMType.CLIENT, "sdk.enable_logging").upper() == "TRUE"
+log_to_file = get_config("sdk.enable_logging").upper() == "TRUE"
 
 app = FastAPI()
 sio = socketio.AsyncServer(

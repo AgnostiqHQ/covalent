@@ -18,10 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from covalent._shared_files.config import CMType, get_config
+from covalent._shared_files.config import get_config
 
-log_level = get_config(CMType.CLIENT, "sdk.log_level").upper()
-log_to_file = get_config(CMType.CLIENT, "sdk.enable_logging").upper() == "TRUE"
+log_level = get_config("sdk.log_level").upper()
+log_to_file = get_config("sdk.enable_logging").upper() == "TRUE"
 
 if log_to_file:
     log = log_level

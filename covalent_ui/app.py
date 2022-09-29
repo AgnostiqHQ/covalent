@@ -45,7 +45,7 @@ WEBAPP_PATH = "webapp/build"
 STATIC_FILES = {"": WEBAPP_PATH, "/": f"{WEBAPP_PATH}/index.html"}
 
 # Log configuration
-log_to_file = get_config(CMType.CLIENT, "sdk.enable_logging").upper() == "TRUE"
+log_to_file = get_config("sdk.enable_logging").upper() == "TRUE"
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 templates = Jinja2Templates(directory=WEBAPP_PATH)
