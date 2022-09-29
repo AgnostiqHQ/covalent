@@ -202,7 +202,7 @@ The required resources include an EC2 Key Pair, and optionally a VPC & Subnet th
    * - AWS EC2 Key Pair
      - Yes
      - :code:`key_name`
-     - An EC2 Key Pair must be created and named corresponding to the :code:`key_name` config value.
+     - An EC2 Key Pair must be created and named corresponding to the :code:`key_name` config value. This key pair is used by the executor to connect to the EC2 instance via SSH. This key must also be present in the user's local machine that is dispatching the workflow and it's filepath specified under the :code:`ssh_key_file` config value.
    * - VPC
      - No
      - :code:`vpc`
@@ -211,6 +211,10 @@ The required resources include an EC2 Key Pair, and optionally a VPC & Subnet th
      - No
      - :code:`subnet`
      - A Subnet ID can be provided corresponding to the :code:`subnet` config value. Otherwise a public Subnet will be auto-created for each electron.
+   * - EC2 Instance
+     - No
+     - (Auto Created)
+     - An EC2 Instance will be automatically provisioned for each electron in the workflow that utilizes this executor.
 
 
 #. To create an AWS EC2 Key pair refer to the following `AWS documentation <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html>`_.
