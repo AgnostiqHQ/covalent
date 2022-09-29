@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Remove `benchmark` workflow from `nightly` schedule
+
 ### Tests
 
 - Updated status related tests
