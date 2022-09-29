@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Update nightly trigger to `hourly` for testing
+- Update `changelog` action token to `COVALENT_OPS_BOT_TOKEN`
+
+### Operations
+
 - Remove `benchmark` workflow from `nightly` schedule
 
 ### Tests
