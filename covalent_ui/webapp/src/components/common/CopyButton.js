@@ -44,7 +44,8 @@ const CopyButton = ({
       data-testid="copyButton"
     >
       <IconButton
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation()
           copy(content)
           setCopied(true)
           setTimeout(() => setCopied(false), 1200)

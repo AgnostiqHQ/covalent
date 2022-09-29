@@ -90,12 +90,19 @@ const LatticeStatusCard = ({
             <Box
               sx={{
                 display: 'flex',
+                alignItems: 'center',
               }}
             >
-              <Typography sx={{ display: 'flex' }}>Viewing: {sublatticesDispatchId?.latticeName}</Typography>
+              <Typography sx={{ display: 'flex' }}>
+                Viewing: {sublatticesDispatchId?.latticeName}
+              </Typography>
               <SvgIcon
                 onClick={() => dispatch(resetSublatticesId())}
-                sx={{ pl:1,cursor: 'pointer' }}
+                sx={{
+                  cursor: 'pointer',
+                  width: '50px',
+                  fontSize: '30px',
+                }}
               >
                 <BackButton />
               </SvgIcon>

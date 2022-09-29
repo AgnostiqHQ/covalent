@@ -46,7 +46,10 @@ import {
 } from '@mui/material'
 import { SublatticeIcon } from '../../utils/misc'
 
-import { sublatticesListDetails, sublatticesDispatchId } from '../../redux/latticeSlice'
+import {
+  sublatticesListDetails,
+  sublatticesDispatchId,
+} from '../../redux/latticeSlice'
 import Runtime from './Runtime'
 import OverflowTip from '../common/EllipsisTooltip'
 
@@ -110,7 +113,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
   },
   [`& .${tableBodyClasses.root} .${tableRowClasses.root} `]: {
     fontSize: '0.875rem',
-    padding: '0px'
+    padding: '0px',
   },
 
   // subdue header text
@@ -138,10 +141,6 @@ const StyledTable = styled(Table)(({ theme }) => ({
   },
   [`& .${tableBodyClasses.root} .${tableRowClasses.root}.Mui-selected:hover`]: {
     backgroundColor: theme.palette.background.coveBlack01,
-  },
-
-  [`& .${tableCellClasses.root}`]: {
-    borderColor: theme.palette.background.default,
   },
 
   [`& .${tableCellClasses.root}`]: {
@@ -236,8 +235,30 @@ const SublatticesListing = () => {
                 >
                   {sublatticesListView &&
                     sublatticesListView.map((result, index) => (
-                      <Tooltip title='Click to view sublattices graph'>
-                        <TableRow hover key={result.dispatchId} onClick={() => sublatticesDispatch(result)} sx={{ borderRadius: result.dispatchId === sublatticesId?.dispatchId ? '1px solid #6473FF' : '',border: result.dispatchId === sublatticesId?.dispatchId ? '16px' : '', backgroundColor: result.dispatchId === sublatticesId?.dispatchId ? '#1C1C46' : '', color: result.dispatchId === sublatticesId?.dispatchId ? '#FFFFFF' : '' }}>
+                      <Tooltip title="Click to view sublattices graph">
+                        <TableRow
+                          hover
+                          key={result.dispatchId}
+                          onClick={() => sublatticesDispatch(result)}
+                          sx={{
+                            borderRadius:
+                              result.dispatchId === sublatticesId?.dispatchId
+                                ? '1px solid #6473FF'
+                                : '',
+                            border:
+                              result.dispatchId === sublatticesId?.dispatchId
+                                ? '16px'
+                                : '',
+                            backgroundColor:
+                              result.dispatchId === sublatticesId?.dispatchId
+                                ? '#1C1C46'
+                                : '',
+                            color:
+                              result.dispatchId === sublatticesId?.dispatchId
+                                ? '#FFFFFF'
+                                : '',
+                          }}
+                        >
                           <TableCell>
                             <Grid sx={{ display: 'flex', mt: 0.8, mb: 0 }}>
                               {' '}

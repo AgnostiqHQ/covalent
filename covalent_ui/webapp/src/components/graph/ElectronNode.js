@@ -20,17 +20,11 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import {
-  Grid,
-  Paper,
-  Tooltip,
-  tooltipClasses,
-  Typography,
-} from '@mui/material'
+import { Grid, Paper, Tooltip, tooltipClasses, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { Handle } from 'react-flow-renderer'
 import CopyButton from '../common/CopyButton'
-import { truncateMiddle, nodeLabelIcon,statusIcon } from '../../utils/misc'
+import { truncateMiddle, nodeLabelIcon, statusIcon } from '../../utils/misc'
 
 export const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
 
