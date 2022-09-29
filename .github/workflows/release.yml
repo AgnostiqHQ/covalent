@@ -93,6 +93,7 @@ jobs:
         with:
           changelog-path: CHANGELOG.md
           version-path: VERSION
+
       - name: Read version
         run: |
           if [ -z ${{ inputs.prerelease }} ] && \
