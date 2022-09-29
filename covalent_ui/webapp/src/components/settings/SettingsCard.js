@@ -239,7 +239,7 @@ const SettingsCard = () => {
   }
 
   const handleClick = (item) => {
-    _.map(item, function (value, key) {
+    _.map(item, function (value, _key) {
       if (_.isObject(value)) {
         setOpen(!open)
         setSubMenu(item)
@@ -355,6 +355,7 @@ const SettingsCard = () => {
     setSearchKey('')
     setClientDetail(Object.values(settings_result)[0])
     setServerDetail(Object.values(settings_result)[1])
+    setSubMenu(Object.values(settings_result)[0].executors)
   }
 
   const handleSubmenuClick = (value, key) => {
@@ -493,11 +494,11 @@ const SettingsCard = () => {
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => {}
+                              : () => { }
                           }
                           sx={{
-                            right: isChildHasList(menuValue) ? '0px' : '0px',
-                            padding: '0px',
+                            right: '0px',
+                            padding: '0px'
                           }}
                         >
                           {isChildHasList(menuValue) && (
@@ -582,11 +583,11 @@ const SettingsCard = () => {
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => {}
+                              : () => { }
                           }
                           sx={{
-                            right: isChildHasList(menuValue) ? '0px' : '0px',
-                            padding: '0px',
+                            right: '0px',
+                            padding: '0px'
                           }}
                         >
                           {isChildHasList(menuValue) && (
@@ -658,10 +659,10 @@ const SettingsCard = () => {
                                       <FormControl>
                                         <FormLabel
                                           id="demo-row-radio-buttons-group-label"
-                                          sx={(theme) => ({
+                                          sx={{
                                             fontSize: '14px',
                                             color: 'text.primary',
-                                          })}
+                                          }}
                                         >
                                           {' '}
                                           {getSettingsName(key1)}
@@ -826,10 +827,10 @@ const SettingsCard = () => {
                                     <FormControl>
                                       <FormLabel
                                         id="demo-row-radio-buttons-group-label"
-                                        sx={(theme) => ({
+                                        sx={{
                                           fontSize: '14px',
                                           color: 'text.primary',
-                                        })}
+                                        }}
                                       >
                                         {' '}
                                         {getSettingsName(key)}
@@ -928,7 +929,7 @@ const SettingsCard = () => {
                         <Button
                           variant="outlined"
                           onClick={() => cancelButton()}
-                          sx={(theme) => ({
+                          sx={{
                             padding: '8px 20px',
                             border: '1px solid #6473FF',
                             borderRadius: '60px',
@@ -937,14 +938,14 @@ const SettingsCard = () => {
                             textTransform: 'capitalize',
                             width: '77px',
                             height: '32px',
-                          })}
+                          }}
                         >
                           Cancel
                         </Button>
                         <Button
                           var
                           type="submit"
-                          sx={(theme) => ({
+                          sx={{
                             background: '#5552FF',
                             borderRadius: '60px',
                             color: 'white',
@@ -953,7 +954,7 @@ const SettingsCard = () => {
                             textTransform: 'capitalize',
                             width: '63px',
                             height: '32px',
-                          })}
+                          }}
                         >
                           Save
                         </Button>
