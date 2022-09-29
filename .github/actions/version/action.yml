@@ -30,7 +30,7 @@ runs:
         fetch-depth: 0
         ref: ${{ inputs.head_ref }}
         repository: ${{ github.event.pull_request.head.repo.full_name }}
-        
+
     - name: Check git history
       shell: bash
       run: |
