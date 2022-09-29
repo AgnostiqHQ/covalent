@@ -92,6 +92,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed payload dependency from changelog action so it can run on a schedule
 - Remove `benchmark` workflow from `nightly` schedule
 
+## [0.198.0] - 2022-09-22
+
+### Authors
+
+- Akalanka Galappaththi <boney.ag@gmail.com>
+
+### Changed
+
+- Updated `covalent_ui/api/v1/uitls/file_handle.py` for loop that concatenate strings with `str.join` API 
+
 ## [0.198.0] - 2022-09-14
 
 ### Authors
