@@ -23,11 +23,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated status related tests
 - Added tests for functions in `util_classes.py` and `statuses.py`
 
+### Docs
+
+- Updated EC2 RTD with config & cloud resources table
+
 ### Operations
 
 - Fixed syntax issues in `nightly.yml`
 - Add `repository` arg to checkout in `version`
 - fix `octokit` request action route, update env token
+- add `fetch-depth: 0` to fetch entire history
 
 ## [0.199.0] - 2022-09-29
 
@@ -47,7 +52,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Tests
 
