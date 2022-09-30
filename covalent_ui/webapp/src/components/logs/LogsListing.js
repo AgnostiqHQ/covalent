@@ -189,9 +189,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-    {
-      fontSize: '1rem',
-    },
+  {
+    fontSize: '1rem',
+  },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -425,8 +425,8 @@ const LogsListing = () => {
                     logListView.map((result, index) => (
                       <Tooltip
                         title={!copied ? 'Click to copy log message' : 'Copied'}
-                        placement="top"
                         data-testid="log"
+                        followCursor={true}
                       >
                         <TableRow
                           onClick={() => {
