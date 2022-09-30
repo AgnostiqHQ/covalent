@@ -93,7 +93,7 @@ const SettingsCard = () => {
         isChanged: valueChange,
         data: resultOutput,
         nodeName: resultKey,
-        mainKey: accName
+        mainKey: accName,
       }
       dispatch(toggleLatticeDrawer(settingObj))
     } else {
@@ -223,7 +223,11 @@ const SettingsCard = () => {
     } else {
       if (name === 'sdk' || name === 'dask') {
         formattedName = name.toUpperCase()
-      } else {
+      }
+      else if (name === 'slurm') {
+        formattedName = name.toUpperCase()
+      }
+      else {
         formattedName = name.charAt(0).toUpperCase() + name.slice(1)
       }
     }
@@ -239,7 +243,7 @@ const SettingsCard = () => {
   }
 
   const handleClick = (item) => {
-    _.map(item, function (value, key) {
+    _.map(item, function (value, _key) {
       if (_.isObject(value)) {
         setOpen(!open)
         setSubMenu(item)
@@ -285,12 +289,30 @@ const SettingsCard = () => {
     setValueChange(true)
   }
 
+  const handleKeypressSub = (event) => {
+    setHandle(event.key)
+    setValueChange(true)
+  }
+
   const onInputExecutorChange = (e, subkey, key) => {
     setResultOutput((currValue) => ({
       ...currValue,
       [key]: {
         ...currValue[key],
         [subkey]: e.target.value,
+      },
+    }))
+  }
+
+  const onInputExecutorChangeSub = (e, key1, subkey, key) => {
+    setResultOutput((currValue) => ({
+      ...currValue,
+      [key]: {
+        ...currValue[key],
+        [key1]: {
+          ...currValue[key][key1],
+          [subkey]: e.target.value,
+        },
       },
     }))
   }
@@ -347,6 +369,7 @@ const SettingsCard = () => {
     setSearchKey('')
     setClientDetail(Object.values(settings_result)[0])
     setServerDetail(Object.values(settings_result)[1])
+    setSubMenu(Object.values(settings_result)[0].executors)
   }
 
   const handleSubmenuClick = (value, key) => {
@@ -369,7 +392,12 @@ const SettingsCard = () => {
   }
 
   const StyledList = styled(List)({
+    '& .MuiListItemButton-root': {
+      backgroundColor: (theme) => theme.palette.background.default,
+      borderRadius: '8px',
+    },
     // hover states
+
     '& .MuiListItemButton-root:hover': {
       backgroundColor: '#1C1C46',
       borderRadius: '8px',
@@ -483,7 +511,7 @@ const SettingsCard = () => {
                               : () => { }
                           }
                           sx={{
-                            right: isChildHasList(menuValue) ? '0px' : '0px',
+                            right: '0px',
                             padding: '0px'
                           }}
                         >
@@ -528,9 +556,10 @@ const SettingsCard = () => {
                         return (
                           <StyledList sx={{ pb: 0, pt: 0 }} key={key}>
                             <ListItem disablePadding>
-                              <ListItemButton sx={{ pl: 7, pt: 0.3, pb: 0.3 }} onClick={() =>
-                                handleSubmenuClick(subMenu, key)
-                              }>
+                              <ListItemButton
+                                sx={{ pl: 7, pt: 0.3, pb: 0.3 }}
+                                onClick={() => handleSubmenuClick(subMenu, key)}
+                              >
                                 <ListItemText
                                   inset
                                   primary={getSubmenuName(key)}
@@ -571,7 +600,7 @@ const SettingsCard = () => {
                               : () => { }
                           }
                           sx={{
-                            right: isChildHasList(menuValue) ? '0px' : '0px',
+                            right: '0px',
                             padding: '0px'
                           }}
                         >
@@ -587,7 +616,7 @@ const SettingsCard = () => {
                           <ListItemText
                             inset
                             primary={getSettingsName(menuKey)}
-                            onClick={() => menuClick(menuValue, menuKey)}
+                            onClick={() => menuClick(menuValue, menuKey, serverName)}
                             disableTypography
                             sx={{
                               padding: '8px 16px',
@@ -644,10 +673,10 @@ const SettingsCard = () => {
                                       <FormControl>
                                         <FormLabel
                                           id="demo-row-radio-buttons-group-label"
-                                          sx={(theme) => ({
+                                          sx={{
                                             fontSize: '14px',
                                             color: 'text.primary',
-                                          })}
+                                          }}
                                         >
                                           {' '}
                                           {getSettingsName(key1)}
@@ -688,40 +717,103 @@ const SettingsCard = () => {
                                       </FormControl>
                                     ) : (
                                       <>
-                                        <InputLabel
-                                          variant="standard"
-                                          htmlFor="uncontrolled-native"
-                                          sx={{
-                                            fontSize: '14px',
-                                            mb: 1,
-                                            color: 'text.primary',
-                                          }}
-                                        >
-                                          {getLabelName(key1)}
-                                        </InputLabel>
-                                        <Input
-                                          sx={{
-                                            px: 2,
-                                            py: 0.5,
-                                            width: '360px',
-                                            height: '32px',
-                                            border: '1px solid #303067',
-                                            borderRadius: '60px',
-                                            fontSize: '14px',
-                                            color: (theme) =>
-                                              theme.palette.text.secondary,
-                                          }}
-                                          disabled={isDisabled}
-                                          onKeyDown={handleKeypress}
-                                          autoComplete="off"
-                                          name={key1}
-                                          onChange={(e) =>
-                                            onInputExecutorChange(e, key1, key)
-                                          }
-                                          value={item}
-                                          disableUnderline
-                                          placeholder={key1}
-                                        />
+                                        {_.isObject(item) ?
+                                          _.map(item, function (inputSubValue, inputSubKey) {
+                                            return (
+                                              <Box sx={{ mt: 3 }}>
+                                                <InputLabel
+                                                  variant="standard"
+                                                  htmlFor="uncontrolled-native"
+                                                  sx={{
+                                                    fontSize: '14px',
+                                                    mb: 1,
+                                                    color: 'text.primary',
+                                                  }}
+                                                >
+                                                  {getLabelName(inputSubKey)}
+                                                </InputLabel>
+                                                <Input
+                                                  sx={[
+                                                    {
+                                                      input: {
+                                                        '&::placeholder': {
+                                                          color: (theme) =>
+                                                            theme.palette.text.primary,
+                                                          opacity: 1
+                                                        },
+                                                      },
+                                                      px: 2,
+                                                      py: 0.5,
+                                                      width: '85%',
+                                                      height: '32px',
+                                                      border: '1px solid #303067',
+                                                      borderRadius: '60px',
+                                                      fontSize: '14px',
+                                                      color: (theme) =>
+                                                        theme.palette.text.secondary,
+                                                    }
+                                                  ]}
+                                                  disabled={isDisabled}
+                                                  onKeyDown={handleKeypressSub}
+                                                  autoComplete="off"
+                                                  name={inputSubKey}
+                                                  onChange={(e) =>
+                                                    onInputExecutorChangeSub(e, key1, inputSubKey, key)
+                                                  }
+                                                  value={inputSubValue}
+                                                  disableUnderline
+                                                  placeholder="Please enter a value"
+                                                />
+                                              </Box>
+                                            )
+                                          })
+                                          :
+                                          <Box>
+                                            <InputLabel
+                                              variant="standard"
+                                              htmlFor="uncontrolled-native"
+                                              sx={{
+                                                fontSize: '14px',
+                                                mb: 1,
+                                                color: 'text.primary',
+                                              }}
+                                            >
+                                              {getLabelName(key1)}
+                                            </InputLabel>
+                                            <Input
+                                              sx={[
+                                                {
+                                                  input: {
+                                                    '&::placeholder': {
+                                                      color: (theme) =>
+                                                        theme.palette.text.primary,
+                                                      opacity: 1
+                                                    },
+                                                  },
+                                                  px: 2,
+                                                  py: 0.5,
+                                                  width: '85%',
+                                                  height: '32px',
+                                                  border: '1px solid #303067',
+                                                  borderRadius: '60px',
+                                                  fontSize: '14px',
+                                                  color: (theme) =>
+                                                    theme.palette.text.secondary,
+                                                }
+                                              ]}
+                                              disabled={isDisabled}
+                                              onKeyDown={handleKeypress}
+                                              autoComplete="off"
+                                              name={key1}
+                                              onChange={(e) =>
+                                                onInputExecutorChange(e, key1, key)
+                                              }
+                                              value={item}
+                                              disableUnderline
+                                              placeholder="Please enter a value"
+                                            />
+                                          </Box>
+                                        }
                                       </>
                                     )}
                                   </Box>
@@ -752,15 +844,14 @@ const SettingsCard = () => {
                                   <Select
                                     labelId="demo-simple-select-label"
                                     id="demo-simple-select"
+                                    displayEmpty
                                     value={value}
-                                    name={key}
-                                    label={key}
                                     onChange={(e) => handleSelectChange(e, key)}
                                     sx={{
-                                      mt: 1,
                                       fontSize: '14px',
                                       width: '140px',
                                       height: '32px',
+                                      mt: 1,
                                     }}
                                     className="dropdownSelect"
                                   >
@@ -802,10 +893,10 @@ const SettingsCard = () => {
                                     <FormControl>
                                       <FormLabel
                                         id="demo-row-radio-buttons-group-label"
-                                        sx={(theme) => ({
+                                        sx={{
                                           fontSize: '14px',
                                           color: 'text.primary',
-                                        })}
+                                        }}
                                       >
                                         {' '}
                                         {getSettingsName(key)}
@@ -857,17 +948,26 @@ const SettingsCard = () => {
                                         {getLabelName(key)}
                                       </InputLabel>
                                       <Input
-                                        sx={{
-                                          px: 2,
-                                          py: 0.5,
-                                          width: '360px',
-                                          height: '32px',
-                                          border: '1px solid #303067',
-                                          borderRadius: '60px',
-                                          fontSize: '14px',
-                                          color: (theme) =>
-                                            theme.palette.text.secondary,
-                                        }}
+                                        sx={[
+                                          {
+                                            input: {
+                                              '&::placeholder': {
+                                                color: (theme) =>
+                                                  theme.palette.text.primary,
+                                                opacity: 1
+                                              },
+                                            },
+                                            px: 2,
+                                            py: 0.5,
+                                            width: '85%',
+                                            height: '32px',
+                                            border: '1px solid #303067',
+                                            borderRadius: '60px',
+                                            fontSize: '14px',
+                                            color: (theme) =>
+                                              theme.palette.text.secondary,
+                                          }
+                                        ]}
                                         disabled={isDisabled}
                                         autoComplete="off"
                                         onKeyDown={handleKeypress}
@@ -875,7 +975,7 @@ const SettingsCard = () => {
                                         onChange={(e) => onInputChange(e, key)}
                                         value={value}
                                         disableUnderline
-                                        placeholder={key}
+                                        placeholder="Please enter a value"
                                       />
                                     </>
                                   )}
@@ -896,7 +996,7 @@ const SettingsCard = () => {
                         <Button
                           variant="outlined"
                           onClick={() => cancelButton()}
-                          sx={(theme) => ({
+                          sx={{
                             padding: '8px 20px',
                             border: '1px solid #6473FF',
                             borderRadius: '60px',
@@ -905,14 +1005,14 @@ const SettingsCard = () => {
                             textTransform: 'capitalize',
                             width: '77px',
                             height: '32px',
-                          })}
+                          }}
                         >
                           Cancel
                         </Button>
                         <Button
                           var
                           type="submit"
-                          sx={(theme) => ({
+                          sx={{
                             background: '#5552FF',
                             borderRadius: '60px',
                             color: 'white',
@@ -921,7 +1021,7 @@ const SettingsCard = () => {
                             textTransform: 'capitalize',
                             width: '63px',
                             height: '32px',
-                          })}
+                          }}
                         >
                           Save
                         </Button>
@@ -939,9 +1039,8 @@ const SettingsCard = () => {
           <Skeleton animation="wave" />
           <Skeleton animation={false} />
         </Box>
-      )
-      }
-    </Container >
+      )}
+    </Container>
   )
 }
 

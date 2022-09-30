@@ -484,8 +484,8 @@ const LogsListing = () => {
                     stableSort(logListView, getComparator(sortOrder, sortColumn)).map((result, index) => (
                       <Tooltip
                         title={!copied ? 'Click to copy log message' : 'Copied'}
-                        placement="top"
                         data-testid="log"
+                        followCursor={true}
                       >
                         <TableRow hover key={index} sx={{ height: '50px' }}
                           onClick={() => {
