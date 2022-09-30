@@ -243,11 +243,11 @@ const SublatticesListing = () => {
                           sx={{
                             borderRadius:
                               result.dispatchId === sublatticesId?.dispatchId
-                                ? '1px solid #6473FF'
+                                ? '16px'
                                 : '',
                             border:
                               result.dispatchId === sublatticesId?.dispatchId
-                                ? '16px'
+                                ? '2px solid #6473FF'
                                 : '',
                             backgroundColor:
                               result.dispatchId === sublatticesId?.dispatchId
