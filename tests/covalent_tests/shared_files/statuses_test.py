@@ -49,7 +49,7 @@ async def test_status_listener_case_1(mocker: mock):
     test_status = "TEST_STATUS"
 
     sv_mock = mocker.MagicMock()
-    sv_mock.retrieve_wait = mocker.MagicMock(return_value=None)
+    sv_mock.retrieve = mocker.MagicMock(return_value=None)
 
     result_mock = mocker.MagicMock()
     result_mock._get_node_status.return_value = test_status
@@ -58,7 +58,7 @@ async def test_status_listener_case_1(mocker: mock):
     result_mock._update_node.side_effect = asyncio.CancelledError
 
     await status_listener(result_object=result_mock, node_id=-2, status_store=sv_mock)
-    sv_mock.retrieve_wait.assert_called_once()
+    sv_mock.retrieve.assert_called_once()
     result_mock._get_node_status.assert_called_once()
     result_mock._update_node.assert_called_once()
 
@@ -67,7 +67,7 @@ async def test_status_listener_case_1(mocker: mock):
 async def test_status_listener_case_2(mocker: mock):
 
     sv_mock = mocker.MagicMock()
-    sv_mock.retrieve_wait = mocker.MagicMock(return_value=None)
+    sv_mock.retrieve = mocker.MagicMock(return_value=None)
 
     result_mock = mocker.MagicMock()
     result_mock._get_node_status.return_value = None
@@ -75,7 +75,7 @@ async def test_status_listener_case_2(mocker: mock):
 
     # Case 2: current_status == node_status
     await status_listener(result_object=result_mock, node_id=-2, status_store=sv_mock)
-    sv_mock.retrieve_wait.assert_called_once()
+    sv_mock.retrieve.assert_called_once()
     result_mock._get_node_status.assert_called_once()
     assert result_mock._update_node.call_count == 0
 
@@ -86,13 +86,13 @@ async def test_status_listener_case_3(mocker: mock):
     test_status = "TEST_STATUS"
 
     sv_mock = mocker.MagicMock()
-    sv_mock.retrieve_async = mocker.MagicMock(return_value=test_status)
+    sv_mock.retrieve = mocker.MagicMock(return_value=test_status)
 
     result_mock = mocker.MagicMock()
     result_mock._get_node_status.return_value = test_status
 
     # Case 3: type(current_status) != type(None, RunningCategory, PendingCategory)
     await status_listener(result_object=result_mock, node_id=-2, status_store=sv_mock)
-    sv_mock.retrieve_wait.assert_called_once()
+    sv_mock.retrieve.assert_called_once()
     assert result_mock._get_node_status.call_count == 0
     result_mock._update_node.assert_called_once()

@@ -47,11 +47,6 @@ class SafeVariable(queue.Queue):
         except queue.Empty:
             return None
 
-    def retrieve_wait(self) -> Any:
-        value = self.get()
-        self.put(value)
-        return value
-
 
 # TODO: Following definitions are for legacy reasons only and should be removed soon:
 # {
