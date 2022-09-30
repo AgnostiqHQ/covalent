@@ -22,8 +22,8 @@
 Unit tests for DataStore object
 """
 
-from covalent._data_store.datastore import DataStore
 from covalent._shared_files.config import get_config
+from covalent_dispatcher._db.datastore import DataStore
 
 
 def test_datastore_init():
