@@ -222,7 +222,11 @@ const SettingsCard = () => {
     } else {
       if (name === 'sdk' || name === 'dask') {
         formattedName = name.toUpperCase()
-      } else {
+      }
+      else if (name === 'slurm') {
+        formattedName = name.toUpperCase()
+      }
+      else {
         formattedName = name.charAt(0).toUpperCase() + name.slice(1)
       }
     }
@@ -271,6 +275,14 @@ const SettingsCard = () => {
             [resultKey]: resultOutput,
           }))
           setRestoreData(resultOutput)
+          setResultOutput(value)
+          setResultKey(key)
+          if (panel === 'server') {
+            setIsDisabled(true)
+          }
+          else {
+            setIsDisabled(false)
+          }
         } else if (action.type === updateSettings.rejected.type) {
           setOpenSnackbar(true)
           setSnackbarMessage(
@@ -619,7 +631,7 @@ const SettingsCard = () => {
                           <ListItemText
                             inset
                             primary={getSettingsName(menuKey)}
-                            onClick={() => menuClick(menuValue, menuKey)}
+                            onClick={() => menuClick(menuValue, menuKey, serverName)}
                             disableTypography
                             sx={{
                               padding: '8px 16px',
@@ -736,17 +748,26 @@ const SettingsCard = () => {
                                                   {getLabelName(inputSubKey)}
                                                 </InputLabel>
                                                 <Input
-                                                  sx={{
-                                                    px: 2,
-                                                    py: 0.5,
-                                                    width: '85%',
-                                                    height: '32px',
-                                                    border: '1px solid #303067',
-                                                    borderRadius: '60px',
-                                                    fontSize: '14px',
-                                                    color: (theme) =>
-                                                      theme.palette.text.secondary,
-                                                  }}
+                                                  sx={[
+                                                    {
+                                                      input: {
+                                                        '&::placeholder': {
+                                                          color: (theme) =>
+                                                            theme.palette.text.primary,
+                                                          opacity: 1
+                                                        },
+                                                      },
+                                                      px: 2,
+                                                      py: 0.5,
+                                                      width: '85%',
+                                                      height: '32px',
+                                                      border: '1px solid #303067',
+                                                      borderRadius: '60px',
+                                                      fontSize: '14px',
+                                                      color: (theme) =>
+                                                        theme.palette.text.secondary,
+                                                    }
+                                                  ]}
                                                   disabled={isDisabled}
                                                   onKeyDown={handleKeypressSub}
                                                   autoComplete="off"
@@ -756,7 +777,7 @@ const SettingsCard = () => {
                                                   }
                                                   value={inputSubValue}
                                                   disableUnderline
-                                                  placeholder={inputSubKey}
+                                                  placeholder="Please enter a value"
                                                 />
                                               </>
                                             )
@@ -775,17 +796,26 @@ const SettingsCard = () => {
                                               {getLabelName(key1)}
                                             </InputLabel>
                                             <Input
-                                              sx={{
-                                                px: 2,
-                                                py: 0.5,
-                                                width: '85%',
-                                                height: '32px',
-                                                border: '1px solid #303067',
-                                                borderRadius: '60px',
-                                                fontSize: '14px',
-                                                color: (theme) =>
-                                                  theme.palette.text.secondary,
-                                              }}
+                                              sx={[
+                                                {
+                                                  input: {
+                                                    '&::placeholder': {
+                                                      color: (theme) =>
+                                                        theme.palette.text.primary,
+                                                      opacity: 1
+                                                    },
+                                                  },
+                                                  px: 2,
+                                                  py: 0.5,
+                                                  width: '85%',
+                                                  height: '32px',
+                                                  border: '1px solid #303067',
+                                                  borderRadius: '60px',
+                                                  fontSize: '14px',
+                                                  color: (theme) =>
+                                                    theme.palette.text.secondary,
+                                                }
+                                              ]}
                                               disabled={isDisabled}
                                               onKeyDown={handleKeypress}
                                               autoComplete="off"
@@ -795,7 +825,7 @@ const SettingsCard = () => {
                                               }
                                               value={item}
                                               disableUnderline
-                                              placeholder={key1}
+                                              placeholder="Please enter a value"
                                             />
                                           </>
                                         }
@@ -933,17 +963,26 @@ const SettingsCard = () => {
                                         {getLabelName(key)}
                                       </InputLabel>
                                       <Input
-                                        sx={{
-                                          px: 2,
-                                          py: 0.5,
-                                          width: '85%',
-                                          height: '32px',
-                                          border: '1px solid #303067',
-                                          borderRadius: '60px',
-                                          fontSize: '14px',
-                                          color: (theme) =>
-                                            theme.palette.text.secondary,
-                                        }}
+                                        sx={[
+                                          {
+                                            input: {
+                                              '&::placeholder': {
+                                                color: (theme) =>
+                                                  theme.palette.text.primary,
+                                                opacity: 1
+                                              },
+                                            },
+                                            px: 2,
+                                            py: 0.5,
+                                            width: '85%',
+                                            height: '32px',
+                                            border: '1px solid #303067',
+                                            borderRadius: '60px',
+                                            fontSize: '14px',
+                                            color: (theme) =>
+                                              theme.palette.text.secondary,
+                                          }
+                                        ]}
                                         disabled={isDisabled}
                                         autoComplete="off"
                                         onKeyDown={handleKeypress}
@@ -951,7 +990,7 @@ const SettingsCard = () => {
                                         onChange={(e) => onInputChange(e, key)}
                                         value={value}
                                         disableUnderline
-                                        placeholder={key}
+                                        placeholder="Please enter a value"
                                       />
                                     </>
                                   )}
