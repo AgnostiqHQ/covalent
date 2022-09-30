@@ -22,20 +22,35 @@
 
 import { render, screen } from '@testing-library/react'
 import App from '../NavDrawer'
+import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
+import { ReactFlowProvider } from 'react-flow-renderer'
+import { HelmetProvider } from 'react-helmet-async'
+import { configureStore } from '@reduxjs/toolkit'
+import reducers from '../../../redux/reducers'
+
 
 const MockApp = () => {
+  const store = configureStore({
+    reducer: reducers,
+  })
   return (
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <Provider store={store}>
+      <HelmetProvider>
+        <ReactFlowProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ReactFlowProvider>
+      </HelmetProvider>
+    </Provider>
   )
 }
 
 const navDrawerCases = ['navDrawer', 'covalentLogo']
-const navDrawerCases2 = ['Dispatch list', 'Lattice draw preview']
+const navDrawerCases2 = ['Dispatch list', 'Lattice draw preview','Logs','Settings']
 
-describe('navDrawer', () => {
+describe('navDrawers', () => {
   test.each(navDrawerCases)('render %p', (firstArg) => {
     render(<MockApp />)
     const element = screen.getByTestId(firstArg)
