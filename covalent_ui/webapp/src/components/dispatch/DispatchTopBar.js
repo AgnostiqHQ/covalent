@@ -23,7 +23,7 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box, Typography, Skeleton, SvgIcon, Tooltip } from '@mui/material'
-import { statusIcon, statusColor, statusLabel } from '../../utils/misc'
+import { statusIcon, statusColor, statusLabel, sublatticeIcon } from '../../utils/misc'
 import { resetSublatticesId } from '../../redux/latticeSlice'
 import { ReactComponent as BackButton } from '../../assets/back.svg'
 
@@ -86,16 +86,20 @@ const LatticeStatusCard = ({
     <Box sx={{ my: 0, pt: 1 }} data-testid="topbarcard">
       <Box sx={{ position: 'absolute', left: 490 }}>
         {sublatticesDispatchId && (
-          <Tooltip title="Revert back to main lattice">
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              <Typography sx={{ display: 'flex' }}>
-                Viewing: {sublatticesDispatchId?.latticeName}
-              </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <Typography sx={{ display: 'flex' }}>
+              Viewing:
+            </Typography>
+            {sublatticeIcon(sublatticesDispatchId?.status,true)}
+            <Typography sx={{ display: 'flex' }}>
+              {sublatticesDispatchId?.latticeName}
+            </Typography>
+            <Tooltip title="Revert back to main lattice">
               <SvgIcon
                 onClick={() => dispatch(resetSublatticesId())}
                 sx={{
@@ -106,8 +110,8 @@ const LatticeStatusCard = ({
               >
                 <BackButton />
               </SvgIcon>
-            </Box>
-          </Tooltip>
+            </Tooltip>
+          </Box>
         )}
       </Box>
       <Box

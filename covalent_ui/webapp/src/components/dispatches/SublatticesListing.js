@@ -44,7 +44,7 @@ import {
   linkClasses,
   Grid,
 } from '@mui/material'
-import { SublatticeIcon } from '../../utils/misc'
+import { sublatticeIcon } from '../../utils/misc'
 
 import {
   sublatticesListDetails,
@@ -262,7 +262,7 @@ const SublatticesListing = () => {
                           <TableCell>
                             <Grid sx={{ display: 'flex', mt: 0.8, mb: 0 }}>
                               {' '}
-                              {SublatticeIcon(result.status)}
+                              {sublatticeIcon(result.status)}
                               <OverflowTip
                                 width="70px"
                                 fontSize="14px"
