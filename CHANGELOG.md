@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Updated EC2 RTD with config & cloud resources table
+
+### Operations
+
+- Fixed syntax issues in `nightly.yml`
+- Add `repository` arg to checkout in `version`
+- fix `octokit` request action route, update env token
+- add `fetch-depth: 0` to fetch entire history
+- add `persist-credentials: false` in nightly
+
+## [0.199.0] - 2022-09-29
+
+### Authors
+
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: RaviPsiog <raviteja.gurram@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
 ### Tests
 
 - Fixed `asserts` in stress tests
@@ -60,6 +91,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Workflows authenticate to AWS using OIDC with specific roles
 - Only the recommended platform is tested on pull requests
 - Update check blocks to assert the `workflow_call` event type is replaced with `schedule`
+- Create a hotfix when pushing to a release branch
+- Update nightly trigger to `hourly` for testing
+- Update `changelog` action token to `COVALENT_OPS_BOT_TOKEN`
+- Remove `benchmark` workflow from `nightly` schedule
+- Removed payload dependency from changelog action so it can run on a schedule
+- Remove `benchmark` workflow from `nightly` schedule
 
 ## [0.198.0] - 2022-09-14
 
