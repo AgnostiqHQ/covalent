@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Operations
-
-- Update `nightly` schedule to midnight EST
-
 ### Docs
 
 - Updated EC2 RTD with config & cloud resources table
@@ -20,9 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed syntax issues in `nightly.yml`
 - Add `repository` arg to checkout in `version`
 - fix `octokit` request action route, update env token
+- create stable versions for stable releases
 - add `fetch-depth: 0` to fetch entire history
 - fix regex for matching version
 - add `persist-credentials: false` in nightly
+- Update `nightly` schedule to midnight EST
 
 ## [0.199.0] - 2022-09-29
 
