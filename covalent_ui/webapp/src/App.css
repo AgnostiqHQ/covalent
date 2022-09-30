@@ -65,6 +65,6 @@
 }
 
 .dropdownSelect .MuiOutlinedInput-notchedOutline {
-  border-color: #303067;
+  border-color: #303067 !important;
   border-radius: 60px;
 }

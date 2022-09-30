@@ -325,7 +325,7 @@ const SettingsCard = () => {
       [key]: {
         ...currValue[key],
         [key1]: {
-          ...key1.subkey,
+          ...currValue[key][key1],
           [subkey]: e.target.value,
         },
       },
@@ -735,7 +735,7 @@ const SettingsCard = () => {
                                         {_.isObject(item) ?
                                           _.map(item, function (inputSubValue, inputSubKey) {
                                             return (
-                                              <>
+                                              <Box sx={{ mt: 3 }}>
                                                 <InputLabel
                                                   variant="standard"
                                                   htmlFor="uncontrolled-native"
@@ -779,11 +779,11 @@ const SettingsCard = () => {
                                                   disableUnderline
                                                   placeholder="Please enter a value"
                                                 />
-                                              </>
+                                              </Box>
                                             )
                                           })
                                           :
-                                          <>
+                                          <Box>
                                             <InputLabel
                                               variant="standard"
                                               htmlFor="uncontrolled-native"
@@ -827,7 +827,7 @@ const SettingsCard = () => {
                                               disableUnderline
                                               placeholder="Please enter a value"
                                             />
-                                          </>
+                                          </Box>
                                         }
                                       </>
                                     )}
