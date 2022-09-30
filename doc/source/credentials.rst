@@ -1,7 +1,7 @@
 Managing Cloud Credentials
 ##########################
 
-AWS plugins assume the existence of a credentials file or environment variables in order to communicate with AWS services.  This data lives on the Covalent server.  There are several best practices users should consider when managing AWS credentials on the Covalent server.  **Long-lived credentials provided via an IAM user are strongly discouraged.**
+AWS plugins assume the existence of a credentials file or environment variables in order to communicate with AWS services.  This data lives on the Covalent server.  There are several best practices users should consider when managing AWS credentials on the Covalent server.  **Using root credentials or long-lived credentials provided via an IAM user are strongly discouraged.**
 
 Periodic Manual Login
 *********************
