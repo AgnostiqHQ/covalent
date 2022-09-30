@@ -64,6 +64,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Verbose failure messages in boilerplate workflow
 - Change license.yml to pip-license-checker action
 
+### Changed
+
+- move `upsert_lattice_data()` to dispatcher
+- move `upsert_electron_data()` to dispatcher
+- move `insert_electron_dependency_data()` to dispatcher
+- move `persist()` to dispatcher
+- move `get_unique_id()` to dispatcher
+- move `initialize_result_object()` to dispatcher
+
 ## [0.199.0] - 2022-09-29
 
 ### Authors
@@ -112,12 +121,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update the `set/get/update` config methods to distinguish between the client and server parts
 - `get_all_node_results()` uses in memory `Result` instead of DB
 - `get_all_node_outputs()` uses in memory Result instead of DB
-- move `upsert_lattice_data()` to dispatcher
-- move `upsert_electron_data()` to dispatcher
-- move `insert_electron_dependency_data()` to dispatcher
-- move `persist()` to dispatcher
-- move `get_unique_id()` to dispatcher
-- move `initialize_result_object()` to dispatcher
 
 ### Removed
 
