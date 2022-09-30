@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix regex for matching version
 - add `persist-credentials: false` in nightly
 - Update `nightly` schedule to midnight EST
+- Added CI for Ubuntu 22.04 / Python 3.8, 3.9
+- Added CI for Centos 7 / Python 3.9
+- Added experimental CI for Debian 11 / Python 3.11rc2
+- Renamed Ubuntu images to Debian for accuracy
 
 ## [0.199.0] - 2022-09-29
 
@@ -86,10 +90,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding `nightly.yml` workflow for nightly CI
 - Updated triggers to `tests` and `changelog` workflows
 - Enhanced pre-release workflows
-- Added CI for Ubuntu 22.04 / Python 3.8, 3.9
-- Added CI for Centos 7 / Python 3.9
-- Added experimental CI for Debian 11 / Python 3.11rc2
-- Renamed Ubuntu images to Debian for accuracy
 - `codecov` passthrough jobs added for when tests are not run
 - Tests are run on one platform on pushes to `develop` to keep codecov reports accurate
 - Test matrix source triggers changed from `workflow_call` to `schedule` since contexts are inherited
