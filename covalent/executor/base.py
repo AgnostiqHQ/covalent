@@ -233,7 +233,6 @@ class BaseExecutor(_AbstractBaseExecutor):
         kwargs: Dict,
         dispatch_id: str,
         results_dir: str,
-        status_store: AsyncSafeVariable,
         node_id: int = -1,
     ) -> Any:
         """
@@ -249,7 +248,6 @@ class BaseExecutor(_AbstractBaseExecutor):
             dispatch_id: The unique identifier of the external lattice process which is
                          calling this function.
             results_dir: The location of the results directory.
-            status_store: Variable to store the latest status in to keep the UI updated.
             node_id: ID of the node in the transport graph which is using this executor.
 
         Returns:
@@ -263,7 +261,6 @@ class BaseExecutor(_AbstractBaseExecutor):
             "dispatch_id": dispatch_id,
             "node_id": node_id,
             "results_dir": results_dir,
-            "status_store": status_store,
         }
 
         with self.get_dispatch_context(dispatch_info), redirect_stdout(
