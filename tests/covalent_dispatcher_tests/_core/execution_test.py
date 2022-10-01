@@ -26,6 +26,7 @@ Tests for the core functionality of the dispatcher.
 import asyncio
 from asyncio import Queue
 from typing import Dict, List
+from unittest.mock import MagicMock
 
 import cloudpickle as pickle
 import pytest
@@ -33,6 +34,7 @@ import pytest
 import covalent as ct
 from covalent._data_store.datastore import DataStore
 from covalent._results_manager import Result
+from covalent._results_manager.result import initialize_result_object
 from covalent._shared_files.defaults import sublattice_prefix
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
@@ -88,6 +90,34 @@ def get_mock_result() -> Result:
     )
 
     return result_object
+
+
+def test_initialize_result_object(mocker):
+    """Test the `initialize_result_object` function"""
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph(1)
+    json_lattice = workflow.serialize_to_json()
+    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
+    result_object = get_mock_result()
+
+    mock_result_class = mocker.patch("covalent._results_manager.result.Result")
+    mock_result_instance = mock_result_class.return_value
+    mock_result_instance.persist = MagicMock()
+
+    sub_result_object = initialize_result_object(
+        json_lattice=json_lattice, parent_result_object=result_object, parent_electron_id=5
+    )
+
+    mock_result_instance.persist.assert_called_with(electron_id=5)
+    assert sub_result_object._root_dispatch_id == result_object.dispatch_id
 
 
 def test_plan_workflow():

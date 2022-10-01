@@ -26,8 +26,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 from .._shared_files import logger
-from .._shared_files.context_managers import active_lattice_manager
-from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
@@ -315,26 +313,6 @@ Node Outputs
             self.get_node_result(node_id=node_id)
             for node_id in self._lattice.transport_graph._graph.nodes
         ]
-
-    def post_process(self):
-
-        # Copied from server-side _post_process()
-        node_outputs = self.get_all_node_outputs()
-        ordered_node_outputs = []
-        for i, item in enumerate(node_outputs.items()):
-            key, val = item
-            if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
-                ordered_node_outputs.append((i, val))
-
-        lattice = self._lattice
-
-        with active_lattice_manager.claim(lattice):
-            lattice.post_processing = True
-            lattice.electron_outputs = ordered_node_outputs
-            workflow_function = lattice.workflow_function.get_deserialized()
-            result = workflow_function(*lattice.args, **lattice.kwargs)
-            lattice.post_processing = False
-        return result
 
     def _get_node_name(self, node_id: int) -> str:
         """
