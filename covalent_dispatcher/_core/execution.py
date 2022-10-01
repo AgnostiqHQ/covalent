@@ -49,7 +49,7 @@ from covalent._shared_files.defaults import (
     sublattice_prefix,
 )
 from covalent._shared_files.statuses import PendingCategory, status_listener
-from covalent._shared_files.util_classes import SafeVariable
+from covalent._shared_files.util_classes import AsyncSafeVariable
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
@@ -336,9 +336,6 @@ async def _run_task(
         else:
             app_log.debug(f"Executing task {node_name}")
 
-            status_store = SafeVariable()
-            status_store.save(PendingCategory())
-
             assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
             execute_callable = partial(
                 executor.execute,
@@ -347,27 +344,31 @@ async def _run_task(
                 kwargs=inputs["kwargs"],
                 dispatch_id=dispatch_id,
                 results_dir=results_dir,
-                status_store=status_store,
                 node_id=node_id,
             )
 
-            # For intermediate status updations
-            listener_task = asyncio.create_task(
-                status_listener(
-                    result_object=result_object, node_id=node_id, status_store=status_store
-                )
-            )
-            background_listeners.add(listener_task)
-            listener_task.add_done_callback(background_listeners.discard)
-
             if isinstance(executor, AsyncBaseExecutor):
-                output, stdout, stderr = await execute_callable()
+
+                status_store = AsyncSafeVariable()
+
+                # For intermediate status updations
+                listener_task = asyncio.create_task(
+                    status_listener(
+                        result_object=result_object, node_id=node_id, status_store=status_store
+                    )
+                )
+                status_store.save(PendingCategory())
+
+                background_listeners.add(listener_task)
+                listener_task.add_done_callback(background_listeners.discard)
+
+                output, stdout, stderr = await execute_callable(status_store=status_store)
+
+                # Stop listening for status updates
+                listener_task.cancel()
             else:
                 loop = asyncio.get_running_loop()
                 output, stdout, stderr = await loop.run_in_executor(None, execute_callable)
-
-            # Stop listening for status updates
-            listener_task.cancel()
 
             node_result = generate_node_result(
                 node_id=node_id,

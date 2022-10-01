@@ -19,7 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-import queue
+# import queue
+import asyncio
 from typing import Any, NamedTuple
 
 from . import logger
@@ -28,14 +29,14 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-class SafeVariable(queue.Queue):
+class AsyncSafeVariable(asyncio.Queue):
     def __init__(self) -> None:
         super().__init__(maxsize=1)
 
     def save(self, value: Any) -> None:
         try:
             self.put_nowait(value)
-        except queue.Full:
+        except asyncio.QueueFull:
             self.get_nowait()
             self.put_nowait(value)
 
@@ -44,8 +45,13 @@ class SafeVariable(queue.Queue):
             value = self.get_nowait()
             self.put_nowait(value)
             return value
-        except queue.Empty:
+        except asyncio.QueueEmpty:
             return None
+
+    async def retrieve_wait(self) -> Any:
+        value = await self.get()
+        await self.put(value)
+        return value
 
 
 # TODO: Following definitions are for legacy reasons only and should be removed soon:

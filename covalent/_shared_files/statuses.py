@@ -29,7 +29,7 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 if TYPE_CHECKING:
-    from util_classes import SafeVariable
+    from util_classes import AsyncSafeVariable
 
     from .._results_manager.result import Result
 
@@ -110,11 +110,11 @@ class CancelledCategory(Status):
 
 
 async def status_listener(
-    result_object: "Result", node_id: int, status_store: "SafeVariable"
+    result_object: "Result", node_id: int, status_store: "AsyncSafeVariable"
 ) -> None:
     while True:
         try:
-            current_status = status_store.retrieve()
+            current_status = await status_store.retrieve_wait()
             if isinstance(current_status, (type(None), PendingCategory, RunningCategory)):
                 node_status = result_object._get_node_status(node_id)
                 if node_status != str(current_status):

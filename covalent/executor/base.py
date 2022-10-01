@@ -36,7 +36,7 @@ from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 
 from .._shared_files import logger
 from .._shared_files.context_managers import active_dispatch_info_manager
-from .._shared_files.util_classes import DispatchInfo, SafeVariable
+from .._shared_files.util_classes import AsyncSafeVariable, DispatchInfo
 from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
@@ -233,7 +233,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         kwargs: Dict,
         dispatch_id: str,
         results_dir: str,
-        status_store: SafeVariable,
+        status_store: AsyncSafeVariable,
         node_id: int = -1,
     ) -> Any:
         """
@@ -376,7 +376,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         kwargs: Dict,
         dispatch_id: str,
         results_dir: str,
-        status_store: SafeVariable,
+        status_store: AsyncSafeVariable,
         node_id: int = -1,
     ) -> Any:
 

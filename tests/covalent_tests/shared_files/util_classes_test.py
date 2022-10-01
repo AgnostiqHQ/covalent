@@ -18,12 +18,13 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import queue
+# import queue
+import asyncio
 from unittest import mock
 
 import pytest
 
-from covalent._shared_files.util_classes import SafeVariable, Status
+from covalent._shared_files.util_classes import AsyncSafeVariable, Status
 
 
 @pytest.fixture
@@ -33,7 +34,7 @@ def test_value():
 
 @pytest.fixture
 def safe_variable():
-    return SafeVariable()
+    return AsyncSafeVariable()
 
 
 def test_legacy_status():
@@ -46,90 +47,100 @@ def test_legacy_status():
     assert str(legacy_status) == test_status_str
 
 
-def test_safe_variable_init(mocker: mock):
-    """Testing SafeVariable's initialization"""
+def test_safe_variable_init():
+    """Testing AsyncSafeVariable's initialization"""
 
-    safe_variable = SafeVariable()
+    safe_variable = AsyncSafeVariable()
     assert safe_variable.maxsize == 1
 
 
-def test_safe_variable_save(mocker: mock, test_value: int, safe_variable: SafeVariable):
-    """Testing SafeVariable's save method"""
+def test_safe_variable_save(mocker: mock, test_value: int, safe_variable: AsyncSafeVariable):
+    """Testing AsyncSafeVariable's save method"""
 
-    put_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.put_nowait"
+    put_nowait_mock = mocker.patch(
+        "covalent._shared_files.util_classes.AsyncSafeVariable.put_nowait"
     )
 
     safe_variable.save(test_value)
-    put_nowait_safe_mock.assert_called_with(test_value)
+    put_nowait_mock.assert_called_with(test_value)
 
 
-def test_safe_variable_save_exception(mocker: mock, test_value: int, safe_variable: SafeVariable):
-    """Testing SafeVariable's save method when queue is full"""
+def test_safe_variable_save_exception(
+    mocker: mock, test_value: int, safe_variable: AsyncSafeVariable
+):
+    """Testing AsyncSafeVariable's save method when queue is full"""
 
-    put_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.put_nowait"
+    put_nowait_mock = mocker.patch(
+        "covalent._shared_files.util_classes.AsyncSafeVariable.put_nowait"
     )
-    put_nowait_safe_mock.side_effect = queue.Full
+    put_nowait_mock.side_effect = asyncio.QueueFull
 
-    get_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.get_nowait"
+    get_nowait_mock = mocker.patch(
+        "covalent._shared_files.util_classes.AsyncSafeVariable.get_nowait"
     )
 
-    with pytest.raises(queue.Full):
-        safe_variable.save(test_value + 1)
+    def remove_side_effect_after_getting():
+        put_nowait_mock.side_effect = None
 
-    get_nowait_safe_mock.assert_called_once()
-    put_nowait_safe_mock.assert_called_with(test_value + 1)
+    get_nowait_mock.side_effect = remove_side_effect_after_getting
+
+    safe_variable.save(test_value + 1)
+
+    get_nowait_mock.assert_called_once()
+    put_nowait_mock.assert_called_with(test_value + 1)
 
 
-def test_safe_variable_retrieve(mocker: mock, test_value: int, safe_variable: SafeVariable):
-    """Testing SafeVariable's retrieve method"""
+def test_safe_variable_retrieve(mocker: mock, test_value: int, safe_variable: AsyncSafeVariable):
+    """Testing AsyncSafeVariable's retrieve method"""
 
-    get_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.get_nowait"
+    get_nowait_mock = mocker.patch(
+        "covalent._shared_files.util_classes.AsyncSafeVariable.get_nowait"
     )
-    get_nowait_safe_mock.return_value = test_value
+    get_nowait_mock.return_value = test_value
 
-    put_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.put_nowait"
+    put_nowait_mock = mocker.patch(
+        "covalent._shared_files.util_classes.AsyncSafeVariable.put_nowait"
     )
 
     value = safe_variable.retrieve()
     assert value == test_value
-    get_nowait_safe_mock.assert_called_once()
-    put_nowait_safe_mock.assert_called_with(test_value)
+    get_nowait_mock.assert_called_once()
+    put_nowait_mock.assert_called_with(test_value)
 
 
-def test_safe_variable_retrieve_exception(mocker: mock, safe_variable: SafeVariable):
-    """Testing SafeVariable's retrieve method when queue is empty"""
+def test_safe_variable_retrieve_exception(mocker: mock, safe_variable: AsyncSafeVariable):
+    """Testing AsyncSafeVariable's retrieve method when queue is empty"""
 
-    get_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.get_nowait"
+    get_nowait_mock = mocker.patch(
+        "covalent._shared_files.util_classes.AsyncSafeVariable.get_nowait"
     )
-    get_nowait_safe_mock.side_effect = queue.Empty
+    get_nowait_mock.side_effect = asyncio.QueueEmpty
 
-    put_nowait_safe_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.put_nowait"
+    put_nowait_mock = mocker.patch(
+        "covalent._shared_files.util_classes.AsyncSafeVariable.put_nowait"
     )
 
     value = safe_variable.retrieve()
 
     assert value is None
-    get_nowait_safe_mock.assert_called_once()
-    put_nowait_safe_mock.call_count == 0
+
+    get_nowait_mock.assert_called_once()
+    put_nowait_mock.call_count == 0
 
 
-def test_safe_variable_retrieve_wait(mocker: mock, test_value: int, safe_variable: SafeVariable):
-    """Testing SafeVariable's retrieve_async method"""
+@pytest.mark.asyncio
+async def test_safe_variable_retrieve_wait(
+    mocker: mock, test_value: int, safe_variable: AsyncSafeVariable
+):
+    """Testing AsyncSafeVariable's retrieve_async method"""
 
     get_mock = mocker.patch(
-        "covalent._shared_files.util_classes.SafeVariable.get", return_value=test_value
+        "covalent._shared_files.util_classes.AsyncSafeVariable.get", return_value=test_value
     )
 
-    put_mock = mocker.patch("covalent._shared_files.util_classes.SafeVariable.put")
+    put_mock = mocker.patch("covalent._shared_files.util_classes.AsyncSafeVariable.put")
 
-    value = safe_variable.retrieve_wait()
+    value = await safe_variable.retrieve_wait()
     get_mock.assert_called_once()
     put_mock.assert_called_with(test_value)
     assert value == test_value
