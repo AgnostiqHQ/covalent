@@ -112,20 +112,21 @@ class CancelledCategory(Status):
 async def status_listener(
     result_object: "Result", node_id: int, status_store: "SafeVariable"
 ) -> None:
-    while True:
-        try:
-            current_status = status_store.retrieve()
-            if isinstance(current_status, (type(None), PendingCategory, RunningCategory)):
-                node_status = result_object._get_node_status(node_id)
-                if node_status != str(current_status):
-                    result_object._update_node(node_id=node_id, status=str(current_status))
-                await asyncio.sleep(0)
-            else:
+
+    try:
+        current_status = status_store.retrieve()
+
+        while isinstance(current_status, (type(None), PendingCategory, RunningCategory)):
+
+            node_status = result_object._get_node_status(node_id)
+            if node_status != str(current_status):
                 result_object._update_node(node_id=node_id, status=str(current_status))
-                break
-        except asyncio.CancelledError:
-            del status_store
-            break
+            await asyncio.sleep(0)
+
+        result_object._update_node(node_id=node_id, status=str(current_status))
+
+    except asyncio.CancelledError:
+        del status_store
 
 
 class RESULT_STATUS:
