@@ -216,6 +216,7 @@ def test_base_executor_execute(mocker):
     dispatch_id = "asdf"
     results_dir = "/tmp"
     node_id = -1
+    status_store = mocker.MagicMock()
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
@@ -225,6 +226,7 @@ def test_base_executor_execute(mocker):
         kwargs=kwargs,
         dispatch_id=dispatch_id,
         results_dir=results_dir,
+        status_store=status_store,
         node_id=node_id,
     )
 
@@ -267,6 +269,7 @@ def test_base_executor_passes_task_metadata(mocker):
     call_after = []
     dispatch_id = "asdf"
     results_dir = "/tmp"
+    status_store = mocker.MagicMock()
     node_id = -1
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
@@ -277,12 +280,14 @@ def test_base_executor_passes_task_metadata(mocker):
         kwargs=kwargs,
         dispatch_id=dispatch_id,
         results_dir=results_dir,
+        status_store=status_store,
         node_id=node_id,
     )
     task_metadata = {
         "dispatch_id": dispatch_id,
         "node_id": node_id,
         "results_dir": results_dir,
+        "status_store": status_store,
     }
     assert metadata == task_metadata
 
@@ -383,12 +388,14 @@ def test_executor_setup_teardown_method(mocker):
     call_after = []
     dispatch_id = "asdf"
     results_dir = "/tmp"
+    status_store = MagicMock()
     node_id = -1
 
     task_metadata = {
         "dispatch_id": dispatch_id,
         "node_id": node_id,
         "results_dir": results_dir,
+        "status_store": status_store,
     }
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
@@ -399,6 +406,7 @@ def test_executor_setup_teardown_method(mocker):
         kwargs=kwargs,
         dispatch_id=dispatch_id,
         results_dir=results_dir,
+        status_store=status_store,
         node_id=node_id,
     )
 

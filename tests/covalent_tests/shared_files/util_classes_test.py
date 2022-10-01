@@ -18,13 +18,11 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-# import queue
-import asyncio
 from unittest import mock
 
 import pytest
 
-from covalent._shared_files.util_classes import AsyncSafeVariable, Status
+from covalent._shared_files.util_classes import SafeVariable, Status
 
 
 @pytest.fixture
@@ -34,7 +32,7 @@ def test_value():
 
 @pytest.fixture
 def safe_variable():
-    return AsyncSafeVariable()
+    return SafeVariable()
 
 
 def test_legacy_status():
@@ -48,99 +46,60 @@ def test_legacy_status():
 
 
 def test_safe_variable_init():
-    """Testing AsyncSafeVariable's initialization"""
+    """Testing SafeVariable's initialization"""
 
-    safe_variable = AsyncSafeVariable()
+    safe_variable = SafeVariable()
     assert safe_variable.maxsize == 1
 
 
-def test_safe_variable_save(mocker: mock, test_value: int, safe_variable: AsyncSafeVariable):
-    """Testing AsyncSafeVariable's save method"""
-
-    put_nowait_mock = mocker.patch(
-        "covalent._shared_files.util_classes.AsyncSafeVariable.put_nowait"
-    )
-
-    safe_variable.save(test_value)
-    put_nowait_mock.assert_called_with(test_value)
-
-
-def test_safe_variable_save_exception(
-    mocker: mock, test_value: int, safe_variable: AsyncSafeVariable
+@pytest.mark.parametrize("is_full", [False, True])
+def test_safe_variable_save(
+    mocker: mock, test_value: int, safe_variable: SafeVariable, is_full: bool
 ):
-    """Testing AsyncSafeVariable's save method when queue is full"""
+    """Testing SafeVariable's save method"""
 
-    put_nowait_mock = mocker.patch(
-        "covalent._shared_files.util_classes.AsyncSafeVariable.put_nowait"
-    )
-    put_nowait_mock.side_effect = asyncio.QueueFull
+    full_mock = mocker.patch("covalent._shared_files.util_classes.SafeVariable.full")
+    full_mock.return_value = is_full
 
-    get_nowait_mock = mocker.patch(
-        "covalent._shared_files.util_classes.AsyncSafeVariable.get_nowait"
-    )
+    put_mock = mocker.patch("covalent._shared_files.util_classes.SafeVariable.put")
 
-    def remove_side_effect_after_getting():
-        put_nowait_mock.side_effect = None
+    get_mock = mocker.patch("covalent._shared_files.util_classes.SafeVariable.get")
 
-    get_nowait_mock.side_effect = remove_side_effect_after_getting
+    if not is_full:
+        safe_variable.save(test_value)
 
-    safe_variable.save(test_value + 1)
+        put_mock.assert_called_with(test_value)
 
-    get_nowait_mock.assert_called_once()
-    put_nowait_mock.assert_called_with(test_value + 1)
+    else:
+        safe_variable.save(test_value + 1)
 
-
-def test_safe_variable_retrieve(mocker: mock, test_value: int, safe_variable: AsyncSafeVariable):
-    """Testing AsyncSafeVariable's retrieve method"""
-
-    get_nowait_mock = mocker.patch(
-        "covalent._shared_files.util_classes.AsyncSafeVariable.get_nowait"
-    )
-    get_nowait_mock.return_value = test_value
-
-    put_nowait_mock = mocker.patch(
-        "covalent._shared_files.util_classes.AsyncSafeVariable.put_nowait"
-    )
-
-    value = safe_variable.retrieve()
-    assert value == test_value
-    get_nowait_mock.assert_called_once()
-    put_nowait_mock.assert_called_with(test_value)
+        get_mock.assert_called_once()
+        put_mock.assert_called_with(test_value + 1)
 
 
-def test_safe_variable_retrieve_exception(mocker: mock, safe_variable: AsyncSafeVariable):
-    """Testing AsyncSafeVariable's retrieve method when queue is empty"""
-
-    get_nowait_mock = mocker.patch(
-        "covalent._shared_files.util_classes.AsyncSafeVariable.get_nowait"
-    )
-    get_nowait_mock.side_effect = asyncio.QueueEmpty
-
-    put_nowait_mock = mocker.patch(
-        "covalent._shared_files.util_classes.AsyncSafeVariable.put_nowait"
-    )
-
-    value = safe_variable.retrieve()
-
-    assert value is None
-
-    get_nowait_mock.assert_called_once()
-    put_nowait_mock.call_count == 0
-
-
-@pytest.mark.asyncio
-async def test_safe_variable_retrieve_wait(
-    mocker: mock, test_value: int, safe_variable: AsyncSafeVariable
+@pytest.mark.parametrize("is_empty", [False, True])
+def test_safe_variable_retrieve(
+    mocker: mock, test_value: int, safe_variable: SafeVariable, is_empty: bool
 ):
-    """Testing AsyncSafeVariable's retrieve_async method"""
+    """Testing SafeVariable's retrieve method"""
+
+    empty_mock = mocker.patch("covalent._shared_files.util_classes.SafeVariable.empty")
+    empty_mock.return_value = is_empty
 
     get_mock = mocker.patch(
-        "covalent._shared_files.util_classes.AsyncSafeVariable.get", return_value=test_value
+        "covalent._shared_files.util_classes.SafeVariable.get", return_value=test_value
     )
 
-    put_mock = mocker.patch("covalent._shared_files.util_classes.AsyncSafeVariable.put")
+    put_mock = mocker.patch("covalent._shared_files.util_classes.SafeVariable.put")
 
-    value = await safe_variable.retrieve_wait()
-    get_mock.assert_called_once()
-    put_mock.assert_called_with(test_value)
-    assert value == test_value
+    value = safe_variable.retrieve()
+
+    if not is_empty:
+        assert value == test_value
+        get_mock.assert_called_once()
+        put_mock.assert_called_with(test_value)
+
+    else:
+        assert value is None
+        get_mock.call_count == 0
+        put_mock.call_count == 0
