@@ -202,7 +202,7 @@ role with the appropriate permissions to be passed to Braket.
    * - IAM role
      - Yes
      - :code:`braket_job_execution_role_name`
-     - An IAM role granting permissions to Braket, S3, ECR, and a few other resources. The "AmazonBraketFullAccess" managed policy would suffice.
+     - An IAM role granting permissions to Braket, S3, ECR, and a few other resources.
    * - ECR repository
      - Yes
      - :code:`ecr_repo_name`
@@ -213,9 +213,6 @@ role with the appropriate permissions to be passed to Braket.
      - An S3 bucket for storing task-specific data, such as Braket outputs or function inputs.
 
 
-#. To set up finer-grained permissions for the IAM role, please see
-   the AWS documentation on `"managing access to Amazon Braket"
-   <https://docs.aws.amazon.com/braket/latest/developerguide/braket-manage-access.html>`_.
 
 #. Braket jobs are packaged and shipped in containers together with
    some supporting packages; for more context, see the `"Bring your
@@ -228,6 +225,138 @@ role with the appropriate permissions to be passed to Braket.
 #. The `AWS documentation on S3
    <https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html>`_
    details how to configure an S3 bucket.
+#.  The permissions required for the the IAM role are documented in the article
+    `"managing access to Amazon Braket" <https://docs.aws.amazon.com/braket/latest/developerguide/braket-manage-access.html>`_.
+    The following policy is attached to the default role "CovalentBraketJobsExecutionRole":
+
+.. dropdown:: Sample IAM policy for Braket's execution role
+
+    .. code:: json
+
+    {
+	"Version": "2012-10-17",
+	"Statement": [
+	    {
+		"Sid": "VisualEditor0",
+		"Effect": "Allow",
+		"Action": "cloudwatch:PutMetricData",
+		"Resource": "*",
+		"Condition": {
+		    "StringEquals": {
+			"cloudwatch:namespace": "/aws/braket"
+		    }
+		}
+	    },
+	    {
+		"Sid": "VisualEditor1",
+		"Effect": "Allow",
+		"Action": [
+		    "logs:CreateLogStream",
+		    "logs:DescribeLogStreams",
+		    "ecr:GetDownloadUrlForLayer",
+		    "ecr:BatchGetImage",
+		    "logs:StartQuery",
+		    "logs:GetLogEvents",
+		    "logs:CreateLogGroup",
+		    "logs:PutLogEvents",
+		    "ecr:BatchCheckLayerAvailability"
+		],
+		"Resource": [
+		    "arn:aws:ecr:*:348041629502:repository/*",
+		    "arn:aws:logs:*:*:log-group:/aws/braket*"
+		]
+	    },
+	    {
+		"Sid": "VisualEditor2",
+		"Effect": "Allow",
+		"Action": "iam:PassRole",
+		"Resource": "arn:aws:iam::348041629502:role/CovalentBraketJobsExecutionRole",
+		"Condition": {
+		    "StringLike": {
+			"iam:PassedToService": "braket.amazonaws.com"
+		    }
+		}
+	    },
+	    {
+		"Sid": "VisualEditor3",
+		"Effect": "Allow",
+		"Action": [
+		    "braket:SearchDevices",
+		    "s3:CreateBucket",
+		    "ecr:BatchDeleteImage",
+		    "ecr:BatchGetRepositoryScanningConfiguration",
+		    "ecr:DeleteRepository",
+		    "ecr:TagResource",
+		    "ecr:BatchCheckLayerAvailability",
+		    "ecr:GetLifecyclePolicy",
+		    "braket:CreateJob",
+		    "ecr:DescribeImageScanFindings",
+		    "braket:GetJob",
+		    "ecr:CreateRepository",
+		    "ecr:PutImageScanningConfiguration",
+		    "ecr:GetDownloadUrlForLayer",
+		    "ecr:DescribePullThroughCacheRules",
+		    "ecr:GetAuthorizationToken",
+		    "ecr:DeleteLifecyclePolicy",
+		    "braket:ListTagsForResource",
+		    "ecr:PutImage",
+		    "s3:PutObject",
+		    "s3:GetObject",
+		    "braket:GetDevice",
+		    "ecr:UntagResource",
+		    "ecr:BatchGetImage",
+		    "ecr:DescribeImages",
+		    "braket:CancelQuantumTask",
+		    "ecr:StartLifecyclePolicyPreview",
+		    "braket:CancelJob",
+		    "ecr:InitiateLayerUpload",
+		    "ecr:PutImageTagMutability",
+		    "ecr:StartImageScan",
+		    "ecr:DescribeImageReplicationStatus",
+		    "ecr:ListTagsForResource",
+		    "s3:ListBucket",
+		    "ecr:UploadLayerPart",
+		    "ecr:CreatePullThroughCacheRule",
+		    "ecr:ListImages",
+		    "ecr:GetRegistryScanningConfiguration",
+		    "braket:TagResource",
+		    "ecr:CompleteLayerUpload",
+		    "ecr:DescribeRepositories",
+		    "ecr:ReplicateImage",
+		    "ecr:GetRegistryPolicy",
+		    "ecr:PutLifecyclePolicy",
+		    "s3:PutBucketPublicAccessBlock",
+		    "ecr:GetLifecyclePolicyPreview",
+		    "ecr:DescribeRegistry",
+		    "braket:SearchJobs",
+		    "braket:CreateQuantumTask",
+		    "iam:ListRoles",
+		    "ecr:PutRegistryScanningConfiguration",
+		    "ecr:DeletePullThroughCacheRule",
+		    "braket:UntagResource",
+		    "ecr:BatchImportUpstreamImage",
+		    "braket:GetQuantumTask",
+		    "s3:PutBucketPolicy",
+		    "braket:SearchQuantumTasks",
+		    "ecr:GetRepositoryPolicy",
+		    "ecr:PutReplicationConfiguration"
+		],
+		"Resource": "*"
+	    },
+	    {
+		"Sid": "VisualEditor4",
+		"Effect": "Allow",
+		"Action": "logs:GetQueryResults",
+		"Resource": "arn:aws:logs:*:*:log-group:*"
+	    },
+	    {
+		"Sid": "VisualEditor5",
+		"Effect": "Allow",
+		"Action": "logs:StopQuery",
+		"Resource": "arn:aws:logs:*:*:log-group:/aws/braket*"
+	    }
+	]
+    }
 
 .. ===========================================
 .. 5. Source
