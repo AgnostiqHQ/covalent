@@ -7,6 +7,6 @@ Covalent is developed using Python 3.8 on Linux and macOS.  See the :doc:`Compat
 
 .. toctree::
    :maxdepth: 2
-   
+
    installation/index
    quickstart/index
