@@ -44,7 +44,6 @@ export function DispatchLayout() {
   const dispatch = useDispatch()
   const graph_result = useSelector((state) => state.graphResults[dispatchId].graph)
   const latDetailError = useSelector((state) => state.latticeResults.latticeDetailsResults.error)
-
   // check if socket message is received and call API
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
   const sublatticesDispatchId = useSelector(

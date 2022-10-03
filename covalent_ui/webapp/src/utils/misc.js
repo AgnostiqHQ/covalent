@@ -345,23 +345,23 @@ export const nodeLabelIcon = (type) => {
   }
 }
 
-export const SublatticeIcon = (type) => {
+export const sublatticeIcon = (type, sub) => {
   switch (type) {
     case 'COMPLETED':
       return (
-        <SvgIcon sx={{ mr: 1 }}>
+        <SvgIcon sx={{ mr: 1, mt: sub ? 1 : 0, ml: sub ? 1 : 0, fontSize: '28px' }}>
           <SuccessSvg />
         </SvgIcon>
       )
     case 'FAILED':
       return (
-        <SvgIcon sx={{ mr: 1 }}>
+        <SvgIcon sx={{ mr: 1, mt: sub ? 1 : 0, ml: sub ? 1 : 0 , fontSize: '28px'}}>
           <FailedSvg />
         </SvgIcon>
       )
     case 'RUNNING':
       return (
-        <SvgIcon sx={{ mr: 1 }}>
+        <SvgIcon sx={{ mr: 1, mt: sub ? 1 : 0, ml: sub ? 1 : 0 , fontSize: '28px'}}>
           <RunningSvg />
         </SvgIcon>
       )

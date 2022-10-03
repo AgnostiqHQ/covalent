@@ -119,6 +119,40 @@ class GraphResponse(BaseModel):
     """Graph Response Model"""
 
 
+class GraphNodes(BaseModel):
+
+    id: int = None
+    name: str = None
+    node_id: int = None
+    started_at: datetime = None
+    completed_at: datetime = None
+    status: str = None
+    type: str = None
+    executor: str = None
+
+    # Immediate parent electron id
+    parent_electron_id: int = None
+
+    # Is_parent field introduced to for graph box
+    is_parent: int = None
+
+    # Immediate parent dispatch id, to get electrons details
+    parent_dispatch_id: str = None
+
+    # Allow users to copy dispatch id a sublattice
+    sublattice_dispatch_id: str = None
+
+
+class GraphResponseData(BaseModel):
+
+    nodes: List[GraphNodes] = None
+    links: List[dict] = None
+
+
+class GraphResponse(BaseModel):
+    """Graph Response Model"""
+
+
 class LatticeFileOutput(str, Enum):
     """Lattices file names"""
 
