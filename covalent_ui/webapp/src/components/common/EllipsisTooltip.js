@@ -61,7 +61,7 @@ const OverflowTip = (props) => {
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          width: '200px',
+          width: props.width ? props.width : '200px',
         }}
       >
         {props.value}

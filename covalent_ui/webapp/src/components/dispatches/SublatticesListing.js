@@ -76,8 +76,8 @@ const headers = [
 
 const ResultsTableHead = ({ order, orderBy, onSort }) => {
   const createSortHandler = (property) => (event) => {
-    onSort(event, property);
-  };
+    onSort(event, property)
+  }
   return (
     <TableHead>
       <TableRow>
@@ -175,7 +175,8 @@ const SublatticesListing = () => {
     (state) => state.latticeResults.sublatticesId
   )
   const sublatticesListView = useSelector(
-    (state) => state.latticeResults.latticeResultsData[dispatchId].sublatticesList
+    (state) =>
+      state.latticeResults.latticeResultsData[dispatchId].sublatticesList
   )?.map((e) => {
     return {
       dispatchId: e.dispatch_id,
@@ -211,47 +212,47 @@ const SublatticesListing = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortColumn, sortOrder, callSocketApi])
 
-  const handleChangeSort = (e,column) => {
+  const handleChangeSort = (e, column) => {
     const isAsc = sortColumn === column && sortOrder === 'asc'
     setSortOrder(isAsc ? 'desc' : 'asc')
     setSortColumn(column)
   }
 
   function stableSort(array, comparator) {
-    const stabilizedThis = array.map((el, index) => [el, index]);
+    const stabilizedThis = array.map((el, index) => [el, index])
     stabilizedThis.sort((a, b) => {
-      const order = comparator(a[0], b[0]);
+      const order = comparator(a[0], b[0])
       if (order !== 0) {
-        return order;
+        return order
       }
-      return a[1] - b[1];
-    });
-    return stabilizedThis.map((el) => el[0]);
+      return a[1] - b[1]
+    })
+    return stabilizedThis.map((el) => el[0])
   }
 
   function descendingComparator(a, b, orderBy) {
     if (orderBy === 'runTime' || orderBy === 'endTime') {
       if (new Date(b[orderBy]) < new Date(a[orderBy])) {
-        return -1;
+        return -1
       }
       if (new Date(b[orderBy]) > new Date(a[orderBy])) {
-        return 1;
+        return 1
       }
     }
 
     if (b[orderBy] < a[orderBy]) {
-      return -1;
+      return -1
     }
     if (b[orderBy] > a[orderBy]) {
-      return 1;
+      return 1
     }
-    return 0;
+    return 0
   }
 
   function getComparator(order, orderBy) {
     return order === 'desc'
       ? (a, b) => descendingComparator(a, b, orderBy)
-      : (a, b) => -descendingComparator(a, b, orderBy);
+      : (a, b) => -descendingComparator(a, b, orderBy)
   }
 
   const sublatticesDispatch = (sublatticeId) => {
@@ -279,7 +280,10 @@ const SublatticesListing = () => {
                   }}
                 >
                   {sublatticesListView &&
-                    stableSort(sublatticesListView, getComparator(sortOrder, sortColumn)).map((result, index) => (
+                    stableSort(
+                      sublatticesListView,
+                      getComparator(sortOrder, sortColumn)
+                    ).map((result, index) => (
                       <Tooltip title="Click to view sublattices graph">
                         <TableRow
                           hover
@@ -305,13 +309,19 @@ const SublatticesListing = () => {
                           }}
                         >
                           <TableCell>
-                            <Grid sx={{ display: 'flex', mt: 0.8, mb: 0 }}>
+                            <Grid
+                              sx={{
+                                display: 'flex',
+                                mt: 0.8,
+                                mb: 0,
+                              }}
+                            >
                               {' '}
                               {sublatticeIcon(result.status)}
                               <OverflowTip
-                                width="70px"
                                 fontSize="14px"
                                 value={result.latticeName}
+                                width="70px"
                               />
                             </Grid>
                           </TableCell>
@@ -323,8 +333,8 @@ const SublatticesListing = () => {
                           </TableCell>
                           <TableCell>
                             <OverflowTip
-                              width="70px"
                               value={`${result.totalElectrons}/${result.totalElectronsCompleted}`}
+                              width="70px"
                             />
                           </TableCell>
                         </TableRow>

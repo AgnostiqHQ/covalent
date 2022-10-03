@@ -37,7 +37,12 @@ import { TabContext, TabList, TabPanel } from '@mui/lab'
 import LatticeDispatchOverview from './LatticeDispatchOverview'
 import SublatticesListing from '../dispatches/SublatticesListing'
 import ErrorCard from '../common/ErrorCard'
-import { latticeDetails, latticeError, sublatticesListDetails, resetSublatticesId } from '../../redux/latticeSlice'
+import {
+  latticeDetails,
+  latticeError,
+  sublatticesListDetails,
+  resetSublatticesId,
+} from '../../redux/latticeSlice'
 import { ChevronLeft } from '@mui/icons-material'
 import CopyButton from '../common/CopyButton'
 import { truncateMiddle } from '../../utils/misc'
@@ -47,10 +52,11 @@ import { isDemo } from '../../utils/demo/setup'
 const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
-  const [tab, setTab] = useState('sublattices')
+  const [tab, setTab] = useState('overview')
 
   const drawerLatticeDetails = useSelector(
-    (state) => state.latticeResults.latticeResultsData[dispatchId].latticeDetails
+    (state) =>
+      state.latticeResults.latticeResultsData[dispatchId].latticeDetails
   )
   const drawerLatticeError = useSelector(
     (state) => state.latticeResults.latticeResultsData[dispatchId].latticeError
@@ -64,7 +70,8 @@ const DispatchDrawerContents = () => {
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
   const sublatticesListView = useSelector(
-    (state) => state.latticeResults.latticeResultsData[dispatchId].sublatticesList
+    (state) =>
+      state.latticeResults.latticeResultsData[dispatchId].sublatticesList
   )
   const sublatticesListApi = () => {
     const bodyParams = {
@@ -85,14 +92,14 @@ const DispatchDrawerContents = () => {
 
   useEffect(() => {
     if (!isDemo) {
-      sublatticesListApi();
+      sublatticesListApi()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
 
   const handleTabChange = (value) => {
-    dispatch(resetSublatticesId());
-    setTab(value);
+    dispatch(resetSublatticesId())
+    setTab(value)
   }
 
   return (
@@ -161,7 +168,9 @@ const DispatchDrawerContents = () => {
           onChange={(e, newTab) => handleTabChange(newTab)}
         >
           <Tab label="Overview" value="overview" />
-          {sublatticesListView?.length > 0 && (<Tab label="Sublattices" value="sublattices" />)}
+          {sublatticesListView?.length > 0 && (
+            <Tab label="Sublattices" value="sublattices" />
+          )}
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
