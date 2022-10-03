@@ -55,19 +55,19 @@ import OverflowTip from '../common/EllipsisTooltip'
 
 const headers = [
   {
-    id: 'lattice_name',
+    id: 'latticeName',
     getter: 'lattice.name',
     label: 'Title',
     sortable: true,
   },
   {
-    id: 'runtime',
+    id: 'runTime',
     getter: 'runtime',
     label: 'Runtime',
     sortable: true,
   },
   {
-    id: 'total_electrons',
+    id: 'totalElectrons',
     getter: 'nodes',
     label: 'Nodes',
     sortable: true,
@@ -75,6 +75,9 @@ const headers = [
 ]
 
 const ResultsTableHead = ({ order, orderBy, onSort }) => {
+  const createSortHandler = (property) => (event) => {
+    onSort(event, property);
+  };
   return (
     <TableHead>
       <TableRow>
@@ -91,7 +94,7 @@ const ResultsTableHead = ({ order, orderBy, onSort }) => {
                 <TableSortLabel
                   active={orderBy === header.id}
                   direction={orderBy === header.id ? order : 'asc'}
-                  onClick={() => onSort(header.id)}
+                  onClick={createSortHandler(header.id)}
                   sx={{
                     '.Mui-active': {
                       color: (theme) => theme.palette.text.secondary,
@@ -208,10 +211,47 @@ const SublatticesListing = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortColumn, sortOrder, callSocketApi])
 
-  const handleChangeSort = (column) => {
+  const handleChangeSort = (e,column) => {
     const isAsc = sortColumn === column && sortOrder === 'asc'
     setSortOrder(isAsc ? 'desc' : 'asc')
     setSortColumn(column)
+  }
+
+  function stableSort(array, comparator) {
+    const stabilizedThis = array.map((el, index) => [el, index]);
+    stabilizedThis.sort((a, b) => {
+      const order = comparator(a[0], b[0]);
+      if (order !== 0) {
+        return order;
+      }
+      return a[1] - b[1];
+    });
+    return stabilizedThis.map((el) => el[0]);
+  }
+
+  function descendingComparator(a, b, orderBy) {
+    if (orderBy === 'runTime' || orderBy === 'endTime') {
+      if (new Date(b[orderBy]) < new Date(a[orderBy])) {
+        return -1;
+      }
+      if (new Date(b[orderBy]) > new Date(a[orderBy])) {
+        return 1;
+      }
+    }
+
+    if (b[orderBy] < a[orderBy]) {
+      return -1;
+    }
+    if (b[orderBy] > a[orderBy]) {
+      return 1;
+    }
+    return 0;
+  }
+
+  function getComparator(order, orderBy) {
+    return order === 'desc'
+      ? (a, b) => descendingComparator(a, b, orderBy)
+      : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
   const sublatticesDispatch = (sublatticeId) => {
@@ -239,7 +279,7 @@ const SublatticesListing = () => {
                   }}
                 >
                   {sublatticesListView &&
-                    sublatticesListView.map((result, index) => (
+                    stableSort(sublatticesListView, getComparator(sortOrder, sortColumn)).map((result, index) => (
                       <Tooltip title="Click to view sublattices graph">
                         <TableRow
                           hover
@@ -248,11 +288,11 @@ const SublatticesListing = () => {
                           sx={{
                             borderRadius:
                               result.dispatchId === sublatticesId?.dispatchId
-                                ? '1px solid #6473FF'
+                                ? '16px'
                                 : '',
                             border:
                               result.dispatchId === sublatticesId?.dispatchId
-                                ? '16px'
+                                ? '2px solid #6473FF'
                                 : '',
                             backgroundColor:
                               result.dispatchId === sublatticesId?.dispatchId
