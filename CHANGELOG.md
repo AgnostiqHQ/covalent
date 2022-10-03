@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed Ubuntu images to Debian for accuracy
 - Adding a new `aws_ami` job to `release.yml` to build the Covalent self-hosted AMI using packer
 - Adding boilerplate workflow
+- Syntax fixes in release.yml
+- Verbose failure messages in boilerplate workflow
 
 ## [0.199.0] - 2022-09-29
 
