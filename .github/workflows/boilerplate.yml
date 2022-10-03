@@ -38,7 +38,7 @@ jobs:
             **/*.py
       - name: Boilerplate
         env:
-          boilerplate: |
+          boilerplate: |-
             # Copyright 2021 Agnostiq Inc.
             #
             # This file is part of Covalent.
