@@ -2785,7 +2785,7 @@ graphDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"] = {
     "graph": {
         "nodes": [
             {
-                "id": 1076,
+                "id": 0,
                 "name": "identity",
                 "node_id": 0,
                 "started_at": "2022-10-03 03:34:56.953333",
@@ -2796,7 +2796,7 @@ graphDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"] = {
                 "sublattice_dispatch_id": null
             },
             {
-                "id": 1077,
+                "id": 1,
                 "name": ":parameter:1",
                 "node_id": 1,
                 "started_at": "2022-10-03 03:34:56.937558",
@@ -2807,7 +2807,7 @@ graphDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"] = {
                 "sublattice_dispatch_id": null
             },
             {
-                "id": 1078,
+                "id": 2,
                 "name": ":sublattice:SubEta",
                 "node_id": 2,
                 "started_at": "2022-10-03 03:34:57.017045",
@@ -2818,7 +2818,7 @@ graphDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"] = {
                 "sublattice_dispatch_id": "e8096480-15da-41c3-b869-212e7e773749"
             },
             {
-                "id": 1079,
+                "id": 3,
                 "name": ":sublattice:SubBeta",
                 "node_id": 3,
                 "started_at": "2022-10-03 03:34:57.444964",
@@ -2833,23 +2833,382 @@ graphDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"] = {
             {
                 "edge_name": "arg[0]",
                 "parameter_type": "arg",
-                "target": 1078,
-                "source": 1076,
+                "target": 2,
+                "source": 0,
                 "arg_index": 0
             },
             {
                 "edge_name": "x",
                 "parameter_type": "arg",
-                "target": 1076,
-                "source": 1077,
+                "target": 0,
+                "source": 1,
                 "arg_index": 0
             },
             {
                 "edge_name": "arg[0]",
                 "parameter_type": "arg",
-                "target": 1079,
-                "source": 1078,
+                "target": 3,
+                "source": 2,
                 "arg_index": 0
+            }
+        ]
+    }
+}
+
+
+// Dispatch e8096480-15da-41c3-b869-212e7e773749
+graphDemoData["e8096480-15da-41c3-b869-212e7e773749"] = {
+    "dispatch_id": "e8096480-15da-41c3-b869-212e7e773749",
+    "graph": {
+        "nodes": [
+            {
+                "id": 0,
+                "name": "identity",
+                "node_id": 0,
+                "started_at": "2022-10-03 03:34:57.202052",
+                "completed_at": "2022-10-03 03:34:57.261796",
+                "status": "COMPLETED",
+                "type": "function",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 1,
+                "name": ":parameter:1",
+                "node_id": 1,
+                "started_at": "2022-10-03 03:34:57.152237",
+                "completed_at": "2022-10-03 03:34:57.152243",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 2,
+                "name": "identity",
+                "node_id": 2,
+                "started_at": "2022-10-03 03:34:57.214856",
+                "completed_at": "2022-10-03 03:34:57.275284",
+                "status": "COMPLETED",
+                "type": "function",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 3,
+                "name": ":parameter:1",
+                "node_id": 3,
+                "started_at": "2022-10-03 03:34:57.173495",
+                "completed_at": "2022-10-03 03:34:57.173497",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 4,
+                "name": "identity",
+                "node_id": 4,
+                "started_at": "2022-10-03 03:34:57.242464",
+                "completed_at": "2022-10-03 03:34:57.386979",
+                "status": "COMPLETED",
+                "type": "function",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 5,
+                "name": ":parameter:1",
+                "node_id": 5,
+                "started_at": "2022-10-03 03:34:57.188510",
+                "completed_at": "2022-10-03 03:34:57.188513",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            }
+        ],
+        "links": [
+            {
+                "edge_name": "x",
+                "parameter_type": "arg",
+                "target": 0,
+                "source": 1,
+                "arg_index": 0
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "arg",
+                "target": 2,
+                "source": 3,
+                "arg_index": 0
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "arg",
+                "target": 4,
+                "source": 5,
+                "arg_index": 0
+            }
+        ]
+    }
+}
+
+// Dispatch 419d22a3-e1d7-46a8-92ba-d4ef234674b0
+graphDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"] = {
+    "dispatch_id": "419d22a3-e1d7-46a8-92ba-d4ef234674b0",
+    "graph": {
+        "nodes": [
+            {
+                "id": 0,
+                "name": "identity",
+                "node_id": 0,
+                "started_at": "2022-10-03 03:34:57.960289",
+                "completed_at": "2022-10-03 03:34:58.006827",
+                "status": "COMPLETED",
+                "type": "function",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 1,
+                "name": ":electron_list:",
+                "node_id": 1,
+                "started_at": "2022-10-03 03:34:57.840132",
+                "completed_at": "2022-10-03 03:34:57.907292",
+                "status": "COMPLETED",
+                "type": "electron_list",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 2,
+                "name": ":parameter:1",
+                "node_id": 2,
+                "started_at": "2022-10-03 03:34:57.678650",
+                "completed_at": "2022-10-03 03:34:57.678654",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 3,
+                "name": ":parameter:1",
+                "node_id": 3,
+                "started_at": "2022-10-03 03:34:57.697728",
+                "completed_at": "2022-10-03 03:34:57.697731",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 4,
+                "name": ":parameter:1",
+                "node_id": 4,
+                "started_at": "2022-10-03 03:34:57.717116",
+                "completed_at": "2022-10-03 03:34:57.717118",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 5,
+                "name": "identity",
+                "node_id": 5,
+                "started_at": "2022-10-03 03:34:57.984383",
+                "completed_at": "2022-10-03 03:34:58.046638",
+                "status": "COMPLETED",
+                "type": "function",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 6,
+                "name": ":electron_list:",
+                "node_id": 6,
+                "started_at": "2022-10-03 03:34:57.854587",
+                "completed_at": "2022-10-03 03:34:57.925453",
+                "status": "COMPLETED",
+                "type": "electron_list",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 7,
+                "name": ":parameter:1",
+                "node_id": 7,
+                "started_at": "2022-10-03 03:34:57.735275",
+                "completed_at": "2022-10-03 03:34:57.735277",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 8,
+                "name": ":parameter:1",
+                "node_id": 8,
+                "started_at": "2022-10-03 03:34:57.755331",
+                "completed_at": "2022-10-03 03:34:57.755334",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 9,
+                "name": ":parameter:1",
+                "node_id": 9,
+                "started_at": "2022-10-03 03:34:57.771624",
+                "completed_at": "2022-10-03 03:34:57.771626",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 10,
+                "name": "identity",
+                "node_id": 10,
+                "started_at": "2022-10-03 03:34:58.021597",
+                "completed_at": "2022-10-03 03:34:58.084013",
+                "status": "COMPLETED",
+                "type": "function",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 11,
+                "name": ":electron_list:",
+                "node_id": 11,
+                "started_at": "2022-10-03 03:34:57.882949",
+                "completed_at": "2022-10-03 03:34:57.970101",
+                "status": "COMPLETED",
+                "type": "electron_list",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 12,
+                "name": ":parameter:1",
+                "node_id": 12,
+                "started_at": "2022-10-03 03:34:57.788478",
+                "completed_at": "2022-10-03 03:34:57.788481",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 13,
+                "name": ":parameter:1",
+                "node_id": 13,
+                "started_at": "2022-10-03 03:34:57.804733",
+                "completed_at": "2022-10-03 03:34:57.804735",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 14,
+                "name": ":parameter:1",
+                "node_id": 14,
+                "started_at": "2022-10-03 03:34:57.821583",
+                "completed_at": "2022-10-03 03:34:57.821585",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            }
+        ],
+        "links": [
+            {
+                "edge_name": "x",
+                "parameter_type": "arg",
+                "target": 0,
+                "source": 1,
+                "arg_index": 0
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "kwarg",
+                "target": 1,
+                "source": 2,
+                "arg_index": 0
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "kwarg",
+                "target": 1,
+                "source": 3,
+                "arg_index": 1
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "kwarg",
+                "target": 1,
+                "source": 4,
+                "arg_index": 2
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "arg",
+                "target": 5,
+                "source": 6,
+                "arg_index": 0
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "kwarg",
+                "target": 6,
+                "source": 7,
+                "arg_index": 0
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "kwarg",
+                "target": 6,
+                "source": 8,
+                "arg_index": 1
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "kwarg",
+                "target": 6,
+                "source": 9,
+                "arg_index": 2
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "arg",
+                "target": 10,
+                "source": 11,
+                "arg_index": 0
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "kwarg",
+                "target": 11,
+                "source": 12,
+                "arg_index": 0
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "kwarg",
+                "target": 11,
+                "source": 13,
+                "arg_index": 1
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "kwarg",
+                "target": 11,
+                "source": 14,
+                "arg_index": 2
             }
         ]
     }

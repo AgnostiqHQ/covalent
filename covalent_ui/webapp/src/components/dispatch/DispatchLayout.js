@@ -42,13 +42,14 @@ import { isDemo } from '../../utils/demo/setup'
 export function DispatchLayout() {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
-  const graph_result = useSelector((state) => state.graphResults[dispatchId].graph)
   const latDetailError = useSelector((state) => state.latticeResults.latticeDetailsResults.error)
   // check if socket message is received and call API
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
   const sublatticesDispatchId = useSelector(
     (state) => state.latticeResults.sublatticesId
   )
+  const graph_result = useSelector((state) => state.graphResults[sublatticesDispatchId?.dispatchId ? sublatticesDispatchId?.dispatchId : dispatchId].graph)
+
   useEffect(() => {
     if (!isDemo) {
       if (sublatticesDispatchId?.dispatchId) dispatch(graphResults({ dispatchId: sublatticesDispatchId?.dispatchId }))

@@ -1646,4 +1646,488 @@ latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].sublatticesList =
     }
 ]
 
+// electron data initilisation
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron = []
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0] = {}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[1] = {}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2] = {}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3] = {}
+
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0].electronDetails = {
+    "id": 1076,
+    "node_id": 0,
+    "parent_lattice_id": 34,
+    "type": "function",
+    "storage_path": "/home/prasannavenkatesh/Desktop/workflows/results/699d2cb1-0776-4c54-a958-0a79082497e4/node_0",
+    "name": "identity",
+    "status": "COMPLETED",
+    "started_at": "2022-10-03T09:04:56",
+    "ended_at": "2022-10-03T09:04:56",
+    "runtime": 0,
+    "description": ""
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0].electronResult = {
+    "data": "\"1\""
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0].electronFunctionString = {
+    "data": "@ct.electron\ndef identity(x):\n    return x\n\n\n"
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0].electronError = null
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0].electronInput = {
+    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+}
+
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].electronDetails = {
+    "id": 1078,
+    "node_id": 2,
+    "parent_lattice_id": 34,
+    "type": "sublattice",
+    "storage_path": "/home/prasannavenkatesh/Desktop/workflows/results/699d2cb1-0776-4c54-a958-0a79082497e4/node_2",
+    "name": ":sublattice:SubEta",
+    "status": "COMPLETED",
+    "started_at": "2022-10-03T09:04:57",
+    "ended_at": "2022-10-03T09:04:57",
+    "runtime": 0,
+    "description": ""
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].electronResult = {
+    "data": "\"[1, 1, 1]\""
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].electronFunctionString = {
+    "data": "@ct.electron\n@ct.lattice\ndef SubEta(x):\n    a=[]\n    for i in range(3):\n        a.append(identity(x))\n    return a\n\n\n"
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].electronError = null
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].electronInput = {
+    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+}
+
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].electronDetails = {
+    "id": 1079,
+    "node_id": 3,
+    "parent_lattice_id": 34,
+    "type": "sublattice",
+    "storage_path": "/home/prasannavenkatesh/Desktop/workflows/results/699d2cb1-0776-4c54-a958-0a79082497e4/node_3",
+    "name": ":sublattice:SubBeta",
+    "status": "COMPLETED",
+    "started_at": "2022-10-03T09:04:57",
+    "ended_at": "2022-10-03T09:04:58",
+    "runtime": 1000,
+    "description": ""
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].electronResult = {
+    "data": "\"[[1, 1, 1], [1, 1, 1], [1, 1, 1]]\""
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].electronFunctionString = {
+    "data": "@ct.electron\n@ct.lattice\ndef SubBeta(x):\n    a=[]\n    for i in range(3):\n        a.append(identity(x))\n    return a    \n\n\n"
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].electronError = null
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].electronInput = {
+    "data": "{\"args\": [\"[1, 1, 1]\"], \"kwargs\": {}}"
+}
+
+
+
+//   Dispatch e8096480-15da-41c3-b869-212e7e773749
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"] = {}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].latticeDetails =
+{
+    "dispatch_id": "e8096480-15da-41c3-b869-212e7e773749",
+    "status": "COMPLETED",
+    "total_electrons": 4,
+    "total_electrons_completed": 4,
+    "started_at": "2022-10-03T09:04:56",
+    "ended_at": "2022-10-03T09:04:58",
+    "directory": "/home/prasannavenkatesh/Desktop/workflows/results/e8096480-15da-41c3-b869-212e7e773749",
+    "description": "",
+    "runtime": 2000,
+    "updated_at": null
+};
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].latticeError = "";
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].latticeResult = {
+    "data": "\"[[1, 1, 1], [1, 1, 1], [1, 1, 1]]\""
+  };
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].latticeInput = {
+    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+};
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].latticeFunctionString = {
+    "data": "@ct.lattice\ndef compute_energy(x):\n    y=identity(x)\n    result=SubEta(y)\n    result=SubBeta(result)\n    return result\n\n\n"
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].latticeExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].sublatticesList = [
+    {
+        "dispatch_id": "419d22a3-e1d7-46a8-92ba-d4ef234674b0",
+        "lattice_name": "SubBeta",
+        "runtime": 1000,
+        "total_electrons": 15,
+        "total_electrons_completed": 15,
+        "started_at": "2022-10-03T09:04:57",
+        "ended_at": "2022-10-03T09:04:58",
+        "status": "COMPLETED",
+        "updated_at": "2022-10-03T09:04:58"
+    },
+    {
+        "dispatch_id": "e8096480-15da-41c3-b869-212e7e773749",
+        "lattice_name": "SubEta",
+        "runtime": 0,
+        "total_electrons": 6,
+        "total_electrons_completed": 6,
+        "started_at": "2022-10-03T09:04:57",
+        "ended_at": "2022-10-03T09:04:57",
+        "status": "COMPLETED",
+        "updated_at": "2022-10-03T09:04:57"
+    }
+]
+
+// electron data initilisation
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron = []
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0] = {}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[1] = {}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2] = {}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[3] = {}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4] = {}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[5] = {}
+
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0].electronDetails = {
+    "id": 1080,
+    "node_id": 0,
+    "parent_lattice_id": 35,
+    "type": "function",
+    "storage_path": "/home/prasannavenkatesh/Desktop/workflows/results/e8096480-15da-41c3-b869-212e7e773749/node_0",
+    "name": "identity",
+    "status": "COMPLETED",
+    "started_at": "2022-10-03T09:04:57",
+    "ended_at": "2022-10-03T09:04:57",
+    "runtime": 0,
+    "description": ""
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0].electronResult = {
+    "data": "\"1\""
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0].electronFunctionString = {
+    "data": "@ct.electron\ndef identity(x):\n    return x\n\n\n"
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0].electronError = null
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0].electronInput = {
+    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+}
+
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].electronDetails = {
+    "id": 1082,
+    "node_id": 2,
+    "parent_lattice_id": 35,
+    "type": "function",
+    "storage_path": "/home/prasannavenkatesh/Desktop/workflows/results/e8096480-15da-41c3-b869-212e7e773749/node_2",
+    "name": "identity",
+    "status": "COMPLETED",
+    "started_at": "2022-10-03T09:04:57",
+    "ended_at": "2022-10-03T09:04:57",
+    "runtime": 0,
+    "description": ""
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].electronResult = {
+    "data": "\"1\""
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].electronFunctionString = {
+    "data": "@ct.electron\ndef identity(x):\n    return x\n\n\n"
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].electronError = null
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].electronInput = {
+    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+}
+
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].electronDetails = {
+    "id": 1084,
+    "node_id": 4,
+    "parent_lattice_id": 35,
+    "type": "function",
+    "storage_path": "/home/prasannavenkatesh/Desktop/workflows/results/e8096480-15da-41c3-b869-212e7e773749/node_4",
+    "name": "identity",
+    "status": "COMPLETED",
+    "started_at": "2022-10-03T09:04:57",
+    "ended_at": "2022-10-03T09:04:57",
+    "runtime": 0,
+    "description": ""
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].electronResult = {
+    "data": "\"1\""
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].electronFunctionString = {
+    "data": "@ct.electron\ndef identity(x):\n    return x\n\n\n"
+}
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].electronError = null
+latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].electronInput = {
+    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+}
+
+
+//   Dispatch 419d22a3-e1d7-46a8-92ba-d4ef234674b0
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].latticeDetails =
+{
+    "dispatch_id": "419d22a3-e1d7-46a8-92ba-d4ef234674b0",
+    "status": "COMPLETED",
+    "total_electrons": 4,
+    "total_electrons_completed": 4,
+    "started_at": "2022-10-03T09:04:56",
+    "ended_at": "2022-10-03T09:04:58",
+    "directory": "/home/prasannavenkatesh/Desktop/workflows/results/419d22a3-e1d7-46a8-92ba-d4ef234674b0",
+    "description": "",
+    "runtime": 2000,
+    "updated_at": null
+};
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].latticeError = "";
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].latticeResult = {
+    "data": "\"[[1, 1, 1], [1, 1, 1], [1, 1, 1]]\""
+  };
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].latticeInput = {
+    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+};
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].latticeFunctionString = {
+    "data": "@ct.lattice\ndef compute_energy(x):\n    y=identity(x)\n    result=SubEta(y)\n    result=SubBeta(result)\n    return result\n\n\n"
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].latticeExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].sublatticesList = [
+    {
+        "dispatch_id": "419d22a3-e1d7-46a8-92ba-d4ef234674b0",
+        "lattice_name": "SubBeta",
+        "runtime": 1000,
+        "total_electrons": 15,
+        "total_electrons_completed": 15,
+        "started_at": "2022-10-03T09:04:57",
+        "ended_at": "2022-10-03T09:04:58",
+        "status": "COMPLETED",
+        "updated_at": "2022-10-03T09:04:58"
+    },
+    {
+        "dispatch_id": "419d22a3-e1d7-46a8-92ba-d4ef234674b0",
+        "lattice_name": "SubEta",
+        "runtime": 0,
+        "total_electrons": 6,
+        "total_electrons_completed": 6,
+        "started_at": "2022-10-03T09:04:57",
+        "ended_at": "2022-10-03T09:04:57",
+        "status": "COMPLETED",
+        "updated_at": "2022-10-03T09:04:57"
+    }
+]
+
+// electron data initilisation
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron = []
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[2] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[3] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[4] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[7] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[8] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[9] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[12] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[13] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[14] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[15] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[16] = {}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[17] = {}
+
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0].electronDetails = {
+    "id": 1086,
+    "node_id": 0,
+    "parent_lattice_id": 36,
+    "type": "function",
+    "storage_path": "/home/prasannavenkatesh/Desktop/workflows/results/419d22a3-e1d7-46a8-92ba-d4ef234674b0/node_0",
+    "name": "identity",
+    "status": "COMPLETED",
+    "started_at": "2022-10-03T09:04:57",
+    "ended_at": "2022-10-03T09:04:58",
+    "runtime": 1000,
+    "description": ""
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0].electronResult = {
+    "data": "\"[1, 1, 1]\""
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0].electronFunctionString = {
+    "data": "# Copyright 2021 Agnostiq Inc.\n#\n# This file is part of Covalent.\n#\n# Licensed under the GNU Affero General Public License 3.0 (the \"License\").\n# A copy of the License may be obtained with this software package or at\n#\n#      https://www.gnu.org/licenses/agpl-3.0.en.html\n#\n# Use of this file is prohibited except in compliance with the License. Any\n# modifications or derivative works of this file must retain this copyright\n# notice, and modified files must contain a notice indicating that they have\n# been altered from the originals.\n# Covalent is distributed in the hope that it will be useful, but WITHOUT\n# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or\n# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.\n\n# Relief from the License may be granted by purchasing a commercial license.\n\nimport argparse\nimport os\n\nimport socketio\nimport uvicorn\nfrom fastapi import Request\nfrom fastapi.templating import Jinja2Templates\n\nfrom covalent._data_store.datastore import DataStore\nfrom covalent._shared_files import logger\nfrom covalent._shared_files.config import get_config\nfrom covalent_dispatcher._service.app_dask import DaskCluster\nfrom covalent_ui.api.main import app as fastapi_app\nfrom covalent_ui.api.main import sio\n\n# read env vars configuring server\nCOVALENT_SERVER_IFACE_ANY = os.getenv(\"COVALENT_SERVER_IFACE_ANY\", \"False\").lower() in (\n    \"true\",\n    \"1\",\n    \"t\",\n)\n\nWEBHOOK_PATH = \"/api/webhook\"\nWEBAPP_PATH = \"webapp/build\"\nSTATIC_FILES = {\"\": WEBAPP_PATH, \"/\": f\"{WEBAPP_PATH}/index.html\"}\n\n# Log configuration\napp_log = logger.app_log\nlog_stack_info = logger.log_stack_info\ntemplates = Jinja2Templates(directory=WEBAPP_PATH)\n\n\n@fastapi_app.get(\"/{rest_of_path}\")\ndef get_home(request: Request, rest_of_path: str):\n    return templates.TemplateResponse(\"index.html\", {\"request\": request})\n\n\n"
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0].electronError = null
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0].electronInput = {
+    "data": "{\"args\": [\"[1, 1, 1]\"], \"kwargs\": {}}"
+}
+
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].electronDetails = {
+    "id": 1086,
+    "node_id": 0,
+    "parent_lattice_id": 36,
+    "type": "function",
+    "storage_path": "/home/prasannavenkatesh/Desktop/workflows/results/419d22a3-e1d7-46a8-92ba-d4ef234674b0/node_0",
+    "name": "identity",
+    "status": "COMPLETED",
+    "started_at": "2022-10-03T09:04:57",
+    "ended_at": "2022-10-03T09:04:58",
+    "runtime": 1000,
+    "description": ""
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].electronResult = {
+    "data": "\"[1, 1, 1]\""
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].electronFunctionString = {
+    "data": "# Copyright 2021 Agnostiq Inc.\n#\n# This file is part of Covalent.\n#\n# Licensed under the GNU Affero General Public License 3.0 (the \"License\").\n# A copy of the License may be obtained with this software package or at\n#\n#      https://www.gnu.org/licenses/agpl-3.0.en.html\n#\n# Use of this file is prohibited except in compliance with the License. Any\n# modifications or derivative works of this file must retain this copyright\n# notice, and modified files must contain a notice indicating that they have\n# been altered from the originals.\n# Covalent is distributed in the hope that it will be useful, but WITHOUT\n# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or\n# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.\n\n# Relief from the License may be granted by purchasing a commercial license.\n\nimport argparse\nimport os\n\nimport socketio\nimport uvicorn\nfrom fastapi import Request\nfrom fastapi.templating import Jinja2Templates\n\nfrom covalent._data_store.datastore import DataStore\nfrom covalent._shared_files import logger\nfrom covalent._shared_files.config import get_config\nfrom covalent_dispatcher._service.app_dask import DaskCluster\nfrom covalent_ui.api.main import app as fastapi_app\nfrom covalent_ui.api.main import sio\n\n# read env vars configuring server\nCOVALENT_SERVER_IFACE_ANY = os.getenv(\"COVALENT_SERVER_IFACE_ANY\", \"False\").lower() in (\n    \"true\",\n    \"1\",\n    \"t\",\n)\n\nWEBHOOK_PATH = \"/api/webhook\"\nWEBAPP_PATH = \"webapp/build\"\nSTATIC_FILES = {\"\": WEBAPP_PATH, \"/\": f\"{WEBAPP_PATH}/index.html\"}\n\n# Log configuration\napp_log = logger.app_log\nlog_stack_info = logger.log_stack_info\ntemplates = Jinja2Templates(directory=WEBAPP_PATH)\n\n\n@fastapi_app.get(\"/{rest_of_path}\")\ndef get_home(request: Request, rest_of_path: str):\n    return templates.TemplateResponse(\"index.html\", {\"request\": request})\n\n\n"
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].electronError = null
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].electronInput = {
+    "data": "{\"args\": [\"[1, 1, 1]\"], \"kwargs\": {}}"
+}
+
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].electronDetails = {
+    "id": 1086,
+    "node_id": 0,
+    "parent_lattice_id": 36,
+    "type": "function",
+    "storage_path": "/home/prasannavenkatesh/Desktop/workflows/results/419d22a3-e1d7-46a8-92ba-d4ef234674b0/node_0",
+    "name": "identity",
+    "status": "COMPLETED",
+    "started_at": "2022-10-03T09:04:57",
+    "ended_at": "2022-10-03T09:04:58",
+    "runtime": 1000,
+    "description": ""
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].electronResult = {
+    "data": "\"[1, 1, 1]\""
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].electronFunctionString = {
+    "data": "# Copyright 2021 Agnostiq Inc.\n#\n# This file is part of Covalent.\n#\n# Licensed under the GNU Affero General Public License 3.0 (the \"License\").\n# A copy of the License may be obtained with this software package or at\n#\n#      https://www.gnu.org/licenses/agpl-3.0.en.html\n#\n# Use of this file is prohibited except in compliance with the License. Any\n# modifications or derivative works of this file must retain this copyright\n# notice, and modified files must contain a notice indicating that they have\n# been altered from the originals.\n# Covalent is distributed in the hope that it will be useful, but WITHOUT\n# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or\n# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.\n\n# Relief from the License may be granted by purchasing a commercial license.\n\nimport argparse\nimport os\n\nimport socketio\nimport uvicorn\nfrom fastapi import Request\nfrom fastapi.templating import Jinja2Templates\n\nfrom covalent._data_store.datastore import DataStore\nfrom covalent._shared_files import logger\nfrom covalent._shared_files.config import get_config\nfrom covalent_dispatcher._service.app_dask import DaskCluster\nfrom covalent_ui.api.main import app as fastapi_app\nfrom covalent_ui.api.main import sio\n\n# read env vars configuring server\nCOVALENT_SERVER_IFACE_ANY = os.getenv(\"COVALENT_SERVER_IFACE_ANY\", \"False\").lower() in (\n    \"true\",\n    \"1\",\n    \"t\",\n)\n\nWEBHOOK_PATH = \"/api/webhook\"\nWEBAPP_PATH = \"webapp/build\"\nSTATIC_FILES = {\"\": WEBAPP_PATH, \"/\": f\"{WEBAPP_PATH}/index.html\"}\n\n# Log configuration\napp_log = logger.app_log\nlog_stack_info = logger.log_stack_info\ntemplates = Jinja2Templates(directory=WEBAPP_PATH)\n\n\n@fastapi_app.get(\"/{rest_of_path}\")\ndef get_home(request: Request, rest_of_path: str):\n    return templates.TemplateResponse(\"index.html\", {\"request\": request})\n\n\n"
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].electronError = null
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].electronInput = {
+    "data": "{\"args\": [\"[1, 1, 1]\"], \"kwargs\": {}}"
+}
+
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].electronDetails = {
+    "id": 1087,
+    "node_id": 1,
+    "parent_lattice_id": 36,
+    "type": "electron_list",
+    "storage_path": "/home/prasannavenkatesh/Desktop/workflows/results/419d22a3-e1d7-46a8-92ba-d4ef234674b0/node_1",
+    "name": ":electron_list:",
+    "status": "COMPLETED",
+    "started_at": "2022-10-03T09:04:57",
+    "ended_at": "2022-10-03T09:04:57",
+    "runtime": 0,
+    "description": ""
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].electronResult = {
+    "data": "\"[1, 1, 1]\""
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].electronFunctionString = {
+    "data": "@electron\ndef to_decoded_electron_collection(**x):\n    \"\"\"Interchanges order of serialize -> collection\"\"\"\n    collection = list(x.values())[0]\n    if isinstance(collection, list):\n        return TransportableObject.deserialize_list(collection)\n    elif isinstance(collection, dict):\n        return TransportableObject.deserialize_dict(collection)\n\n\n"
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].electronError = null
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].electronInput = {
+    "data": "{\"args\": [], \"kwargs\": {\"x\": \"[<covalent.TransportableObject object at 0x7f82c7c337c0>, <covalent.TransportableObject object at 0x7f82c7b357f0>, <covalent.TransportableObject object at 0x7f82c7b352e0>]\"}}"
+}
+
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].electronDetails = {
+    "id": 1087,
+    "node_id": 1,
+    "parent_lattice_id": 36,
+    "type": "electron_list",
+    "storage_path": "/home/prasannavenkatesh/Desktop/workflows/results/419d22a3-e1d7-46a8-92ba-d4ef234674b0/node_1",
+    "name": ":electron_list:",
+    "status": "COMPLETED",
+    "started_at": "2022-10-03T09:04:57",
+    "ended_at": "2022-10-03T09:04:57",
+    "runtime": 0,
+    "description": ""
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].electronResult = {
+    "data": "\"[1, 1, 1]\""
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].electronFunctionString = {
+    "data": "@electron\ndef to_decoded_electron_collection(**x):\n    \"\"\"Interchanges order of serialize -> collection\"\"\"\n    collection = list(x.values())[0]\n    if isinstance(collection, list):\n        return TransportableObject.deserialize_list(collection)\n    elif isinstance(collection, dict):\n        return TransportableObject.deserialize_dict(collection)\n\n\n"
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].electronError = null
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].electronInput = {
+    "data": "{\"args\": [], \"kwargs\": {\"x\": \"[<covalent.TransportableObject object at 0x7f82c7c337c0>, <covalent.TransportableObject object at 0x7f82c7b357f0>, <covalent.TransportableObject object at 0x7f82c7b352e0>]\"}}"
+}
+
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].electronDetails = {
+    "id": 1087,
+    "node_id": 1,
+    "parent_lattice_id": 36,
+    "type": "electron_list",
+    "storage_path": "/home/prasannavenkatesh/Desktop/workflows/results/419d22a3-e1d7-46a8-92ba-d4ef234674b0/node_1",
+    "name": ":electron_list:",
+    "status": "COMPLETED",
+    "started_at": "2022-10-03T09:04:57",
+    "ended_at": "2022-10-03T09:04:57",
+    "runtime": 0,
+    "description": ""
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].electronResult = {
+    "data": "\"[1, 1, 1]\""
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].electronExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].electronFunctionString = {
+    "data": "@electron\ndef to_decoded_electron_collection(**x):\n    \"\"\"Interchanges order of serialize -> collection\"\"\"\n    collection = list(x.values())[0]\n    if isinstance(collection, list):\n        return TransportableObject.deserialize_list(collection)\n    elif isinstance(collection, dict):\n        return TransportableObject.deserialize_dict(collection)\n\n\n"
+}
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].electronError = null
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].electronInput = {
+    "data": "{\"args\": [], \"kwargs\": {\"x\": \"[<covalent.TransportableObject object at 0x7f82c7c337c0>, <covalent.TransportableObject object at 0x7f82c7b357f0>, <covalent.TransportableObject object at 0x7f82c7b352e0>]\"}}"
+}
+
 export default latticeDetailsDemoData
