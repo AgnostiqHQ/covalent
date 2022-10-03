@@ -61,6 +61,11 @@ jobs:
         run: |
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             if [[ ! $( cat $file ) =~ $boilerplate ]] ; then
+              printf "Boilerplate is missing from $file.\n"
+              printf "The first 20 lines of $file are\n\n"
+              cat -ET $file | head -n 20
+              printf "\nThe boilerplate should be\n\n"
+              echo $boilerplate | cat -ET
               exit 1
             fi
           done
