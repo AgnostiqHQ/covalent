@@ -41,7 +41,7 @@ We begin building our workflow by creating electrons for all the tasks listed in
         evals, _ = np.linalg.eig(matrix)
         return evals
 
-    
+
     @ct.electron
     def get_real_values(eigenvalues):
         """
@@ -123,7 +123,7 @@ single node workflow ``generate_figure`` and dispatch that to Covalent with the 
         plt.plot(real_values, imag_values, 'o', ms=1)
         plt.title(f"Matrix eigenvalues for set {integer_set}", fontsize=12)
         return ax
-        
+
     dispatch_id = ct.dispatch(generate_figure)(real_values, imag_values, integer_set)
     result = ct.get_result(dispatch_id, wait=True)
 
@@ -165,7 +165,7 @@ All Covalent ``executors`` are provided as separate plugins that user's can at w
 The ``SSHExecutor`` can be installed through ``pip`` as follows
 
 .. code:: bash
-    
+
     pip install covalent-ssh-plugin
 
 The executor can be imported from Covalent as any normal Python module and can be used in a workflow to customize
@@ -236,7 +236,7 @@ For convenience, following is the entire source code needed to quickly get start
         evals, _ = np.linalg.eig(matrix)
         return evals
 
-    
+
     @ct.electron
     def get_real_values(eigenvalues):
         """
