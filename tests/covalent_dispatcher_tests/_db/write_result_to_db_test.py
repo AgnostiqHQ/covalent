@@ -27,9 +27,20 @@ from datetime import timezone
 import pytest
 
 import covalent as ct
-from covalent._data_store.datastore import DataStore
-from covalent._data_store.models import Electron, ElectronDependency, Lattice
-from covalent._results_manager.write_result_to_db import (
+from covalent._shared_files.defaults import (
+    arg_prefix,
+    attr_prefix,
+    electron_dict_prefix,
+    electron_list_prefix,
+    generator_prefix,
+    parameter_prefix,
+    prefix_separator,
+    sublattice_prefix,
+    subscript_prefix,
+)
+from covalent_dispatcher._db.datastore import DataStore
+from covalent_dispatcher._db.models import Electron, ElectronDependency, Lattice
+from covalent_dispatcher._db.write_result_to_db import (
     InvalidFileExtension,
     MissingElectronRecordError,
     MissingLatticeRecordError,
@@ -43,17 +54,6 @@ from covalent._results_manager.write_result_to_db import (
     update_electrons_data,
     update_lattice_completed_electron_num,
     update_lattices_data,
-)
-from covalent._shared_files.defaults import (
-    arg_prefix,
-    attr_prefix,
-    electron_dict_prefix,
-    electron_list_prefix,
-    generator_prefix,
-    parameter_prefix,
-    prefix_separator,
-    sublattice_prefix,
-    subscript_prefix,
 )
 
 STORAGE_TYPE = "local"
