@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding boilerplate workflow
 - Syntax fixes in release.yml
 - Verbose failure messages in boilerplate workflow
+- Change license.yml to pip-license-checker action
 
 ## [0.199.0] - 2022-09-29
 
