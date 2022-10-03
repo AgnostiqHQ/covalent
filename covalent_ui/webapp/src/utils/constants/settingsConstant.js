@@ -1,11 +1,11 @@
 export const CONFIG_SECTIONS = {
-    SLURM: 'slurm',
-    SDK: 'sdk',
-    DASK: 'dask',
-    CACHEDIRECTORY: 'Cache dir',
-    RESULTSDIRECTORY: 'Results dir',
-    EXECUTORDIRECTORY: 'Executor dir',
-    LOGSTANDARDOUT: 'Log stdout',
-    LOGDIRECTORY: 'Log dir',
-    BASEDIRECTORY: 'Base dir'
+  'slurm': 'SLURM',
+  'sdk': 'SDK',
+  'dask': 'DASK',
+  'cache_dir': 'Cache directory',
+  'results_dir': 'Results directory',
+  'executor_dir': 'Executor directory',
+  'log_stdout': 'Log standard out',
+  'log_dir': 'Log directory',
+  'base_dir': 'Base directory',
 }

@@ -105,6 +105,7 @@ const SettingsCard = () => {
       }
       dispatch(toggleLatticeDrawer(settingObj))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valueChange, resultOutput])
 
   useEffect(() => {
@@ -152,32 +153,14 @@ const SettingsCard = () => {
   }
 
   const formatUnderscoreConcatenatedString = (str) => {
-    let formattedName = str
-    const uSpliit = str.includes('_')
-    if (uSpliit) {
+    let formattedName = str;
+    if (CONFIG_SECTIONS[formattedName]) {
+      formattedName = CONFIG_SECTIONS[formattedName];
+    } else if (str.includes('_')) {
       formattedName = str.split('_').map(word => word.charAt(0).toUpperCase() +
         word.slice(1)).join(" ")
     } else {
-      if (str === CONFIG_SECTIONS.SDK || str === CONFIG_SECTIONS.DASK ||
-        str === CONFIG_SECTIONS.SLURM) {
-        formattedName = str.toUpperCase()
-      }
-      else if (formattedName === CONFIG_SECTIONS.CACHEDIRECTORY) {
-        formattedName = 'Cache directory'
-      } else if (formattedName === CONFIG_SECTIONS.RESULTSDIRECTORY) {
-        formattedName = 'Results directory'
-      } else if (formattedName === CONFIG_SECTIONS.EXECUTORDIRECTORY) {
-        formattedName = 'Executor directory'
-      } else if (formattedName === CONFIG_SECTIONS.LOGSTANDARDOUT) {
-        formattedName = 'Log standard out'
-      } else if (formattedName === CONFIG_SECTIONS.LOGDIRECTORY) {
-        formattedName = 'Log directory'
-      } else if (formattedName === CONFIG_SECTIONS.BASEDIRECTORY) {
-        formattedName = 'Base directory'
-      }
-      else {
-        formattedName = str.charAt(0).toUpperCase() + str.slice(1)
-      }
+      formattedName = str.charAt(0).toUpperCase() + str.slice(1)
     }
     return formattedName
   }
