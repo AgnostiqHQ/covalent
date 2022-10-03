@@ -333,8 +333,8 @@ const SublatticesListing = () => {
                           </TableCell>
                           <TableCell>
                             <OverflowTip
+                              width="65px"
                               value={`${result.totalElectrons}/${result.totalElectronsCompleted}`}
-                              width="70px"
                             />
                           </TableCell>
                         </TableRow>
