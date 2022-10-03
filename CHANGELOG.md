@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added experimental CI for Debian 11 / Python 3.11rc2
 - Renamed Ubuntu images to Debian for accuracy
 - Adding boilerplate workflow
+- Syntax fixes in release.yml
 
 ## [0.199.0] - 2022-09-29
 
