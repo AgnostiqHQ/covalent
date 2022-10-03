@@ -71,6 +71,9 @@ should also output the result:
 
 In order for the above workflow to run successfully, one has to provision the required AWS resources as mentioned in :ref:`required_aws_resources`.
 
+.. note::
+    Users may encounter failures with dispatching workflows on MacOS due to errors with importing the `psutil` module. This is a known issue and will be       addressed in a future sprint.
+
 3. Overview of configuration
 ############################
 
