@@ -283,7 +283,7 @@ const SublatticesListing = () => {
                           </TableCell>
                           <TableCell>
                             <OverflowTip
-                              width="70px"
+                              width="65px"
                               value={`${result.totalElectrons}/${result.totalElectronsCompleted}`}
                             />
                           </TableCell>
