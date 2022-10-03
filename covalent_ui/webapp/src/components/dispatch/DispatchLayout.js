@@ -33,7 +33,7 @@ import { graphBgColor } from '../../utils/theme'
 import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
 import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
 import { graphResults, resetGraphState } from '../../redux/graphSlice'
-import { resetLatticeState } from '../../redux/latticeSlice'
+import { resetLatticeState,resetSublatticesId } from '../../redux/latticeSlice'
 import { resetElectronState } from '../../redux/electronSlice'
 import DispatchTopBar from './DispatchTopBar'
 import DispatchDrawerContents from './DispatchDrawerContents'
@@ -66,7 +66,15 @@ export function DispatchLayout() {
         dispatch(resetGraphState());
         dispatch(resetLatticeState());
         dispatch(resetElectronState());
+        dispatch(resetSublatticesId())
       }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    return () => {
+        dispatch(resetSublatticesId())
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

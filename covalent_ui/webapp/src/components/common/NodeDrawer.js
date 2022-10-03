@@ -165,7 +165,7 @@ const NodeDrawer = ({ node,dispatchId }) => {
               <Skeleton data-testid="node__box_skl" width={150} />
             ) : (
               <Typography sx={{ color: '#A5A6F6', overflowWrap: 'anywhere' }}>
-                {electronDetail.name}
+                {electronDetail?.name}
               </Typography>
             )}
 
@@ -177,7 +177,7 @@ const NodeDrawer = ({ node,dispatchId }) => {
           </Box>
 
           {/* Status */}
-          {electronDetail.status && (
+          {electronDetail?.status && (
             <>
               <Heading>Status</Heading>
               {electronDetailIsFetching ? (
@@ -187,14 +187,14 @@ const NodeDrawer = ({ node,dispatchId }) => {
                   sx={{
                     mt: 1,
                     mb: 2,
-                    color: statusColor(electronDetail.status),
+                    color: statusColor(electronDetail?.status),
                     display: 'flex',
                     alignItems: 'center',
                   }}
                 >
-                  {statusIcon(electronDetail.status)}
+                  {statusIcon(electronDetail?.status)}
                   &nbsp;
-                  {statusLabel(electronDetail.status)}
+                  {statusLabel(electronDetail?.status)}
                 </Box>
               )}
             </>
@@ -203,14 +203,14 @@ const NodeDrawer = ({ node,dispatchId }) => {
           {electronErrorData && <ErrorCard error={electronErrorData.data} />}
 
           {/* Description */}
-          {electronDetail.description &&
+          {electronDetail?.description &&
             (electronDetailIsFetching ? (
               <Skeleton data-testid="node__desc_skl" />
             ) : (
               <>
                 <Heading>Description</Heading>
                 <Typography fontSize="body2.fontSize" color="text.tertiary">
-                  {electronDetail.description}
+                  {electronDetail?.description}
                 </Typography>
               </>
             ))}
@@ -224,8 +224,8 @@ const NodeDrawer = ({ node,dispatchId }) => {
                 <Skeleton data-testid="node__start_time" />
               ) : (
                 <Typography fontSize="body2.fontSize" color="text.tertiary">
-                  {formatDate(electronDetail.started_at)}
-                  {hasEnded && ` - ${formatDate(electronDetail.ended_at)}`}
+                  {formatDate(electronDetail?.started_at)}
+                  {hasEnded && ` - ${formatDate(electronDetail?.ended_at)}`}
                 </Typography>
               )}
             </>
@@ -233,7 +233,7 @@ const NodeDrawer = ({ node,dispatchId }) => {
 
           {/* Runtime */}
 
-          {electronDetail.status && electronDetail.status !== 'NEW_OBJECT' && (
+          {electronDetail?.status && electronDetail?.status !== 'NEW_OBJECT' && (
             <>
               <Heading>Runtime</Heading>
               {electronDetailIsFetching ? (
@@ -244,8 +244,8 @@ const NodeDrawer = ({ node,dispatchId }) => {
                     color: theme.palette.text.tertiary,
                     fontSize: 'body2.fontSize',
                   })}
-                  startTime={electronDetail.started_at}
-                  endTime={electronDetail.ended_at}
+                  startTime={electronDetail?.started_at}
+                  endTime={electronDetail?.ended_at}
                 />
               )
               }
@@ -260,7 +260,7 @@ const NodeDrawer = ({ node,dispatchId }) => {
           />)}
 
           {/* Result */}
-          {electronDetail.status === 'COMPLETED' && (
+          {electronDetail?.status === 'COMPLETED' && (
             <ResultSection
               results={electronResultData}
               data-testid="node__result_sec"
@@ -293,7 +293,7 @@ const NodeDrawer = ({ node,dispatchId }) => {
                   bgcolor: theme.palette.background.darkblackbg,
                 })}
               >
-                <SyntaxHighlighter src={electronFunctionResult.data} />
+                <SyntaxHighlighter src={electronFunctionResult?.data} />
               </Paper>
             </>
           )}
