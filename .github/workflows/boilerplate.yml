@@ -66,6 +66,8 @@ jobs:
               cat -ET $file | head -n 20
               printf "\nThe boilerplate should be\n\n"
               echo "$boilerplate" | cat -ET
+              printf "\nThe diff is\n\n"
+              diff <(cat $file | head -n 20) <(echo "$boilerplate") | cat -ET
               exit 1
             fi
           done
