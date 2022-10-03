@@ -58,6 +58,7 @@ import Skeleton from '@mui/material/Skeleton'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
 import { styled } from '@mui/material/styles'
+import { CONFIG_SECTIONS } from '../../utils/constants/settingsConstant'
 
 const SettingsCard = () => {
   const dispatch = useDispatch()
@@ -104,7 +105,6 @@ const SettingsCard = () => {
       }
       dispatch(toggleLatticeDrawer(settingObj))
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valueChange, resultOutput])
 
   useEffect(() => {
@@ -151,83 +151,32 @@ const SettingsCard = () => {
     setHandle('')
   }
 
-  const getSubmenuName = (name) => {
-    let formattedName = name
-    const uSpliit = name.includes('_')
+  const formatUnderscoreConcatenatedString = (str) => {
+    let formattedName = str
+    const uSpliit = str.includes('_')
     if (uSpliit) {
-      var a = name
-        .replace(name.at(0), name.at(0).toLocaleUpperCase())
-        .substring(0, name.indexOf('_'))
-      var b = name
-        .replace(name.at(0), name.at(0).toLocaleUpperCase())
-        .substring(name.indexOf('_') + 1, name.length)
-      formattedName = a + ' ' + b.replace(b.at(0), b.at(0).toLocaleUpperCase())
+      formattedName = str.split('_').map(word => word.charAt(0).toUpperCase() +
+        word.slice(1)).join(" ")
     } else {
-      if (name === 'slurm') {
-        formattedName = name.toUpperCase()
-      } else if (name === 'dask') {
-        formattedName = name.toUpperCase()
-      } else {
-        formattedName = name.charAt(0).toUpperCase() + name.slice(1)
+      if (str === CONFIG_SECTIONS.SDK || str === CONFIG_SECTIONS.DASK ||
+        str === CONFIG_SECTIONS.SLURM) {
+        formattedName = str.toUpperCase()
       }
-    }
-    return formattedName
-  }
-
-  const getLabelName = (name) => {
-    let formattedName = name
-    const uSpliit = name.includes('_')
-    if (uSpliit) {
-      var a = name
-        .replace(name.at(0), name.at(0).toLocaleUpperCase())
-        .substring(0, name.indexOf('_'))
-      var b = name
-        .replace(name.at(0), name.at(0).toLocaleUpperCase())
-        .substring(name.indexOf('_') + 1, name.length)
-      formattedName = a + ' ' + b.replace(b.at(0), b.at(0))
-    } else {
-      if (name === 'sdk') {
-        formattedName = name.toUpperCase()
-      } else {
-        formattedName = name.charAt(0).toUpperCase() + name.slice(1)
-      }
-    }
-    if (formattedName === 'Cache dir') {
-      formattedName = 'Cache directory'
-    } else if (formattedName === 'Results dir') {
-      formattedName = 'Results directory'
-    } else if (formattedName === 'Executor dir') {
-      formattedName = 'Executor directory'
-    } else if (formattedName === 'Log stdout') {
-      formattedName = 'Log standard out'
-    } else if (formattedName === 'Log dir') {
-      formattedName = 'Log directory'
-    } else if (formattedName === 'Base dir') {
-      formattedName = 'Base directory'
-    }
-    return formattedName
-  }
-
-  const getSettingsName = (name) => {
-    let formattedName = name
-    const uSpliit = name.includes('_')
-    if (uSpliit) {
-      var a = name
-        .replace(name.at(0), name.at(0).toLocaleUpperCase())
-        .substring(0, name.indexOf('_'))
-      var b = name
-        .replace(name.at(0), name.at(0).toLocaleUpperCase())
-        .substring(name.indexOf('_') + 1, name.length)
-      formattedName = a + ' ' + b.replace(b.at(0), b.at(0).toLocaleUpperCase())
-    } else {
-      if (name === 'sdk' || name === 'dask') {
-        formattedName = name.toUpperCase()
-      }
-      else if (name === 'slurm') {
-        formattedName = name.toUpperCase()
+      else if (formattedName === CONFIG_SECTIONS.CACHEDIRECTORY) {
+        formattedName = 'Cache directory'
+      } else if (formattedName === CONFIG_SECTIONS.RESULTSDIRECTORY) {
+        formattedName = 'Results directory'
+      } else if (formattedName === CONFIG_SECTIONS.EXECUTORDIRECTORY) {
+        formattedName = 'Executor directory'
+      } else if (formattedName === CONFIG_SECTIONS.LOGSTANDARDOUT) {
+        formattedName = 'Log standard out'
+      } else if (formattedName === CONFIG_SECTIONS.LOGDIRECTORY) {
+        formattedName = 'Log directory'
+      } else if (formattedName === CONFIG_SECTIONS.BASEDIRECTORY) {
+        formattedName = 'Base directory'
       }
       else {
-        formattedName = name.charAt(0).toUpperCase() + name.slice(1)
+        formattedName = str.charAt(0).toUpperCase() + str.slice(1)
       }
     }
     return formattedName
@@ -541,7 +490,7 @@ const SettingsCard = () => {
                           )}
                           <ListItemText
                             inset
-                            primary={getSettingsName(menuKey)}
+                            primary={formatUnderscoreConcatenatedString(menuKey)}
                             onClick={() =>
                               menuClick(menuValue, menuKey, accName)
                             }
@@ -577,7 +526,7 @@ const SettingsCard = () => {
                               >
                                 <ListItemText
                                   inset
-                                  primary={getSubmenuName(key)}
+                                  primary={formatUnderscoreConcatenatedString(key)}
                                   disableTypography
                                   sx={{ pl: '0px', fontSize: '14px' }}
                                 />
@@ -630,7 +579,7 @@ const SettingsCard = () => {
                           )}
                           <ListItemText
                             inset
-                            primary={getSettingsName(menuKey)}
+                            primary={formatUnderscoreConcatenatedString(menuKey)}
                             onClick={() => menuClick(menuValue, menuKey, serverName)}
                             disableTypography
                             sx={{
@@ -661,7 +610,7 @@ const SettingsCard = () => {
                   color: (theme) => theme.palette.primary.white,
                 }}
               >
-                {getSettingsName(resultKey)}
+                {formatUnderscoreConcatenatedString(resultKey)}
               </Typography>
               <Grid container spacing={3} sx={{ mt: 2 }}>
                 <Grid item xs={7}>
@@ -679,7 +628,7 @@ const SettingsCard = () => {
                                   fontWeight: 'bold',
                                 })}
                               >
-                                {getSettingsName(key)}
+                                {formatUnderscoreConcatenatedString(key)}
                               </Typography>
                               {_.map(value, function (item, key1) {
                                 return (
@@ -694,7 +643,7 @@ const SettingsCard = () => {
                                           }}
                                         >
                                           {' '}
-                                          {getSettingsName(key1)}
+                                          {formatUnderscoreConcatenatedString(key1)}
                                         </FormLabel>
                                         <RadioGroup
                                           row
@@ -745,7 +694,7 @@ const SettingsCard = () => {
                                                     color: 'text.primary',
                                                   }}
                                                 >
-                                                  {getLabelName(inputSubKey)}
+                                                  {formatUnderscoreConcatenatedString(inputSubKey)}
                                                 </InputLabel>
                                                 <Input
                                                   sx={[
@@ -793,7 +742,7 @@ const SettingsCard = () => {
                                                 color: 'text.primary',
                                               }}
                                             >
-                                              {getLabelName(key1)}
+                                              {formatUnderscoreConcatenatedString(key1)}
                                             </InputLabel>
                                             <Input
                                               sx={[
@@ -853,7 +802,7 @@ const SettingsCard = () => {
                                     }}
                                   >
                                     {' '}
-                                    {getSettingsName(key)}
+                                    {formatUnderscoreConcatenatedString(key)}
                                   </FormLabel>
 
                                   <Select
@@ -914,7 +863,7 @@ const SettingsCard = () => {
                                         }}
                                       >
                                         {' '}
-                                        {getSettingsName(key)}
+                                        {formatUnderscoreConcatenatedString(key)}
                                       </FormLabel>
                                       <RadioGroup
                                         row
@@ -960,7 +909,7 @@ const SettingsCard = () => {
                                           color: 'text.primary',
                                         }}
                                       >
-                                        {getLabelName(key)}
+                                        {formatUnderscoreConcatenatedString(key)}
                                       </InputLabel>
                                       <Input
                                         sx={[
