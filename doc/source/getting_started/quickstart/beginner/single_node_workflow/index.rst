@@ -56,7 +56,7 @@ Details pertaining the the workflow can be visualized by clicking on the dispatc
 |
 .. image:: workflow.png
     :align: center
-    
+
 From the above, we can see that an ``electron`` itself can be made into a ``lattice`` by decorator composition reducing
 unecessary code duplication and leaner workflows.
-    
+
