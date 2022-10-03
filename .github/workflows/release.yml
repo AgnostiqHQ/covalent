@@ -127,7 +127,7 @@ jobs:
           inputs.prerelease
           && steps.message.outcome == 'success'
           && steps.push.outcome == 'success'
-          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false') }}
+          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
         uses: ncipollo/release-action@v1
         with:
           body: ${{ env.MESSAGE }}
@@ -140,7 +140,7 @@ jobs:
           && contains(env.PAUL_BLART, github.actor)
           && steps.stable-changelog.outcome == 'success'
           && steps.push.outcome == 'success'
-          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false') }}
+          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
         uses: ncipollo/release-action@v1
         with:
           body: ${{ steps.stable-changelog.outputs.message }}
