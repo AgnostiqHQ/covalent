@@ -294,10 +294,6 @@ const SublatticesListing = () => {
                               result.dispatchId === sublatticesId?.dispatchId
                                 ? '16px'
                                 : '',
-                            border:
-                              result.dispatchId === sublatticesId?.dispatchId
-                                ? '2px solid #6473FF'
-                                : '',
                             backgroundColor:
                               result.dispatchId === sublatticesId?.dispatchId
                                 ? '#1C1C46'
