@@ -153,12 +153,14 @@ const SettingsCard = () => {
   }
 
   const formatUnderscoreConcatenatedString = (str) => {
-    let formattedName = str;
+    let formattedName = str
     if (CONFIG_SECTIONS[formattedName]) {
-      formattedName = CONFIG_SECTIONS[formattedName];
+      formattedName = CONFIG_SECTIONS[formattedName]
     } else if (str.includes('_')) {
-      formattedName = str.split('_').map(word => word.charAt(0).toUpperCase() +
-        word.slice(1)).join(" ")
+      formattedName = str
+        .split('_')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
     } else {
       formattedName = str.charAt(0).toUpperCase() + str.slice(1)
     }
@@ -211,8 +213,7 @@ const SettingsCard = () => {
           setResultKey(key)
           if (panel === 'server') {
             setIsDisabled(true)
-          }
-          else {
+          } else {
             setIsDisabled(false)
           }
         } else if (action.type === updateSettings.rejected.type) {
@@ -455,11 +456,11 @@ const SettingsCard = () => {
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => { }
+                              : () => {}
                           }
                           sx={{
                             right: '0px',
-                            padding: '0px'
+                            padding: '0px',
                           }}
                         >
                           {isChildHasList(menuValue) && (
@@ -473,7 +474,9 @@ const SettingsCard = () => {
                           )}
                           <ListItemText
                             inset
-                            primary={formatUnderscoreConcatenatedString(menuKey)}
+                            primary={formatUnderscoreConcatenatedString(
+                              menuKey
+                            )}
                             onClick={() =>
                               menuClick(menuValue, menuKey, accName)
                             }
@@ -509,7 +512,9 @@ const SettingsCard = () => {
                               >
                                 <ListItemText
                                   inset
-                                  primary={formatUnderscoreConcatenatedString(key)}
+                                  primary={formatUnderscoreConcatenatedString(
+                                    key
+                                  )}
                                   disableTypography
                                   sx={{ pl: '0px', fontSize: '14px' }}
                                 />
@@ -544,11 +549,11 @@ const SettingsCard = () => {
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => { }
+                              : () => {}
                           }
                           sx={{
                             right: '0px',
-                            padding: '0px'
+                            padding: '0px',
                           }}
                         >
                           {isChildHasList(menuValue) && (
@@ -562,8 +567,12 @@ const SettingsCard = () => {
                           )}
                           <ListItemText
                             inset
-                            primary={formatUnderscoreConcatenatedString(menuKey)}
-                            onClick={() => menuClick(menuValue, menuKey, serverName)}
+                            primary={formatUnderscoreConcatenatedString(
+                              menuKey
+                            )}
+                            onClick={() =>
+                              menuClick(menuValue, menuKey, serverName)
+                            }
                             disableTypography
                             sx={{
                               padding: '8px 16px',
@@ -598,24 +607,287 @@ const SettingsCard = () => {
               <Grid container spacing={3} sx={{ mt: 2 }}>
                 <Grid item xs={7}>
                   <form onSubmit={handleSubmit} id="get__pop_id">
-                    {_.map(resultOutput, function (value, key) {
-                      return (
-                        <Box sx={{ mb: 3 }} key={key}>
-                          {_.isObject(value) ? (
-                            <Box key={key} id={key}>
-                              <Typography
-                                variant="h6"
-                                component="h6"
-                                sx={(theme) => ({
-                                  color: theme.palette.primary.light,
-                                  fontWeight: 'bold',
+                    <Grid
+                      sx={{
+                        mb: 4,
+                        height: 410,
+                        overflow: 'auto',
+                        '@media (min-height: 800px)': {
+                          height: 550,
+                        },
+                        '@media (min-height: 1000px)': {
+                          height: 750,
+                        },
+                      }}
+                    >
+                      {_.map(resultOutput, function (value, key) {
+                        return (
+                          <Box sx={{ mb: 3 }} key={key}>
+                            {_.isObject(value) ? (
+                              <Box key={key} id={key}>
+                                <Typography
+                                  variant="h6"
+                                  component="h6"
+                                  sx={(theme) => ({
+                                    color: theme.palette.primary.light,
+                                    fontWeight: 'bold',
+                                  })}
+                                >
+                                  {formatUnderscoreConcatenatedString(key)}
+                                </Typography>
+                                {_.map(value, function (item, key1) {
+                                  return (
+                                    <Box sx={{ mt: 3 }} key={key1}>
+                                      {value === 'true' || value === 'false' ? (
+                                        <FormControl>
+                                          <FormLabel
+                                            id="demo-row-radio-buttons-group-label"
+                                            sx={{
+                                              fontSize: '14px',
+                                              color: 'text.primary',
+                                            }}
+                                          >
+                                            {' '}
+                                            {formatUnderscoreConcatenatedString(
+                                              key1
+                                            )}
+                                          </FormLabel>
+                                          <RadioGroup
+                                            row
+                                            onChange={handleChange}
+                                            aria-labelledby="demo-row-radio-buttons-group-label"
+                                            name="row-radio-buttons-group"
+                                          >
+                                            <FormControlLabel
+                                              value="true"
+                                              disabled={isDisabled}
+                                              control={<Radio />}
+                                              label={
+                                                <Typography
+                                                  sx={{ fontSize: '14px' }}
+                                                >
+                                                  True
+                                                </Typography>
+                                              }
+                                            />
+                                            <FormControlLabel
+                                              value="false"
+                                              disabled={isDisabled}
+                                              control={<Radio />}
+                                              label={
+                                                <Typography
+                                                  sx={{
+                                                    fontSize: '14px',
+                                                  }}
+                                                >
+                                                  False
+                                                </Typography>
+                                              }
+                                            />
+                                          </RadioGroup>
+                                        </FormControl>
+                                      ) : (
+                                        <>
+                                          {_.isObject(item) ? (
+                                            _.map(
+                                              item,
+                                              function (
+                                                inputSubValue,
+                                                inputSubKey
+                                              ) {
+                                                return (
+                                                  <Box sx={{ mt: 3 }}>
+                                                    <InputLabel
+                                                      variant="standard"
+                                                      htmlFor="uncontrolled-native"
+                                                      sx={{
+                                                        fontSize: '14px',
+                                                        mb: 1,
+                                                        color: 'text.primary',
+                                                      }}
+                                                    >
+                                                      {formatUnderscoreConcatenatedString(
+                                                        inputSubKey
+                                                      )}
+                                                    </InputLabel>
+                                                    <Input
+                                                      sx={[
+                                                        {
+                                                          input: {
+                                                            '&::placeholder': {
+                                                              color: (theme) =>
+                                                                theme.palette
+                                                                  .text.primary,
+                                                              opacity: 1,
+                                                            },
+                                                          },
+                                                          px: 2,
+                                                          py: 0.5,
+                                                          width: '85%',
+                                                          height: '32px',
+                                                          border:
+                                                            '1px solid #303067',
+                                                          borderRadius: '60px',
+                                                          fontSize: '14px',
+                                                          color: (theme) =>
+                                                            theme.palette.text
+                                                              .secondary,
+                                                        },
+                                                      ]}
+                                                      disabled={isDisabled}
+                                                      onKeyDown={
+                                                        handleKeypressSub
+                                                      }
+                                                      autoComplete="off"
+                                                      name={inputSubKey}
+                                                      onChange={(e) =>
+                                                        onInputExecutorChangeSub(
+                                                          e,
+                                                          key1,
+                                                          inputSubKey,
+                                                          key
+                                                        )
+                                                      }
+                                                      value={inputSubValue}
+                                                      disableUnderline
+                                                      placeholder="Please enter a value"
+                                                    />
+                                                  </Box>
+                                                )
+                                              }
+                                            )
+                                          ) : (
+                                            <Box>
+                                              <InputLabel
+                                                variant="standard"
+                                                htmlFor="uncontrolled-native"
+                                                sx={{
+                                                  fontSize: '14px',
+                                                  mb: 1,
+                                                  color: 'text.primary',
+                                                }}
+                                              >
+                                                {formatUnderscoreConcatenatedString(
+                                                  key1
+                                                )}
+                                              </InputLabel>
+                                              <Input
+                                                sx={[
+                                                  {
+                                                    input: {
+                                                      '&::placeholder': {
+                                                        color: (theme) =>
+                                                          theme.palette.text
+                                                            .primary,
+                                                        opacity: 1,
+                                                      },
+                                                    },
+                                                    px: 2,
+                                                    py: 0.5,
+                                                    width: '85%',
+                                                    height: '32px',
+                                                    border: '1px solid #303067',
+                                                    borderRadius: '60px',
+                                                    fontSize: '14px',
+                                                    color: (theme) =>
+                                                      theme.palette.text
+                                                        .secondary,
+                                                  },
+                                                ]}
+                                                disabled={isDisabled}
+                                                onKeyDown={handleKeypress}
+                                                autoComplete="off"
+                                                name={key1}
+                                                onChange={(e) =>
+                                                  onInputExecutorChange(
+                                                    e,
+                                                    key1,
+                                                    key
+                                                  )
+                                                }
+                                                value={item}
+                                                disableUnderline
+                                                placeholder="Please enter a value"
+                                              />
+                                            </Box>
+                                          )}
+                                        </>
+                                      )}
+                                    </Box>
+                                  )
                                 })}
-                              >
-                                {formatUnderscoreConcatenatedString(key)}
-                              </Typography>
-                              {_.map(value, function (item, key1) {
-                                return (
-                                  <Box sx={{ mt: 3 }} key={key1}>
+                              </Box>
+                            ) : (
+                              <>
+                                {key === 'log_level' ? (
+                                  <Box
+                                    sx={{
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      alignContent: 'flex-start',
+                                    }}
+                                  >
+                                    <FormLabel
+                                      id="demo-simple-select-label"
+                                      sx={{
+                                        fontSize: '14px',
+                                        color: 'text.primary',
+                                      }}
+                                    >
+                                      {' '}
+                                      {formatUnderscoreConcatenatedString(key)}
+                                    </FormLabel>
+
+                                    <Select
+                                      labelId="demo-simple-select-label"
+                                      id="demo-simple-select"
+                                      displayEmpty
+                                      value={value}
+                                      onChange={(e) =>
+                                        handleSelectChange(e, key)
+                                      }
+                                      sx={{
+                                        fontSize: '14px',
+                                        width: '140px',
+                                        height: '32px',
+                                        mt: 1,
+                                      }}
+                                      className="dropdownSelect"
+                                    >
+                                      <MenuItem
+                                        sx={{ fontSize: '14px' }}
+                                        value="debug"
+                                      >
+                                        Debug
+                                      </MenuItem>
+                                      <MenuItem
+                                        sx={{ fontSize: '14px' }}
+                                        value="info"
+                                      >
+                                        Info
+                                      </MenuItem>
+                                      <MenuItem
+                                        sx={{ fontSize: '14px' }}
+                                        value="warning"
+                                      >
+                                        Warning
+                                      </MenuItem>
+                                      <MenuItem
+                                        sx={{ fontSize: '14px' }}
+                                        value="error"
+                                      >
+                                        Error
+                                      </MenuItem>
+                                      <MenuItem
+                                        sx={{ fontSize: '14px' }}
+                                        value="critical"
+                                      >
+                                        Critical
+                                      </MenuItem>
+                                    </Select>
+                                  </Box>
+                                ) : (
+                                  <>
                                     {value === 'true' || value === 'false' ? (
                                       <FormControl>
                                         <FormLabel
@@ -626,13 +898,16 @@ const SettingsCard = () => {
                                           }}
                                         >
                                           {' '}
-                                          {formatUnderscoreConcatenatedString(key1)}
+                                          {formatUnderscoreConcatenatedString(
+                                            key
+                                          )}
                                         </FormLabel>
                                         <RadioGroup
                                           row
-                                          onChange={handleChange}
                                           aria-labelledby="demo-row-radio-buttons-group-label"
-                                          name="row-radio-buttons-group"
+                                          name={key}
+                                          value={value}
+                                          onChange={(e) => handleChange(e, key)}
                                         >
                                           <FormControlLabel
                                             value="true"
@@ -652,9 +927,7 @@ const SettingsCard = () => {
                                             control={<Radio />}
                                             label={
                                               <Typography
-                                                sx={{
-                                                  fontSize: '14px',
-                                                }}
+                                                sx={{ fontSize: '14px' }}
                                               >
                                                 False
                                               </Typography>
@@ -664,276 +937,61 @@ const SettingsCard = () => {
                                       </FormControl>
                                     ) : (
                                       <>
-                                        {_.isObject(item) ?
-                                          _.map(item, function (inputSubValue, inputSubKey) {
-                                            return (
-                                              <Box sx={{ mt: 3 }}>
-                                                <InputLabel
-                                                  variant="standard"
-                                                  htmlFor="uncontrolled-native"
-                                                  sx={{
-                                                    fontSize: '14px',
-                                                    mb: 1,
-                                                    color: 'text.primary',
-                                                  }}
-                                                >
-                                                  {formatUnderscoreConcatenatedString(inputSubKey)}
-                                                </InputLabel>
-                                                <Input
-                                                  sx={[
-                                                    {
-                                                      input: {
-                                                        '&::placeholder': {
-                                                          color: (theme) =>
-                                                            theme.palette.text.primary,
-                                                          opacity: 1
-                                                        },
-                                                      },
-                                                      px: 2,
-                                                      py: 0.5,
-                                                      width: '85%',
-                                                      height: '32px',
-                                                      border: '1px solid #303067',
-                                                      borderRadius: '60px',
-                                                      fontSize: '14px',
-                                                      color: (theme) =>
-                                                        theme.palette.text.secondary,
-                                                    }
-                                                  ]}
-                                                  disabled={isDisabled}
-                                                  onKeyDown={handleKeypressSub}
-                                                  autoComplete="off"
-                                                  name={inputSubKey}
-                                                  onChange={(e) =>
-                                                    onInputExecutorChangeSub(e, key1, inputSubKey, key)
-                                                  }
-                                                  value={inputSubValue}
-                                                  disableUnderline
-                                                  placeholder="Please enter a value"
-                                                />
-                                              </Box>
-                                            )
-                                          })
-                                          :
-                                          <Box>
-                                            <InputLabel
-                                              variant="standard"
-                                              htmlFor="uncontrolled-native"
-                                              sx={{
-                                                fontSize: '14px',
-                                                mb: 1,
-                                                color: 'text.primary',
-                                              }}
-                                            >
-                                              {formatUnderscoreConcatenatedString(key1)}
-                                            </InputLabel>
-                                            <Input
-                                              sx={[
-                                                {
-                                                  input: {
-                                                    '&::placeholder': {
-                                                      color: (theme) =>
-                                                        theme.palette.text.primary,
-                                                      opacity: 1
-                                                    },
-                                                  },
-                                                  px: 2,
-                                                  py: 0.5,
-                                                  width: '85%',
-                                                  height: '32px',
-                                                  border: '1px solid #303067',
-                                                  borderRadius: '60px',
-                                                  fontSize: '14px',
+                                        <InputLabel
+                                          variant="standard"
+                                          htmlFor="uncontrolled-native"
+                                          sx={{
+                                            fontSize: '14px',
+                                            mb: 1,
+                                            color: 'text.primary',
+                                          }}
+                                        >
+                                          {formatUnderscoreConcatenatedString(
+                                            key
+                                          )}
+                                        </InputLabel>
+                                        <Input
+                                          sx={[
+                                            {
+                                              input: {
+                                                '&::placeholder': {
                                                   color: (theme) =>
-                                                    theme.palette.text.secondary,
-                                                }
-                                              ]}
-                                              disabled={isDisabled}
-                                              onKeyDown={handleKeypress}
-                                              autoComplete="off"
-                                              name={key1}
-                                              onChange={(e) =>
-                                                onInputExecutorChange(e, key1, key)
-                                              }
-                                              value={item}
-                                              disableUnderline
-                                              placeholder="Please enter a value"
-                                            />
-                                          </Box>
-                                        }
+                                                    theme.palette.text.primary,
+                                                  opacity: 1,
+                                                },
+                                              },
+                                              px: 2,
+                                              py: 0.5,
+                                              width: '85%',
+                                              height: '32px',
+                                              border: '1px solid #303067',
+                                              borderRadius: '60px',
+                                              fontSize: '14px',
+                                              color: (theme) =>
+                                                theme.palette.text.secondary,
+                                            },
+                                          ]}
+                                          disabled={isDisabled}
+                                          autoComplete="off"
+                                          onKeyDown={handleKeypress}
+                                          name={key}
+                                          onChange={(e) =>
+                                            onInputChange(e, key)
+                                          }
+                                          value={value}
+                                          disableUnderline
+                                          placeholder="Please enter a value"
+                                        />
                                       </>
                                     )}
-                                  </Box>
-                                )
-                              })}
-                            </Box>
-                          ) : (
-                            <>
-                              {key === 'log_level' ? (
-                                <Box
-                                  sx={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignContent: 'flex-start',
-                                  }}
-                                >
-                                  <FormLabel
-                                    id="demo-simple-select-label"
-                                    sx={{
-                                      fontSize: '14px',
-                                      color: 'text.primary',
-                                    }}
-                                  >
-                                    {' '}
-                                    {formatUnderscoreConcatenatedString(key)}
-                                  </FormLabel>
-
-                                  <Select
-                                    labelId="demo-simple-select-label"
-                                    id="demo-simple-select"
-                                    displayEmpty
-                                    value={value}
-                                    onChange={(e) => handleSelectChange(e, key)}
-                                    sx={{
-                                      fontSize: '14px',
-                                      width: '140px',
-                                      height: '32px',
-                                      mt: 1,
-                                    }}
-                                    className="dropdownSelect"
-                                  >
-                                    <MenuItem
-                                      sx={{ fontSize: '14px' }}
-                                      value="debug"
-                                    >
-                                      Debug
-                                    </MenuItem>
-                                    <MenuItem
-                                      sx={{ fontSize: '14px' }}
-                                      value="info"
-                                    >
-                                      Info
-                                    </MenuItem>
-                                    <MenuItem
-                                      sx={{ fontSize: '14px' }}
-                                      value="warning"
-                                    >
-                                      Warning
-                                    </MenuItem>
-                                    <MenuItem
-                                      sx={{ fontSize: '14px' }}
-                                      value="error"
-                                    >
-                                      Error
-                                    </MenuItem>
-                                    <MenuItem
-                                      sx={{ fontSize: '14px' }}
-                                      value="critical"
-                                    >
-                                      Critical
-                                    </MenuItem>
-                                  </Select>
-                                </Box>
-                              ) : (
-                                <>
-                                  {value === 'true' || value === 'false' ? (
-                                    <FormControl>
-                                      <FormLabel
-                                        id="demo-row-radio-buttons-group-label"
-                                        sx={{
-                                          fontSize: '14px',
-                                          color: 'text.primary',
-                                        }}
-                                      >
-                                        {' '}
-                                        {formatUnderscoreConcatenatedString(key)}
-                                      </FormLabel>
-                                      <RadioGroup
-                                        row
-                                        aria-labelledby="demo-row-radio-buttons-group-label"
-                                        name={key}
-                                        value={value}
-                                        onChange={(e) => handleChange(e, key)}
-                                      >
-                                        <FormControlLabel
-                                          value="true"
-                                          disabled={isDisabled}
-                                          control={<Radio />}
-                                          label={
-                                            <Typography
-                                              sx={{ fontSize: '14px' }}
-                                            >
-                                              True
-                                            </Typography>
-                                          }
-                                        />
-                                        <FormControlLabel
-                                          value="false"
-                                          disabled={isDisabled}
-                                          control={<Radio />}
-                                          label={
-                                            <Typography
-                                              sx={{ fontSize: '14px' }}
-                                            >
-                                              False
-                                            </Typography>
-                                          }
-                                        />
-                                      </RadioGroup>
-                                    </FormControl>
-                                  ) : (
-                                    <>
-                                      <InputLabel
-                                        variant="standard"
-                                        htmlFor="uncontrolled-native"
-                                        sx={{
-                                          fontSize: '14px',
-                                          mb: 1,
-                                          color: 'text.primary',
-                                        }}
-                                      >
-                                        {formatUnderscoreConcatenatedString(key)}
-                                      </InputLabel>
-                                      <Input
-                                        sx={[
-                                          {
-                                            input: {
-                                              '&::placeholder': {
-                                                color: (theme) =>
-                                                  theme.palette.text.primary,
-                                                opacity: 1
-                                              },
-                                            },
-                                            px: 2,
-                                            py: 0.5,
-                                            width: '85%',
-                                            height: '32px',
-                                            border: '1px solid #303067',
-                                            borderRadius: '60px',
-                                            fontSize: '14px',
-                                            color: (theme) =>
-                                              theme.palette.text.secondary,
-                                          }
-                                        ]}
-                                        disabled={isDisabled}
-                                        autoComplete="off"
-                                        onKeyDown={handleKeypress}
-                                        name={key}
-                                        onChange={(e) => onInputChange(e, key)}
-                                        value={value}
-                                        disableUnderline
-                                        placeholder="Please enter a value"
-                                      />
-                                    </>
-                                  )}
-                                </>
-                              )}
-                            </>
-                          )}
-                        </Box>
-                      )
-                    })}
-
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </Box>
+                        )
+                      })}
+                    </Grid>
                     {!isDisabled && (
                       <Stack
                         spacing={2}
