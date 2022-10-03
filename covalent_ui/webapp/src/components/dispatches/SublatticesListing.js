@@ -167,7 +167,7 @@ const SublatticesListing = () => {
     (state) => state.latticeResults.sublatticesId
   )
   const sublatticesListView = useSelector(
-    (state) => state.latticeResults.sublatticesList
+    (state) => state.latticeResults.latticeResultsData[dispatchId].sublatticesList
   )?.map((e) => {
     return {
       dispatchId: e.dispatch_id,

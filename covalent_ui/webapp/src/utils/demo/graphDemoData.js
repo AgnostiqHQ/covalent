@@ -2778,4 +2778,81 @@ executor_label:'dask',
         ],
     },
 }
+
+// Dispatch 699d2cb1-0776-4c54-a958-0a79082497e4
+graphDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"] = {
+    "dispatch_id": "699d2cb1-0776-4c54-a958-0a79082497e4",
+    "graph": {
+        "nodes": [
+            {
+                "id": 1076,
+                "name": "identity",
+                "node_id": 0,
+                "started_at": "2022-10-03 03:34:56.953333",
+                "completed_at": "2022-10-03 03:34:56.988396",
+                "status": "COMPLETED",
+                "type": "function",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 1077,
+                "name": ":parameter:1",
+                "node_id": 1,
+                "started_at": "2022-10-03 03:34:56.937558",
+                "completed_at": "2022-10-03 03:34:56.937562",
+                "status": "COMPLETED",
+                "type": "parameter",
+                "executor_label": "local",
+                "sublattice_dispatch_id": null
+            },
+            {
+                "id": 1078,
+                "name": ":sublattice:SubEta",
+                "node_id": 2,
+                "started_at": "2022-10-03 03:34:57.017045",
+                "completed_at": "2022-10-03 03:34:57.430926",
+                "status": "COMPLETED",
+                "type": "sublattice",
+                "executor_label": "local",
+                "sublattice_dispatch_id": "e8096480-15da-41c3-b869-212e7e773749"
+            },
+            {
+                "id": 1079,
+                "name": ":sublattice:SubBeta",
+                "node_id": 3,
+                "started_at": "2022-10-03 03:34:57.444964",
+                "completed_at": "2022-10-03 03:34:58.142049",
+                "status": "COMPLETED",
+                "type": "sublattice",
+                "executor_label": "local",
+                "sublattice_dispatch_id": "419d22a3-e1d7-46a8-92ba-d4ef234674b0"
+            }
+        ],
+        "links": [
+            {
+                "edge_name": "arg[0]",
+                "parameter_type": "arg",
+                "target": 1078,
+                "source": 1076,
+                "arg_index": 0
+            },
+            {
+                "edge_name": "x",
+                "parameter_type": "arg",
+                "target": 1076,
+                "source": 1077,
+                "arg_index": 0
+            },
+            {
+                "edge_name": "arg[0]",
+                "parameter_type": "arg",
+                "target": 1079,
+                "source": 1078,
+                "arg_index": 0
+            }
+        ]
+    }
+}
+
 export default graphDemoData

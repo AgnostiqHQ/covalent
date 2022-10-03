@@ -47,7 +47,7 @@ import { isDemo } from '../../utils/demo/setup'
 const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
-  const [tab, setTab] = useState('overview')
+  const [tab, setTab] = useState('sublattices')
 
   const drawerLatticeDetails = useSelector(
     (state) => state.latticeResults.latticeResultsData[dispatchId].latticeDetails
@@ -64,7 +64,7 @@ const DispatchDrawerContents = () => {
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
 
   const sublatticesListView = useSelector(
-    (state) => state.latticeResults.sublatticesList
+    (state) => state.latticeResults.latticeResultsData[dispatchId].sublatticesList
   )
   const sublatticesListApi = () => {
     const bodyParams = {

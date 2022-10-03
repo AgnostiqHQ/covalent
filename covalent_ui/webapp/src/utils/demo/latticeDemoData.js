@@ -1591,4 +1591,59 @@ latticeDetailsDemoData["ba3c238c-cb92-48e8-b7b2-debeebe2e81a"].electron[17].elec
     "data": "{'args': (), 'kwargs': {'dec': '[-16.71611586111111, -5.041399250518333]', 'ha': '[array([8167.13796004, 8167.37861714, 8167.61927424, ..., 8527.64229285,\\n       8527.88294994, 8528.12360704]), array([7921.80274665, 7922.04340374, 7922.28406084, ..., 8282.30707945,\\n       8282.54773655, 8282.78839365])]', 'alt': '[array([-27.43219742, -27.27607228, -27.11989331, ..., -27.10485205,\\n       -26.94861616, -26.79233023]), array([35.65312336, 35.64665394, 35.63937735, ..., 35.63863409,\\n       35.630473  , 35.6215055 ])]', 'lat': '49.2827'}}",
     "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x16\\x02\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94)\\x8c\\x06kwargs\\x94}\\x94(\\x8c\\x03dec\\x94\\x8c([-16.71611586111111, -5.041399250518333]\\x94\\x8c\\x02ha\\x94\\x8c\\xde[array([8167.13796004, 8167.37861714, 8167.61927424, ..., 8527.64229285,\\n       8527.88294994, 8528.12360704]), array([7921.80274665, 7922.04340374, 7922.28406084, ..., 8282.30707945,\\n       8282.54773655, 8282.78839365])]\\x94\\x8c\\x03alt\\x94\\x8c\\xcc[array([-27.43219742, -27.27607228, -27.11989331, ..., -27.10485205,\\n       -26.94861616, -26.79233023]), array([35.65312336, 35.64665394, 35.63937735, ..., 35.63863409,\\n       35.630473  , 35.6215055 ])]\\x94\\x8c\\x03lat\\x94\\x8c\\x0749.2827\\x94uu.')"
 }
+
+//   Dispatch 699d2cb1-0776-4c54-a958-0a79082497e4
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"] = {}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].latticeDetails =
+{
+    "dispatch_id": "699d2cb1-0776-4c54-a958-0a79082497e4",
+    "status": "COMPLETED",
+    "total_electrons": 4,
+    "total_electrons_completed": 4,
+    "started_at": "2022-10-03T09:04:56",
+    "ended_at": "2022-10-03T09:04:58",
+    "directory": "/home/prasannavenkatesh/Desktop/workflows/results/699d2cb1-0776-4c54-a958-0a79082497e4",
+    "description": "",
+    "runtime": 2000,
+    "updated_at": null
+};
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].latticeError = "";
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].latticeResult = {
+    "data": "\"[[1, 1, 1], [1, 1, 1], [1, 1, 1]]\""
+  };
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].latticeInput = {
+    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+};
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].latticeFunctionString = {
+    "data": "@ct.lattice\ndef compute_energy(x):\n    y=identity(x)\n    result=SubEta(y)\n    result=SubBeta(result)\n    return result\n\n\n"
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].latticeExecutor = {
+    "executor_name": "local",
+    "executor_details": null
+}
+latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].sublatticesList = [
+    {
+        "dispatch_id": "419d22a3-e1d7-46a8-92ba-d4ef234674b0",
+        "lattice_name": "SubBeta",
+        "runtime": 1000,
+        "total_electrons": 15,
+        "total_electrons_completed": 15,
+        "started_at": "2022-10-03T09:04:57",
+        "ended_at": "2022-10-03T09:04:58",
+        "status": "COMPLETED",
+        "updated_at": "2022-10-03T09:04:58"
+    },
+    {
+        "dispatch_id": "e8096480-15da-41c3-b869-212e7e773749",
+        "lattice_name": "SubEta",
+        "runtime": 0,
+        "total_electrons": 6,
+        "total_electrons_completed": 6,
+        "started_at": "2022-10-03T09:04:57",
+        "ended_at": "2022-10-03T09:04:57",
+        "status": "COMPLETED",
+        "updated_at": "2022-10-03T09:04:57"
+    }
+]
+
 export default latticeDetailsDemoData

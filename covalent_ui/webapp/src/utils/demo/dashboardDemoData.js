@@ -22,12 +22,12 @@
 
 const demoDashboardListData = {
     dashboardOverview: {
-        "total_jobs": 6,
+        "total_jobs": 7,
         "total_jobs_running": 0,
-        "total_jobs_completed": 5,
+        "total_jobs_completed": 6,
         "total_jobs_failed": 1,
         "latest_running_task_status": "COMPLETED",
-        "total_dispatcher_duration": 53000
+        "total_dispatcher_duration": 55000
     },
     dashboardList: [
         {
@@ -95,7 +95,18 @@ const demoDashboardListData = {
             "ended_at": "2022-06-13T12:14:43",
             "status": "COMPLETED",
             "updated_at": "2022-08-11T12:14:40"
-        }
+        },
+        {
+            "dispatch_id": "699d2cb1-0776-4c54-a958-0a79082497e4",
+            "lattice_name": "compute_energy",
+            "runtime": 2000,
+            "total_electrons": 4,
+            "total_electrons_completed": 4,
+            "started_at": "2022-10-03T09:04:56",
+            "ended_at": "2022-10-03T09:04:58",
+            "status": "COMPLETED",
+            "updated_at": "2022-10-03T09:04:58"
+          }
     ],
     total_count: 6
 }

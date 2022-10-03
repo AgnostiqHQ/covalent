@@ -61,6 +61,7 @@ export const demoState = {
     latticeInputList: { isFetching: false, error: null },
     latticeErrorList: { isFetching: false, error: null },
     latticeExecutorDetailList: { isFetching: false, error: null },
+    sublatticesListResults: { isFetching: false, error: null },
   },
   graphResults: graphDemoData,
   latticePreview,
