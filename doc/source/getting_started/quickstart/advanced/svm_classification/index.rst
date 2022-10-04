@@ -71,7 +71,7 @@ is the following
             ax.set_axis_off()
             ax.imshow(image.reshape(8, 8), cmap=plt.cm.gray_r, interpolation="nearest")
             ax.set_title(f"Training: {label}")
-    
+
         plt.tight_layout()
         plt.savefig(f"{os.path.join(basedir, "training_images.png")}", format="png", dpi=300)
         return
@@ -116,7 +116,7 @@ Inspecting the ``plot_images`` electron it is apparent that ``matplotlib`` is re
             ax.set_axis_off()
             ax.imshow(image.reshape(8, 8), cmap=plt.cm.gray_r, interpolation="nearest")
             ax.set_title(f"Training: {label}")
-    
+
         plt.tight_layout()
         plt.savefig(f"{os.path.join(basedir, "training_images.png")}", format="png", dpi=300)
         return
@@ -199,7 +199,7 @@ We now stich all the above specified electrons into a workflow that can be dispa
             ax.set_axis_off()
             ax.imshow(image.reshape(8, 8), cmap=plt.cm.gray_r, interpolation="nearest")
             ax.set_title(f"Training: {label}")
-    
+
         plt.tight_layout()
         plt.savefig(f"{os.path.join(basedir, "training_images.png")}", format="png", dpi=300)
         return
@@ -274,6 +274,28 @@ Model Training & Cross validation
 =================================
 
 So far we looked at the `pre-processing` workflow and covered several niche features in Covalent such as file transfers, electron dependencies, synchronization primitives, remote executors etc.
-In the earlier section, we saw how users can dispatch parts of their workflows to remote machines they may have access to. The machines can be bare-metal servers, virtual machines (running on-prem/cloud) that users
-would have access to. In this section, we look to demonstrate how through Covalent users can dispatch workflows to AWS cloud services users would have access to.
+In the earlier section, we saw how users can dispatch parts of their workflows to remote machines they may have access to. The machines can be bare-metal servers, virtual machines (on-prem/cloud) that users
+would have access to.
 
+In this section, we look to demonstrate users can dispatch their Covalent workflows to AWS cloud services (especially AWS Batch) for execution. Covalent supports execution of tasks
+on a variety of AWS cloud services through its suite of :doc:`AWS cloud executor plugins<../../../../plugins>`. Users can choose the right compute service for their computational needs and use them elastically as the needs arise.
+
+Following is the list of AWS cloud executors that are currently supported in Covalent
+
+* AWS EC2
+* AWS Batch
+* AWS ECS
+* AWS Lambda
+* AWS Braket
+
+Each one of them can be installed independently through PYPI, but users can use the following shortcut to install all the AWS cloud plugins
+
+.. code:: bash
+
+    pip install covalent-aws-plugins
+
+In this exercise we will be using the AWS Batch executor to offload the training of our model which can be installed as follows
+
+.. code:: bash
+
+    pip install covalent-awsbatch-plugin
