@@ -126,7 +126,7 @@ During the execution of the workflow one can navigate to the UI to see the statu
    * - region
      - No
      - us-east-1
-     - AWS Region to use to for client calls
+     - AWS Region to use to for client calls to AWS
    * - credentials_file
      - Yes
      - ~/.aws/credentials

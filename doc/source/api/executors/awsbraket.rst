@@ -43,16 +43,18 @@ states and then measures the state. We use the `Pennylane
     import os
 
     # AWS resources to pass to the executor
-    credentials_file = "~/.aws/credentials"
+    credentials = "~/.aws/credentials"
     profile = "default"
+	region = "us-east-1"
     s3_bucket_name = "braket_s3_bucket"
     ecr_repo_name = "braket_ecr_repo"
     iam_role_name = "covalent-braket-iam-role"
 
     # Instantiate the executor
     ex = BraketExecutor(
-	credentials=credentials_file,
+	credentials=credentials,
 	profile=profile,
+	region=region,
 	s3_bucket_name=s3_bucket_name,
 	ecr_repo_name=ecr_repo_name,
 	braket_job_execution_role_name=iam_role_name,
@@ -121,8 +123,8 @@ should also output a value with the output of the quantum measurement.
      - Is Required
      - Default
      - Description
-   * - credentials_file
-     - Yes
+   * - credentials
+     - No
      - "~/.aws/credentials"
      - The path to the AWS credentials file
    * - braket_job_execution_role_name
@@ -133,8 +135,12 @@ should also output a value with the output of the quantum measurement.
      - No
      - "default"
      - Named AWS profile used for authentication
+   * - region
+     - Yes
+     - :code`AWS_DEFAULT_REGION` environment variable
+     - AWS Region to use to for client calls to AWS
    * - s3_bucket_name
-     - No
+     - Yes
      - amazon-braket-covalent-job-resources
      - The S3 bucket where Covalent will store input and output files for the task.
    * - ecr_repo_name
@@ -145,7 +151,7 @@ should also output a value with the output of the quantum measurement.
      - No
      - "arn:aws:braket:::device/quantum-simulator/amazon/sv1"
      - The ARN of the quantum device to use
-   * - Classical device
+   * - classical_device
      - No
      - "ml.m5.large"
      - Instance type for the classical device to use
