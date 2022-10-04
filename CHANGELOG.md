@@ -7,10 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Ability to view the configuration file on the GUI as settings
+- Ability to copy python objects for inputs and results for lattice and electrons
+
+### Fixed
+
+- Minor GUI bugs and improvements
+
 ### Docs
 
 - Updated Lambda Executor RTD with config & cloud resources table
-- Updated EC2 RTD with config & cloud resources table
+- Updated EC2, Braket, and Batch AWS Executors RTD with config & cloud resources table
 
 ### Operations
 
@@ -29,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding boilerplate workflow
 - Syntax fixes in release.yml
 - Verbose failure messages in boilerplate workflow
+- Change license.yml to pip-license-checker action
 
 ## [0.199.0] - 2022-09-29
 

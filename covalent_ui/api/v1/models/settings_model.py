@@ -18,14 +18,31 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Boilerplate for backend API tests"""
+"""Settings request and response model"""
 
-from fastapi.testclient import TestClient
+import enum
+from typing import Union
 
-from covalent_ui.app import fastapi_app
+from pydantic import BaseModel
 
 
-def test_overview():
-    client = TestClient(fastapi_app)
-    response = client.get("/api/v1/dispatches/overview")
-    assert response.status_code in [200]
+class GetSettingsResponseModel(BaseModel):
+    """Get Settings response model"""
+
+    client: Union[dict, None] = None
+    server: Union[dict, None] = None
+
+
+class UpdateSettingsResponseModel(BaseModel):
+    """Update Settings response model"""
+
+    data: str
+
+
+class Validators(enum.Enum):
+    """Validate settings overwrite"""
+
+    DISPATCHER = "dispatcher"
+    DASK = "dask"
+    WORKFLOW_DATA = "workflow_data"
+    USER_INTERFACE = "user_interface"

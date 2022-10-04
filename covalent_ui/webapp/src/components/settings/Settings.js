@@ -20,26 +20,22 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import NavDrawer from '../common/NavDrawer'
-import { Container, Typography } from '@mui/material'
+import { Container } from '@mui/material'
 import { Box } from '@mui/system'
-import LogsListing from './LogsListing'
+import NavDrawer from '../common/NavDrawer'
+import Typography from '@mui/material/Typography'
 
-const LogsLayout = () => {
+const SettingsLayout = () => {
   return (
-    <Box sx={{ display: 'flex' }} data-testid="dashboard">
+    <Box sx={{ display: 'flex' }}>
       <NavDrawer />
-      <Container maxWidth="xl" sx={{ mb: 4, mt: '32px' }}>
-        <Typography
-          fontSize="32px"
-          sx={{ color: (theme) => theme.palette.primary.white, mb: 4 }}
-        >
-          Logs{' '}
+      <Container maxWidth="xl" sx={{ mb: 4, mt: 7.5, ml: 4, }}>
+        <Typography variant="h4" component="h4">
+          Settings
         </Typography>
-        <LogsListing />
       </Container>
     </Box>
   )
 }
 
-export default LogsLayout
+export default SettingsLayout

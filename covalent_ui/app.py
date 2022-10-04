@@ -11,10 +11,11 @@
 # modifications or derivative works of this file must retain this copyright
 # notice, and modified files must contain a notice indicating that they have
 # been altered from the originals.
+#
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-
+#
 # Relief from the License may be granted by purchasing a commercial license.
 
 import argparse
@@ -31,6 +32,7 @@ from covalent._shared_files.config import get_config
 from covalent_dispatcher._service.app_dask import DaskCluster
 from covalent_ui.api.main import app as fastapi_app
 from covalent_ui.api.main import sio
+from covalent_ui.api.v1.utils.log_handler import log_config
 
 # read env vars configuring server
 COVALENT_SERVER_IFACE_ANY = os.getenv("COVALENT_SERVER_IFACE_ANY", "False").lower() in (
@@ -86,7 +88,7 @@ if __name__ == "__main__":
     else:
         port = int(get_config("dispatcher.port"))
 
-    host = "localhost" if not COVALENT_SERVER_IFACE_ANY else "0.0.0.0"
+    host = get_config("dispatcher.address") if not COVALENT_SERVER_IFACE_ANY else "0.0.0.0"
 
     DEBUG = True if args.develop is True else False
     # reload = True if args.develop is True else False
@@ -107,5 +109,5 @@ if __name__ == "__main__":
         port=port,
         debug=DEBUG,
         reload=RELOAD,
-        log_config="./log_config.yml",
+        log_config=log_config(),
     )

@@ -20,26 +20,15 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import NavDrawer from '../common/NavDrawer'
-import { Container, Typography } from '@mui/material'
-import { Box } from '@mui/system'
-import LogsListing from './LogsListing'
-
-const LogsLayout = () => {
-  return (
-    <Box sx={{ display: 'flex' }} data-testid="dashboard">
-      <NavDrawer />
-      <Container maxWidth="xl" sx={{ mb: 4, mt: '32px' }}>
-        <Typography
-          fontSize="32px"
-          sx={{ color: (theme) => theme.palette.primary.white, mb: 4 }}
-        >
-          Logs{' '}
-        </Typography>
-        <LogsListing />
-      </Container>
-    </Box>
-  )
+export const CONFIG_SECTIONS = {
+  slurm: 'SLURM',
+  sdk: 'SDK',
+  dask: 'DASK',
+  cache_dir: 'Cache directory',
+  results_dir: 'Results directory',
+  executor_dir: 'Executor directory',
+  log_stdout: 'Log standard out',
+  log_stderr: 'Log standard error',
+  log_dir: 'Log directory',
+  base_dir: 'Base directory',
 }
-
-export default LogsLayout
