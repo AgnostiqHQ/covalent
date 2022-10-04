@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Ability to view the configuration file on the GUI as settings
+- Ability to copy python objects for inputs and results for lattice and electrons
+
+### Fixed
+
+- Minor GUI bugs and improvements
+
 ### Docs
 
 - Updated EC2 RTD with config & cloud resources table

@@ -33,7 +33,7 @@ import { styled } from '@mui/material/styles'
 import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'
 
-const InputTooltip = styled(({ className, ...props }) => (
+const ResultTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
 ))(() => ({
   [`& .${tooltipClasses.tooltip}`]: {
@@ -42,38 +42,38 @@ const InputTooltip = styled(({ className, ...props }) => (
   },
 }))
 
-const InputSection = ({ isFetching, inputs, preview, ...props }) => {
+const ResultSection = ({ isFetching, results, preview, ...props }) => {
   const [copied, setCopied] = useState(false)
-  const inputSrc = preview
+  const resultSrc = preview
     ? _.join(
-      _.map(inputs?.data, (value, key) => `${key}: ${value}`),
+      _.map(results.data, (value, key) => `${key}: ${value}`),
       '\n'
     )
-    : inputs?.data
+    : results.data
   return (
     <>
       {isFetching ? (
         <Skeleton sx={{ height: '80px' }} />
       ) : (
-        inputSrc && (
-          <InputTooltip title={copied ? 'Python object copied' : 'Copy python object'} arrow>
+        resultSrc && (
+          <ResultTooltip title={copied ? 'Python object copied' : 'Copy python object'} arrow>
             <div onClick={
               () => {
-                copy(inputs?.python_object)
+                copy(results?.python_object)
                 setCopied(true)
                 setTimeout(() => setCopied(false), 1200)
               }
             } >
-              <Heading data-testid='inputSection'>Input</Heading>
+              <Heading data-testid='resultSection'>Result</Heading>
               <Paper elevation={0} {...props} >
-                <SyntaxHighlighter language="json" src={inputSrc} />
+                <SyntaxHighlighter language="json" src={resultSrc} />
               </Paper>
             </div>
-          </InputTooltip>
+          </ResultTooltip>
         )
       )}
     </>
   )
 }
 
-export default InputSection
+export default ResultSection

@@ -20,26 +20,20 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import NavDrawer from '../common/NavDrawer'
-import { Container, Typography } from '@mui/material'
-import { Box } from '@mui/system'
-import LogsListing from './LogsListing'
+import { createSlice } from '@reduxjs/toolkit'
 
-const LogsLayout = () => {
-  return (
-    <Box sx={{ display: 'flex' }} data-testid="dashboard">
-      <NavDrawer />
-      <Container maxWidth="xl" sx={{ mb: 4, mt: '32px' }}>
-        <Typography
-          fontSize="32px"
-          sx={{ color: (theme) => theme.palette.primary.white, mb: 4 }}
-        >
-          Logs{' '}
-        </Typography>
-        <LogsListing />
-      </Container>
-    </Box>
-  )
+const initialState = {
+    popupData: null
 }
 
-export default LogsLayout
+export const popupSlice = createSlice({
+    name: 'common',
+    initialState,
+    reducers: {
+        toggleLatticeDrawer(state, { payload }) {
+            state.popupData = payload
+        },
+    },
+})
+
+export const { toggleLatticeDrawer } = popupSlice.actions
