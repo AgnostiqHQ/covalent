@@ -3,8 +3,8 @@ from unittest.mock import Mock
 
 from click.testing import CliRunner
 
-from covalent._data_store.datastore import DataStore
 from covalent_dispatcher._cli.groups.db import MIGRATION_WARNING_MSG, alembic, migrate
+from covalent_dispatcher._db.datastore import DataStore
 
 
 def test_migration_with_warning(mocker):
