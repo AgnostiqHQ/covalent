@@ -43,7 +43,6 @@ import { useMatch } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import DialogBox from '../../components/settings/DialogBox'
-import { updateSettings } from '../../redux/settingsSlice'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
 
 export const navDrawerWidth = 60
