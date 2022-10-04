@@ -64,7 +64,7 @@ def log_config():
         },
         "loggers": {
             "uvicorn": {"level": log, "handlers": ["default"]},
-            "uvicorn.error": {"level": log, "handlers": ["default"], "propogate": False},
+            "uvicorn.error": {"level": log, "handlers": ["default"], "propagate": False},
             "uvicorn.access": {"level": log, "handlers": ["access"], "propagate": "no"},
         },
     }
