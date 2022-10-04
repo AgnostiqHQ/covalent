@@ -42,7 +42,7 @@ and return an excited phrase.
         vcpu=1,
         memory=2,
         poll_freq=10,
-        )
+    )
 
 
     @ct.electron(executor=executor)
@@ -96,6 +96,10 @@ The following table shows a list of all input arguments including the required a
      - No
      - default
      - The AWS profile used for authentication
+   * - region
+     - Yes
+     - us-east-1
+     - AWS region to use for client calls to AWS
    * - s3_bucket_name
      - No
      - covalent-fargate-task-resources
@@ -122,11 +126,11 @@ The following table shows a list of all input arguments including the required a
      - The IAM role used by the container during runtime
    * - ecs_task_subnet_id
      - Yes
-     - An empty string
+     -
      - Valid subnet ID
    * - ecs_task_security_group_id
      - Yes
-     - An empty string
+     -
      - Valid security group ID
    * - ecs_task_log_group_name
      - No
@@ -206,7 +210,7 @@ Alternatively, users can customize this executor entirely by providing their own
         memory=2,
         cache_dir="/home/<user>/covalent/cache",
         poll_freq=10,
-        )
+    )
 
     @ct.electron(executor=ecs_executor)
     def task(x, y):
