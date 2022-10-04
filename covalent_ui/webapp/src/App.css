@@ -28,6 +28,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -37,22 +38,33 @@
 .react-flow {
   background: #08081A;
 }
+
 .react-flow__handle {
   visibility: hidden;
 }
+
 /* adjust handle for edge positioning */
 .react-flow__handle-bottom {
   bottom: 0px !important;
 }
+
 .react-flow__handle-top {
   top: 0px !important;
 }
+
 .react-flow__handle-left {
   left: 0px !important;
 }
+
 .react-flow__handle-right {
   right: 0px !important;
 }
-.side-drawernav .Mui-selected{
+
+.side-drawernav .Mui-selected {
   background-color: transparent !important;
+}
+
+.dropdownSelect .MuiOutlinedInput-notchedOutline {
+  border-color: #303067 !important;
+  border-radius: 60px;
 }

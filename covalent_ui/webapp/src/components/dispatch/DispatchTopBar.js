@@ -48,7 +48,7 @@ const DispatchTopBar = () => {
             position: 'absolute',
             top: 0,
             width: '100%',
-            height: '55px',
+            height: '75px',
             justifyContent: 'center',
             zIndex: 95,
             display: 'flex',

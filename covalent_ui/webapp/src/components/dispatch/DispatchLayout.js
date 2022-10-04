@@ -100,7 +100,7 @@ export function DispatchLayout() {
           width: '100vw',
           height: '100vh',
           bgcolor: graphBgColor,
-          paddingTop: '20px'
+          paddingTop: '35px'
         }}
       >
         {Object.keys(graph_result).length !== 0 && (<LatticeGraph

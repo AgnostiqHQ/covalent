@@ -253,75 +253,81 @@ class Summary:
         """
         success = []
         failure = []
-        if len(data.dispatches) >= 1:
-            for dispatch_id in data.dispatches:
-                try:
-                    lattice_id = (
-                        self.db_con.query(Lattice.id)
-                        .filter(
-                            Lattice.dispatch_id == str(dispatch_id),
-                            Lattice.is_active.is_not(False),
-                        )
-                        .first()
+        message = "No dispatches were deleted"
+        if len(data.dispatches) == 0:
+            return DeleteDispatchesResponse(
+                success_items=success,
+                failure_items=failure,
+                message=message,
+            )
+        for dispatch_id in data.dispatches:
+            try:
+                lattice_id = (
+                    self.db_con.query(Lattice.id)
+                    .filter(
+                        Lattice.dispatch_id == str(dispatch_id),
+                        Lattice.is_active.is_not(False),
                     )
-                    if lattice_id is not None:
-                        electron_ids = (
-                            self.db_con.query(Electron.id)
-                            .filter(
-                                Electron.parent_lattice_id == lattice_id[0],
-                                Electron.is_active.is_not(False),
-                            )
-                            .scalar_subquery()
-                        )
-
-                        update_electron_dependency = (
-                            update(ElectronDependency)
-                            .where(ElectronDependency.parent_electron_id.in_(electron_ids))
-                            .values(
-                                {
-                                    ElectronDependency.updated_at: datetime.now(timezone.utc),
-                                    ElectronDependency.is_active: False,
-                                }
-                            )
-                        )
-                        update_electron = (
-                            update(Electron)
-                            .where(Electron.parent_lattice_id == lattice_id[0])
-                            .values(
-                                {
-                                    Electron.updated_at: datetime.now(timezone.utc),
-                                    Electron.is_active: False,
-                                }
-                            )
-                        )
-                        update_lattice = (
-                            update(Lattice)
-                            .where(Lattice.id == lattice_id[0])
-                            .values(
-                                {
-                                    Lattice.updated_at: datetime.now(timezone.utc),
-                                    Lattice.is_active: False,
-                                }
-                            )
-                        )
-                        self.db_con.execute(
-                            update_electron_dependency,
-                            execution_options=immutabledict({"synchronize_session": "fetch"}),
-                        )
-                        self.db_con.execute(update_electron)
-                        self.db_con.execute(update_lattice)
-                        self.db_con.commit()
-                        success.append(dispatch_id)
-                    else:
-                        failure.append(dispatch_id)
-                except InterfaceError:
+                    .first()
+                )
+                if lattice_id is None:
                     failure.append(dispatch_id)
-        if (len(failure) == 0 and len(success) == 0) or (len(failure) > 0 and len(success) == 0):
-            message = "No dispatches were deleted"
-        elif len(failure) > 0 and len(success) > 0:
-            message = "Some of the dispatches could not be deleted"
-        else:
+                    continue
+                electron_ids = (
+                    self.db_con.query(Electron.id)
+                    .filter(
+                        Electron.parent_lattice_id == lattice_id[0],
+                        Electron.is_active.is_not(False),
+                    )
+                    .scalar_subquery()
+                )
+
+                update_electron_dependency = (
+                    update(ElectronDependency)
+                    .where(ElectronDependency.parent_electron_id.in_(electron_ids))
+                    .values(
+                        {
+                            ElectronDependency.updated_at: datetime.now(timezone.utc),
+                            ElectronDependency.is_active: False,
+                        }
+                    )
+                )
+                self.db_con.execute(
+                    update_electron_dependency,
+                    execution_options=immutabledict({"synchronize_session": "fetch"}),
+                )
+                update_electron = (
+                    update(Electron)
+                    .where(Electron.parent_lattice_id == lattice_id[0])
+                    .values(
+                        {
+                            Electron.updated_at: datetime.now(timezone.utc),
+                            Electron.is_active: False,
+                        }
+                    )
+                )
+                self.db_con.execute(update_electron)
+
+                update_lattice = (
+                    update(Lattice)
+                    .where(Lattice.id == lattice_id[0])
+                    .values(
+                        {
+                            Lattice.updated_at: datetime.now(timezone.utc),
+                            Lattice.is_active: False,
+                        }
+                    )
+                )
+                self.db_con.execute(update_lattice)
+                self.db_con.commit()
+                success.append(dispatch_id)
+            except InterfaceError:
+                failure.append(dispatch_id)
+        if len(success) > 0:
             message = "Dispatch(es) have been deleted successfully!"
+            if len(failure) > 0:
+                message = "Some of the dispatches could not be deleted"
+
         return DeleteDispatchesResponse(
             success_items=success,
             failure_items=failure,
