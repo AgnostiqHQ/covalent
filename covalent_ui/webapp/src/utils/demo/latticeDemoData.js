@@ -1609,11 +1609,13 @@ latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].latticeDetails =
 };
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].latticeError = "";
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].latticeResult = {
-    "data": "\"[[1, 1, 1], [1, 1, 1], [1, 1, 1]]\""
-  };
+    "data": "\"[[1, 1, 1], [1, 1, 1], [1, 1, 1]]\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95#\\x00\\x00\\x00\\x00\\x00\\x00\\x00]\\x94(]\\x94(K\\x01K\\x01K\\x01e]\\x94(K\\x01K\\x01K\\x01e]\\x94(K\\x01K\\x01K\\x01ee.')"
+}
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].latticeInput = {
-    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
-};
+    "data": "{'args': ('1',), 'kwargs': {}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x1d\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94\\x8c\\x011\\x94\\x85\\x94\\x8c\\x06kwargs\\x94}\\x94u.')"
+}
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].latticeFunctionString = {
     "data": "@ct.lattice\ndef compute_energy(x):\n    y=identity(x)\n    result=SubEta(y)\n    result=SubBeta(result)\n    return result\n\n\n"
 }
@@ -1667,7 +1669,8 @@ latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0].elect
     "description": ""
 }
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0].electronResult = {
-    "data": "\"1\""
+    "data": "\"1\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05K\\x01.')"
 }
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0].electronExecutor = {
     "executor_name": "local",
@@ -1678,7 +1681,8 @@ latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0].elect
 }
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0].electronError = null
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[0].electronInput = {
-    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+    "data": "{'args': ('1',), 'kwargs': {}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x1d\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94\\x8c\\x011\\x94\\x85\\x94\\x8c\\x06kwargs\\x94}\\x94u.')"
 }
 
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].electronDetails = {
@@ -1695,7 +1699,8 @@ latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].elect
     "description": ""
 }
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].electronResult = {
-    "data": "\"[1, 1, 1]\""
+    "data": "\"[1, 1, 1]\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x0b\\x00\\x00\\x00\\x00\\x00\\x00\\x00]\\x94(K\\x01K\\x01K\\x01e.')"
 }
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].electronExecutor = {
     "executor_name": "local",
@@ -1706,7 +1711,8 @@ latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].elect
 }
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].electronError = null
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[2].electronInput = {
-    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+    "data": "{'args': ('1',), 'kwargs': {}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x1d\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94\\x8c\\x011\\x94\\x85\\x94\\x8c\\x06kwargs\\x94}\\x94u.')"
 }
 
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].electronDetails = {
@@ -1723,7 +1729,8 @@ latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].elect
     "description": ""
 }
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].electronResult = {
-    "data": "\"[[1, 1, 1], [1, 1, 1], [1, 1, 1]]\""
+    "data": "\"[[1, 1, 1], [1, 1, 1], [1, 1, 1]]\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95#\\x00\\x00\\x00\\x00\\x00\\x00\\x00]\\x94(]\\x94(K\\x01K\\x01K\\x01e]\\x94(K\\x01K\\x01K\\x01e]\\x94(K\\x01K\\x01K\\x01ee.')"
 }
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].electronExecutor = {
     "executor_name": "local",
@@ -1734,7 +1741,8 @@ latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].elect
 }
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].electronError = null
 latticeDetailsDemoData["699d2cb1-0776-4c54-a958-0a79082497e4"].electron[3].electronInput = {
-    "data": "{\"args\": [\"[1, 1, 1]\"], \"kwargs\": {}}"
+    "data": "{'args': ('[1, 1, 1]',), 'kwargs': {}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95%\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94\\x8c\\t[1, 1, 1]\\x94\\x85\\x94\\x8c\\x06kwargs\\x94}\\x94u.')"
 }
 
 
@@ -1816,7 +1824,8 @@ latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0].elect
     "description": ""
 }
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0].electronResult = {
-    "data": "\"1\""
+    "data": "\"1\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05K\\x01.')"
 }
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0].electronExecutor = {
     "executor_name": "local",
@@ -1827,7 +1836,8 @@ latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0].elect
 }
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0].electronError = null
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[0].electronInput = {
-    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+    "data": "{'args': ('1',), 'kwargs': {}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x1d\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94\\x8c\\x011\\x94\\x85\\x94\\x8c\\x06kwargs\\x94}\\x94u.')"
 }
 
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].electronDetails = {
@@ -1844,7 +1854,8 @@ latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].elect
     "description": ""
 }
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].electronResult = {
-    "data": "\"1\""
+    "data": "\"1\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05K\\x01.')"
 }
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].electronExecutor = {
     "executor_name": "local",
@@ -1855,7 +1866,8 @@ latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].elect
 }
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].electronError = null
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[2].electronInput = {
-    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+    "data": "{'args': ('1',), 'kwargs': {}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x1d\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94\\x8c\\x011\\x94\\x85\\x94\\x8c\\x06kwargs\\x94}\\x94u.')"
 }
 
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].electronDetails = {
@@ -1872,7 +1884,8 @@ latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].elect
     "description": ""
 }
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].electronResult = {
-    "data": "\"1\""
+    "data": "\"1\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05K\\x01.')"
 }
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].electronExecutor = {
     "executor_name": "local",
@@ -1883,7 +1896,8 @@ latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].elect
 }
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].electronError = null
 latticeDetailsDemoData["e8096480-15da-41c3-b869-212e7e773749"].electron[4].electronInput = {
-    "data": "{\"args\": [\"1\"], \"kwargs\": {}}"
+    "data": "{'args': ('1',), 'kwargs': {}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x1d\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94\\x8c\\x011\\x94\\x85\\x94\\x8c\\x06kwargs\\x94}\\x94u.')"
 }
 
 
@@ -1976,7 +1990,8 @@ latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0].elect
     "description": ""
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0].electronResult = {
-    "data": "\"[1, 1, 1]\""
+    "data": "\"[1, 1, 1]\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x0b\\x00\\x00\\x00\\x00\\x00\\x00\\x00]\\x94(K\\x01K\\x01K\\x01e.')"
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0].electronExecutor = {
     "executor_name": "local",
@@ -1987,7 +2002,8 @@ latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0].elect
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0].electronError = null
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[0].electronInput = {
-    "data": "{\"args\": [\"[1, 1, 1]\"], \"kwargs\": {}}"
+    "data": "{'args': ('[1, 1, 1]',), 'kwargs': {}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95%\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94\\x8c\\t[1, 1, 1]\\x94\\x85\\x94\\x8c\\x06kwargs\\x94}\\x94u.')"
 }
 
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].electronDetails = {
@@ -2004,7 +2020,8 @@ latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].elect
     "description": ""
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].electronResult = {
-    "data": "\"[1, 1, 1]\""
+    "data": "\"[1, 1, 1]\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x0b\\x00\\x00\\x00\\x00\\x00\\x00\\x00]\\x94(K\\x01K\\x01K\\x01e.')"
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].electronExecutor = {
     "executor_name": "local",
@@ -2015,7 +2032,8 @@ latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].elect
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].electronError = null
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[5].electronInput = {
-    "data": "{\"args\": [\"[1, 1, 1]\"], \"kwargs\": {}}"
+    "data": "{'args': ('[1, 1, 1]',), 'kwargs': {}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95%\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94\\x8c\\t[1, 1, 1]\\x94\\x85\\x94\\x8c\\x06kwargs\\x94}\\x94u.')"
 }
 
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].electronDetails = {
@@ -2032,7 +2050,8 @@ latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].elec
     "description": ""
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].electronResult = {
-    "data": "\"[1, 1, 1]\""
+    "data": "\"[1, 1, 1]\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x0b\\x00\\x00\\x00\\x00\\x00\\x00\\x00]\\x94(K\\x01K\\x01K\\x01e.')"
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].electronExecutor = {
     "executor_name": "local",
@@ -2043,7 +2062,8 @@ latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].elec
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].electronError = null
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[10].electronInput = {
-    "data": "{\"args\": [\"[1, 1, 1]\"], \"kwargs\": {}}"
+    "data": "{'args': ('[1, 1, 1]',), 'kwargs': {}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95%\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94\\x8c\\t[1, 1, 1]\\x94\\x85\\x94\\x8c\\x06kwargs\\x94}\\x94u.')"
 }
 
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].electronDetails = {
@@ -2060,7 +2080,8 @@ latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].elect
     "description": ""
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].electronResult = {
-    "data": "\"[1, 1, 1]\""
+    "data": "\"[1, 1, 1]\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x0b\\x00\\x00\\x00\\x00\\x00\\x00\\x00]\\x94(K\\x01K\\x01K\\x01e.')"
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].electronExecutor = {
     "executor_name": "local",
@@ -2071,7 +2092,8 @@ latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].elect
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].electronError = null
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[1].electronInput = {
-    "data": "{\"args\": [], \"kwargs\": {\"x\": \"[<covalent.TransportableObject object at 0x7f82c7c337c0>, <covalent.TransportableObject object at 0x7f82c7b357f0>, <covalent.TransportableObject object at 0x7f82c7b352e0>]\"}}"
+    "data": "{'args': (), 'kwargs': {'x': '[<covalent.TransportableObject object at 0x7f497f7f7970>, <covalent.TransportableObject object at 0x7f497f7b0be0>, <covalent.TransportableObject object at 0x7f497f7b0940>]'}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\xcb\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94)\\x8c\\x06kwargs\\x94}\\x94\\x8c\\x01x\\x94\\x8c\\xab[<covalent.TransportableObject object at 0x7f497f7f7970>, <covalent.TransportableObject object at 0x7f497f7b0be0>, <covalent.TransportableObject object at 0x7f497f7b0940>]\\x94su.')"
 }
 
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].electronDetails = {
@@ -2088,7 +2110,8 @@ latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].elect
     "description": ""
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].electronResult = {
-    "data": "\"[1, 1, 1]\""
+    "data": "\"[1, 1, 1]\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x0b\\x00\\x00\\x00\\x00\\x00\\x00\\x00]\\x94(K\\x01K\\x01K\\x01e.')"
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].electronExecutor = {
     "executor_name": "local",
@@ -2099,7 +2122,8 @@ latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].elect
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].electronError = null
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[6].electronInput = {
-    "data": "{\"args\": [], \"kwargs\": {\"x\": \"[<covalent.TransportableObject object at 0x7f82c7c337c0>, <covalent.TransportableObject object at 0x7f82c7b357f0>, <covalent.TransportableObject object at 0x7f82c7b352e0>]\"}}"
+    "data": "{'args': (), 'kwargs': {'x': '[<covalent.TransportableObject object at 0x7f497f7f7970>, <covalent.TransportableObject object at 0x7f497f7b0be0>, <covalent.TransportableObject object at 0x7f497f7b0940>]'}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\xcb\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94)\\x8c\\x06kwargs\\x94}\\x94\\x8c\\x01x\\x94\\x8c\\xab[<covalent.TransportableObject object at 0x7f497f7f7970>, <covalent.TransportableObject object at 0x7f497f7b0be0>, <covalent.TransportableObject object at 0x7f497f7b0940>]\\x94su.')"
 }
 
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].electronDetails = {
@@ -2116,7 +2140,8 @@ latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].elec
     "description": ""
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].electronResult = {
-    "data": "\"[1, 1, 1]\""
+    "data": "\"[1, 1, 1]\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x0b\\x00\\x00\\x00\\x00\\x00\\x00\\x00]\\x94(K\\x01K\\x01K\\x01e.')"
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].electronExecutor = {
     "executor_name": "local",
@@ -2126,8 +2151,9 @@ latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].elec
     "data": "@electron\ndef to_decoded_electron_collection(**x):\n    \"\"\"Interchanges order of serialize -> collection\"\"\"\n    collection = list(x.values())[0]\n    if isinstance(collection, list):\n        return TransportableObject.deserialize_list(collection)\n    elif isinstance(collection, dict):\n        return TransportableObject.deserialize_dict(collection)\n\n\n"
 }
 latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].electronError = null
-latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].electronInput = {
-    "data": "{\"args\": [], \"kwargs\": {\"x\": \"[<covalent.TransportableObject object at 0x7f82c7c337c0>, <covalent.TransportableObject object at 0x7f82c7b357f0>, <covalent.TransportableObject object at 0x7f82c7b352e0>]\"}}"
+latticeDetailsDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"].electron[11].electronInput ={
+    "data": "{'args': (), 'kwargs': {'x': '[<covalent.TransportableObject object at 0x7f497f7f7970>, <covalent.TransportableObject object at 0x7f497f7b0be0>, <covalent.TransportableObject object at 0x7f497f7b0940>]'}}",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\xcb\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94)\\x8c\\x06kwargs\\x94}\\x94\\x8c\\x01x\\x94\\x8c\\xab[<covalent.TransportableObject object at 0x7f497f7f7970>, <covalent.TransportableObject object at 0x7f497f7b0be0>, <covalent.TransportableObject object at 0x7f497f7b0940>]\\x94su.')"
 }
 
 export default latticeDetailsDemoData
