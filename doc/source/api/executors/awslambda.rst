@@ -87,6 +87,10 @@ The following table shows a list of all input arguments including the required a
      - Is Required
      - Default
      - Description
+   * - credentials_file
+     - No
+     - ~/.aws/credentials
+     - The path to your AWS credentials file
    * - profile
      - No
      - default
@@ -130,7 +134,7 @@ the necessary input arguments to the executor:
 .. code-block:: bash
 
     [executors.awslambda]
-    credentials = "/home/<user>/.aws/credentials"
+    credentials_file = "/home/<user>/.aws/credentials"
     profile = "default"
     region = "us-east-1"
     lambda_role_name = "CovalentLambdaExecutionRole"
@@ -160,7 +164,7 @@ Alternatively, users can customize this executor entirely by providing their own
     from covalent.executor import AWSLambdaExecutor
 
     lambda_executor = AWSLambdaExecutor(
-        credentials="my_custom_credentials",
+        credentials_file="my_custom_credentials",
         profile="custom_profile",
         region="us-east-1",
         lambda_role_name="my_lambda_role_name",
