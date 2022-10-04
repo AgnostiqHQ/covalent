@@ -18,10 +18,10 @@ to follow examples of varying levels of complexity to illustrate the core aspect
       - Beginner
       - This simple workflow illustrates the core features of Covalent ``electrons & lattices``
 
-    * - :doc:`Single node workflows <./beginner/single_node_workflow/index>`
-      - Beginner
-      - This example illustrates how users can create workflows consisting of a single node quite easily using a combination of the ``electron`` and ``lattice`` decorators
-
     * - :doc:`Matrix eigenvalues <./intermediate/matrix_eigenvalues/index>`
       - Intermediate
       - This example illustrates how one can offload computationally heavy tasks to a remote machine using ``remote executors`` in Covalent
+
+    * - :doc:`Classifying images with Support Vector Machines <./advanced/svm_classification/index>`
+      - Advanced
+      - This example highlights some advanced features in Covalent such as file transfers, before/after call hooks and AWS executors
