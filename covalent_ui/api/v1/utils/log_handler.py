@@ -42,12 +42,12 @@ def log_config():
             "default": {
                 "()": "uvicorn.logging.DefaultFormatter",
                 "datefmt": "%Y-%m-%d %H:%M:%S",
-                "fmt": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                "fmt": "[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s",
             },
             "access": {
                 "()": "uvicorn.logging.AccessFormatter",
                 "datefmt": "%Y-%m-%d %H:%M:%S",
-                "fmt": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                "fmt": "[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s",
             },
         },
         "handlers": {
