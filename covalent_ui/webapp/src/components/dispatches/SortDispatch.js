@@ -42,6 +42,7 @@ const SortDispatch = (props) => {
         setOffset(0)
       }}
       sx={{
+        marginRight: '32px',
         display: 'flex',
         alignItems: 'center',
         cursor: 'default',

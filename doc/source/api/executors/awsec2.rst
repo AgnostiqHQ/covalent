@@ -186,7 +186,7 @@ The following shows an example of how a user might modify their `covalent config
 4. Required Cloud Resources
 ===========================================
 
-This plugin requires users have an AWS account. New users can follow instructions `here <https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/>`_ to create a new account. In order to run workflows with Covalent and the AWS EC2 plugin, there are a few notable resources that need to be provisioned first. Whenever interacting with AWS resources, users strongly recommended to follow `best practices <../../credentials>` for managing cloud credentials. Users are recommended to follow the principle of least privilege. For this executor, users who wish to deploy required infrastructure may use the AWS Managed Policy `AmazonEC2FullAccess <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-iam-awsmanpol.html>`_ although some administrators may wish to further restrict instance families, regions, or other options according to their organization's cloud policies.
+This plugin requires users have an AWS account. New users can follow instructions `here <https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/>`_ to create a new account. In order to run workflows with Covalent and the AWS EC2 plugin, there are a few notable resources that need to be provisioned first. Whenever interacting with AWS resources, users strongly recommended to follow :doc:`best practices <../../credentials>` for managing cloud credentials. Users are recommended to follow the principle of least privilege. For this executor, users who wish to deploy required infrastructure may use the AWS Managed Policy `AmazonEC2FullAccess <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-iam-awsmanpol.html>`_ although some administrators may wish to further restrict instance families, regions, or other options according to their organization's cloud policies.
 
 The required resources include an EC2 Key Pair, and optionally a VPC & Subnet that can be used instead of the EC2 executor automatically creating it.
 
@@ -202,7 +202,7 @@ The required resources include an EC2 Key Pair, and optionally a VPC & Subnet th
    * - AWS EC2 Key Pair
      - Yes
      - :code:`key_name`
-     - An EC2 Key Pair must be created and named corresponding to the :code:`key_name` config value.
+     - An EC2 Key Pair must be created and named corresponding to the :code:`key_name` config value. This key pair is used by the executor to connect to the EC2 instance via SSH. This key must also be present in the user's local machine that is dispatching the workflow and it's filepath specified under the :code:`ssh_key_file` config value.
    * - VPC
      - No
      - :code:`vpc`
@@ -211,6 +211,14 @@ The required resources include an EC2 Key Pair, and optionally a VPC & Subnet th
      - No
      - :code:`subnet`
      - A Subnet ID can be provided corresponding to the :code:`subnet` config value. Otherwise a public Subnet will be auto-created for each electron.
+   * - Security Group
+     - No
+     - (Auto Created)
+     - A security group will be auto created and attached to the VPC in order to give the local machine (dispatching workflow) SSH access to the EC2 instance.
+   * - EC2 Instance
+     - No
+     - (Auto Created)
+     - An EC2 Instance will be automatically provisioned for each electron in the workflow that utilizes this executor.
 
 
 #. To create an AWS EC2 Key pair refer to the following `AWS documentation <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html>`_.

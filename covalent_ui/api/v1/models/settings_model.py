@@ -15,40 +15,34 @@
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Electron Dependency Request and Respone Model"""
+"""Settings request and response model"""
 
-from typing import List
+import enum
+from typing import Union
 
 from pydantic import BaseModel
 
-from covalent_ui.api.v1.utils.status import Status
+
+class GetSettingsResponseModel(BaseModel):
+    """Get Settings response model"""
+
+    client: Union[dict, None] = None
+    server: Union[dict, None] = None
 
 
-class LinkModule(BaseModel):
-    """Link Module Validation"""
+class UpdateSettingsResponseModel(BaseModel):
+    """Update Settings response model"""
 
-    id: int
-    electron_id: int
-    parent_electron_id: int
-    edge_name: str
-    parameter_type: str
-    created_at: str
+    data: str
 
 
-class NodeModule(BaseModel):
-    """Node Module Validation"""
+class Validators(enum.Enum):
+    """Validate settings overwrite"""
 
-    id: int
-    name: str
-    start_time: str
-    end_time: str
-    status: Status
-
-
-class GraphResponseModel(BaseModel):
-    """Graph Response Validation"""
-
-    node: List[NodeModule]
-    links: List[LinkModule]
+    DISPATCHER = "dispatcher"
+    DASK = "dask"
+    WORKFLOW_DATA = "workflow_data"
+    USER_INTERFACE = "user_interface"

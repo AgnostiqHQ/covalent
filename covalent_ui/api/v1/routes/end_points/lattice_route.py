@@ -28,9 +28,9 @@ from sqlalchemy.orm import Session
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
 from covalent_ui.api.v1.database.config.db import engine
 from covalent_ui.api.v1.models.lattices_model import (
-    FileOutput,
     LatticeDetailResponse,
     LatticeExecutorResponse,
+    LatticeFileOutput,
     LatticeFileResponse,
     LatticeWorkflowExecutorResponse,
 )
@@ -79,7 +79,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
 
 
 @routes.get("/{dispatch_id}/details/{name}")
-def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
+def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
     """Get lattice file data
 
     Args:
@@ -95,11 +95,13 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
         if lattice_data is not None:
             handler = FileHandler(lattice_data["directory"])
             if name == "result":
-                response = handler.read_from_pickle(lattice_data["results_filename"])
-                return LatticeFileResponse(data=str(response))
+                response, python_object = handler.read_from_pickle(
+                    lattice_data["results_filename"]
+                )
+                return LatticeFileResponse(data=str(response), python_object=python_object)
             if name == "inputs":
-                response = handler.read_from_pickle(lattice_data["inputs_filename"])
-                return LatticeFileResponse(data=response)
+                response, python_object = handler.read_from_pickle(lattice_data["inputs_filename"])
+                return LatticeFileResponse(data=response, python_object=python_object)
             elif name == "function_string":
                 response = handler.read_from_text(lattice_data["function_string_filename"])
                 return LatticeFileResponse(data=response)
@@ -121,8 +123,10 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
                 response = handler.read_from_text(lattice_data["error_filename"])
                 return LatticeFileResponse(data=response)
             elif name == "function":
-                response = handler.read_from_pickle(lattice_data["function_filename"])
-                return LatticeFileResponse(data=response)
+                response, python_object = handler.read_from_pickle(
+                    lattice_data["function_filename"]
+                )
+                return LatticeFileResponse(data=response, python_object=python_object)
             elif name == "transport_graph":
                 response = handler.read_from_pickle(lattice_data["transport_graph_filename"])
                 return LatticeFileResponse(data=response)

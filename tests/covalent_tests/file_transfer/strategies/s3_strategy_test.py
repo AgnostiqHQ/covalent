@@ -54,7 +54,7 @@ class TestS3Strategy:
         S3().download(from_file, to_file)()
 
         boto3_client_mock().download_file.assert_called_with(
-            bucket_name, from_file.filepath, to_file.filepath
+            bucket_name, from_file.filepath.strip("/"), to_file.filepath
         )
 
     def test_upload(self, mocker):
@@ -74,7 +74,7 @@ class TestS3Strategy:
         S3().upload(from_file, to_file)()
 
         boto3_client_mock().upload_file.assert_called_with(
-            from_file.filepath, bucket_name, to_file.filepath
+            from_file.filepath, bucket_name, to_file.filepath.strip("/")
         )
 
     def test_cp_failure(self, mocker):

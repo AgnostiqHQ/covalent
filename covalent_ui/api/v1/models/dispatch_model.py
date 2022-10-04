@@ -15,49 +15,25 @@
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Dispatch request and response model"""
 
 
 from datetime import datetime
-from enum import Enum
 from typing import List, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel, conint
 
+from covalent_ui.api.v1.utils.models_helper import SortBy, SortDirection
 from covalent_ui.api.v1.utils.status import Status
 
 
-class CaseInsensitiveEnum(Enum):
-    """Enum overriden to support case insensitive keys"""
-
-    @classmethod
-    def _missing_(cls, value):
-        for member in cls:
-            if member.value == value.upper():
-                return member
-
-
-class SortBy(CaseInsensitiveEnum):
-    """Values to filter data by"""
-
-    RUNTIME = "runtime"
-    STATUS = "status"
-    STARTED = "started_at"
-    LATTICE_NAME = "lattice_name"
-    ENDED = "ended_at"
-
-
-class SortDirection(CaseInsensitiveEnum):
-    """Values to decide sort direction"""
-
-    ASCENDING = "ASC"
-    DESCENDING = "DESC"
-
-
 class DispatchSummaryRequest(BaseModel):
+    """Dispatch Summary Request model"""
+
     count: conint(gt=0, lt=100)
     offset: Optional[conint(gt=-1)] = 0
     sort_by: Optional[SortBy] = SortBy.STARTED
@@ -123,21 +99,21 @@ class DeleteDispatchesResponse(BaseModel):
     """Dashboard metadate model"""
 
     success_items: List[UUID]
-    failure_items: List[UUID] = None
-    message: str = None
+    failure_items: Union[List[UUID], None] = None
+    message: Union[str, None] = None
 
 
 class DispatchDashBoardResponse(BaseModel):
     """Dashboard metadate model"""
 
-    total_jobs: int = None
-    total_jobs_running: int = None
-    total_jobs_completed: int = None
-    total_jobs_failed: int = None
-    total_jobs_cancelled: int = None
-    total_jobs_new_object: int = None
-    latest_running_task_status: Status = None
-    total_dispatcher_duration: int = None
+    total_jobs: Union[int, None] = None
+    total_jobs_running: Union[int, None] = None
+    total_jobs_completed: Union[int, None] = None
+    total_jobs_failed: Union[int, None] = None
+    total_jobs_cancelled: Union[int, None] = None
+    total_jobs_new_object: Union[int, None] = None
+    latest_running_task_status: Union[Status, None] = None
+    total_dispatcher_duration: Union[int, None] = None
 
     class Config:
         """Configure example for openAPI"""
