@@ -26,6 +26,7 @@ on:
   push:
     branches:
       - develop
+      - testing-windows
     paths-ignore:
       - CHANGELOG.md
       - VERSION
@@ -112,6 +113,7 @@ jobs:
             - '.github/actions/**'
 
       - name: Generate environment variables
+        if: matrix.os != 'windows-2019'
         run: |
           if ${{ matrix.os == 'ubuntu-latest'
             && contains(matrix.container, 'debian11-py38')
@@ -137,9 +139,14 @@ jobs:
           echo "NEED_FRONTEND=$NEED_FRONTEND" >> $GITHUB_ENV
           echo "BUILD_AND_RUN_ALL=$BUILD_AND_RUN_ALL" >> $GITHUB_ENV
 
+      - name: Windows environment
+        if: contains(matrix.os, 'windows')
+        run: |
+          Add-Content -Path $env:GITHUB_ENV -Value "BUILD_AND_RUN_ALL=true"
+
       - name: Set up Python
         if: >
-          contains(matrix.os, 'macos')
+          (contains(matrix.os, 'macos') || contains(matrix.os, 'windows'))
           && (env.NEED_PYTHON || env.BUILD_AND_RUN_ALL)
         uses: actions/setup-python@v2
         with:
@@ -153,7 +160,7 @@ jobs:
           pip install --no-cache-dir -r ./tests/requirements.txt
 
       - name: Build webapp
-        if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
+        if: (env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL) && matrix.os != 'windows-2019'
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
@@ -169,7 +176,7 @@ jobs:
         run: python setup.py sdist
 
       - name: Validate distribution
-        if: env.BUILD_AND_RUN_ALL
+        if: env.BUILD_AND_RUN_ALL && matrix.os != 'windows-2019'
         run: |
           VERSION="$(cat ./VERSION)"
           cd dist
@@ -183,10 +190,10 @@ jobs:
 
       - name: Install Covalent
         if: steps.build-dist.outcome == 'success'
-        run: pip install dist/covalent-*.tar.gz
+        run: pip install dist/covalent-0.199.0.tar.gz
 
-      - name: Start Covalent dispatcher server
-        if: env.BUILD_AND_RUN_ALL
+      - name: Start Covalent dispatcher server for Linux and MacOS
+        if: env.BUILD_AND_RUN_ALL && matrix.os != 'windows-2019'
         id: covalent_start
         run: |
           if [ "${{ matrix.backend }}" = 'dask' ] ; then
@@ -197,6 +204,10 @@ jobs:
             echo "Invalid backend specified in test matrix."
             exit 1
           fi
+
+      - name: Start Covalent dispatcher server for Windows
+        if: matrix.os == 'windows-2019'
+        run: covalent start --ignore-migrations
 
       - name: Run SDK tests and measure coverage
         id: sdk-tests

@@ -28,7 +28,7 @@ from setuptools.command.develop import develop
 
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
-with open("VERSION") as f:
+with open("VERSION", encoding="utf-8") as f:
     version = f.read().strip()
 
 
@@ -37,7 +37,7 @@ sdk_only = os.environ.get("COVALENT_SDK_ONLY")
 if sdk_only == "True":
     requirements_file = "requirements-client.txt"
 
-with open(requirements_file) as f:
+with open(requirements_file, encoding="utf-8") as f:
     required = f.read().splitlines()
 
 
@@ -162,7 +162,7 @@ setup_info = {
     "author": "Agnostiq",
     "author_email": "support@agnostiq.ai",
     "description": "Covalent Workflow Tool",
-    "long_description": open("README.md").read(),
+    "long_description": open("README.md", encoding="utf-8").read(),
     "long_description_content_type": "text/markdown",
     "include_package_data": True,
     "zip_safe": False,

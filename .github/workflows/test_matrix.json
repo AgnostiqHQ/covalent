@@ -1,5 +1,15 @@
 [
   {
+    "name": "Windows Server 2019 / Python 3.8 / Dask",
+    "os": "windows-2019",
+    "python-version": "3.8",
+    "backend": "dask",
+    "experimental": false,
+    "trigger": [
+      "push"
+    ]
+  },
+  {
     "name": "Debian 10 / Python 3.8 / Dask",
     "os": "ubuntu-latest",
     "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py38:latest",
@@ -72,7 +82,6 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "push",
       "pull_request",
       "schedule",
       "workflow_dispatch"
