@@ -257,10 +257,11 @@ const NodeDrawer = ({ node,dispatchId }) => {
             inputs={electronInputResult}
             data-testid="node__input_sec"
             sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg, cursor: 'pointer' })}
+            isFetching={electronInputResultIsFetching}
           />)}
 
           {/* Result */}
-          {electronDetail?.status === 'COMPLETED' && (
+          {electronDetail.status === 'COMPLETED' && (
             <ResultSection
               results={electronResultData}
               data-testid="node__result_sec"

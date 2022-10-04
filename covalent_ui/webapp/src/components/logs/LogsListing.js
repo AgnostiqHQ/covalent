@@ -153,6 +153,11 @@ const ResultsTableHead = ({
                   active={orderBy === header.id}
                   direction={orderBy === header.id ? order : 'asc'}
                   onClick={createSortHandler(header.id)}
+                  sx={{
+                    '.Mui-active': {
+                      color: (theme) => theme.palette.text.secondary,
+                    },
+                  }}
                 >
                   {header.label}
                 </TableSortLabel>
@@ -497,7 +502,7 @@ const LogsListing = () => {
                           <TableCell
                             sx={{
                               width: 180,
-                              verticalAlign: 'center',
+                              verticalAlign: 'top',
                               fontFamily: (theme) => theme.typography.logsFont,
                             }}
                           >

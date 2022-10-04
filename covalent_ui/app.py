@@ -11,10 +11,11 @@
 # modifications or derivative works of this file must retain this copyright
 # notice, and modified files must contain a notice indicating that they have
 # been altered from the originals.
+#
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-
+#
 # Relief from the License may be granted by purchasing a commercial license.
 
 import argparse

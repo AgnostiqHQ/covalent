@@ -28,6 +28,7 @@ export const CONFIG_SECTIONS = {
   results_dir: 'Results directory',
   executor_dir: 'Executor directory',
   log_stdout: 'Log standard out',
+  log_stderr: 'Log standard error',
   log_dir: 'Log directory',
   base_dir: 'Base directory',
 }
