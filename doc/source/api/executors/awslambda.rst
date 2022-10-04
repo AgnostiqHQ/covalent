@@ -41,7 +41,7 @@ and return an excited phrase.
         s3_bucket_name="covalent-lambda-job-resources",
         timeout=60,
         memory_size=512
-        )
+    )
 
     @ct.electron(executor=executor)
     def join_words(a, b):
@@ -174,7 +174,7 @@ Alternatively, users can customize this executor entirely by providing their own
         timeout=30,
         memory_size=512,
         cleanup=True
-        )
+    )
 
     @ct.electron(executor=lambda_executor)
     def task(x, y):
