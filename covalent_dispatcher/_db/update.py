@@ -45,7 +45,7 @@ def persist(record: Union[Result, Lattice, _TransportGraph], electron_id: int = 
             if the workflow is actually a subworkflow
     """
     if isinstance(record, Result):
-        record._initialize_results_dir()
+        _initialize_results_dir(record)
         app_log.debug("upsert start")
         upsert._lattice_data(record, electron_id=electron_id)
         upsert._electron_data(record)

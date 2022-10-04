@@ -20,9 +20,7 @@
 
 """Result object."""
 
-import os
 from datetime import datetime
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 from .._shared_files import logger
@@ -484,15 +482,7 @@ Node Outputs
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
 
-        self.upsert_electron_data()
-
         app_log.debug("Inside update node - SUCCESS")
-
-    def _initialize_results_dir(self):
-        """Create the results directory."""
-
-        result_folder_path = os.path.join(self.results_dir, f"{self.dispatch_id}")
-        Path(result_folder_path).mkdir(parents=True, exist_ok=True)
 
     def _convert_to_electron_result(self) -> Any:
         """

@@ -87,8 +87,8 @@ def test_db():
 def test_update_node(test_db, result_1, mocker):
     """Test the node update method."""
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     update.persist(result_1)
     update._node(
         result_1,
@@ -162,9 +162,9 @@ def test_update_node(test_db, result_1, mocker):
 def test_result_persist_workflow_1(test_db, result_1, mocker):
     """Test the persist method for the Result object."""
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
-    result_1.persist()
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    update.persist(result_1)
 
     # Query lattice / electron / electron dependency
     with test_db.session() as session:
@@ -267,7 +267,8 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
 
         for node_id in range(5):
-            result_1._update_node(
+            update._node(
+                result_1,
                 node_id=node_id,
                 start_time=cur_time,
                 end_time=cur_time,
@@ -277,7 +278,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
             )
 
         # Call Result.persist
-        result_1.persist()
+        update.persist(result_1)
 
     # Query lattice / electron / electron dependency
     with test_db.session() as session:
@@ -315,9 +316,9 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
 def test_result_persist_subworkflow_1(test_db, result_1, mocker):
     """Test the persist method for the Result object when passed an electron_id"""
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
-    result_1.persist(electron_id=2)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    update.persist(result_1, electron_id=2)
 
     # Query lattice / electron / electron dependency
     with test_db.session() as session:
@@ -342,9 +343,9 @@ def test_result_persist_rehydrate(test_db, result_1, mocker):
     """Test that persist followed by result_from preserves all result,
     lattice, and transport graph attributes"""
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
-    result_1.persist()
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    update.persist(result_1)
     with test_db.session() as session:
         lattice_row = session.query(Lattice).first()
         result_2 = _result_from(lattice_row)
