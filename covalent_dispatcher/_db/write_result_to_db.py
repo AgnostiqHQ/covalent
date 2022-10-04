@@ -43,6 +43,7 @@ from covalent._shared_files.defaults import (
     subscript_prefix,
 )
 from covalent._shared_files.exceptions import MissingLatticeRecordError
+from covalent._workflow import Lattice as LatticeClass
 
 from .datastore import workflow_db
 from .models import Electron, ElectronDependency, Lattice
@@ -225,7 +226,7 @@ def insert_electrons_data(
     return electron_id
 
 
-def insert_electron_dependency_data(dispatch_id: str, lattice: "Lattice"):
+def insert_electron_dependency_data(dispatch_id: str, lattice: LatticeClass):
     """Extract electron dependencies from the lattice transport graph and add them to the DB."""
 
     # TODO - Update how we access the transport graph edges directly in favor of using some interface provied by the TransportGraph class.

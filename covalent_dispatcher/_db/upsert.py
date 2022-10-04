@@ -21,10 +21,11 @@
 from datetime import datetime, timezone
 from pathlib import Path
 
-from covalent._data_store import models, workflow_db
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 
+from . import models
+from .datastore import workflow_db
 from .write_result_to_db import (
     get_electron_type,
     insert_electrons_data,
