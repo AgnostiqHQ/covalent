@@ -55,8 +55,11 @@ describe('preview drawer section', () => {
       lattice: {
         doc: 'covalent',
         inputs: {
-          args: [],
-          kwargs: { n: '15', serial: 'True', parallel: 'True' },
+          data:{
+            args: [],
+            kwargs: { n: '15', serial: 'True', parallel: 'True' },
+          },
+          python_object:'import pickle'
         },
         metadata: {
           executor_name: 'dask',
