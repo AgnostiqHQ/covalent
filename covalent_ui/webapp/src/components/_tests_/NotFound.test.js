@@ -20,18 +20,30 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
-
 import App from '../NotFound'
+import { Provider } from 'react-redux'
+import { BrowserRouter } from 'react-router-dom'
+import { ReactFlowProvider } from 'react-flow-renderer'
+import { HelmetProvider } from 'react-helmet-async'
+import { configureStore } from '@reduxjs/toolkit'
+import reducers from '../../redux/reducers'
 
+const store = configureStore({
+  reducer: reducers,
+})
 describe('page not found component render', () => {
   test('page not found text check', () => {
     const component = render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <Provider store={store}>
+        <HelmetProvider>
+          <ReactFlowProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </ReactFlowProvider>
+        </HelmetProvider>
+      </Provider>
     )
     const linkElement = component.getByText(/Page not found./i)
     expect(linkElement).toBeInTheDocument()
@@ -39,9 +51,15 @@ describe('page not found component render', () => {
 
   test('page not found logo', () => {
     render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <Provider store={store}>
+        <HelmetProvider>
+          <ReactFlowProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </ReactFlowProvider>
+        </HelmetProvider>
+      </Provider>
     )
     const element = screen.getByTestId('logo')
     expect(element).toBeInTheDocument()
@@ -49,9 +67,15 @@ describe('page not found component render', () => {
 
   test('page not found message check', () => {
     render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <Provider store={store}>
+        <HelmetProvider>
+          <ReactFlowProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </ReactFlowProvider>
+        </HelmetProvider>
+      </Provider>
     )
     const element = screen.getByTestId('message')
     expect(element).toBeInTheDocument()
