@@ -130,7 +130,7 @@ During the execution of the workflow one can navigate to the UI to see the statu
      - Yes
      - us-east-1
      - AWS Region to use to for client calls
-   * - credentials_file
+   * - credentials
      - No
      - ~/.aws/credentials
      - The path to the AWS credentials file
