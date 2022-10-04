@@ -115,7 +115,9 @@ def test_result_root_dispatch_id(result_1):
     assert result_1.root_dispatch_id == result_1._root_dispatch_id
 
 
-def test_result_post_process(mocker, test_db):
+def test_result_post_process(
+    mocker,
+):
     """Test client-side post-processing of results."""
 
     import covalent as ct
@@ -178,10 +180,6 @@ def test_result_post_process(mocker, test_db):
     res._status = Result.PENDING_POSTPROCESSING
     res._dispatch_id = "MOCK"
     res._root_dispatch_id = "MOCK"
-
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
-    res.persist()
 
     execution_result = res.post_process()
 
