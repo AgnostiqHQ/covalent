@@ -140,7 +140,7 @@ The source code for the visualization electron is as follows
 
 .. code:: python
 
-    rsync = ct.fs_strategies.Rsync(user=<username>, host=<hostname>, private_key_path=<ssh key file>)
+    rsync = ct.fs.strategies.Rsync(user=<username>, host=<hostname>, private_key_path=<ssh key file>)
     @ct.electron(
         files=[ct.fs.TransferFromRemote(f"{os.path.join(os.environ['HOME'], 'training_images.png')}", strategy=rsync)]
     )
@@ -408,12 +408,12 @@ We introduce the following two new electrons to build the SVM classifier and spl
     def build_classifier(gamma: float):
         return SVC(gamma = gamma)
 
-
+    
     @ct.electron
     def split_dataset(images, labels, fraction: float=0.2):
         return train_test_split(images, labels, test_size=fraction, random_state=42)
 
-
+    
 We now create the cross validation electron that would be by far the most compute intensive operation of our workflow. To this end we offload this electron to AWS using our Batch executor created earlier (``awsbatch``).
 We also point out that since the executor will be executed using the AWS Batch service as a container, we need to ensure that all Python packages that this electron needs are installed and available to it during runtime. To accomplish this,
 we use the ``DepsPip`` electron dependency to install ``scikit-learn`` in the tasks runtime environment on AWS Batch. With these additions, the ``cross_validation`` electron is the following
@@ -451,7 +451,7 @@ of their workflow.
         call_before=[ct.DepsCall(setup_results_dir, args=[RESULTS_DIR])]
     )
     def save_results(results_dir, classifier, cv_scores, accuracy_score):
-       # Generate a random name for the object and results
+       # Generate a random name for the object and results    
         random_name = uuid.uuid4()
         dump({"clf": classifier, "cv_score": np.mean(cv_scores), "accuracy": acc_score}, os.path.join(results_dir, f"{random_name}_results.pkl"))
         return
@@ -485,7 +485,7 @@ We now create our lattice composing of all the above electrons as follows
             acc_score = evaluate_model(svm_classifier, train_images, train_labels, test_images, test_labels)
             ct.wait(child=acc_score, parents=[svm_classifier, cv_scores])
             save_results(results_dir, svm_classifier, cv_scores, acc_score)
-    return
+        return
 
 In our ``cross_validation_workflow`` we first load the images from ``scikit-learn`` and split the entire dataset into ``training`` and ``test`` sets. As inputs to our workflow,
 we pass in the following
@@ -540,3 +540,201 @@ The result object of the workflow is the following
 
 Model selection
 ================
+
+After the ``cross_validation_workflow`` completes, all the results/classifier objects get pickled and saved at the location specified by ``RESULTS_DIR``. As a final step,
+we create a single node workflow that simply parses all the result files and picks the best model i.e. model with the highest accuracy on the test set and returns it as its result.
+
+Single node workflows in Covalent are easy to construct as any electron can be converted into a lattice by simply adding the ``lattice`` decorator to it. We create our final
+``find_best_model`` single node workflow that parses all results files and returns the model with the highest test accuracy.
+
+.. code:: python
+
+    import pandas as pd
+
+    @ct.lattice
+    @ct.electron
+    def find_best_model(results_dir):
+        all_results = []
+        for root, dirs, files in os.walk(results_dir):
+            for file in files:
+                if "results" in file:
+                    obj = load(os.path.join(root, file))
+                    all_results.append(obj)
+
+        # Convert to dataframe
+        df = pd.DataFrame(all_results)
+        return dict(df.iloc[df['accuracy'].idxmax()])
+
+We use ``pandas`` to sort all the models and filter the one with the highest accuracy score. After dispatching this single node workflow, the results are the following
+
+.. code:: python
+
+    dispatch_id = ct.dispatch(find_best_model)(RESULTS_DIR)
+    result = ct.get_result(dispatch_id, wait=True)
+    print(result.result)
+
+Workflow graph
+
+.. image:: ./find_best_model.png
+    :width: 1000
+    :align: center
+
+Best SVM classifier model
+
+.. image:: ./best_model.png
+    :width: 1000
+    :align: center
+
+
+Full source
+==============
+
+For convenience, we give the entire source code of this workflow here
+
+.. code:: python
+
+    import os
+    import uuid
+    import pandas as pd
+    import numpy as np
+    import covalent as ct
+    from sklearn import datasets, metrics
+    import matplotlib.pyplot as plt
+    from covalent.executor import SSHExecutor, AWSBatchExecutor
+    from sklearn.model_selection import train_test_split, cross_val_score, ParameterGrid
+    from sklearn.svm import SVC
+    from joblib import dump, load
+
+    # Executors
+    localssh = SSHExecutor(username=<username>, hostname=<hostname>, ssh_key_file=<path to ssh key>)
+
+    awsbatch = AWSBatchExecutor(
+                        s3_bucket_name='<s3 bucket name>',
+                        batch_job_definition_name='<job definition name>',
+                        batch_queue='<batch job queue>',
+                        batch_execution_role_name='<batch execution role name>',
+                        batch_job_role_name='<batch IAM job role name>',
+                        batch_job_log_group_name='<batch job log group name>',
+                        vcpu=2,
+                        memory=3.75,
+                        time_limit=60
+    )
+
+    @ct.electron
+    def load_dataset():
+        """
+        Return the MNIST handwritten images and labels
+        """
+        data = datasets.load_digits()
+        nsamples = len(data.images)
+        return data.images.reshape((nsamples, -1)), data.target
+
+    @ct.electron(
+        executor=localssh,
+        deps_pip = ct.DepsPip(packages=["matplotlib==3.5.1"])
+    )
+    def plot_images(images, labels, basedir = os.environ['HOME']):
+        _, axes = plt.subplots(nrows=1, ncols=len(images), figsize=(10, 3))
+
+        for ax, image, label in zip(axes, images, labels):
+            ax.set_axis_off()
+            ax.imshow(image.reshape(8, 8), cmap=plt.cm.gray_r, interpolation="nearest")
+            ax.set_title(f"Training: {label}")
+
+        plt.tight_layout()
+        plt.savefig(f"{os.path.join(basedir, "training_images.png")}", format="png", dpi=300)
+        return
+
+    rsync = ct.fs.strategies.Rsync(user=<username>, host=<hostname>, private_key_path=<ssh key file>)
+    @ct.electron(
+        files=[ct.fs.TransferFromRemote(f"{os.path.join(os.environ['HOME'], 'training_images.png')}", strategy=rsync)]
+    )
+    def visualize_images(files=[]):
+        _, local_path_to_file = files[0]
+        return Image.open(f"{local_path_to_file}"), str(local_path_to_file)
+
+    @ct.lattice
+    def preprocessing_workflow():
+        train_images, train_labels = load_dataset()
+        plots = plot_images(train_images[:5], train_labels[:5])
+        images = visualize_images()
+        ct.wait(child=images, parents=[plots])
+        return images
+
+    # Dispatch the pre-processing workflow
+    dispatch_id = ct.dispatch(preprocessing_workflow)()
+    result = ct.get_result(dispatch_id, wait=True)
+
+
+    # Cross validation workflow
+    @ct.electron
+    def build_classifier(gamma: float):
+        return SVC(gamma = gamma)
+
+    @ct.electron
+    def split_dataset(images, labels, fraction: float=0.2):
+        return train_test_split(images, labels, test_size=fraction, random_state=42)
+
+    @ct.electron(executor=awsbatch, deps_pip=ct.DepsPip(packages=['scikit-learn']))
+    def cross_validate_classifier(clf, train_images, train_labels, kfold=3):
+        """
+        Cross validate using the estimators default scorer
+        """
+        cv_scores = cross_val_score(clf, train_images, train_labels, cv=kfold)
+        return cv_scores
+
+    @ct.electron
+    def evaluate_model(clf, train_images, train_labels, test_images, test_labels):
+        clf.fit(train_images, train_labels)
+        predictions = clf.predict(test_images)
+        return metrics.accuracy_score(predictions, test_labels)
+
+    RESULTS_DIR = os.path.join(os.environ['HOME'], "cv_results")
+
+    @ct.electron(
+        call_before=[ct.DepsCall(setup_results_dir, args=[RESULTS_DIR])]
+    )
+    def save_results(results_dir, classifier, cv_scores, accuracy_score):
+       # Generate a random name for the object and results    
+        random_name = uuid.uuid4()
+        dump({"clf": classifier, "cv_score": np.mean(cv_scores), "accuracy": acc_score}, os.path.join(results_dir, f"{random_name}_results.pkl"))
+        return
+
+    # Cross validation workflow
+    @ct.lattice(call_after=[ct.DepsCall(find_best_model, args=[RESULTS_DIR])])
+    def cross_validation_workflow(results_dir, param_grid, split_fraction: float = 0.2):
+        images, labels = load_images()
+        train_images, test_images, train_labels, test_labels = split_dataset(images, labels, fraction=split_fraction)
+
+        for param in list(param_grid):
+            svm_classifier = build_classifier(**param)
+            cv_scores = cross_validate_classifier(svm_classifier, train_images, train_labels, kfold=3)
+            acc_score = evaluate_model(svm_classifier, train_images, train_labels, test_images, test_labels)
+            ct.wait(child=acc_score, parents=[svm_classifier, cv_scores])
+            save_results(results_dir, svm_classifier, cv_scores, acc_score)
+        return
+
+    # Dispatch CV workflow
+    parameters = list(ParameterGrid({'gamma': np.linspace(0.01, 0.1, 5)}))
+
+    dispatch_id = ct.dispatch(cross_validation_workflow)(RESULTS_DIR, parameters, 0.2)
+    result = ct.get_result(dispatch_id, wait=True)
+
+    # Model selection
+    @ct.lattice
+    @ct.electron
+    def find_best_model(results_dir):
+        all_results = []
+        for root, dirs, files in os.walk(results_dir):
+            for file in files:
+                if "results" in file:
+                    obj = load(os.path.join(root, file))
+                    all_results.append(obj)
+
+        # Convert to dataframe
+        df = pd.DataFrame(all_results)
+        return dict(df.iloc[df['accuracy'].idxmax()])
+
+    # Dispatch model selection workflow
+    dispatch_id = ct.dispatch(find_best_model)(RESULTS_DIR)
+    result = ct.get_result(dispatch_id, wait=True)
