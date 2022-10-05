@@ -474,7 +474,7 @@ We now create our lattice composing of all the above electrons as follows
 
 .. code:: python
 
-    @ct.lattice(call_after=[ct.DepsCall(find_best_model, args=[RESULTS_DIR])])
+    @ct.lattice
     def cross_validation_workflow(results_dir, param_grid, split_fraction: float = 0.2):
         images, labels = load_images()
         train_images, test_images, train_labels, test_labels = split_dataset(images, labels, fraction=split_fraction)
@@ -701,7 +701,7 @@ For convenience, we give the entire source code of this workflow here
         return
 
     # Cross validation workflow
-    @ct.lattice(call_after=[ct.DepsCall(find_best_model, args=[RESULTS_DIR])])
+    @ct.lattice
     def cross_validation_workflow(results_dir, param_grid, split_fraction: float = 0.2):
         images, labels = load_images()
         train_images, test_images, train_labels, test_labels = split_dataset(images, labels, fraction=split_fraction)
