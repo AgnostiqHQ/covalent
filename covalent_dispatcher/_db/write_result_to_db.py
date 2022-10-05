@@ -43,7 +43,7 @@ from covalent._shared_files.defaults import (
     subscript_prefix,
 )
 from covalent._shared_files.exceptions import MissingLatticeRecordError
-from covalent._workflow import Lattice as LatticeClass
+from covalent._workflow.lattice import Lattice as LatticeClass
 
 from .datastore import workflow_db
 from .models import Electron, ElectronDependency, Lattice
