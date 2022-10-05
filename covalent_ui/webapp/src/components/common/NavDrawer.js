@@ -100,7 +100,7 @@ const NavDrawer = () => {
           path="/settings"
           icon={NavSettings}
           position="fixed"
-          bottom={55}
+          bottom={110}
           paddingTop="3px"
           paddingLeft="2px"
           paddingRight="3px"
@@ -116,12 +116,12 @@ const NavDrawer = () => {
             paddingRight="0px"
             paddingBottom="0px"
             position="fixed"
-            bottom={0}
+            bottom={54}
           />
         </Grid>
         <Grid>
           <LinkButton
-            title="Logs"
+            title="Terminal"
             path="/terminal"
             icon={UITerminal}
             paddingTop="8px"
