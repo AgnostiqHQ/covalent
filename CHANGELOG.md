@@ -7,11 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Ability to view the configuration file on the GUI as settings
+- Ability to copy python objects for inputs and results for lattice and electrons
+
+### Fixed
+
+- Minor GUI bugs and improvements
+
+### Docs
+
+- Refactor the `Getting Started` section in the docs
+- Add workflow to compute the matrix eigenvalues
+- Updated EC2 RTD with config & cloud resources table
+
 ### Operations
 
 - Fixed syntax issues in `nightly.yml`
 - Add `repository` arg to checkout in `version`
 - fix `octokit` request action route, update env token
+- create stable versions for stable releases
+- add `fetch-depth: 0` to fetch entire history
+- fix regex for matching version
+- add `persist-credentials: false` in nightly
+- Update `nightly` schedule to midnight EST
+- Added CI for Ubuntu 22.04 / Python 3.8, 3.9
+- Added CI for Centos 7 / Python 3.9
+- Added experimental CI for Debian 11 / Python 3.11rc2
+- Renamed Ubuntu images to Debian for accuracy
+- Adding boilerplate workflow
+- Syntax fixes in release.yml
+- Verbose failure messages in boilerplate workflow
+- Change license.yml to pip-license-checker action
 
 ## [0.199.0] - 2022-09-29
 
@@ -31,7 +59,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Tests
 

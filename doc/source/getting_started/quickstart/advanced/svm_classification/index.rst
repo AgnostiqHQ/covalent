@@ -1,0 +1,301 @@
+Classification with Support Vector Machines
+=============================================
+
+In this example we highlight some advanced features in Covalent that facilitate developing workflows involving multiple remote executors. Covalent is quite
+feature rich and allows users to customize execution of their workflows at a very granular level. Users can specify custom hooks that can execute before or after an electron is run by Covalent,
+files can be uploaded and downloaded from remote machines, AWS S3 buckets before the tasks consuming them even begin execution. Users can also specify custom synchronization points in their workflows in order
+to enforce dependencies between electrons. This feature is quite useful when users would want to force a dependency between independent electrons before proceeding to subsequent steps.
+
+In this example, we use the classic MNIST dataset and build a SVM (Support Vector Machine) classifier using ``scikit-learn`` tools. We will decompose the entire machine learning pipeline
+into several stages and use Covalent to execute the corresponding workflows.
+
+Generally speaking, ML workflows can be largely decomposed into the 3 stages
+
+1) Data pre-processing
+2) Model training/Cross Validation
+3) Inference
+
+All of these stages are unique on their own and depending on the problem at hand each one of them can be quite computationally expensive. Training very large ML models require vast amounts of data all of which needs pre-processing.
+
+With Covalent, we can tackle each of these stages as separate workflows and dispatch computationally intensive parts of each to remote backends using suitable executors.
+
+Workflow Outline
+~~~~~~~~~~~~~~~~~~~~~
+
+Data pre-processing
+~~~~~~~~~~~~~~~~~~~~~
+
+In the first stage, we load the MNIST hand written dataset from ``scikit-learn`` itself and arrange it in a shape suitable for training. To gain visual insight into the dataset, we add a step
+in our workflow to plot a few training samples from the dataset and display the images. Seemingly these steps are quite simple but can be computationally intensive under certain circumstances.
+Imagine the use case where the dataset to be plotted is really large and needs a machine with ample amount hardware resources to render the figures. This could very well be a node in a workflow,
+that can be offloaded to a remote machine for execution through Covalent.
+
+We break our pre-processing workflow into 3 distinct steps
+
+1) Load the raw images from ``scikit-learn`` datasets
+2) Plot a few sample images using ``matplotlib`` and save the resulting figure as PNG using a remote executor (``SSHExecutor``)
+3) Download the resulting figures to the local machine for visualization and post-processing
+
+The first step is trivial and is expressed by the following electron. We flatten the ``8 x 8`` pixel images to a vector of length ``64``. This makes it easier when fitting the classifier to the dataset
+
+.. code:: python
+
+    import covalent as ct
+    from sklearn import datasets
+
+    @ct.electron
+    def load_dataset():
+        """
+        Return the MNIST handwritten images and labels
+        """
+        data = datasets.load_digits()
+        nsamples = len(data.images)
+        return data.images.reshape((nsamples, -1)), data.target
+
+For the second stage of the pre-processing workflow we are going to use the ``SSHExecutor`` to offload the task of generating the images to a remote virtual machine. The source code for this ``plot_images`` stage
+is the following
+
+.. code:: python
+
+    import matplotlib.pyplot as plt
+    import os
+    from covalent.executor import SSHExecutor
+
+    localssh = SSHExecutor(username=<username>, hostname=<hostname>, ssh_key_file=<path to ssh key>)
+
+    @ct.electron(executor=localssh)
+    def plot_images(images, labels, basedir = os.environ['HOME']):
+        _, axes = plt.subplots(nrows=1, ncols=len(images), figsize=(10, 3))
+
+        for ax, image, label in zip(axes, images, labels):
+            ax.set_axis_off()
+            ax.imshow(image.reshape(8, 8), cmap=plt.cm.gray_r, interpolation="nearest")
+            ax.set_title(f"Training: {label}")
+
+        plt.tight_layout()
+        plt.savefig(f"{os.path.join(basedir, "training_images.png")}", format="png", dpi=300)
+        return
+
+
+We first create an instance of the ``SSHExecutor`` with the corresponding arguments and pass that as an input the the ``electron`` decorator. This signifies to covalent that
+the execution of the ``plot_images`` electron needs to be on the remote machine running at ``<hostname>``. During runtime, the executor will authenticate with that remote machine
+with the user supplied credentials. The inputs to this ``plot_images`` electron are the training images along with their labels to be plotted and an optional ``basedir`` argument that defaults to the HOME directory
+on the remote machine. This electron does not return anything but generates a PNG figure named ``training_images.png`` saved at ``basedir``.
+
+Electron Dependencies
+=======================
+
+Pip Dependencies
+~~~~~~~~~~~~~~~~~~~~
+
+During runtime, when Covalent will encounter this, it will pickle the ``plot_images`` function using ``cloudpickle`` and transport it to the remote machine for execution. The pickled object will be un-pickled on the remote machine
+and executed due to which all the python packages being referenced in the ``electron`` need to be installed and be visible in the ``PYTHONPATH`` of the remote Python interpreter.
+There are multiple ways this can be accomplished namely
+
+1) The user curates the remote execution environment before dispatching the workflows
+2) If on the cloud, the VM can be customized by creating specialized AMIs using tools such as Terraform, Packer and equivalents.
+3) Use Covalent's ``electron dependencies`` features
+
+Here we highlight an important feature in Covalent that allows users to install python packages required by an electron before execution. :doc:`Electron dependencies <../../../../concepts/concepts>` are a key feature in Covalent
+that makes it really convenient for users to install the required Python packages for an electron before its execution. The platform on which the packages get installed are determined by the
+executor of the electron. If the electron is configured to execute on a remote machine, the dependencies will be injected into the remote machines environment. There are several electron dependencies
+supported by Covalent, in this section we will focus on the :doc:`DepsPip <../../../../concepts/concepts>` dependency.
+
+Inspecting the ``plot_images`` electron it is apparent that ``matplotlib`` is required to be present on the remote machine for the plots to be properly generated. We can instruct Covalent to install a very specific version of ``matplotlib`` at the electron level as follows
+
+.. code:: python
+
+    @ct.electron(
+        executor=localssh,
+        deps_pip = ct.DepsPip(packages=["matplotlib==3.5.1"])
+    )
+    def plot_images(images, labels, basedir = os.environ['HOME']):
+        _, axes = plt.subplots(nrows=1, ncols=len(images), figsize=(10, 3))
+
+        for ax, image, label in zip(axes, images, labels):
+            ax.set_axis_off()
+            ax.imshow(image.reshape(8, 8), cmap=plt.cm.gray_r, interpolation="nearest")
+            ax.set_title(f"Training: {label}")
+
+        plt.tight_layout()
+        plt.savefig(f"{os.path.join(basedir, "training_images.png")}", format="png", dpi=300)
+        return
+
+By simply augmenting the ``electron`` decorator with the ``deps_pip`` dependency, Covalent will now install ``matplotlib`` version ``3.5.1`` before executing the ``plot_images`` electron on the remote machine.
+
+.. note::
+    As electrons are packaged and transported as types defined within Covalent, ``covalent`` itself is a dependency that needs to be installed and made available on remote machines.
+    For consistency it is recommended that the same version of covalent is used across all remote environments to avoid any version conflicts
+
+
+File Transfers
+~~~~~~~~~~~~~~~~
+
+:doc:`File transfer <../../../../concepts/concepts>` is another important feature in Covalent that aims to facilitate file I/O between environments during runtime. In the context of our workflow,
+we want to transfer the PNG figure generated on the remote machine via the ``plot_images`` electron onto our local machine before visualization. Covalent supports a variety of file transfer ``strategies`` to facilitate
+the movement of large files between environments. In our case, we will leverage the ``Rsync`` file transfer strategy to download the PNG figures from the remote machine as part of the visualization step of the workflow. Further details about
+file transfers and different strategies can be found :doc:`here <../../../../concepts/concepts>`
+
+The source code for the visualization electron is as follows
+
+.. code:: python
+
+    rsync = ct.fs_strategies.Rsync(user=<username>, host=<hostname>, private_key_path=<ssh key file>)
+    @ct.electron(
+        files=[ct.fs.TransferFromRemote(f"{os.path.join(os.environ['HOME'], 'training_images.png')}", strategy=rsync)]
+    )
+    def visualize_images(files=[]):
+        _, local_path_to_file = files[0]
+        return Image.open(f"{local_path_to_file}"), str(local_path_to_file)
+
+As seen from above, we create a ``rsync`` file transfer strategy object and pass it the connection credentials such as the username, remote host address and path to the private SSH key.
+The electron decorator is then augmented with a list of file transfer objects (in this case ``ct.fs.TransferFromRemote``) indicating the files that need to be moved from the remote machine to
+the local platform before ``visualize_images`` executes. With this simple addition, Covalent will copy the figures generated on the remote machine to the user's local environment
+and make it available for further processing in the ``visualize_images`` electron.
+
+It can be seen that there is a ``files=[]`` placeholder argument being passed into ``visualize_images``. This is a convenient handle Covalent exposes for users to easily interact
+with the files being transferred in and out. It can noted that we have not specified where on the local filesystem Covalent ought to download the file. To this end, we use
+the ``files`` argument in ``visualize_images`` to get the temporary path to the download file.
+
+This is then used to open the PNG file and return it as a Python object.
+
+
+Pre-processing workflow
+=========================
+
+We now stich all the above specified electrons into a workflow that can be dispatched to Covalent for execution.
+
+.. code:: python
+
+    import os
+    import covalent as ct
+    import matplotlib.pyplot as plt
+    from PIL import Image
+    from sklearn import datasets
+    from covalent.executor import SSHExecutor
+
+    @ct.electron
+    def load_dataset():
+        """
+        Return the MNIST handwritten images and labels
+        """
+        data = datasets.load_digits()
+        nsamples = len(data.images)
+        return data.images.reshape((nsamples, -1)), data.target
+
+    # Create the SSHExecutor
+    localssh = SSHExecutor(username=<username>,
+                    hostname=<hostname>,
+                    ssh_key_file=<path to ssh key>)
+
+    @ct.electron(
+        executor=localssh,
+        deps_pip = ct.DepsPip(packages=["matplotlib==3.5.1"])
+    )
+    def plot_images(images, labels, basedir = os.environ['HOME']):
+        _, axes = plt.subplots(nrows=1, ncols=len(images), figsize=(10, 3))
+
+        for ax, image, label in zip(axes, images, labels):
+            ax.set_axis_off()
+            ax.imshow(image.reshape(8, 8), cmap=plt.cm.gray_r, interpolation="nearest")
+            ax.set_title(f"Training: {label}")
+
+        plt.tight_layout()
+        plt.savefig(f"{os.path.join(basedir, "training_images.png")}", format="png", dpi=300)
+        return
+
+    # Download the file for visualization
+    rsync = ct.fs_strategies.Rsync(user=<username>, host=<hostname>, private_key_path=<ssh key file>)
+    @ct.electron(
+        files=[
+            ct.fs.TransferFromRemote(
+                f"{os.path.join(os.environ['HOME'],
+                'training_images.png')}",
+                strategy=rsync
+            )
+        ]
+    )
+    def visualize_images(files=[]):
+        _, local_path_to_file = files[0]
+        return Image.open(f"{local_path_to_file}"), str(local_path_to_file)
+
+
+    @ct.lattice
+    def preprocessing_workflow():
+        train_images, train_labels = load_dataset()
+        plots = plot_images(train_images[:5], train_labels[:5])
+        images = visualize_images()
+        ct.wait(child=images, parents=[plots])
+        return images
+
+
+Synchronization between nodes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before proceeding further, we pause here to mention a few key aspects about the current workflow. It can be noted that the ``plot_images`` electron basically returns ``None``
+and there are no inputs to the ``visualize_images`` electron. However, the PNG images will only be generated after the ``plot_images`` step completes successfully and until then
+the ``visualize_images`` step should be barred from executing. All lattices are converted into DAGs before execution by Covalent and nodes in the graph that have not dependent edges between them
+are deemed to execute concurrently by Covalent.
+
+In this case however, this would lead to ``visualize_images`` to fail if the PNG figure is not ready to be downloaded. This is an implicit race condition in this workflow that needs to be addressed.
+In Covalent, users can enforce dependencies between nodes by using the ``wait`` command. As seen in the ``preprocessing_workflow`` we are enforcing a ``parent-child`` dependency between
+the ``plot_images`` and ``visualize_images`` electrons via the ``ct.wait`` command.
+
+Behind the scenes, Covalent will create an ``edge`` connecting the two and synchronizing the execution thus eliminating the potential race condition.
+
+The workflow can now be dispatched to Covalent and its graph can be viewed at `<http://localhost:48008>`_
+
+.. code:: python
+
+    dispatch_id = ct.dispatch(preprocessing_workflow)()
+    result = ct.get_result(dispatch_id, wait=True)
+    print(result)
+
+.. image:: ./lattice_result.png
+    :width: 1000
+    :align: center
+
+
+Workflow Graph
+
+.. image:: ./preprocessing_workflow.png
+    :width: 1000
+    :align: center
+
+
+The output of the ``visualize_images`` electron is the following
+
+.. image:: ./output.png
+    :width: 1000
+    :align: center
+
+
+Model Training & Cross validation
+=================================
+
+So far we looked at the `pre-processing` workflow and covered several niche features in Covalent such as file transfers, electron dependencies, synchronization primitives, remote executors etc.
+In the earlier section, we saw how users can dispatch parts of their workflows to remote machines they may have access to. The machines can be bare-metal servers, virtual machines (on-prem/cloud) that users
+would have access to.
+
+In this section, we look to demonstrate users can dispatch their Covalent workflows to AWS cloud services (especially AWS Batch) for execution. Covalent supports execution of tasks
+on a variety of AWS cloud services through its suite of :doc:`AWS cloud executor plugins<../../../../plugins>`. Users can choose the right compute service for their computational needs and use them elastically as the needs arise.
+
+Following is the list of AWS cloud executors that are currently supported in Covalent
+
+* AWS EC2
+* AWS Batch
+* AWS ECS
+* AWS Lambda
+* AWS Braket
+
+Each one of them can be installed independently through PYPI, but users can use the following shortcut to install all the AWS cloud plugins
+
+.. code:: bash
+
+    pip install covalent-aws-plugins
+
+In this exercise we will be using the AWS Batch executor to offload the training of our model which can be installed as follows
+
+.. code:: bash
+
+    pip install covalent-awsbatch-plugin

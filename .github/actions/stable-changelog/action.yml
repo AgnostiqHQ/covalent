@@ -1,0 +1,17 @@
+name: "Changelog Update For Stable Version"
+description: "Parse the information in the CHANGELOG. Compile updates from release candidates into a stable version."
+inputs:
+  changelog-path:
+    description: "Path to the CHANGELOG file"
+    required: true
+    default: "CHANGELOG.md"
+  version-path:
+    description: "Path to the VERSION file"
+    required: true
+    default: "VERSION"
+outputs:
+  message:
+    description: "The release message generated from the changelog"
+runs:
+  using: "node16"
+  main: "dist/index.js"

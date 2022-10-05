@@ -20,31 +20,57 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
+import { useState } from 'react'
 import _ from 'lodash'
-import { Paper, Skeleton } from '@mui/material'
-
+import {
+  Paper,
+  Skeleton,
+  Tooltip,
+  tooltipClasses
+} from '@mui/material'
+import copy from 'copy-to-clipboard'
+import { styled } from '@mui/material/styles'
 import Heading from './Heading'
 import SyntaxHighlighter from './SyntaxHighlighter'
 
+const InputTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(() => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    // customize tooltip
+    maxWidth: 500,
+  },
+}))
+
 const InputSection = ({ isFetching, inputs, preview, ...props }) => {
+  const [copied, setCopied] = useState(false)
   const inputSrc = preview
     ? _.join(
-      _.map(inputs, (value, key) => `${key}: ${value}`),
+      _.map(inputs?.data, (value, key) => `${key}: ${value}`),
       '\n'
     )
-    : inputs
+    : inputs?.data
   return (
     <>
       {isFetching ? (
         <Skeleton sx={{ height: '80px' }} />
       ) : (
         inputSrc && (
-          <>
-            <Heading data-testid='inputSection'>Input</Heading>
-            <Paper elevation={0} {...props}>
-              <SyntaxHighlighter language="json" src={inputSrc} />
-            </Paper>
-          </>)
+          <InputTooltip title={copied ? 'Python object copied' : 'Copy python object'} arrow>
+            <div onClick={
+              () => {
+                copy(inputs?.python_object)
+                setCopied(true)
+                setTimeout(() => setCopied(false), 1200)
+              }
+            } >
+              <Heading data-testid='inputSection'>Input</Heading>
+              <Paper elevation={0} {...props} >
+                <SyntaxHighlighter language="json" src={inputSrc} />
+              </Paper>
+            </div>
+          </InputTooltip>
+        )
       )}
     </>
   )
