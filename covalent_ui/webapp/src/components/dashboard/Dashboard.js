@@ -30,7 +30,7 @@ const Dashboard = () => {
   return (
     <Box sx={{ display: 'flex' }} data-testid="dashboard">
       <NavDrawer />
-      <Container maxWidth="xl" sx={{ mb: 4, mt: 7.5 }}>
+      <Container maxWidth="xl" sx={{ mb: 4, marginTop: '32px' }}>
         <DashboardCard />
         <ResultListing />
       </Container>

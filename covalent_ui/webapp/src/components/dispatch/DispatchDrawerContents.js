@@ -69,8 +69,10 @@ const DispatchDrawerContents = () => {
 
   return (
     <Box sx={{ px: 3 }} data-testid="latticedispatchoverview">
-      <Box sx={{ m: 0, p: 0, display: 'flex', alignItems: 'center' }}
-        data-testid="backbtn">
+      <Box
+        sx={{ mt: '16px', p: 0, display: 'flex', alignItems: 'center' }}
+        data-testid="backbtn"
+      >
         <IconButton
           data-testid="backbtn"
           href="/"

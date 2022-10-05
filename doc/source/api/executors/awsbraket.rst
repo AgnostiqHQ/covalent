@@ -5,194 +5,368 @@
 
 .. image:: AWS_Braket.jpg
 
-This executor interfaces Covalent with `AWS Braket Hybrid Jobs <https://docs.aws.amazon.com/braket/latest/developerguide/braket-jobs.html/>`_ service by
-containerizing tasks using Docker and dispatching them to be executed on AWS Braket. This executor is a suitable choice
-for workflow containing tasks that require a mix of classical and quantum compute resources. In order for
-workflows to be deployable, users must have AWS credentials allowing access to Braket, S3, ECR, and
-some other services. Users will need additional permissions to provision or manage cloud
-infrastructure used by this plugin.
 
-This plugin can be installed via pip as follows
+Covalent is a Pythonic workflow tool used to execute tasks on advanced computing hardware.
+
+This plugin allows executing quantum circuits and quantum-classical hybrid jobs in Amazon Braket when you use Covalent.
+
+
+===========================================
+1. Installation
+===========================================
+
+To use this plugin with Covalent, simply install it using :code:`pip`:
 
 .. code:: bash
 
-    pip install covalent-braket-plugin==0.3.0rc0
+   pip install covalent-awsbraket-plugin
 
-Since this is a cloud executor, proper IAM credentials, permissions and roles must be configured prior to using this executor.
-This executor uses different AWS services (S3, ECR and Braket) to successfully run a task. To this end the IAM roles and policies must be
-configured so that the executor has the necessary permissions to interact with these.
+.. note::
 
-The following IAM policy can be use to properly configure the required IAM role for this executor
+   Users will also need to have `Docker <https://docs.docker.com/get-docker/>`_ installed on their local machine to use this plugin.
 
-.. dropdown:: AWS Braket IAM policy
+
+
+===========================================
+2. Usage Example
+===========================================
+
+The following toy example executes a simple quantum circuit on one
+qubit that prepares a uniform superposition of the standard basis
+states and then measures the state. We use the `Pennylane
+<https://pennylane.ai/>`_ framework.
+
+.. code-block:: python
+
+    import covalent as ct
+    from covalent_braket_plugin.braket import BraketExecutor
+    import os
+
+    # AWS resources to pass to the executor
+    credentials = "~/.aws/credentials"
+    profile = "default"
+	region = "us-east-1"
+    s3_bucket_name = "braket_s3_bucket"
+    ecr_repo_name = "braket_ecr_repo"
+    iam_role_name = "covalent-braket-iam-role"
+
+    # Instantiate the executor
+    ex = BraketExecutor(
+	credentials=credentials,
+	profile=profile,
+	region=region,
+	s3_bucket_name=s3_bucket_name,
+	ecr_repo_name=ecr_repo_name,
+	braket_job_execution_role_name=iam_role_name,
+	quantum_device="arn:aws:braket:::device/quantum-simulator/amazon/sv1",
+	classical_device="ml.m5.large",
+	storage=30,
+	time_limit=300,
+    )
+
+
+    # Execute the following circuit:
+    # |0> - H - Measure
+    @ct.electron(executor=ex)
+    def simple_quantum_task(num_qubits: int):
+	import pennylane as qml
+
+	# These are passed to the Hybrid Jobs container at runtime
+	device_arn = os.environ["AMZN_BRAKET_DEVICE_ARN"]
+	s3_bucket = os.environ["AMZN_BRAKET_OUT_S3_BUCKET"]
+	s3_task_dir = os.environ["AMZN_BRAKET_TASK_RESULTS_S3_URI"].split(s3_bucket)[1]
+
+	device = qml.device(
+	    "braket.aws.qubit",
+	    device_arn=device_arn,
+	    s3_destination_folder=(s3_bucket, s3_task_dir),
+	    wires=num_qubits,
+	)
+
+	@qml.qnode(device=device)
+	def simple_circuit():
+	    qml.Hadamard(wires=[0])
+	    return qml.expval(qml.PauliZ(wires=[0]))
+
+	res = simple_circuit().numpy()
+	return res
+
+
+    @ct.lattice
+    def simple_quantum_workflow(num_qubits: int):
+	return simple_quantum_task(num_qubits=num_qubits)
+
+
+    dispatch_id = ct.dispatch(simple_quantum_workflow)(1)
+    result_object = ct.get_result(dispatch_id, wait=True)
+
+    # We expect 0 as the result
+    print("Result:", result_object.result)
+
+During the execution of the workflow one can navigate to the UI to see
+the status of the workflow, once completed however the above script
+should also output a value with the output of the quantum measurement.
+
+.. code-block:: shell
+
+    >>> Result: 0
+
+===========================================
+3. Overview of Configuration
+===========================================
+
+.. list-table::
+   :widths: 2 1 2 3
+   :header-rows: 1
+
+   * - Config Key
+     - Is Required
+     - Default
+     - Description
+   * - credentials
+     - No
+     - "~/.aws/credentials"
+     - The path to the AWS credentials file
+   * - braket_job_execution_role_name
+     - Yes
+     - "CovalentBraketJobsExecutionRole"
+     - The name of the IAM role that Braket will assume during task execution.
+   * - profile
+     - No
+     - "default"
+     - Named AWS profile used for authentication
+   * - region
+     - Yes
+     - :code`AWS_DEFAULT_REGION` environment variable
+     - AWS Region to use to for client calls to AWS
+   * - s3_bucket_name
+     - Yes
+     - amazon-braket-covalent-job-resources
+     - The S3 bucket where Covalent will store input and output files for the task.
+   * - ecr_repo_name
+     - No
+     - "covalent-braket-job-images"
+     - The ECR repo where the job container will be uploaded
+   * - quantum_device
+     - No
+     - "arn:aws:braket:::device/quantum-simulator/amazon/sv1"
+     - The ARN of the quantum device to use
+   * - classical_device
+     - No
+     - "ml.m5.large"
+     - Instance type for the classical device to use
+   * - storage
+     - No
+     - 30
+     - Storage size in GB for the classical device
+   * - time_limit
+     - No
+     - 300
+     - Max running time in seconds for the Braket job
+   * - poll_freq
+     - No
+     - 30
+     - How often (in seconds) to poll Braket for the job status
+   * - cache_dir
+     - No
+     - "/tmp/covalent"
+     - Location for storing temporary files generated by the Covalent server
+
+This plugin can be configured in one of two ways:
+
+#. Configuration options can be passed in as constructor keys to the executor class :code:`ct.executor.BraketExecutor`
+
+#. By modifying the `covalent configuration file <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ under the section :code:`[executors.braket]`
+
+
+
+The following shows an example of how a user might modify their `covalent configuration file <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_  to support this plugin:
+
+.. code:: shell
+
+    [executors.braket]
+    quantum_device = "arn:aws:braket:::device/qpu/ionq/ionQdevice"
+    time_limit = 3600
+
+
+===========================================
+4. Required Cloud Resources
+===========================================
+
+The Braket executor requires some resources to be provisioned on
+AWS. Precisely, users will need an S3 bucket, an ECR repo, and an IAM
+role with the appropriate permissions to be passed to Braket.
+
+.. list-table::
+   :widths: 2 1 2 3
+   :header-rows: 1
+
+   * - Resource
+     - Is Required
+     - Config Key
+     - Description
+   * - IAM role
+     - Yes
+     - :code:`braket_job_execution_role_name`
+     - An IAM role granting permissions to Braket, S3, ECR, and a few other resources.
+   * - ECR repository
+     - Yes
+     - :code:`ecr_repo_name`
+     - An ECR repository for storing container images to be run by Braket.
+   * - S3 bucket
+     - Yes
+     - :code:`s3_bucket`
+     - An S3 bucket for storing task-specific data, such as Braket outputs or function inputs.
+
+
+
+#. Braket jobs are packaged and shipped in containers together with
+   some supporting packages; for more context, see the `"Bring your
+   own container"
+   <https://docs.aws.amazon.com/braket/latest/developerguide/braket-jobs-byoc.html>`_
+   documentation on AWS. This is why an ECR repo is needed.  For more
+   information on configuring an ECR repository, consult the `AWS
+   documentation
+   <https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html>`_.
+#. The `AWS documentation on S3
+   <https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html>`_
+   details how to configure an S3 bucket.
+#.  The permissions required for the the IAM role are documented in the article
+    `"managing access to Amazon Braket" <https://docs.aws.amazon.com/braket/latest/developerguide/braket-manage-access.html>`_.
+    The following policy is attached to the default role "CovalentBraketJobsExecutionRole":
+
+.. dropdown:: Sample IAM policy for Braket's execution role
 
     .. code:: json
 
-        {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Sid": "VisualEditor0",
-                "Effect": "Allow",
-                "Action": "cloudwatch:PutMetricData",
-                "Resource": "*",
-                "Condition": {
-                    "StringEquals": {
-                        "cloudwatch:namespace": "/aws/braket"
-                    }
-                }
-            },
-            {
-                "Sid": "VisualEditor1",
-                "Effect": "Allow",
-                "Action": "iam:PassRole",
-                "Resource": "arn:aws:iam::<account id>:role/CovalentBraketJobsExecutionRole",
-                "Condition": {
-                    "StringLike": {
-                        "iam:PassedToService": "braket.amazonaws.com"
-                    }
-                }
-            },
-            {
-                "Sid": "VisualEditor2",
-                "Effect": "Allow",
-                "Action": [
-                    "braket:CreateJob",
-                    "braket:GetJob",
-                    "braket:SearchDevices",
-                    "braket:SearchJobs",
-                    "braket:CreateQuantumTask",
-                    "ecr:GetAuthorizationToken",
-                    "iam:ListRoles",
-                    "braket:ListTagsForResource",
-                    "braket:UntagResource",
-                    "braket:TagResource",
-                    "braket:GetDevice",
-                    "braket:GetQuantumTask",
-                    "braket:CancelQuantumTask",
-                    "braket:SearchQuantumTasks",
-                    "braket:CancelJob"
-                ],
-                "Resource": "*"
-            },
-            {
-                "Sid": "VisualEditor3",
-                "Effect": "Allow",
-                "Action": [
-                    "s3:PutBucketPublicAccessBlock",
-                    "logs:DescribeLogStreams",
-                    "ecr:GetDownloadUrlForLayer",
-                    "logs:StartQuery",
-                    "s3:CreateBucket",
-                    "s3:ListBucket",
-                    "logs:CreateLogGroup",
-                    "logs:PutLogEvents",
-                    "s3:PutObject",
-                    "s3:GetObject",
-                    "logs:CreateLogStream",
-                    "logs:GetLogEvents",
-                    "ecr:BatchGetImage",
-                    "s3:PutBucketPolicy",
-                    "ecr:BatchCheckLayerAvailability"
-                ],
-                "Resource": [
-                    "arn:aws:s3:::amazon-braket-covalent-job-resources",
-                    "arn:aws:s3:::amazon-braket-covalent-job-resources/*",
-                    "arn:aws:logs:*:*:log-group:/aws/braket*",
-                    "arn:aws:ecr:*:<account id>:repository/covalent-braket-job-images"
-                ]
-            },
-            {
-                "Sid": "VisualEditor4",
-                "Effect": "Allow",
-                "Action": "logs:GetQueryResults",
-                "Resource": "arn:aws:logs:*:*:log-group:*"
-            },
-            {
-                "Sid": "VisualEditor5",
-                "Effect": "Allow",
-                "Action": "logs:StopQuery",
-                "Resource": "arn:aws:logs:*:*:log-group:/aws/braket*"
-            }
-        ]
+    {
+	"Version": "2012-10-17",
+	"Statement": [
+	    {
+		"Sid": "VisualEditor0",
+		"Effect": "Allow",
+		"Action": "cloudwatch:PutMetricData",
+		"Resource": "*",
+		"Condition": {
+		    "StringEquals": {
+			"cloudwatch:namespace": "/aws/braket"
+		    }
+		}
+	    },
+	    {
+		"Sid": "VisualEditor1",
+		"Effect": "Allow",
+		"Action": [
+		    "logs:CreateLogStream",
+		    "logs:DescribeLogStreams",
+		    "ecr:GetDownloadUrlForLayer",
+		    "ecr:BatchGetImage",
+		    "logs:StartQuery",
+		    "logs:GetLogEvents",
+		    "logs:CreateLogGroup",
+		    "logs:PutLogEvents",
+		    "ecr:BatchCheckLayerAvailability"
+		],
+		"Resource": [
+		    "arn:aws:ecr:*:348041629502:repository/*",
+		    "arn:aws:logs:*:*:log-group:/aws/braket*"
+		]
+	    },
+	    {
+		"Sid": "VisualEditor2",
+		"Effect": "Allow",
+		"Action": "iam:PassRole",
+		"Resource": "arn:aws:iam::348041629502:role/CovalentBraketJobsExecutionRole",
+		"Condition": {
+		    "StringLike": {
+			"iam:PassedToService": "braket.amazonaws.com"
+		    }
+		}
+	    },
+	    {
+		"Sid": "VisualEditor3",
+		"Effect": "Allow",
+		"Action": [
+		    "braket:SearchDevices",
+		    "s3:CreateBucket",
+		    "ecr:BatchDeleteImage",
+		    "ecr:BatchGetRepositoryScanningConfiguration",
+		    "ecr:DeleteRepository",
+		    "ecr:TagResource",
+		    "ecr:BatchCheckLayerAvailability",
+		    "ecr:GetLifecyclePolicy",
+		    "braket:CreateJob",
+		    "ecr:DescribeImageScanFindings",
+		    "braket:GetJob",
+		    "ecr:CreateRepository",
+		    "ecr:PutImageScanningConfiguration",
+		    "ecr:GetDownloadUrlForLayer",
+		    "ecr:DescribePullThroughCacheRules",
+		    "ecr:GetAuthorizationToken",
+		    "ecr:DeleteLifecyclePolicy",
+		    "braket:ListTagsForResource",
+		    "ecr:PutImage",
+		    "s3:PutObject",
+		    "s3:GetObject",
+		    "braket:GetDevice",
+		    "ecr:UntagResource",
+		    "ecr:BatchGetImage",
+		    "ecr:DescribeImages",
+		    "braket:CancelQuantumTask",
+		    "ecr:StartLifecyclePolicyPreview",
+		    "braket:CancelJob",
+		    "ecr:InitiateLayerUpload",
+		    "ecr:PutImageTagMutability",
+		    "ecr:StartImageScan",
+		    "ecr:DescribeImageReplicationStatus",
+		    "ecr:ListTagsForResource",
+		    "s3:ListBucket",
+		    "ecr:UploadLayerPart",
+		    "ecr:CreatePullThroughCacheRule",
+		    "ecr:ListImages",
+		    "ecr:GetRegistryScanningConfiguration",
+		    "braket:TagResource",
+		    "ecr:CompleteLayerUpload",
+		    "ecr:DescribeRepositories",
+		    "ecr:ReplicateImage",
+		    "ecr:GetRegistryPolicy",
+		    "ecr:PutLifecyclePolicy",
+		    "s3:PutBucketPublicAccessBlock",
+		    "ecr:GetLifecyclePolicyPreview",
+		    "ecr:DescribeRegistry",
+		    "braket:SearchJobs",
+		    "braket:CreateQuantumTask",
+		    "iam:ListRoles",
+		    "ecr:PutRegistryScanningConfiguration",
+		    "ecr:DeletePullThroughCacheRule",
+		    "braket:UntagResource",
+		    "ecr:BatchImportUpstreamImage",
+		    "braket:GetQuantumTask",
+		    "s3:PutBucketPolicy",
+		    "braket:SearchQuantumTasks",
+		    "ecr:GetRepositoryPolicy",
+		    "ecr:PutReplicationConfiguration"
+		],
+		"Resource": "*"
+	    },
+	    {
+		"Sid": "VisualEditor4",
+		"Effect": "Allow",
+		"Action": "logs:GetQueryResults",
+		"Resource": "arn:aws:logs:*:*:log-group:*"
+	    },
+	    {
+		"Sid": "VisualEditor5",
+		"Effect": "Allow",
+		"Action": "logs:StopQuery",
+		"Resource": "arn:aws:logs:*:*:log-group:/aws/braket*"
+	    }
+	]
     }
 
-
-This executor uses `Docker <https://www.docker.com/>`_ to build an image containing the function code to be executed on Braket locally
-on the user's machine and uploads it to the provided container registry. Following the image update, a ``braket job`` is created
-with the image as a template. The job uploads the result to the S3 bucket specified by the user which the executor then
-parses to retrieve the result object.
-
-This executor plugin can be installed locally via ``pip``
-
-.. code:: bash
-
-    pip install covalent-braket-plugin
-
-Users must add the correct entries to their Covalent `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ to support the Braket Hybrid Jobs plugin.
-Below is an example which works using some basic infrastructure created for testing purposes:
-
-.. code:: bash
-
-    [executors.braket]
-    credentials = "/home/user/.aws/credentials"
-    profile = ""
-    s3_bucket_name = "amazon-braket-covalent-job-resources"
-    ecr_repo_name = "covalent-braket-job-images"
-    cache_dir = "/tmp/covalent"
-    poll_freq = 30
-    braket_job_execution_role_name = "CovalentBraketJobsExecutionRole"
-    quantum_device = "arn:aws:braket:::device/quantum-simulator/amazon/sv1"
-    classical_device = "ml.m5.large"
-    storage = 30
-    time_limit = 300
-
-Note that the S3 bucket must always start with ``amazon-braket-``
-and the set of classical devices is constrained to `certain types <https://docs.aws.amazon.com/braket/latest/developerguide/braket-jobs-configure-job-instance-for-script.html/>`_.
-
-Having provided the executor configuration as above, within workflows users can use the executor as follows
-
-.. code:: python
-
-    import covalent as ct
-
-    @ct.electron(executor="braket")
-    def my_hybrid_task(num_qubits: int, shots: int):
-        import pennylane as qml
-
-        # These are passed to the Hybrid Jobs container at runtime
-        device_arn = os.environ["AMZN_BRAKET_DEVICE_ARN"]
-        s3_bucket = os.environ["AMZN_BRAKET_OUT_S3_BUCKET"]
-        s3_task_dir = os.environ["AMZN_BRAKET_TASK_RESULTS_S3_URI"].split(s3_bucket)[1]
-
-        device = qml.device(
-            "braket.aws.qubit",
-    	device_arn=device_arn,
-    	s3_destination_folder=(s3_bucket, s3_task_dir),
-    	wires=num_qubits,
-    	shots=shots,
-    	parallel=True,
-    	max_parallel=4
-        )
-
-        @qml.qnode(device)
-        def circuit():
-            # Define the circuit here
-
-        # Invoke the circuit and iterate as needed
-
-Alternatively, users can also instantiate the executor class explicity with their custom arguments as follows
-
-.. code:: python
-    import covalent as ct
-
-    executor = ct.executor.BraketExecutor(
-    classical_device = "ml.p3.2xlarge" # Includes a V100 GPU and 8 vCPUs
-    quantum_device = "arn:aws:braket:::device/qpu/rigetti/Aspen-11", # 47-qubit QPU
-    time_limit = 600, # 10-minute time limit
-    )
-    ef my_custom_hybrid_task():
-        # Task definition goes here
+.. ===========================================
+.. 5. Source
+.. ===========================================
 
 .. autoclass:: covalent.executor.BraketExecutor
     :members:
