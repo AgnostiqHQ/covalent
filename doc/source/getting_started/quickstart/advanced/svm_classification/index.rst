@@ -389,3 +389,82 @@ To begin, we import all the required python libraries for our workflow
     from sklearn.svm import SVC
     from joblib import dump
 
+
+We reuse the ``load_images`` electron that we created earlier during the pre-processing stages i.e.
+
+.. code:: python
+
+    @ct.electron
+    def load_dataset():
+        """
+        Return the MNIST handwritten images and labels
+        """
+        data = datasets.load_digits()
+        nsamples = len(data.images)
+        return data.images.reshape((nsamples, -1)), data.target
+
+
+We introduce the following two new electrons to build the SVM classifier and split the datasets into training and test sets
+
+.. code:: python
+
+    @ct.electron
+    def build_classifier(gamma: float):
+        return SVC(gamma = gamma)
+
+    
+    @ct.electron
+    def split_dataset(images, labels, fraction: float=0.2):
+        return train_test_split(images, labels, test_size=fraction, random_state=42)
+
+    
+We now create the cross validation electron that would be by far the most compute intensive operation of our workflow. To this end we offload this electron to AWS using our Batch executor created earlier (``awsbatch``).
+We also point out that since the executor will be executed using the AWS Batch service as a container, we need to ensure that all Python packages that this electron needs are installed and available to it during runtime. To accomplish this,
+we use the ``DepsPip`` electron dependency to install ``scikit-learn`` in the tasks runtime environment on AWS Batch. With these additions, the ``cross_validation`` electron is the following
+
+.. code:: python
+
+    @ct.electron(executor=awsbatch, deps_pip=ct.DepsPip(packages=['scikit-learn']))
+    def cross_validate_classifier(clf, train_images, train_labels, kfold=3):
+        """
+        Cross validate using the estimators default scorer
+        """
+        cv_scores = cross_val_score(clf, train_images, train_labels, cv=kfold)
+        return cv_scores
+
+Here ``clf`` is the SVC classifier used in the cross validation and ``kfold`` is the number of cross validation folds we would run at a given time (defaults to 3). Once the cross validation is finished, we fit the model again on the entire training set
+and predict using the so far, untouched test set and compute an accuracy score. We summarize these steps in the following ``evaluate_model`` electron
+
+.. code:: python
+
+    @ct.electron
+    def evaluate_model(clf, train_images, train_labels, test_images, test_labels):
+        clf.fit(train_images, train_labels)
+        predictions = clf.predict(test_images)
+        return metrics.accuracy_score(predictions, test_labels)
+
+Finally, we save all the results into separate files on disk via the ``save_results`` electron
+
+.. code:: python
+
+    @ct.electron
+    def save_results(results_dir, classifier, cv_scores, accuracy_score):
+        # Generate a random name for the object and results
+        if not os.path.exists(results_dir):
+            os.mkdir(results_dir)
+
+        random_name = uuid.uuid4()
+
+        # Save the classifier
+        dump(classifier, os.path.join(results_dir, f"{random_name}_classifier.joblib"))
+
+        # Save the results
+        results = {}
+        results['cv_score'] = np.mean(cv_scores)
+        results['accuracy'] = acc_score
+        dump(results, os.path.join(results_dir, f"{random_name}_results.joblib"))
+
+
+The ``save_results`` electron 
+
+
