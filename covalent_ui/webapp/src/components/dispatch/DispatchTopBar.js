@@ -24,7 +24,7 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box, Typography, Skeleton, SvgIcon, Tooltip } from '@mui/material'
-import { statusIcon, statusColor, statusLabel,sublatticeIcon } from '../../utils/misc'
+import { statusIcon, statusColor, statusLabel, sublatticeIconTopBar } from '../../utils/misc'
 import { resetSublatticesId } from '../../redux/latticeSlice'
 import { ReactComponent as BackButton } from '../../assets/back.svg'
 
@@ -97,7 +97,7 @@ const LatticeStatusCard = ({
             <Typography sx={{ display: 'flex' }}>
               Viewing:
             </Typography>
-            {sublatticeIcon(sublatticesDispatchId?.status,true)}
+            {sublatticeIconTopBar(sublatticesDispatchId?.status)}
             <Typography sx={{ display: 'flex' }}>
               {sublatticesDispatchId?.latticeName}
             </Typography>
