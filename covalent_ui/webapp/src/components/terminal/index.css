@@ -1,5 +1,5 @@
-.term {
-height: max-content;
+.term .xterm-screen {
+height: 1200px;
 }
 .term .xterm-viewport {
     overflow-y: auto !important;

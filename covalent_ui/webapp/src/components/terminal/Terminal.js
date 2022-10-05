@@ -56,7 +56,7 @@ const Terminal = () => {
                     options={{
                         cursorBlink: true,
                         macOptionIsMeta: true,
-                        scrollback: true,
+                        scrollback: 500,
                         theme: {
                             background: '#08081A',
                         }
