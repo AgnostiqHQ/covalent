@@ -261,7 +261,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
           />)}
 
           {/* Result */}
-          {electronDetail.status === 'COMPLETED' && (
+          {electronDetail?.status === 'COMPLETED' && (
             <ResultSection
               results={electronResultData}
               data-testid="node__result_sec"
