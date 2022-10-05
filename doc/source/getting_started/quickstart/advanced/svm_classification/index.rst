@@ -408,12 +408,12 @@ We introduce the following two new electrons to build the SVM classifier and spl
     def build_classifier(gamma: float):
         return SVC(gamma = gamma)
 
-    
+
     @ct.electron
     def split_dataset(images, labels, fraction: float=0.2):
         return train_test_split(images, labels, test_size=fraction, random_state=42)
 
-    
+
 We now create the cross validation electron that would be by far the most compute intensive operation of our workflow. To this end we offload this electron to AWS using our Batch executor created earlier (``awsbatch``).
 We also point out that since the executor will be executed using the AWS Batch service as a container, we need to ensure that all Python packages that this electron needs are installed and available to it during runtime. To accomplish this,
 we use the ``DepsPip`` electron dependency to install ``scikit-learn`` in the tasks runtime environment on AWS Batch. With these additions, the ``cross_validation`` electron is the following
@@ -451,7 +451,7 @@ of their workflow.
         call_before=[ct.DepsCall(setup_results_dir, args=[RESULTS_DIR])]
     )
     def save_results(results_dir, classifier, cv_scores, accuracy_score):
-       # Generate a random name for the object and results    
+       # Generate a random name for the object and results
         random_name = uuid.uuid4()
         dump({"clf": classifier, "cv_score": np.mean(cv_scores), "accuracy": acc_score}, os.path.join(results_dir, f"{random_name}_results.pkl"))
         return
@@ -695,7 +695,7 @@ For convenience, we give the entire source code of this workflow here
         call_before=[ct.DepsCall(setup_results_dir, args=[RESULTS_DIR])]
     )
     def save_results(results_dir, classifier, cv_scores, accuracy_score):
-       # Generate a random name for the object and results    
+       # Generate a random name for the object and results
         random_name = uuid.uuid4()
         dump({"clf": classifier, "cv_score": np.mean(cv_scores), "accuracy": acc_score}, os.path.join(results_dir, f"{random_name}_results.pkl"))
         return
