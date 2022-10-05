@@ -46,7 +46,9 @@ import { ReactComponent as ConnectionLostSvg } from '../assets/status/connection
 import { ReactComponent as TimeoutSvg } from '../assets/status/timeout.svg'
 import { ReactComponent as QueuedSvg } from '../assets/status/queued.svg'
 import { ReactComponent as CompletingSvg } from '../assets/status/completing.svg'
-
+import { ReactComponent as RunningTopBarSvg } from '../assets/sublattice/runningTopBar.svg'
+import { ReactComponent as FailedTopBarSvg } from '../assets/sublattice/failedTopBar.svg'
+import { ReactComponent as SuccessTopBarSvg } from '../assets/sublattice/successTopBar.svg'
 export const secondsToHms = (ms) => {
   let time = ''
   const sec = Math.floor(ms / 1000)
@@ -349,20 +351,46 @@ export const sublatticeIcon = (type, sub) => {
   switch (type) {
     case 'COMPLETED':
       return (
-        <SvgIcon sx={{ mr: 1, mt: sub ? 1 : 0, ml: sub ? 1 : 0, fontSize: '28px' }}>
+        <SvgIcon sx={{ mr: 1,  fontSize: '28px' }}>
           <SuccessSvg />
         </SvgIcon>
       )
     case 'FAILED':
       return (
-        <SvgIcon sx={{ mr: 1, mt: sub ? 1 : 0, ml: sub ? 1 : 0 , fontSize: '28px'}}>
+        <SvgIcon sx={{ mr: 1,  fontSize: '28px' }}>
           <FailedSvg />
         </SvgIcon>
       )
     case 'RUNNING':
       return (
-        <SvgIcon sx={{ mr: 1, mt: sub ? 1 : 0, ml: sub ? 1 : 0 , fontSize: '28px'}}>
+        <SvgIcon sx={{ mr: 1,  fontSize: '28px' }}>
           <RunningSvg />
+        </SvgIcon>
+      )
+
+    default:
+      return null
+  }
+}
+
+export const sublatticeIconTopBar = (type, sub) => {
+  switch (type) {
+    case 'COMPLETED':
+      return (
+        <SvgIcon sx={{ mr: 1, mt: 1 , ml: 1, fontSize: '28px' }}>
+          <SuccessTopBarSvg />
+        </SvgIcon>
+      )
+    case 'FAILED':
+      return (
+        <SvgIcon sx={{ mr: 1, mt: 1 , ml: 1, fontSize: '28px' }}>
+          <FailedTopBarSvg />
+        </SvgIcon>
+      )
+    case 'RUNNING':
+      return (
+        <SvgIcon sx={{ mr: 1, mt: 1 , ml: 1, fontSize: '28px' }}>
+          <RunningTopBarSvg />
         </SvgIcon>
       )
 
