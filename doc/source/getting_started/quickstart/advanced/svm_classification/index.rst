@@ -377,7 +377,7 @@ We build our cross validation workflow in stages as done earlier in the pre-proc
 
 To begin, we import all the required python libraries for our workflow
 
-.. code:: python 
+.. code:: python
 
     import os
     import uuid
