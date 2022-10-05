@@ -21,7 +21,7 @@
  */
 
 import React from 'react'
-import { createTheme, emphasize, darken } from '@mui/material/styles'
+import { createTheme, emphasize } from '@mui/material/styles'
 import { Link as RouterLink } from 'react-router-dom'
 
 const LinkBehavior = React.forwardRef(({ href, ...props }, ref) => {
@@ -178,6 +178,6 @@ const theme = createTheme(defaultTheme, {
   },
 })
 
-export const graphBgColor = darken(theme.palette.background.paper, 0.3)
+export const graphBgColor = theme.palette.background.default
 
 export default theme

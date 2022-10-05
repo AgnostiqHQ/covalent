@@ -256,7 +256,8 @@ const SublatticesListing = () => {
   }
 
   const sublatticesDispatch = (sublatticeId) => {
-    dispatch(sublatticesDispatchId(sublatticeId))
+    if (sublatticeId.totalElectrons !== 0)
+      dispatch(sublatticesDispatchId(sublatticeId))
   }
 
   return (
@@ -274,8 +275,8 @@ const SublatticesListing = () => {
 
                 <TableBody
                   sx={{
-                    '.MuiTableRow-root': {
-                      borderBottom: '2 px solid red',
+                    '.MuiTableCell-root': {
+                      padding: '6px 0 6px 16px',
                     },
                   }}
                 >
@@ -284,7 +285,12 @@ const SublatticesListing = () => {
                       sublatticesListView,
                       getComparator(sortOrder, sortColumn)
                     ).map((result, index) => (
-                      <Tooltip title="Click to view sublattices graph">
+                      <Tooltip followCursor={true}
+                      title={
+                        result.totalElectrons !== 0
+                          ? 'Click to view sublattices graph'
+                          : ''
+                      }>
                         <TableRow
                           hover
                           key={result.dispatchId}
@@ -330,7 +336,7 @@ const SublatticesListing = () => {
                           <TableCell>
                             <OverflowTip
                               width="65px"
-                              value={`${result.totalElectrons}/${result.totalElectronsCompleted}`}
+                              value={`${result.totalElectronsCompleted}/${result.totalElectrons}`}
                             />
                           </TableCell>
                         </TableRow>

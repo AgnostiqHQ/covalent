@@ -20,7 +20,7 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { useReactFlow } from 'react-flow-renderer'
+import { useZoomPanHelper } from 'react-flow-renderer'
 import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material'
 import {
   Add as PlusIcon,
@@ -49,7 +49,7 @@ const LatticeControls = ({
    nodesDraggable,
    toggleNodesDraggable,
  }) => {
-   const { zoomIn, zoomOut } = useReactFlow()
+   const { zoomIn, zoomOut } = useZoomPanHelper()
    const { fitView } = useFitViewHelper()
 
    return (

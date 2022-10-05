@@ -383,6 +383,9 @@ const SettingsCard = () => {
                     border: '1px solid #303067',
                     borderRadius: '60px',
                     mb: 3,
+                    '@media (max-width: 1290px)': {
+                      width: '258px',
+                    },
                   }}
                   disableUnderline
                   value={searchKey}
@@ -594,7 +597,7 @@ const SettingsCard = () => {
                           height: 550,
                         },
                         '@media (min-height: 1000px)': {
-                          height: 750,
+                          height: 730,
                         },
                       }}
                     >

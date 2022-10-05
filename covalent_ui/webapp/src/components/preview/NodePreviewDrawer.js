@@ -21,6 +21,7 @@
  */
 import _ from 'lodash'
 import { useSelector } from 'react-redux'
+import { useStoreActions } from 'react-flow-renderer'
 import { Close } from '@mui/icons-material'
 import {
   Box,
@@ -46,8 +47,12 @@ export const nodeDrawerWidth = 360
 
 const NodeDrawer = ({ node,setSelectedElectron }) => {
   const preview = useSelector((state) => state.latticePreview.lattice)   // unselect on close
+  const setSelectedElements = useStoreActions(
+    (actions) => actions.setSelectedElements
+  )
+
   const handleClose = () => {
-    setSelectedElectron(null)
+    setSelectedElements([])
   }
 
   const src = _.get(node, 'function_string', '# source unavailable')
