@@ -298,7 +298,7 @@ In this exercise we will be using the AWS Batch executor to offload the training
 
 .. code:: bash
 
-    pip install covalent-awsbatch-plugin
+    pip install covalent-awsbatch-plugin==0.16.1rc0
 
 AWS Batch Executor
 ~~~~~~~~~~~~~~~~~~~~
@@ -310,14 +310,10 @@ As AWS Batch supports executing jobs as containers, the AWS Batch executor utili
 of an electron scheduled to be executed on AWS Batch are as follows
 
 1) Pickle the electron task to be executed along with all its dependencies (``DepsPip, DepsCall`` etc)
-2) Build a Docker container image that executes the pickled function as its ``ENTRYPOINT``
-3) Upload the container image to AWS elastic container registry (ECR)
-4) Submit the container as a batch job to the user provided batch job queue
+2) Upload the pickled file to the user provided S3 bucket
+4) Submit a AWS Batch job to execute the electron task using Covalent's public AWS Batch base container
 5) Upload the electron's result object to the user provided S3 bucket
 6) Download the result object locally for post processing
-
-The current version of the Batch executor requires `Docker <https://docs.docker.com/get-docker/>`_ to be installed and properly configured on the users' machine. As Covalent builds a docker image
-prior to electron execution during runtime, the first image build takes a little while with build times dropping significantly for subsequent runs due to image caching.
 
 Similar to the way we configured the ``SSHExecutor``, user can import the ``AWSBatchExecutor`` from Covalent and use that in their workflows. Users can configure this executor in several different ways as outlined in `here <https://github.com/AgnostiqHQ/covalent-awsbatch-plugin>`_.
 In this example, we will configure an instance of the executor and use that to offload execution of certain electrons to the Batch compute environment. Following are the required arguments users need to provided in order to
@@ -443,28 +439,110 @@ and predict using the so far, untouched test set and compute an accuracy score. 
         predictions = clf.predict(test_images)
         return metrics.accuracy_score(predictions, test_labels)
 
-Finally, we save all the results into separate files on disk via the ``save_results`` electron
+Finally, we save all the results into separate files on disk via the ``save_results`` electron. In this electron, we save the actually classifier, the scores obtained from cross validation
+and the accuracy score of the model returned via ``evaluate_model``. We define a variable ``RESULTS_DIR`` for convenience that points to the location where the user wishes to save the results
+of their workflow.
 
 .. code:: python
 
-    @ct.electron
+    RESULTS_DIR = os.path.join(os.environ['HOME'], "cv_results")
+
+    @ct.electron(
+        call_before=[ct.DepsCall(setup_results_dir, args=[RESULTS_DIR])]
+    )
     def save_results(results_dir, classifier, cv_scores, accuracy_score):
-        # Generate a random name for the object and results
-        if not os.path.exists(results_dir):
-            os.mkdir(results_dir)
-
+       # Generate a random name for the object and results    
         random_name = uuid.uuid4()
+        dump({"clf": classifier, "cv_score": np.mean(cv_scores), "accuracy": acc_score}, os.path.join(results_dir, f"{random_name}_results.pkl"))
+        return
 
-        # Save the classifier
-        dump(classifier, os.path.join(results_dir, f"{random_name}_classifier.joblib"))
+Call Before/After Hooks
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        # Save the results
-        results = {}
-        results['cv_score'] = np.mean(cv_scores)
-        results['accuracy'] = acc_score
-        dump(results, os.path.join(results_dir, f"{random_name}_results.joblib"))
+Covalent allows users to define custom hooks that they can use to run arbitrary Python functions before and after an electron executes. These call dependencies are another type of :doc:`electron dependencies <../../../../concepts/concepts>`
+referred to in Covalent as ``DepsCall``. Users can pass in a list of Python functions to the electron decorator they wish Covalent to execute on their behalf before/after an
+electron is executed.
+
+In our case, we use the ``call_before`` hook to check that the directory referenced by ``RESULTS_DIR`` exists, if not we create it before the ``save_results`` electron executes.
+This way we are able to ensure that all the results from the ``cross_validation`` step are saved properly to disk for later post processing.
 
 
-The ``save_results`` electron 
+Cross Validation Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We now create our lattice composing of all the above electrons as follows
+
+.. code:: python
+
+    @ct.lattice(call_after=[ct.DepsCall(find_best_model, args=[RESULTS_DIR])])
+    def cross_validation_workflow(results_dir, param_grid, split_fraction: float = 0.2):
+        images, labels = load_images()
+        train_images, test_images, train_labels, test_labels = split_dataset(images, labels, fraction=split_fraction)
+
+        for param in list(param_grid):
+            svm_classifier = build_classifier(**param)
+            cv_scores = cross_validate_classifier(svm_classifier, train_images, train_labels, kfold=3)
+            acc_score = evaluate_model(svm_classifier, train_images, train_labels, test_images, test_labels)
+            ct.wait(child=acc_score, parents=[svm_classifier, cv_scores])
+            save_results(results_dir, svm_classifier, cv_scores, acc_score)
+    return
+
+In our ``cross_validation_workflow`` we first load the images from ``scikit-learn`` and split the entire dataset into ``training`` and ``test`` sets. As inputs to our workflow,
+we pass in the following
+
+* ``results_dir``: Location on the local filesystem where the model results are to be saved
+* ``param_grid``: The grid of model parameter values to use during cross validation
+* ``split_fraction``: Fraction of the entire dataset to be used for testing the model, defaults to ``0.2``
+
+Following the splitting of the datasets, we loop over all the parameter values passed in via the ``param_grid`` variable. For each parameter then we do the following steps sequentially
+
+* Build a SVM classifier object
+* Use just the training set to perform 3 fold cross validation of the model
+* Evaluate the model on the test set after fitting it to the entire training dataset
+* Store the results on disk as pickle files using a randomly generated name
+
+We use the ``ct.wait`` feature again to enforce that the ``save_results`` electrons do not proceed before the results from ``cross_validate_classifier`` and ``evaluate_model``
+are available. This ensure consistency in our workflow and prevents any race conditions.
+
+.. note::
+
+    It can be noted that running the cross validation electron for different parameter values are independent of each other. Covalent is able to recognize such patterns in workflows
+    and it automatically unrolls the for loop iterations and renders them as independent nodes in the workflow graph. Each of these nodes then execute concurrently as separate AWS Batch jobs.
+    This scales quite nicely with workflow size as independent loop iterations are separate invocations of the underlying electron.
+
+We now dispatch the workflow to Covalent as follows after generating a grid of 5 SVM classifier parameter values
+
+.. code:: python
+
+    from sklearn.model_selection import ParameterGrid
+    import numpy as np
+
+    parameters = list(ParameterGrid({'gamma': np.linspace(0.01, 0.1, 5)}))
+
+    dispatch_id = ct.dispatch(cross_validation_workflow)(RESULTS_DIR, parameters, 0.2)
+    result = ct.get_result(dispatch_id, wait=True)
+    print(result)
+
+
+The workflow graph can be inspected in the UI
+
+.. image:: ./cv_workflow.png
+    :width: 1000
+    :align: center
+
+
+The result object of the workflow is the following
+
+.. image:: ./cv_workflow_result.png
+    :width: 1000
+    :align: center
+
+
+Model selection
+================
+
+
+
+
 
 
