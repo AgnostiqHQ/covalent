@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Updated `formatters` field in `log_config()` to show timestamps in fastapi logs
+- Timestamps are now displayed in fastapi app logs
 - Ability to view the configuration file on the GUI as settings
 - Ability to copy python objects for inputs and results for lattice and electrons
 
