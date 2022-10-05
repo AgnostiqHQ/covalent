@@ -97,7 +97,7 @@ const ResultsTableHead = ({ order, orderBy, onSort }) => {
                   onClick={createSortHandler(header.id)}
                   sx={{
                     '.Mui-active': {
-                      color: (theme) => theme.palette.text.secondary,
+                      color: (theme) => theme.palette.text.primary,
                     },
                   }}
                 >

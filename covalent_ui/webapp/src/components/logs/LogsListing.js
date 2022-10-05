@@ -21,7 +21,7 @@
  */
 
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from '@reduxjs/toolkit'
 import Fuse from 'fuse.js'
@@ -277,6 +277,8 @@ const LogsListing = () => {
   const [disableDownload, setDisableDownload] = useState(false)
   const [logFinalFile, setLogFinalFile] = useState('')
   const [copied, setCopied] = useState(false);
+  const logsRef = useRef([])
+
 
   useEffect(() => {
     if (logFinalFile) {
@@ -333,6 +335,7 @@ const LogsListing = () => {
     setSelected([])
     const offsetValue = pageValue === 1 ? 0 : pageValue * 70 - 70
     setOffset(offsetValue)
+    logsRef.current[0].scrollIntoView({ behavior: 'smooth', block: 'end' })
   }
 
   useEffect(() => {
@@ -465,6 +468,9 @@ const LogsListing = () => {
                 '@media (min-width: 1700px)': {
                   height: _.isEmpty(logListView) ? 50 : '66vh',
                 },
+                '@media (min-height: 900px)': {
+                  height: _.isEmpty(logListView) ? 50 : '72vh',
+                },
                 width: _.isEmpty(logListView) ? '40%' : null,
 
                 borderRadius:
@@ -492,7 +498,8 @@ const LogsListing = () => {
                         data-testid="log"
                         followCursor={true}
                       >
-                        <TableRow hover key={index} sx={{ height: '50px' }}
+                        <TableRow
+                          ref={(el) => (logsRef.current[index] = el)}
                           onClick={() => {
                             copy(result.message)
                             setCopied(true)

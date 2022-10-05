@@ -55,13 +55,13 @@ import {
   electronExecutor,
   electronFunctionString,
   electronError,
-  electronInput
+  electronInput,
 } from '../../redux/electronSlice'
 import { isDemo } from '../../utils/demo/setup'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node,dispatchId }) => {
+const NodeDrawer = ({ node, dispatchId }) => {
   const dispatch = useDispatch()
   const electronId = node !== undefined && node.id
   const electronDetail = useSelector(
@@ -99,11 +99,9 @@ const NodeDrawer = ({ node,dispatchId }) => {
   useEffect(() => {
     if (!!node && !isDemo) {
       dispatch(electronDetails({ electronId, dispatchId }))
-      dispatch(electronInput({ dispatchId , electronId, params: 'inputs' }))
+      dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
       dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
-      dispatch(
-        electronExecutor({ dispatchId, electronId, params: 'executor' })
-      )
+      dispatch(electronExecutor({ dispatchId, electronId, params: 'executor' }))
       dispatch(
         electronFunctionString({
           dispatchId,
@@ -143,6 +141,10 @@ const NodeDrawer = ({ node,dispatchId }) => {
           boxShadow: '0px 16px 50px rgba(0, 0, 0, 0.9)',
           backdropFilter: 'blur(8px)',
           borderRadius: '16px',
+          '@media (max-width: 1290px)': {
+            height: '92vh',
+            marginTop: '70px',
+          },
         },
       })}
       anchor="right"
@@ -247,8 +249,7 @@ const NodeDrawer = ({ node,dispatchId }) => {
                   startTime={electronDetail?.started_at}
                   endTime={electronDetail?.ended_at}
                 />
-              )
-              }
+              )}
             </>
           )}
 
@@ -264,7 +265,10 @@ const NodeDrawer = ({ node,dispatchId }) => {
             <ResultSection
               results={electronResultData}
               data-testid="node__result_sec"
-              sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg, cursor: 'pointer' })}
+              sx={(theme) => ({
+                bgcolor: theme.palette.background.darkblackbg,
+                cursor: 'pointer',
+              })}
               isFetching={electronResultDataIsFetching}
             />
           )}
@@ -273,7 +277,9 @@ const NodeDrawer = ({ node,dispatchId }) => {
           {electronExecutorResult && (
             <ExecutorSection
               metadata={electronExecutorResult}
-              sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
+              sx={(theme) => ({
+                bgcolor: theme.palette.background.darkblackbg,
+              })}
               isFetching={electronExecutorResultIsFetching}
             />
           )}

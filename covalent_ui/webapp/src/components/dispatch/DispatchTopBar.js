@@ -24,9 +24,15 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box, Typography, Skeleton, SvgIcon, Tooltip } from '@mui/material'
-import { statusIcon, statusColor, statusLabel, sublatticeIconTopBar } from '../../utils/misc'
+import {
+  statusIcon,
+  statusColor,
+  statusLabel,
+  sublatticeIcon,
+} from '../../utils/misc'
 import { resetSublatticesId } from '../../redux/latticeSlice'
 import { ReactComponent as BackButton } from '../../assets/back.svg'
+import OverflowTip from '../common/EllipsisTooltip'
 
 const DispatchTopBar = () => {
   const { dispatchId } = useParams()
@@ -85,8 +91,8 @@ const LatticeStatusCard = ({
   dispatch,
 }) => {
   return (
-    <Box sx={{ my: 0, pt: 1 }} data-testid="topbarcard">
-      <Box sx={{ position: 'absolute', left: 490 }}>
+    <Box sx={{ my: 0, pt: 2 }} data-testid="topbarcard">
+      <Box sx={{ position: 'absolute', left: 490, mt: 1 }}>
         {sublatticesDispatchId && (
           <Box
             sx={{
@@ -94,12 +100,15 @@ const LatticeStatusCard = ({
               alignItems: 'center',
             }}
           >
+            <Typography sx={{ display: 'flex' }}>Viewing:</Typography>
+            {sublatticeIcon(sublatticesDispatchId?.status, true)}
+
             <Typography sx={{ display: 'flex' }}>
-              Viewing:
-            </Typography>
-            {sublatticeIconTopBar(sublatticesDispatchId?.status)}
-            <Typography sx={{ display: 'flex' }}>
-              {sublatticesDispatchId?.latticeName}
+              <OverflowTip
+                width="30px"
+                fontSize="14px"
+                value={sublatticesDispatchId?.latticeName}
+              />
             </Typography>
             <Tooltip title="Revert back to main lattice">
               <SvgIcon
@@ -119,6 +128,7 @@ const LatticeStatusCard = ({
       <Box
         sx={{
           display: 'flex',
+          mt: 1.5,
         }}
       >
         <Box
