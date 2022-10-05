@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ability to view the configuration file on the GUI as settings
 - Ability to copy python objects for inputs and results for lattice and electrons
+- Ability to view sublattices as part of the main lattice on the GUI.
+- Ability to view subalattices graph as part of main lattice.
 
 ### Fixed
 

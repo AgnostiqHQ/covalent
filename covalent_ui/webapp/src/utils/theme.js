@@ -21,7 +21,7 @@
  */
 
 import React from 'react'
-import { createTheme, emphasize, darken } from '@mui/material/styles'
+import { createTheme, emphasize } from '@mui/material/styles'
 import { Link as RouterLink } from 'react-router-dom'
 
 const LinkBehavior = React.forwardRef(({ href, ...props }, ref) => {
