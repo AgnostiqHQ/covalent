@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Timestamps are now displayed in fastapi app logs
+
 ## [0.200.0] - 2022-10-05
 
 ### Authors
@@ -33,7 +37,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Timestamps are now displayed in fastapi app logs
 - Ability to view the configuration file on the GUI as settings
 - Ability to copy python objects for inputs and results for lattice and electrons
 
