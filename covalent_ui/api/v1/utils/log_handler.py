@@ -42,12 +42,12 @@ def log_config():
             "default": {
                 "()": "uvicorn.logging.DefaultFormatter",
                 "datefmt": "%Y-%m-%d %H:%M:%S",
-                "fmt": "[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s",
+                "format": "[%(asctime)s,%(msecs)03d] [%(levelname)s] %(message)s",
             },
             "access": {
                 "()": "uvicorn.logging.AccessFormatter",
                 "datefmt": "%Y-%m-%d %H:%M:%S",
-                "fmt": "[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s",
+                "format": "[%(asctime)s,%(msecs)03d] [%(levelname)s] %(message)s",
             },
         },
         "handlers": {
@@ -63,7 +63,6 @@ def log_config():
             },
         },
         "loggers": {
-            "uvicorn": {"level": log, "handlers": ["default"]},
             "uvicorn.error": {"level": log, "handlers": ["default"], "propagate": False},
             "uvicorn.access": {"level": log, "handlers": ["access"], "propagate": "no"},
         },
