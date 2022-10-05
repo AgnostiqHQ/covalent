@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- move `upsert_lattice_data()` to dispatcher
+- move `upsert_electron_data()` to dispatcher
+- move `insert_electron_dependency_data()` to dispatcher
+- move `persist()` to dispatcher
+- move `get_unique_id()` to dispatcher
+- move `initialize_result_object()` to dispatcher
+
 ## [0.200.0] - 2022-10-05
 
 ### Authors
@@ -63,15 +72,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Syntax fixes in release.yml
 - Verbose failure messages in boilerplate workflow
 - Change license.yml to pip-license-checker action
-
-### Changed
-
-- move `upsert_lattice_data()` to dispatcher
-- move `upsert_electron_data()` to dispatcher
-- move `insert_electron_dependency_data()` to dispatcher
-- move `persist()` to dispatcher
-- move `get_unique_id()` to dispatcher
-- move `initialize_result_object()` to dispatcher
 
 ## [0.199.0] - 2022-09-29
 
