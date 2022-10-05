@@ -215,7 +215,7 @@ const SublatticesListing = () => {
   }
 
   const sublatticesDispatch = (sublatticeId) => {
-    dispatch(sublatticesDispatchId(sublatticeId))
+    if (sublatticeId.totalElectrons !== 0) dispatch(sublatticesDispatchId(sublatticeId))
   }
 
   return (
@@ -240,7 +240,7 @@ const SublatticesListing = () => {
                 >
                   {sublatticesListView &&
                     sublatticesListView.map((result, index) => (
-                      <Tooltip title="Click to view sublattices graph">
+                      <Tooltip title={result.totalElectrons !== 0 ? "Click to view sublattices graph" : ''}>
                         <TableRow
                           hover
                           key={result.dispatchId}
@@ -280,7 +280,7 @@ const SublatticesListing = () => {
                           <TableCell>
                             <OverflowTip
                               width="65px"
-                              value={`${result.totalElectrons}/${result.totalElectronsCompleted}`}
+                              value={`${result.totalElectronsCompleted}/${result.totalElectrons}`}
                             />
                           </TableCell>
                         </TableRow>
@@ -306,31 +306,33 @@ const SublatticesListing = () => {
         )}
       </Box>
 
-      {isFetching && _.isEmpty(sublatticesListView) && (
-        <>
-          {/*  */}
-          {/* <Skeleton variant="rectangular" height={50} /> */}
-          <TableContainer>
-            <StyledTable>
-              <TableBody>
-                {[...Array(7)].map((_) => (
-                  <TableRow key={Math.random()}>
-                    <TableCell padding="checkbox">
-                      <Skeleton sx={{ my: 2, mx: 1 }} />
-                    </TableCell>
-                    <TableCell sx={{ paddingTop: '6px !important' }}>
-                      <Skeleton sx={{ my: 2, mx: 1 }} />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton sx={{ my: 2, mx: 1 }} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </StyledTable>
-          </TableContainer>
-        </>
-      )}
+      {
+        isFetching && _.isEmpty(sublatticesListView) && (
+          <>
+            {/*  */}
+            {/* <Skeleton variant="rectangular" height={50} /> */}
+            <TableContainer>
+              <StyledTable>
+                <TableBody>
+                  {[...Array(7)].map((_) => (
+                    <TableRow key={Math.random()}>
+                      <TableCell padding="checkbox">
+                        <Skeleton sx={{ my: 2, mx: 1 }} />
+                      </TableCell>
+                      <TableCell sx={{ paddingTop: '6px !important' }}>
+                        <Skeleton sx={{ my: 2, mx: 1 }} />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton sx={{ my: 2, mx: 1 }} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </StyledTable>
+            </TableContainer>
+          </>
+        )
+      }
     </>
   )
 }
