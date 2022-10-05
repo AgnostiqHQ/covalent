@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## Docs
+
+- Updated ECS Executor RTD with config & cloud resources table
+
 ### Added
 
 - Ability to view the configuration file on the GUI as settings
@@ -18,7 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Updated EC2 RTD with config & cloud resources table
+- Updated Lambda Executor RTD with config & cloud resources table
+- Updated EC2, Braket, and Batch AWS Executors RTD with config & cloud resources table
 
 ### Operations
 
