@@ -28,7 +28,7 @@ import {
   statusIcon,
   statusColor,
   statusLabel,
-  sublatticeIcon,
+  sublatticeIconTopBar,
 } from '../../utils/misc'
 import { resetSublatticesId } from '../../redux/latticeSlice'
 import { ReactComponent as BackButton } from '../../assets/back.svg'
@@ -101,11 +101,11 @@ const LatticeStatusCard = ({
             }}
           >
             <Typography sx={{ display: 'flex' }}>Viewing:</Typography>
-            {sublatticeIcon(sublatticesDispatchId?.status, true)}
+            {sublatticeIconTopBar(sublatticesDispatchId?.status, true)}
 
             <Typography sx={{ display: 'flex' }}>
               <OverflowTip
-                width="30px"
+                width="70px"
                 fontSize="14px"
                 value={sublatticesDispatchId?.latticeName}
               />
