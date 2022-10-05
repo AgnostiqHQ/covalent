@@ -294,8 +294,98 @@ Each one of them can be installed independently through PYPI, but users can use 
 
     pip install covalent-aws-plugins
 
-In this exercise we will be using the AWS Batch executor to offload the training of our model which can be installed as follows
+In this exercise we will be using the AWS Batch executor to offload the training our model to AWS. The Covalent AWS Batch plugin can from PYPI as follows
 
 .. code:: bash
 
     pip install covalent-awsbatch-plugin
+
+AWS Batch Executor
+~~~~~~~~~~~~~~~~~~~~
+
+The `Batch executor <https://github.com/AgnostiqHQ/covalent-awsbatch-plugin>`_ plugin assumes that all the necessary AWS infrastructure has already been provisioned prior to running the workflow. Details pertaining to configuring a
+a AWS batch job queue, job definitions, compute environments and IAM roles can be found `here <https://docs.aws.amazon.com/batch/latest/userguide/Batch_GetStarted.html>`_
+
+As AWS Batch supports executing jobs as containers, the AWS Batch executor utilizes that feature to execute electrons. From a high level the execution steps from start to finish
+of an electron scheduled to be executed on AWS Batch are as follows
+
+1) Pickle the electron task to be executed along with all its dependencies (``DepsPip, DepsCall`` etc)
+2) Build a Docker container image that executes the pickled function as its ``ENTRYPOINT``
+3) Upload the container image to AWS elastic container registry (ECR)
+4) Submit the container as a batch job to the user provided batch job queue
+5) Upload the electron's result object to the user provided S3 bucket
+6) Download the result object locally for post processing
+
+The current version of the Batch executor requires `Docker <https://docs.docker.com/get-docker/>`_ to be installed and properly configured on the users' machine. As Covalent builds a docker image
+prior to electron execution during runtime, the first image build takes a little while with build times dropping significantly for subsequent runs due to image caching.
+
+Similar to the way we configured the ``SSHExecutor``, user can import the ``AWSBatchExecutor`` from Covalent and use that in their workflows. Users can configure this executor in several different ways as outlined in `here <https://github.com/AgnostiqHQ/covalent-awsbatch-plugin>`_.
+In this example, we will configure an instance of the executor and use that to offload execution of certain electrons to the Batch compute environment. Following are the required arguments users need to provided in order to
+properly configure the AWS Batch executor
+
+* ``s3_bucket_name``: Name of the AWS S3 bucket to be used during execution to cache function/result objects
+* ``batch_job_definition_name``:  Name of the user configured AWS Batch job definition
+* ``batch_queue``: Name of the AWS Batch job queue to which the job ought to be submitted
+* ``batch_execution_role_name``: Execution role name that grants Batch compute backend services (ECS/Fargate) to take API calls on the user's behalf
+* ``batch_job_role_name``: IAM role name configured by the user for the Batch job. This role should have sufficient privileges for the jobs to read and write the S3
+* ``batch_job_log_group_name``: Name of the AWS cloudwatch log group for storing all logs generated during batch job execution
+* ``vcpu``: Number of virtual CPU cores to be used to execute the task
+* ``memory``: Memory in GB to allocate for the task
+* ``time_limit``: Time limit for the job in seconds
+
+.. note::
+    The executor uses ``vcpu=2``, ``memory=3.75`` and ``time_limit=300`` as default values for all jobs. These can
+    be overridden by the user as per their compute requirements and AWS Batch configuration
+
+
+With the required information, users can then instantiate their Batch executor as follows and use it to offload electrons from their workflows
+
+.. code:: python
+
+    from covalent.executor import AWSBatchExecutor
+
+    awsbatch = AWSBatchExecutor(
+                        s3_bucket_name='<s3 bucket name>',
+                        batch_job_definition_name='<job definition name>',
+                        batch_queue='<batch job queue>',
+                        batch_execution_role_name='<batch execution role name>',
+                        batch_job_role_name='<batch IAM job role name>',
+                        batch_job_log_group_name='<batch job log group name>',
+                        vcpu=2,
+                        memory=3.75,
+                        time_limit=60
+    )
+
+
+Cross validation
+~~~~~~~~~~~~~~~~~
+
+When building good machine learning models it is important that the models do not overfit the training dataset. Overfitting causes the model's to generalize poorly and
+result in poor accuracy on test sets. To circumvent such issues, k-fold cross validation is typically carried out using the training samples a) to prevent overfitting and b) to find the optimal
+model hyper-parameters. There are great tools already available in the ``scikit-learn`` package that greatly simplify this process. In this section we will use these techniques to optimize
+our SVM classifier while using Covalent to orchestrate the entire workflow.
+
+We build our cross validation workflow in stages as done earlier in the pre-processing stage. The steps in our workflow consists of the following
+
+1) Load the dataset
+2) Build a grid of parameters over which to tune the classifier
+3) Build an SVM classifier from a specific set of input parameters
+4) Perform k-fold cross validation of the classifier on the training dataset
+5) Calculate CV scores
+6) Evaluate the model's performance on the training/test set and record results
+6) Save results to disk for each model
+
+To begin, we import all the required python libraries for our workflow
+
+.. code:: python 
+
+    import os
+    import uuid
+    import covalent as ct
+    import numpy as np
+    from sklearn import datasets, metrics
+    from covalent.executor import AWSBatchExecutor
+    from sklearn.model_selection import train_test_split, cross_val_score, ParameterGrid
+    from sklearn.svm import SVC
+    from joblib import dump
+
