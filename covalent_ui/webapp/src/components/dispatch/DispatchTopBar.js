@@ -42,7 +42,7 @@ const DispatchTopBar = () => {
             position: 'absolute',
             top: 0,
             width: '100%',
-            height: '55px',
+            height: '75px',
             justifyContent: 'center',
             zIndex: 95,
             display: 'flex',
@@ -71,7 +71,7 @@ export default DispatchTopBar
 
 const LatticeStatusCard = ({ latDetails, isFetching }) => {
   return (
-    <Box sx={{ my: 0, pt: 1 }} data-testid="topbarcard">
+    <Box sx={{ my: 0, pt: '18px' }} data-testid="topbarcard">
       <Box
         sx={{
           display: 'flex',

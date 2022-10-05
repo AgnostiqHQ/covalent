@@ -52,9 +52,17 @@ origins = [f"http://{address}:{port}"]
 socket_origins = [f"http://{address}:{port}", f"http://{address}:{socket_port}"]
 
 app_log = logger.app_log
+log_to_file = get_config("sdk.enable_logging").upper() == "TRUE"
 
 app = FastAPI()
-sio = socketio.AsyncServer(async_mode="asgi")
+sio = socketio.AsyncServer(
+    cors_allowed_origins=socket_origins, async_mode="asgi", logger=log_to_file
+)
+
+
+@sio.on("message")
+async def chat_message(sid, data):
+    await sio.emit("draw-request", "hi ")
 
 
 app.include_router(routes.routes)

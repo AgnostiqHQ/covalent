@@ -20,7 +20,7 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { Box, LinearProgress, Tooltip, Typography } from '@mui/material'
+import { Box, LinearProgress, Tooltip } from '@mui/material'
 import { statusLabel } from '../../utils/misc'
 
 const STATUS_COLORS = {
@@ -37,7 +37,7 @@ const ResultProgress = (props) => {
   const { status, totalElectronsCompleted, totalElectrons } = props.result
   return (
     <Tooltip title={statusLabel(status)} placement="right">
-      <Box sx={{ display: 'flex', alignItems: 'center',width:'120px' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', width: '120px' }}>
         <Box data-testid="resultProgress" sx={{ width: '50%', mr: 1 }}>
           <LinearProgress
             variant="determinate"
@@ -46,39 +46,29 @@ const ResultProgress = (props) => {
           />
         </Box>
         <Box sx={{ width: '50%' }}>
-          <Typography
-            variant="body2"
-            color={STATUS_COLORS[status.toUpperCase()]}
+          <Box
+            component="div"
+            display="inline"
+            sx={{
+              color: `${STATUS_COLORS[status.toUpperCase()]}.main`,
+              fontSize: '1rem',
+            }}
           >
-            <Typography variant="body2">
-              <Box
-                component="div"
-                display="inline"
-                sx={{
-                  color: `${STATUS_COLORS[status.toUpperCase()]}.main`,
-                  fontSize: '1rem',
-                }}
-              >
-                {totalElectronsCompleted}
-              </Box>
-              <Box
-                component="div"
-                display="inline"
-                sx={{
-                  color:
-                    totalElectrons === totalElectronsCompleted
-                      ? `${STATUS_COLORS[status.toUpperCase()]}.main`
-                      : '',
-                  fontSize: '1rem',
-                }}
-              >
-                /{totalElectrons}
-              </Box>
-            </Typography>
-          </Typography>
+            {totalElectronsCompleted}
+          </Box>
+          <Box
+            component="div"
+            display="inline"
+            sx={{
+              color: `${STATUS_COLORS[status.toUpperCase()]}.main`,
+              fontSize: '1rem',
+            }}
+          >
+            /{totalElectrons}
+          </Box>
         </Box>
-      </Box>
-    </Tooltip>
+      </Box >
+    </Tooltip >
   )
 }
 
